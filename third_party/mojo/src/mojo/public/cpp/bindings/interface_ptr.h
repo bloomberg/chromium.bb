@@ -20,11 +20,6 @@ class ErrorHandler;
 // closes the pipe and deletes the proxy on destruction. The pointer must be
 // bound to a message pipe before the interface methods can be called.
 //
-// Can also route incoming calls to a local implementation of the
-// Interface::Client interface. To enable this, call the set_client() method.
-// Calls to the client interface will originate from the same thread that owns
-// this InterfacePtr.
-//
 // This class is thread hostile, as is the local proxy it manages. All calls to
 // this class or the proxy should be from the same thread that created it. If
 // you need to move the proxy to a different thread, extract the message pipe
@@ -87,21 +82,16 @@ class InterfacePtr {
     internal_state_.Swap(&doomed);
   }
 
-  // Blocks the current thread until the next incoming call to a client method
-  // or callback arrives, or until an error occurs. Returns |true| if a call
-  // arrived, or |false| in case of error.
+  // Blocks the current thread until the next incoming response callback arrives
+  // or an error occurs. Returns |true| if a response arrived, or |false| in
+  // case of error.
   //
   // This method may only be called after the InterfacePtr has been bound to a
   // message pipe.
+  //
+  // TODO(jamesr): Rename to WaitForIncomingResponse().
   bool WaitForIncomingMethodCall() {
     return internal_state_.WaitForIncomingMethodCall();
-  }
-
-  // Enables routing of incoming method calls to a local implementation of the
-  // Interface::Client interface. Calls to |client| will come from the thread
-  // that owns this InterfacePtr.
-  void set_client(typename Interface::Client* client) {
-    internal_state_.set_client(client);
   }
 
   // Indicates whether the message pipe has encountered an error. If true,

@@ -28,7 +28,9 @@ class ViewManagerContext::InternalState {
 
 ViewManagerContext::ViewManagerContext(ApplicationImpl* application_impl)
     : state_(new InternalState(application_impl)) {}
-ViewManagerContext::~ViewManagerContext() {}
+ViewManagerContext::~ViewManagerContext() {
+  delete state_;
+}
 
 void ViewManagerContext::Embed(const String& url) {
   Embed(url, nullptr, nullptr);

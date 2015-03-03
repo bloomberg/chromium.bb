@@ -41,8 +41,8 @@ define("mojo/services/public/js/shell", [
       return application;
     }
 
-    connectToService(url, service, client) {
-      return this.connectToApplication(url).requestService(service, client);
+    connectToService(url, service) {
+      return this.connectToApplication(url).requestService(service);
     };
 
     close() {

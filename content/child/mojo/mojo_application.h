@@ -5,9 +5,9 @@
 #ifndef CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 #define CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 
+#include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/mojo/src/mojo/edk/embedder/channel_init.h"
 
 namespace IPC {
 class Message;
@@ -31,7 +31,7 @@ class MojoApplication {
  private:
   void OnActivate(const IPC::PlatformFileForTransit& file);
 
-  mojo::embedder::ChannelInit channel_init_;
+  ChannelInit channel_init_;
 
   ServiceRegistryImpl service_registry_;
 

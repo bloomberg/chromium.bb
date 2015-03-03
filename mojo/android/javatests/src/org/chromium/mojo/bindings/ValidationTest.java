@@ -11,8 +11,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.mojo.HandleMock;
 import org.chromium.mojo.MojoTestCase;
 import org.chromium.mojo.bindings.test.mojom.mojo.ConformanceTestInterface;
-import org.chromium.mojo.bindings.test.mojom.mojo.IntegrationTestInterface1;
-import org.chromium.mojo.bindings.test.mojom.mojo.IntegrationTestInterface2TestHelper;
+import org.chromium.mojo.bindings.test.mojom.mojo.IntegrationTestInterface;
 import org.chromium.mojo.system.Handle;
 
 import java.io.File;
@@ -119,41 +118,6 @@ public class ValidationTest extends MojoTestCase {
         }
     }
 
-    private static class RoutingMessageReceiver implements MessageReceiver {
-        private final MessageReceiver mRequest;
-        private final MessageReceiver mResponse;
-
-        private RoutingMessageReceiver(MessageReceiver request, MessageReceiver response) {
-            this.mRequest = request;
-            this.mResponse = response;
-        }
-
-        /**
-         * @see MessageReceiver#accept(Message)
-         */
-        @Override
-        public boolean accept(Message message) {
-            try {
-                MessageHeader header = message.asServiceMessage().getHeader();
-                if (header.hasFlag(MessageHeader.MESSAGE_IS_RESPONSE_FLAG)) {
-                    return mResponse.accept(message);
-                } else {
-                    return mRequest.accept(message);
-                }
-            } catch (DeserializationException e) {
-                return false;
-            }
-        }
-
-        /**
-         * @see MessageReceiver#close()
-         */
-        @Override
-        public void close() {
-        }
-
-    }
-
     /**
      * A trivial message receiver that refuses all messages it receives.
      */
@@ -188,11 +152,7 @@ public class ValidationTest extends MojoTestCase {
      */
     @SmallTest
     public void testIntegration() throws FileNotFoundException {
-        runTest("integration_",
-                new RoutingMessageReceiver(IntegrationTestInterface1.MANAGER.buildStub(null,
-                        IntegrationTestInterface1.MANAGER.buildProxy(null,
-                                new SinkMessageReceiver())),
-                        IntegrationTestInterface2TestHelper
-                                .newIntegrationTestInterface2MethodCallback()));
+        runTest("integration_", IntegrationTestInterface.MANAGER.buildStub(null,
+                IntegrationTestInterface.MANAGER.buildProxy(null, new SinkMessageReceiver())));
     }
 }

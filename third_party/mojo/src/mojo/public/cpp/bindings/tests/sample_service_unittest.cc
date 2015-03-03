@@ -256,7 +256,10 @@ void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
 
 class ServiceImpl : public Service {
  public:
-  void Frobinate(FooPtr foo, BazOptions baz, PortPtr port) override {
+  void Frobinate(FooPtr foo,
+                 BazOptions baz,
+                 PortPtr port,
+                 const Service::FrobinateCallback& callback) override {
     // Users code goes here to handle the incoming Frobinate message.
 
     // We mainly check that we're given the expected arguments.
@@ -273,6 +276,7 @@ class ServiceImpl : public Service {
       Print(depth, "baz", baz);
       Print(depth, "port", port.get());
     }
+    callback.Run(5);
   }
 
   void GetPort(mojo::InterfaceRequest<Port> port_request) override {}
@@ -336,7 +340,8 @@ TEST_F(BindingsSampleTest, Basic) {
   CheckFoo(*foo);
 
   PortPtr port;
-  service->Frobinate(foo.Pass(), Service::BAZ_OPTIONS_EXTRA, port.Pass());
+  service->Frobinate(foo.Pass(), Service::BAZ_OPTIONS_EXTRA, port.Pass(),
+                     Service::FrobinateCallback());
 
   delete service;
 }

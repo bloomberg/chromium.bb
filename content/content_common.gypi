@@ -416,6 +416,8 @@
       'common/message_router.cc',
       'common/message_router.h',
       'common/mime_registry_messages.h',
+      'common/mojo/channel_init.cc',
+      'common/mojo/channel_init.h',
       'common/mojo/mojo_messages.h',
       'common/mojo/service_registry_impl.cc',
       'common/mojo/service_registry_impl.h',

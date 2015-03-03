@@ -13,8 +13,9 @@ import "mojo/public/interfaces/application/shell.mojom";
 interface Application {
   // Initializes the application with the specified arguments. This method is
   // guaranteed to be called before any other method is called, and will only be
-  // called once.
-  Initialize(Shell shell, array<string>? args);
+  // called once. The |url| parameter is the final url the application was found
+  // at, after all redirects and resolutions.
+  Initialize(Shell shell, array<string>? args, string url);
 
   // Called when another application (identified by |requestor_url|) attempts to
   // open a connection to this application.

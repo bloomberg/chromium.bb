@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_SLAVE_CONNECTION_MANAGER_H_
 #define MOJO_EDK_SYSTEM_SLAVE_CONNECTION_MANAGER_H_
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,10 +32,10 @@ namespace system {
 
 // The |ConnectionManager| implementation for slave processes.
 //
-// Objects of this class may be created and destroyed on any thread. However,
-// |Init()| and |Shutdown()| must be called on the "delegate thread". Otherwise,
-// its public methods are thread-safe (except that they may not be called from
-// its internal, private thread).
+// This class is thread-safe (except that no public methods may be called from
+// its internal, private thread), with condition that |Init()| be called before
+// anything else and |Shutdown()| be called before destruction (and no other
+// public methods may be called during/after |Shutdown()|).
 class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager
     : public ConnectionManager,
       public RawChannel::Delegate {
@@ -52,10 +53,8 @@ class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager
             embedder::SlaveProcessDelegate* slave_process_delegate,
             embedder::ScopedPlatformHandle platform_handle);
 
-  // No other methods may be called after this is (or while it is being) called.
-  void Shutdown();
-
   // |ConnectionManager| methods:
+  void Shutdown() override;
   bool AllowConnect(const ConnectionIdentifier& connection_id) override;
   bool CancelConnect(const ConnectionIdentifier& connection_id) override;
   bool Connect(const ConnectionIdentifier& connection_id,
@@ -80,11 +79,6 @@ class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager
       const MessageInTransit::View& message_view,
       embedder::ScopedPlatformHandleVectorPtr platform_handles) override;
   void OnError(Error error) override;
-
-  // Asserts that the current thread is the delegate thread. (This actually
-  // checks the current message loop.)
-  // TODO(vtl): Probably we should actually check the thread.
-  void AssertOnDelegateThread() const;
 
   // Asserts that the current thread is *not* |private_thread_| (no-op if
   // DCHECKs are not enabled). This should only be called while

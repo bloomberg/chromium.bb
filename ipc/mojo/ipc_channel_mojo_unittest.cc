@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_message.h"
@@ -17,6 +18,7 @@
 #include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 #include "ipc/mojo/ipc_mojo_message_helper.h"
+#include "ipc/mojo/scoped_ipc_support.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -63,6 +65,8 @@ class ListenerThatExpectsOK : public IPC::Listener {
 class ChannelClient {
  public:
   explicit ChannelClient(IPC::Listener* listener, const char* name) {
+    ipc_support_.reset(
+        new IPC::ScopedIPCSupport(main_message_loop_.task_runner()));
     channel_ = IPC::ChannelMojo::Create(NULL,
                                         IPCTestBase::GetChannelName(name),
                                         IPC::Channel::MODE_CLIENT,
@@ -73,14 +77,45 @@ class ChannelClient {
     CHECK(channel_->Connect());
   }
 
+  void Close() {
+    channel_->Close();
+
+    base::RunLoop run_loop;
+    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   IPC::ChannelMojo* channel() const { return channel_.get(); }
 
  private:
   base::MessageLoopForIO main_message_loop_;
+  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
   scoped_ptr<IPC::ChannelMojo> channel_;
 };
 
-class IPCChannelMojoTest : public IPCTestBase {
+class IPCChannelMojoTestBase : public IPCTestBase {
+ public:
+  void InitWithMojo(const std::string& test_client_name) {
+    Init(test_client_name);
+    ipc_support_.reset(new IPC::ScopedIPCSupport(task_runner()));
+  }
+
+  void TearDown() override {
+    // Make sure Mojo IPC support is properly shutdown on the I/O loop before
+    // TearDown continues.
+    ipc_support_.reset();
+    base::RunLoop run_loop;
+    task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+
+    IPCTestBase::TearDown();
+  }
+
+ private:
+  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
+};
+
+class IPCChannelMojoTest : public IPCChannelMojoTestBase {
  protected:
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
@@ -122,7 +157,7 @@ class TestChannelListenerWithExtraExpectations
 };
 
 TEST_F(IPCChannelMojoTest, ConnectedFromClient) {
-  Init("IPCChannelMojoTestClient");
+  InitWithMojo("IPCChannelMojoTestClient");
 
   // Set up IPC channel and start client.
   TestChannelListenerWithExtraExpectations listener;
@@ -159,6 +194,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestClient) {
   EXPECT_TRUE(listener.is_connected_called());
   EXPECT_TRUE(listener.HasSentAll());
 
+  client.Close();
+
   return 0;
 }
 
@@ -186,7 +223,7 @@ class ListenerExpectingErrors : public IPC::Listener {
 };
 
 
-class IPCChannelMojoErrorTest : public IPCTestBase {
+class IPCChannelMojoErrorTest : public IPCChannelMojoTestBase {
  protected:
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
@@ -229,11 +266,13 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoErraticTestClient) {
 
   base::MessageLoop::current()->Run();
 
+  client.Close();
+
   return 0;
 }
 
 TEST_F(IPCChannelMojoErrorTest, SendFailWithPendingMessages) {
-  Init("IPCChannelMojoErraticTestClient");
+  InitWithMojo("IPCChannelMojoErraticTestClient");
 
   // Set up IPC channel and start client.
   ListenerExpectingErrors listener;
@@ -373,7 +412,7 @@ class ListenerThatExpectsMessagePipe : public IPC::Listener {
 };
 
 TEST_F(IPCChannelMojoTest, SendMessagePipe) {
-  Init("IPCChannelMojoTestSendMessagePipeClient");
+  InitWithMojo("IPCChannelMojoTestSendMessagePipeClient");
 
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
@@ -398,11 +437,13 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendMessagePipeClient) {
 
   base::MessageLoop::current()->Run();
 
+  client.Close();
+
   return 0;
 }
 
 #if defined(OS_WIN)
-class IPCChannelMojoDeadHandleTest : public IPCTestBase {
+class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
  protected:
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
@@ -429,7 +470,7 @@ class IPCChannelMojoDeadHandleTest : public IPCTestBase {
 
 TEST_F(IPCChannelMojoDeadHandleTest, InvalidClientHandle) {
   // Any client type is fine as it is going to be killed anyway.
-  Init("IPCChannelMojoTestDoNothingClient");
+  InitWithMojo("IPCChannelMojoTestDoNothingClient");
 
   // Set up IPC channel and start client.
   ListenerExpectingErrors listener;
@@ -489,7 +530,7 @@ class ListenerThatExpectsFile : public IPC::Listener {
 
 
 TEST_F(IPCChannelMojoTest, SendPlatformHandle) {
-  Init("IPCChannelMojoTestSendPlatformHandleClient");
+  InitWithMojo("IPCChannelMojoTestSendPlatformHandleClient");
 
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
@@ -516,6 +557,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendPlatformHandleClient) {
   listener.set_sender(client.channel());
 
   base::MessageLoop::current()->Run();
+
+  client.Close();
 
   return 0;
 }
@@ -544,7 +587,7 @@ class ListenerThatExpectsFileAndPipe : public IPC::Listener {
 };
 
 TEST_F(IPCChannelMojoTest, SendPlatformHandleAndPipe) {
-  Init("IPCChannelMojoTestSendPlatformHandleAndPipeClient");
+  InitWithMojo("IPCChannelMojoTestSendPlatformHandleAndPipeClient");
 
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
@@ -574,6 +617,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(
 
   base::MessageLoop::current()->Run();
 
+  client.Close();
+
   return 0;
 }
 
@@ -597,7 +642,7 @@ class ListenerThatVerifiesPeerPid : public IPC::Listener {
 };
 
 TEST_F(IPCChannelMojoTest, VerifyGlobalPid) {
-  Init("IPCChannelMojoTestVerifyGlobalPidClient");
+  InitWithMojo("IPCChannelMojoTestVerifyGlobalPidClient");
 
   ListenerThatVerifiesPeerPid listener;
   CreateChannel(&listener);
@@ -605,7 +650,7 @@ TEST_F(IPCChannelMojoTest, VerifyGlobalPid) {
   ASSERT_TRUE(StartClient());
 
   base::MessageLoop::current()->Run();
-  this->channel()->Close();
+  channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannel();
@@ -619,6 +664,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestVerifyGlobalPidClient) {
   client.Connect();
 
   base::MessageLoop::current()->Run();
+
+  client.Close();
 
   return 0;
 }

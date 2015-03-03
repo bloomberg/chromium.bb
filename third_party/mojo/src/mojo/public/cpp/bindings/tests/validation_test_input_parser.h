@@ -82,7 +82,7 @@ namespace test {
 // The following describes a valid message whose payload is a Foo struct:
 //   // message header
 //   [dist4]message_header   // num_bytes
-//   [u4]3                   // num_fields
+//   [u4]3                   // version
 //   [u4]0                   // type
 //   [u4]1                   // flags
 //   [u8]1234                // request_id
@@ -90,7 +90,7 @@ namespace test {
 //
 //   // payload
 //   [dist4]foo      // num_bytes
-//   [u4]2           // num_fields
+//   [u4]2           // version
 //   [dist8]bar_ptr  // x
 //   [u4]0xABCD      // y
 //   [u4]0           // padding
@@ -98,7 +98,7 @@ namespace test {
 //
 //   [anchr]bar_ptr
 //   [dist4]bar   // num_bytes
-//   [u4]3        // num_fields
+//   [u4]3        // version
 //   [s4]-1       // a
 //   [b]00000010  // b and c
 //   0 0 0        // padding

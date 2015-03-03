@@ -5,12 +5,13 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_H_
 #define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_H_
 
+#include <stdint.h>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "geometry/public/interfaces/geometry.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "surfaces/public/interfaces/surface_id.mojom.h"
 #include "view_manager/public/cpp/types.h"
@@ -87,7 +88,7 @@ class View {
   void ClearLocalProperty(const ViewProperty<T>* property);
 
   // Type of a function to delete a property that this view owns.
-  typedef void (*PropertyDeallocator)(int64 value);
+  typedef void (*PropertyDeallocator)(int64_t value);
 
   // A View is drawn if the View and all its ancestors are visible and the
   // View is attached to the root.
@@ -141,12 +142,13 @@ class View {
   View(ViewManager* manager, Id id);
 
   // Called by the public {Set,Get,Clear}Property functions.
-  int64 SetLocalPropertyInternal(const void* key,
-                                 const char* name,
-                                 PropertyDeallocator deallocator,
-                                 int64 value,
-                                 int64 default_value);
-  int64 GetLocalPropertyInternal(const void* key, int64 default_value) const;
+  int64_t SetLocalPropertyInternal(const void* key,
+                                   const char* name,
+                                   PropertyDeallocator deallocator,
+                                   int64_t value,
+                                   int64_t default_value);
+  int64_t GetLocalPropertyInternal(const void* key,
+                                   int64_t default_value) const;
 
   void LocalDestroy();
   void LocalAddChild(View* child);
@@ -157,6 +159,7 @@ class View {
   void LocalSetViewportMetrics(const ViewportMetrics& old_metrics,
                                const ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
+  void LocalSetVisible(bool visible);
 
   // Methods implementing visibility change notifications. See ViewObserver
   // for more details.
@@ -193,13 +196,13 @@ class View {
   // WindowProperty<>.
   struct Value {
     const char* name;
-    int64 value;
+    int64_t value;
     PropertyDeallocator deallocator;
   };
 
   std::map<const void*, Value> prop_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(View);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(View);
 };
 
 }  // namespace mojo

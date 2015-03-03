@@ -29,6 +29,7 @@ class TraceMemoryController;
 
 namespace IPC {
 class MessageFilter;
+class ScopedIPCSupport;
 class SyncChannel;
 class SyncMessageFilter;
 }  // namespace IPC
@@ -239,6 +240,15 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void EnsureConnected();
 
+  class SingleProcessChannelDelegate;
+  class SingleProcessChannelDelegateDeleter {
+   public:
+    void operator()(SingleProcessChannelDelegate* delegate) const;
+  };
+
+  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
+  scoped_ptr<SingleProcessChannelDelegate, SingleProcessChannelDelegateDeleter>
+      single_process_channel_delegate_;
   scoped_ptr<MojoApplication> mojo_application_;
 
   std::string channel_name_;

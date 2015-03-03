@@ -24,6 +24,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../../crypto/crypto.gyp:crypto',
       ],
       'includes': [
         'mojo_edk_system_impl.gypi',
@@ -86,6 +87,8 @@
       'sources': [
         'src/mojo/edk/test/multiprocess_test_helper.cc',
         'src/mojo/edk/test/multiprocess_test_helper.h',
+        'src/mojo/edk/test/scoped_ipc_support.cc',
+        'src/mojo/edk/test/scoped_ipc_support.h',
         'src/mojo/edk/test/test_utils.h',
         'src/mojo/edk/test/test_utils_posix.cc',
         'src/mojo/edk/test/test_utils_win.cc',
@@ -138,6 +141,7 @@
           'dependencies': [
             '../../base/base.gyp:base_win64',
             '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
+            '../../crypto/crypto.gyp:crypto_nacl_win64',
           ],
           'includes': [
             'mojo_edk_system_impl.gypi',

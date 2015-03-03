@@ -29,18 +29,13 @@ interface NamedObject {
   GetName() => (string name);
 };
 
-[Client=FactoryClient]
 interface Factory {
-  DoStuff(Request request, handle<message_pipe>? pipe);
-  DoStuff2(handle<data_pipe_consumer> pipe);
+  DoStuff(Request request, handle<message_pipe>? pipe) =>
+      (Response response, string text);
+  DoStuff2(handle<data_pipe_consumer> pipe) => (string text);
   CreateNamedObject(NamedObject& obj);
   RequestImportedInterface(
       imported.ImportedInterface& obj) => (imported.ImportedInterface& obj);
   TakeImportedInterface(
       imported.ImportedInterface obj) => (imported.ImportedInterface obj);
-};
-
-interface FactoryClient {
-  DidStuff(Response response, string text);
-  DidStuff2(string text);
 };

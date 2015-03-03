@@ -12,7 +12,7 @@
 namespace mojo {
 
 // NoInterface is for use in cases when a non-existent or empty interface is
-// needed (e.g., when the Mojom "Peer" attribute is not present).
+// needed.
 
 class NoInterfaceProxy;
 class NoInterfaceStub;
@@ -24,7 +24,6 @@ class NoInterface {
   typedef NoInterfaceStub Stub_;
   typedef PassThroughFilter RequestValidator_;
   typedef PassThroughFilter ResponseValidator_;
-  typedef NoInterface Client;
   virtual ~NoInterface() {}
 };
 

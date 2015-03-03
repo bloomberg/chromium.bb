@@ -1,7 +1,8 @@
 [dist4]message_header  // num_bytes
-[u4]2                  // num_fields
+[u4]3                  // num_fields
 [u4]0                  // name
-[u4]0                  // flags
+[u4]2                  // flags kMessageIsResponse
+[u8]1                  // request_id
 [anchr]message_header
 
 [dist4]method0_params  // num_bytes
@@ -10,5 +11,7 @@
 [anchr]method0_params
 
 [anchr]param0_ptr
-[u4]0  // num_bytes: The struct size is too small.
-[u4]0  // num_fields
+[dist4]uint8_array  // num_bytes
+[u4]1               // num_elements
+[u1]0
+[anchr]uint8_array

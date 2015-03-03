@@ -15,7 +15,6 @@ public abstract class Struct {
      * The header for a mojo complex element.
      */
     public static final class DataHeader {
-
         /**
          * The size of a serialized header, in bytes.
          */
@@ -29,18 +28,26 @@ public abstract class Struct {
         /**
          * The offset of the number of fields field.
          */
-        public static final int NUM_FIELDS_OFFSET = 4;
+        public static final int ELEMENTS_OR_VERSION_OFFSET = 4;
 
+        /**
+         * The size of the object owning this header.
+         */
         public final int size;
-        public final int numFields;
+
+        /**
+         * Number of element (for an array) or version (for a struct) of the object owning this
+         * header.
+         */
+        public final int elementsOrVersion;
 
         /**
          * Constructor.
          */
-        public DataHeader(int size, int numFields) {
+        public DataHeader(int size, int elementsOrVersion) {
             super();
             this.size = size;
-            this.numFields = numFields;
+            this.elementsOrVersion = elementsOrVersion;
         }
 
         /**
@@ -50,7 +57,7 @@ public abstract class Struct {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + numFields;
+            result = prime * result + elementsOrVersion;
             result = prime * result + size;
             return result;
         }
@@ -68,8 +75,7 @@ public abstract class Struct {
                 return false;
 
             DataHeader other = (DataHeader) object;
-            return (numFields == other.numFields &&
-                    size == other.size);
+            return (elementsOrVersion == other.elementsOrVersion && size == other.size);
         }
     }
 

@@ -5,10 +5,10 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_TRACKER_H_
 #define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_TRACKER_H_
 
+#include <stdint.h>
 #include <set>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "view_manager/public/cpp/view_observer.h"
 
 namespace mojo {
@@ -39,7 +39,7 @@ class ViewTracker : public ViewObserver {
  private:
   Views views_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewTracker);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ViewTracker);
 };
 
 }  // namespace mojo

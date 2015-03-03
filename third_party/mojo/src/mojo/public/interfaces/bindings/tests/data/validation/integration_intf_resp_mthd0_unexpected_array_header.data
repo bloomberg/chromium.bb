@@ -1,7 +1,7 @@
 [dist4]message_header  // num_bytes
 [u4]3                  // num_fields
 [u4]0                  // name
-[u4]2                  // flags: Is response.
+[u4]2                  // flags kMessageIsResponse
 [u8]1                  // request_id
 [anchr]message_header
 

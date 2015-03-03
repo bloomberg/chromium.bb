@@ -30,7 +30,7 @@ define("mojo/services/public/js/application", [
       };
     }
 
-    doInitialize(shellProxy, args) {
+    doInitialize(shellProxy, args, url) {
       this.shellProxy_ = shellProxy;
       this.shell = new Shell(shellProxy);
       this.initialize(args);

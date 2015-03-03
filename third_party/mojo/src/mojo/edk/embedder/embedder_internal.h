@@ -11,6 +11,12 @@
 
 #include <stdint.h>
 
+#include "mojo/edk/embedder/process_type.h"
+
+namespace base {
+class TaskRunner;
+}
+
 namespace mojo {
 
 namespace system {
@@ -26,9 +32,7 @@ typedef uint64_t ChannelId;
 namespace embedder {
 
 class PlatformSupport;
-// TODO(vtl): Remove these (see below).
-class MasterProcessDelegate;
-class SlaveProcessDelegate;
+class ProcessDelegate;
 
 // This is a type that's opaque to users of the embedder API (which only
 // gives/takes |ChannelInfo*|s). We make it a struct to make it
@@ -48,15 +52,11 @@ extern PlatformSupport* g_platform_support;
 // Instance of |Core| used by the system functions (|Mojo...()|).
 extern system::Core* g_core;
 
-// Instance of |ChannelManager| used by the channel management functions
-// (|mojo::embedder::CreateChannel()|, etc.).
-extern system::ChannelManager* g_channel_manager;
-
-// TODO(vtl): Remove these: We'll eventually really want to hold on to a
-// |MasterConnectionManager*| or a |SlaveConnectionManager*|. For now, keep
-// these around as globals to avoid triggering leak detectors.
-extern MasterProcessDelegate* g_master_process_delegate;
-extern SlaveProcessDelegate* g_slave_process_delegate;
+// Type of process initialized in |InitIPCSupport()| (set to |UNINITIALIZED| if
+// "outside" |InitIPCSupport()|/|ShutdownIPCSupport()|). This is declared here
+// so that |mojo::embedder::test::Shutdown()| can check that it's only called
+// after |ShutdownIPCSupport()|.
+extern ProcessType g_process_type;
 
 }  // namespace internal
 

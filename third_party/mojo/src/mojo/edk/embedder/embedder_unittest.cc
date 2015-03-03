@@ -18,6 +18,7 @@
 #include "mojo/edk/embedder/test_embedder.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/c/system/core.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +45,7 @@ class ScopedTestChannel {
                     ScopedPlatformHandle platform_handle)
       : io_thread_task_runner_(io_thread_task_runner),
         bootstrap_message_pipe_(MOJO_HANDLE_INVALID),
-        did_create_channel_event_(true, false),  // Manual reset.
+        event_(true, false),  // Manual reset.
         channel_info_(nullptr) {
     bootstrap_message_pipe_ =
         CreateChannel(platform_handle.Pass(), io_thread_task_runner_,
@@ -60,12 +61,17 @@ class ScopedTestChannel {
   // the I/O thread must be alive and pumping messages.)
   ~ScopedTestChannel() {
     // |WaitForChannelCreationCompletion()| must be called before destruction.
-    CHECK(did_create_channel_event_.IsSignaled());
-    DestroyChannel(channel_info_);
+    CHECK(event_.IsSignaled());
+    event_.Reset();
+    DestroyChannel(channel_info_,
+                   base::Bind(&ScopedTestChannel::DidDestroyChannel,
+                              base::Unretained(this)),
+                   nullptr);
+    event_.Wait();
   }
 
   // Waits for channel creation to be completed.
-  void WaitForChannelCreationCompletion() { did_create_channel_event_.Wait(); }
+  void WaitForChannelCreationCompletion() { event_.Wait(); }
 
   MojoHandle bootstrap_message_pipe() const { return bootstrap_message_pipe_; }
 
@@ -78,8 +84,10 @@ class ScopedTestChannel {
     CHECK(channel_info);
     CHECK(!channel_info_);
     channel_info_ = channel_info;
-    did_create_channel_event_.Signal();
+    event_.Signal();
   }
+
+  void DidDestroyChannel() { event_.Signal(); }
 
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 
@@ -90,8 +98,9 @@ class ScopedTestChannel {
   MojoHandle bootstrap_message_pipe_;
 
   // Set after channel creation has been completed (i.e., the callback to
-  // |CreateChannel()| has been called).
-  base::WaitableEvent did_create_channel_event_;
+  // |CreateChannel()| has been called). Also used in the destructor to wait for
+  // |DestroyChannel()| completion.
+  base::WaitableEvent event_;
 
   // Valid after channel creation completion until destruction.
   ChannelInfo* channel_info_;
@@ -120,6 +129,8 @@ class EmbedderTest : public testing::Test {
 };
 
 TEST_F(EmbedderTest, ChannelsBasic) {
+  mojo::test::ScopedIPCSupport ipc_support(test_io_task_runner());
+
   PlatformChannelPair channel_pair;
   ScopedTestChannel server_channel(test_io_task_runner(),
                                    channel_pair.PassServerHandle());
@@ -247,6 +258,8 @@ TEST_F(EmbedderTest, AsyncWait) {
 }
 
 TEST_F(EmbedderTest, ChannelsHandlePassing) {
+  mojo::test::ScopedIPCSupport ipc_support(test_io_task_runner());
+
   PlatformChannelPair channel_pair;
   ScopedTestChannel server_channel(test_io_task_runner(),
                                    channel_pair.PassServerHandle());
@@ -389,6 +402,10 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 #define MAYBE_MultiprocessChannels MultiprocessChannels
 #endif  // defined(OS_ANDROID)
 TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
+  // TODO(vtl): This should eventually initialize a master process instead,
+  // probably.
+  mojo::test::ScopedIPCSupport ipc_support(test_io_task_runner());
+
   mojo::test::MultiprocessTestHelper multiprocess_test_helper;
   multiprocess_test_helper.StartChild("MultiprocessChannelsClient");
 
@@ -512,6 +529,10 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
   test::InitWithSimplePlatformSupport();
 
   {
+    // TODO(vtl): This should eventually initialize a slave process instead,
+    // probably.
+    mojo::test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
+
     ScopedTestChannel client_channel(test_io_thread.task_runner(),
                                      client_platform_handle.Pass());
     MojoHandle client_mp = client_channel.bootstrap_message_pipe();

@@ -13,14 +13,9 @@ enum Enum {
   VALUE
 };
 
-[Client=ProviderClient]
 interface Provider {
   EchoString(string a) => (string a);
   EchoStrings(string a, string b) => (string a, string b);
   EchoMessagePipeHandle(handle<message_pipe> a) => (handle<message_pipe> a);
   EchoEnum(Enum a) => (Enum a);
-};
-
-// TODO(darin): We shouldn't need this, but JS bindings don't work without it.
-interface ProviderClient {
 };

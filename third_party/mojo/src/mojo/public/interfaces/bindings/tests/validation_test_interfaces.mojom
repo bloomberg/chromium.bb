@@ -49,12 +49,6 @@ struct BasicStruct {
   int32 a;
 };
 
-[Client=IntegrationTestInterface2]
-interface IntegrationTestInterface1 {
-  Method0(BasicStruct param0);
-};
-
-[Client=IntegrationTestInterface1]
-interface IntegrationTestInterface2 {
-  Method0() => (array<uint8> param0);
+interface IntegrationTestInterface {
+  Method0(BasicStruct param0) => (array<uint8> param0);
 };

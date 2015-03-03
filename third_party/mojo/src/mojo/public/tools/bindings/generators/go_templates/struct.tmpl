@@ -10,7 +10,7 @@ type {{struct|name(exported)}} struct {
 }
 
 func (s *{{struct|name(exported)}}) Encode(encoder *bindings.Encoder) error {
-	encoder.StartStruct({{struct.versions[-1].num_bytes}}, {{struct.packed.packed_fields|length}})
+	encoder.StartStruct({{struct.versions[-1].num_bytes}}, {{struct.versions[-1].version}})
 {% for byte in struct.bytes %}
 {%   for packed_field in byte.packed_fields %}
 	{{encode('s.'~packed_field.field|name(exported), packed_field.field.kind)|tab_indent()}}
@@ -24,7 +24,7 @@ func (s *{{struct|name(exported)}}) Encode(encoder *bindings.Encoder) error {
 
 func (s *{{struct|name(exported)}}) Decode(decoder *bindings.Decoder) error {
 {% if struct.bytes %}
-	numFields, err := decoder.StartStruct()
+	version, err := decoder.StartStruct()
 {% else %}
 	_, err := decoder.StartStruct()
 {% endif %}
@@ -33,7 +33,7 @@ func (s *{{struct|name(exported)}}) Decode(decoder *bindings.Decoder) error {
 	}
 {% for byte in struct.bytes %}
 {%   for packed_field in byte.packed_fields %}
-	if numFields > {{packed_field.ordinal}} {
+	if version >= {{packed_field.min_version}} {
 		{{decode('s.'~packed_field.field|name(exported), packed_field.field.kind)|tab_indent(2)}}
 	}
 {%   endfor %}

@@ -5,7 +5,6 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CLIENT_FACTORY_H_
 #define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CLIENT_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "view_manager/public/interfaces/view_manager.mojom.h"
 
@@ -22,8 +21,9 @@ class ViewManagerClientFactory : public InterfaceFactory<ViewManagerClient> {
   ViewManagerClientFactory(Shell* shell, ViewManagerDelegate* delegate);
   ~ViewManagerClientFactory() override;
 
-  // Creates a ViewManagerClient from the supplied arguments.
-  static scoped_ptr<ViewManagerClient> WeakBindViewManagerToPipe(
+  // Creates a ViewManagerClient from the supplied arguments. Returns ownership
+  // to the caller.
+  static ViewManagerClient* WeakBindViewManagerToPipe(
       InterfaceRequest<ViewManagerClient> request,
       ViewManagerServicePtr view_manager_service,
       Shell* shell,

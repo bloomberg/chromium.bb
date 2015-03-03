@@ -22,6 +22,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSupport : public PlatformSupport {
   SimplePlatformSupport() {}
   ~SimplePlatformSupport() override {}
 
+  void GetCryptoRandomBytes(void* bytes, size_t num_bytes) override;
   PlatformSharedBuffer* CreateSharedBuffer(size_t num_bytes) override;
   PlatformSharedBuffer* CreateSharedBufferFromHandle(
       size_t num_bytes,

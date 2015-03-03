@@ -10,10 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
-#include "base/test/test_timeouts.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
-#include "base/time/time.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/channel.h"
@@ -27,42 +24,44 @@ namespace {
 
 class ChannelManagerTest : public testing::Test {
  public:
-  ChannelManagerTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
+  ChannelManagerTest()
+      : message_loop_(base::MessageLoop::TYPE_IO),
+        channel_manager_(&platform_support_,
+                         message_loop_.task_runner(),
+                         nullptr) {}
   ~ChannelManagerTest() override {}
 
  protected:
-  embedder::SimplePlatformSupport* platform_support() {
-    return &platform_support_;
-  }
-  base::MessageLoop* message_loop() { return &message_loop_; }
+  ChannelManager& channel_manager() { return channel_manager_; }
 
  private:
   embedder::SimplePlatformSupport platform_support_;
   base::MessageLoop message_loop_;
+  // Note: This should be *after* the above, since they must be initialized
+  // before it (and should outlive it).
+  ChannelManager channel_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelManagerTest);
 };
 
 TEST_F(ChannelManagerTest, Basic) {
-  ChannelManager cm(platform_support());
-
   embedder::PlatformChannelPair channel_pair;
 
   const ChannelId id = 1;
   scoped_refptr<MessagePipeDispatcher> d =
-      cm.CreateChannelOnIOThread(id, channel_pair.PassServerHandle());
+      channel_manager().CreateChannelOnIOThread(
+          id, channel_pair.PassServerHandle());
 
-  scoped_refptr<Channel> ch = cm.GetChannel(id);
+  scoped_refptr<Channel> ch = channel_manager().GetChannel(id);
   EXPECT_TRUE(ch);
   // |ChannelManager| should have a ref.
   EXPECT_FALSE(ch->HasOneRef());
 
-  cm.WillShutdownChannel(id);
+  channel_manager().WillShutdownChannel(id);
   // |ChannelManager| should still have a ref.
   EXPECT_FALSE(ch->HasOneRef());
 
-  cm.ShutdownChannel(id);
-  // On the "I/O" thread, so shutdown should happen synchronously.
+  channel_manager().ShutdownChannelOnIOThread(id);
   // |ChannelManager| should have given up its ref.
   EXPECT_TRUE(ch->HasOneRef());
 
@@ -70,33 +69,33 @@ TEST_F(ChannelManagerTest, Basic) {
 }
 
 TEST_F(ChannelManagerTest, TwoChannels) {
-  ChannelManager cm(platform_support());
-
   embedder::PlatformChannelPair channel_pair;
 
   const ChannelId id1 = 1;
   scoped_refptr<MessagePipeDispatcher> d1 =
-      cm.CreateChannelOnIOThread(id1, channel_pair.PassServerHandle());
+      channel_manager().CreateChannelOnIOThread(
+          id1, channel_pair.PassServerHandle());
 
   const ChannelId id2 = 2;
   scoped_refptr<MessagePipeDispatcher> d2 =
-      cm.CreateChannelOnIOThread(id2, channel_pair.PassClientHandle());
+      channel_manager().CreateChannelOnIOThread(
+          id2, channel_pair.PassClientHandle());
 
-  scoped_refptr<Channel> ch1 = cm.GetChannel(id1);
+  scoped_refptr<Channel> ch1 = channel_manager().GetChannel(id1);
   EXPECT_TRUE(ch1);
 
-  scoped_refptr<Channel> ch2 = cm.GetChannel(id2);
+  scoped_refptr<Channel> ch2 = channel_manager().GetChannel(id2);
   EXPECT_TRUE(ch2);
 
   // Calling |WillShutdownChannel()| multiple times (on |id1|) is okay.
-  cm.WillShutdownChannel(id1);
-  cm.WillShutdownChannel(id1);
+  channel_manager().WillShutdownChannel(id1);
+  channel_manager().WillShutdownChannel(id1);
   EXPECT_FALSE(ch1->HasOneRef());
   // Not calling |WillShutdownChannel()| (on |id2|) is okay too.
 
-  cm.ShutdownChannel(id1);
+  channel_manager().ShutdownChannelOnIOThread(id1);
   EXPECT_TRUE(ch1->HasOneRef());
-  cm.ShutdownChannel(id2);
+  channel_manager().ShutdownChannelOnIOThread(id2);
   EXPECT_TRUE(ch2->HasOneRef());
 
   EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
@@ -110,7 +109,7 @@ class OtherThread : public base::SimpleThread {
   OtherThread(scoped_refptr<base::TaskRunner> task_runner,
               ChannelManager* channel_manager,
               ChannelId channel_id,
-              base::Closure quit_closure)
+              const base::Closure& quit_closure)
       : base::SimpleThread("other_thread"),
         task_runner_(task_runner),
         channel_manager_(channel_manager),
@@ -132,20 +131,12 @@ class OtherThread : public base::SimpleThread {
     // |ChannelManager| should still have a ref.
     EXPECT_FALSE(ch->HasOneRef());
 
-    channel_manager_->ShutdownChannel(channel_id_);
-    // This doesn't happen synchronously, so we "wait" until it does.
-    // TODO(vtl): Probably |Channel| should provide some notification of being
-    // shut down.
-    base::TimeTicks start_time(base::TimeTicks::Now());
-    for (;;) {
-      if (ch->HasOneRef())
-        break;
-
-      // Check, instead of assert, since if things go wrong, dying is more
-      // reliable than tearing down.
-      CHECK_LT(base::TimeTicks::Now() - start_time,
-               TestTimeouts::action_timeout());
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
+    {
+      base::MessageLoop message_loop;
+      base::RunLoop run_loop;
+      channel_manager_->ShutdownChannel(channel_id_, run_loop.QuitClosure(),
+                                        message_loop.task_runner());
+      run_loop.Run();
     }
 
     CHECK(task_runner_->PostTask(FROM_HERE, quit_closure_));
@@ -160,16 +151,15 @@ class OtherThread : public base::SimpleThread {
 };
 
 TEST_F(ChannelManagerTest, CallsFromOtherThread) {
-  ChannelManager cm(platform_support());
-
   embedder::PlatformChannelPair channel_pair;
 
   const ChannelId id = 1;
   scoped_refptr<MessagePipeDispatcher> d =
-      cm.CreateChannelOnIOThread(id, channel_pair.PassServerHandle());
+      channel_manager().CreateChannelOnIOThread(
+          id, channel_pair.PassServerHandle());
 
   base::RunLoop run_loop;
-  OtherThread thread(base::MessageLoopProxy::current(), &cm, id,
+  OtherThread thread(base::MessageLoopProxy::current(), &channel_manager(), id,
                      run_loop.QuitClosure());
   thread.Start();
   run_loop.Run();

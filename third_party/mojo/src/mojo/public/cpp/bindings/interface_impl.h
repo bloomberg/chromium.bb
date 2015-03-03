@@ -21,7 +21,6 @@ template <typename Interface>
 class InterfaceImpl : public Interface, public ErrorHandler {
  public:
   using ImplementedInterface = Interface;
-  using Client = typename Interface::Client;
 
   InterfaceImpl() : binding_(this), error_handler_impl_(this) {
     binding_.set_error_handler(&error_handler_impl_);
@@ -38,15 +37,12 @@ class InterfaceImpl : public Interface, public ErrorHandler {
     return binding_.WaitForIncomingMethodCall();
   }
 
-  Client* client() { return binding_.client(); }
   internal::Router* internal_router() { return binding_.internal_router(); }
 
   // Implements ErrorHandler.
   //
-  // Called when the client is no longer connected to this instance. NOTE: The
-  // client() method continues to return a non-null pointer after this method
-  // is called. After this method is called, any method calls made on client()
-  // will be silently ignored.
+  // Called when the underlying pipe is closed. After this point no more
+  // calls will be made on Interface and all responses will be silently ignored.
   void OnConnectionError() override {}
 
   void set_delete_on_error(bool delete_on_error) {
@@ -159,9 +155,6 @@ Impl* WeakBindToProxy(
 // The instance is also bound to the current thread. Its methods will only be
 // called on the current thread, and if the current thread exits, then it will
 // also be deleted, and along with it, its end point of the pipe will be closed.
-//
-// Before returning, the instance will receive a SetClient call, providing it
-// with a proxy to the client on the other end of the pipe.
 template <typename Impl, typename Interface>
 Impl* BindToRequest(
     Impl* instance,

@@ -77,7 +77,7 @@ class ScopedTreeNotifier {
  private:
   ViewObserver::TreeChangeParams params_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedTreeNotifier);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedTreeNotifier);
 };
 
 void RemoveChildImpl(View* child, View::Children* children) {
@@ -112,7 +112,7 @@ class ScopedOrderChangedNotifier {
   View* relative_view_;
   OrderDirection direction_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
 };
 
 // Returns true if the order actually changed.
@@ -168,7 +168,7 @@ class ScopedSetBoundsNotifier {
   const Rect old_bounds_;
   const Rect new_bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
 
 // Some operations are only permitted in the connection that created the view.
@@ -220,9 +220,7 @@ void View::SetVisible(bool value) {
 
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->SetVisible(id_, value);
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanging(this));
-  visible_ = value;
-  NotifyViewVisibilityChanged(this);
+  LocalSetVisible(value);
 }
 
 void View::SetSharedProperty(const std::string& name,
@@ -529,6 +527,15 @@ void View::LocalSetDrawn(bool value) {
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDrawnChanging(this));
   drawn_ = value;
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDrawnChanged(this));
+}
+
+void View::LocalSetVisible(bool visible) {
+  if (visible_ == visible)
+    return;
+
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanging(this));
+  visible_ = visible;
+  NotifyViewVisibilityChanged(this);
 }
 
 void View::NotifyViewVisibilityChanged(View* target) {

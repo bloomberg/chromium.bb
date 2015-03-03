@@ -47,7 +47,7 @@ define("mojo/services/public/js/service_exchange", [
 
       var provider = {
         service: service, // A JS bindings interface object.
-        factory: factory, // factory(clientProxy) => interface implemntation
+        factory: factory, // factory() => interface implemntation
         connections: [],
       };
       this.providers_.set(service.name, provider);
@@ -60,12 +60,10 @@ define("mojo/services/public/js/service_exchange", [
     }
 
     // Outgoing requests
-    requestService(interfaceObject, clientImpl) {
+    requestService(interfaceObject) {
       checkServiceExchange(this);
       if (!interfaceObject.name)
         throw new Error("Invalid service parameter");
-      if (!clientImpl && interfaceObject.client)
-        throw new Error("Client implementation must be provided");
 
       var serviceProxy;
       var serviceHandle = connection.bindProxy(

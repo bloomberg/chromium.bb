@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/channel_info_forward.h"
+#include "mojo/edk/embedder/process_type.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -18,9 +19,15 @@ namespace mojo {
 namespace embedder {
 
 struct Configuration;
-class MasterProcessDelegate;
 class PlatformSupport;
-class SlaveProcessDelegate;
+class ProcessDelegate;
+typedef void* SlaveInfo;
+
+// Basic configuration/initialization ------------------------------------------
+
+// |Init()| sets up the basic Mojo system environment, making the |Mojo...()|
+// functions available and functional. This is never shut down (except in tests
+// -- see test_embedder.h).
 
 // Returns the global configuration. In general, you should not need to change
 // the configuration, but if you do you must do it before calling |Init()|.
@@ -30,29 +37,86 @@ MOJO_SYSTEM_IMPL_EXPORT Configuration* GetConfiguration();
 // initialize the (global, singleton) system.
 MOJO_SYSTEM_IMPL_EXPORT void Init(scoped_ptr<PlatformSupport> platform_support);
 
-// Initializes a master process. To be called after |Init()|.
-// |master_process_delegate| should live forever (or until after
-// |mojo::embedder::test::Shutdown()|); its methods will be called using
-// |delegate_thread_task_runner|, which must be the task runner for the thread
-// calling |InitMaster()|. |io_thread_task_runner| should be the task runner for
-// some I/O thread; this should be the same as that provided to
-// |CreateChannel()| (or on which |CreateChannelOnIOThread()| is called).
-// TODO(vtl): Remove the |io_thread_task_runner| argument from
-// |CreateChannel()| (and eventually |CreateChannel()| altogether) and require
-// that either this or |InitSlave()| be called. Currently, |CreateChannel()| can
-// be used with different I/O threads, but this capability will be removed.
-MOJO_SYSTEM_IMPL_EXPORT void InitMaster(
-    scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
-    MasterProcessDelegate* master_process_delegate,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner);
+// Basic functions -------------------------------------------------------------
 
-// Initializes a slave process. Similar to |InitMaster()| (see above).
-// |platform_handle| should be connected to the handle passed to |AddSlave()|.
-// TODO(vtl): |AddSlave()| doesn't exist yet.
-MOJO_SYSTEM_IMPL_EXPORT void InitSlave(
+// The functions in this section are available once |Init()| has been called.
+
+// Start waiting on the handle asynchronously. On success, |callback| will be
+// called exactly once, when |handle| satisfies a signal in |signals| or it
+// becomes known that it will never do so. |callback| will be executed on an
+// arbitrary thread, so it must not call any Mojo system or embedder functions.
+MOJO_SYSTEM_IMPL_EXPORT MojoResult
+AsyncWait(MojoHandle handle,
+          MojoHandleSignals signals,
+          const base::Callback<void(MojoResult)>& callback);
+
+// Creates a |MojoHandle| that wraps the given |PlatformHandle| (taking
+// ownership of it). This |MojoHandle| can then, e.g., be passed through message
+// pipes. Note: This takes ownership (and thus closes) |platform_handle| even on
+// failure, which is different from what you'd expect from a Mojo API, but it
+// makes for a more convenient embedder API.
+MOJO_SYSTEM_IMPL_EXPORT MojoResult
+CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
+                            MojoHandle* platform_handle_wrapper_handle);
+
+// Retrieves the |PlatformHandle| that was wrapped into a |MojoHandle| (using
+// |CreatePlatformHandleWrapper()| above). Note that the |MojoHandle| must still
+// be closed separately.
+MOJO_SYSTEM_IMPL_EXPORT MojoResult
+PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
+                          ScopedPlatformHandle* platform_handle);
+
+// Initialialization/shutdown for interprocess communication (IPC) -------------
+
+// |InitIPCSupport()| sets up the subsystem for interprocess communication,
+// making the IPC functions (in the following section) available and functional.
+// (This may only be done after |Init()|.)
+//
+// This subsystem may be shut down, using |ShutdownIPCSupportOnIOThread()| or
+// |ShutdownIPCSupport()|. None of the IPC functions may be called while or
+// after either of these is called.
+
+// Initializes a process of the given type; to be called after |Init()|.
+//   - |process_delegate| must be a process delegate of the appropriate type
+//     corresponding to |process_type|; its methods will be called on
+//     |delegate_thread_task_runner|.
+//   - |delegate_thread_task_runner|, |process_delegate|, and
+//     |io_thread_task_runner| should live at least until
+//     |ShutdownIPCSupport()|'s callback has been run or
+//     |ShutdownIPCSupportOnIOThread()| has completed.
+//   - For slave processes (i.e., |process_type| is |ProcessType::SLAVE|),
+//     |platform_handle| should be connected to the handle passed to
+//     |ConnectToSlave()| (in the master process). For other processes,
+//     |platform_handle| is ignored (and should not be valid).
+MOJO_SYSTEM_IMPL_EXPORT void InitIPCSupport(
+    ProcessType process_type,
     scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
-    SlaveProcessDelegate* slave_process_delegate,
+    ProcessDelegate* process_delegate,
     scoped_refptr<base::TaskRunner> io_thread_task_runner,
+    ScopedPlatformHandle platform_handle);
+
+// Shuts down the subsystem initialized by |InitIPCSupport()|. This must be
+// called on the I/O thread (given to |InitIPCSupport()|). This completes
+// synchronously and does not result in a call to the process delegate's
+// |OnShutdownComplete()|.
+MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupportOnIOThread();
+
+// Like |ShutdownIPCSupportOnIOThread()|, but may be called from any thread,
+// signalling shutdown completion via the process delegate's
+// |OnShutdownComplete()|.
+MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport();
+
+// Interprocess communication (IPC) functions ----------------------------------
+
+// Connects to a slave process to the IPC system. This should only be called in
+// a process initialized (using |InitIPCSupport()|) with process type
+// |ProcessType::MASTER|. |slave_info| is caller-dependent slave information,
+// which should remain alive until the master process delegate's
+// |OnSlaveDisconnect()| is called. |platform_handle| should be a handle to one
+// end of an OS "pipe"; the slave process should |InitIPCSupport()| with
+// |ProcessType::SLAVE| and the handle to the other end of this OS "pipe".
+MOJO_SYSTEM_IMPL_EXPORT void ConnectToSlave(
+    SlaveInfo slave_info,
     ScopedPlatformHandle platform_handle);
 
 // A "channel" is a connection on top of an OS "pipe", on top of which Mojo
@@ -111,47 +175,32 @@ typedef base::Callback<void(ChannelInfo*)> DidCreateChannelCallback;
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateChannel(ScopedPlatformHandle platform_handle,
               scoped_refptr<base::TaskRunner> io_thread_task_runner,
-              DidCreateChannelCallback callback,
+              const DidCreateChannelCallback& callback,
               scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
 // Destroys a channel that was created using |CreateChannel()| (or
-// |CreateChannelOnIOThread()|); may be called from any thread. |channel_info|
-// should be the value provided to the callback to |CreateChannel()| (or
-// returned by |CreateChannelOnIOThread()|). If called from the I/O thread, this
-// will complete synchronously (in particular, it will post no tasks).
-// TODO(vtl): If called from some other thread, it'll post tasks to the I/O
-// thread. This is obviously potentially problematic if you want to shut the I/O
-// thread down.
-MOJO_SYSTEM_IMPL_EXPORT void DestroyChannel(ChannelInfo* channel_info);
+// |CreateChannelOnIOThread()|); must be called from the channel's I'O thread.
+// |channel_info| should be the value provided to the callback to
+// |CreateChannel()| (or returned by |CreateChannelOnIOThread()|). Completes
+// synchronously (and posts no tasks).
+MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
+    ChannelInfo* channel_info);
+
+typedef base::Closure DidDestroyChannelCallback;
+// Like |DestroyChannelOnIOThread()|, but asynchronous and may be called from
+// any thread. The callback will be called using |callback_thread_task_runner|
+// if that is non-null, or otherwise it will be called on the "channel thread".
+// The "channel thread" must remain alive and continue to process tasks until
+// the callback has been executed.
+MOJO_SYSTEM_IMPL_EXPORT void DestroyChannel(
+    ChannelInfo* channel_info,
+    const DidDestroyChannelCallback& callback,
+    scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
 // Inform the channel that it will soon be destroyed (doing so is optional).
 // This may be called from any thread, but the caller must ensure that this is
 // called before |DestroyChannel()|.
 MOJO_SYSTEM_IMPL_EXPORT void WillDestroyChannelSoon(ChannelInfo* channel_info);
-
-// Creates a |MojoHandle| that wraps the given |PlatformHandle| (taking
-// ownership of it). This |MojoHandle| can then, e.g., be passed through message
-// pipes. Note: This takes ownership (and thus closes) |platform_handle| even on
-// failure, which is different from what you'd expect from a Mojo API, but it
-// makes for a more convenient embedder API.
-MOJO_SYSTEM_IMPL_EXPORT MojoResult
-CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
-                            MojoHandle* platform_handle_wrapper_handle);
-// Retrieves the |PlatformHandle| that was wrapped into a |MojoHandle| (using
-// |CreatePlatformHandleWrapper()| above). Note that the |MojoHandle| must still
-// be closed separately.
-MOJO_SYSTEM_IMPL_EXPORT MojoResult
-PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
-                          ScopedPlatformHandle* platform_handle);
-
-// Start waiting the handle asynchronously. On success, |callback| will be
-// called exactly once, when |handle| satisfies a signal in |signals| or it
-// becomes known that it will never do so. |callback| will be executed on an
-// arbitrary thread. It must not call any Mojo system or embedder functions.
-MOJO_SYSTEM_IMPL_EXPORT MojoResult
-AsyncWait(MojoHandle handle,
-          MojoHandleSignals signals,
-          base::Callback<void(MojoResult)> callback);
 
 }  // namespace embedder
 }  // namespace mojo

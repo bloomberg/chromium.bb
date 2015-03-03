@@ -19,11 +19,11 @@ enum ValidationError {
   // objects.
   VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE,
   // A struct header doesn't make sense, for example:
-  // - |num_bytes| is smaller than the size of the oldest version that we
-  // support.
-  // - |num_fields| is smaller than the field number of the oldest version that
-  // we support.
-  // - |num_bytes| and |num_fields| don't match.
+  // - |num_bytes| is smaller than the size of the struct header.
+  // - |num_bytes| and |version| don't match.
+  // TODO(yzshen): Consider splitting it into two different error codes. Because
+  // the former indicates someone is misbehaving badly whereas the latter could
+  // be due to an inappropriately-modified .mojom file.
   VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER,
   // An array header doesn't make sense, for example:
   // - |num_bytes| is smaller than the size of the header plus the size required

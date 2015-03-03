@@ -4,10 +4,16 @@
 
 #include "mojo/edk/embedder/simple_platform_support.h"
 
+#include "crypto/random.h"
 #include "mojo/edk/embedder/simple_platform_shared_buffer.h"
 
 namespace mojo {
 namespace embedder {
+
+void SimplePlatformSupport::GetCryptoRandomBytes(void* bytes,
+                                                 size_t num_bytes) {
+  crypto::RandBytes(bytes, num_bytes);
+}
 
 PlatformSharedBuffer* SimplePlatformSupport::CreateSharedBuffer(
     size_t num_bytes) {

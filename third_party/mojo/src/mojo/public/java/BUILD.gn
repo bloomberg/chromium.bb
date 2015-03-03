@@ -18,6 +18,7 @@ android_library("system") {
     "system/src/org/chromium/mojo/system/Pair.java",
     "system/src/org/chromium/mojo/system/SharedBufferHandle.java",
     "system/src/org/chromium/mojo/system/UntypedHandle.java",
+    "system/src/org/chromium/mojo/system/RunLoop.java",
   ]
 }
 
@@ -36,7 +37,6 @@ android_library("bindings") {
     "bindings/src/org/chromium/mojo/bindings/HandleOwner.java",
     "bindings/src/org/chromium/mojo/bindings/Interface.java",
     "bindings/src/org/chromium/mojo/bindings/InterfaceRequest.java",
-    "bindings/src/org/chromium/mojo/bindings/InterfaceWithClient.java",
     "bindings/src/org/chromium/mojo/bindings/MessageHeader.java",
     "bindings/src/org/chromium/mojo/bindings/Message.java",
     "bindings/src/org/chromium/mojo/bindings/MessageReceiver.java",

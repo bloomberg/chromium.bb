@@ -101,12 +101,17 @@ template("dart_packaged_application") {
       datadeps = invoker.datadeps
     }
 
+    line = "#!mojo mojo:dart_content_handler"
+    if (defined(invoker.strict) && invoker.strict == true) {
+      line = "#!mojo mojo:dart_content_handler?strict=true"
+    }
+
     rebase_input = rebase_path(input, root_build_dir)
     rebase_output = rebase_path(output, root_build_dir)
     args = [
       "--input=$rebase_input",
       "--output=$rebase_output",
-      "--line=#!mojo mojo:dart_content_handler",
+      "--line=$line",
     ]
   }
 }

@@ -24,8 +24,8 @@ class InterfacePtrState {
 
   ~InterfacePtrState() {
     // Destruction order matters here. We delete |proxy_| first, even though
-    // |router_| may have a reference to it, so that |~Interface| may have a
-    // shot at generating new outbound messages (ie, invoking client methods).
+    // |router_| may have a reference to it, so that destructors for any request
+    // callbacks still pending can interact with the InterfacePtr.
     delete proxy_;
     delete router_;
   }
@@ -71,13 +71,6 @@ class InterfacePtrState {
 
   bool is_bound() const { return handle_.is_valid() || router_; }
 
-  void set_client(typename Interface::Client* client) {
-    ConfigureProxyIfNecessary();
-
-    MOJO_DCHECK(proxy_);
-    proxy_->stub.set_sink(client);
-  }
-
   bool encountered_error() const {
     return router_ ? router_->encountered_error() : false;
   }
@@ -95,15 +88,7 @@ class InterfacePtrState {
   }
 
  private:
-  class ProxyWithStub : public Interface::Proxy_ {
-   public:
-    explicit ProxyWithStub(MessageReceiverWithResponder* receiver)
-        : Interface::Proxy_(receiver) {}
-    typename Interface::Client::Stub_ stub;
-
-   private:
-    MOJO_DISALLOW_COPY_AND_ASSIGN(ProxyWithStub);
-  };
+  using Proxy = typename Interface::Proxy_;
 
   void ConfigureProxyIfNecessary() {
     // The proxy has been configured.
@@ -119,19 +104,15 @@ class InterfacePtrState {
 
     FilterChain filters;
     filters.Append<MessageHeaderValidator>();
-    filters.Append<typename Interface::Client::RequestValidator_>();
     filters.Append<typename Interface::ResponseValidator_>();
 
     router_ = new Router(handle_.Pass(), filters.Pass(), waiter_);
     waiter_ = nullptr;
 
-    ProxyWithStub* proxy = new ProxyWithStub(router_);
-    router_->set_incoming_receiver(&proxy->stub);
-
-    proxy_ = proxy;
+    proxy_ = new Proxy(router_);
   }
 
-  ProxyWithStub* proxy_;
+  Proxy* proxy_;
   Router* router_;
 
   // |proxy_| and |router_| are not initialized until read/write with the

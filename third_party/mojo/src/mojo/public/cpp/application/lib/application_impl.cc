@@ -71,10 +71,13 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
   return registry;
 }
 
-void ApplicationImpl::Initialize(ShellPtr shell, Array<String> args) {
+void ApplicationImpl::Initialize(ShellPtr shell,
+                                 Array<String> args,
+                                 const mojo::String& url) {
   shell_ = shell.Pass();
   shell_watch_ = new ShellPtrWatcher(this);
   shell_.set_error_handler(shell_watch_);
+  url_ = url;
   args_ = args.To<std::vector<std::string>>();
   delegate_->Initialize(this);
 }

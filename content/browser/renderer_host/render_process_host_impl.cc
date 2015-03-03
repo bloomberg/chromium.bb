@@ -110,6 +110,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
@@ -664,9 +665,15 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
+    scoped_refptr<base::TaskRunner> io_task_runner =
+        BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
+              ->task_runner();
     if (!channel_mojo_host_) {
-      channel_mojo_host_.reset(new IPC::ChannelMojoHost(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+      channel_mojo_host_.reset(new IPC::ChannelMojoHost(io_task_runner));
+    }
+
+    if (run_renderer_in_process()) {
+      ChannelInit::SetSingleProcessIOTaskRunner(io_task_runner);
     }
 
     return IPC::ChannelProxy::Create(

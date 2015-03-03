@@ -85,7 +85,6 @@ android_library("mojo_javatests") {
     "javatests/src/org/chromium/mojo/bindings/ValidationTest.java",
     "javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java",
     "javatests/src/org/chromium/mojo/bindings/ValidationTestUtilTest.java",
-    "javatests/src/org/chromium/mojo/bindings/test/mojom/mojo/IntegrationTestInterface2TestHelper.java",
     "javatests/src/org/chromium/mojo/system/impl/CoreImplTest.java",
   ]
 

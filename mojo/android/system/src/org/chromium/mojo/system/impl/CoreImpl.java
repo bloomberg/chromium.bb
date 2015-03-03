@@ -16,6 +16,7 @@ import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.mojo.system.Pair;
+import org.chromium.mojo.system.RunLoop;
 import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.DuplicateOptions;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
@@ -203,6 +204,22 @@ public class CoreImpl implements Core, AsyncWaiter {
     @Override
     public AsyncWaiter getDefaultAsyncWaiter() {
         return this;
+    }
+
+    /**
+     * @see Core#createDefaultRunLoop()
+     */
+    @Override
+    public RunLoop createDefaultRunLoop() {
+        return null;
+    }
+
+    /**
+     * @see Core#getCurrentRunLoop()
+     */
+    @Override
+    public RunLoop getCurrentRunLoop() {
+        return null;
     }
 
     /**

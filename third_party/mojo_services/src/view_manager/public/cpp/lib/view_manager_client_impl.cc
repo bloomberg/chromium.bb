@@ -4,9 +4,6 @@
 
 #include "view_manager/public/cpp/lib/view_manager_client_impl.h"
 
-#include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
@@ -90,7 +87,7 @@ class RootObserver : public ViewObserver {
 
   View* root_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootObserver);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(RootObserver);
 };
 
 ViewManagerClientImpl::ViewManagerClientImpl(
@@ -236,7 +233,9 @@ void ViewManagerClientImpl::SetViewManagerService(
 Id ViewManagerClientImpl::CreateViewOnServer() {
   DCHECK(service_);
   const Id view_id = MakeTransportId(connection_id_, ++next_id_);
-  service_->CreateView(view_id, ActionCompletedCallbackWithErrorCode());
+  service_->CreateView(view_id, [this](ErrorCode code) {
+    OnActionCompleted(code == ERROR_CODE_NONE);
+  });
   return view_id;
 }
 
@@ -286,14 +285,21 @@ void ViewManagerClientImpl::OnEmbed(
   root_->AddObserver(new RootObserver(root_));
 
   window_manager_.Bind(window_manager_pipe.Pass());
-  // base::Unretained() is safe here as |window_manager_| is bound to our
-  // lifetime.
   WindowManagerObserverPtr observer;
   wm_observer_binding_.Bind(GetProxy(&observer));
+  // binding to |this| is safe here as |window_manager_| is bound to our
+  // lifetime.
   window_manager_->GetFocusedAndActiveViews(
       observer.Pass(),
-      base::Bind(&ViewManagerClientImpl::OnGotFocusedAndActiveViews,
-                 base::Unretained(this)));
+      [this](uint32_t capture_view_id, uint32_t focused_view_id,
+             uint32_t active_view_id) {
+        if (GetViewById(capture_view_id) != capture_view_)
+          OnCaptureChanged(capture_view_id);
+        if (GetViewById(focused_view_id) != focused_view_)
+          OnFocusChanged(focused_view_id);
+        if (GetViewById(active_view_id) != activated_view_)
+          OnActiveWindowChanged(active_view_id);
+      });
 
   delegate_->OnEmbed(root_, services.Pass(), exposed_services.Pass());
 }
@@ -373,7 +379,7 @@ void ViewManagerClientImpl::OnViewVisibilityChanged(Id view_id, bool visible) {
   // Deal with this some how.
   View* view = GetViewById(view_id);
   if (view)
-    view->SetVisible(visible);
+    ViewPrivate(view).LocalSetVisible(visible);
 }
 
 void ViewManagerClientImpl::OnViewDrawnStateChanged(Id view_id, bool drawn) {
@@ -483,31 +489,8 @@ void ViewManagerClientImpl::OnActionCompleted(bool success) {
     change_acked_callback_.Run();
 }
 
-void ViewManagerClientImpl::OnActionCompletedWithErrorCode(ErrorCode code) {
-  OnActionCompleted(code == ERROR_CODE_NONE);
-}
-
-base::Callback<void(bool)> ViewManagerClientImpl::ActionCompletedCallback() {
-  return base::Bind(&ViewManagerClientImpl::OnActionCompleted,
-                    base::Unretained(this));
-}
-
-base::Callback<void(ErrorCode)>
-    ViewManagerClientImpl::ActionCompletedCallbackWithErrorCode() {
-  return base::Bind(&ViewManagerClientImpl::OnActionCompletedWithErrorCode,
-                    base::Unretained(this));
-}
-
-void ViewManagerClientImpl::OnGotFocusedAndActiveViews(
-    uint32_t capture_view_id,
-    uint32_t focused_view_id,
-    uint32_t active_view_id) {
-  if (GetViewById(capture_view_id) != capture_view_)
-    OnCaptureChanged(capture_view_id);
-  if (GetViewById(focused_view_id) != focused_view_)
-    OnFocusChanged(focused_view_id);
-  if (GetViewById(active_view_id) != activated_view_)
-    OnActiveWindowChanged(active_view_id);
+Callback<void(bool)> ViewManagerClientImpl::ActionCompletedCallback() {
+  return [this](bool success) { OnActionCompleted(success); };
 }
 
 }  // namespace mojo

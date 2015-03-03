@@ -38,7 +38,7 @@ class Callback<void(Args...)> {
 
   // As above, but can take an object that isn't derived from Runnable, so long
   // as it has a compatible operator() or Run() method.  operator() will be
-  // prefered if the type has both.
+  // preferred if the type has both.
   template <typename Sink>
   Callback(const Sink& sink) {
     using sink_type = typename internal::Conditional<

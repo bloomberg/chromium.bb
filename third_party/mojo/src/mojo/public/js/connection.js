@@ -73,52 +73,6 @@ define("mojo/public/js/connection", [
 
   TestConnection.prototype = Object.create(Connection.prototype);
 
-  // TODO(hansmuller): remove when Shell.mojom loses its client.
-  function createOpenConnection(
-      messagePipeHandle, client, localInterface, remoteInterface) {
-    var stubClass = (localInterface && localInterface.stubClass) || EmptyStub;
-    var proxyClass =
-        (remoteInterface && remoteInterface.proxyClass) || EmptyProxy;
-    var proxy = new proxyClass;
-    var stub = new stubClass;
-    var router = new Router(messagePipeHandle);
-    var connection = new BaseConnection(stub, proxy, router);
-
-    ProxyBindings(proxy).connection = connection;
-    ProxyBindings(proxy).local = connection.local;
-    StubBindings(stub).connection = connection;
-    StubBindings(proxy).remote = connection.remote;
-
-    var clientImpl = client instanceof Function ? client(proxy) : client;
-    if (clientImpl)
-      StubBindings(stub).delegate = clientImpl;
-
-    return connection;
-  }
-
-  // TODO(hansmuller): remove when Shell.mojom loses its client.
-  // Return a message pipe handle.
-  function bindProxyClient(clientImpl, localInterface, remoteInterface) {
-    var messagePipe = core.createMessagePipe();
-    if (messagePipe.result != core.RESULT_OK)
-      throw new Error("createMessagePipe failed " + messagePipe.result);
-
-    createOpenConnection(
-      messagePipe.handle0, clientImpl, localInterface, remoteInterface);
-    return messagePipe.handle1;
-  }
-
-  // TODO(hansmuller): remove when Shell.mojom loses its client.
-  // Return a proxy.
-  function bindProxyHandle(proxyHandle, localInterface, remoteInterface) {
-    if (!core.isHandle(proxyHandle))
-      throw new Error("Not a handle " + proxyHandle);
-
-    var connection = createOpenConnection(
-        proxyHandle, undefined, localInterface, remoteInterface);
-    return connection.remote;
-  }
-
   // Return a handle for a message pipe that's connected to a proxy
   // for remoteInterface. Used by generated code for outgoing interface&
   // (request) parameters: the caller is given the generated proxy via
@@ -192,10 +146,6 @@ define("mojo/public/js/connection", [
   var exports = {};
   exports.Connection = Connection;
   exports.TestConnection = TestConnection;
-
-  // TODO(hansmuller): remove these when Shell.mojom loses its client.
-  exports.bindProxyHandle = bindProxyHandle;
-  exports.bindProxyClient = bindProxyClient;
 
   exports.bindProxy = bindProxy;
   exports.bindImpl = bindImpl;

@@ -283,3 +283,69 @@ struct BitArrayValues {
   array<array<bool>?> f5;
   array<array<bool, 2>?> f6;
 };
+
+// Used to verify that different versions can be decoded correctly.
+
+struct MultiVersionStruct {
+  [MinVersion=0]
+  int32 f_int32;
+  [MinVersion=1]
+  Rect? f_rect;
+  [MinVersion=3]
+  string? f_string;
+  [MinVersion=5]
+  array<int8> f_array;
+  [MinVersion=7]
+  handle<message_pipe>? f_message_pipe;
+  [MinVersion=7]
+  bool f_bool;
+  [MinVersion=9]
+  int16 f_int16;
+};
+
+struct MultiVersionStructV0 {
+  [MinVersion=0]
+  int32 f_int32;
+};
+
+struct MultiVersionStructV1 {
+  [MinVersion=0]
+  int32 f_int32;
+  [MinVersion=1]
+  Rect? f_rect;
+};
+
+struct MultiVersionStructV3 {
+  [MinVersion=0]
+  int32 f_int32;
+  [MinVersion=1]
+  Rect? f_rect;
+  [MinVersion=3]
+  string? f_string;
+};
+
+struct MultiVersionStructV5 {
+  [MinVersion=0]
+  int32 f_int32;
+  [MinVersion=1]
+  Rect? f_rect;
+  [MinVersion=3]
+  string? f_string;
+  [MinVersion=5]
+  array<int8> f_array;
+};
+
+struct MultiVersionStructV7 {
+  [MinVersion=0]
+  int32 f_int32;
+  [MinVersion=1]
+  Rect? f_rect;
+  [MinVersion=3]
+  string? f_string;
+  [MinVersion=5]
+  array<int8> f_array;
+  [MinVersion=7]
+  handle<message_pipe>? f_message_pipe;
+  [MinVersion=7]
+  bool f_bool;
+};

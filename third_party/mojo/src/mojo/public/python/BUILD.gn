@@ -78,6 +78,16 @@ python_binary_source_set("python_common") {
   ]
 }
 
+python_package("packaged_application") {
+  sources = [
+    "mojo_application/__init__.py",
+    "mojo_application/application_delegate.py",
+    "mojo_application/application_impl.py",
+    "mojo_application/application_runner.py",
+    "mojo_application/service_provider_impl.py",
+  ]
+}
+
 # GYP version: mojo.gyp:mojo_python_bindings
 copy("bindings") {
   sources = [

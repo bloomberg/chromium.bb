@@ -32,7 +32,7 @@ class {{struct.name}} {
 {%- endif %}
   bool Equals(const {{struct.name}}& other) const;
 
-{#--- Getters #}
+{#--- Struct members #}
 {%  for field in struct.fields %}
 {%-   set type = field.kind|cpp_wrapper_type %}
 {%-   set name = field.name %}

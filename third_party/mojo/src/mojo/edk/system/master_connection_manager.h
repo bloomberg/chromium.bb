@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -25,7 +26,7 @@ namespace mojo {
 
 namespace embedder {
 class MasterProcessDelegate;
-class SlaveInfo;
+typedef void* SlaveInfo;
 }
 
 namespace system {
@@ -35,10 +36,10 @@ const ProcessIdentifier kMasterProcessIdentifier = 1;
 
 // The |ConnectionManager| implementation for the master process.
 //
-// Objects of this class may be created and destroyed on any thread. However,
-// |Init()| and |Shutdown()| must be called on the "delegate thread". Otherwise,
-// its public methods are thread-safe (except that they may not be called from
-// its internal, private thread).
+// This class is thread-safe (except that no public methods may be called from
+// its internal, private thread), with condition that |Init()| be called before
+// anything else and |Shutdown()| be called before destruction (and no other
+// public methods may be called during/after |Shutdown()|).
 class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
     : public ConnectionManager {
  public:
@@ -54,18 +55,17 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   void Init(scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
             embedder::MasterProcessDelegate* master_process_delegate);
 
-  // No other methods may be called after this is (or while it is being) called.
-  void Shutdown();
-
   // Adds a slave process and sets up/tracks a connection to that slave (using
-  // |platform_handle|). (|slave_info| is used by the caller/implementation of
-  // |embedder::MasterProcessDelegate| to track this process; ownership of
-  // |slave_info| will be returned to the delegate via |OnSlaveDisconnect()|,
-  // which will always be called for each slave, assuming proper shutdown.)
-  void AddSlave(scoped_ptr<embedder::SlaveInfo> slave_info,
+  // |platform_handle|). |slave_info| is used by the caller/implementation of
+  // |embedder::MasterProcessDelegate| to track this process. It must remain
+  // alive until the delegate's |OnSlaveDisconnect()| is called with it as the
+  // argument. |OnSlaveDisconnect()| will always be called for each slave,
+  // assuming proper shutdown.)
+  void AddSlave(embedder::SlaveInfo slave_info,
                 embedder::ScopedPlatformHandle platform_handle);
 
   // |ConnectionManager| methods:
+  void Shutdown() override;
   bool AllowConnect(const ConnectionIdentifier& connection_id) override;
   bool CancelConnect(const ConnectionIdentifier& connection_id) override;
   bool Connect(const ConnectionIdentifier& connection_id,
@@ -89,18 +89,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   // These should only be called on |private_thread_|:
   void ShutdownOnPrivateThread();
   // Signals |*event| on completion.
-  void AddSlaveOnPrivateThread(scoped_ptr<embedder::SlaveInfo> slave_info,
+  void AddSlaveOnPrivateThread(embedder::SlaveInfo slave_info,
                                embedder::ScopedPlatformHandle platform_handle,
                                base::WaitableEvent* event);
   // Called by |Helper::OnError()|.
   void OnError(ProcessIdentifier process_identifier);
   // Posts a call to |master_process_delegate_->OnSlaveDisconnect()|.
-  void CallOnSlaveDisconnect(scoped_ptr<embedder::SlaveInfo> slave_info);
-
-  // Asserts that the current thread is the delegate thread. (This actually
-  // checks the current message loop.)
-  // TODO(vtl): Probably we should actually check the thread.
-  void AssertOnDelegateThread() const;
+  void CallOnSlaveDisconnect(embedder::SlaveInfo slave_info);
 
   // Asserts that the current thread is *not* |private_thread_| (no-op if
   // DCHECKs are not enabled). This should only be called while

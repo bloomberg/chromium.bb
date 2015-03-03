@@ -25,9 +25,9 @@ class Map {
   MOJO_MOVE_ONLY_TYPE(Map)
 
  public:
-  // Map keys can not be move only classes.
+  // Map keys cannot be move only classes.
   static_assert(!internal::IsMoveOnlyType<Key>::value,
-                "Map keys can not be move only types.");
+                "Map keys cannot be move only types.");
 
   typedef internal::MapTraits<Key,
                               Value,

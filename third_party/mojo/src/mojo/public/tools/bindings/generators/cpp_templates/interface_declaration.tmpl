@@ -6,9 +6,6 @@ class {{interface.name}}RequestValidator;
 {%- if interface|has_callbacks %}
 class {{interface.name}}ResponseValidator;
 {%- endif %}
-{% if interface.client %}
-class {{interface.client}};
-{% endif %}
 
 class {{interface.name}} {
  public:
@@ -23,11 +20,6 @@ class {{interface.name}} {
 {%- else %}
   using ResponseValidator_ = mojo::PassThroughFilter;
 {%- endif %}
-{% if interface.client %}
-  using Client = {{interface.client}};
-{% else %}
-  using Client = mojo::NoInterface;
-{% endif %}
 
 {#--- Constants #}
 {%- for constant in interface.constants %}

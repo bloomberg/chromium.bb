@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
-
 #include "input_events/public/interfaces/input_events.mojom.h"
 #include "view_manager/public/cpp/view.h"
 

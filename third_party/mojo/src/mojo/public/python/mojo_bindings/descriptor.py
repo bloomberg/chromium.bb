@@ -508,8 +508,8 @@ class MapType(SerializableType):
       '__module__': __name__,
       'DESCRIPTOR': {
         'fields': [
-          SingleFieldGroup('keys', MapType._GetArrayType(key_type), 0, 0),
-          SingleFieldGroup('values', MapType._GetArrayType(value_type), 1, 1),
+          SingleFieldGroup('keys', MapType._GetArrayType(key_type), 0, 1),
+          SingleFieldGroup('values', MapType._GetArrayType(value_type), 1, 2),
         ],
       }
     }
@@ -608,13 +608,19 @@ class FieldGroup(object):
   def GetByteSize(self):
     raise NotImplementedError()
 
-  def GetVersion(self):
+  def GetMinVersion(self):
+    raise NotImplementedError()
+
+  def GetMaxVersion(self):
     raise NotImplementedError()
 
   def Serialize(self, obj, data_offset, data, handle_offset):
     raise NotImplementedError()
 
   def Deserialize(self, value, context):
+    raise NotImplementedError()
+
+  def Filter(self, version):
     raise NotImplementedError()
 
 
@@ -632,7 +638,10 @@ class SingleFieldGroup(FieldGroup, FieldDescriptor):
   def GetByteSize(self):
     return self.field_type.GetByteSize()
 
-  def GetVersion(self):
+  def GetMinVersion(self):
+    return self.version
+
+  def GetMaxVersion(self):
     return self.version
 
   def Serialize(self, obj, data_offset, data, handle_offset):
@@ -643,12 +652,16 @@ class SingleFieldGroup(FieldGroup, FieldDescriptor):
     entity = self.field_type.Deserialize(value, context)
     return { self.name: entity }
 
+  def Filter(self, version):
+    return self
+
 
 class BooleanGroup(FieldGroup):
   """A FieldGroup to pack booleans."""
   def __init__(self, descriptors):
     FieldGroup.__init__(self, descriptors)
-    self.version = min([descriptor.version  for descriptor in descriptors])
+    self.min_version = min([descriptor.version  for descriptor in descriptors])
+    self.max_version = max([descriptor.version  for descriptor in descriptors])
 
   def GetTypeCode(self):
     return 'B'
@@ -656,8 +669,11 @@ class BooleanGroup(FieldGroup):
   def GetByteSize(self):
     return 1
 
-  def GetVersion(self):
-    return self.version
+  def GetMinVersion(self):
+    return self.min_version
+
+  def GetMaxVersion(self):
+    return self.max_version
 
   def Serialize(self, obj, data_offset, data, handle_offset):
     value = _ConvertBooleansToByte(
@@ -669,6 +685,10 @@ class BooleanGroup(FieldGroup):
                                       _ConvertByteToBooleans(value),
                                      fillvalue=False)
     return dict(values)
+
+  def Filter(self, version):
+    return BooleanGroup(
+        filter(lambda d: d.version <= version, self.descriptors))
 
 
 def _SerializeNativeArray(value, data_offset, data, length):

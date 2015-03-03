@@ -5,9 +5,6 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_CLIENT_IMPL_H_
 #define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_CLIENT_IMPL_H_
 
-#include "base/callback.h"
-#include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "view_manager/public/cpp/types.h"
 #include "view_manager/public/cpp/view.h"
@@ -66,12 +63,10 @@ class ViewManagerClientImpl : public ViewManager,
              ServiceProviderPtr exposed_services);
   void Embed(Id view_id, ViewManagerClientPtr client);
 
-  void set_change_acked_callback(const base::Callback<void(void)>& callback) {
+  void set_change_acked_callback(const Callback<void(void)>& callback) {
     change_acked_callback_ = callback;
   }
-  void ClearChangeAckedCallback() {
-    change_acked_callback_ = base::Callback<void(void)>();
-  }
+  void ClearChangeAckedCallback() { change_acked_callback_.reset(); }
 
   // Start/stop tracking views. While tracked, they can be retrieved via
   // ViewManager::GetViewById.
@@ -136,22 +131,15 @@ class ViewManagerClientImpl : public ViewManager,
   void RootDestroyed(View* root);
 
   void OnActionCompleted(bool success);
-  void OnActionCompletedWithErrorCode(ErrorCode code);
 
-  base::Callback<void(bool)> ActionCompletedCallback();
-  base::Callback<void(ErrorCode)> ActionCompletedCallbackWithErrorCode();
-
-  // Callback from server for initial request of capture/focused/active views.
-  void OnGotFocusedAndActiveViews(uint32_t capture_view_id,
-                                  uint32_t focused_view_id,
-                                  uint32_t active_view_id);
+  Callback<void(bool)> ActionCompletedCallback();
 
   ConnectionSpecificId connection_id_;
   ConnectionSpecificId next_id_;
 
   std::string creator_url_;
 
-  base::Callback<void(void)> change_acked_callback_;
+  Callback<void(void)> change_acked_callback_;
 
   ViewManagerDelegate* delegate_;
 
@@ -170,7 +158,7 @@ class ViewManagerClientImpl : public ViewManager,
   ViewManagerServicePtr service_;
   const bool delete_on_error_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };
 
 }  // namespace mojo

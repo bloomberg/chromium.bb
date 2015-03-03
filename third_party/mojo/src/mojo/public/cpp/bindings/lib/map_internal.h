@@ -21,7 +21,7 @@ template <typename Key, typename Value>
 struct MapTraits<Key, Value, false> {
   // Map keys can't be move only types.
   static_assert(!internal::IsMoveOnlyType<Key>::value,
-                "Map keys can not be move only types.");
+                "Map keys cannot be move only types.");
 
   typedef Key KeyStorageType;
   typedef Key& KeyRefType;
@@ -111,7 +111,7 @@ template <typename Key, typename Value>
 struct MapTraits<Key, Value, true> {
   // Map keys can't be move only types.
   static_assert(!internal::IsMoveOnlyType<Key>::value,
-                "Map keys can not be move only types.");
+                "Map keys cannot be move only types.");
 
   typedef Key KeyStorageType;
   typedef Key& KeyRefType;

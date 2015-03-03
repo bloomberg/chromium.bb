@@ -297,17 +297,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       size_t* actual_size,
       embedder::PlatformHandleVector* platform_handles);
 
+  // This should be overridden to return true if/when there's an ongoing
+  // operation (e.g., two-phase read/writes on data pipes) that should prevent a
+  // handle from being sent over a message pipe (with status "busy").
+  virtual bool IsBusyNoLock() const;
+
   // Available to subclasses. (Note: Returns a non-const reference, just like
   // |base::AutoLock|'s constructor takes a non-const reference.)
   base::Lock& lock() const { return lock_; }
 
  private:
   friend class DispatcherTransport;
-
-  // This should be overridden to return true if/when there's an ongoing
-  // operation (e.g., two-phase read/writes on data pipes) that should prevent a
-  // handle from being sent over a message pipe (with status "busy").
-  virtual bool IsBusyNoLock() const;
 
   // Closes the dispatcher. This must be done under lock, and unlike |Close()|,
   // the dispatcher must not be closed already. (This is the "equivalent" of

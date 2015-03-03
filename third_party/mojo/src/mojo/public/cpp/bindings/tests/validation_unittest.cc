@@ -225,7 +225,9 @@ class ValidationIntegrationTest : public ValidationTest {
    public:
     TestMessageReceiver(ValidationIntegrationTest* owner,
                         ScopedMessagePipeHandle handle)
-        : owner_(owner), connector_(handle.Pass()) {}
+        : owner_(owner), connector_(handle.Pass()) {
+      connector_.set_enforce_errors_from_incoming_receiver(false);
+    }
     ~TestMessageReceiver() override {}
 
     bool Accept(Message* message) override {
@@ -246,19 +248,14 @@ class ValidationIntegrationTest : public ValidationTest {
   ScopedMessagePipeHandle testee_endpoint_;
 };
 
-class IntegrationTestInterface1Client : public IntegrationTestInterface1 {
+class IntegrationTestInterfaceImpl : public IntegrationTestInterface {
  public:
-  ~IntegrationTestInterface1Client() override {}
+  ~IntegrationTestInterfaceImpl() override {}
 
-  void Method0(BasicStructPtr param0) override {}
-};
-
-class IntegrationTestInterface1Impl
-    : public InterfaceImpl<IntegrationTestInterface1> {
- public:
-  ~IntegrationTestInterface1Impl() override {}
-
-  void Method0(BasicStructPtr param0) override {}
+  void Method0(BasicStructPtr param0,
+               const Method0Callback& callback) override {
+    callback.Run(Array<uint8_t>::New(0u));
+  }
 };
 
 TEST_F(ValidationTest, InputParser) {
@@ -383,35 +380,32 @@ TEST_F(ValidationTest, NotImplemented) {
   RunValidationTests("not_implemented_", validators.GetHead());
 }
 
+// Test that InterfacePtr<X> applies the correct validators and they don't
+// conflict with each other:
+//   - MessageHeaderValidator
+//   - X::ResponseValidator_
 TEST_F(ValidationIntegrationTest, InterfacePtr) {
-  // Test that InterfacePtr<X> applies the correct validators and they don't
-  // conflict with each other:
-  //   - MessageHeaderValidator
-  //   - X::Client::RequestValidator_
-  //   - X::ResponseValidator_
+  IntegrationTestInterfacePtr interface_ptr =
+      MakeProxy<IntegrationTestInterface>(testee_endpoint().Pass());
+  interface_ptr.internal_state()->router_for_testing()->EnableTestingMode();
 
-  IntegrationTestInterface1Client interface1_client;
-  IntegrationTestInterface2Ptr interface2_ptr =
-      MakeProxy<IntegrationTestInterface2>(testee_endpoint().Pass());
-  interface2_ptr.set_client(&interface1_client);
-  interface2_ptr.internal_state()->router_for_testing()->EnableTestingMode();
-
-  RunValidationTests("integration_", test_message_receiver());
+  RunValidationTests("integration_intf_resp", test_message_receiver());
+  RunValidationTests("integration_msghdr", test_message_receiver());
 }
 
-TEST_F(ValidationIntegrationTest, InterfaceImpl) {
-  // Test that InterfaceImpl<X> applies the correct validators and they don't
-  // conflict with each other:
-  //   - MessageHeaderValidator
-  //   - X::RequestValidator_
-  //   - X::Client::ResponseValidator_
+// Test that Binding<X> applies the correct validators and they don't
+// conflict with each other:
+//   - MessageHeaderValidator
+//   - X::RequestValidator_
+TEST_F(ValidationIntegrationTest, Binding) {
+  IntegrationTestInterfaceImpl interface_impl;
+  Binding<IntegrationTestInterface> binding(
+      &interface_impl,
+      MakeRequest<IntegrationTestInterface>(testee_endpoint().Pass()));
+  binding.internal_router()->EnableTestingMode();
 
-  // |interface1_impl| will delete itself when the pipe is closed.
-  IntegrationTestInterface1Impl* interface1_impl =
-      BindToPipe(new IntegrationTestInterface1Impl(), testee_endpoint().Pass());
-  interface1_impl->internal_router()->EnableTestingMode();
-
-  RunValidationTests("integration_", test_message_receiver());
+  RunValidationTests("integration_intf_rqst", test_message_receiver());
+  RunValidationTests("integration_msghdr", test_message_receiver());
 }
 
 }  // namespace

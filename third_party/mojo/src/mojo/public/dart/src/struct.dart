@@ -4,18 +4,6 @@
 
 part of bindings;
 
-class DataHeader {
-  static const int kHeaderSize = 8;
-  static const int kSizeOffset = 0;
-  static const int kNumFieldsOffset = 4;
-  final int size;
-  final int numFields;
-
-  const DataHeader(this.size, this.numFields);
-
-  String toString() => "DataHeader($size, $numFields)";
-}
-
 abstract class Struct {
   final int encodedSize;
 

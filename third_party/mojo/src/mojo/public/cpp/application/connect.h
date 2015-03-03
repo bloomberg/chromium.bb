@@ -9,6 +9,7 @@
 
 namespace mojo {
 
+// Binds |ptr| to a remote implementation of Interface from |service_provider|.
 template <typename Interface>
 inline void ConnectToService(ServiceProvider* service_provider,
                              InterfacePtr<Interface>* ptr) {

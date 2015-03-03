@@ -8,9 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 class ApplicationImpl;
@@ -37,7 +36,7 @@ class ViewManagerContext {
 
  private:
   class InternalState;
-  scoped_ptr<InternalState> state_;
+  InternalState* state_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerContext);
 };

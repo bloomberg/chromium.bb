@@ -42,6 +42,19 @@ abstract class {{interface|name}} implements core.Listener {
     [Function responseFactory = null]);
 {%- endif %}
 {%- endfor %}
+
+
+{#--- Interface Constants #}
+{% for constant in interface.constants %}
+  static final {{constant|name}} = {{constant.value|expression_to_text}};
+{%-   endfor %}
+
+
+{#--- Interface Enums #}
+{%- from "enum_definition.tmpl" import enum_def -%}
+{%- for enum in interface.enums %}
+  {{ enum_def("  static ", enum) }}
+{%-  endfor %}
 }
 
 class {{interface|name}}Proxy extends bindings.Proxy implements {{interface|name}} {
@@ -200,14 +213,3 @@ class {{interface|name}}Stub extends bindings.Stub {
 {#--- TODO(zra): Validation #}
 
 
-{#--- Interface Constants #}
-{% for constant in interface.constants %}
-final {{constant|name}} = {{constant.value|expression_to_text}};
-{%-   endfor %}
-
-
-{#--- Interface Enums #}
-{%- from "enum_definition.tmpl" import enum_def -%}
-{%- for enum in interface.enums %}
-  {{ enum_def("", enum) }}
-{%-  endfor %}

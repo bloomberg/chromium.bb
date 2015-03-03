@@ -333,7 +333,6 @@
           'src/mojo/public/interfaces/bindings/tests/no_module.mojom',
           'src/mojo/public/interfaces/bindings/tests/rect.mojom',
           'src/mojo/public/interfaces/bindings/tests/regression_tests.mojom',
-          'src/mojo/public/interfaces/bindings/tests/regression_tests_import.mojom',
           'src/mojo/public/interfaces/bindings/tests/sample_factory.mojom',
           'src/mojo/public/interfaces/bindings/tests/sample_import.mojom',
           'src/mojo/public/interfaces/bindings/tests/sample_import2.mojom',

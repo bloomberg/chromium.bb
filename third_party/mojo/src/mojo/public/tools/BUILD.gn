@@ -2,28 +2,64 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/module_args/mojo.gni")
 import("../mojo.gni")
 
 if (use_prebuilt_mojo_shell) {
   copy("copy_mojo_shell") {
     filename = "mojo_shell"
-    if (is_win) {
-      filename += ".exe"
-    }
     if (is_android) {
       filename = "MojoShell.apk"
-    }
-    sources = [
-      "prebuilt/$filename",
-    ]
-    if (is_android) {
+      sources = [
+        "prebuilt/shell/android-arm/$filename",
+      ]
       outputs = [
         "$root_out_dir/apks/$filename",
       ]
     } else {
+      assert(is_linux)
+      sources = [
+        "prebuilt/shell/linux-x64/$filename",
+      ]
       outputs = [
         "$root_out_dir/$filename",
       ]
     }
+  }
+}
+
+if (use_prebuilt_network_service) {
+  copy("copy_network_service") {
+    filename = "network_service.mojo"
+    if (is_android) {
+      sources = [
+        "prebuilt/network_service/android-arm/$filename",
+      ]
+    } else {
+      assert(is_linux)
+      sources = [
+        "prebuilt/network_service/linux-x64/$filename",
+      ]
+    }
+    outputs = [
+      "$root_out_dir/$filename",
+    ]
+  }
+
+  copy("copy_network_service_apptests") {
+    filename = "network_service_apptests.mojo"
+    if (is_android) {
+      sources = [
+        "prebuilt/network_service_apptests/android-arm/$filename",
+      ]
+    } else {
+      assert(is_linux)
+      sources = [
+        "prebuilt/network_service_apptests/linux-x64/$filename",
+      ]
+    }
+    outputs = [
+      "$root_out_dir/$filename",
+    ]
   }
 }

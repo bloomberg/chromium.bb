@@ -37,12 +37,12 @@ class MasterConnectionManager::Helper : public RawChannel::Delegate {
  public:
   Helper(MasterConnectionManager* owner,
          ProcessIdentifier process_identifier,
-         scoped_ptr<embedder::SlaveInfo> slave_info,
+         embedder::SlaveInfo slave_info,
          embedder::ScopedPlatformHandle platform_handle);
   ~Helper() override;
 
   void Init();
-  scoped_ptr<embedder::SlaveInfo> Shutdown();
+  embedder::SlaveInfo Shutdown();
 
  private:
   // |RawChannel::Delegate| methods:
@@ -58,7 +58,7 @@ class MasterConnectionManager::Helper : public RawChannel::Delegate {
 
   MasterConnectionManager* const owner_;
   const ProcessIdentifier process_identifier_;
-  scoped_ptr<embedder::SlaveInfo> slave_info_;
+  embedder::SlaveInfo const slave_info_;
   scoped_ptr<RawChannel> raw_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
@@ -67,26 +67,26 @@ class MasterConnectionManager::Helper : public RawChannel::Delegate {
 MasterConnectionManager::Helper::Helper(
     MasterConnectionManager* owner,
     ProcessIdentifier process_identifier,
-    scoped_ptr<embedder::SlaveInfo> slave_info,
+    embedder::SlaveInfo slave_info,
     embedder::ScopedPlatformHandle platform_handle)
     : owner_(owner),
       process_identifier_(process_identifier),
-      slave_info_(slave_info.Pass()),
+      slave_info_(slave_info),
       raw_channel_(RawChannel::Create(platform_handle.Pass())) {
 }
 
 MasterConnectionManager::Helper::~Helper() {
-  DCHECK(!slave_info_);
+  DCHECK(!raw_channel_);
 }
 
 void MasterConnectionManager::Helper::Init() {
   raw_channel_->Init(this);
 }
 
-scoped_ptr<embedder::SlaveInfo> MasterConnectionManager::Helper::Shutdown() {
+embedder::SlaveInfo MasterConnectionManager::Helper::Shutdown() {
   raw_channel_->Shutdown();
   raw_channel_.reset();
-  return slave_info_.Pass();
+  return slave_info_;
 }
 
 void MasterConnectionManager::Helper::OnReadMessage(
@@ -243,14 +243,31 @@ void MasterConnectionManager::Init(
   DCHECK(!private_thread_.message_loop());
 
   delegate_thread_task_runner_ = delegate_thread_task_runner;
-  AssertOnDelegateThread();
   master_process_delegate_ = master_process_delegate;
   CHECK(private_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 }
 
+void MasterConnectionManager::AddSlave(
+    embedder::SlaveInfo slave_info,
+    embedder::ScopedPlatformHandle platform_handle) {
+  // We don't really care if |slave_info| is non-null or not.
+  DCHECK(platform_handle.is_valid());
+  AssertNotOnPrivateThread();
+
+  // We have to wait for the task to be executed, in case someone calls
+  // |AddSlave()| followed immediately by |Shutdown()|.
+  base::WaitableEvent event(false, false);
+  private_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&MasterConnectionManager::AddSlaveOnPrivateThread,
+                 base::Unretained(this), base::Unretained(slave_info),
+                 base::Passed(&platform_handle), base::Unretained(&event)));
+  event.Wait();
+}
+
 void MasterConnectionManager::Shutdown() {
-  AssertOnDelegateThread();
+  AssertNotOnPrivateThread();
   DCHECK(master_process_delegate_);
   DCHECK(private_thread_.message_loop());
 
@@ -263,24 +280,6 @@ void MasterConnectionManager::Shutdown() {
   DCHECK(pending_connections_.empty());
   master_process_delegate_ = nullptr;
   delegate_thread_task_runner_ = nullptr;
-}
-
-void MasterConnectionManager::AddSlave(
-    scoped_ptr<embedder::SlaveInfo> slave_info,
-    embedder::ScopedPlatformHandle platform_handle) {
-  // We don't really care if |slave_info| is non-null or not.
-  DCHECK(platform_handle.is_valid());
-  AssertNotOnPrivateThread();
-
-  // We have to wait for the task to be executed, in case someone calls
-  // |AddSlave()| followed immediately by |Shutdown()|.
-  base::WaitableEvent event(false, false);
-  private_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&MasterConnectionManager::AddSlaveOnPrivateThread,
-                 base::Unretained(this), base::Passed(&slave_info),
-                 base::Passed(&platform_handle), base::Unretained(&event)));
-  event.Wait();
 }
 
 bool MasterConnectionManager::AllowConnect(
@@ -482,16 +481,16 @@ void MasterConnectionManager::ShutdownOnPrivateThread() {
   if (!helpers_.empty()) {
     DVLOG(1) << "Shutting down with slaves still connected";
     for (auto& p : helpers_) {
-      scoped_ptr<embedder::SlaveInfo> slave_info = p.second->Shutdown();
+      embedder::SlaveInfo slave_info = p.second->Shutdown();
       delete p.second;
-      CallOnSlaveDisconnect(slave_info.Pass());
+      CallOnSlaveDisconnect(slave_info);
     }
     helpers_.clear();
   }
 }
 
 void MasterConnectionManager::AddSlaveOnPrivateThread(
-    scoped_ptr<embedder::SlaveInfo> slave_info,
+    embedder::SlaveInfo slave_info,
     embedder::ScopedPlatformHandle platform_handle,
     base::WaitableEvent* event) {
   DCHECK(platform_handle.is_valid());
@@ -502,8 +501,8 @@ void MasterConnectionManager::AddSlaveOnPrivateThread(
   ProcessIdentifier process_identifier = next_process_identifier_;
   next_process_identifier_++;
 
-  scoped_ptr<Helper> helper(new Helper(
-      this, process_identifier, slave_info.Pass(), platform_handle.Pass()));
+  scoped_ptr<Helper> helper(
+      new Helper(this, process_identifier, slave_info, platform_handle.Pass()));
   helper->Init();
 
   DCHECK(helpers_.find(process_identifier) == helpers_.end());
@@ -520,7 +519,7 @@ void MasterConnectionManager::OnError(ProcessIdentifier process_identifier) {
   auto it = helpers_.find(process_identifier);
   DCHECK(it != helpers_.end());
   Helper* helper = it->second;
-  scoped_ptr<embedder::SlaveInfo> slave_info = helper->Shutdown();
+  embedder::SlaveInfo slave_info = helper->Shutdown();
   helpers_.erase(it);
   delete helper;
 
@@ -542,23 +541,17 @@ void MasterConnectionManager::OnError(ProcessIdentifier process_identifier) {
     }
   }
 
-  CallOnSlaveDisconnect(slave_info.Pass());
+  CallOnSlaveDisconnect(slave_info);
 }
 
 void MasterConnectionManager::CallOnSlaveDisconnect(
-    scoped_ptr<embedder::SlaveInfo> slave_info) {
+    embedder::SlaveInfo slave_info) {
   AssertOnPrivateThread();
   DCHECK(master_process_delegate_);
   delegate_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&embedder::MasterProcessDelegate::OnSlaveDisconnect,
                             base::Unretained(master_process_delegate_),
-                            base::Passed(&slave_info)));
-}
-
-void MasterConnectionManager::AssertOnDelegateThread() const {
-  DCHECK(base::MessageLoop::current());
-  DCHECK_EQ(base::MessageLoop::current()->task_runner(),
-            delegate_thread_task_runner_);
+                            base::Unretained(slave_info)));
 }
 
 void MasterConnectionManager::AssertNotOnPrivateThread() const {

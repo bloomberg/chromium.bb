@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_PROPERTY_H_
 #define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_PROPERTY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 // This header should be included by code that defines ViewProperties. It
 // should not be included by code that only gets and sets ViewProperties.
@@ -43,27 +43,27 @@
 namespace mojo {
 namespace {
 
-// No single new-style cast works for every conversion to/from int64, so we
+// No single new-style cast works for every conversion to/from int64_t, so we
 // need this helper class. A third specialization is needed for bool because
 // MSVC warning C4800 (forcing value to bool) is not suppressed by an explicit
 // cast (!).
 template <typename T>
 class ViewPropertyCaster {
  public:
-  static int64 ToInt64(T x) { return static_cast<int64>(x); }
-  static T FromInt64(int64 x) { return static_cast<T>(x); }
+  static int64_t ToInt64(T x) { return static_cast<int64_t>(x); }
+  static T FromInt64(int64_t x) { return static_cast<T>(x); }
 };
 template <typename T>
 class ViewPropertyCaster<T*> {
  public:
-  static int64 ToInt64(T* x) { return reinterpret_cast<int64>(x); }
-  static T* FromInt64(int64 x) { return reinterpret_cast<T*>(x); }
+  static int64_t ToInt64(T* x) { return reinterpret_cast<int64_t>(x); }
+  static T* FromInt64(int64_t x) { return reinterpret_cast<T*>(x); }
 };
 template <>
 class ViewPropertyCaster<bool> {
  public:
-  static int64 ToInt64(bool x) { return static_cast<int64>(x); }
-  static bool FromInt64(int64 x) { return x != 0; }
+  static int64_t ToInt64(bool x) { return static_cast<int64_t>(x); }
+  static bool FromInt64(int64_t x) { return x != 0; }
 };
 
 }  // namespace
@@ -77,7 +77,7 @@ struct ViewProperty {
 
 template <typename T>
 void View::SetLocalProperty(const ViewProperty<T>* property, T value) {
-  int64 old = SetLocalPropertyInternal(
+  int64_t old = SetLocalPropertyInternal(
       property, property->name,
       value == property->default_value ? nullptr : property->deallocator,
       ViewPropertyCaster<T>::ToInt64(value),
@@ -111,23 +111,23 @@ void View::ClearLocalProperty(const ViewProperty<T>* property) {
       const mojo::ViewProperty<T>*);
 #define DECLARE_VIEW_PROPERTY_TYPE(T) DECLARE_EXPORTED_VIEW_PROPERTY_TYPE(, T)
 
-#define DEFINE_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                      \
-  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);  \
-  namespace {                                                              \
-  const mojo::ViewProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr}; \
-  }                                                                        \
+#define DEFINE_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                       \
+  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64_t), property_type_too_large); \
+  namespace {                                                               \
+  const mojo::ViewProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};  \
+  }                                                                         \
   const mojo::ViewProperty<TYPE>* const NAME = &NAME##_Value;
 
-#define DEFINE_LOCAL_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                \
-  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64), property_type_too_large);  \
-  namespace {                                                              \
-  const mojo::ViewProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr}; \
-  const mojo::ViewProperty<TYPE>* const NAME = &NAME##_Value;              \
+#define DEFINE_LOCAL_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                 \
+  COMPILE_ASSERT(sizeof(TYPE) <= sizeof(int64_t), property_type_too_large); \
+  namespace {                                                               \
+  const mojo::ViewProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};  \
+  const mojo::ViewProperty<TYPE>* const NAME = &NAME##_Value;               \
   }
 
 #define DEFINE_OWNED_VIEW_PROPERTY_KEY(TYPE, NAME, DEFAULT)            \
   namespace {                                                          \
-  void Deallocator##NAME(int64 p) {                                    \
+  void Deallocator##NAME(int64_t p) {                                  \
     enum { type_must_be_complete = sizeof(TYPE) };                     \
     delete mojo::ViewPropertyCaster<TYPE*>::FromInt64(p);              \
   }                                                                    \

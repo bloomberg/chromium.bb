@@ -18,9 +18,12 @@ class PlatformSharedBuffer;
 
 // This class is provided by the embedder to implement (typically
 // platform-dependent) things needed by the Mojo system implementation.
+// Implementations must be thread-safe.
 class MOJO_SYSTEM_IMPL_EXPORT PlatformSupport {
  public:
   virtual ~PlatformSupport() {}
+
+  virtual void GetCryptoRandomBytes(void* bytes, size_t num_bytes) = 0;
 
   virtual PlatformSharedBuffer* CreateSharedBuffer(size_t num_bytes) = 0;
   virtual PlatformSharedBuffer* CreateSharedBufferFromHandle(

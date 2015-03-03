@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -22,6 +24,8 @@ namespace system {
 
 class Awakable;
 class AwakableList;
+class Channel;
+class DataPipeImpl;
 
 // |DataPipe| is a base class for secondary objects implementing data pipes,
 // similar to |MessagePipe| (see the explanatory comment in core.cc). It is
@@ -46,6 +50,14 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
       UserPointer<const MojoCreateDataPipeOptions> in_options,
       MojoCreateDataPipeOptions* out_options);
 
+  // Creates a local (both producer and consumer) data pipe (using
+  // |LocalDataPipeImpl|. |validated_options| should be the output of
+  // |ValidateOptions()|. In particular: |struct_size| is ignored (so
+  // |validated_options| must be the current version of the struct) and
+  // |capacity_num_bytes| must be nonzero.
+  static DataPipe* CreateLocal(
+      const MojoCreateDataPipeOptions& validated_options);
+
   // These are called by the producer dispatcher to implement its methods of
   // corresponding names.
   void ProducerCancelAllAwakables();
@@ -64,6 +76,13 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
                                  HandleSignalsState* signals_state);
   void ProducerRemoveAwakable(Awakable* awakable,
                               HandleSignalsState* signals_state);
+  void ProducerStartSerialize(Channel* channel,
+                              size_t* max_size,
+                              size_t* max_platform_handles);
+  bool ProducerEndSerialize(Channel* channel,
+                            void* destination,
+                            size_t* actual_size,
+                            embedder::PlatformHandleVector* platform_handles);
   bool ProducerIsBusy() const;
 
   // These are called by the consumer dispatcher to implement its methods of
@@ -90,60 +109,34 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
                                  HandleSignalsState* signals_state);
   void ConsumerRemoveAwakable(Awakable* awakable,
                               HandleSignalsState* signals_state);
+  void ConsumerStartSerialize(Channel* channel,
+                              size_t* max_size,
+                              size_t* max_platform_handles);
+  bool ConsumerEndSerialize(Channel* channel,
+                            void* destination,
+                            size_t* actual_size,
+                            embedder::PlatformHandleVector* platform_handles);
   bool ConsumerIsBusy() const;
 
- protected:
-  DataPipe(bool has_local_producer,
-           bool has_local_consumer,
-           const MojoCreateDataPipeOptions& validated_options);
+  // The following are only to be used by |DataPipeImpl| (and its subclasses):
 
-  friend class base::RefCountedThreadSafe<DataPipe>;
-  virtual ~DataPipe();
-
-  virtual void ProducerCloseImplNoLock() = 0;
-  // |num_bytes.Get()| will be a nonzero multiple of |element_num_bytes_|.
-  virtual MojoResult ProducerWriteDataImplNoLock(
-      UserPointer<const void> elements,
-      UserPointer<uint32_t> num_bytes,
-      uint32_t max_num_bytes_to_write,
-      uint32_t min_num_bytes_to_write) = 0;
-  virtual MojoResult ProducerBeginWriteDataImplNoLock(
-      UserPointer<void*> buffer,
-      UserPointer<uint32_t> buffer_num_bytes,
-      uint32_t min_num_bytes_to_write) = 0;
-  virtual MojoResult ProducerEndWriteDataImplNoLock(
-      uint32_t num_bytes_written) = 0;
-  // Note: A producer should not be writable during a two-phase write.
-  virtual HandleSignalsState ProducerGetHandleSignalsStateImplNoLock()
-      const = 0;
-
-  virtual void ConsumerCloseImplNoLock() = 0;
-  // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
-  virtual MojoResult ConsumerReadDataImplNoLock(UserPointer<void> elements,
-                                                UserPointer<uint32_t> num_bytes,
-                                                uint32_t max_num_bytes_to_read,
-                                                uint32_t min_num_bytes_to_read,
-                                                bool peek) = 0;
-  virtual MojoResult ConsumerDiscardDataImplNoLock(
-      UserPointer<uint32_t> num_bytes,
-      uint32_t max_num_bytes_to_discard,
-      uint32_t min_num_bytes_to_discard) = 0;
-  // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
-  virtual MojoResult ConsumerQueryDataImplNoLock(
-      UserPointer<uint32_t> num_bytes) = 0;
-  virtual MojoResult ConsumerBeginReadDataImplNoLock(
-      UserPointer<const void*> buffer,
-      UserPointer<uint32_t> buffer_num_bytes,
-      uint32_t min_num_bytes_to_read) = 0;
-  virtual MojoResult ConsumerEndReadDataImplNoLock(uint32_t num_bytes_read) = 0;
-  // Note: A consumer should not be writable during a two-phase read.
-  virtual HandleSignalsState ConsumerGetHandleSignalsStateImplNoLock()
-      const = 0;
+  void ProducerCloseNoLock();
+  void ConsumerCloseNoLock();
 
   // Thread-safe and fast (they don't take the lock):
-  bool may_discard() const { return may_discard_; }
-  size_t element_num_bytes() const { return element_num_bytes_; }
-  size_t capacity_num_bytes() const { return capacity_num_bytes_; }
+  const MojoCreateDataPipeOptions& validated_options() const {
+    return validated_options_;
+  }
+  bool may_discard() const {
+    return (validated_options_.flags &
+            MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD);
+  }
+  size_t element_num_bytes() const {
+    return validated_options_.element_num_bytes;
+  }
+  size_t capacity_num_bytes() const {
+    return validated_options_.capacity_num_bytes;
+  }
 
   // Must be called under lock.
   bool producer_open_no_lock() const {
@@ -181,6 +174,22 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
   }
 
  private:
+  friend class base::RefCountedThreadSafe<DataPipe>;
+
+  // |validated_options| should be the output of |ValidateOptions()|. In
+  // particular: |struct_size| is ignored (so |validated_options| must be the
+  // current version of the struct) and |capacity_num_bytes| must be nonzero.
+  // TODO(vtl): |has_local_producer|/|has_local_consumer| shouldn't really be
+  // arguments here. Instead, they should be determined from the |impl| ... but
+  // the |impl|'s typically figures these out by examining the owner, i.e., the
+  // |DataPipe| object. Probably, this indicates that more stuff should be moved
+  // to |DataPipeImpl|, but for now we'll live with this.
+  DataPipe(bool has_local_producer,
+           bool has_local_consumer,
+           const MojoCreateDataPipeOptions& validated_options,
+           scoped_ptr<DataPipeImpl> impl);
+  virtual ~DataPipe();
+
   void AwakeProducerAwakablesForStateChangeNoLock(
       const HandleSignalsState& new_producer_state);
   void AwakeConsumerAwakablesForStateChangeNoLock(
@@ -195,9 +204,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
     return !!consumer_awakable_list_;
   }
 
-  const bool may_discard_;
-  const size_t element_num_bytes_;
-  const size_t capacity_num_bytes_;
+  MSVC_SUPPRESS_WARNING(4324)  // Suppress an alignment warning on 64-bit MSVC.
+  const MojoCreateDataPipeOptions validated_options_;
 
   mutable base::Lock lock_;  // Protects the following members.
   // *Known* state of producer or consumer.
@@ -209,6 +217,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
   // These are nonzero if and only if a two-phase write/read is in progress.
   uint32_t producer_two_phase_max_num_bytes_written_;
   uint32_t consumer_two_phase_max_num_bytes_read_;
+  scoped_ptr<DataPipeImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPipe);
 };

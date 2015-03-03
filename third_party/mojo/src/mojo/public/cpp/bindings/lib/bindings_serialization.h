@@ -69,13 +69,15 @@ inline void Decode(T* obj, std::vector<Handle>* handles) {
     obj->ptr->DecodePointersAndHandles(handles);
 }
 
-// If returns true, this function also claims the memory range of the size
-// specified in the struct header, starting from |data|.
-// Note: |min_num_bytes| must be no less than sizeof(StructHeader).
-bool ValidateStructHeader(const void* data,
-                          uint32_t min_num_bytes,
-                          uint32_t min_num_fields,
-                          BoundsChecker* bounds_checker);
+// Validates that |data| contains a valid struct header, in terms of alignment
+// and size (i.e., the |num_bytes| field of the header is sufficient for storing
+// the header itself). Besides, it checks that the memory range
+// [data, data + num_bytes) is not marked as occupied by other objects in
+// |bounds_checker|. On success, the memory range is marked as occupied.
+// Note: Does not verify |version| or that |num_bytes| is correct for the
+// claimed version.
+bool ValidateStructHeaderAndClaimMemory(const void* data,
+                                        BoundsChecker* bounds_checker);
 
 }  // namespace internal
 }  // namespace mojo

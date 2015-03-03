@@ -19,7 +19,7 @@ from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from cpython.object cimport Py_EQ, Py_NE
 from libc.stdint cimport int32_t, int64_t, uint32_t, uint64_t, uintptr_t
 
-import ctypes
+import weakref
 import threading
 
 import mojo_system_impl
@@ -770,7 +770,7 @@ class RunLoop(object):
 
   def __init__(self):
     self.__run_loop = mojo_system_impl.RunLoop()
-    _RUN_LOOPS.loop = id(self)
+    _RUN_LOOPS.loop = weakref.ref(self)
 
   def __del__(self):
     del _RUN_LOOPS.loop
@@ -797,7 +797,7 @@ class RunLoop(object):
   @staticmethod
   def Current():
     if hasattr(_RUN_LOOPS, 'loop'):
-      return ctypes.cast(_RUN_LOOPS.loop, ctypes.py_object).value
+      return _RUN_LOOPS.loop()
     return None
 
 

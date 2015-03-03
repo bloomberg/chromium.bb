@@ -7,7 +7,7 @@
 #include <ostream>
 
 #include "base/strings/string_number_conversions.h"
-#include "crypto/random.h"
+#include "mojo/edk/embedder/platform_support.h"
 
 namespace mojo {
 namespace system {
@@ -19,9 +19,10 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 // static
-UniqueIdentifier UniqueIdentifier::Generate() {
+UniqueIdentifier UniqueIdentifier::Generate(
+    embedder::PlatformSupport* platform_support) {
   UniqueIdentifier rv;
-  crypto::RandBytes(rv.data_, sizeof(rv.data_));
+  platform_support->GetCryptoRandomBytes(rv.data_, sizeof(rv.data_));
   return rv;
 }
 

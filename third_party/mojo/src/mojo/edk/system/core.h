@@ -58,7 +58,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // awakable.h. In particular, it must not call any Mojo system functions.
   MojoResult AsyncWait(MojoHandle handle,
                        MojoHandleSignals signals,
-                       base::Callback<void(MojoResult)> callback);
+                       const base::Callback<void(MojoResult)>& callback);
 
   embedder::PlatformSupport* platform_support() const {
     return platform_support_;

@@ -5,8 +5,6 @@
 #ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_PRIVATE_H_
 #define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_PRIVATE_H_
 
-#include "base/basictypes.h"
-
 #include "view_manager/public/cpp/view.h"
 
 namespace mojo {
@@ -61,11 +59,12 @@ class ViewPrivate {
     view_->LocalSetBounds(old_bounds, new_bounds);
   }
   void LocalSetDrawn(bool drawn) { view_->LocalSetDrawn(drawn); }
+  void LocalSetVisible(bool visible) { view_->LocalSetVisible(visible); }
 
  private:
   View* view_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewPrivate);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ViewPrivate);
 };
 
 }  // namespace mojo

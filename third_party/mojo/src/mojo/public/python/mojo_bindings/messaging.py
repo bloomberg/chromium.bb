@@ -30,13 +30,13 @@ class MessagingException(Exception):
 class MessageHeader(object):
   """The header of a mojo message."""
 
-  _SIMPLE_MESSAGE_NUM_FIELDS = 2
+  _SIMPLE_MESSAGE_VERSION = 2
   _SIMPLE_MESSAGE_STRUCT = struct.Struct("<IIII")
 
   _REQUEST_ID_STRUCT = struct.Struct("<Q")
   _REQUEST_ID_OFFSET = _SIMPLE_MESSAGE_STRUCT.size
 
-  _MESSAGE_WITH_REQUEST_ID_NUM_FIELDS = 3
+  _MESSAGE_WITH_REQUEST_ID_VERSION = 3
   _MESSAGE_WITH_REQUEST_ID_SIZE = (
       _SIMPLE_MESSAGE_STRUCT.size + _REQUEST_ID_STRUCT.size)
 
@@ -53,11 +53,11 @@ class MessageHeader(object):
       raise serialization.DeserializationException('Header is too short.')
     (size, version, message_type, flags) = (
         cls._SIMPLE_MESSAGE_STRUCT.unpack_from(buf))
-    if (version < cls._SIMPLE_MESSAGE_NUM_FIELDS):
+    if (version < cls._SIMPLE_MESSAGE_VERSION):
       raise serialization.DeserializationException('Incorrect version.')
     request_id = 0
     if _HasRequestId(flags):
-      if version < cls._MESSAGE_WITH_REQUEST_ID_NUM_FIELDS:
+      if version < cls._MESSAGE_WITH_REQUEST_ID_VERSION:
         raise serialization.DeserializationException('Incorrect version.')
       if (size < cls._MESSAGE_WITH_REQUEST_ID_SIZE or
           len(data) < cls._MESSAGE_WITH_REQUEST_ID_SIZE):
@@ -105,10 +105,10 @@ class MessageHeader(object):
   def Serialize(self):
     if not self._data:
       self._data = bytearray(self.size)
-      version = self._SIMPLE_MESSAGE_NUM_FIELDS
+      version = self._SIMPLE_MESSAGE_VERSION
       size = self._SIMPLE_MESSAGE_STRUCT.size
       if self.has_request_id:
-        version = self._MESSAGE_WITH_REQUEST_ID_NUM_FIELDS
+        version = self._MESSAGE_WITH_REQUEST_ID_VERSION
         size = self._MESSAGE_WITH_REQUEST_ID_SIZE
       self._SIMPLE_MESSAGE_STRUCT.pack_into(self._data, 0, size, version,
                                             self._message_type, self._flags)

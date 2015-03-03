@@ -131,7 +131,6 @@ PRIMITIVES = (
 
 
 ATTRIBUTE_MIN_VERSION = 'MinVersion'
-ATTRIBUTE_CLIENT = 'Client'
 
 
 class NamedValue(object):
@@ -271,16 +270,16 @@ class Map(ReferenceKind):
                              'm[' + key_kind.spec + '][' + value_kind.spec +
                              ']')
       if IsNullableKind(key_kind):
-        raise Exception("Nullable kinds can not be keys in maps.")
+        raise Exception("Nullable kinds cannot be keys in maps.")
       if IsStructKind(key_kind):
         # TODO(erg): It would sometimes be nice if we could key on struct
         # values. However, what happens if the struct has a handle in it? Or
         # non-copyable data like an array?
-        raise Exception("Structs can not be keys in maps.")
+        raise Exception("Structs cannot be keys in maps.")
       if IsAnyHandleKind(key_kind):
-        raise Exception("Handles can not be keys in maps.")
+        raise Exception("Handles cannot be keys in maps.")
       if IsArrayKind(key_kind):
-        raise Exception("Arrays can not be keys in maps.")
+        raise Exception("Arrays cannot be keys in maps.")
     else:
       ReferenceKind.__init__(self)
 
@@ -370,9 +369,10 @@ class Interface(ReferenceKind):
     self.methods.append(method)
     return method
 
+  # TODO(451323): Remove when the language backends no longer rely on this.
   @property
   def client(self):
-    return self.attributes.get(ATTRIBUTE_CLIENT) if self.attributes else None
+    return None
 
 
 class EnumField(object):

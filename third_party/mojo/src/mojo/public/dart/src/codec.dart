@@ -9,7 +9,9 @@ int align(int size) => size + (kAlignment - (size % kAlignment)) % kAlignment;
 const int kAlignment = 8;
 const int kSerializedHandleSize = 4;
 const int kPointerSize = 8;
-const DataHeader kMapStructHeader = const DataHeader(24, 2);
+// TODO(yzshen): In order to work with other bindings which still interprets
+// the |version| field as |num_fields|, set it to version 2 for now.
+const StructDataHeader kMapStructHeader = const StructDataHeader(24, 2);
 const int kUnspecifiedArrayLength = -1;
 const int kNothingNullable = 0;
 const int kArrayNullable = (1 << 0);
@@ -17,6 +19,30 @@ const int kElementNullable = (1 << 1);
 
 bool isArrayNullable(int nullability) => (nullability & kArrayNullable) > 0;
 bool isElementNullable(int nullability) => (nullability & kElementNullable) > 0;
+
+class StructDataHeader {
+  static const int kHeaderSize = 8;
+  static const int kSizeOffset = 0;
+  static const int kVersionOffset = 4;
+  final int size;
+  final int version;
+
+  const StructDataHeader(this.size, this.version);
+
+  String toString() => "StructDataHeader($size, $version)";
+}
+
+class ArrayDataHeader {
+  static const int kHeaderSize = 8;
+  static const int kSizeOffset = 0;
+  static const int kNumElementsOffset = 4;
+  final int size;
+  final int numElements;
+
+  const ArrayDataHeader(this.size, this.numElements);
+
+  String toString() => "ArrayDataHeader($size, $numElements)";
+}
 
 class MojoCodecError {
   final String message;
@@ -64,18 +90,30 @@ class Encoder {
       _buffer = buffer,
       _base = buffer.extent;
 
-  Encoder getEncoderAtOffset(DataHeader dataHeader) {
+  Encoder getStructEncoderAtOffset(StructDataHeader dataHeader) {
     var result = new Encoder._fromBuffer(_buffer);
-    result.encodeDataHeader(dataHeader);
+    result.encodeStructDataHeader(dataHeader);
+    return result;
+  }
+
+  Encoder getArrayEncoderAtOffset(ArrayDataHeader dataHeader) {
+    var result = new Encoder._fromBuffer(_buffer);
+    result.encodeArrayDataHeader(dataHeader);
     return result;
   }
 
   Message get message => new Message(_buffer.trimmed, _buffer.handles);
 
-  void encodeDataHeader(DataHeader dataHeader) {
+  void encodeStructDataHeader(StructDataHeader dataHeader) {
     _buffer.claimMemory(align(dataHeader.size));
-    encodeUint32(dataHeader.size, DataHeader.kSizeOffset);
-    encodeUint32(dataHeader.numFields, DataHeader.kNumFieldsOffset);
+    encodeUint32(dataHeader.size, StructDataHeader.kSizeOffset);
+    encodeUint32(dataHeader.version, StructDataHeader.kVersionOffset);
+  }
+
+  void encodeArrayDataHeader(ArrayDataHeader dataHeader) {
+    _buffer.claimMemory(align(dataHeader.size));
+    encodeUint32(dataHeader.size, ArrayDataHeader.kSizeOffset);
+    encodeUint32(dataHeader.numElements, ArrayDataHeader.kNumElementsOffset);
   }
 
   static const String kErrorUnsigned =
@@ -223,8 +261,8 @@ class Encoder {
 
   Encoder encoderForArrayByTotalSize(int size, int length, int offset) {
     encodePointerToNextUnclaimed(offset);
-    return getEncoderAtOffset(
-        new DataHeader(DataHeader.kHeaderSize + size, length));
+    return getArrayEncoderAtOffset(
+        new ArrayDataHeader(ArrayDataHeader.kHeaderSize + size, length));
   }
 
   void encodeBoolArray(
@@ -329,7 +367,8 @@ class Encoder {
     var encoder = encoderForArray(
         kSerializedHandleSize, value.length, offset, expectedLength);
     for (int i = 0; i < value.length; ++i) {
-      int handleOffset = DataHeader.kHeaderSize + kSerializedHandleSize * i;
+      int handleOffset =
+          ArrayDataHeader.kHeaderSize + kSerializedHandleSize * i;
       elementEncoder(
           encoder, value[i], handleOffset, isElementNullable(nullability));
     }
@@ -415,8 +454,8 @@ class Encoder {
 
   void appendBytes(Uint8List value) {
     _buffer.buffer.buffer.asUint8List().setRange(
-        _base + DataHeader.kHeaderSize,
-        _base + DataHeader.kHeaderSize + value.lengthInBytes,
+        _base + ArrayDataHeader.kHeaderSize,
+        _base + ArrayDataHeader.kHeaderSize + value.lengthInBytes,
         value);
   }
 
@@ -452,7 +491,7 @@ class Encoder {
 
   Encoder encoderForMap(int offset) {
     encodePointerToNextUnclaimed(offset);
-    return getEncoderAtOffset(kMapStructHeader);
+    return getStructEncoderAtOffset(kMapStructHeader);
   }
 }
 
@@ -588,31 +627,47 @@ class Decoder {
     return new Decoder.atOffset(this, newPosition, _validator);
   }
 
-  DataHeader decodeDataHeader() {
-    _validator.claimMemory(_base, _base + DataHeader.kHeaderSize);
-    int size = decodeUint32(DataHeader.kSizeOffset);
-    int numFields = decodeUint32(DataHeader.kNumFieldsOffset);
+  StructDataHeader decodeStructDataHeader() {
+    _validator.claimMemory(_base, _base + StructDataHeader.kHeaderSize);
+    int size = decodeUint32(StructDataHeader.kSizeOffset);
+    int version = decodeUint32(StructDataHeader.kVersionOffset);
     if (size < 0) {
       throw new MojoCodecError('Negative size.');
     }
-    if (numFields < 0) {
-      throw new MojoCodecError('Negative number of fields.');
+    if (version < 0) {
+      throw new MojoCodecError('Negative version number.');
     }
-    _validator.claimMemory(_base + DataHeader.kHeaderSize, _base + size);
-    return new DataHeader(size, numFields);
+    _validator.claimMemory(_base + StructDataHeader.kHeaderSize, _base + size);
+    return new StructDataHeader(size, version);
+  }
+
+  ArrayDataHeader decodeArrayDataHeader() {
+    _validator.claimMemory(_base, _base + ArrayDataHeader.kHeaderSize);
+    int size = decodeUint32(ArrayDataHeader.kSizeOffset);
+    int numElements = decodeUint32(ArrayDataHeader.kNumElementsOffset);
+    if (size < 0) {
+      throw new MojoCodecError('Negative size.');
+    }
+    if (numElements < 0) {
+      throw new MojoCodecError('Negative number of elements.');
+    }
+    _validator.claimMemory(_base + ArrayDataHeader.kHeaderSize, _base + size);
+    return new ArrayDataHeader(size, numElements);
   }
 
   // Decode arrays.
-  DataHeader decodeDataHeaderForBoolArray(int expectedLength) {
-    var header = decodeDataHeader();
-    if (header.size < DataHeader.kHeaderSize + (header.numFields + 7) ~/ 8) {
+  ArrayDataHeader decodeDataHeaderForBoolArray(int expectedLength) {
+    var header = decodeArrayDataHeader();
+    var arrayByteCount =
+        ArrayDataHeader.kHeaderSize + (header.numElements + 7) ~/ 8;
+    if (header.size < arrayByteCount) {
       throw new MojoCodecError('Array header is incorrect');
     }
     if ((expectedLength != kUnspecifiedArrayLength) &&
-        (header.numFields != expectedLength)) {
+        (header.numElements != expectedLength)) {
       throw new MojoCodecError(
           'Incorrect array length. Expected $expectedLength, but got '
-          '${header.numFields}.');
+          '${header.numElements}.');
     }
     return header;
   }
@@ -625,9 +680,9 @@ class Decoder {
     var header = d.decodeDataHeaderForBoolArray(expectedLength);
     var bytes = new Uint8List.view(
         d._buffer.buffer,
-        d._buffer.offsetInBytes + d._base + DataHeader.kHeaderSize,
-        (header.numFields + 7) ~/ kAlignment);
-    var result = new List<bool>(header.numFields);
+        d._buffer.offsetInBytes + d._base + ArrayDataHeader.kHeaderSize,
+        (header.numElements + 7) ~/ kAlignment);
+    var result = new List<bool>(header.numElements);
     for (int i = 0; i < bytes.lengthInBytes; ++i) {
       for (int j = 0; j < kAlignment; ++j) {
         int boolIndex = i * kAlignment + j;
@@ -639,22 +694,25 @@ class Decoder {
     return result;
   }
 
-  DataHeader decodeDataHeaderForArray(int elementSize, int expectedLength) {
-    var header = decodeDataHeader();
-    if (header.size < DataHeader.kHeaderSize + header.numFields * elementSize) {
+  ArrayDataHeader decodeDataHeaderForArray(int elementSize,
+                                           int expectedLength) {
+    var header = decodeArrayDataHeader();
+    var arrayByteCount = 
+        ArrayDataHeader.kHeaderSize + header.numElements * elementSize;
+    if (header.size < arrayByteCount) {
       throw new MojoCodecError(
           'Array header is incorrect: $header, elementSize = $elementSize');
     }
     if ((expectedLength != kUnspecifiedArrayLength) &&
-        (header.numFields != expectedLength)) {
+        (header.numElements != expectedLength)) {
       throw new MojoCodecError(
           'Incorrect array length. Expected $expectedLength, but got '
-          '${header.numFields}');
+          '${header.numElements}');
     }
     return header;
   }
 
-  DataHeader decodeDataHeaderForPointerArray(int expectedLength) =>
+  ArrayDataHeader decodeDataHeaderForPointerArray(int expectedLength) =>
       decodeDataHeaderForArray(kPointerSize, expectedLength);
 
   List decodeArray(Function arrayViewer,
@@ -669,8 +727,8 @@ class Decoder {
     var header = d.decodeDataHeaderForArray(elementSize, expectedLength);
     return arrayViewer(
         d._buffer.buffer,
-        d._buffer.offsetInBytes + d._base + DataHeader.kHeaderSize,
-        header.numFields);
+        d._buffer.offsetInBytes + d._base + ArrayDataHeader.kHeaderSize,
+        header.numElements);
   }
 
   List<int> decodeInt8Array(
@@ -732,11 +790,11 @@ class Decoder {
       return null;
     }
     var header = d.decodeDataHeaderForArray(4, expectedLength);
-    var result = new List(header.numFields);
+    var result = new List(header.numElements);
     for (int i = 0; i < result.length; ++i) {
       result[i] = elementDecoder(
           d,
-          DataHeader.kHeaderSize + kSerializedHandleSize * i,
+          ArrayDataHeader.kHeaderSize + kSerializedHandleSize * i,
           isElementNullable(nullability));
     }
     return result;
@@ -798,15 +856,15 @@ class Decoder {
     return _stringOfUtf8(bytes);
   }
 
-  DataHeader decodeDataHeaderForMap() {
-    var header = decodeDataHeader();
+  StructDataHeader decodeDataHeaderForMap() {
+    var header = decodeStructDataHeader();
     if (header.size != kMapStructHeader.size) {
       throw new MojoCodecError(
           'Incorrect header for map. The size is incorrect.');
     }
-    if (header.numFields != kMapStructHeader.numFields) {
+    if (header.version != kMapStructHeader.version) {
       throw new MojoCodecError(
-          'Incorrect header for map. The number of fields is incorrect.');
+          'Incorrect header for map. The version is incorrect.');
     }
     return header;
   }

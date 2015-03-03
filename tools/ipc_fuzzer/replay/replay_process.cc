@@ -93,7 +93,7 @@ void ReplayProcess::OpenChannel() {
                          content::ShouldUseMojoChannel();
   if (should_use_mojo) {
     channel_ = IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateClientFactory(channel_name), this,
+        IPC::ChannelMojo::CreateClientFactory(nullptr, channel_name), this,
         io_thread_.message_loop_proxy());
   } else {
     channel_ =

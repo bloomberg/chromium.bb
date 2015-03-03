@@ -7,7 +7,7 @@
 namespace mojo {
 namespace system {
 
-AsyncWaiter::AsyncWaiter(AwakeCallback callback) : callback_(callback) {
+AsyncWaiter::AsyncWaiter(const AwakeCallback& callback) : callback_(callback) {
 }
 
 AsyncWaiter::~AsyncWaiter() {

@@ -50,7 +50,7 @@ abstract class Proxy extends core.MojoEventStreamListener {
                    serviceMessage.buffer.lengthInBytes,
                    serviceMessage.handles);
     if (!endpoint.status.isOk) {
-      throw "message pipe write failed";
+      throw "message pipe write failed - ${endpoint.status}";
     }
   }
 
@@ -69,7 +69,7 @@ abstract class Proxy extends core.MojoEventStreamListener {
                    serviceMessage.buffer.lengthInBytes,
                    serviceMessage.handles);
     if (!endpoint.status.isOk) {
-      throw "message pipe write failed";
+      throw "message pipe write failed - ${endpoint.status}";
     }
 
     var completer = new Completer();

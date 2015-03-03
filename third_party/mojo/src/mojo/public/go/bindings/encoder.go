@@ -74,10 +74,10 @@ func ensureElementBitSizeAndCapacity(state *encodingState, bitSize uint32) error
 	if state == nil {
 		return fmt.Errorf("empty state stack")
 	}
-	if state.elementBitSize > 0 && state.elementBitSize != bitSize {
+	if state.elementBitSize != 0 && state.elementBitSize != bitSize {
 		return fmt.Errorf("unexpected element bit size: expected %d, but got %d", state.elementBitSize, bitSize)
 	}
-	if state.elementsProcessed >= state.elements {
+	if state.elementBitSize != 0 && state.elementsProcessed >= state.elements {
 		return fmt.Errorf("can't process more than elements defined in header(%d)", state.elements)
 	}
 	byteSize := bytesForBits(uint64(state.bitOffset + bitSize))
@@ -112,11 +112,15 @@ func (e *Encoder) popState() {
 func (e *Encoder) pushState(header DataHeader, elementBitSize uint32) {
 	oldEnd := e.end
 	e.claimData(align(int(header.Size), defaultAlignment))
+	elements := uint32(0)
+	if elementBitSize != 0 {
+		elements = header.ElementsOrVersion
+	}
 	e.stateStack = append(e.stateStack, encodingState{
 		offset:         oldEnd,
 		limit:          e.end,
 		elementBitSize: elementBitSize,
-		elements:       header.Elements,
+		elements:       elements,
 	})
 	e.writeDataHeader(header)
 }
@@ -153,15 +157,15 @@ func (e *Encoder) StartMap() {
 // StartStruct starts encoding a struct and writes its data header.
 // Note: it doesn't write a pointer to the encoded struct.
 // Call |Finish()| after writing all fields.
-func (e *Encoder) StartStruct(size, numFields uint32) {
+func (e *Encoder) StartStruct(size, version uint32) {
 	dataSize := dataHeaderSize + int(size)
-	header := DataHeader{uint32(dataSize), numFields}
+	header := DataHeader{uint32(dataSize), version}
 	e.pushState(header, 0)
 }
 
 func (e *Encoder) writeDataHeader(header DataHeader) {
 	binary.LittleEndian.PutUint32(e.buf[e.state().offset:], header.Size)
-	binary.LittleEndian.PutUint32(e.buf[e.state().offset+4:], header.Elements)
+	binary.LittleEndian.PutUint32(e.buf[e.state().offset+4:], header.ElementsOrVersion)
 	e.state().offset += 8
 }
 
@@ -171,7 +175,7 @@ func (e *Encoder) Finish() error {
 	if e.state() == nil {
 		return fmt.Errorf("state stack is empty")
 	}
-	if e.state().elementsProcessed != e.state().elements {
+	if e.state().elementBitSize != 0 && e.state().elementsProcessed != e.state().elements {
 		return fmt.Errorf("unexpected number of elements written: defined in header %d, but written %d", e.state().elements, e.state().elementsProcessed)
 	}
 	e.popState()

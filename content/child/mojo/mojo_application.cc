@@ -6,6 +6,7 @@
 
 #include "content/child/child_process.h"
 #include "content/common/application_setup.mojom.h"
+#include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "ipc/ipc_message.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
@@ -34,9 +35,15 @@ void MojoApplication::OnActivate(
 #elif defined(OS_WIN)
   base::PlatformFile handle = file;
 #endif
+  scoped_refptr<base::TaskRunner> io_task_runner =
+      ChannelInit::GetSingleProcessIOTaskRunner();
+  if (!io_task_runner) {
+    io_task_runner = ChildProcess::current()->io_message_loop_proxy();
+  }
+  DCHECK(io_task_runner);
+
   mojo::ScopedMessagePipeHandle message_pipe =
-      channel_init_.Init(handle,
-                         ChildProcess::current()->io_message_loop_proxy());
+      channel_init_.Init(handle, io_task_runner);
   DCHECK(message_pipe.is_valid());
 
   ApplicationSetupPtr application_setup;

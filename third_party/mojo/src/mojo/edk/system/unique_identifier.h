@@ -31,6 +31,13 @@ struct hash<mojo::system::UniqueIdentifier>;
 }  // BASE_HASH_NAMESPACE
 
 namespace mojo {
+
+namespace embedder {
+
+class PlatformSupport;
+
+}  // namespace embedder
+
 namespace system {
 
 // Declare this before |UniqueIdentifier|, so that it can be friended.
@@ -44,7 +51,7 @@ class MOJO_SYSTEM_IMPL_EXPORT UniqueIdentifier {
  public:
   // This generates a new identifier. Uniqueness is "guaranteed" (i.e.,
   // probabilistically) for identifiers.
-  static UniqueIdentifier Generate();
+  static UniqueIdentifier Generate(embedder::PlatformSupport* platform_support);
 
   bool operator==(const UniqueIdentifier& other) const {
     return memcmp(data_, other.data_, sizeof(data_)) == 0;
@@ -58,7 +65,9 @@ class MOJO_SYSTEM_IMPL_EXPORT UniqueIdentifier {
 
  private:
   friend BASE_HASH_NAMESPACE::hash<mojo::system::UniqueIdentifier>;
-  friend std::ostream& operator<<(std::ostream&, const UniqueIdentifier&);
+  friend MOJO_SYSTEM_IMPL_EXPORT std::ostream& operator<<(
+      std::ostream&,
+      const UniqueIdentifier&);
 
   explicit UniqueIdentifier() {}
 

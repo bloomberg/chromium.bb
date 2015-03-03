@@ -19,17 +19,16 @@ ViewManagerClientFactory::~ViewManagerClientFactory() {
 }
 
 // static
-scoped_ptr<ViewManagerClient>
-ViewManagerClientFactory::WeakBindViewManagerToPipe(
+ViewManagerClient* ViewManagerClientFactory::WeakBindViewManagerToPipe(
     InterfaceRequest<ViewManagerClient> request,
     ViewManagerServicePtr view_manager_service,
     Shell* shell,
     ViewManagerDelegate* delegate) {
   const bool delete_on_error = false;
-  scoped_ptr<ViewManagerClientImpl> client(new ViewManagerClientImpl(
-      delegate, shell, request.Pass(), delete_on_error));
+  auto client = new ViewManagerClientImpl(delegate, shell, request.Pass(),
+                                          delete_on_error);
   client->SetViewManagerService(view_manager_service.Pass());
-  return client.Pass();
+  return client;
 }
 
 // InterfaceFactory<ViewManagerClient> implementation.

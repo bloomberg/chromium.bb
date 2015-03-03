@@ -16,12 +16,16 @@ class DataPipeDrainer {
     _dataSize = 0;
   }
 
+  ByteData _copy(ByteData byteData) =>
+      new ByteData.view(
+          new Uint8List.fromList(byteData.buffer.asUint8List()).buffer);
+
   MojoResult _doRead() {
     ByteData thisRead = _consumer.beginRead();
     if (thisRead == null) {
       throw 'Data pipe beginRead failed: ${_consumer.status}';
     }
-    _dataList.add(thisRead);
+    _dataList.add(_copy(thisRead));
     _dataSize += thisRead.lengthInBytes;
     return _consumer.endRead(thisRead.lengthInBytes);
   }

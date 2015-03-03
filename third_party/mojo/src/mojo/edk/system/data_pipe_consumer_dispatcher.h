@@ -50,6 +50,14 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
                                    HandleSignalsState* signals_state) override;
   void RemoveAwakableImplNoLock(Awakable* awakable,
                                 HandleSignalsState* signals_state) override;
+  void StartSerializeImplNoLock(Channel* channel,
+                                size_t* max_size,
+                                size_t* max_platform_handles) override;
+  bool EndSerializeAndCloseImplNoLock(
+      Channel* channel,
+      void* destination,
+      size_t* actual_size,
+      embedder::PlatformHandleVector* platform_handles) override;
   bool IsBusyNoLock() const override;
 
   // Protected by |lock()|:

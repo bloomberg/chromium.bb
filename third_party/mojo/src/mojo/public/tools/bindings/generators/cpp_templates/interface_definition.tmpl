@@ -1,90 +1,29 @@
 {%- import "interface_macros.tmpl" as interface_macros %}
+{%- import "struct_macros.tmpl" as struct_macros %}
 {%- set class_name = interface.name %}
 {%- set proxy_name = interface.name ~ "Proxy" %}
 {%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
 
-{%- macro alloc_params(parameters) %}
-{%-   for param in parameters %}
-{%-     if param.kind|is_object_kind  %}
-{{param.kind|cpp_result_type}} p{{loop.index}};
-Deserialize_(params->{{param.name}}.ptr, &p{{loop.index}});
-{%      endif -%}
+{%- macro alloc_params(struct) %}
+{%-   for param in struct.packed.packed_fields_in_ordinal_order %}
+  {{param.field.kind|cpp_result_type}} p_{{param.field.name}}{};
 {%-   endfor %}
+  {{struct_macros.deserialize(struct, "params", "p_%s")}}
 {%- endmacro %}
 
 {%- macro pass_params(parameters) %}
 {%-   for param in parameters %}
-{%-     if param.kind|is_string_kind -%}
-p{{loop.index}}
-{%-     elif param.kind|is_object_kind -%}
-p{{loop.index}}.Pass()
-{%-     elif param.kind|is_interface_kind -%}
-mojo::MakeProxy<{{param.kind|get_name_for_kind}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
-{%-     elif param.kind|is_interface_request_kind -%}
-mojo::MakeRequest<{{param.kind.kind|get_name_for_kind}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
-{%-     elif param.kind|is_any_handle_kind -%}
-mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}}))
-{%-     elif param.kind|is_enum_kind -%}
-static_cast<{{param.kind|cpp_wrapper_type}}>(params->{{param.name}})
+{%-     if param.kind|is_move_only_kind -%}
+p_{{param.name}}.Pass()
 {%-     else -%}
-params->{{param.name}}
+p_{{param.name}}
 {%-     endif -%}
 {%-     if not loop.last %}, {% endif %}
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro compute_payload_size(params_name, parameters) -%}
-  size_t payload_size =
-      mojo::internal::Align(sizeof({{params_name}}));
-{#--- Computes #}
-{%-   for param in parameters %}
-{%-     if param.kind|is_object_kind %}
-  payload_size += GetSerializedSize_(in_{{param.name}});
-{%-     endif %}
-{%-   endfor %}
-{%- endmacro %}
-
-{%- macro build_message(params_name, parameters, params_description) -%}
-  {# TODO(yzshen): Consider refactoring to share code with
-     struct_serialization_definition.tmpl #}
-  {{params_name}}* params =
-      {{params_name}}::New(builder.buffer());
-{#--- Sets #}
-{%   for param in parameters %}
-{%-     if param.kind|is_object_kind %}
-{%-       if param.kind|is_array_kind %}
-  mojo::SerializeArray_<{{param.kind|get_array_validate_params|indent(24)}}>(
-      mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
-{%-       elif param.kind|is_map_kind %}
-  mojo::SerializeMap_<{{param.kind.value_kind|get_map_validate_params|indent(24)}}>(
-      mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
-{%-       else %}
-  Serialize_(mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
-{%-       endif %}
-{%-       if not param.kind|is_nullable_kind %}
-  MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-      !params->{{param.name}}.ptr,
-      mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
-      "null {{param.name}} argument in {{params_description}}");
-{%-       endif %}
-{%-     elif param.kind|is_any_handle_kind %}
-{%-       if param.kind|is_interface_kind or
-             param.kind|is_interface_request_kind %}
-  // Delegate handle.
-  params->{{param.name}} = in_{{param.name}}.PassMessagePipe().release();
-{%-       else %}
-  params->{{param.name}} = in_{{param.name}}.release();
-{%-       endif %}
-{%-       if not param.kind|is_nullable_kind %}
-  MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-      !params->{{param.name}}.is_valid(),
-      mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
-      "invalid {{param.name}} argument in {{params_description}}");
-{%-       endif %}
-{%-     else %}
-  params->{{param.name}} = in_{{param.name}};
-{%-     endif %}
-{%-   endfor %}
+{%- macro build_message(struct, struct_display_name) -%}
+  {{struct_macros.serialize(struct, struct_display_name, "in_%s", "params", "builder.buffer()")}}
   mojo::Message message;
   params->EncodePointersAndHandles(message.mutable_handles());
   builder.Finish(&message);
@@ -119,7 +58,7 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
           message->mutable_payload());
 
   params->DecodePointersAndHandles(message->mutable_handles());
-  {{alloc_params(method.response_parameters)|indent(2)}}
+  {{alloc_params(method|response_struct_from_method)}}
   callback_.Run({{pass_params(method.response_parameters)}});
   return true;
 }
@@ -135,21 +74,20 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 {%- for method in interface.methods %}
 {%-   set message_name =
           "internal::k%s_%s_Name"|format(interface.name, method.name) %}
-{%-   set params_name =
-          "internal::%s_%s_Params_Data"|format(interface.name, method.name) %}
+{%-   set params_struct = method|struct_from_method %}
 {%-   set params_description =
           "%s.%s request"|format(interface.name, method.name) %}
 void {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_request_params("in_", method)}}) {
-  {{compute_payload_size(params_name, method.parameters)}}
+  {{struct_macros.get_serialized_size(params_struct, "in_%s")}}
 
 {%- if method.response_parameters != None %}
-  mojo::internal::RequestMessageBuilder builder({{message_name}}, payload_size);
+  mojo::internal::RequestMessageBuilder builder({{message_name}}, size);
 {%- else %}
-  mojo::internal::MessageBuilder builder({{message_name}}, payload_size);
+  mojo::internal::MessageBuilder builder({{message_name}}, size);
 {%- endif %}
 
-  {{build_message(params_name, method.parameters, params_description)}}
+  {{build_message(params_struct, params_description)}}
 
 {%- if method.response_parameters != None %}
   mojo::MessageReceiver* responder =
@@ -170,8 +108,7 @@ void {{proxy_name}}::{{method.name}}(
 {%-   if method.response_parameters != None %}
 {%-     set message_name =
             "internal::k%s_%s_Name"|format(interface.name, method.name) %}
-{%-     set params_name =
-            "internal::%s_%s_ResponseParams_Data"|format(interface.name, method.name) %}
+{%-     set response_params_struct = method|response_struct_from_method %}
 {%-     set params_description =
             "%s.%s response"|format(interface.name, method.name) %}
 class {{class_name}}_{{method.name}}_ProxyToResponder
@@ -197,10 +134,10 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
 };
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
     {{interface_macros.declare_params("in_", method.response_parameters)}}) const {
-  {{compute_payload_size(params_name, method.response_parameters)}}
+  {{struct_macros.get_serialized_size(response_params_struct, "in_%s")}}
   mojo::internal::ResponseMessageBuilder builder(
-      {{message_name}}, payload_size, request_id_);
-  {{build_message(params_name, method.response_parameters, params_description)}}
+      {{message_name}}, size, request_id_);
+  {{build_message(response_params_struct, params_description)}}
   bool ok = responder_->Accept(&message);
   MOJO_ALLOW_UNUSED_LOCAL(ok);
   // TODO(darin): !ok returned here indicates a malformed message, and that may
@@ -229,9 +166,8 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
               message->mutable_payload());
 
       params->DecodePointersAndHandles(message->mutable_handles());
-      {{alloc_params(method.parameters)|indent(6)}}
-      // A null |sink_| typically means there is a missing call to
-      // InterfacePtr::set_client().
+      {{alloc_params(method|struct_from_method)|indent(4)}}
+      // A null |sink_| means no implementation was bound.
       assert(sink_);
       sink_->{{method.name}}({{pass_params(method.parameters)}});
       return true;
@@ -261,9 +197,8 @@ bool {{class_name}}Stub::AcceptWithResponder(
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(), responder);
       {{class_name}}::{{method.name}}Callback callback(runnable);
-      {{alloc_params(method.parameters)|indent(6)}}
-      // A null |sink_| typically means there is a missing call to
-      // InterfacePtr::set_client().
+      {{alloc_params(method|struct_from_method)|indent(4)}}
+      // A null |sink_| means no implementation was bound.
       assert(sink_);
       sink_->{{method.name}}(
 {%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback);
@@ -311,8 +246,6 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
   }
 {%- endif %}
 
-  // A null |sink_| typically means there is a missing call to
-  // InterfacePtr::set_client().
   assert(sink_);
   return sink_->Accept(message);
 }
@@ -343,8 +276,6 @@ bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
   }
 {%- endif %}
 
-  // A null |sink_| typically means there is a missing call to
-  // InterfacePtr::set_client().
   assert(sink_);
   return sink_->Accept(message);
 }

@@ -20,7 +20,7 @@ class MOJO_SYSTEM_IMPL_EXPORT AsyncWaiter final : public Awakable {
   typedef base::Callback<void(MojoResult)> AwakeCallback;
 
   // |callback| must satisfy the same contract as |Awakable::Awake()|.
-  explicit AsyncWaiter(AwakeCallback callback);
+  explicit AsyncWaiter(const AwakeCallback& callback);
   virtual ~AsyncWaiter();
 
  private:

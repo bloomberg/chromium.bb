@@ -11,8 +11,6 @@ mojo_edk_source_set("embedder") {
 
   sources = [
     "channel_info_forward.h",
-    "channel_init.cc",
-    "channel_init.h",
     "configuration.h",
     "embedder.cc",
     "embedder.h",
@@ -84,6 +82,7 @@ mojo_edk_source_set("platform") {
 
   deps = [
     "//base",
+    "//crypto",
   ]
 
   if (is_android) {
@@ -100,6 +99,8 @@ mojo_edk_source_set("delegates") {
 
   sources = [
     "master_process_delegate.h",
+    "process_delegate.h",
+    "process_type.h",
     "slave_process_delegate.h",
   ]
 

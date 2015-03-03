@@ -49,12 +49,14 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/websocket_dispatcher.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/mojo/channel_init.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
+#include "ipc/mojo/scoped_ipc_support.h"
 
 #if defined(OS_WIN)
 #include "content/common/handle_enumerator_win.h"
@@ -203,6 +205,42 @@ ChildThread* ChildThread::Get() {
   return ChildThreadImpl::current();
 }
 
+// Mojo client channel delegate to be used in single process mode.
+class ChildThreadImpl::SingleProcessChannelDelegate
+    : public IPC::ChannelMojo::Delegate {
+ public:
+  explicit SingleProcessChannelDelegate() : weak_factory_(this) {}
+
+  ~SingleProcessChannelDelegate() override {}
+
+  base::WeakPtr<IPC::ChannelMojo::Delegate> ToWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  scoped_refptr<base::TaskRunner> GetIOTaskRunner() override {
+    return ChannelInit::GetSingleProcessIOTaskRunner();
+  }
+
+  void OnChannelCreated(base::WeakPtr<IPC::ChannelMojo> channel) override {}
+
+  void DeleteSoon() {
+    ChannelInit::GetSingleProcessIOTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&base::DeletePointer<SingleProcessChannelDelegate>,
+                   base::Unretained(this)));
+  }
+
+ private:
+  base::WeakPtrFactory<IPC::ChannelMojo::Delegate> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleProcessChannelDelegate);
+};
+
+void ChildThreadImpl::SingleProcessChannelDelegateDeleter::operator()(
+    SingleProcessChannelDelegate* delegate) const {
+  delegate->DeleteSoon();
+}
+
 ChildThreadImpl::Options::Options()
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
@@ -250,8 +288,20 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
   bool create_pipe_now = true;
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
-    channel_->Init(IPC::ChannelMojo::CreateClientFactory(channel_name_),
-                   create_pipe_now);
+    scoped_refptr<base::TaskRunner> io_task_runner =
+        ChannelInit::GetSingleProcessIOTaskRunner();
+    if (io_task_runner) {
+      single_process_channel_delegate_.reset(new SingleProcessChannelDelegate);
+    } else {
+      io_task_runner = ChildProcess::current()->io_message_loop_proxy();
+    }
+    DCHECK(io_task_runner);
+    ipc_support_.reset(new IPC::ScopedIPCSupport(io_task_runner));
+    channel_->Init(
+        IPC::ChannelMojo::CreateClientFactory(
+            single_process_channel_delegate_.get(),
+            channel_name_),
+        create_pipe_now);
     return;
   }
 

@@ -120,20 +120,45 @@ public class Decoder {
         // Claim the memory for the header.
         mValidator.claimMemory(mBaseOffset, mBaseOffset + DataHeader.HEADER_SIZE);
         int size = readInt(DataHeader.SIZE_OFFSET);
-        int numFields = readInt(DataHeader.NUM_FIELDS_OFFSET);
+        int elementsOrVersion = readInt(DataHeader.ELEMENTS_OR_VERSION_OFFSET);
         if (size < 0) {
             throw new DeserializationException(
                     "Negative size. Unsigned integers are not valid for java.");
         }
-        if (numFields < 0) {
+        if (elementsOrVersion < 0) {
             throw new DeserializationException(
-                    "Negative number of fields. Unsigned integers are not valid for java.");
+                    "Negative elements or version. Unsigned integers are not valid for java.");
         }
 
         // Claim the remaining memory.
         mValidator.claimMemory(mBaseOffset + DataHeader.HEADER_SIZE, mBaseOffset + size);
-        DataHeader res = new DataHeader(size, numFields);
+        DataHeader res = new DataHeader(size, elementsOrVersion);
         return res;
+    }
+
+    public DataHeader readAndValidateDataHeader(DataHeader[] versionArray) {
+        DataHeader header = readDataHeader();
+        int maxVersionIndex = versionArray.length - 1;
+        if (header.elementsOrVersion <= versionArray[maxVersionIndex].elementsOrVersion) {
+            DataHeader referenceHeader = null;
+            for (int index = maxVersionIndex; index >= 0; index--) {
+                DataHeader dataHeader = versionArray[index];
+                if (header.elementsOrVersion >= dataHeader.elementsOrVersion) {
+                    referenceHeader = dataHeader;
+                    break;
+                }
+            }
+            if (referenceHeader == null || referenceHeader.size != header.size) {
+                throw new DeserializationException(
+                        "Header doesn't correspond to any known version.");
+            }
+        } else {
+            if (header.size < versionArray[maxVersionIndex].size) {
+                throw new DeserializationException("Message newer than the last known version"
+                        + " cannot be shorter than required by the last known version.");
+            }
+        }
+        return header;
     }
 
     /**
@@ -153,9 +178,9 @@ public class Decoder {
             throw new DeserializationException(
                     "Incorrect header for map. The size is incorrect.");
         }
-        if (si.numFields != BindingsHelper.MAP_STRUCT_HEADER.numFields) {
+        if (si.elementsOrVersion != BindingsHelper.MAP_STRUCT_HEADER.elementsOrVersion) {
             throw new DeserializationException(
-                    "Incorrect header for map. The number of fields is incorrect.");
+                    "Incorrect header for map. The version is incorrect.");
         }
     }
 
@@ -244,10 +269,10 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForBooleanArray(expectedLength);
-        byte[] bytes = new byte[(si.numFields + 7) / BindingsHelper.ALIGNMENT];
+        byte[] bytes = new byte[(si.elementsOrVersion + 7) / BindingsHelper.ALIGNMENT];
         d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
         d.mMessage.getData().get(bytes);
-        boolean[] result = new boolean[si.numFields];
+        boolean[] result = new boolean[si.elementsOrVersion];
         for (int i = 0; i < bytes.length; ++i) {
             for (int j = 0; j < BindingsHelper.ALIGNMENT; ++j) {
                 int booleanIndex = i * BindingsHelper.ALIGNMENT + j;
@@ -268,7 +293,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(1, expectedLength);
-        byte[] result = new byte[si.numFields];
+        byte[] result = new byte[si.elementsOrVersion];
         d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
         d.mMessage.getData().get(result);
         return result;
@@ -283,7 +308,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(2, expectedLength);
-        short[] result = new short[si.numFields];
+        short[] result = new short[si.elementsOrVersion];
         d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
         d.mMessage.getData().asShortBuffer().get(result);
         return result;
@@ -298,7 +323,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        int[] result = new int[si.numFields];
+        int[] result = new int[si.elementsOrVersion];
         d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
         d.mMessage.getData().asIntBuffer().get(result);
         return result;
@@ -313,7 +338,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        float[] result = new float[si.numFields];
+        float[] result = new float[si.elementsOrVersion];
         d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
         d.mMessage.getData().asFloatBuffer().get(result);
         return result;
@@ -328,7 +353,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(8, expectedLength);
-        long[] result = new long[si.numFields];
+        long[] result = new long[si.elementsOrVersion];
         d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
         d.mMessage.getData().asLongBuffer().get(result);
         return result;
@@ -343,7 +368,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(8, expectedLength);
-        double[] result = new double[si.numFields];
+        double[] result = new double[si.elementsOrVersion];
         d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
         d.mMessage.getData().asDoubleBuffer().get(result);
         return result;
@@ -447,7 +472,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        Handle[] result = new Handle[si.numFields];
+        Handle[] result = new Handle[si.elementsOrVersion];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readHandle(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
@@ -466,7 +491,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        UntypedHandle[] result = new UntypedHandle[si.numFields];
+        UntypedHandle[] result = new UntypedHandle[si.elementsOrVersion];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readUntypedHandle(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
@@ -485,7 +510,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        DataPipe.ConsumerHandle[] result = new DataPipe.ConsumerHandle[si.numFields];
+        DataPipe.ConsumerHandle[] result = new DataPipe.ConsumerHandle[si.elementsOrVersion];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readConsumerHandle(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
@@ -504,7 +529,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        DataPipe.ProducerHandle[] result = new DataPipe.ProducerHandle[si.numFields];
+        DataPipe.ProducerHandle[] result = new DataPipe.ProducerHandle[si.elementsOrVersion];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readProducerHandle(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
@@ -524,7 +549,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        MessagePipeHandle[] result = new MessagePipeHandle[si.numFields];
+        MessagePipeHandle[] result = new MessagePipeHandle[si.elementsOrVersion];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readMessagePipeHandle(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
@@ -544,7 +569,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        SharedBufferHandle[] result = new SharedBufferHandle[si.numFields];
+        SharedBufferHandle[] result = new SharedBufferHandle[si.elementsOrVersion];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readSharedBufferHandle(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
@@ -564,7 +589,7 @@ public class Decoder {
             return null;
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
-        S[] result = manager.buildArray(si.numFields);
+        S[] result = manager.buildArray(si.elementsOrVersion);
         for (int i = 0; i < result.length; ++i) {
             // This cast is necessary because java 6 doesn't handle wildcard correctly when using
             // Manager<S, ? extends S>
@@ -588,7 +613,7 @@ public class Decoder {
         }
         DataHeader si = d.readDataHeaderForArray(4, expectedLength);
         @SuppressWarnings("unchecked")
-        InterfaceRequest<I>[] result = new InterfaceRequest[si.numFields];
+        InterfaceRequest<I>[] result = new InterfaceRequest[si.elementsOrVersion];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readInterfaceRequest(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
@@ -610,13 +635,13 @@ public class Decoder {
      */
     private DataHeader readDataHeaderForBooleanArray(int expectedLength) {
         DataHeader dataHeader = readDataHeader();
-        if (dataHeader.size < DataHeader.HEADER_SIZE + (dataHeader.numFields + 7) / 8) {
+        if (dataHeader.size < DataHeader.HEADER_SIZE + (dataHeader.elementsOrVersion + 7) / 8) {
             throw new DeserializationException("Array header is incorrect.");
         }
         if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
-                && dataHeader.numFields != expectedLength) {
-            throw new DeserializationException("Incorrect array length. Expected: "
-                    + expectedLength + ", but got: " + dataHeader.numFields + ".");
+                && dataHeader.elementsOrVersion != expectedLength) {
+            throw new DeserializationException("Incorrect array length. Expected: " + expectedLength
+                    + ", but got: " + dataHeader.elementsOrVersion + ".");
         }
         return dataHeader;
     }
@@ -626,13 +651,14 @@ public class Decoder {
      */
     private DataHeader readDataHeaderForArray(long elementSize, int expectedLength) {
         DataHeader dataHeader = readDataHeader();
-        if (dataHeader.size < (DataHeader.HEADER_SIZE + elementSize * dataHeader.numFields)) {
+        if (dataHeader.size
+                < (DataHeader.HEADER_SIZE + elementSize * dataHeader.elementsOrVersion)) {
             throw new DeserializationException("Array header is incorrect.");
         }
         if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
-                && dataHeader.numFields != expectedLength) {
-            throw new DeserializationException("Incorrect array length. Expected: "
-                    + expectedLength + ", but got: " + dataHeader.numFields + ".");
+                && dataHeader.elementsOrVersion != expectedLength) {
+            throw new DeserializationException("Incorrect array length. Expected: " + expectedLength
+                    + ", but got: " + dataHeader.elementsOrVersion + ".");
         }
         return dataHeader;
     }

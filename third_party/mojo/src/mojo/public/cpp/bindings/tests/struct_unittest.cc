@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,6 +28,48 @@ void CheckRect(const Rect& rect, int32_t factor = 1) {
   EXPECT_EQ(2 * factor, rect.y);
   EXPECT_EQ(10 * factor, rect.width);
   EXPECT_EQ(20 * factor, rect.height);
+}
+
+MultiVersionStructPtr MakeMultiVersionStruct() {
+  MultiVersionStructPtr output(MultiVersionStruct::New());
+  output->f_int32 = 123;
+  output->f_rect = MakeRect(5);
+  output->f_string = "hello";
+  output->f_array = Array<int8_t>(3);
+  output->f_array[0] = 10;
+  output->f_array[1] = 9;
+  output->f_array[2] = 8;
+  MessagePipe pipe;
+  output->f_message_pipe = pipe.handle0.Pass();
+  output->f_int16 = 42;
+
+  return output.Pass();
+}
+
+template <typename U, typename T>
+U SerializeAndDeserialize(T input) {
+  typedef typename mojo::internal::WrapperTraits<T>::DataType InputDataType;
+  typedef typename mojo::internal::WrapperTraits<U>::DataType OutputDataType;
+
+  size_t size = GetSerializedSize_(input);
+  mojo::internal::FixedBuffer buf(size + 32);
+  InputDataType data;
+  Serialize_(input.Pass(), &buf, &data);
+
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+
+  // Set the subsequent area to a special value, so that we can find out if we
+  // mistakenly access the area.
+  void* subsequent_area = buf.Allocate(32);
+  memset(subsequent_area, 0xAA, 32);
+
+  OutputDataType output_data = reinterpret_cast<OutputDataType>(data);
+  output_data->DecodePointersAndHandles(&handles);
+
+  U output;
+  Deserialize_(output_data, &output);
+  return output.Pass();
 }
 
 class StructTest : public testing::Test {
@@ -195,6 +240,183 @@ TEST_F(StructTest, Serialization_NullArrayPointers) {
 
   EXPECT_TRUE(region2->name.is_null());
   EXPECT_TRUE(region2->rects.is_null());
+}
+
+// Tests deserializing structs as a newer version.
+TEST_F(StructTest, Versioning_OldToNew) {
+  {
+    MultiVersionStructV0Ptr input(MultiVersionStructV0::New());
+    input->f_int32 = 123;
+    MultiVersionStructPtr expected_output(MultiVersionStruct::New());
+    expected_output->f_int32 = 123;
+
+    MultiVersionStructPtr output =
+        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+
+  {
+    MultiVersionStructV1Ptr input(MultiVersionStructV1::New());
+    input->f_int32 = 123;
+    input->f_rect = MakeRect(5);
+    MultiVersionStructPtr expected_output(MultiVersionStruct::New());
+    expected_output->f_int32 = 123;
+    expected_output->f_rect = MakeRect(5);
+
+    MultiVersionStructPtr output =
+        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+
+  {
+    MultiVersionStructV3Ptr input(MultiVersionStructV3::New());
+    input->f_int32 = 123;
+    input->f_rect = MakeRect(5);
+    input->f_string = "hello";
+    MultiVersionStructPtr expected_output(MultiVersionStruct::New());
+    expected_output->f_int32 = 123;
+    expected_output->f_rect = MakeRect(5);
+    expected_output->f_string = "hello";
+
+    MultiVersionStructPtr output =
+        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+
+  {
+    MultiVersionStructV5Ptr input(MultiVersionStructV5::New());
+    input->f_int32 = 123;
+    input->f_rect = MakeRect(5);
+    input->f_string = "hello";
+    input->f_array = Array<int8_t>(3);
+    input->f_array[0] = 10;
+    input->f_array[1] = 9;
+    input->f_array[2] = 8;
+    MultiVersionStructPtr expected_output(MultiVersionStruct::New());
+    expected_output->f_int32 = 123;
+    expected_output->f_rect = MakeRect(5);
+    expected_output->f_string = "hello";
+    expected_output->f_array = Array<int8_t>(3);
+    expected_output->f_array[0] = 10;
+    expected_output->f_array[1] = 9;
+    expected_output->f_array[2] = 8;
+
+    MultiVersionStructPtr output =
+        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+
+  {
+    MultiVersionStructV7Ptr input(MultiVersionStructV7::New());
+    input->f_int32 = 123;
+    input->f_rect = MakeRect(5);
+    input->f_string = "hello";
+    input->f_array = Array<int8_t>(3);
+    input->f_array[0] = 10;
+    input->f_array[1] = 9;
+    input->f_array[2] = 8;
+    MessagePipe pipe;
+    input->f_message_pipe = pipe.handle0.Pass();
+
+    MultiVersionStructPtr expected_output(MultiVersionStruct::New());
+    expected_output->f_int32 = 123;
+    expected_output->f_rect = MakeRect(5);
+    expected_output->f_string = "hello";
+    expected_output->f_array = Array<int8_t>(3);
+    expected_output->f_array[0] = 10;
+    expected_output->f_array[1] = 9;
+    expected_output->f_array[2] = 8;
+    // Save the raw handle value separately so that we can compare later.
+    MojoHandle expected_handle = input->f_message_pipe.get().value();
+
+    MultiVersionStructPtr output =
+        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_EQ(expected_handle, output->f_message_pipe.get().value());
+    output->f_message_pipe.reset();
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+}
+
+// Tests deserializing structs as an older version.
+TEST_F(StructTest, Versioning_NewToOld) {
+  {
+    MultiVersionStructPtr input = MakeMultiVersionStruct();
+    MultiVersionStructV7Ptr expected_output(MultiVersionStructV7::New());
+    expected_output->f_int32 = 123;
+    expected_output->f_rect = MakeRect(5);
+    expected_output->f_string = "hello";
+    expected_output->f_array = Array<int8_t>(3);
+    expected_output->f_array[0] = 10;
+    expected_output->f_array[1] = 9;
+    expected_output->f_array[2] = 8;
+    // Save the raw handle value separately so that we can compare later.
+    MojoHandle expected_handle = input->f_message_pipe.get().value();
+
+    MultiVersionStructV7Ptr output =
+        SerializeAndDeserialize<MultiVersionStructV7Ptr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_EQ(expected_handle, output->f_message_pipe.get().value());
+    output->f_message_pipe.reset();
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+
+  {
+    MultiVersionStructPtr input = MakeMultiVersionStruct();
+    MultiVersionStructV5Ptr expected_output(MultiVersionStructV5::New());
+    expected_output->f_int32 = 123;
+    expected_output->f_rect = MakeRect(5);
+    expected_output->f_string = "hello";
+    expected_output->f_array = Array<int8_t>(3);
+    expected_output->f_array[0] = 10;
+    expected_output->f_array[1] = 9;
+    expected_output->f_array[2] = 8;
+
+    MultiVersionStructV5Ptr output =
+        SerializeAndDeserialize<MultiVersionStructV5Ptr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+
+  {
+    MultiVersionStructPtr input = MakeMultiVersionStruct();
+    MultiVersionStructV3Ptr expected_output(MultiVersionStructV3::New());
+    expected_output->f_int32 = 123;
+    expected_output->f_rect = MakeRect(5);
+    expected_output->f_string = "hello";
+
+    MultiVersionStructV3Ptr output =
+        SerializeAndDeserialize<MultiVersionStructV3Ptr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+
+  {
+    MultiVersionStructPtr input = MakeMultiVersionStruct();
+    MultiVersionStructV1Ptr expected_output(MultiVersionStructV1::New());
+    expected_output->f_int32 = 123;
+    expected_output->f_rect = MakeRect(5);
+
+    MultiVersionStructV1Ptr output =
+        SerializeAndDeserialize<MultiVersionStructV1Ptr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
+
+  {
+    MultiVersionStructPtr input = MakeMultiVersionStruct();
+    MultiVersionStructV0Ptr expected_output(MultiVersionStructV0::New());
+    expected_output->f_int32 = 123;
+
+    MultiVersionStructV0Ptr output =
+        SerializeAndDeserialize<MultiVersionStructV0Ptr>(input.Pass());
+    EXPECT_TRUE(output);
+    EXPECT_TRUE(output->Equals(*expected_output));
+  }
 }
 
 }  // namespace test

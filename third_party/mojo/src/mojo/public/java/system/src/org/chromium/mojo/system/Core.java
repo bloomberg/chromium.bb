@@ -309,4 +309,13 @@ public interface Core {
      */
     public AsyncWaiter getDefaultAsyncWaiter();
 
+    /**
+     * Returns a new run loop.
+     */
+    public RunLoop createDefaultRunLoop();
+
+    /**
+     * Returns the current run loop if it exists.
+     */
+    public RunLoop getCurrentRunLoop();
 }

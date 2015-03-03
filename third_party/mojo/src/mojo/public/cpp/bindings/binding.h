@@ -58,8 +58,6 @@ namespace mojo {
 template <typename Interface>
 class Binding : public ErrorHandler {
  public:
-  using Client = typename Interface::Client;
-
   // Constructs an incomplete binding that will use the implementation |impl|.
   // The binding may be completed with a subsequent call to the |Bind| method.
   // Does not take ownership of |impl|, which must outlive the binding.
@@ -102,7 +100,6 @@ class Binding : public ErrorHandler {
   // Tears down the binding, closing the message pipe and leaving the interface
   // implementation unbound.
   ~Binding() override {
-    delete proxy_;
     if (internal_router_) {
       internal_router_->set_error_handler(nullptr);
       delete internal_router_;
@@ -118,14 +115,11 @@ class Binding : public ErrorHandler {
     internal::FilterChain filters;
     filters.Append<internal::MessageHeaderValidator>();
     filters.Append<typename Interface::RequestValidator_>();
-    filters.Append<typename Client::ResponseValidator_>();
 
     internal_router_ =
         new internal::Router(handle.Pass(), filters.Pass(), waiter);
     internal_router_->set_incoming_receiver(&stub_);
     internal_router_->set_error_handler(this);
-
-    proxy_ = new typename Client::Proxy_(internal_router_);
   }
 
   // Completes a binding that was constructed with only an interface
@@ -188,9 +182,6 @@ class Binding : public ErrorHandler {
   // does not take ownership.
   Interface* impl() { return impl_; }
 
-  // Returns the client's interface.
-  Client* client() { return proxy_; }
-
   // Indicates whether the binding has been completed (i.e., whether a message
   // pipe has been bound to the implementation).
   bool is_bound() const { return !!internal_router_; }
@@ -200,7 +191,6 @@ class Binding : public ErrorHandler {
 
  private:
   internal::Router* internal_router_ = nullptr;
-  typename Client::Proxy_* proxy_ = nullptr;
   typename Interface::Stub_ stub_;
   Interface* impl_;
   ErrorHandler* error_handler_ = nullptr;

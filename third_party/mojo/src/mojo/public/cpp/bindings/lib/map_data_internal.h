@@ -44,10 +44,18 @@ class Map_Data {
     if (!data)
       return true;
 
-    if (!ValidateStructHeader(data, sizeof(Map_Data), 2, bounds_checker))
+    if (!ValidateStructHeaderAndClaimMemory(data, bounds_checker))
       return false;
 
     const Map_Data* object = static_cast<const Map_Data*>(data);
+    // TODO(yzshen): In order to work with other bindings which still interprets
+    // the |version| field as |num_fields|, |version| is set to 2.
+    if (object->header_.num_bytes != sizeof(Map_Data) ||
+        object->header_.version != 2) {
+      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
+      return false;
+    }
+
     if (!ValidateEncodedPointer(&object->keys.offset)) {
       ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
       return false;
@@ -106,7 +114,9 @@ class Map_Data {
  private:
   Map_Data() {
     header_.num_bytes = sizeof(*this);
-    header_.num_fields = 2;
+    // TODO(yzshen): In order to work with other bindings which still interprets
+    // the |version| field as |num_fields|, set it to version 2 for now.
+    header_.version = 2;
   }
   ~Map_Data() = delete;
 };

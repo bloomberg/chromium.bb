@@ -1,51 +1,15 @@
+{%- import "struct_macros.tmpl" as struct_macros %}
 size_t GetSerializedSize_(const {{struct.name}}Ptr& input) {
   if (!input)
     return 0;
-  size_t size = sizeof(internal::{{struct.name}}_Data);
-{%- for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind %}
-  size += GetSerializedSize_(input->{{pf.field.name}});
-{%- endfor %}
+  {{struct_macros.get_serialized_size(struct, "input->%s")}}
   return size;
 }
 
 void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
                 internal::{{struct.name}}_Data** output) {
   if (input) {
-    internal::{{struct.name}}_Data* result =
-        internal::{{struct.name}}_Data::New(buf);
-{%- for pf in struct.packed.packed_fields %}
-{%-   if pf.field.kind|is_object_kind %}
-{%-     if pf.field.kind|is_array_kind %}
-    mojo::SerializeArray_<{{pf.field.kind|get_array_validate_params|indent(26)}}>(
-        mojo::internal::Forward(input->{{pf.field.name}}), buf, &result->{{pf.field.name}}.ptr);
-{%-     elif pf.field.kind|is_map_kind %}
-    mojo::SerializeMap_<{{pf.field.kind.value_kind|get_map_validate_params|indent(26)}}>(
-        mojo::internal::Forward(input->{{pf.field.name}}), buf, &result->{{pf.field.name}}.ptr);
-{%-     else %}
-    Serialize_(mojo::internal::Forward(input->{{pf.field.name}}), buf, &result->{{pf.field.name}}.ptr);
-{%-     endif %}
-{%-     if not pf.field.kind|is_nullable_kind %}
-    MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-        !result->{{pf.field.name}}.ptr,
-        mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
-        "null {{pf.field.name}} field in {{struct.name}} struct");
-{%-     endif %}
-{%-   elif pf.field.kind|is_any_handle_kind %}
-{%-     if pf.field.kind|is_interface_kind %}
-    result->{{pf.field.name}} = input->{{pf.field.name}}.PassMessagePipe().release();
-{%-     else %}
-    result->{{pf.field.name}} = input->{{pf.field.name}}.release();
-{%-     endif %}
-{%-     if not pf.field.kind|is_nullable_kind %}
-    MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-        !result->{{pf.field.name}}.is_valid(),
-        mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
-        "invalid {{pf.field.name}} field in {{struct.name}} struct");
-{%-     endif %}
-{%-   else %}
-    result->{{pf.field.name}} = input->{{pf.field.name}};
-{%-   endif %}
-{%- endfor %}
+    {{struct_macros.serialize(struct, struct.name ~ " struct", "input->%s", "result", "buf")|indent(2)}}
     *output = result;
   } else {
     *output = nullptr;
@@ -56,21 +20,7 @@ void Deserialize_(internal::{{struct.name}}_Data* input,
                   {{struct.name}}Ptr* output) {
   if (input) {
     {{struct.name}}Ptr result({{struct.name}}::New());
-{%- for pf in struct.packed.packed_fields %}
-{%-   if pf.field.kind|is_object_kind %}
-    Deserialize_(input->{{pf.field.name}}.ptr, &result->{{pf.field.name}});
-{%-   elif pf.field.kind|is_interface_kind %}
-    if (input->{{pf.field.name}}.is_valid())
-      result->{{pf.field.name}}.Bind(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&input->{{pf.field.name}})));
-{%-   elif pf.field.kind|is_any_handle_kind %}
-    result->{{pf.field.name}}.reset(mojo::internal::FetchAndReset(&input->{{pf.field.name}}));
-{%-   elif pf.field.kind|is_enum_kind %}
-    result->{{pf.field.name}} = static_cast<{{pf.field.kind|cpp_wrapper_type}}>(
-      input->{{pf.field.name}});
-{%-   else %}
-    result->{{pf.field.name}} = input->{{pf.field.name}};
-{%-   endif %}
-{%- endfor %}
+    {{struct_macros.deserialize(struct, "input", "result->%s")|indent(2)}}
     *output = result.Pass();
   } else {
     output->reset();

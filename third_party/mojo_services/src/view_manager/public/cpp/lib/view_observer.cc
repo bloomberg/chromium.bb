@@ -4,17 +4,16 @@
 
 #include "view_manager/public/cpp/view_observer.h"
 
-#include "base/basictypes.h"
-
 namespace mojo {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewObserver, public:
 
 ViewObserver::TreeChangeParams::TreeChangeParams()
-    : target(NULL),
-      old_parent(NULL),
-      new_parent(NULL),
-      receiver(NULL) {}
+    : target(nullptr),
+      old_parent(nullptr),
+      new_parent(nullptr),
+      receiver(nullptr) {
+}
 
 }  // namespace mojo

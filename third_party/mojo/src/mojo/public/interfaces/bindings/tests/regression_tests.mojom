@@ -7,8 +7,6 @@
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.regression_tests"]
 module regression_tests;
 
-import "regression_tests_import.mojom";
-
 interface CheckMethodWithEmptyResponse {
 WithouParameterAndEmptyResponse() => ();
 WithParameterAndEmptyResponse(bool b) => ();
@@ -53,8 +51,4 @@ struct A {
 
 struct B {
   A? a;
-};
-
-[Client=InterfaceWithClientImportedClient]
-interface InterfaceWithClientImported {
 };

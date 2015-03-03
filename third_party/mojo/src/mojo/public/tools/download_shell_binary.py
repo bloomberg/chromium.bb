@@ -20,7 +20,10 @@ if not sys.platform.startswith("linux"):
   sys.exit(0)
 
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
-PREBUILT_FILE_PATH = os.path.join(CURRENT_PATH, "prebuilt")
+sys.path.insert(0, os.path.join(CURRENT_PATH, "pylib"))
+import gs
+
+PREBUILT_FILE_PATH = os.path.join(CURRENT_PATH, "prebuilt", "shell")
 
 
 def download(tools_directory):
@@ -50,44 +53,21 @@ def download_version_for_platform(version, platform, tools_directory):
   sys.path.insert(0, find_depot_tools_path)
   # pylint: disable=F0401
   import find_depot_tools
+  depot_tools_path = find_depot_tools.add_depot_tools_to_path()
 
   basename = platform + ".zip"
   gs_path = "gs://mojo/shell/" + version + "/" + basename
 
-  depot_tools_path = find_depot_tools.add_depot_tools_to_path()
-  gsutil_exe = os.path.join(depot_tools_path, "third_party", "gsutil", "gsutil")
-
   with tempfile.NamedTemporaryFile() as temp_zip_file:
-    # We're downloading from a public bucket which does not need authentication,
-    # but the user might have busted credential files somewhere such as ~/.boto
-    # that the gsutil script will try (and fail) to use. Setting these
-    # environment variables convinces gsutil not to attempt to use these, but
-    # also generates a useless warning about failing to load the file. We want
-    # to discard this warning but still preserve all output in the case of an
-    # actual failure. So, we run the script and capture all output and then
-    # throw the output away if the script succeeds (return code 0).
-    env = os.environ.copy()
-    env["AWS_CREDENTIAL_FILE"] = ""
-    env["BOTO_CONFIG"] = ""
-    try:
-      subprocess.check_output(
-          [gsutil_exe,
-           "--bypass_prodaccess",
-           "cp",
-           gs_path,
-           temp_zip_file.name],
-          stderr=subprocess.STDOUT,
-          env=env)
-    except subprocess.CalledProcessError as e:
-      print e.output
-      sys.exit(1)
-
+    gs.download_from_public_bucket(gs_path, temp_zip_file.name,
+                                   depot_tools_path)
     binary_name = BINARY_FOR_PLATFORM[platform]
+    output_dir = os.path.join(PREBUILT_FILE_PATH, platform)
     with zipfile.ZipFile(temp_zip_file.name) as z:
       zi = z.getinfo(binary_name)
       mode = zi.external_attr >> 16
-      z.extract(zi, PREBUILT_FILE_PATH)
-      os.chmod(os.path.join(PREBUILT_FILE_PATH, binary_name), mode)
+      z.extract(zi, output_dir)
+      os.chmod(os.path.join(output_dir, binary_name), mode)
 
 
 def main():
@@ -97,13 +77,11 @@ def main():
                       dest="tools_directory",
                       metavar="<tools-directory>",
                       type=str,
-                      help="Path to the directory containing"
-                           " find_depot_tools.py, specified as a relative path"
-                           " from the location of this file.")
+                      required=True,
+                      help="Path to the directory containing "
+                           "find_depot_tools.py, specified as a relative path "
+                           "from the location of this file.")
   args = parser.parse_args()
-  if not args.tools_directory:
-    print "Must specify --tools_directory; please see help message."
-    sys.exit(1)
   return download(args.tools_directory)
 
 if __name__ == "__main__":

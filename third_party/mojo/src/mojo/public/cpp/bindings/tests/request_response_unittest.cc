@@ -13,8 +13,11 @@ namespace mojo {
 namespace test {
 namespace {
 
-class ProviderImpl : public InterfaceImpl<sample::Provider> {
+class ProviderImpl : public sample::Provider {
  public:
+  explicit ProviderImpl(InterfaceRequest<sample::Provider> request)
+      : binding_(this, request.Pass()) {}
+
   void EchoString(const String& a,
                   const Callback<void(String)>& callback) override {
     Callback<void(String)> callback_copy;
@@ -39,6 +42,8 @@ class ProviderImpl : public InterfaceImpl<sample::Provider> {
                 const Callback<void(sample::Enum)>& callback) override {
     callback.Run(a);
   }
+
+  Binding<sample::Provider> binding_;
 };
 
 class StringRecorder {
@@ -86,7 +91,7 @@ class RequestResponseTest : public testing::Test {
 
 TEST_F(RequestResponseTest, EchoString) {
   sample::ProviderPtr provider;
-  BindToProxy(new ProviderImpl(), &provider);
+  ProviderImpl provider_impl(GetProxy(&provider));
 
   std::string buf;
   provider->EchoString(String::From("hello"), StringRecorder(&buf));
@@ -98,7 +103,7 @@ TEST_F(RequestResponseTest, EchoString) {
 
 TEST_F(RequestResponseTest, EchoStrings) {
   sample::ProviderPtr provider;
-  BindToProxy(new ProviderImpl(), &provider);
+  ProviderImpl provider_impl(GetProxy(&provider));
 
   std::string buf;
   provider->EchoStrings(
@@ -111,7 +116,7 @@ TEST_F(RequestResponseTest, EchoStrings) {
 
 TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
   sample::ProviderPtr provider;
-  BindToProxy(new ProviderImpl(), &provider);
+  ProviderImpl provider_impl(GetProxy(&provider));
 
   MessagePipe pipe2;
   provider->EchoMessagePipeHandle(pipe2.handle1.Pass(),
@@ -127,7 +132,7 @@ TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
 
 TEST_F(RequestResponseTest, EchoEnum) {
   sample::ProviderPtr provider;
-  BindToProxy(new ProviderImpl(), &provider);
+  ProviderImpl provider_impl(GetProxy(&provider));
 
   sample::Enum value;
   provider->EchoEnum(sample::ENUM_VALUE, EnumRecorder(&value));

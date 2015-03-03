@@ -12,39 +12,40 @@
 
 namespace mojo {
 
-// An instance of this class is passed to
-// ApplicationDelegate's ConfigureIncomingConnection() method each time a
-// connection is made to this app, and to ApplicationDelegate's
-// ConfigureOutgoingConnection() method when the app connects to
-// another.
+// Represents a connection to another application. An instance of this class is
+// passed to ApplicationDelegate's ConfigureIncomingConnection() method each
+// time a connection is made to this app, and to ApplicationDelegate's
+// ConfigureOutgoingConnection() method when the app connects to another.
 //
-// To use define a class that implements your specific service api, e.g. FooImpl
-// to implement a service named Foo.
-// That class must subclass an InterfaceImpl specialization.
+// To use, define a class that implements your specific service API (e.g.,
+// FooImpl to implement a service named Foo). Then implement an
+// InterfaceFactory<Foo> that binds instances of FooImpl to
+// InterfaceRequest<Foo>s and register that on the connection like this:
 //
-// Then implement an InterfaceFactory<Foo> that binds instances of FooImpl to
-// InterfaceRequest<Foo>s and register that on the connection.
+//   connection->AddService(&factory);
 //
-// connection->AddService(&factory);
-//
-// Or if you have multiple factories implemented by the same type, explicitly
+// Or, if you have multiple factories implemented by the same type, explicitly
 // specify the interface to register the factory for:
 //
-// connection->AddService<Foo>(&my_foo_and_bar_factory_);
-// connection->AddService<Bar>(&my_foo_and_bar_factory_);
+//   connection->AddService<Foo>(&my_foo_and_bar_factory_);
+//   connection->AddService<Bar>(&my_foo_and_bar_factory_);
 //
 // The InterfaceFactory must outlive the ApplicationConnection.
 class ApplicationConnection {
  public:
   virtual ~ApplicationConnection();
 
+  // Makes Interface available as a service to the remote application.
+  // |factory| will create implementations of Interface on demand.
   template <typename Interface>
   void AddService(InterfaceFactory<Interface>* factory) {
     AddServiceConnector(
         new internal::InterfaceFactoryConnector<Interface>(factory));
   }
 
-  // Connect to the service implementing |Interface|.
+  // Binds |ptr| to an implemention of Interface in the remote application.
+  // |ptr| can immediately be used to start sending requests to the remote
+  // service.
   template <typename Interface>
   void ConnectToService(InterfacePtr<Interface>* ptr) {
     if (ServiceProvider* sp = GetServiceProvider()) {
@@ -54,10 +55,12 @@ class ApplicationConnection {
     }
   }
 
-  // The url identifying the application on the other end of this connection.
+  // Returns the URL identifying the remote application on this connection.
   virtual const std::string& GetRemoteApplicationURL() = 0;
 
-  // Raw ServiceProvider interface to remote application.
+  // Returns the raw proxy to the remote application's ServiceProvider
+  // interface. Most applications will just use ConnectToService() instead.
+  // Caller does not take ownership.
   virtual ServiceProvider* GetServiceProvider() = 0;
 
  private:

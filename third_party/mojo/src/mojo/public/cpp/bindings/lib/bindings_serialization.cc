@@ -79,12 +79,8 @@ void DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
   *handle = FetchAndReset(&handles->at(handle->value()));
 }
 
-bool ValidateStructHeader(const void* data,
-                          uint32_t min_num_bytes,
-                          uint32_t min_num_fields,
-                          BoundsChecker* bounds_checker) {
-  MOJO_DCHECK(min_num_bytes >= sizeof(StructHeader));
-
+bool ValidateStructHeaderAndClaimMemory(const void* data,
+                                        BoundsChecker* bounds_checker) {
   if (!IsAligned(data)) {
     ReportValidationError(VALIDATION_ERROR_MISALIGNED_OBJECT);
     return false;
@@ -96,11 +92,7 @@ bool ValidateStructHeader(const void* data,
 
   const StructHeader* header = static_cast<const StructHeader*>(data);
 
-  // TODO(yzshen): Currently our binding code cannot handle structs of smaller
-  // size or with fewer fields than the version that it sees. That needs to be
-  // changed in order to provide backward compatibility.
-  if (header->num_bytes < min_num_bytes ||
-      header->num_fields < min_num_fields) {
+  if (header->num_bytes < sizeof(StructHeader)) {
     ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
     return false;
   }

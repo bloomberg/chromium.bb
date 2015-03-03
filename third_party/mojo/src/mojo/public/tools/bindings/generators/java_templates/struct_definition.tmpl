@@ -95,8 +95,8 @@ if (decoder{{level+1}} == null) {
     }
 {%     else %}
     DataHeader si{{level+1}} = decoder{{level+1}}.readDataHeaderForPointerArray({{kind|array_expected_length}});
-    {{variable}} = {{kind|new_array('si'~(level+1)~'.numFields')}};
-    for (int i{{level+1}} = 0; i{{level+1}} < si{{level+1}}.numFields; ++i{{level+1}}) {
+    {{variable}} = {{kind|new_array('si'~(level+1)~'.elementsOrVersion')}};
+    for (int i{{level+1}} = 0; i{{level+1}} < si{{level+1}}.elementsOrVersion; ++i{{level+1}}) {
         {{decode(variable~'[i'~(level+1)~']', kind.kind, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE * i'~(level+1), 0, level+1)|indent(8)}}
     }
 {%     endif %}
@@ -111,7 +111,12 @@ if (decoder{{level+1}} == null) {
 {{'static' if inner_class else 'public'}} final class {{struct|name}} extends org.chromium.mojo.bindings.Struct {
 
     private static final int STRUCT_SIZE = {{struct.versions[-1].num_bytes}};
-    private static final DataHeader DEFAULT_STRUCT_INFO = new DataHeader(STRUCT_SIZE, {{struct.packed.packed_fields|length}});
+    private static final DataHeader[] VERSION_ARRAY = new DataHeader[] {
+{%-   for version in struct.versions -%}
+        new DataHeader({{version.num_bytes}}, {{version.version}}){% if not loop.last %}, {% endif -%}
+{%-   endfor -%}
+    };
+    private static final DataHeader DEFAULT_STRUCT_INFO = VERSION_ARRAY[{{struct.versions|length - 1}}];
 {%  for constant in struct.constants %}
 
     {{constant_def(constant)|indent(4)}}
@@ -149,13 +154,13 @@ if (decoder{{level+1}} == null) {
         }
         {{struct|name}} result = new {{struct|name}}();
 {% if not struct.bytes %}
-        decoder0.readDataHeader();
+        decoder0.readAndValidateDataHeader(VERSION_ARRAY);
 {% else %}
-        DataHeader mainDataHeader = decoder0.readDataHeader();
+        DataHeader mainDataHeader = decoder0.readAndValidateDataHeader(VERSION_ARRAY);
 {% endif %}
 {% for byte in struct.bytes %}
 {%   for packed_field in byte.packed_fields %}
-        if (mainDataHeader.numFields > {{packed_field.ordinal}}) {
+        if (mainDataHeader.elementsOrVersion >= {{packed_field.min_version}}) {
             {{decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(12)}}
         }
 {%   endfor %}

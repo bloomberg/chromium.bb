@@ -99,6 +99,27 @@ void DataPipeProducerDispatcher::RemoveAwakableImplNoLock(
   data_pipe_->ProducerRemoveAwakable(awakable, signals_state);
 }
 
+void DataPipeProducerDispatcher::StartSerializeImplNoLock(
+    Channel* channel,
+    size_t* max_size,
+    size_t* max_platform_handles) {
+  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
+  data_pipe_->ProducerStartSerialize(channel, max_size, max_platform_handles);
+}
+
+bool DataPipeProducerDispatcher::EndSerializeAndCloseImplNoLock(
+    Channel* channel,
+    void* destination,
+    size_t* actual_size,
+    embedder::PlatformHandleVector* platform_handles) {
+  DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
+
+  bool rv = data_pipe_->ProducerEndSerialize(channel, destination, actual_size,
+                                             platform_handles);
+  data_pipe_ = nullptr;
+  return rv;
+}
+
 bool DataPipeProducerDispatcher::IsBusyNoLock() const {
   lock().AssertAcquired();
   return data_pipe_->ProducerIsBusy();

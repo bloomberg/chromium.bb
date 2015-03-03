@@ -53,10 +53,9 @@ const char* MinimalCTest(void) {
   handle0 = MOJO_HANDLE_INVALID;
   EXPECT_NE(MOJO_RESULT_OK, MojoClose(handle0));
 
-  EXPECT_EQ(
-      MOJO_RESULT_INVALID_ARGUMENT,
-      MojoWait(handle0, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE,
-               NULL));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoWait(handle0, ~MOJO_HANDLE_SIGNAL_NONE,
+                     MOJO_DEADLINE_INDEFINITE, NULL));
 
   handle1 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &handle0, &handle1));
@@ -72,37 +71,26 @@ const char* MinimalCTest(void) {
   EXPECT_EQ(123u, result_index);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, states[0].satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-            MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             states[0].satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(handle0,
-                             kHello,
-                             (uint32_t)sizeof(kHello),
-                             NULL,
-                             0u,
-                             MOJO_WRITE_DATA_FLAG_NONE));
+            MojoWriteMessage(handle0, kHello, (uint32_t)sizeof(kHello), NULL,
+                             0u, MOJO_WRITE_DATA_FLAG_NONE));
 
   struct MojoHandleSignalsState state;
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      MojoWait(handle1, MOJO_HANDLE_SIGNAL_READABLE,
-               MOJO_DEADLINE_INDEFINITE, &state));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(handle1, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &state));
 
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-            MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             state.satisfiable_signals);
 
   num_bytes = (uint32_t)sizeof(buffer);
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(handle1,
-                            buffer,
-                            &num_bytes,
-                            NULL,
-                            NULL,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(handle1, buffer, &num_bytes, NULL,
+                                            NULL, MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ((uint32_t)sizeof(kHello), num_bytes);
   EXPECT_EQ(0, memcmp(buffer, kHello, sizeof(kHello)));
 

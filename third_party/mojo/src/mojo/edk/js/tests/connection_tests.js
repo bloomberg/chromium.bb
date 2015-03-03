@@ -83,14 +83,15 @@ define([
 
   function createPeerConnection(handle, stubClass, proxyClass) {
     var c = new connection.Connection(handle, stubClass, proxyClass);
-    c.local.peer = c.remote;
-    c.remote.peer = c.local;
+    if (c.local)
+      c.local.peer = c.remote;
+    if (c.remote)
+      c.remote.peer = c.local;
     return c;
   }
 
   function testClientServer() {
     var receivedFrobinate = false;
-    var receivedDidFrobinate = false;
 
     // ServiceImpl ------------------------------------------------------------
 
@@ -107,21 +108,7 @@ define([
       expect(baz).toBeTruthy();
       expect(core.close(port)).toBe(core.RESULT_OK);
 
-      this.peer.didFrobinate(42);
-    };
-
-    // ServiceClientImpl ------------------------------------------------------
-
-    function ServiceClientImpl() {
-    }
-
-    ServiceClientImpl.prototype =
-        Object.create(sample_service.ServiceClient.stubClass.prototype);
-
-    ServiceClientImpl.prototype.didFrobinate = function(result) {
-      receivedDidFrobinate = true;
-
-      expect(result).toBe(42);
+      return Promise.resolve(42);
     };
 
     var pipe = core.createMessagePipe();
@@ -129,10 +116,10 @@ define([
     var sourcePipe = core.createMessagePipe();
 
     var connection0 = createPeerConnection(
-        pipe.handle0, ServiceImpl, sample_service.ServiceClient.proxyClass);
+        pipe.handle0, ServiceImpl);
 
     var connection1 = createPeerConnection(
-        pipe.handle1, ServiceClientImpl, sample_service.Service.proxyClass);
+        pipe.handle1, undefined, sample_service.Service.proxyClass);
 
     var foo = new sample_service.Foo();
     foo.bar = new sample_service.Bar();
@@ -143,7 +130,6 @@ define([
     mockSupport.pumpOnce(core.RESULT_OK);
 
     expect(receivedFrobinate).toBeTruthy();
-    expect(receivedDidFrobinate).toBeTruthy();
 
     connection0.close();
     connection1.close();
@@ -179,8 +165,7 @@ define([
 
     var foo = new sample_service.Foo();
     foo.bar = new sample_service.Bar();
-    // TODO(darin): crbug.com/357043: pass null in place of |foo| here.
-    connection1.remote.frobinate(foo, true, null);
+    connection1.remote.frobinate(null, true, null);
 
     // Write failures are not reported.
     expect(connection1.encounteredError()).toBeFalsy();
@@ -213,24 +198,15 @@ define([
       return Promise.resolve({a: a, b: b});
     };
 
-    // ProviderClientImpl ------------------------------------------------------
-
-    function ProviderClientImpl() {
-    }
-
-    ProviderClientImpl.prototype =
-        Object.create(sample_interfaces.ProviderClient.stubClass.prototype);
-
     var pipe = core.createMessagePipe();
 
     var connection0 = createPeerConnection(
         pipe.handle0,
-        ProviderImpl,
-        sample_interfaces.ProviderClient.proxyClass);
+        ProviderImpl);
 
     var connection1 = createPeerConnection(
         pipe.handle1,
-        ProviderClientImpl,
+        undefined,
         sample_interfaces.Provider.proxyClass);
 
     var origReadMessage = core.readMessage;

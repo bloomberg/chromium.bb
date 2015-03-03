@@ -12,13 +12,13 @@ package {{package}}
 
 import (
 	"fmt"
-
-	"mojo/public/go/bindings"
 	"mojo/public/go/system"
+{% for i in imports %}
+	{{i}}
+{% endfor %}
 )
 
 var _ = fmt.Errorf
-var _ = bindings.NewEncoder
 var _ = system.GetCore
 
 {% import "enum.tmpl" as enum_macros %}

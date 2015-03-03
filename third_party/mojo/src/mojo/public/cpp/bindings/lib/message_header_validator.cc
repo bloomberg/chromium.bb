@@ -17,17 +17,21 @@ bool IsValidMessageHeader(const MessageHeader* header) {
   // header. If we encounter fields we do not understand, we must ignore them.
 
   // Extra validation of the struct header:
-  if (header->num_fields == 2) {
+  if (header->version < 2) {
+    ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
+    return false;
+  }
+  if (header->version == 2) {
     if (header->num_bytes != sizeof(MessageHeader)) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
     }
-  } else if (header->num_fields == 3) {
+  } else if (header->version == 3) {
     if (header->num_bytes != sizeof(MessageHeaderWithRequestID)) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
     }
-  } else if (header->num_fields > 3) {
+  } else if (header->version > 3) {
     if (header->num_bytes < sizeof(MessageHeaderWithRequestID)) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
       return false;
@@ -37,8 +41,8 @@ bool IsValidMessageHeader(const MessageHeader* header) {
   // Validate flags (allow unknown bits):
 
   // These flags require a RequestID.
-  if (header->num_fields < 3 && ((header->flags & kMessageExpectsResponse) ||
-                                 (header->flags & kMessageIsResponse))) {
+  if (header->version < 3 && ((header->flags & kMessageExpectsResponse) ||
+                              (header->flags & kMessageIsResponse))) {
     ReportValidationError(VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID);
     return false;
   }
@@ -65,10 +69,8 @@ bool MessageHeaderValidator::Accept(Message* message) {
   // if |message| contains handles.
   BoundsChecker bounds_checker(message->data(), message->data_num_bytes(), 0);
 
-  if (!ValidateStructHeader(
-          message->data(), sizeof(MessageHeader), 2, &bounds_checker)) {
+  if (!ValidateStructHeaderAndClaimMemory(message->data(), &bounds_checker))
     return false;
-  }
 
   if (!IsValidMessageHeader(message->header()))
     return false;

@@ -23,7 +23,6 @@
         'wincrypt_shim.h',
       ],
     },
-    'hmac_win64_related_sources': [ '<@(hmac_win64_related_sources)' ],
     'crypto_sources': [
       # NOTE: all transitive dependencies of HMAC on windows need
       #     to be placed in the source list above.
@@ -100,6 +99,11 @@
       'third_party/nss/pk11akey.cc',
       'third_party/nss/rsawrapr.c',
       'third_party/nss/secsign.cc',
-    ]
+    ],
+    'nacl_win64_sources': [
+      '<@(hmac_win64_related_sources)',
+      'random.cc',
+      'random.h',
+    ],
   }
 }

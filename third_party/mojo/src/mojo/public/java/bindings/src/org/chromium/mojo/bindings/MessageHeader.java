@@ -14,14 +14,14 @@ import java.nio.ByteBuffer;
 public class MessageHeader {
 
     private static final int SIMPLE_MESSAGE_SIZE = 16;
-    private static final int SIMPLE_MESSAGE_NUM_FIELDS = 2;
+    private static final int SIMPLE_MESSAGE_VERSION = 2;
     private static final DataHeader SIMPLE_MESSAGE_STRUCT_INFO =
-            new DataHeader(SIMPLE_MESSAGE_SIZE, SIMPLE_MESSAGE_NUM_FIELDS);
+            new DataHeader(SIMPLE_MESSAGE_SIZE, SIMPLE_MESSAGE_VERSION);
 
     private static final int MESSAGE_WITH_REQUEST_ID_SIZE = 24;
-    private static final int MESSAGE_WITH_REQUEST_ID_NUM_FIELDS = 3;
+    private static final int MESSAGE_WITH_REQUEST_ID_VERSION = 3;
     private static final DataHeader MESSAGE_WITH_REQUEST_ID_STRUCT_INFO =
-            new DataHeader(MESSAGE_WITH_REQUEST_ID_SIZE, MESSAGE_WITH_REQUEST_ID_NUM_FIELDS);
+            new DataHeader(MESSAGE_WITH_REQUEST_ID_SIZE, MESSAGE_WITH_REQUEST_ID_VERSION);
 
     private static final int TYPE_OFFSET = 8;
     private static final int FLAGS_OFFSET = 12;
@@ -216,28 +216,25 @@ public class MessageHeader {
      * Validate that the given {@link DataHeader} can be the data header of a message header.
      */
     private static void validateDataHeader(DataHeader dataHeader) {
-        if (dataHeader.numFields < SIMPLE_MESSAGE_NUM_FIELDS) {
-            throw new DeserializationException(
-                    "Incorrect number of fields, expecting at least " + SIMPLE_MESSAGE_NUM_FIELDS
-                    + ", but got: " + dataHeader.numFields);
+        if (dataHeader.elementsOrVersion < SIMPLE_MESSAGE_VERSION) {
+            throw new DeserializationException("Incorrect number of fields, expecting at least "
+                    + SIMPLE_MESSAGE_VERSION + ", but got: " + dataHeader.elementsOrVersion);
         }
         if (dataHeader.size < SIMPLE_MESSAGE_SIZE) {
             throw new DeserializationException(
                     "Incorrect message size, expecting at least " + SIMPLE_MESSAGE_SIZE
                     + ", but got: " + dataHeader.size);
         }
-        if (dataHeader.numFields == SIMPLE_MESSAGE_NUM_FIELDS
+        if (dataHeader.elementsOrVersion == SIMPLE_MESSAGE_VERSION
                 && dataHeader.size != SIMPLE_MESSAGE_SIZE) {
-            throw new DeserializationException(
-                    "Incorrect message size for a message with " + SIMPLE_MESSAGE_NUM_FIELDS
-                    + " fields, expecting " + SIMPLE_MESSAGE_SIZE + ", but got: "
-                    + dataHeader.size);
+            throw new DeserializationException("Incorrect message size for a message with "
+                    + SIMPLE_MESSAGE_VERSION + " fields, expecting " + SIMPLE_MESSAGE_SIZE
+                    + ", but got: " + dataHeader.size);
         }
-        if (dataHeader.numFields == MESSAGE_WITH_REQUEST_ID_NUM_FIELDS
+        if (dataHeader.elementsOrVersion == MESSAGE_WITH_REQUEST_ID_VERSION
                 && dataHeader.size != MESSAGE_WITH_REQUEST_ID_SIZE) {
-            throw new DeserializationException(
-                    "Incorrect message size for a message with "
-                    + MESSAGE_WITH_REQUEST_ID_NUM_FIELDS + " fields, expecting "
+            throw new DeserializationException("Incorrect message size for a message with "
+                    + MESSAGE_WITH_REQUEST_ID_VERSION + " fields, expecting "
                     + MESSAGE_WITH_REQUEST_ID_SIZE + ", but got: " + dataHeader.size);
         }
     }

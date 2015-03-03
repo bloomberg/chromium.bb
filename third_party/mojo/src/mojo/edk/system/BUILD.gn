@@ -44,6 +44,7 @@ component("system") {
     "core.h",
     "data_pipe.cc",
     "data_pipe.h",
+    "data_pipe_impl.h",
     "data_pipe_consumer_dispatcher.cc",
     "data_pipe_consumer_dispatcher.h",
     "data_pipe_producer_dispatcher.cc",
@@ -57,8 +58,8 @@ component("system") {
     "handle_table.h",
     "incoming_endpoint.cc",
     "incoming_endpoint.h",
-    "local_data_pipe.cc",
-    "local_data_pipe.h",
+    "local_data_pipe_impl.cc",
+    "local_data_pipe_impl.h",
     "local_message_pipe_endpoint.cc",
     "local_message_pipe_endpoint.h",
     "mapping_table.cc",
@@ -117,7 +118,6 @@ component("system") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//crypto",
   ]
 
   allow_circular_includes_from = [ "../embedder" ]
@@ -158,7 +158,7 @@ test("mojo_system_unittests") {
     "core_unittest.cc",
     "data_pipe_unittest.cc",
     "dispatcher_unittest.cc",
-    "local_data_pipe_unittest.cc",
+    "local_data_pipe_impl_unittest.cc",
     "memory_unittest.cc",
     "message_pipe_dispatcher_unittest.cc",
     "message_pipe_test_utils.cc",

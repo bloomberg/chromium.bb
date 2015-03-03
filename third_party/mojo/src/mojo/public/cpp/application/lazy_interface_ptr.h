@@ -10,6 +10,8 @@
 
 namespace mojo {
 
+// An InterfacePtr that will request an implementation from a specified
+// ServiceProvider when it is first accessed with the get() method.
 template <typename Interface>
 class LazyInterfacePtr : public InterfacePtr<Interface> {
  public:

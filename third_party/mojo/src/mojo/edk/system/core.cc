@@ -17,7 +17,6 @@
 #include "mojo/edk/system/data_pipe_producer_dispatcher.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
-#include "mojo/edk/system/local_data_pipe.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/message_pipe.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
@@ -100,7 +99,7 @@ scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
 
 MojoResult Core::AsyncWait(MojoHandle handle,
                            MojoHandleSignals signals,
-                           base::Callback<void(MojoResult)> callback) {
+                           const base::Callback<void(MojoResult)>& callback) {
   scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
   DCHECK(dispatcher);
 
@@ -381,7 +380,7 @@ MojoResult Core::CreateDataPipe(
   }
   DCHECK_NE(handle_pair.second, MOJO_HANDLE_INVALID);
 
-  scoped_refptr<DataPipe> data_pipe(new LocalDataPipe(validated_options));
+  scoped_refptr<DataPipe> data_pipe(DataPipe::CreateLocal(validated_options));
   producer_dispatcher->Init(data_pipe);
   consumer_dispatcher->Init(data_pipe);
 

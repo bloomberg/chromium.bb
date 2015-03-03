@@ -422,15 +422,6 @@ class Generator(generator.Generator):
   def GetJinjaExportsForInterface(self, interface):
     exports = self.GetJinjaExports()
     exports.update({'interface': interface})
-    if interface.client:
-      all_interfaces = [] + self.module.interfaces
-      for each in self.module.imports:
-        all_interfaces += each['module'].interfaces
-      interfaces_by_name = dict((x.name, x) for x in all_interfaces)
-      assert  interface.client in interfaces_by_name, (
-          'Unable to find interface %s declared as client of %s.' %
-          (interface.client, interface.name))
-      exports.update({'client': interfaces_by_name[interface.client]})
     return exports
 
   @UseJinja('java_templates/enum.java.tmpl', filters=java_filters)

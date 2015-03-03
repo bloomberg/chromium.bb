@@ -29,6 +29,7 @@ namespace system {
 
 class Channel;
 class ChannelEndpoint;
+class ConnectionManager;
 class MessagePipeDispatcher;
 
 // IDs for |Channel|s managed by a |ChannelManager|. (IDs should be thought of
@@ -42,17 +43,37 @@ const ChannelId kInvalidChannelId = 0;
 // specifically noted.
 class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
  public:
-  // |*platform_support| must remain alive longer than this object.
-  explicit ChannelManager(embedder::PlatformSupport* platform_support);
+  // |io_thread_task_runner| should be the |TaskRunner| for the I/O thread, on
+  // which this channel manager will create all channels. Connection manager is
+  // optional and may be null. All arguments (if non-null) must remain alive at
+  // least until after shutdown completion.
+  ChannelManager(embedder::PlatformSupport* platform_support,
+                 scoped_refptr<base::TaskRunner> io_thread_task_runner,
+                 ConnectionManager* connection_manager);
   ~ChannelManager();
 
+  // Shuts down the channel manager, including shutting down all channels (as if
+  // |ShutdownChannelOnIOThread()| were called for each channel). This must be
+  // called from the I/O thread (given to the constructor) and completes
+  // synchronously. This, or |Shutdown()|, must be called before destroying this
+  // object.
+  void ShutdownOnIOThread();
+
+  // Like |ShutdownOnIOThread()|, but may be called from any thread. On
+  // completion, will call |callback| ("on" |io_thread_task_runner| if
+  // |callback_thread_task_runner| is null else by posted using
+  // |callback_thread_task_runner|). Note: This will always post a task to the
+  // I/O thread, even it is the current thread.
+  // TODO(vtl): Consider if this is really necessary, since it only has one use
+  // (in tests).
+  void Shutdown(const base::Closure& callback,
+                scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+
   // Creates a |Channel| and adds it to the set of channels managed by this
-  // |ChannelManager|. |channel_id| should be a valid |ChannelId| (i.e.,
-  // nonzero) not "assigned" to any other |Channel| being managed by this
+  // |ChannelManager|. This must be called from the I/O thread (given to the
+  // constructor). |channel_id| should be a valid |ChannelId| (i.e., nonzero)
+  // not "assigned" to any other |Channel| being managed by this
   // |ChannelManager|.
-  // TODO(vtl): Currently, this should be called on any I/O thread (which will
-  // become the new channel's "channel thread"). Eventually, the channel manager
-  // will have an assigned I/O thread, on which this must be called.
   scoped_refptr<MessagePipeDispatcher> CreateChannelOnIOThread(
       ChannelId channel_id,
       embedder::ScopedPlatformHandle platform_handle);
@@ -69,7 +90,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
       ChannelId channel_id,
       embedder::ScopedPlatformHandle platform_handle,
       scoped_refptr<base::TaskRunner> io_thread_task_runner,
-      base::Closure callback,
+      const base::Closure& callback,
       scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
   // Gets the |Channel| with the given ID (which must exist).
@@ -82,14 +103,31 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
   // the channel).
   void WillShutdownChannel(ChannelId channel_id);
 
-  // Shuts down the channel specified by the given ID. It is up to the caller to
-  // guarantee that this is only called once per channel (that was added using
-  // |CreateChannelOnIOThread()|). If called from the channel's creation thread
-  // (i.e., |base::MessageLoopProxy::current()| is the channel thread's
-  // |TaskRunner|), this will complete synchronously.
-  void ShutdownChannel(ChannelId channel_id);
+  // Shuts down the channel specified by the given ID. This, or
+  // |ShutdownChannel()|, should be called once per channel (created using
+  // |CreateChannelOnIOThread()| or |CreateChannel()|). This must be called from
+  // the channel's "channel thread", and completes synchronously.
+  // TODO(vtl): "channel thread" will become "this object's I/O thread".
+  void ShutdownChannelOnIOThread(ChannelId channel_id);
+
+  // Like |ShutdownChannelOnIOThread()|, but may be called from any thread. It
+  // will always post a task to the channel's "channel thread", and post
+  // |callback| to |callback_thread_task_runner| (or execute it directly on the
+  // "channel thread" if |callback_thread_task_runner| is null) on completion.
+  // TODO(vtl): "channel thread" will become "this object's I/O thread".
+  void ShutdownChannel(
+      ChannelId channel_id,
+      const base::Closure& callback,
+      scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+
+  ConnectionManager* connection_manager() const { return connection_manager_; }
 
  private:
+  // Used by |Shutdown()|. Called on the I/O thread.
+  void ShutdownHelper(
+      const base::Closure& callback,
+      scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+
   // Used by |CreateChannelOnIOThread()| and |CreateChannelHelper()|. Called on
   // the I/O thread.
   void CreateChannelOnIOThreadHelper(
@@ -102,10 +140,13 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
       ChannelId channel_id,
       embedder::ScopedPlatformHandle platform_handle,
       scoped_refptr<system::ChannelEndpoint> bootstrap_channel_endpoint,
-      base::Closure callback,
+      const base::Closure& callback,
       scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
+  // Note: These must not be used after shutdown.
   embedder::PlatformSupport* const platform_support_;
+  const scoped_refptr<base::TaskRunner> io_thread_task_runner_;
+  ConnectionManager* const connection_manager_;
 
   // Note: |Channel| methods should not be called under |lock_|.
   mutable base::Lock lock_;  // Protects the members below.

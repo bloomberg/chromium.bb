@@ -36,14 +36,6 @@ interface {{method|interface_response_name}} extends org.chromium.mojo.bindings.
 {%-   endif -%}
 {%- endmacro -%}
 
-{%- macro super_class(client, with_generic=True) -%}
-{%-   if client -%}
-org.chromium.mojo.bindings.InterfaceWithClient{% if with_generic %}<{{client|java_type}}>{% endif %}
-{%-   else -%}
-org.chromium.mojo.bindings.Interface
-{%-   endif -%}
-{%- endmacro -%}
-
 {%- macro flags_for_method(method, is_parameter) -%}
 {{flags(method.response_parameters, is_parameter)}}
 {%- endmacro -%}
@@ -58,15 +50,13 @@ org.chromium.mojo.bindings.MessageHeader.MESSAGE_IS_RESPONSE_FLAG
 {%-   endif -%}
 {%- endmacro -%}
 
-{%- macro manager_class(interface, client, fully_qualified=False) -%}
-{% if fully_qualified %}{{super_class(client, False)}}.{% endif %}Manager<{{interface|name}}, {{interface|name}}.Proxy
-{%- if client -%}, {{client|java_type}}{%-  endif -%}
->
+{%- macro manager_class(interface, fully_qualified=False) -%}
+{% if fully_qualified %}org.chromium.mojo.bindings.Interface.{% endif %}Manager<{{interface|name}}, {{interface|name}}.Proxy>
 {%- endmacro -%}
 
-{%- macro manager_def(interface, client) -%}
-public static final {{manager_class(interface, client, True)}} MANAGER =
-        new {{manager_class(interface, client, True)}}() {
+{%- macro manager_def(interface) -%}
+public static final {{manager_class(interface, True)}} MANAGER =
+        new {{manager_class(interface, True)}}() {
 
     public String getName() {
         return "{{namespace|replace(".","::")}}::{{interface.name}}";
@@ -84,12 +74,6 @@ public static final {{manager_class(interface, client, True)}} MANAGER =
     public {{interface|name}}[] buildArray(int size) {
       return new {{interface|name}}[size];
     }
-{%  if client %}
-
-    protected org.chromium.mojo.bindings.Interface.Manager<{{client|java_type}}, ?> getClientManager() {
-        return {{client|java_type}}.MANAGER;
-    }
-{%  endif %}
 };
 {%- endmacro -%}
 
@@ -134,8 +118,8 @@ return false;
 {% endif %}
 {%- endmacro -%}
 
-{% macro interface_def(interface, client) %}
-public interface {{interface|name}} extends {{super_class(client)}} {
+{% macro interface_def(interface) %}
+public interface {{interface|name}} extends org.chromium.mojo.bindings.Interface {
 {%  for constant in interface.constants %}
 
     {{constant_def(constant)|indent(4)}}
@@ -145,10 +129,10 @@ public interface {{interface|name}} extends {{super_class(client)}} {
     {{enum_def(enum, false)|indent(4)}}
 {% endfor %}
 
-    public interface Proxy extends {{interface|name}}, {{super_class(client, False)}}.Proxy{% if client %}<{{client|java_type}}>{% endif %} {
+    public interface Proxy extends {{interface|name}}, org.chromium.mojo.bindings.Interface.Proxy {
     }
 
-    {{manager_class(interface, client)}} MANAGER = {{interface|name}}_Internal.MANAGER;
+    {{manager_class(interface)}} MANAGER = {{interface|name}}_Internal.MANAGER;
 {% for method in interface.methods %}
 
     void {{method|name}}({{declare_request_params(method)}});
@@ -159,16 +143,16 @@ public interface {{interface|name}} extends {{super_class(client)}} {
 }
 {% endmacro %}
 
-{% macro interface_internal_def(interface, client) %}
+{% macro interface_internal_def(interface) %}
 class {{interface|name}}_Internal {
 
-    {{manager_def(interface, client)|indent(4)}}
+    {{manager_def(interface)|indent(4)}}
 
 {% for method in interface.methods %}
     private static final int {{method|method_ordinal_name}} = {{method.ordinal}};
 {% endfor %}
 
-    static final class Proxy extends {% if client %}org.chromium.mojo.bindings.InterfaceWithClient.AbstractProxy<{{client|java_type}}>{% else %}org.chromium.mojo.bindings.Interface.AbstractProxy{% endif %} implements {{interface|name}}.Proxy {
+    static final class Proxy extends org.chromium.mojo.bindings.Interface.AbstractProxy implements {{interface|name}}.Proxy {
 
         Proxy(org.chromium.mojo.system.Core core,
               org.chromium.mojo.bindings.MessageReceiverWithResponder messageReceiver) {

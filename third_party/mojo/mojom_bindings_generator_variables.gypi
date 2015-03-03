@@ -19,7 +19,6 @@
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/module.cc.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/module.h.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/module-internal.h.tmpl',
-      '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/params_definition.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/struct_declaration.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/struct_definition.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/struct_macros.tmpl',

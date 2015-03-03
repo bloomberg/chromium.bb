@@ -6,8 +6,17 @@ import("//build/module_args/mojo.gni")
 
 # If using the prebuilt shell, gate its usage by the platforms for which it is
 # published.
-if (!defined(use_prebuilt_mojo_shell) || use_prebuilt_mojo_shell) {
+use_prebuilt_mojo_shell = false
+if (!defined(build_mojo_shell_from_source) || !build_mojo_shell_from_source) {
   use_prebuilt_mojo_shell = is_linux || is_android
+}
+
+# If using the prebuilt network service, gate its usage by the platforms for
+# which it is published.
+use_prebuilt_network_service = false
+if (!defined(build_network_service_from_source) ||
+    !build_network_service_from_source) {
+  use_prebuilt_network_service = is_linux || is_android
 }
 
 # The absolute path to the directory containing the mojo public SDK (i.e., the

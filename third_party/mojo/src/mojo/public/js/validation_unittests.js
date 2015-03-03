@@ -254,8 +254,8 @@ define([
         testInterface.ConformanceTestInterface.validateRequest]);
   }
 
-  function testIntegratedMessageValidation() {
-    var testFiles = getMessageTestFiles("integration_");
+  function testIntegratedMessageValidation(testFilesPattern) {
+    var testFiles = getMessageTestFiles(testFilesPattern);
     expect(testFiles.length).toBeGreaterThan(0);
 
     for (var i = 0; i < testFiles.length; i++) {
@@ -279,8 +279,8 @@ define([
 
       var testConnection = new connection.TestConnection(
           testMessagePipe.handle1,
-          testInterface.IntegrationTestInterface1.stubClass,
-          testInterface.IntegrationTestInterface2.proxyClass);
+          testInterface.IntegrationTestInterface.stubClass,
+          testInterface.IntegrationTestInterface.proxyClass);
 
       var validationError = noError;
       testConnection.router_.validationErrorHandler = function(err) {
@@ -295,8 +295,22 @@ define([
     }
   }
 
+  function testIntegratedMessageHeaderValidation() {
+    testIntegratedMessageValidation("integration_msghdr");
+  }
+
+  function testIntegratedRequestMessageValidation() {
+    testIntegratedMessageValidation("integration_intf_rqst");
+  }
+
+  function testIntegratedResponseMessageValidation() {
+    testIntegratedMessageValidation("integration_intf_resp");
+  }
+
   expect(checkTestMessageParser()).toBeNull();
   testConformanceMessageValidation();
-  testIntegratedMessageValidation();
+  testIntegratedMessageHeaderValidation();
+  testIntegratedResponseMessageValidation();
+  testIntegratedRequestMessageValidation();
   this.result = "PASS";
 });

@@ -40,8 +40,8 @@ type Payload interface {
 
 // DataHeader is a header for a mojo complex element.
 type DataHeader struct {
-	Size     uint32
-	Elements uint32
+	Size              uint32
+	ElementsOrVersion uint32
 }
 
 // MessageHeader is a header information for a message.

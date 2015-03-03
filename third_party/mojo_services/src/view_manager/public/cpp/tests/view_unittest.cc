@@ -27,7 +27,7 @@ class TestView : public View {
   ~TestView() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestView);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
 TEST_F(ViewTest, AddChild) {
@@ -148,7 +148,7 @@ class TestProperty {
 
  private:
   static TestProperty* last_deleted_;
-  DISALLOW_COPY_AND_ASSIGN(TestProperty);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TestProperty);
 };
 
 TestProperty* TestProperty::last_deleted_ = NULL;
@@ -222,7 +222,7 @@ class TreeChangeObserver : public ViewObserver {
   View* observee_;
   std::vector<TreeChangeParams> received_params_;
 
-  DISALLOW_COPY_AND_ASSIGN(TreeChangeObserver);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TreeChangeObserver);
 };
 
 // Adds/Removes v11 to v1.
@@ -463,7 +463,7 @@ class OrderChangeObserver : public ViewObserver {
   View* observee_;
   Changes changes_;
 
-  DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
 };
 
 }  // namespace
@@ -613,7 +613,7 @@ class BoundsChangeObserver : public ViewObserver {
   View* view_;
   Changes changes_;
 
-  DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
 };
 
 }  // namespace
@@ -669,7 +669,7 @@ class VisibilityChangeObserver : public ViewObserver {
   View* view_;
   Changes changes_;
 
-  DISALLOW_COPY_AND_ASSIGN(VisibilityChangeObserver);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(VisibilityChangeObserver);
 };
 
 }  // namespace
@@ -775,7 +775,7 @@ class SharedPropertyChangeObserver : public ViewObserver {
   View* view_;
   Changes changes_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedPropertyChangeObserver);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(SharedPropertyChangeObserver);
 };
 
 }  // namespace
@@ -856,7 +856,7 @@ class LocalPropertyChangeObserver : public ViewObserver {
   const void* property_key_;
   intptr_t old_property_value_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalPropertyChangeObserver);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(LocalPropertyChangeObserver);
 };
 
 }  // namespace

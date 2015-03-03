@@ -12,7 +12,7 @@ if ({{variable}} == null) {
 {%-   endif %}
   var encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}}, {{kind|array_expected_length}});
   for (int i{{level}} = 0; i{{level}} < {{variable}}.length; ++i{{level}}) {
-    {{encode(variable~'[i'~level~']', sub_kind, 'bindings.DataHeader.kHeaderSize + bindings.kPointerSize * i'~level, 0, level+1)|indent(4)}}
+    {{encode(variable~'[i'~level~']', sub_kind, 'bindings.ArrayDataHeader.kHeaderSize + bindings.kPointerSize * i'~level, 0, level+1)|indent(4)}}
   }
 }
 {%- elif kind|is_map_kind %}
@@ -23,8 +23,8 @@ if ({{variable}} == null) {
   int size{{level}} = {{variable}}.length;
   var keys{{level}} = {{variable}}.keys.toList();
   var values{{level}} = {{variable}}.values.toList();
-  {{encode('keys'~level, kind.key_kind|array, 'bindings.DataHeader.kHeaderSize', 0, level+1, False)|indent(2)}}
-  {{encode('values'~level, kind.value_kind|array, 'bindings.DataHeader.kHeaderSize + bindings.kPointerSize', 0, level+1, False)|indent(2)}}
+  {{encode('keys'~level, kind.key_kind|array, 'bindings.ArrayDataHeader.kHeaderSize', 0, level+1, False)|indent(2)}}
+  {{encode('values'~level, kind.value_kind|array, 'bindings.ArrayDataHeader.kHeaderSize + bindings.kPointerSize', 0, level+1, False)|indent(2)}}
 }
 {%- else %}
 encoder{{level}}.{{kind|encode_method(variable, offset, bit)}};
@@ -50,18 +50,18 @@ if (decoder{{level+1}} == null) {
   List<{{kind.key_kind|dart_type}}> keys{{level}};
   List<{{kind.value_kind|dart_type}}> values{{level}};
   {
-    {{decode('keys'~level, kind.key_kind|array, 'bindings.DataHeader.kHeaderSize', 0, level+1)|indent(4)}}
+    {{decode('keys'~level, kind.key_kind|array, 'bindings.ArrayDataHeader.kHeaderSize', 0, level+1)|indent(4)}}
   }
   {
-    {{decode('values'~level, kind.value_kind|array('keys'~level~'.length'), 'bindings.DataHeader.kHeaderSize + bindings.kPointerSize', 0, level+1)|indent(4)}}
+    {{decode('values'~level, kind.value_kind|array('keys'~level~'.length'), 'bindings.ArrayDataHeader.kHeaderSize + bindings.kPointerSize', 0, level+1)|indent(4)}}
   }
   {{variable}} = new Map<{{kind.key_kind|dart_type}}, {{kind.value_kind|dart_type}}>.fromIterables(
       keys{{level}}, values{{level}});
 {%-     else %}
   var si{{level+1}} = decoder{{level+1}}.decodeDataHeaderForPointerArray({{kind|array_expected_length}});
-  {{variable}} = new {{kind|dart_type}}(si{{level+1}}.numFields);
-  for (int i{{level+1}} = 0; i{{level+1}} < si{{level+1}}.numFields; ++i{{level+1}}) {
-    {{decode(variable~'[i'~(level+1)~']', kind.kind, 'bindings.DataHeader.kHeaderSize + bindings.kPointerSize * i'~(level+1), 0, level+1)|indent(4)}}
+  {{variable}} = new {{kind|dart_type}}(si{{level+1}}.numElements);
+  for (int i{{level+1}} = 0; i{{level+1}} < si{{level+1}}.numElements; ++i{{level+1}}) {
+    {{decode(variable~'[i'~(level+1)~']', kind.kind, 'bindings.ArrayDataHeader.kHeaderSize + bindings.kPointerSize * i'~(level+1), 0, level+1)|indent(4)}}
   }
 {%-     endif %}
 }
@@ -75,8 +75,8 @@ if (decoder{{level+1}} == null) {
 {%- macro struct_def(struct) %}
 class {{struct|name}} extends bindings.Struct {
   static const int kStructSize = {{struct.versions[-1].num_bytes}};
-  static const bindings.DataHeader kDefaultStructInfo =
-      const bindings.DataHeader(kStructSize, {{struct.packed.packed_fields|length}});
+  static const bindings.StructDataHeader kDefaultStructInfo =
+      const bindings.StructDataHeader(kStructSize, {{struct.versions[-1].version}});
 
 {#--- Enums #}
 {%- from "enum_definition.tmpl" import enum_def %}
@@ -107,15 +107,15 @@ class {{struct|name}} extends bindings.Struct {
     }
     {{struct|name}} result = new {{struct|name}}();
 
-    var mainDataHeader = decoder0.decodeDataHeader();
+    var mainDataHeader = decoder0.decodeStructDataHeader();
     if ((mainDataHeader.size < kStructSize) ||
-        (mainDataHeader.numFields < {{struct.packed.packed_fields|length}})) {
+        (mainDataHeader.version < {{struct.versions[-1].version}})) {
       throw new bindings.MojoCodecError('Malformed header');
     }
 
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}
-    if (mainDataHeader.numFields > {{packed_field.ordinal}}) {
+    {
       {{decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(6)}}
     }
 {%-   endfor %}
@@ -125,9 +125,9 @@ class {{struct|name}} extends bindings.Struct {
 
   void encode(bindings.Encoder encoder) {
 {%- if not struct.bytes %}
-    encoder.getEncoderAtOffset(kDefaultStructInfo);
+    encoder.getStructEncoderAtOffset(kDefaultStructInfo);
 {%- else %}
-    var encoder0 = encoder.getEncoderAtOffset(kDefaultStructInfo);
+    var encoder0 = encoder.getStructEncoderAtOffset(kDefaultStructInfo);
 {%- endif %}
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}

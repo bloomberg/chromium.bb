@@ -10,7 +10,6 @@ test("mojo_view_manager_lib_unittests") {
     "run_all_unittests.cc",
     "view_manager_test_suite.cc",
     "view_manager_test_suite.h",
-    "view_manager_unittest.cc",
     "view_unittest.cc",
   ]
 
@@ -18,11 +17,10 @@ test("mojo_view_manager_lib_unittests") {
     "//base",
     "//base/test:test_support",
     "//mojo/public/cpp/application",
+    "//mojo/public/cpp/system",
     "//mojo/services/geometry/public/cpp",
     "//mojo/services/geometry/public/interfaces",
     "//mojo/services/view_manager/public/cpp",
-    "//mojo/services/view_manager/public/interfaces",
-    "//shell/application_manager",
     "//shell:test_support",
     "//testing/gtest",
   ]

@@ -8,7 +8,6 @@
 [u4]2                  // num_fields
 [dist8]param0_ptr      // param0
 [dist8]param1_ptr      // param1
-[u8]0                  // unknown
 [anchr]method7_params
 
 [anchr]param0_ptr

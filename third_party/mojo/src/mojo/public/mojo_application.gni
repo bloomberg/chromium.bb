@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/module_args/mojo.gni")
 import("mojo.gni")
 import("mojo_sdk.gni")
 
@@ -68,22 +69,22 @@ template("mojo_native_application") {
       libs = invoker.libs
     }
 
-    if (use_prebuilt_mojo_shell) {
-      copy_mojo_shell =
-          rebase_path("mojo/public/tools:copy_mojo_shell", ".", mojo_root)
-    }
-
-    # Copy the prebuilt mojo_shell if using it.
+    data_deps = []
     if (defined(invoker.data_deps)) {
       data_deps = invoker.data_deps
-      if (use_prebuilt_mojo_shell) {
-        data_deps += [ copy_mojo_shell ]
-      }
-    } else {
-      if (use_prebuilt_mojo_shell) {
-        data_deps = [ copy_mojo_shell ]
-      }
     }
+
+    # Copy any necessary prebuilt artifacts.
+    if (use_prebuilt_mojo_shell) {
+      data_deps +=
+          [ rebase_path("mojo/public/tools:copy_mojo_shell", ".", mojo_root) ]
+    }
+    if (use_prebuilt_network_service) {
+      data_deps += [ rebase_path("mojo/public/tools:copy_network_service",
+                                 ".",
+                                 mojo_root) ]
+    }
+
     deps = rebase_path([
                          "mojo/public/c/system",
                          "mojo/public/platform/native:system",

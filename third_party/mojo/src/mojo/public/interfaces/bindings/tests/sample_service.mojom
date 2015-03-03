@@ -104,19 +104,14 @@ struct StructWithHoleV2 {
   int32 v3 = 3;
 };
 
-[Client=ServiceClient]
 interface Service {
   enum BazOptions {
     REGULAR = 0,
     EXTRA
   };
   const uint8 kFavoriteBaz = 1;
-  Frobinate@0(Foo? foo@0, BazOptions baz@1, Port? port@2);
+  Frobinate@0(Foo? foo@0, BazOptions baz@1, Port? port@2) => (int32 result@0);
   GetPort@1(Port& port @0);
-};
-
-interface ServiceClient {
-  DidFrobinate@0(int32 result@0);
 };
 
 // This interface is referenced above where it is defined. It also refers to

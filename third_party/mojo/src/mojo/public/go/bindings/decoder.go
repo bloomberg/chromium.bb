@@ -68,11 +68,15 @@ func (d *Decoder) pushState(header DataHeader, elementBitSize uint32) error {
 	if err := d.claimData(int(header.Size - dataHeaderSize)); err != nil {
 		return err
 	}
+	elements := uint32(0)
+	if elementBitSize != 0 {
+		elements = header.ElementsOrVersion
+	}
 	d.stateStack = append(d.stateStack, encodingState{
 		offset:         oldEnd,
 		limit:          d.end,
 		elementBitSize: elementBitSize,
-		elements:       header.Elements,
+		elements:       elements,
 	})
 	return nil
 }
@@ -94,13 +98,14 @@ func (d *Decoder) StartArray(elementBitSize uint32) (uint32, error) {
 	if err != nil {
 		return 0, err
 	}
-	if got, want := int(header.Size), dataHeaderSize+bytesForBits(uint64(header.Elements)*uint64(elementBitSize)); got < want {
+	minSize := bytesForBits(uint64(header.ElementsOrVersion) * uint64(elementBitSize))
+	if got, want := int(header.Size), dataHeaderSize+minSize; got < want {
 		return 0, fmt.Errorf("data header size is too small: is %d, but should be at least %d", got, want)
 	}
 	if err := d.pushState(header, elementBitSize); err != nil {
 		return 0, err
 	}
-	return header.Elements, nil
+	return header.ElementsOrVersion, nil
 }
 
 // StartMap starts decoding a map and reads its data header.
@@ -120,8 +125,8 @@ func (d *Decoder) StartMap() error {
 	return nil
 }
 
-// StartArray starts decoding a struct and reads its data header,
-// returning number of fields declared in data header.
+// StartStruct starts decoding a struct and reads its data header,
+// returning struct version declared in data header.
 // Note: it doesn't read a pointer to the encoded struct.
 // Call |Finish()| after reading all fields.
 func (d *Decoder) StartStruct() (uint32, error) {
@@ -135,7 +140,7 @@ func (d *Decoder) StartStruct() (uint32, error) {
 	if err := d.pushState(header, 0); err != nil {
 		return 0, err
 	}
-	return header.Elements, nil
+	return header.ElementsOrVersion, nil
 }
 
 func (d *Decoder) readDataHeader() (DataHeader, error) {
@@ -144,8 +149,8 @@ func (d *Decoder) readDataHeader() (DataHeader, error) {
 	}
 	oldEnd := d.end - dataHeaderSize
 	header := DataHeader{
-		Size:     binary.LittleEndian.Uint32(d.buf[oldEnd:]),
-		Elements: binary.LittleEndian.Uint32(d.buf[oldEnd+4:]),
+		Size:              binary.LittleEndian.Uint32(d.buf[oldEnd:]),
+		ElementsOrVersion: binary.LittleEndian.Uint32(d.buf[oldEnd+4:]),
 	}
 	return header, nil
 }

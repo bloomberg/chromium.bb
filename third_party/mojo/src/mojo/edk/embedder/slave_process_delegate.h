@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
@@ -14,8 +15,10 @@ namespace embedder {
 
 // An interface for the slave process delegate (which lives in each slave
 // process).
-class MOJO_SYSTEM_IMPL_EXPORT SlaveProcessDelegate {
+class MOJO_SYSTEM_IMPL_EXPORT SlaveProcessDelegate : public ProcessDelegate {
  public:
+  ProcessType GetType() const override;
+
   // Called when contact with the master process has been lost.
   // TODO(vtl): Obviously, there needs to be a suitable embedder API for
   // connecting to the master process. What will it be? Mention that here once
@@ -24,11 +27,15 @@ class MOJO_SYSTEM_IMPL_EXPORT SlaveProcessDelegate {
 
  protected:
   SlaveProcessDelegate() {}
-  virtual ~SlaveProcessDelegate() {}
+  ~SlaveProcessDelegate() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SlaveProcessDelegate);
 };
+
+inline ProcessType SlaveProcessDelegate::GetType() const {
+  return ProcessType::SLAVE;
+}
 
 }  // namespace embedder
 }  // namespace mojo

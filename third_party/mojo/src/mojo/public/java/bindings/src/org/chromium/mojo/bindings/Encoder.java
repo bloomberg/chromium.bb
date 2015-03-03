@@ -150,7 +150,7 @@ public class Encoder {
     public void encode(DataHeader s) {
         mEncoderState.claimMemory(BindingsHelper.align(s.size));
         encode(s.size, DataHeader.SIZE_OFFSET);
-        encode(s.numFields, DataHeader.NUM_FIELDS_OFFSET);
+        encode(s.elementsOrVersion, DataHeader.ELEMENTS_OR_VERSION_OFFSET);
     }
 
     /**

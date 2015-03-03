@@ -26,7 +26,7 @@ class Array_Data;
 
 struct StructHeader {
   uint32_t num_bytes;
-  uint32_t num_fields;
+  uint32_t version;
 };
 static_assert(sizeof(StructHeader) == 8, "Bad sizeof(StructHeader)");
 

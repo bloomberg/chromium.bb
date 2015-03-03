@@ -146,14 +146,14 @@ define([
   function SimpleMessageReceiver() {
   }
 
-  SimpleMessageReceiver.prototype.accept = function(message) {
+  SimpleMessageReceiver.prototype.acceptAndExpectResponse = function(message) {
     if (dumpMessageAsHex) {
       var uint8Array = new Uint8Array(message.buffer.arrayBuffer);
       console.log(hexdump.dumpArray(uint8Array));
     }
     // Imagine some IPC happened here.
     var serviceImpl = new ServiceImpl();
-    serviceImpl.accept(message);
+    return serviceImpl.acceptWithResponder(message, { accept: function() {} });
   };
 
   var serviceProxy = new sample.Service.proxyClass;

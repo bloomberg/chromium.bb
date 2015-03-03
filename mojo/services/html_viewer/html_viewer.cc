@@ -75,7 +75,9 @@ class HTMLViewerApplication : public mojo::Application {
         web_media_player_factory_(web_media_player_factory),
         is_headless_(is_headless) {}
 
-  void Initialize(ShellPtr shell, Array<String> args) override {
+  void Initialize(ShellPtr shell,
+                  Array<String> args,
+                  const String& url) override {
     ServiceProviderPtr service_provider;
     shell_ = shell.Pass();
     shell_->ConnectToApplication("mojo:network_service",
