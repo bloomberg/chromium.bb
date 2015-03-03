@@ -4132,7 +4132,7 @@ long Chapters::Atom::Parse(IMkvReader* pReader, long long pos, long long size) {
       long long val;
       status = UnserializeInt(pReader, pos, size, val);
 
-      if (val < 0)  // error
+      if (status < 0)  // error
         return status;
 
       m_uid = static_cast<unsigned long long>(val);
