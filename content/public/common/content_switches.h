@@ -231,6 +231,7 @@ CONTENT_EXPORT extern const char kUseImageTextureTarget[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 CONTENT_EXPORT extern const char kUseNormalPriorityForTileTaskWorkerThreads[];
 extern const char kUseSurfaces[];
+CONTENT_EXPORT extern const char kDisableSurfaces[];
 extern const char kUtilityCmdPrefix[];
 CONTENT_EXPORT extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];
