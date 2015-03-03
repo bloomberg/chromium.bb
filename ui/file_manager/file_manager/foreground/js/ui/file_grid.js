@@ -107,6 +107,18 @@ FileGrid.prototype.onThumbnailLoaded_ = function(event) {
 FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
   cr.ui.Grid.prototype.mergeItems.call(this, beginIndex, endIndex);
 
+  // Make sure that grid item's selected attribute is updated just after the
+  // mergeItems operation is done. This prevents shadow of selected grid items
+  // from being animated unintentionally by redraw.
+  for (var i = beginIndex; i < endIndex; i++) {
+    var item = this.getListItemByIndex(i);
+    if (!item)
+      continue;
+    var isSelected = this.selectionModel.getIndexSelected(i);
+    if (item.selected != isSelected)
+      item.selected = isSelected;
+  }
+
   // Keep these values to set range when a new list thumbnail loader is set.
   this.beginIndex_ = beginIndex;
   this.endIndex_ = endIndex;

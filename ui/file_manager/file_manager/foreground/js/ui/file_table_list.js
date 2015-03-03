@@ -27,7 +27,7 @@ FileTableList.prototype.mergeItems = function(beginIndex, endIndex) {
 
   // Make sure that list item's selected attribute is updated just after the
   // mergeItems operation is done. This prevents checkmarks on selected items
-  // from being animated unintentinally by redraw.
+  // from being animated unintentionally by redraw.
   for (var i = beginIndex; i < endIndex; i++) {
     var item = this.getListItemByIndex(i);
     if (!item)
