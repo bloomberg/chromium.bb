@@ -1,5 +1,3 @@
-EVENT(message)
-EVENT(keystatuseschange)
 for (var entry of keyStatuses)
 123, usable
 4567890, usable

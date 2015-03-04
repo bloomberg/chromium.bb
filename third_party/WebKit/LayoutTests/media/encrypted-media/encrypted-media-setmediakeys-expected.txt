@@ -1,6 +1,0 @@
-This tests setting MediaKeys on a video object.
-
-This is a testharness.js-based test.
-PASS Setting MediaKeys on a video object. 
-Harness: the test ran to completion.
-

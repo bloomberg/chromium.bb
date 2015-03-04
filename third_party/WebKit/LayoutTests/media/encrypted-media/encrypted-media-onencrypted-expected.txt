@@ -1,8 +1,0 @@
-Test that encrypted event is fired on an encrypted media file.
-
-EVENT(encrypted)
-EVENT(encrypted)
-This is a testharness.js-based test.
-PASS encrypted fired on encrypted media file. 
-Harness: the test ran to completion.
-

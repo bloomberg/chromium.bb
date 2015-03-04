@@ -58,7 +58,6 @@ function getInitData(initDataType)
 function waitForEventAndRunStep(eventName, element, func, stepTest)
 {
     var eventCallback = function(event) {
-        consoleWrite('EVENT(' + eventName + ')');
         if (func)
             func(event);
     }

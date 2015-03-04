@@ -1,8 +1,0 @@
-CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed soon. Please use 'navigator.requestMediaKeySystemAccess()' instead.
-Call unprefixed EME API after prefixed EME API.
-
-EVENT(loadstart)
-This is a testharness.js-based test.
-PASS Call unprefixed EME API after prefixed EME API. 
-Harness: the test ran to completion.
-

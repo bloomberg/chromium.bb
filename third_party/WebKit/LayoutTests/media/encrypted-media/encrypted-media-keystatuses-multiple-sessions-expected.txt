@@ -1,5 +1,3 @@
-EVENT(message)
-EVENT(keystatuseschange)
 for (var entry of keyStatuses)
 123, usable
 for (var key of keyStatuses.keys())
@@ -10,8 +8,6 @@ for (var entry of keyStatuses.entries())
 123, usable
 keyStatuses.forEach()
 123, usable
-EVENT(message)
-EVENT(keystatuseschange)
 for (var entry of keyStatuses)
 4567890, usable
 for (var key of keyStatuses.keys())
