@@ -293,7 +293,7 @@ void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidModificationError, "Cannot add a CSS-connected FontFace.");
         return;
     }
-    CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+    CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
     m_nonCSSConnectedFaces.add(fontFace);
     fontSelector->fontFaceCache()->addFontFace(fontSelector, fontFace, false);
     if (fontFace->loadStatus() == FontFace::Loading)
@@ -305,7 +305,7 @@ void FontFaceSet::clear()
 {
     if (!inActiveDocumentContext() || m_nonCSSConnectedFaces.isEmpty())
         return;
-    CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+    CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
     FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
     for (const auto& fontFace : m_nonCSSConnectedFaces) {
         fontFaceCache->removeFontFace(fontFace.get(), false);
@@ -327,7 +327,7 @@ bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
     WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >::iterator it = m_nonCSSConnectedFaces.find(fontFace);
     if (it != m_nonCSSConnectedFaces.end()) {
         m_nonCSSConnectedFaces.remove(it);
-        CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+        CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
         fontSelector->fontFaceCache()->removeFontFace(fontFace, false);
         if (fontFace->loadStatus() == FontFace::Loading)
             removeFromLoadingFonts(fontFace);
@@ -354,7 +354,7 @@ const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >& FontFaceSet::cssConn
 {
     Document* d = document();
     d->ensureStyleResolver(); // Flush pending style changes.
-    return d->styleEngine()->fontSelector()->fontFaceCache()->cssConnectedFontFaces();
+    return d->styleEngine().fontSelector()->fontFaceCache()->cssConnectedFontFaces();
 }
 
 bool FontFaceSet::isCSSConnectedFontFace(FontFace* fontFace) const
@@ -449,7 +449,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontStri
         return promise;
     }
 
-    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    FontFaceCache* fontFaceCache = document()->styleEngine().fontSelector()->fontFaceCache();
     FontFaceArray faces;
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* segmentedFontFace = fontFaceCache->get(font.fontDescription(), f->family());
@@ -474,7 +474,7 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
         return false;
     }
 
-    CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+    CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
     FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
 
     bool hasLoadedFaces = false;
@@ -538,7 +538,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
     styleResolver.applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), style.get());
 
     font = style->font();
-    font.update(document()->styleEngine()->fontSelector());
+    font.update(document()->styleEngine().fontSelector());
     return true;
 }
 

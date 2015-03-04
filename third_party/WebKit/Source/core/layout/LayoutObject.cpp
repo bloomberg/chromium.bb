@@ -2646,7 +2646,7 @@ static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
 
 PassRefPtr<LayoutStyle> LayoutObject::uncachedFirstLineStyle(LayoutStyle* style) const
 {
-    if (!document().styleEngine()->usesFirstLineRules())
+    if (!document().styleEngine().usesFirstLineRules())
         return nullptr;
 
     ASSERT(!isText());
@@ -2656,7 +2656,7 @@ PassRefPtr<LayoutStyle> LayoutObject::uncachedFirstLineStyle(LayoutStyle* style)
 
 LayoutStyle* LayoutObject::cachedFirstLineStyle() const
 {
-    ASSERT(document().styleEngine()->usesFirstLineRules());
+    ASSERT(document().styleEngine().usesFirstLineRules());
 
     if (RefPtr<LayoutStyle> style = firstLineStyleForCachedUncachedType(Cached, isText() ? parent() : this, m_style.get()))
         return style.get();

@@ -55,7 +55,7 @@ TEST_F(FontBuilderInitTest, InitialFontSizeNotScaled)
 
     FontBuilder builder(document());
     builder.setInitial(1.0f); // FIXME: Remove unused param.
-    builder.createFont(document().styleEngine()->fontSelector(), *initial);
+    builder.createFont(document().styleEngine().fontSelector(), *initial);
 
     EXPECT_EQ(16.0f, initial->fontDescription().computedSize());
 }
@@ -80,7 +80,7 @@ TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified)
 
     FontBuilder fontBuilder(document());
     funcs.setValue(fontBuilder);
-    fontBuilder.createFont(document().styleEngine()->fontSelector(), *style);
+    fontBuilder.createFont(document().styleEngine().fontSelector(), *style);
 
     FontDescription outputDescription = style->fontDescription();
 

@@ -71,7 +71,7 @@ ShadowRoot::~ShadowRoot()
     if (m_shadowRootRareData && m_shadowRootRareData->styleSheets())
         m_shadowRootRareData->styleSheets()->detachFromDocument();
 
-    document().styleEngine()->didRemoveShadowRoot(this);
+    document().styleEngine().didRemoveShadowRoot(this);
 
     // We cannot let ContainerNode destructor call willBeDeletedFromDocument()
     // for this ShadowRoot instance because TreeScope destructor
@@ -176,7 +176,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
 void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
 {
     if (insertionPoint->inDocument()) {
-        document().styleEngine()->shadowRootRemovedFromDocument(this);
+        document().styleEngine().shadowRootRemovedFromDocument(this);
         if (m_registeredWithParentShadowRoot) {
             ShadowRoot* root = host()->containingShadowRoot();
             if (!root)

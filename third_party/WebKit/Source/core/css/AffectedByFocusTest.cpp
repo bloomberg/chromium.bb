@@ -210,12 +210,12 @@ TEST_F(AffectedByFocusTest, AffectedByFocusUpdate)
 
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned startCount = document().styleEngine()->resolverAccessCount();
+    unsigned startCount = document().styleEngine().resolverAccessCount();
 
     document().getElementById("d")->focus();
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned accessCount = document().styleEngine()->resolverAccessCount() - startCount;
+    unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
 
     ASSERT_EQ(1U, accessCount);
 }
@@ -241,12 +241,12 @@ TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate)
 
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned startCount = document().styleEngine()->resolverAccessCount();
+    unsigned startCount = document().styleEngine().resolverAccessCount();
 
     document().getElementById("d")->focus();
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned accessCount = document().styleEngine()->resolverAccessCount() - startCount;
+    unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
 
     ASSERT_EQ(11U, accessCount);
 }
@@ -272,12 +272,12 @@ TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate)
 
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned startCount = document().styleEngine()->resolverAccessCount();
+    unsigned startCount = document().styleEngine().resolverAccessCount();
 
     document().getElementById("d")->focus();
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned accessCount = document().styleEngine()->resolverAccessCount() - startCount;
+    unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
 
     ASSERT_EQ(2U, accessCount);
 }
@@ -304,12 +304,12 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate)
 
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned startCount = document().styleEngine()->resolverAccessCount();
+    unsigned startCount = document().styleEngine().resolverAccessCount();
 
     document().getElementById("d")->focus();
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned accessCount = document().styleEngine()->resolverAccessCount() - startCount;
+    unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
 
     ASSERT_EQ(1U, accessCount);
 }

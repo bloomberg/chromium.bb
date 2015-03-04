@@ -208,7 +208,7 @@ void PopupMenuImpl::addSeparator(HTMLHRElement& element, SharedBuffer* data)
 void PopupMenuImpl::didWriteDocument(Document& document)
 {
     Document& ownerDocument = ownerElement().document();
-    document.styleEngine()->setFontSelector(PopupMenuCSSFontSelector::create(&document, ownerDocument.styleEngine()->fontSelector()));
+    document.styleEngine().setFontSelector(PopupMenuCSSFontSelector::create(&document, ownerDocument.styleEngine().fontSelector()));
 }
 
 void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValue)

@@ -239,7 +239,7 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)
         || (checkFonts && (!parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(style()->font().fontMetrics())
         || parentStyle.lineHeight() != style()->lineHeight()));
 
-    if (!alwaysCreateLineBoxesNew && checkFonts && document().styleEngine()->usesFirstLineRules()) {
+    if (!alwaysCreateLineBoxesNew && checkFonts && document().styleEngine().usesFirstLineRules()) {
         // Have to check the first line style as well.
         const LayoutStyle& firstLineParentStyle = parent()->styleRef(true);
         const LayoutStyle& childStyle = styleRef(true);
@@ -1314,7 +1314,7 @@ InlineFlowBox* LayoutInline::createAndAppendInlineFlowBox()
 
 LayoutUnit LayoutInline::lineHeight(bool firstLine, LineDirectionMode /*direction*/, LinePositionMode /*linePositionMode*/) const
 {
-    if (firstLine && document().styleEngine()->usesFirstLineRules()) {
+    if (firstLine && document().styleEngine().usesFirstLineRules()) {
         const LayoutStyle* s = style(firstLine);
         if (s != style())
             return s->computedLineHeight();

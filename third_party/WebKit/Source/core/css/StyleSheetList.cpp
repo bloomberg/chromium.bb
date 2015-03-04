@@ -44,13 +44,13 @@ inline const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& StyleSheetList::
     if (!m_treeScope)
         return m_detachedStyleSheets;
 #endif
-    return document()->styleEngine()->styleSheetsForStyleSheetList(*m_treeScope);
+    return document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
 }
 
 #if !ENABLE(OILPAN)
 void StyleSheetList::detachFromDocument()
 {
-    m_detachedStyleSheets = document()->styleEngine()->styleSheetsForStyleSheetList(*m_treeScope);
+    m_detachedStyleSheets = document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
     m_treeScope = nullptr;
 }
 #endif

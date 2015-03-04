@@ -32,12 +32,12 @@ TEST(DragUpdateTest, AffectedByDragUpdate)
         "</div>", ASSERT_NO_EXCEPTION);
 
     document.view()->updateLayoutAndStyleIfNeededRecursive();
-    unsigned startCount = document.styleEngine()->resolverAccessCount();
+    unsigned startCount = document.styleEngine().resolverAccessCount();
 
     document.documentElement()->renderer()->updateDragState(true);
     document.view()->updateLayoutAndStyleIfNeededRecursive();
 
-    unsigned accessCount = document.styleEngine()->resolverAccessCount() - startCount;
+    unsigned accessCount = document.styleEngine().resolverAccessCount() - startCount;
 
     ASSERT_EQ(1U, accessCount);
 }
@@ -58,12 +58,12 @@ TEST(DragUpdateTest, ChildrenOrSiblingsAffectedByDragUpdate)
         "</div>", ASSERT_NO_EXCEPTION);
 
     document.updateLayout();
-    unsigned startCount = document.styleEngine()->resolverAccessCount();
+    unsigned startCount = document.styleEngine().resolverAccessCount();
 
     document.documentElement()->renderer()->updateDragState(true);
     document.updateLayout();
 
-    unsigned accessCount = document.styleEngine()->resolverAccessCount() - startCount;
+    unsigned accessCount = document.styleEngine().resolverAccessCount() - startCount;
 
     ASSERT_EQ(5U, accessCount);
 }

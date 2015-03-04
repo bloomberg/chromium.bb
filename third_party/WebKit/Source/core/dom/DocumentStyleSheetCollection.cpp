@@ -43,7 +43,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     ASSERT(treeScope.rootNode() == treeScope.rootNode().document());
 }
 
-void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine* engine, DocumentStyleSheetCollector& collector)
+void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine& engine, DocumentStyleSheetCollector& collector)
 {
     for (Node* n : m_styleSheetCandidateNodes) {
         StyleSheetCandidate candidate(*n);
@@ -56,14 +56,14 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
             if (collector.hasVisited(document))
                 continue;
             collector.willVisit(document);
-            document->styleEngine()->updateStyleSheetsInImport(collector);
+            document->styleEngine().updateStyleSheetsInImport(collector);
             continue;
         }
 
         if (candidate.isEnabledAndLoading()) {
             // it is loading but we should still decide which style sheet set to use
-            if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
-                engine->selectStylesheetSetName(candidate.title());
+            if (candidate.hasPreferrableName(engine.preferredStylesheetSetName()))
+                engine.selectStylesheetSetName(candidate.title());
             continue;
         }
 
@@ -71,23 +71,23 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
         if (!sheet)
             continue;
 
-        if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
-            engine->selectStylesheetSetName(candidate.title());
+        if (candidate.hasPreferrableName(engine.preferredStylesheetSetName()))
+            engine.selectStylesheetSetName(candidate.title());
         collector.appendSheetForList(sheet);
-        if (candidate.canBeActivated(engine->preferredStylesheetSetName()))
+        if (candidate.canBeActivated(engine.preferredStylesheetSetName()))
             collector.appendActiveStyleSheet(toCSSStyleSheet(sheet));
     }
 }
 
-void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, DocumentStyleSheetCollector& collector)
+void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine& engine, DocumentStyleSheetCollector& collector)
 {
-    ASSERT(document().styleEngine() == engine);
-    collector.appendActiveStyleSheets(engine->injectedAuthorStyleSheets());
-    collector.appendActiveStyleSheets(engine->documentAuthorStyleSheets());
+    ASSERT(&document().styleEngine() == &engine);
+    collector.appendActiveStyleSheets(engine.injectedAuthorStyleSheets());
+    collector.appendActiveStyleSheets(engine.documentAuthorStyleSheets());
     collectStyleSheetsFromCandidates(engine, collector);
 }
 
-void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
+void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, StyleResolverUpdateMode updateMode)
 {
     StyleSheetCollection collection;
     ActiveDocumentStyleSheetCollector collector(collection);
@@ -97,15 +97,15 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
     analyzeStyleSheetChange(updateMode, collection, change);
 
     if (change.styleResolverUpdateType == Reconstruct) {
-        engine->clearMasterResolver();
+        engine.clearMasterResolver();
         // FIMXE: The following depends on whether StyleRuleFontFace was modified or not.
         // No need to always-clear font cache.
-        engine->clearFontCache();
-    } else if (StyleResolver* styleResolver = engine->resolver()) {
+        engine.clearFontCache();
+    } else if (StyleResolver* styleResolver = engine.resolver()) {
         if (change.styleResolverUpdateType != Additive) {
             ASSERT(change.styleResolverUpdateType == Reset);
             styleResolver->resetAuthorStyle(treeScope());
-            engine->removeFontFaceRules(change.fontFaceRulesToRemove);
+            engine.removeFontFaceRules(change.fontFaceRulesToRemove);
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
             styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
         } else {

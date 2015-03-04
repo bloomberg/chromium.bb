@@ -45,7 +45,7 @@ ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot& shado
 {
 }
 
-void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollection& collection)
+void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine& engine, StyleSheetCollection& collection)
 {
     for (Node* n : m_styleSheetCandidateNodes) {
         StyleSheetCandidate candidate(*n);
@@ -61,16 +61,16 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Sty
         // FIXME: clarify how PREFERRED or ALTERNATE works in shadow trees.
         // Should we set preferred/selected stylesheets name in shadow trees and
         // use the name in document?
-        if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
-            engine->selectStylesheetSetName(candidate.title());
+        if (candidate.hasPreferrableName(engine.preferredStylesheetSetName()))
+            engine.selectStylesheetSetName(candidate.title());
 
         collection.appendSheetForList(sheet);
-        if (candidate.canBeActivated(engine->preferredStylesheetSetName()))
+        if (candidate.canBeActivated(engine.preferredStylesheetSetName()))
             collection.appendActiveStyleSheet(toCSSStyleSheet(sheet));
     }
 }
 
-void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
+void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, StyleResolverUpdateMode updateMode)
 {
     StyleSheetCollection collection;
     collectStyleSheets(engine, collection);
@@ -78,7 +78,7 @@ void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine
     StyleSheetChange change;
     analyzeStyleSheetChange(updateMode, collection, change);
 
-    if (StyleResolver* styleResolver = engine->resolver()) {
+    if (StyleResolver* styleResolver = engine.resolver()) {
         if (change.styleResolverUpdateType != Additive) {
             // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
             // In this case, we will reset rulesets created from style elements in the shadow tree.

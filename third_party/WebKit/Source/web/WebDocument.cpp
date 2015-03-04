@@ -217,7 +217,7 @@ void WebDocument::insertStyleSheet(const WebString& sourceCode)
     ASSERT(document);
     RefPtrWillBeRawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document, 0));
     parsedSheet->parseString(sourceCode);
-    document->styleEngine()->addAuthorSheet(parsedSheet);
+    document->styleEngine().addAuthorSheet(parsedSheet);
 }
 
 void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)
@@ -298,13 +298,13 @@ void WebDocument::beginExitTransition(const WebString& cssSelector, bool exitToN
     RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
     if (!exitToNativeApp)
         document->hideTransitionElements(cssSelector);
-    document->styleEngine()->setExitTransitionStylesheetsEnabled(true);
+    document->styleEngine().setExitTransitionStylesheetsEnabled(true);
 }
 
 void WebDocument::revertExitTransition()
 {
     RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
-    document->styleEngine()->setExitTransitionStylesheetsEnabled(false);
+    document->styleEngine().setExitTransitionStylesheetsEnabled(false);
 }
 
 void WebDocument::hideTransitionElements(const WebString& cssSelector)

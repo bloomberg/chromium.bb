@@ -543,7 +543,7 @@ void StyleSheetContents::clientLoadStarted(CSSStyleSheet* sheet)
 void StyleSheetContents::removeSheetFromCache(Document* document)
 {
     ASSERT(document);
-    document->styleEngine()->removeSheet(this);
+    document->styleEngine().removeSheet(this);
 }
 
 void StyleSheetContents::addedToMemoryCache()
@@ -579,7 +579,7 @@ static void clearResolvers(WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleShee
 {
     for (const auto& sheet : clients) {
         if (Document* document = sheet->ownerDocument())
-            document->styleEngine()->clearResolver();
+            document->styleEngine().clearResolver();
     }
 }
 
@@ -605,7 +605,7 @@ static void removeFontFaceRules(WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyl
 {
     for (const auto& sheet : clients) {
         if (Node* ownerNode = sheet->ownerNode())
-            ownerNode->document().styleEngine()->removeFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >(1, fontFaceRule));
+            ownerNode->document().styleEngine().removeFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace>>(1, fontFaceRule));
     }
 }
 

@@ -17,7 +17,7 @@ namespace blink {
 
 inline LayoutStyle* LayoutObject::firstLineStyle() const
 {
-    return document().styleEngine()->usesFirstLineRules() ? cachedFirstLineStyle() : style();
+    return document().styleEngine().usesFirstLineRules() ? cachedFirstLineStyle() : style();
 }
 
 inline const LayoutStyle& LayoutObject::firstLineStyleRef() const

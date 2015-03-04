@@ -569,8 +569,7 @@ Document::~Document()
     m_timeline->detachFromDocument();
 
     // We need to destroy CSSFontSelector before destroying m_fetcher.
-    if (m_styleEngine)
-        m_styleEngine->detachFromDocument();
+    m_styleEngine->detachFromDocument();
 
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
@@ -667,7 +666,7 @@ MediaQueryMatcher& Document::mediaQueryMatcher()
 void Document::mediaQueryAffectingValueChanged()
 {
     m_evaluateMediaQueriesOnStyleRecalc = true;
-    styleEngine()->clearMediaQueryRuleSetStyleSheets();
+    styleEngine().clearMediaQueryRuleSetStyleSheets();
     InspectorInstrumentation::mediaQueryResultChanged(this);
 }
 
@@ -700,7 +699,7 @@ void Document::setDoctype(PassRefPtrWillBeRawPtr<DocumentType> docType)
             m_isMobileDocument = true;
     }
     // Doctype affects the interpretation of the stylesheets.
-    clearStyleResolver();
+    styleEngine().clearResolver();
 }
 
 DOMImplementation& Document::implementation()
@@ -1603,7 +1602,7 @@ void Document::updateStyleInvalidationIfNeeded()
 void Document::setupFontBuilder(LayoutStyle& documentStyle)
 {
     FontBuilder fontBuilder(*this);
-    RefPtrWillBeRawPtr<CSSFontSelector> selector = m_styleEngine->fontSelector();
+    RefPtrWillBeRawPtr<CSSFontSelector> selector = styleEngine().fontSelector();
     fontBuilder.createFontForDocument(selector, documentStyle);
 }
 
@@ -1646,7 +1645,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     // documentElement's style was dirty. We could keep track of which elements depend on
     // rem units like we do for viewport styles, but we assume root font size changes are
     // rare and just invalidate the cache for now.
-    if (styleEngine()->usesRemUnits() && (documentElement()->needsAttach() || documentElement()->computedStyle()->fontSize() != documentElementStyle->fontSize())) {
+    if (styleEngine().usesRemUnits() && (documentElement()->needsAttach() || documentElement()->computedStyle()->fontSize() != documentElementStyle->fontSize())) {
         ensureStyleResolver().invalidateMatchedPropertiesCache();
         documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FontSizeChange));
     }
@@ -1748,7 +1747,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
 
     if (m_elemSheet && m_elemSheet->contents()->usesRemUnits())
-        m_styleEngine->setUsesRemUnit(true);
+        styleEngine().setUsesRemUnit(true);
 
     updateStyle(change);
 
@@ -1817,10 +1816,10 @@ void Document::updateStyle(StyleRecalcChange change)
 
     clearChildNeedsStyleRecalc();
 
-    if (m_styleEngine->hasResolver()) {
+    if (styleEngine().hasResolver()) {
         // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
-        StyleResolver& resolver = m_styleEngine->ensureResolver();
-        m_styleEngine->resetCSSFeatureFlags(resolver.ensureUpdatedRuleFeatureSet());
+        StyleResolver& resolver = styleEngine().ensureResolver();
+        styleEngine().resetCSSFeatureFlags(resolver.ensureUpdatedRuleFeatureSet());
         resolver.clearStyleSharingList();
     }
 
@@ -1905,9 +1904,9 @@ void Document::clearFocusedElementTimerFired(Timer<Document>*)
 // to instead suspend JavaScript execution.
 void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks runPostLayoutTasks)
 {
-    StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
+    StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
 
-    if (m_styleEngine->hasPendingSheets()) {
+    if (styleEngine().hasPendingSheets()) {
         // FIXME: We are willing to attempt to suppress painting with outdated style info only once.
         // Our assumption is that it would be dangerous to try to stop it a second time, after page
         // content has already been loaded and displayed with accurate style information. (Our
@@ -1936,7 +1935,7 @@ void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks
 PassRefPtr<LayoutStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
 {
     ASSERT_ARG(element, element->document() == this);
-    StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
+    StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
     return ensureStyleResolver().styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
 }
 
@@ -2061,11 +2060,6 @@ StyleResolver& Document::ensureStyleResolver() const
     return m_styleEngine->ensureResolver();
 }
 
-void Document::clearStyleResolver()
-{
-    m_styleEngine->clearResolver();
-}
-
 void Document::attach(const AttachContext& context)
 {
     ASSERT(m_lifecycle.state() == DocumentLifecycle::Inactive);
@@ -2143,7 +2137,7 @@ void Document::detach(const AttachContext& context)
     m_layoutView = 0;
     ContainerNode::detach(context);
 
-    m_styleEngine->didDetach();
+    styleEngine().didDetach();
 
     frameHost()->eventHandlerRegistry().documentDetached(*this);
 
@@ -2940,8 +2934,8 @@ void Document::processHttpEquivDefaultStyle(const AtomicString& content)
     // For more info, see the test at:
     // http://www.hixie.ch/tests/evil/css/import/main/preferred.html
     // -dwh
-    m_styleEngine->setSelectedStylesheetSetName(content);
-    m_styleEngine->setPreferredStylesheetSetName(content);
+    styleEngine().setSelectedStylesheetSetName(content);
+    styleEngine().setPreferredStylesheetSetName(content);
     styleResolverChanged();
 }
 
@@ -3279,7 +3273,7 @@ String Document::selectedStylesheetSet() const
 
 void Document::setSelectedStylesheetSet(const String& aString)
 {
-    m_styleEngine->setSelectedStylesheetSetName(aString);
+    styleEngine().setSelectedStylesheetSetName(aString);
     styleResolverChanged();
 }
 
@@ -3309,14 +3303,9 @@ void Document::notifyResizeForViewportUnits()
 
 void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
 {
-    // styleResolverChanged() can be invoked during Document destruction.
-    // We just skip that case.
-    if (!m_styleEngine)
-        return;
+    styleEngine().resolverChanged(updateMode);
 
-    m_styleEngine->resolverChanged(updateMode);
-
-    if (didLayoutWithPendingStylesheets() && !m_styleEngine->hasPendingSheets()) {
+    if (didLayoutWithPendingStylesheets() && !styleEngine().hasPendingSheets()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
         // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
@@ -5435,7 +5424,7 @@ void Document::removedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode upda
     // styleResolverChanged() is needed even when the document is inactive so that
     // imported docuements (which is inactive) notifies the change to the master document.
     if (isActive())
-        styleEngine()->modifiedStyleSheet(sheet);
+        styleEngine().modifiedStyleSheet(sheet);
     styleResolverChanged(updateMode);
 }
 
@@ -5445,7 +5434,7 @@ void Document::modifiedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode upd
     // styleResolverChanged() is needed even when the document is inactive so that
     // imported docuements (which is inactive) notifies the change to the master document.
     if (isActive())
-        styleEngine()->modifiedStyleSheet(sheet);
+        styleEngine().modifiedStyleSheet(sheet);
     styleResolverChanged(updateMode);
 }
 
@@ -5624,7 +5613,7 @@ void Document::platformColorsChanged()
     if (!isActive())
         return;
 
-    styleEngine()->platformColorsChanged();
+    styleEngine().platformColorsChanged();
 }
 
 void Document::clearWeakMembers(Visitor* visitor)

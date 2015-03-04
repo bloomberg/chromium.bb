@@ -215,11 +215,11 @@ void StyleResolver::finishAppendAuthorStyleSheets()
     collectFeatures();
 
     if (document().layoutView() && document().layoutView()->style())
-        document().layoutView()->style()->font().update(document().styleEngine()->fontSelector());
+        document().layoutView()->style()->font().update(document().styleEngine().fontSelector());
 
     collectViewportRules();
 
-    document().styleEngine()->resetCSSFeatureFlags(m_features);
+    document().styleEngine().resetCSSFeatureFlags(m_features);
 }
 
 void StyleResolver::resetRuleFeatures()
@@ -283,7 +283,7 @@ void StyleResolver::collectFeatures()
     if (m_watchedSelectorsRules)
         m_features.add(m_watchedSelectorsRules->features());
 
-    document().styleEngine()->collectScopedStyleFeaturesTo(m_features);
+    document().styleEngine().collectScopedStyleFeaturesTo(m_features);
 
     m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
     m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
@@ -524,7 +524,7 @@ void StyleResolver::adjustLayoutStyle(StyleResolverState& state, Element* elemen
 void StyleResolver::loadPendingResources(StyleResolverState& state)
 {
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
-    document().styleEngine()->fontSelector()->fontLoader()->loadPendingFonts();
+    document().styleEngine().fontSelector()->fontLoader()->loadPendingFonts();
 }
 
 PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutStyle* defaultParent, StyleSharingBehavior sharingBehavior,
@@ -541,7 +541,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutS
         if (!s_styleNotYetAvailable) {
             s_styleNotYetAvailable = LayoutStyle::create().leakRef();
             s_styleNotYetAvailable->setDisplay(NONE);
-            s_styleNotYetAvailable->font().update(document().styleEngine()->fontSelector());
+            s_styleNotYetAvailable->font().update(document().styleEngine().fontSelector());
         }
 
         document().setHasNodesWithPlaceholderStyle();
@@ -703,7 +703,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
 {
     if (value) {
         StyleBuilder::applyProperty(property, state, value);
-        state.fontBuilder().createFont(state.document().styleEngine()->fontSelector(), state.mutableStyleRef());
+        state.fontBuilder().createFont(state.document().styleEngine().fontSelector(), state.mutableStyleRef());
     }
     return CSSAnimatableValueFactory::create(property, *state.style());
 }
@@ -907,7 +907,7 @@ PassRefPtr<LayoutStyle> StyleResolver::defaultStyleForElement()
     RefPtr<LayoutStyle> style = LayoutStyle::create();
     FontBuilder fontBuilder(document());
     fontBuilder.setInitial(style->effectiveZoom());
-    fontBuilder.createFont(document().styleEngine()->fontSelector(), *style);
+    fontBuilder.createFont(document().styleEngine().fontSelector(), *style);
     return style.release();
 }
 
@@ -923,7 +923,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForText(Text* textNode)
 
 void StyleResolver::updateFont(StyleResolverState& state)
 {
-    state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.mutableStyleRef());
+    state.fontBuilder().createFont(document().styleEngine().fontSelector(), state.mutableStyleRef());
     state.setConversionFontSizes(CSSToLengthConversionData::FontSizes(state.style(), state.rootElementStyle()));
     state.setConversionZoom(state.style()->effectiveZoom());
 }

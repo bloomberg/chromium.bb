@@ -289,9 +289,9 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& exc
         return 0;
     }
 
-    unsigned beforeCount = document->styleEngine()->resolverAccessCount();
+    unsigned beforeCount = document->styleEngine().resolverAccessCount();
     document->updateRenderTreeIfNeeded();
-    return document->styleEngine()->resolverAccessCount() - beforeCount;
+    return document->styleEngine().resolverAccessCount() - beforeCount;
 }
 
 unsigned Internals::needsLayoutCount(ExceptionState& exceptionState) const
@@ -2292,7 +2292,7 @@ void Internals::showAllTransitionElements()
 
 void Internals::setExitTransitionStylesheetsEnabled(bool enabled)
 {
-    frame()->document()->styleEngine()->setExitTransitionStylesheetsEnabled(enabled);
+    frame()->document()->styleEngine().setExitTransitionStylesheetsEnabled(enabled);
 }
 
 void Internals::forcePluginPlaceholder(HTMLElement* element, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, ExceptionState& exceptionState)

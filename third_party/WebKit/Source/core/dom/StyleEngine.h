@@ -58,8 +58,8 @@ public:
 
     class IgnoringPendingStylesheet : public TemporaryChange<bool> {
     public:
-        IgnoringPendingStylesheet(StyleEngine* engine)
-            : TemporaryChange<bool>(engine->m_ignorePendingStylesheets, true)
+        IgnoringPendingStylesheet(StyleEngine& engine)
+            : TemporaryChange<bool>(engine.m_ignorePendingStylesheets, true)
         {
         }
     };

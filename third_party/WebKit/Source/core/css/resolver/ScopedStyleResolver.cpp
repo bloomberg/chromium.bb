@@ -86,7 +86,7 @@ void ScopedStyleResolver::addFontFaceRules(const RuleSet& ruleSet)
         return;
 
     Document& document = treeScope().document();
-    CSSFontSelector* cssFontSelector = document.styleEngine()->fontSelector();
+    CSSFontSelector* cssFontSelector = document.styleEngine().fontSelector();
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace>> fontFaceRules = ruleSet.fontFaceRules();
     for (auto& fontFaceRule : fontFaceRules) {
         if (RefPtrWillBeRawPtr<FontFace> fontFace = FontFace::create(&document, fontFaceRule))

@@ -42,7 +42,7 @@ class ShadowTreeStyleSheetCollection final : public TreeScopeStyleSheetCollectio
 public:
     explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
 
-    void updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
+    void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -50,7 +50,7 @@ public:
     }
 
 private:
-    void collectStyleSheets(StyleEngine*, StyleSheetCollection&);
+    void collectStyleSheets(StyleEngine&, StyleSheetCollection&);
 };
 
 }

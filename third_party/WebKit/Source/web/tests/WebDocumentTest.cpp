@@ -35,7 +35,7 @@ TEST(WebDocumentTest, InsertStyleSheet)
     webDoc.insertStyleSheet("body { color: green }");
 
     // Check insertStyleSheet did not cause a synchronous style recalc.
-    unsigned accessCount = coreDoc->styleEngine()->resolverAccessCount();
+    unsigned accessCount = coreDoc->styleEngine().resolverAccessCount();
     ASSERT_EQ(0U, accessCount);
 
     HTMLElement* bodyElement = coreDoc->body();

@@ -45,8 +45,8 @@ public:
         return adoptPtrWillBeNoop(new DocumentStyleSheetCollection(treeScope));
     }
 
-    void updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
-    void collectStyleSheets(StyleEngine*, DocumentStyleSheetCollector&);
+    void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
+    void collectStyleSheets(StyleEngine&, DocumentStyleSheetCollector&);
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -56,7 +56,7 @@ public:
 private:
     explicit DocumentStyleSheetCollection(TreeScope&);
 
-    void collectStyleSheetsFromCandidates(StyleEngine*, DocumentStyleSheetCollector&);
+    void collectStyleSheetsFromCandidates(StyleEngine&, DocumentStyleSheetCollector&);
 };
 
 }

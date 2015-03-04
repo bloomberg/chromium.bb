@@ -1296,7 +1296,7 @@ void ContainerNode::checkForChildrenAdjacentRuleChanges()
             child->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
 
         if (childRulesChanged && hasDirectAdjacentRules)
-            forceCheckOfNextElementCount = document.styleEngine()->maxDirectAdjacentSelectors();
+            forceCheckOfNextElementCount = document.styleEngine().maxDirectAdjacentSelectors();
         else if (forceCheckOfNextElementCount)
             --forceCheckOfNextElementCount;
 

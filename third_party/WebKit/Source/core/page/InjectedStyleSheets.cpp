@@ -55,7 +55,7 @@ void InjectedStyleSheets::invalidateInjectedStyleSheetCacheInAllFrames()
     for (const Page* page : pages) {
         for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
-                toLocalFrame(frame)->document()->styleEngine()->invalidateInjectedStyleSheetCache();
+                toLocalFrame(frame)->document()->styleEngine().invalidateInjectedStyleSheetCache();
         }
     }
 }

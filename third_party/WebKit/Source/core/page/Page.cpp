@@ -500,7 +500,7 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
     case SettingsDelegate::FontFamilyChange:
         for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
-                toLocalFrame(frame)->document()->styleEngine()->updateGenericFontFamilySettings();
+                toLocalFrame(frame)->document()->styleEngine().updateGenericFontFamilySettings();
         }
         setNeedsRecalcStyleInAllFrames();
         break;

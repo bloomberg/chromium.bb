@@ -231,7 +231,7 @@ void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, c
     fontDescription.setComputedSize(FontSize::getComputedSizeFromSpecifiedSize(&document, scalingFactor, fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), DoNotUseSmartMinimumForFontSize));
 
     scaledFont = Font(fontDescription);
-    scaledFont.update(document.styleEngine()->fontSelector());
+    scaledFont.update(document.styleEngine().fontSelector());
 }
 
 LayoutRect LayoutSVGInlineText::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const

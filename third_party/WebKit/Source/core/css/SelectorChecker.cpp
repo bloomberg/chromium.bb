@@ -144,7 +144,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
 
             PseudoId pseudoId = CSSSelector::pseudoId(context.selector->pseudoType());
             if (pseudoId == FIRST_LETTER)
-                context.element->document().styleEngine()->setUsesFirstLetterRules(true);
+                context.element->document().styleEngine().setUsesFirstLetterRules(true);
             if (pseudoId != NOPSEUDO && m_mode != SharingRules && result)
                 result->dynamicPseudo = pseudoId;
         }
@@ -625,7 +625,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
                 element.setStyleAffectedByEmpty();
                 if (context.elementStyle)
                     context.elementStyle->setEmptyState(result);
-                else if (element.layoutStyle() && (element.document().styleEngine()->usesSiblingRules() || element.layoutStyle()->unique()))
+                else if (element.layoutStyle() && (element.document().styleEngine().usesSiblingRules() || element.layoutStyle()->unique()))
                     element.layoutStyle()->setEmptyState(result);
             }
             return result;

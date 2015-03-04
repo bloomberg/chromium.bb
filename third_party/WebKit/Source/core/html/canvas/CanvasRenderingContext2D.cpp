@@ -1997,9 +1997,9 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
         static_cast<CSSFontSelector*>(state().m_font.fontSelector())->unregisterForInvalidationCallbacks(&modifiableState());
 #endif
     modifiableState().m_font = newStyle->font();
-    modifiableState().m_font.update(canvas()->document().styleEngine()->fontSelector());
+    modifiableState().m_font.update(canvas()->document().styleEngine().fontSelector());
     modifiableState().m_realizedFont = true;
-    canvas()->document().styleEngine()->fontSelector()->registerForInvalidationCallbacks(&modifiableState());
+    canvas()->document().styleEngine().fontSelector()->registerForInvalidationCallbacks(&modifiableState());
 }
 
 String CanvasRenderingContext2D::textAlign() const

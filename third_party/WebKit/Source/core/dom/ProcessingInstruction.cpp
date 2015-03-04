@@ -65,7 +65,7 @@ ProcessingInstruction::~ProcessingInstruction()
     // However, if we add ASSERT(!inDocument()), fast/xsl/xslt-entity.xml
     // crashes. We need to investigate ProcessingInstruction lifetime.
     if (inDocument() && m_isCSS)
-        document().styleEngine()->removeStyleSheetCandidateNode(this);
+        document().styleEngine().removeStyleSheetCandidateNode(this);
 #endif
     clearEventListenerForXSLT();
 }
@@ -179,7 +179,7 @@ void ProcessingInstruction::process(const String& href, const String& charset)
     if (resource) {
         m_loading = true;
         if (!m_isXSL)
-            document().styleEngine()->addPendingSheet();
+            document().styleEngine().addPendingSheet();
         setResource(resource);
     }
 }
@@ -197,7 +197,7 @@ bool ProcessingInstruction::sheetLoaded()
 {
     if (!isLoading()) {
         if (!DocumentXSLT::sheetLoaded(document(), this))
-            document().styleEngine()->removePendingSheet(this);
+            document().styleEngine().removePendingSheet(this);
         return true;
     }
     return false;
@@ -277,7 +277,7 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
     String charset;
     bool isValid = checkStyleSheet(href, charset);
     if (!DocumentXSLT::processingInstructionInsertedIntoDocument(document(), this))
-        document().styleEngine()->addStyleSheetCandidateNode(this, m_createdByParser);
+        document().styleEngine().addStyleSheetCandidateNode(this, m_createdByParser);
     if (isValid)
         process(href, charset);
     return InsertionDone;
@@ -291,7 +291,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 
     // No need to remove XSLStyleSheet from StyleEngine.
     if (!DocumentXSLT::processingInstructionRemovedFromDocument(document(), this))
-        document().styleEngine()->removeStyleSheetCandidateNode(this);
+        document().styleEngine().removeStyleSheetCandidateNode(this);
 
     RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet;
     if (m_sheet) {
@@ -311,7 +311,7 @@ void ProcessingInstruction::clearSheet()
 {
     ASSERT(m_sheet);
     if (m_sheet->isLoading())
-        document().styleEngine()->removePendingSheet(this);
+        document().styleEngine().removePendingSheet(this);
     m_sheet.release()->clearOwnerNode();
 }
 

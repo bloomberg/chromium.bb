@@ -703,7 +703,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
 
     // This method determines the vertical position for inline elements.
     bool firstLine = isFirstLineStyle();
-    if (firstLine && !renderer->document().styleEngine()->usesFirstLineRules())
+    if (firstLine && !renderer->document().styleEngine().usesFirstLineRules())
         firstLine = false;
 
     // Check the cache.

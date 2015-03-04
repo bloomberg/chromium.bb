@@ -46,7 +46,7 @@ LayoutBR::~LayoutBR()
 
 int LayoutBR::lineHeight(bool firstLine) const
 {
-    const LayoutStyle& style = styleRef(firstLine && document().styleEngine()->usesFirstLineRules());
+    const LayoutStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
     return style.computedLineHeight();
 }
 

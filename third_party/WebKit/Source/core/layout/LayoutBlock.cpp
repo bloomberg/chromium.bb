@@ -3153,7 +3153,7 @@ LayoutUnit LayoutBlock::lineHeight(bool firstLine, LineDirectionMode direction, 
     if (isReplaced() && linePositionMode == PositionOnContainingLine)
         return LayoutBox::lineHeight(firstLine, direction, linePositionMode);
 
-    const LayoutStyle& style = styleRef(firstLine && document().styleEngine()->usesFirstLineRules());
+    const LayoutStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
     return style.computedLineHeight();
 }
 

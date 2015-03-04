@@ -42,7 +42,7 @@ Document* HTMLImportTreeRoot::document() const
 
 bool HTMLImportTreeRoot::isDone() const
 {
-    return !m_document->parsing() && m_document->styleEngine()->haveStylesheetsLoaded();
+    return !m_document->parsing() && m_document->styleEngine().haveStylesheetsLoaded();
 }
 
 void HTMLImportTreeRoot::stateWillChange()

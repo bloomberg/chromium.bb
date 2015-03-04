@@ -407,7 +407,7 @@ void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentC
     ASSERT(!isMaster());
     WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > sheetsForList;
     ImportedDocumentStyleSheetCollector subcollector(parentCollector, sheetsForList);
-    documentStyleSheetCollection()->collectStyleSheets(this, subcollector);
+    documentStyleSheetCollection()->collectStyleSheets(*this, subcollector);
     documentStyleSheetCollection()->swapSheetsForSheetList(sheetsForList);
 }
 
@@ -416,7 +416,7 @@ void StyleEngine::updateActiveStyleSheetsInShadow(StyleResolverUpdateMode update
     ASSERT(treeScope != m_document);
     ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
     ASSERT(collection);
-    collection->updateActiveStyleSheets(this, updateMode);
+    collection->updateActiveStyleSheets(*this, updateMode);
     if (!collection->hasStyleSheetCandidateNodes()) {
         treeScopesRemoved.add(treeScope);
         // When removing TreeScope from ActiveTreeScopes,
@@ -434,7 +434,7 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
         return;
 
     if (shouldUpdateDocumentStyleSheetCollection(updateMode))
-        documentStyleSheetCollection()->updateActiveStyleSheets(this, updateMode);
+        documentStyleSheetCollection()->updateActiveStyleSheets(*this, updateMode);
 
     if (shouldUpdateShadowTreeStyleSheetCollection(updateMode)) {
         UnorderedTreeScopeSet treeScopesRemoved;
@@ -545,7 +545,7 @@ void StyleEngine::clearResolver()
 void StyleEngine::clearMasterResolver()
 {
     if (Document* master = this->master())
-        master->styleEngine()->clearResolver();
+        master->styleEngine().clearResolver();
 }
 
 unsigned StyleEngine::resolverAccessCount() const
@@ -630,7 +630,7 @@ void StyleEngine::markDocumentDirty()
 {
     m_documentScopeDirty = true;
     if (document().importLoader())
-        document().importsController()->master()->styleEngine()->markDocumentDirty();
+        document().importsController()->master()->styleEngine().markDocumentDirty();
 }
 
 static bool isCacheableForStyleElement(const StyleSheetContents& contents)
@@ -652,7 +652,7 @@ PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const
 {
     RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet = nullptr;
 
-    e->document().styleEngine()->addPendingSheet();
+    e->document().styleEngine().addPendingSheet();
 
     if (!e->document().inQuirksMode()) {
         AtomicString textContent(text);

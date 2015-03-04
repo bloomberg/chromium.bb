@@ -68,7 +68,7 @@ void StyleElement::processStyleSheet(Document& document, Element* element)
     ASSERT(element->inDocument());
 
     m_registeredAsCandidate = true;
-    document.styleEngine()->addStyleSheetCandidateNode(element, m_createdByParser);
+    document.styleEngine().addStyleSheetCandidateNode(element, m_createdByParser);
     if (m_createdByParser)
         return;
 
@@ -97,7 +97,7 @@ void StyleElement::removedFrom(Element* element, ContainerNode* insertionPoint)
 
     Document& document = element->document();
     if (m_registeredAsCandidate) {
-        document.styleEngine()->removeStyleSheetCandidateNode(element, shadowRoot ? *toTreeScope(shadowRoot) : toTreeScope(document));
+        document.styleEngine().removeStyleSheetCandidateNode(element, shadowRoot ? *toTreeScope(shadowRoot) : toTreeScope(document));
         m_registeredAsCandidate = false;
     }
 
@@ -117,7 +117,7 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
     if (element->inDocument()) {
         // HTMLLinkElement in shadow tree is not supported.
         TreeScope& treeScope = isHTMLStyleElement(element) || isSVGStyleElement(element) ? element->treeScope() : element->document();
-        document.styleEngine()->removeStyleSheetCandidateNode(element, treeScope);
+        document.styleEngine().removeStyleSheetCandidateNode(element, treeScope);
     }
 }
 
@@ -149,7 +149,7 @@ void StyleElement::clearSheet(Element* ownerElement)
     ASSERT(m_sheet);
 
     if (ownerElement && m_sheet->isLoading())
-        ownerElement->document().styleEngine()->removePendingSheet(ownerElement);
+        ownerElement->document().styleEngine().removePendingSheet(ownerElement);
 
     m_sheet.release()->clearOwnerNode();
 }
@@ -193,7 +193,7 @@ void StyleElement::createSheet(Element* e, const String& text)
         if (screenEval.eval(mediaQueries.get()) || printEval.eval(mediaQueries.get())) {
             m_loading = true;
             TextPosition startPosition = m_startPosition == TextPosition::belowRangePosition() ? TextPosition::minimumPosition() : m_startPosition;
-            m_sheet = document.styleEngine()->createSheet(e, text, startPosition, m_createdByParser);
+            m_sheet = document.styleEngine().createSheet(e, text, startPosition, m_createdByParser);
             m_sheet->setMediaQueries(mediaQueries.release());
             m_loading = false;
         }
@@ -215,13 +215,13 @@ bool StyleElement::sheetLoaded(Document& document)
     if (isLoading())
         return false;
 
-    document.styleEngine()->removePendingSheet(m_sheet->ownerNode());
+    document.styleEngine().removePendingSheet(m_sheet->ownerNode());
     return true;
 }
 
 void StyleElement::startLoadingDynamicSheet(Document& document)
 {
-    document.styleEngine()->addPendingSheet();
+    document.styleEngine().addPendingSheet();
 }
 
 DEFINE_TRACE(StyleElement)
