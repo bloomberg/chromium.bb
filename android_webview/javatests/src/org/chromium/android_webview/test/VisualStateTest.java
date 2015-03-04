@@ -59,11 +59,6 @@ public class VisualStateTest extends AwTestBase {
                                 assertEquals(requestId, id);
                                 ch.notifyCalled();
                             }
-
-                            @Override
-                            public void onFailure(long id) {
-                                fail("onFailure received");
-                            }
                         });
             }
         });
@@ -89,11 +84,6 @@ public class VisualStateTest extends AwTestBase {
                             final long requestId = 10;
                             awContentsRef.get().insertVisualStateCallback(requestId,
                                     new VisualStateCallback() {
-                                        @Override
-                                        public void onFailure(long id) {
-                                            fail("onFailure received");
-                                        }
-
                                         @Override
                                         public void onComplete(long id) {
                                             assertEquals(requestId, id);
@@ -147,11 +137,6 @@ public class VisualStateTest extends AwTestBase {
                 awContentsRef.get().insertVisualStateCallback(10,
                         new VisualStateCallback() {
                             @Override
-                            public void onFailure(long id) {
-                                fail("onFailure received");
-                            }
-
-                            @Override
                             public void onComplete(long id) {
                                 Bitmap blueScreenshot = GraphicsTestUtils.drawAwContents(
                                         awContentsRef.get(), 100, 100);
@@ -191,11 +176,6 @@ public class VisualStateTest extends AwTestBase {
                 awContents.insertVisualStateCallback(20,
                         new VisualStateCallback() {
                             @Override
-                            public void onFailure(long id) {
-                                fail("onFailure received");
-                            }
-
-                            @Override
                             public void onComplete(long id) {
                                 Bitmap redScreenshot = GraphicsTestUtils.drawAwContents(
                                         awContents, 100, 100);
@@ -228,11 +208,6 @@ public class VisualStateTest extends AwTestBase {
             public void onPageFinished(String url) {
                 super.onPageFinished(url);
                 awContentsRef.get().insertVisualStateCallback(10, new VisualStateCallback() {
-                    @Override
-                    public void onFailure(long id) {
-                        fail("onFailure received");
-                    }
-
                     @Override
                     public void onComplete(long id) {
                         Bitmap blueScreenshot =
@@ -271,11 +246,6 @@ public class VisualStateTest extends AwTestBase {
             public void run() {
                 awContents.insertVisualStateCallback(20, new VisualStateCallback() {
                     @Override
-                    public void onFailure(long id) {
-                        fail("onFailure received");
-                    }
-
-                    @Override
                     public void onComplete(long id) {
                         // NOTE: We cannot use drawAwContents here because the web contents
                         // are rendered into the custom view while in fullscreen.
@@ -310,11 +280,6 @@ public class VisualStateTest extends AwTestBase {
                 super.onPageFinished(url);
                 awContentsRef.get().insertVisualStateCallback(10, new VisualStateCallback() {
                     @Override
-                    public void onFailure(long id) {
-                        fail("onFailure received");
-                    }
-
-                    @Override
                     public void onComplete(long id) {
                         Bitmap blueScreenshot =
                                 GraphicsTestUtils.drawAwContents(awContentsRef.get(), 100, 100);
@@ -328,11 +293,6 @@ public class VisualStateTest extends AwTestBase {
             public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
                 super.onShowCustomView(view, callback);
                 awContentsRef.get().insertVisualStateCallback(20, new VisualStateCallback() {
-                    @Override
-                    public void onFailure(long id) {
-                        fail("onFailure received");
-                    }
-
                     @Override
                     public void onComplete(long id) {
                         // NOTE: We cannot use drawAwContents here because the web contents are

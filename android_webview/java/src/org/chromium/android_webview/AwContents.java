@@ -183,13 +183,14 @@ public class AwContents implements SmartClipProvider,
     /**
      * Visual state callback, see {@link #insertVisualStateCallback} for details.
      *
-     * <p>The {@code requestId} is the id passed to {@link AwContents#insertVisualStateCallback}
-     * which can be used to match requests with the corresponding callbacks.
      */
     @VisibleForTesting
     public abstract static class VisualStateCallback {
+        /**
+         * @param requestId the id passed to {@link AwContents#insertVisualStateCallback}
+         * which can be used to match requests with the corresponding callbacks.
+         */
         public abstract void onComplete(long requestId);
-        public abstract void onFailure(long requestId);
     }
 
     private long mNativeAwContents;
@@ -2212,17 +2213,13 @@ public class AwContents implements SmartClipProvider,
      */
     @CalledByNative
     public void invokeVisualStateCallback(
-            final VisualStateCallback callback, final long requestId, final boolean result) {
+            final VisualStateCallback callback, final long requestId) {
         // Posting avoids invoking the callback inside invoking_composite_
         // (see synchronous_compositor_impl.cc and crbug/452530).
         mContainerView.getHandler().post(new Runnable() {
             @Override
             public void run() {
-                if (result) {
-                    callback.onComplete(requestId);
-                } else {
-                    callback.onFailure(requestId);
-                }
+                callback.onComplete(requestId);
             }
         });
     }

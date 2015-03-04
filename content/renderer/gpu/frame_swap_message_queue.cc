@@ -161,9 +161,13 @@ void FrameSwapMessageQueue::DidNotSwap(int source_frame_number,
     case cc::SwapPromise::SWAP_FAILS:
     case cc::SwapPromise::COMMIT_NO_UPDATE:
       swap_queue_->DrainMessages(source_frame_number, messages);
-    // fallthrough
-    case cc::SwapPromise::COMMIT_FAILS:
       visual_state_queue_->DrainMessages(source_frame_number, messages);
+      break;
+    case cc::SwapPromise::COMMIT_FAILS:
+      // Do not queue any responses here.
+      // If COMMIT_FAILS the renderer is shutting down, which will
+      // result in the RenderFrameHostImpl destructor firing the
+      // remaining response callbacks itself.
       break;
     default:
       NOTREACHED();

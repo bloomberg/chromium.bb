@@ -237,13 +237,11 @@ TEST_F(FrameSwapMessageQueueTest, TestDidNotSwapCommitFails) {
   QueueVisualStateMessage(3, CloneMessage(third_message_));
 
   queue_->DidNotSwap(2, cc::SwapPromise::COMMIT_FAILS, &messages);
-  ASSERT_EQ(1u, messages.size());
-  ASSERT_TRUE(HasMessageForId(messages, second_message_.routing_id()));
+  ASSERT_EQ(0u, messages.size());
   messages.clear();
 
   queue_->DidNotSwap(3, cc::SwapPromise::COMMIT_FAILS, &messages);
-  ASSERT_EQ(1u, messages.size());
-  ASSERT_TRUE(HasMessageForId(messages, third_message_.routing_id()));
+  ASSERT_EQ(0u, messages.size());
   messages.clear();
 
   DrainMessages(1, &messages);

@@ -1039,15 +1039,15 @@ void AwContents::EnableOnNewPicture(JNIEnv* env,
 
 namespace {
 void InvokeVisualStateCallback(const JavaObjectWeakGlobalRef& java_ref,
-                              long request_id,
-                              ScopedJavaGlobalRef<jobject>* callback,
-                              bool result) {
+                               long request_id,
+                               ScopedJavaGlobalRef<jobject>* callback,
+                               bool result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref.get(env);
   if (obj.is_null())
      return;
   Java_AwContents_invokeVisualStateCallback(
-      env, obj.obj(), callback->obj(), request_id, result);
+      env, obj.obj(), callback->obj(), request_id);
 }
 }  // namespace
 
