@@ -63,6 +63,10 @@ wl_cursor_image_get_buffer(struct wl_cursor_image *image);
 int
 wl_cursor_frame(struct wl_cursor *cursor, uint32_t time);
 
+int
+wl_cursor_frame_and_duration(struct wl_cursor *cursor, uint32_t time,
+			     uint32_t *duration);
+
 #ifdef  __cplusplus
 }
 #endif

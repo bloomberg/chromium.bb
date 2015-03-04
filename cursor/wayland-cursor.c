@@ -458,9 +458,61 @@ wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
 }
 
 /** Find the frame for a given elapsed time in a cursor animation
+ *  as well as the time left until next cursor change.
  *
  * \param cursor The cursor
- * \param time Elapsed time since the beginning of the animation
+ * \param time Elapsed time in ms since the beginning of the animation
+ * \param duration pointer to uint32_t to store time left for this image or
+ *                 zero if the cursor won't change.
+ *
+ * \return The index of the image that should be displayed for the
+ * given time in the cursor animation.
+ */
+WL_EXPORT int
+wl_cursor_frame_and_duration(struct wl_cursor *_cursor, uint32_t time,
+			     uint32_t *duration)
+{
+	struct cursor *cursor = (struct cursor *) _cursor;
+	uint32_t t;
+	int i;
+
+	if (cursor->cursor.image_count == 1) {
+		if (duration)
+			*duration = 0;
+		return 0;
+	}
+
+	i = 0;
+	t = time % cursor->total_delay;
+
+	/* If there is a 0 delay in the image set then this
+	 * loop breaks on it and we display that cursor until
+	 * time % cursor->total_delay wraps again.
+	 * Since a 0 delay is silly, and we've never actually
+	 * seen one in a cursor file, we haven't bothered to
+	 * "fix" this.
+	 */
+	while (t - cursor->cursor.images[i]->delay < t)
+		t -= cursor->cursor.images[i++]->delay;
+
+	if (!duration)
+		return i;
+
+	/* Make sure we don't accidentally tell the caller this is
+	 * a static cursor image.
+	 */
+	if (t >= cursor->cursor.images[i]->delay)
+		*duration = 1;
+	else
+		*duration = cursor->cursor.images[i]->delay - t;
+
+	return i;
+}
+
+/** Find the frame for a given elapsed time in a cursor animation
+ *
+ * \param cursor The cursor
+ * \param time Elapsed time in ms since the beginning of the animation
  *
  * \return The index of the image that should be displayed for the
  * given time in the cursor animation.
@@ -468,18 +520,5 @@ wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
 WL_EXPORT int
 wl_cursor_frame(struct wl_cursor *_cursor, uint32_t time)
 {
-	struct cursor *cursor = (struct cursor *) _cursor;
-	uint32_t t;
-	int i;
-
-	if (cursor->cursor.image_count == 1)
-		return 0;
-
-	i = 0;
-	t = time % cursor->total_delay;
-
-	while (t - cursor->cursor.images[i]->delay < t)
-		t -= cursor->cursor.images[i++]->delay;
-
-	return i;
+	return wl_cursor_frame_and_duration(_cursor, time, NULL);
 }
