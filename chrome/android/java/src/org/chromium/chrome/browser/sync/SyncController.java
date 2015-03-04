@@ -10,6 +10,7 @@ import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
@@ -60,6 +61,9 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         mProfileSyncService = ProfileSyncService.get(mContext);
         mProfileSyncService.addSyncStateChangedListener(this);
         mChromeSigninController.ensureGcmIsInitialized();
+        // Set the sessions ID using the generator that was registered for GENERATOR_ID.
+        mProfileSyncService.setSessionsId(
+                UniqueIdentificationGeneratorFactory.getInstance(GENERATOR_ID));
     }
 
     /**

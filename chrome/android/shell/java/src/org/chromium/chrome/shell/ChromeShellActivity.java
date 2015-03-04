@@ -36,8 +36,6 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
-import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
-import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.notifications.NotificationUIManager;
@@ -45,7 +43,6 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -69,8 +66,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class ChromeShellActivity extends ActionBarActivity implements AppMenuPropertiesDelegate {
     private static final String TAG = "ChromeShellActivity";
-
-    private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
 
     /**
      * Factory used to set up a mock ActivityWindowAndroid for testing.
@@ -194,8 +189,6 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
                 true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
 
         mPrintingController = PrintingControllerFactory.create(this);
-
-        setupSessionSyncId();
 
         mSyncController = SyncController.get(this);
         // In case this method is called after the first onStart(), we need to inform the
@@ -482,19 +475,6 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
     @VisibleForTesting
     public static void setAppMenuHandlerFactory(AppMenuHandlerFactory factory) {
         sAppMenuHandlerFactory = factory;
-    }
-
-    private void setupSessionSyncId() {
-        // Ensure that sync uses the correct UniqueIdentificationGenerator, but do not force the
-        // registration, in case a test case has already overridden it.
-        UuidBasedUniqueIdentificationGenerator generator =
-                new UuidBasedUniqueIdentificationGenerator(this, SESSIONS_UUID_PREF_KEY);
-        UniqueIdentificationGeneratorFactory.registerGenerator(
-                UuidBasedUniqueIdentificationGenerator.GENERATOR_ID, generator, false);
-        // Since we do not override the UniqueIdentificationGenerator, we get it from the factory,
-        // instead of using the instance we just created.
-        ProfileSyncService.get(this).setSessionsId(UniqueIdentificationGeneratorFactory
-                .getInstance(UuidBasedUniqueIdentificationGenerator.GENERATOR_ID));
     }
 
     /**
