@@ -96,7 +96,6 @@
 
 #if OS(MACOSX)
 #define WTF_USE_CF 1
-#define WTF_USE_RUBBER_BANDING 1
 #endif /* OS(MACOSX) */
 
 #if OS(POSIX)

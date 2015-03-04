@@ -307,7 +307,6 @@
           ['include', 'mac/LocalCurrentGraphicsContext\\.mm$'],
           ['include', 'mac/NSScrollerImpDetails\\.mm$'],
           ['include', 'mac/ScrollAnimatorMac\\.mm$'],
-          ['include', 'mac/ScrollElasticityController\\.mm$'],
           ['include', 'mac/ThemeMac\\.h$'],
           ['include', 'mac/ThemeMac\\.mm$'],
           ['include', 'mac/WebCoreNSCellExtras\\.h$'],

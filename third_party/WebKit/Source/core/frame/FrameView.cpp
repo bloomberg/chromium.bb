@@ -145,9 +145,6 @@ FrameView::FrameView(LocalFrame* frame)
 
     if (!m_frame->isMainFrame())
         return;
-
-    ScrollableArea::setVerticalScrollElasticity(ScrollElasticityAllowed);
-    ScrollableArea::setHorizontalScrollElasticity(ScrollElasticityAllowed);
 }
 
 PassRefPtrWillBeRawPtr<FrameView> FrameView::create(LocalFrame* frame)
@@ -1304,7 +1301,6 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object)
 LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
 {
     LayoutRect viewportRect = LayoutRect(visibleContentRect());
-    // Ignore overhang. No-op when not using rubber banding.
     viewportRect.setLocation(clampScrollPosition(scrollPosition()));
     return viewportRect;
 }
@@ -1744,24 +1740,6 @@ void FrameView::updateCompositedSelectionBoundsIfNeeded()
     }
 
     page->chrome().client().updateCompositedSelectionBounds(start, end);
-}
-
-bool FrameView::isRubberBandInProgress() const
-{
-    if (scrollbarsSuppressed())
-        return false;
-
-    // If the main thread updates the scroll position for this FrameView, we should return
-    // ScrollAnimator::isRubberBandInProgress().
-    if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
-        return scrollAnimator->isRubberBandInProgress();
-
-    return false;
-}
-
-bool FrameView::rubberBandingOnCompositorThread() const
-{
-    return m_frame->settings()->rubberBandingOnCompositorThread();
 }
 
 HostWindow* FrameView::hostWindow() const
@@ -2995,12 +2973,8 @@ void FrameView::removeChild(Widget* child)
 
 ScrollResult FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
 {
-    // Note that to allow for rubber-band over-scroll behavior, even non-scrollable views
-    // should handle wheel events.
-#if !USE(RUBBER_BANDING)
     if (!isScrollable())
         return ScrollResult(false);
-#endif
 
     if (m_frame->settings()->rootLayerScrolls())
         return ScrollResult(false);
@@ -3581,8 +3555,7 @@ void FrameView::setScrollOffsetFromUpdateScrollbars(const DoubleSize& offset)
 {
     DoublePoint adjustedScrollPosition = DoublePoint(offset);
 
-    if (!isRubberBandInProgress())
-        adjustedScrollPosition = adjustScrollPositionWithinRange(adjustedScrollPosition);
+    adjustedScrollPosition = adjustScrollPositionWithinRange(adjustedScrollPosition);
 
     if (adjustedScrollPosition != scrollPositionDouble() || scrollOriginChanged()) {
         ScrollableArea::scrollToOffsetWithoutAnimation(toFloatPoint(adjustedScrollPosition));

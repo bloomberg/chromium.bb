@@ -30,7 +30,6 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/mac/ScrollElasticityController.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "wtf/RetainPtr.h"
 
@@ -40,15 +39,11 @@ OBJC_CLASS WebScrollbarPainterDelegate;
 
 typedef id ScrollbarPainterController;
 
-#if !USE(RUBBER_BANDING)
-class ScrollElasticityControllerClient { };
-#endif
-
 namespace blink {
 
 class Scrollbar;
 
-class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimator, private ScrollElasticityControllerClient {
+class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimator {
 
 public:
     ScrollAnimatorMac(ScrollableArea*);
@@ -88,10 +83,6 @@ private:
     virtual ScrollResultOneDimensional scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
-#if USE(RUBBER_BANDING)
-    virtual ScrollResult handleWheelEvent(const PlatformWheelEvent&) override;
-#endif
-
     virtual void handleWheelEventPhase(PlatformWheelEventPhase) override;
 
     virtual void cancelAnimations() override;
@@ -126,30 +117,6 @@ private:
     FloatPoint adjustScrollPositionIfNecessary(const FloatPoint&) const;
 
     void immediateScrollTo(const FloatPoint&);
-
-    virtual bool isRubberBandInProgress() const override;
-
-#if USE(RUBBER_BANDING)
-    /// ScrollElasticityControllerClient member functions.
-    virtual IntSize stretchAmount() override;
-    virtual bool allowsHorizontalStretching() override;
-    virtual bool allowsVerticalStretching() override;
-    virtual bool pinnedInDirection(const FloatSize&) override;
-    virtual bool canScrollHorizontally() override;
-    virtual bool canScrollVertically() override;
-    virtual IntPoint absoluteScrollPosition() override;
-    virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize&) override;
-    virtual void immediateScrollBy(const FloatSize&) override;
-    virtual void startSnapRubberbandTimer() override;
-    virtual void stopSnapRubberbandTimer() override;
-    virtual void adjustScrollPositionToBoundsIfNecessary() override;
-
-    bool pinnedInDirection(float deltaX, float deltaY);
-    void snapRubberBandTimerFired(Timer<ScrollAnimatorMac>*);
-
-    ScrollElasticityController m_scrollElasticityController;
-    Timer<ScrollAnimatorMac> m_snapRubberBandTimer;
-#endif
 
     bool m_haveScrolledSincePageLoad;
     bool m_needsScrollerStyleUpdate;

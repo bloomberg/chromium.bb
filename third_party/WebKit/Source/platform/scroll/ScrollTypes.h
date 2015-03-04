@@ -112,12 +112,6 @@ enum ScrollGranularity {
     ScrollByPrecisePixel
 };
 
-enum ScrollElasticity {
-    ScrollElasticityAutomatic,
-    ScrollElasticityNone,
-    ScrollElasticityAllowed
-};
-
 enum ScrollbarOrientation { HorizontalScrollbar, VerticalScrollbar };
 
 enum ScrollbarMode { ScrollbarAuto, ScrollbarAlwaysOff, ScrollbarAlwaysOn };

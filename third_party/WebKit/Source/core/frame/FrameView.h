@@ -164,15 +164,12 @@ public:
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
     virtual void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant) override;
-    virtual bool isRubberBandInProgress() const override;
-    virtual bool rubberBandingOnCompositorThread() const override;
     void setScrollPositionNonProgrammatically(const IntPoint&);
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
     void setElasticOverscroll(const FloatSize&);
 
-    // This is different than visibleContentRect() in that it ignores negative (or overly positive)
-    // offsets from rubber-banding, and it takes zooming into account.
+    // This is different than visibleContentRect() in that it takes zooming into account.
     LayoutRect viewportConstrainedVisibleContentRect() const;
     void viewportConstrainedVisibleContentSizeChanged(bool widthChanged, bool heightChanged);
 

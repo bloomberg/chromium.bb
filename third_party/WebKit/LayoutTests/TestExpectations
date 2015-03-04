@@ -152,15 +152,6 @@ crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failu
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 # crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-n.html [ ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-ne.html [ ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-nw.html [ ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-s.html [ ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-se.html [ ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-size-change.html [ ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-sw.html [ ImageOnlyFailure Pass ]
-crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-w.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
@@ -1387,27 +1378,8 @@ crbug.com/389594 virtual/slimmingpaint/svg/filters/feBlend-all-modes.html [ Need
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
-# These tests will need to be rebaselined after overscroll is moved to the
-# compositor thread. That switch will be made in the Chromium repository.
-crbug.com/133097 [ Mac ] rubberbanding/overhang-nw.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/event-overhang-w.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/custom-scrollbars-sw.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/custom-scrollbars-nw.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/overhang-ne.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/momentum-reset.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/overhang-w.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/custom-scrollbars-se.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/event-overhang-e.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/overhang-e.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/overhang-se.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/custom-scrollbars-ne.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/event-overhang-n.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/overhang-n.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/overhang-s.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/overhang-sw.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] rubberbanding/event-overhang-s.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] compositing/fixed-body-background-positioned.html [ NeedsManualRebaseline ]
-crbug.com/133097 [ Mac ] fast/repaint/scale-page-shrink.html [ NeedsManualRebaseline ]
+crbug.com/133097 [ Mac ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
+crbug.com/133097 [ Mac ] fast/repaint/scale-page-shrink.html [ NeedsRebaseline ]
 
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]

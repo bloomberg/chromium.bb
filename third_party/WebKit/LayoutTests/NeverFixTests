@@ -45,11 +45,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # <progress> on Mac is always animated. So it's hard to get a reliable pixel result.
 [ Mac ] fast/dom/HTMLProgressElement/progress-element.html [ WontFix ]
 
-# These test rubber band overhang drawing, which is a Mac OS X Lion feature
-# that is not supported on other platforms.
-[ Win Linux ] rubberbanding [ WontFix ]
-[ Win Linux ] compositing/rubberbanding [ WontFix ]
-
 # This requires usp10.dll version 1.600 or greater on Windows and
 # it isn't installed on XP by default.
 [ XP ] css3/font-feature-settings-rendering.html [ WontFix ]
