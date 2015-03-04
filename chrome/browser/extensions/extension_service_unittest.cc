@@ -134,6 +134,7 @@
 #include "url/gurl.h"
 
 #if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
@@ -6609,6 +6610,26 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)
+class MockPermissionRequestCreator : public PermissionRequestCreator {
+ public:
+  MockPermissionRequestCreator() {}
+  ~MockPermissionRequestCreator() override {}
+
+  bool IsEnabled() const override { return true; }
+
+  void CreateURLAccessRequest(const GURL& url_requested,
+                              const SuccessCallback& callback) override {
+    FAIL();
+  }
+
+  MOCK_METHOD2(CreateExtensionUpdateRequest,
+               void(const std::string& extension_id,
+                    const SupervisedUserService::SuccessCallback& callback));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPermissionRequestCreator);
+};
+
 TEST_F(ExtensionServiceTest, SupervisedUser_InstallOnlyAllowedByCustodian) {
   ExtensionServiceInitParams params = CreateDefaultInitParams();
   params.profile_is_supervised = true;
@@ -6676,6 +6697,9 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile());
   GetManagementPolicy()->RegisterProvider(supervised_user_service);
+  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
+  supervised_user_service->AddPermissionRequestCreator(
+      make_scoped_ptr(creator));
 
   base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
   base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
@@ -6694,6 +6718,7 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
   std::string old_version = extension->VersionString();
 
   // Update to a new version with increased permissions.
+  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(id, testing::_));
   path = base_path.AppendASCII("v2");
   PackCRXAndUpdateExtension(id, path, pem_path, DISABLED);
 

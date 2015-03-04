@@ -13,10 +13,10 @@
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
-using base::Time;
-
 const char kSupervisedUserAccessRequestKeyPrefix[] =
     "X-ManagedUser-AccessRequests";
+const char kSupervisedUserUpdateRequestKeyPrefix[] =
+    "X-ManagedUser-UpdateRequests";
 const char kSupervisedUserAccessRequestTime[] = "timestamp";
 const char kSupervisedUserName[] = "name";
 
@@ -48,20 +48,33 @@ bool PermissionRequestCreatorSync::IsEnabled() const {
           state == GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 
-void PermissionRequestCreatorSync::CreatePermissionRequest(
+void PermissionRequestCreatorSync::CreateURLAccessRequest(
     const GURL& url_requested,
     const SuccessCallback& callback) {
-  // Escape the URL and add the prefix.
+  CreateRequest(kSupervisedUserAccessRequestKeyPrefix,
+                url_requested.spec(),
+                callback);
+}
+
+void PermissionRequestCreatorSync::CreateExtensionUpdateRequest(
+    const std::string& extension_id,
+    const SuccessCallback& callback) {
+  CreateRequest(kSupervisedUserUpdateRequestKeyPrefix, extension_id, callback);
+}
+
+void PermissionRequestCreatorSync::CreateRequest(
+    const std::string& prefix,
+    const std::string& data,
+    const SuccessCallback& callback) {
+  // Escape the data string and add the prefix.
   std::string key = SupervisedUserSettingsService::MakeSplitSettingKey(
-      kSupervisedUserAccessRequestKeyPrefix,
-      net::EscapeQueryParamValue(url_requested.spec(), true));
+      prefix,
+      net::EscapeQueryParamValue(data, true));
 
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-
   // TODO(sergiu): Use sane time here when it's ready.
   dict->SetDouble(kSupervisedUserAccessRequestTime,
                   base::Time::Now().ToJsTime());
-
   dict->SetString(kSupervisedUserName, name_);
 
   // Copy the notification setting of the custodian.

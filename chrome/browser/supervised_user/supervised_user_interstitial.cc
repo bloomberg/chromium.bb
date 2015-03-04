@@ -311,7 +311,7 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
 
     SupervisedUserService* supervised_user_service =
         SupervisedUserServiceFactory::GetForProfile(profile_);
-    supervised_user_service->AddAccessRequest(
+    supervised_user_service->AddURLAccessRequest(
         url_, base::Bind(&SupervisedUserInterstitial::OnAccessRequestAdded,
                          weak_ptr_factory_.GetWeakPtr()));
     return;

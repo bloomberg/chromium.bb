@@ -56,7 +56,7 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
 
   void CreateRequest(int url_fetcher_id, const GURL& url) {
     permission_creator_.set_url_fetcher_id_for_testing(url_fetcher_id);
-    permission_creator_.CreatePermissionRequest(
+    permission_creator_.CreateURLAccessRequest(
         url,
         base::Bind(&PermissionRequestCreatorApiaryTest::OnRequestCreated,
                    base::Unretained(this)));

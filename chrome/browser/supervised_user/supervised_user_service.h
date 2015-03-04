@@ -69,9 +69,9 @@ class SupervisedUserService : public KeyedService,
                               public chrome::BrowserListObserver,
                               public SupervisedUserURLFilter::Observer {
  public:
-  typedef base::Callback<void(content::WebContents*)> NavigationBlockedCallback;
-  typedef base::Callback<void(const GoogleServiceAuthError&)> AuthErrorCallback;
-  typedef base::Callback<void(bool)> SuccessCallback;
+  using NavigationBlockedCallback = base::Callback<void(content::WebContents*)>;
+  using AuthErrorCallback = base::Callback<void(const GoogleServiceAuthError&)>;
+  using SuccessCallback = base::Callback<void(bool)>;
 
   class Delegate {
    public:
@@ -111,13 +111,16 @@ class SupervisedUserService : public KeyedService,
   // Returns the whitelist service.
   SupervisedUserWhitelistService* GetWhitelistService();
 
-  // Whether the user can request access to blocked URLs.
+  // Whether the user can request to get access to blocked URLs or to new
+  // extensions.
   bool AccessRequestsEnabled();
 
-  // Adds an access request for the given URL. The requests are stored using
-  // a prefix followed by a URIEncoded version of the URL. Each entry contains
-  // a dictionary which currently has the timestamp of the request in it.
-  void AddAccessRequest(const GURL& url, const SuccessCallback& callback);
+  // Adds an access request for the given URL.
+  void AddURLAccessRequest(const GURL& url, const SuccessCallback& callback);
+
+  // Adds an update request for the given WebStore item (App/Extension).
+  void AddExtensionUpdateRequest(const std::string& extension_id,
+                                 const SuccessCallback& callback);
 
   // Returns the email address of the custodian.
   std::string GetCustodianEmailAddress() const;
@@ -185,6 +188,9 @@ class SupervisedUserService : public KeyedService,
                            ChangesSyncSessionStateOnChangedSettings);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceExtensionTest,
                            ExtensionManagementPolicyProvider);
+
+  using CreatePermissionRequestCallback =
+      base::Callback<void(PermissionRequestCreator*, const SuccessCallback&)>;
 
   // A bridge from the UI thread to the SupervisedUserURLFilters, one of which
   // lives on the IO thread. This class mediates access to them and makes sure
@@ -266,13 +272,15 @@ class SupervisedUserService : public KeyedService,
   SupervisedUserSettingsService* GetSettingsService();
 
   size_t FindEnabledPermissionRequestCreator(size_t start);
-  void AddAccessRequestInternal(const GURL& url,
-                                const SuccessCallback& callback,
-                                size_t index);
-  void OnPermissionRequestIssued(const GURL& url,
-                                 const SuccessCallback& callback,
-                                 size_t index,
-                                 bool success);
+  void AddPermissionRequestInternal(
+      const CreatePermissionRequestCallback& create_request,
+      const SuccessCallback& callback,
+      size_t index);
+  void OnPermissionRequestIssued(
+      const CreatePermissionRequestCallback& create_request,
+      const SuccessCallback& callback,
+      size_t index,
+      bool success);
 
   void OnSupervisedUserIdChanged();
 

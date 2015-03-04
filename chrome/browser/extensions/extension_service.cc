@@ -84,6 +84,11 @@
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -110,12 +115,17 @@ using extensions::SharedModuleInfo;
 using extensions::SharedModuleService;
 using extensions::UnloadedExtensionInfo;
 
-namespace errors = extensions::manifest_errors;
-
 namespace {
 
 // Wait this many seconds after an extensions becomes idle before updating it.
 const int kUpdateIdleDelay = 5;
+
+#if defined(ENABLE_SUPERVISED_USERS)
+// Callback for SupervisedUserService::AddExtensionUpdateRequest.
+void ExtensionUpdateRequestSent(const std::string& id, bool success) {
+  LOG_IF(WARNING, !success) << "Failed sending update request for " << id;
+}
+#endif
 
 }  // namespace
 
@@ -1660,6 +1670,19 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     }
     extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
+
+#if defined(ENABLE_SUPERVISED_USERS)
+    // If a custodian-installed extension is disabled for a supervised user due
+    // to a permissions increase, send a request to the custodian, since the
+    // supervised user itself can't re-enable the extension.
+    if (extensions::util::IsExtensionSupervised(extension, profile_)) {
+      SupervisedUserService* supervised_user_service =
+          SupervisedUserServiceFactory::GetForProfile(profile_);
+      supervised_user_service->AddExtensionUpdateRequest(
+          extension->id(),
+          base::Bind(ExtensionUpdateRequestSent, extension->id()));
+    }
+#endif
   }
   if (disable_reasons != Extension::DISABLE_NONE) {
     extension_prefs_->AddDisableReason(

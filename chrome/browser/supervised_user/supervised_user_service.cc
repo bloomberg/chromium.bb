@@ -78,6 +78,20 @@ const char* const kCustodianInfoPrefs[] = {
   prefs::kSupervisedUserSecondCustodianProfileURL,
 };
 
+void CreateURLAccessRequest(
+    const GURL& url,
+    PermissionRequestCreator* creator,
+    const SupervisedUserService::SuccessCallback& callback) {
+  creator->CreateURLAccessRequest(url, callback);
+}
+
+void CreateExtensionUpdateRequest(
+    const std::string& extension_id,
+    PermissionRequestCreator* creator,
+    const SupervisedUserService::SuccessCallback& callback) {
+  creator->CreateExtensionUpdateRequest(extension_id, callback);
+}
+
 #if defined(ENABLE_EXTENSIONS)
 enum ExtensionState {
   EXTENSION_FORCED,
@@ -531,8 +545,8 @@ size_t SupervisedUserService::FindEnabledPermissionRequestCreator(
   return permissions_creators_.size();
 }
 
-void SupervisedUserService::AddAccessRequestInternal(
-    const GURL& url,
+void SupervisedUserService::AddPermissionRequestInternal(
+    const CreatePermissionRequestCallback& create_request,
     const SuccessCallback& callback,
     size_t index) {
   // Find a permission request creator that is enabled.
@@ -542,14 +556,15 @@ void SupervisedUserService::AddAccessRequestInternal(
     return;
   }
 
-  permissions_creators_[next_index]->CreatePermissionRequest(
-      url,
+  create_request.Run(
+      permissions_creators_[next_index],
       base::Bind(&SupervisedUserService::OnPermissionRequestIssued,
-                 weak_ptr_factory_.GetWeakPtr(), url, callback, next_index));
+                 weak_ptr_factory_.GetWeakPtr(), create_request,
+                 callback, next_index));
 }
 
 void SupervisedUserService::OnPermissionRequestIssued(
-    const GURL& url,
+    const CreatePermissionRequestCallback& create_request,
     const SuccessCallback& callback,
     size_t index,
     bool success) {
@@ -558,7 +573,7 @@ void SupervisedUserService::OnPermissionRequestIssued(
     return;
   }
 
-  AddAccessRequestInternal(url, callback, index + 1);
+  AddPermissionRequestInternal(create_request, callback, index + 1);
 }
 
 void SupervisedUserService::OnSupervisedUserIdChanged() {
@@ -631,10 +646,21 @@ bool SupervisedUserService::AccessRequestsEnabled() {
   return FindEnabledPermissionRequestCreator(0) < permissions_creators_.size();
 }
 
-void SupervisedUserService::AddAccessRequest(const GURL& url,
-                                             const SuccessCallback& callback) {
-  AddAccessRequestInternal(SupervisedUserURLFilter::Normalize(url), callback,
-                           0);
+void SupervisedUserService::AddURLAccessRequest(
+    const GURL& url,
+    const SuccessCallback& callback) {
+  AddPermissionRequestInternal(
+      base::Bind(CreateURLAccessRequest,
+                 SupervisedUserURLFilter::Normalize(url)),
+      callback, 0);
+}
+
+void SupervisedUserService::AddExtensionUpdateRequest(
+    const std::string& extension_id,
+    const SuccessCallback& callback) {
+  AddPermissionRequestInternal(
+      base::Bind(CreateExtensionUpdateRequest, extension_id),
+      callback, 0);
 }
 
 void SupervisedUserService::InitSync(const std::string& refresh_token) {

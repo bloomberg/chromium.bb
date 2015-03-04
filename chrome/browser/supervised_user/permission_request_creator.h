@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_H_
 #define CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 
 class GURL;
@@ -23,8 +25,14 @@ class PermissionRequestCreator {
 
   // Creates a permission request for |url_requested| and calls |callback| with
   // the result (whether creating the permission request was successful).
-  virtual void CreatePermissionRequest(const GURL& url_requested,
-                                       const SuccessCallback& callback) = 0;
+  virtual void CreateURLAccessRequest(const GURL& url_requested,
+                                      const SuccessCallback& callback) = 0;
+
+  // Creates a request to re-enable the extension with the given |extension_id|,
+  // which was disabled due to a permission increase.
+  virtual void CreateExtensionUpdateRequest(
+      const std::string& extension_id,
+      const SuccessCallback& callback) = 0;
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_H_

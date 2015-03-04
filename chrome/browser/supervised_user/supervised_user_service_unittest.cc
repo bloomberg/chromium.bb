@@ -190,8 +190,8 @@ class SupervisedUserServiceTest : public ::testing::Test {
   ~SupervisedUserServiceTest() override {}
 
  protected:
-  void AddAccessRequest(const GURL& url, AsyncResultHolder* result_holder) {
-    supervised_user_service_->AddAccessRequest(
+  void AddURLAccessRequest(const GURL& url, AsyncResultHolder* result_holder) {
+    supervised_user_service_->AddURLAccessRequest(
         url, base::Bind(&AsyncResultHolder::SetResult,
                         base::Unretained(result_holder)));
   }
@@ -249,11 +249,16 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
   // PermissionRequestCreator:
   bool IsEnabled() const override { return enabled_; }
 
-  void CreatePermissionRequest(const GURL& url_requested,
-                               const SuccessCallback& callback) override {
+  void CreateURLAccessRequest(const GURL& url_requested,
+                              const SuccessCallback& callback) override {
     ASSERT_TRUE(enabled_);
     requested_urls_.push_back(url_requested);
     callbacks_.push_back(callback);
+  }
+
+  void CreateExtensionUpdateRequest(const std::string& extension_id,
+                                    const SuccessCallback& callback) override {
+    FAIL();
   }
 
   bool enabled_;
@@ -269,11 +274,11 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
   GURL url("http://www.example.com");
 
   // Without any permission request creators, it should be disabled, and any
-  // AddAccessRequest() calls should fail.
+  // AddURLAccessRequest() calls should fail.
   EXPECT_FALSE(supervised_user_service_->AccessRequestsEnabled());
   {
     AsyncResultHolder result_holder;
-    AddAccessRequest(url, &result_holder);
+    AddURLAccessRequest(url, &result_holder);
     EXPECT_FALSE(result_holder.GetResult());
   }
 
@@ -285,7 +290,7 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
   EXPECT_FALSE(supervised_user_service_->AccessRequestsEnabled());
   {
     AsyncResultHolder result_holder;
-    AddAccessRequest(url, &result_holder);
+    AddURLAccessRequest(url, &result_holder);
     EXPECT_FALSE(result_holder.GetResult());
   }
 
@@ -295,7 +300,7 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
   EXPECT_TRUE(supervised_user_service_->AccessRequestsEnabled());
   {
     AsyncResultHolder result_holder;
-    AddAccessRequest(url, &result_holder);
+    AddURLAccessRequest(url, &result_holder);
     ASSERT_EQ(1u, creator->requested_urls().size());
     EXPECT_EQ(url.spec(), creator->requested_urls()[0].spec());
 
@@ -305,7 +310,7 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
 
   {
     AsyncResultHolder result_holder;
-    AddAccessRequest(url, &result_holder);
+    AddURLAccessRequest(url, &result_holder);
     ASSERT_EQ(1u, creator->requested_urls().size());
     EXPECT_EQ(url.spec(), creator->requested_urls()[0].spec());
 
@@ -321,7 +326,7 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
 
   {
     AsyncResultHolder result_holder;
-    AddAccessRequest(url, &result_holder);
+    AddURLAccessRequest(url, &result_holder);
     ASSERT_EQ(1u, creator->requested_urls().size());
     EXPECT_EQ(url.spec(), creator->requested_urls()[0].spec());
 
@@ -332,7 +337,7 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
 
   {
     AsyncResultHolder result_holder;
-    AddAccessRequest(url, &result_holder);
+    AddURLAccessRequest(url, &result_holder);
     ASSERT_EQ(1u, creator->requested_urls().size());
     EXPECT_EQ(url.spec(), creator->requested_urls()[0].spec());
 

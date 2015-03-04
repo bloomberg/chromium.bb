@@ -14,6 +14,9 @@ class ProfileSyncService;
 class SupervisedUserSettingsService;
 class SupervisedUserSharedSettingsService;
 
+// The requests are stored using a prefix followed by a URIEncoded version of
+// the URL/extension ID. Each entry contains a dictionary which currently has
+// the timestamp of the request in it.
 class PermissionRequestCreatorSync : public PermissionRequestCreator {
  public:
   PermissionRequestCreatorSync(
@@ -26,10 +29,15 @@ class PermissionRequestCreatorSync : public PermissionRequestCreator {
 
   // PermissionRequestCreator implementation:
   bool IsEnabled() const override;
-  void CreatePermissionRequest(const GURL& url_requested,
-                               const SuccessCallback& callback) override;
+  void CreateURLAccessRequest(const GURL& url_requested,
+                              const SuccessCallback& callback) override;
+  void CreateExtensionUpdateRequest(const std::string& extension_id,
+                                    const SuccessCallback& callback) override;
 
  private:
+  void CreateRequest(const std::string& prefix,
+                     const std::string& data,
+                     const SuccessCallback& callback);
   SupervisedUserSettingsService* settings_service_;
   SupervisedUserSharedSettingsService* shared_settings_service_;
   ProfileSyncService* sync_service_;
