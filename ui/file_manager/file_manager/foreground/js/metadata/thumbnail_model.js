@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 /**
+ * Metadata containing thumbnail information.
+ * @typedef {Object}
+ */
+var ThumbnailMetadataItem;
+
+/**
  * @param {!MetadataModel} metadataModel
  * @struct
  * @constructor
@@ -17,7 +23,8 @@ function ThumbnailModel(metadataModel) {
 
 /**
  * @param {!Array<!Entry>} entries
- * @return {Promise} Promise fulfilled with old format metadata list.
+ * @return {Promise<ThumbnailMetadataItem>} Promise fulfilled with old format
+ *     metadata list.
  */
 ThumbnailModel.prototype.get = function(entries) {
   var results = {};

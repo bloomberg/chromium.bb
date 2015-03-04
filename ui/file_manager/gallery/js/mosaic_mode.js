@@ -547,7 +547,7 @@ Mosaic.prototype.onContentChange_ = function(event) {
   if (!this.tiles_)
     return;
 
-  if (!event.metadata)
+  if (!event.thumbnailChanged)
     return; // Thumbnail unchanged, nothing to do.
 
   var index = this.dataModel_.indexOf(event.item);
@@ -2054,7 +2054,6 @@ Mosaic.Tile.prototype.markUnloaded = function() {
  * target dimensions using metadata.
  */
 Mosaic.Tile.prototype.init = function() {
-  var metadata = this.getItem().getMetadata();
   this.markUnloaded();
   this.left_ = null;  // Mark as not laid out.
 
@@ -2065,7 +2064,7 @@ Mosaic.Tile.prototype.init = function() {
   this.thumbnailLoader_ = new ThumbnailLoader(
       this.getItem().getEntry(),
       ThumbnailLoader.LoaderType.CANVAS,
-      metadata,
+      this.getItem().getThumbnailMetadataItem(),
       undefined,  // Media type.
       [
         ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
@@ -2079,7 +2078,7 @@ Mosaic.Tile.prototype.init = function() {
     this.thumbnailPreloader_ = new ThumbnailLoader(
         this.getItem().getEntry(),
         ThumbnailLoader.LoaderType.CANVAS,
-        metadata,
+        this.getItem().getThumbnailMetadataItem(),
         undefined,  // Media type.
         [
           ThumbnailLoader.LoadTarget.CONTENT_METADATA

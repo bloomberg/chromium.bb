@@ -49,39 +49,34 @@ function testSaveToFile(callback) {
       }
     });
   };
-  var fetchedMediaCleared = false;
-  var metadataCache = {
-    getLatest: function(entries, type, callback) {
-      callback([{name: 'newMetadata'}]);
+  var entryChanged = false;
+  var metadataModel = {
+    get: function(entries, names) {
+      return Promise.resolve([
+        {size: 200}
+      ]);
     },
-    clear: function(entries, type) {
-      fetchedMediaCleared = true;
+    notifyEntriesChanged: function() {
+      entryChanged = true;
     }
   };
   var item = new Gallery.Item(
       entry,
       {isReadOnly: false},
-      {name: 'oldMetadata'},
+      {size: 100},
       {},
-      metadataCache,
-      // Mock of MetadataModel.
-      {
-        get: function() {
-          return Promise.resolve([{}]);
-        },
-        notifyEntriesChanged: function() {}
-      },
       /* original */ true);
-  assertEquals('oldMetadata', item.getMetadata().name);
-  assertFalse(fetchedMediaCleared);
+  assertEquals(100, item.getMetadataItem().size);
+  assertFalse(entryChanged);
   reportPromise(
       new Promise(item.saveToFile.bind(
           item,
           {getLocationInfo: function() { return {}; }},
-          null,
-          true,
+          metadataModel,
+          /* fallbackDir */ null,
+          /* overwrite */ true,
           document.createElement('canvas'))).then(function() {
-            assertEquals('newMetadata', item.getMetadata().name);
-            assertTrue(fetchedMediaCleared);
+            assertEquals(200, item.getMetadataItem().size);
+            assertTrue(entryChanged);
           }), callback);
 }

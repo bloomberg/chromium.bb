@@ -7,53 +7,33 @@
  *
  * @param {!FileEntry} entry Image entry.
  * @param {!EntryLocation} locationInfo Entry location information.
- * @param {!Object} metadata Metadata for the entry.
  * @param {!MetadataItem} metadataItem
- * @param {!MetadataCache} metadataCache Metadata cache instance.
- * @param {!MetadataModel} metadataModel File system metadata.
+ * @param {!ThumbnailMetadataItem} thumbnailMetadataItem
  * @param {boolean} original Whether the entry is original or edited.
  * @constructor
  * @struct
  */
 Gallery.Item = function(
-    entry, locationInfo, metadata, metadataItem, metadataCache,
-    metadataModel, original) {
+    entry, locationInfo, metadataItem, thumbnailMetadataItem, original) {
   /**
-   * @type {!FileEntry}
-   * @private
+   * @private {!FileEntry}
    */
   this.entry_ = entry;
 
   /**
-   * @type {!EntryLocation}
-   * @private
+   * @private {!EntryLocation}
    */
   this.locationInfo_ = locationInfo;
 
   /**
-   * @type {!Object}
-   * @private
-   */
-  this.metadata_ = Object.preventExtensions(metadata);
-
-  /**
-   * @type {!MetadataItem}
+   * @private {!MetadataItem}
    */
   this.metadataItem_ = metadataItem;
 
   /**
-   * @type {!MetadataCache}
-   * @private
-   * @const
+   * @private {!ThumbnailMetadataItem}
    */
-  this.metadataCache_ = metadataCache;
-
-  /**
-   * @type {!MetadataModel}
-   * @private
-   * @const
-   */
-  this.metadataModel_ = metadataModel;
+  this.thumbnailMetadataItem_ = metadataItem;
 
   // TODO(yawano): Change this.contentImage and this.screenImage to private
   // fields and provide utility methods for them (e.g. revokeFullImageCache).
@@ -101,15 +81,24 @@ Gallery.Item.prototype.getLocationInfo = function() {
 };
 
 /**
- * @return {!Object} Metadata.
+ * @return {!MetadataItem} Metadata.
  */
-Gallery.Item.prototype.getMetadata = function() { return this.metadata_; };
+Gallery.Item.prototype.getMetadataItem = function() {
+  return this.metadataItem_;
+};
 
 /**
  * @return {!MetadataItem} Metadata.
  */
 Gallery.Item.prototype.getMetadataItem = function() {
   return this.metadataItem_;
+};
+
+/**
+ * @return {!ThumbnailMetadataItem} Thumbnail metadata item.
+ */
+Gallery.Item.prototype.getThumbnailMetadataItem = function() {
+  return this.thumbnailMetadataItem_;
 };
 
 /**
@@ -224,6 +213,7 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
  * Writes the new item content to either the existing or a new file.
  *
  * @param {!VolumeManager} volumeManager Volume manager instance.
+ * @param {!MetadataModel} metadataModel
  * @param {DirectoryEntry} fallbackDir Fallback directory in case the current
  *     directory is read only.
  * @param {boolean} overwrite Whether to overwrite the image to the item or not.
@@ -231,7 +221,7 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
  * @param {function(boolean)} callback Callback accepting true for success.
  */
 Gallery.Item.prototype.saveToFile = function(
-    volumeManager, fallbackDir, overwrite, canvas, callback) {
+    volumeManager, metadataModel, fallbackDir, overwrite, canvas, callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var name = this.getFileName();
@@ -249,31 +239,17 @@ Gallery.Item.prototype.saveToFile = function(
     this.locationInfo_ = locationInfo;
 
     // Updates the metadata.
-    this.metadataCache_.clear([this.entry_], '*');
-    var oldMetadataPromise = new Promise(function(fulfill, reject) {
-      this.metadataCache_.getLatest(
-          [this.entry_],
-          Gallery.METADATA_TYPE,
-          function(metadataList) {
-            if (metadataList.length === 1) {
-              this.metadata_ = metadataList[0];
-              fulfill();
-            } else {
-              reject();
-            }
-          }.bind(this));
-    }.bind(this));
-    this.metadataModel_.notifyEntriesChanged([this.entry_]);
-    var newMetadataPromise = this.metadataModel_.get(
-        [entry], Gallery.PREFETCH_PROPERTY_NAMES).then(
-        function(metadataItems) {
-          this.metadataItem_ = metadataItems[0];
-        }.bind(this));
-    if (callback) {
-      Promise.all([oldMetadataPromise, newMetadataPromise]).then(
-          callback.bind(null, true),
-          callback.bind(null, false));
-    }
+    metadataModel.notifyEntriesChanged([this.entry_]);
+    Promise.all([
+      metadataModel.get([entry], Gallery.PREFETCH_PROPERTY_NAMES),
+      new ThumbnailModel(metadataModel).get([entry])
+    ]).then(function(metadataLists) {
+      this.metadataItem_ = metadataLists[0][0];
+      this.thumbnailMetadataItem_ = metadataLists[1][0];
+      callback(true);
+    }.bind(this), function() {
+      callback(false);
+    });
   }.bind(this);
 
   var onError = function(error) {
@@ -284,7 +260,7 @@ Gallery.Item.prototype.saveToFile = function(
   };
 
   var doSave = function(newFile, fileEntry) {
-    var metadataPromise = this.metadataModel_.get(
+    var metadataPromise = metadataModel.get(
         [fileEntry],
         ['mediaMimeType', 'contentMimeType', 'ifd', 'exifLittleEndian']);
     metadataPromise.then(function(metadataItems) {

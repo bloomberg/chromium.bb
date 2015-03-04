@@ -8,17 +8,15 @@ var fileSystem;
 var item;
 
 function setUp() {
-  var metadataCache = new MockMetadataCache();
   model = new GalleryDataModel(
-      metadataCache,
       /* Mock MetadataModel */{},
       /* Mock EntryListWatcher */{});
   fileSystem = new MockFileSystem('volumeId');
   item = new Gallery.Item(
       new MockEntry(fileSystem, '/test.jpg'),
       null,
-      {media: {mimeType: 'image/jpeg'}},
-      metadataCache,
+      /* metadataItem */ {},
+      /* thumbnailMetadataItem */ {},
       /* original */ true);
 }
 
@@ -26,6 +24,7 @@ function testSaveItemOverwrite(callback) {
   // Mocking the saveToFile method.
   item.saveToFile = function(
       volumeManager,
+      metadataModel,
       fallbackDir,
       overwrite,
       canvas,
@@ -44,6 +43,7 @@ function testSaveItemNewFile(callback) {
   // Mocking the saveToFile method.
   item.saveToFile = function(
       volumeManager,
+      metadataModel,
       fallbackDir,
       overwrite,
       canvas,

@@ -99,13 +99,6 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
   this.volumeManager_ = volumeManager;
 
   /**
-   * @type {!MetadataCache}
-   * @private
-   * @const
-   */
-  this.metadataCache_ = context.metadataCache;
-
-  /**
    * @type {function(function())}
    * @private
    * @const

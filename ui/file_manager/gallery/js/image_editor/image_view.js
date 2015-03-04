@@ -152,9 +152,10 @@ ImageView.getLoadTarget = function(item, effect) {
     return ImageView.LoadTarget.CACHED_THUMBNAIL;
 
   // Only show thumbnails if there is no effect or the effect is Slide.
-  var metadata = item.getMetadata();
   var thumbnailLoader = new ThumbnailLoader(
-      item.getEntry(), ThumbnailLoader.LoaderType.CANVAS, item.getMetadata());
+      item.getEntry(),
+      ThumbnailLoader.LoaderType.CANVAS,
+      item.getThumbnailMetadataItem());
   if ((effect instanceof ImageView.Effect.None ||
        effect instanceof ImageView.Effect.Slide) &&
       thumbnailLoader.getLoadTarget() !==
@@ -350,7 +351,6 @@ ImageView.prototype.cancelLoad = function() {
 ImageView.prototype.load =
     function(item, effect, displayCallback, loadCallback) {
   var entry = item.getEntry();
-  var metadata = item.getMetadata() || {};
 
   if (!(effect instanceof ImageView.Effect.None)) {
     // Skip effects when reloading repeatedly very quickly.
@@ -389,7 +389,7 @@ ImageView.prototype.load =
       var thumbnailLoader = new ThumbnailLoader(
           entry,
           ThumbnailLoader.LoaderType.CANVAS,
-          metadata);
+          item.getThumbnailMetadataItem());
       thumbnailLoader.loadDetachedImage(function(success) {
         displayThumbnail(
             ImageView.LoadType.IMAGE_FILE,
@@ -485,7 +485,7 @@ ImageView.prototype.load =
         loadType, Object.keys(ImageView.LoadType).length);
 
     if (loadType === ImageView.LoadType.ERROR &&
-        !navigator.onLine && !metadata.external.present) {
+        !navigator.onLine && !item.getMetadataItem().present) {
       loadType = ImageView.LoadType.OFFLINE;
     }
     if (loadCallback) loadCallback(loadType, animationDuration, opt_error);
