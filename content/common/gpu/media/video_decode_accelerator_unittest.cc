@@ -231,17 +231,23 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
     done.Wait();
 
 #if defined(USE_OZONE)
+    gpu_helper_.reset(new ui::OzoneGpuTestHelper());
     // Need to initialize after the rendering side since the rendering side
     // initializes the "GPU" parts of Ozone.
     //
     // This also needs to be done in the test environment since this shouldn't
     // be initialized multiple times for the same Ozone platform.
-    gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get(),
-                           GetRenderingTaskRunner());
+    gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get(),
+                            GetRenderingTaskRunner());
 #endif
   }
 
-  void TearDown() override { rendering_thread_.Stop(); }
+  void TearDown() override {
+#if defined(USE_OZONE)
+    gpu_helper_.reset();
+#endif
+    rendering_thread_.Stop();
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetRenderingTaskRunner() const {
     return rendering_thread_.task_runner();
@@ -250,7 +256,7 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
  private:
   base::Thread rendering_thread_;
 #if defined(USE_OZONE)
-  ui::OzoneGpuTestHelper gpu_helper_;
+  scoped_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTestEnvironment);
