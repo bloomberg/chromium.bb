@@ -2,8 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/* Note: we use display: block here to avoid positioning issues related to
+   the use of overflow: hidden. */
 :host {
-  display: inline-block;
+  display: block;
   height: 50px;
   overflow: hidden;
   position: relative;
