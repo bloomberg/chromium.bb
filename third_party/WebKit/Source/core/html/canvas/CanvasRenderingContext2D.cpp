@@ -2302,9 +2302,8 @@ int CanvasRenderingContext2D::getFontBaseline(const FontMetrics& fontMetrics) co
 
 void CanvasRenderingContext2D::setIsHidden(bool hidden)
 {
-    ImageBuffer* buffer = canvas()->buffer();
-    if (buffer)
-        buffer->setIsHidden(hidden);
+    if (canvas()->hasImageBuffer())
+        canvas()->buffer()->setIsHidden(hidden);
 }
 
 WebLayer* CanvasRenderingContext2D::platformLayer() const
