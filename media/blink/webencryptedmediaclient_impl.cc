@@ -25,12 +25,6 @@ namespace media {
 const char kKeySystemSupportUMAPrefix[] =
     "Media.EME.RequestMediaKeySystemAccess.";
 
-// TODO(jrummell): Convert to an enum. http://crbug.com/418239
-const char kTemporarySessionType[] = "temporary";
-const char kPersistentLicenseSessionType[] = "persistent-license";
-const char kPersistentReleaseMessageSessionType[] =
-    "persistent-release-message";
-
 enum ConfigurationSupport {
   CONFIGURATION_NOT_SUPPORTED,
   CONFIGURATION_REQUIRES_PERMISSION,
@@ -151,23 +145,41 @@ static ConfigurationSupport GetSupportedConfiguration(
   // 1. Let accumulated configuration be empty. (Done by caller.)
   // 2. If candidate configuration's initDataTypes attribute is not empty, run
   //    the following steps:
-  if (!candidate.initDataTypes.isEmpty()) {
+  blink::WebVector<blink::WebEncryptedMediaInitDataType> init_data_types =
+      candidate.getInitDataTypes();
+  if (!init_data_types.isEmpty()) {
     // 2.1. Let supported types be empty.
-    std::vector<blink::WebString> supported_types;
+    std::vector<blink::WebEncryptedMediaInitDataType> supported_types;
 
     // 2.2. For each value in candidate configuration's initDataTypes attribute:
-    for (size_t i = 0; i < candidate.initDataTypes.size(); i++) {
+    for (size_t i = 0; i < init_data_types.size(); i++) {
       // 2.2.1. Let initDataType be the value.
-      const blink::WebString& init_data_type = candidate.initDataTypes[i];
+      blink::WebEncryptedMediaInitDataType init_data_type = init_data_types[i];
       // 2.2.2. If initDataType is the empty string, return null.
-      if (init_data_type.isEmpty())
-        return CONFIGURATION_NOT_SUPPORTED;
+      if (init_data_type == blink::WebEncryptedMediaInitDataType::Unknown)
+        continue;
       // 2.2.3. If the implementation supports generating requests based on
       //        initDataType, add initDataType to supported types. String
       //        comparison is case-sensitive.
-      if (base::IsStringASCII(init_data_type) &&
-          IsSupportedKeySystemWithInitDataType(
-              key_system, base::UTF16ToASCII(init_data_type))) {
+      // TODO(jrummell): |init_data_type| should be an enum all the way through
+      // Chromium. http://crbug.com/417440
+      std::string init_data_type_as_ascii = "unknown";
+      switch (init_data_type) {
+        case blink::WebEncryptedMediaInitDataType::Cenc:
+          init_data_type_as_ascii = "cenc";
+          break;
+        case blink::WebEncryptedMediaInitDataType::Keyids:
+          init_data_type_as_ascii = "keyids";
+          break;
+        case blink::WebEncryptedMediaInitDataType::Webm:
+          init_data_type_as_ascii = "webm";
+          break;
+        case blink::WebEncryptedMediaInitDataType::Unknown:
+          NOTREACHED();
+          break;
+      }
+      if (IsSupportedKeySystemWithInitDataType(key_system,
+                                               init_data_type_as_ascii)) {
         supported_types.push_back(init_data_type);
       }
     }
@@ -177,7 +189,7 @@ static ConfigurationSupport GetSupportedConfiguration(
       return CONFIGURATION_NOT_SUPPORTED;
 
     // 2.4. Add supported types to accumulated configuration.
-    accumulated_configuration->initDataTypes = supported_types;
+    accumulated_configuration->setInitDataTypes(supported_types);
   }
 
   // 3. Follow the steps for the value of candidate configuration's
@@ -329,20 +341,22 @@ static ConfigurationSupport GetSupportedConfiguration(
   // 12. Return accumulated configuration.
   //     (As an extra step, we record the available session types so that
   //     createSession() can be synchronous.)
-  std::vector<blink::WebString> session_types;
-  session_types.push_back(kTemporarySessionType);
+  std::vector<blink::WebEncryptedMediaSessionType> session_types;
+  session_types.push_back(blink::WebEncryptedMediaSessionType::Temporary);
   if (accumulated_configuration->persistentState ==
       blink::WebMediaKeySystemConfiguration::Requirement::Required) {
     if (IsPersistentLicenseSessionSupported(key_system,
                                             is_permission_granted)) {
-      session_types.push_back(kPersistentLicenseSessionType);
+      session_types.push_back(
+          blink::WebEncryptedMediaSessionType::PersistentLicense);
     }
     if (IsPersistentReleaseMessageSessionSupported(key_system,
                                                    is_permission_granted)) {
-      session_types.push_back(kPersistentReleaseMessageSessionType);
+      session_types.push_back(
+          blink::WebEncryptedMediaSessionType::PersistentReleaseMessage);
     }
   }
-  accumulated_configuration->sessionTypes = session_types;
+  accumulated_configuration->setSessionTypes(session_types);
 
   return CONFIGURATION_SUPPORTED;
 }
