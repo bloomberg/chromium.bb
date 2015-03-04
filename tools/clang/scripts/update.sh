@@ -34,6 +34,8 @@ ABS_COMPILER_RT_DIR="${PWD}/${COMPILER_RT_DIR}"
 # ${A:-a} returns $A if it's set, a else.
 LLVM_REPO_URL=${LLVM_URL:-https://llvm.org/svn/llvm-project}
 
+CDS_URL=https://commondatastorage.googleapis.com/chromium-browser-clang
+
 if [[ -z "$GYP_DEFINES" ]]; then
   GYP_DEFINES=
 fi
@@ -161,9 +163,36 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
     with_android=
   fi
 
-  if [[ "${OS}" == "Linux" ]] && [[ -z ${gcc_toolchain:-''} ]]; then
-    # Set gcc_toolchain on Linux; llvm-symbolizer needs the bundled libstdc++.
-    gcc_toolchain="$(dirname $(dirname $(which gcc)))"
+  LLVM_BUILD_TOOLS_DIR="${ABS_LLVM_DIR}/../llvm-build-tools"
+
+  if [[ "${OS}" == "Linux" ]] && [[ -z "${gcc_toolchain}" ]]; then
+    if [[ $(gcc -dumpversion) < "4.7.0" ]]; then
+      # We need a newer GCC version.
+      if [[ ! -e "${LLVM_BUILD_TOOLS_DIR}/gcc482" ]]; then
+        echo "Downloading pre-built GCC 4.8.2"
+        mkdir -p "${LLVM_BUILD_TOOLS_DIR}"
+        curl --fail -L "${CDS_URL}/tools/gcc482.tgz" | \
+          tar vzxf - -C "${LLVM_BUILD_TOOLS_DIR}"
+      fi
+      gcc_toolchain="${LLVM_BUILD_TOOLS_DIR}/gcc482"
+    else
+      # Always set gcc_toolchain; llvm-symbolizer needs the bundled libstdc++.
+      gcc_toolchain="$(dirname $(dirname $(which gcc)))"
+    fi
+  fi
+
+  if [[ "${OS}" == "Linux" ]]; then
+    # TODO(hans): Might need to make this work on Mac eventually.
+    if [[ $(cmake --version | grep -Eo '[0-9.]+') < "3.0" ]]; then
+      # We need a newer CMake version.
+      if [[ ! -e "${LLVM_BUILD_TOOLS_DIR}/cmake310" ]]; then
+        echo "Downloading pre-built CMake 3.10"
+        mkdir -p "${LLVM_BUILD_TOOLS_DIR}"
+        curl --fail -L "${CDS_URL}/tools/cmake310.tgz" | \
+          tar vzxf - -C "${LLVM_BUILD_TOOLS_DIR}"
+      fi
+      export PATH="${LLVM_BUILD_TOOLS_DIR}/cmake310/bin:${PATH}"
+    fi
   fi
 
   echo "LLVM_FORCE_HEAD_REVISION was set; using r${CLANG_REVISION}"
@@ -210,7 +239,6 @@ rm -f "${STAMP_FILE}"
 if [[ -z "$force_local_build" ]]; then
   # Check if there's a prebuilt binary and if so just fetch that. That's faster,
   # and goma relies on having matching binary hashes on client and server too.
-  CDS_URL=https://commondatastorage.googleapis.com/chromium-browser-clang
   CDS_FILE="clang-${CLANG_REVISION}.tgz"
   CDS_OUT_DIR=$(mktemp -d -t clang_download.XXXXXX)
   CDS_OUTPUT="${CDS_OUT_DIR}/${CDS_FILE}"
