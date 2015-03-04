@@ -307,6 +307,10 @@ Node::~Node()
 
     if (getFlag(HasWeakReferencesFlag))
         WeakNodeMap::notifyNodeDestroyed(this);
+
+    // clearEventTargetData() must be always done,
+    // or eventTargetDataMap() may keep a raw pointer to a deleted object.
+    ASSERT(!hasEventTargetData());
 #else
     // With Oilpan, the rare data finalizer also asserts for
     // this condition (we cannot directly access it here.)
@@ -320,13 +324,13 @@ Node::~Node()
 // With Oilpan all of this is handled with weak processing of the document.
 void Node::willBeDeletedFromDocument()
 {
+    if (hasEventTargetData())
+        clearEventTargetData();
+
     if (!isTreeScopeInitialized())
         return;
 
     Document& document = this->document();
-
-    if (hasEventTargetData())
-        clearEventTargetData();
 
     if (document.frameHost())
         document.frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
@@ -1899,6 +1903,7 @@ EventTargetData& Node::ensureEventTargetData()
 {
     if (hasEventTargetData())
         return *eventTargetDataMap().get(this);
+    ASSERT(!eventTargetDataMap().contains(this));
     setHasEventTargetData(true);
     EventTargetData* data = new EventTargetData;
     eventTargetDataMap().set(this, adoptPtr(data));
@@ -1909,6 +1914,9 @@ EventTargetData& Node::ensureEventTargetData()
 void Node::clearEventTargetData()
 {
     eventTargetDataMap().remove(this);
+#if ENABLE(ASSERT)
+    setHasEventTargetData(false);
+#endif
 }
 #endif
 
