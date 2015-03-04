@@ -160,6 +160,8 @@ template("generate_jar_jni") {
     jni_target_name = "${target_name}__jni_${classname}"
     jni_actions += [ ":$jni_target_name" ]
     action(jni_target_name) {
+      # The sources aren't compiled so don't check their dependencies.
+      check_includes = false
       depfile = "$target_gen_dir/$target_name.d"
       script = "//base/android/jni_generator/jni_generator.py"
       sources = [
