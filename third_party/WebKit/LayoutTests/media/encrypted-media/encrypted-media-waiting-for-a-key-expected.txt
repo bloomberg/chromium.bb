@@ -1,6 +1,8 @@
 EVENT(encrypted)
 EVENT(encrypted)
 EVENT(message)
+EVENT(waitingforkey)
+EVENT(waitingforkey)
 EVENT(playing)
 This is a testharness.js-based test.
 PASS Waiting for a key. 

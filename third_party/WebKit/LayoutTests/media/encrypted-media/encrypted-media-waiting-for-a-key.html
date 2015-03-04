@@ -16,6 +16,7 @@
                 var mediaKeySession = null;
                 var sessionReadyReceived = false;
                 var encryptedEventCount = 0;
+                var waitingForKeyEventCount = 0;
 
                 var keyId = null;
                 var rawKey = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
@@ -54,14 +55,23 @@
                     setTimeout(verifyWaitingForKey, 250);
                 }
 
+                function onWaitingForKey(event)
+                {
+                    assert_equals(event.target, video);
+                    assert_equals(event.type, 'waitingforkey');
+                    ++waitingForKeyEventCount;
+                }
+
                 function verifyWaitingForKey()
                 {
                     // Make sure the video is NOT paused and not progressing
                     // before the session is updated.
-                    // TODO(xhwang): Check "waiting" event after it's
-                    // implemented. See http://crbug.com/337975
                     assert_false(video.paused);
                     assert_equals(video.currentTime, 0);
+
+                    // TODO(jrummell): waitingforkey event should only occur
+                    // once. http://crbug.com/461903
+                    assert_equals(waitingForKeyEventCount, 2);
 
                     updateSession();
                 }
@@ -96,6 +106,7 @@
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     waitForEventAndRunStep('encrypted', video, onEncrypted, test);
+                    waitForEventAndRunStep('waitingforkey', video, onWaitingForKey, test);
                     waitForEventAndRunStep('playing', video, onPlaying, test);
                     video.src = '../content/test-encrypted.webm';
                     return video.setMediaKeys(mediaKeys);
