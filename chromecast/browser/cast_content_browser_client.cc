@@ -9,6 +9,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
+#include "base/i18n/icu_util.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -273,17 +274,16 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     int child_process_id,
     content::FileDescriptorInfo* mappings) {
 #if defined(OS_ANDROID)
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  base::FilePath pak_file;
-  CHECK(PathService::Get(FILE_CAST_PAK, &pak_file));
-  base::File pak_with_flags(pak_file, flags);
-  if (!pak_with_flags.IsValid()) {
+  const int flags_open_read = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  base::FilePath pak_file_path;
+  CHECK(PathService::Get(FILE_CAST_PAK, &pak_file_path));
+  base::File pak_file(pak_file_path, flags_open_read);
+  if (!pak_file.IsValid()) {
     NOTREACHED() << "Failed to open file when creating renderer process: "
                  << "cast_shell.pak";
   }
-  mappings->Transfer(
-      kAndroidPakDescriptor,
-      base::ScopedFD(pak_with_flags.TakePlatformFile()));
+  mappings->Transfer(kAndroidPakDescriptor,
+                     base::ScopedFD(pak_file.TakePlatformFile()));
 
   if (breakpad::IsCrashReporterEnabled()) {
     base::File minidump_file(
@@ -297,6 +297,16 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                          base::ScopedFD(minidump_file.TakePlatformFile()));
     }
   }
+
+  base::FilePath app_data_path;
+  CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data_path));
+  base::FilePath icudata_path =
+      app_data_path.AppendASCII(base::i18n::kIcuDataFileName);
+  base::File icudata_file(icudata_path, flags_open_read);
+  if (!icudata_file.IsValid())
+    NOTREACHED() << "Failed to open ICU file when creating renderer process";
+  mappings->Transfer(kAndroidICUDataDescriptor,
+                     base::ScopedFD(icudata_file.TakePlatformFile()));
 #else
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
