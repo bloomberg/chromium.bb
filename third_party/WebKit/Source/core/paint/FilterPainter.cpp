@@ -37,7 +37,7 @@ FilterPainter::FilterPainter(Layer& renderLayer, GraphicsContext* context, const
     SkiaImageFilterBuilder builder(context);
     RefPtrWillBeRawPtr<FilterEffect> lastEffect = renderLayer.filterRenderer()->lastEffect();
     lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
-    RefPtr<ImageFilter> imageFilter = builder.build(lastEffect.get(), ColorSpaceDeviceRGB);
+    RefPtr<SkImageFilter> imageFilter = builder.build(lastEffect.get(), ColorSpaceDeviceRGB);
     if (!imageFilter)
         return;
 

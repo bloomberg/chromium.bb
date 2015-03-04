@@ -35,7 +35,6 @@
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/ImageBufferSurface.h"
-#include "platform/graphics/ImageFilter.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
@@ -308,7 +307,7 @@ public:
     void beginTransparencyLayer(float opacity, const FloatRect* = 0);
     // Apply SkXfermode::Mode when the layer is composited on the backdrop (i.e. endLayer()).
     // Don't change the current SkXfermode::Mode states.
-    void beginLayer(float opacity, SkXfermode::Mode, const FloatRect* = 0, ColorFilter = ColorFilterNone, ImageFilter* = 0);
+    void beginLayer(float opacity, SkXfermode::Mode, const FloatRect* = 0, ColorFilter = ColorFilterNone, SkImageFilter* = 0);
     void endLayer();
     bool isDrawingToLayer() { return m_layerCount; }
 

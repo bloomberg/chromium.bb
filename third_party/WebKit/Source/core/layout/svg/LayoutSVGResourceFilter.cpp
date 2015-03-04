@@ -158,7 +158,7 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
     SourceGraphic* sourceGraphic = static_cast<SourceGraphic*>(filterData->builder->getEffectById(SourceGraphic::effectName()));
     ASSERT(sourceGraphic);
     builder.setSourceGraphic(sourceGraphic);
-    RefPtr<ImageFilter> imageFilter = builder.build(filterData->builder->lastEffect(), ColorSpaceDeviceRGB);
+    RefPtr<SkImageFilter> imageFilter = builder.build(filterData->builder->lastEffect(), ColorSpaceDeviceRGB);
     FloatRect boundaries = filterData->boundaries;
     context->save();
 

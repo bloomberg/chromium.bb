@@ -10,14 +10,14 @@
 
 namespace blink {
 
-BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
+BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds)
     : PairedBeginDisplayItem(client, BeginFilter)
     , m_imageFilter(imageFilter)
     , m_bounds(bounds)
 {
 }
 
-BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, PassOwnPtr<WebFilterOperations> webFilterOperations)
+BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<WebFilterOperations> webFilterOperations)
     : PairedBeginDisplayItem(client, BeginFilter)
     , m_imageFilter(imageFilter)
     , m_webFilterOperations(webFilterOperations)
@@ -25,19 +25,28 @@ BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRef
 {
 }
 
+static FloatRect mapImageFilterRect(SkImageFilter* filter, const FloatRect& bounds)
+{
+    SkRect filterBounds;
+    filter->computeFastBounds(bounds, &filterBounds);
+    filterBounds.offset(-bounds.x(), -bounds.y());
+    return filterBounds;
+}
+
 void BeginFilterDisplayItem::replay(GraphicsContext* context)
 {
     context->save();
-    FloatRect boundaries = mapImageFilterRect(m_imageFilter.get(), m_bounds);
-    context->translate(m_bounds.x().toFloat(), m_bounds.y().toFloat());
-    boundaries.move(-m_bounds.x().toFloat(), -m_bounds.y().toFloat());
-    context->beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, m_imageFilter.get());
-    context->translate(-m_bounds.x().toFloat(), -m_bounds.y().toFloat());
+
+    FloatRect imageFilterBounds = mapImageFilterRect(m_imageFilter.get(), m_bounds);
+
+    context->translate(m_bounds.x(), m_bounds.y());
+    context->beginLayer(1, SkXfermode::kSrcOver_Mode, &imageFilterBounds, ColorFilterNone, m_imageFilter.get());
+    context->translate(-m_bounds.x(), -m_bounds.y());
 }
 
 void BeginFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    list->appendFilterItem(*m_webFilterOperations, FloatRect(m_bounds));
+    list->appendFilterItem(*m_webFilterOperations, m_bounds);
 }
 
 bool BeginFilterDisplayItem::drawsContent() const
@@ -51,7 +60,7 @@ void BeginFilterDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& str
 {
     DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
     stringBuilder.append(WTF::String::format(", filter bounds: [%f,%f,%f,%f]",
-        m_bounds.x().toFloat(), m_bounds.y().toFloat(), m_bounds.width().toFloat(), m_bounds.height().toFloat()));
+        m_bounds.x(), m_bounds.y(), m_bounds.width(), m_bounds.height()));
 }
 #endif
 
