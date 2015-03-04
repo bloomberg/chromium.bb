@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -425,14 +426,37 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
 void ExtensionToolbarModel::InitializeExtensionList() {
   DCHECK(toolbar_items_.empty());  // We shouldn't have any items yet.
 
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/463337 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "463337 ExtensionToolbarModel::InitializeExtensionList1"));
   last_known_positions_ = extension_prefs_->GetToolbarOrder();
-  if (profile_->IsOffTheRecord())
+  if (profile_->IsOffTheRecord()) {
+    // TODO(robliao): Remove ScopedTracker below once crbug.com/463337 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "463337 ExtensionToolbarModel::InitializeExtensionList2"));
     IncognitoPopulate();
-  else
+  } else {
+    // TODO(robliao): Remove ScopedTracker below once crbug.com/463337 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "463337 ExtensionToolbarModel::InitializeExtensionList3"));
     Populate(&last_known_positions_);
+  }
 
   extensions_initialized_ = true;
+
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/463337 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "463337 ExtensionToolbarModel::InitializeExtensionList4"));
   MaybeUpdateVisibilityPrefs();
+
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/463337 is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "463337 ExtensionToolbarModel::InitializeExtensionList5"));
   FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
 }
 
