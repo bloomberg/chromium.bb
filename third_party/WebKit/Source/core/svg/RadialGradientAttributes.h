@@ -27,12 +27,12 @@ struct RadialGradientAttributes final : GradientAttributes {
     DISALLOW_ALLOCATION();
 public:
     RadialGradientAttributes()
-        : m_cx(SVGLength::create(LengthModeWidth))
-        , m_cy(SVGLength::create(LengthModeHeight))
-        , m_r(SVGLength::create(LengthModeOther))
-        , m_fx(SVGLength::create(LengthModeWidth))
-        , m_fy(SVGLength::create(LengthModeHeight))
-        , m_fr(SVGLength::create(LengthModeOther))
+        : m_cx(SVGLength::create(SVGLengthMode::Width))
+        , m_cy(SVGLength::create(SVGLengthMode::Height))
+        , m_r(SVGLength::create(SVGLengthMode::Other))
+        , m_fx(SVGLength::create(SVGLengthMode::Width))
+        , m_fy(SVGLength::create(SVGLengthMode::Height))
+        , m_fr(SVGLength::create(SVGLengthMode::Other))
         , m_cxSet(false)
         , m_cySet(false)
         , m_rSet(false)

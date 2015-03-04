@@ -42,10 +42,10 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUn
 
 inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document)
-    , m_refX(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_refY(SVGAnimatedLength::create(this, SVGNames::refYAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
-    , m_markerWidth(SVGAnimatedLength::create(this, SVGNames::markerWidthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
-    , m_markerHeight(SVGAnimatedLength::create(this, SVGNames::markerHeightAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
+    , m_refX(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_refY(SVGAnimatedLength::create(this, SVGNames::refYAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
+    , m_markerWidth(SVGAnimatedLength::create(this, SVGNames::markerWidthAttr, SVGLength::create(SVGLengthMode::Width), ForbidNegativeLengths))
+    , m_markerHeight(SVGAnimatedLength::create(this, SVGNames::markerHeightAttr, SVGLength::create(SVGLengthMode::Height), ForbidNegativeLengths))
     , m_orientAngle(SVGAnimatedAngle::create(this))
     , m_markerUnits(SVGAnimatedEnumeration<SVGMarkerUnitsType>::create(this, SVGNames::markerUnitsAttr, SVGMarkerUnitsStrokeWidth))
 {

@@ -117,9 +117,10 @@ SVGLengthType stringToLengthType(const CharType*& ptr, const CharType* end)
 SVGLength::SVGLength(SVGLengthMode mode)
     : SVGPropertyBase(classType())
     , m_valueInSpecifiedUnits(0)
-    , m_unitMode(mode)
+    , m_unitMode(static_cast<unsigned>(mode))
     , m_unitType(LengthTypeNumber)
 {
+    ASSERT(unitMode() == mode);
 }
 
 SVGLength::SVGLength(const SVGLength& o)
@@ -359,35 +360,35 @@ SVGLengthMode SVGLength::lengthModeForAnimatedLengthAttribute(const QualifiedNam
     DEFINE_STATIC_LOCAL(LengthModeForLengthAttributeMap, s_lengthModeMap, ());
 
     if (s_lengthModeMap.isEmpty()) {
-        s_lengthModeMap.set(SVGNames::xAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::yAttr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::cxAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::cyAttr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::dxAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::dyAttr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::fxAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::fyAttr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::rAttr, LengthModeOther);
-        s_lengthModeMap.set(SVGNames::rxAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::ryAttr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::widthAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::heightAttr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::x1Attr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::x2Attr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::y1Attr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::y2Attr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::refXAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::refYAttr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::markerWidthAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::markerHeightAttr, LengthModeHeight);
-        s_lengthModeMap.set(SVGNames::textLengthAttr, LengthModeWidth);
-        s_lengthModeMap.set(SVGNames::startOffsetAttr, LengthModeWidth);
+        s_lengthModeMap.set(SVGNames::xAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::yAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::cxAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::cyAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::dxAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::dyAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::fxAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::fyAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::rAttr, SVGLengthMode::Other);
+        s_lengthModeMap.set(SVGNames::rxAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::ryAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::widthAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::heightAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::x1Attr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::x2Attr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::y1Attr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::y2Attr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::refXAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::refYAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::markerWidthAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::markerHeightAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::textLengthAttr, SVGLengthMode::Width);
+        s_lengthModeMap.set(SVGNames::startOffsetAttr, SVGLengthMode::Width);
     }
 
     if (s_lengthModeMap.contains(attrName))
         return s_lengthModeMap.get(attrName);
 
-    return LengthModeOther;
+    return SVGLengthMode::Other;
 }
 
 PassRefPtrWillBeRawPtr<SVGLength> SVGLength::blend(PassRefPtrWillBeRawPtr<SVGLength> passFrom, float progress) const

@@ -28,10 +28,10 @@ namespace blink {
 
 inline SVGLineElement::SVGLineElement(Document& document)
     : SVGGeometryElement(SVGNames::lineTag, document)
-    , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
-    , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
+    , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
+    , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
 {
     addToPropertyMap(m_x1);
     addToPropertyMap(m_y1);

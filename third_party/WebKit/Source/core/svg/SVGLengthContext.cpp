@@ -35,11 +35,11 @@ namespace blink {
 static inline float dimensionForLengthMode(SVGLengthMode mode, const FloatSize& viewportSize)
 {
     switch (mode) {
-    case LengthModeWidth:
+    case SVGLengthMode::Width:
         return viewportSize.width();
-    case LengthModeHeight:
+    case SVGLengthMode::Height:
         return viewportSize.height();
-    case LengthModeOther:
+    case SVGLengthMode::Other:
         return sqrtf(viewportSize.diagonalLengthSquared() / 2);
     }
     ASSERT_NOT_REACHED();

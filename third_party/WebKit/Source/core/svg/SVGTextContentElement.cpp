@@ -66,7 +66,7 @@ public:
 
 private:
     SVGAnimatedTextLength(SVGTextContentElement* contextElement)
-        : SVGAnimatedLength(contextElement, SVGNames::textLengthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths)
+        : SVGAnimatedLength(contextElement, SVGNames::textLengthAttr, SVGLength::create(SVGLengthMode::Width), ForbidNegativeLengths)
     {
     }
 };

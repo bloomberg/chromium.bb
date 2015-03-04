@@ -28,12 +28,12 @@ namespace blink {
 
 inline SVGRectElement::SVGRectElement(Document& document)
     : SVGGeometryElement(SVGNames::rectTag, document)
-    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
-    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
-    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
-    , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
-    , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(SVGLengthMode::Width), ForbidNegativeLengths))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(SVGLengthMode::Height), ForbidNegativeLengths))
+    , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(SVGLengthMode::Width), ForbidNegativeLengths))
+    , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(SVGLengthMode::Height), ForbidNegativeLengths))
 {
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);

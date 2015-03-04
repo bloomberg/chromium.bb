@@ -55,10 +55,10 @@ static void updatePathFromEllipseElement(SVGElement* element, Path& path)
 
     SVGLengthContext lengthContext(element);
     const LayoutStyle& style = ellipse->renderer()->styleRef();
-    float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, LengthModeWidth);
+    float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, SVGLengthMode::Width);
     if (rx < 0)
         return;
-    float ry = lengthContext.valueForLength(style.svgStyle().ry(), style, LengthModeHeight);
+    float ry = lengthContext.valueForLength(style.svgStyle().ry(), style, SVGLengthMode::Height);
     if (ry < 0)
         return;
     if (!rx && !ry)
@@ -119,10 +119,10 @@ static void updatePathFromRectElement(SVGElement* element, Path& path)
         return;
 
     const LayoutStyle& style = rect->renderer()->styleRef();
-    float x = lengthContext.valueForLength(style.svgStyle().x(), style, LengthModeWidth);
-    float y = lengthContext.valueForLength(style.svgStyle().y(), style, LengthModeHeight);
-    float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, LengthModeWidth);
-    float ry = lengthContext.valueForLength(style.svgStyle().ry(), style, LengthModeHeight);
+    float x = lengthContext.valueForLength(style.svgStyle().x(), style, SVGLengthMode::Width);
+    float y = lengthContext.valueForLength(style.svgStyle().y(), style, SVGLengthMode::Height);
+    float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, SVGLengthMode::Width);
+    float ry = lengthContext.valueForLength(style.svgStyle().ry(), style, SVGLengthMode::Height);
     bool hasRx = rx > 0;
     bool hasRy = ry > 0;
     if (hasRx || hasRy) {

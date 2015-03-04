@@ -64,8 +64,8 @@ void LayoutSVGRect::updateShapeFromElement()
     if (!boundingBoxSize.isEmpty()) {
         // Fallback to LayoutSVGShape and path-based hit detection if the rect
         // has rounded corners or a non-scaling or non-simple stroke.
-        if (lengthContext.valueForLength(style()->svgStyle().rx(), styleRef(), LengthModeWidth) > 0
-            || lengthContext.valueForLength(style()->svgStyle().ry(), styleRef(), LengthModeHeight) > 0
+        if (lengthContext.valueForLength(style()->svgStyle().rx(), styleRef(), SVGLengthMode::Width) > 0
+            || lengthContext.valueForLength(style()->svgStyle().ry(), styleRef(), SVGLengthMode::Height) > 0
             || hasNonScalingStroke()
             || !definitelyHasSimpleStroke()) {
             LayoutSVGShape::updateShapeFromElement();
@@ -76,8 +76,8 @@ void LayoutSVGRect::updateShapeFromElement()
 
     m_fillBoundingBox = FloatRect(
         FloatPoint(
-            lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(), LengthModeWidth),
-            lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(), LengthModeHeight)),
+            lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(), SVGLengthMode::Width),
+            lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(), SVGLengthMode::Height)),
         boundingBoxSize);
 
     // To decide if the stroke contains a point we create two rects which represent the inner and

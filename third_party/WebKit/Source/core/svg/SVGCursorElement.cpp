@@ -29,8 +29,8 @@ namespace blink {
 
 inline SVGCursorElement::SVGCursorElement(Document& document)
     : SVGElement(SVGNames::cursorTag, document)
-    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
 {
     SVGTests::initialize(this);
     SVGURIReference::initialize(this);

@@ -42,7 +42,7 @@ class SVGLength final : public SVGPropertyBase {
 public:
     typedef SVGLengthTearOff TearOffType;
 
-    static PassRefPtrWillBeRawPtr<SVGLength> create(SVGLengthMode mode = LengthModeOther)
+    static PassRefPtrWillBeRawPtr<SVGLength> create(SVGLengthMode mode = SVGLengthMode::Other)
     {
         return adoptRefWillBeNoop(new SVGLength(mode));
     }

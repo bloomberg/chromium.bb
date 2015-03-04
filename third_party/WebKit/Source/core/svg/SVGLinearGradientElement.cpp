@@ -32,10 +32,10 @@ namespace blink {
 
 inline SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
     : SVGGradientElement(SVGNames::linearGradientTag, document)
-    , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
-    , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
+    , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
+    , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
 {
     // Spec: If the x2 attribute is not specified, the effect is as if a value of "100%" were specified.
     m_x2->setDefaultValueAsString("100%");

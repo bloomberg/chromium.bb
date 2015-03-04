@@ -31,10 +31,10 @@ namespace blink {
 
 SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagName, Document& document)
     : SVGTextContentElement(tagName, document)
-    , m_x(SVGAnimatedLengthList::create(this, SVGNames::xAttr, SVGLengthList::create(LengthModeWidth)))
-    , m_y(SVGAnimatedLengthList::create(this, SVGNames::yAttr, SVGLengthList::create(LengthModeHeight)))
-    , m_dx(SVGAnimatedLengthList::create(this, SVGNames::dxAttr, SVGLengthList::create(LengthModeWidth)))
-    , m_dy(SVGAnimatedLengthList::create(this, SVGNames::dyAttr, SVGLengthList::create(LengthModeHeight)))
+    , m_x(SVGAnimatedLengthList::create(this, SVGNames::xAttr, SVGLengthList::create(SVGLengthMode::Width)))
+    , m_y(SVGAnimatedLengthList::create(this, SVGNames::yAttr, SVGLengthList::create(SVGLengthMode::Height)))
+    , m_dx(SVGAnimatedLengthList::create(this, SVGNames::dxAttr, SVGLengthList::create(SVGLengthMode::Width)))
+    , m_dy(SVGAnimatedLengthList::create(this, SVGNames::dyAttr, SVGLengthList::create(SVGLengthMode::Height)))
     , m_rotate(SVGAnimatedNumberList::create(this, SVGNames::rotateAttr, SVGNumberList::create()))
 {
     addToPropertyMap(m_x);

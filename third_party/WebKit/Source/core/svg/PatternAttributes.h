@@ -33,10 +33,10 @@ class PatternAttributes final {
     DISALLOW_ALLOCATION();
 public:
     PatternAttributes()
-        : m_x(SVGLength::create(LengthModeWidth))
-        , m_y(SVGLength::create(LengthModeHeight))
-        , m_width(SVGLength::create(LengthModeWidth))
-        , m_height(SVGLength::create(LengthModeHeight))
+        : m_x(SVGLength::create(SVGLengthMode::Width))
+        , m_y(SVGLength::create(SVGLengthMode::Height))
+        , m_width(SVGLength::create(SVGLengthMode::Width))
+        , m_height(SVGLength::create(SVGLengthMode::Height))
         , m_viewBox()
         , m_preserveAspectRatio(SVGPreserveAspectRatio::create())
         , m_patternUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)

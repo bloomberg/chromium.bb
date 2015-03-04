@@ -104,12 +104,12 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyF
         return property.release();
     }
     case AnimatedLength: {
-        RefPtrWillBeRawPtr<SVGLength> property = SVGLength::create(LengthModeOther);
+        RefPtrWillBeRawPtr<SVGLength> property = SVGLength::create();
         property->setValueAsString(value, IGNORE_EXCEPTION);
         return property.release();
     }
     case AnimatedLengthList: {
-        RefPtrWillBeRawPtr<SVGLengthList> property = SVGLengthList::create(LengthModeOther);
+        RefPtrWillBeRawPtr<SVGLengthList> property = SVGLengthList::create();
         property->setValueAsString(value, IGNORE_EXCEPTION);
         return property.release();
     }

@@ -28,10 +28,10 @@ namespace blink {
 
 inline SVGEllipseElement::SVGEllipseElement(Document& document)
     : SVGGeometryElement(SVGNames::ellipseTag, document)
-    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
-    , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
-    , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
+    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
+    , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(SVGLengthMode::Width), ForbidNegativeLengths))
+    , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(SVGLengthMode::Height), ForbidNegativeLengths))
 {
     addToPropertyMap(m_cx);
     addToPropertyMap(m_cy);

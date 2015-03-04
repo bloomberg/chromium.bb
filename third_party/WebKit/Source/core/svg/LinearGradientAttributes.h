@@ -29,10 +29,10 @@ struct LinearGradientAttributes : GradientAttributes {
     DISALLOW_ALLOCATION();
 public:
     LinearGradientAttributes()
-        : m_x1(SVGLength::create(LengthModeWidth))
-        , m_y1(SVGLength::create(LengthModeWidth))
-        , m_x2(SVGLength::create(LengthModeWidth))
-        , m_y2(SVGLength::create(LengthModeWidth))
+        : m_x1(SVGLength::create(SVGLengthMode::Width))
+        , m_y1(SVGLength::create(SVGLengthMode::Height))
+        , m_x2(SVGLength::create(SVGLengthMode::Width))
+        , m_y2(SVGLength::create(SVGLengthMode::Height))
         , m_x1Set(false)
         , m_y1Set(false)
         , m_x2Set(false)

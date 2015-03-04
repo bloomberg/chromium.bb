@@ -43,7 +43,7 @@ class SVGLengthList final : public SVGListPropertyHelper<SVGLengthList, SVGLengt
 public:
     typedef SVGLengthListTearOff TearOffType;
 
-    static PassRefPtrWillBeRawPtr<SVGLengthList> create(SVGLengthMode mode = LengthModeOther)
+    static PassRefPtrWillBeRawPtr<SVGLengthList> create(SVGLengthMode mode = SVGLengthMode::Other)
     {
         return adoptRefWillBeNoop(new SVGLengthList(mode));
     }

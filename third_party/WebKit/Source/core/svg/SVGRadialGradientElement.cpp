@@ -31,12 +31,12 @@ namespace blink {
 
 inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     : SVGGradientElement(SVGNames::radialGradientTag, document)
-    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
-    , m_r(SVGAnimatedLength::create(this, SVGNames::rAttr, SVGLength::create(LengthModeOther), ForbidNegativeLengths))
-    , m_fx(SVGAnimatedLength::create(this, SVGNames::fxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
-    , m_fy(SVGAnimatedLength::create(this, SVGNames::fyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
-    , m_fr(SVGAnimatedLength::create(this, SVGNames::frAttr, SVGLength::create(LengthModeOther), ForbidNegativeLengths))
+    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
+    , m_r(SVGAnimatedLength::create(this, SVGNames::rAttr, SVGLength::create(SVGLengthMode::Other), ForbidNegativeLengths))
+    , m_fx(SVGAnimatedLength::create(this, SVGNames::fxAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
+    , m_fy(SVGAnimatedLength::create(this, SVGNames::fyAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
+    , m_fr(SVGAnimatedLength::create(this, SVGNames::frAttr, SVGLength::create(SVGLengthMode::Other), ForbidNegativeLengths))
 {
     // Spec: If the cx/cy/r attribute is not specified, the effect is as if a value of "50%" were specified.
     m_cx->setDefaultValueAsString("50%");

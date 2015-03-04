@@ -44,10 +44,10 @@ enum SVGLengthType {
     LengthTypePC
 };
 
-enum SVGLengthMode {
-    LengthModeWidth = 0,
-    LengthModeHeight,
-    LengthModeOther
+enum class SVGLengthMode {
+    Width,
+    Height,
+    Other
 };
 
 class SVGLengthContext {
@@ -68,7 +68,7 @@ public:
     float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit) const;
     float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit) const;
 
-    float valueForLength(const Length&, const LayoutStyle&, SVGLengthMode = LengthModeOther) const;
+    float valueForLength(const Length&, const LayoutStyle&, SVGLengthMode = SVGLengthMode::Other) const;
 
     bool determineViewport(FloatSize&) const;
 
