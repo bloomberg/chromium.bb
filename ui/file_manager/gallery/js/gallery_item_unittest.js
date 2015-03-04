@@ -62,6 +62,7 @@ function testSaveToFile(callback) {
       entry,
       {isReadOnly: false},
       {name: 'oldMetadata'},
+      {},
       metadataCache,
       // Mock of MetadataModel.
       {

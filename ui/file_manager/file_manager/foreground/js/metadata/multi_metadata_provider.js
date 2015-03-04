@@ -100,9 +100,12 @@ MultiMetadataProvider.prototype.get = function(requests) {
     if (volumeInfo &&
         (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE ||
          volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED)) {
+      // Because properties can be out of sync just after sync completion
+      // even if 'dirty' is false, it refers 'present' here to switch the
+      // content and the external providers.
       if (fallbackContentPropertyNames.length &&
-          externalPropertyNames.indexOf('dirty') === -1) {
-        externalPropertyNames.push('dirty');
+          externalPropertyNames.indexOf('present') === -1) {
+        externalPropertyNames.push('present');
       }
       addRequests(externalRequests, externalPropertyNames);
       addRequests(contentRequests, contentPropertyNames);
@@ -133,7 +136,7 @@ MultiMetadataProvider.prototype.get = function(requests) {
         var results = requestsAndResults.results;
         var dirtyMap = [];
         for (var i = 0; i < results.length; i++) {
-          dirtyMap[requests[i].entry.toURL()] = results[i].dirty;
+          dirtyMap[requests[i].entry.toURL()] = results[i].present;
         }
         return get(
             this.contentMetadataProvider_,

@@ -8,6 +8,7 @@
  * @param {!FileEntry} entry Image entry.
  * @param {!EntryLocation} locationInfo Entry location information.
  * @param {!Object} metadata Metadata for the entry.
+ * @param {!MetadataItem} metadataItem
  * @param {!MetadataCache} metadataCache Metadata cache instance.
  * @param {!MetadataModel} metadataModel File system metadata.
  * @param {boolean} original Whether the entry is original or edited.
@@ -15,8 +16,8 @@
  * @struct
  */
 Gallery.Item = function(
-    entry, locationInfo, metadata, metadataCache, metadataModel,
-    original) {
+    entry, locationInfo, metadata, metadataItem, metadataCache,
+    metadataModel, original) {
   /**
    * @type {!FileEntry}
    * @private
@@ -34,6 +35,11 @@ Gallery.Item = function(
    * @private
    */
   this.metadata_ = Object.preventExtensions(metadata);
+
+  /**
+   * @type {!MetadataItem}
+   */
+  this.metadataItem_ = metadataItem;
 
   /**
    * @type {!MetadataCache}
@@ -100,24 +106,10 @@ Gallery.Item.prototype.getLocationInfo = function() {
 Gallery.Item.prototype.getMetadata = function() { return this.metadata_; };
 
 /**
- * Obtains the latest media metadata.
- *
- * This is a heavy operation since it forces to load the image data to obtain
- * the metadata.
- * @return {!Promise} Promise to be fulfilled with fetched metadata.
+ * @return {!MetadataItem} Metadata.
  */
-Gallery.Item.prototype.getFetchedMedia = function() {
-  return new Promise(function(fulfill, reject) {
-    this.metadataCache_.getLatest(
-        [this.entry_],
-        'fetchedMedia',
-        function(metadata) {
-          if (metadata[0])
-            fulfill(metadata[0]);
-          else
-            reject('Failed to load metadata.');
-        });
-  }.bind(this));
+Gallery.Item.prototype.getMetadataItem = function() {
+  return this.metadataItem_;
 };
 
 /**
@@ -236,10 +228,10 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
  *     directory is read only.
  * @param {boolean} overwrite Whether to overwrite the image to the item or not.
  * @param {!HTMLCanvasElement} canvas Source canvas.
- * @param {function(boolean)=} opt_callback Callback accepting true for success.
+ * @param {function(boolean)} callback Callback accepting true for success.
  */
 Gallery.Item.prototype.saveToFile = function(
-    volumeManager, fallbackDir, overwrite, canvas, opt_callback) {
+    volumeManager, fallbackDir, overwrite, canvas, callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var name = this.getFileName();
@@ -258,27 +250,37 @@ Gallery.Item.prototype.saveToFile = function(
 
     // Updates the metadata.
     this.metadataCache_.clear([this.entry_], '*');
-    this.metadataCache_.getLatest(
-        [this.entry_],
-        Gallery.METADATA_TYPE,
-        function(metadataList) {
-          if (metadataList.length === 1) {
-            this.metadata_ = metadataList[0];
-            if (opt_callback)
-              opt_callback(true);
-          } else {
-            if (opt_callback)
-              opt_callback(false);
-          }
-        }.bind(this));
+    var oldMetadataPromise = new Promise(function(fulfill, reject) {
+      this.metadataCache_.getLatest(
+          [this.entry_],
+          Gallery.METADATA_TYPE,
+          function(metadataList) {
+            if (metadataList.length === 1) {
+              this.metadata_ = metadataList[0];
+              fulfill();
+            } else {
+              reject();
+            }
+          }.bind(this));
+    }.bind(this));
     this.metadataModel_.notifyEntriesChanged([this.entry_]);
+    var newMetadataPromise = this.metadataModel_.get(
+        [entry], Gallery.PREFETCH_PROPERTY_NAMES).then(
+        function(metadataItems) {
+          this.metadataItem_ = metadataItems[0];
+        }.bind(this));
+    if (callback) {
+      Promise.all([oldMetadataPromise, newMetadataPromise]).then(
+          callback.bind(null, true),
+          callback.bind(null, false));
+    }
   }.bind(this);
 
   var onError = function(error) {
     console.error('Error saving from gallery', name, error);
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
-    if (opt_callback)
-      opt_callback(false);
+    if (callback)
+      callback(false);
   };
 
   var doSave = function(newFile, fileEntry) {

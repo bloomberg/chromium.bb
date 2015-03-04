@@ -13,18 +13,22 @@
  * @param {!ErrorBanner} errorBanner Error banner.
  * @param {!cr.ui.ArrayDataModel} dataModel Data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
+ * @param {!MetadataModel} metadataModel
+ * @param {!ThumbnailModel} thumbnailModel
  * @param {!Object} context Context.
  * @param {!VolumeManager} volumeManager Volume manager.
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
+
  * @constructor
  * @struct
  * @suppress {checkStructDictInheritance}
  * @extends {cr.EventTarget}
  */
 function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
-    selectionModel, context, volumeManager, toggleMode, displayStringFunction) {
+    selectionModel, metadataModel, thumbnailModel, context, volumeManager,
+    toggleMode, displayStringFunction) {
   /**
    * @type {!HTMLElement}
    * @private
@@ -337,7 +341,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @const
    */
   this.ribbon_ = new Ribbon(
-      this.document_, this.dataModel_, this.selectionModel_);
+      this.document_, this.dataModel_, this.selectionModel_, thumbnailModel);
   this.ribbonSpacer_.appendChild(this.ribbon_);
 
   util.createChild(this.container_, 'spinner');
@@ -428,7 +432,8 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    */
   this.imageView_ = new ImageView(
       this.imageContainer_,
-      this.viewport_);
+      this.viewport_,
+      metadataModel);
 
   /**
    * @type {!ImageEditor}
@@ -993,7 +998,6 @@ SlideMode.prototype.loadItem_ = function(
 SlideMode.prototype.itemLoaded_ = function(
     item, loadCallback, loadType, delay, opt_error) {
   var entry = item.getEntry();
-  var metadata = item.getMetadata();
 
   this.showSpinner_(false);
   if (loadType === ImageView.LoadType.ERROR) {
@@ -1015,7 +1019,7 @@ SlideMode.prototype.itemLoaded_ = function(
   };
 
   ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
-      toMillions(metadata.filesystem.size));
+      toMillions(item.getMetadataItem().size));
 
   var canvas = this.imageView_.getCanvas();
   ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),

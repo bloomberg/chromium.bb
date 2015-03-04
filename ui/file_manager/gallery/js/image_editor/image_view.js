@@ -7,11 +7,12 @@
  *
  * @param {!HTMLElement} container The container element.
  * @param {!Viewport} viewport The viewport.
+ * @param {!MetadataModel} metadataModel
  * @constructor
  * @extends {ImageBuffer.Overlay}
  * @struct
  */
-function ImageView(container, viewport) {
+function ImageView(container, viewport, metadataModel) {
   ImageBuffer.Overlay.call(this);
 
   this.container_ = container;
@@ -27,10 +28,12 @@ function ImageView(container, viewport) {
   this.contentGeneration_ = 0;
   this.displayedContentGeneration_ = 0;
 
-  this.imageLoader_ = new ImageUtil.ImageLoader(this.document_);
+  this.imageLoader_ =
+      new ImageUtil.ImageLoader(this.document_, metadataModel);
   // We have a separate image loader for prefetch which does not get cancelled
   // when the selection changes.
-  this.prefetchLoader_ = new ImageUtil.ImageLoader(this.document_);
+  this.prefetchLoader_ =
+      new ImageUtil.ImageLoader(this.document_, metadataModel);
 
   this.contentCallbacks_ = [];
 
@@ -412,26 +415,16 @@ ImageView.prototype.load =
    */
   function displayThumbnail(loadType, canvas) {
     if (canvas) {
-      var width = null;
-      var height = null;
-      if (metadata.media) {
-        width = metadata.media.width;
-        height = metadata.media.height;
-      }
-      // If metadata.external.present is true, the image data is loaded directly
-      // from local cache, whose size may be out of sync with the drive
-      // metadata.
-      if (metadata.external && !metadata.external.present) {
-        width = metadata.external.imageWidth;
-        height = metadata.external.imageHeight;
-      }
+      var width = item.getMetadataItem().imageWidth;
+      var height = item.getMetadataItem().imageHeight;
       self.replace(
           canvas,
           effect,
           width,
           height,
           true /* preview */);
-      if (displayCallback) displayCallback();
+      if (displayCallback)
+        displayCallback();
     }
     loadMainImage(loadType, entry, !!canvas,
         (effect && canvas) ? effect.getSafeInterval() : 0);

@@ -73,6 +73,7 @@ GalleryDataModel.prototype.saveItem = function(
     volumeManager, item, canvas, overwrite) {
   var oldEntry = item.getEntry();
   var oldMetadata = item.getMetadata();
+  var oldMetadataItem = item.getMetadataItem();
   var oldLocationInfo = item.getLocationInfo();
   return new Promise(function(fulfill, reject) {
     item.saveToFile(
@@ -101,6 +102,7 @@ GalleryDataModel.prototype.saveItem = function(
                 oldEntry,
                 oldLocationInfo,
                 oldMetadata,
+                oldMetadataItem,
                 this.metadataCache_,
                 this.metadataModel_,
                 item.isOriginal());

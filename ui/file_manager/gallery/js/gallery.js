@@ -57,6 +57,11 @@ function Gallery(volumeManager) {
    * @const
    */
   this.metadataModel_ = MetadataModel.create(volumeManager);
+  /**
+   * @private {!ThumbnailModel}
+   * @const
+   */
+  this.thumbnailModel_ = new ThumbnailModel(this.metadataModel_);
   this.selectedEntry_ = null;
   this.metadataCacheObserverId_ = null;
   this.onExternallyUnmountedBound_ = this.onExternallyUnmounted_.bind(this);
@@ -163,6 +168,8 @@ function Gallery(volumeManager) {
                                   this.errorBanner_,
                                   this.dataModel_,
                                   this.selectionModel_,
+                                  this.metadataModel_,
+                                  this.thumbnailModel_,
                                   this.context_,
                                   this.volumeManager_,
                                   this.toggleMode_.bind(this),
@@ -249,6 +256,13 @@ Gallery.MOSAIC_BACKGROUND_INIT_DELAY = 1000;
 Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|external';
 
 /**
+ * Types of metadata Gallery uses (to query the metadata cache).
+ * @const
+ * @type {!Array<string>}
+ */
+Gallery.PREFETCH_PROPERTY_NAMES = ['imageWidth', 'imageHeight', 'size'];
+
+/**
  * Closes gallery when a volume containing the selected item is unmounted.
  * @param {!Event} event The unmount event.
  * @private
@@ -310,12 +324,12 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
   // Obtains max chank size.
   var maxChunkSize = 20;
   var volumeInfo = this.volumeManager_.getVolumeInfo(entries[0]);
-  if (volumeInfo &&
-      volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MTP) {
-    maxChunkSize = 1;
+  if (volumeInfo) {
+    if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MTP)
+      maxChunkSize = 1;
+    if (volumeInfo.isReadOnly)
+      this.context_.readonlyDirName = volumeInfo.label;
   }
-  if (volumeInfo.isReadOnly)
-    this.context_.readonlyDirName = volumeInfo.label;
 
   // Make loading list.
   var entrySet = {};
@@ -361,17 +375,21 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
     var chunk = loadingList.splice(0, maxChunkSize);
     if (!chunk.length)
       return;
-
-    return new Promise(function(fulfill) {
+    var entries = chunk.map(function(chunkItem) {
+      return chunkItem.entry;
+    });
+    var oldMetadataPromise = new Promise(function(fulfill) {
       // Obtains metadata for chunk.
-      var entries = chunk.map(function(chunkItem) {
-        return chunkItem.entry;
-      });
       self.metadataCache_.get(entries, Gallery.METADATA_TYPE, fulfill);
     }).then(function(metadataList) {
       if (chunk.length !== metadataList.length)
         return Promise.reject('Failed to load metadata.');
-
+      return metadataList;
+    });
+    var metadataPromise = self.metadataModel_.get(
+        entries, Gallery.PREFETCH_PROPERTY_NAMES);
+    return Promise.all([oldMetadataPromise, metadataPromise]).then(
+        function(metadataLists) {
       // Remove all the previous items if it's the first chunk.
       // Do it here because prevent a flicker between removing all the items
       // and adding new ones.
@@ -386,11 +404,13 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
         var locationInfo = self.volumeManager_.getLocationInfo(chunkItem.entry);
         if (!locationInfo)  // Skip the item, since gone.
           return;
-        var clonedMetadata = MetadataCache.cloneMetadata(metadataList[index]);
+        var clonedMetadata =
+            MetadataCache.cloneMetadata(metadataLists[0][index]);
         items.push(new Gallery.Item(
             chunkItem.entry,
             locationInfo,
             clonedMetadata,
+            metadataLists[1][index],
             self.metadataCache_,
             self.metadataModel_,
             /* original */ true));

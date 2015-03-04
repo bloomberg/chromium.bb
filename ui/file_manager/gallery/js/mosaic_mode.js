@@ -2095,15 +2095,12 @@ Mosaic.Tile.prototype.init = function() {
   // extracted from headers. For Drive files, it is received via the Drive API.
   // If the dimensions are not available, then the fallback dimensions will be
   // used (same as for the generic icon).
+  var metadataItem = this.getItem().getMetadataItem();
   var width;
   var height;
-  if (metadata.media && metadata.media.width) {
-    width = metadata.media.width;
-    height = metadata.media.height;
-  } else if (metadata.external && metadata.external.imageWidth &&
-             metadata.external.imageHeight) {
-    width = metadata.external.imageWidth;
-    height = metadata.external.imageHeight;
+  if (metadataItem.imageWidth && metadataItem.imageHeight) {
+    width = metadataItem.imageWidth;
+    height = metadataItem.imageHeight;
   } else {
     // No dimensions in metadata, then use the generic dimensions.
     width = Mosaic.Tile.GENERIC_ICON_SIZE;

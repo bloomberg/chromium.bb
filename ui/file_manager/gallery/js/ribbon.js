@@ -8,31 +8,38 @@
  * @param {!Document} document Document.
  * @param {!cr.ui.ArrayDataModel} dataModel Data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
+ * @param {!ThumbnailModel} thumbnailModel
  * @extends {HTMLDivElement}
  * @constructor
  * @suppress {checkStructDictInheritance}
  * @struct
  */
-function Ribbon(document, dataModel, selectionModel) {
+function Ribbon(document, dataModel, selectionModel, thumbnailModel) {
   if (this instanceof Ribbon) {
     return Ribbon.call(/** @type {Ribbon} */ (document.createElement('div')),
-        document, dataModel, selectionModel);
+        document, dataModel, selectionModel, thumbnailModel);
   }
 
   this.__proto__ = Ribbon.prototype;
   this.className = 'ribbon';
 
   /**
-   * @type {!cr.ui.ArrayDataModel}
-   * @private
+   * @private {!cr.ui.ArrayDataModel}
+   * @const
    */
   this.dataModel_ = dataModel;
 
   /**
-   * @type {!cr.ui.ListSelectionModel}
-   * @private
+   * @private {!cr.ui.ListSelectionModel}
+   * @const
    */
   this.selectionModel_ = selectionModel;
+
+  /**
+   * @private {!ThumbnailModel}
+   * @const
+   */
+  this.thumbnailModel_ = thumbnailModel;
 
   /**
    * @type {!Object}
@@ -389,14 +396,16 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
  * @private
  */
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
-  var loader = new ThumbnailLoader(
-      item.getEntry(),
-      ThumbnailLoader.LoaderType.IMAGE,
-      item.getMetadata());
-  loader.load(
-      thumbnail.querySelector('.image-wrapper'),
-      ThumbnailLoader.FillMode.FILL /* fill */,
-      ThumbnailLoader.OptimizationMode.NEVER_DISCARD);
+  this.thumbnailModel_.get([item.getEntry()]).then(function(metadataList) {
+    var loader = new ThumbnailLoader(
+        item.getEntry(),
+        ThumbnailLoader.LoaderType.IMAGE,
+        metadataList[0]);
+    loader.load(
+        thumbnail.querySelector('.image-wrapper'),
+        ThumbnailLoader.FillMode.FILL /* fill */,
+        ThumbnailLoader.OptimizationMode.NEVER_DISCARD);
+  });
 };
 
 /**

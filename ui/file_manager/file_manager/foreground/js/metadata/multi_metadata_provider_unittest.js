@@ -108,11 +108,11 @@ function testMultiMetadataProviderExternalAndContentProperty(callback) {
           assertEquals(2, requests.length);
           assertEquals('filesystem://B', requests[0].entry.toURL());
           assertEquals('filesystem://C', requests[1].entry.toURL());
-          assertArrayEquals(['imageWidth', 'dirty'], requests[0].names);
-          assertArrayEquals(['imageWidth', 'dirty'], requests[1].names);
+          assertArrayEquals(['imageWidth', 'present'], requests[0].names);
+          assertArrayEquals(['imageWidth', 'present'], requests[1].names);
           return Promise.resolve([
-            {dirty: false, imageWidth: 200},
-            {dirty: true, imageWidth: 400}
+            {present: false, imageWidth: 200},
+            {present: true, imageWidth: 400}
           ]);
         }
       },

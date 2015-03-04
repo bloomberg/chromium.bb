@@ -77,6 +77,7 @@
           '../../file_manager/foreground/js/metadata/metadata_model.js',
           '../../file_manager/foreground/js/metadata/multi_metadata_provider.js',
           '../../file_manager/foreground/js/metadata/new_metadata_provider.js',
+          '../../file_manager/foreground/js/metadata/thumbnail_model.js',
           '../../file_manager/foreground/js/mouse_inactivity_watcher.js',
           '../../file_manager/foreground/js/share_client.js',
           '../../file_manager/foreground/js/thumbnail_loader.js',

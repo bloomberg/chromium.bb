@@ -427,11 +427,19 @@ ImageUtil.setClass = function(element, className, on) {
  *    account.
  *
  * @param {!HTMLDocument} document Owner document.
+ * @param {!MetadataModel} metadataModel
  * @constructor
  * @struct
  */
-ImageUtil.ImageLoader = function(document) {
+ImageUtil.ImageLoader = function(document, metadataModel) {
   this.document_ = document;
+
+  /**
+   * @private {!MetadataModel}
+   * @const
+   */
+  this.metadataModel_ = metadataModel;
+
   this.image_ = new Image();
   this.generation_ = 0;
 
@@ -510,14 +518,10 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
     this.image_.onload = function() {
       this.image_.onerror = null;
       this.image_.onload = null;
-      item.getFetchedMedia().then(function(fetchedMediaMetadata) {
-        if (fetchedMediaMetadata.imageTransform)
-          onTransform(this.image_, fetchedMediaMetadata.imageTransform);
-        else
-          onTransform(this.image_);
-      }.bind(this)).catch(function(error) {
-        console.error(error.stack || error);
-      });
+      this.metadataModel_.get([entry], ['contentImageTransform']).then(
+          function(metadataItems) {
+            onTransform(this.image_, metadataItems[0].contentImageTransform);
+          }.bind(this));
     }.bind(this);
 
     // The error callback has an optional error argument, which in case of a
