@@ -242,6 +242,7 @@ TEST_F(DecimalTest, Ceil)
     EXPECT_EQ(Decimal(0), encode(199, -3, Negative).ceil());
     EXPECT_EQ(Decimal(-1), encode(199, -2, Negative).ceil());
     EXPECT_EQ(Decimal(-2), encode(209, -2, Negative).ceil());
+    EXPECT_EQ(Decimal(1), encode(UINT64_C(123456789012345678), -18, Positive).ceil());
 }
 
 TEST_F(DecimalTest, CeilingBigExponent)
@@ -493,8 +494,9 @@ TEST_F(DecimalTest, Division)
     EXPECT_EQ(encode(5, -1, Negative), Decimal(-1) / Decimal(2));
     EXPECT_EQ(encode(99, 0, Positive), Decimal(99) / Decimal(1));
     EXPECT_EQ(Decimal(1), Decimal(-50) / Decimal(-50));
-    EXPECT_EQ(encode(UINT64_C(33333333333333333), -17, Positive), Decimal(1) / Decimal(3));
+    EXPECT_EQ(encode(UINT64_C(333333333333333333), -18, Positive), Decimal(1) / Decimal(3));
     EXPECT_EQ(encode(UINT64_C(12345678901234), -1, Positive), encode(UINT64_C(12345678901234), 0, Positive) / Decimal(10));
+    EXPECT_EQ(encode(UINT64_C(500005000050000500), -18, Positive), Decimal(50000) / Decimal(99999));
 }
 
 TEST_F(DecimalTest, DivisionBigExponent)
