@@ -110,11 +110,13 @@ public:
 
     AudioDestinationNode* destination() { return m_destinationNode.get(); }
 
-    size_t currentSampleFrame() const { return m_destinationNode ? m_destinationNode->currentSampleFrame() : 0; }
-    double currentTime() const { return m_destinationNode ? m_destinationNode->currentTime() : 0; }
-    // cachedSampleFrame() is like currentSampleFrame() but must be called from the main thread to
-    // get the sample frame. It might be slightly behind curentSampleFrame() due to locking.
-    size_t cachedSampleFrame() const;
+    // currentSampleFrame() and currentTime() can be called from both the main
+    // thread and the audio thread. Note that, however, they return the cached
+    // value instead of actual current ones when they are accessed from the main
+    // thread. See: crbug.com/431874
+    size_t currentSampleFrame() const;
+    double currentTime() const;
+
     float sampleRate() const { return m_destinationNode ? m_destinationNode->sampleRate() : 0; }
 
     String state() const;

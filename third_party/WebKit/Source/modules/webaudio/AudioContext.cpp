@@ -715,11 +715,20 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
     return PeriodicWave::create(sampleRate(), real, imag);
 }
 
-size_t AudioContext::cachedSampleFrame() const
+size_t AudioContext::currentSampleFrame() const
 {
-    ASSERT(isMainThread());
+    if (isAudioThread())
+        return m_destinationNode ? m_destinationNode->currentSampleFrame() : 0;
 
     return m_cachedSampleFrame;
+}
+
+double AudioContext::currentTime() const
+{
+    if (isAudioThread())
+        return m_destinationNode ? m_destinationNode->currentTime() : 0;
+
+    return m_cachedSampleFrame / static_cast<double>(sampleRate());
 }
 
 String AudioContext::state() const
