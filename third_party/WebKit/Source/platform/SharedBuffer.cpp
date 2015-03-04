@@ -312,7 +312,6 @@ void SharedBuffer::mergeSegmentsIntoBuffer() const
 {
     unsigned bufferSize = m_buffer.size();
     if (m_size > bufferSize) {
-        m_buffer.reserveCapacity(m_size);
         unsigned bytesLeft = m_size - bufferSize;
         for (unsigned i = 0; i < m_segments.size(); ++i) {
             unsigned bytesToCopy = std::min(bytesLeft, segmentSize);
