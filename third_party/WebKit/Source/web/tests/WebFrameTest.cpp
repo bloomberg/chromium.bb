@@ -7170,6 +7170,19 @@ TEST_F(WebFrameSwapTest, RemoteFramesAreIndexable)
     EXPECT_EQ(3, windowLengthInteger->Value());
 }
 
+TEST_F(WebFrameSwapTest, RemoteFrameLengthAccess)
+{
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
+    mainFrame()->lastChild()->swap(remoteFrame);
+    remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+    v8::Local<v8::Value> remoteWindowLength = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2].length"));
+    ASSERT_TRUE(remoteWindowLength->IsNumber());
+    v8::Local<v8::Integer> remoteWindowLengthInteger = remoteWindowLength->ToInteger();
+    EXPECT_EQ(0, remoteWindowLengthInteger->Value());
+}
+
 class RemoteToLocalSwapWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     explicit RemoteToLocalSwapWebFrameClient(WebRemoteFrame* remoteFrame)

@@ -228,8 +228,11 @@ inline unsigned FrameTree::scopedChildCount(TreeScope* scope) const
 
 unsigned FrameTree::scopedChildCount() const
 {
-    if (m_scopedChildCount == invalidChildCount)
-        m_scopedChildCount = scopedChildCount(toLocalFrame(m_thisFrame)->document());
+    if (m_scopedChildCount == invalidChildCount) {
+        // FIXME: implement a TreeScope for RemoteFrames.
+        TreeScope* scope = m_thisFrame->isLocalFrame() ? toLocalFrame(m_thisFrame)->document() : nullptr;
+        m_scopedChildCount = scopedChildCount(scope);
+    }
     return m_scopedChildCount;
 }
 
