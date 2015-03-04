@@ -2090,8 +2090,12 @@ public class AwContents implements SmartClipProvider,
      * @param requestId an id that will be returned from the callback invocation to allow
      * callers to match requests with callbacks.
      * @param callback the callback to be inserted
+     * @throw IllegalStateException if this method is invoked after {@link #destroy()} has been
+     * called.
      */
     public void insertVisualStateCallback(long requestId, VisualStateCallback callback) {
+        if (isDestroyed()) throw new IllegalStateException(
+                "insertVisualStateCallback cannot be called after the WebView has been destroyed");
         nativeInsertVisualStateCallback(mNativeAwContents, requestId, callback);
     }
 
