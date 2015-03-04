@@ -2441,6 +2441,10 @@ bool GLES2DecoderImpl::Initialize(
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
 
+  ContextCreationAttribHelper attrib_parser;
+  if (!attrib_parser.Parse(attribs))
+    return false;
+
   surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
   set_initialized();
@@ -2457,7 +2461,10 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnsafeES3APIs)) {
+          switches::kEnableUnsafeES3APIs) &&
+      attrib_parser.es3_context_required) {
+    // TODO(zmo): We need to implement capabilities check to ensure we can
+    // actually create ES3 contexts.
     set_unsafe_es3_apis_enabled(true);
   }
 
@@ -2469,10 +2476,6 @@ bool GLES2DecoderImpl::Initialize(
   // SetSurface.
   context_ = context;
   surface_ = surface;
-
-  ContextCreationAttribHelper attrib_parser;
-  if (!attrib_parser.Parse(attribs))
-    return false;
 
   // Create GPU Tracer for timing values.
   gpu_tracer_.reset(new GPUTracer(this));
@@ -2956,9 +2959,15 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         features().nv_draw_buffers ? 1 : 0;
   }
 
-  ShShaderSpec shader_spec = force_webgl_glsl_validation_ ? SH_WEBGL_SPEC
-                                                          : SH_GLES2_SPEC;
-  if (shader_spec == SH_WEBGL_SPEC && features().enable_shader_name_hashing)
+  ShShaderSpec shader_spec;
+  if (force_webgl_glsl_validation_) {
+    shader_spec = unsafe_es3_apis_enabled() ? SH_WEBGL2_SPEC : SH_WEBGL_SPEC;
+  } else {
+    shader_spec = unsafe_es3_apis_enabled() ? SH_GLES3_SPEC : SH_GLES2_SPEC;
+  }
+
+  if ((shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) &&
+      features().enable_shader_name_hashing)
     resources.HashFunction = &CityHash64;
   else
     resources.HashFunction = NULL;

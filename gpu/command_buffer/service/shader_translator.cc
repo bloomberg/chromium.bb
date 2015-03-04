@@ -110,13 +110,19 @@ bool ShaderTranslator::Init(
   // Make sure Init is called only once.
   DCHECK(compiler_ == NULL);
   DCHECK(shader_type == GL_FRAGMENT_SHADER || shader_type == GL_VERTEX_SHADER);
-  DCHECK(shader_spec == SH_GLES2_SPEC || shader_spec == SH_WEBGL_SPEC);
+  DCHECK(shader_spec == SH_GLES2_SPEC || shader_spec == SH_WEBGL_SPEC ||
+         shader_spec == SH_GLES3_SPEC || shader_spec == SH_WEBGL2_SPEC);
   DCHECK(resources != NULL);
 
   g_translator_initializer.Get();
 
-  ShShaderOutput shader_output =
-      (glsl_implementation_type == kGlslES ? SH_ESSL_OUTPUT : SH_GLSL_OUTPUT);
+  ShShaderOutput shader_output;
+  if (glsl_implementation_type == kGlslES) {
+    shader_output = SH_ESSL_OUTPUT;
+  } else {
+    shader_output = (shader_spec == SH_WEBGL2_SPEC) ? SH_GLSL_CORE_OUTPUT :
+        SH_GLSL_COMPATIBILITY_OUTPUT;
+  }
 
   {
     TRACE_EVENT0("gpu", "ShConstructCompiler");

@@ -894,6 +894,7 @@ const int32 kBufferDestroyed = 0x3095;  // EGL_BUFFER_DESTROYED
 const int32 kBindGeneratesResource = 0x10000;
 const int32 kFailIfMajorPerfCaveat = 0x10001;
 const int32 kLoseContextWhenOutOfMemory = 0x10002;
+const int32 kES3ContextRequired = 0x10003;
 
 }  // namespace
 
@@ -909,7 +910,8 @@ ContextCreationAttribHelper::ContextCreationAttribHelper()
       buffer_preserved(true),
       bind_generates_resource(true),
       fail_if_major_perf_caveat(false),
-      lose_context_when_out_of_memory(false) {}
+      lose_context_when_out_of_memory(false),
+      es3_context_required(false) {}
 
 void ContextCreationAttribHelper::Serialize(std::vector<int32>* attribs) const {
   if (alpha_size != -1) {
@@ -952,6 +954,8 @@ void ContextCreationAttribHelper::Serialize(std::vector<int32>* attribs) const {
   attribs->push_back(fail_if_major_perf_caveat ? 1 : 0);
   attribs->push_back(kLoseContextWhenOutOfMemory);
   attribs->push_back(lose_context_when_out_of_memory ? 1 : 0);
+  attribs->push_back(kES3ContextRequired);
+  attribs->push_back(es3_context_required ? 1 : 0);
   attribs->push_back(kNone);
 }
 
@@ -1005,6 +1009,9 @@ bool ContextCreationAttribHelper::Parse(const std::vector<int32>& attribs) {
         break;
       case kLoseContextWhenOutOfMemory:
         lose_context_when_out_of_memory = value != 0;
+        break;
+      case kES3ContextRequired:
+        es3_context_required = value != 0;
         break;
       case kNone:
         // Terminate list, even if more attributes.

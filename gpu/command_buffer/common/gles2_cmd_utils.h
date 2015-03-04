@@ -223,6 +223,7 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   bool bind_generates_resource;
   bool fail_if_major_perf_caveat;
   bool lose_context_when_out_of_memory;
+  bool es3_context_required;
 };
 
 }  // namespace gles2
