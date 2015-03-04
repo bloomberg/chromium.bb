@@ -47,6 +47,10 @@ fun:*content*RenderViewObserverTracker*RenderView*
 
 fun:*DatabaseContext*contextDestroyed*
 
+# FIXME: Cannot handle template function LifecycleObserver<>::setContext,
+# so exclude source file for now. 
+src:*LifecycleObserver.h*
+
 #############################################################################
 # static_cast into itself in the constructor.
 
@@ -54,12 +58,14 @@ fun:*RefCountedGarbageCollected*makeKeepAlive*
 fun:*ThreadSafeRefCountedGarbageCollected*makeKeepAlive*
 
 #############################################################################
-# Accessing data in destructurors where the class has virtual inheritances.
+# Accessing data in destructors where the class has virtual inheritances.
 
 type:*content*RenderWidgetHost*
 
-# Mangled name for content::RenderViewHostImpl::~RenderViewHostImpl()
-fun:*content*RenderViewHostImpl*
+# Match mangled name for content::RenderViewHostImpl::~RenderViewHostImpl().
+fun:*content*RenderViewHostImplD*
+# Match mangled name for content::RenderThreadImpl::~RenderThreadImpl().
+fun:*content*RenderThreadImplD*
 
 #############################################################################
 # Using raw pointer values.
@@ -94,6 +100,13 @@ type:*TestNowSource*
 
 #############################################################################
 # UBSan seems to be emit false positives when virtual base classes are
-# involved, see e.g. chromium:448102
+# involved, see e.g. crbug.com/448102.
 
 type:*v8*internal*OFStream*
+
+#############################################################################
+# UBsan is unable to handle static_cast<A*>(nullptr) and crashes on SIGSEGV.
+#
+
+# static_cast<StartPageService*> in StartPageServiceFactory::GetForProfile.
+type:*StartPageService*
