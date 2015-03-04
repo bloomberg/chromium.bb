@@ -1,3 +1,6 @@
+# http://crbug.com/293125
+WebRtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
+
 # crbug.com/395172
 WebRtcBrowserTest.CanForwardRemoteStream
 WebRtcBrowserTest.CanForwardRemoteStream720p
@@ -23,8 +26,12 @@ ServiceWorkerBrowserTest.ImportsBustMemcache
 # crbug.com/461489
 ServiceWorkerVersionBrowserTest.TimeoutStartingWorker
 
-# http://crbug.com/293125
-WebRtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
-
 # http://crbug.com/456131
 BrowserSideNavigationBrowserTest.BrowserInitiatedNavigations
+
+# http://crbug.com/464029
+WebRtcBrowserTest.CallAndModifyStream
+
+# http://crbug.com/464033
+RenderFrameHostImplBrowserTest.IsFocused_AtLoad
+RenderFrameHostImplBrowserTest.IsFocused_Widget
