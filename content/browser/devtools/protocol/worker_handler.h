@@ -22,6 +22,8 @@ class WorkerHandler {
 
   Response DisconnectFromWorker(int worker_id);
 
+  Response DisconnectFromWorker(const std::string& worker_id);
+
  private:
   scoped_ptr<Client> client_;
 

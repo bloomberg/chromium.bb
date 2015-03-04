@@ -24,6 +24,10 @@ Response WorkerHandler::DisconnectFromWorker(int worker_id) {
   return Response::FallThrough();
 }
 
+Response WorkerHandler::DisconnectFromWorker(const std::string& worker_id) {
+  return Response::FallThrough();
+}
+
 }  // namespace worker
 }  // namespace devtools
 }  // namespace content
