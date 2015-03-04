@@ -74,7 +74,8 @@ class MockExternalPolicyProviderVisitor
                                     const base::FilePath& path,
                                     Manifest::Location unused,
                                     int unused2,
-                                    bool unused3) override {
+                                    bool unused3,
+                                    bool unused4) override {
     ADD_FAILURE() << "There should be no external extensions from files.";
     return false;
   }

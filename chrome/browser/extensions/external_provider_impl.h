@@ -78,6 +78,10 @@ class ExternalProviderImpl : public ExternalProviderInterface {
     auto_acknowledge_ = auto_acknowledge;
   }
 
+  void set_install_immediately(bool install_immediately) {
+    install_immediately_ = install_immediately;
+  }
+
  private:
   // Location for external extensions that are provided by this provider from
   // local crx files.
@@ -112,6 +116,9 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   // Whether loaded extensions should be automatically acknowledged, so that
   // the user doesn't see an alert about them.
   bool auto_acknowledge_;
+
+  // Whether the extensions from this provider should be installed immediately.
+  bool install_immediately_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImpl);
 };

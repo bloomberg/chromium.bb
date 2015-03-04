@@ -232,7 +232,8 @@ class ExtensionService
                                     const base::FilePath& path,
                                     extensions::Manifest::Location location,
                                     int creation_flags,
-                                    bool mark_acknowledged) override;
+                                    bool mark_acknowledged,
+                                    bool install_immediately) override;
   bool OnExternalExtensionUpdateUrlFound(
       const std::string& id,
       const std::string& install_parameter,

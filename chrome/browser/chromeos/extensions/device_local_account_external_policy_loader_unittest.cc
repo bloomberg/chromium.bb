@@ -68,12 +68,13 @@ class MockExternalPolicyProviderVisitor
   MockExternalPolicyProviderVisitor();
   virtual ~MockExternalPolicyProviderVisitor();
 
-  MOCK_METHOD6(OnExternalExtensionFileFound,
+  MOCK_METHOD7(OnExternalExtensionFileFound,
                bool(const std::string&,
                     const base::Version*,
                     const base::FilePath&,
                     extensions::Manifest::Location,
                     int,
+                    bool,
                     bool));
   MOCK_METHOD6(OnExternalExtensionUpdateUrlFound,
                bool(const std::string&,
@@ -165,7 +166,7 @@ void DeviceLocalAccountExternalPolicyLoaderTest::TearDown() {
 void DeviceLocalAccountExternalPolicyLoaderTest::
     VerifyAndResetVisitorCallExpectations() {
   Mock::VerifyAndClearExpectations(&visitor_);
-  EXPECT_CALL(visitor_, OnExternalExtensionFileFound(_, _, _, _, _, _))
+  EXPECT_CALL(visitor_, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor_, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
@@ -289,6 +290,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
       _,
       cached_crx_path,
       extensions::Manifest::EXTERNAL_POLICY,
+      _,
       _,
       _));
   EXPECT_CALL(visitor_, OnExternalProviderReady(provider_.get()))

@@ -40,7 +40,8 @@ class ExternalProviderInterface {
         const base::FilePath& path,
         Manifest::Location location,
         int creation_flags,
-        bool mark_acknowledged) = 0;
+        bool mark_acknowledged,
+        bool install_immediately) = 0;
 
     // Return true if the extension install will proceed.  Install might not
     // proceed if the extension is already installed from a higher priority

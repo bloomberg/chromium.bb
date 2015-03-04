@@ -179,12 +179,13 @@ class MockExternalProviderVisitor
  public:
   MockExternalProviderVisitor() {}
 
-  MOCK_METHOD6(OnExternalExtensionFileFound,
+  MOCK_METHOD7(OnExternalExtensionFileFound,
                bool(const std::string&,
                     const base::Version*,
                     const base::FilePath&,
                     extensions::Manifest::Location,
                     int,
+                    bool,
                     bool));
   MOCK_METHOD6(OnExternalExtensionUpdateUrlFound,
                bool(const std::string&,
@@ -345,7 +346,7 @@ TEST_F(ServicesCustomizationDocumentTest, NoCustomizationIdInVpd) {
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
@@ -390,7 +391,7 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
@@ -401,7 +402,7 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
   loader->StartLoading();
   Mock::VerifyAndClearExpectations(&visitor);
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(2);
@@ -440,7 +441,7 @@ TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
           extensions::Extension::FROM_WEBSTORE |
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);
@@ -451,7 +452,7 @@ TEST_F(ServicesCustomizationDocumentTest, CustomizationManifestNotFound) {
   loader->StartLoading();
   Mock::VerifyAndClearExpectations(&visitor);
 
-  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _, _))
       .Times(0);

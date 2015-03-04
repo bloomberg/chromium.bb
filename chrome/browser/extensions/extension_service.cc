@@ -2108,7 +2108,8 @@ bool ExtensionService::OnExternalExtensionFileFound(
          const base::FilePath& path,
          Manifest::Location location,
          int creation_flags,
-         bool mark_acknowledged) {
+         bool mark_acknowledged,
+         bool install_immediately) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(crx_file::id_util::IdIsValid(id));
   if (extension_prefs_->IsExternalExtensionUninstalled(id))
@@ -2159,6 +2160,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
   installer->set_expected_id(id);
   installer->set_expected_version(*version);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_EXTERNAL_FILE);
+  installer->set_install_immediately(install_immediately);
   installer->set_creation_flags(creation_flags);
 #if defined(OS_CHROMEOS)
   extensions::InstallLimiter::Get(profile_)->Add(installer, path);
