@@ -42,7 +42,8 @@ EventMonitorMac::EventMonitorMac(ui::EventHandler* event_handler,
       handler:^NSEvent*(NSEvent* event) {
           if (!target_window || [event window] == target_window) {
             scoped_ptr<ui::Event> ui_event = ui::EventFromNative(event);
-            event_handler->OnEvent(ui_event.get());
+            if (ui_event)
+              event_handler->OnEvent(ui_event.get());
           }
           return event;
       }];

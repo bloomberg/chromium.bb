@@ -52,9 +52,10 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
       return ET_MOUSE_EXITED;
     case NSEventTypeSwipe:
       return ET_SCROLL_FLING_START;
-    case NSFlagsChanged:
     case NSAppKitDefined:
     case NSSystemDefined:
+      return ET_UNKNOWN;
+    case NSFlagsChanged:
     case NSApplicationDefined:
     case NSPeriodic:
     case NSCursorUpdate:
