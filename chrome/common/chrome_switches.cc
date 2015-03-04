@@ -408,10 +408,13 @@ const char kEnableDeviceDiscoveryNotifications[] =
     "enable-device-discovery-notifications";
 
 // Enables the DOM distiller.
-const char kEnableDomDistiller[]               = "enable-dom-distiller";
+const char kEnableDomDistiller[] = "enable-dom-distiller";
 
 // Enables Domain Reliability Monitoring.
-const char kEnableDomainReliability[]          = "enable-domain-reliability";
+const char kEnableDomainReliability[] = "enable-domain-reliability";
+
+// Enables Download Notification.
+const char kEnableDownloadNotification[] = "enable-download-notification";
 
 // Enable Enhanced Bookmarks.
 const char kEnhancedBookmarksExperiment[] = "enhanced-bookmarks-experiment";

@@ -831,6 +831,13 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableDownloadResumption)
   },
+  {
+    "enable-download-notification",
+    IDS_FLAGS_ENABLE_DOWNLOAD_NOTIFICATION_NAME,
+    IDS_FLAGS_ENABLE_DOWNLOAD_NOTIFICATION_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableDownloadNotification)
+  },
 #if defined(ENABLE_PLUGINS)
   {
     "allow-nacl-socket-api",

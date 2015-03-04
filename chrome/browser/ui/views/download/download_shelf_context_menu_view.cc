@@ -13,9 +13,8 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
-    content::DownloadItem* download_item,
-    content::PageNavigator* navigator)
-    : DownloadShelfContextMenu(download_item, navigator) {
+    content::DownloadItem* download_item)
+    : DownloadShelfContextMenu(download_item) {
 }
 
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}

@@ -5,9 +5,13 @@
 #include "chrome/browser/download/download_ui_controller.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/notification/download_notification_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -22,22 +26,22 @@
 
 namespace {
 
-// DefaultUIControllerDelegate{Android,} is used when a DownloadUIController is
+// DownloadShelfUIControllerDelegate{Android,} is used when a
+// DownloadUIController is
 // constructed without specifying an explicit Delegate.
 #if defined(OS_ANDROID)
 
-class DefaultUIControllerDelegateAndroid
-    : public DownloadUIController::Delegate {
+class AndroidUIControllerDelegate : public DownloadUIController::Delegate {
  public:
-  DefaultUIControllerDelegateAndroid() {}
-  ~DefaultUIControllerDelegateAndroid() override {}
+  AndroidUIControllerDelegate() {}
+  ~AndroidUIControllerDelegate() override {}
 
  private:
   // DownloadUIController::Delegate
   void OnNewDownloadReady(content::DownloadItem* item) override;
 };
 
-void DefaultUIControllerDelegateAndroid::OnNewDownloadReady(
+void AndroidUIControllerDelegate::OnNewDownloadReady(
     content::DownloadItem* item) {
   // The Android DownloadController is only interested in IN_PROGRESS downloads.
   // Ones which are INTERRUPTED etc. can't be handed over to the Android
@@ -53,12 +57,13 @@ void DefaultUIControllerDelegateAndroid::OnNewDownloadReady(
 
 #else  // OS_ANDROID
 
-class DefaultUIControllerDelegate : public DownloadUIController::Delegate {
+class DownloadShelfUIControllerDelegate
+    : public DownloadUIController::Delegate {
  public:
-  // |profile| is required to outlive DefaultUIControllerDelegate.
-  explicit DefaultUIControllerDelegate(Profile* profile)
+  // |profile| is required to outlive DownloadShelfUIControllerDelegate.
+  explicit DownloadShelfUIControllerDelegate(Profile* profile)
       : profile_(profile) {}
-  ~DefaultUIControllerDelegate() override {}
+  ~DownloadShelfUIControllerDelegate() override {}
 
  private:
   // DownloadUIController::Delegate
@@ -67,7 +72,7 @@ class DefaultUIControllerDelegate : public DownloadUIController::Delegate {
   Profile* profile_;
 };
 
-void DefaultUIControllerDelegate::OnNewDownloadReady(
+void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
     content::DownloadItem* item) {
   content::WebContents* web_contents = item->GetWebContents();
   Browser* browser =
@@ -97,13 +102,19 @@ DownloadUIController::DownloadUIController(content::DownloadManager* manager,
       delegate_(delegate.Pass()) {
   if (!delegate_) {
 #if defined(OS_ANDROID)
-    delegate_.reset(new DefaultUIControllerDelegateAndroid());
+    delegate_.reset(new AndroidUIControllerDelegate());
 #else
     // The delegate should not be invoked after the profile has gone away. This
     // should be the case since DownloadUIController is owned by
     // DownloadService, which in turn is a profile keyed service.
-    delegate_.reset(new DefaultUIControllerDelegate(
-        Profile::FromBrowserContext(manager->GetBrowserContext())));
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableDownloadNotification)) {
+      delegate_.reset(new DownloadNotificationManager(
+          Profile::FromBrowserContext(manager->GetBrowserContext())));
+    } else {
+      delegate_.reset(new DownloadShelfUIControllerDelegate(
+          Profile::FromBrowserContext(manager->GetBrowserContext())));
+    }
 #endif
   }
 }

@@ -1294,6 +1294,7 @@
       'browser/chromeos/system/device_disabling_manager_unittest.cc',
       'browser/chromeos/ui/accessibility_focus_ring_controller_unittest.cc',
       'browser/chromeos/ui/idle_app_name_notification_view_unittest.cc',
+      'browser/download/notification/download_notification_item_unittest.cc',
       'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc',
       'browser/extensions/api/log_private/syslog_parser_unittest.cc',
       'browser/extensions/updater/local_extension_cache_unittest.cc',

@@ -75,7 +75,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
  public:
   DownloadShelfContextMenuMac(DownloadItem* downloadItem,
                               content::PageNavigator* navigator)
-      : DownloadShelfContextMenu(downloadItem, navigator) { }
+      : DownloadShelfContextMenu(downloadItem) { }
 
   // DownloadShelfContextMenu::GetMenuModel is protected.
   using DownloadShelfContextMenu::GetMenuModel;
