@@ -933,6 +933,42 @@ weston_surface_to_buffer_rect(struct weston_surface *surface,
 				       rect);
 }
 
+/** Transform a region from surface coordinates to buffer coordinates
+ *
+ * \param surface The surface to fetch wl_viewport and buffer transformation
+ * from.
+ * \param surface_region[in] The region in surface coordinates.
+ * \param buffer_region[out] The region converted to buffer coordinates.
+ *
+ * Buffer_region must be init'd, but will be completely overwritten.
+ *
+ * Viewport and buffer transformations can only do translation, scaling,
+ * and rotations in 90-degree steps. Therefore the only loss in the
+ * conversion is coordinate flooring (rounding).
+ */
+WL_EXPORT void
+weston_surface_to_buffer_region(struct weston_surface *surface,
+				pixman_region32_t *surface_region,
+				pixman_region32_t *buffer_region)
+{
+	pixman_box32_t *src_rects, *dest_rects;
+	int nrects, i;
+
+	src_rects = pixman_region32_rectangles(surface_region, &nrects);
+	dest_rects = malloc(nrects * sizeof(*dest_rects));
+	if (!dest_rects)
+		return;
+
+	for (i = 0; i < nrects; i++) {
+		dest_rects[i] = weston_surface_to_buffer_rect(surface,
+							      src_rects[i]);
+	}
+
+	pixman_region32_fini(buffer_region);
+	pixman_region32_init_rects(buffer_region, dest_rects, nrects);
+	free(dest_rects);
+}
+
 WL_EXPORT void
 weston_view_move_to_plane(struct weston_view *view,
 			     struct weston_plane *plane)

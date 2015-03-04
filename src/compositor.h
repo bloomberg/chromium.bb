@@ -1034,6 +1034,11 @@ weston_surface_to_buffer_rect(struct weston_surface *surface,
 			      pixman_box32_t rect);
 
 void
+weston_surface_to_buffer_region(struct weston_surface *surface,
+				pixman_region32_t *surface_region,
+				pixman_region32_t *buffer_region);
+
+void
 weston_spring_init(struct weston_spring *spring,
 		   double k, double current, double target);
 void
