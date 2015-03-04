@@ -43,6 +43,8 @@ Still reading?
   </issue>
   <issue id="IconDensities">
     <!-- crbug.com/457918 is tracking missing assets -->
+    <ignore path="components/web_contents_delegate_android/android/java/res/drawable-xxhdpi"/>
+    <ignore path="components/web_contents_delegate_android/android/java/res/drawable-xxxhdpi"/>
     <ignore path="content/public/android/java/res/drawable-xxhdpi"/>
     <ignore path="content/public/android/java/res/drawable-xxxhdpi"/>
     <ignore path="chrome/android/java/res/drawable-xxhdpi"/>
