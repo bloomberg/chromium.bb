@@ -36,17 +36,14 @@ function unreached_rejection(test, prefix) {
     });
 }
 
-// FIXME: Clean up the iframe when the test completes.
-function with_iframe(url, f) {
-  return new Promise(function(resolve, reject) {
+// Adds an iframe to the document and returns a promise that resolves to the
+// iframe when it finishes loading. The caller is responsible for removing the
+// iframe later if needed.
+function with_iframe(url) {
+  return new Promise(function(resolve) {
       var frame = document.createElement('iframe');
       frame.src = url;
-      frame.onload = function() {
-        if (f) {
-          f(frame);
-        }
-        resolve(frame);
-      };
+      frame.onload = function() { resolve(frame); };
       document.body.appendChild(frame);
     });
 }

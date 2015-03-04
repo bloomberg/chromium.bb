@@ -5,38 +5,39 @@
 <script src="resources/test-helpers.js"></script>
 <body>
 <script>
-var t = async_test('controller is set upon reload after registration');
-t.step(function() {
-    var reloaded = false;
+promise_test(function(t) {
     var scope = 'resources/blank.html';
-    service_worker_unregister(t, scope).then(doTest);
-
-    function doTest() {
-        with_iframe(scope, t.step_func(onIframeLoad));
-    }
-
-    function onIframeLoad(frame) {
-        var w = frame.contentWindow;
-        if (reloaded) {
-            assert_true(w.navigator.serviceWorker.controller instanceof w.ServiceWorker,
-                        'controller should be a ServiceWorker object upon reload');
-            service_worker_unregister_and_done(t, scope);
-            return;
-        }
-
-        w.navigator.serviceWorker.register('resources/empty-worker.js',
-                                           {scope: 'resources/blank.html'})
-        .then(function(registration) {
-            return wait_for_state(t, registration.installing, 'activated');
-          })
-        .then(function() {
-            assert_equals(w.navigator.serviceWorker.controller, null,
-                          'controller should be null until the document is reloaded');
-            reloaded = true;
-            w.location.reload();
-          })
-        .catch(unreached_rejection(t));
-    }
-});
+    var frame;
+    return service_worker_unregister(t, scope)
+      .then(function() {
+          return with_iframe(scope);
+        })
+      .then(function(f) {
+          frame = f;
+          return frame.contentWindow.navigator.serviceWorker.register(
+              'resources/empty-worker.js', {scope: scope});
+        })
+      .then(function(registration) {
+          return wait_for_state(t, registration.installing, 'activated');
+        })
+      .then(function() {
+          var w = frame.contentWindow;
+          assert_equals(w.navigator.serviceWorker.controller, null,
+                        'controller should be null until the document is ' +
+                        'reloaded');
+          return new Promise(function(resolve) {
+              frame.onload = function() { resolve(); }
+              w.location.reload();
+            });
+        })
+      .then(function() {
+          var w = frame.contentWindow;
+          assert_true(
+              w.navigator.serviceWorker.controller instanceof w.ServiceWorker,
+              'controller should be a ServiceWorker object upon reload');
+          frame.remove();
+          service_worker_unregister_and_done(t, scope);
+        });
+  }, 'controller is set upon reload after registration');
 </script>
 </body>
