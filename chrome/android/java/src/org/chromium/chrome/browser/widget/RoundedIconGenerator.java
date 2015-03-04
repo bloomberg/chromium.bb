@@ -14,7 +14,6 @@ import android.graphics.RectF;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.TypedValue;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.UrlConstants;
@@ -51,17 +50,16 @@ public class RoundedIconGenerator {
      * @param iconWidthDp The width of the generated icon in dp.
      * @param iconHeightDp The height of the generated icon in dp.
      * @param cornerRadiusDp The radius of the corners in the icon in dp.
-     * @param backgroundColor Color at which the rounded rectangle should be drawn.
-     * @param textSizeSp Size at which the text should be drawn in dp.
+     * @param backgroundColor Color with which the rounded rectangle should be drawn.
+     * @param textSizeDp Size at which the text should be drawn in dp.
      */
     public RoundedIconGenerator(Context context, int iconWidthDp, int iconHeightDp,
-            int cornerRadiusDp, int backgroundColor, int textSizeSp) {
+            int cornerRadiusDp, int backgroundColor, int textSizeDp) {
         this((int) (context.getResources().getDisplayMetrics().density * iconWidthDp),
                 (int) (context.getResources().getDisplayMetrics().density * iconHeightDp),
                 (int) (context.getResources().getDisplayMetrics().density * cornerRadiusDp),
                 backgroundColor,
-                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSizeSp,
-                        context.getResources().getDisplayMetrics()));
+                (int) (context.getResources().getDisplayMetrics().density * textSizeDp));
     }
 
     /**

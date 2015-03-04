@@ -46,7 +46,7 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
     private static final int FAVICON_CORNER_RADIUS_DP = 2;
     private static final int FAVICON_SIZE_DP = 16;
     private static final int FAVICON_PADDING_DP = 4;
-    private static final int FAVICON_TEXT_SIZE_SP = 10;
+    private static final int FAVICON_TEXT_SIZE_DP = 10;
     private static final int FAVICON_BACKGROUND_COLOR = 0xff969696;
 
     WebsitePreference(Context context, Website site, String categoryFilter) {
@@ -86,7 +86,7 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
             RoundedIconGenerator faviconGenerator = new RoundedIconGenerator(
                     getContext(), FAVICON_SIZE_DP, FAVICON_SIZE_DP,
                     FAVICON_CORNER_RADIUS_DP, FAVICON_BACKGROUND_COLOR,
-                    FAVICON_TEXT_SIZE_SP);
+                    FAVICON_TEXT_SIZE_DP);
             image = faviconGenerator.generateIconForUrl(faviconUrl());
         }
 

@@ -303,12 +303,11 @@ public class NotificationUIManager {
                 res.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
 
         return new RoundedIconGenerator(
-                appContext,
-                (int) (widthPx / density),
-                (int) (heightPx / density),
-                (int) (Math.min(widthPx, heightPx) / density / 2),
+                widthPx,
+                heightPx,
+                Math.min(widthPx, heightPx) / 2,
                 NOTIFICATION_ICON_BG_COLOR,
-                NOTIFICATION_TEXT_SIZE_DP);
+                NOTIFICATION_TEXT_SIZE_DP * density);
     }
 
     /**
