@@ -254,12 +254,6 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool CouldSendBeginMainFrame() const;
 
-  void SetImplLatencyTakesPriorityOnBattery(
-      bool impl_latency_takes_priority_on_battery) {
-    impl_latency_takes_priority_on_battery_ =
-        impl_latency_takes_priority_on_battery;
-  }
-
   void SetDeferCommits(bool defer_commits);
 
   // TODO(zmo): This is temporary for debugging crbug.com/393331.
@@ -341,7 +335,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool skip_next_begin_main_frame_to_reduce_latency_;
   bool skip_begin_main_frame_to_reduce_latency_;
   bool continuous_painting_;
-  bool impl_latency_takes_priority_on_battery_;
   bool children_need_begin_frames_;
   bool defer_commits_;
 

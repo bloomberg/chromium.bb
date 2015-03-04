@@ -104,7 +104,6 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
                           scheduler_settings,
                           layer_tree_host_->id(),
                           MainThreadTaskRunner(),
-                          base::PowerMonitor::Get(),
                           external_begin_frame_source_.Pass());
     scheduler_on_impl_thread_->SetCanStart();
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());

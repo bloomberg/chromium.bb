@@ -79,7 +79,6 @@ Scheduler::Scheduler(
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::PowerMonitor* power_monitor,
     scoped_ptr<BeginFrameSource> external_begin_frame_source,
     SchedulerFrameSourcesConstructor* frame_sources_constructor)
     : frame_source_(),
@@ -93,7 +92,6 @@ Scheduler::Scheduler(
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
       task_runner_(task_runner),
-      power_monitor_(power_monitor),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false),
       inside_action_(SchedulerStateMachine::ACTION_NONE),
@@ -132,12 +130,9 @@ Scheduler::Scheduler(
   unthrottled_frame_source_ =
       frame_sources_constructor->ConstructUnthrottledFrameSource(this);
   frame_source_->AddSource(unthrottled_frame_source_);
-
-  SetupPowerMonitoring();
 }
 
 Scheduler::~Scheduler() {
-  TeardownPowerMonitoring();
   if (frame_source_->NeedsBeginFrames())
     frame_source_->SetNeedsBeginFrames(false);
 }
@@ -149,27 +144,6 @@ base::TimeTicks Scheduler::Now() const {
                "now",
                now);
   return now;
-}
-
-void Scheduler::SetupPowerMonitoring() {
-  if (settings_.disable_hi_res_timer_tasks_on_battery) {
-    DCHECK(power_monitor_);
-    power_monitor_->AddObserver(this);
-    state_machine_.SetImplLatencyTakesPriorityOnBattery(
-        power_monitor_->IsOnBatteryPower());
-  }
-}
-
-void Scheduler::TeardownPowerMonitoring() {
-  if (settings_.disable_hi_res_timer_tasks_on_battery) {
-    DCHECK(power_monitor_);
-    power_monitor_->RemoveObserver(this);
-  }
-}
-
-void Scheduler::OnPowerStateChange(bool on_battery_power) {
-  DCHECK(settings_.disable_hi_res_timer_tasks_on_battery);
-  state_machine_.SetImplLatencyTakesPriorityOnBattery(on_battery_power);
 }
 
 void Scheduler::CommitVSyncParameters(base::TimeTicks timebase,

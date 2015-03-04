@@ -47,7 +47,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       skip_next_begin_main_frame_to_reduce_latency_(false),
       skip_begin_main_frame_to_reduce_latency_(false),
       continuous_painting_(false),
-      impl_latency_takes_priority_on_battery_(false),
       children_need_begin_frames_(false),
       defer_commits_(false) {
 }
@@ -236,8 +235,6 @@ void SchedulerStateMachine::AsValueInto(base::trace_event::TracedValue* state,
   state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
                     skip_next_begin_main_frame_to_reduce_latency_);
   state->SetBoolean("continuous_painting", continuous_painting_);
-  state->SetBoolean("impl_latency_takes_priority_on_battery",
-                    impl_latency_takes_priority_on_battery_);
   state->SetBoolean("children_need_begin_frames", children_need_begin_frames_);
   state->SetBoolean("defer_commits", defer_commits_);
   state->EndDictionary();
@@ -901,11 +898,6 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
 
   // Prioritize impl-thread draws in impl_latency_takes_priority_ mode.
   if (impl_latency_takes_priority_)
-    return true;
-
-  // If we are on battery power and want to prioritize impl latency because
-  // we don't trust deadline tasks to execute at the right time.
-  if (impl_latency_takes_priority_on_battery_)
     return true;
 
   return false;

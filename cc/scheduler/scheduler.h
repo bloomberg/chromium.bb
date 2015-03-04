@@ -11,8 +11,6 @@
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
@@ -75,22 +73,19 @@ class CC_EXPORT SchedulerFrameSourcesConstructor {
   friend class Scheduler;
 };
 
-class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
-                            public base::PowerObserver {
+class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
  public:
   static scoped_ptr<Scheduler> Create(
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::PowerMonitor* power_monitor,
       scoped_ptr<BeginFrameSource> external_begin_frame_source) {
     SchedulerFrameSourcesConstructor frame_sources_constructor;
     return make_scoped_ptr(new Scheduler(client,
                                          scheduler_settings,
                                          layer_tree_host_id,
                                          task_runner,
-                                         power_monitor,
                                          external_begin_frame_source.Pass(),
                                          &frame_sources_constructor));
   }
@@ -99,9 +94,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
 
   // BeginFrameObserverMixin
   bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
-
-  // base::PowerObserver method.
-  void OnPowerStateChange(bool on_battery_power) override;
 
   const SchedulerSettings& settings() const { return settings_; }
 
@@ -179,7 +171,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
             const SchedulerSettings& scheduler_settings,
             int layer_tree_host_id,
             const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-            base::PowerMonitor* power_monitor,
             scoped_ptr<BeginFrameSource> external_begin_frame_source,
             SchedulerFrameSourcesConstructor* frame_sources_constructor);
 
@@ -204,8 +195,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   SchedulerClient* client_;
   int layer_tree_host_id_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  base::PowerMonitor* power_monitor_;
 
   base::TimeDelta estimated_parent_draw_time_;
 
@@ -243,8 +232,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   void OnBeginImplFrameDeadline();
   void PollForAnticipatedDrawTriggers();
   void PollToAdvanceCommitState();
-  void SetupPowerMonitoring();
-  void TeardownPowerMonitoring();
   void UpdateActiveFrameSource();
 
   base::TimeDelta EstimatedParentDrawTime() {
