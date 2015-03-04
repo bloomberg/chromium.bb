@@ -102,6 +102,14 @@ void MediaElementAudioSourceNode::setFormat(size_t numberOfChannels, float sourc
     }
 }
 
+bool MediaElementAudioSourceNode::passesCORSAccessCheck()
+{
+    ASSERT(mediaElement());
+
+    return (mediaElement()->webMediaPlayer() && mediaElement()->webMediaPlayer()->didPassCORSAccessCheck())
+        || (context()->securityOrigin() && context()->securityOrigin()->canRequest(mediaElement()->currentSrc()));
+}
+
 void MediaElementAudioSourceNode::process(size_t numberOfFrames)
 {
     AudioBus* outputBus = output(0)->bus();
@@ -128,8 +136,7 @@ void MediaElementAudioSourceNode::process(size_t numberOfFrames)
                 provider->provideInput(outputBus, numberOfFrames);
             }
             // Output silence if we don't have access to the element.
-            if (!((mediaElement()->webMediaPlayer() && mediaElement()->webMediaPlayer()->didPassCORSAccessCheck())
-                || context()->securityOrigin()->canRequest(mediaElement()->currentSrc()))) {
+            if (!passesCORSAccessCheck()) {
                 outputBus->zero();
             }
         } else {

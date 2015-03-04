@@ -67,6 +67,8 @@ private:
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 
+    bool passesCORSAccessCheck();
+
     RefPtrWillBeMember<HTMLMediaElement> m_mediaElement;
     Mutex m_processLock;
 
