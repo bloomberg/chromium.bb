@@ -1,5 +1,5 @@
 cron:
 - description: Repopulates all cached data.
   url: /_cron
-  schedule: every 60 minutes
-  target: 3-47-4
+  schedule: every 180 minutes
+  target: 3-48-0
