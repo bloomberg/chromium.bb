@@ -101,15 +101,16 @@ TextRun constructTextRun(LayoutObject* context, const Font& font, const String& 
 TextRun constructTextRun(LayoutObject* context, const Font& font, const String& string, const LayoutStyle& style, TextRunFlags flags)
 {
     bool hasStrongDirectionality;
-    return constructTextRun(context, font, string, style, determineDirectionality(string, hasStrongDirectionality), flags);
+    return constructTextRun(context, font, string, style, string.is8Bit() ? LTR : determineDirectionality(string, hasStrongDirectionality), flags);
 }
 
 TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, unsigned offset, unsigned length, const LayoutStyle& style)
 {
     ASSERT(offset + length <= text->textLength());
-    TextRun run = text->is8Bit()
-        ? constructTextRunInternal(context, font, text->characters8() + offset, length, style, LTR)
-        : constructTextRunInternal(context, font, text->characters16() + offset, length, style, LTR);
+    if (text->is8Bit())
+        return constructTextRunInternal(context, font, text->characters8() + offset, length, style, LTR);
+
+    TextRun run = constructTextRunInternal(context, font, text->characters16() + offset, length, style, LTR);
     bool hasStrongDirectionality;
     run.setDirection(directionForRun(run, hasStrongDirectionality));
     return run;
