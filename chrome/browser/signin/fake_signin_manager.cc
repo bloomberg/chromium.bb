@@ -89,8 +89,8 @@ void FakeSigninManager::SignOut(
   set_auth_in_progress(std::string());
   set_password(std::string());
   const std::string account_id = GetAuthenticatedAccountId();
-  const std::string username = authenticated_username_;
-  authenticated_username_.clear();
+  const std::string username = GetAuthenticatedUsername();
+  ClearAuthenticatedUsername();
 
   FOR_EACH_OBSERVER(SigninManagerBase::Observer, observer_list_,
                     GoogleSignedOut(account_id, username));
