@@ -66,10 +66,6 @@
 #include "extensions/common/switches.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_switches.h"
-#endif
-
 namespace about_flags {
 
 // Macros to simplify specifying the type.
@@ -2189,15 +2185,6 @@ const Experiment kExperiments[] = {
         switches::kSyncServiceURL,
         "https://chrome-sync.sandbox.google.com/chrome-sync/alpha")
   },
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
-  {
-    "ozone-test-single-overlay-support",
-    IDS_FLAGS_OZONE_TEST_SINGLE_HARDWARE_OVERLAY,
-    IDS_FLAGS_OZONE_TEST_SINGLE_HARDWARE_OVERLAY_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kOzoneTestSingleOverlaySupport)
-  },
-#endif  // defined(OS_CHROMEOS) && defined(USE_OZONE)
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
