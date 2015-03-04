@@ -164,9 +164,11 @@ function checkResult (event) {
     }
 
     if (diffCount <= thresholdDiffCount) {
-        testPassed("Number of differences between actual and expected result is less than " + thresholdDiffCount);
+        testPassed("Number of differences between actual and expected result is less than " + thresholdDiffCount
+                   + " out of " + renderedData.length);
     } else {
-        testFailed(diffCount + " differences found but expected no more than " + thresholdDiffCount);
+        testFailed(diffCount + " differences found but expected no more than " + thresholdDiffCount
+                   + " out of " + renderedData.length);
     }
 
     finishJSTest();

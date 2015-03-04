@@ -3,9 +3,9 @@ Test Triangle Oscillator with Exponential Sweep
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS Exceeded SNR threshold of 84.85 dB
-PASS Maximum difference below threshold of 2.5 ulp (16-bits)
-PASS Number of differences between actual and expected result is less than 5100
+PASS Exceeded SNR threshold of 80.5 dB
+PASS Maximum difference below threshold of 5.71 ulp (16-bits)
+PASS Number of differences between actual and expected result is less than 16982 out of 176400
 PASS successfullyParsed is true
 
 TEST COMPLETE
