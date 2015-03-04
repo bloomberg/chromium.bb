@@ -368,6 +368,8 @@ crbug.com/451577 [ Win ] inspector/console [ Slow ]
 crbug.com/450493 [ Win ] inspector/sources/debugger [ Slow ]
 
 crbug.com/463023 inspector/sources/debugger/debugger-reload-breakpoints-with-source-maps.html [ Failure Pass ]
+crbug.com/463758 inspector/sources/debugger/debugger-step-into-async1.html [ Slow ]
+crbug.com/463758 inspector/sources/debugger/debugger-eval-on-call-frame-inside-iframe.html [ Slow ]
 
 crbug.com/451577 [ Win ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Slow ]
 crbug.com/451577 [ Win ] inspector/profiler/webgl/webgl-get-resource-state.html [ Slow ]
