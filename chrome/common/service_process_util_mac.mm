@@ -180,13 +180,13 @@ bool ServiceProcessState::Initialize() {
     CFRelease(err);
     return false;
   }
-  state_->launchd_conf_.reset(dict);
+  state_->launchd_conf.reset(dict);
   return true;
 }
 
 IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
   DCHECK(state_);
-  NSDictionary *ns_launchd_conf = base::mac::CFToNSCast(state_->launchd_conf_);
+  NSDictionary *ns_launchd_conf = base::mac::CFToNSCast(state_->launchd_conf);
   NSDictionary* socket_dict =
       [ns_launchd_conf objectForKey:@ LAUNCH_JOBKEY_SOCKETS];
   NSArray* sockets =
@@ -301,7 +301,7 @@ bool ServiceProcessState::RemoveFromAutoRun() {
 
 bool ServiceProcessState::StateData::WatchExecutable() {
   base::mac::ScopedNSAutoreleasePool pool;
-  NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(launchd_conf_);
+  NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(launchd_conf);
   NSString* exe_path = [ns_launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
   if (!exe_path) {
     DLOG(ERROR) << "No " LAUNCH_JOBKEY_PROGRAM;
@@ -313,15 +313,15 @@ bool ServiceProcessState::StateData::WatchExecutable() {
   scoped_ptr<ExecFilePathWatcherCallback> callback(
       new ExecFilePathWatcherCallback);
   if (!callback->Init(executable_path)) {
-    DLOG(ERROR) << "executable_watcher_.Init " << executable_path.value();
+    DLOG(ERROR) << "executable_watcher.Init " << executable_path.value();
     return false;
   }
-  if (!executable_watcher_.Watch(
+  if (!executable_watcher.Watch(
           executable_path,
           false,
           base::Bind(&ExecFilePathWatcherCallback::NotifyPathChanged,
                      base::Owned(callback.release())))) {
-    DLOG(ERROR) << "executable_watcher_.watch " << executable_path.value();
+    DLOG(ERROR) << "executable_watcher.watch " << executable_path.value();
     return false;
   }
   return true;

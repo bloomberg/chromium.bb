@@ -77,9 +77,9 @@ static void SigTermHandler(int sig, siginfo_t* info, void* uap) {
   }
 }
 
-ServiceProcessState::StateData::StateData() : set_action_(false) {
-  memset(sockets_, -1, sizeof(sockets_));
-  memset(&old_action_, 0, sizeof(old_action_));
+ServiceProcessState::StateData::StateData() : set_action(false) {
+  memset(sockets, -1, sizeof(sockets));
+  memset(&old_action, 0, sizeof(old_action));
 }
 
 void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
@@ -87,17 +87,17 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
   DCHECK_EQ(g_signal_socket, -1);
   DCHECK(!signal->IsSignaled());
   *success = base::MessageLoopForIO::current()->WatchFileDescriptor(
-      sockets_[0],
+      sockets[0],
       true,
       base::MessageLoopForIO::WATCH_READ,
-      &watcher_,
-      terminate_monitor_.get());
+      &watcher,
+      terminate_monitor.get());
   if (!*success) {
     DLOG(ERROR) << "WatchFileDescriptor";
     signal->Signal();
     return;
   }
-  g_signal_socket = sockets_[1];
+  g_signal_socket = sockets[1];
 
   // Set up signal handler for SIGTERM.
   struct sigaction action;
@@ -105,7 +105,7 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
   action.sa_sigaction = SigTermHandler;
   sigemptyset(&action.sa_mask);
   action.sa_flags = SA_SIGINFO;
-  *success = sigaction(SIGTERM, &action, &old_action_) == 0;
+  *success = sigaction(SIGTERM, &action, &old_action) == 0;
   if (!*success) {
     DPLOG(ERROR) << "sigaction";
     signal->Signal();
@@ -115,8 +115,8 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
   // If the old_action is not default, somebody else has installed a
   // a competing handler. Our handler is going to override it so it
   // won't be called. If this occurs it needs to be fixed.
-  DCHECK_EQ(old_action_.sa_handler, SIG_DFL);
-  set_action_ = true;
+  DCHECK_EQ(old_action.sa_handler, SIG_DFL);
+  set_action = true;
 
 #if defined(OS_MACOSX)
   *success = WatchExecutable();
@@ -126,24 +126,24 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
     return;
   }
 #elif defined(OS_POSIX)
-  initializing_lock_.reset();
+  initializing_lock.reset();
 #endif  // OS_POSIX
   signal->Signal();
 }
 
 ServiceProcessState::StateData::~StateData() {
-  if (sockets_[0] != -1) {
-    if (IGNORE_EINTR(close(sockets_[0]))) {
+  if (sockets[0] != -1) {
+    if (IGNORE_EINTR(close(sockets[0]))) {
       DPLOG(ERROR) << "close";
     }
   }
-  if (sockets_[1] != -1) {
-    if (IGNORE_EINTR(close(sockets_[1]))) {
+  if (sockets[1] != -1) {
+    if (IGNORE_EINTR(close(sockets[1]))) {
       DPLOG(ERROR) << "close";
     }
   }
-  if (set_action_) {
-    if (sigaction(SIGTERM, &old_action_, NULL) < 0) {
+  if (set_action) {
+    if (sigaction(SIGTERM, &old_action, NULL) < 0) {
       DPLOG(ERROR) << "sigaction";
     }
   }
@@ -167,14 +167,14 @@ bool ServiceProcessState::SignalReady(
   DCHECK(state_);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  state_->running_lock_.reset(TakeServiceRunningLock(true));
-  if (state_->running_lock_.get() == NULL) {
+  state_->running_lock.reset(TakeServiceRunningLock(true));
+  if (state_->running_lock.get() == NULL) {
     return false;
   }
 #endif
-  state_->terminate_monitor_.reset(
+  state_->terminate_monitor.reset(
       new ServiceProcessTerminateMonitor(terminate_task));
-  if (pipe(state_->sockets_) < 0) {
+  if (pipe(state_->sockets) < 0) {
     DPLOG(ERROR) << "pipe";
     return false;
   }

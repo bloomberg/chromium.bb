@@ -66,8 +66,8 @@ bool CheckServiceProcessReady() {
 }
 
 bool ServiceProcessState::TakeSingletonLock() {
-  state_->initializing_lock_.reset(TakeServiceInitializingLock(true));
-  return state_->initializing_lock_.get();
+  state_->initializing_lock.reset(TakeServiceInitializingLock(true));
+  return state_->initializing_lock.get();
 }
 
 bool ServiceProcessState::AddToAutoRun() {
