@@ -2433,7 +2433,7 @@ _toolchain_minor.add_config('internal-toolchain-minor', internal, official,
 
 _release = full.derive(official, internal,
   build_type=constants.CANARY_TYPE,
-  useflags=append_useflags(['-cros-debug', '-highdpi']),
+  useflags=append_useflags(['-cros-debug']),
   build_tests=True,
   afdo_use=True,
   manifest=constants.OFFICIAL_MANIFEST,
@@ -2596,35 +2596,9 @@ _release.add_config('bobcat-release',
   signer_tests=False,
 )
 
-_release.add_config('link-release',
-  boards=['link'],
-  useflags=append_useflags(['highdpi']),
-)
-
-_release.add_config('quawks-release',
-  boards=['quawks'],
-  useflags=append_useflags(['highdpi']),
-)
-
-_release.add_config('quawks_freon-release',
-  _base_configs['quawks_freon'],
-  useflags=append_useflags(['highdpi']),
-)
-
 _release.add_config('samus-release',
   _base_configs['samus'],
-  useflags=append_useflags(['highdpi']),
   important=True,
-)
-
-_release.add_config('swanky-release',
-  boards=['swanky'],
-  useflags=append_useflags(['highdpi']),
-)
-
-_release.add_config('swanky_freon-release',
-  _base_configs['swanky_freon'],
-  useflags=append_useflags(['highdpi']),
 )
 
 ### Arm release configs.
@@ -2636,26 +2610,6 @@ _critical_for_chrome_boards = frozenset([
     'lumpy',
     'parrot',
 ])
-
-_arm_release.add_config('peach_pi-release',
-  boards=['peach_pi'],
-  useflags=append_useflags(['highdpi']),
-)
-
-_arm_release.add_config('nyan-release',
-  boards=['nyan'],
-  useflags=append_useflags(['highdpi']),
-)
-
-_arm_release.add_config('nyan_big-release',
-  boards=['nyan_big'],
-  useflags=append_useflags(['highdpi']),
-)
-
-_arm_release.add_config('nyan_blaze-release',
-  boards=['nyan_blaze'],
-  useflags=append_useflags(['highdpi']),
-)
 
 _arm_release.add_config('veyron_rialto-release',
   _base_configs['veyron_rialto'],
@@ -2818,7 +2772,6 @@ _release.add_config('rush-release',
 _release.add_config('rush_ryu-release',
   non_testable_builder,
   boards=['rush_ryu'],
-  useflags=append_useflags(['highdpi']),
   hw_tests=[],
 )
 
