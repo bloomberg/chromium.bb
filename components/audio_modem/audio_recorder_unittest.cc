@@ -196,7 +196,15 @@ class AudioRecorderTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_F(AudioRecorderTest, BasicRecordAndStop) {
+
+// http://crbug.com/463854
+#if defined(OS_MACOSX)
+#define MAYBE_BasicRecordAndStop DISABLED_BasicRecordAndStop
+#else
+#define MAYBE_BasicRecordAndStop BasicRecordAndStop
+#endif
+
+TEST_F(AudioRecorderTest, MAYBE_BasicRecordAndStop) {
   CreateSimpleRecorder();
 
   recorder_->Record();
