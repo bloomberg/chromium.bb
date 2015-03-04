@@ -25,6 +25,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
+import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.base.ModelType;
@@ -65,6 +66,8 @@ public class SigninManager {
             new ObserverList<SignInStateObserver>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
             new ObserverList<SignInAllowedObserver>();
+
+    private final SigninNotificationController mSigninNotificationController;
 
     private Activity mSignInActivity;
     private Account mSignInAccount;
@@ -164,6 +167,13 @@ public class SigninManager {
         mContext = context.getApplicationContext();
         mNativeSigninManagerAndroid = nativeInit();
         mSigninAllowedByPolicy = nativeIsSigninAllowedByPolicy(mNativeSigninManagerAndroid);
+
+        // Setup notification system for Google services. This includes both sign-in and sync.
+        GoogleServicesNotificationController controller =
+                GoogleServicesNotificationController.get(mContext);
+        mSigninNotificationController = new SigninNotificationController(
+                mContext, controller, AccountManagementFragment.class);
+        ChromeSigninController.get(mContext).addListener(mSigninNotificationController);
     }
 
     /**
@@ -227,6 +237,13 @@ public class SigninManager {
                 }
             }
         });
+    }
+
+    /**
+     * Return the SigninNotificationController.
+     */
+    public SigninNotificationController getSigninNotificationController() {
+        return mSigninNotificationController;
     }
 
     /**
