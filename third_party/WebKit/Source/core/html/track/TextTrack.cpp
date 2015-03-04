@@ -288,11 +288,19 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
 
     // 1. If the given cue is not currently listed in the method's TextTrack
     // object's text track's text track list of cues, then throw a NotFoundError exception.
-    // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
-    if (cue->track() != this || !m_cues || !m_cues->remove(cue)) {
+    if (cue->track() != this) {
         exceptionState.throwDOMException(NotFoundError, "The specified cue is not listed in the TextTrack's list of cues.");
         return;
     }
+
+    // cue->track() == this implies that cue is in this track's list of cues,
+    // so this track should have a list of cues and the cue being removed
+    // should be in it.
+    ASSERT(m_cues);
+
+    // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
+    bool wasRemoved = m_cues->remove(cue);
+    ASSERT_UNUSED(wasRemoved, wasRemoved);
 
     // If the cue is active, a timeline needs to be available.
     ASSERT(!cue->isActive() || cueTimeline());
@@ -384,9 +392,13 @@ void TextTrack::cueWillChange(TextTrackCue* cue)
 
 void TextTrack::cueDidChange(TextTrackCue* cue)
 {
+    // This method is called through cue->track(), which should imply that this
+    // track has a list of cues.
+    ASSERT(m_cues && cue->track() == this);
+
     // Make sure the TextTrackCueList order is up-to-date.
     // FIXME: Only need to do this if the change was to any of the timestamps.
-    ensureTextTrackCueList()->updateCueIndex(cue);
+    m_cues->updateCueIndex(cue);
 
     // Since a call to cueDidChange is always preceded by a call to
     // cueWillChange, the cue should no longer be active when we reach this
