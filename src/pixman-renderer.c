@@ -157,6 +157,30 @@ weston_matrix_to_pixman_transform(pixman_transform_t *pt,
 }
 
 static void
+pixman_renderer_compute_transform(pixman_transform_t *transform_out,
+				  struct weston_view *ev,
+				  struct weston_output *output)
+{
+	struct weston_matrix matrix;
+
+	/* Set up the source transformation based on the surface
+	   position, the output position/transform/scale and the client
+	   specified buffer transform/scale */
+	weston_matrix_invert(&matrix, &output->matrix);
+
+	if (ev->transform.enabled) {
+		weston_matrix_multiply(&matrix, &ev->transform.inverse);
+	} else {
+		weston_matrix_translate(&matrix,
+					-ev->geometry.x, -ev->geometry.y, 0);
+	}
+
+	weston_matrix_multiply(&matrix, &ev->surface->surface_to_buffer_matrix);
+
+	weston_matrix_to_pixman_transform(transform_out, &matrix);
+}
+
+static void
 repaint_region(struct weston_view *ev, struct weston_output *output,
 	       pixman_region32_t *region, pixman_region32_t *surf_region,
 	       pixman_op_t pixman_op)
@@ -169,7 +193,6 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	pixman_region32_t final_region;
 	float view_x, view_y;
 	pixman_transform_t transform;
-	struct weston_matrix matrix;
 	pixman_image_t *mask_image;
 	pixman_color_t mask = { 0, };
 
@@ -203,21 +226,7 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	/* And clip to it */
 	pixman_image_set_clip_region32 (po->shadow_image, &final_region);
 
-	/* Set up the source transformation based on the surface
-	   position, the output position/transform/scale and the client
-	   specified buffer transform/scale */
-	weston_matrix_invert(&matrix, &output->matrix);
-
-	if (ev->transform.enabled) {
-		weston_matrix_multiply(&matrix, &ev->transform.inverse);
-	} else {
-		weston_matrix_translate(&matrix,
-					-ev->geometry.x, -ev->geometry.y, 0);
-	}
-
-	weston_matrix_multiply(&matrix, &ev->surface->surface_to_buffer_matrix);
-
-	weston_matrix_to_pixman_transform(&transform, &matrix);
+	pixman_renderer_compute_transform(&transform, ev, output);
 	pixman_image_set_transform(ps->image, &transform);
 
 	if (ev->transform.enabled || output->current_scale != vp->buffer.scale)
