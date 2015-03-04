@@ -7423,4 +7423,16 @@ TEST_F(WebFrameTest, NavigationTransitionCallbacks)
     EXPECT_EQ(1u, frameClient.navigationalDataReceivedCount());
 }
 
+TEST_F(WebFrameTest, DetachRemoteFrame)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebView* view = WebView::create(&viewClient);
+    view->setMainFrame(WebRemoteFrame::create(&remoteClient));
+    FrameTestHelpers::TestWebRemoteFrameClient childFrameClient;
+    WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild("", &childFrameClient);
+    childFrame->detach();
+    view->close();
+}
+
 } // namespace blink

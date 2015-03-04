@@ -75,6 +75,10 @@ void RemoteFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientR
 
 void RemoteFrame::detach()
 {
+    // Frame::detach() requires the caller to keep a reference to this, since
+    // otherwise it may clear the last reference to this, causing it to be
+    // deleted, which can cause a use-after-free.
+    RefPtrWillBeRawPtr<RemoteFrame> protect(this);
     detachChildren();
     if (!client())
         return;
