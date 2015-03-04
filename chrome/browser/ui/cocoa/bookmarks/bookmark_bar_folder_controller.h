@@ -136,9 +136,6 @@ class Profile;
   // incomplete animations do not cause valgrind complaints.
   BOOL ignoreAnimations_;
 
-  // The screen to which the menu should be restricted.
-  NSScreen* screen_;
-
   int selectedIndex_;
   NSString* typedPrefix_;
 

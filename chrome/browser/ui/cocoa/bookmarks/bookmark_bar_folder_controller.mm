@@ -129,12 +129,17 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
 - (void)_updateTrackingAreas;
 @end
 
-@interface BookmarkBarFolderController(Private)
+@interface BookmarkBarFolderController ()
 - (void)configureWindow;
 - (void)addOrUpdateScrollTracking;
 - (void)removeScrollTracking;
 - (void)endScroll;
 - (void)addScrollTimerWithDelta:(CGFloat)delta;
+
+// Return the screen to which the menu should be restricted. The screen list is
+// very volatile and can change with very short notice so it isn't worth
+// caching. http://crbug.com/463458
+- (NSScreen*)menuScreen;
 
 // Helper function to configureWindow which performs a basic layout of
 // the window subviews, in particular the menu buttons and the window width.
@@ -260,33 +265,6 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
 
     // We want the button to remain bordered as part of the menu path.
     [button forceButtonBorderToStayOnAlways:YES];
-
-    // Pick the parent button's screen to be the screen upon which all display
-    // happens. This loop over all screens is not equivalent to
-    // |[[button window] screen]|. BookmarkButtons are commonly positioned near
-    // the edge of their windows (both in the bookmark bar and in other bookmark
-    // menus), and |[[button window] screen]| would return the screen that the
-    // majority of their window was on even if the parent button were clearly
-    // contained within a different screen.
-    NSRect parentButtonGlobalFrame =
-        [button convertRect:[button bounds] toView:nil];
-    parentButtonGlobalFrame.origin =
-        [[button window] convertBaseToScreen:parentButtonGlobalFrame.origin];
-    for (NSScreen* screen in [NSScreen screens]) {
-      if (NSIntersectsRect([screen frame], parentButtonGlobalFrame)) {
-        screen_ = screen;
-        break;
-      }
-    }
-    if (!screen_) {
-      // The parent button is offscreen. The ideal thing to do would be to
-      // calculate the "closest" screen, the screen which has an edge parallel
-      // to, and the least distance from, one of the edges of the button.
-      // However, popping a subfolder from an offscreen button is an unrealistic
-      // edge case and so this ideal remains unrealized. Cheat instead; this
-      // code is wrong but a lot simpler.
-      screen_ = [[button window] screen];
-    }
 
     parentController_.reset([parentController retain]);
     if (!parentController_)
@@ -468,6 +446,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   // left but not in that order).  Limit us to three tries in case
   // the folder window can't fit on either side of the screen; we
   // don't want to loop forever.
+  NSRect screenVisibleFrame = [[self menuScreen] visibleFrame];
   CGFloat x;
   int tries = 0;
   while (tries < 2) {
@@ -477,9 +456,8 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
       x = NSMaxX([[parentButton_ window] frame]) -
           bookmarks::kBookmarkMenuOverlap;
       // If off the screen, switch direction.
-      if ((x + windowWidth +
-           bookmarks::kBookmarkHorizontalScreenPadding) >
-          NSMaxX([screen_ visibleFrame])) {
+      if ((x + windowWidth + bookmarks::kBookmarkHorizontalScreenPadding) >
+          NSMaxX(screenVisibleFrame)) {
         [self setSubFolderGrowthToRight:NO];
       } else {
         return x;
@@ -492,7 +470,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
           bookmarks::kBookmarkMenuOverlap -
           windowWidth;
       // If off the screen, switch direction.
-      if (x < NSMinX([screen_ visibleFrame])) {
+      if (x < NSMinX(screenVisibleFrame)) {
         [self setSubFolderGrowthToRight:YES];
       } else {
         return x;
@@ -500,7 +478,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
     }
   }
   // Unhappy; do the best we can.
-  return NSMaxX([screen_ visibleFrame]) - windowWidth;
+  return NSMaxX(screenVisibleFrame) - windowWidth;
 }
 
 
@@ -530,26 +508,27 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
     // Make sure the window is on-screen; if not, push left or right. It is
     // intentional that top level folders "push left" or "push right" slightly
     // different than subfolders.
-    NSRect screenFrame = [screen_ visibleFrame];
+    NSRect screenVisibleFrame = [[self menuScreen] visibleFrame];
     // Test if window goes off-screen on the right side.
-    CGFloat spillOff = (newWindowTopLeft.x + windowWidth) - NSMaxX(screenFrame);
+    CGFloat spillOff =
+        newWindowTopLeft.x + windowWidth - NSMaxX(screenVisibleFrame);
     if (spillOff > 0.0) {
       newWindowTopLeft.x = std::max(newWindowTopLeft.x - spillOff,
-                                    NSMinX(screenFrame));
-    } else if (newWindowTopLeft.x < NSMinX(screenFrame)) {
+                                    NSMinX(screenVisibleFrame));
+    } else if (newWindowTopLeft.x < NSMinX(screenVisibleFrame)) {
       // For left side.
-      newWindowTopLeft.x = NSMinX(screenFrame);
+      newWindowTopLeft.x = NSMinX(screenVisibleFrame);
     }
     // The menu looks bad when it is squeezed up against the bottom of the
     // screen and ends up being only a few pixels tall. If it meets the
     // threshold for this case, instead show the menu above the button.
     CGFloat availableVerticalSpace = newWindowTopLeft.y -
-        (NSMinY(screenFrame) + bookmarks::kScrollWindowVerticalMargin);
+        (NSMinY(screenVisibleFrame) + bookmarks::kScrollWindowVerticalMargin);
     if ((availableVerticalSpace < kMinSqueezedMenuHeight) &&
         (windowHeight > availableVerticalSpace)) {
       newWindowTopLeft.y = std::min(
           newWindowTopLeft.y + windowHeight + NSHeight([parentButton_ frame]),
-          NSMaxY(screenFrame));
+          NSMaxY(screenVisibleFrame));
     }
   } else {
     // Parent is a folder: expose as much as we can vertically; grow right/left.
@@ -615,9 +594,9 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   metrics.deltaScrollerHeight = 0.0;
   metrics.deltaScrollerY = 0.0;
 
-  metrics.minimumY = NSMinY([screen_ visibleFrame]) +
+  metrics.minimumY = NSMinY([[self menuScreen] visibleFrame]) +
                      bookmarks::kScrollWindowVerticalMargin;
-  metrics.screenBottomY = NSMinY([screen_ frame]);
+  metrics.screenBottomY = NSMinY([[self menuScreen] frame]);
   metrics.oldWindowY = NSMinY(metrics.windowFrame);
   metrics.folderY =
       metrics.scrollerFrame.origin.y + metrics.visibleFrame.origin.y +
@@ -632,7 +611,8 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
     effectiveFolderY -= metrics.windowSize.height;
   metrics.canScrollUp = effectiveFolderY < metrics.minimumY;
   CGFloat maximumY =
-      NSMaxY([screen_ visibleFrame]) - bookmarks::kScrollWindowVerticalMargin;
+      NSMaxY([[self menuScreen] visibleFrame]) -
+          bookmarks::kScrollWindowVerticalMargin;
   metrics.canScrollDown = metrics.folderTop > maximumY;
 
   // Accommodate changes in the bottom of the menu.
@@ -707,7 +687,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   } else {
     if (metrics.canScrollDown) {
       // Couldn't -> Can
-      const CGFloat maximumY = NSMaxY([screen_ visibleFrame]);
+      const CGFloat maximumY = NSMaxY([[self menuScreen] visibleFrame]);
       metrics.deltaWindowHeight += (maximumY - NSMaxY(metrics.windowFrame));
       metrics.deltaVisibleHeight -= bookmarks::kScrollWindowVerticalMargin;
       metrics.deltaScrollerHeight -= verticalScrollArrowHeight_;
@@ -839,7 +819,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   // Make sure as much of a submenu is exposed (which otherwise would be a
   // problem if the parent button is close to the bottom of the screen).
   if ([parentController_ isKindOfClass:[self class]]) {
-    CGFloat minimumY = NSMinY([screen_ visibleFrame]) +
+    CGFloat minimumY = NSMinY([[self menuScreen] visibleFrame]) +
                        bookmarks::kScrollWindowVerticalMargin +
                        height;
     newWindowTopLeft.y = MAX(newWindowTopLeft.y, minimumY);
@@ -984,6 +964,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
       (delta < 0.0 && ![scrollDownArrowView_ isHidden])) {
     NSWindow* window = [self window];
     NSRect windowFrame = [window frame];
+    NSRect screenVisibleFrame = [[self menuScreen] visibleFrame];
     NSPoint scrollPosition = [scrollView_ documentVisibleRect].origin;
     CGFloat scrollY = scrollPosition.y;
     NSRect scrollerFrame = [scrollView_ frame];
@@ -995,14 +976,13 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
 
     if (delta > 0.0) {
       // Scrolling up.
-      CGFloat minimumY = NSMinY([screen_ visibleFrame]) +
+      CGFloat minimumY = NSMinY(screenVisibleFrame) +
                          bookmarks::kScrollWindowVerticalMargin;
       CGFloat maxUpDelta = scrollY - offset + minimumY;
       delta = MIN(delta, maxUpDelta);
     } else {
       // Scrolling down.
-      NSRect screenFrame =  [screen_ visibleFrame];
-      CGFloat topOfScreen = NSMaxY(screenFrame);
+      CGFloat topOfScreen = NSMaxY(screenVisibleFrame);
       NSRect folderFrame = [folderView_ frame];
       CGFloat folderHeight = NSHeight(folderFrame);
       CGFloat folderTop = folderHeight - scrollY + offset;
@@ -1040,6 +1020,32 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   [[NSRunLoop mainRunLoop] addTimer:scrollTimer_ forMode:NSRunLoopCommonModes];
 }
 
+- (NSScreen*)menuScreen {
+  // Return the parent button's screen for use as the screen upon which all
+  // display happens. This loop over all screens is not equivalent to
+  // |[[button window] screen]|. BookmarkButtons are commonly positioned near
+  // the edge of their windows (both in the bookmark bar and in other bookmark
+  // menus), and |[[button window] screen]| would return the screen that the
+  // majority of their window was on even if the parent button were clearly
+  // contained within a different screen.
+  NSButton* button = parentButton_.get();
+  NSRect parentButtonGlobalFrame =
+      [button convertRect:[button bounds] toView:nil];
+  parentButtonGlobalFrame.origin =
+      [[button window] convertBaseToScreen:parentButtonGlobalFrame.origin];
+  for (NSScreen* screen in [NSScreen screens]) {
+    if (NSIntersectsRect([screen frame], parentButtonGlobalFrame))
+      return screen;
+  }
+
+  // The parent button is offscreen. The ideal thing to do would be to calculate
+  // the "closest" screen, the screen which has an edge parallel to, and the
+  // least distance from, one of the edges of the button. However, popping a
+  // subfolder from an offscreen button is an unrealistic edge case and so this
+  // ideal remains unrealized. Cheat instead; this code is wrong but a lot
+  // simpler.
+  return [[button window] screen];
+}
 
 // Called as a result of our tracking area.  Warning: on the main
 // screen (of a single-screened machine), the minimum mouse y value is
