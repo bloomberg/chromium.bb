@@ -345,7 +345,7 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 
 crbug.com/451577 [ Win ] inspector/console [ Slow ]
 
-crbug.com/450493 [ Win ] inspector/sources/debugger [ Slow ]
+crbug.com/450493 inspector/sources/debugger [ Slow ]
 
 crbug.com/463023 inspector/sources/debugger/debugger-reload-breakpoints-with-source-maps.html [ Failure Pass ]
 crbug.com/463758 inspector/sources/debugger/debugger-step-into-async1.html [ Slow ]
