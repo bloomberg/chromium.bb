@@ -1651,6 +1651,15 @@ TEST_F(PipelineIntegrationTest, P444_VP9_WebM) {
   EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, VideoFrame::YV24);
 }
 
+// Verify that frames of VP9 video in the BT.709 color space have the YV12HD
+// format.
+TEST_F(PipelineIntegrationTest, BT709_VP9_WebM) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-bt709.webm"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, VideoFrame::YV12HD);
+}
+
 // Verify that videos with an odd frame size playback successfully.
 TEST_F(PipelineIntegrationTest, BasicPlayback_OddVideoSize) {
   ASSERT_EQ(PIPELINE_OK, Start("butterfly-853x480.webm"));

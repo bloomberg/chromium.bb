@@ -465,7 +465,12 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
     codec_format = VideoFrame::YV24;
     uv_rows = vpx_image->d_h;
   } else if (vpx_codec_alpha_) {
+    // TODO(watk): A limitation of conflating color space with pixel format is
+    // that it's not possible to have BT709 with alpha.
+    // Until color space is separated from format, prefer YV12A over YV12HD.
     codec_format = VideoFrame::YV12A;
+  } else if (vpx_image->cs == VPX_CS_BT_709) {
+    codec_format = VideoFrame::YV12HD;
   }
 
   gfx::Size size(vpx_image->d_w, vpx_image->d_h);
