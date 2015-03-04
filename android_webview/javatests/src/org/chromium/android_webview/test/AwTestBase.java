@@ -528,7 +528,11 @@ public class AwTestBase
         });
 
         final String parentUrl = testWebServer.setResponse("/popupParent.html", mainHtml, null);
-        testWebServer.setResponse(popupPath, popupHtml, null);
+        if (popupHtml != null) {
+            testWebServer.setResponse(popupPath, popupHtml, null);
+        } else {
+            testWebServer.setResponseWithNoContentStatus(popupPath);
+        }
 
         parentAwContentsClient.getOnCreateWindowHelper().setReturnValue(true);
         loadUrlSync(parentAwContents, parentAwContentsClient.getOnPageFinishedHelper(), parentUrl);
@@ -542,9 +546,24 @@ public class AwTestBase
     }
 
     /**
+     * POD object for holding references to helper objects of a popup window.
+     */
+    public static class PopupInfo {
+        public final TestAwContentsClient popupContentsClient;
+        public final AwTestContainerView popupContainerView;
+        public final AwContents popupContents;
+        public PopupInfo(TestAwContentsClient popupContentsClient,
+                AwTestContainerView popupContainerView, AwContents popupContents) {
+            this.popupContentsClient = popupContentsClient;
+            this.popupContainerView = popupContainerView;
+            this.popupContents = popupContents;
+        }
+    }
+
+    /**
      * Supplies the popup window with AwContents then waits for the popup window to finish loading.
      */
-    public AwContents connectPendingPopup(final AwContents parentAwContents) throws Exception {
+    public PopupInfo connectPendingPopup(final AwContents parentAwContents) throws Exception {
         TestAwContentsClient popupContentsClient;
         AwTestContainerView popupContainerView;
         final AwContents popupContents;
@@ -564,6 +583,6 @@ public class AwTestBase
         int callCount = onPageFinishedHelper.getCallCount();
         onPageFinishedHelper.waitForCallback(callCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
-        return popupContents;
+        return new PopupInfo(popupContentsClient, popupContainerView, popupContents);
     }
 }

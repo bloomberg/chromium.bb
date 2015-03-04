@@ -163,6 +163,18 @@ void AwWebContentsDelegate::AddNewContents(WebContents* source,
   }
 }
 
+void AwWebContentsDelegate::NavigationStateChanged(
+    content::WebContents* source,
+    content::InvalidateTypes changed_flags) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
+  if (java_delegate.obj()) {
+    Java_AwWebContentsDelegate_navigationStateChanged(env, java_delegate.obj(),
+                                                      changed_flags);
+  }
+}
+
 // Notifies the delegate about the creation of a new WebContents. This
 // typically happens when popups are created.
 void AwWebContentsDelegate::WebContentsCreated(

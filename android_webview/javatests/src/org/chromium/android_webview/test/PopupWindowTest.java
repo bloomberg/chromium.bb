@@ -11,6 +11,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
 /**
@@ -56,8 +57,31 @@ public class PopupWindowTest extends AwTestBase {
                 "This is a popup window");
 
         triggerPopup(mParentContents, mParentContentsClient, mWebServer, parentPageHtml,
-                popupPageHtml, "/popup.html", "tryOpenWindow()");
-        AwContents popupContents = connectPendingPopup(mParentContents);
+                popupPageHtml, popupPath, "tryOpenWindow()");
+        AwContents popupContents = connectPendingPopup(mParentContents).popupContents;
         assertEquals(POPUP_TITLE, getTitleOnUiThread(popupContents));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOnPageFinishedCalledOnDomModificationAfterNavigation() throws Throwable {
+        final String popupPath = "/popup.html";
+        final String parentPageHtml = CommonResources.makeHtmlPageFrom("", "<script>"
+                        + "function tryOpenWindow() {"
+                        + "  window.popupWindow = window.open('" + popupPath + "');"
+                        + "}"
+                        + "function modifyDomOfPopup() {"
+                        + "  window.popupWindow.document.body.innerHTML = 'Hello from the parent!';"
+                        + "}</script>");
+
+        triggerPopup(mParentContents, mParentContentsClient, mWebServer, parentPageHtml,
+                null, popupPath, "tryOpenWindow()");
+        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                connectPendingPopup(mParentContents).popupContentsClient.getOnPageFinishedHelper();
+        final int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
+        executeJavaScriptAndWaitForResult(mParentContents, mParentContentsClient,
+                "modifyDomOfPopup()");
+        onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
+        assertEquals("about:blank", onPageFinishedHelper.getUrl());
     }
 }

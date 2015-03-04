@@ -80,11 +80,14 @@ public class TestWebServer {
         final boolean mIsRedirect;
         final Runnable mResponseAction;
         final boolean mIsNotFound;
+        final boolean mIsNoContent;
 
         Response(byte[] responseData, List<Pair<String, String>> responseHeaders,
-                boolean isRedirect, boolean isNotFound, Runnable responseAction) {
+                boolean isRedirect, boolean isNotFound, boolean isNoContent,
+                Runnable responseAction) {
             mIsRedirect = isRedirect;
             mIsNotFound = isNotFound;
+            mIsNoContent = isNoContent;
             mResponseData = responseData;
             mResponseHeaders = responseHeaders == null
                     ? new ArrayList<Pair<String, String>>() : responseHeaders;
@@ -208,6 +211,7 @@ public class TestWebServer {
     private static final int RESPONSE_STATUS_NORMAL = 0;
     private static final int RESPONSE_STATUS_MOVED_TEMPORARILY = 1;
     private static final int RESPONSE_STATUS_NOT_FOUND = 2;
+    private static final int RESPONSE_STATUS_NO_CONTENT = 3;
 
     private String setResponseInternal(
             String requestPath, byte[] responseData,
@@ -215,10 +219,12 @@ public class TestWebServer {
             int status) {
         final boolean isRedirect = (status == RESPONSE_STATUS_MOVED_TEMPORARILY);
         final boolean isNotFound = (status == RESPONSE_STATUS_NOT_FOUND);
+        final boolean isNoContent = (status == RESPONSE_STATUS_NO_CONTENT);
 
         synchronized (mLock) {
             mResponseMap.put(requestPath, new Response(
-                    responseData, responseHeaders, isRedirect, isNotFound, responseAction));
+                    responseData, responseHeaders, isRedirect, isNotFound, isNoContent,
+                    responseAction));
             mResponseCountMap.put(requestPath, Integer.valueOf(0));
             mLastRequestMap.put(requestPath, null);
         }
@@ -248,6 +254,18 @@ public class TestWebServer {
             String requestPath) {
         return setResponseInternal(requestPath, "".getBytes(), null, null,
                 RESPONSE_STATUS_NOT_FOUND);
+    }
+
+    /**
+     * Sets a 204 (no content) response to be returned when a particular request path is passed in.
+     *
+     * @param requestPath The path to respond to.
+     * @return The full URL including the path that should be requested to get the expected
+     *         response.
+     */
+    public String setResponseWithNoContentStatus(String requestPath) {
+        return setResponseInternal(
+                requestPath, "".getBytes(), null, null, RESPONSE_STATUS_NO_CONTENT);
     }
 
     /**
@@ -450,6 +468,10 @@ public class TestWebServer {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
         } else if (response.mIsNotFound) {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
+            servedResponseFor(path, request);
+        } else if (response.mIsNoContent) {
+            httpResponse = createResponse(HttpStatus.SC_NO_CONTENT);
+            httpResponse.setHeader("Content-Length", "0");
             servedResponseFor(path, request);
         } else if (response.mIsRedirect) {
             httpResponse = createResponse(HttpStatus.SC_MOVED_TEMPORARILY);

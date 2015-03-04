@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.webkit.ValueCallback;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content_public.browser.InvalidateTypes;
 
 /**
  * Adapts the AwWebContentsDelegate interface to the AwContentsClient interface.
@@ -210,6 +212,22 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     @Override
     public void activateContents() {
         mContentsClient.onRequestFocus();
+    }
+
+    @Override
+    public void navigationStateChanged(int flags) {
+        if ((flags & InvalidateTypes.URL) != 0
+                && mAwContents.hasAccessedInitialDocument()
+                && mAwContents.getDidAttemptLoad()) {
+            // Hint the client to show the last committed url, as it may be unsafe to show
+            // the pending entry.
+            String url = mAwContents.getLastCommittedUrl();
+            url = TextUtils.isEmpty(url) ? "about:blank" : url;
+            mContentsClient.onPageStarted(url);
+            mContentsClient.onLoadResource(url);
+            mContentsClient.onProgressChanged(100);
+            mContentsClient.onPageFinished(url);
+        }
     }
 
     @Override

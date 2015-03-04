@@ -9,6 +9,11 @@ namespace content {
 
 // Flags passed to the WebContentsDelegate.NavigationStateChanged to tell it
 // what has changed. Combine them to update more than one thing.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.content_public.browser)
+// GENERATED_JAVA_PREFIX_TO_STRIP: INVALIDATE_TYPE_
 enum InvalidateTypes {
   INVALIDATE_TYPE_URL           = 1 << 0,  // The URL has changed.
   INVALIDATE_TYPE_TAB           = 1 << 1,  // The favicon, app icon, or crashed

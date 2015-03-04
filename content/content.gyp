@@ -444,6 +444,7 @@
             'content_strings_grd',
             'content_gamepad_mapping',
             'gesture_event_type_java',
+            'invalidate_types_java',
             'navigation_controller_java',
             'popup_item_type_java',
             'result_codes_java',
@@ -492,6 +493,14 @@
           'type': 'none',
           'variables': {
             'source_file': 'browser/android/gesture_event_type.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'invalidate_types_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'public/browser/invalidate_type.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

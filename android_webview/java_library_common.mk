@@ -55,6 +55,7 @@ $(call intermediates-dir-for,GYP,shared)/enums/console_message_level_java/org/ch
 $(call intermediates-dir-for,GYP,shared)/enums/content_gamepad_mapping/org/chromium/content/browser/input/CanonicalAxisIndex.java \
 $(call intermediates-dir-for,GYP,shared)/enums/content_gamepad_mapping/org/chromium/content/browser/input/CanonicalButtonIndex.java \
 $(call intermediates-dir-for,GYP,shared)/enums/gesture_event_type_java/org/chromium/content/browser/GestureEventType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/invalidate_types_java/org/chromium/content_public/browser/InvalidateTypes.java \
 $(call intermediates-dir-for,GYP,shared)/enums/navigation_controller_java/org/chromium/content_public/browser/navigation_controller/LoadURLType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/navigation_controller_java/org/chromium/content_public/browser/navigation_controller/UserAgentOverrideOption.java \
 $(call intermediates-dir-for,GYP,shared)/enums/popup_item_type_java/org/chromium/content/browser/input/PopupItemType.java \
