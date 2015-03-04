@@ -30,10 +30,13 @@ const double testdouble = 2.71828182845904523;
 const std::string teststring("Hello world");  // note non-aligned string length
 const std::wstring testwstring(L"Hello, world");
 const base::string16 teststring16(base::ASCIIToUTF16("Hello, world"));
+const char testrawstring[] = "Hello new world"; // Test raw string writing
+// Test raw char16 writing, assumes UTF16 encoding is ANSI for alpha chars.
+const base::char16 testrawstring16[] = {'A', 'l', 'o', 'h', 'a', 0};
 const char testdata[] = "AAA\0BBB\0";
 const int testdatalen = arraysize(testdata) - 1;
 
-// checks that the result
+// checks that the results can be read correctly from the Pickle
 void VerifyResult(const Pickle& pickle) {
   PickleIterator iter(pickle);
 
@@ -91,6 +94,14 @@ void VerifyResult(const Pickle& pickle) {
   EXPECT_TRUE(iter.ReadString16(&outstring16));
   EXPECT_EQ(teststring16, outstring16);
 
+  base::StringPiece outstringpiece;
+  EXPECT_TRUE(iter.ReadStringPiece(&outstringpiece));
+  EXPECT_EQ(testrawstring, outstringpiece);
+
+  base::StringPiece16 outstringpiece16;
+  EXPECT_TRUE(iter.ReadStringPiece16(&outstringpiece16));
+  EXPECT_EQ(testrawstring16, outstringpiece16);
+
   const char* outdata;
   int outdatalen;
   EXPECT_TRUE(iter.ReadData(&outdata, &outdatalen));
@@ -121,6 +132,8 @@ TEST(PickleTest, EncodeDecode) {
   EXPECT_TRUE(pickle.WriteString(teststring));
   EXPECT_TRUE(pickle.WriteWString(testwstring));
   EXPECT_TRUE(pickle.WriteString16(teststring16));
+  EXPECT_TRUE(pickle.WriteString(testrawstring));
+  EXPECT_TRUE(pickle.WriteString16(testrawstring16));
   EXPECT_TRUE(pickle.WriteData(testdata, testdatalen));
   VerifyResult(pickle);
 
