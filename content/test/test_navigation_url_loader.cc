@@ -6,6 +6,8 @@
 
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/common/resource_response.h"
+#include "net/url_request/redirect_info.h"
 
 namespace content {
 
@@ -19,6 +21,16 @@ TestNavigationURLLoader::TestNavigationURLLoader(
 
 void TestNavigationURLLoader::FollowRedirect() {
   redirect_count_++;
+}
+
+void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
+  net::RedirectInfo redirect_info;
+  redirect_info.status_code = 302;
+  redirect_info.new_method = "GET";
+  redirect_info.new_url = redirect_url;
+  redirect_info.new_first_party_for_cookies = redirect_url;
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  CallOnRequestRedirected(redirect_info, response);
 }
 
 void TestNavigationURLLoader::CallOnRequestRedirected(

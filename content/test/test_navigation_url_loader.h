@@ -36,6 +36,8 @@ class TestNavigationURLLoader
 
   NavigationRequestInfo* request_info() const { return request_info_.get(); }
 
+  void SimulateServerRedirect(const GURL& redirect_url);
+
   void CallOnRequestRedirected(const net::RedirectInfo& redirect_info,
                                const scoped_refptr<ResourceResponse>& response);
   void CallOnResponseStarted(const scoped_refptr<ResourceResponse>& response,

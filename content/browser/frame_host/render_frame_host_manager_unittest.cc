@@ -272,7 +272,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     // is replaced without a pending frame being created, and we don't get the
     // right values for the RFH to navigate: we try to use the old one that has
     // been deleted in the meantime.
-    contents()->GetMainFrame()->PrepareForCommit(url);
+    contents()->GetMainFrame()->PrepareForCommit();
 
     TestRenderFrameHost* old_rfh = contents()->GetMainFrame();
     TestRenderFrameHost* active_rfh = contents()->GetPendingMainFrame()
@@ -351,7 +351,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     // Navigate to a cross-site URL.
     contents()->GetController().LoadURL(
         kDestUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-    contents()->GetMainFrame()->PrepareForCommit(kDestUrl);
+    contents()->GetMainFrame()->PrepareForCommit();
     EXPECT_TRUE(contents()->cross_navigation_pending());
 
     // Manually increase the number of active frames in the
@@ -430,7 +430,7 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
   // we use the committed one.
   contents2->GetController().LoadURL(
       kChromeUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  contents2->GetMainFrame()->PrepareForCommit(kChromeUrl);
+  contents2->GetMainFrame()->PrepareForCommit();
   TestRenderFrameHost* ntp_rfh2 = contents2->GetMainFrame();
   EXPECT_FALSE(contents2->cross_navigation_pending());
   ntp_rfh2->SendNavigate(100, kChromeUrl);
@@ -439,7 +439,7 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
   // requiring a beforeunload ack.
   contents2->GetController().LoadURL(
       kDestUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  contents2->GetMainFrame()->PrepareForCommit(kDestUrl);
+  contents2->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents2->cross_navigation_pending());
   TestRenderFrameHost* dest_rfh2 = contents2->GetPendingMainFrame();
   ASSERT_TRUE(dest_rfh2);
@@ -460,7 +460,7 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
 
   contents2->GetController().LoadURL(
       kChromeUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  contents2->GetMainFrame()->PrepareForCommit(kChromeUrl);
+  contents2->GetMainFrame()->PrepareForCommit();
   contents2->GetPendingMainFrame()->SendNavigate(102, kChromeUrl);
 
   EXPECT_NE(contents()->GetMainFrame()->GetSiteInstance(),
@@ -795,7 +795,7 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   controller().LoadURL(
       kUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   // Simulate response from RenderFrame for DispatchBeforeUnload.
-  contents()->GetMainFrame()->PrepareForCommit(kUrl);
+  contents()->GetMainFrame()->PrepareForCommit();
   ASSERT_TRUE(contents()->GetPendingMainFrame())
       << "Expected new pending RenderFrameHost to be created.";
   RenderFrameHost* last_rfh = contents()->GetPendingMainFrame();
@@ -815,7 +815,7 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // Navigate, again.
   controller().LoadURL(
       kUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  contents()->GetMainFrame()->PrepareForCommit(kUrl);
+  contents()->GetMainFrame()->PrepareForCommit();
   // The same RenderViewHost should be reused.
   EXPECT_FALSE(contents()->GetPendingMainFrame());
   EXPECT_TRUE(last_rfh == contents()->GetMainFrame());
@@ -1075,7 +1075,7 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
 
   // Now let's simulate the evil page calling history.back().
   contents()->OnGoToEntryAtOffset(-1);
-  contents()->GetMainFrame()->PrepareForCommit(kUrl1);
+  contents()->GetMainFrame()->PrepareForCommit();
   // We should have a new pending RFH.
   // Note that in this case, the navigation has not committed, so evil_rfh will
   // not be deleted yet.
@@ -1160,7 +1160,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   // (http://crbug.com/93427).
   contents()->GetController().GoBack();
   EXPECT_TRUE(rfh2->IsWaitingForBeforeUnloadACK());
-  contents()->GetMainFrame()->PrepareForCommit(kUrl1);
+  contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_FALSE(rfh2->IsWaitingForBeforeUnloadACK());
 
   // The back navigation commits.
@@ -1171,7 +1171,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
 
   // We should be able to navigate forward.
   contents()->GetController().GoForward();
-  contents()->GetMainFrame()->PrepareForCommit(kUrl2);
+  contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry2 = contents()->GetController().GetPendingEntry();
   rfh2->SendNavigate(entry2->GetPageID(), entry2->GetURL());
   EXPECT_EQ(rfh2, main_test_rfh());
@@ -1342,7 +1342,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
 
   // Start a back navigation so that rfh1 becomes the pending RFH.
   contents()->GetController().GoBack();
-  contents()->GetMainFrame()->PrepareForCommit(kUrl1);
+  contents()->GetMainFrame()->PrepareForCommit();
 
   // Disown the opener from rfh2.
   rfh2->DidDisownOpener();
@@ -1383,7 +1383,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   // Commit a back navigation before the DidDisownOpener message arrives.
   // rfh1 will be kept alive because of the opener tab.
   contents()->GetController().GoBack();
-  contents()->GetMainFrame()->PrepareForCommit(kUrl1);
+  contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
   rfh1->SendNavigate(entry1->GetPageID(), entry1->GetURL());
 
@@ -1449,7 +1449,7 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   // Reload the initial tab. This should recreate the opener's swapped out RVH
   // in the original SiteInstance.
   contents()->GetController().Reload(true);
-  contents()->GetMainFrame()->PrepareForCommit(kUrl1);
+  contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_EQ(opener1_manager->GetSwappedOutRenderViewHost(
                 rvh1->GetSiteInstance())->GetRoutingID(),
             test_rvh()->opener_route_id());
@@ -1644,7 +1644,7 @@ TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableBrowserSideNavigation)) {
-    rfh1->PrepareForCommit(kUrl2);
+    rfh1->PrepareForCommit();
   }
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
@@ -1669,7 +1669,7 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  contents()->GetMainFrame()->PrepareForCommit(kUrl2);
+  contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
@@ -1717,7 +1717,7 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  contents()->GetMainFrame()->PrepareForCommit(kUrl2);
+  contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
@@ -1760,7 +1760,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  rfh1->PrepareForCommit(kUrl2);
+  rfh1->PrepareForCommit();
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 

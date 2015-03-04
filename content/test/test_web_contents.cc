@@ -158,7 +158,7 @@ void TestWebContents::CommitPendingNavigation() {
   // replaced without a pending frame being created, and we don't get the right
   // values for the RFH to navigate: we try to use the old one that has been
   // deleted in the meantime.
-  GetMainFrame()->PrepareForCommit(entry->GetURL());
+  GetMainFrame()->PrepareForCommit();
 
   TestRenderFrameHost* old_rfh = GetMainFrame();
   TestRenderFrameHost* rfh = GetPendingMainFrame();

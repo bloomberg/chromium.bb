@@ -200,58 +200,71 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   OnDidCommitProvisionalLoad(msg);
 }
 
-void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url,
-                                                     bool has_user_gesture) {
-  BeginNavigationParams begin_params("GET", std::string(), net::LOAD_NORMAL,
-                                     has_user_gesture);
-  CommonNavigationParams common_params;
-  common_params.url = url;
-  common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
-  common_params.transition = ui::PAGE_TRANSITION_LINK;
-  OnBeginNavigation(common_params, begin_params,
-                    scoped_refptr<ResourceRequestBody>());
+void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
+    const GURL& url,
+    bool has_user_gesture) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    BeginNavigationParams begin_params("GET", std::string(), net::LOAD_NORMAL,
+                                       has_user_gesture);
+    CommonNavigationParams common_params;
+    common_params.url = url;
+    common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
+    common_params.transition = ui::PAGE_TRANSITION_LINK;
+    OnBeginNavigation(common_params, begin_params,
+                      scoped_refptr<ResourceRequestBody>());
+  }
 }
 
 void TestRenderFrameHost::DidDisownOpener() {
   OnDidDisownOpener();
 }
 
-void TestRenderFrameHost::PrepareForCommit(const GURL& url) {
+void TestRenderFrameHost::PrepareForCommit() {
+  PrepareForCommitWithServerRedirect(GURL());
+}
+
+void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
+    const GURL& redirect_url) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
+    // Non PlzNavigate
     SendBeforeUnloadACK(true);
     return;
   }
 
   // PlzNavigate
-  // Simulate the network stack commit without any redirects.
   NavigationRequest* request =
       static_cast<NavigatorImpl*>(frame_tree_node_->navigator())
           ->GetNavigationRequestForNodeForTesting(frame_tree_node_);
+  CHECK(request);
 
-  // We are simulating a renderer-initiated user-initiated navigation.
-  if (!request) {
-    SendBeginNavigationWithURL(url, true);
-    request = static_cast<NavigatorImpl*>(frame_tree_node_->navigator())
-        ->GetNavigationRequestForNodeForTesting(frame_tree_node_);
-  }
-  ASSERT_TRUE(request);
-
-  // We may not have simulated the renderer response to the navigation request.
-  // Do that now.
+  // Simulate a beforeUnload ACK from the renderer if the browser is waiting for
+  // it. If it runs it will update the request state.
   if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE)
     SendBeforeUnloadACK(true);
 
-  // We have already simulated the IO thread commit. Only the
-  // DidCommitProvisionalLoad from the renderer is missing.
-  if (request->state() == NavigationRequest::RESPONSE_STARTED)
+  // If a network request is not needed for this URL, just check the request is
+  // in the correct state and return.
+  if (!request->ShouldMakeNetworkRequest(request->common_params().url)) {
+    CHECK(request->state() == NavigationRequest::RESPONSE_STARTED);
     return;
+  }
 
-  ASSERT_TRUE(request->state() == NavigationRequest::STARTED);
+  CHECK(request->state() == NavigationRequest::STARTED);
+
   TestNavigationURLLoader* url_loader =
       static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
-  ASSERT_TRUE(url_loader);
+  CHECK(url_loader);
+
+  // If a non-empty |redirect_url| was provided, simulate a server redirect.
+  if (!redirect_url.is_empty())
+    url_loader->SimulateServerRedirect(redirect_url);
+
+  // Simulate the network stack commit.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
+  // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, MakeEmptyStream());
 }
 
