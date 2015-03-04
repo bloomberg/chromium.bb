@@ -14,7 +14,7 @@ function bytesToBase64(bytes) {
   var bstr = '';
   for (var i = 0; i < bytes.length; ++i)
     bstr += String.fromCharCode(bytes[i]);
-  return btoa(bstr).replace('=', '');
+  return btoa(bstr).replace(/=/g, '');
 }
 
 /**
