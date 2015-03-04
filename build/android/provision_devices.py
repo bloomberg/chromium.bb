@@ -145,9 +145,12 @@ def WipeDeviceData(device, options):
   if device_authorized:
     adb_keys_set = set(adb_keys)
     for adb_key_file in options.adb_key_files or []:
-      with open(adb_key_file, 'r') as f:
-        adb_public_keys = f.readlines()
-      adb_keys_set.update(adb_public_keys)
+      try:
+        with open(adb_key_file, 'r') as f:
+          adb_public_keys = f.readlines()
+        adb_keys_set.update(adb_public_keys)
+      except IOError:
+        logging.warning('Unable to find adb keys file %s.' % adb_key_file)
     WriteAdbKeysFile(device, '\n'.join(adb_keys_set))
 
 
