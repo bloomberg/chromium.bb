@@ -75,11 +75,18 @@ void PageScaleConstraintsSet::setUserAgentConstraints(const PageScaleConstraints
     m_constraintsDirty = true;
 }
 
+void PageScaleConstraintsSet::setFullscreenConstraints(const PageScaleConstraints& fullscreenConstraints)
+{
+    m_fullscreenConstraints = fullscreenConstraints;
+    m_constraintsDirty = true;
+}
+
 PageScaleConstraints PageScaleConstraintsSet::computeConstraintsStack() const
 {
     PageScaleConstraints constraints = defaultConstraints();
     constraints.overrideWith(m_pageDefinedConstraints);
     constraints.overrideWith(m_userAgentConstraints);
+    constraints.overrideWith(m_fullscreenConstraints);
     return constraints;
 }
 
@@ -162,6 +169,11 @@ IntSize PageScaleConstraintsSet::mainFrameSize() const
     FloatSize frameSize(m_viewSize);
     frameSize.scale(1 / finalConstraints().minimumScale);
     return expandedIntSize(frameSize);
+}
+
+IntSize PageScaleConstraintsSet::layoutSize() const
+{
+    return flooredIntSize(computeConstraintsStack().layoutSize);
 }
 
 void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescription& description, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled)
