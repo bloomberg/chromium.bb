@@ -13,7 +13,7 @@
 #include "chromecast/renderer/cast_media_load_deferrer.h"
 #include "chromecast/renderer/cast_render_process_observer.h"
 #include "chromecast/renderer/key_systems_cast.h"
-#include "chromecast/renderer/media/cma_media_renderer_factory.h"
+#include "chromecast/renderer/media/chromecast_media_renderer_factory.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
@@ -160,8 +160,8 @@ CastContentRendererClient::CreateMediaRendererFactory(
     return nullptr;
 
   return scoped_ptr<::media::RendererFactory>(
-      new chromecast::media::CmaMediaRendererFactory(
-          render_frame->GetRoutingID()));
+      new chromecast::media::ChromecastMediaRendererFactory(
+          media_log, render_frame->GetRoutingID()));
 }
 #endif
 
