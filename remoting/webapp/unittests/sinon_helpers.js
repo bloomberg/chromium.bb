@@ -9,11 +9,12 @@ sinonHelpers.reset = function() {
 /**
  * @param {Object} obj
  * @param {string} method
+ * @param {Function=} opt_stubFunction
  * @return {sinon.TestStub}
  * @suppress {reportUnknownTypes}
  */
-sinon.$setupStub = function(obj, method) {
-  sinon.stub(obj, method);
+sinon.$setupStub = function(obj, method, opt_stubFunction) {
+  sinon.stub(obj, method, opt_stubFunction);
   obj[method].$testStub = /** @type {sinon.TestStub} */ (obj[method]);
   return obj[method].$testStub;
 };

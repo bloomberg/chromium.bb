@@ -29,3 +29,6 @@ chrome.socket.destroy.$testStub = new sinon.TestStub();
 chrome.socket.read.$testStub = new sinon.TestStub();
 chrome.socket.secure.$testStub = new sinon.TestStub();
 chrome.socket.write.$testStub = new sinon.TestStub();
+
+remoting.setMode.$testStub = new sinon.TestStub();
+remoting.Host.needsUpdate.$testStub = new sinon.TestStub();

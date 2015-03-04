@@ -94,9 +94,10 @@ sinon.Spy.prototype.reset = function() {};
 /**
  * @param {Object} obj
  * @param {string} method
+ * @param {Function=} opt_stubFunction
  * @return {sinon.TestStub}
  */
-sinon.stub = function(obj, method) {};
+sinon.stub = function(obj, method, opt_stubFunction) {};
 
 /** @constructor */
 sinon.TestStub = function() {};

@@ -7,242 +7,277 @@
  * Class representing an entry in the host-list portion of the home screen.
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+(function() {
+
+'use strict';
+
 /**
  * An entry in the host table.
- * @param {remoting.Host} host The host, as obtained from Apiary.
+ *
  * @param {number} webappMajorVersion The major version nmber of the web-app,
  *     used to identify out-of-date hosts.
+ * @param {function(string):void} onConnect Callback for
+ *     connect operations.
  * @param {function(remoting.HostTableEntry):void} onRename Callback for
  *     rename operations.
  * @param {function(remoting.HostTableEntry):void=} opt_onDelete Callback for
  *     delete operations.
+ *
  * @constructor
+ * @implements {base.Disposable}
  */
 remoting.HostTableEntry = function(
-    host, webappMajorVersion, onRename, opt_onDelete) {
+    webappMajorVersion, onConnect, onRename, opt_onDelete) {
   /** @type {remoting.Host} */
-  this.host = host;
-  /** @type {number} */
+  this.host = null;
+  /** @private {number} */
   this.webappMajorVersion_ = webappMajorVersion;
-  /** @type {function(remoting.HostTableEntry):void} @private */
+  /** @private {function(remoting.HostTableEntry):void} */
   this.onRename_ = onRename;
-  /** @type {undefined|function(remoting.HostTableEntry):void} @private */
+  /** @private {undefined|function(remoting.HostTableEntry):void} */
   this.onDelete_ = opt_onDelete;
+  /** @private {function(string):void} */
+  this.onConnect_ = onConnect;
 
-  /** @type {HTMLElement} */
-  this.tableRow = null;
-  /** @type {HTMLElement} @private */
-  this.hostNameCell_ = null;
-  /** @type {HTMLElement} @private */
+  /** @private {HTMLElement} */
+  this.rootElement_ = null;
+  /** @private {HTMLElement} */
+  this.hostNameLabel_ = null;
+  /** @private {HTMLInputElement} */
+  this.renameInputField_ = null;
+  /** @private {HTMLElement} */
   this.warningOverlay_ = null;
+
+  /** @private {base.Disposables} */
+  this.renameInputEventHooks_ = null;
+  /** @private {base.Disposables} */
+  this.disposables_ = new base.Disposables();
+
   // References to event handlers so that they can be removed.
-  /** @type {function():void} @private */
-  this.onBlurReference_ = function() {};
-  /** @type {function():void} @private */
+  /** @private {function():void} */
   this.onConfirmDeleteReference_ = function() {};
-  /** @type {function():void} @private */
+  /** @private {function():void} */
   this.onCancelDeleteReference_ = function() {};
-  /** @type {function():void?} @private */
-  this.onConnectReference_ = null;
+
+  this.createDom_();
+};
+
+/** @param {remoting.Host} host */
+remoting.HostTableEntry.prototype.setHost = function(host) {
+  this.host = host;
+  this.updateUI_();
+};
+
+/** @return {HTMLElement} */
+remoting.HostTableEntry.prototype.element = function() {
+  return this.rootElement_;
+};
+
+remoting.HostTableEntry.prototype.dispose = function() {
+  base.dispose(this.disposables_);
+  this.disposables_ = null;
+  base.dispose(this.renameInputEventHooks_);
+  this.renameInputEventHooks_ = null;
+};
+
+/** @return {string} */
+remoting.HostTableEntry.prototype.getHTML_ = function() {
+  var html =
+    '<div class="host-list-main-icon">' +
+      '<span class="warning-overlay"></span>' +
+      '<img src="icon_host.webp">' +
+    '</div>' +
+    '<div class="box-spacer"">' +
+      '<a class="host-name-label" href="#""></a>' +
+      '<input class="host-rename-input" type="text" hidden/>' +
+    '</div>' +
+    '<span tabindex="0" class="clickable host-list-edit rename-button">' +
+      '<img src="icon_pencil.webp" class="host-list-rename-icon">' +
+    '</span>';
+  if (this.onDelete_) {
+    html +=
+    '<span tabindex="0" class="clickable host-list-edit delete-button">' +
+       '<img src="icon_cross.webp" class="host-list-remove-icon">' +
+    '</span>';
+  }
+  return '<div class="section-row host-offline">' + html + '</div>';
 };
 
 /**
  * Create the HTML elements for this entry and set up event handlers.
  * @return {void} Nothing.
  */
-remoting.HostTableEntry.prototype.createDom = function() {
-  // Create the top-level <div>
-  var tableRow = /** @type {HTMLElement} */ (document.createElement('div'));
-  tableRow.classList.add('section-row');
-  // Create the host icon cell.
-  var hostIconDiv = /** @type {HTMLElement} */ (document.createElement('div'));
-  hostIconDiv.classList.add('host-list-main-icon');
-  var warningOverlay =
-      /** @type {HTMLElement} */ (document.createElement('span'));
-  hostIconDiv.appendChild(warningOverlay);
-  var hostIcon = /** @type {HTMLElement} */ (document.createElement('img'));
-  hostIcon.src = 'icon_host.webp';
-  hostIconDiv.appendChild(hostIcon);
-  tableRow.appendChild(hostIconDiv);
-  // Create the host name cell.
-  var hostNameCell = /** @type {HTMLElement} */ (document.createElement('div'));
-  hostNameCell.classList.add('box-spacer');
-  hostNameCell.id = 'host_' + this.host.hostId;
-  tableRow.appendChild(hostNameCell);
-  // Create the host rename cell.
-  var editButton = /** @type {HTMLElement} */ (document.createElement('span'));
-  var editButtonImg =
-      /** @type {HTMLElement} */ (document.createElement('img'));
-  editButtonImg.title = chrome.i18n.getMessage(
-      /*i18n-content*/'TOOLTIP_RENAME');
-  editButtonImg.src = 'icon_pencil.webp';
-  editButton.tabIndex = 0;
-  editButton.classList.add('clickable');
-  editButton.classList.add('host-list-edit');
-  editButtonImg.classList.add('host-list-rename-icon');
-  editButton.appendChild(editButtonImg);
-  tableRow.appendChild(editButton);
-  // Create the host delete cell.
-  var deleteButton =
-      /** @type {HTMLElement} */ (document.createElement('span'));
-  var deleteButtonImg =
-      /** @type {HTMLElement} */ (document.createElement('img'));
-  deleteButtonImg.title =
-      chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_DELETE');
-  deleteButtonImg.src = 'icon_cross.webp';
-  deleteButton.tabIndex = 0;
-  deleteButton.classList.add('clickable');
-  deleteButton.classList.add('host-list-edit');
-  deleteButtonImg.classList.add('host-list-remove-icon');
-  deleteButton.appendChild(deleteButtonImg);
-  tableRow.appendChild(deleteButton);
+remoting.HostTableEntry.prototype.createDom_ = function() {
+  var container = /** @type {HTMLElement} */ (document.createElement('div'));
+  container.innerHTML = this.getHTML_();
 
-  this.init(tableRow, warningOverlay, hostNameCell, editButton, deleteButton);
+  // Setup DOM references.
+  this.rootElement_ = /** @type {HTMLElement} */ (container.firstElementChild);
+  this.warningOverlay_ = container.querySelector('.warning-overlay');
+  this.hostNameLabel_ = container.querySelector('.host-name-label');
+  this.renameInputField_ = /** @type {HTMLInputElement} */ (
+      container.querySelector('.host-rename-input'));
+
+  // Register event handlers and set tooltips.
+  var editButton = container.querySelector('.rename-button');
+  var deleteButton = container.querySelector('.delete-button');
+  editButton.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_RENAME');
+  this.registerButton_(editButton, this.beginRename_.bind(this));
+  this.registerButton_(this.rootElement_, this.onConnectButton_.bind(this));
+  if (deleteButton) {
+    this.registerButton_(deleteButton, this.showDeleteConfirmation_.bind(this));
+    deleteButton.title =
+        chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_DELETE');
+  }
+};
+
+/** @return {base.Disposable} @private */
+remoting.HostTableEntry.prototype.registerButton_ = function(
+    /** HTMLElement */ button, /** Function */ callback) {
+  var onKeyDown = function(/** Event */ e) {
+    if (e.which === KeyCodes.ENTER || e.which === KeyCodes.SPACEBAR) {
+      callback();
+      e.stopPropagation();
+    }
+  };
+  var onClick = function(/** Event */ e) {
+    callback();
+    e.stopPropagation();
+  };
+  var onFocusChanged = this.onFocusChange_.bind(this);
+  this.disposables_.add(
+      new base.DomEventHook(button, 'click', onClick, false),
+      new base.DomEventHook(button, 'keydown', onKeyDown, false),
+      // Register focus and blur handlers to cause the parent node to be
+      // highlighted whenever a child link has keyboard focus. Note that this is
+      // only necessary because Chrome does not yet support the draft CSS
+      // Selectors 4 specification (http://www.w3.org/TR/selectors4/#subject),
+      // which provides a more elegant solution to this problem.
+      new base.DomEventHook(button, 'focus', onFocusChanged, false),
+      new base.DomEventHook(button, 'blur', onFocusChanged, false));
+};
+
+
+/** @return {void} @private */
+remoting.HostTableEntry.prototype.onConnectButton_ = function() {
+  // Don't connect during renaming as this event fires if the user hits Enter
+  // after typing a new name.
+  if (!this.isRenaming_() && this.isOnline_()) {
+    var encodedHostId = encodeURIComponent(this.host.hostId);
+    this.onConnect_(encodedHostId);
+  }
+};
+
+/** @return {boolean} @private */
+remoting.HostTableEntry.prototype.isOnline_ = function() {
+  return Boolean(this.host) && this.host.status === 'ONLINE';
+};
+
+/** @return {string} @private */
+remoting.HostTableEntry.prototype.getHostDisplayName_ = function() {
+  if (this.isOnline_()) {
+    if (remoting.Host.needsUpdate(this.host, this.webappMajorVersion_)) {
+      return  chrome.i18n.getMessage(
+          /*i18n-content*/'UPDATE_REQUIRED', this.host.hostName);
+    }
+    return this.host.hostName;
+  } else {
+    if (this.host.updatedTime) {
+      var formattedTime = formatUpdateTime(this.host.updatedTime);
+      return chrome.i18n.getMessage(/*i18n-content*/ 'LAST_ONLINE',
+                                    [this.host.hostName, formattedTime]);
+    }
+    return chrome.i18n.getMessage(/*i18n-content*/ 'OFFLINE',
+                                  this.host.hostName);
+  }
 };
 
 /**
- * Associate the table row with the specified elements and callbacks, and set
- * up event handlers.
+ * Update the UI to reflect the current status of the host
  *
- * @param {HTMLElement} tableRow The top-level <div> for the table entry.
- * @param {HTMLElement} warningOverlay The <span> element to render a warning
- *     icon on top of the host icon.
- * @param {HTMLElement} hostNameCell The element containing the host name.
- * @param {HTMLElement} editButton The <img> containing the pencil icon for
- *     editing the host name.
- * @param {HTMLElement=} opt_deleteButton The <img> containing the cross icon
- *     for deleting the host, if present.
  * @return {void} Nothing.
+ * @private
  */
-remoting.HostTableEntry.prototype.init = function(
-    tableRow, warningOverlay, hostNameCell, editButton, opt_deleteButton) {
-  this.tableRow = tableRow;
-  this.warningOverlay_ = warningOverlay;
-  this.hostNameCell_ = hostNameCell;
-  this.setHostName_();
-
-  /** @type {remoting.HostTableEntry} */
-  var that = this;
-
-  /** @param {Event} event The click event. */
-  var beginRename = function(event) {
-    that.beginRename_();
-    event.stopPropagation();
-  };
-  /** @param {Event} event The keyup event. */
-  var beginRenameKeyboard = function(event) {
-    if (event.which == 13 || event.which == 32) {
-      that.beginRename_();
-      event.stopPropagation();
-    }
-  };
-  editButton.addEventListener('click', beginRename, true);
-  editButton.addEventListener('keyup', beginRenameKeyboard, true);
-  this.registerFocusHandlers_(editButton);
-
-  if (opt_deleteButton) {
-    /** @param {Event} event The click event. */
-    var confirmDelete = function(event) {
-      that.showDeleteConfirmation_();
-      event.stopPropagation();
-    };
-    /** @param {Event} event The keyup event. */
-    var confirmDeleteKeyboard = function(event) {
-      if (event.which == 13 || event.which == 32) {
-        that.showDeleteConfirmation_();
-      }
-    };
-    opt_deleteButton.addEventListener('click', confirmDelete, false);
-    opt_deleteButton.addEventListener('keyup', confirmDeleteKeyboard, false);
-    this.registerFocusHandlers_(opt_deleteButton);
+remoting.HostTableEntry.prototype.updateUI_ = function() {
+  if (!this.host) {
+    return;
   }
-  this.updateStatus();
-};
+  var clickToConnect = this.isOnline_() && !this.isRenaming_();
+  var showOffline = !this.isOnline_();
+  var connectLabel = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_CONNECT',
+                                            this.host.hostName);
+  this.rootElement_.classList.toggle('clickable', clickToConnect);
+  this.rootElement_.title = (clickToConnect) ? connectLabel : '';
+  this.rootElement_.classList.toggle('host-online', !showOffline);
+  this.rootElement_.classList.toggle('host-offline', showOffline);
 
-/**
- * Update the row to reflect the current status of the host (online/offline and
- * clickable/unclickable).
- *
- * @param {boolean=} opt_forEdit True if the status is being updated in order
- *     to allow the host name to be edited.
- * @return {void} Nothing.
- */
-remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
-  var clickToConnect = this.host.status == 'ONLINE' && !opt_forEdit;
-  if (clickToConnect) {
-    if (!this.onConnectReference_) {
-      /** @type {string} */
-      var encodedHostId = encodeURIComponent(this.host.hostId);
-      this.onConnectReference_ = function() {
-        remoting.connectMe2Me(encodedHostId);
-      };
-      this.tableRow.addEventListener('click', this.onConnectReference_, false);
-    }
-    this.tableRow.classList.add('clickable');
-    this.tableRow.title = chrome.i18n.getMessage(
-        /*i18n-content*/'TOOLTIP_CONNECT', this.host.hostName);
-  } else {
-    if (this.onConnectReference_) {
-      this.tableRow.removeEventListener('click', this.onConnectReference_,
-                                        false);
-      this.onConnectReference_ = null;
-    }
-    this.tableRow.classList.remove('clickable');
-    this.tableRow.title = '';
-  }
-  var showOffline = this.host.status != 'ONLINE';
-  if (showOffline) {
-    this.tableRow.classList.remove('host-online');
-    this.tableRow.classList.add('host-offline');
-  } else {
-    this.tableRow.classList.add('host-online');
-    this.tableRow.classList.remove('host-offline');
-  }
-  var hostReportedError = this.host.hostOfflineReason != '';
+  var hostReportedError = this.host.hostOfflineReason !== '';
   var hostNeedsUpdate = remoting.Host.needsUpdate(
       this.host, this.webappMajorVersion_);
   this.warningOverlay_.hidden = !hostNeedsUpdate && !hostReportedError;
+  this.hostNameLabel_.innerText = this.getHostDisplayName_();
+  this.hostNameLabel_.title =
+      formatHostOfflineReason(this.host.hostOfflineReason);
+  this.renameInputField_.hidden = !this.isRenaming_();
+  this.hostNameLabel_.hidden = this.isRenaming_();
 };
 
 /**
- * Prepare the host for renaming by replacing its name with an edit box.
+ * Prepares the host for renaming by showing an edit box.
  * @return {void} Nothing.
  * @private
  */
 remoting.HostTableEntry.prototype.beginRename_ = function() {
-  var editBox =
-      /** @type {HTMLInputElement} */ (document.createElement('input'));
-  editBox.type = 'text';
-  editBox.value = this.host.hostName;
-  this.hostNameCell_.innerText = '';
-  this.hostNameCell_.appendChild(editBox);
-  editBox.select();
+  this.renameInputField_.value = this.host.hostName;
+  base.debug.assert(this.renameInputEventHooks_ === null);
+  base.dispose(this.renameInputEventHooks_);
+  this.renameInputEventHooks_ = new base.Disposables(
+      new base.DomEventHook(this.renameInputField_, 'blur',
+                            this.commitRename_.bind(this), false),
+      new base.DomEventHook(this.renameInputField_, 'keydown',
+                            this.onKeydown_.bind(this), false));
+  this.updateUI_();
+  this.renameInputField_.focus();
+};
 
-  this.onBlurReference_ = this.commitRename_.bind(this);
-  editBox.addEventListener('blur', this.onBlurReference_, false);
+/** @return {boolean} @private */
+remoting.HostTableEntry.prototype.isRenaming_ = function() {
+  return Boolean(this.renameInputEventHooks_);
+};
 
-  editBox.addEventListener('keydown', this.onKeydown_.bind(this), false);
-  this.updateStatus(true);
+/** @return {void} @private */
+remoting.HostTableEntry.prototype.commitRename_ = function() {
+  if (this.host.hostName != this.renameInputField_.value) {
+    this.host.hostName = this.renameInputField_.value;
+    this.onRename_(this);
+  }
+  this.hideEditBox_();
+};
+
+/** @return {void} @private */
+remoting.HostTableEntry.prototype.hideEditBox_ = function() {
+  // onblur will fire when the edit box is removed, so remove the hook.
+  base.dispose(this.renameInputEventHooks_);
+  this.renameInputEventHooks_ = null;
+  // Update the tool-tip and event handler.
+  this.updateUI_();
 };
 
 /**
- * Accept the hostname entered by the user.
+ * Handle a key event while the user is typing a host name
+ * @param {Event} event The keyboard event.
  * @return {void} Nothing.
  * @private
  */
-remoting.HostTableEntry.prototype.commitRename_ = function() {
-  var editBox = this.hostNameCell_.querySelector('input');
-  if (editBox) {
-    if (this.host.hostName != editBox.value) {
-      this.host.hostName = editBox.value;
-      this.onRename_(this);
-    }
-    this.removeEditBox_();
+remoting.HostTableEntry.prototype.onKeydown_ = function(event) {
+  if (event.which == KeyCodes.ESCAPE) {
+    this.hideEditBox_();
+  } else if (event.which == KeyCodes.ENTER) {
+    this.commitRename_();
+    event.stopPropagation();
   }
 };
 
@@ -300,19 +335,20 @@ remoting.HostTableEntry.prototype.cleanUpConfirmationEventListeners_ =
 };
 
 /**
- * Remove the edit box corresponding to the specified host, and reset its name.
+ * Handle a focus change event within this table row.
  * @return {void} Nothing.
  * @private
  */
-remoting.HostTableEntry.prototype.removeEditBox_ = function() {
-  var editBox = this.hostNameCell_.querySelector('input');
-  if (editBox) {
-    // onblur will fire when the edit box is removed, so remove the hook.
-    editBox.removeEventListener('blur', this.onBlurReference_, false);
+remoting.HostTableEntry.prototype.onFocusChange_ = function() {
+  var element = document.activeElement;
+  while (element) {
+    if (element == this.rootElement_) {
+      this.rootElement_.classList.add('child-focused');
+      return;
+    }
+    element = element.parentNode;
   }
-  // Update the tool-top and event handler.
-  this.updateStatus();
-  this.setHostName_();
+  this.rootElement_.classList.remove('child-focused');
 };
 
 /**
@@ -341,118 +377,35 @@ function formatUpdateTime(updateTime) {
  * @return {string}
  */
 function formatHostOfflineReason(hostOfflineReason) {
+  if (!hostOfflineReason) {
+    return '';
+  }
   var knownReasonTags = [
-    /*i18n-content*/ 'OFFLINE_REASON_INITIALIZATION_FAILED',
-    /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_CONFIGURATION',
-    /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_DOMAIN',
-    /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_ID',
-    /*i18n-content*/ 'OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS',
-    /*i18n-content*/ 'OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED',
-    /*i18n-content*/ 'OFFLINE_REASON_POLICY_CHANGE_REQUIRES_RESTART',
-    /*i18n-content*/ 'OFFLINE_REASON_POLICY_READ_ERROR',
-    /*i18n-content*/ 'OFFLINE_REASON_SUCCESS_EXIT',
-    /*i18n-content*/ 'OFFLINE_REASON_USERNAME_MISMATCH'
+    /*i18n-content*/'OFFLINE_REASON_INITIALIZATION_FAILED',
+    /*i18n-content*/'OFFLINE_REASON_INVALID_HOST_CONFIGURATION',
+    /*i18n-content*/'OFFLINE_REASON_INVALID_HOST_DOMAIN',
+    /*i18n-content*/'OFFLINE_REASON_INVALID_HOST_ID',
+    /*i18n-content*/'OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS',
+    /*i18n-content*/'OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED',
+    /*i18n-content*/'OFFLINE_REASON_POLICY_CHANGE_REQUIRES_RESTART',
+    /*i18n-content*/'OFFLINE_REASON_POLICY_READ_ERROR',
+    /*i18n-content*/'OFFLINE_REASON_SUCCESS_EXIT',
+    /*i18n-content*/'OFFLINE_REASON_USERNAME_MISMATCH'
   ];
   var offlineReasonTag = 'OFFLINE_REASON_' + hostOfflineReason;
   if (knownReasonTags.indexOf(offlineReasonTag) != (-1)) {
     return chrome.i18n.getMessage(offlineReasonTag);
   } else {
     return chrome.i18n.getMessage(
-        /*i18n-content*/ 'OFFLINE_REASON_UNKNOWN',
-        hostOfflineReason);
+        /*i18n-content*/'OFFLINE_REASON_UNKNOWN', hostOfflineReason);
   }
 }
 
-/**
- * Create the DOM nodes and event handlers for the hostname cell.
- * @return {void} Nothing.
- * @private
- */
-remoting.HostTableEntry.prototype.setHostName_ = function() {
-  var hostNameNode = /** @type {HTMLElement} */ (document.createElement('a'));
-  if (this.host.status == 'ONLINE') {
-    if (remoting.Host.needsUpdate(this.host, this.webappMajorVersion_)) {
-      hostNameNode.innerText = chrome.i18n.getMessage(
-          /*i18n-content*/'UPDATE_REQUIRED', this.host.hostName);
-    } else {
-      hostNameNode.innerText = this.host.hostName;
-    }
-    hostNameNode.href = '#';
-    this.registerFocusHandlers_(hostNameNode);
-    /** @type {remoting.HostTableEntry} */
-    var that = this;
-    /** @param {Event} event */
-    var onKeyDown = function(event) {
-      if (that.onConnectReference_ &&
-          (event.which == 13 || event.which == 32)) {
-        that.onConnectReference_();
-      }
-    };
-    hostNameNode.addEventListener('keydown', onKeyDown, false);
-  } else {
-    if (this.host.updatedTime) {
-      var formattedTime = formatUpdateTime(this.host.updatedTime);
-      hostNameNode.innerText = chrome.i18n.getMessage(
-          /*i18n-content*/'LAST_ONLINE', [this.host.hostName, formattedTime]);
-      if (this.host.hostOfflineReason) {
-        var detailsText = formatHostOfflineReason(this.host.hostOfflineReason);
-        // TODO(lukasza): Put detailsText into a hideable div (title/tooltip
-        // is not as discoverable + doesn't work well for touchscreens).
-        hostNameNode.title = detailsText;
-      }
-    } else {
-      hostNameNode.innerText = chrome.i18n.getMessage(
-          /*i18n-content*/'OFFLINE', this.host.hostName);
-    }
-  }
-  hostNameNode.classList.add('host-list-label');
-  this.hostNameCell_.innerText = '';  // Remove previous contents (if any).
-  this.hostNameCell_.appendChild(hostNameNode);
+/** @enum {number} */
+var KeyCodes = {
+  ENTER: 13,
+  ESCAPE: 27,
+  SPACEBAR: 32
 };
 
-/**
- * Handle a key event while the user is typing a host name
- * @param {Event} event The keyboard event.
- * @return {void} Nothing.
- * @private
- */
-remoting.HostTableEntry.prototype.onKeydown_ = function(event) {
-  if (event.which == 27) {  // Escape
-    this.removeEditBox_();
-  } else if (event.which == 13) {  // Enter
-    this.commitRename_();
-  }
-};
-
-/**
- * Register focus and blur handlers to cause the parent node to be highlighted
- * whenever a child link has keyboard focus. Note that this is only necessary
- * because Chrome does not yet support the draft CSS Selectors 4 specification
- * (http://www.w3.org/TR/selectors4/#subject), which provides a more elegant
- * solution to this problem.
- *
- * @param {HTMLElement} e The element on which to register the event handlers.
- * @return {void} Nothing.
- * @private
- */
-remoting.HostTableEntry.prototype.registerFocusHandlers_ = function(e) {
-  e.addEventListener('focus', this.onFocusChange_.bind(this), false);
-  e.addEventListener('blur', this.onFocusChange_.bind(this), false);
-};
-
-/**
- * Handle a focus change event within this table row.
- * @return {void} Nothing.
- * @private
- */
-remoting.HostTableEntry.prototype.onFocusChange_ = function() {
-  var element = document.activeElement;
-  while (element) {
-    if (element == this.tableRow) {
-      this.tableRow.classList.add('child-focused');
-      return;
-    }
-    element = element.parentNode;
-  }
-  this.tableRow.classList.remove('child-focused');
-};
+})();

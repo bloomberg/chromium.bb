@@ -72,15 +72,13 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
    */
   this.lastError_ = '';
   /**
-   * @type {remoting.Host?}
+   * @type {remoting.LocalHostSection}
    * @private
    */
-  this.localHost_ = null;
-  /**
-   * @type {remoting.HostController.State}
-   * @private
-   */
-  this.localHostState_ = remoting.HostController.State.UNKNOWN;
+  this.localHostSection_ = new remoting.LocalHostSection(
+      /** @type {HTMLElement} */ (document.querySelector('.daemon-control')),
+      new remoting.LocalHostSection.Controller(
+          this, new remoting.HostSetupDialog(remoting.hostController)));
 
   /**
    * @type {number}
@@ -98,7 +96,7 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   function refresh(event) {
     event.preventDefault();
     that.refresh(that.display.bind(that));
-  };
+  }
   reloadButton.addEventListener('click', refresh, false);
 };
 
@@ -258,40 +256,22 @@ remoting.HostList.prototype.display = function() {
       // not the local host (which is displayed separately). NB: if the host has
       // never sent a heartbeat, then there will be no jabberId.
       if (host.hostName && host.hostId && host.status && host.publicKey &&
-          (!this.localHost_ || host.hostId != this.localHost_.hostId)) {
+          (host.hostId != this.localHostSection_.getHostId())) {
         var hostTableEntry = new remoting.HostTableEntry(
-            host, this.webappMajorVersion_,
-            this.renameHost_.bind(this), this.deleteHost_.bind(this));
-        hostTableEntry.createDom();
+            this.webappMajorVersion_,
+            remoting.connectMe2Me,
+            this.renameHost.bind(this),
+            this.deleteHost_.bind(this));
+        hostTableEntry.setHost(host);
         this.hostTableEntries_[i] = hostTableEntry;
-        this.table_.appendChild(hostTableEntry.tableRow);
+        this.table_.appendChild(hostTableEntry.element());
       }
     }
   }
 
   this.errorMsg_.parentNode.hidden = (this.lastError_ == '');
-
-  // The local host cannot be stopped or started if the host controller is not
-  // implemented for this platform. Additionally, it cannot be started if there
-  // is an error (in many error states, the start operation will fail anyway,
-  // but even if it succeeds, the chance of a related but hard-to-diagnose
-  // future error is high).
-  var state = this.localHostState_;
-  var enabled = (state == remoting.HostController.State.STARTING) ||
-      (state == remoting.HostController.State.STARTED);
-  var canChangeLocalHostState =
-      (state != remoting.HostController.State.NOT_IMPLEMENTED) &&
-      (state != remoting.HostController.State.UNKNOWN) &&
-      (state != remoting.HostController.State.NOT_INSTALLED ||
-       remoting.isMe2MeInstallable()) &&
-      (enabled || this.lastError_ == '');
-
-  remoting.updateModalUi(enabled ? 'enabled' : 'disabled', 'data-daemon-state');
-  var element = document.getElementById('daemon-control');
-  element.hidden = !canChangeLocalHostState;
-
   if (noHostsRegistered) {
-    this.showHostListEmptyMessage_(canChangeLocalHostState);
+    this.showHostListEmptyMessage_(this.localHostSection_.canChangeState());
   }
 };
 
@@ -337,7 +317,7 @@ remoting.HostList.prototype.showHostListEmptyMessage_ = function(
  * @private
  */
 remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
-  this.table_.removeChild(hostTableEntry.tableRow);
+  this.table_.removeChild(hostTableEntry.element());
   var index = this.hostTableEntries_.indexOf(hostTableEntry);
   if (index != -1) {
     this.hostTableEntries_.splice(index, 1);
@@ -349,9 +329,8 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
  * Prepare a host for renaming by replacing its name with an edit box.
  * @param {remoting.HostTableEntry} hostTableEntry The host to be renamed.
  * @return {void} Nothing.
- * @private
  */
-remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
+remoting.HostList.prototype.renameHost = function(hostTableEntry) {
   for (var i = 0; i < this.hosts_.length; ++i) {
     if (this.hosts_[i].hostId == hostTableEntry.host.hostId) {
       this.hosts_[i].hostName = hostTableEntry.host.hostName;
@@ -377,24 +356,6 @@ remoting.HostList.unregisterHostById = function(hostId) {
 };
 
 /**
- * Set tool-tips for the 'connect' action. We can't just set this on the
- * parent element because the button has no tool-tip, and therefore would
- * inherit connectStr.
- *
- * @return {void} Nothing.
- * @private
- */
-remoting.HostList.prototype.setTooltips_ = function() {
-  var connectStr = '';
-  if (this.localHost_) {
-    chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_CONNECT',
-                           this.localHost_.hostName);
-  }
-  document.getElementById('this-host-name').title = connectStr;
-  document.getElementById('this-host-icon').title = connectStr;
-};
-
-/**
  * Set the state of the local host and localHostId if any.
  *
  * @param {remoting.HostController.State} state State of the local host.
@@ -402,48 +363,9 @@ remoting.HostList.prototype.setTooltips_ = function() {
  * @return {void} Nothing.
  */
 remoting.HostList.prototype.setLocalHostStateAndId = function(state, hostId) {
-  this.localHostState_ = state;
-  this.setLocalHost_(hostId ? this.getHostForId(hostId) : null);
-}
-
-/**
- * Set the host object that corresponds to the local computer, if any.
- *
- * @param {remoting.Host?} host The host, or null if not registered.
- * @return {void} Nothing.
- * @private
- */
-remoting.HostList.prototype.setLocalHost_ = function(host) {
-  this.localHost_ = host;
-  this.setTooltips_();
-  /** @type {remoting.HostList} */
-  var that = this;
-  if (host) {
-    /** @param {remoting.HostTableEntry} host */
-    var renameHost = function(host) {
-      that.renameHost_(host);
-      that.setTooltips_();
-    };
-    if (!this.localHostTableEntry_) {
-      /** @type {remoting.HostTableEntry} @private */
-      this.localHostTableEntry_ = new remoting.HostTableEntry(
-          host, this.webappMajorVersion_, renameHost);
-      this.localHostTableEntry_.init(
-          document.getElementById('this-host-connect'),
-          document.getElementById('this-host-warning'),
-          document.getElementById('this-host-name'),
-          document.getElementById('this-host-rename'));
-    } else {
-      // TODO(jamiewalch): This is hack to prevent multiple click handlers being
-      // registered for the same DOM elements if this method is called more than
-      // once. A better solution would be to let HostTable create the daemon row
-      // like it creates the rows for non-local hosts.
-      this.localHostTableEntry_.host = host;
-    }
-  } else {
-    this.localHostTableEntry_ = null;
-  }
-}
+  var host = hostId ? this.getHostForId(hostId) : null;
+  this.localHostSection_.setModel(host, state, this.lastError_ !== '');
+};
 
 /**
  * Called by the HostControlled after the local host has been started.
@@ -471,7 +393,9 @@ remoting.HostList.prototype.onLocalHostStarted = function(
   localHost.status = 'ONLINE';
   this.hosts_.push(localHost);
   this.save_();
-  this.setLocalHost_(localHost);
+  this.localHostSection_.setModel(localHost,
+                                  remoting.HostController.State.STARTED,
+                                  this.lastError_ !== '');
 };
 
 /**

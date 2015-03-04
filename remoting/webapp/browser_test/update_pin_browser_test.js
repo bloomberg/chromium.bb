@@ -62,6 +62,6 @@ browserTest.Update_PIN.prototype.run = function(data) {
 browserTest.Update_PIN.prototype.changePIN_ = function(newPin) {
   var AppMode = remoting.AppMode;
   var HOST_RESTART_WAIT = 10000;
-  browserTest.clickOnControl('change-daemon-pin');
+  browserTest.clickOnControl('.change-daemon-pin');
   return browserTest.setupPIN(newPin);
 };

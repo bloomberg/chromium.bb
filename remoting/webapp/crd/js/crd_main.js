@@ -11,6 +11,7 @@ var remoting = remoting || {};
  * Initialize the host list.
  */
 remoting.initHostlist_ = function() {
+  remoting.hostController = new remoting.HostController();
   remoting.hostList = new remoting.HostList(
       document.getElementById('host-list'),
       document.getElementById('host-list-empty'),
@@ -88,10 +89,7 @@ function isHostModeSupported_() {
  * and also if the user cancels pin entry or the connection in session mode.
  */
 remoting.initHomeScreenUi = function() {
-  remoting.hostController = new remoting.HostController();
   remoting.setMode(remoting.AppMode.HOME);
-  remoting.hostSetupDialog =
-      new remoting.HostSetupDialog(remoting.hostController);
   var dialog = document.getElementById('paired-clients-list');
   var message = document.getElementById('paired-client-manager-message');
   var deleteAll = document.getElementById('delete-all-paired-clients');

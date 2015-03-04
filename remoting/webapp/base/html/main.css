@@ -442,6 +442,7 @@ thead {
   font-weight: bold;
 }
 
+#this-host-connect:hover,
 .host-online.clickable:hover,
 .host-online.clickable.child-focused {
   background-color: #f2f2f2;
@@ -474,7 +475,7 @@ thead {
   padding: 0 5px;
 }
 
-.host-list-label, .host-list-label:visited, .host-list-label:active {
+.host-name-label, .host-name-label:visited, .host-name-label:active {
   color: inherit;
   cursor: inherit;
 }
@@ -495,9 +496,18 @@ thead {
   right: -10px;
 }
 
-.host-offline .host-list-label,
+.host-offline .host-name-label,
 .host-offline .host-list-main-icon {
   opacity: 0.5;
+}
+
+#this-host-connect {
+  -webkit-align-items: center;
+  display: flex;
+}
+
+#this-host-connect .host-entry {
+  flex: 1;
 }
 
 button {

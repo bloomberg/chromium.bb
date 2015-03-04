@@ -74,6 +74,35 @@ base.Disposables = function(var_args) {
   this.disposables_ = Array.prototype.slice.call(arguments, 0);
 };
 
+/**
+ * @param {...base.Disposable} var_args
+ */
+base.Disposables.prototype.add = function(var_args) {
+  var disposables = Array.prototype.slice.call(arguments, 0);
+  for (var i = 0; i < disposables.length; i++) {
+    var current = /** @type {base.Disposable} */ (disposables[i]);
+    if (this.disposables_.indexOf(current) === -1) {
+      this.disposables_.push(current);
+    }
+  }
+};
+
+/**
+ * @param {...base.Disposable} var_args  Dispose |var_args| and remove
+ *    them from the current object.
+ */
+base.Disposables.prototype.remove = function(var_args) {
+  var disposables = Array.prototype.slice.call(arguments, 0);
+  for (var i = 0; i < disposables.length; i++) {
+    var disposable = /** @type {base.Disposable} */ (disposables[i]);
+    var index = this.disposables_.indexOf(disposable);
+    if(index !== -1) {
+      this.disposables_.splice(index, 1);
+      disposable.dispose();
+    }
+  }
+};
+
 base.Disposables.prototype.dispose = function() {
   for (var i = 0; i < this.disposables_.length; i++) {
     this.disposables_[i].dispose();

@@ -45,7 +45,7 @@ found in the LICENSE file.
          class="host-list-empty-instructions" hidden>
     </div>
 
-    <div id="daemon-control" data-daemon-state="enabled disabled" hidden>
+    <div class="daemon-control" data-daemon-state="enabled disabled" hidden>
       <div class="section-row no-non-local-hosts"
            data-daemon-state="disabled">
         <img src="icon_host.webp" class="host-list-main-icon">
@@ -53,35 +53,22 @@ found in the LICENSE file.
              id="start-daemon-message"
              i18n-content="HOME_DAEMON_START_MESSAGE"></div>
         <button type="button"
-                id="start-daemon"
+                class="start-daemon"
                 i18n-content="HOME_DAEMON_START_BUTTON">
         </button>
       </div> <!-- disabled -->
       <div id="this-host-connect"
-           class="section-row clickable no-non-local-hosts"
            data-daemon-state="enabled">
-        <div class="host-list-main-icon">
-          <span id="this-host-warning" hidden></span>
-          <img id="this-host-icon"
-               src="icon_host.webp">
-        </div>
-        <div id="this-host-name" class="box-spacer"></div>
-        <span id="this-host-rename"
-              class="host-list-edit"
-              tabIndex="0"
-              i18n-title="TOOLTIP_RENAME">
-          <img class="host-list-rename-icon"
-               src="icon_pencil.webp">
-        </span>
+        <div class='host-entry'></div>
         <button type="button"
-                id="stop-daemon"
+                class="stop-daemon"
                 i18n-content="HOME_DAEMON_STOP_BUTTON">
         </button>
       </div> <!-- this-host-connect -->
       <div data-daemon-state="enabled">
         <div>
           <span i18n-content="HOME_DAEMON_ACTIVE_MESSAGE"></span>
-          <a id="change-daemon-pin"
+          <a class="change-daemon-pin"
              href="#"
              i18n-content="HOME_DAEMON_CHANGE_PIN_LINK"></a>
         </div>

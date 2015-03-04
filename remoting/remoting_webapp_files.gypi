@@ -73,6 +73,7 @@
       'webapp/unittests/dns_blackhole_checker_unittest.js',
       'webapp/unittests/event_hook_unittest.js',
       'webapp/unittests/fallback_signal_strategy_unittest.js',
+      'webapp/unittests/host_table_entry_unittest.js',
       'webapp/unittests/ipc_unittest.js',
       'webapp/unittests/l10n_unittest.js',
       'webapp/unittests/menu_button_unittest.js',
@@ -202,6 +203,7 @@
       'webapp/crd/js/host_list_api.js',
       'webapp/crd/js/host_list_api_impl.js',
       'webapp/crd/js/host_table_entry.js',
+      'webapp/crd/js/local_host_section.js',
     ],
     # Logging and stats JavaScript files.
     'remoting_webapp_js_logging_files': [

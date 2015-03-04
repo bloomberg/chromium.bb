@@ -32,14 +32,16 @@ QUnit.asyncTest = function(desc, f) {};
 /**
  * @param {*} a
  * @param {*} b
+ * @param {string=} opt_message
  */
-QUnit.deepEqual = function(a, b) {};
+QUnit.deepEqual = function(a, b, opt_message) {};
 
 /**
  * @param {*} a
  * @param {*} b
+ * @param {string=} opt_message
  */
-QUnit.equal = function(a, b) {};
+QUnit.equal = function(a, b, opt_message) {};
 
 /**
  * @param {*} a

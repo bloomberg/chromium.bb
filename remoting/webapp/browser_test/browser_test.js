@@ -130,11 +130,14 @@ browserTest.pass = function() {
 };
 
 /**
- * @param {string} id
+ * @param {string} id The id or the selector of the element.
  * @return {void}
  */
 browserTest.clickOnControl = function(id) {
   var element = document.getElementById(id);
+  if (!element) {
+    element = document.querySelector(id);
+  }
   browserTest.expect(element, 'No such element: ' + id);
   element.click();
 };
@@ -193,7 +196,7 @@ browserTest.connectMe2Me = function() {
   // The one second timeout is necessary because the click handler of
   // 'this-host-connect' is registered asynchronously.
   return base.Promise.sleep(1000).then(function() {
-      browserTest.clickOnControl('this-host-connect');
+      browserTest.clickOnControl('local-host-connect-button');
     }).then(function(){
       return browserTest.onUIMode(AppMode.CLIENT_HOST_NEEDS_UPGRADE);
     }).then(function() {
@@ -408,11 +411,11 @@ browserTest.ensureHostStartedWithPIN = function(pin) {
       function(started){
         if (!started) {
           console.log('browserTest: Enabling remote connection.');
-          browserTest.clickOnControl('start-daemon');
+          browserTest.clickOnControl('.start-daemon');
         } else {
           console.log('browserTest: Changing the PIN of the host to: ' +
               pin + '.');
-          browserTest.clickOnControl('change-daemon-pin');
+          browserTest.clickOnControl('.change-daemon-pin');
         }
         return browserTest.setupPIN(pin);
       });

@@ -557,13 +557,13 @@ void RemoteDesktopBrowserTest::ConnectToLocalHost(bool remember_pin) {
 
   // Verify that the local host is online.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      "remoting.hostList.localHost_.hostName && "
-      "remoting.hostList.localHost_.hostId && "
-      "remoting.hostList.localHost_.status && "
-      "remoting.hostList.localHost_.status == 'ONLINE'"));
+      "remoting.hostList.localHostSection_.host_.hostName && "
+      "remoting.hostList.localHostSection_.host_.hostId && "
+      "remoting.hostList.localHostSection_.host_.status && "
+      "remoting.hostList.localHostSection_.host_.status == 'ONLINE'"));
 
   // Connect.
-  ClickOnControl("this-host-connect");
+  ClickOnControl("local-host-connect-button");
 
   // Enter the pin # passed in from the command line.
   EnterPin(me2me_pin(), remember_pin);
@@ -823,7 +823,8 @@ void RemoteDesktopBrowserTest::WaitForConnection() {
 bool RemoteDesktopBrowserTest::IsLocalHostReady() {
   // TODO(weitaosu): Instead of polling, can we register a callback to
   // remoting.hostList.setLocalHost_?
-  return ExecuteScriptAndExtractBool("remoting.hostList.localHost_ != null");
+  return ExecuteScriptAndExtractBool(
+      "remoting.hostList.localHostSection_.host_ != null");
 }
 
 bool RemoteDesktopBrowserTest::IsHostListReady() {
