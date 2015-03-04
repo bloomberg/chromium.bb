@@ -37,9 +37,11 @@ addEventListener('message', function(workerEvent) {
 });
 
 addEventListener('notificationclick', function(event) {
-    messagePort.postMessage({ command: 'click', notification: {
-        title: event.notification.title
-    }});
+    // Copies the serializable attributes of the Notification instance on |event|.
+    var notificationCopy = JSON.parse(JSON.stringify(event.notification));
+
+    messagePort.postMessage({ command: 'click',
+                              notification: notificationCopy });
 
     // Notifications containing "ACTION:CLOSE" in their message will be closed
     // immediately by the Service Worker.

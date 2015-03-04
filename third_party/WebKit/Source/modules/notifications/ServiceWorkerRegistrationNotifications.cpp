@@ -37,7 +37,6 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     ScriptPromise promise = resolver->promise();
 
     // FIXME: Do the appropriate CORS checks on the icon URL.
-    // FIXME: Determine the text direction based on the options dictionary.
 
     KURL iconUrl;
     if (options.hasIcon() && !options.icon().isEmpty()) {
@@ -46,7 +45,8 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
             iconUrl = KURL();
     }
 
-    WebNotificationData notification(title, WebNotificationData::DirectionLeftToRight, options.lang(), options.body(), options.tag(), iconUrl);
+    WebNotificationData::Direction dir = options.dir() == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
+    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl);
     WebNotificationShowCallbacks* callbacks = new CallbackPromiseAdapter<void, void>(resolver);
 
     SecurityOrigin* origin = executionContext->securityOrigin();

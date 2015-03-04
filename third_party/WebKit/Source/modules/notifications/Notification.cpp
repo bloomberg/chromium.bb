@@ -145,9 +145,9 @@ void Notification::show()
     SecurityOrigin* origin = executionContext()->securityOrigin();
     ASSERT(origin);
 
-    // FIXME: Associate the appropriate text direction with the notification.
     // FIXME: Do CSP checks on the associated notification icon.
-    WebNotificationData notificationData(m_title, WebNotificationData::DirectionLeftToRight, m_lang, m_body, m_tag, m_iconUrl);
+    WebNotificationData::Direction dir = m_dir == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
+    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl);
     notificationManager()->show(WebSerializedOrigin(*origin), notificationData, this);
 
     m_state = NotificationStateShowing;
