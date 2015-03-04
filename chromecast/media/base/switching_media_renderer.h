@@ -33,7 +33,7 @@ class SwitchingMediaRenderer : public ::media::Renderer {
   // ::media::Renderer implementation:
   void Initialize(
       ::media::DemuxerStreamProvider* demuxer_stream_provider,
-      const base::Closure& init_cb,
+      const ::media::PipelineStatusCB& init_cb,
       const ::media::StatisticsCB& statistics_cb,
       const ::media::BufferingStateCB& buffering_state_cb,
       const ::media::Renderer::PaintCB& paint_cb,
