@@ -163,6 +163,7 @@ v8.log
 /gpu/gles2_conform_test
 /gyp-mac-tool
 /internal_gyp
+/ios/third_party/gcdwebserver/src
 /llvm
 /media/cast/logging/cast_logging_proto_lib.xml
 /media/cdm/ppapi/api

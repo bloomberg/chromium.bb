@@ -1,0 +1,10 @@
+Name: gcdwebserver
+URL: https://github.com/swisspol/GCDWebServer
+Version: 3.2
+License:  3-clause BSD
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+GCDWebServer is a modern and lightweight GCD based HTTP 1.1 server designed to
+be embedded in OS X & iOS apps.

@@ -344,6 +344,9 @@ deps_os = {
      Var('chromium_git') + '/external/omaha.git' + '@' + '098c7a3d157218dab4eed595e8f2fbe5a20a0bae',
   },
   'ios': {
+    'src/ios/third_party/gcdwebserver/src':
+     Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '18889793b75d7ee593d62ac88997caad850acdb6',
+
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
 
