@@ -599,6 +599,8 @@
       'browser/ui/cocoa/panels/panel_utils_cocoa.mm',
       'browser/ui/cocoa/panels/panel_window_controller_cocoa.h',
       'browser/ui/cocoa/panels/panel_window_controller_cocoa.mm',
+      'browser/ui/cocoa/passwords/credential_item_view.h',
+      'browser/ui/cocoa/passwords/credential_item_view.mm',
       'browser/ui/cocoa/passwords/manage_password_item_view_controller.h',
       'browser/ui/cocoa/passwords/manage_password_item_view_controller.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller.h',

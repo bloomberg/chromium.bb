@@ -459,6 +459,7 @@
       'browser/ui/cocoa/omnibox/omnibox_popup_view_mac_unittest.mm',
       'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
       'browser/ui/cocoa/panels/panel_cocoa_unittest.mm',
+      'browser/ui/cocoa/passwords/credential_item_view_unittest.mm',
       'browser/ui/cocoa/passwords/manage_password_item_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_cocoa_unittest.mm',
