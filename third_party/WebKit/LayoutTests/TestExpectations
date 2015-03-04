@@ -1860,5 +1860,5 @@ crbug.com/462404 fast/js/function-name.html [ Pass Failure ]
 crbug.com/462404 fast/js/getOwnPropertyDescriptor.html [ Pass Failure ]
 crbug.com/462404 fast/js/mozilla/strict/function-name-arity.html [ Pass Failure ]
 
-crbug.com/463796 [ Mac ] fast/inline-block/003.html [ Failure ]
+crbug.com/463796 [ Mac ] fast/inline-block/003.html [ NeedsRebaseline ]
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
