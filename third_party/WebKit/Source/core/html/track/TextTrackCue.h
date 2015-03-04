@@ -77,7 +77,7 @@ public:
     using EventTarget::dispatchEvent;
     virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
-    bool isActive();
+    bool isActive() const { return m_isActive; }
     void setIsActive(bool active) { m_isActive = active; }
 
     virtual void updateDisplay(HTMLDivElement& container) = 0;

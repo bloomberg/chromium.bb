@@ -64,6 +64,7 @@ void CueTimeline::removeCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue> cue
 
     size_t index = m_currentlyActiveCues.find(interval);
     if (index != kNotFound) {
+        ASSERT(cue->isActive());
         m_currentlyActiveCues.remove(index);
         cue->setIsActive(false);
         // Since the cue will be removed from the media element and likely the

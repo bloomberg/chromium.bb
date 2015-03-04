@@ -146,11 +146,6 @@ bool TextTrackCue::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     return EventTarget::dispatchEvent(event);
 }
 
-bool TextTrackCue::isActive()
-{
-    return m_isActive && track() && track()->mode() != TextTrack::disabledKeyword();
-}
-
 const AtomicString& TextTrackCue::interfaceName() const
 {
     return EventTargetNames::TextTrackCue;
