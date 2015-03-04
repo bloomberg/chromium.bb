@@ -528,7 +528,7 @@
   "mimeHandlerViewGuestInternal": {
     "internal": true,
     "contexts": "all",
-    "channel": "dev",
+    "channel": "stable",
     "matches": ["<all_urls>"]
   },
   "musicManagerPrivate": {
