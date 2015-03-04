@@ -529,6 +529,8 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
     locale_code = "zh-Hant";
   else if (locale_code == "tl")
     locale_code = "fil";
+  else if (locale_code == "mo")
+    locale_code = "ro-MD";
 
   base::string16 display_name;
 #if defined(OS_ANDROID)

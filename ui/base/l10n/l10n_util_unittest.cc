@@ -453,6 +453,9 @@ TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
   result = l10n_util::GetDisplayNameForLocale("es-419", "en", false);
   EXPECT_EQ(ASCIIToUTF16("Spanish (Latin America)"), result);
 
+  result = l10n_util::GetDisplayNameForLocale("mo", "en", false);
+  EXPECT_EQ(l10n_util::GetDisplayNameForLocale("ro-MD", "en", false), result);
+
   result = l10n_util::GetDisplayNameForLocale("-BR", "en", false);
   EXPECT_EQ(ASCIIToUTF16("Brazil"), result);
 
