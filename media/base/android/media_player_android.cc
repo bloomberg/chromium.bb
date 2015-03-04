@@ -21,6 +21,7 @@ MediaPlayerAndroid::MediaPlayerAndroid(
       player_id_(player_id),
       manager_(manager),
       frame_url_(frame_url),
+      is_audible_(false),
       weak_factory_(this) {
   listener_.reset(new MediaPlayerListener(base::MessageLoopProxy::current(),
                                           weak_factory_.GetWeakPtr()));
@@ -79,5 +80,11 @@ void MediaPlayerAndroid::DetachListener() {
   listener_->ReleaseMediaPlayerListenerResources();
 }
 
+void MediaPlayerAndroid::SetAudible(bool is_audible) {
+  if (is_audible_ != is_audible) {
+    is_audible_ = is_audible;
+    manager_->OnAudibleStateChanged(player_id(), is_audible_);
+  }
+}
 
 }  // namespace media

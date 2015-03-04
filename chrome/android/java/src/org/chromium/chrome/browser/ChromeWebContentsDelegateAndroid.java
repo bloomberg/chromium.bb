@@ -71,4 +71,5 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
 
     protected static native boolean nativeIsCapturingAudio(WebContents webContents);
     protected static native boolean nativeIsCapturingVideo(WebContents webContents);
+    protected static native boolean nativeHasAudibleAudio(WebContents webContents);
 }

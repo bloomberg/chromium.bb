@@ -22,7 +22,7 @@
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
-#include "content/browser/media/audio_stream_monitor.h"
+#include "content/browser/media/audio_state_provider.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/accessibility_mode_enums.h"
@@ -669,8 +669,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);
 
-  AudioStreamMonitor* audio_stream_monitor() {
-    return &audio_stream_monitor_;
+  AudioStateProvider* audio_state_provider() {
+    return audio_state_provider_.get();
   }
 
   bool has_audio_power_save_blocker_for_testing() const {
@@ -1025,6 +1025,11 @@ class CONTENT_EXPORT WebContentsImpl
   scoped_ptr<PowerSaveBlocker> audio_power_save_blocker_;
   scoped_ptr<PowerSaveBlocker> video_power_save_blocker_;
 
+  // Tells whether this WebContents is actively producing sound.
+  // Order is important: the |frame_tree_| destruction uses
+  // |audio_state_provider_|.
+  scoped_ptr<AudioStateProvider> audio_state_provider_;
+
   // Manages the frame tree of the page and process swaps in each node.
   FrameTree frame_tree_;
 
@@ -1238,9 +1243,6 @@ class CONTENT_EXPORT WebContentsImpl
   // The accessibility mode for all frames. This is queried when each frame
   // is created, and broadcast to all frames when it changes.
   AccessibilityMode accessibility_mode_;
-
-  // Monitors power levels for audio streams associated with this WebContents.
-  AudioStreamMonitor audio_stream_monitor_;
 
   // Created on-demand to mute all audio output from this WebContents.
   scoped_ptr<WebContentsAudioMuter> audio_muter_;

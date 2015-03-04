@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "content/browser/media/audio_state_provider.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_output_controller.h"
 
@@ -22,7 +23,6 @@ class TickClock;
 }
 
 namespace content {
-class WebContents;
 
 // Repeatedly polls audio streams for their power levels, and "debounces" the
 // information into a simple, binary "was recently audible" result for the audio
@@ -32,23 +32,23 @@ class WebContents;
 // to turn on/off repeatedly and annoy the user.  AudioStreamMonitor sends UI
 // update notifications only when needed, but may be queried at any time.
 //
-// Each WebContentsImpl owns an AudioStreamMonitor.
-class CONTENT_EXPORT AudioStreamMonitor {
+class CONTENT_EXPORT AudioStreamMonitor : public AudioStateProvider {
  public:
   explicit AudioStreamMonitor(WebContents* contents);
-  ~AudioStreamMonitor();
+  ~AudioStreamMonitor() override;
 
   // Indicates if audio stream monitoring is available.  It's only available if
   // AudioOutputController can and will monitor output power levels.
-  static bool monitoring_available() {
-    return media::AudioOutputController::will_monitor_audio_levels();
-  }
+  bool IsAudioStateAvailable() const override;
+
+  // This provider is a monitor, the method returns |this|.
+  AudioStreamMonitor* audio_stream_monitor() override;
 
   // Returns true if audio has recently been audible from the tab.  This is
   // usually called whenever the tab data model is refreshed; but there are
   // other use cases as well (e.g., the OOM killer uses this to de-prioritize
   // the killing of tabs making sounds).
-  bool WasRecentlyAudible() const;
+  bool WasRecentlyAudible() const override;
 
   // Starts or stops audio level monitoring respectively for the stream owned by
   // the specified renderer.  Safe to call from any thread.
@@ -65,10 +65,6 @@ class CONTENT_EXPORT AudioStreamMonitor {
   static void StopMonitoringStream(int render_process_id,
                                    int render_frame_id,
                                    int stream_id);
-
-  void set_was_recently_audible_for_testing(bool value) {
-    was_recently_audible_ = value;
-  }
 
  private:
   friend class AudioStreamMonitorTest;
@@ -112,11 +108,6 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // on, |off_timer_| is started to re-invoke this method in the future.
   void MaybeToggle();
 
-  // The WebContents instance instance to receive indicator toggle
-  // notifications.  This pointer should be valid for the lifetime of
-  // AudioStreamMonitor.
-  WebContents* const web_contents_;
-
   // Note: |clock_| is always |&default_tick_clock_|, except during unit
   // testing.
   base::DefaultTickClock default_tick_clock_;
@@ -133,10 +124,6 @@ class CONTENT_EXPORT AudioStreamMonitor {
 
   // Records the last time at which sound was audible from any stream.
   base::TimeTicks last_blurt_time_;
-
-  // Set to true if the last call to MaybeToggle() determined the indicator
-  // should be turned on.
-  bool was_recently_audible_;
 
   // Calls Poll() at regular intervals while |poll_callbacks_| is non-empty.
   base::RepeatingTimer<AudioStreamMonitor> poll_timer_;

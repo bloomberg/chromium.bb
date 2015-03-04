@@ -8,11 +8,13 @@
 #include "base/stl_util.h"
 #include "content/browser/media/cdm/browser_cdm_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/android/media_players_observer.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "media/base/android/media_player_android.h"
@@ -22,7 +24,8 @@ namespace content {
 
 MediaWebContentsObserver::MediaWebContentsObserver(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
+    : WebContentsObserver(web_contents)
+{
 }
 
 MediaWebContentsObserver::~MediaWebContentsObserver() {
@@ -35,6 +38,10 @@ void MediaWebContentsObserver::RenderFrameDeleted(
   // Always destroy the media players before CDMs because we do not support
   // detaching CDMs from media players yet. See http://crbug.com/330324
   media_player_managers_.erase(key);
+
+  MediaPlayersObserver* audio_observer = GetMediaPlayersObserver();
+  if (audio_observer)
+    audio_observer->RenderFrameDeleted(render_frame_host);
 #endif
   // TODO(xhwang): Currently MediaWebContentsObserver, BrowserMediaPlayerManager
   // and BrowserCdmManager all run on browser UI thread. So this call is okay.
@@ -161,9 +168,22 @@ BrowserMediaPlayerManager* MediaWebContentsObserver::GetMediaPlayerManager(
   if (!media_player_managers_.contains(key)) {
     media_player_managers_.set(
         key,
-        make_scoped_ptr(BrowserMediaPlayerManager::Create(render_frame_host)));
+        make_scoped_ptr(BrowserMediaPlayerManager::Create(
+            render_frame_host, GetMediaPlayersObserver())));
   }
   return media_player_managers_.get(key);
+}
+
+MediaPlayersObserver*
+MediaWebContentsObserver::GetMediaPlayersObserver() const {
+  AudioStateProvider* provider =
+      static_cast<WebContentsImpl*>(web_contents())->audio_state_provider();
+
+  MediaPlayersObserver* audio_observer =
+      static_cast<MediaPlayersObserver*>(provider);
+
+  DCHECK(audio_observer);
+  return audio_observer;
 }
 
 #if defined(VIDEO_HOLE)
