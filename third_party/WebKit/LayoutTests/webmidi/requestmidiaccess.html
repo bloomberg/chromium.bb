@@ -20,9 +20,7 @@ function checkInputMap(inputs) {
         shouldBeEqualToString("input.manufacturer", "MockInputManufacturer");
         shouldBeEqualToString("input.name", "MockInputName");
         shouldBeEqualToString("input.version", "MockInputVersion");
-        // FIXME: Once Web MIDI introduces open(), the initial state will be
-        // changed to "connected".
-        shouldBeEqualToString("input.state", "opened");
+        shouldBeEqualToString("input.state", "connected");
         shouldBeEqualToString("input.type", "input");
     }
     debug("for (var input of inputs.keys())");
@@ -66,9 +64,7 @@ function checkOutputMap(outputs) {
         shouldBeEqualToString("output.manufacturer", "MockOutputManufacturer");
         shouldBeEqualToString("output.name", "MockOutputName");
         shouldBeEqualToString("output.version", "MockOutputVersion");
-        // FIXME: Once Web MIDI introduces open(), the initial state will be
-        // changed to "connected".
-        shouldBeEqualToString("output.state", "opened");
+        shouldBeEqualToString("output.state", "connected");
         shouldBeEqualToString("output.type", "output");
     }
     debug("for (var output of outputs.keys())");

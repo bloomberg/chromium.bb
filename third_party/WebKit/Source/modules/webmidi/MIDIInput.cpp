@@ -37,14 +37,16 @@
 
 namespace blink {
 
-MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
+using PortState = MIDIAccessor::MIDIPortState;
+
+MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(access);
-    return new MIDIInput(access, id, manufacturer, name, version, isActive);
+    return new MIDIInput(access, id, manufacturer, name, version, state);
 }
 
-MIDIInput::MIDIInput(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
-    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeInput, version, isActive)
+MIDIInput::MIDIInput(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
+    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeInput, version, state)
 {
 }
 

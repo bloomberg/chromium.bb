@@ -59,7 +59,7 @@ public:
         access->suspendIfNeeded();
         return access;
     }
-    virtual ~MIDIAccess();
+    ~MIDIAccess() override;
 
     MIDIInputMap* inputs() const;
     MIDIOutputMap* outputs() const;
@@ -69,24 +69,24 @@ public:
     bool sysexEnabled() const { return m_sysexEnabled; }
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override { return EventTargetNames::MIDIAccess; }
-    virtual ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    const AtomicString& interfaceName() const override { return EventTargetNames::MIDIAccess; }
+    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
 
     // ActiveDOMObject
-    virtual void stop() override;
+    void stop() override;
 
     // MIDIAccessorClient
-    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive) override;
-    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive) override;
-    virtual void didSetInputPortState(unsigned portIndex, bool isActive) override;
-    virtual void didSetOutputPortState(unsigned portIndex, bool isActive) override;
-    virtual void didStartSession(bool success, const String& error, const String& message) override
+    void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState) override;
+    void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState) override;
+    void didSetInputPortState(unsigned portIndex, MIDIAccessor::MIDIPortState) override;
+    void didSetOutputPortState(unsigned portIndex, MIDIAccessor::MIDIPortState) override;
+    void didStartSession(bool success, const String& error, const String& message) override
     {
         // This method is for MIDIAccess initialization: MIDIAccessInitializer
         // has the implementation.
         ASSERT_NOT_REACHED();
     }
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
+    void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
 
     // |timeStampInMilliseconds| is in the same time coordinate system as performance.now().
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);

@@ -51,4 +51,7 @@ enum MIDIPortType {
     readonly attribute DOMString version;
 
     attribute EventHandler onstatechange;
+
+    [CallWith=ScriptState] Promise open();
+    [CallWith=ScriptState] Promise close();
 };

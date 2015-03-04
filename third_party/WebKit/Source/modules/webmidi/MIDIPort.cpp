@@ -31,28 +31,48 @@
 #include "config.h"
 #include "modules/webmidi/MIDIPort.h"
 
+#include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/DOMError.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 
 namespace blink {
 
-MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version, bool isActive)
+using PortState = MIDIAccessor::MIDIPortState;
+
+MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version, PortState state)
     : m_id(id)
     , m_manufacturer(manufacturer)
     , m_name(name)
     , m_type(type)
     , m_version(version)
     , m_access(access)
-    , m_isActive(isActive)
 {
     ASSERT(access);
     ASSERT(type == MIDIPortTypeInput || type == MIDIPortTypeOutput);
+    ASSERT(state == PortState::MIDIPortStateDisconnected
+        || state == PortState::MIDIPortStateConnected
+        || state == PortState::MIDIPortStateOpened);
+    // FIXME: Remove following code once blink API has a real open and close
+    // operations.
+    if (state == PortState::MIDIPortStateOpened)
+        state = PortState::MIDIPortStateConnected;
+    m_state = state;
 }
 
 String MIDIPort::state() const
 {
-    // FIXME: Support complete MIDIPortState once Blink API is updated.
-    return m_isActive ? "opened" : "disconnected";
+    switch (m_state) {
+    case PortState::MIDIPortStateDisconnected:
+        return "disconnected";
+    case PortState::MIDIPortStateConnected:
+        return "connected";
+    case PortState::MIDIPortStateOpened:
+        return "opened";
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return emptyString();
 }
 
 String MIDIPort::type() const
@@ -68,9 +88,45 @@ String MIDIPort::type() const
     return emptyString();
 }
 
-void MIDIPort::setActiveState(bool isActive)
+ScriptPromise MIDIPort::open(ScriptState* scriptState)
 {
-    m_isActive = isActive;
+    switch (m_state) {
+    case PortState::MIDIPortStateDisconnected:
+        return reject(scriptState, "InvalidStateError", "The port has been disconnected.");
+    case PortState::MIDIPortStateConnected:
+        // FIXME: Add blink API to perform a real open operation.
+        setState(PortState::MIDIPortStateOpened);
+        // fall through
+    case PortState::MIDIPortStateOpened:
+        return accept(scriptState);
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return reject(scriptState, "InvalidStateError", "The port is in unknown state.");
+}
+
+ScriptPromise MIDIPort::close(ScriptState* scriptState)
+{
+    switch (m_state) {
+    case PortState::MIDIPortStateDisconnected:
+        return reject(scriptState, "InvalidStateError", "The port has been disconnected.");
+    case PortState::MIDIPortStateOpened:
+        // FIXME: Add blink API to perform a real close operation.
+        setState(PortState::MIDIPortStateConnected);
+        // fall through
+    case PortState::MIDIPortStateConnected:
+        return accept(scriptState);
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return reject(scriptState, "InvalidStateError", "The port is in unknown state.");
+}
+
+void MIDIPort::setState(PortState state)
+{
+    if (m_state == state)
+        return;
+    m_state = state;
     dispatchEvent(MIDIConnectionEvent::create(this));
 }
 
@@ -84,5 +140,16 @@ DEFINE_TRACE(MIDIPort)
     visitor->trace(m_access);
     RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>::trace(visitor);
 }
+
+ScriptPromise MIDIPort::accept(ScriptState* scriptState)
+{
+    return ScriptPromise::cast(scriptState, toV8(this, scriptState->context()->Global(), scriptState->isolate()));
+}
+
+ScriptPromise MIDIPort::reject(ScriptState* scriptState, const String& name, const String& message)
+{
+    return ScriptPromise::reject(scriptState, toV8(DOMError::create(name, message), scriptState->context()->Global(), scriptState->isolate()));
+}
+
 
 } // namespace blink

@@ -17,6 +17,8 @@
 
 namespace blink {
 
+using PortState = WebMIDIAccessorClient::MIDIPortState;
+
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions& options)
     : ScriptPromiseResolver(scriptState)
     , m_requestSysex(false)
@@ -93,19 +95,19 @@ ScriptPromise MIDIAccessInitializer::start()
     return promise;
 }
 
-void MIDIAccessInitializer::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
+void MIDIAccessInitializer::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(m_accessor);
-    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeInput, version, isActive));
+    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeInput, version, state));
 }
 
-void MIDIAccessInitializer::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
+void MIDIAccessInitializer::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(m_accessor);
-    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeOutput, version, isActive));
+    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeOutput, version, state));
 }
 
-void MIDIAccessInitializer::didSetInputPortState(unsigned portIndex, bool isActive)
+void MIDIAccessInitializer::didSetInputPortState(unsigned portIndex, PortState state)
 {
     // didSetInputPortState() is not allowed to call before didStartSession()
     // is called. Once didStartSession() is called, MIDIAccessorClient methods
@@ -113,7 +115,7 @@ void MIDIAccessInitializer::didSetInputPortState(unsigned portIndex, bool isActi
     ASSERT_NOT_REACHED();
 }
 
-void MIDIAccessInitializer::didSetOutputPortState(unsigned portIndex, bool isActive)
+void MIDIAccessInitializer::didSetOutputPortState(unsigned portIndex, PortState state)
 {
     // See comments on didSetInputPortState().
     ASSERT_NOT_REACHED();

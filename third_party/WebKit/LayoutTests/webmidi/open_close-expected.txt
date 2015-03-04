@@ -1,0 +1,54 @@
+Tests MIDIPort.open and MIDIPort.close.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS requestMIDIAccess() succeeded with access [object MIDIAccess].
+Check state transition for close on connected state.
+- check initial state.
+PASS port.state is "connected"
+- check callback arguments.
+PASS callback is called with port [object MIDIInput].
+PASS callbackport.id is "MockInputID"
+PASS callbackport.state is "connected"
+- check final state.
+PASS port.state is "connected"
+Check state transition for open on connected state.
+- check initial state.
+PASS port.state is "connected"
+- check handler port.
+PASS handler is called with port [object MIDIInput].
+PASS eventport.id is "MockInputID"
+PASS eventport.state is "opened"
+- check callback arguments.
+PASS callback is called with port [object MIDIInput].
+PASS callbackport.id is "MockInputID"
+PASS callbackport.state is "opened"
+- check final state.
+PASS port.state is "opened"
+Check state transition for open on opened state.
+- check initial state.
+PASS port.state is "opened"
+- check callback arguments.
+PASS callback is called with port [object MIDIInput].
+PASS callbackport.id is "MockInputID"
+PASS callbackport.state is "opened"
+- check final state.
+PASS port.state is "opened"
+Check state transition for close on opened state.
+- check initial state.
+PASS port.state is "opened"
+- check handler port.
+PASS handler is called with port [object MIDIInput].
+PASS eventport.id is "MockInputID"
+PASS eventport.state is "connected"
+- check callback arguments.
+PASS callback is called with port [object MIDIInput].
+PASS callbackport.id is "MockInputID"
+PASS callbackport.state is "connected"
+- check final state.
+PASS port.state is "connected"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

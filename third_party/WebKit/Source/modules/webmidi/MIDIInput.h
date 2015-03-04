@@ -32,6 +32,7 @@
 #define MIDIInput_h
 
 #include "modules/EventTargetModules.h"
+#include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIPort.h"
 
 namespace blink {
@@ -41,7 +42,7 @@ class MIDIAccess;
 class MIDIInput final : public MIDIPort {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MIDIInput* create(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive);
+    static MIDIInput* create(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState);
     virtual ~MIDIInput() { }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
@@ -55,7 +56,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive);
+    MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState);
 };
 
 } // namespace blink

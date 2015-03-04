@@ -41,6 +41,8 @@
 
 namespace blink {
 
+using PortState = MIDIAccessor::MIDIPortState;
+
 namespace {
 
 double now(ExecutionContext* context)
@@ -174,14 +176,14 @@ private:
 
 } // namespace
 
-MIDIOutput* MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
+MIDIOutput* MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(access);
-    return new MIDIOutput(access, portIndex, id, manufacturer, name, version, isActive);
+    return new MIDIOutput(access, portIndex, id, manufacturer, name, version, state);
 }
 
-MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
-    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeOutput, version, isActive)
+MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
+    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeOutput, version, state)
     , m_portIndex(portIndex)
 {
 }

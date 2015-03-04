@@ -67,26 +67,22 @@ void MIDIAccessor::sendMIDIData(unsigned portIndex, const unsigned char* data, s
 
 void MIDIAccessor::didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState state)
 {
-    // FIXME: Update to support complete MIDIPortState in MIDIPort.
-    m_client->didAddInputPort(id, manufacturer, name, version, state != MIDIPortStateDisconnected);
+    m_client->didAddInputPort(id, manufacturer, name, version, state);
 }
 
 void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState state)
 {
-    // FIXME: Update to support complete MIDIPortState in MIDIPort.
-    m_client->didAddOutputPort(id, manufacturer, name, version, state != MIDIPortStateDisconnected);
+    m_client->didAddOutputPort(id, manufacturer, name, version, state);
 }
 
 void MIDIAccessor::didSetInputPortState(unsigned portIndex, MIDIPortState state)
 {
-    // FIXME: Update to support complete MIDIPortState in MIDIPort.
-    m_client->didSetInputPortState(portIndex, state != MIDIPortStateDisconnected);
+    m_client->didSetInputPortState(portIndex, state);
 }
 
 void MIDIAccessor::didSetOutputPortState(unsigned portIndex, MIDIPortState state)
 {
-    // FIXME: Update to support complete MIDIPortState in MIDIPort.
-    m_client->didSetOutputPortState(portIndex, state != MIDIPortStateDisconnected);
+    m_client->didSetOutputPortState(portIndex, state);
 }
 
 void MIDIAccessor::didStartSession(bool success, const WebString& error, const WebString& message)

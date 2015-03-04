@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests MIDIPort.open and MIDIPort.close.");
+
+function checkStateTransition(options) {
+    debug("Check state transition for " + options.method + " on " +
+          options.initialstate + " state.");
+    debug("- check initial state.");
+    window.port = options.port;
+    shouldBeEqualToString("port.state", options.initialstate);
+    port.onstatechange = function(e) {
+        debug("- check handler port.");
+        window.eventport = e.port;
+        testPassed("handler is called with port " + eventport + ".");
+        if (options.initialstate == options.finalstate) {
+            testFailed("onstatechange handler should not be called here.");
+        }
+        shouldBeEqualToString("eventport.id", options.port.id);
+        shouldBeEqualToString("eventport.state", options.finalstate);
+    };
+    return port[options.method]().then(function(p) {
+        window.callbackport = p;
+        debug("- check callback arguments.");
+        testPassed("callback is called with port " + callbackport + ".");
+        shouldBeEqualToString("callbackport.id", options.port.id);
+        shouldBeEqualToString("callbackport.state", options.finalstate);
+        debug("- check final state.");
+        shouldBeEqualToString("port.state", options.finalstate);
+    }, function(e) {
+        testFailed("error callback should not be called here.");
+        throw e;
+    });
+}
+
+function runTests(port) {
+    return Promise.resolve().then(checkStateTransition.bind(undefined, {
+        port: port,
+        method: "close",
+        initialstate: "connected",
+        finalstate: "connected",
+    })).then(checkStateTransition.bind(undefined, {
+        port: port,
+        method: "open",
+        initialstate: "connected",
+        finalstate: "opened",
+    })).then(checkStateTransition.bind(undefined, {
+        port: port,
+        method: "open",
+        initialstate: "opened",
+        finalstate: "opened",
+    })).then(checkStateTransition.bind(undefined, {
+        port: port,
+        method: "close",
+        initialstate: "opened",
+        finalstate: "connected",
+    }));
+}
+
+function successAccessCallback(a) {
+    window.access = a;
+    testPassed("requestMIDIAccess() succeeded with access " + access + ".");
+
+    runTests(access.inputs.values().next().value)
+            .then(finishJSTest, finishJSTest);
+}
+
+function errorAccessCallback(error) {
+    testFailed("requestMIDIAccess() error callback should not be called when requesting basic access.");
+    finishJSTest();
+}
+
+window.jsTestIsAsync = true;
+
+// Test MIDIPort state transition by open() and close().
+navigator.requestMIDIAccess().then(successAccessCallback, errorAccessCallback);
+
+</script>
+</body>
+</html>

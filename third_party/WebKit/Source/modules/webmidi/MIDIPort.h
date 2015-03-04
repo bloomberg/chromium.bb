@@ -31,7 +31,9 @@
 #ifndef MIDIPort_h
 #define MIDIPort_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "modules/EventTargetModules.h"
+#include "modules/webmidi/MIDIAccessor.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -56,9 +58,12 @@ public:
     String type() const;
     String version() const { return m_version; }
 
+    ScriptPromise open(ScriptState*);
+    ScriptPromise close(ScriptState*);
+
     MIDIAccess* midiAccess() const { return m_access; }
-    bool isActive() const { return m_isActive; }
-    void setActiveState(bool isActive);
+    MIDIAccessor::MIDIPortState getState() const { return m_state; }
+    void setState(MIDIAccessor::MIDIPortState);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -69,16 +74,19 @@ public:
     virtual ExecutionContext* executionContext() const override final;
 
 protected:
-    MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version, bool isActive);
+    MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version, MIDIAccessor::MIDIPortState);
 
 private:
+    ScriptPromise accept(ScriptState*);
+    ScriptPromise reject(ScriptState*, const String& name, const String& message);
+
     String m_id;
     String m_manufacturer;
     String m_name;
     MIDIPortTypeCode m_type;
     String m_version;
     Member<MIDIAccess> m_access;
-    bool m_isActive;
+    MIDIAccessor::MIDIPortState m_state;
 };
 
 } // namespace blink

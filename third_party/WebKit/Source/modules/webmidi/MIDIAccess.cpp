@@ -46,6 +46,8 @@
 
 namespace blink {
 
+using PortState = MIDIAccessor::MIDIPortState;
+
 MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     : ActiveDOMObject(executionContext)
     , m_accessor(accessor)
@@ -55,9 +57,9 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
     for (size_t i = 0; i < ports.size(); ++i) {
         const MIDIAccessInitializer::PortDescriptor& port = ports[i];
         if (port.type == MIDIPort::MIDIPortTypeInput) {
-            m_inputs.append(MIDIInput::create(this, port.id, port.manufacturer, port.name, port.version, port.isActive));
+            m_inputs.append(MIDIInput::create(this, port.id, port.manufacturer, port.name, port.version, port.state));
         } else {
-            m_outputs.append(MIDIOutput::create(this, m_outputs.size(), port.id, port.manufacturer, port.name, port.version, port.isActive));
+            m_outputs.append(MIDIOutput::create(this, m_outputs.size(), port.id, port.manufacturer, port.name, port.version, port.state));
         }
     }
 }
@@ -72,7 +74,7 @@ MIDIInputMap* MIDIAccess::inputs() const
     size_t inactiveCount = 0;
     for (size_t i = 0; i < m_inputs.size(); ++i) {
         MIDIInput* input = m_inputs[i];
-        if (input->isActive())
+        if (input->getState() != PortState::MIDIPortStateDisconnected)
             inputs.add(input->id(), input);
         else
             inactiveCount++;
@@ -90,7 +92,7 @@ MIDIOutputMap* MIDIAccess::outputs() const
     size_t inactiveCount = 0;
     for (size_t i = 0; i < m_outputs.size(); ++i) {
         MIDIOutput* output = m_outputs[i];
-        if (output->isActive())
+        if (output->getState() != PortState::MIDIPortStateDisconnected)
             outputs.add(output->id(), output);
         else
             inactiveCount++;
@@ -102,40 +104,40 @@ MIDIOutputMap* MIDIAccess::outputs() const
     return new MIDIOutputMap(outputs);
 }
 
-void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
+void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(isMainThread());
-    MIDIInput* port = MIDIInput::create(this, id, manufacturer, name, version, isActive);
+    MIDIInput* port = MIDIInput::create(this, id, manufacturer, name, version, state);
     m_inputs.append(port);
     dispatchEvent(MIDIConnectionEvent::create(port));
 }
 
-void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
+void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(isMainThread());
     unsigned portIndex = m_outputs.size();
-    MIDIOutput* port = MIDIOutput::create(this, portIndex, id, manufacturer, name, version, isActive);
+    MIDIOutput* port = MIDIOutput::create(this, portIndex, id, manufacturer, name, version, state);
     m_outputs.append(port);
     dispatchEvent(MIDIConnectionEvent::create(port));
 }
 
-void MIDIAccess::didSetInputPortState(unsigned portIndex, bool isActive)
+void MIDIAccess::didSetInputPortState(unsigned portIndex, PortState state)
 {
     ASSERT(isMainThread());
     if (portIndex >= m_inputs.size())
         return;
 
-    m_inputs[portIndex]->setActiveState(isActive);
+    m_inputs[portIndex]->setState(state);
     dispatchEvent(MIDIConnectionEvent::create(m_inputs[portIndex]));
 }
 
-void MIDIAccess::didSetOutputPortState(unsigned portIndex, bool isActive)
+void MIDIAccess::didSetOutputPortState(unsigned portIndex, PortState state)
 {
     ASSERT(isMainThread());
     if (portIndex >= m_outputs.size())
         return;
 
-    m_outputs[portIndex]->setActiveState(isActive);
+    m_outputs[portIndex]->setState(state);
     dispatchEvent(MIDIConnectionEvent::create(m_outputs[portIndex]));
 }
 
