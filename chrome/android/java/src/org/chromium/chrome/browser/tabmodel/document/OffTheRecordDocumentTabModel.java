@@ -108,12 +108,6 @@ public class OffTheRecordDocumentTabModel extends OffTheRecordTabModel implement
     }
 
     @Override
-    public void addTab(Tab tab) {
-        ensureTabModelImpl();
-        getDelegateDocumentTabModel().addTab(tab);
-    }
-
-    @Override
     public void addTab(Intent intent, Tab tab) {
         ensureTabModelImpl();
         getDelegateDocumentTabModel().addTab(intent, tab);

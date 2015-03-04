@@ -864,13 +864,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
-    public void addTab(Tab tab) {
-        int parentIndex = indexOf(tab.getParentId());
-        int index = parentIndex == -1 ? getCount() : parentIndex + 1;
-        addTab(tab, index, tab.getLaunchType());
-    }
-
-    @Override
     public void addTab(Intent intent, Tab tab) {
         int parentIndex = indexOf(tab.getParentId());
         int index = parentIndex == -1 ? getCount() : parentIndex + 1;

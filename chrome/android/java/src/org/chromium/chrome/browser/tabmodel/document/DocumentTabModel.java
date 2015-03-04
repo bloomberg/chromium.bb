@@ -163,12 +163,6 @@ public interface DocumentTabModel extends TabModel {
 
     /**
      * Adds the given Tab to this TabModel.
-     * @param tab Tab to add.
-     */
-    void addTab(Tab tab);
-
-    /**
-     * Adds the given Tab to this TabModel.
      * @param intent Intent of the DocumentActivity.
      * @param tab Tab to add.
      */
