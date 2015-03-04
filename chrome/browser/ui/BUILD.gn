@@ -228,7 +228,10 @@ static_library("ui") {
     }
     if (is_mac) {
       if (mac_views_browser) {
-        sources += [ "views/apps/chrome_app_window_client_views_mac.mm" ]
+        sources += rebase_path(
+                gypi_values.chrome_browser_ui_views_mac_experimental_sources,
+                ".",
+                "//chrome")
         sources -= [
           "cocoa/apps/chrome_app_window_client_cocoa.mm",
           "cocoa/bookmarks/bookmark_drag_drop_cocoa.mm",

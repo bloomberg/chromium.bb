@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
+// This file tests whichever implementation of NativeAppWindow is used.
+// I.e. it could be NativeAppWindowCocoa or ChromeNativeAppWindowViewsMac.
+#include "extensions/browser/app_window/native_app_window.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"

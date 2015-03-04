@@ -2309,6 +2309,14 @@
       'browser/ui/views/website_settings/website_settings_popup_view.cc',
       'browser/ui/views/website_settings/website_settings_popup_view.h',
     ],
+    # MacViews sources that we still want to keep behind a compile-time flag.
+    # TODO(jackhou): Move items to chrome_browser_ui_views_sources when they
+    # migrate from mac_views_browser to a chrome://flag.
+    'chrome_browser_ui_views_mac_experimental_sources': [
+      'browser/ui/views/apps/chrome_app_window_client_views_mac.mm',
+      'browser/ui/views/apps/chrome_native_app_window_views_mac.h',
+      'browser/ui/views/apps/chrome_native_app_window_views_mac.mm',
+    ],
     # Windows-only. Assume ash/aura/views.
     'chrome_browser_ui_win_sources': [
       'browser/ui/network_profile_bubble.cc',
@@ -2858,7 +2866,7 @@
               'conditions': [
                 ['mac_views_browser==1', {
                   'sources': [
-                    'browser/ui/views/apps/chrome_app_window_client_views_mac.mm',
+                    '<@(chrome_browser_ui_views_mac_experimental_sources)',
                   ],
                   'sources!': [
                     'browser/ui/cocoa/apps/chrome_app_window_client_cocoa.mm',
