@@ -45,8 +45,6 @@ enum BinaryType { "blob", "arraybuffer" };
     GarbageCollected,
     ImplementedAs=DOMWebSocket,
 ] interface WebSocket : EventTarget {
-    // FIXME: Lowercase .url is in the spec, .URL is for compatibility reasons. Remove when possible.
-    [DeprecateAs=WebSocketURL] readonly attribute DOMString URL;
     readonly attribute DOMString url;
 
     // ready state

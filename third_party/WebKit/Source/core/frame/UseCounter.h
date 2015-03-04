@@ -243,7 +243,6 @@ public:
         SVGSVGElementInDocument = 250,
         SVGDocumentRootElement = 251,
         EventSourceURL = 254,
-        WebSocketURL = 255,
         WorkerSubjectToCSP = 257,
         WorkerAllowedByChildBlockedByScript = 258,
         DeprecatedWebKitGradient = 260,

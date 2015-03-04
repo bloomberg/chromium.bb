@@ -763,9 +763,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case EventSourceURL:
         return replacedBy("EventSource.URL", "EventSource.url");
 
-    case WebSocketURL:
-        return replacedBy("WebSocket.URL", "WebSocket.url");
-
     case HTMLTableElementVspace:
         return "The 'vspace' attribute on table is deprecated. Please use CSS margin-top and margin-bottom property instead.";
 
