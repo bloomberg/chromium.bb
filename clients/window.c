@@ -38,6 +38,7 @@
 #include <sys/mman.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
+#include <stdbool.h>
 
 #ifdef HAVE_CAIRO_EGL
 #include <wayland-egl.h>
@@ -3524,6 +3525,22 @@ input_set_pointer_image_index(struct input *input, int index)
 
 static const struct wl_callback_listener pointer_surface_listener;
 
+static bool
+input_set_pointer_special(struct input *input)
+{
+	if (input->current_cursor == CURSOR_BLANK) {
+		wl_pointer_set_cursor(input->pointer,
+				      input->pointer_enter_serial,
+				      NULL, 0, 0);
+		return true;
+	}
+
+	if (input->current_cursor == CURSOR_UNSET)
+		return true;
+
+	return false;
+}
+
 static void
 pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 			       uint32_t time)
@@ -3541,15 +3558,9 @@ pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 	if (!input->pointer)
 		return;
 
-	if (input->current_cursor == CURSOR_BLANK) {
-		wl_pointer_set_cursor(input->pointer,
-				      input->pointer_enter_serial,
-				      NULL, 0, 0);
+	if (input_set_pointer_special(input))
 		return;
-	}
 
-	if (input->current_cursor == CURSOR_UNSET)
-		return;
 	cursor = input->display->cursors[input->current_cursor];
 	if (!cursor)
 		return;
@@ -3598,7 +3609,7 @@ input_set_pointer_image(struct input *input, int pointer)
 	input->cursor_serial = input->pointer_enter_serial;
 	if (!input->cursor_frame_cb)
 		pointer_surface_frame_callback(input, NULL, 0);
-	else if (force) {
+	else if (force && !input_set_pointer_special(input)) {
 		/* The current frame callback may be stuck if, for instance,
 		 * the set cursor request was processed by the server after
 		 * this client lost the focus. In this case the cursor surface
