@@ -3258,7 +3258,7 @@ _waterfall_config_map = {
       'tricky-paladin',
       'whirlwind-paladin',
 
-      # Experimental Canaries
+      # Experimental Canaries (Group)
       'auron-b-release-group',
       'ivybridge-freon-release-group',
       'jecht-release-group',
@@ -3271,9 +3271,10 @@ _waterfall_config_map = {
       'veyron-c-release-group',
       'veyron-release-group',
 
-      # Experimental Canaries (Group)
+      # Experimental Canaries
       'bobcat-release',
       'cosmos-release',
+      'daisy_freon-release',
       'daisy_winter-release',
       'gizmo-release',
       'kayle-release',
