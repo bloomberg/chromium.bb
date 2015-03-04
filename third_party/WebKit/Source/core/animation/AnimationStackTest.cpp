@@ -117,10 +117,4 @@ TEST_F(AnimationAnimationStackTest, CancelledAnimationPlayers)
     EXPECT_TRUE(interpolationValue(result.get(CSSPropertyZIndex))->equals(AnimatableDouble::create(2).get()));
 }
 
-TEST_F(AnimationAnimationStackTest, ForwardsFillDiscarding)
-{
-    // FIXME: The test WebFrameSwapTest.SwapPreservesGlobalContext breaks if
-    // this test is removed...
-}
-
 }
