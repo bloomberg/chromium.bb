@@ -244,8 +244,6 @@ if (!is_android) {
       "//net",
       "//net:net_resources",
       "//net:test_support",
-
-      #"//ppapi:ppapi_tests",  # TODO(GYP) this doesn't exist yet.
       "//skia",
       "//sync",
       "//testing/gmock",
@@ -261,6 +259,7 @@ if (!is_android) {
 
     # Runtime dependencies
     datadeps = [
+      "//ppapi:ppapi_tests",
       "//third_party/mesa:osmesa",
     ]
 
@@ -669,7 +668,8 @@ if (!is_android) {
 
     # Runtime dependencies
     data_deps = [
-      #"//ppapi:ppapi_tests",  # TODO(GYP) this doesn't exist yet.
+      "//ppapi:ppapi_tests",
+
       #'../remoting/remoting.gyp:remoting_browser_test_resources',  TODO(GYP)
       #'../remoting/remoting.gyp:remoting_webapp_unittest',  TODO(GYP)
       "//third_party/mesa:osmesa",

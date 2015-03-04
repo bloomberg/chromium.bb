@@ -2,6 +2,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+copy("copy_test_files") {
+  visibility = [ ":*" ]
+  sources = [
+    # Keep "test_case.html.mock-http-headers" with "test_case.html".
+    "tests/test_case.html",
+    "tests/test_case.html.mock-http-headers",
+    "tests/test_page.css",
+    "tests/ppapi_nacl_tests_newlib.nmf",
+  ]
+  outputs = [
+    "$root_out_dir/{{source_file_part}}",
+  ]
+}
+
+copy("copy_test_files2") {
+  visibility = [ ":*" ]
+  sources = [
+    "tests/test_url_loader_data/hello.txt",
+  ]
+  outputs = [
+    "$root_out_dir/test_url_loader_data/{{source_file_part}}",
+  ]
+}
+
 import("//ppapi/ppapi_sources.gni")
 shared_library("ppapi_tests") {
   sources = ppapi_sources.test_common_source_files +
@@ -13,6 +37,8 @@ shared_library("ppapi_tests") {
   deps = [
     "//ppapi/cpp",
     "//ppapi/shared_impl",
+    ":copy_test_files",
+    ":copy_test_files2",
   ]
 }
 # TODO(GYP) other targets from ppapi_tests.gyp

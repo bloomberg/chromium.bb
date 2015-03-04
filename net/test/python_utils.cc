@@ -17,6 +17,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif
+
 const char kPythonPathEnv[] = "PYTHONPATH";
 
 void AppendToPythonPath(const base::FilePath& dir) {
@@ -50,25 +54,26 @@ bool GetPyProtoPath(base::FilePath* dir) {
     return false;
   }
 
-  const base::FilePath kPyProto(FILE_PATH_LITERAL("pyproto"));
-
 #if defined(OS_MACOSX)
-  // On Mac, DIR_EXE might be pointing deep into the Release/ (or Debug/)
-  // directory and we can't depend on how far down it goes. So we walk upwards
-  // from DIR_EXE until we find a likely looking spot.
-  while (!base::DirectoryExists(generated_code_dir.Append(kPyProto))) {
-    base::FilePath parent = generated_code_dir.DirName();
-    if (parent == generated_code_dir) {
-      // We hit the root directory. Maybe we didn't build any targets which
-      // produced Python protocol buffers.
-      return false;
-    }
-    generated_code_dir = parent;
-  }
+  if (base::mac::AmIBundled())
+    generated_code_dir = generated_code_dir.DirName().DirName().DirName();
 #endif
-  *dir = generated_code_dir.Append(kPyProto);
-  VLOG(2) << "Found " << kPyProto.value() << " in " << dir->value();
-  return true;
+
+  // Used for GYP. TODO(jam): remove after GN conversion.
+  const base::FilePath kPyProto(FILE_PATH_LITERAL("pyproto"));
+  if (base::DirectoryExists(generated_code_dir.Append(kPyProto))) {
+    *dir = generated_code_dir.Append(kPyProto);
+    return true;
+  }
+
+  // Used for GN.
+  const base::FilePath kGen(FILE_PATH_LITERAL("gen"));
+  if (base::DirectoryExists(generated_code_dir.Append(kGen))) {
+    *dir = generated_code_dir.Append(kGen);
+    return true;
+  }
+
+  return false;
 }
 
 #if defined(OS_WIN)

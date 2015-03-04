@@ -264,3 +264,68 @@ if (current_toolchain == host_toolchain) {
     deps += [ "//build/config/sanitizers:deps" ]
   }
 }
+
+copy("copy_google") {
+  sources = [
+    "__init__.py",
+  ]
+  outputs = [
+    "$root_gen_dir/google/{{source_file_part}}",
+  ]
+}
+
+copy("copy_google_protobuf") {
+  sources = [
+    "python/google/protobuf/__init__.py",
+    "python/google/protobuf/descriptor.py",
+    "python/google/protobuf/descriptor_database.py",
+    "python/google/protobuf/descriptor_pool.py",
+    "python/google/protobuf/message.py",
+    "python/google/protobuf/message_factory.py",
+    "python/google/protobuf/reflection.py",
+    "python/google/protobuf/service.py",
+    "python/google/protobuf/service_reflection.py",
+    "python/google/protobuf/text_format.py",
+
+    # TODO(ncarter): protoc"s python generator treats
+    # descriptor.proto specially, but it's not possible to trigger
+    # the special treatment unless you run protoc from ./src/src
+    # (the treatment is based on the path to the .proto file
+    # matching a constant exactly). I'm not sure how to convince
+    # gyp to execute a rule from a different directory.  Until this
+    # is resolved, use a copy of descriptor_pb2.py that I manually
+    # generated.
+    "descriptor_pb2.py",
+  ]
+  outputs = [
+    "$root_gen_dir/google/protobuf/{{source_file_part}}",
+  ]
+}
+
+copy("copy_google_protobuf_internal") {
+  sources = [
+    "python/google/protobuf/internal/__init__.py",
+    "python/google/protobuf/internal/api_implementation.py",
+    "python/google/protobuf/internal/containers.py",
+    "python/google/protobuf/internal/cpp_message.py",
+    "python/google/protobuf/internal/decoder.py",
+    "python/google/protobuf/internal/encoder.py",
+    "python/google/protobuf/internal/enum_type_wrapper.py",
+    "python/google/protobuf/internal/generator_test.py",
+    "python/google/protobuf/internal/message_listener.py",
+    "python/google/protobuf/internal/python_message.py",
+    "python/google/protobuf/internal/type_checkers.py",
+    "python/google/protobuf/internal/wire_format.py",
+  ]
+  outputs = [
+    "$root_gen_dir/google/protobuf/internal/{{source_file_part}}",
+  ]
+}
+
+group("py_proto") {
+  public_deps = [
+    ":copy_google",
+    ":copy_google_protobuf",
+    ":copy_google_protobuf_internal",
+  ]
+}

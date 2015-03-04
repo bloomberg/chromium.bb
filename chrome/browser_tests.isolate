@@ -59,6 +59,9 @@
           '<(PRODUCT_DIR)/peerconnection_server<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/pseudo_locales/',
           '<(PRODUCT_DIR)/pyproto/',
+          # TODO(jam): above is directory for GYP. GN uses:
+          #'<(SHARED_INTERMEDIATE_DIR)/google/',
+          #'<(SHARED_INTERMEDIATE_DIR)/policy/proto/',
           '<(PRODUCT_DIR)/remoting/unittests/',
           '<(PRODUCT_DIR)/test_case.html',
           '<(PRODUCT_DIR)/test_case.html.mock-http-headers',

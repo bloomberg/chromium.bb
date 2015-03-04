@@ -703,6 +703,10 @@ source_set("test_support") {
     "//url",
   ]
 
+  if (!is_ios) {
+    public_deps += [ "//third_party/protobuf:py_proto" ]
+  }
+
   if (!use_openssl && (use_nss_certs || is_ios)) {
     public_deps += [ "//crypto:platform" ]
   }
@@ -942,7 +946,6 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",  # TODO(brettw) bug 363749: this shouldn't be necessary. It's not
                # in the GYP build, and can be removed when the bug is fixed.
-
       ":test_support",
       "//base",
       "//base/test:test_support",
