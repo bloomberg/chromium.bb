@@ -501,20 +501,13 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
     if (protocolIsJavaScript(url))
         return false;
 
-    // FIXME: None of this code should use renderers!
-    LayoutEmbeddedObject* renderer = layoutEmbeddedObject();
-    ASSERT(renderer);
-    if (!renderer)
-        return false;
-
     KURL completedURL = document().completeURL(url);
     if (!pluginIsLoadable(completedURL, mimeType))
         return false;
 
     bool useFallback;
-    bool requireRenderer = true;
     if (shouldUsePlugin(completedURL, mimeType, hasFallbackContent(), useFallback))
-        return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, requireRenderer);
+        return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, true);
 
     // If the plug-in element already contains a subframe,
     // loadOrRedirectSubframe will re-use it. Otherwise, it will create a new
