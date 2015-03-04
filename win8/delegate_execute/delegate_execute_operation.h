@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 
 namespace base {
@@ -59,8 +60,8 @@ class DelegateExecuteOperation {
     return mutex_;
   }
 
-  // Returns the process id of the parent or 0 on failure.
-  DWORD GetParentPid() const;
+  // Returns the parent process.
+  base::Process GetParent() const;
 
   const base::FilePath& shortcut() const {
     return relaunch_shortcut_;

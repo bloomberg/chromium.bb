@@ -108,9 +108,9 @@ int RelaunchChrome(const DelegateExecuteOperation& operation) {
       AtlTrace("Unexpected release of the relaunch mutex!!\n");
     } else if (result == WAIT_TIMEOUT) {
       // This could mean that Chrome is hung. Proceed to exterminate.
-      DWORD pid = operation.GetParentPid();
-      AtlTrace("%ds timeout. Killing Chrome %d\n", kWaitSeconds, pid);
-      base::KillProcessById(pid, 0, false);
+      base::Process process = operation.GetParent();
+      AtlTrace("%ds timeout. Killing Chrome %d\n", kWaitSeconds, process.Pid());
+      process.Terminate(0);
     } else {
       AtlTrace("Failed to wait for relaunch mutex, result is 0x%x\n", result);
     }

@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -266,6 +267,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     remote_window_ = NULL;
     return PROCESS_NONE;
   }
+  base::Process process = base::Process::Open(process_id);
 
   // The window is hung. Scan for every window to find a visible one.
   bool visible_window = false;
@@ -285,7 +287,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   }
 
   // Time to take action. Kill the browser process.
-  base::KillProcessById(process_id, content::RESULT_CODE_HUNG, true);
+  base::KillProcess(process.Handle(), content::RESULT_CODE_HUNG, true);
   remote_window_ = NULL;
   return PROCESS_NONE;
 }

@@ -57,12 +57,6 @@ BASE_EXPORT bool KillProcess(ProcessHandle process, int exit_code, bool wait);
 BASE_EXPORT bool KillProcessGroup(ProcessHandle process_group_id);
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_WIN)
-BASE_EXPORT bool KillProcessById(ProcessId process_id,
-                                 int exit_code,
-                                 bool wait);
-#endif  // defined(OS_WIN)
-
 // Get the termination status of the process by interpreting the
 // circumstances of the child process' death. |exit_code| is set to
 // the status returned by waitpid() on POSIX, and from

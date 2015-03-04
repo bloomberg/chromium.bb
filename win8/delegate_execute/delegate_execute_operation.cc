@@ -51,15 +51,15 @@ bool DelegateExecuteOperation::Init(const base::CommandLine* cmd_line) {
   return true;
 }
 
-DWORD DelegateExecuteOperation::GetParentPid() const {
+base::Process DelegateExecuteOperation::GetParent() const {
   std::vector<base::string16> parts;
   base::SplitString(mutex_, L'.', &parts);
   if (parts.size() != 3)
-    return 0;
+    return base::Process();
   DWORD pid;
   if (!base::StringToUint(parts[2], reinterpret_cast<uint32*>(&pid)))
-    return 0;
-  return pid;
+    return base::Process();
+  return base::Process::Open(pid);
 }
 
 }  // namespace delegate_execute

@@ -25,8 +25,8 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -203,8 +203,8 @@ void CrashCallback() {
   if (rand() % 100 > 30) {
     printf("sweet death...\n");
 #if defined(OS_WIN)
-    // Windows does more work on _exit() that we would like, so we use Kill.
-    base::KillProcessById(base::GetCurrentProcId(), kExpectedCrash, false);
+    // Windows does more work on _exit() than we would like.
+    base::Process::Current().Terminate(kExpectedCrash);
 #elif defined(OS_POSIX)
     // On POSIX, _exit() will terminate the process with minimal cleanup,
     // and it is cleaner than killing.

@@ -101,22 +101,6 @@ bool KillProcess(ProcessHandle process, int exit_code, bool wait) {
   return result;
 }
 
-// Attempts to kill the process identified by the given process
-// entry structure, giving it the specified exit code.
-// Returns true if this is successful, false otherwise.
-bool KillProcessById(ProcessId process_id, int exit_code, bool wait) {
-  HANDLE process = OpenProcess(PROCESS_TERMINATE | SYNCHRONIZE,
-                               FALSE,  // Don't inherit handle
-                               process_id);
-  if (!process) {
-    DPLOG(ERROR) << "Unable to open process " << process_id;
-    return false;
-  }
-  bool ret = KillProcess(process, exit_code, wait);
-  CloseHandle(process);
-  return ret;
-}
-
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   DWORD tmp_exit_code = 0;
 

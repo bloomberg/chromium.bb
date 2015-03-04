@@ -14,11 +14,8 @@ bool KillProcesses(const FilePath::StringType& executable_name,
   bool result = true;
   NamedProcessIterator iter(executable_name, filter);
   while (const ProcessEntry* entry = iter.NextProcessEntry()) {
-#if defined(OS_WIN)
-    result &= KillProcessById(entry->pid(), exit_code, true);
-#else
-    result &= KillProcess(entry->pid(), exit_code, true);
-#endif
+    Process process = Process::Open(entry->pid());
+    result &= KillProcess(process.Handle(), exit_code, true);
   }
   return result;
 }
