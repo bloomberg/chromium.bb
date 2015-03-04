@@ -80,20 +80,7 @@
         ],
       },
     }],
-    ['OS=="mac"', {
-      'variables': {
-        'command': [
-          '../test_env.py',
-          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
-          '--gtest_filter=RemoteDesktopBrowserTest.MANUAL_Launch',
-          '--run-manual',
-          '--ui-test-action-timeout=100000',
-          '--webapp-unpacked=<(PRODUCT_DIR)/remoting/remoting.webapp',
-          '--extension-name=Chromoting',
-        ],
-      },
-    }],
-    ['OS=="win"', {
+    ['OS=="win" or OS=="mac"', {
       'variables': {
         'command': [
           '../test_env.py',
