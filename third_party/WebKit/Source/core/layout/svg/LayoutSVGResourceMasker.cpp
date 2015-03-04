@@ -52,8 +52,19 @@ void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client, bool m
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture()
+PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(AffineTransform& contentTransformation, const FloatRect& targetBoundingBox)
 {
+    SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue();
+    if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+        contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
+        contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
+    }
+
+    if (m_maskContentPicture)
+        return m_maskContentPicture;
+
+    SubtreeContentTransformScope contentTransformScope(contentTransformation);
+
     // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
@@ -82,22 +93,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture()
 
     if (displayItemList)
         displayItemList->replay(&context);
-    return context.endRecording();
-}
-
-PassRefPtr<const SkPicture> LayoutSVGResourceMasker::getContentPicture(AffineTransform& contentTransformation, const FloatRect& targetBoundingBox)
-{
-    SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue();
-    if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
-        contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
-        contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
-    }
-
-    if (!m_maskContentPicture) {
-        SubtreeContentTransformScope contentTransformScope(contentTransformation);
-        m_maskContentPicture = createContentPicture();
-    }
-
+    m_maskContentPicture = context.endRecording();
     return m_maskContentPicture;
 }
 

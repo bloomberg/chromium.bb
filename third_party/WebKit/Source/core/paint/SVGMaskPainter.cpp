@@ -68,7 +68,7 @@ void SVGMaskPainter::drawMaskForRenderer(GraphicsContext* context, DisplayItemCl
     ASSERT(context);
 
     AffineTransform contentTransformation;
-    RefPtr<const SkPicture> maskContentPicture = m_mask.getContentPicture(contentTransformation, targetBoundingBox);
+    RefPtr<const SkPicture> maskContentPicture = m_mask.createContentPicture(contentTransformation, targetBoundingBox);
 
     TransformRecorder recorder(*context, client, contentTransformation);
 
