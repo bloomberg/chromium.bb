@@ -41,7 +41,7 @@ template("wug") {
   helper_args = [
     rebase_path(declaration_path, root_build_dir),
     "--destination",
-    out_dir,
+    rebase_path(out_dir, root_build_dir),
     "--root",
     src_root,
     "--gn",
@@ -85,7 +85,7 @@ template("wug") {
       "--root",
       src_root,
       "--destination",
-      out_dir,
+      rebase_path(out_dir, root_build_dir),
     ]
   }
 
