@@ -223,6 +223,15 @@ userstyles/simple-stylesheet.html
 virtual/deferred/fast/images/link-body-content-imageDimensionChanged-crash.html
 virtual/prefer_compositing_to_lcd_text/compositing/scrollbars/scrollbar-large-overflow-rectangle.html
 virtual/stable/webexposed/internal-properties-should-not-be-exposed.html
+webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html
+webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html
+webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html
+webaudio/codec-tests/aac/vbr-128kbps-44khz.html
+webaudio/codec-tests/mp3/128kbps-44khz.html
+webaudio/codec-tests/wav/wav-369760.html
+webaudio/codec-tests/wav/24bit-44khz.html
+webaudio/codec-tests/wav/24bit-22khz-resample.html
+webaudio/osc-custom-sweep-snr.html
 webaudio/stereo2mono-down-mixing.html
 webexposed/custom-elements.html
 webexposed/internal-properties-should-not-be-exposed.html
