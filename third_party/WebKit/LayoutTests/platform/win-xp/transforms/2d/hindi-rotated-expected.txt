@@ -14,13 +14,13 @@ layer at (0,0) size 785x600
       LayoutBlockFlow {P} at (0,576) size 769x0
 layer at (8,103) size 252x60 transparent
   LayoutBlockFlow {DIV} at (0,95) size 252x60 [border: (1px solid #008000)]
-    LayoutText {#text} at (1,7) size 245x48
-      text run at (1,7) width 245: "Straight \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947} \x{935}\x{93E}\x{932}\x{93E}"
+    LayoutText {#text} at (1,7) size 249x48
+      text run at (1,7) width 249: "Straight \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947} \x{935}\x{93E}\x{932}\x{93E}"
       text run at (1,36) width 77: "\x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
 layer at (8,238) size 252x60 transparent
   LayoutBlockFlow {DIV} at (0,230) size 252x60 [border: (1px solid #008000)]
-    LayoutText {#text} at (1,7) size 243x48
-      text run at (1,7) width 243: "Now rotated \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947}"
+    LayoutText {#text} at (1,7) size 247x48
+      text run at (1,7) width 247: "Now rotated \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947}"
       text run at (1,36) width 111: "\x{935}\x{93E}\x{932}\x{93E} \x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
 layer at (8,373) size 252x60 transparent
   LayoutBlockFlow {DIV} at (0,365) size 252x60 [border: (1px solid #008000)]
