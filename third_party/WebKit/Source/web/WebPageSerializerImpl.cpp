@@ -465,10 +465,9 @@ void WebPageSerializerImpl::collectTargetFrames()
     if (!m_recursiveSerialization)
         return;
     // Collect all frames inside the specified frame.
-    for (int i = 0; i < static_cast<int>(m_frames.size()); ++i) {
-        WebLocalFrameImpl* currentFrame = m_frames[i];
+    for (WebLocalFrameImpl* frame : m_frames) {
         // Get current using document.
-        Document* currentDoc = currentFrame->frame()->document();
+        Document* currentDoc = frame->frame()->document();
         // Go through sub-frames.
         RefPtrWillBeRawPtr<HTMLAllCollection> all = currentDoc->all();
 
