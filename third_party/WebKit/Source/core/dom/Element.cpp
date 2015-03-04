@@ -1913,11 +1913,6 @@ void Element::removeAttrNodeList()
 
 PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
 {
-    if (!attrNode) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Attr"));
-        return nullptr;
-    }
-
     RefPtrWillBeRawPtr<Attr> oldAttrNode = attrIfExists(attrNode->qualifiedName());
     if (oldAttrNode.get() == attrNode)
         return attrNode; // This Attr is already attached to the element.
@@ -1972,10 +1967,6 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionSt
 
 PassRefPtrWillBeRawPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState)
 {
-    if (!attr) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Attr"));
-        return nullptr;
-    }
     if (attr->ownerElement() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node provided is owned by another element.");
         return nullptr;
@@ -2389,12 +2380,6 @@ static Element* contextElementForInsertion(const String& where, Element* element
 
 Element* Element::insertAdjacentElement(const String& where, Element* newChild, ExceptionState& exceptionState)
 {
-    if (!newChild) {
-        // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-        exceptionState.throwTypeError("The node provided is null.");
-        return nullptr;
-    }
-
     Node* returnValue = insertAdjacent(where, newChild, exceptionState);
     return toElement(returnValue);
 }
