@@ -66,11 +66,19 @@ public:
     // Must be called with the context's graph lock.
     void disconnectAll();
 
+    // Disconnect a specific input or AudioParam.
+    void disconnectInput(AudioNodeInput &);
+    void disconnectAudioParam(AudioParam &);
+
     void setNumberOfChannels(unsigned);
     unsigned numberOfChannels() const { return m_numberOfChannels; }
     bool isChannelCountKnown() const { return numberOfChannels() > 0; }
 
     bool isConnected() { return fanOutCount() > 0 || paramFanOutCount() > 0; }
+
+    // Probe if the output node is connected with a certain input or AudioParam
+    bool isConnectedToInput(AudioNodeInput &);
+    bool isConnectedToAudioParam(AudioParam &);
 
     // Disable/Enable happens when there are still JavaScript references to a node, but it has otherwise "finished" its work.
     // For example, when a note has finished playing.  It is kept around, because it may be played again at a later time.

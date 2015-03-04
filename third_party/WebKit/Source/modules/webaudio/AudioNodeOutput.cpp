@@ -190,6 +190,18 @@ void AudioNodeOutput::disconnectAllInputs()
         m_inputs.begin()->key->disconnect(*this);
 }
 
+void AudioNodeOutput::disconnectInput(AudioNodeInput& input)
+{
+    ASSERT(context()->isGraphOwner() && isConnectedToInput(input));
+    input.disconnect(*this);
+}
+
+void AudioNodeOutput::disconnectAudioParam(AudioParam& param)
+{
+    ASSERT(context()->isGraphOwner() && isConnectedToAudioParam(param));
+    param.disconnect(*this);
+}
+
 void AudioNodeOutput::addParam(AudioParam& param)
 {
     ASSERT(context()->isGraphOwner());
@@ -215,6 +227,18 @@ void AudioNodeOutput::disconnectAll()
 {
     disconnectAllInputs();
     disconnectAllParams();
+}
+
+bool AudioNodeOutput::isConnectedToInput(AudioNodeInput& input)
+{
+    ASSERT(context()->isGraphOwner());
+    return m_inputs.contains(&input);
+}
+
+bool AudioNodeOutput::isConnectedToAudioParam(AudioParam& param)
+{
+    ASSERT(context()->isGraphOwner());
+    return m_params.contains(&param);
 }
 
 void AudioNodeOutput::disable()

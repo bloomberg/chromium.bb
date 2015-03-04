@@ -42,7 +42,13 @@ enum ChannelInterpretation {
 ] interface AudioNode : EventTarget {
     [RaisesException] void connect(AudioNode destination, optional unsigned long output = 0, optional unsigned long input = 0);
     [RaisesException] void connect(AudioParam destination, optional unsigned long output = 0);
-    [RaisesException] void disconnect(optional unsigned long output = 0);
+    void disconnect();
+    [RaisesException] void disconnect(unsigned long output);
+    [RaisesException] void disconnect(AudioNode destination);
+    [RaisesException] void disconnect(AudioNode destination, unsigned long output);
+    [RaisesException] void disconnect(AudioNode destination, unsigned long output, unsigned long input);
+    [RaisesException] void disconnect(AudioParam destination);
+    [RaisesException] void disconnect(AudioParam destination, unsigned long output);
     readonly attribute AudioContext  context;
     readonly attribute unsigned long numberOfInputs;
     readonly attribute unsigned long numberOfOutputs;

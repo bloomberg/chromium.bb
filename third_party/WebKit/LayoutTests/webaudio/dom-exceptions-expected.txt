@@ -54,7 +54,7 @@ PASS node.connect(null, 0, 0) threw exception TypeError: Failed to execute 'conn
 PASS node.connect(context.destination, 100, 0) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (100) exceeds number of outputs (1)..
 PASS node.connect(context.destination, 0, 100) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': input index (100) exceeds number of inputs (1)..
 PASS node.connect(node2.gain, 100) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (100) exceeds number of outputs (1)..
-PASS node.disconnect(99) threw exception IndexSizeError: Failed to execute 'disconnect' on 'AudioNode': output index (99) exceeds number of outputs (1)..
+PASS node.disconnect(99) threw exception IndexSizeError: Failed to execute 'disconnect' on 'AudioNode': The output index provided (99) is outside the range [0, 1]..
 PASS node.connect(otherContext.destination) threw exception SyntaxError: Failed to execute 'connect' on 'AudioNode': cannot connect to a destination belonging to a different audio context..
 PASS node.channelCount = 99 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': channel count (99) must be between 1 and 32..
 PASS node.channelCount is not 99

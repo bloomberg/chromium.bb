@@ -138,7 +138,15 @@ public:
     // Called from main thread by corresponding JavaScript methods.
     virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
     void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
+
+    virtual void disconnect();
     virtual void disconnect(unsigned outputIndex, ExceptionState&);
+    virtual void disconnect(AudioNode*, ExceptionState&);
+    virtual void disconnect(AudioNode*, unsigned outputIndex, ExceptionState&);
+    virtual void disconnect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
+    virtual void disconnect(AudioParam*, ExceptionState&);
+    virtual void disconnect(AudioParam*, unsigned outputIndex, ExceptionState&);
+
     // Like disconnect, but no exception is thrown if the outputIndex is invalid.  Just do nothing
     // in that case.
     virtual void disconnectWithoutException(unsigned outputIndex);

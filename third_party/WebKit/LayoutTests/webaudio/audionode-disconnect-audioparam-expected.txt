@@ -1,0 +1,14 @@
+Test disconnect() method on AudioParam destination.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS The rendered buffer matches expected values: [2.25,1.5]
+PASS The rendered buffer matches expected values: Ch0 = [3,1.5] Ch1 = [6,3]
+PASS "gain1.disconnect(gain3.gain);" threw exception InvalidAccessError.
+PASS "splitter.disconnect(gain1.gain, 1);" threw exception InvalidAccessError.
+PASS "splitter.disconnect(gain1.gain, 2);" threw exception IndexSizeError.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

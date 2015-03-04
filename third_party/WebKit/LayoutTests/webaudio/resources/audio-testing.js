@@ -175,22 +175,6 @@ function isValidNumber(x) {
     return !isNaN(x) && (x != Infinity) && (x != -Infinity);
 }
 
-function shouldThrowTypeError(func, text) {
-    var ok = false;
-    try {
-        func();
-    } catch (e) {
-        if (e instanceof TypeError) {
-            ok = true;
-        }
-    }
-    if (ok) {
-        testPassed(text + " threw TypeError.");
-    } else {
-        testFailed(text + " should throw TypeError.");
-    }
-}
-
 // |Audit| is a task runner for web audio test. It makes asynchronous web audio
 // testing simple and manageable.
 //
@@ -256,3 +240,80 @@ function shouldThrowTypeError(func, text) {
     };
 
 })();
+
+
+// Create an AudioBuffer for test verification. Fill an incremental index value
+// into the each channel in the buffer. The channel index is between 1 and
+// |numChannels|. For example, a 4-channel buffer created by this function will
+// contain values 1, 2, 3 and 4 for each channel respectively.
+function createTestingAudioBuffer(context, numChannels, length) {
+    var buffer = context.createBuffer(numChannels, length, context.sampleRate);
+    for (var i = 1; i <= numChannels; i++) {
+        var data = buffer.getChannelData(i-1);
+        for (var j = 0; j < data.length; j++) {
+            // Storing channel index into the channel buffer.
+            data[j] = i;
+        }
+    }
+    return buffer;
+}
+
+// Generate a string out of function. Useful when throwing an error/exception
+// with a description. It creates strings from a function, then extract the
+// function body and trim out leading and trailing white spaces.
+function getTaskSummary(func) {
+    var lines = func.toString().split('\n').slice(1, -1);
+    lines = lines.map(function (str) { return str.trim(); });
+    lines = lines.join(' ');
+    return '"' + lines + '"';
+}
+
+// The name space for |Should| test utility. Dependencies: testPassed(),
+// testFailed() from resources/js-test.js
+var Should = {};
+
+// Expect an exception to be thrown with a certain type.
+Should.throwWithType = function (type, func) {
+    var summary = getTaskSummary(func);
+    try {
+        func();
+        testFailed(summary + ' should throw ' + type + '.');
+    } catch (e) {
+        if (e.name === type)
+            testPassed(summary + ' threw exception ' + e.name + '.');
+        else
+            testFailed(summary + ' should throw ' + type + '. Threw exception ' + e.name + '.');
+    }
+};
+
+// Expect not to throw an exception.
+Should.notThrow = function (func) {
+    var summary = getTaskSummary(func);
+    try {
+        func();
+        testPassed(summary + ' did not throw exception.');
+    } catch (e) {
+        testFailed(summary + ' should not throw exception. Threw exception ' + e.name + '.');
+    }
+};
+
+
+// Verify if the channelData array contains a single constant |value|.
+Should.haveValueInChannel = function (value, channelData) {
+    var mismatch = {};
+    for (var i = 0; i < channelData.length; i++) {
+        if (channelData[i] !== value) {
+            mismatch[i] = value;
+        }
+    }
+
+    var numberOfmismatches = Object.keys(mismatch).length;
+    if (numberOfmismatches === 0) {
+        testPassed('ChannelData has expected values (' + value + ').');
+    } else {
+        testFailed(numberOfmismatches + ' values in ChannelData are not equal to ' + value + ':');
+        for (var index in mismatch) {
+            console.log('[' + index + '] : ' + mismatch[index]);
+        }
+    }
+};
