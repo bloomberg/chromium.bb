@@ -36,6 +36,8 @@ source_set("test_support") {
     "mock_chrome_application_mac.mm",
     "mock_devices_changed_observer.cc",
     "mock_devices_changed_observer.h",
+    "mock_log.cc",
+    "mock_log.h",
     "multiprocess_test.cc",
     "multiprocess_test.h",
     "multiprocess_test_android.cc",

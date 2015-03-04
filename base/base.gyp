@@ -938,6 +938,8 @@
         'test/mock_chrome_application_mac.mm',
         'test/mock_devices_changed_observer.cc',
         'test/mock_devices_changed_observer.h',
+        'test/mock_log.cc',
+        'test/mock_log.h',
         'test/multiprocess_test.cc',
         'test/multiprocess_test.h',
         'test/multiprocess_test_android.cc',

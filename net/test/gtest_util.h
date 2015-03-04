@@ -7,8 +7,8 @@
 #ifndef NET_QUIC_TEST_TOOLS_GTEST_UTIL_H_
 #define NET_QUIC_TEST_TOOLS_GTEST_UTIL_H_
 
+#include "base/test/mock_log.h"
 #include "net/test/scoped_disable_exit_on_dfatal.h"
-#include "net/test/scoped_mock_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,26 +17,25 @@ namespace test {
 
 // Internal implementation for the EXPECT_DFATAL and ASSERT_DFATAL
 // macros.  Do not use this directly.
-#define GTEST_DFATAL_(statement, matcher, fail)                         \
-  GTEST_AMBIGUOUS_ELSE_BLOCKER_                                         \
-  if (true) {                                                           \
-    ::net::test::ScopedMockLog gtest_log;                               \
-    ::net::test::ScopedDisableExitOnDFatal gtest_disable_exit;          \
-    using ::testing::_;                                                 \
-    EXPECT_CALL(gtest_log, Log(_, _, _, _, _))                          \
-        .WillRepeatedly(::testing::Return(false));                      \
-    EXPECT_CALL(gtest_log, Log(logging::LOG_DFATAL, _, _, _, matcher))  \
-        .Times(::testing::AtLeast(1))                                   \
-        .WillOnce(::testing::Return(false));                            \
-    gtest_log.StartCapturingLogs();                                     \
-    { statement; }                                                      \
-    gtest_log.StopCapturingLogs();                                      \
-    if (!testing::Mock::VerifyAndClear(&gtest_log)) {                   \
-      goto GTEST_CONCAT_TOKEN_(gtest_label_dfatal_, __LINE__);          \
-    }                                                                   \
-  } else                                                                \
-    GTEST_CONCAT_TOKEN_(gtest_label_dfatal_, __LINE__):                 \
-        fail("")
+#define GTEST_DFATAL_(statement, matcher, fail)                        \
+  GTEST_AMBIGUOUS_ELSE_BLOCKER_                                        \
+  if (true) {                                                          \
+    ::base::test::MockLog gtest_log;                                   \
+    ::net::test::ScopedDisableExitOnDFatal gtest_disable_exit;         \
+    using ::testing::_;                                                \
+    EXPECT_CALL(gtest_log, Log(_, _, _, _, _))                         \
+        .WillRepeatedly(::testing::Return(false));                     \
+    EXPECT_CALL(gtest_log, Log(logging::LOG_DFATAL, _, _, _, matcher)) \
+        .Times(::testing::AtLeast(1))                                  \
+        .WillOnce(::testing::Return(false));                           \
+    gtest_log.StartCapturingLogs();                                    \
+    { statement; }                                                     \
+    gtest_log.StopCapturingLogs();                                     \
+    if (!testing::Mock::VerifyAndClear(&gtest_log)) {                  \
+      goto GTEST_CONCAT_TOKEN_(gtest_label_dfatal_, __LINE__);         \
+    }                                                                  \
+  } else                                                               \
+  GTEST_CONCAT_TOKEN_(gtest_label_dfatal_, __LINE__) : fail("")
 
 // The EXPECT_DFATAL and ASSERT_DFATAL macros are lightweight
 // alternatives to EXPECT_DEBUG_DEATH and ASSERT_DEBUG_DEATH. They

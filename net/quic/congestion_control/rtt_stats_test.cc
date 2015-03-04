@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "net/test/scoped_mock_log.h"
+#include "base/test/mock_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using logging::LOG_WARNING;
@@ -226,7 +226,7 @@ TEST_F(RttStatsTest, ExpireSmoothedMetrics) {
 
 TEST_F(RttStatsTest, UpdateRttWithBadSendDeltas) {
   // Make sure we ignore bad RTTs.
-  ScopedMockLog log;
+  base::test::MockLog log;
 
   QuicTime::Delta initial_rtt = QuicTime::Delta::FromMilliseconds(10);
   rtt_stats_.UpdateRtt(initial_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());

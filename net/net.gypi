@@ -1678,8 +1678,6 @@
       'test/run_all_unittests.cc',
       'test/scoped_disable_exit_on_dfatal.cc',
       'test/scoped_disable_exit_on_dfatal.h',
-      'test/scoped_mock_log.cc',
-      'test/scoped_mock_log.h',
       'test/test_certificate_data.h',
       'tools/balsa/balsa_frame_test.cc',
       'tools/balsa/balsa_headers_test.cc',
