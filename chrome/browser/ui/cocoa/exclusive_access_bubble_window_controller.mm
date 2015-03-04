@@ -10,13 +10,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/exclusive_access_bubble_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
@@ -65,15 +65,17 @@ const float kHideDuration = 0.7;
 
 @implementation ExclusiveAccessBubbleWindowController
 
-- (id)initWithOwner:(BrowserWindowController*)owner
-            browser:(Browser*)browser
-                url:(const GURL&)url
-         bubbleType:(ExclusiveAccessBubbleType)bubbleType {
+- (id)initWithOwner:(NSWindowController*)owner
+    exclusive_access_manager:(ExclusiveAccessManager*)exclusive_access_manager
+                     profile:(Profile*)profile
+                         url:(const GURL&)url
+                  bubbleType:(ExclusiveAccessBubbleType)bubbleType {
   NSString* nibPath =
       [base::mac::FrameworkBundle() pathForResource:@"ExclusiveAccessBubble"
                                              ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
-    browser_ = browser;
+    exclusive_access_manager_ = exclusive_access_manager;
+    profile_ = profile;
     owner_ = owner;
     url_ = url;
     bubbleType_ = bubbleType;
@@ -97,12 +99,12 @@ const float kHideDuration = 0.7;
     [[self window] setIgnoresMouseEvents:YES];
 
   DCHECK(exclusive_access_bubble::ShowButtonsForType(bubbleType_));
-  browser_->exclusive_access_manager()->OnAcceptExclusiveAccessPermission();
+  exclusive_access_manager_->OnAcceptExclusiveAccessPermission();
 }
 
 - (void)deny:(id)sender {
   DCHECK(exclusive_access_bubble::ShowButtonsForType(bubbleType_));
-  browser_->exclusive_access_manager()->OnDenyExclusiveAccessPermission();
+  exclusive_access_manager_->OnDenyExclusiveAccessPermission();
 }
 
 - (void)showButtons:(BOOL)show {
@@ -126,7 +128,9 @@ const float kHideDuration = 0.7;
   }
   [tweaker_ tweakUI:info_bubble];
   [[owner_ window] addChildWindow:info_bubble ordered:NSWindowAbove];
-  [owner_ layoutSubviews];
+
+  if ([owner_ respondsToSelector:@selector(layoutSubviews)])
+    [(id)owner_ layoutSubviews];
 
   [info_bubble orderFront:self];
 }
@@ -151,8 +155,7 @@ const float kHideDuration = 0.7;
 - (BOOL)textView:(NSTextView*)textView
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
-  browser_->exclusive_access_manager()
-      ->fullscreen_controller()
+  exclusive_access_manager_->fullscreen_controller()
       ->ExitExclusiveAccessToPreviousState();
   return YES;
 }
@@ -281,7 +284,7 @@ const float kHideDuration = 0.7;
   if (bubbleType_ == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE)
     return @"";
   extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(browser_->profile());
+      extensions::ExtensionRegistry::Get(profile_);
   return SysUTF16ToNSString(exclusive_access_bubble::GetLabelTextForType(
       bubbleType_, url_, registry));
 }

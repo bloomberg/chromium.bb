@@ -7,6 +7,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/notification_service.h"
@@ -17,9 +19,8 @@
 using content::RenderViewHost;
 using content::WebContents;
 
-MouseLockController::MouseLockController(ExclusiveAccessManager* manager,
-                                         Browser* browser)
-    : ExclusiveAccessControllerBase(manager, browser),
+MouseLockController::MouseLockController(ExclusiveAccessManager* manager)
+    : ExclusiveAccessControllerBase(manager),
       mouse_lock_state_(MOUSELOCK_NOT_REQUESTED) {
 }
 
@@ -136,8 +137,10 @@ bool MouseLockController::OnAcceptExclusiveAccessPermission() {
   if (mouse_lock && !IsMouseLocked()) {
     DCHECK(IsMouseLockRequested());
 
-    HostContentSettingsMap* settings_map =
-        profile()->GetHostContentSettingsMap();
+    HostContentSettingsMap* settings_map = exclusive_access_manager()
+                                               ->context()
+                                               ->GetProfile()
+                                               ->GetHostContentSettingsMap();
 
     GURL url = GetExclusiveAccessBubbleURL();
     ContentSettingsPattern pattern = ContentSettingsPattern::FromURL(url);
@@ -237,7 +240,10 @@ ContentSetting MouseLockController::GetMouseLockSetting(const GURL& url) const {
           ->IsPrivilegedFullscreenForTab())
     return CONTENT_SETTING_ALLOW;
 
-  HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings_map = exclusive_access_manager()
+                                             ->context()
+                                             ->GetProfile()
+                                             ->GetHostContentSettingsMap();
   return settings_map->GetContentSetting(
       url, url, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string());
 }

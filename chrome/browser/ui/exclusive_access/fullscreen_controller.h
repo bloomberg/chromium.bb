@@ -49,7 +49,7 @@ class WebContents;
 // This class implements fullscreen behaviour.
 class FullscreenController : public ExclusiveAccessControllerBase {
  public:
-  FullscreenController(ExclusiveAccessManager* manager, Browser* browser);
+  explicit FullscreenController(ExclusiveAccessManager* manager);
   ~FullscreenController() override;
 
   // Browser/User Fullscreen ///////////////////////////////////////////////////
@@ -116,14 +116,14 @@ class FullscreenController : public ExclusiveAccessControllerBase {
 
   // Platform Fullscreen ///////////////////////////////////////////////////////
 
+#if defined(OS_WIN)
   // Returns whether we are currently in a Metro snap view.
   bool IsInMetroSnapMode();
 
-#if defined(OS_WIN)
   // API that puts the window into a mode suitable for rendering when Chrome
   // is rendered in a 20% screen-width Metro snap view on Windows 8.
   void SetMetroSnapMode(bool enable);
-#endif
+#endif  // OS_WIN
 
   // Overrde from ExclusiveAccessControllerBase.
   void OnTabDetachedFromView(content::WebContents* web_contents) override;

@@ -66,7 +66,7 @@ class TestBrowserWindow : public BrowserWindow {
                        ExclusiveAccessBubbleType type,
                        bool with_toolbar) override {}
   void ExitFullscreen() override {}
-  void UpdateFullscreenExitBubbleContent(
+  void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type) override {}
   bool ShouldHideUIForFullscreen() const override;
@@ -150,6 +150,7 @@ class TestBrowserWindow : public BrowserWindow {
   int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
+  ExclusiveAccessContext* GetExclusiveAccessContext() override;
 
  protected:
   void DestroyBrowser() override {}

@@ -11,7 +11,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
-class Browser;
+class ExclusiveAccessManager;
 
 namespace gfx {
 class Rect;
@@ -22,7 +22,7 @@ class Rect;
 // state, namely fullscreen and mouse lock.
 class ExclusiveAccessBubble : public gfx::AnimationDelegate {
  public:
-  explicit ExclusiveAccessBubble(Browser* browser,
+  explicit ExclusiveAccessBubble(ExclusiveAccessManager* manager,
                                  const GURL& url,
                                  ExclusiveAccessBubbleType bubble_type);
   ~ExclusiveAccessBubble() override;
@@ -71,7 +71,7 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   // on or off the screen as appropriate.
   void CheckMousePosition();
 
-  void ToggleFullscreen();
+  void ExitExclusiveAccess();
   // Accepts the request. Can cause FullscreenExitBubble to be deleted.
   void Accept();
   // Denys the request. Can cause FullscreenExitBubble to be deleted.
@@ -85,8 +85,8 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   // The following strings never change.
   base::string16 GetInstructionText() const;
 
-  // The browser this bubble is in.
-  Browser* browser_;
+  // The Manager associated with this bubble.
+  ExclusiveAccessManager* const manager_;
 
   // The host the bubble is for, can be empty.
   GURL url_;

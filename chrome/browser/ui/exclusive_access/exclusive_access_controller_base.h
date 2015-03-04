@@ -6,13 +6,11 @@
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_CONTROLLER_BASE_H_
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class Browser;
-class BrowserWindow;
 class ExclusiveAccessManager;
 class GURL;
 class Profile;
@@ -26,8 +24,7 @@ class WebContents;
 // which the resource (screen/mouse) is held exclusively.
 class ExclusiveAccessControllerBase : public content::NotificationObserver {
  public:
-  explicit ExclusiveAccessControllerBase(ExclusiveAccessManager* manager,
-                                         Browser* browser);
+  explicit ExclusiveAccessControllerBase(ExclusiveAccessManager* manager);
   ~ExclusiveAccessControllerBase() override;
 
   GURL GetExclusiveAccessBubbleURL() const;
@@ -73,10 +70,6 @@ class ExclusiveAccessControllerBase : public content::NotificationObserver {
 
   ExclusiveAccessManager* exclusive_access_manager() const { return manager_; }
 
-  Browser* browser() const { return browser_; }
-
-  Profile* profile() const { return profile_; }
-
   // Exits exclusive access mode for the tab if currently exclusive.
   virtual void ExitExclusiveAccessIfNecessary() = 0;
 
@@ -88,8 +81,6 @@ class ExclusiveAccessControllerBase : public content::NotificationObserver {
   void UpdateNotificationRegistrations();
 
   ExclusiveAccessManager* const manager_;
-  Browser* const browser_;
-  Profile* const profile_;
 
   content::NotificationRegistrar registrar_;
 

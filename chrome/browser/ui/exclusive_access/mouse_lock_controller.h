@@ -11,7 +11,7 @@
 // This class implements mouselock behavior.
 class MouseLockController : public ExclusiveAccessControllerBase {
  public:
-  MouseLockController(ExclusiveAccessManager* manager, Browser* browser);
+  explicit MouseLockController(ExclusiveAccessManager* manager);
   ~MouseLockController() override;
 
   bool IsMouseLocked() const;

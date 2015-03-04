@@ -22,6 +22,7 @@
 
 class Browser;
 class DownloadShelf;
+class ExclusiveAccessContext;
 class FindBar;
 class GlobalErrorBubbleViewBase;
 class GURL;
@@ -131,7 +132,7 @@ class BrowserWindow : public ui::BaseWindow {
                                ExclusiveAccessBubbleType bubble_type,
                                bool with_toolbar) = 0;
   virtual void ExitFullscreen() = 0;
-  virtual void UpdateFullscreenExitBubbleContent(
+  virtual void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type) = 0;
 
@@ -394,6 +395,9 @@ class BrowserWindow : public ui::BaseWindow {
   // Executes |command| registered by |extension|.
   virtual void ExecuteExtensionCommand(const extensions::Extension* extension,
                                        const extensions::Command& command) = 0;
+
+  // Returns object implementing ExclusiveAccessContext interface.
+  virtual ExclusiveAccessContext* GetExclusiveAccessContext() = 0;
 
  protected:
   friend class BrowserCloseManager;

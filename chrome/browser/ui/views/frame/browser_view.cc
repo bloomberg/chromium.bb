@@ -946,7 +946,7 @@ void BrowserView::ExitFullscreen() {
                     EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
-void BrowserView::UpdateFullscreenExitBubbleContent(
+void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type) {
   // Immersive mode has no exit bubble because it has a visible strip at the
@@ -2280,7 +2280,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 
   if (fullscreen && !chrome::IsRunningInAppMode() &&
       mode != METRO_SNAP_FULLSCREEN) {
-    UpdateFullscreenExitBubbleContent(url, bubble_type);
+    UpdateExclusiveAccessExitBubbleContent(url, bubble_type);
   }
 
   // Undo our anti-jankiness hacks and force a re-layout. We also need to
@@ -2502,6 +2502,10 @@ void BrowserView::ExecuteExtensionCommand(
   toolbar_->ExecuteExtensionCommand(extension, command);
 }
 
+ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {
+  return this;
+}
+
 void BrowserView::DoCutCopyPaste(void (WebContents::*method)(),
                                  int command_id) {
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
@@ -2567,4 +2571,43 @@ int BrowserView::GetMaxTopInfoBarArrowHeight() {
     top_arrow_height = infobar_top.y() - icon_bottom.y();
   }
   return top_arrow_height;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, ExclusiveAccessContext overrides
+Profile* BrowserView::GetProfile() {
+  return browser_->profile();
+}
+
+WebContents* BrowserView::GetActiveWebContents() {
+  return browser_->tab_strip_model()->GetActiveWebContents();
+}
+
+void BrowserView::UnhideDownloadShelf() {
+  GetDownloadShelf()->Unhide();
+}
+
+void BrowserView::HideDownloadShelf() {
+  GetDownloadShelf()->Hide();
+  StatusBubble* statusBubble = GetStatusBubble();
+  if (statusBubble)
+    statusBubble->Hide();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, ExclusiveAccessBubbleViewsContext overrides
+ExclusiveAccessManager* BrowserView::GetExclusiveAccessManager() {
+  return browser_->exclusive_access_manager();
+}
+
+bool BrowserView::IsImmersiveModeEnabled() {
+  return immersive_mode_controller()->IsEnabled();
+}
+
+views::Widget* BrowserView::GetBubbleAssociatedWidget() {
+  return GetWidget();
+}
+
+gfx::Rect BrowserView::GetTopContainerBoundsInScreen() {
+  return top_container_->GetBoundsInScreen();
 }

@@ -7,8 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
@@ -32,10 +32,10 @@ const int ExclusiveAccessBubble::kSlideOutDurationMs = 700;
 const int ExclusiveAccessBubble::kPopupTopPx = 15;
 
 ExclusiveAccessBubble::ExclusiveAccessBubble(
-    Browser* browser,
+    ExclusiveAccessManager* manager,
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type)
-    : browser_(browser), url_(url), bubble_type_(bubble_type) {
+    : manager_(manager), url_(url), bubble_type_(bubble_type) {
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type_);
 }
 
@@ -114,24 +114,22 @@ void ExclusiveAccessBubble::CheckMousePosition() {
   }
 }
 
-void ExclusiveAccessBubble::ToggleFullscreen() {
-  browser_->exclusive_access_manager()
-      ->fullscreen_controller()
-      ->ExitExclusiveAccessToPreviousState();
+void ExclusiveAccessBubble::ExitExclusiveAccess() {
+  manager_->ExitExclusiveAccess();
 }
 
 void ExclusiveAccessBubble::Accept() {
-  browser_->exclusive_access_manager()->OnAcceptExclusiveAccessPermission();
+  manager_->OnAcceptExclusiveAccessPermission();
 }
 
 void ExclusiveAccessBubble::Cancel() {
-  browser_->exclusive_access_manager()->OnDenyExclusiveAccessPermission();
+  manager_->OnDenyExclusiveAccessPermission();
 }
 
 base::string16 ExclusiveAccessBubble::GetCurrentMessageText() const {
   return exclusive_access_bubble::GetLabelTextForType(
       bubble_type_, url_,
-      extensions::ExtensionRegistry::Get(browser_->profile()));
+      extensions::ExtensionRegistry::Get(manager_->context()->GetProfile()));
 }
 
 base::string16 ExclusiveAccessBubble::GetCurrentDenyButtonText() const {

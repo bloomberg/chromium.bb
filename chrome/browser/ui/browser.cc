@@ -446,7 +446,8 @@ Browser::Browser(const CreateParams& params)
 #endif  // defined(OS_WIN)
   }
 
-  exclusive_access_manager_.reset(new ExclusiveAccessManager(this));
+  exclusive_access_manager_.reset(
+      new ExclusiveAccessManager(window_->GetExclusiveAccessContext()));
 
   // Must be initialized after window_.
   // Also: surprise! a modal dialog host is not necessary to host modal dialogs

@@ -61,11 +61,12 @@ class ExclusiveAccessBubbleWindowControllerTest : public CocoaProfileTest {
 
     site_instance_ = SiteInstance::Create(profile());
     controller_.reset([[ExclusiveAccessBubbleWindowController alloc]
-        initWithOwner:nil
-              browser:browser()
-                  url:GURL()
-           bubbleType:
-               EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION]);
+                   initWithOwner:nil
+        exclusive_access_manager:browser()->exclusive_access_manager()
+                         profile:browser()->profile()
+                             url:GURL()
+                      bubbleType:
+                          EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION]);
     EXPECT_TRUE([controller_ window]);
   }
 
@@ -143,20 +144,23 @@ TEST_F(ExclusiveAccessBubbleWindowControllerTest, ShortcutText) {
 // http://crbug.com/139944
 TEST_F(ExclusiveAccessBubbleWindowControllerTest, DenyButtonText) {
   controller_.reset([[ExclusiveAccessBubbleWindowController alloc]
-      initWithOwner:nil
-      browser:browser()
-      url:GURL()
-      bubbleType:EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS]);
+                 initWithOwner:nil
+      exclusive_access_manager:browser()->exclusive_access_manager()
+                       profile:browser()->profile()
+                           url:GURL()
+                    bubbleType:EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS]);
   [controller_ initializeLabelAndButton];
   NSString* mouselock_deny_button_text = [controller_ denyButtonText];
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_FULLSCREEN_DENY),
     mouselock_deny_button_text);
 
   controller_.reset([[ExclusiveAccessBubbleWindowController alloc]
-      initWithOwner:nil
-      browser:browser()
-      url:GURL()
-      bubbleType:EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS]);
+                 initWithOwner:nil
+      exclusive_access_manager:browser()->exclusive_access_manager()
+                       profile:browser()->profile()
+                           url:GURL()
+                    bubbleType:
+                        EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS]);
   [controller_ initializeLabelAndButton];
   NSString* fullscreen_mouselock_deny_button_text =
       [controller_ denyButtonText];

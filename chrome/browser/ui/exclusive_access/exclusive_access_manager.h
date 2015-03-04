@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 
-class Browser;
+class ExclusiveAccessContext;
 class FullscreenController;
 class GURL;
 class MouseLockController;
@@ -24,7 +24,8 @@ class WebContents;
 // the exit bubble to reflect the combined state.
 class ExclusiveAccessManager {
  public:
-  explicit ExclusiveAccessManager(Browser* browser);
+  explicit ExclusiveAccessManager(
+      ExclusiveAccessContext* exclusive_access_context);
   ~ExclusiveAccessManager();
 
   FullscreenController* fullscreen_controller() {
@@ -34,6 +35,8 @@ class ExclusiveAccessManager {
   MouseLockController* mouse_lock_controller() {
     return &mouse_lock_controller_;
   }
+
+  ExclusiveAccessContext* context() const { return exclusive_access_context_; }
 
   ExclusiveAccessBubbleType GetExclusiveAccessExitBubbleType() const;
   void UpdateExclusiveAccessExitBubbleContent();
@@ -57,9 +60,10 @@ class ExclusiveAccessManager {
   // Called by platform ExclusiveAccessExitBubble.
   void OnAcceptExclusiveAccessPermission();
   void OnDenyExclusiveAccessPermission();
+  void ExitExclusiveAccess();
 
  private:
-  Browser* const browser_;
+  ExclusiveAccessContext* const exclusive_access_context_;
   FullscreenController fullscreen_controller_;
   MouseLockController mouse_lock_controller_;
 

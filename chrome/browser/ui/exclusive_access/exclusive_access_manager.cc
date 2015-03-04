@@ -7,15 +7,17 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 
 using content::WebContents;
 
-ExclusiveAccessManager::ExclusiveAccessManager(Browser* browser)
-    : browser_(browser),
-      fullscreen_controller_(this, browser),
-      mouse_lock_controller_(this, browser) {
+ExclusiveAccessManager::ExclusiveAccessManager(
+    ExclusiveAccessContext* exclusive_access_context)
+    : exclusive_access_context_(exclusive_access_context),
+      fullscreen_controller_(this),
+      mouse_lock_controller_(this) {
 }
 
 ExclusiveAccessManager::~ExclusiveAccessManager() {
@@ -71,7 +73,8 @@ void ExclusiveAccessManager::UpdateExclusiveAccessExitBubbleContent() {
       mouse_lock_controller_.IsMouseLocked())
     mouse_lock_controller_.UnlockMouse();
 
-  browser_->window()->UpdateFullscreenExitBubbleContent(url, bubble_type);
+  exclusive_access_context_->UpdateExclusiveAccessExitBubbleContent(
+      url, bubble_type);
 }
 
 GURL ExclusiveAccessManager::GetExclusiveAccessBubbleURL() const {
@@ -116,4 +119,9 @@ void ExclusiveAccessManager::OnDenyExclusiveAccessPermission() {
   updateBubble |= fullscreen_controller_.OnDenyExclusiveAccessPermission();
   if (updateBubble)
     UpdateExclusiveAccessExitBubbleContent();
+}
+
+void ExclusiveAccessManager::ExitExclusiveAccess() {
+  fullscreen_controller_.ExitExclusiveAccessToPreviousState();
+  mouse_lock_controller_.LostMouseLock();
 }

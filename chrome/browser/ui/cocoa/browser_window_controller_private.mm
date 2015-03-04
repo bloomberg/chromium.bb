@@ -617,10 +617,11 @@ willPositionSheet:(NSWindow*)sheet
     [exclusiveAccessBubbleWindowController_ closeImmediately];
     exclusiveAccessBubbleWindowController_.reset(
         [[ExclusiveAccessBubbleWindowController alloc]
-            initWithOwner:self
-                  browser:browser_.get()
-                      url:fullscreenUrl_
-               bubbleType:exclusiveAccessBubbleType_]);
+                       initWithOwner:self
+            exclusive_access_manager:browser_.get()->exclusive_access_manager()
+                             profile:browser_.get()->profile()
+                                 url:fullscreenUrl_
+                          bubbleType:exclusiveAccessBubbleType_]);
     [exclusiveAccessBubbleWindowController_ showWindow];
   }
 }

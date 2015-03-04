@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -267,11 +269,16 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+class BrowserCommandControllerFullscreenTest;
 
 // A test browser window that can toggle fullscreen state.
-class FullscreenTestBrowserWindow : public TestBrowserWindow {
+class FullscreenTestBrowserWindow : public TestBrowserWindow,
+                                    ExclusiveAccessContext {
  public:
-  FullscreenTestBrowserWindow() : fullscreen_(false) {}
+  FullscreenTestBrowserWindow(
+      BrowserCommandControllerFullscreenTest* test_browser)
+      : fullscreen_(false), test_browser_(test_browser) {}
+
   ~FullscreenTestBrowserWindow() override {}
 
   // TestBrowserWindow overrides:
@@ -284,8 +291,21 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow {
   }
   void ExitFullscreen() override { fullscreen_ = false; }
 
+  ExclusiveAccessContext* GetExclusiveAccessContext() override { return this; }
+
+  // Exclusive access interface:
+  Profile* GetProfile() override;
+  content::WebContents* GetActiveWebContents() override;
+  void HideDownloadShelf() override {}
+  void UnhideDownloadShelf() override {}
+  void UpdateExclusiveAccessExitBubbleContent(
+      const GURL& url,
+      ExclusiveAccessBubbleType bubble_type) override {}
+  bool IsFullscreenWithToolbar() const override { return IsFullscreen(); }
+
  private:
   bool fullscreen_;
+  BrowserCommandControllerFullscreenTest* test_browser_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenTestBrowserWindow);
 };
@@ -297,14 +317,24 @@ class BrowserCommandControllerFullscreenTest
   BrowserCommandControllerFullscreenTest() {}
   ~BrowserCommandControllerFullscreenTest() override {}
 
+  Browser* GetBrowser() { return BrowserWithTestWindowTest::browser(); }
+
   // BrowserWithTestWindowTest overrides:
   BrowserWindow* CreateBrowserWindow() override {
-    return new FullscreenTestBrowserWindow;
+    return new FullscreenTestBrowserWindow(this);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserCommandControllerFullscreenTest);
 };
+
+Profile* FullscreenTestBrowserWindow::GetProfile() {
+  return test_browser_->GetBrowser()->profile();
+}
+
+content::WebContents* FullscreenTestBrowserWindow::GetActiveWebContents() {
+  return test_browser_->GetBrowser()->tab_strip_model()->GetActiveWebContents();
+}
 
 TEST_F(BrowserCommandControllerFullscreenTest,
        UpdateCommandsForFullscreenMode) {

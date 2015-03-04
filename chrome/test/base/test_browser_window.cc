@@ -231,3 +231,7 @@ TestBrowserWindow::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
 void TestBrowserWindow::ExecuteExtensionCommand(
     const extensions::Extension* extension,
     const extensions::Command& command) {}
+
+ExclusiveAccessContext* TestBrowserWindow::GetExclusiveAccessContext() {
+  return nullptr;
+}

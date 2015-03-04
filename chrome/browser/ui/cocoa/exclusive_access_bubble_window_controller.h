@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "url/gurl.h"
 
-@class BrowserWindowController;
-class Browser;
+class ExclusiveAccessManager;
+class Profile;
 @class GTMUILocalizerAndLayoutTweaker;
 @class HyperlinkTextView;
 
@@ -20,8 +20,9 @@ class Browser;
 @interface ExclusiveAccessBubbleWindowController
     : NSWindowController<NSTextViewDelegate, NSAnimationDelegate> {
  @private
-  BrowserWindowController* owner_;  // weak
-  Browser* browser_;                // weak
+  NSWindowController* owner_;                         // weak
+  ExclusiveAccessManager* exclusive_access_manager_;  // weak
+  Profile* profile_;                                  // weak
   GURL url_;
   ExclusiveAccessBubbleType bubbleType_;
 
@@ -43,10 +44,11 @@ class Browser;
 };
 
 // Initializes a new InfoBarController.
-- (id)initWithOwner:(BrowserWindowController*)owner
-            browser:(Browser*)browser
-                url:(const GURL&)url
-         bubbleType:(ExclusiveAccessBubbleType)bubbleType;
+- (id)initWithOwner:(NSWindowController*)owner
+    exclusive_access_manager:(ExclusiveAccessManager*)exclusive_access_manager
+                     profile:(Profile*)profile
+                         url:(const GURL&)url
+                  bubbleType:(ExclusiveAccessBubbleType)bubbleType;
 
 - (void)allow:(id)sender;
 - (void)deny:(id)sender;

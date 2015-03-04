@@ -16,13 +16,8 @@
 using content::WebContents;
 
 ExclusiveAccessControllerBase::ExclusiveAccessControllerBase(
-    ExclusiveAccessManager* manager,
-    Browser* browser)
-    : manager_(manager),
-      browser_(browser),
-      profile_(browser->profile()),
-      tab_with_exclusive_access_(nullptr) {
-  DCHECK(profile_);
+    ExclusiveAccessManager* manager)
+    : manager_(manager), tab_with_exclusive_access_(nullptr) {
 }
 
 ExclusiveAccessControllerBase::~ExclusiveAccessControllerBase() {

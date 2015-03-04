@@ -17,9 +17,11 @@
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -85,7 +87,9 @@ class BrowserView : public BrowserWindow,
                     public views::ClientView,
                     public InfoBarContainerDelegate,
                     public LoadCompleteListener::Delegate,
-                    public OmniboxPopupModelObserver {
+                    public OmniboxPopupModelObserver,
+                    public ExclusiveAccessContext,
+                    public ExclusiveAccessBubbleViewsContext {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -275,7 +279,7 @@ class BrowserView : public BrowserWindow,
                        ExclusiveAccessBubbleType bubble_type,
                        bool with_toolbar) override;
   void ExitFullscreen() override;
-  void UpdateFullscreenExitBubbleContent(
+  void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type) override;
   bool ShouldHideUIForFullscreen() const override;
@@ -285,9 +289,9 @@ class BrowserView : public BrowserWindow,
   void UpdateFullscreenWithToolbar(bool with_toolbar) override;
   bool IsFullscreenWithToolbar() const override;
 #if defined(OS_WIN)
-  virtual void SetMetroSnapMode(bool enable) override;
-  virtual bool IsInMetroSnapMode() const override;
-#endif
+  void SetMetroSnapMode(bool enable) override;
+  bool IsInMetroSnapMode() const override;
+#endif  // defined(OS_WIN)
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;
   void UpdateReloadStopState(bool is_loading, bool force) override;
@@ -361,6 +365,7 @@ class BrowserView : public BrowserWindow,
   int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
+  ExclusiveAccessContext* GetExclusiveAccessContext() override;
 
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;
@@ -437,6 +442,18 @@ class BrowserView : public BrowserWindow,
 
   // OmniboxPopupModelObserver overrides
   void OnOmniboxPopupShownOrHidden() override;
+
+  // ExclusiveAccessContext overrides
+  Profile* GetProfile() override;
+  content::WebContents* GetActiveWebContents() override;
+  void HideDownloadShelf() override;
+  void UnhideDownloadShelf() override;
+
+  // ExclusiveAccessBubbleViewsContext overrides
+  ExclusiveAccessManager* GetExclusiveAccessManager() override;
+  bool IsImmersiveModeEnabled() override;
+  views::Widget* GetBubbleAssociatedWidget() override;
+  gfx::Rect GetTopContainerBoundsInScreen() override;
 
   // Testing interface:
   views::View* GetContentsContainerForTest() { return contents_container_; }

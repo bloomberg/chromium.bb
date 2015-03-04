@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_state_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -23,7 +24,8 @@
 
 // A BrowserWindow used for testing FullscreenController. The behavior of this
 // mock is verfied manually by running FullscreenControllerStateInteractiveTest.
-class FullscreenControllerTestWindow : public TestBrowserWindow {
+class FullscreenControllerTestWindow : public TestBrowserWindow,
+                                       ExclusiveAccessContext {
  public:
   // Simulate the window state with an enumeration.
   enum WindowState {
@@ -55,6 +57,16 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
   static const char* GetWindowStateString(WindowState state);
   WindowState state() const { return state_; }
   void set_browser(Browser* browser) { browser_ = browser; }
+  ExclusiveAccessContext* GetExclusiveAccessContext() override;
+
+  // ExclusiveAccessContext Interface:
+  Profile* GetProfile() override;
+  content::WebContents* GetActiveWebContents() override;
+  void HideDownloadShelf() override;
+  void UnhideDownloadShelf() override;
+  void UpdateExclusiveAccessExitBubbleContent(
+      const GURL& url,
+      ExclusiveAccessBubbleType bubble_type) override;
 
   // Simulates the window changing state.
   void ChangeWindowFullscreenState();
@@ -205,6 +217,32 @@ bool FullscreenControllerTestWindow::IsTransitionReentrant(
       mac_with_toolbar_mode_changed;
 }
 
+ExclusiveAccessContext*
+FullscreenControllerTestWindow::GetExclusiveAccessContext() {
+  return this;
+}
+
+Profile* FullscreenControllerTestWindow::GetProfile() {
+  return browser_->profile();
+}
+
+content::WebContents* FullscreenControllerTestWindow::GetActiveWebContents() {
+  return browser_->tab_strip_model()->GetActiveWebContents();
+}
+
+void FullscreenControllerTestWindow::UnhideDownloadShelf() {
+  GetDownloadShelf()->Unhide();
+}
+
+void FullscreenControllerTestWindow::HideDownloadShelf() {
+  GetDownloadShelf()->Hide();
+}
+
+void FullscreenControllerTestWindow::UpdateExclusiveAccessExitBubbleContent(
+    const GURL& url,
+    ExclusiveAccessBubbleType bubble_type) {
+  TestBrowserWindow::UpdateExclusiveAccessExitBubbleContent(url, bubble_type);
+}
 
 // FullscreenControllerStateUnitTest -------------------------------------------
 
@@ -229,7 +267,7 @@ class FullscreenControllerStateUnitTest : public BrowserWithTestWindowTest,
   FullscreenControllerTestWindow* window_;
 };
 
-FullscreenControllerStateUnitTest::FullscreenControllerStateUnitTest ()
+FullscreenControllerStateUnitTest::FullscreenControllerStateUnitTest()
     : window_(NULL) {
 }
 
@@ -315,7 +353,6 @@ bool FullscreenControllerStateUnitTest::ShouldSkipStateAndEventPair(
 Browser* FullscreenControllerStateUnitTest::GetBrowser() {
   return BrowserWithTestWindowTest::browser();
 }
-
 
 // Soak tests ------------------------------------------------------------------
 

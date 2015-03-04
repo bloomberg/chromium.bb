@@ -753,10 +753,13 @@ void FullscreenControllerStateTest::VerifyWindowStateExpectations(
     EXPECT_EQ(GetFullscreenController()->IsWindowFullscreenForTabOrPending(),
               !!fullscreen_for_tab) << GetAndClearDebugLog();
   }
+
+#if defined(OS_WIN)
   if (in_metro_snap != IN_METRO_SNAP_NO_EXPECTATION) {
     EXPECT_EQ(GetFullscreenController()->IsInMetroSnapMode(),
               !!in_metro_snap) << GetAndClearDebugLog();
   }
+#endif  // OS_WIN
 }
 
 FullscreenController* FullscreenControllerStateTest::GetFullscreenController() {
