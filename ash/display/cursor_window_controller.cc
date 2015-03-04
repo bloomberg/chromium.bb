@@ -93,6 +93,7 @@ CursorWindowController::CursorWindowController()
     : is_cursor_compositing_enabled_(false),
       container_(NULL),
       cursor_type_(ui::kCursorNone),
+      visible_(true),
       cursor_set_(ui::CURSOR_SET_NORMAL),
       cursor_rotation_(gfx::Display::ROTATE_0),
       delegate_(new CursorWindowDelegate()) {
@@ -169,6 +170,7 @@ void CursorWindowController::SetCursor(gfx::NativeCursor cursor) {
   cursor_type_ = cursor.native_type();
   cursor_rotation_ = display_.rotation();
   UpdateCursorImage();
+  UpdateCursorVisibility();
 }
 
 void CursorWindowController::SetCursorSet(ui::CursorSetType cursor_set) {
@@ -179,10 +181,8 @@ void CursorWindowController::SetCursorSet(ui::CursorSetType cursor_set) {
 void CursorWindowController::SetVisibility(bool visible) {
   if (!cursor_window_)
     return;
-  if (visible)
-    cursor_window_->Show();
-  else
-    cursor_window_->Hide();
+  visible_ = visible;
+  UpdateCursorVisibility();
 }
 
 void CursorWindowController::SetContainer(aura::Window* container) {
@@ -204,7 +204,7 @@ void CursorWindowController::SetContainer(aura::Window* container) {
   UpdateCursorImage();
 
   container->AddChild(cursor_window_.get());
-  cursor_window_->Show();
+  UpdateCursorVisibility();
   SetBoundsInScreen(container->bounds());
 }
 
@@ -263,6 +263,16 @@ void CursorWindowController::UpdateCursorImage() {
         gfx::Rect(cursor_window_->bounds().size()));
     UpdateLocation();
   }
+}
+
+void CursorWindowController::UpdateCursorVisibility() {
+  if (!cursor_window_)
+    return;
+  bool visible = (visible_ && cursor_type_ != ui::kCursorNone);
+  if (visible)
+    cursor_window_->Show();
+  else
+    cursor_window_->Hide();
 }
 
 }  // namespace ash

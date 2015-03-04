@@ -60,6 +60,9 @@ class ASH_EXPORT CursorWindowController {
   // Updates cursor image based on current cursor state.
   void UpdateCursorImage();
 
+  // Hides/shows cursor window based on current cursor state.
+  void UpdateCursorVisibility();
+
   bool is_cursor_compositing_enabled_;
   aura::Window* container_;
 
@@ -68,6 +71,9 @@ class ASH_EXPORT CursorWindowController {
 
   // The native_type of the cursor, see definitions in cursor.h
   int cursor_type_;
+
+  // The last requested cursor visibility.
+  bool visible_;
 
   ui::CursorSetType cursor_set_;
   gfx::Display::Rotation cursor_rotation_;
