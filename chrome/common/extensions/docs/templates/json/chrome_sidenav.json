@@ -497,6 +497,10 @@
                 "href": "/apps/tags/webview"
               },
               {
+                "title": "Appview Tag",
+                "href": "/apps/tags/appview"
+              },
+              {
                 "title": "Web APIs",
                 "href": "/apps/api_other"
               },

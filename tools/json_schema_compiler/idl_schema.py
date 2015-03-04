@@ -343,7 +343,8 @@ class Namespace(object):
                internal=False,
                platforms=None,
                compiler_options=None,
-               deprecated=None):
+               deprecated=None,
+               documentation_options=None):
     self.namespace = namespace_node
     self.nodoc = nodoc
     self.internal = internal
@@ -355,6 +356,7 @@ class Namespace(object):
     self.callbacks = OrderedDict()
     self.description = description
     self.deprecated = deprecated
+    self.documentation_options = documentation_options
 
   def process(self):
     for node in self.namespace.GetChildren():
@@ -371,10 +373,8 @@ class Namespace(object):
         self.types.append(Enum(node).process())
       else:
         sys.exit('Did not process %s %s' % (node.cls, node))
-    if self.compiler_options is not None:
-      compiler_options = self.compiler_options
-    else:
-      compiler_options = {}
+    compiler_options = self.compiler_options or {}
+    documentation_options = self.documentation_options or {}
     return {'namespace': self.namespace.GetName(),
             'description': self.description,
             'nodoc': self.nodoc,
@@ -384,7 +384,8 @@ class Namespace(object):
             'events': self.events,
             'platforms': self.platforms,
             'compiler_options': compiler_options,
-            'deprecated': self.deprecated}
+            'deprecated': self.deprecated,
+            'documentation_options': documentation_options}
 
   def process_interface(self, node):
     members = []
@@ -412,6 +413,7 @@ class IDLSchema(object):
     platforms = None
     compiler_options = {}
     deprecated = None
+    documentation_options = {}
     for node in self.idl:
       if node.cls == 'Namespace':
         if not description:
@@ -422,7 +424,8 @@ class IDLSchema(object):
         namespace = Namespace(node, description, nodoc, internal,
                               platforms=platforms,
                               compiler_options=compiler_options or None,
-                              deprecated=deprecated)
+                              deprecated=deprecated,
+                              documentation_options=documentation_options)
         namespaces.append(namespace.process())
         nodoc = False
         internal = False
@@ -445,6 +448,12 @@ class IDLSchema(object):
           compiler_options['camel_case_enum_to_string'] = node.value
         elif node.name == 'deprecated':
           deprecated = str(node.value)
+        elif node.name == 'documentation_title':
+          documentation_options['title'] = node.value
+        elif node.name == 'documentation_namespace':
+          documentation_options['namespace'] = node.value
+        elif node.name == 'documented_in':
+          documentation_options['documented_in'] = node.value
         else:
           continue
       else:

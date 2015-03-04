@@ -75,6 +75,11 @@
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
     "matches": []
   },
+  "appviewTag": {
+    "internal": true,
+    "dependencies": ["permission:appview"],
+    "contexts": ["blessed_extension"]
+  },
   "audioModem": {
     "dependencies": ["permission:audioModem"],
     "contexts": ["blessed_extension"]
