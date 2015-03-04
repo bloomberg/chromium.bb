@@ -9,12 +9,17 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "net/socket/socket_test_util.h"
+#include "net/url_request/url_request_context_storage.h"
+#include "net/url_request/url_request_intercepting_job_factory.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 
 namespace data_reduction_proxy {
@@ -56,6 +61,7 @@ DataReductionProxyTestContext::Builder::Builder()
       params_definitions_(0),
       client_(Client::UNKNOWN),
       request_context_(nullptr),
+      mock_socket_factory_(nullptr),
       use_mock_config_(false),
       use_test_configurator_(false),
       use_mock_service_(false),
@@ -79,6 +85,13 @@ DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithURLRequestContext(
     net::URLRequestContext* request_context) {
   request_context_ = request_context;
+  return *this;
+}
+
+DataReductionProxyTestContext::Builder&
+DataReductionProxyTestContext::Builder::WithMockClientSocketFactory(
+    net::MockClientSocketFactory* mock_socket_factory) {
+  mock_socket_factory_ = mock_socket_factory;
   return *this;
 }
 
@@ -127,7 +140,13 @@ DataReductionProxyTestContext::Builder::Build() {
     request_context_getter = new net::TrivialURLRequestContextGetter(
         request_context_, task_runner);
   } else {
-    request_context_getter = new net::TestURLRequestContextGetter(task_runner);
+    scoped_ptr<net::TestURLRequestContext> test_request_context(
+        new net::TestURLRequestContext(true));
+    if (mock_socket_factory_)
+      test_request_context->set_client_socket_factory(mock_socket_factory_);
+    test_request_context->Init();
+    request_context_getter = new net::TestURLRequestContextGetter(
+        task_runner, test_request_context.Pass());
   }
 
   scoped_ptr<DataReductionProxyEventStore> event_store(
@@ -176,8 +195,8 @@ DataReductionProxyTestContext::Builder::Build() {
   scoped_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(
           loop.Pass(), task_runner, pref_service.Pass(), net_log.Pass(),
-          request_context_getter, io_data.Pass(), settings.Pass(),
-          test_context_flags));
+          request_context_getter, mock_socket_factory_, io_data.Pass(),
+          settings.Pass(), test_context_flags));
 
   if (!skip_settings_initialization_)
     test_context->InitSettingsWithoutCheck();
@@ -191,6 +210,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
     scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
     scoped_ptr<net::CapturingNetLog> net_log,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    net::MockClientSocketFactory* mock_socket_factory,
     scoped_ptr<TestDataReductionProxyIOData> io_data,
     scoped_ptr<DataReductionProxySettings> settings,
     unsigned int test_context_flags)
@@ -200,6 +220,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
       simple_pref_service_(simple_pref_service.Pass()),
       net_log_(net_log.Pass()),
       request_context_getter_(request_context_getter),
+      mock_socket_factory_(mock_socket_factory),
       io_data_(io_data.Pass()),
       settings_(settings.Pass()) {
 }
@@ -247,6 +268,51 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal() {
         new DataReductionProxyService(statistics_prefs.Pass(), settings_.get(),
                                       request_context_getter_.get()));
   }
+}
+
+void DataReductionProxyTestContext::AttachToURLRequestContext(
+      net::URLRequestContextStorage* request_context_storage) const {
+  DCHECK(request_context_storage);
+
+  // |request_context_storage| takes ownership of the network delegate.
+  request_context_storage->set_network_delegate(
+      io_data()->CreateNetworkDelegate(
+          scoped_ptr<net::NetworkDelegate>(new net::TestNetworkDelegate()),
+          true).release());
+
+  // |request_context_storage| takes ownership of the job factory.
+  request_context_storage->set_job_factory(
+      new net::URLRequestInterceptingJobFactory(
+          scoped_ptr<net::URLRequestJobFactory>(
+              new net::URLRequestJobFactoryImpl()),
+          io_data()->CreateInterceptor().Pass()));
+}
+
+void DataReductionProxyTestContext::
+    EnableDataReductionProxyWithSecureProxyCheckSuccess() {
+  DCHECK(mock_socket_factory_);
+  // This won't actually update the proxy config when using a test configurator.
+  DCHECK(!(test_context_flags_ &
+           DataReductionProxyTestContext::USE_TEST_CONFIGURATOR));
+  // |settings_| needs to have been initialized, since a
+  // |DataReductionProxyService| is needed in order to issue the secure proxy
+  // check.
+  DCHECK(data_reduction_proxy_service());
+
+  // Enable the Data Reduction Proxy, simulating a successful secure proxy
+  // check.
+  net::MockRead mock_reads[] = {
+      net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+      net::MockRead("OK"),
+      net::MockRead(net::SYNCHRONOUS, net::OK),
+  };
+  net::StaticSocketDataProvider socket_data_provider(
+      mock_reads, arraysize(mock_reads), nullptr, 0);
+  mock_socket_factory_->AddSocketDataProvider(&socket_data_provider);
+
+  // Set the pref to cause the secure proxy check to be issued.
+  pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled, true);
+  RunUntilIdle();
 }
 
 TestDataReductionProxyConfigurator*

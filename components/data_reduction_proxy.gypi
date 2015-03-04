@@ -181,6 +181,8 @@
         'data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [4267, ],
     },
     {
       'target_name': 'data_reduction_proxy_version_header',

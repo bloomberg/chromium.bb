@@ -21,9 +21,11 @@ class SingleThreadTaskRunner;
 }
 
 namespace net {
+class MockClientSocketFactory;
 class NetLog;
 class URLRequestContext;
 class URLRequestContextGetter;
+class URLRequestContextStorage;
 }
 
 namespace data_reduction_proxy {
@@ -94,6 +96,15 @@ class DataReductionProxyTestContext {
     // owned by the caller.
     Builder& WithURLRequestContext(net::URLRequestContext* request_context);
 
+    // Specifies a |net::MockClientSocketFactory| to use. The
+    // |mock_socket_factory| is owned by the caller. If a non-NULL
+    // |request_context_| is also specified, then the caller is responsible for
+    // attaching |mock_socket_factory| to |request_context_|. Otherwise,
+    // |mock_socket_factory| will be attached to the dummy
+    // |net::URLRequestContext| generated during Build().
+    Builder& WithMockClientSocketFactory(
+        net::MockClientSocketFactory* mock_socket_factory);
+
     // Specifies the use of |MockDataReductionProxyConfig| instead of
     // |TestDataReductionProxyConfig|.
     Builder& WithMockConfig();
@@ -117,6 +128,7 @@ class DataReductionProxyTestContext {
     unsigned int params_definitions_;
     Client client_;
     net::URLRequestContext* request_context_;
+    net::MockClientSocketFactory* mock_socket_factory_;
 
     bool use_mock_config_;
     bool use_test_configurator_;
@@ -138,6 +150,19 @@ class DataReductionProxyTestContext {
   // WithMockDataReductionProxyService. Can only be called if built with
   // SkipSettingsInitialization.
   scoped_ptr<DataReductionProxyService> CreateDataReductionProxyService();
+
+  // This creates a |DataReductionProxyNetworkDelegate| and
+  // |DataReductionProxyInterceptor|, using them in the |net::URLRequestContext|
+  // for |request_context_storage|. |request_context_storage| takes ownership of
+  // the created objects.
+  void AttachToURLRequestContext(
+      net::URLRequestContextStorage* request_context_storage) const;
+
+  // Enable the Data Reduction Proxy, simulating a successful secure proxy
+  // check. This can only be called if not built with WithTestConfigurator,
+  // |settings_| has been initialized, and |this| was built with a
+  // |net::MockClientSocketFactory| specified.
+  void EnableDataReductionProxyWithSecureProxyCheckSuccess();
 
   // Returns the underlying |TestDataReductionProxyConfigurator|. This can only
   // be called if built with WithTestConfigurator.
@@ -210,6 +235,7 @@ class DataReductionProxyTestContext {
       scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
       scoped_ptr<net::CapturingNetLog> net_log,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      net::MockClientSocketFactory* mock_socket_factory,
       scoped_ptr<TestDataReductionProxyIOData> io_data,
       scoped_ptr<DataReductionProxySettings> settings,
       unsigned int test_context_flags);
@@ -227,6 +253,9 @@ class DataReductionProxyTestContext {
   scoped_ptr<TestingPrefServiceSimple> simple_pref_service_;
   scoped_ptr<net::CapturingNetLog> net_log_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // Non-owned pointer. Will be NULL if |this| was built without specifying a
+  // |net::MockClientSocketFactory|.
+  net::MockClientSocketFactory* mock_socket_factory_;
 
   scoped_ptr<TestDataReductionProxyIOData> io_data_;
   scoped_ptr<DataReductionProxySettings> settings_;

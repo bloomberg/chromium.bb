@@ -34,7 +34,21 @@ net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptRequest(
   return nullptr;
 }
 
+net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptRedirect(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const GURL& location) const {
+  return MaybeInterceptResponseOrRedirect(request, network_delegate);
+}
+
 net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptResponse(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return MaybeInterceptResponseOrRedirect(request, network_delegate);
+}
+
+net::URLRequestJob*
+DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
   if (request->response_info().was_cached)

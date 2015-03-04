@@ -33,6 +33,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -554,11 +555,11 @@ TEST_F(DataReductionProxyUsageStatsTest, RequestCompletionErrorCodes) {
 class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
  public:
   DataReductionProxyUsageStatsEndToEndTest()
-      : context_(true) {}
+      : context_(true), context_storage_(&context_) {}
 
   ~DataReductionProxyUsageStatsEndToEndTest() override {
-    test_context_->io_data()->ShutdownOnUIThread();
-    test_context_->RunUntilIdle();
+    drp_test_context_->io_data()->ShutdownOnUIThread();
+    drp_test_context_->RunUntilIdle();
   }
 
   void SetUp() override {
@@ -566,33 +567,18 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     // test bypassed bytes due to proxy fallbacks. This way, a test just needs
     // to cause one proxy fallback in order for the data reduction proxy to be
     // fully bypassed.
-    test_context_ =
+    drp_test_context_ =
         DataReductionProxyTestContext::Builder()
             .WithParamsFlags(DataReductionProxyParams::kAllowed)
-            .WithParamsDefinitions(TestDataReductionProxyParams::HAS_ORIGIN)
+            .WithParamsDefinitions(
+                 TestDataReductionProxyParams::HAS_EVERYTHING &
+                 ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                 ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
             .WithURLRequestContext(&context_)
-            .SkipSettingsInitialization()
+            .WithMockClientSocketFactory(&mock_socket_factory_)
             .Build();
-    test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
-                                              true);
-    test_context_->InitSettings();
-
-    network_delegate_ = test_context_->io_data()->CreateNetworkDelegate(
-        scoped_ptr<net::NetworkDelegate>(new net::TestNetworkDelegate()), true);
-    context_.set_network_delegate(network_delegate_.get());
-
+    drp_test_context_->AttachToURLRequestContext(&context_storage_);
     context_.set_client_socket_factory(&mock_socket_factory_);
-
-    job_factory_.reset(new net::URLRequestInterceptingJobFactory(
-        scoped_ptr<net::URLRequestJobFactory>(
-            new net::URLRequestJobFactoryImpl()),
-        test_context_->io_data()->CreateInterceptor().Pass()));
-    context_.set_job_factory(job_factory_.get());
-
-    test_context_->configurator()->Enable(false, true,
-                                          config()->Origin().ToURI(),
-                                          std::string(), std::string());
-    test_context_->RunUntilIdle();
   }
 
   // Create and execute a fake request using the data reduction proxy stack.
@@ -640,7 +626,7 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     request->set_method("GET");
     request->SetLoadFlags(net::LOAD_NORMAL);
     request->Start();
-    test_context_->RunUntilIdle();
+    drp_test_context_->RunUntilIdle();
   }
 
   void set_proxy_service(net::ProxyService* proxy_service) {
@@ -652,11 +638,11 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
   }
 
   const DataReductionProxySettings* settings() const {
-    return test_context_->settings();
+    return drp_test_context_->settings();
   }
 
   DataReductionProxyConfig* config() const {
-    return test_context_->config();
+    return drp_test_context_->config();
   }
 
   void ClearBadProxies() {
@@ -665,6 +651,7 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
 
   void InitializeContext() {
     context_.Init();
+    drp_test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
   }
 
   void ExpectOtherBypassedBytesHistogramsEmpty(
@@ -723,10 +710,9 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
  private:
   net::TestDelegate delegate_;
   net::MockClientSocketFactory mock_socket_factory_;
-  scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate_;
-  scoped_ptr<net::URLRequestJobFactory> job_factory_;
   net::TestURLRequestContext context_;
-  scoped_ptr<DataReductionProxyTestContext> test_context_;
+  net::URLRequestContextStorage context_storage_;
+  scoped_ptr<DataReductionProxyTestContext> drp_test_context_;
 };
 
 TEST_F(DataReductionProxyUsageStatsEndToEndTest, BypassedBytesNoRetry) {
