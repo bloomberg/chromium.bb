@@ -5,6 +5,7 @@
 #include "config.h"
 #include "platform/WebThreadSupportingGC.h"
 
+#include "platform/heap/SafePoint.h"
 #include "wtf/Threading.h"
 
 namespace blink {
@@ -26,7 +27,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
 {
     if (ThreadState::current()) {
         // WebThread's destructor blocks until all the tasks are processed.
-        ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
+        SafePointScope scope(ThreadState::HeapPointersOnStack);
         m_thread.clear();
     }
 }
