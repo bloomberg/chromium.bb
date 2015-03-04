@@ -13,10 +13,12 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/push_messaging/push_messaging_application_id.h"
+#include "chrome/browser/push_messaging/push_messaging_constants.h"
+#include "chrome/browser/push_messaging/push_messaging_service_factory.h"
+#include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/services/gcm/push_messaging_application_id.h"
-#include "chrome/browser/services/gcm/push_messaging_constants.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -36,8 +38,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif
-
-namespace gcm {
 
 namespace {
 // Responds to a confirm infobar by accepting or cancelling it. Responds to at
@@ -192,10 +192,12 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    gcm_service_ = static_cast<FakeGCMProfileService*>(
-        GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            browser()->profile(), &FakeGCMProfileService::Build));
+    gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
+        gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            browser()->profile(), &gcm::FakeGCMProfileService::Build));
     gcm_service_->set_collect(true);
+    push_service_ =
+        PushMessagingServiceFactory::GetForProfile(browser()->profile());
 
     LoadTestPage();
 
@@ -240,7 +242,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   net::SpawnedTestServer* https_server() const { return https_server_.get(); }
 
-  FakeGCMProfileService* gcm_service() const { return gcm_service_; }
+  gcm::FakeGCMProfileService* gcm_service() const { return gcm_service_; }
 
 #if defined(ENABLE_NOTIFICATIONS)
   StubNotificationUIManager* notification_manager() const {
@@ -252,10 +254,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 #endif
 
-  PushMessagingServiceImpl* push_service() {
-    return static_cast<PushMessagingServiceImpl*>(
-        gcm_service_->push_messaging_service());
-  }
+  PushMessagingServiceImpl* push_service() const { return push_service_; }
 
  protected:
   virtual std::string GetTestURL() {
@@ -264,7 +263,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
  private:
   scoped_ptr<net::SpawnedTestServer> https_server_;
-  FakeGCMProfileService* gcm_service_;
+  gcm::FakeGCMProfileService* gcm_service_;
+  PushMessagingServiceImpl* push_service_;
   scoped_ptr<StubNotificationUIManager> notification_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);
@@ -465,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
 
-  GCMClient::IncomingMessage message;
+  gcm::GCMClient::IncomingMessage message;
   message.sender_id = "1234567890";
   message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.app_id_guid(), message);
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   gcm_service()->SetUnregisterCallback(base::Bind(&UnregistrationCallback::Run,
                                                   base::Unretained(&callback)));
 
-  GCMClient::IncomingMessage message;
+  gcm::GCMClient::IncomingMessage message;
   message.sender_id = "1234567890";
   message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.app_id_guid(), message);
@@ -548,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
-  GCMClient::IncomingMessage message;
+  gcm::GCMClient::IncomingMessage message;
   message.sender_id = "1234567890";
   for (int n = 0; n < 2; n++) {
     message.data["data"] = "testdata";
@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   notification_manager()->SetNotificationAddedCallback(
       base::Bind(&NotificationAddedCallback::Run, base::Unretained(&callback)));
 
-  GCMClient::IncomingMessage message;
+  gcm::GCMClient::IncomingMessage message;
   message.sender_id = "1234567890";
   message.data["data"] = "shownotification-without-waituntil";
   push_service()->OnMessage(app_id.app_id_guid(), message);
@@ -720,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterSuccess) {
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
 
-  gcm_service()->AddExpectedUnregisterResponse(GCMClient::SUCCESS);
+  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
 
   ASSERT_TRUE(RunScript("unregister()", &script_result));
   EXPECT_EQ("unregister result: true", script_result);
@@ -734,7 +734,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterNetworkError) {
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
 
-  gcm_service()->AddExpectedUnregisterResponse(GCMClient::NETWORK_ERROR);
+  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::NETWORK_ERROR);
 
   ASSERT_TRUE(RunScript("unregister()", &script_result));
   EXPECT_EQ("unregister error: NetworkError: "
@@ -750,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterAbortError) {
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
 
-  gcm_service()->AddExpectedUnregisterResponse(GCMClient::UNKNOWN_ERROR);
+  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::UNKNOWN_ERROR);
 
   ASSERT_TRUE(RunScript("unregister()", &script_result));
   EXPECT_EQ("unregister error: "
@@ -1009,5 +1009,3 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
   EXPECT_EQ("true - registered", script_result);
 }
-
-}  // namespace gcm

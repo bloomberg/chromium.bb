@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_APPLICATION_ID_H_
-#define CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_APPLICATION_ID_H_
+#ifndef CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_APPLICATION_ID_H_
+#define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_APPLICATION_ID_H_
 
 #include <string>
 #include <vector>
@@ -16,8 +16,6 @@ class Profile;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
-
-namespace gcm {
 
 // The prefix used for all push messaging application ids.
 extern const char kPushMessagingApplicationIdPrefix[];
@@ -80,6 +78,4 @@ class PushMessagingApplicationId {
   int64 service_worker_registration_id_;
 };
 
-}  // namespace gcm
-
-#endif  // CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_APPLICATION_ID_H_
+#endif  // CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_APPLICATION_ID_H_

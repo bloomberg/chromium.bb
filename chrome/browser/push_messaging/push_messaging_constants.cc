@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/push_messaging_constants.h"
-
-namespace gcm {
+#include "chrome/browser/push_messaging/push_messaging_constants.h"
 
 const char kPushMessagingEndpoint[] = "https://android.googleapis.com/gcm/send";
 
 const char kPushMessagingForcedNotificationTag[] =
     "user_visible_auto_notification";
-
-}  // namespace gcm

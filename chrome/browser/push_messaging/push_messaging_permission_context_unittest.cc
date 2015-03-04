@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/push_messaging_permission_context.h"
+#include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -13,8 +13,6 @@
 
 const char kOriginA[] = "https://origina.org";
 const char kOriginB[] = "https://originb.org";
-
-namespace gcm {
 
 class TestPushMessagingPermissionContext
     : public PushMessagingPermissionContext {
@@ -162,5 +160,3 @@ TEST_F(PushMessagingPermissionContextTest, DecidePushPermission) {
   EXPECT_TRUE(context.was_persisted());
   EXPECT_TRUE(context.was_granted());
 }
-
-}  // namespace gcm

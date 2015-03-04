@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/push_messaging_application_id.h"
+#include "chrome/browser/push_messaging/push_messaging_application_id.h"
 
 #include "base/guid.h"
 #include "base/logging.h"
@@ -19,8 +19,6 @@
 namespace {
 const char kSeparator = '#';  // Ok as only the origin of the url is used.
 }  // namespace
-
-namespace gcm {
 
 const char kPushMessagingApplicationIdPrefix[] = "wp:";
 
@@ -168,5 +166,3 @@ bool PushMessagingApplicationId::IsValid() const {
       && !app_id_guid_.compare(0, prefix_len, kPushMessagingApplicationIdPrefix)
       && base::IsValidGUID(app_id_guid_.substr(prefix_len, std::string::npos));
 }
-
-}  // namespace gcm

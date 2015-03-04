@@ -115,8 +115,6 @@ KeyedService* FakeGCMProfileService::Build(content::BrowserContext* context) {
 FakeGCMProfileService::FakeGCMProfileService(Profile* profile)
     : collect_(false),
       registration_count_(0) {
-  static_cast<PushMessagingServiceImpl*>(push_messaging_service())
-      ->SetProfileForTesting(profile);
 }
 
 FakeGCMProfileService::~FakeGCMProfileService() {}

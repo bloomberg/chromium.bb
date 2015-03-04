@@ -55,9 +55,9 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/app_list/app_list_prefs.h"
@@ -381,7 +381,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
   enhanced_bookmarks::BookmarkServerClusterService::RegisterPrefs(registry);
-  gcm::GCMProfileService::RegisterProfilePrefs(registry);
+  PushMessagingServiceImpl::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
   InstantUI::RegisterProfilePrefs(registry);

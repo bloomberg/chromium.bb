@@ -58,14 +58,14 @@
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/push_messaging/push_messaging_permission_context.h"
+#include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
-#include "chrome/browser/services/gcm/push_messaging_permission_context.h"
-#include "chrome/browser/services/gcm/push_messaging_permission_context_factory.h"
 #include "chrome/browser/signin/principals_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
@@ -653,7 +653,7 @@ PermissionContextBase* GetPermissionContext(Profile* profile,
       break;
 #endif
     case content::PERMISSION_PUSH_MESSAGING:
-      return gcm::PushMessagingPermissionContextFactory::GetForProfile(profile);
+      return PushMessagingPermissionContextFactory::GetForProfile(profile);
     case content::PERMISSION_NUM:
       NOTREACHED() << "Invalid RequestPermission for " << permission;
       break;

@@ -75,7 +75,7 @@ class PlatformNotificationServiceImpl
   friend struct DefaultSingletonTraits<PlatformNotificationServiceImpl>;
   friend class PlatformNotificationServiceBrowserTest;
   friend class PlatformNotificationServiceTest;
-  friend class gcm::PushMessagingBrowserTest;
+  friend class PushMessagingBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(
       PlatformNotificationServiceTest, DisplayNameForOrigin);
   FRIEND_TEST_ALL_PREFIXES(PlatformNotificationServiceTest,

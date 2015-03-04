@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_SERVICE_IMPL_H_
-#define CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_SERVICE_IMPL_H_
+#ifndef CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
+#define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -11,24 +11,27 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 class Profile;
+class PushMessagingApplicationId;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
 namespace gcm {
-
+class GCMDriver;
 class GCMProfileService;
-class PushMessagingApplicationId;
+}
 
 class PushMessagingServiceImpl : public content::PushMessagingService,
-                                 public GCMAppHandler,
-                                 public content_settings::Observer {
+                                 public gcm::GCMAppHandler,
+                                 public content_settings::Observer,
+                                 public KeyedService {
  public:
   // Register profile-specific prefs for GCM.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -36,18 +39,17 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // If any Service Workers are using push, starts GCM and adds an app handler.
   static void InitializeForProfile(Profile* profile);
 
-  PushMessagingServiceImpl(GCMProfileService* gcm_profile_service,
-                           Profile* profile);
+  explicit PushMessagingServiceImpl(Profile* profile);
   ~PushMessagingServiceImpl() override;
 
-  // GCMAppHandler implementation.
+  // gcm::GCMAppHandler implementation.
   void ShutdownHandler() override;
   void OnMessage(const std::string& app_id,
-                 const GCMClient::IncomingMessage& message) override;
+                 const gcm::GCMClient::IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;
   void OnSendError(
       const std::string& app_id,
-      const GCMClient::SendErrorDetails& send_error_details) override;
+      const gcm::GCMClient::SendErrorDetails& send_error_details) override;
   void OnSendAcknowledged(const std::string& app_id,
                           const std::string& message_id) override;
   bool CanHandle(const std::string& app_id) const override;
@@ -83,7 +85,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
 
-  void SetProfileForTesting(Profile* profile);
+  // KeyedService implementation.
+  void Shutdown() override;
 
  private:
   // A registration is pending until it has succeeded or failed.
@@ -95,7 +98,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void DeliverMessageCallback(const std::string& app_id_guid,
                               const GURL& requesting_origin,
                               int64 service_worker_registration_id,
-                              const GCMClient::IncomingMessage& message,
+                              const gcm::GCMClient::IncomingMessage& message,
                               content::PushDeliveryStatus status);
 
   // Developers are required to display a Web Notification in response to an
@@ -124,7 +127,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingApplicationId& application_id,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
-      GCMClient::Result result);
+      gcm::GCMClient::Result result);
 
   void DidRequestPermission(
       const PushMessagingApplicationId& application_id,
@@ -142,7 +145,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void DidUnregister(const std::string& app_id_guid,
                      bool retry_on_failure,
                      const content::PushMessagingService::UnregisterCallback&,
-                     GCMClient::Result result);
+                     gcm::GCMClient::Result result);
 
   // OnContentSettingChanged methods -------------------------------------------
 
@@ -155,9 +158,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // Checks if a given origin is allowed to use Push.
   bool HasPermission(const GURL& origin);
 
-  GCMProfileService* gcm_profile_service_;  // It owns us.
+  gcm::GCMDriver* GetGCMDriver() const;
 
-  Profile* profile_;  // It owns our owner.
+  Profile* profile_;
 
   int push_registration_count_;
   int pending_push_registration_count_;
@@ -167,6 +170,4 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   DISALLOW_COPY_AND_ASSIGN(PushMessagingServiceImpl);
 };
 
-}  // namespace gcm
-
-#endif  // CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_SERVICE_IMPL_H_
+#endif  // CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_

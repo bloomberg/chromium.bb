@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/push_messaging_permission_context_factory.h"
+#include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/push_messaging_permission_context.h"
+#include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-
-namespace gcm {
 
 // static
 PushMessagingPermissionContext*
@@ -45,5 +43,3 @@ PushMessagingPermissionContextFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
-
-}  // namespace gcm

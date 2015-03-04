@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/push_messaging_permission_context.h"
+#include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 
 #include "chrome/browser/content_settings/permission_context_uma_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -16,8 +16,6 @@
 
 const ContentSettingsType kPushSettingType =
     CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
-
-namespace gcm {
 
 PushMessagingPermissionContext::PushMessagingPermissionContext(Profile* profile)
     : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING),
@@ -138,5 +136,3 @@ void PushMessagingPermissionContext::DecidePushPermission(
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                       true /* persist */, CONTENT_SETTING_ALLOW);
 }
-}  // namespace gcm
-

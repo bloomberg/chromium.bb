@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/push_messaging_application_id.h"
+#include "chrome/browser/push_messaging/push_messaging_application_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace gcm {
 
 class PushMessagingApplicationIdTest : public testing::Test {
  protected:
@@ -14,7 +12,7 @@ class PushMessagingApplicationIdTest : public testing::Test {
       int64 service_worker_registration_id) {
     // To bypass DCHECK in PushMessagingApplicationId::Generate, we just use it
     // to generate app_id_guid, and then use private constructor.
-    std::string app_id_guid = gcm::PushMessagingApplicationId::Generate(
+    std::string app_id_guid = PushMessagingApplicationId::Generate(
         GURL("https://www.example.com/"), 1).app_id_guid();
     return PushMessagingApplicationId(app_id_guid, origin,
                                       service_worker_registration_id);
@@ -32,10 +30,8 @@ TEST_F(PushMessagingApplicationIdTest, ConstructorValidity) {
 }
 
 TEST_F(PushMessagingApplicationIdTest, UniqueGuids) {
-  EXPECT_NE(gcm::PushMessagingApplicationId::Generate(
+  EXPECT_NE(PushMessagingApplicationId::Generate(
                 GURL("https://www.example.com/"), 1).app_id_guid(),
-            gcm::PushMessagingApplicationId::Generate(
+            PushMessagingApplicationId::Generate(
                 GURL("https://www.example.com/"), 1).app_id_guid());
 }
-
-}  // namespace gcm

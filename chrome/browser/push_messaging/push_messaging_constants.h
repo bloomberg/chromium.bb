@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_CONSTANTS_H_
-#define CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_CONSTANTS_H_
-
-namespace gcm {
+#ifndef CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_CONSTANTS_H_
+#define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_CONSTANTS_H_
 
 extern const char kPushMessagingEndpoint[];
 
@@ -13,6 +11,4 @@ extern const char kPushMessagingEndpoint[];
 // receives a push message then fails to show a notification.
 extern const char kPushMessagingForcedNotificationTag[];
 
-}  // namespace gcm
-
-#endif  // CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_CONSTANTS_H_
+#endif  // CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_CONSTANTS_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/push_messaging_service_impl.h"
+#include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 
 #include <bitset>
 #include <vector>
@@ -18,12 +18,13 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/push_messaging/push_messaging_application_id.h"
+#include "chrome/browser/push_messaging/push_messaging_constants.h"
+#include "chrome/browser/push_messaging/push_messaging_permission_context.h"
+#include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
+#include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/services/gcm/push_messaging_application_id.h"
-#include "chrome/browser/services/gcm/push_messaging_constants.h"
-#include "chrome/browser/services/gcm/push_messaging_permission_context.h"
-#include "chrome/browser/services/gcm/push_messaging_permission_context_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -52,8 +53,6 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
-
-namespace gcm {
 
 namespace {
 const int kMaxRegistrations = 1000000;
@@ -112,21 +111,13 @@ void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
   if (count <= 0)
     return;
 
-  // Create the GCMProfileService, and hence instantiate this class.
-  GCMProfileService* gcm_service =
-      GCMProfileServiceFactory::GetForProfile(profile);
   PushMessagingServiceImpl* push_service =
-      static_cast<PushMessagingServiceImpl*>(
-          gcm_service->push_messaging_service());
-
+      PushMessagingServiceFactory::GetForProfile(profile);
   push_service->IncreasePushRegistrationCount(count, false /* is_pending */);
 }
 
-PushMessagingServiceImpl::PushMessagingServiceImpl(
-    GCMProfileService* gcm_profile_service,
-    Profile* profile)
-    : gcm_profile_service_(gcm_profile_service),
-      profile_(profile),
+PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
+    : profile_(profile),
       push_registration_count_(0),
       pending_push_registration_count_(0),
       weak_factory_(this) {
@@ -138,8 +129,6 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(
 }
 
 PushMessagingServiceImpl::~PushMessagingServiceImpl() {
-  // TODO(johnme): If it's possible for this to be destroyed before GCMDriver,
-  // then we should call RemoveAppHandler.
   profile_->GetHostContentSettingsMap()->RemoveObserver(this);
 }
 
@@ -147,8 +136,7 @@ void PushMessagingServiceImpl::IncreasePushRegistrationCount(int add,
                                                              bool is_pending) {
   DCHECK(add > 0);
   if (push_registration_count_ + pending_push_registration_count_ == 0) {
-    gcm_profile_service_->driver()->AddAppHandler(
-        kPushMessagingApplicationIdPrefix, this);
+    GetGCMDriver()->AddAppHandler(kPushMessagingApplicationIdPrefix, this);
   }
   if (is_pending) {
     pending_push_registration_count_ += add;
@@ -172,8 +160,7 @@ void PushMessagingServiceImpl::DecreasePushRegistrationCount(int subtract,
                                      push_registration_count_);
   }
   if (push_registration_count_ + pending_push_registration_count_ == 0) {
-    gcm_profile_service_->driver()->RemoveAppHandler(
-        kPushMessagingApplicationIdPrefix);
+    GetGCMDriver()->RemoveAppHandler(kPushMessagingApplicationIdPrefix);
   }
 }
 
@@ -182,14 +169,16 @@ bool PushMessagingServiceImpl::CanHandle(const std::string& app_id) const {
 }
 
 void PushMessagingServiceImpl::ShutdownHandler() {
-  // TODO(johnme): Do any necessary cleanup.
+  // Shutdown() should come before and it removes us from the list of app
+  // handlers of gcm::GCMDriver so this shouldn't ever been called.
+  NOTREACHED();
 }
 
 // OnMessage methods -----------------------------------------------------------
 
 void PushMessagingServiceImpl::OnMessage(
     const std::string& app_id,
-    const GCMClient::IncomingMessage& message) {
+    const gcm::GCMClient::IncomingMessage& message) {
   PushMessagingApplicationId application_id =
       PushMessagingApplicationId::Get(profile_, app_id);
   // Drop message and unregister if app id was unknown (maybe recently deleted).
@@ -226,7 +215,7 @@ void PushMessagingServiceImpl::OnMessage(
   // https://crbug.com/449184
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePushMessagePayload)) {
-    GCMClient::MessageData::const_iterator it = message.data.find("data");
+    gcm::GCMClient::MessageData::const_iterator it = message.data.find("data");
     if (it != message.data.end())
       data = it->second;
   }
@@ -246,7 +235,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     const std::string& app_id_guid,
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
-    const GCMClient::IncomingMessage& message,
+    const gcm::GCMClient::IncomingMessage& message,
     content::PushDeliveryStatus status) {
   // TODO(mvanouwerkerk): Show a warning in the developer console of the
   // Service Worker corresponding to app_id (and/or on an internals page).
@@ -424,7 +413,7 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
   }
 }
 
-// Other GCMAppHandler methods -------------------------------------------------
+// Other gcm::GCMAppHandler methods -------------------------------------------
 
 void PushMessagingServiceImpl::OnMessagesDeleted(const std::string& app_id) {
   // TODO(mvanouwerkerk): Fire push error event on the Service Worker
@@ -433,7 +422,7 @@ void PushMessagingServiceImpl::OnMessagesDeleted(const std::string& app_id) {
 
 void PushMessagingServiceImpl::OnSendError(
     const std::string& app_id,
-    const GCMClient::SendErrorDetails& send_error_details) {
+    const gcm::GCMClient::SendErrorDetails& send_error_details) {
   NOTREACHED() << "The Push API shouldn't have sent messages upstream";
 }
 
@@ -459,11 +448,6 @@ void PushMessagingServiceImpl::RegisterFromDocument(
     int render_frame_id,
     bool user_visible_only,
     const content::PushMessagingService::RegisterCallback& callback) {
-  if (!gcm_profile_service_->driver()) {
-    NOTREACHED() << "There is no GCMDriver. Has GCMProfileService shut down?";
-    return;
-  }
-
   PushMessagingApplicationId application_id =
       PushMessagingApplicationId::Generate(requesting_origin,
                                            service_worker_registration_id);
@@ -494,8 +478,8 @@ void PushMessagingServiceImpl::RegisterFromDocument(
   const PermissionRequestID id(
       renderer_id, web_contents->GetRoutingID(), bridge_id, GURL());
 
-  gcm::PushMessagingPermissionContext* permission_context =
-      gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
+  PushMessagingPermissionContext* permission_context =
+      PushMessagingPermissionContextFactory::GetForProfile(profile_);
 
   if (permission_context == NULL || !user_visible_only) {
     RegisterEnd(callback,
@@ -521,11 +505,6 @@ void PushMessagingServiceImpl::RegisterFromWorker(
     int64 service_worker_registration_id,
     const std::string& sender_id,
     const content::PushMessagingService::RegisterCallback& register_callback) {
-  if (!gcm_profile_service_->driver()) {
-    NOTREACHED() << "There is no GCMDriver. Has GCMProfileService shut down?";
-    return;
-  }
-
   PushMessagingApplicationId application_id =
       PushMessagingApplicationId::Generate(requesting_origin,
                                            service_worker_registration_id);
@@ -550,7 +529,7 @@ void PushMessagingServiceImpl::RegisterFromWorker(
 
   IncreasePushRegistrationCount(1, true /* is_pending */);
   std::vector<std::string> sender_ids(1, sender_id);
-  gcm_profile_service_->driver()->Register(
+  GetGCMDriver()->Register(
       application_id.app_id_guid(), sender_ids,
       base::Bind(&PushMessagingServiceImpl::DidRegister,
                  weak_factory_.GetWeakPtr(),
@@ -577,24 +556,24 @@ void PushMessagingServiceImpl::DidRegister(
     const PushMessagingApplicationId& application_id,
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& registration_id,
-    GCMClient::Result result) {
+    gcm::GCMClient::Result result) {
   content::PushRegistrationStatus status =
       content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
   switch (result) {
-    case GCMClient::SUCCESS:
+    case gcm::GCMClient::SUCCESS:
       status = content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE;
       application_id.PersistToDisk(profile_);
       IncreasePushRegistrationCount(1, false /* is_pending */);
       break;
-    case GCMClient::INVALID_PARAMETER:
-    case GCMClient::GCM_DISABLED:
-    case GCMClient::ASYNC_OPERATION_PENDING:
-    case GCMClient::SERVER_ERROR:
-    case GCMClient::UNKNOWN_ERROR:
+    case gcm::GCMClient::INVALID_PARAMETER:
+    case gcm::GCMClient::GCM_DISABLED:
+    case gcm::GCMClient::ASYNC_OPERATION_PENDING:
+    case gcm::GCMClient::SERVER_ERROR:
+    case gcm::GCMClient::UNKNOWN_ERROR:
       status = content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
       break;
-    case GCMClient::NETWORK_ERROR:
-    case GCMClient::TTL_EXCEEDED:
+    case gcm::GCMClient::NETWORK_ERROR:
+    case gcm::GCMClient::TTL_EXCEEDED:
       status = content::PUSH_REGISTRATION_STATUS_NETWORK_ERROR;
       break;
   }
@@ -614,13 +593,9 @@ void PushMessagingServiceImpl::DidRequestPermission(
     return;
   }
 
-  // The GCMDriver could be NULL if GCMProfileService has been shut down.
-  if (!gcm_profile_service_->driver())
-    return;
-
   IncreasePushRegistrationCount(1, true /* is_pending */);
   std::vector<std::string> sender_ids(1, sender_id);
-  gcm_profile_service_->driver()->Register(
+  GetGCMDriver()->Register(
       application_id.app_id_guid(),
       sender_ids,
       base::Bind(&PushMessagingServiceImpl::DidRegister,
@@ -636,8 +611,6 @@ void PushMessagingServiceImpl::Unregister(
     const std::string& sender_id,
     bool retry_on_failure,
     const content::PushMessagingService::UnregisterCallback& callback) {
-  DCHECK(gcm_profile_service_->driver());
-
   PushMessagingApplicationId application_id = PushMessagingApplicationId::Get(
       profile_, requesting_origin, service_worker_registration_id);
   if (!application_id.IsValid()) {
@@ -657,8 +630,6 @@ void PushMessagingServiceImpl::Unregister(
     const std::string& sender_id,
     bool retry_on_failure,
     const content::PushMessagingService::UnregisterCallback& callback) {
-  DCHECK(gcm_profile_service_->driver());
-
   if (retry_on_failure) {
     // Delete the mapping for this app id, to guarantee that no messages get
     // delivered in future (even if unregistration fails).
@@ -676,10 +647,10 @@ void PushMessagingServiceImpl::Unregister(
                  app_id_guid, retry_on_failure, callback);
 #if defined(OS_ANDROID)
   // On Android the backend is different, and requires the original sender_id.
-  gcm_profile_service_->driver()->UnregisterWithSenderId(app_id_guid, sender_id,
-                                                         unregister_callback);
+  GetGCMDriver()->UnregisterWithSenderId(app_id_guid, sender_id,
+                                         unregister_callback);
 #else
-  gcm_profile_service_->driver()->Unregister(app_id_guid, unregister_callback);
+  GetGCMDriver()->Unregister(app_id_guid, unregister_callback);
 #endif
 }
 
@@ -687,8 +658,8 @@ void PushMessagingServiceImpl::DidUnregister(
     const std::string& app_id_guid,
     bool retry_on_failure,
     const content::PushMessagingService::UnregisterCallback& callback,
-    GCMClient::Result result) {
-  if (result == GCMClient::SUCCESS) {
+    gcm::GCMClient::Result result) {
+  if (result == gcm::GCMClient::SUCCESS) {
     PushMessagingApplicationId application_id =
         PushMessagingApplicationId::Get(profile_, app_id_guid);
     if (!application_id.IsValid()) {
@@ -706,18 +677,18 @@ void PushMessagingServiceImpl::DidUnregister(
   // Internal calls pass a null callback.
   if (!callback.is_null()) {
     switch (result) {
-      case GCMClient::SUCCESS:
+      case gcm::GCMClient::SUCCESS:
         callback.Run(content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED);
         break;
-      case GCMClient::INVALID_PARAMETER:
-      case GCMClient::GCM_DISABLED:
-      case GCMClient::ASYNC_OPERATION_PENDING:
-      case GCMClient::SERVER_ERROR:
-      case GCMClient::UNKNOWN_ERROR:
+      case gcm::GCMClient::INVALID_PARAMETER:
+      case gcm::GCMClient::GCM_DISABLED:
+      case gcm::GCMClient::ASYNC_OPERATION_PENDING:
+      case gcm::GCMClient::SERVER_ERROR:
+      case gcm::GCMClient::UNKNOWN_ERROR:
         callback.Run(content::PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR);
         break;
-      case GCMClient::NETWORK_ERROR:
-      case GCMClient::TTL_EXCEEDED:
+      case gcm::GCMClient::NETWORK_ERROR:
+      case gcm::GCMClient::TTL_EXCEEDED:
         callback.Run(
             retry_on_failure
             ? content::
@@ -772,20 +743,27 @@ void PushMessagingServiceImpl::UnregisterBecausePermissionRevoked(
       profile_, id.origin(), id.service_worker_registration_id());
 }
 
+// KeyedService methods -------------------------------------------------------
+
+void PushMessagingServiceImpl::Shutdown() {
+  GetGCMDriver()->RemoveAppHandler(kPushMessagingApplicationIdPrefix);
+}
+
 // Helper methods --------------------------------------------------------------
 
 bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {
-  gcm::PushMessagingPermissionContext* permission_context =
-      gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
+  PushMessagingPermissionContext* permission_context =
+      PushMessagingPermissionContextFactory::GetForProfile(profile_);
   DCHECK(permission_context);
 
   return permission_context->GetPermissionStatus(origin, origin) ==
       CONTENT_SETTING_ALLOW;
 }
 
-void PushMessagingServiceImpl::SetProfileForTesting(Profile* profile) {
-  profile_ = profile;
-  profile_->GetHostContentSettingsMap()->AddObserver(this);
+gcm::GCMDriver* PushMessagingServiceImpl::GetGCMDriver() const {
+  gcm::GCMProfileService* gcm_profile_service =
+      gcm::GCMProfileServiceFactory::GetForProfile(profile_);
+  CHECK(gcm_profile_service);
+  CHECK(gcm_profile_service->driver());
+  return gcm_profile_service->driver();
 }
-
-}  // namespace gcm

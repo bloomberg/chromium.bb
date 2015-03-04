@@ -127,18 +127,11 @@ bool GCMProfileService::IsGCMEnabled(Profile* profile) {
 #endif  // defined(OS_ANDROID)
 }
 
-// static
-void GCMProfileService::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  PushMessagingServiceImpl::RegisterProfilePrefs(registry);
-}
-
 #if defined(OS_ANDROID)
 static GCMProfileService* debug_instance = nullptr;
 
 GCMProfileService::GCMProfileService(Profile* profile)
-    : profile_(profile),
-      push_messaging_service_(this, profile) {
+    : profile_(profile) {
   CHECK(!profile->IsOffTheRecord());
 
   // TODO(johnme): Remove debug_instance and this logging code once
@@ -166,8 +159,7 @@ GCMProfileService::GCMProfileService(Profile* profile)
 GCMProfileService::GCMProfileService(
     Profile* profile,
     scoped_ptr<GCMClientFactory> gcm_client_factory)
-    : profile_(profile),
-      push_messaging_service_(this, profile) {
+    : profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
 
   driver_ = CreateGCMDriverDesktop(
@@ -181,8 +173,7 @@ GCMProfileService::GCMProfileService(
 #endif  // defined(OS_ANDROID)
 
 GCMProfileService::GCMProfileService()
-    : profile_(NULL),
-      push_messaging_service_(this, NULL) {
+    : profile_(NULL) {
 }
 
 GCMProfileService::~GCMProfileService() {
