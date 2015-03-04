@@ -292,6 +292,12 @@
     "reference_args": []
   },
   {
+    "prefix": "slimmingpaint",
+    "base": "fast/repaint",
+    "args": ["--enable-slimming-paint"],
+    "reference_args": []
+  },
+  {
     "prefix": "scroll_customization",
     "base": "fast/scroll-behavior",
     "args": ["--enable-blink-features=ScrollCustomization"]
