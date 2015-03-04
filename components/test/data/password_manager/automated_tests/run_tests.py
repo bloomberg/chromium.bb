@@ -3,21 +3,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This file allows the bots to be easily configure and run the tests.
+"""This file allows the bots to be easily configured and run the tests.
 
 Running this script requires passing --config-path with a path to a config file
 of the following structure:
+
   [data_files]
   passwords_path=<path to a file with passwords>
   [binaries]
   chrome-path=<chrome binary path>
   chromedriver-path=<chrome driver path>
   [run_options]
+  # |write_to_sheet| is optional, the default value is false.
   write_to_sheet=[false|true]
-  tests_in_parrallel=<number of parallel tests>
+  # |tests_in_parallel| is optional, the default value is 1.
+  tests_in_parallel=<number of parallel tests>
   # |tests_to_runs| field is optional, if it is absent all tests will be run.
   tests_to_run=<test names to run, comma delimited>
   [output]
+  # |save-path| is optional, the default value is /dev/null.
   save-path=<file where to save result>
   [sheet_info]
   # This section is required only when write_to_sheet=true
@@ -177,14 +181,39 @@ class TestRunner(object):
     print "Run of test %s started" % self.test_name
     self.runner_process = subprocess.Popen(self.test_cmd)
 
+def _apply_defaults(config, defaults):
+  """Adds default values from |defaults| to |config|.
+
+  Note: This differs from ConfigParser's mechanism for providing defaults in
+  two aspects:
+    * The "defaults" here become explicit, and are associated with sections.
+    * Sections get created for the added defaults where needed, that is, if
+      they do not exist before.
+
+  Args:
+    config: A ConfigParser instance to be updated
+    defaults: A dictionary mapping (section_string, option_string) pairs
+      to string values. For every section/option combination not already
+      contained in |config|, the value from |defaults| is stored in |config|.
+  """
+  for (section, option) in defaults:
+    if not config.has_section(section):
+      config.add_section(section)
+    if not config.has_option(section, option):
+      config.set(section, option, defaults[(section, option)])
+
 def run_tests(config_path):
   """ Runs automated tests. """
   environment = Environment("", "", "", None, False)
   tests.Tests(environment)
+  defaults = { ("output", "save-path"): "/dev/null",
+               ("run_options", "tests_in_parallel"): "1",
+               ("run_options", "write_to_sheet"): "false" }
   config = ConfigParser.ConfigParser()
+  _apply_defaults(config, defaults)
   config.read(config_path)
   date = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-  max_tests_in_parrallel = config.getint("run_options", "tests_in_parrallel")
+  max_tests_in_parallel = config.getint("run_options", "tests_in_parallel")
   sheet_writer = SheetWriter(config)
   full_path = os.path.realpath(__file__)
   tests_dir = os.path.dirname(full_path)
@@ -214,7 +243,7 @@ def run_tests(config_path):
           del runners[i]
         else:
           i += 1
-      while len(runners) < max_tests_in_parrallel and len(tests_to_run) > 0:
+      while len(runners) < max_tests_in_parallel and len(tests_to_run) > 0:
         runners.append(TestRunner(general_test_cmd, tests_to_run.pop()))
       time.sleep(1)  # Let us wait for worker process to finish.
 
