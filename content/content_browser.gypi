@@ -529,8 +529,6 @@
       'browser/devtools/protocol/tethering_handler.h',
       'browser/devtools/protocol/tracing_handler.cc',
       'browser/devtools/protocol/tracing_handler.h',
-      'browser/devtools/protocol/usage_and_quota_query.cc',
-      'browser/devtools/protocol/usage_and_quota_query.h',
       'browser/devtools/protocol/worker_handler.cc',
       'browser/devtools/protocol/worker_handler.h',
       'browser/devtools/render_frame_devtools_agent_host.cc',

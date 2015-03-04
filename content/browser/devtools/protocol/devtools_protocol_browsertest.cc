@@ -96,20 +96,6 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, QueryUsageAndQuota) {
-  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue);
-  params->SetString("securityOrigin", "http://example.com");
-  SendCommand("Page.queryUsageAndQuota", params.Pass());
-
-  EXPECT_TRUE(HasValue("quota.persistent"));
-  EXPECT_TRUE(HasValue("quota.temporary"));
-  EXPECT_TRUE(HasListItem("usage.temporary", "id", "appcache"));
-  EXPECT_TRUE(HasListItem("usage.temporary", "id", "database"));
-  EXPECT_TRUE(HasListItem("usage.temporary", "id", "indexeddatabase"));
-  EXPECT_TRUE(HasListItem("usage.temporary", "id", "filesystem"));
-  EXPECT_TRUE(HasListItem("usage.persistent", "id", "filesystem"));
-}
-
 class CaptureScreenshotTest : public DevToolsProtocolTest {
  private:
 #if !defined(OS_ANDROID)

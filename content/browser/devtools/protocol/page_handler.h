@@ -109,10 +109,6 @@ class PageHandler {
       DevToolsCommandId command_id,
       scoped_refptr<StopRecordingFramesResponse> response_data);
 
-  void QueryUsageAndQuotaCompleted(
-      DevToolsCommandId command_id,
-      scoped_refptr<QueryUsageAndQuotaResponse> response);
-
   bool enabled_;
   bool touch_emulation_enabled_;
   std::string touch_emulation_configuration_;

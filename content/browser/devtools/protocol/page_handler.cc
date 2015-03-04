@@ -13,7 +13,6 @@
 #include "base/threading/worker_pool.h"
 #include "content/browser/devtools/protocol/color_picker.h"
 #include "content/browser/devtools/protocol/frame_recorder.h"
-#include "content/browser/devtools/protocol/usage_and_quota_query.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -27,7 +26,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
-#include "storage/browser/quota/quota_manager.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
@@ -63,24 +61,6 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
     result = ui::GestureProviderConfigType::GENERIC_DESKTOP;
   }
   return result;
-}
-
-void QueryUsageAndQuotaCompletedOnIOThread(
-    const UsageAndQuotaQuery::Callback& callback,
-    scoped_refptr<QueryUsageAndQuotaResponse> response) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, response));
-}
-
-void QueryUsageAndQuotaOnIOThread(
-    scoped_refptr<storage::QuotaManager> quota_manager,
-    const GURL& security_origin,
-    const UsageAndQuotaQuery::Callback& callback) {
-  new UsageAndQuotaQuery(
-      quota_manager,
-      security_origin,
-      base::Bind(&QueryUsageAndQuotaCompletedOnIOThread,
-                 callback));
 }
 
 std::string EncodeScreencastFrame(const SkBitmap& bitmap,
@@ -449,21 +429,6 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
 
 Response PageHandler::QueryUsageAndQuota(DevToolsCommandId command_id,
                                          const std::string& security_origin) {
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  scoped_refptr<storage::QuotaManager> quota_manager =
-      host_->GetProcess()->GetStoragePartition()->GetQuotaManager();
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&QueryUsageAndQuotaOnIOThread,
-                 quota_manager,
-                 GURL(security_origin),
-                 base::Bind(&PageHandler::QueryUsageAndQuotaCompleted,
-                            weak_factory_.GetWeakPtr(),
-                            command_id)));
   return Response::OK();
 }
 
@@ -632,12 +597,6 @@ void PageHandler::OnFramesRecorded(
     DevToolsCommandId command_id,
     scoped_refptr<StopRecordingFramesResponse> response_data) {
   client_->SendStopRecordingFramesResponse(command_id, response_data);
-}
-
-void PageHandler::QueryUsageAndQuotaCompleted(
-    DevToolsCommandId command_id,
-    scoped_refptr<QueryUsageAndQuotaResponse> response_data) {
-  client_->SendQueryUsageAndQuotaResponse(command_id, response_data);
 }
 
 }  // namespace page
