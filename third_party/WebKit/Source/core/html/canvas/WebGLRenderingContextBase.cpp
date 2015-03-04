@@ -2607,6 +2607,11 @@ ScriptValue WebGLRenderingContextBase::getRenderbufferParameter(ScriptState* scr
 
     GLint value = 0;
     switch (pname) {
+    case GL_RENDERBUFFER_SAMPLES:
+        if (!isWebGL2OrHigher()) {
+            synthesizeGLError(GL_INVALID_ENUM, "getRenderbufferParameter", "invalid parameter name");
+            return ScriptValue::createNull(scriptState);
+        }
     case GL_RENDERBUFFER_WIDTH:
     case GL_RENDERBUFFER_HEIGHT:
     case GL_RENDERBUFFER_RED_SIZE:
