@@ -36,6 +36,7 @@
 #include "core/events/GenericEventQueue.h"
 #include "core/html/MediaKeyError.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
+#include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
@@ -302,32 +303,6 @@ MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* me
     return session.get();
 }
 
-WebEncryptedMediaInitDataType MediaKeySession::convertInitDataType(const String& initDataType)
-{
-    if (initDataType == "cenc")
-        return WebEncryptedMediaInitDataType::Cenc;
-    if (initDataType == "keyids")
-        return WebEncryptedMediaInitDataType::Keyids;
-    if (initDataType == "webm")
-        return WebEncryptedMediaInitDataType::Webm;
-
-    // |initDataType| is not restricted in the idl, so anything is possible.
-    return WebEncryptedMediaInitDataType::Unknown;
-}
-
-WebEncryptedMediaSessionType MediaKeySession::convertSessionType(const String& sessionType)
-{
-    if (sessionType == "temporary")
-        return WebEncryptedMediaSessionType::Temporary;
-    if (sessionType == "persistent-license")
-        return WebEncryptedMediaSessionType::PersistentLicense;
-    if (sessionType == "persistent-release-message")
-        return WebEncryptedMediaSessionType::PersistentReleaseMessage;
-
-    ASSERT_NOT_REACHED();
-    return WebEncryptedMediaSessionType::Unknown;
-}
-
 MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys, WebEncryptedMediaSessionType sessionType)
     : ActiveDOMObject(scriptState->executionContext())
     , m_keySystem(mediaKeys->keySystem())
@@ -447,7 +422,7 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
     //    (blink side doesn't know what the CDM supports, so the proper check
     //     will be done on the Chromium side. However, we can verify that
     //     |initDataType| is one of the registered values.)
-    WebEncryptedMediaInitDataType initDataType = convertInitDataType(initDataTypeString);
+    WebEncryptedMediaInitDataType initDataType = EncryptedMediaUtils::convertToInitDataType(initDataTypeString);
     if (initDataType == WebEncryptedMediaInitDataType::Unknown) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(NotSupportedError, "The initialization data type '" + initDataTypeString + "' is not supported."));

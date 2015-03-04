@@ -31,6 +31,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
 #include "platform/Logging.h"
@@ -114,7 +115,7 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String
     // 2. If the Key System implementation represented by this object's cdm
     //    implementation value does not support sessionType, throw a new
     //    DOMException whose name is NotSupportedError.
-    WebEncryptedMediaSessionType sessionType = MediaKeySession::convertSessionType(sessionTypeString);
+    WebEncryptedMediaSessionType sessionType = EncryptedMediaUtils::convertToSessionType(sessionTypeString);
     if (!sessionTypeSupported(sessionType))
         exceptionState.throwDOMException(NotSupportedError, "Unsupported session type.");
 

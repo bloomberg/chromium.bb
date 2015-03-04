@@ -11,6 +11,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
+#include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
@@ -34,14 +35,11 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
     WTF_MAKE_NONCOPYABLE(NewCdmResultPromise);
 
 public:
-    NewCdmResultPromise(ScriptState* scriptState, const String& keySystem, const blink::WebVector<blink::WebString>& supportedSessionTypes)
+    NewCdmResultPromise(ScriptState* scriptState, const String& keySystem, const blink::WebVector<blink::WebEncryptedMediaSessionType>& supportedSessionTypes)
         : ContentDecryptionModuleResultPromise(scriptState)
         , m_keySystem(keySystem)
-        , m_supportedSessionTypes(supportedSessionTypes.size())
+        , m_supportedSessionTypes(supportedSessionTypes)
     {
-        // FIXME: WebMediaKeySystemConfiguration should use the enum.
-        for (size_t i = 0; i < supportedSessionTypes.size(); i++)
-            m_supportedSessionTypes[i] = MediaKeySession::convertSessionType(supportedSessionTypes[i]);
     }
 
     virtual ~NewCdmResultPromise()
@@ -66,12 +64,12 @@ private:
 
 // These methods are the inverses of those with the same names in
 // NavigatorRequestMediaKeySystemAccess.
-static Vector<String> convertInitDataTypes(const WebVector<WebString>& initDataTypes)
+static Vector<String> convertInitDataTypes(const WebVector<WebEncryptedMediaInitDataType>& initDataTypes)
 {
     Vector<String> result;
     result.reserveCapacity(initDataTypes.size());
     for (size_t i = 0; i < initDataTypes.size(); i++)
-        result.append(initDataTypes[i]);
+        result.append(EncryptedMediaUtils::convertFromInitDataType(initDataTypes[i]));
     return result;
 }
 
@@ -118,7 +116,7 @@ MediaKeySystemAccess::~MediaKeySystemAccess()
 void MediaKeySystemAccess::getConfiguration(MediaKeySystemConfiguration& result)
 {
     WebMediaKeySystemConfiguration configuration = m_access->getConfiguration();
-    result.setInitDataTypes(convertInitDataTypes(configuration.initDataTypes));
+    result.setInitDataTypes(convertInitDataTypes(configuration.getInitDataTypes()));
     result.setAudioCapabilities(convertCapabilities(configuration.audioCapabilities));
     result.setVideoCapabilities(convertCapabilities(configuration.videoCapabilities));
     result.setDistinctiveIdentifier(convertMediaKeysRequirement(configuration.distinctiveIdentifier));
@@ -135,7 +133,7 @@ ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* scriptState)
     WebMediaKeySystemConfiguration configuration = m_access->getConfiguration();
 
     // 1. Let promise be a new promise.
-    NewCdmResultPromise* helper = new NewCdmResultPromise(scriptState, m_keySystem, configuration.sessionTypes);
+    NewCdmResultPromise* helper = new NewCdmResultPromise(scriptState, m_keySystem, configuration.getSessionTypes());
     ScriptPromise promise = helper->promise();
 
     // 2. Asynchronously create and initialize the MediaKeys object.

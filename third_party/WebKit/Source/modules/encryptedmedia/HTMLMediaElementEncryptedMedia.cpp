@@ -17,6 +17,7 @@
 #include "core/html/MediaKeyError.h"
 #include "core/html/MediaKeyEvent.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
+#include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaEncryptedEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "platform/ContentDecryptionModuleResult.h"
@@ -310,20 +311,7 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptSt
 static PassRefPtrWillBeRawPtr<Event> createEncryptedEvent(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
 {
     MediaEncryptedEventInit initializer;
-    switch (initDataType) {
-    case WebEncryptedMediaInitDataType::Cenc:
-        initializer.setInitDataType("cenc");
-        break;
-    case WebEncryptedMediaInitDataType::Keyids:
-        initializer.setInitDataType("keyids");
-        break;
-    case WebEncryptedMediaInitDataType::Webm:
-        initializer.setInitDataType("webm");
-        break;
-    case WebEncryptedMediaInitDataType::Unknown:
-        initializer.setInitDataType(emptyString());
-        break;
-    }
+    initializer.setInitDataType(EncryptedMediaUtils::convertFromInitDataType(initDataType));
     initializer.setInitData(DOMArrayBuffer::create(initData, initDataLength));
     initializer.setBubbles(false);
     initializer.setCancelable(false);

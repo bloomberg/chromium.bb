@@ -292,6 +292,7 @@
       'exported/WebLocalCredential.cpp',
       'exported/WebMediaConstraints.cpp',
       'exported/WebMediaDeviceInfo.cpp',
+      'exported/WebMediaKeySystemConfiguration.cpp',
       'exported/WebMediaStream.cpp',
       'exported/WebMediaStreamSource.cpp',
       'exported/WebMediaStreamTrack.cpp',

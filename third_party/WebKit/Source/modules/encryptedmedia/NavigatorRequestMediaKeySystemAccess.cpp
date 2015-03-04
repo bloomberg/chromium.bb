@@ -11,6 +11,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/encryptedmedia/EncryptedMediaRequest.h"
+#include "modules/encryptedmedia/EncryptedMediaUtils.h"
+#include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/MediaKeySystemAccess.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/Logging.h"
@@ -27,11 +29,11 @@ namespace blink {
 
 namespace {
 
-static WebVector<WebString> convertInitDataTypes(const Vector<String>& initDataTypes)
+    static WebVector<WebEncryptedMediaInitDataType> convertInitDataTypes(const Vector<String>& initDataTypes)
 {
-    WebVector<WebString> result(initDataTypes.size());
+    WebVector<WebEncryptedMediaInitDataType> result(initDataTypes.size());
     for (size_t i = 0; i < initDataTypes.size(); ++i)
-        result[i] = initDataTypes[i];
+        result[i] = EncryptedMediaUtils::convertToInitDataType(initDataTypes[i]);
     return result;
 }
 
@@ -99,7 +101,7 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* sc
         const MediaKeySystemConfiguration& config = supportedConfigurations[i];
         WebMediaKeySystemConfiguration webConfig;
         if (config.hasInitDataTypes())
-            webConfig.initDataTypes = convertInitDataTypes(config.initDataTypes());
+            webConfig.setInitDataTypes(convertInitDataTypes(config.initDataTypes()));
         if (config.hasAudioCapabilities())
             webConfig.audioCapabilities = convertCapabilities(config.audioCapabilities());
         if (config.hasVideoCapabilities())

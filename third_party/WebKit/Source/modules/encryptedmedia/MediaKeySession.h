@@ -64,8 +64,6 @@ class MediaKeySession final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
     static MediaKeySession* create(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
-    static WebEncryptedMediaInitDataType convertInitDataType(const String& initDataType);
-    static WebEncryptedMediaSessionType convertSessionType(const String& sessionType);
     virtual ~MediaKeySession();
 
     String sessionId() const;

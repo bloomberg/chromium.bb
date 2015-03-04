@@ -564,6 +564,8 @@
       'encoding/TextEncoder.h',
       'encryptedmedia/ContentDecryptionModuleResultPromise.cpp',
       'encryptedmedia/ContentDecryptionModuleResultPromise.h',
+      'encryptedmedia/EncryptedMediaUtils.cpp',
+      'encryptedmedia/EncryptedMediaUtils.h',
       'encryptedmedia/HTMLMediaElementEncryptedMedia.cpp',
       'encryptedmedia/HTMLMediaElementEncryptedMedia.h',
       'encryptedmedia/MediaEncryptedEvent.cpp',
