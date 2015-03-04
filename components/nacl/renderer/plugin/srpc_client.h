@@ -23,9 +23,7 @@ class DescWrapper;
 
 namespace plugin {
 
-class ErrorInfo;
 class MethodInfo;
-class Plugin;
 class SrpcParams;
 
 //  SrpcClient represents an SRPC connection to a client.
@@ -46,11 +44,8 @@ class SrpcClient {
   //  Invoke an SRPC method.
   bool Invoke(const std::string& method_name, SrpcParams* params);
   // Get the error status from that last method invocation
-  NaClSrpcError GetLastError() { return last_error_; }
+  NaClSrpcError GetLastError() const { return last_error_; }
   bool InitParams(const std::string& method_name, SrpcParams* params);
-
-  // Attach a service for reverse-direction (from .nexe) RPCs.
-  void AttachService(NaClSrpcService* service, void* instance_data);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(SrpcClient);

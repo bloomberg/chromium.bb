@@ -21,12 +21,6 @@ class SrpcParams {
     memset(outs_, 0, sizeof(outs_));
   }
 
-  SrpcParams(const char* in_types, const char* out_types) {
-    if (!Init(in_types, out_types)) {
-      FreeAll();
-    }
-  }
-
   ~SrpcParams() {
     FreeAll();
   }

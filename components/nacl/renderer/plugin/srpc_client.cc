@@ -191,9 +191,4 @@ bool SrpcClient::Invoke(const std::string& method_name, SrpcParams* params) {
   return true;
 }
 
-void SrpcClient::AttachService(NaClSrpcService* service, void* instance_data) {
-  srpc_channel_.server = service;
-  srpc_channel_.server_instance_data = instance_data;
-}
-
 }  // namespace plugin
