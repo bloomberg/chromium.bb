@@ -41,6 +41,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleEngine.h"
@@ -2351,8 +2352,13 @@ void CanvasRenderingContext2D::drawFocusIfNeededInternal(const Path& path, Eleme
     // Note: we need to check document->focusedElement() rather than just calling
     // element->focused(), because element->focused() isn't updated until after
     // focus events fire.
-    if (element->document().focusedElement() == element)
+    if (element->document().focusedElement() == element) {
+        scrollPathIntoViewInternal(path);
         drawFocusRing(path);
+    }
+
+    // Update its accessible bounds whether it's focused or not.
+    updateFocusRingElementAccessibility(path, element);
 }
 
 bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* element)
@@ -2397,6 +2403,25 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
 
     validateStateStack();
     didDraw(dirtyRect);
+}
+
+void CanvasRenderingContext2D::updateFocusRingElementAccessibility(const Path& path, Element* element)
+{
+    AXObjectCache* axObjectCache = element->document().existingAXObjectCache();
+    if (!axObjectCache)
+        return;
+
+    // Get the transformed path.
+    Path transformedPath = path;
+    transformedPath.transform(state().m_transform);
+
+    // Offset by the canvas rect, taking border and padding into account.
+    LayoutBoxModelObject* rbmo = canvas()->layoutBoxModelObject();
+    IntRect canvasRect = canvas()->renderer()->absoluteBoundingBoxRect();
+    canvasRect.move(rbmo->borderLeft() + rbmo->paddingLeft(), rbmo->borderTop() + rbmo->paddingTop());
+    LayoutRect elementRect = enclosingLayoutRect(transformedPath.boundingRect());
+    elementRect.moveBy(canvasRect.location());
+    axObjectCache->setCanvasObjectBounds(element, elementRect);
 }
 
 void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, ExceptionState& exceptionState)

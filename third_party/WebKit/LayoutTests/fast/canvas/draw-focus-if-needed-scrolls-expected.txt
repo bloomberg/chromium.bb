@@ -1,0 +1,12 @@
+PASS window.pageYOffset is 0
+PASS window.pageYOffset is >= minYOffset
+PASS maxYOffset is >= window.pageYOffset
+PASS window.pageYOffset is >= minYOffset
+PASS maxYOffset is >= window.pageYOffset
+PASS window.pageYOffset is >= minYOffset
+PASS maxYOffset is >= window.pageYOffset
+PASS successfullyParsed is true
+
+TEST COMPLETE
+1000-pixel box
+

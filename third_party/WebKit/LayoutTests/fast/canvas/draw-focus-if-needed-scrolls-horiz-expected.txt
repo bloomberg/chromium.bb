@@ -1,0 +1,11 @@
+PASS window.pageXOffset is 0
+PASS window.pageXOffset is >= minXOffset
+PASS maxXOffset is >= window.pageXOffset
+PASS window.pageXOffset is >= minXOffset
+PASS maxXOffset is >= window.pageXOffset
+PASS window.pageXOffset is >= minXOffset
+PASS maxXOffset is >= window.pageXOffset
+PASS successfullyParsed is true
+
+TEST COMPLETE
+1000-pixel box
