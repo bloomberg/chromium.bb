@@ -126,11 +126,6 @@ QUnit.asyncTest('connect() should return access code',
     function() {
   // Stubs authentication.
   sinon.stub(base, 'isAppsV2').returns(true);
-  sinon.stub(remoting.HangoutConsentDialog, 'getInstance').returns({
-    show : function() {
-      return Promise.resolve();
-    }
-  });
   sinon.stub(chrome.identity, 'getAuthToken')
       .callsArgWith(1, 'token');
   sinon.stub(remoting.identity, 'getToken')

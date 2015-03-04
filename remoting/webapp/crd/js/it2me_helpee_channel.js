@@ -323,12 +323,7 @@ remoting.It2MeHelpeeChannel.prototype.showConfirmDialogV2_ = function(bounds) {
   var getToken =
       base.Promise.as(chrome.identity.getAuthToken, [{interactive: false}]);
 
-  return getToken.then(
-    /** @param {string} token */
-    function(token) {
-      return remoting.HangoutConsentDialog.getInstance().show(Boolean(token),
-                                                              bounds);
-    });
+  return getToken;
 };
 
 /**
