@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -16,7 +17,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.ProfilePathCallback;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Calendar;
 
@@ -40,7 +40,7 @@ public class AboutChromePreferences extends PreferenceFragment implements
         getActivity().setTitle(R.string.prefs_about_chrome);
         addPreferencesFromResource(R.xml.about_chrome_preferences);
 
-        if (!FeatureUtilities.isApplicationUpdateSupported()) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
             ChromeBasePreference deprecationWarning = new ChromeBasePreference(
                     new ContextThemeWrapper(getActivity(),
                             R.style.DeprecationWarningPreferenceTheme));

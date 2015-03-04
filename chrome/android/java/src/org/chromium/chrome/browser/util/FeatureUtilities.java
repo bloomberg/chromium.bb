@@ -121,9 +121,5 @@ public class FeatureUtilities {
         nativeSetDocumentModeEnabled(enabled);
     }
 
-    public static boolean isApplicationUpdateSupported() {
-        return true;
-    }
-
     private static native void nativeSetDocumentModeEnabled(boolean enabled);
 }
