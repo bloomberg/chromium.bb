@@ -16,9 +16,7 @@ namespace chromeos {
 namespace {
 
 // Checks the |event| and asynchronously sets the XKB layout when necessary.
-void HandleHierarchyChangedEvent(
-    XIHierarchyEvent* event,
-    ObserverList<DeviceHierarchyObserver>* observer_list) {
+void HandleHierarchyChangedEvent(XIHierarchyEvent* event) {
   if (!(event->flags & (XISlaveAdded | XISlaveRemoved)))
     return;
 
@@ -26,15 +24,8 @@ void HandleHierarchyChangedEvent(
   for (int i = 0; i < event->num_info; ++i) {
     XIHierarchyInfo* info = &event->info[i];
     if ((info->flags & XISlaveAdded) && (info->use == XIFloatingSlave)) {
-      FOR_EACH_OBSERVER(DeviceHierarchyObserver,
-                        *observer_list,
-                        DeviceAdded(info->deviceid));
       update_keyboard_status = true;
-    } else if (info->flags & XISlaveRemoved) {
-      // Can't check info->use here; it appears to always be 0.
-      FOR_EACH_OBSERVER(DeviceHierarchyObserver,
-                        *observer_list,
-                        DeviceRemoved(info->deviceid));
+      break;
     }
   }
 
@@ -73,16 +64,6 @@ void XInputHierarchyChangedEventListener::Stop() {
   stopped_ = true;
 }
 
-void XInputHierarchyChangedEventListener::AddObserver(
-    DeviceHierarchyObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void XInputHierarchyChangedEventListener::RemoveObserver(
-    DeviceHierarchyObserver* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
 void XInputHierarchyChangedEventListener::WillProcessEvent(
     const ui::PlatformEvent& event) {
   ProcessedXEvent(event);
@@ -100,16 +81,8 @@ void XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
 
   if (cookie->evtype == XI_HierarchyChanged) {
     XIHierarchyEvent* event = static_cast<XIHierarchyEvent*>(cookie->data);
-    HandleHierarchyChangedEvent(event, &observer_list_);
-    if (event->flags & XIDeviceEnabled || event->flags & XIDeviceDisabled)
-      NotifyDeviceHierarchyChanged();
+    HandleHierarchyChangedEvent(event);
   }
-}
-
-void XInputHierarchyChangedEventListener::NotifyDeviceHierarchyChanged() {
-  FOR_EACH_OBSERVER(DeviceHierarchyObserver,
-                    observer_list_,
-                    DeviceHierarchyChanged());
 }
 
 }  // namespace chromeos

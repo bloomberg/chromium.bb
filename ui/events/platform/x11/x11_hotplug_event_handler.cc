@@ -46,7 +46,19 @@ const char* kKnownInvalidKeyboardDeviceNames[] = {"Power Button",
 const char* kCachedAtomList[] = {
   "Abs MT Position X",
   "Abs MT Position Y",
+  XI_KEYBOARD,
+  XI_MOUSE,
+  XI_TOUCHPAD,
+  XI_TOUCHSCREEN,
   NULL,
+};
+
+enum DeviceType {
+  DEVICE_TYPE_KEYBOARD,
+  DEVICE_TYPE_MOUSE,
+  DEVICE_TYPE_TOUCHPAD,
+  DEVICE_TYPE_TOUCHSCREEN,
+  DEVICE_TYPE_OTHER
 };
 
 typedef base::Callback<void(const std::vector<KeyboardDevice>&)>
@@ -55,11 +67,16 @@ typedef base::Callback<void(const std::vector<KeyboardDevice>&)>
 typedef base::Callback<void(const std::vector<TouchscreenDevice>&)>
     TouchscreenDeviceCallback;
 
+typedef base::Callback<void(const std::vector<InputDevice>&)>
+    InputDeviceCallback;
+
 // Used for updating the state on the UI thread once device information is
 // parsed on helper threads.
 struct UiCallbacks {
   KeyboardDeviceCallback keyboard_callback;
   TouchscreenDeviceCallback touchscreen_callback;
+  InputDeviceCallback mouse_callback;
+  InputDeviceCallback touchpad_callback;
 };
 
 // Stores a copy of the XIValuatorClassInfo values so X11 device processing can
@@ -92,11 +109,13 @@ struct TouchClassInfo {
 };
 
 struct DeviceInfo {
-  DeviceInfo(const XIDeviceInfo& device, const base::FilePath& path)
+  DeviceInfo(const XIDeviceInfo& device,
+             DeviceType type,
+             const base::FilePath& path)
       : id(device.deviceid),
         name(device.name),
         use(device.use),
-        enabled(device.enabled),
+        type(type),
         path(path) {
     for (int i = 0; i < device.num_classes; ++i) {
       switch (device.classes[i]->type) {
@@ -126,8 +145,8 @@ struct DeviceInfo {
   // Device type (ie: XIMasterPointer)
   int use;
 
-  // Specifies if the device is enabled and can send events.
-  bool enabled;
+  // Specifies the type of the device.
+  DeviceType type;
 
   // Path to the actual device (ie: /dev/input/eventXX)
   base::FilePath path;
@@ -147,8 +166,10 @@ struct DisplayState {
 // Returns true if |name| is the name of a known invalid keyboard device. Note,
 // this may return false negatives.
 bool IsKnownInvalidKeyboardDevice(const std::string& name) {
+  std::string trimmed(name);
+  base::TrimWhitespaceASCII(name, base::TRIM_TRAILING, &trimmed);
   for (const char* device_name : kKnownInvalidKeyboardDeviceNames) {
-    if (name == device_name)
+    if (trimmed == device_name)
       return true;
   }
   return false;
@@ -156,7 +177,7 @@ bool IsKnownInvalidKeyboardDevice(const std::string& name) {
 
 // Returns true if |name| is the name of a known XTEST device. Note, this may
 // return false negatives.
-bool IsTestKeyboard(const std::string& name) {
+bool IsTestDevice(const std::string& name) {
   return name.find("XTEST") != std::string::npos;
 }
 
@@ -216,16 +237,52 @@ void HandleKeyboardDevicesInWorker(
   std::vector<KeyboardDevice> devices;
 
   for (const DeviceInfo& device_info : device_infos) {
-    if (!device_info.enabled || device_info.use != XISlaveKeyboard)
+    if (device_info.type != DEVICE_TYPE_KEYBOARD)
+      continue;
+    if (device_info.use != XISlaveKeyboard)
       continue;  // Assume all keyboards are keyboard slaves
-    std::string device_name(device_info.name);
-    base::TrimWhitespaceASCII(device_name, base::TRIM_TRAILING, &device_name);
-    if (IsTestKeyboard(device_name))
-      continue;  // Skip test devices.
-    if (IsKnownInvalidKeyboardDevice(device_name))
+    if (IsKnownInvalidKeyboardDevice(device_info.name))
       continue;  // Skip invalid devices.
     InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
     devices.push_back(KeyboardDevice(device_info.id, type));
+  }
+
+  reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
+}
+
+// Helper used to parse mouse information. When it is done it uses
+// |reply_runner| and |callback| to update the state on the UI thread.
+void HandleMouseDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
+                                scoped_refptr<base::TaskRunner> reply_runner,
+                                const InputDeviceCallback& callback) {
+  std::vector<InputDevice> devices;
+  for (const DeviceInfo& device_info : device_infos) {
+    if (device_info.type != DEVICE_TYPE_MOUSE ||
+        device_info.use != XISlavePointer) {
+      continue;
+    }
+
+    InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
+    devices.push_back(InputDevice(device_info.id, type));
+  }
+
+  reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
+}
+
+// Helper used to parse touchpad information. When it is done it uses
+// |reply_runner| and |callback| to update the state on the UI thread.
+void HandleTouchpadDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
+                                   scoped_refptr<base::TaskRunner> reply_runner,
+                                   const InputDeviceCallback& callback) {
+  std::vector<InputDevice> devices;
+  for (const DeviceInfo& device_info : device_infos) {
+    if (device_info.type != DEVICE_TYPE_TOUCHPAD ||
+        device_info.use != XISlavePointer) {
+      continue;
+    }
+
+    InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
+    devices.push_back(InputDevice(device_info.id, type));
   }
 
   reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
@@ -243,15 +300,19 @@ void HandleTouchscreenDevicesInWorker(
       display_state.mt_position_y == None)
     return;
 
-  std::set<int> no_match_touchscreen;
   for (const DeviceInfo& device_info : device_infos) {
-    if (!device_info.enabled || (device_info.use != XIFloatingSlave
-        && device_info.use != XISlavePointer))
+    if (device_info.type != DEVICE_TYPE_TOUCHSCREEN ||
+        (device_info.use != XIFloatingSlave &&
+         device_info.use != XISlavePointer)) {
+      continue;
+    }
+
+    // Touchscreens should be direct touch devices.
+    if (device_info.touch_class_info.mode != XIDirectTouch)
       continue;
 
     double max_x = -1.0;
     double max_y = -1.0;
-    bool is_direct_touch = false;
 
     for (const ValuatorClassInfo& valuator : device_info.valuator_class_infos) {
       if (display_state.mt_position_x == valuator.label) {
@@ -269,12 +330,8 @@ void HandleTouchscreenDevicesInWorker(
       }
     }
 
-    if (device_info.touch_class_info.mode)
-      is_direct_touch = device_info.touch_class_info.mode == XIDirectTouch;
-
-    // Touchscreens should have absolute X and Y axes, and be direct touch
-    // devices.
-    if (max_x > 0.0 && max_y > 0.0 && is_direct_touch) {
+    // Touchscreens should have absolute X and Y axes.
+    if (max_x > 0.0 && max_y > 0.0) {
       InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
       // |max_x| and |max_y| are inclusive values, so we need to add 1 to get
       // the size.
@@ -297,6 +354,9 @@ void HandleHotplugEventInWorker(
       devices, display_state, reply_runner, callbacks.touchscreen_callback);
   HandleKeyboardDevicesInWorker(
       devices, reply_runner, callbacks.keyboard_callback);
+  HandleMouseDevicesInWorker(devices, reply_runner, callbacks.mouse_callback);
+  HandleTouchpadDevicesInWorker(devices, reply_runner,
+                                callbacks.touchpad_callback);
 }
 
 DeviceHotplugEventObserver* GetHotplugEventObserver() {
@@ -311,6 +371,14 @@ void OnTouchscreenDevices(const std::vector<TouchscreenDevice>& devices) {
   GetHotplugEventObserver()->OnTouchscreenDevicesUpdated(devices);
 }
 
+void OnMouseDevices(const std::vector<InputDevice>& devices) {
+  GetHotplugEventObserver()->OnMouseDevicesUpdated(devices);
+}
+
+void OnTouchpadDevices(const std::vector<InputDevice>& devices) {
+  GetHotplugEventObserver()->OnTouchpadDevicesUpdated(devices);
+}
+
 }  // namespace
 
 X11HotplugEventHandler::X11HotplugEventHandler()
@@ -321,14 +389,45 @@ X11HotplugEventHandler::~X11HotplugEventHandler() {
 }
 
 void X11HotplugEventHandler::OnHotplugEvent() {
-  const XIDeviceList& device_list =
-      DeviceListCacheX11::GetInstance()->GetXI2DeviceList(gfx::GetXDisplay());
   Display* display = gfx::GetXDisplay();
+  const XDeviceList& device_list_xi =
+      DeviceListCacheX11::GetInstance()->GetXDeviceList(display);
+  const XIDeviceList& device_list_xi2 =
+      DeviceListCacheX11::GetInstance()->GetXI2DeviceList(display);
+
+  const int kMaxDeviceNum = 128;
+  DeviceType device_types[kMaxDeviceNum];
+  for (int i = 0; i < kMaxDeviceNum; ++i)
+    device_types[i] = DEVICE_TYPE_OTHER;
+
+  for (int i = 0; i < device_list_xi.count; ++i) {
+    int id = device_list_xi[i].id;
+    if (id < 0 || id >= kMaxDeviceNum)
+      continue;
+
+    Atom type = device_list_xi[i].type;
+    if (type == atom_cache_.GetAtom(XI_KEYBOARD))
+      device_types[id] = DEVICE_TYPE_KEYBOARD;
+    else if (type == atom_cache_.GetAtom(XI_MOUSE))
+      device_types[id] = DEVICE_TYPE_MOUSE;
+    else if (type == atom_cache_.GetAtom(XI_TOUCHPAD))
+      device_types[id] = DEVICE_TYPE_TOUCHPAD;
+    else if (type == atom_cache_.GetAtom(XI_TOUCHSCREEN))
+      device_types[id] = DEVICE_TYPE_TOUCHSCREEN;
+  }
 
   std::vector<DeviceInfo> device_infos;
-  for (int i = 0; i < device_list.count; ++i) {
-    const XIDeviceInfo& device = device_list[i];
-    device_infos.push_back(DeviceInfo(device, GetDevicePath(display, device)));
+  for (int i = 0; i < device_list_xi2.count; ++i) {
+    const XIDeviceInfo& device = device_list_xi2[i];
+    if (!device.enabled || IsTestDevice(device.name))
+      continue;
+
+    DeviceType device_type =
+        (device.deviceid >= 0 && device.deviceid < kMaxDeviceNum)
+            ? device_types[device.deviceid]
+            : DEVICE_TYPE_OTHER;
+    device_infos.push_back(
+        DeviceInfo(device, device_type, GetDevicePath(display, device)));
   }
 
   // X11 is not thread safe, so first get all the required state.
@@ -339,8 +438,8 @@ void X11HotplugEventHandler::OnHotplugEvent() {
   UiCallbacks callbacks;
   callbacks.keyboard_callback = base::Bind(&OnKeyboardDevices);
   callbacks.touchscreen_callback = base::Bind(&OnTouchscreenDevices);
-  // TODO(pkotwicz): Compute the lists of mice and touchpads and send the new
-  // lists to DeviceHotplugEventObserver.
+  callbacks.mouse_callback = base::Bind(&OnMouseDevices);
+  callbacks.touchpad_callback = base::Bind(&OnTouchpadDevices);
 
   // Parsing the device information may block, so delegate the operation to a
   // worker thread. Once the device information is extracted the parsed devices

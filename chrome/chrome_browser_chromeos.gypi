@@ -85,7 +85,6 @@
         'browser/chromeos/dbus/screen_lock_service_provider.h',
         'browser/chromeos/device/input_service_proxy.cc',
         'browser/chromeos/device/input_service_proxy.h',
-        'browser/chromeos/device_hierarchy_observer.h',
         'browser/chromeos/device_uma.cc',
         'browser/chromeos/device_uma.h',
         'browser/chromeos/display/display_configuration_observer.cc',

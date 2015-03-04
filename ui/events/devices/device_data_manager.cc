@@ -151,6 +151,14 @@ void DeviceDataManager::OnKeyboardDevicesUpdated(
 
 void DeviceDataManager::OnMouseDevicesUpdated(
     const std::vector<InputDevice>& devices) {
+  if (devices.size() == mouse_devices_.size() &&
+      std::equal(devices.begin(),
+                 devices.end(),
+                 mouse_devices_.begin(),
+                 InputDeviceEquals)) {
+    return;
+  }
+  mouse_devices_ = devices;
   FOR_EACH_OBSERVER(InputDeviceEventObserver,
                     observers_,
                     OnMouseDeviceConfigurationChanged());
@@ -158,6 +166,14 @@ void DeviceDataManager::OnMouseDevicesUpdated(
 
 void DeviceDataManager::OnTouchpadDevicesUpdated(
     const std::vector<InputDevice>& devices) {
+  if (devices.size() == touchpad_devices_.size() &&
+      std::equal(devices.begin(),
+                 devices.end(),
+                 touchpad_devices_.begin(),
+                 InputDeviceEquals)) {
+    return;
+  }
+  touchpad_devices_ = devices;
   FOR_EACH_OBSERVER(InputDeviceEventObserver,
                     observers_,
                     OnTouchpadDeviceConfigurationChanged());

@@ -83,6 +83,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
 
   std::vector<TouchscreenDevice> touchscreen_devices_;
   std::vector<KeyboardDevice> keyboard_devices_;
+  std::vector<InputDevice> mouse_devices_;
+  std::vector<InputDevice> touchpad_devices_;
 
   ObserverList<InputDeviceEventObserver> observers_;
 
