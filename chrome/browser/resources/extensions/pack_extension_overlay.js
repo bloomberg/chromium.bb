@@ -55,8 +55,10 @@ cr.define('extensions', function() {
     /**
      * Utility function which asks the C++ to show a platform-specific file
      * select dialog, and set the value property of |node| to the selected path.
-     * @param {SelectType} selectType The type of selection to use.
-     * @param {FileType} fileType The type of file to select.
+     * @param {chrome.developerPrivate.SelectType} selectType
+     *     The type of selection to use.
+     * @param {chrome.developerPrivate.FileType} fileType
+     *     The type of file to select.
      * @param {HTMLInputElement} node The node to set the value of.
      * @private
      */
@@ -75,8 +77,8 @@ cr.define('extensions', function() {
      */
     handleBrowseExtensionDir_: function(e) {
       this.showFileDialog_(
-          'FOLDER',
-          'LOAD',
+          chrome.developerPrivate.SelectType.FOLDER,
+          chrome.developerPrivate.FileType.LOAD,
           /** @type {HTMLInputElement} */ ($('extension-root-dir')));
     },
 
@@ -87,8 +89,8 @@ cr.define('extensions', function() {
      */
     handleBrowsePrivateKey_: function(e) {
       this.showFileDialog_(
-          'FILE',
-          'PEM',
+          chrome.developerPrivate.SelectType.FILE,
+          chrome.developerPrivate.FileType.PEM,
           /** @type {HTMLInputElement} */ ($('extension-private-key')));
     },
 
@@ -113,16 +115,14 @@ cr.define('extensions', function() {
         extensions.ExtensionSettings.showOverlay(null);
       };
 
-      // TODO(devlin): Once we expose enums on extension APIs, we should use
-      // those objects, instead of a string.
       switch (response.status) {
-        case 'SUCCESS':
+        case chrome.developerPrivate.PackStatus.SUCCESS:
           alertTitle = loadTimeData.getString('packExtensionOverlay');
           alertOk = loadTimeData.getString('ok');
           alertOkCallback = closeAlert;
           // No 'Cancel' option.
           break;
-        case 'WARNING':
+        case chrome.developerPrivate.PackStatus.WARNING:
           alertTitle = loadTimeData.getString('packExtensionWarningTitle');
           alertOk = loadTimeData.getString('packExtensionProceedAnyway');
           alertCancel = loadTimeData.getString('cancel');
@@ -136,7 +136,7 @@ cr.define('extensions', function() {
           }.bind(this);
           alertCancelCallback = closeAlert;
           break;
-        case 'ERROR':
+        case chrome.developerPrivate.PackStatus.ERROR:
           alertTitle = loadTimeData.getString('packExtensionErrorTitle');
           alertOk = loadTimeData.getString('ok');
           alertOkCallback = function() {

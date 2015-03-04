@@ -5,7 +5,7 @@
 /** @fileoverview Externs generated from namespace: developerPrivate */
 
 // Note: hand-modified to change Array to !Array in ItemInfo typedef, and add
-// typedef {string} for idl enums.
+// enum definitions.
 
 /**
  * @typedef {string}
@@ -82,24 +82,44 @@ var InspectOptions;
 var ReloadOptions;
 
 /**
- * @typedef {string}
+ * @enum {string}
  */
-var PackStatus;
+chrome.developerPrivate.PackStatus = {
+  SUCCESS: 'SUCCESS',
+  ERROR: 'ERROR',
+  WARNING: 'WARNING',
+};
 
 /**
- * @typedef {string}
+ * @enum {string}
  */
-var FileType;
+chrome.developerPrivate.FileType = {
+  LOAD: 'LOAD',
+  PEM: 'PEM',
+};
 
 /**
- * @typedef {string}
+ * @enum {string}
  */
-var SelectType;
+chrome.developerPrivate.SelectType = {
+  FILE: 'FILE',
+  FOLDER: 'FOLDER',
+};
 
 /**
- * @typedef {string}
+ * @enum {string}
  */
-var EventType;
+chrome.developerPrivate.EventType = {
+  INSTALLED: 'INSTALLED',
+  UNINSTALLED: 'UNINSTALLED',
+  LOADED: 'LOADED',
+  UNLOADED: 'UNLOADED',
+  // New window / view opened.
+  VIEW_REGISTERED: 'VIEW_REGISTERED',
+  // window / view closed.
+  VIEW_UNREGISTERED: 'VIEW_UNREGISTERED',
+  ERROR_ADDED: 'ERROR_ADDED',
+}
 
 /**
  * @typedef {{
@@ -107,7 +127,7 @@ var EventType;
  *   item_path: string,
  *   pem_path: string,
  *   override_flags: number,
- *   status: PackStatus
+ *   status: chrome.developerPrivate.PackStatus
  * }}
  */
 var PackDirectoryResponse;
@@ -121,7 +141,7 @@ var ProjectInfo;
 
 /**
  * @typedef {{
- *   event_type: EventType,
+ *   event_type: chrome.developerPrivate.EventType,
  *   item_id: string
  * }}
  */
@@ -244,8 +264,10 @@ chrome.developerPrivate.loadDirectory = function(directory, callback) {};
 
 /**
  * Open Dialog to browse to an entry.
- * @param {SelectType} selectType Select a file or a folder.
- * @param {FileType} fileType Required file type. For example, pem type is for
+ * @param {chrome.developerPrivate.SelectType} selectType
+ *     Select a file or a folder.
+ * @param {chrome.developerPrivate.FileType} fileType
+ *     Required file type. For example, pem type is for
  * private key and load type is for an unpacked item.
  * @param {Function} callback called with selected item's path.
  */
