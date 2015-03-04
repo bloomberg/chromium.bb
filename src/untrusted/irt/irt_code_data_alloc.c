@@ -32,7 +32,8 @@ static pthread_mutex_t g_code_mutex = PTHREAD_MUTEX_INITIALIZER;
 void irt_reserve_code_allocation(uintptr_t code_begin, size_t code_size) {
   CHECK(0 == pthread_mutex_lock(&g_code_mutex));
 
-  if (g_next_available_code < code_begin + code_size) {
+  if (g_next_available_code == (uintptr_t) -1 ||
+      g_next_available_code < code_begin + code_size) {
     g_next_available_code = code_begin + code_size;
   }
 

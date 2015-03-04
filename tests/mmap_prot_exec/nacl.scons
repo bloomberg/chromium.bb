@@ -93,4 +93,4 @@ if (env.Bit('tests_use_irt') and env.Bit('nacl_static_link') and
                                    nexe, [datafile],
                                    sel_ldr_flags=['-a'])
   env.AddNodeToTestSuite(node, ['small_tests'],
-                         'run_mmap_code_data_alloc_test', is_broken=True)
+                         'run_mmap_code_data_alloc_test')
