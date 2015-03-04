@@ -11,21 +11,8 @@ namespace web_modal {
 
 // TODO(gbillock): rename this file
 
-#if defined(OS_MACOSX)
-// Use a void* since none of the gfx::Native* types are suitable for
-// representing the web contents modal dialog under Cocoa.
-typedef void* NativeWebContentsModalDialog;
-#else
-typedef gfx::NativeView NativeWebContentsModalDialog;
-#endif
-
-#if defined(OS_MACOSX)
-// Use a void* since none of the gfx::Native* types are suitable for
-// representing a popup window under Cocoa.
-typedef void* NativePopup;
-#else
-typedef gfx::NativeView NativePopup;
-#endif
+using NativeWebContentsModalDialog = gfx::NativeWindow;
+using NativePopup = gfx::NativeWindow;
 
 }  // namespace web_modal
 

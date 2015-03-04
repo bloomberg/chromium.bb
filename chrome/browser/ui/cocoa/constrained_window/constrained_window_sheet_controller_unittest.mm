@@ -56,6 +56,10 @@ const int kSystemSheetReturnCode = 77;
 - (void)updateSheetPosition {
 }
 
+- (NSWindow*)sheetWindow {
+  return [alert_ window];
+}
+
 - (void)alertDidEnd:(NSAlert *)alert
          returnCode:(NSInteger)returnCode
             ctxInfo:(void *)contextInfo {

@@ -197,6 +197,10 @@ void ShowCertificateViewer(content::WebContents* web_contents,
   // NOOP
 }
 
+- (NSWindow*)sheetWindow {
+  return panel_;
+}
+
 - (void)onConstrainedWindowClosed {
   panel_.reset();
   constrainedWindow_.reset();

@@ -227,6 +227,10 @@ void ShowSSLClientCertificateSelector(
   // NOOP
 }
 
+- (NSWindow*)sheetWindow {
+  return panel_;
+}
+
 - (void)onConstrainedWindowClosed {
   observer_->StopObserving();
   panel_.reset();
