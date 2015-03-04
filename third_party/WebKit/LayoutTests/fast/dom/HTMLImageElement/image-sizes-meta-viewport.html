@@ -1,13 +1,19 @@
 <!DOCTYPE html>
+<script>
+    if (window.internals) {
+        window.internals.settings.setViewportEnabled(true);
+        window.internals.settings.setViewportMetaEnabled(true);
+    }
+</script>
+<meta name="viewport" content="width=400">
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="resources/currentSrcHelper.js"></script>
 <script>
-
     addEventListener("load", function() {
         test(function() {
             assert_equals(document.getElementById("simple").currentSrc.indexOf("file://"), 0);
-            assert_equals(document.getElementById("simple").clientWidth, (window.innerWidth));
+            assert_equals(document.getElementById("simple").clientWidth, 800);
             assert_equals(currentSrcFileNameNoParams("simple"), "image-set-2x.png");
             assert_equals(document.getElementById("small_sizes").clientWidth, 300);
             assert_equals(currentSrcFileNameNoParams("small_sizes"), "image-set-1x.png");
@@ -15,9 +21,9 @@
             assert_equals(currentSrcFileNameNoParams("sizes_x_descriptors"), "image-set-1x.png");
             assert_equals(document.getElementById("sizes_src").clientWidth, 400);
             assert_equals(currentSrcFileNameNoParams("sizes_src"), "image-set-1x.png");
-            assert_equals(document.getElementById("default_sizes").clientWidth, window.innerWidth);
+            assert_equals(document.getElementById("default_sizes").clientWidth, 400);
             assert_equals(currentSrcFileNameNoParams("default_sizes"), "image-set-2x.png");
-            assert_equals(document.getElementById("invalid_length").clientWidth, window.innerWidth);
+            assert_equals(document.getElementById("invalid_length").clientWidth, 400);
             assert_equals(currentSrcFileNameNoParams("invalid_length"), "image-set-2x.png");
             assert_approx_equals(document.getElementById("src_and_w").clientWidth, 700, 1/64);
             assert_equals(currentSrcFileNameNoParams("src_and_w"), "image-set-4x.png");
@@ -29,16 +35,16 @@
             assert_equals(currentSrcFileNameNoParams("x_and_w2"), "image-set-2x.png");
             assert_equals(document.getElementById("x_and_w3").clientWidth, 400);
             assert_equals(currentSrcFileNameNoParams("x_and_w3"), "image-set-2x.png");
-            assert_equals(document.getElementById("half_size").clientWidth, (window.innerWidth/2));
+            assert_equals(document.getElementById("half_size").clientWidth, 200);
             assert_equals(currentSrcFileNameNoParams("half_size"), "image-set-2x.png");
-            assert_equals(document.getElementById("infitisimal_sizes").clientWidth, (window.innerWidth/100));
+            assert_equals(document.getElementById("infitisimal_sizes").clientWidth, 4);
             assert_equals(currentSrcFileNameNoParams("infitisimal_sizes"), "image-set-2x.png");
             assert_equals(currentSrcFileNameNoParams("fraction"), "data:,a");
             assert_equals(document.getElementById("seen_lowest_before").clientWidth, 1600);
             assert_equals(currentSrcFileNameNoParams("seen_lowest_before"), "image-set-4x.png");
             assert_equals(document.getElementById("seen_highest_before").clientWidth, 800);
             assert_equals(currentSrcFileNameNoParams("seen_highest_before"), "image-set-4x.png");
-        }, "Test srcset and sizes at a 1x screen");
+        }, "Test srcset and sizes with a meta viewport");
     }, false);
 </script>
 <img id="simple" src="" sizes="(max-width: 300px) 400px, 800px" srcset="../../hidpi/resources/image-set-1x.png?1 400w, ../../hidpi/resources/image-set-2x.png?1 800w">

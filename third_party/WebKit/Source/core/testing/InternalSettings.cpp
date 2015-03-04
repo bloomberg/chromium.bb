@@ -211,6 +211,12 @@ void InternalSettings::setViewportEnabled(bool enabled, ExceptionState& exceptio
     settings()->setViewportEnabled(enabled);
 }
 
+void InternalSettings::setViewportMetaEnabled(bool enabled, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setViewportMetaEnabled(enabled);
+}
+
 void InternalSettings::setStandardFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
