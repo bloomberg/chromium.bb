@@ -106,9 +106,12 @@ void NativeDisplayDelegateProxy::Initialize() {
 
   // Fallback to command line if the file doesn't exit or failed to read.
   if (success || CreateSnapshotFromCommandLine(&params)) {
+    LOG_IF(ERROR, !success) << "Failed to read display_info.bin.";
     DCHECK_NE(DISPLAY_CONNECTION_TYPE_NONE, params.type);
     displays_.push_back(new DriDisplaySnapshotProxy(params, display_manager_));
     has_dummy_display_ = true;
+  } else {
+    LOG(ERROR) << "Failed to obtain initial display info";
   }
 }
 
