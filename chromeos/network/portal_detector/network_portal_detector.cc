@@ -119,4 +119,7 @@ void NetworkPortalDetectorStubImpl::SetStrategy(
     PortalDetectorStrategy::StrategyId /* id */) {
 }
 
+void NetworkPortalDetectorStubImpl::OnLockScreenRequest() {
+}
+
 }  // namespace chromeos

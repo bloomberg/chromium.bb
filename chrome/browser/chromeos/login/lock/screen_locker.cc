@@ -43,6 +43,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"
+#include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -366,6 +367,8 @@ void ScreenLocker::HandleLockScreenRequest() {
     VLOG(1) << "Calling session manager's StopSession D-Bus method";
     DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
   }
+  // Close captive portal window and clear signin profile.
+  NetworkPortalDetector::Get()->OnLockScreenRequest();
 }
 
 // static

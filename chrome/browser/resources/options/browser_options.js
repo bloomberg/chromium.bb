@@ -206,6 +206,9 @@ cr.define('options', function() {
         }
         options.network.NetworkList.refreshNetworkData(
             loadTimeData.getValue('networkData'));
+        if (loadTimeData.getBoolean('enableCaptivePortalBypassProxyOption')) {
+          $('captive-portal-bypass-proxy-div').hidden = false;
+        }
       }
 
       // On Startup section.

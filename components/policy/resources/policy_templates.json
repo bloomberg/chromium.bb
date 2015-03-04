@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 294
+#   For your editing convenience: highest ID currently used: 295
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1345,6 +1345,28 @@
       'caption': '''Clear site data on browser shutdown (deprecated)''',
       'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 29.''',
       'label': '''Clear site data on browser shutdown (deprecated)''',
+    },
+    {
+      'name': 'CaptivePortalAuthenticationIgnoresProxy',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:41-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default_for_enterprise_users': False,
+      'id': 295,
+      'caption': '''Captive portal authentication ignores proxy''',
+      'desc': '''This policy allows <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to bypass any proxy for captive portal authentication.
+
+      This policy only takes effect if a proxy is configured (for example through policy, by the user in chrome://settings, or by extensions).
+
+      If you enable this setting, any captive portal authentication pages (i.e. all web pages starting from captive portal signin page until <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> detects succesful internet connection) will be displayed in a separate window ignoring all policy settings and restrictions for the current user.
+
+      If you disable this setting or leave it unset, any captive portal authentication pages will be shown in a (regular) new browser tab, using the current user's proxy settings.''',
     },
     {
       'name': 'Proxy',

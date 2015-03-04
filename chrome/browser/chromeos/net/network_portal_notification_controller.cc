@@ -16,10 +16,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/chromeos/net/network_portal_web_dialog.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -29,6 +31,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -162,22 +165,22 @@ void NetworkPortalNotificationControllerDelegate::Click() {
       NetworkPortalNotificationController::USER_ACTION_METRIC_CLICKED,
       NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
 
-  // ConsumerManagementService may not exist in tests.
-  const policy::ConsumerManagementService* consumer_management_service =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetConsumerManagementService();
-  const bool enrolled = consumer_management_service &&
-                        consumer_management_service->GetStatus() ==
-                            policy::ConsumerManagementService::STATUS_ENROLLED;
+  Profile* profile = ProfileManager::GetActiveUserProfile();
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableCaptivePortalBypassProxy) &&
-      !enrolled) {
+  const bool bypass_proxy_switch_present =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableCaptivePortalBypassProxyOption);
+  const bool use_incognito_profile =
+      bypass_proxy_switch_present
+          ? (profile &&
+             profile->GetPrefs()->GetBoolean(
+                 prefs::kCaptivePortalAuthenticationIgnoresProxy))
+          : false;
+
+  if (use_incognito_profile) {
     if (controller_)
       controller_->ShowDialog();
   } else {
-    Profile* profile = ProfileManager::GetActiveUserProfile();
     if (!profile)
       return;
     chrome::ScopedTabbedBrowserDisplayer displayer(
@@ -220,7 +223,7 @@ const char NetworkPortalNotificationController::kUserActionMetric[] =
     "CaptivePortal.Notification.UserAction";
 
 NetworkPortalNotificationController::NetworkPortalNotificationController()
-    : dialog_(nullptr) {
+    : dialog_(nullptr), ignore_no_network_for_testing_(false) {
 }
 
 NetworkPortalNotificationController::~NetworkPortalNotificationController() {
@@ -251,8 +254,14 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
       state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
     last_network_path_.clear();
 
-    if (dialog_)
+    // In browser tests we initiate fake network portal detection, but network
+    // state usually stays connected. This way, after dialog is shown, it is
+    // immediately closed. The testing check below prevents dialog from closing.
+    if (dialog_ &&
+        (!ignore_no_network_for_testing_ ||
+         state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)) {
       dialog_->Close();
+    }
 
     CloseNotification();
     return;
@@ -392,6 +401,20 @@ scoped_ptr<Notification> NetworkPortalNotificationController::GetNotification(
   } else {
     return CreateDefaultCaptivePortalNotification(network);
   }
+}
+
+void NetworkPortalNotificationController::SetIgnoreNoNetworkForTesting() {
+  ignore_no_network_for_testing_ = true;
+}
+
+void NetworkPortalNotificationController::CloseDialog() {
+  if (dialog_)
+    dialog_->Close();
+}
+
+const NetworkPortalWebDialog*
+NetworkPortalNotificationController::GetDialogForTesting() const {
+  return dialog_;
 }
 
 }  // namespace chromeos

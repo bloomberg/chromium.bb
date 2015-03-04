@@ -470,6 +470,14 @@
     "note": "This policy is retired, see http://crbug.com/133291."
   },
 
+  "CaptivePortalAuthenticationIgnoresProxy": {
+    "os": ["chromeos"],
+    "test_policy": { "CaptivePortalAuthenticationIgnoresProxy": true },
+    "pref_mappings": [
+      { "pref": "proxy.captive_portal_ignores_proxy" }
+    ]
+  },
+
   "ProxyMode": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "ProxyMode": "direct" },

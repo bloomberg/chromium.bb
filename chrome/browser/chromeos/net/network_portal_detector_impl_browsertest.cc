@@ -2,15 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
+#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -20,6 +27,7 @@
 #include "content/public/test/test_utils.h"
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
@@ -29,6 +37,8 @@ using message_center::MessageCenter;
 using message_center::MessageCenterObserver;
 
 namespace chromeos {
+
+class NetworkPortalWebDialog;
 
 namespace {
 
@@ -139,6 +149,16 @@ class NetworkPortalDetectorImplBrowserTest
 
   MessageCenter* message_center() { return MessageCenter::Get(); }
 
+  void SetIgnoreNoNetworkForTesting() {
+    network_portal_detector_->notification_controller_
+        .SetIgnoreNoNetworkForTesting();
+  }
+
+  const NetworkPortalWebDialog* GetDialog() const {
+    return network_portal_detector_->notification_controller_
+        .GetDialogForTesting();
+  }
+
  private:
   NetworkPortalDetectorImpl* network_portal_detector_;
 
@@ -200,5 +220,91 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   ASSERT_TRUE(
       action_checker.Expect(Controller::USER_ACTION_METRIC_CLOSED, 1)->Check());
 }
+
+class NetworkPortalDetectorImplBrowserTestIgnoreProxy
+    : public NetworkPortalDetectorImplBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  NetworkPortalDetectorImplBrowserTestIgnoreProxy()
+      : NetworkPortalDetectorImplBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    NetworkPortalDetectorImplBrowserTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitch(
+        chromeos::switches::kEnableCaptivePortalBypassProxyOption);
+  }
+
+ protected:
+  void TestImpl(const bool preference_value);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorImplBrowserTestIgnoreProxy);
+};
+
+void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
+    const bool preference_value) {
+  using Controller = NetworkPortalNotificationController;
+
+  TestObserver observer;
+
+  EnumHistogramChecker ui_checker(
+      kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, nullptr);
+  EnumHistogramChecker action_checker(
+      kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, nullptr);
+
+  LoginUser(kTestUser);
+  content::RunAllPendingInMessageLoop();
+
+  SetIgnoreNoNetworkForTesting();
+
+  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+      prefs::kCaptivePortalAuthenticationIgnoresProxy, preference_value);
+
+  // User connects to wifi.
+  SetConnected(kWifiServicePath);
+
+  EXPECT_EQ(PortalDetectorStrategy::STRATEGY_ID_SESSION, strategy()->Id());
+
+  // No notification until portal detection is completed.
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(kNotificationId));
+  RestartDetection();
+  CompleteURLFetch(net::OK, 200, nullptr);
+
+  // Check that WiFi is marked as behind a portal and that a notification
+  // is displayed.
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(kNotificationId));
+  EXPECT_EQ(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
+      NetworkPortalDetector::Get()->GetCaptivePortalState(kWifiGuid).status);
+
+  // Wait until notification is displayed.
+  observer.WaitAndReset();
+
+  EXPECT_TRUE(
+      ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
+  EXPECT_TRUE(action_checker.Check());
+
+  message_center()->ClickOnNotification(kNotificationId);
+
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(preference_value, static_cast<bool>(GetDialog()));
+}
+
+IN_PROC_BROWSER_TEST_P(NetworkPortalDetectorImplBrowserTestIgnoreProxy,
+                       PRE_TestWithPreference) {
+  RegisterUser(kTestUser);
+  StartupUtils::MarkOobeCompleted();
+  EXPECT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy()->Id());
+}
+
+IN_PROC_BROWSER_TEST_P(NetworkPortalDetectorImplBrowserTestIgnoreProxy,
+                       TestWithPreference) {
+  TestImpl(GetParam());
+}
+
+INSTANTIATE_TEST_CASE_P(CaptivePortalAuthenticationIgnoresProxy,
+                        NetworkPortalDetectorImplBrowserTestIgnoreProxy,
+                        testing::Bool());
 
 }  // namespace chromeos

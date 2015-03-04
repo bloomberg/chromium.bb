@@ -332,6 +332,10 @@ void NetworkPortalDetectorImpl::SetStrategy(
   StartDetectionIfIdle();
 }
 
+void NetworkPortalDetectorImpl::OnLockScreenRequest() {
+  notification_controller_.CloseDialog();
+}
+
 void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     const NetworkState* default_network) {
   DCHECK(CalledOnValidThread());

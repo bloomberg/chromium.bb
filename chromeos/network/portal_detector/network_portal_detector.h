@@ -122,6 +122,9 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
   // Returns non-localized string representation of |status|.
   static std::string CaptivePortalStatusString(CaptivePortalStatus status);
 
+  // Closes portal login window before screen is locked.
+  virtual void OnLockScreenRequest() = 0;
+
  protected:
   NetworkPortalDetector() {}
   virtual ~NetworkPortalDetector() {}
@@ -159,6 +162,7 @@ class CHROMEOS_EXPORT NetworkPortalDetectorStubImpl
   void Enable(bool start_detection) override;
   bool StartDetectionIfIdle() override;
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
+  void OnLockScreenRequest() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorStubImpl);

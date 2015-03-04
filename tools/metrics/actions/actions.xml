@@ -8486,6 +8486,20 @@ should be able to be added at any place in this file.
   <description>Settings: Bluetooth: Add a device</description>
 </action>
 
+<action name="Options_CaptivePortalBypassProxy_Disable">
+  <owner>alemate@chromium.org</owner>
+  <description>
+    Captive portal authorization bypass proxy is disabled.
+  </description>
+</action>
+
+<action name="Options_CaptivePortalBypassProxy_Enable">
+  <owner>alemate@chromium.org</owner>
+  <description>
+    Captive portal authorization bypass proxy is enabled.
+  </description>
+</action>
+
 <action name="Options_ChangeDefaultZoomLevel">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

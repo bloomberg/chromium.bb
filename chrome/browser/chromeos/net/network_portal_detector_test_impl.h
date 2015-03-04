@@ -37,6 +37,7 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   bool StartDetectionIfIdle() override;
 
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
+  void OnLockScreenRequest() override;
 
   PortalDetectorStrategy::StrategyId strategy_id() const {
     return strategy_id_;

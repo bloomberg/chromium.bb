@@ -76,6 +76,7 @@ class NetworkPortalDetectorImpl
   void Enable(bool start_detection) override;
   bool StartDetectionIfIdle() override;
   void SetStrategy(PortalDetectorStrategy::StrategyId id) override;
+  void OnLockScreenRequest() override;
 
   // NetworkStateHandlerObserver implementation:
   void DefaultNetworkChanged(const NetworkState* network) override;

@@ -495,6 +495,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "cloudPrintEnableNotificationsLabel",
       IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL },
 #endif  // defined(ENABLE_SERVICE_DISCOVERY)
+#if defined(OS_CHROMEOS)
+    { "captivePortalBypassProxy",
+      IDS_OPTIONS_CAPTIVE_PORTAL_BYPASS_PROXY_LABEL },
+#endif
   };
 
 #if defined(ENABLE_SETTINGS_APP)
@@ -658,6 +662,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   RegisterTitle(values, "thirdPartyImeConfirmOverlay",
                 IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE);
+
+  values->SetBoolean(
+      "enableCaptivePortalBypassProxyOption",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableCaptivePortalBypassProxyOption));
 #endif
 
   values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());

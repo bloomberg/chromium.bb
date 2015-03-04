@@ -63,8 +63,18 @@ class NetworkPortalNotificationController
   // Creates NetworkPortalWebDialog.
   void ShowDialog();
 
+  // Destroys NetworkPortalWebDialog.
+  void CloseDialog();
+
   // NULLifies reference to the active dialog.
   void OnDialogDestroyed(const NetworkPortalWebDialog* dialog);
+
+  // Ignores "No network" errors in browser tests.
+  void SetIgnoreNoNetworkForTesting();
+
+  // Browser tests should be able to verify that NetworkPortalWebDialog is
+  // shown.
+  const NetworkPortalWebDialog* GetDialogForTesting() const;
 
  private:
   // Creates the default notification informing the user that a captive portal
@@ -95,6 +105,9 @@ class NetworkPortalNotificationController
 
   // Currently displayed authorization dialog, or NULL if none.
   NetworkPortalWebDialog* dialog_;
+
+  // Do not close Portal Login dialog on "No network" error in browser tests.
+  bool ignore_no_network_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationController);
 };

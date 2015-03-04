@@ -318,11 +318,15 @@ void Preferences::RegisterProfilePrefs(
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
+  input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
+
   registry->RegisterBooleanPref(
       prefs::kResolveTimezoneByGeolocation, true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
+  registry->RegisterBooleanPref(
+      prefs::kCaptivePortalAuthenticationIgnoresProxy, true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {

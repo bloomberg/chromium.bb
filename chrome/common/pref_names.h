@@ -268,6 +268,7 @@ extern const char kCurrentWallpaperAppName[];
 extern const char kFileSystemProviderMounted[];
 extern const char kTouchVirtualKeyboardEnabled[];
 extern const char kWakeOnWifiSsid[];
+extern const char kCaptivePortalAuthenticationIgnoresProxy[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];

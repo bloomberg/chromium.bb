@@ -806,6 +806,12 @@ const char kTouchVirtualKeyboardEnabled[] = "ui.touch_virtual_keyboard_enabled";
 // A boolean pref that controls whether wake on SSID is enabled.
 const char kWakeOnWifiSsid[] = "settings.internet.wake_on_wifi_ssid";
 
+// This is the policy CaptivePortalAuthenticationIgnoresProxy that allows to
+// open captive portal authentication pages in a separate window under
+// a temporary incognito profile ("signin profile" is used for this purpose),
+// which allows to bypass the user's proxy for captive portal authentication.
+const char kCaptivePortalAuthenticationIgnoresProxy[] =
+    "proxy.captive_portal_ignores_proxy";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

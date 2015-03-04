@@ -6083,4 +6083,7 @@ All users must sign out to continue.
   <message name="IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Label for checkbox to allow automatic timezone update by user geolocation.">
     Set time zone automatically using your location
   </message>
+  <message name="IDS_OPTIONS_CAPTIVE_PORTAL_BYPASS_PROXY_LABEL" desc="Option in chrome://settings that allows Captive Portal authorization pages to ignore proxy settings.">
+    Allow captive portal sign-in page to bypass proxy servers
+  </message>
 </grit-part>

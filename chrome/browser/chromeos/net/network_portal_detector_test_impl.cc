@@ -95,4 +95,7 @@ void NetworkPortalDetectorTestImpl::SetStrategy(
   strategy_id_ = id;
 }
 
+void NetworkPortalDetectorTestImpl::OnLockScreenRequest() {
+}
+
 }  // namespace chromeos
