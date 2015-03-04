@@ -141,8 +141,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       providers_(old_context->providers_.release()),
-      cache_manager_(ServiceWorkerCacheStorageManager::Create(
-          old_context->cache_manager())),
+      cache_manager_(old_context->cache_manager_.release()),
       next_handle_id_(old_context->next_handle_id_),
       next_registration_handle_id_(old_context->next_registration_handle_id_),
       observer_list_(old_context->observer_list_),

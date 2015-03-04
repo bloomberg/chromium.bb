@@ -57,7 +57,8 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     const std::string& status_message) {
   DCHECK_NE(kInvalidServiceWorkerResponseId, LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
-         owner_->status() == ServiceWorkerVersion::INSTALLING);
+         owner_->status() == ServiceWorkerVersion::INSTALLING ||
+         owner_->status() == ServiceWorkerVersion::REDUNDANT);
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
   if (!status.is_success()) {
