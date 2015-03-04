@@ -33,12 +33,13 @@ class SwitchingMediaRenderer : public ::media::Renderer {
   // ::media::Renderer implementation:
   void Initialize(
       ::media::DemuxerStreamProvider* demuxer_stream_provider,
-      const base::Closure& init_cb,
+      const ::media::PipelineStatusCB& init_cb,
       const ::media::StatisticsCB& statistics_cb,
       const ::media::BufferingStateCB& buffering_state_cb,
       const ::media::Renderer::PaintCB& paint_cb,
       const base::Closure& ended_cb,
-      const ::media::PipelineStatusCB& error_cb) override;
+      const ::media::PipelineStatusCB& error_cb,
+      const base::Closure& waiting_for_decryption_key_cb) override;
   void SetCdm(::media::CdmContext* cdm_context,
               const ::media::CdmAttachedCB& cdm_attached_cb) override;
   void Flush(const base::Closure& flush_cb) override;

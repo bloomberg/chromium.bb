@@ -12,6 +12,7 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media_log.h"
 #include "media/renderers/default_renderer_factory.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 
 namespace chromecast {
 namespace media {
