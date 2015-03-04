@@ -40,6 +40,7 @@
 
 using blink::WebInputEventFactory;
 using blink::WebKeyboardEvent;
+using blink::WebInputEvent;
 
 namespace {
 
@@ -49,10 +50,28 @@ struct KeyMappingEntry {
     int windowsKeyCode;
 };
 
-NSEvent* BuildFakeKeyEvent(NSUInteger keyCode, unichar character, NSUInteger modifierFlags)
+struct ModifierKey {
+    int macKeyCode;
+    int leftOrRightMask;
+    int nonSpecificMask;
+};
+
+// Modifier keys, grouped into left/right pairs.
+ModifierKey modifierKeys[] = {
+    { 56, 1 <<  1, NSShiftKeyMask },      // Left Shift
+    { 60, 1 <<  2, NSShiftKeyMask },      // Right Shift
+    { 55, 1 <<  3, NSCommandKeyMask },    // Left Command
+    { 54, 1 <<  4, NSCommandKeyMask },    // Right Command
+    { 58, 1 <<  5, NSAlternateKeyMask },  // Left Alt
+    { 61, 1 <<  6, NSAlternateKeyMask },  // Right Alt
+    { 59, 1 <<  0, NSControlKeyMask },    // Left Control
+    { 62, 1 << 13, NSControlKeyMask },    // Right Control
+};
+
+NSEvent* BuildFakeKeyEvent(NSUInteger keyCode, unichar character, NSUInteger modifierFlags, NSEventType eventType)
 {
     NSString* string = [NSString stringWithCharacters:&character length:1];
-    return [NSEvent keyEventWithType:NSKeyDown
+    return [NSEvent keyEventWithType:eventType
                             location:NSZeroPoint
                        modifierFlags:modifierFlags
                            timestamp:0.0
@@ -70,22 +89,26 @@ NSEvent* BuildFakeKeyEvent(NSUInteger keyCode, unichar character, NSUInteger mod
 TEST(WebInputEventFactoryTestMac, ArrowKeyNumPad)
 {
     // Left
-    NSEvent* macEvent = BuildFakeKeyEvent(0x7B, NSLeftArrowFunctionKey, NSNumericPadKeyMask);
+    NSEvent* macEvent = BuildFakeKeyEvent(0x7B, NSLeftArrowFunctionKey,
+                                        NSNumericPadKeyMask, NSKeyDown);
     WebKeyboardEvent webEvent = WebInputEventFactory::keyboardEvent(macEvent);
     EXPECT_EQ(0, webEvent.modifiers);
 
     // Right
-    macEvent = BuildFakeKeyEvent(0x7C, NSRightArrowFunctionKey, NSNumericPadKeyMask);
+    macEvent = BuildFakeKeyEvent(0x7C, NSRightArrowFunctionKey,
+                                 NSNumericPadKeyMask, NSKeyDown);
     webEvent = WebInputEventFactory::keyboardEvent(macEvent);
     EXPECT_EQ(0, webEvent.modifiers);
 
     // Down
-    macEvent = BuildFakeKeyEvent(0x7D, NSDownArrowFunctionKey, NSNumericPadKeyMask);
+    macEvent = BuildFakeKeyEvent(0x7D, NSDownArrowFunctionKey,
+                                 NSNumericPadKeyMask, NSKeyDown);
     webEvent = WebInputEventFactory::keyboardEvent(macEvent);
     EXPECT_EQ(0, webEvent.modifiers);
 
     // Up
-    macEvent = BuildFakeKeyEvent(0x7E, NSUpArrowFunctionKey, NSNumericPadKeyMask);
+    macEvent = BuildFakeKeyEvent(0x7E, NSUpArrowFunctionKey,
+                                 NSNumericPadKeyMask, NSKeyDown);
     webEvent = WebInputEventFactory::keyboardEvent(macEvent);
     EXPECT_EQ(0, webEvent.modifiers);
 }
@@ -116,8 +139,56 @@ TEST(WebInputEventFactoryTestMac, NumPadMapping)
     };
 
     for (size_t i = 0; i < arraysize(table); ++i) {
-        NSEvent* macEvent = BuildFakeKeyEvent(table[i].macKeyCode, table[i].character, 0);
+        NSEvent* macEvent = BuildFakeKeyEvent(table[i].macKeyCode,
+                                              table[i].character, 0, NSKeyDown);
         WebKeyboardEvent webEvent = WebInputEventFactory::keyboardEvent(macEvent);
         EXPECT_EQ(table[i].windowsKeyCode, webEvent.windowsKeyCode);
+    }
+}
+
+// Test that left- and right-hand modifier keys are interpreted correctly when
+// pressed simultaneously.
+TEST(WebInputEventFactoryTestMac, SimultaneousModifierKeys)
+{
+    for (size_t i = 0; i < arraysize(modifierKeys) / 2; ++i) {
+        const ModifierKey& left = modifierKeys[2 * i];
+        const ModifierKey& right = modifierKeys[2 * i + 1];
+        // Press the left key.
+        NSEvent* macEvent = BuildFakeKeyEvent(
+            left.macKeyCode, 0, left.leftOrRightMask | left.nonSpecificMask,
+            NSFlagsChanged);
+        WebKeyboardEvent webEvent = WebInputEventFactory::keyboardEvent(macEvent);
+        EXPECT_EQ(WebInputEvent::RawKeyDown, webEvent.type);
+        // Press the right key
+        macEvent = BuildFakeKeyEvent(
+            right.macKeyCode, 0,
+            left.leftOrRightMask | right.leftOrRightMask | left.nonSpecificMask,
+            NSFlagsChanged);
+        webEvent = WebInputEventFactory::keyboardEvent(macEvent);
+        EXPECT_EQ(WebInputEvent::RawKeyDown, webEvent.type);
+        // Release the right key
+        macEvent = BuildFakeKeyEvent(
+            right.macKeyCode, 0, left.leftOrRightMask | left.nonSpecificMask,
+            NSFlagsChanged);
+        // Release the left key
+        macEvent = BuildFakeKeyEvent(left.macKeyCode, 0, 0,NSFlagsChanged);
+        webEvent = WebInputEventFactory::keyboardEvent(macEvent);
+        EXPECT_EQ(WebInputEvent::KeyUp, webEvent.type);
+    }
+}
+
+// Test that individual modifier keys are still reported correctly, even if the
+// undocumented left- or right-hand flags are not set.
+TEST(WebInputEventFactoryTestMac, MissingUndocumentedModifierFlags)
+{
+    for (size_t i = 0; i < arraysize(modifierKeys); ++i) {
+        const ModifierKey& key = modifierKeys[i];
+        NSEvent* macEvent = BuildFakeKeyEvent(
+            key.macKeyCode, 0, key.nonSpecificMask, NSFlagsChanged);
+        WebKeyboardEvent webEvent = WebInputEventFactory::keyboardEvent(macEvent);
+        EXPECT_EQ(WebInputEvent::RawKeyDown, webEvent.type);
+        macEvent = BuildFakeKeyEvent(key.macKeyCode, 0, 0, NSFlagsChanged);
+        webEvent = WebInputEventFactory::keyboardEvent(macEvent);
+        EXPECT_EQ(WebInputEvent::KeyUp, webEvent.type);
     }
 }

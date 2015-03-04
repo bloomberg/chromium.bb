@@ -273,31 +273,73 @@ static int windowsKeyCodeForCharCode(unichar charCode)
     return 0;
 }
 
+// Return true if the target modifier key is up. OS X has an "official" flag
+// to test whether either left or right versions of a modifier key are held,
+// and "unofficial" flags for the left and right versions independently. This
+// function verifies that |targetKeyMask| and |otherKeyMask| (which should be
+// the left and right versions of a modifier) are consistent with with the
+// state of |eitherKeyMask| (which should be the corresponding ""official"
+// flag). If they are consistent, it tests |targetKeyMask|; otherwise it tests
+// |eitherKeyMask|.
+static inline bool isModifierKeyUp(
+    unsigned int flags, unsigned int targetKeyMask, unsigned int otherKeyMask,
+    unsigned int eitherKeyMask)
+{
+  bool eitherKeyDown = (flags & eitherKeyMask) != 0;
+  bool targetKeyDown = (flags & targetKeyMask) != 0;
+  bool otherKeyDown = (flags & otherKeyMask) != 0;
+  if (eitherKeyDown != (targetKeyDown || otherKeyDown))
+    return !eitherKeyDown;
+  return !targetKeyDown;
+}
+
 static inline bool isKeyUpEvent(NSEvent* event)
 {
     if ([event type] != NSFlagsChanged)
         return [event type] == NSKeyUp;
-    // FIXME: This logic fails if the user presses both Shift keys at once, for example:
-    // we treat releasing one of them as keyDown.
+
+    // Unofficial bit-masks for left- and right-hand versions of modifier keys.
+    // These values were determined empirically.
+    const unsigned int kLeftControlKeyMask = 1 << 0;
+    const unsigned int kLeftShiftKeyMask = 1 << 1;
+    const unsigned int kRightShiftKeyMask = 1 << 2;
+    const unsigned int kLeftCommandKeyMask = 1 << 3;
+    const unsigned int kRightCommandKeyMask = 1 << 4;
+    const unsigned int kLeftAlternateKeyMask = 1 << 5;
+    const unsigned int kRightAlternateKeyMask = 1 << 6;
+    const unsigned int kRightControlKeyMask = 1 << 13;
+
     switch ([event keyCode]) {
     case 54: // Right Command
+        return isModifierKeyUp([event modifierFlags], kRightCommandKeyMask,
+                               kLeftCommandKeyMask, NSCommandKeyMask);
     case 55: // Left Command
-        return ([event modifierFlags] & NSCommandKeyMask) == 0;
+        return isModifierKeyUp([event modifierFlags], kLeftCommandKeyMask,
+                               kRightCommandKeyMask, NSCommandKeyMask);
 
     case 57: // Capslock
         return ([event modifierFlags] & NSAlphaShiftKeyMask) == 0;
 
     case 56: // Left Shift
+        return isModifierKeyUp([event modifierFlags], kLeftShiftKeyMask,
+                               kRightShiftKeyMask, NSShiftKeyMask);
     case 60: // Right Shift
-        return ([event modifierFlags] & NSShiftKeyMask) == 0;
+        return isModifierKeyUp([event modifierFlags],kRightShiftKeyMask,
+                               kLeftShiftKeyMask, NSShiftKeyMask);
 
     case 58: // Left Alt
+        return isModifierKeyUp([event modifierFlags], kLeftAlternateKeyMask,
+                               kRightAlternateKeyMask, NSAlternateKeyMask);
     case 61: // Right Alt
-        return ([event modifierFlags] & NSAlternateKeyMask) == 0;
+        return isModifierKeyUp([event modifierFlags], kRightAlternateKeyMask,
+                               kLeftAlternateKeyMask, NSAlternateKeyMask);
 
     case 59: // Left Ctrl
+        return isModifierKeyUp([event modifierFlags], kLeftControlKeyMask,
+                               kRightControlKeyMask, NSControlKeyMask);
     case 62: // Right Ctrl
-        return ([event modifierFlags] & NSControlKeyMask) == 0;
+        return isModifierKeyUp([event modifierFlags], kRightControlKeyMask,
+                               kLeftControlKeyMask, NSControlKeyMask);
 
     case 63: // Function
         return ([event modifierFlags] & NSFunctionKeyMask) == 0;
@@ -801,7 +843,6 @@ WebKeyboardEvent WebInputEventFactory::keyboardEvent(NSEvent* event)
     result.windowsKeyCode = WebKeyboardEvent::windowsKeyCodeWithoutLocation(windowsKeyCode);
     result.modifiers |= WebKeyboardEvent::locationModifiersFromWindowsKeyCode(windowsKeyCode);
     result.nativeKeyCode = [event keyCode];
-
     NSString* textStr = textFromEvent(event);
     NSString* unmodifiedStr = unmodifiedTextFromEvent(event);
     NSString* identifierStr = keyIdentifierForKeyEvent(event);
