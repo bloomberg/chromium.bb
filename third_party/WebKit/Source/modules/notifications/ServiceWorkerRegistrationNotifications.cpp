@@ -46,7 +46,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     }
 
     WebNotificationData::Direction dir = options.dir() == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
-    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl);
+    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl, options.silent());
     WebNotificationShowCallbacks* callbacks = new CallbackPromiseAdapter<void, void>(resolver);
 
     SecurityOrigin* origin = executionContext->securityOrigin();

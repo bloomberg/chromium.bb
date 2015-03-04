@@ -55,6 +55,7 @@
     readonly attribute DOMString body;
     readonly attribute DOMString tag;
     readonly attribute DOMString icon;
+    readonly attribute boolean silent;
 
     [MeasureAs=NotificationClosed] void close();
 };

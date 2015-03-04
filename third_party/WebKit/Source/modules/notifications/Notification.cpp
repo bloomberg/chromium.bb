@@ -78,6 +78,7 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     notification->setTag(options.tag());
     notification->setLang(options.lang());
     notification->setDir(options.dir());
+    notification->setSilent(options.silent());
     if (options.hasIcon()) {
         KURL iconUrl = options.icon().isEmpty() ? KURL() : context->completeURL(options.icon());
         if (!iconUrl.isEmpty() && iconUrl.isValid())
@@ -103,6 +104,7 @@ Notification* Notification::create(ExecutionContext* context, const String& pers
     notification->setLang(data.lang);
     notification->setBody(data.body);
     notification->setTag(data.tag);
+    notification->setSilent(data.silent);
 
     if (!data.icon.isEmpty())
         notification->setIconUrl(data.icon);
@@ -116,6 +118,7 @@ Notification::Notification(const String& title, ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_title(title)
     , m_dir("auto")
+    , m_silent(false)
     , m_state(NotificationStateIdle)
     , m_asyncRunner(this, &Notification::show)
 {
@@ -147,7 +150,7 @@ void Notification::show()
 
     // FIXME: Do CSP checks on the associated notification icon.
     WebNotificationData::Direction dir = m_dir == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
-    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl);
+    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_silent);
     notificationManager()->show(WebSerializedOrigin(*origin), notificationData, this);
 
     m_state = NotificationStateShowing;

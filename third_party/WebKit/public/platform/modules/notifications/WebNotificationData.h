@@ -19,9 +19,11 @@ struct WebNotificationData {
 
     WebNotificationData()
         : direction(DirectionLeftToRight)
+        , silent(false)
     {
     }
 
+    // FIXME: Remove this constructor when Chromium has switched to the new one.
     WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon)
         : title(title)
         , direction(direction)
@@ -29,6 +31,18 @@ struct WebNotificationData {
         , body(body)
         , tag(tag)
         , icon(icon)
+        , silent(false)
+    {
+    }
+
+    WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, bool silent)
+        : title(title)
+        , direction(direction)
+        , lang(lang)
+        , body(body)
+        , tag(tag)
+        , icon(icon)
+        , silent(silent)
     {
     }
 
@@ -38,6 +52,7 @@ struct WebNotificationData {
     WebString body;
     WebString tag;
     WebURL icon;
+    bool silent;
 };
 
 } // namespace blink

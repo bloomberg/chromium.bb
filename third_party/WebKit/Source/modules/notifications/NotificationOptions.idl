@@ -16,4 +16,5 @@ dictionary NotificationOptions {
     DOMString body = "";
     DOMString tag = "";
     DOMString icon;
+    boolean silent = false;
 };
