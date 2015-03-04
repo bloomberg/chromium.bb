@@ -761,6 +761,16 @@ def CompileProcess(build, input_queue, output_queue):
     output_queue.put((exctype, value, traceback_str))
 
 
+def SenderProcess(files, num_processes, input_queue):
+  # Push all files into the inputs queue.
+  # None is also pushed as a terminator. When worker process read None,
+  # the worker process will terminate.
+  for filename in files:
+    input_queue.put(filename)
+  for _ in xrange(num_processes):
+    input_queue.put(None)
+
+
 def Main(argv):
   parser = OptionParser()
   parser.add_option('--empty', dest='empty', default=False,
@@ -913,13 +923,12 @@ def Main(argv):
         process.start()
         build_processes.append(process)
 
-      # Push all files into the inputs queue.
-      # None is also pushed as a terminator. When worker process read None,
-      # the worker process will terminate.
-      for filename in files:
-        inputs.put(filename)
-      for _ in xrange(num_processes):
-        inputs.put(None)
+      # Start sender process. We cannot send tasks from here, because
+      # if the input queue is stuck, no one can receive output.
+      sender_process = multiprocessing.Process(
+          target=SenderProcess,
+          args=(files, num_processes, inputs))
+      sender_process.start()
 
       # Wait for results.
       src_to_obj = {}
@@ -951,6 +960,7 @@ def Main(argv):
       # results.
       for process in build_processes:
         process.join()
+      sender_process.join()
 
       assert inputs.empty()
       assert returns.empty()
