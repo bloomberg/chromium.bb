@@ -86,6 +86,11 @@ WebPreferences::WebPreferences()
       minimum_font_size(0),
       minimum_logical_font_size(6),
       default_encoding("ISO-8859-1"),
+#if defined(OS_WIN)
+      context_menu_on_mouse_up(true),
+#else
+      context_menu_on_mouse_up(false),
+#endif
       javascript_enabled(true),
       web_security_enabled(true),
       javascript_can_open_windows_automatically(true),

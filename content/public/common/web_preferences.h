@@ -83,6 +83,7 @@ struct CONTENT_EXPORT WebPreferences {
   int minimum_font_size;
   int minimum_logical_font_size;
   std::string default_encoding;
+  bool context_menu_on_mouse_up;
   bool javascript_enabled;
   bool web_security_enabled;
   bool javascript_can_open_windows_automatically;
