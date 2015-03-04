@@ -12,7 +12,7 @@ function test()
         {"name": "NonAscii", "ts": 10000, args: {"nonascii": "лет ми спик фром май харт"}, "dur": 1000, "ph": "X", "tid": mainThread, "pid": 100, "cat":"test"},
         {"name": "NonAsciiSnapshot", "ts": 20000, args: {"snapshot": "тест"}, "dur": 1000, "ph": "O", "tid": mainThread, "pid": 100, "cat":"test"},
         {"name": "ShortSnapshot", "ts": 20000, args: {"snapshot": "short snapshot data"}, "dur": 1000, "ph": "O", "tid": mainThread, "pid": 100, "cat":"test"},
-        {"name": "LongSnapshot", "ts": 20000, args: {"snapshot": Array(10000).join("abcdef")}, "dur": 1000, "ph": "O", "tid": mainThread, "pid": 100, "cat":"test"}
+        {"name": "LongSnapshot", "ts": 20000, args: {"snapshot": "abcdef".repeat(10000)}, "dur": 1000, "ph": "O", "tid": mainThread, "pid": 100, "cat":"test"}
     ];
 
     var model = InspectorTest.createTracingModel();
@@ -26,7 +26,7 @@ function test()
     }
     function step2(object)
     {
-        InspectorTest.assertEquals(Array(10000).join("abcdef"), object);
+        InspectorTest.assertEquals("abcdef".repeat(10000), object);
         process.objectsByName("NonAsciiSnapshot")[0].requestObject(step3);
     }
     function step3(object)

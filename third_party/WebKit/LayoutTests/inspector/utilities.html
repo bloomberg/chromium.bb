@@ -419,7 +419,7 @@ function test()
 
         function stringHashTest(next)
         {
-            var stringA = Array(10000).join(" ");
+            var stringA = " ".repeat(10000);
             var stringB = stringA + " ";
             var hashA = stringA.hashCode();
             InspectorTest.assertTrue(hashA !== stringB.hashCode());
