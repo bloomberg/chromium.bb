@@ -925,14 +925,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIExistence) {
   TestHelper("testWebRequestAPIExistence", "web_view/shim", NO_TEST_SERVER);
 }
 
-// Tests the existence of DeclarativeContent API event objects on the request
-// object, on the webview element, and hanging directly off webview.
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDeclarativeContentAPIExistence) {
-  TestHelper("testDeclarativeContentAPIExistence",
-             "web_view/shim",
-             NO_TEST_SERVER);
-}
-
 // http://crbug.com/315920
 #if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
 #define MAYBE_Shim_TestChromeExtensionURL DISABLED_Shim_TestChromeExtensionURL

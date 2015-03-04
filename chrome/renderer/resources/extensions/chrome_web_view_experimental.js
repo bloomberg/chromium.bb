@@ -19,23 +19,6 @@ var idGeneratorNatives = requireNative('id_generator');
 var MessagingNatives = requireNative('messaging_natives');
 var utils = require('utils');
 var WebViewImpl = require('webView').WebViewImpl;
-var DeclarativeContentSchema =
-    requireNative('schema_registry').GetSchema('declarativeContent');
-
-var DeclarativeContentEvent = function(opt_eventName,
-                                       opt_argSchemas,
-                                       opt_eventOptions,
-                                       opt_webViewInstanceId) {
-  EventBindings.Event.call(this,
-                           opt_eventName,
-                           opt_argSchemas,
-                           opt_eventOptions,
-                           opt_webViewInstanceId);
-}
-
-DeclarativeContentEvent.prototype = {
-  __proto__: EventBindings.Event.prototype
-};
 
 function GetUniqueSubEventName(eventName) {
   return eventName + '/' + idGeneratorNatives.GetNextId();
@@ -191,36 +174,4 @@ WebViewImpl.prototype.setupExperimentalContextMenus = function() {
         get: createContextMenus(),
         enumerable: true
       });
-};
-
-WebViewImpl.prototype.maybeSetupExperimentalChromeWebViewEvents = function(
-    request) {
-  var createDeclarativeContentEvent = function(declarativeContentEvent) {
-    return function() {
-      if (!this[declarativeContentEvent.name]) {
-        this[declarativeContentEvent.name] =
-            new DeclarativeContentEvent(
-                'webViewInternal.declarativeContent.' +
-                declarativeContentEvent.name,
-                declarativeContentEvent.parameters,
-                declarativeContentEvent.options,
-                this.viewInstanceId);
-      }
-      return this[declarativeContentEvent.name];
-    }.bind(this);
-  }.bind(this);
-
-  for (var i = 0; i < DeclarativeContentSchema.events.length; ++i) {
-    var eventSchema = DeclarativeContentSchema.events[i];
-    var declarativeContentEvent = createDeclarativeContentEvent(eventSchema);
-    Object.defineProperty(
-        request,
-        eventSchema.name,
-        {
-          get: declarativeContentEvent,
-          enumerable: true
-        }
-    );
-  }
-  return request;
 };

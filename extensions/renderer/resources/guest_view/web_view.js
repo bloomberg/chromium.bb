@@ -231,10 +231,6 @@ WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {};
 // Implemented when the experimental WebView API is available.
 WebViewImpl.maybeGetExperimentalApiMethods = function() { return []; };
 WebViewImpl.prototype.setupExperimentalContextMenus = function() {};
-WebViewImpl.prototype.maybeSetupExperimentalChromeWebViewEvents =
-  function(request) {
-    return request;
-};
 
 GuestViewContainer.registerElement(WebViewImpl);
 

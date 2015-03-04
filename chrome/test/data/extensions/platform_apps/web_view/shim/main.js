@@ -549,38 +549,6 @@ function testWebRequestAPIExistence() {
   document.body.appendChild(webview);
 }
 
-function testDeclarativeContentAPIExistence() {
-  var apiPropertiesToCheck = [
-    // Declarative Content API.
-    'onPageChanged'
-  ];
-  var webview = document.createElement('webview');
-  webview.setAttribute('partition', arguments.callee.name);
-  webview.addEventListener('loadstop', function(e) {
-    for (var i = 0; i < apiPropertiesToCheck.length; ++i) {
-      embedder.test.assertEq('object',
-                             typeof webview.request[apiPropertiesToCheck[i]]);
-      embedder.test.assertEq(
-          'function',
-          typeof webview.request[apiPropertiesToCheck[i]].addRules);
-      embedder.test.assertEq(
-          'function',
-          typeof webview.request[apiPropertiesToCheck[i]].getRules);
-      embedder.test.assertEq(
-          'function',
-          typeof webview.request[apiPropertiesToCheck[i]].removeRules);
-    }
-
-    // Try to overwrite webview.request, shall not succeed.
-    webview.request = '123';
-    embedder.test.assertTrue(typeof webview.request !== 'string');
-
-    embedder.test.succeed();
-  });
-  webview.setAttribute('src', 'data:text/html,webview check api');
-  document.body.appendChild(webview);
-}
-
 // This test verifies that the loadstart, loadstop, and exit events fire as
 // expected.
 function testEventName() {
@@ -2080,7 +2048,6 @@ embedder.test.testList = {
       testInlineScriptFromAccessibleResources,
   'testInvalidChromeExtensionURL': testInvalidChromeExtensionURL,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
-  'testDeclarativeContentAPIExistence': testDeclarativeContentAPIExistence,
   'testEventName': testEventName,
   'testOnEventProperties': testOnEventProperties,
   'testLoadProgressEvent': testLoadProgressEvent,
