@@ -36,6 +36,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -924,6 +925,15 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         .InitializePermissions(extension_);
     permissions_to_display =
         extension_->permissions_data()->active_permissions();
+    // For delegated installs, all optional permissions are pre-approved by the
+    // person who triggers the install, so add them to the list.
+    if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT) {
+      scoped_refptr<const PermissionSet> optional_permissions =
+          extensions::PermissionsParser::GetOptionalPermissions(extension_);
+      permissions_to_display = PermissionSet::CreateUnion(
+          permissions_to_display.get(),
+          optional_permissions.get());
+    }
   }
 
   if (permissions_to_display.get() &&

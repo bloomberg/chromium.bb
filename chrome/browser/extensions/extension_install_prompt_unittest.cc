@@ -53,14 +53,14 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsPermissionWarnings) {
                              .Set("version", "1.0")
                              .Set("manifest_version", 2)
                              .Set("description", "Random Ext")).Build();
-  ExtensionInstallPrompt prompt(NULL /* no web contents in this test */);
+  ExtensionInstallPrompt prompt(nullptr /* no web contents in this test */);
   base::RunLoop run_loop;
   prompt.set_callback_for_test(
       base::Bind(&VerifyPromptPermissionsCallback,
                  run_loop.QuitClosure(),
                  1u,  // |regular_permissions_count|.
                  0u));  // |withheld_permissions_count|.
-  prompt.ConfirmPermissions(NULL,  // no delegate
+  prompt.ConfirmPermissions(nullptr,  // no delegate
                             extension.get(),
                             permission_set.get());
   run_loop.Run();
@@ -73,29 +73,55 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsWithheldPermissions) {
   FeatureSwitch::ScopedOverride enable_scripts_switch(
       FeatureSwitch::scripts_require_action(), true);
 
-  ListBuilder permissions;
-  permissions.Append("http://*/*");
-  permissions.Append("http://www.google.com/");
-  permissions.Append("tabs");
   scoped_refptr<const Extension> extension =
       ExtensionBuilder().SetManifest(
           DictionaryBuilder().Set("name", "foo")
                              .Set("version", "1.0")
                              .Set("manifest_version", 2)
                              .Set("description", "Random Ext")
-                             .Set("permissions", permissions)).Build();
-  ExtensionInstallPrompt prompt(NULL /* no web contents in this test */);
+                             .Set("permissions",
+                                  ListBuilder().Append("http://*/*")
+                                               .Append("http://www.google.com/")
+                                               .Append("tabs")))
+                             .Build();
+  ExtensionInstallPrompt prompt(nullptr /* no web contents in this test */);
   base::RunLoop run_loop;
 
   // We expect <all_hosts> to be withheld, but http://www.google.com/ and tabs
   // permissions should be granted as regular permissions.
   prompt.ConfirmInstall(
-      NULL,
+      nullptr,
       extension.get(),
       base::Bind(&VerifyPromptPermissionsCallback,
                  run_loop.QuitClosure(),
                  2u,  // |regular_permissions_count|.
                  1u));  // |withheld_permissions_count|.
+  run_loop.Run();
+}
+
+TEST(ExtensionInstallPromptUnittest, DelegatedPromptShowsOptionalPermissions) {
+  content::TestBrowserThreadBundle thread_bundle;
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder().SetManifest(
+          DictionaryBuilder().Set("name", "foo")
+                             .Set("version", "1.0")
+                             .Set("manifest_version", 2)
+                             .Set("description", "Random Ext")
+                             .Set("permissions", ListBuilder().Append("tabs"))
+                             .Set("optional_permissions",
+                                  ListBuilder().Append("location")))
+                             .Build();
+  ExtensionInstallPrompt prompt(nullptr /* no web contents in this test */);
+  base::RunLoop run_loop;
+  prompt.set_callback_for_test(
+      base::Bind(&VerifyPromptPermissionsCallback,
+                 run_loop.QuitClosure(),
+                 2u,  // |regular_permissions_count|.
+                 0u));  // |withheld_permissions_count|.
+  prompt.ConfirmPermissionsForDelegatedInstall(nullptr,  // no delegate
+                                               extension.get(),
+                                               "Username",
+                                               nullptr);  // no icon
   run_loop.Run();
 }
 
