@@ -1590,4 +1590,8 @@ void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {
   render_surface_.reset();
 }
 
+Region LayerImpl::GetInvalidationRegion() {
+  return Region(update_rect_);
+}
+
 }  // namespace cc

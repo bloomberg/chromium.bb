@@ -596,6 +596,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   SyncedScrollOffset* synced_scroll_offset() { return scroll_offset_.get(); }
 
+  // Get the correct invalidation region instead of conservative Rect
+  // for layers that provide it.
+  virtual Region GetInvalidationRegion();
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,

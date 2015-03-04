@@ -605,6 +605,15 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
   return raster_source_->GetFlattenedPicture();
 }
 
+Region PictureLayerImpl::GetInvalidationRegion() {
+  // |invalidation_| gives the invalidation contained in the source frame, but
+  // is not cleared after drawing from the layer. However, update_rect() is
+  // cleared once the invalidation is drawn, which is useful for debugging
+  // visualizations. This method intersects the two to give a more exact
+  // representation of what was invalidated that is cleared after drawing.
+  return IntersectRegions(invalidation_, update_rect());
+}
+
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(
     float contents_scale,
     const gfx::Rect& content_rect) {

@@ -68,17 +68,21 @@ void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
   // not. Therefore we traverse recursively over all layers, not just the render
   // surface list.
 
-  if (!layer->update_rect().IsEmpty() && layer->DrawsContent()) {
+  Region invalidation_region = layer->GetInvalidationRegion();
+  if (!invalidation_region.IsEmpty() && layer->DrawsContent()) {
     float width_scale = layer->content_bounds().width() /
                         static_cast<float>(layer->bounds().width());
     float height_scale = layer->content_bounds().height() /
                          static_cast<float>(layer->bounds().height());
-    gfx::Rect update_content_rect = gfx::ScaleToEnclosingRect(
-        layer->update_rect(), width_scale, height_scale);
-    debug_rects_.push_back(
-        DebugRect(PAINT_RECT_TYPE,
-                  MathUtil::MapEnclosingClippedRect(
-                      layer->screen_space_transform(), update_content_rect)));
+
+    for (Region::Iterator it(invalidation_region); it.has_rect(); it.next()) {
+      gfx::Rect update_content_rect =
+          gfx::ScaleToEnclosingRect(it.rect(), width_scale, height_scale);
+      debug_rects_.push_back(
+          DebugRect(PAINT_RECT_TYPE,
+                    MathUtil::MapEnclosingClippedRect(
+                        layer->screen_space_transform(), update_content_rect)));
+    }
   }
 
   for (unsigned i = 0; i < layer->children().size(); ++i)
