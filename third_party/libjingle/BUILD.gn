@@ -545,42 +545,5 @@ if (enable_webrtc) {
       "//third_party/webrtc/voice_engine",
     ]
   }
-
-  if (is_android) {
-    import("//build/config/android/rules.gni")
-    source_set("libjingle_peerconnection_so") {
-      sources = [
-        "source/talk/app/webrtc/java/jni/peerconnection_jni.cc",
-      ]
-      deps = [
-        ":libjingle_webrtc",
-        ":libpeerconnection",
-      ]
-    }
-
-    android_library("libjingle_peerconnection_java") {
-      java_files = [
-        "source/talk/app/webrtc/java/src/org/webrtc/AudioSource.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/AudioTrack.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/DataChannel.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/IceCandidate.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/Logging.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/MediaConstraints.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/MediaSource.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/MediaStream.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/MediaStreamTrack.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/PeerConnectionFactory.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/PeerConnection.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/SdpObserver.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/StatsObserver.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/StatsReport.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/SessionDescription.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/VideoCapturer.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/VideoRenderer.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/VideoSource.java",
-        "source/talk/app/webrtc/java/src/org/webrtc/VideoTrack.java",
-      ]
-    }
-  }
 }  # enable_webrtc
 # TODO(GYP): Port libjingle.gyp's enable_webrtc condition block.

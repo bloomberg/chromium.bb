@@ -645,34 +645,5 @@
         },  # target libpeerconnection
       ],
     }],
-    ['enable_webrtc==1 and OS=="android" and "<(libpeer_target_type)"=="static_library"', {
-      'targets': [
-        {
-          # GN version: //third_party/libjingle:libjingle_peerconnection_so
-          'target_name': 'libjingle_peerconnection_so',
-          'type': 'shared_library',
-          'dependencies': [
-            '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-            'libjingle_webrtc',
-            'libpeerconnection',
-          ],
-          'sources': [
-            '<(libjingle_source)/talk/app/webrtc/java/jni/peerconnection_jni.cc',
-          ],
-        },
-        {
-          # GN version: //third_party/libjingle:libjingle_peerconnection_java
-          'target_name': 'libjingle_peerconnection_javalib',
-          'type': 'none',
-          'variables': {
-            'java_in_dir': '<(libjingle_source)/talk/app/webrtc/java',
-          },
-          'dependencies': [
-            'libjingle_peerconnection_so',
-          ],
-          'includes': [ '../../build/java.gypi' ],
-        },
-      ],
-    }],
   ],
 }
