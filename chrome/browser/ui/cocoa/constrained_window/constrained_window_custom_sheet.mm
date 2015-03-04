@@ -73,8 +73,4 @@
   [customWindow_ setFrameOrigin:origin];
 }
 
-- (NSWindow*)sheetWindow {
-  return customWindow_;
-}
-
 @end

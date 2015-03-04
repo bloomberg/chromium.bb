@@ -24,8 +24,6 @@
 
 - (void)updateSheetPosition;
 
-@property(readonly, nonatomic) NSWindow* sheetWindow;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_SHEET_H_

@@ -125,7 +125,7 @@ class ConstrainedWebDialogDelegateViews
 
   // ConstrainedWebDialogDelegate:
   web_modal::NativeWebContentsModalDialog GetNativeDialog() override {
-    return view_->GetWidget()->GetNativeWindow();
+    return view_->GetWidget()->GetNativeView();
   }
 
  private:
@@ -246,7 +246,7 @@ class ConstrainedWebDialogDelegateViewViews
         web_modal::PopupManager* popup_manager =
             web_modal::PopupManager::FromWebContents(
                 initiator_observer_.web_contents());
-        popup_manager->ShowModalDialog(GetWidget()->GetNativeWindow(),
+        popup_manager->ShowModalDialog(GetWidget()->GetNativeView(),
                                        initiator_observer_.web_contents());
       }
     }

@@ -220,7 +220,7 @@ class NativeWebContentsModalDialogManagerViews
 #endif
 
     // Will cause this object to be deleted.
-    native_delegate_->WillClose(widget->GetNativeWindow());
+    native_delegate_->WillClose(widget->GetNativeView());
   }
 
   SingleWebContentsDialogManagerDelegate* native_delegate_;
