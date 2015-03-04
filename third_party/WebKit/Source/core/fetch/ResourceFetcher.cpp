@@ -1280,7 +1280,7 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
         resource = requestResource(type, request);
     if (!resource || (m_preloads && m_preloads->contains(resource.get())))
         return;
-    TRACE_EVENT_ASYNC_STEP_INTO0("net", "Resource", resource.get(), "Preload");
+    TRACE_EVENT_ASYNC_STEP_INTO0("blink.net", "Resource", resource.get(), "Preload");
     resource->increasePreloadCount();
 
     if (!m_preloads)
@@ -1353,7 +1353,7 @@ bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequ
 
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
 {
-    TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
+    TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
     RefPtrWillBeRawPtr<Document> protectDocument(document());
     RefPtr<DocumentLoader> protectDocumentLoader(documentLoader());
     willTerminateResourceLoader(resource->loader());
@@ -1372,13 +1372,13 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
 
 void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
-    TRACE_EVENT_ASYNC_STEP_INTO1("net", "Resource", resource, "ChangePriority", "priority", loadPriority);
+    TRACE_EVENT_ASYNC_STEP_INTO1("blink.net", "Resource", resource, "ChangePriority", "priority", loadPriority);
     context().dispatchDidChangeResourcePriority(resource->identifier(), loadPriority, intraPriorityValue);
 }
 
 void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error)
 {
-    TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
+    TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
     willTerminateResourceLoader(resource->loader());
     bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
     context().dispatchDidFail(documentLoader(), resource->identifier(), error, isInternalRequest);
@@ -1461,7 +1461,7 @@ void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceReque
         documentLoader()->applicationCacheHost()->willStartLoadingResource(request);
 
     storeResourceTimingInitiatorInformation(resource);
-    TRACE_EVENT_ASYNC_BEGIN2("net", "Resource", resource, "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
+    TRACE_EVENT_ASYNC_BEGIN2("blink.net", "Resource", resource, "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
 }
 
 void ResourceFetcher::stopFetching()

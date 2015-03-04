@@ -804,7 +804,7 @@ void HTMLDocumentParser::append(const String& inputSource)
     // pumpTokenizer can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
     RefPtrWillBeRawPtr<HTMLDocumentParser> protect(this);
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("net.debug"), "HTMLDocumentParser::append", "size", inputSource.length());
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::append", "size", inputSource.length());
     const SegmentedString source(inputSource);
 
     if (m_preloadScanner) {
@@ -1076,7 +1076,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
 
         OwnPtr<Vector<char>> buffer = adoptPtr(new Vector<char>(length));
         memcpy(buffer->data(), data, length);
-        TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("net.debug"), "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
+        TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
         HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::appendRawBytesFromMainThread, m_backgroundParser, buffer.release()));
         return;
