@@ -127,7 +127,7 @@ void StartPageHandler::OnHotwordEnabledChanged() {
     StartPageService* service = StartPageService::Get(profile);
     web_ui()->CallJavascriptFunction(
         "appList.startPage.setHotwordEnabled",
-        base::FundamentalValue(service->HotwordEnabled()));
+        base::FundamentalValue(service && service->HotwordEnabled()));
   }
 }
 #endif

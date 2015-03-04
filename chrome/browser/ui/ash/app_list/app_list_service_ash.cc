@@ -56,7 +56,10 @@ void AppListServiceAsh::ShowAndSwitchToState(
 void AppListServiceAsh::Init(Profile* initial_profile) {
   // Ensure the StartPageService is created here. This early initialization is
   // necessary to allow the WebContents to load before the app list is shown.
-  app_list::StartPageService::Get(initial_profile)->Init();
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(initial_profile);
+  if (service)
+    service->Init();
 }
 
 base::FilePath AppListServiceAsh::GetProfilePath(

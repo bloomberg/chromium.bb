@@ -55,7 +55,7 @@ class StartPageService : public KeyedService,
  public:
   typedef std::vector<scoped_refptr<const extensions::Extension> >
       ExtensionList;
-  // Gets the instance for the given profile.
+  // Gets the instance for the given profile. May return nullptr.
   static StartPageService* Get(Profile* profile);
 
   void AddObserver(StartPageObserver* observer);
