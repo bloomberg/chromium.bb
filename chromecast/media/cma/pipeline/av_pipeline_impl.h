@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/backend/media_component_device.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
@@ -29,7 +29,7 @@ class CodedFrameProvider;
 class DecoderBufferBase;
 class MediaComponentDevice;
 
-class AvPipelineImpl {
+class AvPipelineImpl : public base::RefCountedThreadSafe<AvPipelineImpl> {
  public:
   // Pipeline states.
   enum State {
@@ -48,7 +48,6 @@ class AvPipelineImpl {
   AvPipelineImpl(
       MediaComponentDevice* media_component_device,
       const UpdateConfigCB& update_config_cb);
-  ~AvPipelineImpl();
 
   // Setting the frame provider or the client must be done in the
   // |kUninitialized| state.
@@ -78,6 +77,9 @@ class AvPipelineImpl {
   void SetCdm(BrowserCdmCast* media_keys);
 
  private:
+  friend class base::RefCountedThreadSafe<AvPipelineImpl>;
+  ~AvPipelineImpl();
+
   // Callback invoked when the CDM state has changed in a way that might
   // impact media playback.
   void OnCdmStateChange();
@@ -157,11 +159,9 @@ class AvPipelineImpl {
   bool pending_time_update_task_;
 
   // Decryption keys, if available.
+  base::Lock media_keys_lock_;
   BrowserCdmCast* media_keys_;
   int media_keys_callback_id_;
-
-  base::WeakPtr<AvPipelineImpl> weak_this_;
-  base::WeakPtrFactory<AvPipelineImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AvPipelineImpl);
 };

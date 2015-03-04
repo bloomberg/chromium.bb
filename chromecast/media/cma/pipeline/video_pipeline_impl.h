@@ -65,7 +65,7 @@ class VideoPipelineImpl : public VideoPipeline {
 
   VideoPipelineDevice* video_device_;
 
-  scoped_ptr<AvPipelineImpl> av_pipeline_impl_;
+  scoped_refptr<AvPipelineImpl> av_pipeline_impl_;
   VideoPipelineClient video_client_;
 
   ::media::PipelineStatistics previous_stats_;

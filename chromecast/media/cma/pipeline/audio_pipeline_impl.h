@@ -62,7 +62,7 @@ class AudioPipelineImpl : public AudioPipeline {
 
   AudioPipelineDevice* audio_device_;
 
-  scoped_ptr<AvPipelineImpl> av_pipeline_impl_;
+  scoped_refptr<AvPipelineImpl> av_pipeline_impl_;
   AvPipelineClient audio_client_;
 
   ::media::PipelineStatistics previous_stats_;
