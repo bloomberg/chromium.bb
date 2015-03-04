@@ -382,12 +382,18 @@
       # TODO(pasko): Remove this target when crbug.com/424562 is fixed.
       # GN: //base:protect_file_posix
       'target_name': 'protect_file_posix',
-      'type': 'static_library',
-      'dependencies': [
-        'base',
-      ],
-      'sources': [
-        'files/protect_file_posix.cc',
+      'conditions': [
+        ['os_posix == 1', {
+          'type': 'static_library',
+          'dependencies': [
+            'base',
+          ],
+          'sources': [
+            'files/protect_file_posix.cc',
+          ],
+        }, {
+          'type': 'none',
+        }],
       ],
     },
     {
