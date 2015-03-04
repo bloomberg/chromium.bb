@@ -307,7 +307,7 @@ class RepoRepository(object):
            self._referenced_repo]
     git.RunGit('.', cmd)
 
-  def Sync(self, local_manifest=None, jobs=None, all_branches=True,
+  def Sync(self, local_manifest=None, jobs=None, all_branches=False,
            network_only=False):
     """Sync/update the source.  Changes manifest if specified.
 
@@ -318,8 +318,7 @@ class RepoRepository(object):
         the manifest.
       all_branches: If False, a repo sync -c is performed; this saves on
         sync'ing via grabbing only what is needed for the manifest specified
-        branch. Defaults to True. TODO(davidjames): Set the default back to
-        False once we've fixed http://crbug.com/368722 .
+        branch. Defaults to False.
       network_only: If true, perform only the network half of the sync; skip
         the checkout.  Primarily of use to validate a manifest (although
         if the manifest has bad copyfile statements, via skipping checkout
