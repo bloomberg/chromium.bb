@@ -729,6 +729,7 @@ TEST_F(ViewDisplayListTest, Scope)
 
     // Now the multicol becomes 3 columns and repaints.
     rootDisplayItemList().invalidate(multicol->displayItemClient());
+    rootDisplayItemList().invalidate(content->displayItemClient());
     drawRect(&context, multicol, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     {
         ScopeRecorder r(&context, *multicol);

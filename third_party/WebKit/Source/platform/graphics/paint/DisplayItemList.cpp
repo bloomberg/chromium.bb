@@ -7,8 +7,11 @@
 
 #include "platform/NotImplemented.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkStream.h"
+
 #ifndef NDEBUG
-#include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/text/StringBuilder.h"
 #include <stdio.h>
 #endif
@@ -195,17 +198,83 @@ void DisplayItemList::updatePaintList()
     DisplayItemIndicesByClientMap newCachedDisplayItemIndicesByClient;
 
     for (OwnPtr<DisplayItem>& newDisplayItem : m_newPaints) {
-        if (newDisplayItem->isCached() || newDisplayItem->isSubtreeCached())
+        if (newDisplayItem->isCached() || newDisplayItem->isSubtreeCached()) {
             copyCachedItems(*newDisplayItem, updatedList, newCachedDisplayItemIndicesByClient);
-        else
+        } else {
+            if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+                checkCachedDisplayItemIsUnchangedFromPreviousPaintList(*newDisplayItem);
+            // FIXME: Enable this assert after we resolve the scope invalidation issue.
+            // else
+            //    ASSERT(!newDisplayItem->isDrawing() || !clientCacheIsValid(newDisplayItem->client()));
+
             appendDisplayItem(updatedList, newCachedDisplayItemIndicesByClient, newDisplayItem.release());
+        }
     }
+
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        checkNoRemainingCachedDisplayItems();
 
     m_newPaints.clear();
     m_paintList.clear();
     m_paintList.swap(updatedList);
     m_cachedDisplayItemIndicesByClient.clear();
     m_cachedDisplayItemIndicesByClient.swap(newCachedDisplayItemIndicesByClient);
+}
+
+static void showUnderInvalidationError(const char* reason, const DisplayItem& displayItem)
+{
+    WTFLogAlways("ERROR: Under-invalidation (%s): "
+#ifdef NDEBUG
+        "%p (use Debug build to get more information)", reason, displayItem.client());
+#else
+        "%s\n", reason, displayItem.asDebugString().utf8().data());
+#endif
+}
+
+void DisplayItemList::checkCachedDisplayItemIsUnchangedFromPreviousPaintList(const DisplayItem& displayItem)
+{
+    if (!displayItem.isDrawing() || !clientCacheIsValid(displayItem.client()))
+        return;
+
+    // If checking under-invalidation, we always generate new display item even if the client is not invalidated.
+    // Checks if the new picture is the same as the cached old picture. If the new picture is different but
+    // the client is not invalidated, issue error about under-invalidation.
+    size_t index = findMatchingItem(displayItem, displayItem.type(), m_cachedDisplayItemIndicesByClient, m_paintList);
+    if (index == kNotFound) {
+        showUnderInvalidationError("no cached display item", displayItem);
+        return;
+    }
+
+
+    RefPtr<const SkPicture> newPicture = static_cast<const DrawingDisplayItem&>(displayItem).picture();
+    RefPtr<const SkPicture> oldPicture = static_cast<const DrawingDisplayItem&>(*m_paintList[index]).picture();
+    // Remove the display item from cache so that we can check if there are any remaining cached display items after merging.
+    m_paintList[index] = nullptr;
+
+    if (newPicture->approximateOpCount() == oldPicture->approximateOpCount()) {
+        SkDynamicMemoryWStream newPictureSerialized;
+        newPicture->serialize(&newPictureSerialized);
+        SkDynamicMemoryWStream oldPictureSerialized;
+        oldPicture->serialize(&oldPictureSerialized);
+
+        if (newPictureSerialized.bytesWritten() == oldPictureSerialized.bytesWritten()) {
+            RefPtr<SkData> oldData = adoptRef(oldPictureSerialized.copyToData());
+            RefPtr<SkData> newData = adoptRef(newPictureSerialized.copyToData());
+            if (oldData->equals(newData.get()))
+                return;
+        }
+    }
+
+    showUnderInvalidationError("display item changed", displayItem);
+}
+
+void DisplayItemList::checkNoRemainingCachedDisplayItems()
+{
+    for (OwnPtr<DisplayItem>& displayItem : m_paintList) {
+        if (!displayItem || !displayItem->isDrawing() || !clientCacheIsValid(displayItem->client()))
+            continue;
+        showUnderInvalidationError("no new display item", *displayItem);
+    }
 }
 
 #ifndef NDEBUG

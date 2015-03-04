@@ -56,6 +56,9 @@ private:
 
     void updatePaintList();
 
+    void checkCachedDisplayItemIsUnchangedFromPreviousPaintList(const DisplayItem&);
+    void checkNoRemainingCachedDisplayItems();
+
 #ifndef NDEBUG
     WTF::String paintListAsDebugString(const PaintList&) const;
 #endif

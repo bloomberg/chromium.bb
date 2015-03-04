@@ -29,7 +29,9 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, DisplayItemClient dis
     context->setInDrawingRecorder(true);
 #endif
     ASSERT(context->displayItemList());
-    m_canUseCachedDrawing = context->displayItemList()->clientCacheIsValid(displayItemClient);
+    m_canUseCachedDrawing = context->displayItemList()->clientCacheIsValid(displayItemClient)
+        && !RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled();
+
 #ifndef NDEBUG
     // Enable recording to check if any painter is still doing unnecessary painting when we can use cache.
     m_context->beginRecording(bounds);
