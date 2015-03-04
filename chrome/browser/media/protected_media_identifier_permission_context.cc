@@ -183,8 +183,8 @@ void ProtectedMediaIdentifierPermissionContext::OnPlatformVerificationResult(
   DCHECK(request->second.second.Equals(id));
   pending_requests_.erase(request);
 
-  ContentSetting content_setting;
-  bool persist; // Whether the ContentSetting should be saved.
+  ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
+  bool persist = false; // Whether the ContentSetting should be saved.
   switch (response) {
     case PlatformVerificationFlow::CONSENT_RESPONSE_NONE:
       content_setting = CONTENT_SETTING_DEFAULT;
