@@ -17,6 +17,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -119,7 +120,7 @@ public class ShareHelper {
      */
     private static void showShareDialog(final Activity activity, final String title,
             final String url, final Bitmap screenshot) {
-        Intent intent = getShareIntent(activity, title, url, null);
+        Intent intent = getShareIntent(title, url, null);
         PackageManager manager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
         assert resolveInfoList.size() > 0;
@@ -166,21 +167,46 @@ public class ShareHelper {
     private static void makeIntentAndShare(final Activity activity, final String title,
             final String url, final Bitmap screenshot, final ComponentName component) {
         if (screenshot == null) {
-            activity.startActivity(
-                    getDirectShareIntentForComponent(activity, title, url, null, component));
+            activity.startActivity(getDirectShareIntentForComponent(title, url, null, component));
         } else {
-            new AsyncTask<Void, Void, Intent>() {
+            new AsyncTask<Void, Void, File>() {
                 @Override
-                protected Intent doInBackground(Void... params) {
-                    return getDirectShareIntentForComponent(
-                            activity, title, url, screenshot, component);
+                protected File doInBackground(Void... params) {
+                    FileOutputStream fOut = null;
+                    try {
+                        File path = new File(UiUtils.getDirectoryForImageCapture(activity),
+                                SCREENSHOT_DIRECTORY_NAME);
+                        if (path.exists() || path.mkdir()) {
+                            File saveFile = File.createTempFile(
+                                    String.valueOf(System.currentTimeMillis()), ".jpg", path);
+                            fOut = new FileOutputStream(saveFile);
+                            screenshot.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
+                            fOut.flush();
+                            fOut.close();
+
+                            return saveFile;
+                        }
+                    } catch (IOException ie) {
+                        if (fOut != null) {
+                            try {
+                                fOut.close();
+                            } catch (IOException e) {
+                                // Ignore exception.
+                            }
+                        }
+                    }
+
+                    return null;
                 }
 
                 @Override
-                protected void onPostExecute(Intent intent) {
+                protected void onPostExecute(File saveFile) {
                     if (ApplicationStatus.getStateForApplication()
                             != ApplicationState.HAS_DESTROYED_ACTIVITIES) {
-                        activity.startActivity(intent);
+                        Uri screenshotUri = saveFile == null
+                                ? null : UiUtils.getUriForImageCaptureFile(activity, saveFile);
+                        activity.startActivity(getDirectShareIntentForComponent(
+                                title, url, screenshotUri, component));
                     }
                 }
             }.execute();
@@ -217,47 +243,20 @@ public class ShareHelper {
     }
 
     @VisibleForTesting
-    public static Intent getShareIntent(
-            Context context, String title, String url, Bitmap screenshot) {
+    public static Intent getShareIntent(String title, String url, Uri screenshotUri) {
         url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, title);
         intent.putExtra(Intent.EXTRA_TEXT, url);
-        if (screenshot != null) {
-            FileOutputStream fOut = null;
-            try {
-                File path = new File(
-                        UiUtils.getDirectoryForImageCapture(context), SCREENSHOT_DIRECTORY_NAME);
-                if (path.exists() || path.mkdir()) {
-                    File saveFile = File.createTempFile(
-                            String.valueOf(System.currentTimeMillis()), ".jpg", path);
-                    fOut = new FileOutputStream(saveFile);
-                    screenshot.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
-                    fOut.flush();
-                    fOut.close();
-
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.putExtra(Intent.EXTRA_STREAM,
-                            UiUtils.getUriForImageCaptureFile(context, saveFile));
-                }
-            } catch (IOException ie) {
-                if (fOut != null) {
-                    try {
-                        fOut.close();
-                    } catch (IOException e) {
-                        // Ignore exception.
-                    }
-                }
-            }
-        }
+        if (screenshotUri != null) intent.putExtra(Intent.EXTRA_STREAM, screenshotUri);
         return intent;
     }
 
     private static Intent getDirectShareIntentForComponent(
-            Context context, String title, String url, Bitmap screenshot, ComponentName component) {
-        Intent intent = getShareIntent(context, title, url, screenshot);
+            String title, String url, Uri screenshotUri, ComponentName component) {
+        Intent intent = getShareIntent(title, url, screenshotUri);
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT
                 | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);
