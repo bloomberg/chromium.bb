@@ -253,16 +253,18 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
         return;
 
     auto nameString = name.As<v8::String>();
-    LocalDOMWindow* window = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
+    DOMWindow* window = V8Window::toImpl(info.Holder());
     if (!window)
         return;
 
-    LocalFrame* frame = window->frame();
+    Frame* frame = window->frame();
     // window is detached from a frame.
     if (!frame)
         return;
 
-    // Search sub-frames.
+    // Note that the spec doesn't allow any cross-origin named access to the window object. However,
+    // UAs have traditionally allowed named access to named child browsing contexts, even across
+    // origins. So first, search child frames for a frame with a matching name.
     AtomicString propName = toCoreAtomicString(nameString);
     Frame* child = frame->tree().scopedChild(propName);
     if (child) {
@@ -280,8 +282,12 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     if (!frame)
         return;
 
+    // If the frame is remote, the caller will never be able to access further named results.
+    if (!frame->isLocalFrame())
+        return;
+
     // Search named items in the document.
-    Document* doc = frame->document();
+    Document* doc = toLocalFrame(frame)->document();
     if (!doc || !doc->isHTMLDocument())
         return;
 

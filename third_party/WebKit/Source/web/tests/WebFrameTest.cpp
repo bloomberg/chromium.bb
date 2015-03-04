@@ -7223,6 +7223,20 @@ TEST_F(WebFrameSwapTest, RemoteFrameLengthAccess)
     EXPECT_EQ(0, remoteWindowLengthInteger->Value());
 }
 
+TEST_F(WebFrameSwapTest, RemoteWindowNamedAccess)
+{
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+    // FIXME: Once OOPIF unit test infrastructure is in place, test that named
+    // window access on a remote window works. For now, just test that accessing
+    // a named property doesn't crash.
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
+    mainFrame()->lastChild()->swap(remoteFrame);
+    remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+    v8::Local<v8::Value> remoteWindowProperty = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2].foo"));
+    EXPECT_TRUE(remoteWindowProperty.IsEmpty());
+}
+
 class RemoteToLocalSwapWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     explicit RemoteToLocalSwapWebFrameClient(WebRemoteFrame* remoteFrame)
