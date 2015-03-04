@@ -171,9 +171,7 @@ void SVGFEImageElement::notifyFinished(Resource*)
         return;
 
     Element* parent = parentElement();
-    ASSERT(parent);
-
-    if (!isSVGFilterElement(*parent) || !parent->renderer())
+    if (!parent || !isSVGFilterElement(parent) || !parent->renderer())
         return;
 
     if (LayoutObject* renderer = this->renderer())
