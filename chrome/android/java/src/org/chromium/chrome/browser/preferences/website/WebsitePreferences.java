@@ -521,6 +521,8 @@ public class WebsitePreferences extends PreferenceFragment
                             LocationSettings.getInstance().isChromeLocationSettingEnabled());
                 } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().isCameraMicEnabled());
+                } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
+                    globalToggle.setChecked(PrefServiceBridge.getInstance().javaScriptEnabled());
                 } else if (mFilter.showPopupSites(mCategoryFilter)) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().popupsEnabled());
                 } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {
