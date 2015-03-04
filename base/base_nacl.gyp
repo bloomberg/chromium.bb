@@ -7,8 +7,12 @@
     'chromium_code': 1,
   },
   'includes': [
-    '../build/common_untrusted.gypi',
+    # base.gypi must be included before common_untrusted.gypi.
+    #
+    # TODO(sergeyu): Replace the target_defaults magic in base.gypi with a
+    # sources variables lists. That way order of includes will not matter.
     'base.gypi',
+    '../build/common_untrusted.gypi',
   ],
   'conditions': [
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
