@@ -195,15 +195,12 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
         // examination. This is about as close to the real path as we can easily
         // get.
         GraphicsContext graphicsContext(nullptr /* canvas */, graphicsLayer->displayItemList());
-        graphicsContext.setCertainlyOpaque(false);
         graphicsLayer->paint(graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));
 
         GraphicsContext replayContext(&canvas, nullptr /* displayItemList */);
-        replayContext.setCertainlyOpaque(false);
         graphicsLayer->displayItemList()->replay(&replayContext);
     } else {
         GraphicsContext graphicsContext(&canvas, nullptr /* displayItemList */);
-        graphicsContext.setCertainlyOpaque(false);
         graphicsLayer->paint(graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));
     }
 }
