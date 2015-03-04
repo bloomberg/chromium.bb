@@ -92,8 +92,8 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
 
   CheckerboardDrawQuad* checkerboard_quad =
       pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-  checkerboard_quad->SetNew(
-      pass->shared_quad_state_list.back(), gfx::Rect(), gfx::Rect(), SkColor());
+  checkerboard_quad->SetNew(pass->shared_quad_state_list.back(), gfx::Rect(),
+                            gfx::Rect(), SkColor(), 1.f);
 
   RenderPassId new_id(63, 4);
 
@@ -143,16 +143,14 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   CheckerboardDrawQuad* checkerboard_quad1 =
       pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
   checkerboard_quad1->SetNew(pass->shared_quad_state_list.back(),
-                             gfx::Rect(1, 1, 1, 1),
-                             gfx::Rect(1, 1, 1, 1),
-                             SkColor());
+                             gfx::Rect(1, 1, 1, 1), gfx::Rect(1, 1, 1, 1),
+                             SkColor(), 1.f);
 
   CheckerboardDrawQuad* checkerboard_quad2 =
       pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
   checkerboard_quad2->SetNew(pass->shared_quad_state_list.back(),
-                             gfx::Rect(2, 2, 2, 2),
-                             gfx::Rect(2, 2, 2, 2),
-                             SkColor());
+                             gfx::Rect(2, 2, 2, 2), gfx::Rect(2, 2, 2, 2),
+                             SkColor(), 1.f);
 
   // And two quads using another shared state.
   SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
@@ -168,16 +166,14 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   CheckerboardDrawQuad* checkerboard_quad3 =
       pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
   checkerboard_quad3->SetNew(pass->shared_quad_state_list.back(),
-                             gfx::Rect(3, 3, 3, 3),
-                             gfx::Rect(3, 3, 3, 3),
-                             SkColor());
+                             gfx::Rect(3, 3, 3, 3), gfx::Rect(3, 3, 3, 3),
+                             SkColor(), 1.f);
 
   CheckerboardDrawQuad* checkerboard_quad4 =
       pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
   checkerboard_quad4->SetNew(pass->shared_quad_state_list.back(),
-                             gfx::Rect(4, 4, 4, 4),
-                             gfx::Rect(4, 4, 4, 4),
-                             SkColor());
+                             gfx::Rect(4, 4, 4, 4), gfx::Rect(4, 4, 4, 4),
+                             SkColor(), 1.f);
 
   // A second render pass with a quad.
   RenderPassId contrib_id(4, 1);
@@ -208,9 +204,8 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   CheckerboardDrawQuad* contrib_quad =
       contrib->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
   contrib_quad->SetNew(contrib->shared_quad_state_list.back(),
-                       gfx::Rect(3, 3, 3, 3),
-                       gfx::Rect(3, 3, 3, 3),
-                       SkColor());
+                       gfx::Rect(3, 3, 3, 3), gfx::Rect(3, 3, 3, 3), SkColor(),
+                       1.f);
 
   // And a RenderPassDrawQuad for the contributing pass.
   scoped_ptr<RenderPassDrawQuad> pass_quad =
@@ -267,9 +262,8 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   CheckerboardDrawQuad* checkerboard_quad1 =
       pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
   checkerboard_quad1->SetNew(pass->shared_quad_state_list.back(),
-                             gfx::Rect(1, 1, 1, 1),
-                             gfx::Rect(1, 1, 1, 1),
-                             SkColor());
+                             gfx::Rect(1, 1, 1, 1), gfx::Rect(1, 1, 1, 1),
+                             SkColor(), 1.f);
 
   // A shared state with no quads, they were culled.
   SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
@@ -307,9 +301,8 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   CheckerboardDrawQuad* checkerboard_quad2 =
       pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
   checkerboard_quad2->SetNew(pass->shared_quad_state_list.back(),
-                             gfx::Rect(3, 3, 3, 3),
-                             gfx::Rect(3, 3, 3, 3),
-                             SkColor());
+                             gfx::Rect(3, 3, 3, 3), gfx::Rect(3, 3, 3, 3),
+                             SkColor(), 1.f);
 
   pass_list.push_back(pass.Pass());
 

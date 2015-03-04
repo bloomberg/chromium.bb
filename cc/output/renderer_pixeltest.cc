@@ -2493,6 +2493,109 @@ TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
       FuzzyPixelOffByOneComparator(true)));
 }
 
+TYPED_TEST(RendererPixelTest, Checkerboards) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPassId id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+
+  // The color's alpha value is not used.
+  SkColor color1 = SK_ColorGREEN;
+  color1 = SkColorSetA(color1, 0);
+  SkColor color2 = SK_ColorBLUE;
+  color2 = SkColorSetA(color2, 0);
+
+  gfx::Rect content_rect(rect);
+
+  gfx::Rect top_left(content_rect);
+  gfx::Rect top_right(content_rect);
+  gfx::Rect bottom_left(content_rect);
+  gfx::Rect bottom_right(content_rect);
+  // The format is Inset(left, top, right, bottom).
+  top_left.Inset(0, 0, content_rect.width() / 2, content_rect.height() / 2);
+  top_right.Inset(content_rect.width() / 2, 0, 0, content_rect.height() / 2);
+  bottom_left.Inset(0, content_rect.height() / 2, content_rect.width() / 2, 0);
+  bottom_right.Inset(content_rect.width() / 2, content_rect.height() / 2, 0, 0);
+
+  // Appends checkerboard quads with a scale of 1.
+  CheckerboardDrawQuad* quad =
+      pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  quad->SetNew(shared_state, top_left, top_left, color1, 1.f);
+  quad = pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  quad->SetNew(shared_state, top_right, top_right, color2, 1.f);
+  quad = pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  quad->SetNew(shared_state, bottom_left, bottom_left, color2, 1.f);
+  quad = pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  quad->SetNew(shared_state, bottom_right, bottom_right, color1, 1.f);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  base::FilePath::StringType path =
+      IsSoftwareRenderer<TypeParam>()
+          ? FILE_PATH_LITERAL("four_blue_green_checkers.png")
+          : FILE_PATH_LITERAL("checkers.png");
+  EXPECT_TRUE(this->RunPixelTest(&pass_list, base::FilePath(path),
+                                 ExactPixelComparator(true)));
+}
+
+TYPED_TEST(RendererPixelTest, CheckerboardsScaled) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPassId id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  gfx::Transform scale;
+  scale.Scale(2.f, 2.f);
+
+  SharedQuadState* shared_state =
+      CreateTestSharedQuadState(scale, rect, pass.get());
+
+  // The color's alpha value is not used.
+  SkColor color1 = SK_ColorGREEN;
+  color1 = SkColorSetA(color1, 0);
+  SkColor color2 = SK_ColorBLUE;
+  color2 = SkColorSetA(color2, 0);
+
+  gfx::Rect content_rect(rect);
+  content_rect.Inset(0, 0, rect.width() / 2, rect.height() / 2);
+
+  gfx::Rect top_left(content_rect);
+  gfx::Rect top_right(content_rect);
+  gfx::Rect bottom_left(content_rect);
+  gfx::Rect bottom_right(content_rect);
+  // The format is Inset(left, top, right, bottom).
+  top_left.Inset(0, 0, content_rect.width() / 2, content_rect.height() / 2);
+  top_right.Inset(content_rect.width() / 2, 0, 0, content_rect.height() / 2);
+  bottom_left.Inset(0, content_rect.height() / 2, content_rect.width() / 2, 0);
+  bottom_right.Inset(content_rect.width() / 2, content_rect.height() / 2, 0, 0);
+
+  // Appends checkerboard quads with a scale of 2, and a shared quad state
+  // with a scale of 2. The checkers should be scaled by 2 * 2 = 4.
+  CheckerboardDrawQuad* quad =
+      pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  quad->SetNew(shared_state, top_left, top_left, color1, 2.f);
+  quad = pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  quad->SetNew(shared_state, top_right, top_right, color2, 2.f);
+  quad = pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  quad->SetNew(shared_state, bottom_left, bottom_left, color2, 2.f);
+  quad = pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  quad->SetNew(shared_state, bottom_right, bottom_right, color1, 2.f);
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  base::FilePath::StringType path =
+      IsSoftwareRenderer<TypeParam>()
+          ? FILE_PATH_LITERAL("four_blue_green_checkers.png")
+          : FILE_PATH_LITERAL("checkers_big.png");
+  EXPECT_TRUE(this->RunPixelTest(&pass_list, base::FilePath(path),
+                                 ExactPixelComparator(true)));
+}
+
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace

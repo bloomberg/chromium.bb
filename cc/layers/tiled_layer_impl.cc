@@ -241,8 +241,8 @@ void TiledLayerImpl::AppendQuads(RenderPass* render_pass,
 
         CheckerboardDrawQuad* checkerboard_quad =
             render_pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-        checkerboard_quad->SetNew(
-            shared_quad_state, tile_rect, visible_tile_rect, checker_color);
+        checkerboard_quad->SetNew(shared_quad_state, tile_rect,
+                                  visible_tile_rect, checker_color, 1.f);
         append_quads_data->num_missing_tiles++;
         continue;
       }

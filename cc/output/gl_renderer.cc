@@ -559,14 +559,16 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
                      SkColorGetB(color) * (1.0f / 255.0f),
                      1));
 
-  const int checkerboard_width = 16;
-  float frequency = 1.0f / checkerboard_width;
+  const int kCheckerboardWidth = 16;
+  float frequency = 1.0f / kCheckerboardWidth;
 
   gfx::Rect tile_rect = quad->rect;
-  float tex_offset_x = tile_rect.x() % checkerboard_width;
-  float tex_offset_y = tile_rect.y() % checkerboard_width;
-  float tex_scale_x = tile_rect.width();
-  float tex_scale_y = tile_rect.height();
+  float tex_offset_x =
+      static_cast<int>(tile_rect.x() / quad->scale) % kCheckerboardWidth;
+  float tex_offset_y =
+      static_cast<int>(tile_rect.y() / quad->scale) % kCheckerboardWidth;
+  float tex_scale_x = tile_rect.width() / quad->scale;
+  float tex_scale_y = tile_rect.height() / quad->scale;
   GLC(gl_,
       gl_->Uniform4f(program->fragment_shader().tex_transform_location(),
                      tex_offset_x,

@@ -10,17 +10,20 @@
 
 namespace cc {
 
-CheckerboardDrawQuad::CheckerboardDrawQuad() : color(0) {}
+CheckerboardDrawQuad::CheckerboardDrawQuad() : color(0), scale(0.f) {
+}
 
 void CheckerboardDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                   const gfx::Rect& rect,
                                   const gfx::Rect& visible_rect,
-                                  SkColor color) {
+                                  SkColor color,
+                                  float scale) {
   gfx::Rect opaque_rect = SkColorGetA(color) == 255 ? rect : gfx::Rect();
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::CHECKERBOARD, rect, opaque_rect,
                    visible_rect, needs_blending);
   this->color = color;
+  this->scale = scale;
 }
 
 void CheckerboardDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -28,10 +31,12 @@ void CheckerboardDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                   const gfx::Rect& opaque_rect,
                                   const gfx::Rect& visible_rect,
                                   bool needs_blending,
-                                  SkColor color) {
+                                  SkColor color,
+                                  float scale) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::CHECKERBOARD, rect, opaque_rect,
                    visible_rect, needs_blending);
   this->color = color;
+  this->scale = scale;
 }
 
 void CheckerboardDrawQuad::IterateResources(
@@ -46,6 +51,7 @@ const CheckerboardDrawQuad* CheckerboardDrawQuad::MaterialCast(
 void CheckerboardDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
   value->SetInteger("color", color);
+  value->SetDouble("scale", scale);
 }
 
 }  // namespace cc

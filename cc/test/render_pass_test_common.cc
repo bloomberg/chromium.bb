@@ -94,7 +94,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
 
   CheckerboardDrawQuad* checkerboard_quad =
       this->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-  checkerboard_quad->SetNew(shared_state, rect, visible_rect, SK_ColorRED);
+  checkerboard_quad->SetNew(shared_state, rect, visible_rect, SK_ColorRED, 1.f);
 
   DebugBorderDrawQuad* debug_border_quad =
       this->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();

@@ -129,6 +129,7 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const CheckerboardDrawQuad* a, const CheckerboardDrawQuad* b) {
     EXPECT_EQ(a->color, b->color);
+    EXPECT_EQ(a->scale, b->scale);
   }
 
   void Compare(const DebugBorderDrawQuad* a, const DebugBorderDrawQuad* b) {
@@ -316,12 +317,10 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   CheckerboardDrawQuad* checkerboard_in =
       pass_in->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-  checkerboard_in->SetAll(shared_state1_in,
-                          arbitrary_rect1,
+  checkerboard_in->SetAll(shared_state1_in, arbitrary_rect1,
                           arbitrary_rect2_inside_rect1,
-                          arbitrary_rect1_inside_rect1,
-                          arbitrary_bool1,
-                          arbitrary_color);
+                          arbitrary_rect1_inside_rect1, arbitrary_bool1,
+                          arbitrary_color, arbitrary_float1);
   pass_cmp->CopyFromAndAppendDrawQuad(checkerboard_in,
                                       checkerboard_in->shared_quad_state);
 
@@ -567,12 +566,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
 
   CheckerboardDrawQuad* quad1 =
       pass_in->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-  quad1->SetAll(shared_state1_in,
-                gfx::Rect(10, 10),
-                gfx::Rect(10, 10),
-                gfx::Rect(10, 10),
-                false,
-                SK_ColorRED);
+  quad1->SetAll(shared_state1_in, gfx::Rect(10, 10), gfx::Rect(10, 10),
+                gfx::Rect(10, 10), false, SK_ColorRED, 1.f);
 
   // The second and third SharedQuadStates are not used.
   SharedQuadState* shared_state2_in = pass_in->CreateAndAppendSharedQuadState();
@@ -608,12 +603,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
 
   CheckerboardDrawQuad* quad2 =
       pass_in->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-  quad2->SetAll(shared_state4_in,
-                gfx::Rect(10, 10),
-                gfx::Rect(10, 10),
-                gfx::Rect(10, 10),
-                false,
-                SK_ColorRED);
+  quad2->SetAll(shared_state4_in, gfx::Rect(10, 10), gfx::Rect(10, 10),
+                gfx::Rect(10, 10), false, SK_ColorRED, 1.f);
 
   // The fifth is not used again.
   SharedQuadState* shared_state5_in = pass_in->CreateAndAppendSharedQuadState();

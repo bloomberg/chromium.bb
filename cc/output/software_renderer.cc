@@ -314,7 +314,7 @@ void SoftwareRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
   gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
       QuadVertexRect(), quad->rect, quad->visible_rect);
   current_paint_.setColor(quad->color);
-  current_paint_.setAlpha(quad->opacity() * SkColorGetA(quad->color));
+  current_paint_.setAlpha(quad->opacity());
   current_canvas_->drawRect(gfx::RectFToSkRect(visible_quad_vertex_rect),
                             current_paint_);
 }

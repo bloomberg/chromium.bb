@@ -331,8 +331,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         CheckerboardDrawQuad* quad =
             render_pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
         SkColor color = DebugColors::DefaultCheckerboardColor();
-        quad->SetNew(
-            shared_quad_state, geometry_rect, visible_geometry_rect, color);
+        quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
+                     color, draw_properties().device_scale_factor);
       } else {
         SkColor color = SafeOpaqueBackgroundColor();
         SolidColorDrawQuad* quad =

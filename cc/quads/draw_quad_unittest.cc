@@ -369,16 +369,19 @@ void CompareDrawQuad(DrawQuad* quad,
 TEST(DrawQuadTest, CopyCheckerboardDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   SkColor color = 0xfabb0011;
+  float scale = 2.3f;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_2_NEW(CheckerboardDrawQuad, visible_rect, color);
+  CREATE_QUAD_3_NEW(CheckerboardDrawQuad, visible_rect, color, scale);
   EXPECT_EQ(DrawQuad::CHECKERBOARD, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(scale, copy_quad->scale);
 
-  CREATE_QUAD_1_ALL(CheckerboardDrawQuad, color);
+  CREATE_QUAD_2_ALL(CheckerboardDrawQuad, color, scale);
   EXPECT_EQ(DrawQuad::CHECKERBOARD, copy_quad->material);
   EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(scale, copy_quad->scale);
 }
 
 TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
@@ -736,9 +739,10 @@ class DrawQuadIteratorTest : public testing::Test {
 TEST_F(DrawQuadIteratorTest, CheckerboardDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   SkColor color = 0xfabb0011;
+  float scale = 3.2f;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_2_NEW(CheckerboardDrawQuad, visible_rect, color);
+  CREATE_QUAD_3_NEW(CheckerboardDrawQuad, visible_rect, color, scale);
   EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 

@@ -234,7 +234,7 @@ void CreateCheckeredQuadAt(ResourceProvider* resource_provider,
                            const gfx::Rect& rect) {
   CheckerboardDrawQuad* checkerboard_quad =
       render_pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-  checkerboard_quad->SetNew(shared_quad_state, rect, rect, SkColor());
+  checkerboard_quad->SetNew(shared_quad_state, rect, rect, SkColor(), 1.f);
 }
 
 void CreateFullscreenCheckeredQuad(ResourceProvider* resource_provider,
