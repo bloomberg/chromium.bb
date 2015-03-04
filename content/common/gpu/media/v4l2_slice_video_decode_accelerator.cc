@@ -240,7 +240,7 @@ class V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator
     : public H264Decoder::H264Accelerator {
  public:
   V4L2H264Accelerator(V4L2SliceVideoDecodeAccelerator* v4l2_dec);
-  virtual ~V4L2H264Accelerator() override;
+  ~V4L2H264Accelerator() override;
 
   // H264Decoder::H264Accelerator implementation.
   scoped_refptr<H264Picture> CreateH264Picture() override;
@@ -322,7 +322,6 @@ class V4L2H264Picture : public H264Picture {
  public:
   V4L2H264Picture(const scoped_refptr<
       V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>& dec_surface);
-  virtual ~V4L2H264Picture() override;
 
   V4L2H264Picture* AsV4L2H264Picture() override { return this; }
   scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
@@ -331,6 +330,8 @@ class V4L2H264Picture : public H264Picture {
   }
 
  private:
+  ~V4L2H264Picture() override;
+
   scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
       dec_surface_;
 
@@ -349,7 +350,6 @@ class V4L2VP8Picture : public VP8Picture {
  public:
   V4L2VP8Picture(const scoped_refptr<
       V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>& dec_surface);
-  virtual ~V4L2VP8Picture() override;
 
   V4L2VP8Picture* AsV4L2VP8Picture() override { return this; }
   scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
@@ -358,6 +358,8 @@ class V4L2VP8Picture : public VP8Picture {
   }
 
  private:
+  ~V4L2VP8Picture() override;
+
   scoped_refptr<V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface>
       dec_surface_;
 

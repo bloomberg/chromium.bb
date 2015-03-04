@@ -35,7 +35,7 @@ class GenericV4L2Device : public V4L2Device {
                              gfx::Size frame_buffer_size,
                              unsigned int buffer_index,
                              uint32_t v4l2_pixfmt,
-                             size_t num_v4l2_planes);
+                             size_t num_v4l2_planes) override;
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
                              EGLImageKHR egl_image) override;
   GLenum GetTextureTarget() override;

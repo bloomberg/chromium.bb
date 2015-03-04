@@ -48,7 +48,7 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
                           InputDeviceType type,
                           const EventDeviceInfo& devinfo,
                           scoped_ptr<Delegate> delegate);
-  ~EventReaderLibevdevCros();
+  ~EventReaderLibevdevCros() override;
 
   // EventConverterEvdev:
   void OnFileCanReadWithoutBlocking(int fd) override;

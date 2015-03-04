@@ -33,15 +33,15 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioUnifiedStream::Close().
-  virtual ~CrasUnifiedStream();
+  ~CrasUnifiedStream() override;
 
   // Implementation of AudioOutputStream.
-  virtual bool Open() override;
-  virtual void Close() override;
-  virtual void Start(AudioSourceCallback* callback) override;
-  virtual void Stop() override;
-  virtual void SetVolume(double volume) override;
-  virtual void GetVolume(double* volume) override;
+  bool Open() override;
+  void Close() override;
+  void Start(AudioSourceCallback* callback) override;
+  void Stop() override;
+  void SetVolume(double volume) override;
+  void GetVolume(double* volume) override;
 
  private:
   // Convert Latency in time to bytes.

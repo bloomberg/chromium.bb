@@ -1269,6 +1269,10 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
   }
 }
 
+gfx::Size H264Decoder::GetPicSize() const {
+  return pic_size_;
+}
+
 size_t H264Decoder::GetRequiredNumOfPictures() const {
   return dpb_.max_num_pics() + kPicsInPipeline;
 }

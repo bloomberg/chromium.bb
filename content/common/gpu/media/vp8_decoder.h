@@ -66,7 +66,7 @@ class CONTENT_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
   void Reset() override;
   void SetStream(const uint8_t* ptr, size_t size) override;
   DecodeResult Decode() override WARN_UNUSED_RESULT;
-  gfx::Size GetPicSize() const override { return pic_size_; }
+  gfx::Size GetPicSize() const override;
   size_t GetRequiredNumOfPictures() const override;
 
  private:

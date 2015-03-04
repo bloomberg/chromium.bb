@@ -25,22 +25,23 @@ class CrasInputStream : public AgcAudioStream<AudioInputStream> {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // audio manager who is creating this object.
-  CrasInputStream(const AudioParameters& params, AudioManagerCras* manager,
+  CrasInputStream(const AudioParameters& params,
+                  AudioManagerCras* manager,
                   const std::string& device_id);
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioOutputStream::Close().
-  virtual ~CrasInputStream();
+  ~CrasInputStream() override;
 
   // Implementation of AudioInputStream.
-  virtual bool Open() override;
-  virtual void Start(AudioInputCallback* callback) override;
-  virtual void Stop() override;
-  virtual void Close() override;
-  virtual double GetMaxVolume() override;
-  virtual void SetVolume(double volume) override;
-  virtual double GetVolume() override;
-  virtual bool IsMuted() override;
+  bool Open() override;
+  void Start(AudioInputCallback* callback) override;
+  void Stop() override;
+  void Close() override;
+  double GetMaxVolume() override;
+  void SetVolume(double volume) override;
+  double GetVolume() override;
+  bool IsMuted() override;
 
  private:
   // Handles requests to get samples from the provided buffer.  This will be

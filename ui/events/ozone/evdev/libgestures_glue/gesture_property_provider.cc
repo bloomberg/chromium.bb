@@ -680,7 +680,6 @@ class MatchDeviceType : public MatchCriteria {
  public:
   explicit MatchDeviceType(const std::string& arg);
   ~MatchDeviceType() override {}
-  virtual bool Match(const DevicePtr device) = 0;
 
  protected:
   bool value_;

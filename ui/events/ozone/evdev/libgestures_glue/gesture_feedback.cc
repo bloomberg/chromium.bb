@@ -23,7 +23,6 @@ namespace {
 
 // Binary paths.
 const char kGzipCommand[] = "/bin/gzip";
-const char kDateCommand[] = "/bin/date";
 
 const size_t kTouchLogTimestampMaxSize = 80;
 

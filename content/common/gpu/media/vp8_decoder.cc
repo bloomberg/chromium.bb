@@ -184,6 +184,10 @@ bool VP8Decoder::DecodeAndOutputCurrentFrame() {
   return true;
 }
 
+gfx::Size VP8Decoder::GetPicSize() const {
+  return pic_size_;
+}
+
 size_t VP8Decoder::GetRequiredNumOfPictures() const {
   const size_t kVP8NumFramesActive = 4;
   const size_t kPicsInPipeline = media::limits::kMaxVideoFrames + 2;
