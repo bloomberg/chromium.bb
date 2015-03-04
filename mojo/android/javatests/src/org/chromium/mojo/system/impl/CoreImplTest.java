@@ -404,7 +404,8 @@ public class CoreImplTest extends MojoTestCase {
         options.setElementNumBytes(24);
         createAndCloseDataPipe(options);
         // Create datapipe with a flag set.
-        options.getFlags().setMayDiscard(true);
+        // TODO(aberent) fix or remove, this does not compile. See http://crbug/463852
+        // options.getFlags().setMayDiscard(true);
         createAndCloseDataPipe(options);
         // Create datapipe with capacity set.
         options.setCapacityNumBytes(1024 * options.getElementNumBytes());
