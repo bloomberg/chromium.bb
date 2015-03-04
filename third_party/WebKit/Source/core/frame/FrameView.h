@@ -243,7 +243,14 @@ public:
     bool scrollToAnchor(const String&);
     void maintainScrollPositionAtAnchor(Node*);
 
-    void scrollElementToRect(Element*, const IntRect&);
+    // Scrolls an |element| into a given |rect| in the frame view. The given
+    // |element| must either be in this Frame's document, or the document of one
+    // of this Frame's child Frames. This method is not recursive; it will not
+    // scroll the child Frames so that the |element| is in view. Returns the
+    // amount of scroll remaining to center the |element|, e.g. this can happen
+    // if the FrameView becomes fully scrolled but |element| still isn't
+    // centered in |rect|.
+    DoubleSize scrollElementToRect(Element*, const FloatRect&);
     void scrollContentsIfNeededRecursive();
 
     // Methods to convert points and rects between the coordinate space of the renderer, and this view.

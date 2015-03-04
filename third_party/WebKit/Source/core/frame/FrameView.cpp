@@ -1528,46 +1528,32 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
         scrollToAnchor();
 }
 
-void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
+DoubleSize FrameView::scrollElementToRect(Element* element, const FloatRect& targetRectInFrame)
 {
-    // FIXME(http://crbug.com/371896) - This method shouldn't be manually doing
-    // coordinate transformations to the PinchViewport.
-    IntRect targetRect(rect);
-
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    bool adjustForVirtualViewport = m_frame->isMainFrame() && m_frame->settings()->pinchVirtualViewportEnabled();
+    // Obtain focused element's bounding box in frame space. Use |pixelSnappedIntRect| for rounding
+    // to pixel as opposed to |enclosingIntRect|. It gives a better combined (location and size)
+    // rounding error resulting in a more accurate scroll offset.
+    // FIXME: It would probably be best to do the whole calculation in LayoutUnits but contentsToRootFrame
+    // and friends don't have LayoutRect/Point versions yet.
+    FrameView* elementView = element->document().view();
+    IntRect boundsInContent = pixelSnappedIntRect(element->boundingBox());
+    IntRect boundsInFrame = contentsToFrame(rootFrameToContents(elementView->contentsToRootFrame(boundsInContent)));
 
-    if (adjustForVirtualViewport) {
-        PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
+    int centeringOffsetX = (targetRectInFrame.width() - boundsInFrame.width()) / 2;
+    int centeringOffsetY = (targetRectInFrame.height() - boundsInFrame.height()) / 2;
 
-        FloatRect visibleRect = pinchViewport.visibleRect();
-        IntSize pinchViewportSize = expandedIntSize(visibleRect.size());
-        targetRect.moveBy(ceiledIntPoint(visibleRect.location()));
-        targetRect.setSize(pinchViewportSize.shrunkTo(targetRect.size()));
-    }
+    IntSize scrollDelta(
+        boundsInFrame.x() - centeringOffsetX - targetRectInFrame.x(),
+        boundsInFrame.y() - centeringOffsetY - targetRectInFrame.y());
 
-    // Obtain focused element's bounding box in window space. The targetRect is already in window space.
-    // Use |pixelSnappedIntRect| for rounding to pixel as opposed to |enclosingIntRect|. It gives a
-    // better combined (location and size) rounding error resulting in a more accurate scroll offset.
-    LayoutRect boundsInContent = element->boundingBox();
-    IntRect bounds = element->document().view()->contentsToWindow(pixelSnappedIntRect(boundsInContent));
-
-    int centeringOffsetX = (targetRect.width() - bounds.width()) / 2;
-    int centeringOffsetY = (targetRect.height() - bounds.height()) / 2;
-
-    IntPoint targetOffset(
-        bounds.x() - centeringOffsetX - targetRect.x(),
-        bounds.y() - centeringOffsetY - targetRect.y());
+    DoublePoint targetOffset = DoublePoint(scrollPosition() + scrollDelta);
 
     // Update frame scroll offset to make target element visible.
-    targetOffset.move(scrollOffset());
-    setScrollPosition(DoublePoint(targetOffset));
+    setScrollPosition(targetOffset);
 
-    if (adjustForVirtualViewport) {
-        IntPoint remainder = IntPoint(targetOffset - scrollPosition());
-        m_frame->page()->frameHost().pinchViewport().move(remainder);
-    }
+    return targetOffset - scrollPositionDouble();
 }
 
 void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior scrollBehavior)

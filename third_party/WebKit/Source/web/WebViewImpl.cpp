@@ -2905,7 +2905,7 @@ void WebViewImpl::clearFocusedElement()
         localFrame->selection().clear();
 }
 
-bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)
+bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
 {
     LocalFrame* frame = page()->mainFrame() && page()->mainFrame()->isLocalFrame()
         ? page()->deprecatedLocalMainFrame() : 0;
@@ -2914,7 +2914,26 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)
         return false;
 
     if (!m_webSettings->autoZoomFocusedNodeToLegibleScale()) {
-        frame->view()->scrollElementToRect(element, IntRect(rect.x, rect.y, rect.width, rect.height));
+        PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+
+        // FIXME: The pixel snapping shouldn't be done ad-hoc. crbug.com/458579.
+        IntRect viewportRectInRootFrame(
+            ceiledIntPoint(pinchViewport.location()),
+            expandedIntSize(pinchViewport.visibleSize()));
+
+        // FIXME: Use viewportToRootFrame when coordinate refactoring CL lands.
+        FloatRect targetRectInRootFrame(
+            rectInViewport.x,
+            rectInViewport.y,
+            rectInViewport.width,
+            rectInViewport.height);
+        targetRectInRootFrame.scale(1 / pinchViewport.scale());
+        targetRectInRootFrame.moveBy(viewportRectInRootFrame.location());
+
+        DoubleSize remainder = frame->view()->scrollElementToRect(element, IntRect(targetRectInRootFrame));
+
+        // Scroll the remainder in the pinch viewport.
+        page()->frameHost().pinchViewport().move(FloatPoint(remainder.width(), remainder.height()));
         return false;
     }
 
