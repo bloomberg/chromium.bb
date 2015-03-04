@@ -71,7 +71,7 @@ PopupMenuImpl::PopupMenuImpl(ChromeClientImpl* chromeClient, PopupMenuClient* cl
 
 PopupMenuImpl::~PopupMenuImpl()
 {
-    closePopup();
+    ASSERT(!m_popup);
 }
 
 IntSize PopupMenuImpl::contentSize()
@@ -236,10 +236,14 @@ void PopupMenuImpl::setValue(const String& value)
 
 void PopupMenuImpl::didClosePopup()
 {
-    if (m_client && m_indexToSetOnClose >= 0)
-        m_client->valueChanged(m_indexToSetOnClose);
-    m_indexToSetOnClose = -1;
+    // Clearing m_popup first to prevent from trying to close the popup again.
     m_popup = nullptr;
+    RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
+    if (m_client && m_indexToSetOnClose >= 0) {
+        // valueChanged() will dispatch a 'change' event.
+        m_client->valueChanged(m_indexToSetOnClose);
+    }
+    m_indexToSetOnClose = -1;
     if (m_client)
         m_client->popupDidHide();
 }
@@ -279,6 +283,8 @@ void PopupMenuImpl::hide()
 
 void PopupMenuImpl::updateFromElement()
 {
+    if (!m_popup)
+        return;
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     PagePopupClient::addString("window.updateData = {\n", data.get());
     PagePopupClient::addString("type: \"update\",\n", data.get());
@@ -300,13 +306,9 @@ void PopupMenuImpl::updateFromElement()
 void PopupMenuImpl::disconnectClient()
 {
     m_client = nullptr;
-#if ENABLE(OILPAN)
     // Cannot be done during finalization, so instead done when the
     // render object is destroyed and disconnected.
-    //
-    // FIXME: do this always, regardless of ENABLE(OILPAN).
     dispose();
-#endif
 }
 
 } // namespace blink
