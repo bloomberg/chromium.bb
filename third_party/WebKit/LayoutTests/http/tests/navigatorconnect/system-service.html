@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<title>
+  Tests posting messages over a navigator.connect initiated channel to a system
+  service.
+</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/testharness-helpers.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+<script src="resources/test-helpers.js"></script>
+<body>
+<script>
+var echo_service_url = 'chrome-layout-test:echo';
+var annotate_service_url = 'chrome-layout-test:annotate';
+var cross_origin = get_host_info().UNAUTHENTICATED_ORIGIN;
+
+// Helper method that waits for a reply on a port, and resolves a promise with
+// the reply.
+function wait_for_reply(test, port) {
+  return new Promise(function(resolve) {
+    var resolved = false;
+    port.onmessage = test.step_func(function(event) {
+      assert_false(resolved);
+      resolved = true;
+      resolve(event.data);
+    });
+  });
+}
+
+// Helper method that applies the same transformations that would happen when
+// roundtripping some value through the conversions that happen when a service
+// expects values as base::Value.
+// In particular since base::Value can't represent a date directly, converting a
+// Date to a base::Value converts it to the number of seconds since
+// 1 January 1970 00:00:00 UTC. Converting it back to javascript will then keep
+// it as a number.
+function convert_dates(key, value) {
+  // Have to use |this[key]| here instead of |value| since |value| is already
+  // stringified.
+  if (this[key] instanceof Date) {
+    return this[key].getTime() / 1000;
+  }
+  return value;
+}
+
+// Convert |actual| and |expected| to json, using |replacer| on |expected|, and
+// compares the resulting strings.
+function compare_as_json(replacer, actual, expected) {
+  assert_equals(JSON.stringify(actual), JSON.stringify(expected, replacer));
+}
+
+// Sends various messages to a port, and compares the response using the passed
+// in |compare| function.
+function test_sending_messages_with_port(port, compare, t) {
+  // List of test messages that are send to the service.
+  var test_messages = ['ping over n.c',
+                      1234,
+                      ["array", "test"],
+                      {obj: "test"},
+                      {date: new Date(2015, 2, 20, 13, 10, 42, 0)},
+                      new Date()];
+  var next_message = 0;
+
+  function send_next_message(port) {
+    if (next_message >= test_messages.length) return;
+    var message = test_messages[next_message++];
+    var result = wait_for_reply(t, port);
+    port.postMessage(message);
+    return result.then(t.step_func(function(response) {
+      compare(response, message);
+      return send_next_message(port);
+    }));
+  }
+
+  return send_next_message(port);
+}
+
+// Connects to the |target_url|, and then tries sending various messages.
+function test_sending_messages(target_url, compare, t) {
+  return navigator.connect(target_url)
+    .then(function(port) {
+        return test_sending_messages_with_port(port, compare, t);
+      });
+}
+
+promise_test(function(t) {
+    var target_url = echo_service_url + '?as-string';
+    // No special replacer needed, so bind undefined to the replacer parameter.
+    var compare = compare_as_json.bind(undefined, undefined);
+    return navigator.connect(target_url)
+      .then(function(port) {
+          return test_sending_messages_with_port(port, compare, t);
+        });
+  }, 'Messages can be sent and received to a system service when sent as strings.');
+
+promise_test(function(t) {
+    var target_url = echo_service_url + '?as-value';
+    var compare = compare_as_json.bind(undefined, convert_dates);
+    return navigator.connect(target_url)
+      .then(function(port) {
+          return test_sending_messages_with_port(port, compare, t);
+        });
+  }, 'Messages can be sent and received to a system service when sent as values.');
+
+promise_test(function(t) {
+    function validate_reply(actual, expected) {
+      compare_as_json(convert_dates, actual.message_as_value, [expected]);
+      assert_equals(actual.message_as_string, '');
+    }
+    var port;
+    return navigator.connect(annotate_service_url + '?as-value')
+      .then(function(p) {
+          port = p;
+          return wait_for_reply(t, port);
+        })
+      .then(t.step_func(function(response) {
+          assert_equals(response.origin, document.location.origin + '/');
+          return test_sending_messages_with_port(port, validate_reply, t);
+        }));
+  }, 'Messages are actually understandable by the browser when sent as values.');
+
+promise_test(function(t) {
+    function validate_reply(actual, expected) {
+      compare_as_json(undefined, actual.message_as_value, []);
+      assert_equals(typeof actual.message_as_string, 'string');
+      assert_not_equals(actual.message_as_string, '');
+    }
+    var port;
+    return navigator.connect(annotate_service_url + '?as-string')
+      .then(function(p) {
+          port = p;
+          return wait_for_reply(t, port);
+        })
+      .then(t.step_func(function(response) {
+          assert_equals(response.origin, document.location.origin + '/');
+          return test_sending_messages_with_port(port, validate_reply, t);
+        }));
+  }, 'Messages are only sent as values when the service asks for it.');
+
+
+promise_test(function(t) {
+    function validate_reply(actual, expected) {
+      compare_as_json(convert_dates, actual.message_as_value, [expected]);
+      assert_equals(actual.message_as_string, '');
+    }
+    var port;
+    return cross_origin_connect(t, annotate_service_url + '?as-value')
+      .then(function(p) {
+          port = p;
+          return wait_for_reply(t, port);
+        })
+      .then(t.step_func(function(response) {
+          assert_equals(response.origin, cross_origin + '/');
+          return test_sending_messages_with_port(port, validate_reply, t);
+        }));
+  }, 'Messages are sent as values, even if port is transferred from iframe.');
+
+</script>
+</body>

@@ -20,15 +20,15 @@ function reply_as_promise(t, port) {
 // Method that behaves similarly to navigator.connect, but the actual connect
 // call is made from a cross origin iframe.
 function cross_origin_connect(t, service) {
-  // |service| is a relative URL, but for this to work from the iframe it needs
-  // an absolute URL.
-  var target_url = location.origin + base_path() + service;
+  // |service| could be a relative URL, but for this to work from the iframe it
+  // needs an absolute URL.
+  var target_url = new URL(service, location.origin + base_path());
   return with_iframe(
       cross_origin + base_path() + 'resources/connect-helper.html')
     .then(function(iframe) {
         var channel = new MessageChannel();
         iframe.contentWindow.postMessage(
-          {connect: target_url, port: channel.port2}, '*', [channel.port2]);
+          {connect: target_url.href, port: channel.port2}, '*', [channel.port2]);
         return reply_as_promise(t, channel.port1);
     });
 }
