@@ -9,8 +9,6 @@ var remoting = remoting || {};
 
 'use strict';
 
-var ENABLE_HANGOUT_REMOTE_ASSISTANCE = false;
-
 /**
  * @constructor
  */
@@ -19,16 +17,7 @@ var BackgroundPage = function() {
   this.appLauncher_ = null;
   /** @private {remoting.ActivationHandler} */
   this.activationHandler_ = null;
-  /** @private {remoting.It2MeService} */
-  this.it2meService_ = null;
-  /** @private {base.Disposables} */
-  this.disposables_ = null;
-
   this.preInit_();
-  this.onResumed_();
-
-  chrome.runtime.onSuspendCanceled.addListener(this.onResumed_.bind(this));
-  chrome.runtime.onSuspend.addListener(this.onSuspended_.bind(this));
 };
 
 /**
@@ -56,21 +45,6 @@ BackgroundPage.prototype.preInit_ = function() {
   }
 };
 
-/** @private */
-BackgroundPage.prototype.onResumed_ = function() {
-  if (ENABLE_HANGOUT_REMOTE_ASSISTANCE) {
-    this.it2meService_ = new remoting.It2MeService(this.appLauncher_);
-    this.it2meService_.init();
-    this.disposables_ = new base.Disposables(this.it2meService_);
-  }
-};
-
-/** @private */
-BackgroundPage.prototype.onSuspended_ = function() {
-  this.it2meService_ = null;
-  base.dispose(this.disposables_);
-  this.disposables_ = null;
-};
 
 window.addEventListener('load', function() {
   remoting.backgroundPage = new BackgroundPage();

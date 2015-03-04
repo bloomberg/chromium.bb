@@ -73,9 +73,6 @@ function onClientStateChange_(state) {
       if (remoting.desktopConnectedView.getMode() ==
           remoting.DesktopConnectedView.Mode.IT2ME) {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
-        remoting.hangoutSessionEvents.raiseEvent(
-            remoting.hangoutSessionEvents.sessionStateChanged,
-            remoting.ClientSession.State.CLOSED);
       } else {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
       }

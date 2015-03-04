@@ -62,22 +62,6 @@ remoting.initHostlist_ = function() {
         var hostId = urlParams['hostId'];
         remoting.connectMe2Me(hostId);
         return;
-      } else if (urlParams['mode'] === 'hangout') {
-        getCurrentId().then(
-            /** @param {*} id */
-            function(id) {
-              /** @type {string} */
-              var accessCode = urlParams['accessCode'];
-              var connector = remoting.app.getSessionConnector();
-              remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-              connector.connectIT2Me(accessCode);
-
-              document.body.classList.add('hangout-remote-desktop');
-              var senderId = /** @type {string} */ (String(id));
-              var hangoutSession = new remoting.HangoutSession(senderId);
-              hangoutSession.init();
-            });
-        return;
       }
     }
     // No valid URL parameters, start up normally.

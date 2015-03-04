@@ -314,10 +314,6 @@ remoting.DesktopRemoting.prototype.handleError = function(errorTag) {
       : this.app_.getSessionConnector().getConnectionMode();
   if (mode == remoting.DesktopConnectedView.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
-    remoting.hangoutSessionEvents.raiseEvent(
-        remoting.hangoutSessionEvents.sessionStateChanged,
-        remoting.ClientSession.State.FAILED
-    );
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
   }

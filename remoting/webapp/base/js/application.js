@@ -106,10 +106,6 @@ remoting.Application.prototype.onConnected = function(clientSession) {
 
   remoting.clipboard.startSession();
   updateStatistics_();
-  remoting.hangoutSessionEvents.raiseEvent(
-      remoting.hangoutSessionEvents.sessionStateChanged,
-      remoting.ClientSession.State.CONNECTED
-  );
 
   this.delegate_.handleConnected(clientSession);
 };

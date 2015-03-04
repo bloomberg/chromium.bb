@@ -727,7 +727,3 @@ body:not(.connected) #session-mode {
   position: absolute;
   pointer-events: none;
 }
-
-body.hangout-remote-desktop .home-screen {
-  display: none;
-}
