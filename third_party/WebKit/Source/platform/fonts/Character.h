@@ -72,7 +72,7 @@ public:
             || c == zeroWidthNonJoiner
             || c == zeroWidthJoiner;
     }
-    static bool treatAsZeroWidthSpaceInComplexScript(UChar c)
+    static bool treatAsZeroWidthSpaceInComplexScript(UChar32 c)
     {
         return c < 0x20 // ASCII Control Characters
             || (c >= 0x7F && c < 0xA0) // ASCII Delete .. No-break space
@@ -82,6 +82,12 @@ public:
             || (c >= leftToRightEmbed && c <= rightToLeftOverride)
             || c == zeroWidthNoBreakSpace
             || c == objectReplacementCharacter;
+    }
+    static bool treatAsZeroWidthSpaceInComplexScript(LChar c)
+    {
+        return c < 0x20 // ASCII Control Characters
+            || (c >= 0x7F && c < 0xA0) // ASCII Delete .. No-break space
+            || c == softHyphen;
     }
     static bool canReceiveTextEmphasis(UChar32);
 

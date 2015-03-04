@@ -119,8 +119,12 @@ private:
 
     void setFontFeatures();
 
+    template<typename CharType>
+    bool shapeInternal(GlyphBuffer*);
+    template<typename CharType>
     bool createHarfBuzzRuns();
     bool createHarfBuzzRunsForSingleCharacter();
+    template<typename CharType>
     bool shapeHarfBuzzRuns();
     bool fillGlyphBuffer(GlyphBuffer*);
     float fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, float initialAdvance);
@@ -128,9 +132,6 @@ private:
     void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*, HarfBuzzRun* previousRun);
     float adjustSpacing(HarfBuzzRun*, size_t glyphIndex, unsigned currentCharacterIndex, HarfBuzzRun* previousRun, float& offsetX, float& totalAdvance);
     void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
-
-    OwnPtr<UChar[]> m_normalizedBuffer;
-    unsigned m_normalizedBufferLength;
 
     float m_wordSpacingAdjustment; // Delta adjustment (pixels) for each word break.
     float m_letterSpacing; // Pixels to be added after each glyph.
