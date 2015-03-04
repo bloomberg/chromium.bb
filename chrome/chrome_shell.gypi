@@ -48,6 +48,7 @@
       'target_name': 'libchromeshell',
       'type': 'shared_library',
       'sources': [
+        'android/shell/chrome_shell_entry_point.cc',
         'android/shell/chrome_main_delegate_chrome_shell_android.cc',
         'android/shell/chrome_main_delegate_chrome_shell_android.h',
       ],
@@ -65,6 +66,7 @@
       'target_name': 'libchromesyncshell',
       'type': 'shared_library',
       'sources': [
+        'android/shell/chrome_shell_entry_point.cc',
         'android/sync_shell/chrome_main_delegate_chrome_sync_shell_android.cc',
         'android/sync_shell/chrome_main_delegate_chrome_sync_shell_android.h',
       ],

@@ -179,6 +179,7 @@ shared_library("chrome_shell") {
   sources = [
     "shell/chrome_main_delegate_chrome_shell_android.cc",
     "shell/chrome_main_delegate_chrome_shell_android.h",
+    "shell/chrome_shell_entry_point.cc",
   ]
   deps = [
     ":chrome_shell_base",
@@ -197,6 +198,7 @@ shared_library("chrome_shell") {
 shared_library("chrome_sync_shell") {
   testonly = true
   sources = [
+    #"shell/chrome_shell_entry_point.cc",
     #"sync_shell/chrome_main_delegate_chrome_sync_shell_android.cc",
     #"sync_shell/chrome_main_delegate_chrome_sync_shell_android.h",
   ]

@@ -671,6 +671,7 @@ if (is_android) {
       "app/android/chrome_android_initializer.cc",
       "app/android/chrome_android_initializer.h",
       "app/android/chrome_jni_onload.cc",
+      "app/android/chrome_jni_onload.h",
       "app/android/chrome_main_delegate_android.cc",
       "app/android/chrome_main_delegate_android.h",
       "app/chrome_main_delegate.cc",

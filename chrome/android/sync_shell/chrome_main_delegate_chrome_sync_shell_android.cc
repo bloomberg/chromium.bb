@@ -20,15 +20,20 @@ ChromeMainDelegateChromeSyncShellAndroid::
 ~ChromeMainDelegateChromeSyncShellAndroid() {
 }
 
-bool
-ChromeMainDelegateChromeSyncShellAndroid::RegisterApplicationNativeMethods(
-    JNIEnv* env) {
-  return ChromeMainDelegateAndroid::RegisterApplicationNativeMethods(env) &&
-      FakeServerHelperAndroid::Register(env);
-}
-
 bool ChromeMainDelegateChromeSyncShellAndroid::BasicStartupComplete(
     int* exit_code) {
   return ChromeMainDelegateAndroid::BasicStartupComplete(exit_code);
 }
 
+int ChromeMainDelegateChromeSyncShellAndroid::RunProcess(
+    const std::string& process_type,
+    const content::MainFunctionParams& main_function_params) {
+  if (process_type.empty()) {
+    // This JNI registration can not be moved to JNI_OnLoad because
+    // FakeServerHelper seems not known by class loader when shared library
+    // is loaded.
+    FakeServerHelperAndroid::Register(base::android::AttachCurrentThread());
+  }
+  return ChromeMainDelegateAndroid::RunProcess(process_type,
+                                               main_function_params);
+}

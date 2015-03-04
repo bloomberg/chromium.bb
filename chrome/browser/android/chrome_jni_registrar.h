@@ -10,8 +10,8 @@
 namespace chrome {
 namespace android {
 
-// Register all JNI bindings necessary for chrome.
-bool RegisterJni(JNIEnv* env);
+// Register all JNI bindings necessary for chrome browser process.
+bool RegisterBrowserJNI(JNIEnv* env);
 
 } // namespace android
 } // namespace chrome

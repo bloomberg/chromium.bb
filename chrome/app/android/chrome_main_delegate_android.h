@@ -13,10 +13,6 @@ class ChromeMainDelegateAndroid : public ChromeMainDelegate {
  public:
   static ChromeMainDelegateAndroid* Create();
 
-  // Set up the JNI bindings.  Tie the Java methods with their native
-  // counterparts.  Override to add more JNI bindings.
-  virtual bool RegisterApplicationNativeMethods(JNIEnv* env);
-
  protected:
   ChromeMainDelegateAndroid();
   ~ChromeMainDelegateAndroid() override;

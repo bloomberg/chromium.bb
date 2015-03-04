@@ -22,15 +22,6 @@
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "chrome/browser/android/chrome_jni_registrar.h"
-#include "net/android/net_jni_registrar.h"
-#include "ui/base/android/ui_base_jni_registrar.h"
-#include "ui/gfx/android/gfx_jni_registrar.h"
-#include "ui/gl/android/gl_jni_registrar.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "base/process/process_metrics.h"
 #include "chromeos/chromeos_paths.h"
@@ -79,15 +70,6 @@ void ChromeTestSuite::Initialize() {
 #if !defined(OS_IOS)
   chrome_browser_application_mac::RegisterBrowserCrApp();
 #endif  // !defined(OS_IOS)
-#endif
-
-#if defined(OS_ANDROID)
-  // Register JNI bindings for android.
-  gfx::android::RegisterJni(base::android::AttachCurrentThread());
-  net::android::RegisterJni(base::android::AttachCurrentThread());
-  ui::android::RegisterJni(base::android::AttachCurrentThread());
-  ui::gl::android::RegisterJni(base::android::AttachCurrentThread());
-  chrome::android::RegisterJni(base::android::AttachCurrentThread());
 #endif
 
   if (!browser_dir_.empty()) {

@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/android/chrome_jni_registrar.h"
 #include "chrome/browser/android/chrome_startup_flags.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
@@ -31,9 +30,6 @@ int ChromeMainDelegateAndroid::RunProcess(
     const content::MainFunctionParams& main_function_params) {
   TRACE_EVENT0("startup", "ChromeMainDelegateAndroid::RunProcess")
   if (process_type.empty()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    RegisterApplicationNativeMethods(env);
-
     // Because the browser process can be started asynchronously as a series of
     // UI thread tasks a second request to start it can come in while the
     // first request is still being processed. Chrome must keep the same
@@ -54,8 +50,4 @@ int ChromeMainDelegateAndroid::RunProcess(
 bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
   SetChromeSpecificCommandLineFlags();
   return ChromeMainDelegate::BasicStartupComplete(exit_code);
-}
-
-bool ChromeMainDelegateAndroid::RegisterApplicationNativeMethods(JNIEnv* env) {
-  return chrome::android::RegisterJni(env);
 }
