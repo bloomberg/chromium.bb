@@ -334,10 +334,7 @@ void RTCDataChannel::clearWeakMembers(Visitor* visitor)
 
 DEFINE_TRACE(RTCDataChannel)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_scheduledEvents);
-#endif
-    visitor->trace(m_connection);
     visitor->template registerWeakMembers<RTCDataChannel, &RTCDataChannel::clearWeakMembers>(this);
     RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>::trace(visitor);
 }

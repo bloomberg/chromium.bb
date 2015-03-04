@@ -37,14 +37,12 @@ LayoutStyle* SVGElementRareData::overrideComputedStyle(Element* element, LayoutS
 DEFINE_TRACE(SVGElementRareData)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_owner);
     visitor->trace(m_outgoingReferences);
     visitor->trace(m_incomingReferences);
-    visitor->trace(m_elementInstances);
-    visitor->trace(m_cursorElement);
-    visitor->trace(m_cursorImageValue);
-    visitor->trace(m_correspondingElement);
     visitor->trace(m_animatedSMILStyleProperties);
+    visitor->trace(m_elementInstances);
+    visitor->trace(m_correspondingElement);
+    visitor->trace(m_owner);
     visitor->template registerWeakMembers<SVGElementRareData, &SVGElementRareData::processWeakMembers>(this);
 #endif
 }
