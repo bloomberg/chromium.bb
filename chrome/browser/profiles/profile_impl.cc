@@ -143,6 +143,7 @@
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/content_settings/content_settings_supervised_provider.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
@@ -475,7 +476,7 @@ ProfileImpl::ProfileImpl(
   BrowserContextDependencyManager::GetInstance()->
       RegisterProfilePrefsForServices(this, pref_registry_.get());
 
-  SupervisedUserSettingsService* supervised_user_settings = NULL;
+  SupervisedUserSettingsService* supervised_user_settings = nullptr;
 #if defined(ENABLE_SUPERVISED_USERS)
   supervised_user_settings =
       SupervisedUserSettingsServiceFactory::GetForProfile(this);
@@ -1040,6 +1041,15 @@ HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!host_content_settings_map_.get()) {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
+#if defined(ENABLE_SUPERVISED_USERS)
+  SupervisedUserSettingsService* supervised_user_settings =
+      SupervisedUserSettingsServiceFactory::GetForProfile(this);
+    scoped_ptr<content_settings::SupervisedProvider> supervised_provider(
+        new content_settings::SupervisedProvider(supervised_user_settings));
+    host_content_settings_map_->RegisterProvider(
+        HostContentSettingsMap::SUPERVISED_PROVIDER,
+        supervised_provider.Pass());
+#endif
   }
   return host_content_settings_map_.get();
 }

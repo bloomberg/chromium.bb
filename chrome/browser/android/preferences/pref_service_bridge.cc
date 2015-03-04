@@ -104,6 +104,17 @@ bool IsContentSettingManaged(ContentSettingsType content_settings_type) {
   return provider == HostContentSettingsMap::POLICY_PROVIDER;
 }
 
+bool IsContentSettingManagedByCustodian(
+    ContentSettingsType content_settings_type) {
+  std::string source;
+  HostContentSettingsMap* content_settings =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  content_settings->GetDefaultContentSetting(content_settings_type, &source);
+  HostContentSettingsMap::ProviderType provider =
+      content_settings->GetProviderTypeFromSource(source);
+  return provider == HostContentSettingsMap::SUPERVISED_PROVIDER;
+}
+
 bool IsContentSettingUserModifiable(ContentSettingsType content_settings_type) {
   std::string source;
   HostContentSettingsMap* content_settings =
@@ -230,8 +241,7 @@ static jboolean GetAllowLocationUserModifiable(JNIEnv* env, jobject obj) {
 }
 
 static jboolean GetAllowLocationManagedByCustodian(JNIEnv* env, jobject obj) {
-  return GetPrefService()->IsPreferenceManagedByCustodian(
-      prefs::kGeolocationEnabled);
+  return IsContentSettingManagedByCustodian(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
 static jboolean GetResolveNavigationErrorEnabled(JNIEnv* env, jobject obj) {
@@ -477,12 +487,7 @@ static jboolean GetCameraMicUserModifiable(JNIEnv* env, jobject obj) {
 }
 
 static jboolean GetCameraMicManagedByCustodian(JNIEnv* env, jobject obj) {
-  PrefService* prefs = GetPrefService();
-  if (prefs->IsPreferenceManagedByCustodian(prefs::kVideoCaptureAllowed))
-    return true;
-  if (prefs->IsPreferenceManagedByCustodian(prefs::kAudioCaptureAllowed))
-    return true;
-  return false;
+  return IsContentSettingManagedByCustodian(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
 static jboolean GetAutologinEnabled(JNIEnv* env, jobject obj) {

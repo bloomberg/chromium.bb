@@ -38,6 +38,7 @@ typedef std::pair<std::string, std::string> StringPair;
 const char* kProviderNames[] = {
   "platform_app",
   "policy",
+  "supervised_user",
   "extension",
   "override",
   "preference",
@@ -57,6 +58,7 @@ const char kExtensionScheme[] = "chrome-extension";
 content_settings::SettingSource kProviderSourceMap[] = {
   content_settings::SETTING_SOURCE_EXTENSION,
   content_settings::SETTING_SOURCE_POLICY,
+  content_settings::SETTING_SOURCE_SUPERVISED,
   content_settings::SETTING_SOURCE_EXTENSION,
   content_settings::SETTING_SOURCE_USER,
   content_settings::SETTING_SOURCE_USER,

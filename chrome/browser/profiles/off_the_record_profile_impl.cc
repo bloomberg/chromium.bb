@@ -80,6 +80,12 @@
 #include "extensions/common/extension.h"
 #endif
 
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/content_settings/content_settings_supervised_provider.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#endif
+
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 using content::HostZoomMap;
@@ -391,6 +397,15 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
       extension_service->RegisterContentSettings(
           host_content_settings_map_.get());
     }
+#endif
+#if defined(ENABLE_SUPERVISED_USERS)
+    SupervisedUserSettingsService* supervised_service =
+        SupervisedUserSettingsServiceFactory::GetForProfile(this);
+    scoped_ptr<content_settings::SupervisedProvider> supervised_provider(
+        new content_settings::SupervisedProvider(supervised_service));
+    host_content_settings_map_->RegisterProvider(
+        HostContentSettingsMap::SUPERVISED_PROVIDER,
+        supervised_provider.Pass());
 #endif
   }
   return host_content_settings_map_.get();

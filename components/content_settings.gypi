@@ -22,6 +22,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'content_settings/core/browser/content_settings_binary_value_map.cc',
+        'content_settings/core/browser/content_settings_binary_value_map.h',
         'content_settings/core/browser/content_settings_client.h',
         'content_settings/core/browser/content_settings_default_provider.cc',
         'content_settings/core/browser/content_settings_default_provider.h',

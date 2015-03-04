@@ -6,13 +6,13 @@
 
 namespace supervised_users {
 
-const char kCameraMicAllowed[] = "CameraMicAllowed";
+const char kCameraMicDisabled[] = "CameraMicDisabled";
 const char kContentPackDefaultFilteringBehavior[] =
     "ContentPackDefaultFilteringBehavior";
 const char kContentPackManualBehaviorHosts[] = "ContentPackManualBehaviorHosts";
 const char kContentPackManualBehaviorURLs[] = "ContentPackManualBehaviorURLs";
 const char kForceSafeSearch[] = "ForceSafeSearch";
-const char kGeolocationAllowed[] = "GeolocationAllowed";
+const char kGeolocationDisabled[] = "GeolocationDisabled";
 const char kRecordHistory[] = "RecordHistory";
 const char kSigninAllowed[] = "SigninAllowed";
 const char kUserName[] = "UserName";

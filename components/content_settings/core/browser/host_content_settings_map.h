@@ -54,6 +54,7 @@ class HostContentSettingsMap
     // TODO(mukai): find the solution.
     INTERNAL_EXTENSION_PROVIDER = 0,
     POLICY_PROVIDER,
+    SUPERVISED_PROVIDER,
     CUSTOM_EXTENSION_PROVIDER,
     OVERRIDE_PROVIDER,
     PREF_PROVIDER,

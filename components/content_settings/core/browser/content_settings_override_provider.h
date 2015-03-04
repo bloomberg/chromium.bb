@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "components/content_settings/core/browser/content_settings_binary_value_map.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
@@ -59,7 +60,7 @@ class OverrideProvider : public ProviderInterface {
   void ReadOverrideSettings();
 
   // Copies of the pref data, so that we can read it on the IO thread.
-  bool allowed_settings_[CONTENT_SETTINGS_NUM_TYPES];
+  BinaryValueMap allowed_settings_;
 
   PrefService* prefs_;
 

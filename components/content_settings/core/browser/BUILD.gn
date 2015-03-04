@@ -9,6 +9,8 @@ static_library("browser") {
     "content_settings_default_provider.h",
     "content_settings_details.cc",
     "content_settings_details.h",
+    "content_settings_binary_value_map.cc",
+    "content_settings_binary_value_map.h",
     "content_settings_observable_provider.cc",
     "content_settings_observable_provider.h",
     "content_settings_observer.h",

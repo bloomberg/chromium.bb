@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
+#include "components/content_settings/core/browser/content_settings_binary_value_map.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -18,28 +19,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 
 namespace content_settings {
-
-namespace {
-
-class OverrideRuleIterator : public RuleIterator {
- public:
-  explicit OverrideRuleIterator(bool is_allowed) : is_done_(is_allowed) {}
-
-  bool HasNext() const override { return !is_done_; }
-
-  Rule Next() override {
-    DCHECK(!is_done_);
-    is_done_ = true;
-    return Rule(ContentSettingsPattern::Wildcard(),
-                ContentSettingsPattern::Wildcard(),
-                new base::FundamentalValue(CONTENT_SETTING_BLOCK));
-  }
-
- private:
-  bool is_done_;
-};
-
-}  // namespace
 
 // static
 void OverrideProvider::RegisterProfilePrefs(
@@ -64,11 +43,9 @@ RuleIterator* OverrideProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  base::AutoLock lock(lock_);
-  if (resource_identifier.empty()) {
-    return new OverrideRuleIterator(allowed_settings_[content_type]);
-  }
-  return new EmptyRuleIterator();
+  scoped_ptr<base::AutoLock> auto_lock(new base::AutoLock(lock_));
+  return allowed_settings_.GetRuleIterator(content_type, resource_identifier,
+                                           auto_lock.Pass());
 }
 
 void OverrideProvider::ClearAllContentSettingsRules(
@@ -97,23 +74,22 @@ void OverrideProvider::SetOverrideSetting(ContentSettingsType content_type,
   // Disallow incognito to change the state.
   DCHECK(!is_incognito_);
 
-  base::AutoLock lock(lock_);
+  base::AutoLock auto_lock(lock_);
   DictionaryPrefUpdate update(prefs_, prefs::kOverrideContentSettings);
   base::DictionaryValue* default_settings_dictionary = update.Get();
+  allowed_settings_.SetContentSettingDisabled(content_type, !enabled);
   if (enabled) {
-    allowed_settings_[content_type] = true;
     default_settings_dictionary->RemoveWithoutPathExpansion(
         GetTypeName(content_type), NULL);
   } else {
-    allowed_settings_[content_type] = false;
     default_settings_dictionary->SetWithoutPathExpansion(
         GetTypeName(content_type), new base::FundamentalValue(true));
   }
 }
 
 bool OverrideProvider::IsEnabled(ContentSettingsType content_type) const {
-  base::AutoLock lock(lock_);
-  return allowed_settings_[content_type];
+  base::AutoLock auto_lock(lock_);
+  return allowed_settings_.IsContentSettingEnabled(content_type);
 }
 
 void OverrideProvider::ReadOverrideSettings() {
@@ -121,9 +97,10 @@ void OverrideProvider::ReadOverrideSettings() {
       prefs_->GetDictionary(prefs::kOverrideContentSettings);
 
   for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    ContentSettingsType content_setting = ContentSettingsType(type);
-    allowed_settings_[content_setting] =
-        !blocked_settings_dictionary->HasKey(GetTypeName(content_setting));
+    ContentSettingsType content_type = ContentSettingsType(type);
+    if (blocked_settings_dictionary->HasKey(GetTypeName(content_type))) {
+      allowed_settings_.SetContentSettingDisabled(content_type, true);
+    }
   }
 }
 

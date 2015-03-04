@@ -2590,6 +2590,8 @@
       'browser/ssl/ssl_error_info.h',
     ],
     'chrome_browser_supervised_user_sources': [
+      'browser/content_settings/content_settings_supervised_provider.cc',
+      'browser/content_settings/content_settings_supervised_provider.h',
       'browser/supervised_user/child_accounts/child_account_feedback_reporter_android.cc',
       'browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h',
       'browser/supervised_user/child_accounts/child_account_service.cc',
