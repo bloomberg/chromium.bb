@@ -86,6 +86,15 @@ class StartPageService::ProfileDestroyObserver
  public:
   explicit ProfileDestroyObserver(StartPageService* service)
       : service_(service) {
+    if (service_->profile()->IsOffTheRecord()) {
+      // We need to be notified when the original profile gets destroyed as well
+      // as the OTR profile, because the original profile will be destroyed
+      // first, and a DCHECK at that time ensures that the OTR profile has 0
+      // hosts. See http://crbug.com/463419.
+      registrar_.Add(
+          this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+          content::Source<Profile>(service_->profile()->GetOriginalProfile()));
+    }
     registrar_.Add(this,
                    chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::Source<Profile>(service_->profile()));
@@ -98,7 +107,9 @@ class StartPageService::ProfileDestroyObserver
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
     DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-    DCHECK_EQ(service_->profile(), content::Source<Profile>(source).ptr());
+    DCHECK(service_->profile()->IsSameProfile(
+        content::Source<Profile>(source).ptr()));
+    registrar_.RemoveAll();
     service_->Shutdown();
   }
 

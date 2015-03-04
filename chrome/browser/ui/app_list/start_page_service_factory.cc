@@ -55,7 +55,7 @@ KeyedService* StartPageServiceFactory::BuildServiceInstanceFor(
 content::BrowserContext* StartPageServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // The start page service needs an instance in ChromeOS guest mode.
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 }  // namespace app_list

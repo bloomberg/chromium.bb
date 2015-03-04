@@ -15,13 +15,20 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/search_result_observer.h"
 #include "ui/base/models/list_model_observer.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
+#endif  // defined(OS_CHROMEOS)
 
 // Browser Test for AppListController that runs on all platforms supporting
 // app_list.
@@ -212,3 +219,37 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   StopWatchingResults();
   service->DismissAppList();
 }
+
+#if defined(OS_CHROMEOS)
+
+class AppListControllerGuestModeBrowserTest : public InProcessBrowserTest {
+ public:
+  AppListControllerGuestModeBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerGuestModeBrowserTest);
+};
+
+void AppListControllerGuestModeBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  command_line->AppendSwitch(chromeos::switches::kGuestSession);
+  command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                  chromeos::login::kGuestUserName);
+  command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                  TestingProfile::kTestUserProfileDir);
+  command_line->AppendSwitch(switches::kIncognito);
+}
+
+// Test creating the initial app list in guest mode.
+IN_PROC_BROWSER_TEST_F(AppListControllerGuestModeBrowserTest, Incognito) {
+  AppListService* service = test::GetAppListService();
+  EXPECT_TRUE(service->GetCurrentAppListProfile());
+
+  service->ShowForProfile(browser()->profile());
+  EXPECT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
+}
+
+#endif  // defined(OS_CHROMEOS)

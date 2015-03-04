@@ -285,6 +285,13 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     return;
   }
 
+  // If we are in guest mode, the new profile should be an incognito profile.
+  // Otherwise, this may later hit a check (same condition as this one) in
+  // Browser::Browser when opening links in a browser window (see
+  // http://crbug.com/460437).
+  DCHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
+      << "Guest mode must use incognito profile";
+
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
   tracked_objects::ScopedTracker tracking_profile3(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
