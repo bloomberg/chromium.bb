@@ -69,12 +69,11 @@ public:
     float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit) const;
 
     float valueForLength(const Length&, const LayoutStyle&, SVGLengthMode = SVGLengthMode::Other) const;
+    static float valueForLength(const Length&, const LayoutStyle&, float dimension);
 
     bool determineViewport(FloatSize&) const;
 
 private:
-    float valueForLengthWithZoom(const Length&, float, SVGLengthMode) const;
-
     float convertValueFromUserUnitsToEMS(float value) const;
     float convertValueFromEMSToUserUnits(float value) const;
 

@@ -18,13 +18,11 @@
  */
 
 #include "config.h"
-
 #include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/SVGLayoutStyle.h"
 #include "core/layout/svg/SVGTextMetrics.h"
-#include "platform/LengthFunctions.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/UnicodeRange.h"
 
@@ -40,10 +38,8 @@ float SVGTextLayoutEngineBaseline::calculateBaselineShift(const LayoutStyle& sty
     const SVGLayoutStyle& svgStyle = style.svgStyle();
 
     switch (svgStyle.baselineShift()) {
-    case BS_LENGTH: {
-        const float zoom = style.effectiveZoom();
-        return floatValueForLength(svgStyle.baselineShiftValue(), m_font.fontDescription().computedPixelSize() * zoom) / zoom;
-    }
+    case BS_LENGTH:
+        return SVGLengthContext::valueForLength(svgStyle.baselineShiftValue(), style, m_font.fontDescription().computedPixelSize());
     case BS_SUB:
         return -m_font.fontMetrics().floatHeight() / 2;
     case BS_SUPER:
