@@ -271,6 +271,8 @@ public class AwContents implements SmartClipProvider,
     // when in this state.
     private boolean mTemporarilyDetached;
 
+    private Handler mHandler;
+
     // True when this AwContents has been destroyed.
     // Do not use directly, call isDestroyed() instead.
     private boolean mIsDestroyed = false;
@@ -603,6 +605,7 @@ public class AwContents implements SmartClipProvider,
         mContainerView = containerView;
         mContainerView.setWillNotDraw(false);
 
+        mHandler = new Handler();
         mContext = context;
         mInternalAccessAdapter = internalAccessAdapter;
         mNativeGLDelegate = nativeGLDelegate;
@@ -941,7 +944,7 @@ public class AwContents implements SmartClipProvider,
             nativeOnDetachedFromWindow(mNativeAwContents);
         }
         mIsDestroyed = true;
-        new Handler().post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 destroyNatives();
@@ -2220,7 +2223,7 @@ public class AwContents implements SmartClipProvider,
             final VisualStateCallback callback, final long requestId) {
         // Posting avoids invoking the callback inside invoking_composite_
         // (see synchronous_compositor_impl.cc and crbug/452530).
-        mContainerView.getHandler().post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 callback.onComplete(requestId);
