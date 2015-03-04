@@ -164,7 +164,7 @@ group("chrome_shell_base") {
     "//chrome:chrome_android_core",
     "//base",
     "//base/allocator",
-    "//content/public/app:browser",
+    "//content/public/app:both",
     "//skia",
   ]
   # TODO(GYP):

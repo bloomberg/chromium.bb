@@ -19,7 +19,7 @@
         '../base/base.gyp:base',
         'chrome_android_core',
         'chrome.gyp:browser_ui',
-        '../content/content.gyp:content_app_browser',
+        '../content/content.gyp:content_app_both',
       ],
       'direct_dependent_settings': {
         'ldflags': [

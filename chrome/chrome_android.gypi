@@ -32,7 +32,7 @@
         #                 is upstreamed.
         '../components/components.gyp:enhanced_bookmarks',
         '../content/content.gyp:content',
-        '../content/content.gyp:content_app_browser',
+        '../content/content.gyp:content_app_both',
       ],
       'include_dirs': [
         '..',

@@ -693,7 +693,7 @@ if (is_android) {
       "//chrome/renderer",
       "//chrome/utility",
       "//components/enhanced_bookmarks",
-      "//content/public/app:browser",
+      "//content/public/app:both",
     ]
   }
 }
