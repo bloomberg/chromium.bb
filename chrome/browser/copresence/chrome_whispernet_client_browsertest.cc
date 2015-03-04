@@ -33,7 +33,7 @@ using audio_modem::TokenParameters;
 
 namespace {
 
-// TODO(ckehoe): Use randomly generated tokens instead.
+// TODO(rkc): Add more varied test input.
 const char kSixZeros[] = "MDAwMDAw";
 const char kEightZeros[] = "MDAwMDAwMDA";
 const char kNineZeros[] = "MDAwMDAwMDAw";
@@ -114,8 +114,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
 
   void EncodeTokenAndSaveSamples(WhispernetClient* client,
                                  bool audible,
-                                 const std::string& token,
-                                 const TokenParameters token_params[2]) {
+                                 const std::string& token) {
     run_loop_.reset(new base::RunLoop());
     client->RegisterSamplesCallback(
         base::Bind(&ChromeWhispernetClientTest::SamplesCallback,
@@ -123,6 +122,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
     expected_token_ = token;
     expected_audible_ = audible;
 
+    TokenParameters token_params[2];
     client->EncodeToken(token, audible ? AUDIBLE : INAUDIBLE, token_params);
     run_loop_->Run();
 
@@ -236,13 +236,11 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
 #define MAYBE_Initialize DISABLED_Initialize
 #define MAYBE_EncodeAndDecode DISABLED_EncodeAndDecode
 #define MAYBE_TokenLengths DISABLED_TokenLengths
-#define MAYBE_Crc DISABLED_Crc
 #define MAYBE_MultipleClients DISABLED_MultipleClients
 #else
 #define MAYBE_Initialize Initialize
 #define MAYBE_EncodeAndDecode EncodeAndDecode
 #define MAYBE_TokenLengths TokenLengths
-#define MAYBE_Crc Crc
 #define MAYBE_MultipleClients MultipleClients
 #endif
 
@@ -259,10 +257,10 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_EncodeAndDecode) {
   TokenParameters token_params[2];
   GetTokenParamsForLengths(kTokenLengths, token_params);
 
-  EncodeTokenAndSaveSamples(client.get(), true, kSixZeros, token_params);
+  EncodeTokenAndSaveSamples(client.get(), true, kSixZeros);
   DecodeSamplesAndVerifyToken(client.get(), true, kSixZeros, token_params);
 
-  EncodeTokenAndSaveSamples(client.get(), false, kSixZeros, token_params);
+  EncodeTokenAndSaveSamples(client.get(), false, kSixZeros);
   DecodeSamplesAndVerifyToken(client.get(), false, kSixZeros, token_params);
 }
 
@@ -276,29 +274,11 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_TokenLengths) {
   TokenParameters token_params[2];
   GetTokenParamsForLengths(kLongTokenLengths, token_params);
 
-  EncodeTokenAndSaveSamples(client.get(), true, kEightZeros, token_params);
+  EncodeTokenAndSaveSamples(client.get(), true, kEightZeros);
   DecodeSamplesAndVerifyToken(client.get(), true, kEightZeros, token_params);
 
-  EncodeTokenAndSaveSamples(client.get(), false, kNineZeros, token_params);
+  EncodeTokenAndSaveSamples(client.get(), false, kNineZeros);
   DecodeSamplesAndVerifyToken(client.get(), false, kNineZeros, token_params);
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Crc) {
-  scoped_ptr<WhispernetClient> client(
-      new ChromeWhispernetClient(browser()->profile()));
-  client->Initialize(base::Bind(&IgnoreResult));
-  SetupDecode();
-
-  TokenParameters token_params[2];
-  GetTokenParamsForLengths(kTokenLengths, token_params);
-  token_params[0].crc = true;
-  token_params[1].crc = true;
-
-  EncodeTokenAndSaveSamples(client.get(), true, kSixZeros, token_params);
-  DecodeSamplesAndVerifyToken(client.get(), true, kSixZeros, token_params);
-
-  EncodeTokenAndSaveSamples(client.get(), false, kSixZeros, token_params);
-  DecodeSamplesAndVerifyToken(client.get(), false, kSixZeros, token_params);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_MultipleClients) {
@@ -317,21 +297,24 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_MultipleClients) {
   client_1->Initialize(base::Bind(&IgnoreResult));
   client_2->Initialize(base::Bind(&IgnoreResult));
 
-  EncodeTokenAndSaveSamples(client_1.get(), true, kSixZeros, token_params);
+  EncodeTokenAndSaveSamples(client_1.get(), true, kSixZeros);
   DecodeSamplesAndVerifyToken(client_1.get(), true, kSixZeros, token_params);
 
-  EncodeTokenAndSaveSamples(client_2.get(), false, kSixZeros, token_params);
+  EncodeTokenAndSaveSamples(client_2.get(), false, kSixZeros);
   DecodeSamplesAndVerifyToken(client_2.get(), false, kSixZeros, token_params);
 
   // Test sequential initialization.
   client_3->Initialize(base::Bind(&IgnoreResult));
 
-  EncodeTokenAndSaveSamples(client_3.get(), true, kSixZeros, token_params);
+  EncodeTokenAndSaveSamples(client_3.get(), true, kSixZeros);
   DecodeSamplesAndVerifyToken(client_3.get(), true, kSixZeros, token_params);
 
   const size_t kLongTokenLengths[2] = {8, 9};
   GetTokenParamsForLengths(kLongTokenLengths, token_params);
 
-  EncodeTokenAndSaveSamples(client_2.get(), true, kEightZeros, token_params);
+  EncodeTokenAndSaveSamples(client_2.get(), true, kEightZeros);
   DecodeSamplesAndVerifyToken(client_2.get(), true, kEightZeros, token_params);
 }
+
+// TODO(ckehoe): Test crc and parity
+// TODO(ckehoe): More multi-client testing
