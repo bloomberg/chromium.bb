@@ -10,9 +10,11 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/extensions_test.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -32,7 +34,7 @@ using content::NotificationService;
 
 namespace extensions {
 
-class ImageLoaderTest : public testing::Test {
+class ImageLoaderTest : public ExtensionsTest {
  public:
   ImageLoaderTest()
       : image_loaded_count_(0),
@@ -174,12 +176,8 @@ TEST_F(ImageLoaderTest, DeleteExtensionWhileWaitingForCache) {
   EXPECT_EQ(0, image_loaded_count());
 
   // Send out notification the extension was uninstalled.
-  UnloadedExtensionInfo details(extension.get(),
-                                UnloadedExtensionInfo::REASON_UNINSTALL);
-  content::NotificationService::current()->Notify(
-      NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::NotificationService::AllSources(),
-      content::Details<UnloadedExtensionInfo>(&details));
+  ExtensionRegistry::Get(browser_context())->TriggerOnUnloaded(
+      extension.get(), UnloadedExtensionInfo::REASON_UNINSTALL);
 
   // Chuck the extension, that way if anyone tries to access it we should crash
   // or get valgrind errors.
