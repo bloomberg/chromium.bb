@@ -53,6 +53,7 @@ public:
 
     void setWeight(FontWeight);
     void setSize(const FontDescription::Size&);
+    void setSizeAdjust(const float aspectValue);
     void setStretch(FontStretch);
     void setFamilyDescription(const FontDescription::FamilyDescription&);
     void setFeatureSettings(PassRefPtr<FontFeatureSettings>);
@@ -75,6 +76,7 @@ public:
     static FontFeatureSettings* initialFeatureSettings() { return nullptr; }
     static FontDescription::GenericFamilyType initialGenericFamily() { return FontDescription::StandardFamily; }
     static FontDescription::Size initialSize() { return FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false); }
+    static float initialSizeAdjust() { return 0; }
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontVariant initialVariant() { return FontVariantNormal; }
     static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }
@@ -93,6 +95,7 @@ private:
     void checkForGenericFamilyChange(const FontDescription&, FontDescription&);
     void updateSpecifiedSize(FontDescription&, const LayoutStyle&);
     void updateComputedSize(FontDescription&, const LayoutStyle&);
+    void updateAdjustedSize(FontDescription&, const LayoutStyle&, FontSelector*);
 
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 
@@ -107,6 +110,7 @@ private:
         FeatureSettings,
         Script,
         Style,
+        SizeAdjust,
         Variant,
         VariantLigatures,
         TextRendering,

@@ -1,0 +1,21 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x430
+  LayoutBlockFlow {HTML} at (0,0) size 800x430
+    LayoutBlockFlow {BODY} at (8,8) size 784x414
+      LayoutBlockFlow {DIV} at (0,0) size 784x202
+        LayoutInline {SPAN} at (0,0) size 85x220
+          LayoutText {#text} at (0,-8) size 85x220
+            text run at (0,-8) width 85: "x"
+        LayoutInline {SPAN} at (0,0) size 99x228
+          LayoutText {#text} at (84,-14) size 99x228
+            text run at (84,-14) width 99: "x"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,202) size 784x212
+        LayoutInline {SPAN} at (0,0) size 94x273
+          LayoutText {#text} at (0,-37) size 94x273
+            text run at (0,-37) width 94: "z"
+        LayoutInline {SPAN} at (0,0) size 86x228
+          LayoutText {#text} at (93,-2) size 86x228
+            text run at (93,-2) width 86: "z"
+        LayoutText {#text} at (0,0) size 0x0

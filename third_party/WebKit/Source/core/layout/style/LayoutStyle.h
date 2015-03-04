@@ -549,6 +549,8 @@ public:
     float specifiedFontSize() const;
     float computedFontSize() const;
     int fontSize() const;
+    float fontSizeAdjust() const;
+    bool hasFontSizeAdjust() const;
     FontWeight fontWeight() const;
     FontStretch fontStretch() const;
 

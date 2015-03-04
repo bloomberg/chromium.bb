@@ -499,6 +499,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyY: return 462;
     case CSSPropertyRx: return 463;
     case CSSPropertyRy: return 464;
+    case CSSPropertyFontSizeAdjust: return 465;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -515,7 +516,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 464; }
+static int maximumCSSSampleId() { return 465; }
 
 void UseCounter::muteForInspector()
 {

@@ -101,6 +101,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyFontFamily,
     CSSPropertyFontKerning,
     CSSPropertyFontSize,
+    CSSPropertyFontSizeAdjust,
     CSSPropertyFontStretch,
     CSSPropertyFontStyle,
     CSSPropertyFontVariant,

@@ -2,6 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Collabora Ltd. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -121,6 +122,13 @@ void FontBuilder::setWeight(FontWeight fontWeight)
 void FontBuilder::setSize(const FontDescription::Size& size)
 {
     setSize(m_fontDescription, size);
+}
+
+void FontBuilder::setSizeAdjust(float aspectValue)
+{
+    set(PropertySetFlag::SizeAdjust);
+
+    m_fontDescription.setSizeAdjust(aspectValue);
 }
 
 void FontBuilder::setStretch(FontStretch fontStretch)
@@ -319,6 +327,29 @@ void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const La
     checkForGenericFamilyChange(style.fontDescription(), fontDescription);
 }
 
+void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const LayoutStyle& style, FontSelector* fontSelector)
+{
+    const float sizeAdjust = fontDescription.sizeAdjust();
+    const float specifiedSize = fontDescription.specifiedSize();
+    if (!sizeAdjust || !specifiedSize)
+        return;
+
+    // We need to create a temporal Font to get xHeight of a primary font.
+    Font font(fontDescription);
+    font.update(fontSelector);
+    if (!font.fontMetrics().hasXHeight())
+        return;
+
+    float aspectValue = font.fontMetrics().xHeight() / specifiedSize;
+    float adjustedSize = (sizeAdjust / aspectValue) * specifiedSize;
+    adjustedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), adjustedSize);
+
+    float multiplier = style.textAutosizingMultiplier();
+    if (multiplier > 1)
+        adjustedSize = TextAutosizer::computeAutosizedFontSize(adjustedSize, multiplier);
+    fontDescription.setAdjustedSize(adjustedSize);
+}
+
 void FontBuilder::updateComputedSize(FontDescription& fontDescription, const LayoutStyle& style)
 {
     float computedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), fontDescription.specifiedSize());
@@ -344,6 +375,8 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
         description.setSpecifiedSize(m_fontDescription.specifiedSize());
         description.setIsAbsoluteSize(m_fontDescription.isAbsoluteSize());
     }
+    if (isSet(PropertySetFlag::SizeAdjust))
+        description.setSizeAdjust(m_fontDescription.sizeAdjust());
     if (isSet(PropertySetFlag::Weight))
         description.setWeight(m_fontDescription.weight());
     if (isSet(PropertySetFlag::Stretch))
@@ -371,6 +404,7 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
 
     updateSpecifiedSize(description, style);
     updateComputedSize(description, style);
+    updateAdjustedSize(description, style, fontSelector.get());
 
     style.setFontDescription(description);
     style.font().update(fontSelector);

@@ -55,6 +55,7 @@ public:
     static FontDescription::FamilyDescription convertFontFamily(StyleResolverState&, CSSValue*);
     static PassRefPtr<FontFeatureSettings> convertFontFeatureSettings(StyleResolverState&, CSSValue*);
     static FontDescription::Size convertFontSize(StyleResolverState&, CSSValue*);
+    static float convertFontSizeAdjust(StyleResolverState&, CSSValue*);
     static FontWeight convertFontWeight(StyleResolverState&, CSSValue*);
     static FontDescription::VariantLigatures convertFontVariantLigatures(StyleResolverState&, CSSValue*);
     static EGlyphOrientation convertGlyphOrientation(StyleResolverState&, CSSValue*);

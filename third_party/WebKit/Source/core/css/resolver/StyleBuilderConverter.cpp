@@ -245,6 +245,16 @@ FontDescription::Size StyleBuilderConverter::convertFontSize(StyleResolverState&
     return FontDescription::Size(0, computeFontSize(state, primitiveValue, parentSize), parentIsAbsoluteSize || !primitiveValue->isFontRelativeLength());
 }
 
+float StyleBuilderConverter::convertFontSizeAdjust(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID() == CSSValueNone)
+        return FontBuilder::initialSizeAdjust();
+
+    ASSERT(primitiveValue->isNumber());
+    return primitiveValue->getFloatValue();
+}
+
 FontWeight StyleBuilderConverter::convertFontWeight(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);

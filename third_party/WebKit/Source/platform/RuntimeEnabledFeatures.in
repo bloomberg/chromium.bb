@@ -38,6 +38,7 @@ CSS3TextDecorations status=experimental
 CSSAnimationUnprefixed status=experimental
 CSSAttributeCaseSensitivity status=experimental
 CSSCompositing status=stable
+CSSFontSizeAdjust status=test
 CSSGridLayout status=experimental
 CSSMaskSourceType status=experimental
 CSSMotionPath status=experimental

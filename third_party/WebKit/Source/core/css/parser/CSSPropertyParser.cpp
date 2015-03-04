@@ -1052,6 +1052,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         else
             parsedValue = parseReflect();
         break;
+    case CSSPropertyFontSizeAdjust: // none | <number>
+        ASSERT(RuntimeEnabledFeatures::cssFontSizeAdjustEnabled());
+        validPrimitive = (id == CSSValueNone) ? true : validUnit(value, FNumber | FNonNeg);
+        break;
     case CSSPropertyOpacity:
         validPrimitive = validUnit(value, FNumber);
         break;

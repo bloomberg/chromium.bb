@@ -40,7 +40,7 @@ struct SameSizeAsFontDescription {
     FontFamily familyList;
     RefPtr<FontFeatureSettings> m_featureSettings;
     AtomicString locale;
-    float sizes[4];
+    float sizes[6];
     // FXIME: Make them fit into one word.
     uint32_t bitfields;
     uint32_t bitfields2 : 7;
@@ -160,7 +160,8 @@ float FontDescription::effectiveFontSize() const
 {
     // Ensure that the effective precision matches the font-cache precision.
     // This guarantees that the same precision is used regardless of cache status.
-    return floorf(computedSize() * FontCacheKey::precisionMultiplier()) / FontCacheKey::precisionMultiplier();
+    float computedOrAdjustedSize = adjustedSize() ? adjustedSize() : computedSize();
+    return floorf(computedOrAdjustedSize * FontCacheKey::precisionMultiplier()) / FontCacheKey::precisionMultiplier();
 }
 
 FontCacheKey FontDescription::cacheKey(const FontFaceCreationParams& creationParams, FontTraits desiredTraits) const

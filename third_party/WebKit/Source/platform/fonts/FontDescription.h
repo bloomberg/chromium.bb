@@ -57,6 +57,8 @@ public:
     FontDescription()
         : m_specifiedSize(0)
         , m_computedSize(0)
+        , m_adjustedSize(0)
+        , m_sizeAdjust(0)
         , m_letterSpacing(0)
         , m_wordSpacing(0)
         , m_orientation(Horizontal)
@@ -131,6 +133,8 @@ public:
     Size size() const { return Size(m_keywordSize, m_specifiedSize, m_isAbsoluteSize); }
     float specifiedSize() const { return m_specifiedSize; }
     float computedSize() const { return m_computedSize; }
+    float adjustedSize() const { return m_adjustedSize; }
+    float sizeAdjust() const { return m_sizeAdjust; }
     FontStyle style() const { return static_cast<FontStyle>(m_style); }
     int computedPixelSize() const { return int(m_computedSize + 0.5f); }
     FontVariant variant() const { return static_cast<FontVariant>(m_variant); }
@@ -179,6 +183,8 @@ public:
     void setFamily(const FontFamily& family) { m_familyList = family; }
     void setComputedSize(float s) { m_computedSize = clampTo<float>(s); }
     void setSpecifiedSize(float s) { m_specifiedSize = clampTo<float>(s); }
+    void setAdjustedSize(float s) { m_adjustedSize = clampTo<float>(s); }
+    void setSizeAdjust(float aspect) { m_sizeAdjust = clampTo<float>(aspect); }
     void setStyle(FontStyle i) { m_style = i; }
     void setVariant(FontVariant c) { m_variant = c; }
     void setVariantLigatures(const VariantLigatures&);
@@ -220,6 +226,14 @@ private:
     float m_specifiedSize;   // Specified CSS value. Independent of rendering issues such as integer
                              // rounding, minimum font sizes, and zooming.
     float m_computedSize;    // Computed size adjusted for the minimum font size and the zoom factor.
+
+    // (Given aspect value / aspect value of a font family) * specifiedSize.
+    // This value is adjusted for the minimum font size and the zoom factor
+    // as well as a computed size is.
+    float m_adjustedSize;
+
+    // Given aspect value, i.e. font-size-adjust.
+    float m_sizeAdjust;
 
     float m_letterSpacing;
     float m_wordSpacing;
@@ -267,6 +281,8 @@ inline bool FontDescription::operator==(const FontDescription& other) const
     return m_familyList == other.m_familyList
         && m_specifiedSize == other.m_specifiedSize
         && m_computedSize == other.m_computedSize
+        && m_adjustedSize == other.m_adjustedSize
+        && m_sizeAdjust == other.m_sizeAdjust
         && m_letterSpacing == other.m_letterSpacing
         && m_wordSpacing == other.m_wordSpacing
         && m_style == other.m_style

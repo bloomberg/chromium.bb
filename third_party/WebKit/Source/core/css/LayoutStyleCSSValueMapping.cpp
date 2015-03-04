@@ -1555,6 +1555,10 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
     }
     case CSSPropertyFontSize:
         return valueForFontSize(style);
+    case CSSPropertyFontSizeAdjust:
+        if (style.hasFontSizeAdjust())
+            return cssValuePool().createValue(style.fontSizeAdjust(), CSSPrimitiveValue::CSS_NUMBER);
+        return cssValuePool().createIdentifierValue(CSSValueNone);
     case CSSPropertyFontStretch:
         return valueForFontStretch(style);
     case CSSPropertyFontStyle:

@@ -1884,3 +1884,9 @@ crbug.com/462404 fast/js/mozilla/strict/function-name-arity.html [ Pass Failure 
 
 crbug.com/463796 [ Mac ] fast/inline-block/003.html [ Failure ]
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
+
+# These need a rebaseline after crbug.com/451346
+crbug.com/451346 [ Win Android ] fast/text/font-size-adjust.html [ NeedsRebaseline ]
+crbug.com/451346 [ Win Linux Android ] tables/mozilla/bugs/bug2886-2.html [ NeedsRebaseline ]
+crbug.com/451346 [ Win ] virtual/antialiasedtext/fast/text/font-size-adjust.html [ NeedsRebaseline ]
+crbug.com/451346 [ Win ] virtual/slimmingpaint/fast/text/font-size-adjust.html [ NeedsRebaseline ]
