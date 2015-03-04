@@ -350,127 +350,159 @@ void VisibleSelection::setBaseAndExtentToDeepEquivalents()
         m_baseIsFirst = comparePositions(m_base, m_extent) <= 0;
 }
 
-void VisibleSelection::setStartAndEndFromBaseAndExtentRespectingGranularity(TextGranularity granularity)
+void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity)
 {
-    if (m_baseIsFirst) {
-        m_start = m_base;
-        m_end = m_extent;
-    } else {
-        m_start = m_extent;
-        m_end = m_base;
-    }
+    m_start = m_baseIsFirst ? m_base : m_extent;
 
     switch (granularity) {
-        case CharacterGranularity:
-            // Don't do any expansion.
-            break;
-        case WordGranularity: {
-            // General case: Select the word the caret is positioned inside of, or at the start of (RightWordIfOnBoundary).
-            // Edge case: If the caret is after the last word in a soft-wrapped line or the last word in
-            // the document, select that last word (LeftWordIfOnBoundary).
-            // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
-            // last word to the line break (also RightWordIfOnBoundary);
-            VisiblePosition start = VisiblePosition(m_start, m_affinity);
-            VisiblePosition originalEnd(m_end, m_affinity);
-            EWordSide side = RightWordIfOnBoundary;
-            if (isEndOfEditableOrNonEditableContent(start) || (isEndOfLine(start) && !isStartOfLine(start) && !isEndOfParagraph(start)))
-                side = LeftWordIfOnBoundary;
-            m_start = startOfWord(start, side).deepEquivalent();
-            side = RightWordIfOnBoundary;
-            if (isEndOfEditableOrNonEditableContent(originalEnd) || (isEndOfLine(originalEnd) && !isStartOfLine(originalEnd) && !isEndOfParagraph(originalEnd)))
-                side = LeftWordIfOnBoundary;
-
-            VisiblePosition wordEnd(endOfWord(originalEnd, side));
-            VisiblePosition end(wordEnd);
-
-            if (isEndOfParagraph(originalEnd) && !isEmptyTableCell(m_start.deprecatedNode())) {
-                // Select the paragraph break (the space from the end of a paragraph to the start of
-                // the next one) to match TextEdit.
-                end = wordEnd.next();
-
-                if (Element* table = isFirstPositionAfterTable(end)) {
-                    // The paragraph break after the last paragraph in the last cell of a block table ends
-                    // at the start of the paragraph after the table.
-                    if (isBlock(table))
-                        end = end.next(CannotCrossEditingBoundary);
-                    else
-                        end = wordEnd;
-                }
-
-                if (end.isNull())
-                    end = wordEnd;
-
-            }
-
-            m_end = end.deepEquivalent();
-            break;
-        }
-        case SentenceGranularity: {
-            m_start = startOfSentence(VisiblePosition(m_start, m_affinity)).deepEquivalent();
-            m_end = endOfSentence(VisiblePosition(m_end, m_affinity)).deepEquivalent();
-            break;
-        }
-        case LineGranularity: {
-            m_start = startOfLine(VisiblePosition(m_start, m_affinity)).deepEquivalent();
-            VisiblePosition end = endOfLine(VisiblePosition(m_end, m_affinity));
-            // If the end of this line is at the end of a paragraph, include the space
-            // after the end of the line in the selection.
-            if (isEndOfParagraph(end)) {
-                VisiblePosition next = end.next();
-                if (next.isNotNull())
-                    end = next;
-            }
-            m_end = end.deepEquivalent();
-            break;
-        }
-        case LineBoundary:
-            m_start = startOfLine(VisiblePosition(m_start, m_affinity)).deepEquivalent();
-            m_end = endOfLine(VisiblePosition(m_end, m_affinity)).deepEquivalent();
-            break;
-        case ParagraphGranularity: {
-            VisiblePosition pos(m_start, m_affinity);
-            if (isStartOfLine(pos) && isEndOfEditableOrNonEditableContent(pos))
-                pos = pos.previous();
-            m_start = startOfParagraph(pos).deepEquivalent();
-            VisiblePosition visibleParagraphEnd = endOfParagraph(VisiblePosition(m_end, m_affinity));
-
-            // Include the "paragraph break" (the space from the end of this paragraph to the start
-            // of the next one) in the selection.
-            VisiblePosition end(visibleParagraphEnd.next());
-
-            if (Element* table = isFirstPositionAfterTable(end)) {
-                // The paragraph break after the last paragraph in the last cell of a block table ends
-                // at the start of the paragraph after the table, not at the position just after the table.
-                if (isBlock(table))
-                    end = end.next(CannotCrossEditingBoundary);
-                // There is no parargraph break after the last paragraph in the last cell of an inline table.
-                else
-                    end = visibleParagraphEnd;
-            }
-
-            if (end.isNull())
-                end = visibleParagraphEnd;
-
-            m_end = end.deepEquivalent();
-            break;
-        }
-        case DocumentBoundary:
-            m_start = startOfDocument(VisiblePosition(m_start, m_affinity)).deepEquivalent();
-            m_end = endOfDocument(VisiblePosition(m_end, m_affinity)).deepEquivalent();
-            break;
-        case ParagraphBoundary:
-            m_start = startOfParagraph(VisiblePosition(m_start, m_affinity)).deepEquivalent();
-            m_end = endOfParagraph(VisiblePosition(m_end, m_affinity)).deepEquivalent();
-            break;
-        case SentenceBoundary:
-            m_start = startOfSentence(VisiblePosition(m_start, m_affinity)).deepEquivalent();
-            m_end = endOfSentence(VisiblePosition(m_end, m_affinity)).deepEquivalent();
-            break;
+    case CharacterGranularity:
+        // Don't do any expansion.
+        break;
+    case WordGranularity: {
+        // General case: Select the word the caret is positioned inside of, or at the start of (RightWordIfOnBoundary).
+        // Edge case: If the caret is after the last word in a soft-wrapped line or the last word in
+        // the document, select that last word (LeftWordIfOnBoundary).
+        // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
+        // last word to the line break (also RightWordIfOnBoundary);
+        VisiblePosition visibleStart = VisiblePosition(m_start, m_affinity);
+        EWordSide side = RightWordIfOnBoundary;
+        if (isEndOfEditableOrNonEditableContent(visibleStart) || (isEndOfLine(visibleStart) && !isStartOfLine(visibleStart) && !isEndOfParagraph(visibleStart)))
+            side = LeftWordIfOnBoundary;
+        m_start = startOfWord(visibleStart, side).deepEquivalent();
+        break;
+    }
+    case SentenceGranularity: {
+        m_start = startOfSentence(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        break;
+    }
+    case LineGranularity: {
+        m_start = startOfLine(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        break;
+    }
+    case LineBoundary:
+        m_start = startOfLine(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        break;
+    case ParagraphGranularity: {
+        VisiblePosition pos(m_start, m_affinity);
+        if (isStartOfLine(pos) && isEndOfEditableOrNonEditableContent(pos))
+            pos = pos.previous();
+        m_start = startOfParagraph(pos).deepEquivalent();
+        break;
+    }
+    case DocumentBoundary:
+        m_start = startOfDocument(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        break;
+    case ParagraphBoundary:
+        m_start = startOfParagraph(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        break;
+    case SentenceBoundary:
+        m_start = startOfSentence(VisiblePosition(m_start, m_affinity)).deepEquivalent();
+        break;
     }
 
     // Make sure we do not have a dangling start or end.
     if (m_start.isNull())
         m_start = m_end;
+}
+
+void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity)
+{
+    m_end = m_baseIsFirst ? m_extent : m_base;
+
+    switch (granularity) {
+    case CharacterGranularity:
+        // Don't do any expansion.
+        break;
+    case WordGranularity: {
+        // General case: Select the word the caret is positioned inside of, or at the start of (RightWordIfOnBoundary).
+        // Edge case: If the caret is after the last word in a soft-wrapped line or the last word in
+        // the document, select that last word (LeftWordIfOnBoundary).
+        // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
+        // last word to the line break (also RightWordIfOnBoundary);
+        VisiblePosition originalEnd(m_end, m_affinity);
+        EWordSide side = RightWordIfOnBoundary;
+        if (isEndOfEditableOrNonEditableContent(originalEnd) || (isEndOfLine(originalEnd) && !isStartOfLine(originalEnd) && !isEndOfParagraph(originalEnd)))
+            side = LeftWordIfOnBoundary;
+
+        VisiblePosition wordEnd(endOfWord(originalEnd, side));
+        VisiblePosition end(wordEnd);
+
+        if (isEndOfParagraph(originalEnd) && !isEmptyTableCell(m_start.deprecatedNode())) {
+            // Select the paragraph break (the space from the end of a paragraph to the start of
+            // the next one) to match TextEdit.
+            end = wordEnd.next();
+
+            if (Element* table = isFirstPositionAfterTable(end)) {
+                // The paragraph break after the last paragraph in the last cell of a block table ends
+                // at the start of the paragraph after the table.
+                if (isBlock(table))
+                    end = end.next(CannotCrossEditingBoundary);
+                else
+                    end = wordEnd;
+            }
+
+            if (end.isNull())
+                end = wordEnd;
+
+        }
+
+        m_end = end.deepEquivalent();
+        break;
+    }
+    case SentenceGranularity: {
+        m_end = endOfSentence(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        break;
+    }
+    case LineGranularity: {
+        VisiblePosition end = endOfLine(VisiblePosition(m_end, m_affinity));
+        // If the end of this line is at the end of a paragraph, include the space
+        // after the end of the line in the selection.
+        if (isEndOfParagraph(end)) {
+            VisiblePosition next = end.next();
+            if (next.isNotNull())
+                end = next;
+        }
+        m_end = end.deepEquivalent();
+        break;
+    }
+    case LineBoundary:
+        m_end = endOfLine(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        break;
+    case ParagraphGranularity: {
+        VisiblePosition visibleParagraphEnd = endOfParagraph(VisiblePosition(m_end, m_affinity));
+
+        // Include the "paragraph break" (the space from the end of this paragraph to the start
+        // of the next one) in the selection.
+        VisiblePosition end(visibleParagraphEnd.next());
+
+        if (Element* table = isFirstPositionAfterTable(end)) {
+            // The paragraph break after the last paragraph in the last cell of a block table ends
+            // at the start of the paragraph after the table, not at the position just after the table.
+            if (isBlock(table))
+                end = end.next(CannotCrossEditingBoundary);
+            // There is no parargraph break after the last paragraph in the last cell of an inline table.
+            else
+                end = visibleParagraphEnd;
+        }
+
+        if (end.isNull())
+            end = visibleParagraphEnd;
+
+        m_end = end.deepEquivalent();
+        break;
+    }
+    case DocumentBoundary:
+        m_end = endOfDocument(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        break;
+    case ParagraphBoundary:
+        m_end = endOfParagraph(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        break;
+    case SentenceBoundary:
+        m_end = endOfSentence(VisiblePosition(m_end, m_affinity)).deepEquivalent();
+        break;
+    }
+
+    // Make sure we do not have a dangling start or end.
     if (m_end.isNull())
         m_end = m_start;
 }
@@ -498,7 +530,8 @@ void VisibleSelection::updateSelectionType()
 void VisibleSelection::validate(TextGranularity granularity)
 {
     setBaseAndExtentToDeepEquivalents();
-    setStartAndEndFromBaseAndExtentRespectingGranularity(granularity);
+    setStartRespectingGranularity(granularity);
+    setEndRespectingGranularity(granularity);
     adjustSelectionToAvoidCrossingShadowBoundaries();
     adjustSelectionToAvoidCrossingEditingBoundaries();
     updateSelectionType();

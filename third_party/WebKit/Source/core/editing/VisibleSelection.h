@@ -145,12 +145,14 @@ public:
     void showTreeForThis() const;
 #endif
 
+    void setStartRespectingGranularity(TextGranularity);
+    void setEndRespectingGranularity(TextGranularity);
+
 private:
     void validate(TextGranularity = CharacterGranularity);
 
     // Support methods for validate()
     void setBaseAndExtentToDeepEquivalents();
-    void setStartAndEndFromBaseAndExtentRespectingGranularity(TextGranularity);
     void adjustSelectionToAvoidCrossingShadowBoundaries();
     void adjustSelectionToAvoidCrossingEditingBoundaries();
     void updateSelectionType();
