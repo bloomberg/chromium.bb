@@ -10,9 +10,9 @@
 #include <sys/stat.h>
 
 #include "native_client/src/include/build_config.h"
-#include "native_client/src/public/desc_metadata_types.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/trusted/desc/desc_metadata_types.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"

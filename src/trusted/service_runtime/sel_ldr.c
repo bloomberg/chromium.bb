@@ -15,7 +15,6 @@
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_macros.h"
 
-#include "native_client/src/public/desc_metadata_types.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/secure_service.h"
 

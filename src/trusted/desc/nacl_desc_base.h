@@ -19,8 +19,6 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
-#include "native_client/src/public/desc_metadata_types.h"
-
 /* For NaClHandle */
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
@@ -28,6 +26,7 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 
+#include "native_client/src/trusted/desc/desc_metadata_types.h"
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
 
 EXTERN_C_BEGIN

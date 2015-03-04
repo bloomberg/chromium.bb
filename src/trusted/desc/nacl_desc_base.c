@@ -18,12 +18,11 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
 
-#include "native_client/src/public/desc_metadata_types.h"
-
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
+#include "native_client/src/trusted/desc/desc_metadata_types.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
