@@ -43,6 +43,7 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
+int current;
 int connectors;
 int full_props;
 int edid;
@@ -272,7 +273,7 @@ static int printRes(int fd, drmModeResPtr res)
 
 	if (connectors) {
 		for (i = 0; i < res->count_connectors; i++) {
-			connector = drmModeGetConnector(fd, res->connectors[i]);
+			connector = (current ? drmModeGetConnectorCurrent : drmModeGetConnector) (fd, res->connectors[i]);
 
 			if (!connector)
 				printf("Could not get connector %i\n", res->connectors[i]);
@@ -331,6 +332,7 @@ static int printRes(int fd, drmModeResPtr res)
 
 static void args(int argc, char **argv)
 {
+	int defaults = 1;
 	int i;
 
 	fbs = 0;
@@ -341,32 +343,41 @@ static void args(int argc, char **argv)
 	full_modes = 0;
 	full_props = 0;
 	connectors = 0;
+	current = 0;
 
 	module_name = argv[1];
 
 	for (i = 2; i < argc; i++) {
 		if (strcmp(argv[i], "-fb") == 0) {
 			fbs = 1;
+			defaults = 0;
 		} else if (strcmp(argv[i], "-crtcs") == 0) {
 			crtcs = 1;
+			defaults = 0;
 		} else if (strcmp(argv[i], "-cons") == 0) {
 			connectors = 1;
 			modes = 1;
+			defaults = 0;
 		} else if (strcmp(argv[i], "-modes") == 0) {
 			connectors = 1;
 			modes = 1;
+			defaults = 0;
 		} else if (strcmp(argv[i], "-full") == 0) {
 			connectors = 1;
 			modes = 1;
 			full_modes = 1;
+			defaults = 0;
 		} else if (strcmp(argv[i], "-props") == 0) {
 			connectors = 1;
 			full_props = 1;
+			defaults = 0;
 		} else if (strcmp(argv[i], "-edids") == 0) {
 			connectors = 1;
 			edid = 1;
+			defaults = 0;
 		} else if (strcmp(argv[i], "-encoders") == 0) {
 			encoders = 1;
+			defaults = 0;
 		} else if (strcmp(argv[i], "-v") == 0) {
 			fbs = 1;
 			edid = 1;
@@ -376,10 +387,13 @@ static void args(int argc, char **argv)
 			full_modes = 1;
 			full_props = 1;
 			connectors = 1;
+			defaults = 0;
+		} else if (strcmp(argv[i], "-current") == 0) {
+			current = 1;
 		}
 	}
 
-	if (argc == 2) {
+	if (defaults) {
 		fbs = 1;
 		edid = 1;
 		crtcs = 1;

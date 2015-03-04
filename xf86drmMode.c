@@ -476,19 +476,23 @@ drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
 /*
  * Connector manipulation
  */
-
-drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
+static drmModeConnectorPtr
+_drmModeGetConnector(int fd, uint32_t connector_id, int probe)
 {
 	struct drm_mode_get_connector conn, counts;
 	drmModeConnectorPtr r = NULL;
 
-retry:
 	memclear(conn);
 	conn.connector_id = connector_id;
+	if (!probe) {
+		conn.count_modes = 1;
+		conn.modes_ptr = VOID2U64(drmMalloc(sizeof(struct drm_mode_modeinfo)));
+	}
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn))
 		return 0;
 
+retry:
 	counts = conn;
 
 	if (conn.count_props) {
@@ -504,6 +508,9 @@ retry:
 		conn.modes_ptr = VOID2U64(drmMalloc(conn.count_modes*sizeof(struct drm_mode_modeinfo)));
 		if (!conn.modes_ptr)
 			goto err_allocs;
+	} else {
+		conn.count_modes = 1;
+		conn.modes_ptr = VOID2U64(drmMalloc(sizeof(struct drm_mode_modeinfo)));
 	}
 
 	if (conn.count_encoders) {
@@ -570,6 +577,16 @@ err_allocs:
 	drmFree(U642VOID(conn.encoders_ptr));
 
 	return r;
+}
+
+drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
+{
+	return _drmModeGetConnector(fd, connector_id, 1);
+}
+
+drmModeConnectorPtr drmModeGetConnectorCurrent(int fd, uint32_t connector_id)
+{
+	return _drmModeGetConnector(fd, connector_id, 0);
 }
 
 int drmModeAttachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_info)

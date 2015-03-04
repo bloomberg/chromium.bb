@@ -422,10 +422,23 @@ drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id);
  */
 
 /**
- * Retrive information about the connector connectorId.
+ * Retrieve all information about the connector connectorId. This will do a
+ * forced probe on the connector to retrieve remote information such as EDIDs
+ * from the display device.
  */
 extern drmModeConnectorPtr drmModeGetConnector(int fd,
-		uint32_t connectorId);
+					       uint32_t connectorId);
+
+/**
+ * Retrieve current information, i.e the currently active mode and encoder,
+ * about the connector connectorId. This will not do any probing on the
+ * connector or remote device, and only reports what is currently known.
+ * For the complete set of modes and encoders associated with the connector
+ * use drmModeGetConnector() which will do a probe to determine any display
+ * link changes first.
+ */
+extern drmModeConnectorPtr drmModeGetConnectorCurrent(int fd,
+						      uint32_t connector_id);
 
 /**
  * Attaches the given mode to an connector.
