@@ -22,7 +22,7 @@ class _GPUTimes(benchmark.Benchmark):
         overhead_level=cat_filter)
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value):
+  def ValueCanBeAddedPredicate(cls, value, _):
     return (isinstance(value, gpu_timeline.GPUTimelineListOfValues) or
             isinstance(value, gpu_timeline.GPUTimelineValue))
 

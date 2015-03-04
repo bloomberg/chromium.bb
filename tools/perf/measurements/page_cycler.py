@@ -61,8 +61,6 @@ class PageCycler(page_test.PageTest):
           (int(pageset_repeat) - 1) * (100 - cold_load_percent) / 100)
       number_warm_runs = number_warm_pageset_runs * page_repeat
       self._cold_run_start_index = number_warm_runs + page_repeat
-      self._discard_first_result = (not cold_load_percent or
-                                    self._discard_first_result)
     else:
       self._cold_run_start_index = pageset_repeat * page_repeat
 

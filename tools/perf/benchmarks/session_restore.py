@@ -23,6 +23,7 @@ class _SessionRestoreTypical25(benchmark.Benchmark):
   TODO(slamm): Make SmallProfileCreator and this use the same page_set ref.
   """
   page_set = page_sets.Typical25PageSet
+  tag = None  # override with 'warm' or 'cold'
 
   @classmethod
   def Name(cls):
@@ -47,6 +48,10 @@ class _SessionRestoreTypical25(benchmark.Benchmark):
         profile_generator.GenerateProfiles(
             small_profile_creator.SmallProfileCreator, profile_type, new_args)
       args.browser_options.profile_dir = profile_dir
+
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, _, is_first_result):
+    return cls.tag == 'cold' or not is_first_result
 
   def CreateUserStorySet(self, _):
     """Return a user story set that only has the first user story.

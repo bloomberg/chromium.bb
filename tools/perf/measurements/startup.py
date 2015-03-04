@@ -24,9 +24,6 @@ class Startup(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
     if self._cold:
       options.clear_sytem_cache_for_browser_and_profile_on_start = True
-    else:
-      self.discard_first_result = True
-
     options.AppendExtraBrowserArgs([
         '--enable-stats-collection-bindings'
     ])

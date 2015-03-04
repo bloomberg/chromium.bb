@@ -9,6 +9,7 @@ from telemetry import benchmark
 
 class _PageCycler(benchmark.Benchmark):
   options = {'pageset_repeat': 6}
+  cold_load_percent = 50  # % of page visits for which a cold load is forced
 
   @classmethod
   def Name(cls):
@@ -20,14 +21,15 @@ class _PageCycler(benchmark.Benchmark):
         action='store_true',
         help='Enable the speed index metric.')
 
-    parser.add_option('--cold-load-percent', type='int', default=50,
-                      help='%d of page visits for which a cold load is forced')
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, _, is_first_result):
+    return cls.cold_load_percent > 0 or not is_first_result
 
   def CreatePageTest(self, options):
     return page_cycler.PageCycler(
         page_repeat = options.page_repeat,
         pageset_repeat = options.pageset_repeat,
-        cold_load_percent = options.cold_load_percent,
+        cold_load_percent = self.cold_load_percent,
         report_speed_index = options.report_speed_index)
 
 
@@ -139,10 +141,10 @@ class PageCyclerNetsimTop10(_PageCycler):
   tag = 'netsim'
   page_set = page_sets.Top10PageSet
   options = {
-      'cold_load_percent': 100,
       'extra_wpr_args_as_string': '--shaping_type=proxy --net=cable',
       'pageset_repeat': 6,
   }
+  cold_load_percent = 100
 
   @classmethod
   def Name(cls):
@@ -152,7 +154,7 @@ class PageCyclerNetsimTop10(_PageCycler):
     return page_cycler.PageCycler(
         page_repeat = options.page_repeat,
         pageset_repeat = options.pageset_repeat,
-        cold_load_percent = options.cold_load_percent,
+        cold_load_percent = self.cold_load_percent,
         report_speed_index = options.report_speed_index,
         clear_cache_before_each_run = True)
 

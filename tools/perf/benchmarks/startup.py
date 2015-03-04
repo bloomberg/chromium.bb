@@ -27,6 +27,10 @@ class _StartupWarm(benchmark.Benchmark):
   def Name(cls):
     return 'startup'
 
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, _, is_first_result):
+    return not is_first_result
+
   def CreatePageTest(self, options):
     return startup.Startup(cold=False)
 
