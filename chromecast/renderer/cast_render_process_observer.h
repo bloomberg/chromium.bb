@@ -16,6 +16,7 @@ class MessageFilter;
 }
 
 namespace chromecast {
+class CapabilitiesMessageFilter;
 namespace media {
 class CmaMessageFilterProxy;
 }
@@ -38,6 +39,7 @@ class CastRenderProcessObserver : public content::RenderProcessObserver {
 #if !defined(OS_ANDROID)
   scoped_refptr<media::CmaMessageFilterProxy> cma_message_filter_proxy_;
 #endif  // !defined(OS_ANDROID)
+  scoped_refptr<CapabilitiesMessageFilter> capabilities_message_filter_;
   std::vector<scoped_refptr<IPC::MessageFilter>> platform_message_filters_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRenderProcessObserver);

@@ -7,6 +7,18 @@
 
 namespace media {
 
+enum HdmiSinkCodec {
+  kSinkCodecAc3 = 1,
+  kSinkCodecDts = 1 << 1,
+  kSinkCodecDtsHd = 1 << 2,
+  kSinkCodecEac3 = 1 << 3,
+  kSinkCodecPcmSurroundSound = 1 << 4,
+};
+
+// Records the known supported codecs for the current HDMI sink, as a bit mask
+// of HdmiSinkCodec values.
+void SetHdmiSinkCodecs(int codecs_mask);
+
 bool HdmiSinkSupportsAC3();
 bool HdmiSinkSupportsDTS();
 bool HdmiSinkSupportsDTSHD();

@@ -227,6 +227,9 @@
         'common/cast_resource_delegate.h',
         'common/chromecast_switches.cc',
         'common/chromecast_switches.h',
+        'common/media/cast_messages.h',
+        'common/media/cast_message_generator.cc',
+        'common/media/cast_message_generator.h',
         'common/platform_client_auth.h',
         'common/pref_names.cc',
         'common/pref_names.h',
@@ -238,6 +241,8 @@
         'renderer/cast_render_process_observer.h',
         'renderer/key_systems_cast.cc',
         'renderer/key_systems_cast.h',
+        'renderer/media/capabilities_message_filter.cc',
+        'renderer/media/capabilities_message_filter.h',
       ],
       'conditions': [
         ['chromecast_branding=="Chrome"', {

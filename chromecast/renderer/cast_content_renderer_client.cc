@@ -8,8 +8,10 @@
 
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromecast/common/chromecast_switches.h"
 #include "chromecast/crash/cast_crash_keys.h"
+#include "chromecast/media/base/media_caps.h"
 #include "chromecast/renderer/cast_media_load_deferrer.h"
 #include "chromecast/renderer/cast_render_process_observer.h"
 #include "chromecast/renderer/key_systems_cast.h"
@@ -106,6 +108,16 @@ void CastContentRendererClient::RenderThreadStarted() {
 #if defined(ARCH_CPU_ARM_FAMILY) && !defined(OS_ANDROID)
   PlatformPollFreemem();
 #endif
+
+  // Set the initial known codecs mask.
+  if (command_line->HasSwitch(switches::kHdmiSinkSupportedCodecs)) {
+    int hdmi_codecs_mask;
+    if (base::StringToInt(command_line->GetSwitchValueASCII(
+                              switches::kHdmiSinkSupportedCodecs),
+                          &hdmi_codecs_mask)) {
+      ::media::SetHdmiSinkCodecs(hdmi_codecs_mask);
+    }
+  }
 
   cast_observer_.reset(
       new CastRenderProcessObserver(PlatformGetRendererMessageFilters()));

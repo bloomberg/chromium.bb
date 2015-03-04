@@ -9,7 +9,9 @@
 
 namespace switches {
 
+// Media switches
 extern const char kEnableCmaMediaPipeline[];
+extern const char kHdmiSinkSupportedCodecs[];
 
 #if defined(OS_ANDROID)
 // Content-implementation switches
