@@ -61,6 +61,7 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   class SensorEventSink;
   class SensorEventSinkMotion;
   class SensorEventSinkOrientation;
+  class SensorEventSinkLight;
 
   virtual FetcherType GetType() const override;
 
@@ -72,6 +73,7 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   base::win::ScopedComPtr<ISensor> sensor_inclinometer_;
   base::win::ScopedComPtr<ISensor> sensor_accelerometer_;
   base::win::ScopedComPtr<ISensor> sensor_gyrometer_;
+  base::win::ScopedComPtr<ISensor> sensor_light_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherSharedMemory);
