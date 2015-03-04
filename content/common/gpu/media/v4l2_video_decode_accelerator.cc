@@ -21,6 +21,7 @@
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "media/base/media_switches.h"
 #include "media/filters/h264_parser.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/scoped_binders.h"
 
 #define NOTIFY_ERROR(x)                        \
@@ -339,7 +340,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
   // thread is waiting on pictures_assigned_.
   DCHECK(free_output_buffers_.empty());
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
-    DCHECK(buffers[i].size() == frame_buffer_size_);
+    DCHECK(buffers[i].size() == coded_size_);
 
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK(!output_record.at_device);
@@ -352,7 +353,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
     EGLImageKHR egl_image = device_->CreateEGLImage(egl_display_,
                                                     egl_context_,
                                                     buffers[i].texture_id(),
-                                                    frame_buffer_size_,
+                                                    coded_size_,
                                                     i,
                                                     output_format_fourcc_,
                                                     output_planes_count_);
@@ -729,8 +730,9 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(
 
   // Check and see if we have format info yet.
   struct v4l2_format format;
+  gfx::Size visible_size;
   bool again = false;
-  if (!GetFormatInfo(&format, &again))
+  if (!GetFormatInfo(&format, &visible_size, &again))
     return false;
 
   if (again) {
@@ -743,7 +745,7 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(
   if (decoder_state_ == kInitialized) {
     DVLOG(3) << "DecodeBufferInitial(): running initialization";
     // Success! Setup our parameters.
-    if (!CreateBuffersForFormat(format))
+    if (!CreateBuffersForFormat(format, visible_size))
       return false;
 
     // We expect to process the initial buffer once during stream init to
@@ -1085,7 +1087,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
                << " as picture_id=" << output_record.picture_id;
       const media::Picture& picture =
           media::Picture(output_record.picture_id, dqbuf.timestamp.tv_sec,
-                         gfx::Rect(frame_buffer_size_), false);
+                         gfx::Rect(visible_size_), false);
       pending_picture_ready_.push(
           PictureRecord(output_record.cleared, picture));
       SendPictureReady();
@@ -1533,14 +1535,15 @@ void V4L2VideoDecodeAccelerator::FinishResolutionChange() {
 
   struct v4l2_format format;
   bool again;
-  bool ret = GetFormatInfo(&format, &again);
+  gfx::Size visible_size;
+  bool ret = GetFormatInfo(&format, &visible_size, &again);
   if (!ret || again) {
     LOG(ERROR) << "Couldn't get format information after resolution change";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
 
-  if (!CreateBuffersForFormat(format)) {
+  if (!CreateBuffersForFormat(format, visible_size)) {
     LOG(ERROR) << "Couldn't reallocate buffers after resolution change";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
@@ -1615,7 +1618,8 @@ void V4L2VideoDecodeAccelerator::SetErrorState(Error error) {
 }
 
 bool V4L2VideoDecodeAccelerator::GetFormatInfo(struct v4l2_format* format,
-                                                 bool* again) {
+                                               gfx::Size* visible_size,
+                                               bool* again) {
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   *again = false;
@@ -1639,22 +1643,64 @@ bool V4L2VideoDecodeAccelerator::GetFormatInfo(struct v4l2_format* format,
     return false;
   }
 
+  gfx::Size coded_size(format->fmt.pix_mp.width, format->fmt.pix_mp.height);
+  if (visible_size != nullptr)
+    *visible_size = GetVisibleSize(coded_size);
+
   return true;
 }
 
 bool V4L2VideoDecodeAccelerator::CreateBuffersForFormat(
-    const struct v4l2_format& format) {
+    const struct v4l2_format& format,
+    const gfx::Size& visible_size) {
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   output_planes_count_ = format.fmt.pix_mp.num_planes;
-  frame_buffer_size_.SetSize(
-      format.fmt.pix_mp.width, format.fmt.pix_mp.height);
+  coded_size_.SetSize(format.fmt.pix_mp.width, format.fmt.pix_mp.height);
+  visible_size_ = visible_size;
   DVLOG(3) << "CreateBuffersForFormat(): new resolution: "
-           << frame_buffer_size_.ToString();
+           << coded_size_.ToString() << ", visible size: "
+           << visible_size_.ToString();
 
   if (!CreateOutputBuffers())
     return false;
 
   return true;
+}
+
+gfx::Size V4L2VideoDecodeAccelerator::GetVisibleSize(
+    const gfx::Size& coded_size) {
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
+
+  struct v4l2_crop crop_arg;
+  memset(&crop_arg, 0, sizeof(crop_arg));
+  crop_arg.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+
+  if (device_->Ioctl(VIDIOC_G_CROP, &crop_arg) != 0) {
+    PLOG(ERROR) << "GetVisibleSize(): ioctl() VIDIOC_G_CROP failed";
+    return coded_size;
+  }
+
+  gfx::Rect rect(crop_arg.c.left, crop_arg.c.top, crop_arg.c.width,
+                 crop_arg.c.height);
+  DVLOG(3) << "visible rectangle is " << rect.ToString();
+  if (!gfx::Rect(coded_size).Contains(rect)) {
+    DLOG(ERROR) << "visible rectangle " << rect.ToString()
+                << " is not inside coded size " << coded_size.ToString();
+    return coded_size;
+  }
+  if (rect.IsEmpty()) {
+    DLOG(ERROR) << "visible size is empty";
+    return coded_size;
+  }
+
+  // Chrome assume picture frame is coded at (0, 0).
+  if (!rect.origin().IsOrigin()) {
+    DLOG(ERROR) << "Unexpected visible rectangle " << rect.ToString()
+                << ", top-left is not origin";
+    return coded_size;
+  }
+
+  return rect.size();
 }
 
 bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
@@ -1786,13 +1832,12 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
 
   DVLOG(3) << "CreateOutputBuffers(): ProvidePictureBuffers(): "
            << "buffer_count=" << output_buffer_map_.size()
-           << ", width=" << frame_buffer_size_.width()
-           << ", height=" << frame_buffer_size_.height();
+           << ", coded_size=" << coded_size_.ToString();
   child_message_loop_proxy_->PostTask(FROM_HERE,
                                       base::Bind(&Client::ProvidePictureBuffers,
                                                  client_,
                                                  output_buffer_map_.size(),
-                                                 frame_buffer_size_,
+                                                 coded_size_,
                                                  device_->GetTextureTarget()));
 
   // Wait for the client to call AssignPictureBuffers() on the Child thread.
@@ -1966,14 +2011,14 @@ bool V4L2VideoDecodeAccelerator::IsResolutionChangeNecessary() {
   }
   struct v4l2_format format;
   bool again = false;
-  bool ret = GetFormatInfo(&format, &again);
+  bool ret = GetFormatInfo(&format, nullptr, &again);
   if (!ret || again) {
     DVLOG(3) << "IsResolutionChangeNecessary(): GetFormatInfo() failed";
     return false;
   }
-  gfx::Size new_size(base::checked_cast<int>(format.fmt.pix_mp.width),
-                     base::checked_cast<int>(format.fmt.pix_mp.height));
-  if (frame_buffer_size_ != new_size) {
+  gfx::Size new_coded_size(base::checked_cast<int>(format.fmt.pix_mp.width),
+                           base::checked_cast<int>(format.fmt.pix_mp.height));
+  if (coded_size_ != new_coded_size) {
     DVLOG(3) << "IsResolutionChangeNecessary(): Resolution change detected";
     return true;
   }
