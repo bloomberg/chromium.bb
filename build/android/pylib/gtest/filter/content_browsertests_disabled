@@ -25,6 +25,9 @@ BrowserPluginHostTest.*
 BrowserPluginTest.*
 PluginTest.*
 
+# http://crbug.com/463740
+CrossPlatformAccessibilityBrowserTest.SelectedEditableTextAccessibility
+
 # http://crbug.com/297230
 DumpAccessibilityTreeTest.AccessibilityAriaLevel
 DumpAccessibilityTreeTest.AccessibilityAriaProgressbar
