@@ -34,8 +34,8 @@ scoped_ptr<VideoEncoder> VideoEncoder::Create(
   }
 #endif  // defined(OS_MACOSX)
 
-  // If the system provides a hardware-accelerated encoder, use it.
 #if !defined(OS_IOS)
+  // If the system provides a hardware-accelerated encoder, use it.
   if (ExternalVideoEncoder::IsSupported(video_config)) {
     return scoped_ptr<VideoEncoder>(new SizeAdaptableExternalVideoEncoder(
         cast_environment,
@@ -44,7 +44,6 @@ scoped_ptr<VideoEncoder> VideoEncoder::Create(
         create_vea_cb,
         create_video_encode_memory_cb));
   }
-#endif  // !defined(OS_IOS)
 
   // Attempt to use the software encoder implementation.
   if (VideoEncoderImpl::IsSupported(video_config)) {
@@ -53,6 +52,7 @@ scoped_ptr<VideoEncoder> VideoEncoder::Create(
         video_config,
         status_change_cb));
   }
+#endif  // !defined(OS_IOS)
 
   // No encoder implementation will suffice.
   return nullptr;
