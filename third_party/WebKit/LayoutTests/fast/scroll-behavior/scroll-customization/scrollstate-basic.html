@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ScrollState constructor behaves correctly</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+
+if (!window.internals || !window.internals.runtimeFlags.scrollCustomizationEnabled) {
+  console.log("These tests only work with window.internals exposed, " +
+              "and require scroll customization.");
+  done();
+}
+
+test(function() {
+  var scrollState = new ScrollState();
+  assert_equals(scrollState.deltaX, 0);
+  assert_equals(scrollState.deltaY, 0);
+  assert_equals(scrollState.deltaGranularity, 0);
+  assert_equals(scrollState.velocityX, 0);
+  assert_equals(scrollState.velocityY, 0);
+  assert_equals(scrollState.inInertialPhase, false);
+  assert_equals(scrollState.isEnding, false);
+  assert_equals(scrollState.fromUserInput, false);
+  assert_equals(scrollState.shouldPropagate, true);
+}, "Empty constructor behaves correctly.");
+
+test(function() {
+  var deltaX = 12.5;
+  var deltaY = 14.9;
+  var deltaGranularity = 148.3;
+  var velocityX = 23.7;
+  var velocityY = 2.5;
+  var inInertialPhase = true;
+  var isEnding = true;
+  var scrollState = new ScrollState(deltaX, deltaY, deltaGranularity, velocityX,
+                                  velocityY, inInertialPhase, isEnding);
+  assert_equals(scrollState.deltaX, deltaX);
+  assert_equals(scrollState.deltaY, deltaY);
+  assert_equals(scrollState.deltaGranularity, deltaGranularity);
+  assert_equals(scrollState.velocityX, velocityX);
+  assert_equals(scrollState.velocityY, velocityY);
+  assert_equals(scrollState.inInertialPhase, inInertialPhase);
+  assert_equals(scrollState.isEnding, isEnding);
+  assert_equals(scrollState.fromUserInput, false);
+  assert_equals(scrollState.shouldPropagate, true);
+}, "Constructor behaves correctly.");
+
+test(function() {
+  var scrollState = new ScrollState();
+  scrollState.fromUserInput = true;
+  assert_equals(scrollState.fromUserInput, false);
+}, "fromUserInput is read only");
+</script>
+</body>
+</html>
