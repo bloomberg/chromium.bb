@@ -29,9 +29,9 @@ function test()
         InspectorTest.sendCommand("Worker.sendMessageToWorker",
             {
                 "workerId": workerId,
-                "message": { "method": method,
-                             "params": params,
-                             "id": workerRequestId }
+                "message": JSON.stringify({ "method": method,
+                                            "params": params,
+                                            "id": workerRequestId })
             });
         return workerRequestId++;
     }
@@ -71,7 +71,7 @@ function test()
 
     InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
     {
-        var message = messageObject["params"]["message"];
+        var message = JSON.parse(messageObject["params"]["message"]);
         if (message["id"] === savedWorkerRequestId) {
             var value = message["result"]["result"]["value"];
             InspectorTest.log("Successfully evaluated, result: " + value);

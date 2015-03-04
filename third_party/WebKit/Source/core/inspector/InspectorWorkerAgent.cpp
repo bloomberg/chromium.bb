@@ -35,10 +35,8 @@
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/JSONParser.h"
 #include "core/inspector/PageConsoleAgent.h"
 #include "core/workers/WorkerInspectorProxy.h"
-#include "platform/JSONValues.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -54,7 +52,7 @@ static const char autoconnectToWorkers[] = "autoconnectToWorkers";
 class InspectorWorkerAgent::WorkerAgentClient final : public WorkerInspectorProxy::PageInspector {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    WorkerAgentClient(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, int id, PageConsoleAgent* consoleAgent)
+    WorkerAgentClient(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
         : m_frontend(frontend)
         , m_proxy(proxy)
         , m_id(id)
@@ -68,7 +66,7 @@ public:
         disconnectFromWorker();
     }
 
-    int id() const { return m_id; }
+    String id() const { return m_id; }
     WorkerInspectorProxy* proxy() const { return m_proxy; }
 
     void connectToWorker()
@@ -91,13 +89,7 @@ private:
     // WorkerInspectorProxy::PageInspector implementation
     virtual void dispatchMessageFromWorker(const String& message) override
     {
-        RefPtr<JSONValue> value = parseJSON(message);
-        if (!value)
-            return;
-        RefPtr<JSONObject> messageObject = value->asObject();
-        if (!messageObject)
-            return;
-        m_frontend->dispatchMessageFromWorker(m_id, messageObject);
+        m_frontend->dispatchMessageFromWorker(m_id, message);
     }
     // WorkerInspectorProxy::PageInspector implementation
     virtual void workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy) override
@@ -107,7 +99,7 @@ private:
 
     InspectorFrontend::Worker* m_frontend;
     WorkerInspectorProxy* m_proxy;
-    int m_id;
+    String m_id;
     bool m_connected;
     PageConsoleAgent* m_consoleAgent;
 };
@@ -176,7 +168,7 @@ void InspectorWorkerAgent::canInspectWorkers(ErrorString*, bool* result)
     *result = true;
 }
 
-void InspectorWorkerAgent::connectToWorker(ErrorString* error, int workerId)
+void InspectorWorkerAgent::connectToWorker(ErrorString* error, const String& workerId)
 {
     WorkerAgentClient* client = m_idToClient.get(workerId);
     if (client)
@@ -185,7 +177,7 @@ void InspectorWorkerAgent::connectToWorker(ErrorString* error, int workerId)
         *error = "Worker is gone";
 }
 
-void InspectorWorkerAgent::disconnectFromWorker(ErrorString* error, int workerId)
+void InspectorWorkerAgent::disconnectFromWorker(ErrorString* error, const String& workerId)
 {
     WorkerAgentClient* client = m_idToClient.get(workerId);
     if (client)
@@ -194,11 +186,11 @@ void InspectorWorkerAgent::disconnectFromWorker(ErrorString* error, int workerId
         *error = "Worker is gone";
 }
 
-void InspectorWorkerAgent::sendMessageToWorker(ErrorString* error, int workerId, const RefPtr<JSONObject>& message)
+void InspectorWorkerAgent::sendMessageToWorker(ErrorString* error, const String& workerId, const String& message)
 {
     WorkerAgentClient* client = m_idToClient.get(workerId);
     if (client)
-        client->proxy()->sendMessageToInspector(message->toJSONString());
+        client->proxy()->sendMessageToInspector(message);
     else
         *error = "Worker is gone";
 }
@@ -224,7 +216,7 @@ bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
 
 void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorProxy, const KURL& url)
 {
-    int id = m_nextId++;
+    String id = "dedicated:" + String::number(m_nextId++);
     m_workerInfos.set(workerInspectorProxy, WorkerInfo(url.string(), id));
     if (m_frontend && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
         createWorkerAgentClient(workerInspectorProxy, url.string(), id);
@@ -260,7 +252,7 @@ void InspectorWorkerAgent::destroyWorkerAgentClients()
     m_idToClient.clear();
 }
 
-void InspectorWorkerAgent::createWorkerAgentClient(WorkerInspectorProxy* workerInspectorProxy, const String& url, int id)
+void InspectorWorkerAgent::createWorkerAgentClient(WorkerInspectorProxy* workerInspectorProxy, const String& url, const String& id)
 {
     WorkerAgentClient* client = new WorkerAgentClient(m_frontend, workerInspectorProxy, id, m_consoleAgent);
     m_idToClient.set(id, client);

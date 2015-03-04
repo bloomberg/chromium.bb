@@ -671,11 +671,11 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimeStampEvent::data(E
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTracingSessionIdForWorkerEvent::data(const String& sessionId, int workerId, WorkerThread* workerThread)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTracingSessionIdForWorkerEvent::data(const String& sessionId, const String& workerId, WorkerThread* workerThread)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("sessionId", sessionId);
-    value->setInteger("workerId", workerId);
+    value->setString("workerId", workerId);
     value->setDouble("workerThreadId", workerThread->platformThreadId());
     return value.release();
 }

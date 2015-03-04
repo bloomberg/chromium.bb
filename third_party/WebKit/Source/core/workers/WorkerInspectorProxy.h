@@ -35,7 +35,7 @@ public:
     void connectToInspector(PageInspector*);
     void disconnectFromInspector();
     void sendMessageToInspector(const String&);
-    void writeTimelineStartedEvent(const String& sessionId, int workerId);
+    void writeTimelineStartedEvent(const String& sessionId, const String& workerId);
 
     PageInspector* pageInspector() const { return m_pageInspector; }
 

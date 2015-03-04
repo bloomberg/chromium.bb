@@ -38,7 +38,6 @@
 
 namespace blink {
 class PageConsoleAgent;
-class JSONObject;
 class KURL;
 class WorkerInspectorProxy;
 
@@ -63,9 +62,9 @@ public:
     virtual void enable(ErrorString*) override;
     virtual void disable(ErrorString*) override;
     virtual void canInspectWorkers(ErrorString*, bool*) override;
-    virtual void connectToWorker(ErrorString*, int workerId) override;
-    virtual void disconnectFromWorker(ErrorString*, int workerId) override;
-    virtual void sendMessageToWorker(ErrorString*, int workerId, const RefPtr<JSONObject>& message) override;
+    virtual void connectToWorker(ErrorString*, const String& workerId) override;
+    virtual void disconnectFromWorker(ErrorString*, const String& workerId) override;
+    virtual void sendMessageToWorker(ErrorString*, const String& workerId, const String& message) override;
     virtual void setAutoconnectToWorkers(ErrorString*, bool value) override;
 
     void setTracingSessionId(const String&);
@@ -73,20 +72,20 @@ public:
 private:
     InspectorWorkerAgent(PageConsoleAgent*);
     void createWorkerAgentClientsForExistingWorkers();
-    void createWorkerAgentClient(WorkerInspectorProxy*, const String& url, int id);
+    void createWorkerAgentClient(WorkerInspectorProxy*, const String& url, const String& id);
     void destroyWorkerAgentClients();
 
     InspectorFrontend::Worker* m_frontend;
 
     class WorkerInfo {
     public:
-        WorkerInfo() : id(0) { }
-        WorkerInfo(const String& url, int id) : url(url), id(id) { }
+        WorkerInfo() { }
+        WorkerInfo(const String& url, const String& id) : url(url), id(id) { }
         String url;
-        int id;
+        String id;
     };
     class WorkerAgentClient;
-    typedef HashMap<int, WorkerAgentClient*> WorkerClients;
+    typedef HashMap<String, WorkerAgentClient*> WorkerClients;
     WorkerClients m_idToClient;
     typedef HashMap<WorkerInspectorProxy*, WorkerInfo> WorkerInfos;
     WorkerInfos m_workerInfos;

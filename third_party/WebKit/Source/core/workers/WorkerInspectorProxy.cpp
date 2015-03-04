@@ -88,7 +88,7 @@ void WorkerInspectorProxy::sendMessageToInspector(const String& message)
     m_workerThread->interruptAndDispatchInspectorCommands();
 }
 
-void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId, int workerId)
+void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId, const String& workerId)
 {
     if (!m_workerThread)
         return;
