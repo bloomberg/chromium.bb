@@ -16,7 +16,7 @@ import("../../mojo_sdk.gni")
 #
 # Parameters:
 #
-#   sources (required)
+#   sources (optional if one of the deps sets listed below is present)
 #       List of source .mojom files to compile.
 #
 #   deps (optional)
@@ -42,97 +42,103 @@ import("../../mojo_sdk.gni")
 #
 #   visibility (optional)
 template("mojom") {
-  assert(defined(invoker.sources),
-         "\"sources\" must be defined for the $target_name template.")
+  assert(
+      defined(invoker.sources) || defined(invoker.deps) ||
+          defined(invoker.public_deps) || defined(invoker.mojo_sdk_deps) ||
+          defined(invoker.mojo_sdk_public_deps),
+      "\"sources\" or \"deps\" must be defined for the $target_name template.")
 
-  generator_root = rebase_path("mojo/public/tools/bindings", ".", mojo_root)
-  generator_script = "$generator_root/mojom_bindings_generator.py"
-  generator_sources = [
-    generator_script,
-    "$generator_root/generators/cpp_templates/enum_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/interface_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/interface_definition.tmpl",
-    "$generator_root/generators/cpp_templates/interface_macros.tmpl",
-    "$generator_root/generators/cpp_templates/interface_proxy_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/interface_request_validator_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/interface_response_validator_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/interface_stub_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/module.cc.tmpl",
-    "$generator_root/generators/cpp_templates/module.h.tmpl",
-    "$generator_root/generators/cpp_templates/module-internal.h.tmpl",
-    "$generator_root/generators/cpp_templates/serialization_macros.tmpl",
-    "$generator_root/generators/cpp_templates/struct_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/struct_definition.tmpl",
-    "$generator_root/generators/cpp_templates/struct_serialization_definition.tmpl",
-    "$generator_root/generators/cpp_templates/struct_macros.tmpl",
-    "$generator_root/generators/cpp_templates/wrapper_class_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/wrapper_class_definition.tmpl",
-    "$generator_root/generators/cpp_templates/union_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/union_definition.tmpl",
-    "$generator_root/generators/cpp_templates/union_serialization_definition.tmpl",
-    "$generator_root/generators/cpp_templates/validation_macros.tmpl",
-    "$generator_root/generators/cpp_templates/wrapper_union_class_declaration.tmpl",
-    "$generator_root/generators/cpp_templates/wrapper_union_class_definition.tmpl",
-    "$generator_root/generators/dart_templates/enum_definition.tmpl",
-    "$generator_root/generators/dart_templates/interface_definition.tmpl",
-    "$generator_root/generators/dart_templates/module.lib.tmpl",
-    "$generator_root/generators/dart_templates/module_definition.tmpl",
-    "$generator_root/generators/dart_templates/struct_definition.tmpl",
-    "$generator_root/generators/go_templates/enum.tmpl",
-    "$generator_root/generators/go_templates/interface.tmpl",
-    "$generator_root/generators/go_templates/source.tmpl",
-    "$generator_root/generators/go_templates/struct.tmpl",
-    "$generator_root/generators/java_templates/constant_definition.tmpl",
-    "$generator_root/generators/java_templates/constants.java.tmpl",
-    "$generator_root/generators/java_templates/enum.java.tmpl",
-    "$generator_root/generators/java_templates/enum_definition.tmpl",
-    "$generator_root/generators/java_templates/header.java.tmpl",
-    "$generator_root/generators/java_templates/interface.java.tmpl",
-    "$generator_root/generators/java_templates/interface_definition.tmpl",
-    "$generator_root/generators/java_templates/interface_internal.java.tmpl",
-    "$generator_root/generators/java_templates/struct.java.tmpl",
-    "$generator_root/generators/java_templates/struct_definition.tmpl",
-    "$generator_root/generators/js_templates/enum_definition.tmpl",
-    "$generator_root/generators/js_templates/interface_definition.tmpl",
-    "$generator_root/generators/js_templates/module.amd.tmpl",
-    "$generator_root/generators/js_templates/module.sky.tmpl",
-    "$generator_root/generators/js_templates/module_definition.tmpl",
-    "$generator_root/generators/js_templates/struct_definition.tmpl",
-    "$generator_root/generators/python_templates/module_macros.tmpl",
-    "$generator_root/generators/python_templates/module.py.tmpl",
-    "$generator_root/generators/mojom_cpp_generator.py",
-    "$generator_root/generators/mojom_dart_generator.py",
-    "$generator_root/generators/mojom_go_generator.py",
-    "$generator_root/generators/mojom_js_generator.py",
-    "$generator_root/generators/mojom_java_generator.py",
-    "$generator_root/generators/mojom_python_generator.py",
-    "$generator_root/pylib/mojom/__init__.py",
-    "$generator_root/pylib/mojom/error.py",
-    "$generator_root/pylib/mojom/generate/__init__.py",
-    "$generator_root/pylib/mojom/generate/data.py",
-    "$generator_root/pylib/mojom/generate/generator.py",
-    "$generator_root/pylib/mojom/generate/module.py",
-    "$generator_root/pylib/mojom/generate/pack.py",
-    "$generator_root/pylib/mojom/generate/template_expander.py",
-    "$generator_root/pylib/mojom/parse/__init__.py",
-    "$generator_root/pylib/mojom/parse/ast.py",
-    "$generator_root/pylib/mojom/parse/lexer.py",
-    "$generator_root/pylib/mojom/parse/parser.py",
-    "$generator_root/pylib/mojom/parse/translate.py",
-  ]
-  generator_cpp_outputs = [
-    "{{source_gen_dir}}/{{source_name_part}}.mojom.cc",
-    "{{source_gen_dir}}/{{source_name_part}}.mojom.h",
-    "{{source_gen_dir}}/{{source_name_part}}.mojom-internal.h",
-  ]
-  generator_dart_outputs =
-      [ "{{source_gen_dir}}/{{source_name_part}}.mojom.dart" ]
+  if (defined(invoker.sources)) {
+    generator_root = rebase_path("mojo/public/tools/bindings", ".", mojo_root)
+    generator_script = "$generator_root/mojom_bindings_generator.py"
+    generator_sources = [
+      generator_script,
+      "$generator_root/generators/cpp_templates/enum_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/interface_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/interface_definition.tmpl",
+      "$generator_root/generators/cpp_templates/interface_macros.tmpl",
+      "$generator_root/generators/cpp_templates/interface_proxy_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/interface_request_validator_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/interface_response_validator_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/interface_stub_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/module.cc.tmpl",
+      "$generator_root/generators/cpp_templates/module.h.tmpl",
+      "$generator_root/generators/cpp_templates/module-internal.h.tmpl",
+      "$generator_root/generators/cpp_templates/serialization_macros.tmpl",
+      "$generator_root/generators/cpp_templates/struct_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/struct_definition.tmpl",
+      "$generator_root/generators/cpp_templates/struct_serialization_definition.tmpl",
+      "$generator_root/generators/cpp_templates/struct_macros.tmpl",
+      "$generator_root/generators/cpp_templates/wrapper_class_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/wrapper_class_definition.tmpl",
+      "$generator_root/generators/cpp_templates/union_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/union_definition.tmpl",
+      "$generator_root/generators/cpp_templates/union_serialization_definition.tmpl",
+      "$generator_root/generators/cpp_templates/validation_macros.tmpl",
+      "$generator_root/generators/cpp_templates/wrapper_union_class_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/wrapper_union_class_definition.tmpl",
+      "$generator_root/generators/dart_templates/enum_definition.tmpl",
+      "$generator_root/generators/dart_templates/interface_definition.tmpl",
+      "$generator_root/generators/dart_templates/module.lib.tmpl",
+      "$generator_root/generators/dart_templates/module_definition.tmpl",
+      "$generator_root/generators/dart_templates/struct_definition.tmpl",
+      "$generator_root/generators/go_templates/enum.tmpl",
+      "$generator_root/generators/go_templates/interface.tmpl",
+      "$generator_root/generators/go_templates/source.tmpl",
+      "$generator_root/generators/go_templates/struct.tmpl",
+      "$generator_root/generators/java_templates/constant_definition.tmpl",
+      "$generator_root/generators/java_templates/constants.java.tmpl",
+      "$generator_root/generators/java_templates/enum.java.tmpl",
+      "$generator_root/generators/java_templates/enum_definition.tmpl",
+      "$generator_root/generators/java_templates/header.java.tmpl",
+      "$generator_root/generators/java_templates/interface.java.tmpl",
+      "$generator_root/generators/java_templates/interface_definition.tmpl",
+      "$generator_root/generators/java_templates/interface_internal.java.tmpl",
+      "$generator_root/generators/java_templates/struct.java.tmpl",
+      "$generator_root/generators/java_templates/struct_definition.tmpl",
+      "$generator_root/generators/js_templates/enum_definition.tmpl",
+      "$generator_root/generators/js_templates/interface_definition.tmpl",
+      "$generator_root/generators/js_templates/module.amd.tmpl",
+      "$generator_root/generators/js_templates/module.sky.tmpl",
+      "$generator_root/generators/js_templates/module_definition.tmpl",
+      "$generator_root/generators/js_templates/struct_definition.tmpl",
+      "$generator_root/generators/python_templates/module_macros.tmpl",
+      "$generator_root/generators/python_templates/module.py.tmpl",
+      "$generator_root/generators/mojom_cpp_generator.py",
+      "$generator_root/generators/mojom_dart_generator.py",
+      "$generator_root/generators/mojom_go_generator.py",
+      "$generator_root/generators/mojom_js_generator.py",
+      "$generator_root/generators/mojom_java_generator.py",
+      "$generator_root/generators/mojom_python_generator.py",
+      "$generator_root/pylib/mojom/__init__.py",
+      "$generator_root/pylib/mojom/error.py",
+      "$generator_root/pylib/mojom/generate/__init__.py",
+      "$generator_root/pylib/mojom/generate/data.py",
+      "$generator_root/pylib/mojom/generate/generator.py",
+      "$generator_root/pylib/mojom/generate/module.py",
+      "$generator_root/pylib/mojom/generate/pack.py",
+      "$generator_root/pylib/mojom/generate/template_expander.py",
+      "$generator_root/pylib/mojom/parse/__init__.py",
+      "$generator_root/pylib/mojom/parse/ast.py",
+      "$generator_root/pylib/mojom/parse/lexer.py",
+      "$generator_root/pylib/mojom/parse/parser.py",
+      "$generator_root/pylib/mojom/parse/translate.py",
+    ]
+    generator_cpp_outputs = [
+      "{{source_gen_dir}}/{{source_name_part}}.mojom.cc",
+      "{{source_gen_dir}}/{{source_name_part}}.mojom.h",
+      "{{source_gen_dir}}/{{source_name_part}}.mojom-internal.h",
+    ]
+    generator_js_outputs =
+        [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
+    generator_dart_outputs =
+        [ "{{source_gen_dir}}/{{source_name_part}}.mojom.dart" ]
+    generator_python_outputs =
+        [ "{{source_gen_dir}}/{{source_name_part}}_mojom.py" ]
+    generator_java_outputs =
+        [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
+  }
   generator_dart_zip_output = "$target_out_dir/$target_name.dartzip"
-  generator_java_outputs =
-      [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
-  generator_js_outputs = [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
-  generator_python_outputs =
-      [ "{{source_gen_dir}}/{{source_name_part}}_mojom.py" ]
   generator_python_zip_output = "$target_out_dir/$target_name.pyzip"
 
   rebased_mojo_sdk_public_deps = []
@@ -160,36 +166,38 @@ template("mojom") {
     target_visibility = [ ":$target_name" ]
   }
 
-  generator_target_name = target_name + "__generator"
-  action_foreach(generator_target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = target_visibility + invoker.visibility
-    }
-    script = generator_script
-    inputs = generator_sources
-    sources = invoker.sources
-    outputs =
-        generator_cpp_outputs + generator_dart_outputs +
-        generator_java_outputs + generator_js_outputs + generator_python_outputs
-    args = [
-      "{{source}}",
-      "--use_bundled_pylibs",
-      "-d",
-      rebase_path("//", root_build_dir),
-      "-I",
-      rebase_path("//", root_build_dir),
-      "-I",
-      rebase_path(mojo_root, root_build_dir),
-      "-o",
-      rebase_path(root_gen_dir),
-    ]
+  if (defined(invoker.sources)) {
+    generator_target_name = target_name + "__generator"
+    action_foreach(generator_target_name) {
+      if (defined(invoker.visibility)) {
+        visibility = target_visibility + invoker.visibility
+      }
+      script = generator_script
+      inputs = generator_sources
+      sources = invoker.sources
+      outputs = generator_cpp_outputs + generator_dart_outputs +
+                generator_java_outputs + generator_js_outputs +
+                generator_python_outputs
+      args = [
+        "{{source}}",
+        "--use_bundled_pylibs",
+        "-d",
+        rebase_path("//", root_build_dir),
+        "-I",
+        rebase_path("//", root_build_dir),
+        "-I",
+        rebase_path(mojo_root, root_build_dir),
+        "-o",
+        rebase_path(root_gen_dir),
+      ]
 
-    if (defined(invoker.import_dirs)) {
-      foreach(import_dir, invoker.import_dirs) {
-        args += [
-          "-I",
-          rebase_path(import_dir, root_build_dir),
-        ]
+      if (defined(invoker.import_dirs)) {
+        foreach(import_dir, invoker.import_dirs) {
+          args += [
+            "-I",
+            rebase_path(import_dir, root_build_dir),
+          ]
+        }
       }
     }
   }
@@ -201,8 +209,10 @@ template("mojom") {
     if (defined(invoker.testonly)) {
       testonly = invoker.testonly
     }
-    sources = process_file_template(invoker.sources, generator_cpp_outputs)
-    data = process_file_template(invoker.sources, generator_js_outputs)
+    if (defined(invoker.sources)) {
+      sources = process_file_template(invoker.sources, generator_cpp_outputs)
+      data = process_file_template(invoker.sources, generator_js_outputs)
+    }
 
     public_configs =
         rebase_path([ "mojo/public/build/config:mojo_sdk" ], ".", mojo_root)
@@ -213,9 +223,10 @@ template("mojom") {
       public_deps += invoker.public_deps
     }
 
-    deps = [
-      ":$generator_target_name",
-    ]
+    deps = []
+    if (defined(invoker.sources)) {
+      deps += [ ":$generator_target_name" ]
+    }
     deps += rebased_mojo_sdk_deps
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -258,7 +269,9 @@ template("mojom") {
   action("${target_name}_python") {
     script = rebase_path("mojo/public/tools/gn/zip.py", ".", mojo_root)
 
-    inputs = process_file_template(invoker.sources, generator_python_outputs)
+    if (defined(invoker.sources)) {
+      inputs = process_file_template(invoker.sources, generator_python_outputs)
+    }
 
     deps = []
     zip_inputs = []
@@ -280,21 +293,27 @@ template("mojom") {
     ]
 
     rebase_base_dir = rebase_path(target_gen_dir, root_build_dir)
-    rebase_inputs = rebase_path(inputs, root_build_dir)
+    if (defined(invoker.sources)) {
+      rebase_inputs = rebase_path(inputs, root_build_dir)
+    }
     rebase_zip_inputs = rebase_path(zip_inputs, root_build_dir)
     rebase_output = rebase_path(output, root_build_dir)
     args = [
       "--base-dir=$rebase_base_dir",
-      "--inputs=$rebase_inputs",
       "--zip-inputs=$rebase_zip_inputs",
       "--output=$rebase_output",
     ]
+    if (defined(invoker.sources)) {
+      args += [ "--inputs=$rebase_inputs" ]
+    }
   }
 
   action("${target_name}_dart") {
     script = rebase_path("mojo/public/tools/gn/zip.py", ".", mojo_root)
 
-    inputs = process_file_template(invoker.sources, generator_dart_outputs)
+    if (defined(invoker.sources)) {
+      inputs = process_file_template(invoker.sources, generator_dart_outputs)
+    }
 
     deps = []
     zip_inputs = []
@@ -316,15 +335,19 @@ template("mojom") {
     ]
 
     rebase_base_dir = rebase_path("$root_build_dir/gen/", root_build_dir)
-    rebase_inputs = rebase_path(inputs, root_build_dir)
+    if (defined(invoker.sources)) {
+      rebase_inputs = rebase_path(inputs, root_build_dir)
+    }
     rebase_zip_inputs = rebase_path(zip_inputs, root_build_dir)
     rebase_output = rebase_path(output, root_build_dir)
     args = [
       "--base-dir=$rebase_base_dir",
-      "--inputs=$rebase_inputs",
       "--zip-inputs=$rebase_zip_inputs",
       "--output=$rebase_output",
     ]
+    if (defined(invoker.sources)) {
+      args += [ "--inputs=$rebase_inputs" ]
+    }
   }
 
   if (is_android) {
@@ -347,7 +370,9 @@ template("mojom") {
         deps += [ "${full_name}_java" ]
       }
 
-      srcjars = process_file_template(invoker.sources, generator_java_outputs)
+      if (defined(invoker.sources)) {
+        srcjars = process_file_template(invoker.sources, generator_java_outputs)
+      }
     }
   }
 }

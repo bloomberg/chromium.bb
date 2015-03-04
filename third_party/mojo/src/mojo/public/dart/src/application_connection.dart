@@ -4,28 +4,28 @@
 
 part of application;
 
-typedef core.Listener ServiceFactory(core.MojoMessagePipeEndpoint endpoint);
+typedef Object ServiceFactory(core.MojoMessagePipeEndpoint endpoint);
 typedef void FallbackServiceFactory(String interfaceName,
     core.MojoMessagePipeEndpoint endpoint);
 
 
-class LocalServiceProvider extends ServiceProvider {
+class LocalServiceProvider implements ServiceProvider {
   final ApplicationConnection connection;
+  ServiceProviderStub _stub;
 
-  LocalServiceProvider(ApplicationConnection this.connection,
-      ServiceProviderStub stub)
-      : super.fromStub(stub) {
-    delegate = this;
+  LocalServiceProvider(this.connection, this._stub) {
+    _stub.delegate = this;
   }
+
+  listen() => _stub.listen();
+
+  void close({bool nodefer : false}) => _stub.close(nodefer: nodefer);
 
   void connectToService(String interfaceName,
       core.MojoMessagePipeEndpoint pipe) {
     if (connection._nameToServiceFactory.containsKey(interfaceName)) {
-      var listener = connection._nameToServiceFactory[interfaceName](pipe);
-      if (listener != null) {
-        listener.listen();
-        return;
-      }
+      connection._nameToServiceFactory[interfaceName](pipe);
+      return;
     }
     if (connection.fallbackServiceFactory != null) {
       connection.fallbackServiceFactory(interfaceName, pipe);
@@ -44,11 +44,11 @@ class LocalServiceProvider extends ServiceProvider {
 // and they're passed to the Application AcceptConnection() method.
 //
 // To request a service from the remote application:
-//   var proxy = applicationConnection.requestService(ViewManagerClient.name);
+//   var proxy = applicationConnection.requestService(ViewManagerClientName);
 //
 // To provide a service to the remote application, specify a function that
 // returns a service. For example:
-//   applicationConnection.provideService(ViewManagerClient.name, (pipe) =>
+//   applicationConnection.provideService(ViewManagerClientName, (pipe) =>
 //       new ViewManagerClientImpl(pipe));
 //
 // To handle requests for any interface, set fallbackServiceFactory to a
@@ -62,7 +62,7 @@ class ApplicationConnection {
   ServiceProviderProxy remoteServiceProvider;
   LocalServiceProvider _localServiceProvider;
   final _nameToServiceFactory = new Map<String, ServiceFactory>();
-  FallbackServiceFactory fallbackServiceFactory;
+  FallbackServiceFactory _fallbackServiceFactory;
 
   ApplicationConnection(ServiceProviderStub stub, ServiceProviderProxy proxy)
       : remoteServiceProvider = proxy {
@@ -70,15 +70,20 @@ class ApplicationConnection {
         new LocalServiceProvider(this, stub);
   }
 
-  bindings.Proxy requestService(bindings.Proxy proxy) {
-    assert(!proxy.isBound &&
+  FallbackServiceFactory get fallbackServiceFactory => _fallbackServiceFactory;
+                         set fallbackServiceFactory(FallbackServiceFactory f) {
+    assert(_localServiceProvider != null);
+    _fallbackServiceFactory = f;
+  }
+
+  bindings.ProxyBase requestService(bindings.ProxyBase proxy) {
+    assert(!proxy.impl.isBound &&
         (remoteServiceProvider != null) &&
-        remoteServiceProvider.isBound);
-    var applicationPipe = new core.MojoMessagePipe();
-    var proxyEndpoint = applicationPipe.endpoints[0];
-    var applicationEndpoint = applicationPipe.endpoints[1];
-    proxy.bind(proxyEndpoint);
-    remoteServiceProvider.connectToService(proxy.name, applicationEndpoint);
+        remoteServiceProvider.impl.isBound);
+    var pipe = new core.MojoMessagePipe();
+    proxy.impl.bind(pipe.endpoints[0]);
+    remoteServiceProvider.ptr.connectToService(
+        proxy.name, pipe.endpoints[1]);
     return proxy;
   }
 
@@ -88,7 +93,8 @@ class ApplicationConnection {
   }
 
   void listen() {
-    if (_localServiceProvider != null) _localServiceProvider.listen();
+    assert(_localServiceProvider != null);
+    _localServiceProvider.listen();
   }
 
   void close({bool nodefer: false}) {

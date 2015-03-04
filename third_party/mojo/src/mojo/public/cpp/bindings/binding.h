@@ -101,8 +101,7 @@ class Binding : public ErrorHandler {
   // implementation unbound.
   ~Binding() override {
     if (internal_router_) {
-      internal_router_->set_error_handler(nullptr);
-      delete internal_router_;
+      DestroyRouter();
     }
   }
 
@@ -112,6 +111,7 @@ class Binding : public ErrorHandler {
   void Bind(
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+    MOJO_DCHECK(!internal_router_);
     internal::FilterChain filters;
     filters.Append<internal::MessageHeaderValidator>();
     filters.Append<typename Interface::RequestValidator_>();
@@ -153,17 +153,23 @@ class Binding : public ErrorHandler {
     return internal_router_->WaitForIncomingMessage();
   }
 
-  // Closes the message pipe that was previously bound.
+  // Closes the message pipe that was previously bound. Put this object into a
+  // state where it can be rebound to a new pipe.
   void Close() {
     MOJO_DCHECK(internal_router_);
     internal_router_->CloseMessagePipe();
+    DestroyRouter();
   }
 
   // Unbinds the underlying pipe from this binding and returns it so it can be
   // used in another context, such as on another thread or with a different
-  // implementation.
+  // implementation. Put this object into a state where it can be rebound to a
+  // new pipe.
   InterfaceRequest<Interface> Unbind() {
-    return MakeRequest<Interface>(internal_router_->PassMessagePipe());
+    InterfaceRequest<Interface> request =
+        MakeRequest<Interface>(internal_router_->PassMessagePipe());
+    DestroyRouter();
+    return request.Pass();
   }
 
   // Sets an error handler that will be called if a connection error occurs on
@@ -190,6 +196,12 @@ class Binding : public ErrorHandler {
   internal::Router* internal_router() { return internal_router_; }
 
  private:
+  void DestroyRouter() {
+    internal_router_->set_error_handler(nullptr);
+    delete internal_router_;
+    internal_router_ = nullptr;
+  }
+
   internal::Router* internal_router_ = nullptr;
   typename Interface::Stub_ stub_;
   Interface* impl_;

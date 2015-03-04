@@ -18,7 +18,6 @@ public interface DataPipe {
      */
     public static class CreateFlags extends Flags<CreateFlags> {
         private static final int FLAG_NONE = 0;
-        private static final int FLAG_MAY_DISCARD = 1 << 0;
 
         /**
          * Immutable flag with not bit set.
@@ -32,18 +31,6 @@ public interface DataPipe {
          */
         protected CreateFlags(int flags) {
             super(flags);
-        }
-
-        /**
-         * Change the may-discard bit of this flag. This indicates that the data pipe may discard
-         * data for whatever reason; best-effort delivery. In particular, if the capacity is
-         * reached, old data may be discard to make room for new data.
-         *
-         * @param mayDiscard the new value of the may-discard bit.
-         * @return this.
-         */
-        public CreateFlags setMayDiscard(boolean mayDiscard) {
-            return setFlag(FLAG_MAY_DISCARD, mayDiscard);
         }
 
         /**

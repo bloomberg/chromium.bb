@@ -4,32 +4,35 @@
 
 part of application;
 
-class _ApplicationImpl extends application_mojom.Application {
+class _ApplicationImpl implements application_mojom.Application {
+  application_mojom.ApplicationStub _stub;
   shell_mojom.ShellProxy shell;
   Application _application;
 
-  _ApplicationImpl(
-      Application application, core.MojoMessagePipeEndpoint endpoint)
-      : _application = application, super(endpoint) {
-    super.delegate = this;
+  _ApplicationImpl(Application application,
+      core.MojoMessagePipeEndpoint endpoint) {
+    _application = application;
+    _stub = new application_mojom.ApplicationStub.fromEndpoint(endpoint)
+        ..delegate = this
+        ..listen();
   }
 
-  _ApplicationImpl.fromHandle(Application application, core.MojoHandle handle)
-      : _application = application, super.fromHandle(handle) {
-    super.delegate = this;
+  _ApplicationImpl.fromHandle(Application application, core.MojoHandle handle) {
+    _application = application;
+    _stub = new application_mojom.ApplicationStub.fromHandle(handle)
+        ..delegate = this
+        ..listen();
   }
 
-  void initialize(
-      shell_mojom.ShellProxy shellProxy, List<String> args, String url) {
+  void initialize(bindings.ProxyBase shellProxy, List<String> args,
+      String url) {
     assert(shell == null);
     shell = shellProxy;
     _application.initialize(args, url);
   }
 
-  void acceptConnection(
-      String requestorUrl,
-      ServiceProviderStub services,
-      ServiceProviderProxy exposedServices) =>
+  void acceptConnection(String requestorUrl, ServiceProviderStub services,
+      bindings.ProxyBase exposedServices, String requested_url) =>
       _application._acceptConnection(requestorUrl, services, exposedServices);
 
   void requestQuit() => _application._requestQuitAndClose();
@@ -61,27 +64,24 @@ abstract class Application {
   // TODO(skydart): This is a temporary fix to allow sky application to consume
   // mojo services. Do not use for any other purpose.
   void initializeFromShellProxy(shell_mojom.ShellProxy shellProxy,
-      List<String> args, String url) {
-    _applicationImpl.initialize(shellProxy, args, url);
-  }
+      List<String> args, String url) =>
+      _applicationImpl.initialize(shellProxy, args, url);
 
   // Returns a connection to the app at |url|.
   ApplicationConnection connectToApplication(String url) {
     var proxy = new ServiceProviderProxy.unbound();
     var stub = new ServiceProviderStub.unbound();
-    _applicationImpl.shell.connectToApplication(url, proxy, stub);
+    _applicationImpl.shell.ptr.connectToApplication(url, proxy, stub);
     var connection = new ApplicationConnection(stub, proxy);
     _applicationConnections.add(connection);
     return connection;
   }
 
-  void connectToService(String url, bindings.Proxy proxy) {
+  void connectToService(String url, bindings.ProxyBase proxy) {
     connectToApplication(url).requestService(proxy);
   }
 
   void requestQuit() {}
-
-  listen() => _applicationImpl.listen();
 
   void _requestQuitAndClose() {
     requestQuit();
@@ -95,9 +95,7 @@ abstract class Application {
     _applicationImpl.close();
   }
 
-  void _acceptConnection(
-      String requestorUrl,
-      ServiceProviderStub services,
+  void _acceptConnection(String requestorUrl, ServiceProviderStub services,
       ServiceProviderProxy exposedServices) {
     var connection = new ApplicationConnection(services, exposedServices);
     _applicationConnections.add(connection);

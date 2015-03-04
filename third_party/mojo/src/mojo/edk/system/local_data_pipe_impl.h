@@ -14,7 +14,7 @@
 namespace mojo {
 namespace system {
 
-class DataPipe;
+class MessageInTransitQueue;
 
 // |LocalDataPipeImpl| is a subclass that "implements" |DataPipe| for data pipes
 // whose producer and consumer are both local. See |DataPipeImpl| for more
@@ -67,6 +67,8 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipeImpl : public DataPipeImpl {
       void* destination,
       size_t* actual_size,
       embedder::PlatformHandleVector* platform_handles) override;
+  bool OnReadMessage(unsigned port, MessageInTransit* message) override;
+  void OnDetachFromChannel(unsigned port) override;
 
   void EnsureBuffer();
   void DestroyBuffer();
@@ -77,7 +79,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipeImpl : public DataPipeImpl {
   size_t GetMaxNumBytesToRead();
 
   // Marks the given number of bytes as consumed/discarded. |num_bytes| must be
-  // greater than |current_num_bytes_|.
+  // no greater than |current_num_bytes_|.
   void MarkDataAsConsumed(size_t num_bytes);
 
   scoped_ptr<char, base::AlignedFreeDeleter> buffer_;

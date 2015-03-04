@@ -119,6 +119,9 @@ class ViewManagerClientImpl : public ViewManager,
   void OnViewInputEvent(Id view_id,
                         EventPtr event,
                         const Callback<void()>& callback) override;
+  void OnPerformAction(Id view_id,
+                       const String& name,
+                       const Callback<void(bool)>& callback) override;
 
   // Overridden from WindowManagerObserver:
   void OnCaptureChanged(Id capture_view_id) override;

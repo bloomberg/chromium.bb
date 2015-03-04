@@ -87,7 +87,8 @@ class HTMLViewerApplication : public mojo::Application {
 
   void AcceptConnection(const String& requestor_url,
                         InterfaceRequest<ServiceProvider> services,
-                        ServiceProviderPtr exposed_services) override {
+                        ServiceProviderPtr exposed_services,
+                        const String& url) override {
     if (initial_response_) {
       OnResponseReceived(URLLoaderPtr(), services.Pass(),
                          initial_response_.Pass());

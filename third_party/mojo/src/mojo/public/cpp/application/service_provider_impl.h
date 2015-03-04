@@ -22,6 +22,9 @@ class ServiceProviderImpl : public ServiceProvider {
   ~ServiceProviderImpl() override;
 
   void Bind(InterfaceRequest<ServiceProvider> request);
+  // Disconnect this service provider and put it in a state where it can be
+  // rebound to a new request.
+  void Close();
 
   template <typename Interface>
   void AddService(InterfaceFactory<Interface>* factory) {

@@ -23,6 +23,22 @@ Dispatcher::Type DataPipeConsumerDispatcher::GetType() const {
   return kTypeDataPipeConsumer;
 }
 
+// static
+scoped_refptr<DataPipeConsumerDispatcher>
+DataPipeConsumerDispatcher::Deserialize(Channel* channel,
+                                        const void* source,
+                                        size_t size) {
+  scoped_refptr<DataPipe> data_pipe;
+  if (!DataPipe::ConsumerDeserialize(channel, source, size, &data_pipe))
+    return nullptr;
+  DCHECK(data_pipe);
+
+  scoped_refptr<DataPipeConsumerDispatcher> dispatcher(
+      new DataPipeConsumerDispatcher());
+  dispatcher->Init(data_pipe);
+  return dispatcher;
+}
+
 DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
   // |Close()|/|CloseImplNoLock()| should have taken care of the pipe.
   DCHECK(!data_pipe_);

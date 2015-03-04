@@ -33,7 +33,7 @@ class MojoMessagePipeReadResult {
 class MojoMessagePipeEndpoint {
   static const int WRITE_FLAG_NONE = 0;
   static const int READ_FLAG_NONE = 0;
-  static const int READ_FLAG_MAY_DISCARD = 0;
+  static const int READ_FLAG_MAY_DISCARD = 1 << 0;
 
   MojoHandle handle;
   MojoResult status;

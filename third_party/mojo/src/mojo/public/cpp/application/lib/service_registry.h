@@ -24,13 +24,15 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
  public:
   ServiceRegistry();
   ServiceRegistry(ApplicationImpl* application_impl,
-                  const std::string& url,
+                  const std::string& connection_url,
+                  const std::string& remote_url,
                   ServiceProviderPtr remote_services,
                   InterfaceRequest<ServiceProvider> local_services);
   ~ServiceRegistry() override;
 
   // ApplicationConnection overrides.
   void AddServiceConnector(ServiceConnectorBase* service_connector) override;
+  const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
   ServiceProvider* GetServiceProvider() override;
 
@@ -42,7 +44,8 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
                         ScopedMessagePipeHandle client_handle) override;
 
   ApplicationImpl* application_impl_;
-  const std::string url_;
+  const std::string connection_url_;
+  const std::string remote_url_;
 
  private:
   bool RemoveServiceConnectorInternal(ServiceConnectorBase* service_connector);

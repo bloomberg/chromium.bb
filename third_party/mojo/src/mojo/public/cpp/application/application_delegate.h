@@ -34,6 +34,10 @@ class ApplicationDelegate {
   // Return false to reject the connection entirely.
   virtual bool ConfigureOutgoingConnection(ApplicationConnection* connection);
 
+  // Called before ApplicationImpl::Terminate(). After returning from this call
+  // the delegate can no longer rely on the main run loop still running.
+  virtual void Quit();
+
  private:
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationDelegate);
 };

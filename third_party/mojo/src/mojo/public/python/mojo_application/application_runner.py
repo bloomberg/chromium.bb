@@ -11,8 +11,7 @@ import mojo_system
 def RunMojoApplication(application_delegate, app_request_handle):
   loop = mojo_system.RunLoop()
 
-  application = ApplicationImpl(application_delegate,
-                                mojo_system.Handle(app_request_handle))
+  application = ApplicationImpl(application_delegate, app_request_handle)
   application.manager.AddOnErrorCallback(loop.Quit)
 
   loop.Run()

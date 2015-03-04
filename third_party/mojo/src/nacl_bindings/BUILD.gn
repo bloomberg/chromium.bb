@@ -1,0 +1,42 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Trusted code
+if (!is_nacl) {
+  # A library for launching a NaCl sandbox connected to a Mojo embedder.
+  source_set("monacl_sel") {
+    sources = [
+      "mojo_syscall_internal.h",
+      "mojo_syscall.cc",
+      "monacl_sel_main.cc",
+    ]
+    deps = [
+      "../mojo/public/c/system",
+
+      # This target makes sure we have all the pre-processor defines needed to
+      # use NaCl's headers.
+      "//native_client/build/config/nacl:nacl_base",
+      "//native_client/src/trusted/desc:nrd_xfer",
+      "//native_client/src/trusted/service_runtime:sel_main_chrome",
+    ]
+  }
+}
+
+# Untrusted code
+if (is_nacl) {
+  executable("irt_mojo") {
+    cflags_c = [ "-std=c99" ]
+    sources = [
+      "../mojo/public/platform/nacl/mojo_irt.h",
+      "irt_entry_mojo.c",
+      "mojo_irt.c",
+    ]
+    deps = [
+      "../mojo/public/c/system",
+      "//native_client/build/config/nacl:nacl_base",
+      "//native_client/src/untrusted/irt:irt_core_lib",
+      "//native_client/src/untrusted/nacl:imc_syscalls",
+    ]
+  }
+}

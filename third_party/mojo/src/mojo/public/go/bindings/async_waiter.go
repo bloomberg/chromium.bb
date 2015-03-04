@@ -12,15 +12,15 @@ import (
 	"mojo/public/go/system"
 )
 
-var waiter *asyncWaiterImpl
+var defaultWaiter *asyncWaiterImpl
 var once sync.Once
 
 // GetAsyncWaiter returns a default implementation of |AsyncWaiter| interface.
 func GetAsyncWaiter() AsyncWaiter {
 	once.Do(func() {
-		waiter = newAsyncWaiter()
+		defaultWaiter = newAsyncWaiter()
 	})
-	return waiter
+	return defaultWaiter
 }
 
 // AsyncWaitId is an id returned by |AsyncWait()| used to cancel it.
@@ -86,7 +86,7 @@ type asyncWaiterWorker struct {
 	isNotified *int32
 	waitChan   <-chan waitRequest // should have a non-empty buffer
 	cancelChan <-chan AsyncWaitId // should have a non-empty buffer
-	lastUsedId AsyncWaitId        // is incremented each |AsyncWait()| call
+	ids        Counter            // is incremented each |AsyncWait()| call
 }
 
 // removeHandle removes handle at provided index without sending response by
@@ -143,8 +143,7 @@ func (w *asyncWaiterWorker) processIncomingRequests() {
 			w.signals = append(w.signals, request.signals)
 			w.responses = append(w.responses, request.responseChan)
 
-			w.lastUsedId++
-			id := w.lastUsedId
+			id := AsyncWaitId(w.ids.Next())
 			w.asyncWaitIds = append(w.asyncWaitIds, id)
 			request.idChan <- id
 		case AsyncWaitId := <-w.cancelChan:
@@ -229,7 +228,7 @@ func newAsyncWaiter() *asyncWaiterImpl {
 		isNotified,
 		waitChan,
 		cancelChan,
-		0,
+		Counter{},
 	}
 	go worker.runLoop()
 	return &asyncWaiterImpl{
@@ -244,7 +243,10 @@ func newAsyncWaiter() *asyncWaiterImpl {
 // after sending a message to |waitChan| or |cancelChan| to avoid deadlock.
 func (w *asyncWaiterImpl) wakeWorker() {
 	if atomic.CompareAndSwapInt32(w.isWorkerNotified, 0, 1) {
-		w.wakingHandle.WriteMessage([]byte{0}, nil, system.MOJO_WRITE_MESSAGE_FLAG_NONE)
+		result := w.wakingHandle.WriteMessage([]byte{0}, nil, system.MOJO_WRITE_MESSAGE_FLAG_NONE)
+		if result != system.MOJO_RESULT_OK {
+			panic("can't write to a message pipe")
+		}
 	}
 }
 

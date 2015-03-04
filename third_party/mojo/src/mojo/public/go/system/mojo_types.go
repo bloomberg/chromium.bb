@@ -72,7 +72,6 @@ const (
 	MOJO_WRITE_DATA_FLAG_ALL_OR_NONE MojoWriteDataFlags = 1 << 0
 
 	MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE        MojoCreateDataPipeOptionsFlags    = 0
-	MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD MojoCreateDataPipeOptionsFlags    = 1 << 0
 	MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE     MojoCreateMessagePipeOptionsFlags = 0
 
 	MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE    MojoCreateSharedBufferOptionsFlags    = 0

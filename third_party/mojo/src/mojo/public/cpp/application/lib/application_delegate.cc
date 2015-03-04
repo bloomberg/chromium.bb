@@ -24,4 +24,7 @@ bool ApplicationDelegate::ConfigureOutgoingConnection(
   return true;
 }
 
+void ApplicationDelegate::Quit() {
+}
+
 }  // namespace mojo

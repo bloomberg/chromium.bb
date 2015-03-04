@@ -41,7 +41,12 @@ ScopedPyRef::ScopedPyRef(PyObject* object) : object_(object) {
 
 ScopedPyRef::ScopedPyRef(PyObject* object, ScopedPyRefAcquire)
     : object_(object) {
-  Py_XINCREF(object_);
+  if (object_)
+    Py_XINCREF(object_);
+}
+
+ScopedPyRef::ScopedPyRef(const ScopedPyRef& other)
+    : ScopedPyRef(other, kAcquire) {
 }
 
 PyObject* ScopedPyRef::Release() {
@@ -57,8 +62,14 @@ ScopedPyRef::~ScopedPyRef() {
   }
 }
 
-ScopedPyRef::operator PyObject*() const {
-  return object_;
+ScopedPyRef& ScopedPyRef::operator=(const ScopedPyRef& other) {
+  if (other)
+    Py_XINCREF(other);
+  PyObject* old = object_;
+  object_ = other;
+  if (old)
+    Py_DECREF(old);
+  return *this;
 }
 
 PythonClosure::PythonClosure(PyObject* callable, const mojo::Closure& quit)

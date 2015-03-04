@@ -534,6 +534,7 @@ def _StubAccept(methods):
               payload.data, payload.handles)).AsDict()
       response = getattr(self.impl, method.name)(**parameters)
       if header.expects_response:
+        @promise.async
         def SendResponse(response):
           if isinstance(response, dict):
             response_message = _GetMessage(method,
@@ -544,8 +545,8 @@ def _StubAccept(methods):
                                            messaging.MESSAGE_IS_RESPONSE_FLAG,
                                            response)
           response_message.header.request_id = header.request_id
-          responder.Accept(response_message)
-        p = promise.Promise.Resolve(response).Then(SendResponse)
+          return responder.Accept(response_message)
+        p = SendResponse(response)
         if self.impl.manager:
           # Close the connection in case of error.
           p.Catch(lambda _: self.impl.manager.Close())

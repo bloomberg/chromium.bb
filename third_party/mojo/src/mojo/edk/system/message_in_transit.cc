@@ -28,6 +28,8 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeEndpointData;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeEndpointDataPipeAck;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeChannelAttachAndRunEndpoint;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeChannelRemoveEndpoint;

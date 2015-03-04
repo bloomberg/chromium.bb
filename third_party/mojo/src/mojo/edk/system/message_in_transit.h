@@ -59,6 +59,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   typedef uint16_t Subtype;
   // Subtypes for type |kTypeEndpoint|:
   static const Subtype kSubtypeEndpointData = 0;
+  static const Subtype kSubtypeEndpointDataPipeAck = 1;
   // Subtypes for type |kTypeChannel|:
   static const Subtype kSubtypeChannelAttachAndRunEndpoint = 0;
   static const Subtype kSubtypeChannelRemoveEndpoint = 1;

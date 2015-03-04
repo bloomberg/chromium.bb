@@ -40,9 +40,10 @@ abstract class Stub extends core.MojoEventStreamListener {
       responseFuture.then((response) {
         _outstandingResponseFutures--;
         if (isOpen) {
-          endpoint.write(response.buffer,
-                         response.buffer.lengthInBytes,
-                         response.handles);
+          endpoint.write(
+              response.buffer,
+              response.buffer.lengthInBytes,
+              response.handles);
           if (!endpoint.status.isOk) {
             throw 'message pipe write failed: ${endpoint.status}';
           }
@@ -69,9 +70,10 @@ abstract class Stub extends core.MojoEventStreamListener {
   // NB: |nodefer| should only be true when calling close() while handling an
   // exception thrown from handleRead(), e.g. when we receive a malformed
   // message.
-  void close({bool nodefer : false}) {
-    if (!isOpen) return;
-    if (!nodefer && (isInHandler || (_outstandingResponseFutures > 0))) {
+  void close({bool nodefer: false}) {
+    if (isOpen &&
+        !nodefer &&
+        (isInHandler || (_outstandingResponseFutures > 0))) {
       // Either close() is being called from within handleRead() or
       // handleWrite(), or close() is being called while there are outstanding
       // response futures. Defer the actual close until all response futures

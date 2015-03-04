@@ -62,7 +62,8 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
   shell_->ConnectToApplication(application_url, GetProxy(&remote_services),
                                local_services.Pass());
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
-      this, application_url, remote_services.Pass(), local_request.Pass());
+      this, application_url, application_url, remote_services.Pass(),
+      local_request.Pass());
   if (!delegate_->ConfigureOutgoingConnection(registry)) {
     delete registry;
     return nullptr;
@@ -97,9 +98,10 @@ void ApplicationImpl::UnbindConnections(
 void ApplicationImpl::AcceptConnection(
     const String& requestor_url,
     InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services) {
+    ServiceProviderPtr exposed_services,
+    const String& url) {
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
-      this, requestor_url, exposed_services.Pass(), services.Pass());
+      this, url, requestor_url, exposed_services.Pass(), services.Pass());
   if (!delegate_->ConfigureIncomingConnection(registry)) {
     delete registry;
     return;
@@ -108,6 +110,7 @@ void ApplicationImpl::AcceptConnection(
 }
 
 void ApplicationImpl::RequestQuit() {
+  delegate_->Quit();
   Terminate();
 }
 

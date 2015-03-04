@@ -20,9 +20,6 @@
 //   |MojoCreateDataPipeOptionsFlags flags|: Used to specify different modes of
 //       operation.
 //     |MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE|: No flags; default mode.
-//     |MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD|: May discard data for
-//         whatever reason; best-effort delivery. In particular, if the capacity
-//         is reached, old data may be discard to make room for new data.
 //   |uint32_t element_num_bytes|: The size of an element, in bytes. All
 //       transactions and buffers will consist of an integral number of
 //       elements. Must be nonzero.
@@ -37,13 +34,9 @@ typedef uint32_t MojoCreateDataPipeOptionsFlags;
 #ifdef __cplusplus
 const MojoCreateDataPipeOptionsFlags MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE =
     0;
-const MojoCreateDataPipeOptionsFlags
-    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD = 1 << 0;
 #else
 #define MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE \
   ((MojoCreateDataPipeOptionsFlags)0)
-#define MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD \
-  ((MojoCreateDataPipeOptionsFlags)1 << 0)
 #endif
 
 MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");

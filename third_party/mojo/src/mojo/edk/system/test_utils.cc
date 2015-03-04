@@ -27,6 +27,16 @@ base::TimeDelta EpsilonTimeout() {
 #endif
 }
 
+MojoDeadline TinyDeadline() {
+  return static_cast<MojoDeadline>(
+      TestTimeouts::tiny_timeout().InMicroseconds());
+}
+
+MojoDeadline ActionDeadline() {
+  return static_cast<MojoDeadline>(
+      TestTimeouts::action_timeout().InMicroseconds());
+}
+
 }  // namespace test
 }  // namespace system
 }  // namespace mojo

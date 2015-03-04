@@ -5,7 +5,6 @@
 #ifndef MOJO_EDK_SYSTEM_SLAVE_CONNECTION_MANAGER_H_
 #define MOJO_EDK_SYSTEM_SLAVE_CONNECTION_MANAGER_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

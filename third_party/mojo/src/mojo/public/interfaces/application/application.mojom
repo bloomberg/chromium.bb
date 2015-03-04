@@ -10,11 +10,19 @@ import "mojo/public/interfaces/application/shell.mojom";
 // This is the primary interface implemented by every Mojo application. It
 // allows the application to receive its startup arguments from the shell, and
 // to be notified of events that occur during its execution.
+//
+// TODO(aa): It would be good to reorder the parameters once we have interface
+// versioning.
 interface Application {
   // Initializes the application with the specified arguments. This method is
   // guaranteed to be called before any other method is called, and will only be
-  // called once. The |url| parameter is the final url the application was found
-  // at, after all redirects and resolutions.
+  // called once.
+  //
+  // The |url| parameter is the identity of the application as far as the shell
+  // is concerned. This will be the URL the application was found at, after all
+  // mappings, resolution, and redirects. And it will not include the
+  // querystring, since the querystring is not part of an application's
+  // identity.
   Initialize(Shell shell, array<string>? args, string url);
 
   // Called when another application (identified by |requestor_url|) attempts to
@@ -37,9 +45,14 @@ interface Application {
   //
   // This application is free to ignore the |services| or |exposed_services|
   // parameters if it does not wish to offer or request services.
+  //
+  // resolved_url is the URL that was requested to create this connection, after
+  // all mappings, resolutions, and redirects. This will include any querystring
+  // that was part of the request.
   AcceptConnection(string requestor_url,
                    ServiceProvider&? services,
-                   ServiceProvider? exposed_services);
+                   ServiceProvider? exposed_services,
+                   string resolved_url);
 
   // Called to request the application shut itself down gracefully.
   RequestQuit();

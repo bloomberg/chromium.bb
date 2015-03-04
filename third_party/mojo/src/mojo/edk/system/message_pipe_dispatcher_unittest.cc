@@ -139,7 +139,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
 
     // It should be signaled.
-    EXPECT_EQ(MOJO_RESULT_OK, w.Wait(1000, &context));
+    EXPECT_EQ(MOJO_RESULT_OK, w.Wait(test::TinyDeadline(), &context));
     EXPECT_EQ(12u, context);
     hss = HandleSignalsState();
     d0->RemoveAwakable(&w, &hss);

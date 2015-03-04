@@ -4,11 +4,162 @@
 
 {% import "struct.tmpl" as struct_macros %}
 
+{%- macro declare_params(struct) %}
+{%- for field in struct.fields -%}
+	{{field|name(False)}} {{field.kind|go_type}}{% if not loop.last %}, {% endif %}
+{%- endfor %}
+{%- endmacro %}
+
+
+
+{% macro declare_request_params(method) %}
+({{declare_params(method|struct_from_method)}})
+{%- if method.response_parameters|is_none_or_empty -%}
+	{{' (err error)'}}
+{%- else -%}
+	{{' '}}({{declare_params(method|response_struct_from_method)}}, err error)
+{%- endif -%}
+{% endmacro %}
+
+
+
+{%- macro flags(response_parameters, is_renponse) -%}
+{%- if not response_parameters -%}
+	bindings.MessageNoFlag
+{%- elif is_parameter: -%}
+	bindings.MessageExpectsResponseFlag
+{%- else -%}
+	bindings.MessageIsResponseFlag
+{%- endif -%}
+{%- endmacro -%}
+
+
+
 {% macro define(interface) %}
+type {{interface|name}} interface {
+{% for method in interface.methods %}
+	{{method|name}}{{declare_request_params(method)}}
+{% endfor %}
+}
+
+type {{interface|name}}Request bindings.InterfaceRequest
+type {{interface|name}}Pointer bindings.InterfacePointer
+
+{% for method in interface.methods %}
+const {{interface|name(False)}}_{{method|name}}_Name = {{method.ordinal}}
+{% endfor %}
+
+type {{interface|name}}Proxy struct {
+	router *bindings.Router
+	ids *bindings.Counter
+}
+
+func New{{interface|name}}Proxy(p {{interface|name}}Pointer, waiter bindings.AsyncWaiter) *{{interface|name}}Proxy {
+	return &{{interface|name}}Proxy{
+		bindings.NewRouter(p.PassMessagePipe(), waiter),
+		&bindings.Counter{},
+	}
+}
+
+func (p *{{interface|name}}Proxy) Close_proxy() {
+	p.router.Close()
+}
+
 {% for method in interface.methods %}
 {{struct_macros.define(method|struct_from_method, False)}}
 {%-  if method.response_parameters %}
 {{struct_macros.define(method|response_struct_from_method, False)}}
+{%-   endif %}
+func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method)}} {
+	payload := &{{method|struct_from_method|name(False)}}{
+{%   for field in (method|struct_from_method).fields %}
+		{{field|name(False)}},
+{%   endfor %}
+	}
+	header := bindings.MessageHeader{
+		Type: {{interface|name(False)}}_{{method|name}}_Name,
+		Flags: {{flags(method.response_parameters, False)}},
+{%   if method.response_parameters %}
+		RequestId: p.ids.Next(),
+{%   endif %}
+	}
+	var message *bindings.Message
+	if message, err = bindings.EncodeMessage(header, payload); err != nil {
+		err = fmt.Errorf("can't encode request: %v", err.Error())
+		return
+	}
+{% if method.response_parameters %}
+	readResult := <-p.router.AcceptWithResponse(message)
+	if err = readResult.Error; err != nil {
+		return
+	}
+	var response {{method|response_struct_from_method|name(False)}}
+	if err = readResult.Message.DecodePayload(&response); err != nil {
+		err = fmt.Errorf("can't decode response: %v", err.Error())
+		return
+	}
+{%   for field in (method|response_struct_from_method).fields %}
+	{{field|name(False)}} = response.{{field|name(False)}}
+{%   endfor %}
+{% else %}
+	err = p.router.Accept(message)
+{% endif %}
+	return
+}
+
+{% endfor %}
+type {{interface|name(False)}}Stub struct {
+	connector *bindings.Connector
+	impl {{interface|name}}
+}
+
+func New{{interface|name}}Stub(r {{interface|name}}Request, impl {{interface|name}}, waiter bindings.AsyncWaiter) *bindings.Stub {
+	connector := bindings.NewConnector(r.PassMessagePipe(), waiter)
+	return bindings.NewStub(connector, &{{interface|name(False)}}Stub{connector, impl})
+}
+
+func (s *{{interface|name(False)}}Stub) Accept(message *bindings.Message) (err error) {
+	switch message.Header.Type {
+{% for method in interface.methods %}
+	case {{interface|name(False)}}_{{method|name}}_Name:
+		var request {{method|struct_from_method|name(False)}}
+		if err := message.DecodePayload(&request); err != nil {
+			return fmt.Errorf("can't decode request: %v", err.Error())
+		}
+{%   if method.response_parameters %}
+		var response {{method|response_struct_from_method|name(False)}}
+{%   endif %}
+{%   if method.response_parameters|is_none_or_empty %}
+		err = s.impl.{{method|name}}(
+{%-   else -%}
+{%	 for field in (method|response_struct_from_method).fields %}
+		response.{{field|name(False)}}{{', '}}
+{%-	endfor -%}err = s.impl.{{method|name}}(
+{%-   endif -%}
+{%-	for field in (method|struct_from_method).fields -%}
+			request.{{field|name(False)}}{% if not loop.last %}, {% endif %}
+{%-	endfor -%}
+		)
+		if err != nil {
+			return
+		}
+{%   if method.response_parameters %}
+		header := bindings.MessageHeader{
+			Type: {{interface|name(False)}}_{{method|name}}_Name,
+			Flags: {{flags(method.response_parameters, True)}},
+			RequestId: message.Header.RequestId,
+		}
+		message, err = bindings.EncodeMessage(header, &response)
+		if err != nil {
+			return fmt.Errorf("can't encode response: %v", err.Error())
+		}
+		return s.connector.WriteMessage(message)
 {%   endif %}
 {% endfor %}
+	default:
+		return fmt.Errorf("unsupported request type %v", message.Header.Type);
+	}
+	return
+}
+
 {% endmacro %}

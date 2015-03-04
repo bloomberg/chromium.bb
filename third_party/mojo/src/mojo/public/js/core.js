@@ -95,7 +95,6 @@ dictionary MojoCreateDataPipeOptions {
 
 // MojoCreateDataPipeOptionsFlags
 var CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-var CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD;
 
 /*
  * MojoWriteDataFlags: Used to specify different modes to |writeData()|.

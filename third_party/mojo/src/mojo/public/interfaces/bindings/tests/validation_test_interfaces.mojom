@@ -31,6 +31,16 @@ struct StructF {
   array<uint8, 3> fixed_size_array;
 };
 
+struct StructG {
+  int32 i;
+  [MinVersion=1]
+  StructA? struct_a;
+  [MinVersion=3]
+  string? str;
+  [MinVersion=3]
+  bool b;
+};
+
 interface ConformanceTestInterface {
   Method0(float param0);
   Method1(StructA param0);
@@ -43,6 +53,7 @@ interface ConformanceTestInterface {
   Method8(array<array<string>?> param0);
   Method9(array<array<handle?>>? param0);
   Method10(map<string, uint8> param0);
+  Method11(StructG param0);
 };
 
 struct BasicStruct {

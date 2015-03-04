@@ -7,11 +7,10 @@ part of core;
 class _MojoHandleNatives {
   static int register(MojoEventStream eventStream) native "MojoHandle_Register";
   static int close(int handle) native "MojoHandle_Close";
-  static List wait(int handle, int signals, int deadline)
-      native "MojoHandle_Wait";
-  static List waitMany(
-      List<int> handles, List<int> signals, int deadline)
-      native "MojoHandle_WaitMany";
+  static List wait(int handle, int signals, int deadline) native
+      "MojoHandle_Wait";
+  static List waitMany(List<int> handles, List<int> signals,
+      int deadline) native "MojoHandle_WaitMany";
 }
 
 
@@ -50,14 +49,16 @@ class MojoHandle {
     }
   }
 
-  bool get readyRead => _ready(MojoHandleSignals.READABLE);
+  bool get readyRead => _ready(MojoHandleSignals.PEER_CLOSED_READABLE);
   bool get readyWrite => _ready(MojoHandleSignals.WRITABLE);
 
-  static MojoWaitManyResult waitMany(
-      List<int> handles, List<int> signals, int deadline) {
+  static MojoWaitManyResult waitMany(List<int> handles, List<int> signals,
+      int deadline) {
     List result = _MojoHandleNatives.waitMany(handles, signals, deadline);
     return new MojoWaitManyResult(
-        new MojoResult(result[0]), result[1], result[2]);
+        new MojoResult(result[0]),
+        result[1],
+        result[2]);
   }
 
   static MojoResult register(MojoEventStream eventStream) {

@@ -8,7 +8,7 @@ import("$mojo_sdk_root/mojo/public/mojo_sdk.gni")
 mojo_sdk_source_set("args") {
   public_configs = [ "../../../public/build/config:mojo_services" ]
   sources = [
-    "args.h",
     "lib/args.cc",
+    "args.h",
   ]
 }

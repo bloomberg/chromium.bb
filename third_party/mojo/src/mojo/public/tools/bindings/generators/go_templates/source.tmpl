@@ -12,14 +12,12 @@ package {{package}}
 
 import (
 	"fmt"
-	"mojo/public/go/system"
 {% for i in imports %}
 	{{i}}
 {% endfor %}
 )
 
 var _ = fmt.Errorf
-var _ = system.GetCore
 
 {% import "enum.tmpl" as enum_macros %}
 {% import "interface.tmpl" as interface_macros %}

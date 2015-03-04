@@ -225,8 +225,11 @@ define([
     expect(testFiles.length).toBeGreaterThan(0);
 
     for (var i = 0; i < testFiles.length; i++) {
-      // TODO(hansmuller): Temporarily skipping array pointer overflow tests.
-      if (testFiles[i].indexOf("overflow") != -1) {
+      // TODO(hansmuller, yzshen): Temporarily skipping:
+      //   - array pointer overflow tests;
+      //   - struct versioning tests (tests with "mthd11" in the name).
+      if (testFiles[i].indexOf("overflow") != -1 ||
+          testFiles[i].indexOf("mthd11") != -1) {
         console.log("[Skipping " + testFiles[i] + "]");
         continue;
       }
@@ -246,11 +249,6 @@ define([
 
   function testConformanceMessageValidation() {
     testMessageValidation("conformance_", [
-        testInterface.ConformanceTestInterface.validateRequest]);
-  }
-
-  function testNotImplementedMessageValidation() {
-    testMessageValidation("not_implemented_", [
         testInterface.ConformanceTestInterface.validateRequest]);
   }
 

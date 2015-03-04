@@ -356,8 +356,6 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
 
             .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_NONE",
                       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE)
-            .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD",
-                      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD)
 
             .SetValue("WRITE_DATA_FLAG_NONE", MOJO_WRITE_DATA_FLAG_NONE)
             .SetValue("WRITE_DATA_FLAG_ALL_OR_NONE",

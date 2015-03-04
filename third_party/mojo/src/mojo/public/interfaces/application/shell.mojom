@@ -9,7 +9,7 @@ import "mojo/public/interfaces/application/service_provider.mojom";
 // An interface through which a Mojo application may communicate with the Mojo
 // system and request connections to other applications.
 interface Shell {
-  // Establishes a connection with another application (identified by
+  // Establishes a connection with another application (located at
   // |application_url|) through which the calling application and the other
   // application may request services from one another.
   //

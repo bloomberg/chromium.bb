@@ -80,3 +80,10 @@ abstract class Proxy extends core.MojoEventStreamListener {
   // Need a getter for this for access in subclasses.
   Map<int, Completer> get completerMap => _completerMap;
 }
+
+
+// Generated Proxy classes implement this interface.
+abstract class ProxyBase {
+  final Proxy impl;
+  final String name;
+}

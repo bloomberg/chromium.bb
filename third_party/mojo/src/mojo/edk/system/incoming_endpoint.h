@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_INCOMING_ENDPOINT_H_
 #define MOJO_EDK_SYSTEM_INCOMING_ENDPOINT_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -12,15 +14,18 @@
 #include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/system_impl_export.h"
 
+struct MojoCreateDataPipeOptions;
+
 namespace mojo {
 namespace system {
 
 class ChannelEndpoint;
+class DataPipe;
 class MessagePipe;
 
 // This is a simple |ChannelEndpointClient| that only receives messages. It's
 // used for endpoints that are "received" by |Channel|, but not yet turned into
-// |MessagePipe|s.
+// |MessagePipe|s or |DataPipe|s.
 class MOJO_SYSTEM_IMPL_EXPORT IncomingEndpoint : public ChannelEndpointClient {
  public:
   IncomingEndpoint();
@@ -29,6 +34,11 @@ class MOJO_SYSTEM_IMPL_EXPORT IncomingEndpoint : public ChannelEndpointClient {
   scoped_refptr<ChannelEndpoint> Init();
 
   scoped_refptr<MessagePipe> ConvertToMessagePipe();
+  scoped_refptr<DataPipe> ConvertToDataPipeProducer(
+      const MojoCreateDataPipeOptions& validated_options,
+      size_t consumer_num_bytes);
+  scoped_refptr<DataPipe> ConvertToDataPipeConsumer(
+      const MojoCreateDataPipeOptions& validated_options);
 
   // Must be called before destroying this object if |ConvertToMessagePipe()|
   // wasn't called (but |Init()| was).

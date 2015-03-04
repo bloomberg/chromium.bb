@@ -44,6 +44,7 @@ component("system") {
     "core.h",
     "data_pipe.cc",
     "data_pipe.h",
+    "data_pipe_impl.cc",
     "data_pipe_impl.h",
     "data_pipe_consumer_dispatcher.cc",
     "data_pipe_consumer_dispatcher.h",
@@ -87,6 +88,11 @@ component("system") {
     "raw_channel.h",
     "raw_channel_posix.cc",
     "raw_channel_win.cc",
+    "remote_consumer_data_pipe_impl.cc",
+    "remote_consumer_data_pipe_impl.h",
+    "remote_data_pipe_ack.h",
+    "remote_producer_data_pipe_impl.cc",
+    "remote_producer_data_pipe_impl.h",
     "shared_buffer_dispatcher.cc",
     "shared_buffer_dispatcher.h",
     "simple_dispatcher.cc",
@@ -142,6 +148,7 @@ mojo_edk_source_set("test_utils") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "../../public/c/system",
   ]
 }
 
@@ -156,6 +163,7 @@ test("mojo_system_unittests") {
     "core_test_base.cc",
     "core_test_base.h",
     "core_unittest.cc",
+    "data_pipe_impl_unittest.cc",
     "data_pipe_unittest.cc",
     "dispatcher_unittest.cc",
     "local_data_pipe_impl_unittest.cc",
@@ -168,6 +176,7 @@ test("mojo_system_unittests") {
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
     "raw_channel_unittest.cc",
+    "remote_data_pipe_impl_unittest.cc",
     "remote_message_pipe_unittest.cc",
     "run_all_unittests.cc",
     "shared_buffer_dispatcher_unittest.cc",
@@ -194,8 +203,8 @@ test("mojo_system_unittests") {
 test("mojo_message_pipe_perftests") {
   sources = [
     "message_pipe_perftest.cc",
-    "message_pipe_test_utils.cc",
     "message_pipe_test_utils.h",
+    "message_pipe_test_utils.cc",
   ]
 
   deps = [

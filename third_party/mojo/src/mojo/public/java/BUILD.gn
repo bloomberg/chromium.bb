@@ -53,3 +53,18 @@ android_library("bindings") {
     ":system",
   ]
 }
+
+android_library("application") {
+  java_files = [
+    "application/src/org/chromium/mojo/application/ApplicationConnection.java",
+    "application/src/org/chromium/mojo/application/ApplicationDelegate.java",
+    "application/src/org/chromium/mojo/application/ApplicationImpl.java",
+    "application/src/org/chromium/mojo/application/ApplicationRunner.java",
+    "application/src/org/chromium/mojo/application/ServiceFactoryBinder.java",
+  ]
+  deps = [
+    ":bindings",
+    ":system",
+    "../interfaces/application:application_java",
+  ]
+}

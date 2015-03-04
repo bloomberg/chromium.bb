@@ -26,10 +26,10 @@ import gs
 PREBUILT_FILE_PATH = os.path.join(CURRENT_PATH, "prebuilt", "shell")
 
 
-def download(tools_directory):
+def download(tools_directory, version_file):
   stamp_path = os.path.join(PREBUILT_FILE_PATH, "VERSION")
 
-  version_path = os.path.join(CURRENT_PATH, "../VERSION")
+  version_path = os.path.join(CURRENT_PATH, version_file)
   with open(version_path) as version_file:
     version = version_file.read().strip()
 
@@ -81,8 +81,17 @@ def main():
                       help="Path to the directory containing "
                            "find_depot_tools.py, specified as a relative path "
                            "from the location of this file.")
+  parser.add_argument("--version-file",
+                      dest="version_file",
+                      metavar="<version-file>",
+                      type=str,
+                      default="../VERSION",
+                      help="Path to the file containing the version of the "
+                           "shell to be fetched, specified as a relative path "
+                           "from the location of this file (default: "
+                           "%(default)s).")
   args = parser.parse_args()
-  return download(args.tools_directory)
+  return download(args.tools_directory, args.version_file)
 
 if __name__ == "__main__":
   sys.exit(main())

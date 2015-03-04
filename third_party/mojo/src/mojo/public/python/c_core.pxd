@@ -106,7 +106,6 @@ cdef extern from "mojo/public/c/system/core.h" nogil:
   # data_pipe.h
   ctypedef uint32_t MojoCreateDataPipeOptionsFlags
   const MojoCreateDataPipeOptionsFlags MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE
-  const MojoCreateDataPipeOptionsFlags MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD
 
   cdef struct MojoCreateDataPipeOptions:
     uint32_t struct_size

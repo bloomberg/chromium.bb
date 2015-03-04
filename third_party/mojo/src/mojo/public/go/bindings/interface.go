@@ -8,16 +8,16 @@ import (
 	"mojo/public/go/system"
 )
 
-// messagePipeHandleOwner owns a message pipe handle, it can only pass it
+// MessagePipeHandleOwner owns a message pipe handle, it can only pass it
 // invalidating itself or close it.
-type messagePipeHandleOwner struct {
+type MessagePipeHandleOwner struct {
 	handle system.MessagePipeHandle
 }
 
 // PassMessagePipe passes ownership of the underlying message pipe handle to
 // the newly created handle object, invalidating the underlying handle object
 // in the process.
-func (o *messagePipeHandleOwner) PassMessagePipe() system.MessagePipeHandle {
+func (o *MessagePipeHandleOwner) PassMessagePipe() system.MessagePipeHandle {
 	if o.handle == nil {
 		return &InvalidHandle{}
 	}
@@ -25,10 +25,16 @@ func (o *messagePipeHandleOwner) PassMessagePipe() system.MessagePipeHandle {
 }
 
 // Close closes the underlying handle.
-func (o *messagePipeHandleOwner) Close() {
+func (o *MessagePipeHandleOwner) Close() {
 	if o.handle != nil {
 		o.handle.Close()
 	}
+}
+
+// NewMessagePipeHandleOwner creates |MessagePipeHandleOwner| that owns the
+// provided message pipe handle.
+func NewMessagePipeHandleOwner(handle system.MessagePipeHandle) MessagePipeHandleOwner {
+	return MessagePipeHandleOwner{handle}
 }
 
 // InterfaceRequest represents a request from a remote client for an
@@ -36,7 +42,7 @@ func (o *messagePipeHandleOwner) Close() {
 // implementor of the interface should remove the message pipe by calling
 // PassMessagePipe() and attach it to the implementation.
 type InterfaceRequest struct {
-	messagePipeHandleOwner
+	MessagePipeHandleOwner
 }
 
 // InterfacePointer owns a message pipe handle with an implementation of mojo
@@ -44,7 +50,7 @@ type InterfaceRequest struct {
 // interface should remove the message pipe by calling PassMessagePipe() and
 // attach it to the proxy.
 type InterfacePointer struct {
-	messagePipeHandleOwner
+	MessagePipeHandleOwner
 }
 
 // CreateMessagePipeForInterface creates a message pipe with interface request
@@ -56,5 +62,5 @@ func CreateMessagePipeForMojoInterface() (InterfaceRequest, InterfacePointer) {
 	if r != system.MOJO_RESULT_OK {
 		panic("can't create a message pipe")
 	}
-	return InterfaceRequest{messagePipeHandleOwner{h0}}, InterfacePointer{messagePipeHandleOwner{h1}}
+	return InterfaceRequest{MessagePipeHandleOwner{h0}}, InterfacePointer{MessagePipeHandleOwner{h1}}
 }

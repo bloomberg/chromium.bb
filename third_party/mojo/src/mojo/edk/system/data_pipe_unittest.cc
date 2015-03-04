@@ -79,8 +79,7 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
 
   // Different flags.
   MojoCreateDataPipeOptionsFlags flags_values[] = {
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD};
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE};
   for (size_t i = 0; i < arraysize(flags_values); i++) {
     const MojoCreateDataPipeOptionsFlags flags = flags_values[i];
 

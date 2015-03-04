@@ -371,15 +371,6 @@ TEST_F(ValidationTest, Conformance) {
   RunValidationTests("conformance_", validators.GetHead());
 }
 
-TEST_F(ValidationTest, NotImplemented) {
-  DummyMessageReceiver dummy_receiver;
-  mojo::internal::FilterChain validators(&dummy_receiver);
-  validators.Append<mojo::internal::MessageHeaderValidator>();
-  validators.Append<ConformanceTestInterface::RequestValidator_>();
-
-  RunValidationTests("not_implemented_", validators.GetHead());
-}
-
 // Test that InterfacePtr<X> applies the correct validators and they don't
 // conflict with each other:
 //   - MessageHeaderValidator

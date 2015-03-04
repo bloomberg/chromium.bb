@@ -685,7 +685,6 @@ class CreateDataPipeOptions(object):
   See mojo/public/c/system/data_pipe.h
   """
   FLAG_NONE = c_core.MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE
-  FLAG_MAY_DISCARD = c_core.MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD
 
   def __init__(self):
     self.flags = CreateDataPipeOptions.FLAG_NONE

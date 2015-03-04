@@ -4,13 +4,14 @@
 
 {% macro define(struct, exported=True) %}
 type {{struct|name(exported)}} struct {
-{% for packed_field in struct.packed.packed_fields %}
-	{{packed_field.field|name(exported)}} {{packed_field.field.kind|go_type}}
+{% for field in struct.fields %}
+	{{field|name(exported)}} {{field.kind|go_type}}
 {% endfor %}
 }
 
 func (s *{{struct|name(exported)}}) Encode(encoder *bindings.Encoder) error {
-	encoder.StartStruct({{struct.versions[-1].num_bytes}}, {{struct.versions[-1].version}})
+{% set HEADER_SIZE = 8 %}
+	encoder.StartStruct({{struct.versions[-1].num_bytes - HEADER_SIZE}}, {{struct.versions[-1].version}})
 {% for byte in struct.bytes %}
 {%   for packed_field in byte.packed_fields %}
 	{{encode('s.'~packed_field.field|name(exported), packed_field.field.kind)|tab_indent()}}
@@ -103,6 +104,10 @@ if err := encoder.Finish(); err != nil {
 if err := encoder.WriteInt32(int32({{value}})); err != nil {
 	return err
 }
+{% elif kind|is_handle_owner %}
+if err := encoder.WriteHandle({{value}}.PassMessagePipe()); err != nil {
+	return err
+}
 {% else %}
 if err := encoder.Write{{kind|encode_suffix}}({{value}}); err != nil {
 	return err
@@ -137,7 +142,12 @@ if err != nil {
 	return err
 }
 if handle{{level}}.IsValid() {
+{%   if kind|is_handle_owner %}
+	handleOwner := bindings.NewMessagePipeHandleOwner(handle{{level}})
+	{{value}} = {% if kind|is_nullable %}&{% endif %}{{kind|go_type(False)}}{handleOwner}
+{%   else %}
 	{{value}} = {% if kind|is_nullable %}&{% endif %}handle{{level}}
+{%   endif %}
 } else {
 {%   if kind|is_nullable %}
 	{{value}} = nil

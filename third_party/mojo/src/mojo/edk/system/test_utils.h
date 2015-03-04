@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace system {
@@ -17,6 +18,14 @@ namespace test {
 // functions with timeouts are reasonably accurate. We want this to be as small
 // as possible without causing too much flakiness.
 base::TimeDelta EpsilonTimeout();
+
+// |TestTimeouts::tiny_timeout()|, as a |MojoDeadline|. (Expect this to be on
+// the order of 100 ms.)
+MojoDeadline TinyDeadline();
+
+// |TestTimeouts::action_timeout()|, as a |MojoDeadline|.(Expect this to be on
+// the order of 10 s.)
+MojoDeadline ActionDeadline();
 
 // Stopwatch -------------------------------------------------------------------
 

@@ -41,7 +41,9 @@ def main():
 
   options, _ = parser.parse_args()
 
-  inputs = ast.literal_eval(options.inputs)
+  inputs = []
+  if (options.inputs):
+    inputs = ast.literal_eval(options.inputs)
   zip_inputs = []
   if options.zip_inputs:
     zip_inputs = ast.literal_eval(options.zip_inputs)

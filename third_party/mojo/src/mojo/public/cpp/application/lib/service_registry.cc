@@ -13,11 +13,13 @@ namespace internal {
 
 ServiceRegistry::ServiceRegistry(
     ApplicationImpl* application_impl,
-    const std::string& url,
+    const std::string& connection_url,
+    const std::string& remote_url,
     ServiceProviderPtr remote_services,
     InterfaceRequest<ServiceProvider> local_services)
     : application_impl_(application_impl),
-      url_(url),
+      connection_url_(connection_url),
+      remote_url_(remote_url),
       local_binding_(this),
       remote_service_provider_(remote_services.Pass()) {
   if (local_services.is_pending())
@@ -63,8 +65,12 @@ bool ServiceRegistry::RemoveServiceConnectorInternal(
   return true;
 }
 
+const std::string& ServiceRegistry::GetConnectionURL() {
+  return connection_url_;
+}
+
 const std::string& ServiceRegistry::GetRemoteApplicationURL() {
-  return url_;
+  return remote_url_;
 }
 
 ServiceProvider* ServiceRegistry::GetServiceProvider() {

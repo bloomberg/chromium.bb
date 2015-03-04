@@ -26,7 +26,8 @@ class ApplicationImpl(application_mojom.Application):
     self.args = args
     self._delegate.Initialize(shell, self)
 
-  def AcceptConnection(self, requestor_url, services, exposed_services):
+  def AcceptConnection(self, requestor_url, services, exposed_services,
+                       resolved_url):
     service_provider = ServiceProviderImpl(services)
     if self._delegate.OnAcceptConnection(service_provider, requestor_url,
                                          exposed_services):

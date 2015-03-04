@@ -21,6 +21,7 @@ enum Target {
 // Embedders that support navigation of implement this interface.
 interface NavigatorHost {
   RequestNavigate(Target target, URLRequest request);
+  RequestNavigateHistory(int32 delta);
 
   // Applications call this to inform hosts of navigations they performed
   // locally. For example, pushState() navigations in an HTML application.

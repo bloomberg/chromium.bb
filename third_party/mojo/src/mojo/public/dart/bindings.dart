@@ -6,8 +6,8 @@ library bindings;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:mojo_core' as core;
 import 'dart:typed_data';
+import 'mojo:core' as core;
 
 part 'src/codec.dart';
 part 'src/message.dart';

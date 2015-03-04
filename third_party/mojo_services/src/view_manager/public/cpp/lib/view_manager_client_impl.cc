@@ -172,8 +172,8 @@ void ViewManagerClientImpl::SetSurfaceId(Id view_id, SurfaceIdPtr surface_id) {
 void ViewManagerClientImpl::SetFocus(Id view_id) {
   // In order for us to get here we had to have exposed a view, which implies we
   // got a connection.
-  DCHECK(window_manager_.get());
-  window_manager_->FocusWindow(view_id, ActionCompletedCallback());
+  DCHECK(service_);
+  service_->PerformAction(view_id, "focus", ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::SetVisible(Id view_id, bool visible) {
@@ -416,6 +416,14 @@ void ViewManagerClientImpl::OnViewInputEvent(
                       OnViewInputEvent(view, event));
   }
   ack_callback.Run();
+}
+
+void ViewManagerClientImpl::OnPerformAction(
+    Id view_id,
+    const String& name,
+    const Callback<void(bool)>& callback) {
+  View* view = GetViewById(view_id);
+  callback.Run(delegate_->OnPerformAction(view, name));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

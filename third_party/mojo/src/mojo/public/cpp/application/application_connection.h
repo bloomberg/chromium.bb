@@ -55,6 +55,18 @@ class ApplicationConnection {
     }
   }
 
+  // Returns the URL that was used by the source application to establish a
+  // connection to the destination application.
+  //
+  // When ApplicationConnection is representing an incoming connection this can
+  // be different than the URL the application was initially loaded from, if the
+  // application handles multiple URLs. Note that this is the URL after all
+  // URL rewriting and HTTP redirects have been performed.
+  //
+  // When ApplicationConnection is representing and outgoing connection, this
+  // will be the same as the value returned by GetRemoveApplicationURL().
+  virtual const std::string& GetConnectionURL() = 0;
+
   // Returns the URL identifying the remote application on this connection.
   virtual const std::string& GetRemoteApplicationURL() = 0;
 

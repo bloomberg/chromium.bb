@@ -6,8 +6,10 @@
 
 #include "base/logging.h"
 #include "mojo/edk/system/channel_endpoint.h"
+#include "mojo/edk/system/data_pipe.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/message_pipe.h"
+#include "mojo/edk/system/remote_producer_data_pipe_impl.h"
 
 namespace mojo {
 namespace system {
@@ -28,6 +30,27 @@ scoped_refptr<MessagePipe> IncomingEndpoint::ConvertToMessagePipe() {
   DCHECK(message_queue_.IsEmpty());
   endpoint_ = nullptr;
   return message_pipe;
+}
+
+scoped_refptr<DataPipe> IncomingEndpoint::ConvertToDataPipeProducer(
+    const MojoCreateDataPipeOptions& validated_options,
+    size_t consumer_num_bytes) {
+  base::AutoLock locker(lock_);
+  scoped_refptr<DataPipe> data_pipe(DataPipe::CreateRemoteConsumerFromExisting(
+      validated_options, consumer_num_bytes, &message_queue_, endpoint_.get()));
+  DCHECK(message_queue_.IsEmpty());
+  endpoint_ = nullptr;
+  return data_pipe;
+}
+
+scoped_refptr<DataPipe> IncomingEndpoint::ConvertToDataPipeConsumer(
+    const MojoCreateDataPipeOptions& validated_options) {
+  base::AutoLock locker(lock_);
+  scoped_refptr<DataPipe> data_pipe(DataPipe::CreateRemoteProducerFromExisting(
+      validated_options, &message_queue_, endpoint_.get()));
+  DCHECK(message_queue_.IsEmpty());
+  endpoint_ = nullptr;
+  return data_pipe;
 }
 
 void IncomingEndpoint::Close() {

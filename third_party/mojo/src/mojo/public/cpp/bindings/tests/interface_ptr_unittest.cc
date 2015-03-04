@@ -261,6 +261,16 @@ TEST_F(InterfacePtrTest, Resettable) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, CloseRaw(handle));
 }
 
+TEST_F(InterfacePtrTest, BindInvalidHandle) {
+  math::CalculatorPtr ptr;
+  EXPECT_FALSE(ptr.get());
+  EXPECT_FALSE(ptr);
+
+  ptr.Bind(ScopedMessagePipeHandle());
+  EXPECT_FALSE(ptr.get());
+  EXPECT_FALSE(ptr);
+}
+
 TEST_F(InterfacePtrTest, EncounteredError) {
   math::CalculatorPtr proxy;
   MathCalculatorImpl calc_impl(GetProxy(&proxy));

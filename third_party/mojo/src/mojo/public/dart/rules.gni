@@ -54,12 +54,46 @@ template("dart_package") {
 # dart_package targets.
 template("dart_packaged_application") {
   package_name = "${target_name}_package"
+  package_analyze_sources = "${target_name}_analyze"
   package_output = "$target_out_dir/$package_name.dartzip"
 
   if (defined(invoker.output_name)) {
     mojo_output = "$root_out_dir/" + invoker.output_name + ".mojo"
   } else {
     mojo_output = "$root_out_dir/" + target_name + ".mojo"
+  }
+
+  action_foreach(package_analyze_sources) {
+    sources = invoker.sources
+
+    script = rebase_path("mojo/public/tools/dart_analyze.py", ".", mojo_root)
+
+    args = [
+      rebase_path(root_gen_dir),
+      rebase_path("$target_gen_dir/{{source_name_part}}.stamp"),
+      "{{source}}",
+      "--no-hints",
+      "--url-mapping=mojo:application,/" +
+          rebase_path("mojo/public/dart/application.dart", "/", mojo_root),
+      "--url-mapping=mojo:bindings,/" +
+          rebase_path("mojo/public/dart/bindings.dart", "/", mojo_root),
+      "--url-mapping=mojo:builtin,/" +
+          rebase_path("mojo/dart/embedder/builtin.dart", "/", mojo_root),
+      "--url-mapping=mojo:core,/" +
+          rebase_path("mojo/public/dart/core.dart", "/", mojo_root),
+    ]
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+
+    if (defined(invoker.datadeps)) {
+      datadeps = invoker.datadeps
+    }
+
+    outputs = [
+      "$target_gen_dir/{{source_name_part}}.stamp",
+    ]
   }
 
   dart_package(package_name) {
@@ -89,6 +123,9 @@ template("dart_packaged_application") {
     ]
 
     deps = [
+      # TODO(erg): When dartanalyze runs at an acceptable speed, add
+      # ":$package_analyze_sources" as a dependency here and remove the
+      # manual group("check") in the toplevel build file.
       ":$package_name",
     ]
     if (defined(invoker.deps)) {
@@ -102,7 +139,7 @@ template("dart_packaged_application") {
     }
 
     line = "#!mojo mojo:dart_content_handler"
-    if (defined(invoker.strict) && invoker.strict == true) {
+    if (is_debug || (defined(invoker.strict) && invoker.strict == true)) {
       line = "#!mojo mojo:dart_content_handler?strict=true"
     }
 

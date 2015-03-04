@@ -21,6 +21,7 @@ mojo_sdk_source_set("cpp") {
     "view_manager.h",
     "view_manager_client_factory.h",
     "view_manager_context.h",
+    "view_manager_delegate.cc",
     "view_manager_delegate.h",
     "view_observer.h",
     "view_property.h",

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/lib/service_connector.h"
 #include "mojo/public/cpp/application/lib/service_registry.h"
 #include "mojo/public/cpp/system/core.h"
@@ -14,8 +15,6 @@
 #include "mojo/public/interfaces/application/shell.mojom.h"
 
 namespace mojo {
-
-class ApplicationDelegate;
 
 // Utility class for communicating with the Shell, and providing Services
 // to clients.
@@ -107,6 +106,7 @@ class ApplicationImpl : public Application {
   void ClearConnections();
 
   void OnShellError() {
+    delegate_->Quit();
     ClearConnections();
     Terminate();
   }
@@ -114,7 +114,8 @@ class ApplicationImpl : public Application {
   // Application implementation.
   void AcceptConnection(const String& requestor_url,
                         InterfaceRequest<ServiceProvider> services,
-                        ServiceProviderPtr exposed_services) override;
+                        ServiceProviderPtr exposed_services,
+                        const String& url) override;
 
   void RequestQuit() override;
 

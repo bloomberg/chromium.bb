@@ -86,8 +86,10 @@ def GetNonNullableGoType(kind):
     return '[]%s' % GetGoType(kind.kind)
   if mojom.IsMapKind(kind):
     return 'map[%s]%s' % (GetGoType(kind.key_kind), GetGoType(kind.value_kind))
-  if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
-    return GetGoType(mojom.MSGPIPE)
+  if mojom.IsInterfaceKind(kind):
+    return '%sPointer' % GetFullName(kind)
+  if mojom.IsInterfaceRequestKind(kind):
+    return '%sRequest' % GetFullName(kind.kind)
   if mojom.IsEnumKind(kind):
     return GetNameForNestedElement(kind)
   return _kind_infos[kind].go_type
@@ -223,9 +225,14 @@ def GetAllEnums(module):
 # Adds an import required to use the provided |element|.
 # The required import is stored at '_imports'.
 def AddImport(module, element):
-  if not hasattr(element, 'imported_from') or not element.imported_from:
+  if (isinstance(element, mojom.Kind) and
+      mojom.IsNonInterfaceHandleKind(element)):
+    _imports['mojo/public/go/system'] = 'system'
     return
-  if isinstance(element, mojom.Kind) and mojom.IsAnyHandleKind(element):
+  if isinstance(element, mojom.Kind) and mojom.IsInterfaceRequestKind(element):
+    AddImport(module, element.kind)
+    return
+  if not hasattr(element, 'imported_from') or not element.imported_from:
     return
   imported = element.imported_from
   if imported['namespace'] == module.namespace:
@@ -246,13 +253,12 @@ def GetImports(module):
   # Imports can only be used in structs, constants, enums, interfaces.
   all_structs = list(module.structs)
   for i in module.interfaces:
-    AddImport(module, i)
     for method in i.methods:
       all_structs.append(GetStructFromMethod(method))
       if method.response_parameters:
         all_structs.append(GetResponseStructFromMethod(method))
 
-  if len(all_structs) > 0:
+  if len(all_structs) > 0 or len(module.interfaces) > 0:
     _imports['mojo/public/go/bindings'] = 'bindings'
   for struct in all_structs:
     for field in struct.fields:
@@ -289,6 +295,8 @@ class Generator(generator.Generator):
     'is_array': mojom.IsArrayKind,
     'is_enum': mojom.IsEnumKind,
     'is_handle': mojom.IsAnyHandleKind,
+    'is_handle_owner': lambda kind:
+        mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind),
     'is_map': mojom.IsMapKind,
     'is_none_or_empty': lambda array: array == None or len(array) == 0,
     'is_nullable': mojom.IsNullableKind,

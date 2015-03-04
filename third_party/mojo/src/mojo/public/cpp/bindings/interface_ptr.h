@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "mojo/public/cpp/bindings/error_handler.h"
+#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_internal.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -56,15 +57,30 @@ class InterfacePtr {
   // Closes the bound message pipe (if any) on destruction.
   ~InterfacePtr() {}
 
-  // Binds the InterfacePtr to a message pipe that is connected to a remote
-  // implementation of Interface. The |waiter| is used for receiving
-  // notifications when there is data to read from the message pipe. For most
-  // callers, the default |waiter| will be sufficient.
+  // Binds the InterfacePtr to a remote implementation of Interface. The
+  // |waiter| is used for receiving notifications when there is data to read
+  // from the message pipe. For most callers, the default |waiter| will be
+  // sufficient.
+  //
+  // Calling with an invalid |info| (containing an invalid message pipe handle)
+  // has the same effect as reset(). In this case, the InterfacePtr is not
+  // considered as bound.
+  void Bind(
+      InterfacePtrInfo<Interface> info,
+      const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
+    reset();
+    if (info.is_valid())
+      internal_state_.Bind(info.Pass(), waiter);
+  }
+
+  // Similar to the previous method, but takes a message pipe handle as input.
+  //
+  // TODO(yzshen): Remove this method and change call sites to use the other
+  // Bind().
   void Bind(
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
-    reset();
-    internal_state_.Bind(handle.Pass(), waiter);
+    Bind(InterfacePtrInfo<Interface>(handle.Pass(), 0u), waiter);
   }
 
   // Returns a raw pointer to the local proxy. Caller does not take ownership.
@@ -74,6 +90,9 @@ class InterfacePtr {
   // Functions like a pointer to Interface. Must already be bound.
   Interface* operator->() const { return get(); }
   Interface& operator*() const { return *get(); }
+
+  // Returns the version number of the interface that the remote side supports.
+  uint32_t version() const { return internal_state_->version(); }
 
   // Closes the bound message pipe (if any) and returns the pointer to the
   // unbound state.
@@ -108,13 +127,23 @@ class InterfacePtr {
     internal_state_.set_error_handler(error_handler);
   }
 
-  // Unbinds the InterfacePtr and return the previously bound message pipe (if
-  // any). This method may be used to move the proxy to a different thread (see
-  // class comments for details).
-  ScopedMessagePipeHandle PassMessagePipe() {
+  // Unbinds the InterfacePtr and returns the information which could be used
+  // to setup an InterfacePtr again. This method may be used to move the proxy
+  // to a different thread (see class comments for details).
+  InterfacePtrInfo<Interface> PassInterface() {
     State state;
     internal_state_.Swap(&state);
-    return state.PassMessagePipe();
+
+    return state.PassInterface();
+  }
+
+  // Similar to the previous method but returns the previously bound message
+  // pipe (if any).
+  //
+  // TODO(yzshen): Remove this method and change call sites to use
+  // PassInterface().
+  ScopedMessagePipeHandle PassMessagePipe() {
+    return PassInterface().PassHandle();
   }
 
   // DO NOT USE. Exposed only for internal use and for testing.
@@ -141,6 +170,9 @@ class InterfacePtr {
 // If the specified message pipe handle is valid, returns an InterfacePtr bound
 // to it. Otherwise, returns an unbound InterfacePtr. The specified |waiter|
 // will be used as in the InterfacePtr::Bind() method.
+//
+// TODO(yzshen): Either remove it or change to use InterfacePtrInfo as the first
+// parameter.
 template <typename Interface>
 InterfacePtr<Interface> MakeProxy(
     ScopedMessagePipeHandle handle,

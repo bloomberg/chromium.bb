@@ -93,7 +93,7 @@ class MojoDataPipeProducer {
 class MojoDataPipeConsumer {
   static const int FLAG_NONE = 0;
   static const int FLAG_ALL_OR_NONE = 1 << 0;
-  static const int FLAG_MAY_DISCARD = 1 << 1;
+  static const int FLAG_DISCARD = 1 << 1;
   static const int FLAG_QUERY = 1 << 2;
   static const int FLAG_PEEK = 1 << 3;
 
@@ -107,7 +107,7 @@ class MojoDataPipeConsumer {
   int read(ByteData data, [int numBytes = -1, int flags = 0]) {
     if (handle == null) {
       status = MojoResult.INVALID_ARGUMENT;
-      return status;
+      return 0;
     }
 
     int data_numBytes = (numBytes == -1) ? data.lengthInBytes : numBytes;
@@ -115,7 +115,7 @@ class MojoDataPipeConsumer {
         handle.h, data, data_numBytes, flags);
     if (result == null) {
       status = MojoResult.INVALID_ARGUMENT;
-      return status;
+      return 0;
     }
     assert((result is List) && (result.length == 2));
     status = new MojoResult(result[0]);
@@ -156,7 +156,6 @@ class MojoDataPipeConsumer {
 
 class MojoDataPipe {
   static const int FLAG_NONE = 0;
-  static const int FLAG_MAY_DISCARD = 1 << 0;
   static const int DEFAULT_ELEMENT_SIZE = 1;
   static const int DEFAULT_CAPACITY = 0;
 
