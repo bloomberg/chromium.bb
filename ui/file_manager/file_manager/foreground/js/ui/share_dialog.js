@@ -136,6 +136,7 @@ ShareDialog.prototype.initDom_ = function() {
   this.webViewWrapper_.className = 'share-dialog-webview-wrapper';
   this.cancelButton_.hidden = true;
   this.okButton_.hidden = true;
+  this.closeButton_.hidden = true;
   this.frame_.insertBefore(this.webViewWrapper_,
                            this.frame_.querySelector('.cr-dialog-buttons'));
 };
