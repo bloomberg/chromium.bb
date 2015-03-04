@@ -2264,7 +2264,6 @@
       'browser/profiles/profile_metrics.cc',
       'browser/profiles/profile_metrics.h',
       'browser/profiles/profile_metrics_list.h',
-      'browser/profiles/profile_metrics_mac.mm',
       'browser/profiles/profile_shortcut_manager_win.cc',
       'browser/profiles/profile_shortcut_manager_win.h',
       'browser/profiles/profiles_state.cc',

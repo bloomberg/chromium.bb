@@ -208,11 +208,6 @@ class ProfileMetrics {
                                       ProfileCounts* counts);
 
   static void LogNumberOfProfileSwitches();
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Update OS level tracking of profile counts.
-  static void UpdateReportedOSProfileStatistics(size_t active, size_t signedin);
-#endif
-
   static void LogNumberOfProfiles(ProfileManager* manager);
   static void LogProfileAddNewUser(ProfileAdd metric);
   static void LogProfileAvatarSelection(size_t icon_index);

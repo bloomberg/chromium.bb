@@ -5,7 +5,6 @@
 #include "chrome/installer/util/google_update_settings.h"
 
 #include <algorithm>
-#include <limits>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -71,7 +70,7 @@ bool ReadGoogleUpdateStrKey(const wchar_t* const name, base::string16* value) {
 bool WriteGoogleUpdateAggregateNumKeyInternal(
     const AppRegistrationData& app_reg_data,
     const wchar_t* const name,
-    size_t value,
+    int value,
     const wchar_t* const aggregate) {
   DCHECK(aggregate);
   DCHECK(GoogleUpdateSettings::IsSystemInstall());
@@ -91,11 +90,7 @@ bool WriteGoogleUpdateAggregateNumKeyInternal(
   reg_path.append(name);
   RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), kAccess);
   key.WriteValue(google_update::kRegAggregateMethod, aggregate);
-
-  DWORD dword_value = (value > std::numeric_limits<DWORD>::max() ?
-      std::numeric_limits<DWORD>::max() :
-      static_cast<DWORD>(value));
-  return (key.WriteValue(uniquename.c_str(), dword_value) == ERROR_SUCCESS);
+  return (key.WriteValue(uniquename.c_str(), value) == ERROR_SUCCESS);
 }
 
 // Updates a registry key |name| to be |value| for the given |app_reg_data|.
@@ -551,8 +546,8 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
   return modified;
 }
 
-void GoogleUpdateSettings::UpdateProfileCounts(size_t profiles_active,
-                                               size_t profiles_signedin) {
+void GoogleUpdateSettings::UpdateProfileCounts(int profiles_active,
+                                               int profiles_signedin) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   // System-level installs must write into the ClientStateMedium key shared by
   // all users. Special treatment is used to aggregate across those users.
@@ -574,10 +569,10 @@ void GoogleUpdateSettings::UpdateProfileCounts(size_t profiles_active,
     // user-level installs.
     WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
                                     google_update::kRegProfilesActive,
-                                    base::SizeTToString16(profiles_active));
+                                    base::IntToString16(profiles_active));
     WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
                                     google_update::kRegProfilesSignedIn,
-                                    base::SizeTToString16(profiles_signedin));
+                                    base::IntToString16(profiles_signedin));
   }
 }
 
