@@ -218,10 +218,4 @@ void SyncDataRemote::GetOrDownloadAttachments(
   attachment_service_.GetOrDownloadAttachments(attachment_ids, callback);
 }
 
-void SyncDataRemote::DropAttachments(
-    const AttachmentIdList& attachment_ids,
-    const AttachmentService::DropCallback& callback) {
-  attachment_service_.DropAttachments(attachment_ids, callback);
-}
-
 }  // namespace syncer

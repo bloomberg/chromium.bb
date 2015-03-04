@@ -62,8 +62,6 @@ class SYNC_EXPORT AttachmentServiceImpl
   AttachmentStore* GetStore() override;
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
                                 const GetOrDownloadCallback& callback) override;
-  void DropAttachments(const AttachmentIdList& attachment_ids,
-                       const DropCallback& callback) override;
   void UploadAttachments(const AttachmentIdSet& attachment_ids) override;
 
   // NetworkChangeObserver implementation.
@@ -85,8 +83,6 @@ class SYNC_EXPORT AttachmentServiceImpl
   void WriteDone(const scoped_refptr<GetOrDownloadState>& state,
                  const Attachment& attachment,
                  const AttachmentStore::Result& result);
-  void DropDone(const DropCallback& callback,
-                const AttachmentStore::Result& result);
   void UploadDone(const AttachmentUploader::UploadResult& result,
                   const AttachmentId& attachment_id);
   void DownloadDone(const scoped_refptr<GetOrDownloadState>& state,

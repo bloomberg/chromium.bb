@@ -176,16 +176,6 @@ void AttachmentServiceImpl::GetOrDownloadAttachments(
                                      state));
 }
 
-void AttachmentServiceImpl::DropAttachments(
-    const AttachmentIdList& attachment_ids,
-    const DropCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  attachment_store_->Drop(attachment_ids,
-                          base::Bind(&AttachmentServiceImpl::DropDone,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     callback));
-}
-
 void AttachmentServiceImpl::ReadDone(
     const scoped_refptr<GetOrDownloadState>& state,
     const AttachmentStore::Result& result,
@@ -232,18 +222,6 @@ void AttachmentServiceImpl::WriteDone(
       state->AddUnavailableAttachmentId(attachment.GetId());
       break;
   }
-}
-
-void AttachmentServiceImpl::DropDone(const DropCallback& callback,
-                                     const AttachmentStore::Result& result) {
-  AttachmentService::DropResult drop_result =
-      AttachmentService::DROP_UNSPECIFIED_ERROR;
-  if (result == AttachmentStore::SUCCESS) {
-    drop_result = AttachmentService::DROP_SUCCESS;
-  }
-  // TODO(maniscalco): Deal with case where an error occurred (bug 361251).
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, drop_result));
 }
 
 void AttachmentServiceImpl::UploadDone(

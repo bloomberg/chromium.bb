@@ -56,8 +56,6 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
   AttachmentStore* GetStore() override;
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
                                 const GetOrDownloadCallback& callback) override;
-  void DropAttachments(const AttachmentIdList& attachment_ids,
-                       const DropCallback& callback) override;
   void UploadAttachments(const AttachmentIdSet& attachment_ids) override;
 
  protected:
@@ -85,8 +83,6 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
     void GetOrDownloadAttachments(
         const AttachmentIdList& attachment_ids,
         const GetOrDownloadCallback& callback) override;
-    void DropAttachments(const AttachmentIdList& attachment_ids,
-                         const DropCallback& callback) override;
     void UploadAttachments(const AttachmentIdSet& attachment_ids) override;
 
    protected:

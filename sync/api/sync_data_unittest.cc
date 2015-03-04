@@ -117,8 +117,8 @@ TEST_F(SyncDataTest, CreateRemoteData) {
   EXPECT_TRUE(data.GetAttachmentIds().empty());
 }
 
-// TODO(maniscalco): Add test cases that verify GetLocalAttachmentsForUpload and
-// DropAttachments calls are passed through to the underlying AttachmentService.
+// TODO(maniscalco): Add test cases that verify GetLocalAttachmentsForUpload
+// calls are passed through to the underlying AttachmentService.
 
 }  // namespace
 

@@ -36,15 +36,6 @@ class SYNC_EXPORT AttachmentService {
       void(const GetOrDownloadResult&, scoped_ptr<AttachmentMap> attachments)>
       GetOrDownloadCallback;
 
-  // The result of a DropAttachments operation.
-  enum DropResult {
-    DROP_SUCCESS,            // No error, all attachments dropped.
-    DROP_UNSPECIFIED_ERROR,  // An unspecified error occurred. Some or all
-                             // attachments may not have been dropped.
-  };
-
-  typedef base::Callback<void(const DropResult&)> DropCallback;
-
   // An interface that embedder code implements to be notified about different
   // events that originate from AttachmentService.
   // This interface will be called from the same thread AttachmentService was
@@ -70,10 +61,6 @@ class SYNC_EXPORT AttachmentService {
   virtual void GetOrDownloadAttachments(
       const AttachmentIdList& attachment_ids,
       const GetOrDownloadCallback& callback) = 0;
-
-  // See SyncData::DropAttachments.
-  virtual void DropAttachments(const AttachmentIdList& attachment_ids,
-                               const DropCallback& callback) = 0;
 
   // Schedules the attachments identified by |attachment_ids| to be uploaded to
   // the server.
