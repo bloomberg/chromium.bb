@@ -26,6 +26,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "pixman-renderer.h"
 
@@ -193,6 +194,24 @@ view_transformation_is_translation(struct weston_view *view)
 }
 
 static void
+region_intersect_only_translation(pixman_region32_t *result_global,
+				  pixman_region32_t *global,
+				  pixman_region32_t *surf,
+				  struct weston_view *view)
+{
+	float view_x, view_y;
+
+	assert(view_transformation_is_translation(view));
+
+	/* Convert from surface to global coordinates */
+	pixman_region32_copy(result_global, surf);
+	weston_view_to_global_float(view, 0, 0, &view_x, &view_y);
+	pixman_region32_translate(result_global, (int)view_x, (int)view_y);
+
+	pixman_region32_intersect(result_global, result_global, global);
+}
+
+static void
 repaint_region(struct weston_view *ev, struct weston_output *output,
 	       pixman_region32_t *region, pixman_region32_t *surf_region,
 	       pixman_op_t pixman_op)
@@ -203,7 +222,6 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	struct pixman_output_state *po = get_output_state(output);
 	struct weston_buffer_viewport *vp = &ev->surface->buffer_viewport;
 	pixman_region32_t final_region;
-	float view_x, view_y;
 	pixman_transform_t transform;
 	pixman_image_t *mask_image;
 	pixman_color_t mask = { 0, };
@@ -215,18 +233,8 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	 */
 	pixman_region32_init(&final_region);
 	if (surf_region) {
-		pixman_region32_copy(&final_region, surf_region);
-
-		/* Convert from surface to global coordinates */
-		if (!ev->transform.enabled) {
-			pixman_region32_translate(&final_region, ev->geometry.x, ev->geometry.y);
-		} else {
-			weston_view_to_global_float(ev, 0, 0, &view_x, &view_y);
-			pixman_region32_translate(&final_region, (int)view_x, (int)view_y);
-		}
-
-		/* We need to paint the intersection */
-		pixman_region32_intersect(&final_region, &final_region, region);
+		region_intersect_only_translation(&final_region, region,
+						  surf_region, ev);
 	} else {
 		/* If there is no surface region, just use the global region */
 		pixman_region32_copy(&final_region, region);
