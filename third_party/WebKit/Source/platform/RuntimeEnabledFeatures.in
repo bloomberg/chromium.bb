@@ -64,7 +64,7 @@ FormDataNewMethods status=experimental
 FullscreenUnprefixed status=test
 Geofencing status=experimental
 GeometryInterfaces status=test
-HTMLPopupMenu status=stable
+HTMLPopupMenu status=experimental
 ImageColorProfiles
 ImageDataConstructor status=stable
 ImageRenderingPixelated status=stable
