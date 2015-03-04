@@ -81,10 +81,27 @@ function testMetadataCacheItemHasFreshCache() {
   assertTrue(item.hasFreshCache(['propertyA']));
 }
 
-function testMetadataCacheShouldNotUpdateBeforeInvalidation() {
+function testMetadataCacheItemShouldNotUpdateBeforeInvalidation() {
   var item = new MetadataCacheItem();
   item.startRequests(1, item.createRequests(['property']));
   item.storeProperties(1, {property: 'value1'});
   item.storeProperties(2, {property: 'value2'});
   assertEquals('value1', item.get(['property']).property);
+}
+
+function testMetadataCacheItemError() {
+  var item = new MetadataCacheItem();
+  item.startRequests(1, item.createRequests(['property']));
+  item.storeProperties(
+      1, {property: 'value1', propertyError: new Error('Error')});
+  assertEquals(undefined, item.get(['property']).property);
+  assertEquals('Error', item.get(['property']).propertyError.message);
+}
+
+function testMetadataCacheItemErrorShouldNotFetchedDirectly() {
+  var item = new MetadataCacheItem();
+  item.startRequests(1, item.createRequests(['property']));
+  item.storeProperties(
+      1, {property: 'value1', propertyError: new Error('Error')});
+  assertThrows(function() { item.get(['propertyError']); });
 }

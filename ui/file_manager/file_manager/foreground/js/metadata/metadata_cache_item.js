@@ -25,6 +25,7 @@ MetadataCacheItem.prototype.createRequests = function(names) {
   var loadRequested = [];
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
+    assert(!/Error$/.test(name));
     // Check if the property needs to be updated.
     if (this.properties_[name] &&
         this.properties_[name].state !==
@@ -44,6 +45,7 @@ MetadataCacheItem.prototype.createRequests = function(names) {
 MetadataCacheItem.prototype.startRequests = function(requestId, names) {
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
+    assert(!/Error$/.test(name));
     if (!this.properties_[name])
       this.properties_[name] = new MetadataCacheItemProperty();
     this.properties_[name].requestId = requestId;
@@ -61,6 +63,12 @@ MetadataCacheItem.prototype.storeProperties = function(requestId, typedObject) {
   var changed = false;
   var object = /** @type {!Object} */(typedObject);
   for (var name in object) {
+    if (/.Error$/.test(name) && object[name])
+      object[name.substr(0, name.length - 5)] = undefined;
+  }
+  for (var name in object) {
+    if (/.Error$/.test(name))
+      continue;
     if (!this.properties_[name])
       this.properties_[name] = new MetadataCacheItemProperty();
     if (requestId < this.properties_[name].requestId ||
@@ -71,6 +79,7 @@ MetadataCacheItem.prototype.storeProperties = function(requestId, typedObject) {
     changed = true;
     this.properties_[name].requestId = requestId;
     this.properties_[name].value = object[name];
+    this.properties_[name].error = object[name + 'Error'];
     this.properties_[name].state = MetadataCacheItemPropertyState.FULFILLED;
   }
   return changed;
@@ -100,8 +109,11 @@ MetadataCacheItem.prototype.get = function(names) {
   var result = /** @type {!Object} */(new MetadataItem());
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
-    if (this.properties_[name])
+    assert(!/Error$/.test(name));
+    if (this.properties_[name]) {
       result[name] = this.properties_[name].value;
+      result[name + 'Error'] = this.properties_[name].error;
+    }
   }
   return /** @type {!MetadataItem} */(result);
 };
@@ -116,6 +128,7 @@ MetadataCacheItem.prototype.clone = function() {
     var property = this.properties_[name];
     clonedItem.properties_[name] = new MetadataCacheItemProperty();
     clonedItem.properties_[name].value = property.value;
+    clonedItem.properties_[name].error = property.error;
     clonedItem.properties_[name].requestId = property.requestId;
     clonedItem.properties_[name].state = property.state;
   }
@@ -158,6 +171,11 @@ function MetadataCacheItemProperty() {
    * @public {*}
    */
   this.value = null;
+
+  /**
+   * @public {Error}
+   */
+  this.error = null;
 
   /**
    * Last request ID.
