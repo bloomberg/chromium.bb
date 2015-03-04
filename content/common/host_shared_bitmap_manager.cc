@@ -55,6 +55,41 @@ class HostSharedBitmap : public cc::SharedBitmap {
 base::LazyInstance<HostSharedBitmapManager> g_shared_memory_manager =
     LAZY_INSTANCE_INITIALIZER;
 
+HostSharedBitmapManagerClient::HostSharedBitmapManagerClient(
+    HostSharedBitmapManager* manager)
+    : manager_(manager) {
+}
+
+HostSharedBitmapManagerClient::~HostSharedBitmapManagerClient() {
+  for (const auto& id : owned_bitmaps_)
+    manager_->ChildDeletedSharedBitmap(id);
+}
+
+void HostSharedBitmapManagerClient::AllocateSharedBitmapForChild(
+    base::ProcessHandle process_handle,
+    size_t buffer_size,
+    const cc::SharedBitmapId& id,
+    base::SharedMemoryHandle* shared_memory_handle) {
+  manager_->AllocateSharedBitmapForChild(process_handle, buffer_size, id,
+                                         shared_memory_handle);
+  owned_bitmaps_.insert(id);
+}
+
+void HostSharedBitmapManagerClient::ChildAllocatedSharedBitmap(
+    size_t buffer_size,
+    const base::SharedMemoryHandle& handle,
+    base::ProcessHandle process_handle,
+    const cc::SharedBitmapId& id) {
+  manager_->ChildAllocatedSharedBitmap(buffer_size, handle, process_handle, id);
+  owned_bitmaps_.insert(id);
+}
+
+void HostSharedBitmapManagerClient::ChildDeletedSharedBitmap(
+    const cc::SharedBitmapId& id) {
+  manager_->ChildDeletedSharedBitmap(id);
+  owned_bitmaps_.erase(id);
+}
+
 HostSharedBitmapManager::HostSharedBitmapManager() {}
 HostSharedBitmapManager::~HostSharedBitmapManager() {
   DCHECK(handle_map_.empty());
@@ -123,7 +158,6 @@ void HostSharedBitmapManager::ChildAllocatedSharedBitmap(
       new BitmapData(process_handle, buffer_size));
 
   handle_map_[id] = data;
-  process_map_[process_handle].insert(id);
 #if defined(OS_WIN)
   data->memory = make_scoped_ptr(
       new base::SharedMemory(handle, false, data->process_handle));
@@ -157,7 +191,6 @@ void HostSharedBitmapManager::AllocateSharedBitmapForChild(
   data->memory = shared_memory.Pass();
 
   handle_map_[id] = data;
-  process_map_[process_handle].insert(id);
   if (!data->memory->ShareToProcess(process_handle, shared_memory_handle)) {
     LOG(ERROR) << "Cannot share shared memory buffer";
     *shared_memory_handle = base::SharedMemory::NULLHandle();
@@ -169,29 +202,7 @@ void HostSharedBitmapManager::AllocateSharedBitmapForChild(
 void HostSharedBitmapManager::ChildDeletedSharedBitmap(
     const cc::SharedBitmapId& id) {
   base::AutoLock lock(lock_);
-  BitmapMap::iterator it = handle_map_.find(id);
-  if (it == handle_map_.end())
-    return;
-  base::hash_set<cc::SharedBitmapId>& res =
-      process_map_[it->second->process_handle];
-  res.erase(id);
-  handle_map_.erase(it);
-}
-
-void HostSharedBitmapManager::ProcessRemoved(
-    base::ProcessHandle process_handle) {
-  base::AutoLock lock(lock_);
-  ProcessMap::iterator proc_it = process_map_.find(process_handle);
-  if (proc_it == process_map_.end())
-    return;
-  base::hash_set<cc::SharedBitmapId>& res = proc_it->second;
-
-  for (base::hash_set<cc::SharedBitmapId>::iterator it = res.begin();
-       it != res.end();
-       ++it) {
-    handle_map_.erase(*it);
-  }
-  process_map_.erase(proc_it);
+  handle_map_.erase(id);
 }
 
 size_t HostSharedBitmapManager::AllocatedBitmapCount() const {

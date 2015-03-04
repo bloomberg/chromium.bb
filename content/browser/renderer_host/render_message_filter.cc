@@ -306,11 +306,12 @@ RenderMessageFilter::RenderMessageFilter(
     media::AudioManager* audio_manager,
     MediaInternals* media_internals,
     DOMStorageContextWrapper* dom_storage_context)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kFilteredMessageClasses,
+                           arraysize(kFilteredMessageClasses)),
       resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
       profile_data_directory_(browser_context->GetPath()),
+      bitmap_manager_client_(HostSharedBitmapManager::current()),
       request_context_(request_context),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
@@ -329,7 +330,6 @@ RenderMessageFilter::~RenderMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(plugin_host_clients_.empty());
-  HostSharedBitmapManager::current()->ProcessRemoved(PeerHandle());
   BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
       BrowserGpuMemoryBufferManager::current();
   if (gpu_memory_buffer_manager)
@@ -920,8 +920,8 @@ void RenderMessageFilter::AllocateSharedBitmapOnFileThread(
     const cc::SharedBitmapId& id,
     IPC::Message* reply_msg) {
   base::SharedMemoryHandle handle;
-  HostSharedBitmapManager::current()->AllocateSharedBitmapForChild(
-      PeerHandle(), buffer_size, id, &handle);
+  bitmap_manager_client_.AllocateSharedBitmapForChild(PeerHandle(), buffer_size,
+                                                      id, &handle);
   ChildProcessHostMsg_SyncAllocateSharedBitmap::WriteReplyParams(reply_msg,
                                                                  handle);
   Send(reply_msg);
@@ -944,12 +944,12 @@ void RenderMessageFilter::OnAllocatedSharedBitmap(
     size_t buffer_size,
     const base::SharedMemoryHandle& handle,
     const cc::SharedBitmapId& id) {
-  HostSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
-      buffer_size, handle, PeerHandle(), id);
+  bitmap_manager_client_.ChildAllocatedSharedBitmap(buffer_size, handle,
+                                                    PeerHandle(), id);
 }
 
 void RenderMessageFilter::OnDeletedSharedBitmap(const cc::SharedBitmapId& id) {
-  HostSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+  bitmap_manager_client_.ChildDeletedSharedBitmap(id);
 }
 
 void RenderMessageFilter::OnAllocateLockedDiscardableSharedMemory(

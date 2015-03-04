@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
 #include "ipc/message_filter.h"
@@ -309,6 +310,8 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   ResourceDispatcherHostImpl* resource_dispatcher_host_;
   PluginServiceImpl* plugin_service_;
   base::FilePath profile_data_directory_;
+
+  HostSharedBitmapManagerClient bitmap_manager_client_;
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

@@ -1867,11 +1867,12 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   int handles_per_frame = 5;
   RendererFrameManager::GetInstance()->set_max_handles(handles_per_frame * 2);
 
+  HostSharedBitmapManagerClient bitmap_client(
+      HostSharedBitmapManager::current());
+
   for (size_t i = 0; i < (renderer_count - 1) * handles_per_frame; i++) {
-    HostSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
-        1,
-        base::SharedMemory::NULLHandle(),
-        base::GetCurrentProcessHandle(),
+    bitmap_client.ChildAllocatedSharedBitmap(
+        1, base::SharedMemory::NULLHandle(), base::GetCurrentProcessHandle(),
         cc::SharedBitmap::GenerateId());
   }
 
@@ -1883,8 +1884,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
     else
       EXPECT_TRUE(views[i]->HasFrameData());
   }
-  HostSharedBitmapManager::current()->ProcessRemoved(
-      base::GetCurrentProcessHandle());
   RendererFrameManager::GetInstance()->set_max_handles(
       base::SharedMemory::GetHandleLimit());
 

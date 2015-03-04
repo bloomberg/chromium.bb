@@ -29,6 +29,31 @@ struct hash<cc::SharedBitmapId> {
 
 namespace content {
 class BitmapData;
+class HostSharedBitmapManager;
+
+class CONTENT_EXPORT HostSharedBitmapManagerClient {
+ public:
+  explicit HostSharedBitmapManagerClient(HostSharedBitmapManager* manager);
+
+  ~HostSharedBitmapManagerClient();
+
+  void AllocateSharedBitmapForChild(
+      base::ProcessHandle process_handle,
+      size_t buffer_size,
+      const cc::SharedBitmapId& id,
+      base::SharedMemoryHandle* shared_memory_handle);
+  void ChildAllocatedSharedBitmap(size_t buffer_size,
+                                  const base::SharedMemoryHandle& handle,
+                                  base::ProcessHandle process_handle,
+                                  const cc::SharedBitmapId& id);
+  void ChildDeletedSharedBitmap(const cc::SharedBitmapId& id);
+
+ private:
+  HostSharedBitmapManager* manager_;
+  base::hash_set<cc::SharedBitmapId> owned_bitmaps_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostSharedBitmapManagerClient);
+};
 
 class CONTENT_EXPORT HostSharedBitmapManager : public cc::SharedBitmapManager {
  public:
@@ -44,6 +69,13 @@ class CONTENT_EXPORT HostSharedBitmapManager : public cc::SharedBitmapManager {
       const gfx::Size& size,
       const cc::SharedBitmapId&) override;
 
+  size_t AllocatedBitmapCount() const;
+
+  void FreeSharedMemoryFromMap(const cc::SharedBitmapId& id);
+
+ private:
+  friend class HostSharedBitmapManagerClient;
+
   void AllocateSharedBitmapForChild(
       base::ProcessHandle process_handle,
       size_t buffer_size,
@@ -54,22 +86,14 @@ class CONTENT_EXPORT HostSharedBitmapManager : public cc::SharedBitmapManager {
                                   base::ProcessHandle process_handle,
                                   const cc::SharedBitmapId& id);
   void ChildDeletedSharedBitmap(const cc::SharedBitmapId& id);
-  void ProcessRemoved(base::ProcessHandle process_handle);
 
-  size_t AllocatedBitmapCount() const;
-
-  void FreeSharedMemoryFromMap(const cc::SharedBitmapId& id);
-
- private:
   mutable base::Lock lock_;
 
   typedef base::hash_map<cc::SharedBitmapId, scoped_refptr<BitmapData> >
       BitmapMap;
   BitmapMap handle_map_;
 
-  typedef base::hash_map<base::ProcessHandle,
-                         base::hash_set<cc::SharedBitmapId> > ProcessMap;
-  ProcessMap process_map_;
+  DISALLOW_COPY_AND_ASSIGN(HostSharedBitmapManager);
 };
 
 }  // namespace content

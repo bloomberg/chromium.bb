@@ -23,10 +23,11 @@ TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   memset(bitmap->memory(), 0xff, size_in_bytes);
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
 
+  HostSharedBitmapManagerClient client(manager_.get());
   base::SharedMemoryHandle handle;
   bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
-  manager_->ChildAllocatedSharedBitmap(
-      size_in_bytes, handle, base::GetCurrentProcessHandle(), id);
+  client.ChildAllocatedSharedBitmap(size_in_bytes, handle,
+                                    base::GetCurrentProcessHandle(), id);
 
   scoped_ptr<cc::SharedBitmap> large_bitmap;
   large_bitmap = manager_->GetSharedBitmapFromId(gfx::Size(1024, 1024), id);
@@ -63,7 +64,7 @@ TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
             0);
 
-  manager_->ChildDeletedSharedBitmap(id);
+  client.ChildDeletedSharedBitmap(id);
 
   memset(bitmap->memory(), 0, size_in_bytes);
 
@@ -78,9 +79,10 @@ TEST_F(HostSharedBitmapManagerTest, TestCreateForChild) {
   size_t size_in_bytes;
   EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+  HostSharedBitmapManagerClient client(manager_.get());
   base::SharedMemoryHandle handle;
-  manager_->AllocateSharedBitmapForChild(
-      base::GetCurrentProcessHandle(), size_in_bytes, id, &handle);
+  client.AllocateSharedBitmapForChild(base::GetCurrentProcessHandle(),
+                                      size_in_bytes, id, &handle);
 
   EXPECT_TRUE(base::SharedMemory::IsHandleValid(handle));
   scoped_ptr<base::SharedMemory> bitmap(new base::SharedMemory(handle, false));
@@ -93,7 +95,7 @@ TEST_F(HostSharedBitmapManagerTest, TestCreateForChild) {
   EXPECT_TRUE(
       memcmp(bitmap->memory(), shared_bitmap->pixels(), size_in_bytes) == 0);
 
-  manager_->ChildDeletedSharedBitmap(id);
+  client.ChildDeletedSharedBitmap(id);
 }
 
 TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
@@ -106,17 +108,19 @@ TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
 
   base::SharedMemoryHandle handle;
+  scoped_ptr<HostSharedBitmapManagerClient> client(
+      new HostSharedBitmapManagerClient(manager_.get()));
   bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
-  manager_->ChildAllocatedSharedBitmap(
-      size_in_bytes, handle, base::GetCurrentProcessHandle(), id);
-
-  manager_->ProcessRemoved(base::kNullProcessHandle);
+  client->ChildAllocatedSharedBitmap(size_in_bytes, handle,
+                                     base::GetCurrentProcessHandle(), id);
 
   scoped_ptr<cc::SharedBitmap> shared_bitmap;
   shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);
   ASSERT_TRUE(shared_bitmap.get() != NULL);
 
-  manager_->ProcessRemoved(base::GetCurrentProcessHandle());
+  EXPECT_EQ(1u, manager_->AllocatedBitmapCount());
+  client.reset();
+  EXPECT_EQ(0u, manager_->AllocatedBitmapCount());
 
   scoped_ptr<cc::SharedBitmap> shared_bitmap2;
   shared_bitmap2 = manager_->GetSharedBitmapFromId(bitmap_size, id);
@@ -125,9 +129,6 @@ TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
             0);
 
   shared_bitmap.reset();
-
-  // Should no-op.
-  manager_->ChildDeletedSharedBitmap(id);
 }
 
 TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
@@ -138,25 +139,26 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+  HostSharedBitmapManagerClient client(manager_.get());
 
   base::SharedMemoryHandle handle;
   bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
-  manager_->ChildAllocatedSharedBitmap(
-      size_in_bytes, handle, base::GetCurrentProcessHandle(), id);
+  client.ChildAllocatedSharedBitmap(size_in_bytes, handle,
+                                    base::GetCurrentProcessHandle(), id);
 
   scoped_ptr<base::SharedMemory> bitmap2(new base::SharedMemory());
   bitmap2->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap2->memory(), 0x00, size_in_bytes);
 
-  manager_->ChildAllocatedSharedBitmap(
-      size_in_bytes, bitmap2->handle(), base::GetCurrentProcessHandle(), id);
+  client.ChildAllocatedSharedBitmap(size_in_bytes, bitmap2->handle(),
+                                    base::GetCurrentProcessHandle(), id);
 
   scoped_ptr<cc::SharedBitmap> shared_bitmap;
   shared_bitmap = manager_->GetSharedBitmapFromId(bitmap_size, id);
   ASSERT_TRUE(shared_bitmap.get() != NULL);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
             0);
-  manager_->ChildDeletedSharedBitmap(id);
+  client.ChildDeletedSharedBitmap(id);
 }
 
 }  // namespace
