@@ -98,3 +98,6 @@ crbug.com/438499 [ Linux ] virtual/threaded/animations/unanimated-style.html [ T
 crbug.com/243871 [ Linux ] virtual/threaded/fast/scroll-behavior/ [ Skip ]
 
 crbug.com/446661 [Linux ] fast/dom/Geolocation/success-clear-watch.html [ Timeout Pass ]
+
+crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow.html [ Timeout ]
+crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow-2.html [ Timeout ]
