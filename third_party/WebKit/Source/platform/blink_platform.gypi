@@ -486,6 +486,7 @@
       'graphics/DecodingImageGenerator.h',
       'graphics/DeferredImageDecoder.cpp',
       'graphics/DeferredImageDecoder.h',
+      'graphics/ExpensiveCanvasHeuristicParameters.h',
       'graphics/PicturePattern.cpp',
       'graphics/PicturePattern.h',
       'graphics/PictureSnapshot.h',

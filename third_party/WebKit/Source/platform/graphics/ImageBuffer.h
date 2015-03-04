@@ -89,10 +89,12 @@ public:
     const IntSize& size() const { return m_surface->size(); }
     bool isAccelerated() const { return m_surface->isAccelerated(); }
     bool isRecording() const { return m_surface->isRecording(); }
+    void setHasExpensiveOp() { m_surface->setHasExpensiveOp(); }
+    bool isExpensiveToPaint() const { return m_surface->isExpensiveToPaint(); }
     bool isSurfaceValid() const;
     bool restoreSurface() const;
     bool needsClipTracking() const { return m_surface->needsClipTracking(); }
-    void didDraw() const { m_surface->didDraw(); }
+    void didDraw(const FloatRect& rect) const { m_surface->didDraw(rect); }
 
     void setFilterLevel(SkPaint::FilterLevel filterLevel) { m_surface->setFilterLevel(filterLevel); }
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }

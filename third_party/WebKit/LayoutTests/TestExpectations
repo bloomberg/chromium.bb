@@ -895,6 +895,13 @@ crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
 crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ Failure ]
 
+crbug.com/458190 virtual/display_list_2d_canvas/fast/canvas/arc360.html [ NeedsRebaseline ]
+crbug.com/458190 virtual/display_list_2d_canvas/fast/canvas/canvas-arc-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/458190 virtual/display_list_2d_canvas/fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
+crbug.com/458190 virtual/display_list_2d_canvas/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/458190 virtual/display_list_2d_canvas/fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
+crbug.com/458190 virtual/display_list_2d_canvas/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+
 # Failing Reftests from CoreText shaper removal
 crbug.com/334269 [ Mac ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]

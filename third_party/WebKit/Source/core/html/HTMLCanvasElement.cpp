@@ -265,6 +265,11 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
     return;
 }
 
+bool HTMLCanvasElement::shouldBeDirectComposited() const
+{
+    return (m_context && m_context->isAccelerated()) || (hasImageBuffer() && buffer()->isExpensiveToPaint());
+}
+
 bool HTMLCanvasElement::isPaintable() const
 {
     if (!m_context)
@@ -282,7 +287,7 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
         renderer()->setMayNeedPaintInvalidation();
     m_dirtyRect.unite(rect);
     if (m_context && m_context->is2d() && hasImageBuffer())
-        buffer()->didDraw();
+        buffer()->didDraw(rect);
 }
 
 void HTMLCanvasElement::didFinalizeFrame()

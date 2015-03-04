@@ -6,6 +6,7 @@
 
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
+#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "public/platform/Platform.h"
@@ -19,8 +20,12 @@ namespace blink {
 RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
     , m_imageBuffer(0)
+    , m_currentFramePixelCount(0)
+    , m_previousFramePixelCount(0)
     , m_frameWasCleared(true)
     , m_didRecordDrawCommandsInCurrentFrame(false)
+    , m_currentFrameHasExpensiveOp(false)
+    , m_previousFrameHasExpensiveOp(false)
     , m_fallbackFactory(fallbackFactory)
 {
     initializeCurrentFrame();
@@ -38,6 +43,8 @@ bool RecordingImageBufferSurface::initializeCurrentFrame()
         m_imageBuffer->resetCanvas(m_currentFrame->getRecordingCanvas());
     }
     m_didRecordDrawCommandsInCurrentFrame = false;
+    m_currentFrameHasExpensiveOp = false;
+    m_currentFramePixelCount = 0;
     return true;
 }
 
@@ -136,6 +143,8 @@ void RecordingImageBufferSurface::willOverwriteCanvas()
 {
     m_frameWasCleared = true;
     m_previousFrame.clear();
+    m_previousFrameHasExpensiveOp = false;
+    m_previousFramePixelCount = 0;
     if (m_didRecordDrawCommandsInCurrentFrame) {
         // Discard previous draw commands
         m_currentFrame->endRecording();
@@ -143,9 +152,11 @@ void RecordingImageBufferSurface::willOverwriteCanvas()
     }
 }
 
-void RecordingImageBufferSurface::didDraw()
+void RecordingImageBufferSurface::didDraw(const FloatRect& rect)
 {
     m_didRecordDrawCommandsInCurrentFrame = true;
+    IntRect pixelBounds = enclosingIntRect(rect);
+    m_currentFramePixelCount += pixelBounds.width() * pixelBounds.height();
 }
 
 bool RecordingImageBufferSurface::finalizeFrameInternal()
@@ -166,9 +177,10 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
     }
 
     m_previousFrame = adoptRef(m_currentFrame->endRecording());
+    m_previousFrameHasExpensiveOp = m_currentFrameHasExpensiveOp;
+    m_previousFramePixelCount = m_currentFramePixelCount;
     if (!initializeCurrentFrame())
         return false;
-
 
     m_frameWasCleared = false;
     return true;
@@ -194,6 +206,33 @@ void RecordingImageBufferSurface::draw(GraphicsContext* context, const FloatRect
     } else {
         ImageBufferSurface::draw(context, destRect, srcRect, op, needsCopy);
     }
+}
+
+bool RecordingImageBufferSurface::isExpensiveToPaint()
+{
+    if (m_fallbackSurface)
+        return m_fallbackSurface->isExpensiveToPaint();
+
+    if (m_didRecordDrawCommandsInCurrentFrame) {
+        if (m_currentFrameHasExpensiveOp)
+            return true;
+
+        if (m_currentFramePixelCount >= (size().width() * size().height() * ExpensiveCanvasHeuristicParameters::ExpensiveOverdrawThreshold))
+            return true;
+
+        if (m_frameWasCleared)
+            return false; // early exit because previous frame is overdrawn
+    }
+
+    if (m_previousFrame) {
+        if (m_previousFrameHasExpensiveOp)
+            return true;
+
+        if (m_previousFramePixelCount >= (size().width() * size().height() * ExpensiveCanvasHeuristicParameters::ExpensiveOverdrawThreshold))
+            return true;
+    }
+
+    return false;
 }
 
 // Fallback passthroughs

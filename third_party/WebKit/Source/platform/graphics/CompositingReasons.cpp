@@ -21,7 +21,7 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
         "Is an accelerated video" },
     { CompositingReasonCanvas,
         "canvas",
-        "Is an accelerated canvas" },
+        "Is an accelerated canvas, or is a display list backed canvas that was promoted to a layer based on a performance heuristic." },
     { CompositingReasonPlugin,
         "plugin",
         "Is an accelerated plugin" },

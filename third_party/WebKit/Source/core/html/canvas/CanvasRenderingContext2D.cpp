@@ -63,6 +63,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/DrawLooperBuilder.h"
+#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/TextRun.h"
@@ -1033,6 +1034,18 @@ static SkPath::FillType parseWinding(const String& windingRuleString)
     return SkPath::kEvenOdd_FillType;
 }
 
+static bool isPathExpensive(const Path& path)
+{
+    const SkPath& skPath = path.skPath();
+    if (ExpensiveCanvasHeuristicParameters::ConcavePathsAreExpensive && !skPath.isConvex())
+        return true;
+
+    if (skPath.countPoints() > ExpensiveCanvasHeuristicParameters::ExpensivePathPointCount)
+        return true;
+
+    return false;
+}
+
 void CanvasRenderingContext2D::fillInternal(const Path& path, const String& windingRuleString)
 {
     if (path.isEmpty()) {
@@ -1077,6 +1090,12 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
     }
 
     c->setFillRule(windRule);
+
+    if (isPathExpensive(path)) {
+        ImageBuffer* buffer = canvas()->buffer();
+        if (buffer)
+            buffer->setHasExpensiveOp();
+    }
 }
 
 void CanvasRenderingContext2D::fill(const String& windingRuleString)
@@ -1129,6 +1148,12 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
             didDraw(dirtyRect);
         }
     }
+
+    if (isPathExpensive(path)) {
+        ImageBuffer* buffer = canvas()->buffer();
+        if (buffer)
+            buffer->setHasExpensiveOp();
+    }
 }
 
 void CanvasRenderingContext2D::stroke()
@@ -1161,8 +1186,11 @@ void CanvasRenderingContext2D::clipInternal(const Path& path, const String& wind
     }
 
     c->clipPath(skPath, SkRegion::kIntersect_Op, m_clipAntialiasing == AntiAliased);
-    if (!skPath.isRect(0))
+    if (ExpensiveCanvasHeuristicParameters::ComplexClipsAreExpensive && !skPath.isRect(0)) {
+        if (buffer)
+            buffer->setHasExpensiveOp();
         modifiableState().m_hasComplexClip = true;
+    }
     modifiableState().m_hasClip = true;
 }
 
@@ -1576,6 +1604,12 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
 
     validateStateStack();
 
+    if (ExpensiveCanvasHeuristicParameters::SVGImageSourcesAreExpensive && image && image->isSVGImage()) {
+        ImageBuffer* buffer = canvas()->buffer();
+        if (buffer)
+            buffer->setHasExpensiveOp();
+    }
+
     if (sourceImageStatus == ExternalSourceImageStatus && isAccelerated() && canvas()->buffer())
         canvas()->buffer()->flush();
 
@@ -1716,6 +1750,12 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& dirtyRect)
 {
     if (dirtyRect.isEmpty())
         return;
+
+    if (ExpensiveCanvasHeuristicParameters::BlurredShadowsAreExpensive && shouldDrawShadows() && state().m_shadowBlur > 0) {
+        ImageBuffer* buffer = canvas()->buffer();
+        if (buffer)
+            buffer->setHasExpensiveOp();
+    }
 
     canvas()->didDraw(dirtyRect);
 }

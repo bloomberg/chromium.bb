@@ -55,19 +55,19 @@ public:
     }
 
     // ImageBufferSurface implementation
-    virtual void finalizeFrame(const FloatRect &dirtyRect) override { m_layerBridge->finalizeFrame(dirtyRect); }
-    virtual void willAccessPixels() override { m_layerBridge->willAccessPixels(); }
-    virtual SkCanvas* canvas() const override { return m_layerBridge->canvas(); }
-    virtual bool isValid() const override { return m_layerBridge && m_layerBridge->checkSurfaceValid(); }
-    virtual bool restore() override { return m_layerBridge->restoreSurface(); }
-    virtual WebLayer* layer() const override { return m_layerBridge->layer(); }
-    virtual Platform3DObject getBackingTexture() const override { return m_layerBridge->getBackingTexture(); }
-    virtual bool isAccelerated() const override { return m_layerBridge->isAccelerated(); }
-    virtual void setFilterLevel(SkPaint::FilterLevel filterLevel) override { m_layerBridge->setFilterLevel(filterLevel); };
-    virtual void setIsHidden(bool hidden) override { m_layerBridge->setIsHidden(hidden); }
-    virtual void setImageBuffer(ImageBuffer* imageBuffer) override { m_layerBridge->setImageBuffer(imageBuffer); }
+    void finalizeFrame(const FloatRect &dirtyRect) override { m_layerBridge->finalizeFrame(dirtyRect); }
+    void willAccessPixels() override { m_layerBridge->willAccessPixels(); }
+    SkCanvas* canvas() const override { return m_layerBridge->canvas(); }
+    bool isValid() const override { return m_layerBridge && m_layerBridge->checkSurfaceValid(); }
+    bool restore() override { return m_layerBridge->restoreSurface(); }
+    WebLayer* layer() const override { return m_layerBridge->layer(); }
+    Platform3DObject getBackingTexture() const override { return m_layerBridge->getBackingTexture(); }
+    bool isAccelerated() const override { return m_layerBridge->isAccelerated(); }
+    void setFilterLevel(SkPaint::FilterLevel filterLevel) override { m_layerBridge->setFilterLevel(filterLevel); };
+    void setIsHidden(bool hidden) override { m_layerBridge->setIsHidden(hidden); }
+    void setImageBuffer(ImageBuffer* imageBuffer) override { m_layerBridge->setImageBuffer(imageBuffer); }
 
-    virtual PassRefPtr<SkImage> newImageSnapshot() const override { return m_layerBridge->newImageSnapshot(); }
+    PassRefPtr<SkImage> newImageSnapshot() const override { return m_layerBridge->newImageSnapshot(); }
 private:
     RefPtr<Canvas2DLayerBridge> m_layerBridge;
 };

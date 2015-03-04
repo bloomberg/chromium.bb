@@ -95,10 +95,8 @@ PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(const PaintInv
 
 CompositingReasons LayoutHTMLCanvas::additionalCompositingReasons() const
 {
-    HTMLCanvasElement* canvas = toHTMLCanvasElement(node());
-    if (canvas->renderingContext() && canvas->renderingContext()->isAccelerated())
+    if (toHTMLCanvasElement(node())->shouldBeDirectComposited())
         return CompositingReasonCanvas;
-
     return CompositingReasonNone;
 }
 
