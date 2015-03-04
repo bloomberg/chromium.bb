@@ -24,6 +24,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"

@@ -67,6 +67,7 @@ LegacyInterfaceTypeChecking
 LegacyTreatAsPartialInterface
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds
+Measure
 MeasureAs=*
 NamedConstructor=*
 NoImplHeader

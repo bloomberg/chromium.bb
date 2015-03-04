@@ -164,7 +164,7 @@ def method_context(interface, method, is_visible=True):
         'is_read_only': is_unforgeable(interface, method),
         'is_static': is_static,
         'is_variadic': arguments and arguments[-1].is_variadic,
-        'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
+        'measure_as': v8_utilities.measure_as(method, interface),  # [MeasureAs]
         'name': name,
         'number_of_arguments': len(arguments),
         'number_of_required_arguments': len([

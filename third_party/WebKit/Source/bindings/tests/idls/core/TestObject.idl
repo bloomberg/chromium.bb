@@ -261,6 +261,7 @@ interface TestObject {
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
+    [Measure] attribute long measuredLongAttribute;
 
 
     // Methods
@@ -514,6 +515,9 @@ interface TestObject {
     [DoNotCheckSignature] void doNotCheckSignatureVoidMethod();
     [ImplementedAs=implementedAsMethodName] void implementedAsVoidMethod();
     [MeasureAs=TestFeature] void measureAsVoidMethod();
+    [Measure] void measureMethod();
+    [Measure] void measureOverloadedMethod();
+    [Measure] void measureOverloadedMethod(long arg);
     [DeprecateAs=TestFeatureA] void DeprecateAsOverloadedMethod();
     [DeprecateAs=TestFeatureB] void DeprecateAsOverloadedMethod(long arg);
     [DeprecateAs=TestFeature] void DeprecateAsSameValueOverloadedMethod();

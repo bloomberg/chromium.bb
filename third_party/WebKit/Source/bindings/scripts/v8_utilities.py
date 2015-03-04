@@ -369,12 +369,18 @@ def cpp_name_or_partial(interface):
 
 
 # [MeasureAs]
-def measure_as(definition_or_member):
+def measure_as(definition_or_member, interface):
     extended_attributes = definition_or_member.extended_attributes
-    if 'MeasureAs' not in extended_attributes:
-        return None
-    includes.add('core/frame/UseCounter.h')
-    return extended_attributes['MeasureAs']
+    if 'MeasureAs' in extended_attributes:
+        includes.add('core/frame/UseCounter.h')
+        return lambda suffix: extended_attributes['MeasureAs']
+    if 'Measure' in extended_attributes:
+        includes.add('core/frame/UseCounter.h')
+        measure_as_name = capitalize(definition_or_member.name)
+        if interface is not None:
+            measure_as_name = '%s_%s' % (capitalize(interface.name), measure_as_name)
+        return lambda suffix: 'V8%s_%s' % (measure_as_name, suffix)
+    return None
 
 
 # [PerContextEnabled]

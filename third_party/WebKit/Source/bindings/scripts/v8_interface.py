@@ -193,7 +193,7 @@ def interface_context(interface):
                 is_active_dom_object or
                 is_dependent_lifetime)
             else 'Independent',
-        'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
+        'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_template_type(
             cpp_ptr_type('PassRefPtr', 'RawPtr', this_gc_type),
@@ -255,7 +255,7 @@ def interface_context(interface):
         'named_constructor': named_constructor,
     })
 
-    constants = [constant_context(constant) for constant in interface.constants]
+    constants = [constant_context(constant, interface) for constant in interface.constants]
 
     special_getter_constants = []
     runtime_enabled_constants = []
@@ -564,13 +564,13 @@ def interface_context(interface):
 
 
 # [DeprecateAs], [Reflect], [RuntimeEnabled]
-def constant_context(constant):
+def constant_context(constant, interface):
     extended_attributes = constant.extended_attributes
     return {
         'cpp_class': extended_attributes.get('PartialInterfaceImplementedAs'),
         'deprecate_as': v8_utilities.deprecate_as(constant),  # [DeprecateAs]
         'idl_type': constant.idl_type.name,
-        'measure_as': v8_utilities.measure_as(constant),  # [MeasureAs]
+        'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]
         'name': constant.name,
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': extended_attributes.get('Reflect', constant.name),

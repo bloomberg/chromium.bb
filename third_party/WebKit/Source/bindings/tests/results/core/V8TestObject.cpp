@@ -5127,6 +5127,40 @@ static void unforgeableLongAttributeAttributeSetterCallback(v8::Local<v8::String
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void measuredLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toImpl(holder);
+    v8SetReturnValueInt(info, impl->measuredLongAttribute());
+}
+
+static void measuredLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasuredLongAttribute_AttributeGetter);
+    TestObjectV8Internal::measuredLongAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void measuredLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "measuredLongAttribute", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(holder);
+    int cppValue = toInt32(v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    impl->setMeasuredLongAttribute(cppValue);
+}
+
+static void measuredLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasuredLongAttribute_AttributeSetter);
+    TestObjectV8Internal::measuredLongAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void testInterfaceAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -9978,6 +10012,72 @@ static void measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8:
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void measureMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    impl->measureMethod();
+}
+
+static void measureMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureMethod_Method);
+    TestObjectV8Internal::measureMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void measureOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    impl->measureOverloadedMethod();
+}
+
+static void measureOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int arg;
+    {
+        arg = toInt32(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
+    impl->measureOverloadedMethod(arg);
+}
+
+static void measureOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 0:
+        if (true) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureOverloadedMethod_Method);
+            measureOverloadedMethod1Method(info);
+            return;
+        }
+        break;
+    case 1:
+        if (true) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureOverloadedMethod_Method);
+            measureOverloadedMethod2Method(info);
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+    return;
+}
+
+static void measureOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::measureOverloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void DeprecateAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -10155,16 +10255,17 @@ static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallback
 static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
             measureAsSameValueOverloadedMethod1Method(info);
             return;
         }
         break;
     case 1:
         if (true) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
             measureAsSameValueOverloadedMethod2Method(info);
             return;
         }
@@ -10206,10 +10307,10 @@ static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::Funct
 static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
             UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
             deprecateAsMeasureAsSameValueOverloadedMethod1Method(info);
             return;
@@ -10217,6 +10318,7 @@ static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
         break;
     case 1:
         if (true) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
             UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
             deprecateAsMeasureAsSameValueOverloadedMethod2Method(info);
             return;
@@ -10312,17 +10414,18 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
     UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
             deprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(info);
             return;
         }
         break;
     case 1:
         if (true) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
             deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(info);
             return;
         }
@@ -11945,6 +12048,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"unforgeableLongAttribute", TestObjectV8Internal::unforgeableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unforgeableLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::PROHIBITS_OVERWRITING), static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"measuredLongAttribute", TestObjectV8Internal::measuredLongAttributeAttributeGetterCallback, TestObjectV8Internal::measuredLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"testInterfaceAttribute", TestObjectV8Internal::testInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"testInterfaceGarbageCollectedAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"testInterfaceGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
@@ -12148,6 +12252,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"deprecatedVoidMethod", TestObjectV8Internal::deprecatedVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"implementedAsVoidMethod", TestObjectV8Internal::implementedAsVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"measureAsVoidMethod", TestObjectV8Internal::measureAsVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"measureMethod", TestObjectV8Internal::measureMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"measureOverloadedMethod", TestObjectV8Internal::measureOverloadedMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"DeprecateAsOverloadedMethod", TestObjectV8Internal::DeprecateAsOverloadedMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"DeprecateAsSameValueOverloadedMethod", TestObjectV8Internal::DeprecateAsSameValueOverloadedMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"measureAsOverloadedMethod", TestObjectV8Internal::measureAsOverloadedMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},

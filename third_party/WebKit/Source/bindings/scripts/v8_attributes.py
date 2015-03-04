@@ -122,7 +122,7 @@ def attribute_context(interface, attribute):
         'is_url': 'URL' in extended_attributes,
         'is_unforgeable': is_unforgeable(interface, attribute),
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
-        'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]
+        'measure_as': v8_utilities.measure_as(attribute, interface),  # [MeasureAs]
         'name': attribute.name,
         'only_exposed_to_private_script': is_only_exposed_to_private_script,
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]

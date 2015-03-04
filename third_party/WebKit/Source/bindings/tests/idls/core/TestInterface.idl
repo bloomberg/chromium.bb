@@ -38,6 +38,7 @@
     DoNotCheckConstants,
     ImplementedAs=TestInterfaceImplementation,
     Iterable,
+    Measure,
     RuntimeEnabled=FeatureName,
     SetWrapperReferenceTo(TestInterface referencedName),
     TypeChecking=Interface,
@@ -49,7 +50,7 @@
     const unsigned long UNSIGNED_LONG = 0;
     [Reflect=CONST_CPP] const short CONST_JAVASCRIPT = 1;
 
-    attribute TestInterface testInterfaceAttribute; // Self-referential interface type with [ImplementedAs]
+    [Measure] attribute TestInterface testInterfaceAttribute; // Self-referential interface type with [ImplementedAs]
     attribute TestInterfaceConstructor testInterfaceConstructorAttribute;
     attribute double doubleAttribute;
     attribute float floatAttribute;

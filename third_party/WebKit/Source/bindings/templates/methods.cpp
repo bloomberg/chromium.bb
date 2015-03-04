@@ -388,7 +388,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
                                   method.runtime_enabled_function) %}
         if ({{test}}) {
             {% if method.measure_as and not overloads.measure_all_as %}
-            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as('Method')}});
             {% endif %}
             {% if method.deprecate_as and not overloads.deprecate_all_as %}
             UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
@@ -445,7 +445,7 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     {% if not method.overloads %}{# Overloaded methods are measured in overload_resolution_method() #}
     {% if method.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as('Method')}});
     {% endif %}
     {% if method.deprecate_as %}
     UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});

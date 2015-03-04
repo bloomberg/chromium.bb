@@ -678,7 +678,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     {% if measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{measure_as}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{measure_as('Constructor')}});
     {% endif %}
     if (!info.IsConstructCall()) {
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("{{interface_name}}"));

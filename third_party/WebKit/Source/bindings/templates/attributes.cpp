@@ -157,7 +157,7 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
     UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
@@ -195,7 +195,7 @@ v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info
     UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
     {% endif %}
     {% if attribute.is_expose_js_accessors %}
     v8ConstructorAttributeGetterAsAccessor(info);
@@ -320,7 +320,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
     UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeSetter')}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
