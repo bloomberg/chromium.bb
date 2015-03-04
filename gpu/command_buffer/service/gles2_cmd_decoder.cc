@@ -585,7 +585,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
                   const scoped_refptr<gfx::GLContext>& context,
                   bool offscreen,
-                  const gfx::Size& size,
+                  const gfx::Size& offscreen_size,
                   const DisallowedFeatures& disallowed_features,
                   const std::vector<int32>& attribs) override;
   void Destroy(bool have_context) override;
@@ -2434,7 +2434,7 @@ bool GLES2DecoderImpl::Initialize(
     const scoped_refptr<gfx::GLSurface>& surface,
     const scoped_refptr<gfx::GLContext>& context,
     bool offscreen,
-    const gfx::Size& size,
+    const gfx::Size& offscreen_size,
     const DisallowedFeatures& disallowed_features,
     const std::vector<int32>& attribs) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::Initialize");
@@ -2678,11 +2678,14 @@ bool GLES2DecoderImpl::Initialize(
 
     // Allocate the render buffers at their initial size and check the status
     // of the frame buffers is okay.
-    if (!ResizeOffscreenFrameBuffer(size)) {
+    if (!ResizeOffscreenFrameBuffer(offscreen_size)) {
       LOG(ERROR) << "Could not allocate offscreen buffer storage.";
       Destroy(true);
       return false;
     }
+
+    state_.viewport_width = offscreen_size.width();
+    state_.viewport_height = offscreen_size.height();
 
     // Allocate the offscreen saved color texture.
     DCHECK(offscreen_saved_color_format_);
@@ -2723,6 +2726,9 @@ bool GLES2DecoderImpl::Initialize(
       glGetIntegerv(GL_STENCIL_BITS, &v);
       back_buffer_has_stencil_ = attrib_parser.stencil_size != 0 && v > 0;
     }
+
+    state_.viewport_width = surface->GetSize().width();
+    state_.viewport_height = surface->GetSize().height();
   }
 
   // OpenGL ES 2.0 implicitly enables the desktop GL capability
@@ -2744,9 +2750,6 @@ bool GLES2DecoderImpl::Initialize(
   if (!InitializeShaderTranslator()) {
     return false;
   }
-
-  state_.viewport_width = size.width();
-  state_.viewport_height = size.height();
 
   GLint viewport_params[4] = { 0 };
   glGetIntegerv(GL_MAX_VIEWPORT_DIMS, viewport_params);

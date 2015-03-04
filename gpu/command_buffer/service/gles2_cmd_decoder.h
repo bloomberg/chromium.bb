@@ -115,13 +115,13 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   //  offscreen: whether to make the context offscreen or not. When FBO 0 is
   //      bound, offscreen contexts render to an internal buffer, onscreen ones
   //      to the surface.
-  //  size: the size if the GL context is offscreen.
+  //  offscreen_size: the size if the GL context is offscreen.
   // Returns:
   //   true if successful.
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
                           const scoped_refptr<gfx::GLContext>& context,
                           bool offscreen,
-                          const gfx::Size& size,
+                          const gfx::Size& offscreen_size,
                           const DisallowedFeatures& disallowed_features,
                           const std::vector<int32>& attribs) = 0;
 
