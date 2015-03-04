@@ -86,13 +86,16 @@
       "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/407693
     ]
   }],
-  "content_capabilities": {
+  "content_capabilities": [{
     "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
       "950D13BB9B4794F4CA2A68D3597E5DFAA47C88AE"  // Drive
     ]
-  },
+  }, {
+    "channel": "canary",
+    "extension_types": ["extension"]
+  }],
   "content_security_policy": {
     "channel": "stable",
     // Platform apps have a restricted content security policy that cannot be
