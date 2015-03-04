@@ -388,17 +388,8 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       if (CheckTraceBaseCall(call))
         return true;
 
-      // If we find a call to registerWeakMembers which is unresolved we
-      // unsoundly consider all weak members as traced.
-      // TODO: Find out how to validate weak member tracing for unresolved call.
-      if (expr->getMemberName().getAsString() == kRegisterWeakMembersName) {
-        for (RecordInfo::Fields::iterator it = info_->GetFields().begin();
-             it != info_->GetFields().end();
-             ++it) {
-          if (it->second.edge()->IsWeakMember())
-            it->second.MarkTraced();
-        }
-      }
+      if (expr->getMemberName().getAsString() == kRegisterWeakMembersName)
+        MarkAllWeakMembersTraced();
 
       QualType base = expr->getBaseType();
       if (!base->isPointerType())
@@ -454,18 +445,23 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
                                         CXXDependentScopeMemberExpr* expr) {
     string fn_name = expr->getMember().getAsString();
 
-    // Check for VisitorDispatcher::trace(field)
+    // Check for VisitorDispatcher::trace(field) and
+    // VisitorDispatcher::registerWeakMembers.
     if (!expr->isImplicitAccess()) {
       if (clang::DeclRefExpr* base_decl =
               clang::dyn_cast<clang::DeclRefExpr>(expr->getBase())) {
-        if (Config::IsVisitorDispatcherType(base_decl->getType()) &&
-            call->getNumArgs() == 1 && fn_name == kTraceName) {
-          FindFieldVisitor finder;
-          finder.TraverseStmt(call->getArg(0));
-          if (finder.field())
-            FoundField(finder.field());
+        if (Config::IsVisitorDispatcherType(base_decl->getType())) {
+          if (call->getNumArgs() == 1 && fn_name == kTraceName) {
+            FindFieldVisitor finder;
+            finder.TraverseStmt(call->getArg(0));
+            if (finder.field())
+              FoundField(finder.field());
 
-          return;
+            return;
+          } else if (call->getNumArgs() == 1 &&
+                     fn_name == kRegisterWeakMembersName) {
+            MarkAllWeakMembersTraced();
+          }
         }
       }
     }
@@ -693,6 +689,16 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       RecordInfo::Fields::iterator it = info_->GetFields().find(field);
       if (it != info_->GetFields().end())
         MarkTraced(it);
+    }
+  }
+
+  void MarkAllWeakMembersTraced() {
+    // If we find a call to registerWeakMembers which is unresolved we
+    // unsoundly consider all weak members as traced.
+    // TODO: Find out how to validate weak member tracing for unresolved call.
+    for (auto& field : info_->GetFields()) {
+      if (field.second.edge()->IsWeakMember())
+        field.second.MarkTraced();
     }
   }
 
