@@ -33371,7 +33371,6 @@
         "vm_tests": []
     },
     "panther_embedded-release": {
-        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -33383,7 +33382,6 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Release Builds (canary) (internal)",
-        "dev_installer_prebuilts": true,
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "hwqual": true,
         "image_test": true,
@@ -39566,7 +39564,6 @@
         "vm_tests": []
     },
     "purin-release": {
-        "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
         "binhost_bucket": "gs://chromeos-dev-installer",
@@ -39578,7 +39575,6 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Release Builds (canary) (internal)",
-        "dev_installer_prebuilts": true,
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "hwqual": true,
         "image_test": true,

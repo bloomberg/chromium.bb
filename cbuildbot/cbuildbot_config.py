@@ -1217,6 +1217,8 @@ internal = _config(
 brillo = _config(
   sync_chrome=False,
   chrome_sdk=False,
+  afdo_use=False,
+  dev_installer_prebuilts=False,
   # TODO(gauravsh): crbug.com/356414 Start running tests on Brillo configs.
   vm_tests=[],
   hw_tests=[],
@@ -2585,6 +2587,12 @@ _AddAFDOConfigs()
 
 ### Release configs.
 
+_critical_for_chrome_boards = frozenset([
+    'daisy',
+    'lumpy',
+    'parrot',
+])
+
 # bayleybay-release does not enable vm_tests or unittests due to the compiler
 # flags enabled for baytrail.
 _release.add_config('bayleybay-release',
@@ -2618,20 +2626,13 @@ _release.add_config('samus-release',
 
 ### Arm release configs.
 
-_arm_release = _release.derive(non_testable_builder)
-
-_critical_for_chrome_boards = frozenset([
-    'daisy',
-    'lumpy',
-    'parrot',
-])
-
-_arm_release.add_config('veyron_rialto-release',
+_release.add_config('veyron_rialto-release',
   _base_configs['veyron_rialto'],
   # rialto does not use Chrome.
   sync_chrome=False,
   chrome_sdk=False,
 )
+
 
 # Now generate generic release configs if we haven't created anything more
 # specific above already.
@@ -2654,23 +2655,16 @@ def _AddReleaseConfigs():
 
 _AddReleaseConfigs()
 
-_brillo_release = _release.derive(brillo,
-  dev_installer_prebuilts=False,
-  afdo_use=False,
-  signer_tests=True,
-  image_test=True,
-)
-
-_brillo_release.add_config('gizmo-release',
-  boards=['gizmo'],
+_release.add_config('gizmo-release',
+  _base_configs['gizmo'],
 
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
   signer_tests=False,
 )
 
-_brillo_release.add_config('lemmings-release',
-  boards=['lemmings'],
+_release.add_config('lemmings-release',
+  _base_configs['lemmings'],
 
   # Hw Lab can't test, yet.
   paygen_skip_testing=True,
@@ -2680,17 +2674,17 @@ _brillo_release.add_config('lemmings-release',
   signer_tests=False,
 )
 
-_brillo_release.add_config('panther_embedded-minimal-release',
-  boards=['panther_embedded'],
+_release.add_config('panther_embedded-minimal-release',
+  _base_configs['panther_embedded'],
   profile='minimal',
   paygen=False,
   signer_tests=False,
 )
 
 # beaglebone build doesn't generate signed images, so don't try to release them.
-_beaglebone_release = _brillo_release.derive(beaglebone, paygen=False,
-                                             signer_tests=False,
-                                             images=['base', 'test'])
+_beaglebone_release = _release.derive(beaglebone, paygen=False,
+                                      signer_tests=False,
+                                      images=['base', 'test'])
 
 _config.add_group('beaglebone-release-group',
   _beaglebone_release.add_config('beaglebone-release',
@@ -2702,24 +2696,22 @@ _config.add_group('beaglebone-release-group',
   important=True,
 )
 
-_non_testable_brillo_release = _brillo_release.derive(non_testable_builder)
-
-_non_testable_brillo_release.add_config('kayle-release',
+_release.add_config('kayle-release',
   _base_configs['kayle'],
   paygen=False,
   signer_tests=False,
 )
 
-_non_testable_brillo_release.add_config('cosmos-release',
-  boards=['cosmos'],
+_release.add_config('cosmos-release',
+  _base_configs['cosmos'],
 
   paygen_skip_testing=True,
   important=False,
   signer_tests=False,
 )
 
-_non_testable_brillo_release.add_config('storm-release',
-  boards=['storm'],
+_release.add_config('storm-release',
+  _base_configs['storm'],
 
   # Hw Lab can't test storm, yet.
   paygen_skip_testing=True,
@@ -2727,8 +2719,8 @@ _non_testable_brillo_release.add_config('storm-release',
   signer_tests=False
 )
 
-_non_testable_brillo_release.add_config('urara-release',
-  boards=['urara'],
+_release.add_config('urara-release',
+  _base_configs['urara'],
   paygen=False,
   signer_tests=False,
   important=False,
@@ -2742,8 +2734,7 @@ _release.add_config('mipsel-o32-generic-release',
 )
 
 _release.add_config('stumpy_moblab-release',
-  moblab,
-  boards=['stumpy_moblab'],
+  _base_configs['stumpy_moblab'],
   images=['base', 'test'],
   paygen_skip_delta_payloads=True,
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
@@ -2760,8 +2751,7 @@ _release.add_config('stumpy_moblab-release',
 )
 
 _release.add_config('panther_moblab-release',
-  moblab,
-  boards=['panther_moblab'],
+  _base_configs['panther_moblab'],
   images=['base', 'test'],
   paygen_skip_delta_payloads=True,
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
@@ -2776,8 +2766,7 @@ _release.add_config('panther_moblab-release',
 )
 
 _release.add_config('rush-release',
-  non_testable_builder,
-  boards=['rush'],
+  _base_configs['rush'],
   hw_tests=[],
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
@@ -2785,14 +2774,15 @@ _release.add_config('rush-release',
 )
 
 _release.add_config('rush_ryu-release',
-  non_testable_builder,
-  boards=['rush_ryu'],
+  _base_configs['rush_ryu'],
   hw_tests=[],
 )
 
 _release.add_config('whirlwind-release',
   _base_configs['whirlwind'],
   important=True,
+  afdo_use=True,
+  dev_installer_prebuilts=True,
 )
 
 ### Per-chipset release groups
