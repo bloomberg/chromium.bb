@@ -66,7 +66,6 @@ group("gn_all") {
     "//ppapi:ppapi_unittests",
     "//ppapi/examples",  # TODO(GYP): What's the GYP equivalent?
     "//printing:printing_unittests",
-    "//remoting:remoting_unittests",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
     "//sync:sync_unit_tests",
@@ -99,6 +98,10 @@ group("gn_all") {
   # TODO(GYP): Get this working on the mac?
   if (enable_extensions && !is_mac) {
     deps += [ "//extensions/shell:app_shell_unittests" ]
+  }
+
+  if (!is_android) {
+    deps += [ "//remoting:remoting_unittests" ]
   }
 
   if (!is_win) {
