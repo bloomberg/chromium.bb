@@ -100,17 +100,14 @@ bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) const {
 }
 
 void ClipboardRecentContentIOS::PasteboardChanged() {
-  if ([UIPasteboard generalPasteboard].changeCount !=
-      lastPasteboardChangeCount_) {
-    urlFromPasteboardCache_ = URLFromPasteboard();
-    if (!urlFromPasteboardCache_.is_empty()) {
-      base::RecordAction(
-          base::UserMetricsAction("MobileOmniboxClipboardChanged"));
-    }
-    lastPasteboardChangeDate_.reset([[NSDate date] retain]);
-    lastPasteboardChangeCount_ = [UIPasteboard generalPasteboard].changeCount;
-    SaveToUserDefaults();
+  urlFromPasteboardCache_ = URLFromPasteboard();
+  if (!urlFromPasteboardCache_.is_empty()) {
+    base::RecordAction(
+        base::UserMetricsAction("MobileOmniboxClipboardChanged"));
   }
+  lastPasteboardChangeDate_.reset([[NSDate date] retain]);
+  lastPasteboardChangeCount_ = [UIPasteboard generalPasteboard].changeCount;
+  SaveToUserDefaults();
 }
 
 ClipboardRecentContentIOS::ClipboardRecentContentIOS()
@@ -124,7 +121,7 @@ ClipboardRecentContentIOS::ClipboardRecentContentIOS()
   NSInteger changeCount = [UIPasteboard generalPasteboard].changeCount;
   if (changeCount != lastPasteboardChangeCount_ ||
       DeviceRestartedSincePasteboardChanged()) {
-     PasteboardChanged();
+    PasteboardChanged();
   }
   notificationBridge_.reset(
       [[PasteboardNotificationListenerBridge alloc] initWithDelegate:this]);
