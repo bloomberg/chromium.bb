@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Entry point to stats reporting objects for cbuildbot.
+
+These factories setup the stats collection modules (es_utils, statsd) correctly
+so that cbuildbot stats from different sources (official builders, trybots,
+developer machines etc.) stay separate.
+"""
+
 from __future__ import print_function
 
 from chromite.cbuildbot import constants
@@ -11,10 +18,14 @@ from chromite.lib.graphite_lib import stats
 from chromite.lib.graphite_lib import stats_es_mock
 
 
+CONNECTION_TYPE_DEBUG = 'debug'
 CONNECTION_TYPE_MOCK = 'none'
 CONNECTION_TYPE_PROD = 'prod'
 CONNECTION_TYPE_READONLY = 'readonly'
 
+# The types definitions below make linter unhappy. The 'right' way of using
+# functools.partial makes functools.wraps (and hence our decorators) blow up.
+# pylint: disable=unnecessary-lambda
 
 class ESMetadataFactoryClass(factory.ObjectFactory):
   """Factory class for setting up an Elastic Search connection."""
@@ -63,6 +74,12 @@ class StatsFactoryClass(factory.ObjectFactory):
               host=constants.STATSD_HOST,
               port=constants.STATSD_PORT,
               prefix=constants.STATSD_PREFIX)),
+      CONNECTION_TYPE_DEBUG: factory.CachedFunctionCall(
+          lambda: stats.Statsd(
+              es=ESMetadataFactory.GetInstance(),
+              host=constants.STATSD_HOST,
+              port=constants.STATSD_PORT,
+              prefix=constants.STATSD_DEBUG_PREFIX)),
       CONNECTION_TYPE_MOCK: factory.CachedFunctionCall(
           lambda: stats_es_mock.Stats())
       }
@@ -75,6 +92,10 @@ class StatsFactoryClass(factory.ObjectFactory):
   def SetupProd(self):
     """Set up this factory to connect to the production Statsd."""
     self.Setup(CONNECTION_TYPE_PROD)
+
+  def SetupDebug(self):
+    """Set up this factory to connect to the debug Statsd."""
+    self.Setup(CONNECTION_TYPE_DEBUG)
 
   def SetupMock(self):
     """Set up this factory to return a mock statsd object."""

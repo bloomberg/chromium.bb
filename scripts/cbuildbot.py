@@ -969,7 +969,7 @@ def _SetupConnections(options, build_config):
   # stats.
   if options.buildbot:
     if options.debug:
-      graphite.StatsFactory.SetupMock()
+      graphite.StatsFactory.SetupDebug()
       graphite.ESMetadataFactory.SetupReadOnly()
       cidb.CIDBConnectionFactory.SetupDebugCidb()
       return
