@@ -1131,7 +1131,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         CheckLeftMostDerived(info);
         CheckDispatch(info);
         if (CXXMethodDecl* newop = info->DeclaresNewOperator())
-          ReportClassOverridesNew(info, newop);
+          if (!Config::IsIgnoreAnnotated(newop))
+            ReportClassOverridesNew(info, newop);
         if (info->IsGCMixinInstance()) {
           // Require that declared GCMixin implementations
           // also provide a trace() override.
