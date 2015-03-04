@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -28,12 +29,14 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/ownership/owner_key_util.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_urls.h"
 
@@ -49,12 +52,15 @@ std::string GenerateKioskAppAccountId(const std::string& app_id) {
 }
 
 void OnRemoveAppCryptohomeComplete(const std::string& app,
+                                   const base::Closure& callback,
                                    bool success,
                                    cryptohome::MountError return_code) {
   if (!success) {
     LOG(ERROR) << "Remove cryptohome for " << app
         << " failed, return code: " << return_code;
   }
+  if (!callback.is_null())
+    callback.Run();
 }
 
 // Check for presence of machine owner public key file.
@@ -538,6 +544,22 @@ void KioskAppManager::UpdateAppData() {
     }
   }
 
+  base::Closure cryptohomes_barrier_closure;
+
+  const user_manager::User* active_user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  if (active_user) {
+    std::string active_user_id = active_user->GetUserID();
+    for (const auto& it : old_apps) {
+      if (it.second->user_id() == active_user_id) {
+        VLOG(1) << "Currently running kiosk app removed from policy, exiting";
+        cryptohomes_barrier_closure = BarrierClosure(
+            old_apps.size(), base::Bind(&chrome::AttemptUserExit));
+        break;
+      }
+    }
+  }
+
   // Clears cache and deletes the remaining old data.
   std::vector<std::string> apps_to_remove;
   for (std::map<std::string, KioskAppData*>::iterator it = old_apps.begin();
@@ -545,7 +567,9 @@ void KioskAppManager::UpdateAppData() {
     it->second->ClearCache();
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
         it->second->user_id(),
-        base::Bind(&OnRemoveAppCryptohomeComplete, it->first));
+        base::Bind(&OnRemoveAppCryptohomeComplete,
+                   it->first,
+                   cryptohomes_barrier_closure));
     apps_to_remove.push_back(it->second->app_id());
   }
   STLDeleteValues(&old_apps);
