@@ -461,6 +461,42 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, TestDrawAttention) {
   ASSERT_TRUE(RunAppWindowInteractiveTest("testDrawAttention")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, TestCreateHidden) {
+  // Created hidden both times.
+  {
+    ExtensionTestMessageListener launched_listener("Launched", true);
+    LoadAndLaunchPlatformApp("hidden_with_id", &launched_listener);
+    EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
+    ExtensionTestMessageListener create_listener_1("Launched", true);
+    launched_listener.Reply("createHidden");
+    EXPECT_TRUE(create_listener_1.WaitUntilSatisfied());
+    AppWindow* app_window = GetFirstAppWindow();
+    EXPECT_TRUE(app_window->is_hidden());
+    ExtensionTestMessageListener create_listener_2("Launched", false);
+    create_listener_1.Reply("createHidden");
+    EXPECT_TRUE(create_listener_2.WaitUntilSatisfied());
+    EXPECT_TRUE(app_window->is_hidden());
+    app_window->GetBaseWindow()->Close();
+  }
+
+  // Created hidden, then visible. The second create should show the window.
+  {
+    ExtensionTestMessageListener launched_listener("Launched", true);
+    LoadAndLaunchPlatformApp("hidden_with_id", &launched_listener);
+    EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
+    ExtensionTestMessageListener create_listener_1("Launched", true);
+    launched_listener.Reply("createHidden");
+    EXPECT_TRUE(create_listener_1.WaitUntilSatisfied());
+    AppWindow* app_window = GetFirstAppWindow();
+    EXPECT_TRUE(app_window->is_hidden());
+    ExtensionTestMessageListener create_listener_2("Launched", false);
+    create_listener_1.Reply("createVisible");
+    EXPECT_TRUE(create_listener_2.WaitUntilSatisfied());
+    EXPECT_FALSE(app_window->is_hidden());
+    app_window->GetBaseWindow()->Close();
+  }
+}
+
 // Only Linux and Windows use keep-alive to determine when to shut down.
 #if defined(OS_LINUX) || defined(OS_WIN)
 

@@ -182,7 +182,7 @@ bool AppWindowCreateFunction::RunAsync() {
             view_id = created_view->GetRoutingID();
           }
 
-          if (options->hidden.get() && !*options->hidden.get()) {
+          if (!options->hidden.get() || !*options->hidden.get()) {
             if (options->focused.get() && !*options->focused.get())
               window->Show(AppWindow::SHOW_INACTIVE);
             else
