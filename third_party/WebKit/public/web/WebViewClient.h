@@ -249,6 +249,8 @@ public:
     // action that wasn't initiated by the client.
     virtual void zoomLevelChanged() { }
 
+    // Informs the browser that the page scale has changed.
+    virtual void pageScaleFactorChanged() { }
 
     // Navigator Content Utils  --------------------------------------------
 
