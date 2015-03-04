@@ -391,16 +391,16 @@ void FrameView::invalidateRect(const IntRect& rect)
         return;
     }
 
-    LayoutPart* renderer = m_frame->ownerRenderer();
-    if (!renderer)
+    LayoutPart* layoutObject = m_frame->ownerLayoutObject();
+    if (!layoutObject)
         return;
 
     IntRect paintInvalidationRect = rect;
-    paintInvalidationRect.move(renderer->borderLeft() + renderer->paddingLeft(),
-                     renderer->borderTop() + renderer->paddingTop());
+    paintInvalidationRect.move(layoutObject->borderLeft() + layoutObject->paddingLeft(),
+        layoutObject->borderTop() + layoutObject->paddingTop());
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    renderer->invalidatePaintRectangle(LayoutRect(paintInvalidationRect));
+    layoutObject->invalidatePaintRectangle(LayoutRect(paintInvalidationRect));
 }
 
 void FrameView::setFrameRect(const IntRect& newRect)
@@ -503,8 +503,8 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
     }
 
     // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
-    LayoutPart* frameRenderer = m_frame->ownerRenderer();
-    if (frameRenderer && frameRenderer->style()->hasPseudoStyle(SCROLLBAR)) {
+    LayoutPart* frameLayoutObject = m_frame->ownerLayoutObject();
+    if (frameLayoutObject && frameLayoutObject->style()->hasPseudoStyle(SCROLLBAR)) {
         customScrollbarFrame = m_frame.get();
         return true;
     }
@@ -751,8 +751,8 @@ bool FrameView::isEnclosedInCompositingLayer() const
     // FIXME: It's a bug that compositing state isn't always up to date when this is called. crbug.com/366314
     DisableCompositingQueryAsserts disabler;
 
-    LayoutObject* frameOwnerRenderer = m_frame->ownerRenderer();
-    return frameOwnerRenderer && frameOwnerRenderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
+    LayoutObject* frameOwnerLayoutObject = m_frame->ownerLayoutObject();
+    return frameOwnerLayoutObject && frameOwnerLayoutObject->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
 }
 
 static inline void countObjectsNeedingLayoutInRoot(const LayoutObject* root, unsigned& needsLayoutObjects, unsigned& totalObjects)
@@ -784,8 +784,8 @@ bool FrameView::isLayoutRoot(const LayoutObject& object) const
 
 inline void FrameView::forceLayoutParentViewIfNeeded()
 {
-    LayoutPart* ownerRenderer = m_frame->ownerRenderer();
-    if (!ownerRenderer || !ownerRenderer->frame())
+    LayoutPart* ownerLayoutObject = m_frame->ownerLayoutObject();
+    if (!ownerLayoutObject || !ownerLayoutObject->frame())
         return;
 
     LayoutBox* contentBox = embeddedContentBox();
@@ -796,17 +796,17 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     if (svgRoot->everHadLayout() && !svgRoot->needsLayout())
         return;
 
-    // If the embedded SVG document appears the first time, the ownerRenderer has already finished
+    // If the embedded SVG document appears the first time, the ownerLayoutObject has already finished
     // layout without knowing about the existence of the embedded SVG document, because LayoutReplaced
     // embeddedContentBox() returns 0, as long as the embedded document isn't loaded yet. Before
-    // bothering to lay out the SVG document, mark the ownerRenderer needing layout and ask its
-    // FrameView for a layout. After that the LayoutEmbeddedObject (ownerRenderer) carries the
+    // bothering to lay out the SVG document, mark the ownerLayoutObject needing layout and ask its
+    // FrameView for a layout. After that the LayoutEmbeddedObject (ownerLayoutObject) carries the
     // correct size, which LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
     // out for the first time, or when the LayoutSVGRoot size has changed dynamically (eg. via <script>).
-    RefPtrWillBeRawPtr<FrameView> frameView = ownerRenderer->frame()->view();
+    RefPtrWillBeRawPtr<FrameView> frameView = ownerLayoutObject->frame()->view();
 
     // Mark the owner renderer as needing layout.
-    ownerRenderer->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    ownerLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 
     // Synchronously enter layout, to layout the view containing the host object/embed/iframe.
     ASSERT(frameView);
@@ -1427,7 +1427,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         DisablePaintInvalidationStateAsserts disabler;
         layoutView()->invalidatePaintRectangle(LayoutRect(updateRect));
     }
-    if (LayoutPart* frameRenderer = m_frame->ownerRenderer()) {
+    if (LayoutPart* frameLayoutObject = m_frame->ownerLayoutObject()) {
         if (isEnclosedInCompositingLayer()) {
             // FIXME: This block is needed for the display list merge algorithm to work correctly.
             //        Remove this once https://codereview.chromium.org/847783003/ lands.
@@ -1437,12 +1437,12 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
                 layoutView->layer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries()->graphicsLayerBacking()->displayItemList()->invalidate(layoutView->displayItemClient());
             }
 
-            LayoutRect rect(frameRenderer->borderLeft() + frameRenderer->paddingLeft(),
-                            frameRenderer->borderTop() + frameRenderer->paddingTop(),
-                            visibleWidth(), visibleHeight());
+            LayoutRect rect(frameLayoutObject->borderLeft() + frameLayoutObject->paddingLeft(),
+                frameLayoutObject->borderTop() + frameLayoutObject->paddingTop(),
+                visibleWidth(), visibleHeight());
             // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
             DisablePaintInvalidationStateAsserts disabler;
-            frameRenderer->invalidatePaintRectangle(rect);
+            frameLayoutObject->invalidatePaintRectangle(rect);
             return;
         }
     }
@@ -1774,7 +1774,7 @@ HostWindow* FrameView::hostWindow() const
 
 void FrameView::contentRectangleForPaintInvalidation(const IntRect& rectInContent)
 {
-    ASSERT(!m_frame->ownerRenderer());
+    ASSERT(!m_frame->ownerLayoutObject());
 
     if (m_isTrackingPaintInvalidations) {
         m_trackedPaintInvalidationRects.append(contentsToFrame(rectInContent));
@@ -2350,11 +2350,11 @@ bool FrameView::scrollbarsCanBeActive() const
 
 IntRect FrameView::scrollableAreaBoundingBox() const
 {
-    LayoutPart* ownerRenderer = frame().ownerRenderer();
-    if (!ownerRenderer)
+    LayoutPart* ownerLayoutObject = frame().ownerLayoutObject();
+    if (!ownerLayoutObject)
         return frameRect();
 
-    return ownerRenderer->absoluteContentQuad().enclosingBoundingBox();
+    return ownerLayoutObject->absoluteContentQuad().enclosingBoundingBox();
 }
 
 
@@ -2485,8 +2485,8 @@ void FrameView::updateScrollCorner()
 
         if (!cornerStyle) {
             // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
-            if (LayoutPart* renderer = m_frame->ownerRenderer())
-                cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
+            if (LayoutPart* layoutObject = m_frame->ownerLayoutObject())
+                cornerStyle = layoutObject->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), layoutObject->style());
         }
     }
 
@@ -2805,16 +2805,16 @@ IntPoint FrameView::convertToRenderer(const LayoutObject& renderer, const IntPoi
 IntRect FrameView::convertToContainingView(const IntRect& localRect) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
-        // Get our renderer in the parent view
-        LayoutPart* renderer = m_frame->ownerRenderer();
-        if (!renderer)
+        // Get our layoutObject in the parent view
+        LayoutPart* layoutObject = m_frame->ownerLayoutObject();
+        if (!layoutObject)
             return localRect;
 
         IntRect rect(localRect);
         // Add borders and padding??
-        rect.move(renderer->borderLeft() + renderer->paddingLeft(),
-            renderer->borderTop() + renderer->paddingTop());
-        return parentView->convertFromRenderer(*renderer, rect);
+        rect.move(layoutObject->borderLeft() + layoutObject->paddingLeft(),
+            layoutObject->borderTop() + layoutObject->paddingTop());
+        return parentView->convertFromRenderer(*layoutObject, rect);
     }
 
     return localRect;
@@ -2823,15 +2823,15 @@ IntRect FrameView::convertToContainingView(const IntRect& localRect) const
 IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
-        // Get our renderer in the parent view
-        LayoutPart* renderer = m_frame->ownerRenderer();
-        if (!renderer)
+        // Get our layoutObject in the parent view
+        LayoutPart* layoutObject = m_frame->ownerLayoutObject();
+        if (!layoutObject)
             return parentRect;
 
-        IntRect rect = parentView->convertToRenderer(*renderer, parentRect);
+        IntRect rect = parentView->convertToRenderer(*layoutObject, parentRect);
         // Subtract borders and padding
-        rect.move(-renderer->borderLeft() - renderer->paddingLeft(),
-            -renderer->borderTop() - renderer->paddingTop());
+        rect.move(-layoutObject->borderLeft() - layoutObject->paddingLeft(),
+            -layoutObject->borderTop() - layoutObject->paddingTop());
         return rect;
     }
 
@@ -2841,17 +2841,17 @@ IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
 IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
-        // Get our renderer in the parent view
-        LayoutPart* renderer = m_frame->ownerRenderer();
-        if (!renderer)
+        // Get our layoutObject in the parent view
+        LayoutPart* layoutObject = m_frame->ownerLayoutObject();
+        if (!layoutObject)
             return localPoint;
 
         IntPoint point(localPoint);
 
         // Add borders and padding
-        point.move(renderer->borderLeft() + renderer->paddingLeft(),
-            renderer->borderTop() + renderer->paddingTop());
-        return parentView->convertFromRenderer(*renderer, point);
+        point.move(layoutObject->borderLeft() + layoutObject->paddingLeft(),
+            layoutObject->borderTop() + layoutObject->paddingTop());
+        return parentView->convertFromRenderer(*layoutObject, point);
     }
 
     return localPoint;
@@ -2860,15 +2860,15 @@ IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
 IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
-        // Get our renderer in the parent view
-        LayoutPart* renderer = m_frame->ownerRenderer();
-        if (!renderer)
+        // Get our layoutObject in the parent view
+        LayoutPart* layoutObject = m_frame->ownerLayoutObject();
+        if (!layoutObject)
             return parentPoint;
 
-        IntPoint point = parentView->convertToRenderer(*renderer, parentPoint);
+        IntPoint point = parentView->convertToRenderer(*layoutObject, parentPoint);
         // Subtract borders and padding
-        point.move(-renderer->borderLeft() - renderer->paddingLeft(),
-            -renderer->borderTop() - renderer->paddingTop());
+        point.move(-layoutObject->borderLeft() - layoutObject->paddingLeft(),
+            -layoutObject->borderTop() - layoutObject->paddingTop());
         return point;
     }
 

@@ -1010,7 +1010,7 @@ Layer* Layer::enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const
     while (!compositedLayer) {
         compositedLayer = layer->enclosingLayerForPaintInvalidation();
         if (!compositedLayer) {
-            LayoutObject* owner = layer->renderer()->frame()->ownerRenderer();
+            LayoutObject* owner = layer->renderer()->frame()->ownerLayoutObject();
             if (!owner)
                 break;
             layer = owner->enclosingLayer();

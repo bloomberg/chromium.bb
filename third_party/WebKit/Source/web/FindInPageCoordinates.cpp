@@ -120,7 +120,7 @@ FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect, const Layou
         ASSERT(renderer->isLayoutView());
 
         // Jump to the renderer owning the frame, if any.
-        renderer = renderer->frame() ? renderer->frame()->ownerRenderer() : 0;
+        renderer = renderer->frame() ? renderer->frame()->ownerLayoutObject() : 0;
     }
 
     return normalizedRect;

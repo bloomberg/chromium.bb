@@ -445,10 +445,10 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap
     for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
-        const LayoutObject* ownerRenderer = toLocalFrame(child)->ownerRenderer();
-        if (!ownerRenderer)
+        const LayoutObject* ownerLayoutObject = toLocalFrame(child)->ownerLayoutObject();
+        if (!ownerLayoutObject)
             continue;
-        const Layer* containingLayer = ownerRenderer->enclosingLayer();
+        const Layer* containingLayer = ownerLayoutObject->enclosingLayer();
         LayerFrameMap::iterator iter = map->find(containingLayer);
         if (iter == map->end())
             map->add(containingLayer, Vector<const LocalFrame*>()).storedValue->value.append(toLocalFrame(child));
@@ -543,8 +543,8 @@ static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerH
 
             if (layer->parent()) {
                 layer = layer->parent();
-            } else if (LayoutObject* parentDocRenderer = layer->renderer()->frame()->ownerRenderer()) {
-                layer = parentDocRenderer->enclosingLayer();
+            } else if (LayoutObject* parentDocLayoutObject = layer->renderer()->frame()->ownerLayoutObject()) {
+                layer = parentDocLayoutObject->enclosingLayer();
                 touchHandlerInChildFrame = true;
             }
         } while (layer);

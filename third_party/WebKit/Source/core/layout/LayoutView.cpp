@@ -249,11 +249,11 @@ void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidati
         return;
 
     if (mode & TraverseDocumentBoundaries) {
-        if (LayoutObject* parentDocRenderer = frame()->ownerRenderer()) {
+        if (LayoutObject* parentDocLayoutObject = frame()->ownerLayoutObject()) {
             transformState.move(-frame()->view()->scrollOffset());
-            if (parentDocRenderer->isBox())
-                transformState.move(toLayoutBox(parentDocRenderer)->contentBoxOffset());
-            parentDocRenderer->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
+            if (parentDocLayoutObject->isBox())
+                transformState.move(toLayoutBox(parentDocLayoutObject)->contentBoxOffset());
+            parentDocLayoutObject->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
             return;
         }
     }
@@ -269,10 +269,10 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
         offsetForFixedPosition = LayoutSize(m_frameView->scrollOffsetForViewportConstrainedObjects());
 
     if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
-        if (LayoutPart* parentDocRenderer = frame()->ownerRenderer()) {
+        if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
             offset = -LayoutSize(m_frameView->scrollOffset());
-            offset += parentDocRenderer->contentBoxOffset();
-            container = parentDocRenderer;
+            offset += parentDocLayoutObject->contentBoxOffset();
+            container = parentDocLayoutObject;
         }
     }
 
@@ -345,7 +345,7 @@ void LayoutView::invalidatePaintForRectangle(const LayoutRect& paintInvalidation
     if (document().printing() || !m_frameView)
         return;
 
-    ASSERT(layer()->compositingState() == PaintsIntoOwnBacking || !frame()->ownerRenderer());
+    ASSERT(layer()->compositingState() == PaintsIntoOwnBacking || !frame()->ownerLayoutObject());
 
     if (layer()->compositingState() == PaintsIntoOwnBacking) {
         setBackingNeedsPaintInvalidationInRect(paintInvalidationRect, invalidationReason);

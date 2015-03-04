@@ -258,7 +258,7 @@ Frame* Frame::findUnsafeParentScrollPropagationBoundary()
     return nullptr;
 }
 
-LayoutPart* Frame::ownerRenderer() const
+LayoutPart* Frame::ownerLayoutObject() const
 {
     if (!deprecatedLocalOwner())
         return nullptr;

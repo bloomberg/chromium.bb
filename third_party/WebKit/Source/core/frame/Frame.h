@@ -99,7 +99,7 @@ public:
     bool canNavigate(const Frame&);
     virtual void printNavigationErrorMessage(const Frame&, const char* reason) = 0;
 
-    LayoutPart* ownerRenderer() const; // Renderer for the element that contains this frame.
+    LayoutPart* ownerLayoutObject() const; // LayoutObject for the element that contains this frame.
 
     Settings* settings() const; // can be null
 

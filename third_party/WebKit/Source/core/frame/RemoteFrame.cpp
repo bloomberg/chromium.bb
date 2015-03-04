@@ -117,7 +117,7 @@ void RemoteFrame::createView()
         // FIXME: This is not the right place to clear the previous frame's
         // widget. We do it here because the LocalFrame cleanup after a swap is
         // still work in progress.
-        if (ownerRenderer()) {
+        if (ownerLayoutObject()) {
             HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
             ASSERT(owner);
             owner->setWidget(nullptr);
@@ -129,7 +129,7 @@ void RemoteFrame::createView()
     RefPtrWillBeRawPtr<RemoteFrameView> view = RemoteFrameView::create(this);
     setView(view);
 
-    if (ownerRenderer()) {
+    if (ownerLayoutObject()) {
         HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
         ASSERT(owner);
         owner->setWidget(view);
@@ -151,8 +151,8 @@ void RemoteFrame::setRemotePlatformLayer(WebLayer* layer)
 
     ASSERT(owner());
     toHTMLFrameOwnerElement(owner())->setNeedsCompositingUpdate();
-    if (LayoutPart* renderer = ownerRenderer())
-        renderer->layer()->updateSelfPaintingLayer();
+    if (LayoutPart* layoutObject = ownerLayoutObject())
+        layoutObject->layer()->updateSelfPaintingLayer();
 }
 
 } // namespace blink

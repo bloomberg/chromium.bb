@@ -29,14 +29,14 @@ PassRefPtrWillBeRawPtr<RemoteFrameView> RemoteFrameView::create(RemoteFrame* rem
 
 void RemoteFrameView::invalidateRect(const IntRect& rect)
 {
-    LayoutPart* renderer = m_remoteFrame->ownerRenderer();
-    if (!renderer)
+    LayoutPart* layoutObject = m_remoteFrame->ownerLayoutObject();
+    if (!layoutObject)
         return;
 
     LayoutRect repaintRect(rect);
-    repaintRect.move(renderer->borderLeft() + renderer->paddingLeft(),
-        renderer->borderTop() + renderer->paddingTop());
-    renderer->invalidatePaintRectangle(repaintRect);
+    repaintRect.move(layoutObject->borderLeft() + layoutObject->paddingLeft(),
+        layoutObject->borderTop() + layoutObject->paddingTop());
+    layoutObject->invalidatePaintRectangle(repaintRect);
 }
 
 void RemoteFrameView::setFrameRect(const IntRect& newRect)

@@ -1060,8 +1060,8 @@ const LayoutBoxModelObject* LayoutObject::adjustCompositedContainerForSpecialAnc
         return paintInvalidationContainer;
 
     LayoutView* layoutView = view();
-    while (layoutView->frame()->ownerRenderer())
-        layoutView = layoutView->frame()->ownerRenderer()->view();
+    while (layoutView->frame()->ownerLayoutObject())
+        layoutView = layoutView->frame()->ownerLayoutObject()->view();
     return layoutView;
 }
 

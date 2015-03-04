@@ -3868,7 +3868,7 @@ bool Document::isInInvisibleSubframe() const
         return false; // this is the root element
 
     ASSERT(frame());
-    return !frame()->ownerRenderer();
+    return !frame()->ownerLayoutObject();
 }
 
 String Document::cookie(ExceptionState& exceptionState) const

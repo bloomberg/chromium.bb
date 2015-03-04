@@ -91,10 +91,8 @@ DEFINE_TRACE(LayoutScrollbar)
 
 LayoutBox* LayoutScrollbar::owningRenderer() const
 {
-    if (m_owningFrame) {
-        LayoutBox* currentRenderer = m_owningFrame->ownerRenderer();
-        return currentRenderer;
-    }
+    if (m_owningFrame)
+        return m_owningFrame->ownerLayoutObject();
     return m_owner && m_owner->renderer() ? m_owner->renderer()->enclosingBox() : 0;
 }
 
