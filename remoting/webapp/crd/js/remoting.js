@@ -182,7 +182,7 @@ remoting.showErrorMessage = function(error) {
       document.getElementById('token-refresh-error-message'),
       error);
   var auth_failed = (error == remoting.Error.AUTHENTICATION_FAILED);
-  if (base.isAppsV2()) {
+  if (auth_failed && base.isAppsV2()) {
     remoting.handleAuthFailureAndRelaunch();
   } else {
     document.getElementById('token-refresh-auth-failed').hidden = !auth_failed;
