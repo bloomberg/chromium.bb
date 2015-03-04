@@ -331,10 +331,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
     public void removeObserver(WebContentsObserver observer) {
         if (mObserverProxy == null) return;
         mObserverProxy.removeObserver(observer);
-        if (!mObserverProxy.hasObservers()) {
-            mObserverProxy.destroy();
-            mObserverProxy = null;
-        }
     }
 
     // This is static to avoid exposing a public destroy method on the native side of this class.
