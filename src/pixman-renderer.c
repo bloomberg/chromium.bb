@@ -180,6 +180,18 @@ pixman_renderer_compute_transform(pixman_transform_t *transform_out,
 	weston_matrix_to_pixman_transform(transform_out, &matrix);
 }
 
+static bool
+view_transformation_is_translation(struct weston_view *view)
+{
+	if (!view->transform.enabled)
+		return true;
+
+	if (view->transform.matrix.type <= WESTON_MATRIX_TRANSFORM_TRANSLATE)
+		return true;
+
+	return false;
+}
+
 static void
 repaint_region(struct weston_view *ev, struct weston_output *output,
 	       pixman_region32_t *region, pixman_region32_t *surf_region,
@@ -305,9 +317,7 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	}
 
 	/* TODO: Implement repaint_region_complex() using pixman_composite_trapezoids() */
-	if (ev->alpha != 1.0 ||
-	    (ev->transform.enabled &&
-	     ev->transform.matrix.type != WESTON_MATRIX_TRANSFORM_TRANSLATE)) {
+	if (ev->alpha != 1.0 || !view_transformation_is_translation(ev)) {
 		repaint_region(ev, output, &repaint, NULL, PIXMAN_OP_OVER);
 	} else {
 		/* blended region is whole surface minus opaque region: */
