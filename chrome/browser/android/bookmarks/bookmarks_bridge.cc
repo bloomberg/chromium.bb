@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -147,13 +146,15 @@ static jboolean IsEnhancedBookmarksFeatureEnabled(JNIEnv* env,
   return IsEnhancedBookmarksEnabled(profile->GetPrefs());
 }
 
-static bool IsEditBookmarksEnabled() {
-  return ProfileManager::GetLastUsedProfile()->GetPrefs()->GetBoolean(
+static bool IsEditBookmarksEnabled(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
       bookmarks::prefs::kEditBookmarksEnabled);
 }
 
-static jboolean IsEditBookmarksEnabled(JNIEnv* env, jclass clazz) {
-  return IsEditBookmarksEnabled();
+static jboolean IsEditBookmarksEnabled(JNIEnv* env,
+                                       jclass clazz,
+                                       jobject j_profile) {
+  return IsEditBookmarksEnabled(ProfileAndroid::FromProfileAndroid(j_profile));
 }
 
 void BookmarksBridge::LoadEmptyPartnerBookmarkShimForTesting(JNIEnv* env,
@@ -808,7 +809,7 @@ bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
       node->type() != BookmarkNode::URL)) {
     return false;
   }
-  if (!IsEditBookmarksEnabled())
+  if (!IsEditBookmarksEnabled(profile_))
     return false;
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->IsEditable(node);

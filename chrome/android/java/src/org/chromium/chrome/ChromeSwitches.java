@@ -109,6 +109,12 @@ public abstract class ChromeSwitches {
     /** Enable begin frame scheduling. */
     public static final String ENABLE_BEGIN_FRAME_SCHEDULING = "enable-begin-frame-scheduling";
 
+    /**
+     * Enable enhanced bookmarks feature.
+     * Native switch - switches::kEnhancedBookmarksExperiment
+     */
+    public static final String ENABLE_ENHANCED_BOOKMARKS = "enhanced-bookmarks-experiment";
+
     /** Enable the DOM Distiller. */
     public static final String ENABLE_DOM_DISTILLER = "enable-dom-distiller";
 

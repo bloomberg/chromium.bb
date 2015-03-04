@@ -544,8 +544,13 @@ public class BookmarksBridge {
         nativeEndGroupingUndos(mNativeBookmarksBridge);
     }
 
+    public static boolean isEditBookmarksEnabled(Profile profile) {
+        return nativeIsEditBookmarksEnabled(profile);
+    }
+
+    // TODO(ianwen): Remove this method after rolling.
     public static boolean isEditBookmarksEnabled() {
-        return nativeIsEditBookmarksEnabled();
+        return true;
     }
 
     public static boolean isEnhancedBookmarksEnabled(Profile profile) {
@@ -737,7 +742,7 @@ public class BookmarksBridge {
     private native long nativeInit(Profile profile);
     private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarksBridge);
     private native void nativeDestroy(long nativeBookmarksBridge);
-    private static native boolean nativeIsEditBookmarksEnabled();
+    private static native boolean nativeIsEditBookmarksEnabled(Profile profile);
 
     /**
      * Simple object representing the bookmark item.
