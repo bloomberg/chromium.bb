@@ -665,7 +665,7 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
-    scoped_refptr<base::TaskRunner> io_task_runner =
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner =
         BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
               ->task_runner();
     if (!channel_mojo_host_) {

@@ -12,7 +12,7 @@
 #include "ipc/mojo/ipc_channel_mojo.h"
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace IPC {
@@ -23,7 +23,8 @@ namespace IPC {
 // instance and call OnClientLaunched().
 class IPC_MOJO_EXPORT ChannelMojoHost {
  public:
-  explicit ChannelMojoHost(scoped_refptr<base::TaskRunner> io_task_runner);
+  explicit ChannelMojoHost(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~ChannelMojoHost();
 
   void OnClientLaunched(base::ProcessHandle process);
@@ -31,16 +32,10 @@ class IPC_MOJO_EXPORT ChannelMojoHost {
 
  private:
   class ChannelDelegate;
+  class ChannelDelegateTraits;
 
-  // Delegate talks to ChannelMojo, whch lives in IO thread, thus
-  // the Delegate should also live and dies in the IO thread as well.
-  class DelegateDeleter {
-   public:
-    void operator()(ChannelDelegate* ptr) const;
-  };
-
-  const scoped_refptr<base::TaskRunner> io_task_runner_;
-  scoped_ptr<ChannelDelegate, DelegateDeleter> channel_delegate_;
+  const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+  scoped_refptr<ChannelDelegate> channel_delegate_;
   base::WeakPtrFactory<ChannelMojoHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelMojoHost);

@@ -153,7 +153,7 @@ IPC::ChannelHandle IPCTestBase::GetTestChannelHandle() {
   return GetChannelName(test_client_name_);
 }
 
-scoped_refptr<base::TaskRunner> IPCTestBase::task_runner() {
+scoped_refptr<base::SequencedTaskRunner> IPCTestBase::task_runner() {
   return message_loop_->message_loop_proxy();
 }
 

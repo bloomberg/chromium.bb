@@ -10,14 +10,22 @@
 
 namespace IPC {
 
+class ChannelMojoHost::ChannelDelegateTraits {
+ public:
+  static void Destruct(const ChannelMojoHost::ChannelDelegate* ptr);
+};
+
 // The delete class lives on the IO thread to talk to ChannelMojo on
 // behalf of ChannelMojoHost.
 //
 // The object must be touched only on the IO thread.
-class ChannelMojoHost::ChannelDelegate : public ChannelMojo::Delegate {
+class ChannelMojoHost::ChannelDelegate
+    : public base::RefCountedThreadSafe<ChannelMojoHost::ChannelDelegate,
+                                        ChannelMojoHost::ChannelDelegateTraits>,
+      public ChannelMojo::Delegate {
  public:
-  explicit ChannelDelegate(scoped_refptr<base::TaskRunner> io_task_runner);
-  ~ChannelDelegate() override;
+  explicit ChannelDelegate(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
   // ChannelMojo::Delegate
   base::WeakPtr<Delegate> ToWeakPtr() override;
@@ -27,10 +35,14 @@ class ChannelMojoHost::ChannelDelegate : public ChannelMojo::Delegate {
   // Returns an weak ptr of ChannelDelegate instead of Delegate
   base::WeakPtr<ChannelDelegate> GetWeakPtr();
   void OnClientLaunched(base::ProcessHandle process);
-  void DeleteThisSoon();
+  void DeleteThisSoon() const;
 
  private:
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+  friend class base::DeleteHelper<ChannelDelegate>;
+
+  ~ChannelDelegate() override;
+
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   base::WeakPtr<ChannelMojo> channel_;
   base::WeakPtrFactory<ChannelDelegate> weak_factory_;
 
@@ -38,7 +50,7 @@ class ChannelMojoHost::ChannelDelegate : public ChannelMojo::Delegate {
 };
 
 ChannelMojoHost::ChannelDelegate::ChannelDelegate(
-    scoped_refptr<base::TaskRunner> io_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : io_task_runner_(io_task_runner), weak_factory_(this) {
 }
 
@@ -72,18 +84,16 @@ void ChannelMojoHost::ChannelDelegate::OnClientLaunched(
     channel_->OnClientLaunched(process);
 }
 
-void ChannelMojoHost::ChannelDelegate::DeleteThisSoon() {
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&base::DeletePointer<ChannelMojoHost::ChannelDelegate>,
-                 base::Unretained(this)));
+void ChannelMojoHost::ChannelDelegate::DeleteThisSoon() const {
+  io_task_runner_->DeleteSoon(FROM_HERE, this);
 }
 
 //
 // ChannelMojoHost
 //
 
-ChannelMojoHost::ChannelMojoHost(scoped_refptr<base::TaskRunner> io_task_runner)
+ChannelMojoHost::ChannelMojoHost(
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : io_task_runner_(io_task_runner),
       channel_delegate_(new ChannelDelegate(io_task_runner)),
       weak_factory_(this) {
@@ -98,8 +108,7 @@ void ChannelMojoHost::OnClientLaunched(base::ProcessHandle process) {
   } else {
     io_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&ChannelDelegate::OnClientLaunched,
-                                         channel_delegate_->GetWeakPtr(),
-                                         process));
+                                         channel_delegate_, process));
   }
 }
 
@@ -107,8 +116,9 @@ ChannelMojo::Delegate* ChannelMojoHost::channel_delegate() const {
   return channel_delegate_.get();
 }
 
-void ChannelMojoHost::DelegateDeleter::operator()(
-    ChannelMojoHost::ChannelDelegate* ptr) const {
+// static
+void ChannelMojoHost::ChannelDelegateTraits::Destruct(
+    const ChannelMojoHost::ChannelDelegate* ptr) {
   ptr->DeleteThisSoon();
 }
 

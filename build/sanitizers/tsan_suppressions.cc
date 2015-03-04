@@ -325,9 +325,6 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/459429
 "race:randomnessPid\n"
 
-// https://crbug.com/460243
-"race:IPC::ChannelMojoHost::OnClientLaunched\n"
-
 // https://crbug.com/454655
 "race:content::BrowserTestBase::PostTaskToInProcessRendererAndWait\n"
 

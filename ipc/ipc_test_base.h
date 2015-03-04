@@ -101,7 +101,7 @@ class IPCTestBase : public base::MultiProcessTest {
   IPC::ChannelProxy* channel_proxy() { return channel_proxy_.get(); }
 
   const base::Process& client_process() const { return client_process_; }
-  scoped_refptr<base::TaskRunner> task_runner();
+  scoped_refptr<base::SequencedTaskRunner> task_runner();
 
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle, base::TaskRunner* runner);
