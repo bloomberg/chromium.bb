@@ -113,7 +113,7 @@ class ServiceWorkerScriptContext {
       SkipWaitingCallbacksMap;
 
   void OnActivateEvent(int request_id);
-  void OnInstallEvent(int request_id, int active_version_id);
+  void OnInstallEvent(int request_id);
   void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
   void OnSyncEvent(int request_id);
   void OnNotificationClickEvent(

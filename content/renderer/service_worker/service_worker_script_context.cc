@@ -314,8 +314,7 @@ void ServiceWorkerScriptContext::OnActivateEvent(int request_id) {
   proxy_->dispatchActivateEvent(request_id);
 }
 
-void ServiceWorkerScriptContext::OnInstallEvent(int request_id,
-                                                int active_version_id) {
+void ServiceWorkerScriptContext::OnInstallEvent(int request_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnInstallEvent");
   install_start_timings_[request_id] = base::TimeTicks::Now();

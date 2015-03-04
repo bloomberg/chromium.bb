@@ -256,7 +256,7 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   // Dispatch an event without starting the worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
-  version_->DispatchInstallEvent(-1, CreateReceiverOnCurrentThread(&status));
+  version_->DispatchInstallEvent(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
@@ -267,8 +267,7 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   status = SERVICE_WORKER_ERROR_FAILED;
   ServiceWorkerStatusCode stop_status = SERVICE_WORKER_ERROR_FAILED;
   version_->StopWorker(CreateReceiverOnCurrentThread(&stop_status));
-  version_->DispatchInstallEvent(
-      -1, CreateReceiverOnCurrentThread(&status));
+  version_->DispatchInstallEvent(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, stop_status);
 
@@ -308,7 +307,7 @@ TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
 
   // Dispatch an install event.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->DispatchInstallEvent(-1, CreateReceiverOnCurrentThread(&status));
+  version_->DispatchInstallEvent(CreateReceiverOnCurrentThread(&status));
 
   // Wait for the completion.
   bool status_change_called = false;

@@ -1262,8 +1262,7 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
         activate_event_result_(blink::WebServiceWorkerEventResultCompleted) {}
 
   void OnInstallEvent(int embedded_worker_id,
-                      int request_id,
-                      int active_version_id) override {
+                      int request_id) override {
     if (!install_callback_.is_null())
       install_callback_.Run();
     SimulateSend(

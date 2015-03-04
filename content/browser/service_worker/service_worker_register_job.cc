@@ -377,7 +377,6 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
 
   // "Fire an event named install..."
   new_version()->DispatchInstallEvent(
-      -1,
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
                  weak_factory_.GetWeakPtr()));
 

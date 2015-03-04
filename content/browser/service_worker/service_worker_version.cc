@@ -463,7 +463,6 @@ void ServiceWorkerVersion::DispatchMessageEventInternal(
 }
 
 void ServiceWorkerVersion::DispatchInstallEvent(
-    int active_version_id,
     const StatusCallback& callback) {
   DCHECK_EQ(INSTALLING, status()) << status();
 
@@ -475,10 +474,9 @@ void ServiceWorkerVersion::DispatchInstallEvent(
                    callback,
                    base::Bind(&self::DispatchInstallEventAfterStartWorker,
                               weak_factory_.GetWeakPtr(),
-                              active_version_id,
                               callback)));
   } else {
-    DispatchInstallEventAfterStartWorker(active_version_id, callback);
+    DispatchInstallEventAfterStartWorker(callback);
   }
 }
 
@@ -944,14 +942,13 @@ void ServiceWorkerVersion::OnStartMessageSent(
 }
 
 void ServiceWorkerVersion::DispatchInstallEventAfterStartWorker(
-    int active_version_id,
     const StatusCallback& callback) {
   DCHECK_EQ(RUNNING, running_status())
       << "Worker stopped too soon after it was started.";
 
   int request_id = install_callbacks_.Add(new StatusCallback(callback));
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      ServiceWorkerMsg_InstallEvent(request_id, active_version_id));
+      ServiceWorkerMsg_InstallEvent(request_id));
   if (status != SERVICE_WORKER_OK) {
     install_callbacks_.Remove(request_id);
     RunSoon(base::Bind(callback, status));

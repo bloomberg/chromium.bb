@@ -81,8 +81,7 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
 
   void OnInstallEvent(int embedded_worker_id,
-                      int request_id,
-                      int active_version_id) override {
+                      int request_id) override {
     SimulateSend(
         new ServiceWorkerHostMsg_InstallEventFinished(
             embedded_worker_id, request_id,

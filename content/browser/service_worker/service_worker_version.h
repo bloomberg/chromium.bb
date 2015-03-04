@@ -175,15 +175,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Sends install event to the associated embedded worker and asynchronously
   // calls |callback| when it errors out or it gets a response from the worker
   // to notify install completion.
-  // |active_version_id| must be a valid positive ID
-  // if there's an activated (previous) version running.
   //
   // This must be called when the status() is NEW. Calling this changes
   // the version's status to INSTALLING.
   // Upon completion, the version's status will be changed to INSTALLED
   // on success, or back to NEW on failure.
-  void DispatchInstallEvent(int active_version_id,
-                            const StatusCallback& callback);
+  void DispatchInstallEvent(const StatusCallback& callback);
 
   // Sends activate event to the associated embedded worker and asynchronously
   // calls |callback| when it errors out or it gets a response from the worker
@@ -341,8 +338,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnStartMessageSent(ServiceWorkerStatusCode status);
 
-  void DispatchInstallEventAfterStartWorker(int active_version_id,
-                                            const StatusCallback& callback);
+  void DispatchInstallEventAfterStartWorker(const StatusCallback& callback);
   void DispatchActivateEventAfterStartWorker(const StatusCallback& callback);
 
   void DispatchMessageEventInternal(

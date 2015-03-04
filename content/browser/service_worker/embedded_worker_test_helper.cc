@@ -137,8 +137,7 @@ void EmbeddedWorkerTestHelper::OnActivateEvent(int embedded_worker_id,
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
-                                              int request_id,
-                                              int active_version_id) {
+                                              int request_id) {
   // The installing worker may have been doomed and terminated.
   if (!registry()->GetWorker(embedded_worker_id))
     return;
@@ -283,15 +282,13 @@ void EmbeddedWorkerTestHelper::OnActivateEventStub(int request_id) {
                  request_id));
 }
 
-void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id,
-                                                  int active_version_id) {
+void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnInstallEvent,
                  weak_factory_.GetWeakPtr(),
                  current_embedded_worker_id_,
-                 request_id,
-                 active_version_id));
+                 request_id));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(

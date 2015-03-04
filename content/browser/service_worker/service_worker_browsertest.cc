@@ -568,7 +568,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
     version_->DispatchInstallEvent(
-        -1, CreateReceiver(BrowserThread::UI, done, result));
+        CreateReceiver(BrowserThread::UI, done, result));
   }
 
   void ActivateOnIOThread(const base::Closure& done,
