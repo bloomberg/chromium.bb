@@ -85,7 +85,6 @@ Still reading?
     <ignore path="org/chromium/content/browser/accessibility/LollipopAccessibilityInjector.class"/>
     <ignore path="org/chromium/content/browser/accessibility/LollipopAccessibilityInjector$*.class"/>
     <ignore path="org/chromium/content/browser/accessibility/LollipopBrowserAccessibilityManager.class"/>
-    <ignore path="org/chromium/device/battery/BatteryStatusManager.class"/>
     <ignore path="org/chromium/media/AudioManagerAndroid.class"/>
     <ignore path="org/chromium/media/MediaCodecBridge.class"/>
     <ignore path="org/chromium/media/MediaDrmBridge.class"/>

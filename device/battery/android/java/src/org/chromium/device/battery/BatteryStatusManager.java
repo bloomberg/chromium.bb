@@ -4,6 +4,7 @@
 
 package org.chromium.device.battery;
 
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -133,35 +134,44 @@ class BatteryStatusManager {
         double chargingTimeSeconds = (charging && batteryFull) ? 0 : Double.POSITIVE_INFINITY;
         double dischargingTimeSeconds = Double.POSITIVE_INFINITY;
 
-        if (mLollipopBatteryManager != null) {
-            // On Lollipop we can provide a better estimate for chargingTime and dischargingTime.
-            double remainingCapacityRatio = mLollipopBatteryManager.getIntProperty(
-                    BatteryManager.BATTERY_PROPERTY_CAPACITY) / 100.0;
-            double batteryCapacityMicroAh = mLollipopBatteryManager.getIntProperty(
-                    BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
-            double averageCurrentMicroA = mLollipopBatteryManager.getIntProperty(
-                    BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE);
-
-            if (charging) {
-                if (chargingTimeSeconds == Double.POSITIVE_INFINITY && averageCurrentMicroA > 0) {
-                    double chargeFromEmptyHours = batteryCapacityMicroAh / averageCurrentMicroA;
-                    chargingTimeSeconds =
-                            Math.ceil((1 - remainingCapacityRatio) * chargeFromEmptyHours * 3600.0);
-                }
-            } else {
-                if (averageCurrentMicroA < 0) {
-                    double dischargeFromFullHours = batteryCapacityMicroAh / -averageCurrentMicroA;
-                    dischargingTimeSeconds =
-                            Math.floor(remainingCapacityRatio * dischargeFromFullHours * 3600.0);
-                }
-            }
-        }
-
         BatteryStatus batteryStatus = new BatteryStatus();
         batteryStatus.charging = charging;
         batteryStatus.chargingTime = chargingTimeSeconds;
         batteryStatus.dischargingTime = dischargingTimeSeconds;
         batteryStatus.level = level;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            updateBatteryStatusForLollipop(batteryStatus);
+        }
+
         mCallback.onBatteryStatusChanged(batteryStatus);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void updateBatteryStatusForLollipop(BatteryStatus batteryStatus) {
+        assert mLollipopBatteryManager != null;
+
+        // On Lollipop we can provide a better estimate for chargingTime and dischargingTime.
+        double remainingCapacityRatio = mLollipopBatteryManager.getIntProperty(
+                BatteryManager.BATTERY_PROPERTY_CAPACITY) / 100.0;
+        double batteryCapacityMicroAh = mLollipopBatteryManager.getIntProperty(
+                BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
+        double averageCurrentMicroA = mLollipopBatteryManager.getIntProperty(
+                BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE);
+
+        if (batteryStatus.charging) {
+            if (batteryStatus.chargingTime == Double.POSITIVE_INFINITY
+                    && averageCurrentMicroA > 0) {
+                double chargeFromEmptyHours = batteryCapacityMicroAh / averageCurrentMicroA;
+                batteryStatus.chargingTime =
+                        Math.ceil((1 - remainingCapacityRatio) * chargeFromEmptyHours * 3600.0);
+            }
+        } else {
+            if (averageCurrentMicroA < 0) {
+                double dischargeFromFullHours = batteryCapacityMicroAh / -averageCurrentMicroA;
+                batteryStatus.dischargingTime =
+                        Math.floor(remainingCapacityRatio * dischargeFromFullHours * 3600.0);
+            }
+        }
     }
 }
