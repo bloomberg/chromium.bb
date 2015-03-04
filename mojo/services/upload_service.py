@@ -74,8 +74,19 @@ def upload_binary(service, binary_dir, platform, dry_run):
   absolute_binary_path = os.path.join(root_path, binary_dir, binary_name)
 
   if not should_zip:
+    # Upload the binary.
     dest = dest_dir + binary_name
     gsutil_cp(absolute_binary_path, dest, dry_run)
+
+    # Update the pointer to the service's location to point to the
+    # newly-uploaded binary.
+    service_location = dest.replace("gs://", "https://storage.googleapis.com/")
+    location_file = ("gs://mojo/services/" + platform + "/" + service +
+                     "_location")
+    with tempfile.NamedTemporaryFile() as tmp:
+      tmp.write(service_location)
+      tmp.flush()
+      gsutil_cp(tmp.name, location_file, dry_run)
     return
 
   # Zip the binary before uploading it to the cloud.
