@@ -14,6 +14,7 @@ import common
 def main_run(args):
   with common.temporary_file() as tempfile_path:
     rc = common.run_command([
+        sys.executable,
         os.path.join(common.SRC_DIR, 'third_party', 'WebKit',
                      'Tools', 'Scripts', 'test-webkitpy'),
         '--write-full-results-to', tempfile_path,
