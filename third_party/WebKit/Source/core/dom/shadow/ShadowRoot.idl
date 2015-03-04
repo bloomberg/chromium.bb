@@ -40,6 +40,8 @@ interface ShadowRoot : DocumentFragment {
 
     Element elementFromPoint(long x, long y);
 
+    Element[] elementsFromPoint(long x, long y);
+
     readonly attribute StyleSheetList styleSheets;
     readonly attribute Element host;
 };

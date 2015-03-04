@@ -323,9 +323,11 @@ Vector<Element*> TreeScope::elementsFromPoint(int x, int y) const
         }
     }
 
-    if (m_document) {
-        if (elements.isEmpty() || elements.last() != m_document->documentElement())
-            elements.append(m_document->documentElement());
+    if (rootNode().isDocumentNode()) {
+        if (Element* rootElement = toDocument(rootNode()).documentElement()) {
+            if (elements.isEmpty() || elements.last() != rootElement)
+                elements.append(rootElement);
+        }
     }
 
     return elements;

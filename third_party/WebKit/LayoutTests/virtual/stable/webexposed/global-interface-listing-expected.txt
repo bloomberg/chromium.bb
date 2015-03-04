@@ -2020,6 +2020,7 @@ interface ShadowRoot
     method cloneNode
     method constructor
     method elementFromPoint
+    method elementsFromPoint
     method getElementsByClassName
     method getElementsByTagName
     method getElementsByTagNameNS
