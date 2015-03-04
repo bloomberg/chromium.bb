@@ -145,9 +145,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
                   const ProfileRegisteredCallback& success_callback,
                   const ErrorCompletionCallback& error_callback);
 
-  // Release use of a profile by a device.
-  void ReleaseProfile(const dbus::ObjectPath& device_path,
-                      BluetoothAdapterProfileChromeOS* profile);
+  // Releases the profile associated with |uuid|
+  void ReleaseProfile(const device::BluetoothUUID& uuid);
 
  protected:
   // BluetoothAdapter:
@@ -284,20 +283,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
 
   // Called by dbus:: on completion of the D-Bus method to register a profile.
   void OnRegisterProfile(const device::BluetoothUUID& uuid,
-                         BluetoothAdapterProfileChromeOS* profile);
-
-  void SetProfileDelegate(const device::BluetoothUUID& uuid,
+                         const dbus::ObjectPath& device_path,
+                         BluetoothProfileServiceProvider::Delegate* delegate,
+                         const ProfileRegisteredCallback& success_callback,
+                         const ErrorCompletionCallback& error_callback);
+  bool SetProfileDelegate(const device::BluetoothUUID& uuid,
                           const dbus::ObjectPath& device_path,
                           BluetoothProfileServiceProvider::Delegate* delegate,
                           const ProfileRegisteredCallback& success_callback,
                           const ErrorCompletionCallback& error_callback);
   void OnRegisterProfileError(const device::BluetoothUUID& uuid,
+                              const ErrorCompletionCallback& error_callback,
                               const std::string& error_name,
                               const std::string& error_message);
-
-  // Called by BluetoothAdapterProfileChromeOS when no users of a profile
-  // remain.
-  void RemoveProfile(const device::BluetoothUUID& uuid);
 
   // Processes the queued discovery requests. For each DiscoveryCallbackPair in
   // the queue, this method will try to add a new discovery session. This method
@@ -341,14 +339,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
 
   // The profiles we have registered with the bluetooth daemon.
   std::map<device::BluetoothUUID, BluetoothAdapterProfileChromeOS*> profiles_;
-
-  // Callback pair for the profile registration queue.
-  typedef std::pair<base::Closure, ErrorCompletionCallback>
-      RegisterProfileCompletionPair;
-
-  // Queue of delegates waiting for a profile to register.
-  std::map<device::BluetoothUUID, std::vector<RegisterProfileCompletionPair>*>
-      profile_queues_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

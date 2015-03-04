@@ -20,27 +20,28 @@ namespace chromeos {
 
 // static
 BluetoothAdapterProfileChromeOS* BluetoothAdapterProfileChromeOS::Register(
+    BluetoothAdapterChromeOS* adapter,
     const device::BluetoothUUID& uuid,
     const BluetoothProfileManagerClient::Options& options,
-    const BluetoothAdapterChromeOS::ProfileRegisteredCallback& success_callback,
+    const base::Closure& success_callback,
     const BluetoothProfileManagerClient::ErrorCallback& error_callback) {
+  DCHECK(adapter);
+
   BluetoothAdapterProfileChromeOS* profile =
-      new BluetoothAdapterProfileChromeOS(uuid);
+      new BluetoothAdapterProfileChromeOS(adapter, uuid);
 
   VLOG(1) << "Registering profile: " << profile->object_path().value();
   DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->RegisterProfile(
-      profile->object_path(),
-      uuid.canonical_value(),
-      options,
-      base::Bind(success_callback, profile),
+      profile->object_path(), uuid.canonical_value(), options, success_callback,
       error_callback);
 
   return profile;
 }
 
 BluetoothAdapterProfileChromeOS::BluetoothAdapterProfileChromeOS(
+    BluetoothAdapterChromeOS* adapter,
     const device::BluetoothUUID& uuid)
-    : uuid_(uuid), weak_ptr_factory_(this) {
+    : uuid_(uuid), adapter_(adapter), weak_ptr_factory_(this) {
   std::string uuid_path;
   base::ReplaceChars(uuid.canonical_value(), ":-", "_", &uuid_path);
   object_path_ =
@@ -53,6 +54,7 @@ BluetoothAdapterProfileChromeOS::BluetoothAdapterProfileChromeOS(
 }
 
 BluetoothAdapterProfileChromeOS::~BluetoothAdapterProfileChromeOS() {
+  profile_.reset();
 }
 
 bool BluetoothAdapterProfileChromeOS::SetDelegate(

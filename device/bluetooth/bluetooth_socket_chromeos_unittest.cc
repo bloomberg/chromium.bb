@@ -107,8 +107,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     ++error_callback_count_;
     last_message_ = message;
 
-    if (message_loop_.is_running())
-      message_loop_.Quit();
+    message_loop_.Quit();
   }
 
   void ConnectToServiceSuccessCallback(scoped_refptr<BluetoothSocket> socket) {
@@ -557,73 +556,6 @@ TEST_F(BluetoothSocketChromeOSTest, PairedConnectFails) {
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(2U, error_callback_count_);
   EXPECT_TRUE(last_socket_.get() == NULL);
-}
-
-TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
-  adapter_->CreateRfcommService(
-      BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
-      BluetoothAdapter::ServiceOptions(),
-      base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-
-  message_loop_.Run();
-
-  EXPECT_EQ(1U, success_callback_count_);
-  EXPECT_EQ(0U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
-
-  // Take control of this socket.
-  scoped_refptr<BluetoothSocket> server_socket;
-  server_socket.swap(last_socket_);
-
-  server_socket->Accept(
-      base::Bind(&BluetoothSocketChromeOSTest::AcceptSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-
-  server_socket->Close();
-
-  server_socket = NULL;
-
-  message_loop_.RunUntilIdle();
-
-  EXPECT_EQ(1U, success_callback_count_);
-  EXPECT_EQ(1U, error_callback_count_);
-
-  adapter_->CreateRfcommService(
-      BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
-      BluetoothAdapter::ServiceOptions(),
-      base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-
-  message_loop_.Run();
-
-  EXPECT_EQ(2U, success_callback_count_);
-  EXPECT_EQ(1U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
-
-  // Take control of this socket.
-  server_socket.swap(last_socket_);
-
-  server_socket->Accept(
-      base::Bind(&BluetoothSocketChromeOSTest::AcceptSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-
-  server_socket->Close();
-
-  server_socket = NULL;
-
-  message_loop_.RunUntilIdle();
-
-  EXPECT_EQ(2U, success_callback_count_);
-  EXPECT_EQ(2U, error_callback_count_);
 }
 
 }  // namespace chromeos

@@ -324,8 +324,7 @@ class BluetoothChromeOSTest : public testing::Test {
     QuitMessageLoop();
   }
 
-  void ProfileRegisteredCallback(BluetoothAdapterProfileChromeOS* profile) {
-    adapter_profile_ = profile;
+  void ProfileRegisteredCallback(BluetoothAdapterProfileChromeOS*) {
     ++callback_count_;
     QuitMessageLoop();
   }
@@ -427,7 +426,6 @@ class BluetoothChromeOSTest : public testing::Test {
   enum BluetoothDevice::ConnectErrorCode last_connect_error_;
   std::string last_client_error_;
   ScopedVector<BluetoothDiscoverySession> discovery_sessions_;
-  BluetoothAdapterProfileChromeOS *adapter_profile_;
 
  private:
   // Some tests use a message loop since background processing is simulated;
@@ -3190,8 +3188,6 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
 
   EXPECT_EQ(dbus::ObjectPath(""), adapter_chrome_os->object_path());
 
-  adapter_profile_ = NULL;
-
   FakeBluetoothProfileServiceProviderDelegate profile_delegate;
   adapter_chrome_os->UseProfile(
       BluetoothUUID(), dbus::ObjectPath(""),
@@ -3200,10 +3196,11 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCompletionCallback,
                  base::Unretained(this)));
+  base::MessageLoop::current()->Run();
+  EXPECT_EQ(1, callback_count_--) << "UseProfile error";
+  EXPECT_EQ(0, error_callback_count_) << "UseProfile error";
 
-  EXPECT_FALSE(adapter_profile_) << "UseProfile error";
-  EXPECT_EQ(0, callback_count_) << "UseProfile error";
-  EXPECT_EQ(1, error_callback_count_--) << "UseProfile error";
+  adapter_chrome_os->ReleaseProfile(BluetoothUUID());
 
   // Protected and private methods:
 
@@ -3261,8 +3258,6 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   // OnStopDiscovery tested in Shutdown_OnStopDiscovery
   // OnStopDiscoveryError tested in Shutdown_OnStopDiscoveryError
 
-  adapter_profile_ = NULL;
-
   // OnRegisterProfile SetProfileDelegate, OnRegisterProfileError, require
   // UseProfile to be set first, do so again here just before calling them.
   adapter_chrome_os->UseProfile(
@@ -3273,9 +3268,14 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
       base::Bind(&BluetoothChromeOSTest::ErrorCompletionCallback,
                  base::Unretained(this)));
 
-  EXPECT_FALSE(adapter_profile_) << "UseProfile error";
-  EXPECT_EQ(0, callback_count_) << "UseProfile error";
-  EXPECT_EQ(1, error_callback_count_--) << "UseProfile error";
+  adapter_chrome_os->OnRegisterProfile(
+      BluetoothUUID(), dbus::ObjectPath(""), &profile_delegate,
+      base::Bind(&BluetoothChromeOSTest::ProfileRegisteredCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ErrorCompletionCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, callback_count_--) << "OnRegisterProfile error";
+  EXPECT_EQ(1, error_callback_count_--) << "OnRegisterProfile error";
 
   adapter_chrome_os->SetProfileDelegate(
       BluetoothUUID(), dbus::ObjectPath(""), &profile_delegate,
@@ -3286,9 +3286,13 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   EXPECT_EQ(0, callback_count_) << "SetProfileDelegate error";
   EXPECT_EQ(1, error_callback_count_--) << "SetProfileDelegate error";
 
-  adapter_chrome_os->OnRegisterProfileError(BluetoothUUID(), "", "");
+  adapter_chrome_os->OnRegisterProfileError(
+      BluetoothUUID(),
+      base::Bind(&BluetoothChromeOSTest::ErrorCompletionCallback,
+                 base::Unretained(this)),
+      "", "");
   EXPECT_EQ(0, callback_count_) << "OnRegisterProfileError error";
-  EXPECT_EQ(0, error_callback_count_) << "OnRegisterProfileError error";
+  EXPECT_EQ(1, error_callback_count_--) << "OnRegisterProfileError error";
 
   adapter_chrome_os->ProcessQueuedDiscoveryRequests();
 

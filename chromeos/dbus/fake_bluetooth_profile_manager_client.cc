@@ -19,8 +19,6 @@ const char FakeBluetoothProfileManagerClient::kL2capUuid[] =
     "4d995052-33cc-4fdf-b446-75f32942a076";
 const char FakeBluetoothProfileManagerClient::kRfcommUuid[] =
     "3f6d6dbf-a6ad-45fc-9653-47dc912ef70e";
-const char FakeBluetoothProfileManagerClient::kUnregisterableUuid[] =
-    "00000000-0000-0000-0000-000000000000";
 
 FakeBluetoothProfileManagerClient::FakeBluetoothProfileManagerClient() {
 }
@@ -38,14 +36,6 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "RegisterProfile: " << profile_path.value() << ": " << uuid;
-
-  if (uuid == kUnregisterableUuid) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(error_callback,
-                              bluetooth_profile_manager::kErrorInvalidArguments,
-                              "Can't register this UUID"));
-    return;
-  }
 
   // check options for channel & psm
 

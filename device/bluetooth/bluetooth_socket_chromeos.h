@@ -148,9 +148,11 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   // Method run to clean-up a listening socket.
   void DoCloseListening();
 
-  // Unregisters this socket's usage of the Bluetooth profile which cleans up
-  // the profile if no one is using it.
+  // Unregister the underlying profile client object from the Bluetooth Daemon.
   void UnregisterProfile();
+
+  // Releases the profile after the delegate is gone.
+  void ReleaseProfile(BluetoothAdapterProfileChromeOS* profile);
 
   // Adapter the profile is registered against
   scoped_refptr<device::BluetoothAdapter> adapter_;
