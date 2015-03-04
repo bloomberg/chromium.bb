@@ -198,7 +198,7 @@ void VideoCaptureImpl::OnBufferCreated(
 void VideoCaptureImpl::OnBufferDestroyed(int buffer_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ClientBufferMap::iterator iter = client_buffers_.find(buffer_id);
+  const ClientBufferMap::iterator iter = client_buffers_.find(buffer_id);
   if (iter == client_buffers_.end())
     return;
 
@@ -229,7 +229,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
       "timestamp", timestamp.ToInternalValue(),
       "time_delta", (timestamp - first_frame_timestamp_).ToInternalValue());
 
-  ClientBufferMap::iterator iter = client_buffers_.find(buffer_id);
+  const ClientBufferMap::const_iterator iter = client_buffers_.find(buffer_id);
   DCHECK(iter != client_buffers_.end());
   scoped_refptr<ClientBuffer> buffer = iter->second;
   scoped_refptr<media::VideoFrame> frame =
@@ -251,8 +251,8 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
                          0)));
   frame->metadata()->MergeInternalValuesFrom(metadata);
 
-  for (const auto& entry : clients_)
-    entry.second.deliver_frame_cb.Run(frame, timestamp);
+  for (const auto& client : clients_)
+    client.second.deliver_frame_cb.Run(frame, timestamp);
 }
 
 void VideoCaptureImpl::OnMailboxBufferReceived(
@@ -280,8 +280,8 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
       timestamp - first_frame_timestamp_, false);
   frame->metadata()->MergeInternalValuesFrom(metadata);
 
-  for (const auto& entry : clients_)
-    entry.second.deliver_frame_cb.Run(frame, timestamp);
+  for (const auto& client : clients_)
+    client.second.deliver_frame_cb.Run(frame, timestamp);
 }
 
 void VideoCaptureImpl::OnClientBufferFinished(
@@ -310,26 +310,21 @@ void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {
         RestartCapture();
       break;
     case VIDEO_CAPTURE_STATE_PAUSED:
-      for (ClientInfoMap::iterator it = clients_.begin();
-           it != clients_.end(); ++it) {
-        it->second.state_update_cb.Run(VIDEO_CAPTURE_STATE_PAUSED);
-      }
+      for (const auto& client : clients_)
+        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_PAUSED);
       break;
     case VIDEO_CAPTURE_STATE_ERROR:
       DVLOG(1) << "OnStateChanged: error!, device_id = " << device_id_;
-      for (ClientInfoMap::iterator it = clients_.begin();
-           it != clients_.end(); ++it) {
-        it->second.state_update_cb.Run(VIDEO_CAPTURE_STATE_ERROR);
-      }
+      for (const auto& client : clients_)
+        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_ERROR);
       clients_.clear();
       state_ = VIDEO_CAPTURE_STATE_ERROR;
       break;
     case VIDEO_CAPTURE_STATE_ENDED:
       DVLOG(1) << "OnStateChanged: ended!, device_id = " << device_id_;
-      for (ClientInfoMap::iterator it = clients_.begin();
-          it != clients_.end(); ++it) {
+      for (const auto& client : clients_) {
         // We'll only notify the client that the stream has stopped.
-        it->second.state_update_cb.Run(VIDEO_CAPTURE_STATE_STOPPED);
+        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_STOPPED);
       }
       clients_.clear();
       state_ = VIDEO_CAPTURE_STATE_ENDED;
@@ -360,17 +355,13 @@ void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {
   DVLOG(1) << "OnDelegateAdded: device_id " << device_id;
 
   device_id_ = device_id;
-  for (ClientInfoMap::iterator it = clients_pending_on_filter_.begin();
-       it != clients_pending_on_filter_.end(); ) {
-    int client_id = it->first;
-    VideoCaptureStateUpdateCB state_update_cb =
-        it->second.state_update_cb;
-    VideoCaptureDeliverFrameCB deliver_frame_cb =
-        it->second.deliver_frame_cb;
-    const media::VideoCaptureParams params = it->second.params;
+  ClientInfoMap::iterator it = clients_pending_on_filter_.begin();
+  while (it != clients_pending_on_filter_.end()) {
+    const int client_id = it->first;
+    const ClientInfo client_info = it->second;
     clients_pending_on_filter_.erase(it++);
-    StartCapture(client_id, params, state_update_cb,
-                 deliver_frame_cb);
+    StartCapture(client_id, client_info.params, client_info.state_update_cb,
+                 client_info.deliver_frame_cb);
   }
 }
 
@@ -393,12 +384,11 @@ void VideoCaptureImpl::RestartCapture() {
   clients_.insert(clients_pending_on_restart_.begin(),
                   clients_pending_on_restart_.end());
   clients_pending_on_restart_.clear();
-  for (ClientInfoMap::iterator it = clients_.begin();
-       it != clients_.end(); ++it) {
+  for (const auto& client : clients_) {
     width = std::max(width,
-                     it->second.params.requested_format.frame_size.width());
-    height = std::max(height,
-                      it->second.params.requested_format.frame_size.height());
+                     client.second.params.requested_format.frame_size.width());
+    height = std::max(
+        height, client.second.params.requested_format.frame_size.height());
   }
   params_.requested_format.frame_size.SetSize(width, height);
   DVLOG(1) << "RestartCapture, "
@@ -423,7 +413,7 @@ bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool found = false;
 
-  ClientInfoMap::iterator it = clients->find(client_id);
+  const ClientInfoMap::iterator it = clients->find(client_id);
   if (it != clients->end()) {
     it->second.state_update_cb.Run(VIDEO_CAPTURE_STATE_STOPPED);
     clients->erase(it);

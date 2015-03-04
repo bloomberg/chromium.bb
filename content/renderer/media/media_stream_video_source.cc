@@ -209,11 +209,10 @@ void FilterFormatsByConstraint(
   while (format_it != formats->end()) {
     // Modify the format_it to fulfill the constraint if possible.
     // Delete it otherwise.
-    if (!UpdateFormatForConstraint(constraint, mandatory, &(*format_it))) {
+    if (!UpdateFormatForConstraint(constraint, mandatory, &(*format_it)))
       format_it = formats->erase(format_it);
-    } else {
+    else
       ++format_it;
-    }
   }
 }
 
@@ -222,9 +221,8 @@ media::VideoCaptureFormats FilterFormats(
     const blink::WebMediaConstraints& constraints,
     const media::VideoCaptureFormats& supported_formats,
     blink::WebString* unsatisfied_constraint) {
-  if (constraints.isNull()) {
+  if (constraints.isNull())
     return supported_formats;
-  }
 
   double max_aspect_ratio;
   double min_aspect_ratio;
@@ -291,9 +289,8 @@ media::VideoCaptureFormats FilterFormats(
   for (size_t i = 0; i < optional.size(); ++i) {
     media::VideoCaptureFormats current_candidates = candidates;
     FilterFormatsByConstraint(optional[i], false, &current_candidates);
-    if (!current_candidates.empty()) {
+    if (!current_candidates.empty())
       candidates = current_candidates;
-    }
   }
 
   // We have done as good as we can to filter the supported resolutions.
@@ -307,7 +304,7 @@ const media::VideoCaptureFormat& GetBestFormatBasedOnArea(
   media::VideoCaptureFormats::const_iterator best_it = formats.begin();
   int best_diff = std::numeric_limits<int>::max();
   for (; it != formats.end(); ++it) {
-    int diff = abs(area - it->frame_size.width() * it->frame_size.height());
+    const int diff = abs(area - it->frame_size.GetArea());
     if (diff < best_diff) {
       best_diff = diff;
       best_it = it;
@@ -348,8 +345,8 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
 
 // static
 bool MediaStreamVideoSource::IsConstraintSupported(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kSupportedConstraints); ++i) {
-    if (kSupportedConstraints[i] == name)
+  for (const char* constraint : kSupportedConstraints) {
+    if (constraint == name)
       return true;
   }
   return false;
@@ -492,11 +489,9 @@ bool MediaStreamVideoSource::FindBestFormatWithConstraints(
     media::VideoCaptureFormat* best_format) {
   DCHECK(CalledOnValidThread());
   // Find the first constraints that we can fulfill.
-  for (std::vector<RequestedConstraints>::iterator request_it =
-           requested_constraints_.begin();
-       request_it != requested_constraints_.end(); ++request_it) {
+  for (const auto& request : requested_constraints_) {
     const blink::WebMediaConstraints& requested_constraints =
-        request_it->constraints;
+        request.constraints;
 
     // If the source doesn't support capability enumeration it is still ok if
     // no mandatory constraints have been specified. That just means that
@@ -548,15 +543,15 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
 
   std::vector<RequestedConstraints> callbacks;
   callbacks.swap(requested_constraints_);
-  for (std::vector<RequestedConstraints>::iterator it = callbacks.begin();
-       it != callbacks.end(); ++it) {
+  for (const auto& request : callbacks) {
     MediaStreamRequestResult result = MEDIA_DEVICE_OK;
     blink::WebString unsatisfied_constraint;
 
-    if (HasMandatoryConstraints(it->constraints) &&
-        FilterFormats(it->constraints, formats,
-                      &unsatisfied_constraint).empty())
+    if (HasMandatoryConstraints(request.constraints) &&
+        FilterFormats(request.constraints, formats,
+                      &unsatisfied_constraint).empty()) {
       result = MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
+    }
 
     if (state_ != STARTED && result == MEDIA_DEVICE_OK)
       result = MEDIA_DEVICE_TRACK_START_FAILURE;
@@ -564,17 +559,17 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
     if (result == MEDIA_DEVICE_OK) {
       int max_width;
       int max_height;
-      GetDesiredMaxWidthAndHeight(it->constraints, &max_width, &max_height);
+      GetDesiredMaxWidthAndHeight(request.constraints, &max_width, &max_height);
       double max_aspect_ratio;
       double min_aspect_ratio;
-      GetDesiredMinAndMaxAspectRatio(it->constraints,
+      GetDesiredMinAndMaxAspectRatio(request.constraints,
                                      &min_aspect_ratio,
                                      &max_aspect_ratio);
       double max_frame_rate = 0.0f;
-      GetConstraintValueAsDouble(it->constraints,
+      GetConstraintValueAsDouble(request.constraints,
                                  kMaxFrameRate, &max_frame_rate);
 
-      track_adapter_->AddTrack(it->track, it->frame_callback,
+      track_adapter_->AddTrack(request.track, request.frame_callback,
                                max_width, max_height,
                                min_aspect_ratio, max_aspect_ratio,
                                max_frame_rate);
@@ -582,8 +577,8 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
 
     DVLOG(3) << "FinalizeAddTrack() result " << result;
 
-    if (!it->callback.is_null()) {
-      it->callback.Run(this, result, unsatisfied_constraint);
+    if (!request.callback.is_null()) {
+      request.callback.Run(this, result, unsatisfied_constraint);
     }
   }
 }
@@ -594,10 +589,8 @@ void MediaStreamVideoSource::SetReadyState(
   DCHECK(CalledOnValidThread());
   if (!owner().isNull())
     owner().setReadyState(state);
-  for (std::vector<MediaStreamVideoTrack*>::iterator it = tracks_.begin();
-       it != tracks_.end(); ++it) {
-    (*it)->OnReadyStateChanged(state);
-  }
+  for (const auto& track : tracks_)
+    track->OnReadyStateChanged(state);
 }
 
 void MediaStreamVideoSource::SetMutedState(bool muted_state) {

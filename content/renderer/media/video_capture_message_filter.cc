@@ -77,10 +77,9 @@ void VideoCaptureMessageFilter::OnFilterAdded(IPC::Sender* sender) {
   DVLOG(1) << "VideoCaptureMessageFilter::OnFilterAdded()";
   sender_ = sender;
 
-  for (Delegates::iterator it = pending_delegates_.begin();
-       it != pending_delegates_.end(); it++) {
-    it->second->OnDelegateAdded(it->first);
-    delegates_[it->first] = it->second;
+  for (const auto& pending_delegate : pending_delegates_) {
+    pending_delegate.second->OnDelegateAdded(pending_delegate.first);
+    delegates_[pending_delegate.first] = pending_delegate.second;
   }
   pending_delegates_.clear();
 }
