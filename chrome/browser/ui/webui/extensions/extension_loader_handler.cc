@@ -14,12 +14,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/extensions/zipfile_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -30,7 +27,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "third_party/re2/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace extensions {
 
@@ -47,96 +43,8 @@ std::string ReadFileToString(const base::FilePath& path) {
 
 }  // namespace
 
-class ExtensionLoaderHandler::FileHelper
-    : public ui::SelectFileDialog::Listener {
- public:
-  explicit FileHelper(ExtensionLoaderHandler* loader_handler);
-  ~FileHelper() override;
-
-  // Create a FileDialog for the user to select the unpacked extension
-  // directory.
-  void ChooseFile();
-
- private:
-  // ui::SelectFileDialog::Listener implementation.
-  void FileSelected(const base::FilePath& path,
-                    int index,
-                    void* params) override;
-  void MultiFilesSelected(const std::vector<base::FilePath>& files,
-                          void* params) override;
-
-  // The associated ExtensionLoaderHandler. Weak, but guaranteed to be alive,
-  // as it owns this object.
-  ExtensionLoaderHandler* loader_handler_;
-
-  // The dialog used to pick a directory when loading an unpacked extension.
-  scoped_refptr<ui::SelectFileDialog> load_extension_dialog_;
-
-  // The last selected directory, so we can start in the same spot.
-  base::FilePath last_unpacked_directory_;
-
-  // The title of the dialog.
-  base::string16 title_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileHelper);
-};
-
-ExtensionLoaderHandler::FileHelper::FileHelper(
-    ExtensionLoaderHandler* loader_handler)
-    : loader_handler_(loader_handler),
-      title_(l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY)) {
-}
-
-ExtensionLoaderHandler::FileHelper::~FileHelper() {
-  // There may be a pending file dialog; inform it the listener is destroyed so
-  // it doesn't try and call back.
-  if (load_extension_dialog_.get())
-    load_extension_dialog_->ListenerDestroyed();
-}
-
-void ExtensionLoaderHandler::FileHelper::ChooseFile() {
-  static const int kFileTypeIndex = 0;  // No file type information to index.
-  static const ui::SelectFileDialog::Type kSelectType =
-      ui::SelectFileDialog::SELECT_FOLDER;
-
-  gfx::NativeWindow parent_window =
-      loader_handler_->web_ui()->GetWebContents()->GetTopLevelNativeWindow();
-  if (!load_extension_dialog_.get()) {
-    load_extension_dialog_ = ui::SelectFileDialog::Create(
-        this,
-        new ChromeSelectFilePolicy(
-            loader_handler_->web_ui()->GetWebContents()));
-  } else if (load_extension_dialog_->IsRunning(parent_window)) {
-    // File chooser dialog is already running; ignore the click.
-    return;
-  }
-
-  load_extension_dialog_->SelectFile(
-      kSelectType,
-      title_,
-      last_unpacked_directory_,
-      NULL,
-      kFileTypeIndex,
-      base::FilePath::StringType(),
-      parent_window,
-      NULL);
-
-  content::RecordComputedAction("Options_LoadUnpackedExtension");
-}
-
-void ExtensionLoaderHandler::FileHelper::FileSelected(
-    const base::FilePath& path, int index, void* params) {
-  loader_handler_->LoadUnpackedExtensionImpl(path);
-}
-
-void ExtensionLoaderHandler::FileHelper::MultiFilesSelected(
-      const std::vector<base::FilePath>& files, void* params) {
-  NOTREACHED();
-}
-
 ExtensionLoaderHandler::ExtensionLoaderHandler(Profile* profile)
     : profile_(profile),
-      file_helper_(new FileHelper(this)),
       extension_error_reporter_observer_(this),
       ui_ready_(false),
       weak_ptr_factory_(this) {
@@ -177,10 +85,6 @@ void ExtensionLoaderHandler::RegisterMessages() {
   content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
   web_ui()->RegisterMessageCallback(
-      "extensionLoaderLoadUnpacked",
-      base::Bind(&ExtensionLoaderHandler::HandleLoadUnpacked,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
       "extensionLoaderRetry",
       base::Bind(&ExtensionLoaderHandler::HandleRetry,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -194,16 +98,11 @@ void ExtensionLoaderHandler::RegisterMessages() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ExtensionLoaderHandler::HandleLoadUnpacked(const base::ListValue* args) {
-  DCHECK(args->empty());
-  file_helper_->ChooseFile();
-}
-
 void ExtensionLoaderHandler::HandleRetry(const base::ListValue* args) {
   DCHECK(args->empty());
   const base::FilePath file_path = failed_paths_.back();
   failed_paths_.pop_back();
-  LoadUnpackedExtensionImpl(file_path);
+  LoadUnpackedExtension(file_path);
 }
 
 void ExtensionLoaderHandler::HandleIgnoreFailure(const base::ListValue* args) {
@@ -222,8 +121,8 @@ void ExtensionLoaderHandler::HandleDisplayFailures(
     NotifyFrontendOfFailure();
 }
 
-void ExtensionLoaderHandler::LoadUnpackedExtensionImpl(
-    const base::FilePath& file_path) {
+void ExtensionLoaderHandler::LoadUnpackedExtension(
+      const base::FilePath& file_path) {
   scoped_refptr<UnpackedInstaller> installer = UnpackedInstaller::Create(
       ExtensionSystem::Get(profile_)->extension_service());
 

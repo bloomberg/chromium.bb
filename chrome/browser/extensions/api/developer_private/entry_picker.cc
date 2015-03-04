@@ -32,28 +32,28 @@ EntryPicker::EntryPicker(EntryPickerClient* client,
                          const ui::SelectFileDialog::FileTypeInfo& info,
                          int file_type_index)
     : client_(client) {
-  select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_contents));
-
-  gfx::NativeWindow owning_window = web_contents ?
-      platform_util::GetTopLevel(web_contents->GetNativeView()) :
-      NULL;
-
   if (g_skip_picker_for_test) {
     if (g_path_to_be_picked_for_test) {
       content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
           base::Bind(
               &EntryPicker::FileSelected,
               base::Unretained(this), *g_path_to_be_picked_for_test, 1,
-              static_cast<void*>(NULL)));
+              static_cast<void*>(nullptr)));
     } else {
       content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
           base::Bind(
               &EntryPicker::FileSelectionCanceled,
-              base::Unretained(this), static_cast<void*>(NULL)));
+              base::Unretained(this), static_cast<void*>(nullptr)));
     }
     return;
   }
+
+  select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, new ChromeSelectFilePolicy(web_contents));
+
+  gfx::NativeWindow owning_window = web_contents ?
+      platform_util::GetTopLevel(web_contents->GetNativeView()) :
+      nullptr;
 
   select_file_dialog_->SelectFile(picker_type,
                                   select_title,
@@ -62,7 +62,7 @@ EntryPicker::EntryPicker(EntryPickerClient* client,
                                   file_type_index,
                                   base::FilePath::StringType(),
                                   owning_window,
-                                  NULL);
+                                  nullptr);
 }
 
 EntryPicker::~EntryPicker() {}

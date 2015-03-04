@@ -29,8 +29,9 @@ class Extension;
 class UnpackedInstaller
     : public base::RefCountedThreadSafe<UnpackedInstaller> {
  public:
-  typedef base::Callback<void(const base::FilePath&, const std::string&)>
-      OnFailureCallback;
+  using CompletionCallback = base::Callback<void(const Extension* extension,
+                                                 const base::FilePath&,
+                                                 const std::string&)>;
 
   static scoped_refptr<UnpackedInstaller> Create(
       ExtensionService* extension_service);
@@ -66,6 +67,10 @@ class UnpackedInstaller
 
   void set_be_noisy_on_failure(bool be_noisy_on_failure) {
     be_noisy_on_failure_ = be_noisy_on_failure;
+  }
+
+  void set_completion_callback(const CompletionCallback& callback) {
+    callback_ = callback;
   }
 
  private:
@@ -132,6 +137,8 @@ class UnpackedInstaller
   // Checks management policies and requirements before the extension can be
   // installed.
   ExtensionInstallChecker install_checker_;
+
+  CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UnpackedInstaller);
 };

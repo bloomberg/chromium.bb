@@ -350,6 +350,11 @@ void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
         service_weak_->profile(),
         be_noisy_on_failure_);
   }
+
+  if (!callback_.is_null()) {
+    callback_.Run(nullptr, extension_path_, error);
+    callback_.Reset();
+  }
 }
 
 void UnpackedInstaller::InstallExtension() {
@@ -361,6 +366,11 @@ void UnpackedInstaller::InstallExtension() {
 
   service_weak_->OnExtensionInstalled(
       extension(), syncer::StringOrdinal(), kInstallFlagInstallImmediately);
+
+  if (!callback_.is_null()) {
+    callback_.Run(extension(), extension_path_, std::string());
+    callback_.Reset();
+  }
 }
 
 }  // namespace extensions

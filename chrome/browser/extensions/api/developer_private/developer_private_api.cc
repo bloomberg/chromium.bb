@@ -756,7 +756,9 @@ ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
 
-  bool fail_quietly = params->options && params->options->fail_quietly;
+  bool fail_quietly = params->options &&
+                      params->options->fail_quietly &&
+                      *params->options->fail_quietly;
 
   ExtensionService* service = GetExtensionService(browser_context());
   if (fail_quietly)
@@ -871,7 +873,15 @@ bool DeveloperPrivateInspectFunction::RunSync() {
 
 DeveloperPrivateInspectFunction::~DeveloperPrivateInspectFunction() {}
 
+DeveloperPrivateLoadUnpackedFunction::DeveloperPrivateLoadUnpackedFunction()
+    : fail_quietly_(false) {
+}
+
 ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
+  scoped_ptr<developer_private::LoadUnpacked::Params> params(
+      developer_private::LoadUnpacked::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
   if (!ShowPicker(
            ui::SelectFileDialog::SELECT_FOLDER,
            l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
@@ -880,16 +890,25 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
     return RespondNow(Error(kCouldNotShowSelectFileDialogError));
   }
 
+  fail_quietly_ = params->options &&
+                  params->options->fail_quietly &&
+                  *params->options->fail_quietly;
+
   AddRef();  // Balanced in FileSelected / FileSelectionCanceled.
   return RespondLater();
 }
 
 void DeveloperPrivateLoadUnpackedFunction::FileSelected(
     const base::FilePath& path) {
-  UnpackedInstaller::Create(GetExtensionService(browser_context()))->Load(path);
+  scoped_refptr<UnpackedInstaller> installer(
+      UnpackedInstaller::Create(GetExtensionService(browser_context())));
+  installer->set_be_noisy_on_failure(!fail_quietly_);
+  installer->set_completion_callback(
+      base::Bind(&DeveloperPrivateLoadUnpackedFunction::OnLoadComplete, this));
+  installer->Load(path);
+
   DeveloperPrivateAPI::Get(browser_context())->SetLastUnpackedDirectory(path);
-  // TODO(devlin): Shouldn't we wait until the extension is loaded?
-  Respond(NoArguments());
+
   Release();  // Balanced in Run().
 }
 
@@ -898,6 +917,13 @@ void DeveloperPrivateLoadUnpackedFunction::FileSelectionCanceled() {
   // backward compatability.
   Respond(Error(kFileSelectionCanceled));
   Release();  // Balanced in Run().
+}
+
+void DeveloperPrivateLoadUnpackedFunction::OnLoadComplete(
+    const Extension* extension,
+    const base::FilePath& file_path,
+    const std::string& error) {
+  Respond(extension ? NoArguments() : Error(error));
 }
 
 bool DeveloperPrivateChooseEntryFunction::ShowPicker(

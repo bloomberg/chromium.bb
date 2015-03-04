@@ -78,7 +78,13 @@ namespace developerPrivate {
   dictionary ReloadOptions {
     // If false, an alert dialog will show in the event of a reload error.
     // Defaults to false.
-    boolean failQuietly;
+    boolean? failQuietly;
+  };
+
+  dictionary LoadUnpackedOptions {
+    // If false, an alert dialog will show in the event of a reload error.
+    // Defaults to false.
+    boolean? failQuietly;
   };
 
   enum PackStatus {
@@ -247,7 +253,9 @@ namespace developerPrivate {
                                optional VoidCallback callback);
 
     // Loads a user-selected unpacked item.
-    static void loadUnpacked(optional VoidCallback callback);
+    // |options| : Additional configuration parameters.
+    static void loadUnpacked(optional LoadUnpackedOptions options,
+                             optional VoidCallback callback);
 
     // Loads an extension / app.
     // |directory| : The directory to load the extension from.

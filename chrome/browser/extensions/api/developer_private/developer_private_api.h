@@ -312,6 +312,7 @@ class DeveloperPrivateLoadUnpackedFunction
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.loadUnpacked",
                              DEVELOPERPRIVATE_LOADUNPACKED);
+  DeveloperPrivateLoadUnpackedFunction();
 
  protected:
   ~DeveloperPrivateLoadUnpackedFunction() override;
@@ -320,6 +321,15 @@ class DeveloperPrivateLoadUnpackedFunction
   // EntryPickerClient:
   void FileSelected(const base::FilePath& path) override;
   void FileSelectionCanceled() override;
+
+  // Callback for the UnpackedLoader.
+  void OnLoadComplete(const Extension* extension,
+                      const base::FilePath& file_path,
+                      const std::string& error);
+
+ private:
+  // Whether or not we should fail quietly in the event of a load error.
+  bool fail_quietly_;
 };
 
 class DeveloperPrivateChoosePathFunction

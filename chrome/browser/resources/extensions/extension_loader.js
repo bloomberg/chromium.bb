@@ -186,11 +186,25 @@ cr.define('extensions', function() {
 
   ExtensionLoader.prototype = {
     /**
+     * Whether or not we are currently loading an unpacked extension.
+     * @private {boolean}
+     */
+    isLoading_: false,
+
+    /**
      * Begin the sequence of loading an unpacked extension. If an error is
      * encountered, this object will get notified via notifyFailed().
      */
     loadUnpacked: function() {
-      chrome.send('extensionLoaderLoadUnpacked');
+      if (this.isLoading_)  // Only one running load at a time.
+        return;
+      this.isLoading_ = true;
+      chrome.developerPrivate.loadUnpacked({failQuietly: true}, function() {
+        // Check lastError to avoid the log, but don't do anything with it -
+        // error-handling is done on the C++ side.
+        var lastError = chrome.runtime.lastError;
+        this.isLoading_ = false;
+      }.bind(this));
     },
 
     /**

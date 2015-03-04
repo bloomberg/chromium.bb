@@ -45,11 +45,6 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
   void RegisterMessages() override;
 
  private:
-  class FileHelper;
-
-  // Handle the 'extensionLoaderLoadUnpacked' message.
-  void HandleLoadUnpacked(const base::ListValue* args);
-
   // Handle the 'extensionLoaderRetry' message.
   void HandleRetry(const base::ListValue* args);
 
@@ -60,7 +55,7 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
   void HandleDisplayFailures(const base::ListValue* args);
 
   // Try to load an unpacked extension from the given |file_path|.
-  void LoadUnpackedExtensionImpl(const base::FilePath& file_path);
+  void LoadUnpackedExtension(const base::FilePath& file_path);
 
   // ExtensionErrorReporter::Observer:
   void OnLoadFailure(content::BrowserContext* browser_context,
@@ -85,9 +80,6 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
 
   // The profile with which this Handler is associated.
   Profile* profile_;
-
-  // A helper to manage file picking.
-  scoped_ptr<FileHelper> file_helper_;
 
   // Holds information about all unpacked extension install failures that
   // were reported while the extensions page was loading.

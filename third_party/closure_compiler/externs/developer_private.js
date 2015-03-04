@@ -76,10 +76,17 @@ var InspectOptions;
 
 /**
  * @typedef {{
- *   failQuietly: boolean
+ *   failQuietly: (boolean|undefined)
  * }}
  */
 var ReloadOptions;
+
+/**
+ * @typedef {{
+ *   failQuietly: (boolean|undefined)
+ * }}
+ */
+var LoadUnpackedOptions;
 
 /**
  * @enum {string}
@@ -251,9 +258,10 @@ chrome.developerPrivate.allowIncognito = function(extensionId, allow, callback) 
 
 /**
  * Loads a user-selected unpacked item.
+ * @param {LoadUnpackedOptions=} options Additional configuration parameters.
  * @param {Function=} callback
  */
-chrome.developerPrivate.loadUnpacked = function(callback) {};
+chrome.developerPrivate.loadUnpacked = function(options, callback) {};
 
 /**
  * Loads an extension / app.
