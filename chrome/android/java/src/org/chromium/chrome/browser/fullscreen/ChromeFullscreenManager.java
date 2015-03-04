@@ -72,7 +72,7 @@ public class ChromeFullscreenManager
     private float mBrowserControlOffset = Float.NaN;
     private float mRendererControlOffset = Float.NaN;
     private float mRendererContentOffset;
-    private float mPreviousContentOffset;
+    private float mPreviousContentOffset = Float.NaN;
     private float mControlOffset;
     private float mPreviousControlOffset;
     private boolean mIsEnteringPersistentModeState;
