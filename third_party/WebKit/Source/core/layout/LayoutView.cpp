@@ -992,11 +992,4 @@ void LayoutView::willBeDestroyed()
     m_compositor.clear();
 }
 
-void LayoutView::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
-{
-    LayoutBlockFlow::invalidateDisplayItemClients(displayItemList);
-    if (m_frameView)
-        displayItemList->invalidate(m_frameView->displayItemClient());
-}
-
 } // namespace blink

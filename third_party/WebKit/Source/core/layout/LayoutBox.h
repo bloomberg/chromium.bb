@@ -703,7 +703,6 @@ protected:
 #endif
 
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& newPaintInvalidationContainer) override;
-    virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
 
     virtual bool hasNonCompositedScrollbars() const override final;
 

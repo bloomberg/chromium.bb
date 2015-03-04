@@ -150,7 +150,7 @@ public:
     bool overlapsResizer() const { return m_overlapsResizer; }
     void setOverlapsResizer(bool overlapsResizer) { m_overlapsResizer = overlapsResizer; }
 
-    virtual DisplayItemClient displayItemClient() const override;
+    virtual DisplayItemClient displayItemClient() const override { return toDisplayItemClient(this); }
 
 protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);

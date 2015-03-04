@@ -1131,6 +1131,17 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject* pai
     }
 }
 
+void LayoutObject::invalidateDisplayItemClient(DisplayItemClient client) const
+{
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return;
+
+    // This is valid because we want to invalidate the client in the display item list of the current graphics layer.
+    DisableCompositingQueryAsserts disabler;
+    if (Layer* container = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+        container->graphicsLayerBacking()->displayItemList()->invalidate(client);
+}
+
 void LayoutObject::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
 {
     displayItemList->invalidate(displayItemClient());
@@ -1153,20 +1164,30 @@ LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObje
     return Layer::computePaintInvalidationRect(this, paintInvalidationContainer->layer(), paintInvalidationState);
 }
 
-void LayoutObject::invalidatePaintRectangle(const LayoutRect& r) const
+const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const LayoutRect& r) const
 {
     RELEASE_ASSERT(isRooted());
 
+    if (r.isEmpty())
+        return nullptr;
+
     if (view()->document().printing())
-        return; // Don't invalidate paints if we're printing.
+        return nullptr; // Don't invalidate paints if we're printing.
 
     LayoutRect dirtyRect(r);
 
     const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     Layer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect);
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationRectangle);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && !r.isEmpty())
-        invalidateDisplayItemClientsUsingContainer(*paintInvalidationContainer);
+    return paintInvalidationContainer;
+}
+
+void LayoutObject::invalidatePaintRectangle(const LayoutRect& r) const
+{
+    if (const LayoutBoxModelObject* paintInvalidationContainer = invalidatePaintRectangleInternal(r)) {
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            invalidateDisplayItemClientsUsingContainer(*paintInvalidationContainer);
+    }
 }
 
 void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)

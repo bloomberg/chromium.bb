@@ -566,9 +566,4 @@ float Scrollbar::scrollableAreaCurrentPos() const
     return m_scrollableArea->scrollPosition().y() - m_scrollableArea->minimumScrollPosition().y();
 }
 
-DisplayItemClient Scrollbar::displayItemClient() const
-{
-    return m_scrollableArea->displayItemClient();
-}
-
 } // namespace blink

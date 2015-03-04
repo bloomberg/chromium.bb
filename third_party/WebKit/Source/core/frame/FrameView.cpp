@@ -2254,6 +2254,8 @@ void FrameView::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rec
     IntRect dirtyRect = rect;
     dirtyRect.moveBy(scrollbar->location());
 
+    layoutView()->invalidateDisplayItemClient(scrollbar->displayItemClient());
+
     if (isInPerformLayout())
         addScrollbarDamage(scrollbar, rect);
     else

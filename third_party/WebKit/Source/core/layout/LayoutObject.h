@@ -864,6 +864,7 @@ public:
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
+    void invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect& r) const { invalidatePaintRectangleInternal(r); }
 
     void invalidateSelectionIfNeeded(const LayoutBoxModelObject&, PaintInvalidationReason);
 
@@ -1068,6 +1069,8 @@ public:
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
+    void invalidateDisplayItemClient(DisplayItemClient) const;
+
 protected:
     enum LayoutObjectType {
         LayoutObjectBr,
@@ -1238,6 +1241,8 @@ private:
     void markContainingBlockChainForPaintInvalidation();
 
     static bool isAllowedToModifyRenderTreeStructure(Document&);
+
+    const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
 
     RefPtr<LayoutStyle> m_style;
 

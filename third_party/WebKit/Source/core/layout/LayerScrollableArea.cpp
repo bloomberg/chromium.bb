@@ -211,6 +211,8 @@ void LayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const In
     if (scrollRect.isEmpty())
         return;
 
+    box().invalidateDisplayItemClient(scrollbar->displayItemClient());
+
     LayoutRect paintInvalidationRect = LayoutRect(scrollRect);
     box().flipForWritingMode(paintInvalidationRect);
 
@@ -221,7 +223,9 @@ void LayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const In
     } else {
         // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
         DisablePaintInvalidationStateAsserts disabler;
-        box().invalidatePaintRectangle(LayoutRect(intRect));
+        // We have invalidated the displayItemClient of the scrollbar, but for now we still need to
+        // invalidate the rectangles to trigger repaints.
+        box().invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(intRect));
     }
 }
 

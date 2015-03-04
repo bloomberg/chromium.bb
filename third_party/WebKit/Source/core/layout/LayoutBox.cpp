@@ -1411,10 +1411,13 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
 
         // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
         if (ScrollableArea* area = scrollableArea()) {
+            // In slimming paint mode, we already invalidated the display item clients of the scrollbars
+            // during LayerScrollableArea::invalidateScrollbarRect(). However, for now we still need to
+            // invalidate the rectangles to trigger repaints.
             if (area->hasVerticalBarDamage())
-                invalidatePaintRectangle(LayoutRect(area->verticalBarDamage()));
+                invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(area->verticalBarDamage()));
             if (area->hasHorizontalBarDamage())
-                invalidatePaintRectangle(LayoutRect(area->horizontalBarDamage()));
+                invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(area->horizontalBarDamage()));
         }
     }
 
@@ -4638,13 +4641,6 @@ void LayoutBox::logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& newLogi
     setLogicalLeft(oldLogicalLeft);
     setMarginLeft(oldMarginLeft);
     setMarginRight(oldMarginRight);
-}
-
-void LayoutBox::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
-{
-    LayoutBoxModelObject::invalidateDisplayItemClients(displayItemList);
-    if (LayerScrollableArea* area = scrollableArea())
-        displayItemList->invalidate(area->displayItemClient());
 }
 
 } // namespace blink

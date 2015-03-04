@@ -186,8 +186,6 @@ private:
 
     LayoutObject* backgroundRenderer() const;
 
-    virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
-
     FrameView* m_frameView;
 
     LayoutObject* m_selectionStart;
