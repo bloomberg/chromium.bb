@@ -659,12 +659,15 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
         syntheticGestureEvent.data.scrollUpdate.preventPropagation = true;
         syntheticGestureEvent.data.scrollUpdate.deltaX = delta.width;
         syntheticGestureEvent.data.scrollUpdate.deltaY = delta.height;
+        syntheticGestureEvent.data.scrollUpdate.velocityX = velocity.width;
+        syntheticGestureEvent.data.scrollUpdate.velocityY = velocity.height;
         syntheticGestureEvent.x = m_positionOnFlingStart.x;
         syntheticGestureEvent.y = m_positionOnFlingStart.y;
         syntheticGestureEvent.globalX = m_globalPositionOnFlingStart.x;
         syntheticGestureEvent.globalY = m_globalPositionOnFlingStart.y;
         syntheticGestureEvent.modifiers = m_flingModifier;
         syntheticGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
+        syntheticGestureEvent.data.scrollUpdate.inertial = true;
 
         if (m_page && m_page->mainFrame() && m_page->mainFrame()->isLocalFrame() && m_page->deprecatedLocalMainFrame()->view())
             return handleGestureEvent(syntheticGestureEvent);
@@ -1934,8 +1937,8 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 
             PlatformGestureEvent endScrollEvent(PlatformEvent::GestureScrollEnd,
                 m_positionOnFlingStart, m_globalPositionOnFlingStart,
-                IntSize(), 0, false, false, false, false,
-                0, 0, 0, 0, false);
+                IntSize(), 0, false, false, false, false);
+            endScrollEvent.setScrollGestureData(0, 0, 0, 0, true, false);
 
             mainFrameImpl()->frame()->eventHandler().handleGestureScrollEnd(endScrollEvent);
         }

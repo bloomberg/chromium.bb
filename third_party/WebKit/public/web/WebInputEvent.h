@@ -467,6 +467,7 @@ public:
             // the entirety of the generative motion.
             bool previousUpdateInSequencePrevented;
             bool preventPropagation;
+            bool inertial;
         } scrollUpdate;
 
         struct {
