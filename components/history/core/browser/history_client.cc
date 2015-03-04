@@ -19,6 +19,10 @@ bool HistoryClient::IsBookmarked(const GURL& url) {
 void HistoryClient::GetBookmarks(std::vector<URLAndTitle>* bookmarks) {
 }
 
+bool HistoryClient::CanAddURL(const GURL& url) {
+  return true;
+}
+
 void HistoryClient::NotifyProfileError(sql::InitStatus init_status) {
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/history/chrome_history_client.h"
 
 #include "base/logging.h"
+#include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/grit/chromium_strings.h"
@@ -60,6 +61,10 @@ void ChromeHistoryClient::GetBookmarks(
     };
     bookmarks->push_back(value);
   }
+}
+
+bool ChromeHistoryClient::CanAddURL(const GURL& url) {
+  return CanAddURLToHistory(url);
 }
 
 void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status) {

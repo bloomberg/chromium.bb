@@ -31,8 +31,6 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "chrome/common/url_constants.h"
-#include "components/dom_distiller/core/url_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -396,7 +394,7 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
   // large part of history (think iframes for ads) and we never display them in
   // history UI. We will still add manual subframes, which are ones the user
   // has clicked on to get.
-  if (!CanAddURL(add_page_args.url))
+  if (history_client_ && !history_client_->CanAddURL(add_page_args.url))
     return;
 
   // Inform VisitedDelegate of all links and redirects.
@@ -422,7 +420,7 @@ void HistoryService::AddPageNoVisitForBookmark(const GURL& url,
                                                const base::string16& title) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!CanAddURL(url))
+  if (history_client_ && !history_client_->CanAddURL(url))
     return;
 
   ScheduleTask(PRIORITY_NORMAL,
@@ -460,7 +458,7 @@ void HistoryService::AddPageWithDetails(const GURL& url,
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   // Filter out unwanted URLs.
-  if (!CanAddURL(url))
+  if (history_client_ && !history_client_->CanAddURL(url))
     return;
 
   // Inform VisitDelegate of the URL.
@@ -620,7 +618,7 @@ void HistoryService::MergeFavicon(
     const gfx::Size& pixel_size) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!CanAddURL(page_url))
+  if (history_client_ && !history_client_->CanAddURL(page_url))
     return;
 
   ScheduleTask(
@@ -636,7 +634,7 @@ void HistoryService::SetFavicons(
     const std::vector<SkBitmap>& bitmaps) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!CanAddURL(page_url))
+  if (history_client_ && !history_client_->CanAddURL(page_url))
     return;
 
   ScheduleTask(PRIORITY_NORMAL,
@@ -975,31 +973,6 @@ void HistoryService::ScheduleTask(SchedulePriority priority,
   CHECK(thread_->message_loop());
   // TODO(brettw): Do prioritization.
   thread_->message_loop()->PostTask(FROM_HERE, task);
-}
-
-// static
-bool HistoryService::CanAddURL(const GURL& url) {
-  if (!url.is_valid())
-    return false;
-
-  // TODO: We should allow kChromeUIScheme URLs if they have been explicitly
-  // typed.  Right now, however, these are marked as typed even when triggered
-  // by a shortcut or menu action.
-  if (url.SchemeIs(url::kJavaScriptScheme) ||
-      url.SchemeIs(content::kChromeDevToolsScheme) ||
-      url.SchemeIs(content::kChromeUIScheme) ||
-      url.SchemeIs(content::kViewSourceScheme) ||
-      url.SchemeIs(chrome::kChromeNativeScheme) ||
-      url.SchemeIs(chrome::kChromeSearchScheme) ||
-      url.SchemeIs(dom_distiller::kDomDistillerScheme))
-    return false;
-
-  // Allow all about: and chrome: URLs except about:blank, since the user may
-  // like to see "chrome://memory/", etc. in their history and autocomplete.
-  if (url == GURL(url::kAboutBlankURL))
-    return false;
-
-  return true;
 }
 
 base::WeakPtr<HistoryService> HistoryService::AsWeakPtr() {

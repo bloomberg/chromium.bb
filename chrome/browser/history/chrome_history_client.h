@@ -26,6 +26,7 @@ class ChromeHistoryClient : public history::HistoryClient {
   void BlockUntilBookmarksLoaded() override;
   bool IsBookmarked(const GURL& url) override;
   void GetBookmarks(std::vector<history::URLAndTitle>* bookmarks) override;
+  bool CanAddURL(const GURL& url) override;
   void NotifyProfileError(sql::InitStatus init_status) override;
   bool ShouldReportDatabaseError() override;
 #if defined(OS_ANDROID)

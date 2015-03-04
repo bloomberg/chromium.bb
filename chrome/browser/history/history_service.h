@@ -487,10 +487,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   void AddPagesWithDetails(const history::URLRows& info,
                            history::VisitSource visit_source);
 
-  // Returns true if this looks like the type of URL we want to add to the
-  // history. We filter out some URLs such as JavaScript.
-  static bool CanAddURL(const GURL& url);
-
   base::WeakPtr<HistoryService> AsWeakPtr();
 
   // syncer::SyncableService implementation.
@@ -778,19 +774,19 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   base::ThreadChecker thread_checker_;
 
   // The thread used by the history service to run complicated operations.
-  // |thread_| is NULL once |Cleanup| is NULL.
+  // |thread_| is null once Cleanup() is called.
   base::Thread* thread_;
 
   // This class has most of the implementation and runs on the 'thread_'.
   // You MUST communicate with this class ONLY through the thread_'s
   // message_loop().
   //
-  // This pointer will be NULL once Cleanup() has been called, meaning no
+  // This pointer will be null once Cleanup() has been called, meaning no
   // more calls should be made to the history thread.
   scoped_refptr<history::HistoryBackend> history_backend_;
 
   // A cache of the user-typed URLs kept in memory that is used by the
-  // autocomplete system. This will be NULL until the database has been created
+  // autocomplete system. This will be null until the database has been created
   // on the background thread.
   // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;

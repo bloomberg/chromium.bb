@@ -52,6 +52,10 @@ class HistoryClient : public KeyedService {
   // If not on the main thread, then BlockUntilBookmarksLoaded must be called.
   virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks);
 
+  // Returns true if this look like the type of URL that should be added to the
+  // history.
+  virtual bool CanAddURL(const GURL& url);
+
   // Notifies the embedder that there was a problem reading the database.
   //
   // Must be called from the main thread.

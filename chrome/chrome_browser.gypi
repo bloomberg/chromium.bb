@@ -1543,6 +1543,8 @@
       'browser/history/history_service_factory.h',
       'browser/history/history_tab_helper.cc',
       'browser/history/history_tab_helper.h',
+      'browser/history/history_utils.cc',
+      'browser/history/history_utils.h',
       'browser/history/in_memory_history_backend.cc',
       'browser/history/in_memory_history_backend.h',
       'browser/history/in_memory_url_index.cc',

@@ -24,6 +24,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -149,7 +150,7 @@ bool TopSitesImpl::SetPageThumbnail(const GURL& url,
     }
   }
 
-  if (!HistoryService::CanAddURL(url))
+  if (!CanAddURLToHistory(url))
     return false;  // It's not a real webpage.
 
   scoped_refptr<base::RefCountedBytes> thumbnail_data;
@@ -188,7 +189,7 @@ bool TopSitesImpl::SetPageThumbnailToJPEGBytes(
     }
   }
 
-  if (!HistoryService::CanAddURL(url))
+  if (!CanAddURLToHistory(url))
     return false;  // It's not a real webpage.
 
   if (add_temp_thumbnail) {
@@ -743,7 +744,7 @@ void TopSitesImpl::Observe(int type,
       if (!load_details)
         return;
       const GURL& url = load_details->entry->GetURL();
-      if (!cache_->IsKnownURL(url) && HistoryService::CanAddURL(url)) {
+      if (!cache_->IsKnownURL(url) && CanAddURLToHistory(url)) {
         // To avoid slamming history we throttle requests when the url updates.
         // To do otherwise negatively impacts perf tests.
         RestartQueryForTopSitesTimer(GetUpdateDelay());
