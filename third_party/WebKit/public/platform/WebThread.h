@@ -28,6 +28,10 @@
 #include "WebCommon.h"
 #include <stdint.h>
 
+#ifdef INSIDE_BLINK
+#include "wtf/Functional.h"
+#endif
+
 namespace blink {
 class WebTraceLocation;
 
@@ -75,6 +79,12 @@ public:
     virtual void exitRunLoop() = 0;
 
     virtual ~WebThread() { }
+
+#ifdef INSIDE_BLINK
+    // Helpers for posting bound functions as tasks.
+    void postTask(const WebTraceLocation&, PassOwnPtr<Function<void()>>);
+    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<Function<void()>>, long long delayMs);
+#endif
 };
 
 } // namespace blink
