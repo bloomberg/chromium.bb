@@ -14,7 +14,6 @@ function test()
 {
     function evaluateSnippetAndDumpEvaluationDetails(uiSourceCode, context, callback)
     {
-        InspectorTest.addSniffer(WebInspector.SnippetScriptMapping.prototype, "addScript", dumpScript);
         InspectorTest.addSniffer(WebInspector.ScriptSnippetModel.prototype, "_printRunScriptResult", dumpResult);
         WebInspector.scriptSnippetModel.evaluateScriptSnippet(context, uiSourceCode);
         var target = context.target();
@@ -24,10 +23,6 @@ function test()
         InspectorTest.addResult("Last evaluation source url for snippet: " + evaluationSourceURL);
         InspectorTest.assertEquals(snippetId, WebInspector.scriptSnippetModel._snippetIdForSourceURL(evaluationSourceURL), "Snippet can not be identified by its evaluation sourceURL.");
 
-        function dumpScript(script)
-        {
-            InspectorTest.addResult("Snippet script added, sourceURL = " + script.sourceURL);
-        }
 
         function dumpResult(target, result, wasThrown)
         {

@@ -51,15 +51,12 @@ Number of snippets in the storage: 0
 
 Running: testEvaluate
 Last evaluation source url for snippet: snippets:///1_1
-Snippet script added, sourceURL = snippets:///1_1
 Snippet execution result: undefined
 Last evaluation source url for snippet: snippets:///2_2
-Snippet script added, sourceURL = snippets:///2_2
 Snippet execution result: function doesNothing() {
     var  i = 2+2;
 }
 Last evaluation source url for snippet: snippets:///1_3
-Snippet script added, sourceURL = snippets:///1_3
 Snippet execution result: undefined
 
 Running: testEvaluateEditReload
@@ -68,6 +65,5 @@ Page reloaded.
 
 Running: testEvaluateInWorker
 Last evaluation source url for snippet: snippets:///1_1
-Snippet script added, sourceURL = snippets:///1_1
 Snippet execution result: 4
 
