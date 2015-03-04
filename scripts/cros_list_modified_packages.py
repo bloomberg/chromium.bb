@@ -162,8 +162,8 @@ def ListWorkonPackagesInfo(board, host):
   vdb_path = os.path.join(install_root, portage.const.VDB_PATH)
   buildroot, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
   for overlay in portage_util.FindOverlays(both, board, buildroot):
-    for filename, projects in portage_util.GetWorkonProjectMap(overlay,
-                                                               packages):
+    for filename, projects,_ in portage_util.GetWorkonProjectMap(overlay,
+                                                                 packages):
       # chromeos-base/power_manager/power_manager-9999
       # cp = chromeos-base/power_manager
       # cpv = chromeos-base/power_manager-9999

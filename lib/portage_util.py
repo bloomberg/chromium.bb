@@ -305,7 +305,8 @@ class EBuild(object):
 
   # A structure to hold computed values of CROS_WORKON_*.
   CrosWorkonVars = collections.namedtuple(
-      'CrosWorkonVars', ('localname', 'project', 'subdir', 'always_live'))
+      'CrosWorkonVars',
+      ('localname', 'project', 'srcpath', 'subdir', 'always_live'))
 
   @classmethod
   def _Print(cls, message):
@@ -471,6 +472,7 @@ class EBuild(object):
       * CROS_WORKON_LOCALNAME
       * CROS_WORKON_PROJECT
       * CROS_WORKON_SUBDIR
+      * CROS_WORKON_SRCPATH
       * CROS_WORKON_ALWAYS_LIVE
 
     Args:
@@ -483,6 +485,7 @@ class EBuild(object):
     workon_vars = (
         'CROS_WORKON_LOCALNAME',
         'CROS_WORKON_PROJECT',
+        'CROS_WORKON_SRCPATH',
         'CROS_WORKON_SUBDIR',
         'CROS_WORKON_ALWAYS_LIVE',
     )
@@ -493,21 +496,28 @@ class EBuild(object):
     }
     settings = osutils.SourceEnvironment(ebuild_path, workon_vars, env=env)
     # Try to detect problems extracting the variables by checking whether
-    # CROS_WORKON_PROJECT is set. If it isn't, something went wrong, possibly
-    # because we're simplistically sourcing the ebuild without most of portage
-    # being available. That still breaks this script and needs to be flagged
-    # as an error. We won't catch problems setting CROS_WORKON_LOCALNAME or
-    # CROS_WORKON_SUBDIR or if CROS_WORKON_PROJECT is set to the wrong thing,
-    # but at least this covers some types of failures.
-    if 'CROS_WORKON_PROJECT' not in settings:
+    # either CROS_WORKON_PROJECT or CROS_WORK_SRCPATH is set. If it isn't,
+    # something went wrong, possibly because we're simplistically sourcing the
+    # ebuild without most of portage being available. That still breaks this
+    # script and needs to be flagged as an error. We won't catch problems
+    # setting CROS_WORKON_LOCALNAME or CROS_WORKON_SUBDIR, or if
+    # CROS_WORKON_{PROJECT,SRCPATH} is set to the wrong thing, but at least
+    # this covers some types of failures.
+    projects = []
+    srcpaths = []
+    if 'CROS_WORKON_PROJECT' in settings:
+      projects = settings['CROS_WORKON_PROJECT'].split(',')
+    if 'CROS_WORKON_SRCPATH' in settings:
+      srcpaths = settings['CROS_WORKON_SRCPATH'].split(',')
+    if not (projects or srcpaths):
       raise EbuildFormatIncorrectException(
-          ebuild_path, 'Unable to determine CROS_WORKON_PROJECT value.')
+          ebuild_path,
+          'Unable to determine CROS_WORKON_{PROJECT,SRCPATH} values.')
     localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
-    projects = settings['CROS_WORKON_PROJECT'].split(',')
     subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
     live = settings['CROS_WORKON_ALWAYS_LIVE']
 
-    return EBuild.CrosWorkonVars(localnames, projects, subdirs, live)
+    return EBuild.CrosWorkonVars(localnames, projects, srcpaths, subdirs, live)
 
   def GetSourcePath(self, srcroot, manifest):
     """Get the project and path for this ebuild.
@@ -515,62 +525,93 @@ class EBuild(object):
     The path is guaranteed to exist, be a directory, and be absolute.
     """
 
-    localnames, projects, subdirs, always_live = EBuild.GetCrosWorkonVars(
-        self._unstable_ebuild_path, self.pkgname)
+    localnames, projects, srcpaths, subdirs, always_live = (
+        EBuild.GetCrosWorkonVars(self._unstable_ebuild_path, self.pkgname))
 
     if always_live:
       return [], []
 
     # Sanity checks and completion.
+    num_projects = len(projects)
     # Each project specification has to have the same amount of items.
-    if len(projects) != len(localnames):
+    if num_projects != len(localnames):
       raise EbuildFormatIncorrectException(
           self._unstable_ebuild_path,
           'Number of _PROJECT and _LOCALNAME items don\'t match.')
-    # Subdir must be either 0,1 or len(project)
-    if len(projects) != len(subdirs) and len(subdirs) > 1:
+    # If both SRCPATH and PROJECT are defined, they must have the same number
+    # of items.
+    if len(srcpaths) > num_projects:
+      if num_projects > 0:
+        raise EbuildFormatIncorrectException(
+            self._unstable_ebuild_path,
+            '_PROJECT has fewer items than _SRCPATH.')
+      num_projects = len(srcpaths)
+      projects = [''] * num_projects
+      localnames = [''] * num_projects
+    elif len(srcpaths) < num_projects:
+      if len(srcpaths) > 0:
+        raise EbuildFormatIncorrectException(
+            self._unstable_ebuild_path,
+            '_SRCPATH has fewer items than _PROJECT.')
+      srcpaths = [''] * num_projects
+    # We better have at least one PROJECT or SRCPATH value at this point.
+    if num_projects == 0:
       raise EbuildFormatIncorrectException(
-          self._unstable_ebuild_path, 'Incorrect number of _SUBDIR items.')
-    # If there's one, apply it to all.
-    if len(subdirs) == 1:
-      subdirs = subdirs * len(projects)
-    # If there is none, make an empty list to avoid exceptions later.
-    if len(subdirs) == 0:
-      subdirs = [''] * len(projects)
+          self._unstable_ebuild_path, 'No _PROJECT or _SRCPATH value found.')
+    # Subdir must be either 0,1 or len(project)
+    if num_projects != len(subdirs):
+      if len(subdirs) > 1:
+        raise EbuildFormatIncorrectException(
+            self._unstable_ebuild_path, 'Incorrect number of _SUBDIR items.')
+      # Multiply the single value if present, otherwise fill with empty strings.
+      subdirs = (subdirs or ['']) * num_projects
 
-    # Calculate srcdir.
+    # Calculate srcdir (used for core packages).
     if self.category in ('chromeos-base', 'brillo-base'):
-      dir_ = '' # 'platform2'
+      dir_ = ''
     else:
       dir_ = 'third_party'
 
-    # Once all targets are moved from platform to platform2, uncomment
-    # the following lines as well as dir_ = 'platform2' above,
-    # and delete the loop that builds |subdir_paths| below.
-
-    # subdir_paths = [os.path.realpath(os.path.join(srcroot, dir_, l, s))
-    #                for l, s in zip(localnames, subdirs)]
+    # Obtain brick source directory (used for non-core packages).
+    # TODO(garnold) This manipulates brick internal structure directly instead
+    # of referring to brick_lib; the latter could not be used because of a
+    # cyclic dependency, but should be used once its dependency on portage_util
+    # is eliminated.
+    srcbase = ''
+    if any(srcpaths):
+      brick_dir = os.path.dirname(os.path.dirname(os.path.dirname(
+          os.path.dirname(self._unstable_ebuild_path))))
+      srcbase = os.path.join(brick_dir, 'src')
+      if not os.path.isdir(srcbase):
+        cros_build_lib.Die('_SRCPATH used but brick source path not found.')
 
     subdir_paths = []
-    for local, sub in zip(localnames, subdirs):
-      subdir_path = os.path.realpath(os.path.join(srcroot, dir_, local, sub))
-      if dir_ == '' and not os.path.isdir(subdir_path):
-        subdir_path = os.path.realpath(os.path.join(srcroot, 'platform',
-                                                    local, sub))
-      subdir_paths.append(subdir_path)
+    rows = zip(localnames, subdirs, projects, srcpaths)
+    for local, sub, project, srcpath in rows:
+      if srcpath:
+        subdir_path = os.path.join(srcbase, srcpath)
+        if not os.path.isdir(subdir_path):
+          cros_build_lib.Die('Source for package %s not found in brick.' %
+                             self.pkgname)
+      else:
+        subdir_path = os.path.realpath(os.path.join(srcroot, dir_, local, sub))
+        if dir_ == '' and not os.path.isdir(subdir_path):
+          subdir_path = os.path.realpath(os.path.join(srcroot, 'platform',
+                                                      local, sub))
 
-    for subdir_path, project in zip(subdir_paths, projects):
-      if not os.path.isdir(subdir_path):
-        cros_build_lib.Die('Source repository %s '
-                           'for project %s does not exist.' % (subdir_path,
-                                                               self.pkgname))
-      # Verify that we're grabbing the commit id from the right project name.
-      real_project = manifest.FindCheckoutFromPath(subdir_path)['name']
-      if project != real_project:
-        cros_build_lib.Die('Project name mismatch for %s '
-                           '(found %s, expected %s)' % (subdir_path,
-                                                        real_project,
-                                                        project))
+        if not os.path.isdir(subdir_path):
+          cros_build_lib.Die('Source repository %s '
+                             'for project %s does not exist.' % (subdir_path,
+                                                                 self.pkgname))
+        # Verify that we're grabbing the commit id from the right project name.
+        real_project = manifest.FindCheckoutFromPath(subdir_path)['name']
+        if project != real_project:
+          cros_build_lib.Die('Project name mismatch for %s '
+                             '(found %s, expected %s)' % (subdir_path,
+                                                          real_project,
+                                                          project))
+
+      subdir_paths.append(subdir_path)
 
     return projects, subdir_paths
 
@@ -1195,15 +1236,15 @@ def BuildFullWorkonPackageDictionary(buildroot, overlay_type, manifest):
 
 
 def GetWorkonProjectMap(overlay, subdirectories):
-  """Get the project -> ebuild mapping for cros_workon ebuilds.
+  """Get a mapping of cros_workon ebuilds to projects and source paths.
 
   Args:
     overlay: Overlay to look at.
     subdirectories: List of subdirectories to look in on the overlay.
 
   Yields:
-    A list of (filename, projects) tuples for cros-workon ebuilds in the
-    given overlay under the given subdirectories.
+    Tuples containing (filename, projects, srcpaths) for cros-workon ebuilds in
+    the given overlay under the given subdirectories.
   """
   # Search ebuilds for project names, ignoring non-existent directories.
   # Also filter out ebuilds which are not cros_workon.
@@ -1211,10 +1252,10 @@ def GetWorkonProjectMap(overlay, subdirectories):
     base_dir = os.path.join(overlay, subdir)
     for ebuild in WorkonEBuildGeneratorForDirectory(base_dir):
       full_path = ebuild.ebuild_path
-      _, projects, _, _ = EBuild.GetCrosWorkonVars(full_path,
-                                                   ebuild.pkgname)
+      _, projects, srcpaths, _, _ = EBuild.GetCrosWorkonVars(full_path,
+                                                             ebuild.pkgname)
       relpath = os.path.relpath(full_path, start=overlay)
-      yield relpath, projects
+      yield relpath, projects, srcpaths
 
 
 def SplitEbuildPath(path):
@@ -1298,7 +1339,7 @@ def FindWorkonProjects(packages):
   all_projects = set()
   buildroot, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
   for overlay in FindOverlays(both, buildroot=buildroot):
-    for _, projects in GetWorkonProjectMap(overlay, packages):
+    for _, projects, _ in GetWorkonProjectMap(overlay, packages):
       all_projects.update(projects)
   return all_projects
 
