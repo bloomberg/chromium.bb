@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/egl_util.h"
-#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"

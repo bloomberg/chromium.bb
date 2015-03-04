@@ -67,9 +67,8 @@
         'dri_vsync_provider.h',
         'dri_window.cc',
         'dri_window.h',
+        'dri_window_delegate.cc',
         'dri_window_delegate.h',
-        'dri_window_delegate_impl.cc',
-        'dri_window_delegate_impl.h',
         'dri_window_delegate_manager.cc',
         'dri_window_delegate_manager.h',
         'dri_window_manager.cc',
@@ -120,7 +119,7 @@
       'direct_dependent_settings': {
         'sources': [
           'dri_surface_unittest.cc',
-          'dri_window_delegate_impl_unittest.cc',
+          'dri_window_delegate_unittest.cc',
           'hardware_display_controller_unittest.cc',
           'hardware_display_plane_manager_unittest.cc',
           'screen_manager_unittest.cc',

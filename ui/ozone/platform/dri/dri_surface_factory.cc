@@ -9,7 +9,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"
-#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"

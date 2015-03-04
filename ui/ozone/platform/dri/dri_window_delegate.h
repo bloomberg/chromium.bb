@@ -7,7 +7,12 @@
 
 #include <vector>
 
+#include "base/timer/timer.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/ozone_export.h"
+#include "ui/ozone/platform/dri/display_change_observer.h"
 
 class SkBitmap;
 
@@ -18,52 +23,93 @@ class Rect;
 
 namespace ui {
 
+class DriBuffer;
+class DrmDeviceManager;
 class HardwareDisplayController;
+class ScreenManager;
 
-// Interface for the display-server half of a DriWindow.
-//
-// The main implementation of this lives in the process that owns the display
-// connection (usually the GPU process) and associates a platform window
-// (DriWindow) with a display. A window is associated with the display whose
-// bounds contains the window bounds. If there's no suitable display, the window
-// is disconnected and its contents will not be visible.
-//
-// In software mode, this is owned directly on DriWindow because the display
-// controller object is in the same process.
-//
-// In accelerated mode, there's a proxy implementation and calls are forwarded
-// to the real object in the GPU process via IPC.
-class DriWindowDelegate {
+// A delegate of the platform window (DriWindow) on the GPU process. This is
+// used to keep track of window state changes such that each platform window is
+// correctly associated with a display.
+// A window is associated with the display whose bounds contains the window
+// bounds. If there's no suitable display, the window is disconnected and its
+// contents will not be visible.
+class OZONE_EXPORT DriWindowDelegate : public DisplayChangeObserver {
  public:
-  virtual ~DriWindowDelegate() {}
+  DriWindowDelegate(gfx::AcceleratedWidget widget,
+                    DrmDeviceManager* device_manager,
+                    ScreenManager* screen_manager);
 
-  virtual void Initialize() = 0;
+  ~DriWindowDelegate() override;
 
-  virtual void Shutdown() = 0;
+  void Initialize();
+
+  void Shutdown();
 
   // Returns the accelerated widget associated with the delegate.
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
+  gfx::AcceleratedWidget GetAcceleratedWidget();
 
   // Returns the current controller the window is displaying on. Callers should
   // not cache the result as the controller may change as the window is moved.
-  virtual HardwareDisplayController* GetController() = 0;
+  HardwareDisplayController* GetController();
 
   // Called when the window is resized/moved.
-  virtual void OnBoundsChanged(const gfx::Rect& bounds) = 0;
+  void OnBoundsChanged(const gfx::Rect& bounds);
 
   // Update the HW cursor bitmap & move to specified location. If
   // the bitmap is empty, the cursor is hidden.
-  virtual void SetCursor(const std::vector<SkBitmap>& bitmaps,
-                         const gfx::Point& location,
-                         int frame_delay_ms) = 0;
+  void SetCursor(const std::vector<SkBitmap>& bitmaps,
+                 const gfx::Point& location,
+                 int frame_delay_ms);
 
   // Update the HW cursor bitmap & move to specified location. If
   // the bitmap is empty, the cursor is hidden.
-  virtual void SetCursorWithoutAnimations(const std::vector<SkBitmap>& bitmaps,
-                                          const gfx::Point& location) = 0;
+  void SetCursorWithoutAnimations(const std::vector<SkBitmap>& bitmaps,
+                                  const gfx::Point& location);
 
   // Move the HW cursor to the specified location.
-  virtual void MoveCursor(const gfx::Point& location) = 0;
+  void MoveCursor(const gfx::Point& location);
+
+  // DisplayChangeObserver:
+  void OnDisplayChanged(HardwareDisplayController* controller) override;
+  void OnDisplayRemoved(HardwareDisplayController* controller) override;
+
+ private:
+  // Draw the last set cursor & update the cursor plane.
+  void ResetCursor(bool bitmap_only);
+
+  // Draw next frame in an animated cursor.
+  void OnCursorAnimationTimeout();
+
+  void UpdateWidgetToDrmDeviceMapping();
+
+  // When |controller_| changes this is called to reallocate the cursor buffers
+  // since the allocation DRM device may have changed.
+  void UpdateCursorBuffers();
+
+  gfx::AcceleratedWidget widget_;
+
+  DrmDeviceManager* device_manager_;  // Not owned.
+  ScreenManager* screen_manager_;     // Not owned.
+
+  // The current bounds of the window.
+  gfx::Rect bounds_;
+
+  // The controller associated with the current window. This may be nullptr if
+  // the window isn't over an active display.
+  HardwareDisplayController* controller_;
+
+  base::RepeatingTimer<DriWindowDelegate> cursor_timer_;
+
+  scoped_refptr<DriBuffer> cursor_buffers_[2];
+  int cursor_frontbuffer_;
+
+  std::vector<SkBitmap> cursor_bitmaps_;
+  gfx::Point cursor_location_;
+  int cursor_frame_;
+  int cursor_frame_delay_ms_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriWindowDelegate);
 };
 
 }  // namespace ui

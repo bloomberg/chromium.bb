@@ -13,7 +13,7 @@
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
-#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
@@ -47,9 +47,9 @@ std::vector<skia::RefPtr<SkSurface>> GetCursorBuffers(
 
 }  // namespace
 
-class DriWindowDelegateImplTest : public testing::Test {
+class DriWindowDelegateTest : public testing::Test {
  public:
-  DriWindowDelegateImplTest() {}
+  DriWindowDelegateTest() {}
 
   void SetUp() override;
   void TearDown() override;
@@ -63,10 +63,10 @@ class DriWindowDelegateImplTest : public testing::Test {
   scoped_ptr<ui::DriWindowDelegateManager> window_delegate_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DriWindowDelegateImplTest);
+  DISALLOW_COPY_AND_ASSIGN(DriWindowDelegateTest);
 };
 
-void DriWindowDelegateImplTest::SetUp() {
+void DriWindowDelegateTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   drm_ = new ui::MockDrmDevice();
   buffer_generator_.reset(new ui::DriBufferGenerator());
@@ -78,10 +78,8 @@ void DriWindowDelegateImplTest::SetUp() {
   drm_device_manager_.reset(new ui::DrmDeviceManager(drm_));
   window_delegate_manager_.reset(new ui::DriWindowDelegateManager());
 
-  scoped_ptr<ui::DriWindowDelegate> window_delegate(
-      new ui::DriWindowDelegateImpl(kDefaultWidgetHandle,
-                                    drm_device_manager_.get(),
-                                    screen_manager_.get()));
+  scoped_ptr<ui::DriWindowDelegate> window_delegate(new ui::DriWindowDelegate(
+      kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));
   window_delegate->Initialize();
   window_delegate->OnBoundsChanged(
       gfx::Rect(gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
@@ -89,14 +87,14 @@ void DriWindowDelegateImplTest::SetUp() {
                                               window_delegate.Pass());
 }
 
-void DriWindowDelegateImplTest::TearDown() {
+void DriWindowDelegateTest::TearDown() {
   scoped_ptr<ui::DriWindowDelegate> delegate =
       window_delegate_manager_->RemoveWindowDelegate(kDefaultWidgetHandle);
   delegate->Shutdown();
   message_loop_.reset();
 }
 
-TEST_F(DriWindowDelegateImplTest, SetCursorImage) {
+TEST_F(DriWindowDelegateTest, SetCursorImage) {
   SkBitmap image;
   SkImageInfo info =
       SkImageInfo::Make(6, 4, kN32_SkColorType, kPremul_SkAlphaType);
@@ -128,7 +126,7 @@ TEST_F(DriWindowDelegateImplTest, SetCursorImage) {
   }
 }
 
-TEST_F(DriWindowDelegateImplTest, CheckCursorSurfaceAfterChangingDevice) {
+TEST_F(DriWindowDelegateTest, CheckCursorSurfaceAfterChangingDevice) {
   // Add another device.
   scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice();
   screen_manager_->AddDisplayController(drm, kDefaultCrtc, kDefaultConnector);

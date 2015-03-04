@@ -19,7 +19,7 @@
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_window.h"
-#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/drm_device.h"

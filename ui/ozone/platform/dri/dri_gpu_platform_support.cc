@@ -9,7 +9,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
-#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
@@ -229,7 +229,7 @@ bool DriGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
 void DriGpuPlatformSupport::OnCreateWindowDelegate(
     gfx::AcceleratedWidget widget) {
   scoped_ptr<DriWindowDelegate> delegate(
-      new DriWindowDelegateImpl(widget, drm_device_manager_, screen_manager_));
+      new DriWindowDelegate(widget, drm_device_manager_, screen_manager_));
   delegate->Initialize();
   window_manager_->AddWindowDelegate(widget, delegate.Pass());
 }

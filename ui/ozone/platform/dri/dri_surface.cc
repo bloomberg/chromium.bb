@@ -13,7 +13,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
-#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/drm_device.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 
