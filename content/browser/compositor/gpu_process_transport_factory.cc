@@ -50,6 +50,7 @@
 #elif defined(USE_OZONE)
 #include "content/browser/compositor/overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
+#include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
@@ -121,9 +122,10 @@ scoped_ptr<cc::OverlayCandidateValidator> CreateOverlayCandidateValidator(
 #if defined(USE_OZONE)
   ui::OverlayCandidatesOzone* overlay_candidates =
       ui::SurfaceFactoryOzone::GetInstance()->GetOverlayCandidates(widget);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (overlay_candidates &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHardwareOverlays)) {
+      (command_line->HasSwitch(switches::kEnableHardwareOverlays) ||
+       command_line->HasSwitch(switches::kOzoneTestSingleOverlaySupport))) {
     return scoped_ptr<cc::OverlayCandidateValidator>(
         new OverlayCandidateValidatorOzone(widget, overlay_candidates));
   }
