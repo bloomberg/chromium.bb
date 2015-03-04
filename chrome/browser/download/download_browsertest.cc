@@ -56,10 +56,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/url_constants.h"
@@ -2895,10 +2892,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
 
   ASSERT_TRUE(test_server()->Start());
 
-  // Ensure that infobars are being used instead of bubbles.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePermissionsBubbles);
-
   // Create a downloads observer.
   scoped_ptr<content::DownloadTestObserver> downloads_observer(
         CreateWaiter(browser(), 2));
@@ -2937,51 +2930,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
   downloads_observer->WaitForFinished();
   EXPECT_EQ(2u, downloads_observer->NumDownloadsSeenInState(
       DownloadItem::COMPLETE));
-}
-
-IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // Permission bubbles are not supported on mobile.
-  return;
-#endif
-
-  ASSERT_TRUE(test_server()->Start());
-
-  // Enable permision bubbles.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePermissionsBubbles);
-
-  // Create a downloads observer.
-  scoped_ptr<content::DownloadTestObserver> downloads_observer(
-        CreateWaiter(browser(), 2));
-
-  MockPermissionBubbleView* mock_bubble_view = new MockPermissionBubbleView();
-  PermissionBubbleManager::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents())->
-          SetView(mock_bubble_view);
-  mock_bubble_view->SetBrowserTest(true);
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(),
-      test_server()->GetURL("files/downloads/download-a_zip_file.html"), 1);
-
-  ASSERT_TRUE(mock_bubble_view->IsVisible());
-  mock_bubble_view->Accept();
-  ASSERT_FALSE(mock_bubble_view->IsVisible());
-
-  // Waits for the download to complete.
-  downloads_observer->WaitForFinished();
-  EXPECT_EQ(2u, downloads_observer->NumDownloadsSeenInState(
-      DownloadItem::COMPLETE));
-
-  browser()->tab_strip_model()->GetActiveWebContents()->Close();
-  delete mock_bubble_view;
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
