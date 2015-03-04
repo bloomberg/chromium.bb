@@ -5,6 +5,7 @@
 package org.chromium.ui.picker;
 
 import android.content.Context;
+import android.os.Build;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
@@ -111,7 +112,12 @@ public abstract class TwoFieldDatePicker extends FrameLayout {
         mYearSpinner.setOnLongPressUpdateInterval(100);
         mYearSpinner.setOnValueChangedListener(onChangeListener);
 
-        reorderSpinners();
+        // TODO(tobiasjs): reorderSpinners causes a crash on Android versions before JB MR2 because
+        // it calls DateFormat.getBestDateTimePattern() which isn't available before then. Fix this
+        // crash and call reorderSpinners on all devices. http://crbug.com/463719
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            reorderSpinners();
+        }
     }
 
     /**
