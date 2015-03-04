@@ -26,9 +26,6 @@ class GL_EXPORT GLImageMemory : public GLImage {
                             gfx::GpuMemoryBuffer::Format format,
                             size_t* stride_in_bytes);
 
-  static bool ValidSize(const gfx::Size& size,
-                        gfx::GpuMemoryBuffer::Format format);
-
   bool Initialize(const unsigned char* memory,
                   gfx::GpuMemoryBuffer::Format format);
 

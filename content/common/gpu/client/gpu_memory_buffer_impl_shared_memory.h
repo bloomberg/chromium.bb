@@ -31,6 +31,7 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
       const DestructionCallback& callback);
 
   static bool IsFormatSupported(Format format);
+  static bool IsSizeValidForFormat(const gfx::Size& size, Format format);
 
   // Overridden from gfx::GpuMemoryBuffer:
   void* Map() override;

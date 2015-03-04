@@ -15,6 +15,7 @@ class GLImage;
 }
 
 namespace gpu {
+struct Capabilities;
 
 class GPU_EXPORT ImageFactory {
  public:
@@ -33,6 +34,16 @@ class GPU_EXPORT ImageFactory {
   // Returns true if |internalformat| is compatible with |format|.
   static bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       unsigned internalformat,
+      gfx::GpuMemoryBuffer::Format format);
+
+  // Returns true if |format| is supported by |capabilities|.
+  static bool IsGpuMemoryBufferFormatSupported(
+      gfx::GpuMemoryBuffer::Format format,
+      const Capabilities& capabilities);
+
+  // Returns true if |size| is valid for |format|.
+  static bool IsImageSizeValidForGpuMemoryBufferFormat(
+      const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format);
 
   // Creates a GLImage instance for GPU memory buffer identified by |handle|.

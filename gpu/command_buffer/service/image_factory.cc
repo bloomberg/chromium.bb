@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/image_factory.h"
 
+#include "gpu/command_buffer/common/capabilities.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
@@ -91,6 +92,54 @@ bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       NOTREACHED();
       return false;
   }
+}
+
+// static
+bool ImageFactory::IsGpuMemoryBufferFormatSupported(
+    gfx::GpuMemoryBuffer::Format format,
+    const gpu::Capabilities& capabilities) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::ATCIA:
+      return capabilities.texture_format_atc;
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      return capabilities.texture_format_bgra8888;
+    case gfx::GpuMemoryBuffer::DXT1:
+      return capabilities.texture_format_dxt1;
+    case gfx::GpuMemoryBuffer::DXT5:
+      return capabilities.texture_format_dxt5;
+    case gfx::GpuMemoryBuffer::ETC1:
+      return capabilities.texture_format_etc1;
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+bool ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
+    const gfx::Size& size,
+    gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::ATCIA:
+    case gfx::GpuMemoryBuffer::DXT1:
+    case gfx::GpuMemoryBuffer::DXT5:
+    case gfx::GpuMemoryBuffer::ETC1:
+      // Compressed images must have a width and height that's evenly divisible
+      // by the block size.
+      return size.width() % 4 == 0 && size.height() % 4 == 0;
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace gpu

@@ -24,6 +24,8 @@ GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     scoped_ptr<base::SharedMemory> shared_memory)
     : GpuMemoryBufferImpl(id, size, format, callback),
       shared_memory_(shared_memory.Pass()) {
+  DCHECK(IsFormatSupported(format));
+  DCHECK(IsSizeValidForFormat(size, format));
 }
 
 GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
@@ -125,6 +127,29 @@ bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(Format format) {
       return true;
     case RGBX_8888:
       return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
+    const gfx::Size& size,
+    Format format) {
+  switch (format) {
+    case ATC:
+    case ATCIA:
+    case DXT1:
+    case DXT5:
+    case ETC1:
+      // Compressed images must have a width and height that's evenly divisible
+      // by the block size.
+      return size.width() % 4 == 0 && size.height() % 4 == 0;
+    case RGBA_8888:
+    case BGRA_8888:
+    case RGBX_8888:
+      return true;
   }
 
   NOTREACHED();

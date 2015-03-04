@@ -183,30 +183,6 @@ bool GLImageMemory::StrideInBytes(size_t width,
   return false;
 }
 
-// static
-bool GLImageMemory::ValidSize(const gfx::Size& size,
-                              gfx::GpuMemoryBuffer::Format format) {
-  switch (format) {
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-      // Compressed images must have a width and height that's evenly divisible
-      // by the block size.
-      return size.width() % 4 == 0 && size.height() % 4 == 0;
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::BGRA_8888:
-      return true;
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-      NOTREACHED();
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 bool GLImageMemory::Initialize(const unsigned char* memory,
                                gfx::GpuMemoryBuffer::Format format) {
   if (!ValidInternalFormat(internalformat_)) {
@@ -221,6 +197,8 @@ bool GLImageMemory::Initialize(const unsigned char* memory,
 
   DCHECK(memory);
   DCHECK(!memory_);
+  DCHECK_IMPLIES(IsCompressedFormat(format), size_.width() % 4 == 0);
+  DCHECK_IMPLIES(IsCompressedFormat(format), size_.height() % 4 == 0);
   memory_ = memory;
   format_ = format;
   return true;

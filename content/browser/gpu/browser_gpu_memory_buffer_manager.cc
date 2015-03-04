@@ -139,6 +139,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
           format, usage)) {
     // Early out if we cannot fallback to shared memory buffer.
     if (!GpuMemoryBufferImplSharedMemory::IsFormatSupported(format) ||
+        !GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size, format) ||
         usage != gfx::GpuMemoryBuffer::MAP) {
       callback.Run(gfx::GpuMemoryBufferHandle());
       return;

@@ -8,7 +8,6 @@
 #include "base/numerics/safe_math.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_image_memory.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
@@ -34,7 +33,6 @@ GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
       callback_(callback),
       mapped_(false),
       destruction_sync_point_(0) {
-  DCHECK(gfx::GLImageMemory::ValidSize(size, format));
 }
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {

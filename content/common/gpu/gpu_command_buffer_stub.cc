@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
+#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -138,29 +139,6 @@ DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
                      ->gpu_memory_manager()
                      ->GetMaximumClientAllocation());
   return new DevToolsChannelData(res.release());
-}
-
-bool IsSupportedImageFormat(const gpu::Capabilities& capabilities,
-                            gfx::GpuMemoryBuffer::Format format) {
-  switch (format) {
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-      return capabilities.texture_format_atc;
-    case gfx::GpuMemoryBuffer::BGRA_8888:
-      return capabilities.texture_format_bgra8888;
-    case gfx::GpuMemoryBuffer::DXT1:
-      return capabilities.texture_format_dxt1;
-    case gfx::GpuMemoryBuffer::DXT5:
-      return capabilities.texture_format_dxt5;
-    case gfx::GpuMemoryBuffer::ETC1:
-      return capabilities.texture_format_etc1;
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 }  // namespace
@@ -979,8 +957,21 @@ void GpuCommandBufferStub::OnCreateImage(int32 id,
     return;
   }
 
-  if (!IsSupportedImageFormat(decoder_->GetCapabilities(), format)) {
-    LOG(ERROR) << "Image format is not supported.";
+  if (!gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
+          format, decoder_->GetCapabilities())) {
+    LOG(ERROR) << "Format is not supported.";
+    return;
+  }
+
+  if (!gpu::ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(size,
+                                                                   format)) {
+    LOG(ERROR) << "Invalid image size for format.";
+    return;
+  }
+
+  if (!gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
+          internalformat, format)) {
+    LOG(ERROR) << "Incompatible image format.";
     return;
   }
 

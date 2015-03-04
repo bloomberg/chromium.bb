@@ -371,6 +371,8 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
       channel_->ShareGpuMemoryBufferToGpuProcess(gpu_memory_buffer->GetHandle(),
                                                  &requires_sync_point);
 
+  DCHECK(gpu::ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
+      gfx::Size(width, height), gpu_memory_buffer->GetFormat()));
   DCHECK(gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       internalformat, gpu_memory_buffer->GetFormat()));
   if (!Send(new GpuCommandBufferMsg_CreateImage(route_id_,
