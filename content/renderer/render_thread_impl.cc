@@ -661,7 +661,12 @@ void RenderThreadImpl::Init() {
     // threads in GPU raster mode.
     if (is_threaded_gpu_rasterization_enabled_)
       num_raster_threads = 1;
-    cc::TileTaskWorkerPool::SetNumWorkerThreads(num_raster_threads);
+
+    // In single process, browser compositor already initialized and set up
+    // worker threads, can't change the number later for the renderer compistor
+    // in the same process.
+    if (!command_line.HasSwitch(switches::kSingleProcess))
+      cc::TileTaskWorkerPool::SetNumWorkerThreads(num_raster_threads);
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
     if (!command_line.HasSwitch(
