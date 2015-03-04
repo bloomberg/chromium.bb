@@ -581,12 +581,11 @@ remoting.ClientPluginImpl.prototype.connect =
   } else if (remoting.platformIsChromeOS()) {
     keyFilter = 'cros';
   }
-  // Use PPB_VideoDecoder API only in Chrome 42 and above. It is broken in
-  // previous versions of Chrome, see http://crbug.com/447403 .
-  // Currently PPAPI doesn't provide a way for plugins to check the Chrome
-  // version, so this check needs to be in the webapp.
+
+  // Use PPB_VideoDecoder API only in Chrome 43 and above. It is broken in
+  // previous versions of Chrome, see crbug.com/459103 and crbug.com/463577 .
   var enableVideoDecodeRenderer =
-      parseInt((remoting.getChromeVersion() || '0').split('.')[0], 10) >= 42;
+      parseInt((remoting.getChromeVersion() || '0').split('.')[0], 10) >= 43;
   this.plugin_.postMessage(JSON.stringify(
       { method: 'delegateLargeCursors', data: {} }));
   var methods = 'third_party,spake2_pair,spake2_hmac,spake2_plain';
