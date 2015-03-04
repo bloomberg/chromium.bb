@@ -654,7 +654,6 @@ void ProvidedFileSystem::OnAddWatcherInQueueCompleted(
   if (result != base::File::FILE_OK) {
     callback.Run(result);
     watcher_queue_.Complete(token);
-    watcher_queue_.Remove(token);
     return;
   }
 
@@ -663,7 +662,6 @@ void ProvidedFileSystem::OnAddWatcherInQueueCompleted(
   if (it != watchers_.end()) {
     callback.Run(base::File::FILE_OK);
     watcher_queue_.Complete(token);
-    watcher_queue_.Remove(token);
     return;
   }
 
@@ -678,7 +676,6 @@ void ProvidedFileSystem::OnAddWatcherInQueueCompleted(
 
   callback.Run(base::File::FILE_OK);
   watcher_queue_.Complete(token);
-  watcher_queue_.Remove(token);
 }
 
 void ProvidedFileSystem::OnRemoveWatcherInQueueCompleted(
@@ -690,7 +687,6 @@ void ProvidedFileSystem::OnRemoveWatcherInQueueCompleted(
     base::File::Error result) {
   if (!extension_response && result != base::File::FILE_OK) {
     watcher_queue_.Complete(token);
-    watcher_queue_.Remove(token);
     callback.Run(result);
     return;
   }
@@ -712,7 +708,6 @@ void ProvidedFileSystem::OnRemoveWatcherInQueueCompleted(
 
   callback.Run(base::File::FILE_OK);
   watcher_queue_.Complete(token);
-  watcher_queue_.Remove(token);
 }
 
 void ProvidedFileSystem::OnNotifyInQueueCompleted(
@@ -721,7 +716,6 @@ void ProvidedFileSystem::OnNotifyInQueueCompleted(
   if (result != base::File::FILE_OK) {
     args->callback.Run(result);
     watcher_queue_.Complete(args->token);
-    watcher_queue_.Remove(args->token);
     return;
   }
 
@@ -731,7 +725,6 @@ void ProvidedFileSystem::OnNotifyInQueueCompleted(
   if (it == watchers_.end()) {
     args->callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     watcher_queue_.Complete(args->token);
-    watcher_queue_.Remove(args->token);
     return;
   }
 
@@ -754,7 +747,6 @@ void ProvidedFileSystem::OnNotifyInQueueCompleted(
 
   args->callback.Run(base::File::FILE_OK);
   watcher_queue_.Complete(args->token);
-  watcher_queue_.Remove(args->token);
 }
 
 void ProvidedFileSystem::OnOpenFileCompleted(const base::FilePath& file_path,

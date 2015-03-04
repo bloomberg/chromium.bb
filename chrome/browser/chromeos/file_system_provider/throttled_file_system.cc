@@ -195,19 +195,12 @@ void ThrottledFileSystem::OnOpenFileCompleted(int queue_token,
                                               const OpenFileCallback& callback,
                                               int file_handle,
                                               base::File::Error result) {
-  // The task may be aborted either via the callback, or by the operation, eg.
-  // because of destroying the request manager or unmounting the file system
-  // during the operation. Mark the task as completed only if it hasn't been
-  // aborted before.
-  if (!open_queue_->IsAborted(queue_token))
-    open_queue_->Complete(queue_token);
-
   // If the file is opened successfully then hold the queue token until the file
   // is closed.
   if (result == base::File::FILE_OK)
     opened_files_[file_handle] = queue_token;
   else
-    open_queue_->Remove(queue_token);
+    open_queue_->Complete(queue_token);
 
   callback.Run(file_handle, result);
 }
@@ -220,10 +213,10 @@ void ThrottledFileSystem::OnCloseFileCompleted(
   // closed on the C++ side. Release the task from the queue, so other files
   // which are enqueued can be opened.
   const auto it = opened_files_.find(file_handle);
-  CHECK(it != opened_files_.end());
+  DCHECK(it != opened_files_.end());
 
   const int queue_token = it->second;
-  open_queue_->Remove(queue_token);
+  open_queue_->Complete(queue_token);
   opened_files_.erase(file_handle);
 
   callback.Run(result);

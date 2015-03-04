@@ -24,19 +24,14 @@ namespace file_system_provider {
 // 1. Call NewToken() to obtain the token used bo all other methods.
 // 2. Call Enqueue() to enqueue the task.
 // 3. Call Complete() when the task is completed.
-// 4. Call Remove() to remove a completed task from the queue and run other
-//    enqueued tasks.
 //
-// Enqueued tasks can be aborted with Abort() at any time until they are marked
-// as completed or removed from the queue, as long as the task supports aborting
-// (it's abort callback is not NULL). Aorting does not remove the task from the
-// queue.
+// If the task supports aborting (it's abort callback is not NULL), then an
+// enqueued task can be aborted with Abort() at any time as long as the task is
+// not completed.
 //
-// In most cases you'll want to call Remove() and Complete() one after the
-// other. However, in some cases you may want to separate it. Eg. for limiting
-// number of opened files, you may want to call Complete() after opening is
-// completed, but Remove() after the file is closed. Note, that they can be
-// called at most once.
+// Once a task is executed, it must be marked as completed with Complete(). If
+// it's aborted before executing, no call to Complete() can happen. Simply
+// saying, just call Complete() from the completion callback of the task.
 class Queue {
  public:
   typedef base::Callback<AbortCallback(void)> AbortableCallback;
@@ -51,32 +46,19 @@ class Queue {
 
   // Enqueues a task using a token generated with NewToken(). The task will be
   // executed if there is space in the internal queue, otherwise it will wait
-  // until another task is finished. Once the task is finished, Complete() and
-  // Remove() must be called. The callback's abort callback may be NULL. In
-  // such case, Abort() must not be called.
+  // until another task is finished. Once the task is finished, Complete() must
+  // be called. The callback's abort callback may be NULL. In such case, Abort()
+  // must not be called.
   void Enqueue(size_t token, const AbortableCallback& callback);
 
   // Forcibly aborts a previously enqueued task. May be called at any time as
   // long as the task is still in the queue and is not marked as completed.
-  // Note, that Remove() must be called in order to remove the task from the
-  // queue. Must not be called if the task doesn't support aborting (it's
-  // abort callback is NULL).
   void Abort(size_t token);
 
-  // Returns true if the task which is in the queue with |token| has been
-  // aborted. This method must not be called for tasks which are not in the
-  // queue.
-  bool IsAborted(size_t token);
-
-  // Marks the previously enqueued task as complete. Must be called for each
-  // enqueued task (unless aborted). Note, that Remove() must be called in order
-  // to remove the task from the queue if it hasn't been aborted earlier.
-  // It must not be called more than one, nor for aborted tasks.
+  // Marks an executed task with |token| as completed. Must be called once the
+  // task is executed. Simply saying, in most cases it should be just called
+  // from the task's completion callback.
   void Complete(size_t token);
-
-  // Removes the previously enqueued and completed or aborted task from the
-  // queue. Must not be called more than once.
-  void Remove(size_t token);
 
  private:
   // Information about an enqueued task which hasn't been removed, nor aborted.
@@ -98,8 +80,6 @@ class Queue {
   size_t next_token_;
   std::deque<Task> pending_;
   std::map<int, Task> executed_;
-  std::map<int, Task> completed_;
-  std::map<int, Task> aborted_;
 
   base::WeakPtrFactory<Queue> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(Queue);
