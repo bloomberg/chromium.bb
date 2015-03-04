@@ -943,6 +943,14 @@ static inline bool isFixedPositionedContainer(Layer* layer)
 
 Layer* Layer::enclosingPositionedAncestor() const
 {
+    if (renderer()->style()->position() == FixedPosition) {
+        Layer* curr = parent();
+        while (curr && !isFixedPositionedContainer(curr))
+            curr = curr->parent();
+
+        return curr;
+    }
+
     Layer* curr = parent();
     while (curr && !curr->isPositionedContainer())
         curr = curr->parent();
@@ -1403,12 +1411,6 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
             ASSERT(ancestorLayer->hasTransformRelatedProperty());
 
             location += layer->location();
-
-            // The spec (http://dev.w3.org/csswg/css-transforms/#transform-rendering) doesn't say if a
-            // fixed-position element under a scrollable transformed element should scroll. However,
-            // other parts of blink scroll the fixed-position element, and the following keeps the consistency.
-            if (LayerScrollableArea* scrollableArea = ancestorLayer->scrollableArea())
-                location -= LayoutSize(scrollableArea->scrollOffset());
         }
         return ancestorLayer;
     }
