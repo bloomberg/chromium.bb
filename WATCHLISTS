@@ -581,7 +581,8 @@
                   '|chrome/browser/automation/automation_provider_json'
     },
     'remoting': {
-      'filepath': 'remoting/',
+      'filepath': 'remoting/' \
+                  '|testing/chromoting'
     },
     'rlz_id': {
       'filepath' :'rlz/lib/machine_id.cc|'\
