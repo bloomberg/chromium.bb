@@ -124,7 +124,7 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
 
     // "14. If |init|'s method member is present, let |method| be it and run
     // these substeps:"
-    if (!init.method.isEmpty()) {
+    if (!init.method.isNull()) {
         // "1. If |method| is not a method or method is a forbidden method,
         // throw a TypeError."
         if (!isValidHTTPToken(init.method)) {

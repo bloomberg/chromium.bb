@@ -49,7 +49,6 @@ test(function() {
 
 test(function() {
     [new Request(URL),
-     new Request(URL, {method: ''}),
      // All mode/credentials below are invalid and thus ignored.
      new Request(URL, {mode: null}),
      new Request(URL, {mode: undefined}),
@@ -137,11 +136,11 @@ test(function() {
 test(function() {
     var request1 = {};
     var request2 = {};
-    var METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', '',
+    var METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS',
                    undefined];
     var MODES = ['same-origin', 'no-cors', 'cors', '', undefined];
     function isSimpleMethod(method) {
-      return ['GET', 'HEAD', 'POST', '', undefined].indexOf(method) != -1;
+      return ['GET', 'HEAD', 'POST', undefined].indexOf(method) != -1;
     };
     function effectiveMethod(method1, method2) {
       return method2 ? method2 : (method1 ? method1 : 'GET');

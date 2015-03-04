@@ -61,14 +61,11 @@ function getContentType(headers) {
   self.sequential_promise_test_done = sequential_promise_test_done;
 })();
 
-// Method names.
-
-// A method name must match token in RFC 2616:
+// token [RFC 2616]
 // "token          = 1*<any CHAR except CTLs or separators>"
-// Fetch API Spec: https://fetch.spec.whatwg.org/#concept-method
-// FIXME: Add ''. https://crbug.com/455162
 // All octets are tested except for those >= 0x80.
-var INVALID_METHOD_NAMES = [
+var INVALID_TOKENS = [
+  '',
   // CTL
   '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07',
   '\x08', '\x09', '\x0a', '\x0b', '\x0c', '\x0d', '\x0e', '\x0f',
@@ -85,6 +82,12 @@ var INVALID_METHOD_NAMES = [
   'test\r', 'test\n', 'test\r\n', 'test\0',
   '\0'.repeat(100000), '<'.repeat(100000), '\r\n'.repeat(50000),
   'x'.repeat(100000) + '\0'];
+
+// Method names.
+
+// A method name must match token in RFC 2616:
+// Fetch API Spec: https://fetch.spec.whatwg.org/#concept-method
+var INVALID_METHOD_NAMES = INVALID_TOKENS;
 
 // Spec: https://fetch.spec.whatwg.org/#forbidden-method
 // "A forbidden method is a method that is a byte case-insensitive match for
@@ -103,8 +106,6 @@ var OTHER_VALID_METHOD_NAMES = [
   '0123456789', 'PATCH', 'MKCOL', 'CUSTOM', 'X-FILES', 'p0sT', 'AZaz',
   'x'.repeat(100000)];
 
-// token [RFC 2616]
-var INVALID_TOKENS = INVALID_METHOD_NAMES.concat(['']);
 var VALID_TOKENS = FORBIDDEN_METHODS
   .concat(TO_BE_NORMALIZED_METHOD_NAMES)
   .concat(OTHER_VALID_METHOD_NAMES);
