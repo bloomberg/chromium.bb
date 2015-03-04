@@ -40,7 +40,10 @@ UtilityThreadImpl::UtilityThreadImpl() : single_process_(false) {
 }
 
 UtilityThreadImpl::UtilityThreadImpl(const std::string& channel_name)
-    : ChildThreadImpl(Options(channel_name, false)),
+    : ChildThreadImpl(Options::Builder()
+                          .InBrowserProcess(true)
+                          .WithChannelName(channel_name)
+                          .Build()),
       single_process_(true) {
   Init();
 }

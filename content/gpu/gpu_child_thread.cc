@@ -45,17 +45,17 @@ bool GpuProcessLogMessageHandler(int severity,
 }
 
 ChildThreadImpl::Options GetOptions() {
-  ChildThreadImpl::Options options;
+  ChildThreadImpl::Options::Builder builder;
 
 #if defined(USE_OZONE)
   IPC::MessageFilter* message_filter = ui::OzonePlatform::GetInstance()
                                            ->GetGpuPlatformSupport()
                                            ->GetMessageFilter();
   if (message_filter)
-    options.startup_filters.push_back(message_filter);
+    builder.AddStartupFilter(message_filter);
 #endif
 
-  return options;
+  return builder.Build();
 }
 
 }  // namespace
@@ -77,7 +77,10 @@ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
 }
 
 GpuChildThread::GpuChildThread(const std::string& channel_id)
-    : ChildThreadImpl(Options(channel_id, false)),
+    : ChildThreadImpl(Options::Builder()
+                          .InBrowserProcess(true)
+                          .WithChannelName(channel_id)
+                          .Build()),
       dead_on_arrival_(false),
       in_browser_process_(true) {
 #if defined(OS_WIN)

@@ -248,18 +248,40 @@ ChildThreadImpl::Options::Options()
       in_browser_process(false) {
 }
 
-ChildThreadImpl::Options::Options(bool mojo)
-    : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessChannelID)),
-      use_mojo_channel(mojo),
-      in_browser_process(true) {
-}
-
-ChildThreadImpl::Options::Options(std::string name, bool mojo)
-    : channel_name(name), use_mojo_channel(mojo), in_browser_process(true) {
-}
-
 ChildThreadImpl::Options::~Options() {
+}
+
+ChildThreadImpl::Options::Builder::Builder() {
+}
+
+ChildThreadImpl::Options::Builder&
+ChildThreadImpl::Options::Builder::InBrowserProcess(bool in_browser_process) {
+  options_.in_browser_process = in_browser_process;
+  return *this;
+}
+
+ChildThreadImpl::Options::Builder&
+ChildThreadImpl::Options::Builder::UseMojoChannel(bool use_mojo_channel) {
+  options_.use_mojo_channel = use_mojo_channel;
+  return *this;
+}
+
+ChildThreadImpl::Options::Builder&
+ChildThreadImpl::Options::Builder::WithChannelName(
+    const std::string& channel_name) {
+  options_.channel_name = channel_name;
+  return *this;
+}
+
+ChildThreadImpl::Options::Builder&
+ChildThreadImpl::Options::Builder::AddStartupFilter(
+    IPC::MessageFilter* filter) {
+  options_.startup_filters.push_back(filter);
+  return *this;
+}
+
+ChildThreadImpl::Options ChildThreadImpl::Options::Builder::Build() {
+  return options_;
 }
 
 ChildThreadImpl::ChildThreadMessageRouter::ChildThreadMessageRouter(
@@ -274,7 +296,7 @@ ChildThreadImpl::ChildThreadImpl()
     : router_(this),
       in_browser_process_(false),
       channel_connected_factory_(this) {
-  Init(Options());
+  Init(Options::Builder().Build());
 }
 
 ChildThreadImpl::ChildThreadImpl(const Options& options)

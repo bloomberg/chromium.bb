@@ -62,17 +62,7 @@ class CONTENT_EXPORT ChildThreadImpl
     : public IPC::Listener,
       virtual public ChildThread {
  public:
-  struct CONTENT_EXPORT Options {
-    Options();
-    explicit Options(bool mojo);
-    Options(std::string name, bool mojo);
-    ~Options();
-
-    std::string channel_name;
-    bool use_mojo_channel;
-    bool in_browser_process;
-    std::vector<IPC::MessageFilter*> startup_filters;
-  };
+  struct CONTENT_EXPORT Options;
 
   // Creates the thread.
   ChildThreadImpl();
@@ -313,6 +303,37 @@ class CONTENT_EXPORT ChildThreadImpl
   base::WeakPtrFactory<ChildThreadImpl> channel_connected_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
+};
+
+struct ChildThreadImpl::Options {
+  ~Options();
+
+  class Builder;
+
+  std::string channel_name;
+  bool use_mojo_channel;
+  bool in_browser_process;
+  std::vector<IPC::MessageFilter*> startup_filters;
+
+ private:
+  Options();
+};
+
+class ChildThreadImpl::Options::Builder {
+ public:
+  Builder();
+
+  Builder& InBrowserProcess(bool in_browser_process);
+  Builder& UseMojoChannel(bool use_mojo_channel);
+  Builder& WithChannelName(const std::string& channel_name);
+  Builder& AddStartupFilter(IPC::MessageFilter* filter);
+
+  Options Build();
+
+ private:
+  struct Options options_;
+
+  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace content
