@@ -1,0 +1,51 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_win, "This only runs on Windows.")
+
+# Runs mc.exe over a list of sources.
+#
+# sources
+#   List of .mc files to process.
+template("message_compiler") {
+  action_name = "${target_name}_mc"
+  source_set_name = target_name
+
+  action_foreach(action_name) {
+    visibility = [ ":$source_set_name" ]
+    script = "//remoting/tools/build/message_compiler.py"
+
+    sources = invoker.sources
+
+    outputs = [
+      "$target_gen_dir/{{source_name_part}}.h",
+      "$target_gen_dir/{{source_name_part}}.rc",
+    ]
+
+    args = [
+      # Where to put the header.
+      "-h",
+      rebase_path(target_gen_dir, root_build_dir),
+
+      # Where to put the .rc file.
+      "-r",
+      rebase_path(target_gen_dir, root_build_dir),
+
+      # Input is Unicode.
+      "-u",
+      "{{source}}",
+    ]
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+  }
+
+  source_set(source_set_name) {
+    sources = get_target_outputs(":$action_name")
+    deps = [
+      ":$action_name",
+    ]
+  }
+}

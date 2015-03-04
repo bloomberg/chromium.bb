@@ -204,6 +204,7 @@
         },  # end of target 'remoting_host'
 
         {
+          # GN version: //remoting/host/native_messaging
           'target_name': 'remoting_native_messaging_base',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -211,18 +212,12 @@
             '../base/base.gyp:base',
           ],
           'sources': [
-            'host/native_messaging/native_messaging_pipe.cc',
-            'host/native_messaging/native_messaging_pipe.h',
-            'host/native_messaging/native_messaging_reader.cc',
-            'host/native_messaging/native_messaging_reader.h',
-            'host/native_messaging/native_messaging_writer.cc',
-            'host/native_messaging/native_messaging_writer.h',
-            'host/native_messaging/pipe_messaging_channel.cc',
-            'host/native_messaging/pipe_messaging_channel.h',
+            '<@(remoting_host_native_messaging_sources)',
           ],
         },  # end of target 'remoting_native_messaging_base'
 
         {
+          # GN version: //remoting/host/setup
           'target_name': 'remoting_host_setup_base',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -235,28 +230,7 @@
             'VERSION=<(version_full)',
           ],
           'sources': [
-            'host/setup/daemon_controller.cc',
-            'host/setup/daemon_controller.h',
-            'host/setup/daemon_controller_delegate_linux.cc',
-            'host/setup/daemon_controller_delegate_linux.h',
-            'host/setup/daemon_controller_delegate_mac.h',
-            'host/setup/daemon_controller_delegate_mac.mm',
-            'host/setup/daemon_controller_delegate_win.cc',
-            'host/setup/daemon_controller_delegate_win.h',
-            'host/setup/me2me_native_messaging_host.cc',
-            'host/setup/me2me_native_messaging_host.h',
-            'host/setup/oauth_client.cc',
-            'host/setup/oauth_client.h',
-            'host/setup/oauth_helper.cc',
-            'host/setup/oauth_helper.h',
-            'host/setup/pin_validator.cc',
-            'host/setup/pin_validator.h',
-            'host/setup/service_client.cc',
-            'host/setup/service_client.h',
-            'host/setup/test_util.cc',
-            'host/setup/test_util.h',
-            'host/setup/win/auth_code_getter.cc',
-            'host/setup/win/auth_code_getter.h',
+            '<@(remoting_host_setup_sources)',
           ],
           'conditions': [
             ['OS=="win"', {

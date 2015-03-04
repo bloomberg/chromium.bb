@@ -27,6 +27,7 @@
       ],
     },  # end of target 'remoting_breakpad_tester'
     {
+      # GN version: //remoting/host:remoting_lib_idl
       'target_name': 'remoting_lib_idl',
       'type': 'static_library',
       'sources': [
@@ -50,6 +51,7 @@
       },
       'rules': [
         {
+          # GN version: //remoting/host:generate_idl
           'rule_name': 'generate_idl',
           'extension': 'templ',
           'outputs': [
@@ -381,6 +383,7 @@
       },
     },  # end of target 'remoting_it2me_native_messaging_host'
     {
+      # GN version: //remoting/host:messages
       'target_name': 'remoting_host_messages',
       'type': 'none',
       'dependencies': [

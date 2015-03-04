@@ -16,6 +16,7 @@ import("//build/config/win/visual_studio_version.gni")
 #   out_dir (optional)
 #       Directory to write the generated files to. Defaults to target_gen_dir.
 #
+#   deps (optional)
 #   visibility (optional)
 
 template("midl") {
@@ -82,6 +83,10 @@ template("midl") {
       idl_target_platform,
       "/Oicf",
     ]
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
   }
 
   source_set(target_name) {

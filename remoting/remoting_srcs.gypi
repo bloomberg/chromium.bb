@@ -4,6 +4,8 @@
 
 {
   'variables': {
+    'daemon_controller_guid': '655bd819-c08c-4b04-80c2-f160739ff6ef',
+    'rdp_desktop_session_guid': '6a7699f0-ee43-43e7-aa30-a6738f9bd470',
     'remoting_base_sources': [
       'base/auto_thread.cc',
       'base/auto_thread.h',
@@ -41,6 +43,8 @@
       'base/util.h',
       'base/vlog_net_log.cc',
       'base/vlog_net_log.h',
+    ],
+    'remoting_codec_sources': [
       'codec/audio_decoder.cc',
       'codec/audio_decoder.h',
       'codec/audio_decoder_opus.cc',

@@ -20,9 +20,9 @@
         # The IDs are not random to avoid rebuilding host when it's not
         # necessary.
         'daemon_controller_clsid':
-            '<!(python -c "import uuid; print uuid.uuid5(uuid.UUID(\'655bd819-c08c-4b04-80c2-f160739ff6ef\'), \'<(version_full)\')")',
+            '<!(python -c "import uuid; print uuid.uuid5(uuid.UUID(\'<(daemon_controller_guid)\'), \'<(version_full)\')")',
         'rdp_desktop_session_clsid':
-            '<!(python -c "import uuid; print uuid.uuid5(uuid.UUID(\'6a7699f0-ee43-43e7-aa30-a6738f9bd470\'), \'<(version_full)\')")',
+            '<!(python -c "import uuid; print uuid.uuid5(uuid.UUID(\'<(rdp_desktop_session_guid)\'), \'<(version_full)\')")',
       }],
     ],
   },
@@ -188,7 +188,7 @@
     },  # end of target 'remoting_resources'
 
     {
-      # GN version: //remoting/base
+      # GN version: //remoting/base and //remoting/codec
       'target_name': 'remoting_base',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -220,6 +220,7 @@
       'hard_dependency': 1,
       'sources': [
         '<@(remoting_base_sources)',
+        '<@(remoting_codec_sources)',
       ],
     },  # end of target 'remoting_base'
 

@@ -5,7 +5,7 @@
 {
    'targets': [
     {
-      # GN version: //ppapi:ppapi_host
+      # GN version: //ppapi/host
       'target_name': 'ppapi_host',
       'type': '<(component)',
       'dependencies': [

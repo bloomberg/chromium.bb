@@ -9,7 +9,7 @@
     'webapp_locale_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/webapp/_locales',
 
     'remoting_locales': [
-      # Note: list duplicated in GN build. See //remoting/resources/BUILD.gn
+      # Note: list duplicated in GN build. See //remoting/remoting_locales.gni
       'ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'en-GB', 'es',
       'es-419', 'et', 'fi', 'fil', 'fr', 'he', 'hi', 'hr', 'hu', 'id',
       'it', 'ja', 'ko', 'lt', 'lv', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT',
