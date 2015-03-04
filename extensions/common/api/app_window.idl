@@ -331,10 +331,10 @@ namespace app.window {
     static void restore();
 
     // Move the window to the position (|left|, |top|).
-    static void moveTo(long left, long top);
+    [deprecated="Use outerBounds."] static void moveTo(long left, long top);
 
     // Resize the window to |width|x|height| pixels in size.
-    static void resizeTo(long width, long height);
+    [deprecated="Use outerBounds."] static void resizeTo(long width, long height);
 
     // Draw attention to the window.
     static void drawAttention();
