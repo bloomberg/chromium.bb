@@ -1424,9 +1424,9 @@ void LayoutObject::showTreeForThis() const
         node()->showTreeForThis();
 }
 
-void LayoutObject::showRenderTreeForThis() const
+void LayoutObject::showLayoutTreeForThis() const
 {
-    showRenderTree(this, 0);
+    showLayoutTree(this, 0);
 }
 
 void LayoutObject::showLineTreeForThis() const
@@ -1458,7 +1458,7 @@ void LayoutObject::showLayoutObject(int printedCharacters) const
     }
 }
 
-void LayoutObject::showRenderTreeAndMark(const LayoutObject* markedObject1, const char* markedLabel1, const LayoutObject* markedObject2, const char* markedLabel2, int depth) const
+void LayoutObject::showLayoutTreeAndMark(const LayoutObject* markedObject1, const char* markedLabel1, const LayoutObject* markedObject2, const char* markedLabel2, int depth) const
 {
     int printedCharacters = 0;
     if (markedObject1 == this && markedLabel1)
@@ -1471,7 +1471,7 @@ void LayoutObject::showRenderTreeAndMark(const LayoutObject* markedObject1, cons
     showLayoutObject(printedCharacters);
 
     for (const LayoutObject* child = slowFirstChild(); child; child = child->nextSibling())
-        child->showRenderTreeAndMark(markedObject1, markedLabel1, markedObject2, markedLabel2, depth + 1);
+        child->showLayoutTreeAndMark(markedObject1, markedLabel1, markedObject2, markedLabel2, depth + 1);
 }
 
 #endif // NDEBUG
@@ -3184,18 +3184,18 @@ void showLineTree(const blink::LayoutObject* object)
         object->showLineTreeForThis();
 }
 
-void showRenderTree(const blink::LayoutObject* object1)
+void showLayoutTree(const blink::LayoutObject* object1)
 {
-    showRenderTree(object1, 0);
+    showLayoutTree(object1, 0);
 }
 
-void showRenderTree(const blink::LayoutObject* object1, const blink::LayoutObject* object2)
+void showLayoutTree(const blink::LayoutObject* object1, const blink::LayoutObject* object2)
 {
     if (object1) {
         const blink::LayoutObject* root = object1;
         while (root->parent())
             root = root->parent();
-        root->showRenderTreeAndMark(object1, "*", object2, "-", 0);
+        root->showLayoutTreeAndMark(object1, "*", object2, "-", 0);
     }
 }
 

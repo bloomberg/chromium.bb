@@ -221,7 +221,7 @@ public:
     {
 #ifndef NDEBUG
         if (needsLayout())
-            showRenderTreeForThis();
+            showLayoutTreeForThis();
 #endif
         ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
     }
@@ -236,7 +236,7 @@ public:
     {
 #ifndef NDEBUG
         if (paintInvalidationStateIsDirty()) {
-            showRenderTreeForThis();
+            showLayoutTreeForThis();
             ASSERT_NOT_REACHED();
         }
 #endif
@@ -312,14 +312,14 @@ private:
 public:
 #ifndef NDEBUG
     void showTreeForThis() const;
-    void showRenderTreeForThis() const;
+    void showLayoutTreeForThis() const;
     void showLineTreeForThis() const;
 
     void showLayoutObject() const;
     // We don't make printedCharacters an optional parameter so that
     // showLayoutObject can be called from gdb easily.
     void showLayoutObject(int printedCharacters) const;
-    void showRenderTreeAndMark(const LayoutObject* markedObject1 = 0, const char* markedLabel1 = 0, const LayoutObject* markedObject2 = 0, const char* markedLabel2 = 0, int depth = 0) const;
+    void showLayoutTreeAndMark(const LayoutObject* markedObject1 = 0, const char* markedLabel1 = 0, const LayoutObject* markedObject2 = 0, const char* markedLabel2 = 0, int depth = 0) const;
 #endif
 
     static LayoutObject* createObject(Element*, const LayoutStyle&);
@@ -1636,10 +1636,10 @@ inline double adjustScrollForAbsoluteZoom(double value, LayoutObject& renderer)
 // Outside the WebCore namespace for ease of invocation from gdb.
 void showTree(const blink::LayoutObject*);
 void showLineTree(const blink::LayoutObject*);
-void showRenderTree(const blink::LayoutObject* object1);
-// We don't make object2 an optional parameter so that showRenderTree
+void showLayoutTree(const blink::LayoutObject* object1);
+// We don't make object2 an optional parameter so that showLayoutTree
 // can be called from gdb easily.
-void showRenderTree(const blink::LayoutObject* object1, const blink::LayoutObject* object2);
+void showLayoutTree(const blink::LayoutObject* object1, const blink::LayoutObject* object2);
 
 #endif
 
