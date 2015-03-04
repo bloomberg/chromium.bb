@@ -59,9 +59,10 @@ source_set("test_support") {
   }
 }
 
-# TODO(GYP) remoting_unittests on Windows. Currently this fails with a
-# duplicate resource error on linking.
-if (!is_win) {
+# TODO(GYP) remoting_unittests on Mac/Windows. Currently this fails with a
+# duplicate resource error on linking on Windows. Just needs to be checked on
+# Mac.
+if (!is_win && !is_mac) {
   test("remoting_unittests") {
     # Sources not included in one of the more specific unit_tests deps.
     sources = [
