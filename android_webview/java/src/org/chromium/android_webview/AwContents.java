@@ -845,7 +845,7 @@ public class AwContents implements SmartClipProvider,
 
     private void installWebContentsObserver() {
         if (mWebContentsObserver != null) {
-            mWebContentsObserver.detachFromWebContents();
+            mWebContentsObserver.destroy();
         }
         mWebContentsObserver = new AwWebContentsObserver(mWebContents, mContentsClient);
     }
@@ -956,7 +956,7 @@ public class AwContents implements SmartClipProvider,
         if (mCleanupReference != null) {
             assert mNativeAwContents != 0;
 
-            mWebContentsObserver.detachFromWebContents();
+            mWebContentsObserver.destroy();
             mWebContentsObserver = null;
             mContentViewCore.destroy();
             mContentViewCore = null;

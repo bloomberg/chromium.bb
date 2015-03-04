@@ -4,11 +4,11 @@
 
 package org.chromium.content.browser.test.util;
 
-import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 
 /**
  * The default WebContentsObserver used by ContentView tests. The below callbacks can be

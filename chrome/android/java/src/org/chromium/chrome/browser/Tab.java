@@ -49,10 +49,10 @@ import org.chromium.components.navigation_interception.InterceptNavigationDelega
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.TopControlsState;
 import org.chromium.printing.PrintManagerDelegateImpl;
@@ -1874,11 +1874,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mWebContentsDelegate = null;
 
         if (mWebContentsObserver != null) {
-            mWebContentsObserver.detachFromWebContents();
+            mWebContentsObserver.destroy();
             mWebContentsObserver = null;
         }
 
-        mVoiceSearchTabHelper = null;
+        if (mVoiceSearchTabHelper != null) {
+            mVoiceSearchTabHelper.destroy();
+            mVoiceSearchTabHelper = null;
+        }
 
         assert mNativeTabAndroid != 0;
         nativeDestroyWebContents(mNativeTabAndroid, deleteNativeWebContents);

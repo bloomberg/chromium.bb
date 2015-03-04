@@ -4,8 +4,8 @@
 
 package org.chromium.android_webview;
 
-import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.NetError;
 
 /**

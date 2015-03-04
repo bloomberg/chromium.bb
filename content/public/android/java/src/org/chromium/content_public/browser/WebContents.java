@@ -229,4 +229,18 @@ public interface WebContents {
      * @return Whether the initial empty page has been accessed by a script.
      */
     public boolean hasAccessedInitialDocument();
+
+    /**
+     * Add an observer to the WebContents
+     *
+     * @param observer The observer to add.
+     */
+    void addObserver(WebContentsObserver observer);
+
+    /**
+     * Remove an observer from the WebContents
+     *
+     * @param observer The observer to remove.
+     */
+    void removeObserver(WebContentsObserver observer);
 }

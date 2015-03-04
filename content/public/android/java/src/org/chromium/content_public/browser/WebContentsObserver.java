@@ -2,53 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content_public.browser;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-import org.chromium.base.ThreadUtils;
-import org.chromium.content_public.browser.WebContents;
+import java.lang.ref.WeakReference;
 
 /**
  * This class receives callbacks that act as hooks for various a native web contents events related
  * to loading a url. A single web contents can have multiple WebContentObservers.
  */
-@JNINamespace("content")
 public abstract class WebContentsObserver {
-    private long mNativeWebContentsObserverAndroid;
+    // TODO(jdduke): Remove the destroy method and hold observer embedders
+    // responsible for explicit observer detachment.
+    // Using a weak reference avoids cycles that might prevent GC of WebView's WebContents.
+    private WeakReference<WebContents> mWebContents;
 
     public WebContentsObserver(WebContents webContents) {
-        ThreadUtils.assertOnUiThread();
-        mNativeWebContentsObserverAndroid = nativeInit(webContents);
+        mWebContents = new WeakReference<WebContents>(webContents);
+        webContents.addObserver(this);
     }
 
     /**
      * Called when the RenderView of the current RenderViewHost is ready, e.g. because we recreated
      * it after a crash.
      */
-    @CalledByNative
-    public void renderViewReady() {
-    }
+    public void renderViewReady() {}
 
-    @CalledByNative
-    public void renderProcessGone(boolean wasOomProtected) {
-    }
+    public void renderProcessGone(boolean wasOomProtected) {}
 
     /**
      * Called when the a page starts loading.
      * @param url The validated url for the loading page.
      */
-    @CalledByNative
-    public void didStartLoading(String url) {
-    }
+    public void didStartLoading(String url) {}
 
     /**
      * Called when the a page finishes loading.
      * @param url The validated url for the page.
      */
-    @CalledByNative
-    public void didStopLoading(String url) {
-    }
+    public void didStopLoading(String url) {}
 
     /**
      * Called when an error occurs while loading a page and/or the page fails to load.
@@ -56,10 +47,8 @@ public abstract class WebContentsObserver {
      * @param description The description for the error.
      * @param failingUrl The url that was loading when the error occurred.
      */
-    @CalledByNative
-    public void didFailLoad(boolean isProvisionalLoad,
-            boolean isMainFrame, int errorCode, String description, String failingUrl) {
-    }
+    public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+            String description, String failingUrl) {}
 
     /**
      * Called when the main frame of the page has committed.
@@ -71,8 +60,7 @@ public abstract class WebContentsObserver {
      *                             document (for example scrolling to a named anchor or PopState).
      */
     public void didNavigateMainFrame(String url, String baseUrl,
-            boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
-    }
+            boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {}
 
     /**
      * Called when the main frame of the page has committed.
@@ -83,7 +71,6 @@ public abstract class WebContentsObserver {
      *                             document (for example scrolling to a named anchor or PopState).
      * @param statusCode The HTTP status code of the navigation.
      */
-    @CalledByNative
     public void didNavigateMainFrame(String url, String baseUrl,
             boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
         didNavigateMainFrame(url, baseUrl, isNavigationToDifferentPage, isFragmentNavigation);
@@ -92,9 +79,7 @@ public abstract class WebContentsObserver {
     /**
      * Called when the page had painted something non-empty.
      */
-    @CalledByNative
-    public void didFirstVisuallyNonEmptyPaint() {
-    }
+    public void didFirstVisuallyNonEmptyPaint() {}
 
     /**
      * Similar to didNavigateMainFrame but also called on subframe navigations.
@@ -102,16 +87,12 @@ public abstract class WebContentsObserver {
      * @param baseUrl The validated base url for the page.
      * @param isReload True if this navigation is a reload.
      */
-    @CalledByNative
-    public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
-    }
+    public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {}
 
     /**
      * Called once the window.document object of the main frame was created.
      */
-    @CalledByNative
-    public void documentAvailableInMainFrame() {
-    }
+    public void documentAvailableInMainFrame() {}
 
     /**
      * Notifies that a load is started for a given frame.
@@ -123,14 +104,8 @@ public abstract class WebContentsObserver {
      * @param isErrorPage Whether this is navigating to an error page.
      * @param isIframeSrcdoc Whether this is navigating to about:srcdoc.
      */
-    @CalledByNative
-    public void didStartProvisionalLoadForFrame(
-            long frameId,
-            long parentFrameId,
-            boolean isMainFrame,
-            String validatedUrl,
-            boolean isErrorPage,
-            boolean isIframeSrcdoc) {
+    public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
+            boolean isMainFrame, String validatedUrl, boolean isErrorPage, boolean isIframeSrcdoc) {
     }
 
     /**
@@ -142,11 +117,8 @@ public abstract class WebContentsObserver {
      * @param transitionType The transition type as defined in
      *                      {@link org.chromium.ui.base.PageTransition} for the load.
      */
-    @CalledByNative
     public void didCommitProvisionalLoadForFrame(
-            long frameId, boolean isMainFrame, String url, int transitionType) {
-
-    }
+            long frameId, boolean isMainFrame, String url, int transitionType) {}
 
     /**
      * Notifies that a load has finished for a given frame.
@@ -154,66 +126,51 @@ public abstract class WebContentsObserver {
      * @param validatedUrl The validated URL that is being navigated to.
      * @param isMainFrame Whether the load is happening for the main frame.
      */
-    @CalledByNative
-    public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
-    }
+    public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {}
 
     /**
      * Notifies that the document has finished loading for the given frame.
      * @param frameId A positive, non-zero integer identifying the navigating frame.
      */
-    @CalledByNative
-    public void documentLoadedInFrame(long frameId) {
-    }
+    public void documentLoadedInFrame(long frameId) {}
 
     /**
      * Notifies that a navigation entry has been committed.
      */
-    @CalledByNative
-    public void navigationEntryCommitted() {
-    }
+    public void navigationEntryCommitted() {}
 
     /**
      * Called when an interstitial page gets attached to the tab content.
      */
-    @CalledByNative
-    public void didAttachInterstitialPage() {
-    }
+    public void didAttachInterstitialPage() {}
 
     /**
      * Called when an interstitial page gets detached from the tab content.
      */
-    @CalledByNative
-    public void didDetachInterstitialPage() {
-    }
+    public void didDetachInterstitialPage() {}
 
     /**
      * Called when the theme color was changed.
      * @param color the new color in ARGB format
      */
-    @CalledByNative
-    public void didChangeThemeColor(int color) {
-    }
+    public void didChangeThemeColor(int color) {}
 
     /**
      * Called when we started navigation to the pending entry.
      * @param url        The URL that we are navigating to.
      */
-    @CalledByNative
-    public void didStartNavigationToPendingEntry(String url) {
-    }
+    public void didStartNavigationToPendingEntry(String url) {}
 
     /**
-     * Destroy the corresponding native object.
+     * Stop observing the web contents and clean up associated references.
      */
-    @CalledByNative
-    public void detachFromWebContents() {
-        if (mNativeWebContentsObserverAndroid != 0) {
-            nativeDestroy(mNativeWebContentsObserverAndroid);
-            mNativeWebContentsObserverAndroid = 0;
-        }
+    public void destroy() {
+        if (mWebContents == null) return;
+        final WebContents webContents = mWebContents.get();
+        mWebContents = null;
+        if (webContents == null) return;
+        webContents.removeObserver(this);
     }
 
-    private native long nativeInit(WebContents webContents);
-    private native void nativeDestroy(long nativeWebContentsObserverAndroid);
+    protected WebContentsObserver() {}
 }

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_WEB_CONTENTS_OBSERVER_ANDROID_H_
-#define CONTENT_BROWSER_ANDROID_WEB_CONTENTS_OBSERVER_ANDROID_H_
+#ifndef CONTENT_BROWSER_ANDROID_WEB_CONTENTS_OBSERVER_PROXY_H_
+#define CONTENT_BROWSER_ANDROID_WEB_CONTENTS_OBSERVER_PROXY_H_
 
 #include <jni.h>
 
@@ -22,12 +22,10 @@ class WebContents;
 
 // Extends WebContentsObserver for providing a public Java API for some of the
 // the calls it receives.
-class WebContentsObserverAndroid : public WebContentsObserver {
+class WebContentsObserverProxy : public WebContentsObserver {
  public:
-  WebContentsObserverAndroid(JNIEnv* env,
-                             jobject obj,
-                             WebContents* web_contents);
-  ~WebContentsObserverAndroid() override;
+  WebContentsObserverProxy(JNIEnv* env, jobject obj, WebContents* web_contents);
+  ~WebContentsObserverProxy() override;
 
   void Destroy(JNIEnv* env, jobject obj);
 
@@ -80,10 +78,10 @@ class WebContentsObserverAndroid : public WebContentsObserver {
 
   JavaObjectWeakGlobalRef weak_java_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsObserverAndroid);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsObserverProxy);
 };
 
-bool RegisterWebContentsObserverAndroid(JNIEnv* env);
+bool RegisterWebContentsObserverProxy(JNIEnv* env);
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_WEB_CONTENTS_OBSERVER_ANDROID_H_
+#endif  // CONTENT_BROWSER_ANDROID_WEB_CONTENTS_OBSERVER_PROXY_H_

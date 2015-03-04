@@ -77,6 +77,7 @@ import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -86,6 +87,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.lang.annotation.Annotation;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -274,6 +276,77 @@ public class ContentViewCore
                             position.mX, position.mY, position.mWidth, position.mHeight);
                 }
             }
+        }
+    }
+
+    /**
+     * A {@link WebContentsObserver} that listens to frame navigation events.
+     */
+    private static class ContentViewWebContentsObserver extends WebContentsObserver {
+        // Using a weak reference avoids cycles that might prevent GC of WebView's WebContents.
+        private final WeakReference<ContentViewCore> mWeakContentViewCore;
+
+        ContentViewWebContentsObserver(ContentViewCore contentViewCore) {
+            super(contentViewCore.getWebContents());
+            mWeakContentViewCore = new WeakReference<ContentViewCore>(contentViewCore);
+        }
+
+        @Override
+        public void didStartLoading(String url) {
+            ContentViewCore contentViewCore = mWeakContentViewCore.get();
+            if (contentViewCore == null) return;
+            contentViewCore.mAccessibilityInjector.onPageLoadStarted();
+        }
+
+        @Override
+        public void didStopLoading(String url) {
+            ContentViewCore contentViewCore = mWeakContentViewCore.get();
+            if (contentViewCore == null) return;
+            contentViewCore.mAccessibilityInjector.onPageLoadStopped();
+        }
+
+        @Override
+        public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+                String description, String failingUrl) {
+            // Navigation that fails the provisional load will have the strong binding removed
+            // here. One for which the provisional load is commited will have the strong binding
+            // removed in navigationEntryCommitted() below.
+            if (isProvisionalLoad) determinedProcessVisibility();
+        }
+
+        @Override
+        public void didNavigateMainFrame(String url, String baseUrl,
+                boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
+            if (!isNavigationToDifferentPage) return;
+            resetPopupsAndInput();
+        }
+
+        @Override
+        public void renderProcessGone(boolean wasOomProtected) {
+            resetPopupsAndInput();
+        }
+
+        @Override
+        public void navigationEntryCommitted() {
+            determinedProcessVisibility();
+        }
+
+        private void resetPopupsAndInput() {
+            ContentViewCore contentViewCore = mWeakContentViewCore.get();
+            if (contentViewCore == null) return;
+            contentViewCore.mIsMobileOptimizedHint = false;
+            contentViewCore.hidePopupsAndClearSelection();
+            contentViewCore.resetScrollInProgress();
+        }
+
+        private void determinedProcessVisibility() {
+            ContentViewCore contentViewCore = mWeakContentViewCore.get();
+            if (contentViewCore == null) return;
+            // Signal to the process management logic that we can now rely on the process
+            // visibility signal for binding management. Before the navigation commits, its
+            // renderer is considered background even if the pending navigation happens in the
+            // foreground renderer.
+            ChildProcessLauncher.determinedVisibility(contentViewCore.getCurrentRenderProcessId());
         }
     }
 
@@ -747,56 +820,7 @@ public class ContentViewCore
 
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
 
-        mWebContentsObserver = new WebContentsObserver(mWebContents) {
-            @Override
-            public void didStartLoading(String url) {
-                mAccessibilityInjector.onPageLoadStarted();
-            }
-
-            @Override
-            public void didStopLoading(String url) {
-                mAccessibilityInjector.onPageLoadStopped();
-            }
-
-            @Override
-            public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
-                    String description, String failingUrl) {
-                // Navigation that fails the provisional load will have the strong binding removed
-                // here. One for which the provisional load is commited will have the strong binding
-                // removed in navigationEntryCommitted() below.
-                if (isProvisionalLoad) determinedProcessVisibility();
-            }
-
-            @Override
-            public void didNavigateMainFrame(String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
-                if (!isNavigationToDifferentPage) return;
-                mIsMobileOptimizedHint = false;
-                hidePopupsAndClearSelection();
-                resetScrollInProgress();
-            }
-
-            @Override
-            public void renderProcessGone(boolean wasOomProtected) {
-                hidePopupsAndClearSelection();
-                resetScrollInProgress();
-                // No need to reset gesture detection as the detector will have
-                // been destroyed in the RenderWidgetHostView.
-            }
-
-            @Override
-            public void navigationEntryCommitted() {
-                determinedProcessVisibility();
-            }
-
-            private void determinedProcessVisibility() {
-                // Signal to the process management logic that we can now rely on the process
-                // visibility signal for binding management. Before the navigation commits, its
-                // renderer is considered background even if the pending navigation happens in the
-                // foreground renderer.
-                ChildProcessLauncher.determinedVisibility(getCurrentRenderProcessId());
-            }
-        };
+        mWebContentsObserver = new ContentViewWebContentsObserver(this);
     }
 
     @VisibleForTesting
@@ -946,7 +970,7 @@ public class ContentViewCore
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
-        mWebContentsObserver.detachFromWebContents();
+        mWebContentsObserver.destroy();
         mWebContentsObserver = null;
         setSmartClipDataListener(null);
         setZoomControlsDelegate(null);

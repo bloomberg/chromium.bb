@@ -37,8 +37,8 @@ import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
-import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -273,7 +273,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             @Override
             public void onDismiss(DialogInterface dialog) {
                 assert mNativeWebsiteSettingsPopup != 0;
-                webContentsObserver.detachFromWebContents();
+                webContentsObserver.destroy();
                 nativeDestroy(mNativeWebsiteSettingsPopup);
             }
         });

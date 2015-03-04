@@ -10,6 +10,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 

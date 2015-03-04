@@ -10,6 +10,7 @@ import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationTransitionDelegate;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 
 /**
  * The WebContentsImpl Java wrapper to allow communicating with the native WebContentsImpl
@@ -22,6 +23,9 @@ import org.chromium.content_public.browser.WebContents;
 
     private long mNativeWebContentsAndroid;
     private NavigationController mNavigationController;
+
+    // Lazily created proxy observer for handling all Java-based WebContentsObservers.
+    private WebContentsObserverProxy mObserverProxy;
 
     private NavigationTransitionDelegate mNavigationTransitionDelegate = null;
 
@@ -41,6 +45,10 @@ import org.chromium.content_public.browser.WebContents;
     private void clearNativePtr() {
         mNativeWebContentsAndroid = 0;
         mNavigationController = null;
+        if (mObserverProxy != null) {
+            mObserverProxy.destroy();
+            mObserverProxy = null;
+        }
     }
 
     @CalledByNative
@@ -310,6 +318,23 @@ import org.chromium.content_public.browser.WebContents;
     private static void onEvaluateJavaScriptResult(
             String jsonResult, JavaScriptCallback callback) {
         callback.handleJavaScriptResult(jsonResult);
+    }
+
+    @Override
+    public void addObserver(WebContentsObserver observer) {
+        assert mNativeWebContentsAndroid != 0;
+        if (mObserverProxy == null) mObserverProxy = new WebContentsObserverProxy(this);
+        mObserverProxy.addObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(WebContentsObserver observer) {
+        if (mObserverProxy == null) return;
+        mObserverProxy.removeObserver(observer);
+        if (!mObserverProxy.hasObservers()) {
+            mObserverProxy.destroy();
+            mObserverProxy = null;
+        }
     }
 
     // This is static to avoid exposing a public destroy method on the native side of this class.
