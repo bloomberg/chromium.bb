@@ -15,7 +15,7 @@ class InjectionHost {
   InjectionHost(const HostID& host_id);
   virtual ~InjectionHost();
 
-  virtual const std::string& GetContentSecurityPolicy() const = 0;
+  virtual std::string GetContentSecurityPolicy() const = 0;
 
   // The base url for the host.
   virtual const GURL& url() const = 0;
@@ -35,6 +35,7 @@ class InjectionHost {
   virtual bool ShouldNotifyBrowserOfInjection() const = 0;
 
   const HostID& id() const { return id_; }
+
  private:
   // The ID of the host.
   HostID id_;

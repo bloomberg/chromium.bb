@@ -56,14 +56,15 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Looks up the script injection associated with |script_id| and |extension|
-  // in the context of the given |web_frame|, |tab_id|, and |url|.
+  // Looks up the script injection associated with |script_id| and
+  // |extension_id| in the context of the given |web_frame|, |tab_id|,
+  // and |url|.
   scoped_ptr<ScriptInjection> GetInjectionForDeclarativeScript(
       int script_id,
       blink::WebFrame* web_frame,
       int tab_id,
       const GURL& url,
-      const Extension* extension);
+      const std::string& extension_id);
 
   // Append all injections from |static_scripts| and each of
   // |programmatic_scripts_| to |injections|.

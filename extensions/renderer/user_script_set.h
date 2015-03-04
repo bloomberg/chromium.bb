@@ -24,7 +24,6 @@ class WebFrame;
 }
 
 namespace extensions {
-class Extension;
 class ExtensionSet;
 class ScriptInjection;
 
@@ -64,8 +63,7 @@ class UserScriptSet {
       blink::WebFrame* web_frame,
       int tab_id,
       UserScript::RunLocation run_location,
-      const GURL& document_url,
-      const Extension* extension);
+      const GURL& document_url);
 
   // Updates scripts given the shared memory region containing user scripts.
   // Returns true if the scripts were successfully updated.
@@ -83,7 +81,6 @@ class UserScriptSet {
       int tab_id,
       UserScript::RunLocation run_location,
       const GURL& document_url,
-      const Extension* extension,
       bool is_declarative);
 
   // Shared memory containing raw script data.

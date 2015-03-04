@@ -53,20 +53,6 @@ UserScript::RunLocation NextRunLocation(UserScript::RunLocation run_location) {
   return UserScript::RUN_LOCATION_LAST;
 }
 
-
-// TODO(hanxi): let ScriptInjection own an InjectionHost to avoid constructing
-// an ExtensionInjectionHost many times.
-// Note: the ScriptInjection should be able to know when the backing extension
-// is removed.
-scoped_ptr<ExtensionInjectionHost> GetExtensionInjectionHost(
-    const std::string& extension_id, const ExtensionSet* extensions) {
-  const Extension* extension = extensions->GetByID(extension_id);
-  if (!extension)
-    return scoped_ptr<ExtensionInjectionHost>();
-  return scoped_ptr<ExtensionInjectionHost>(
-      new ExtensionInjectionHost(extension));
-}
-
 }  // namespace
 
 class ScriptInjectionManager::RVOHelper : public content::RenderViewObserver {
@@ -256,6 +242,23 @@ void ScriptInjectionManager::OnRenderViewCreated(
   rvo_helpers_.push_back(new RVOHelper(render_view, this));
 }
 
+void ScriptInjectionManager::OnExtensionUnloaded(
+    const std::string& extension_id) {
+  for (auto iter = pending_injections_.begin();
+      iter != pending_injections_.end();) {
+    if ((*iter)->host_id().id() == extension_id) {
+      (*iter)->OnHostRemoved();
+      iter = pending_injections_.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+  // If we are currently injection scripts, we need to make a note that this
+  // extension is "dirty" (invalidated).
+  if (injecting_scripts_)
+    invalidated_while_injecting_.insert(extension_id);
+}
+
 void ScriptInjectionManager::OnUserScriptsUpdated(
     const std::set<std::string>& changed_extensions,
     const std::vector<UserScript*>& scripts) {
@@ -392,15 +395,12 @@ void ScriptInjectionManager::InjectScripts(
     if (!IsFrameValid(frame))
       break;
 
-    const std::string& extension_id = (*iter)->host_id().id();
-    scoped_ptr<ExtensionInjectionHost> extension_injection_host =
-        GetExtensionInjectionHost(extension_id, extensions_);
-    // Try to inject the script if the extension is not "dirty" (invalidated by
-    // an update). If the injection does not finish (i.e., it is waiting for
-    // permission), add it to the list of pending injections.
-    if (invalidated_while_injecting_.count(extension_id) == 0 &&
+    // Try to inject the script if the injection host is not "dirty"
+    // (invalidated by an update). If the injection does not finish
+    // (i.e., it is waiting for permission), add it to the list of pending
+    // injections.
+    if (invalidated_while_injecting_.count((*iter)->host_id().id()) == 0 &&
         !(*iter)->TryToInject(run_location,
-                              extension_injection_host.get(),
                               &scripts_run_info)) {
       pending_injections_.insert(pending_injections_.begin(), *iter);
       iter = frame_injections.weak_erase(iter);
@@ -433,23 +433,25 @@ void ScriptInjectionManager::HandleExecuteCode(
     return;
   }
 
+  scoped_ptr<const ExtensionInjectionHost> extension_injection_host =
+      ExtensionInjectionHost::Create(params.extension_id, extensions_);
+
+  if (!extension_injection_host)
+    return;
+
   scoped_ptr<ScriptInjection> injection(new ScriptInjection(
       scoped_ptr<ScriptInjector>(
           new ProgrammaticScriptInjector(params, main_frame)),
       main_frame,
-      HostID(HostID::EXTENSIONS, params.extension_id),
+      extension_injection_host.Pass(),
       static_cast<UserScript::RunLocation>(params.run_at),
       ExtensionHelper::Get(render_view)->tab_id()));
 
   ScriptsRunInfo scripts_run_info;
   FrameStatusMap::const_iterator iter = frame_statuses_.find(main_frame);
 
-  scoped_ptr<ExtensionInjectionHost> extension_injection_host =
-      GetExtensionInjectionHost(injection->host_id().id(), extensions_);
-
   if (!injection->TryToInject(
           iter == frame_statuses_.end() ? UserScript::UNDEFINED : iter->second,
-          extension_injection_host.get(),
           &scripts_run_info)) {
     pending_injections_.push_back(injection.release());
   }
@@ -461,9 +463,6 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
     const ExtensionId& extension_id,
     int script_id,
     const GURL& url) {
-  scoped_ptr<ExtensionInjectionHost> extension_injection_host =
-      GetExtensionInjectionHost(extension_id, extensions_);
-  const Extension* extension = extensions_->GetByID(extension_id);
   // TODO(dcheng): This function signature should really be a WebLocalFrame,
   // rather than trying to coerce it here.
   scoped_ptr<ScriptInjection> injection =
@@ -472,12 +471,11 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
           web_frame->toWebLocalFrame(),
           tab_id,
           url,
-          extension);
-  if (injection.get()) {
+          extension_id);
+  if (injection) {
     ScriptsRunInfo scripts_run_info;
     // TODO(markdittmer): Use return value of TryToInject for error handling.
     injection->TryToInject(UserScript::BROWSER_DRIVEN,
-                           extension_injection_host.get(),
                            &scripts_run_info);
     scripts_run_info.LogRun(web_frame, UserScript::BROWSER_DRIVEN);
   }
@@ -487,8 +485,10 @@ void ScriptInjectionManager::HandlePermitScriptInjection(int64 request_id) {
   ScopedVector<ScriptInjection>::iterator iter =
       pending_injections_.begin();
   for (; iter != pending_injections_.end(); ++iter) {
-    if ((*iter)->request_id() == request_id)
+    if ((*iter)->request_id() == request_id) {
+      DCHECK((*iter)->host_id().type() == HostID::EXTENSIONS);
       break;
+    }
   }
   if (iter == pending_injections_.end())
     return;
@@ -502,10 +502,7 @@ void ScriptInjectionManager::HandlePermitScriptInjection(int64 request_id) {
   pending_injections_.weak_erase(iter);
 
   ScriptsRunInfo scripts_run_info;
-  scoped_ptr<ExtensionInjectionHost> extension_injection_host =
-      GetExtensionInjectionHost(injection->host_id().id(), extensions_);
-  if (injection->OnPermissionGranted(extension_injection_host.get(),
-                                     &scripts_run_info)) {
+  if (injection->OnPermissionGranted(&scripts_run_info)) {
     scripts_run_info.LogRun(injection->web_frame(), UserScript::RUN_DEFERRED);
   }
 }

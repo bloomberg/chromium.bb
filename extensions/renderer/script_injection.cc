@@ -108,16 +108,17 @@ void ScriptInjection::RemoveIsolatedWorld(const std::string& host_id) {
 ScriptInjection::ScriptInjection(
     scoped_ptr<ScriptInjector> injector,
     blink::WebLocalFrame* web_frame,
-    const HostID& host_id,
+    scoped_ptr<const InjectionHost> injection_host,
     UserScript::RunLocation run_location,
     int tab_id)
     : injector_(injector.Pass()),
       web_frame_(web_frame),
-      host_id_(host_id),
+      injection_host_(injection_host.Pass()),
       run_location_(run_location),
       tab_id_(tab_id),
       request_id_(kInvalidRequestId),
       complete_(false) {
+  CHECK(injection_host_.get());
 }
 
 ScriptInjection::~ScriptInjection() {
@@ -126,7 +127,6 @@ ScriptInjection::~ScriptInjection() {
 }
 
 bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
-                                  const InjectionHost* injection_host,
                                   ScriptsRunInfo* scripts_run_info) {
   if (current_location < run_location_)
     return false;  // Wait for the right location.
@@ -134,13 +134,14 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
   if (request_id_ != kInvalidRequestId)
     return false;  // We're waiting for permission right now, try again later.
 
-  if (!injection_host) {
+  if (!injection_host_) {
     NotifyWillNotInject(ScriptInjector::EXTENSION_REMOVED);
     return true;  // We're done.
   }
 
-  switch (injector_->CanExecuteOnFrame(injection_host, web_frame_, tab_id_,
-                                       web_frame_->top()->document().url())) {
+  switch (injector_->CanExecuteOnFrame(
+      injection_host_.get(), web_frame_, tab_id_,
+      web_frame_->top()->document().url())) {
     case PermissionsData::ACCESS_DENIED:
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return true;  // We're done.
@@ -148,7 +149,7 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
       SendInjectionMessage(true /* request permission */);
       return false;  // Wait around for permission.
     case PermissionsData::ACCESS_ALLOWED:
-      Inject(injection_host, scripts_run_info);
+      Inject(scripts_run_info);
       return true;  // We're done!
   }
 
@@ -156,15 +157,18 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
   return false;
 }
 
-bool ScriptInjection::OnPermissionGranted(const InjectionHost* injection_host,
-                                          ScriptsRunInfo* scripts_run_info) {
-  if (!injection_host) {
+bool ScriptInjection::OnPermissionGranted(ScriptsRunInfo* scripts_run_info) {
+  if (!injection_host_) {
     NotifyWillNotInject(ScriptInjector::EXTENSION_REMOVED);
     return false;
   }
 
-  Inject(injection_host, scripts_run_info);
+  Inject(scripts_run_info);
   return true;
+}
+
+void ScriptInjection::OnHostRemoved() {
+  injection_host_.reset(nullptr);
 }
 
 void ScriptInjection::SendInjectionMessage(bool request_permission) {
@@ -176,7 +180,7 @@ void ScriptInjection::SendInjectionMessage(bool request_permission) {
   request_id_ = request_permission ? g_next_pending_id++ : kInvalidRequestId;
   render_view->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
       render_view->GetRoutingID(),
-      host_id_.id(),
+      host_id().id(),
       injector_->script_type(),
       request_id_));
 }
@@ -187,13 +191,12 @@ void ScriptInjection::NotifyWillNotInject(
   injector_->OnWillNotInject(reason);
 }
 
-void ScriptInjection::Inject(const InjectionHost* injection_host,
-                             ScriptsRunInfo* scripts_run_info) {
-  DCHECK(injection_host);
+void ScriptInjection::Inject(ScriptsRunInfo* scripts_run_info) {
+  DCHECK(injection_host_);
   DCHECK(scripts_run_info);
   DCHECK(!complete_);
 
-  if (injection_host->ShouldNotifyBrowserOfInjection())
+  if (injection_host_->ShouldNotifyBrowserOfInjection())
     SendInjectionMessage(false /* don't request permission */);
 
   std::vector<blink::WebFrame*> frame_vector;
@@ -226,13 +229,14 @@ void ScriptInjection::Inject(const InjectionHost* injection_host,
     // Note: we don't consider ACCESS_WITHHELD because there is nowhere to
     // surface a request for a child frame.
     // TODO(rdevlin.cronin): We should ask for permission somehow.
-    if (injector_->CanExecuteOnFrame(injection_host, frame, tab_id_, top_url) ==
-        PermissionsData::ACCESS_DENIED) {
+    if (injector_->CanExecuteOnFrame(
+        injection_host_.get(), frame, tab_id_, top_url) ==
+            PermissionsData::ACCESS_DENIED) {
       DCHECK(frame->parent());
       continue;
     }
     if (inject_js)
-      InjectJs(injection_host, frame, execution_results.get());
+      InjectJs(frame, execution_results.get());
     if (inject_css)
       InjectCss(frame);
   }
@@ -245,20 +249,20 @@ void ScriptInjection::Inject(const InjectionHost* injection_host,
                                  run_location_);
 }
 
-void ScriptInjection::InjectJs(const InjectionHost* injection_host,
-                               blink::WebLocalFrame* frame,
+void ScriptInjection::InjectJs(blink::WebLocalFrame* frame,
                                base::ListValue* execution_results) {
   std::vector<blink::WebScriptSource> sources =
       injector_->GetJsSources(run_location_);
   bool in_main_world = injector_->ShouldExecuteInMainWorld();
   int world_id = in_main_world
                      ? DOMActivityLogger::kMainWorldId
-                     : GetIsolatedWorldIdForInstance(injection_host, frame);
+                     : GetIsolatedWorldIdForInstance(injection_host_.get(),
+                                                     frame);
   bool expects_results = injector_->ExpectsResults();
 
   base::ElapsedTimer exec_timer;
-  if (injection_host->id().type() == HostID::EXTENSIONS)
-    DOMActivityLogger::AttachToWorld(world_id, injection_host->id().id());
+  if (injection_host_->id().type() == HostID::EXTENSIONS)
+    DOMActivityLogger::AttachToWorld(world_id, injection_host_->id().id());
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> script_value;
   if (in_main_world) {
@@ -283,7 +287,7 @@ void ScriptInjection::InjectJs(const InjectionHost* injection_host,
       script_value = (*results)[0];
   }
 
-  if (injection_host->id().type() == HostID::EXTENSIONS)
+  if (injection_host_->id().type() == HostID::EXTENSIONS)
     UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
 
   if (expects_results) {

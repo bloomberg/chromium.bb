@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "extensions/common/user_script.h"
+#include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/script_injector.h"
 
-class InjectionHost;
 struct HostID;
 
 namespace blink {
@@ -32,7 +32,7 @@ class ScriptInjection {
 
   ScriptInjection(scoped_ptr<ScriptInjector> injector,
                   blink::WebLocalFrame* web_frame,
-                  const HostID& host_id,
+                  scoped_ptr<const InjectionHost> injection_host,
                   UserScript::RunLocation run_location,
                   int tab_id);
   ~ScriptInjection();
@@ -41,19 +41,19 @@ class ScriptInjection {
   // the script has either injected or will never inject (i.e., if the object
   // is done), and false if injection is delayed (either for permission purposes
   // or because |current_location| is not the designated |run_location_|).
-  // NOTE: |injection_host| may be NULL, if the injection_host is removed!
   bool TryToInject(UserScript::RunLocation current_location,
-                   const InjectionHost* injection_host,
                    ScriptsRunInfo* scripts_run_info);
 
   // Called when permission for the given injection has been granted.
   // Returns true if the injection ran.
-  bool OnPermissionGranted(const InjectionHost* injection_host,
-                           ScriptsRunInfo* scripts_run_info);
+  bool OnPermissionGranted(ScriptsRunInfo* scripts_run_info);
+
+  // Resets the pointer of the injection host when the host is gone.
+  void OnHostRemoved();
 
   // Accessors.
   blink::WebLocalFrame* web_frame() const { return web_frame_; }
-  const HostID& host_id() const { return host_id_; }
+  const HostID& host_id() const { return injection_host_->id(); }
   int64 request_id() const { return request_id_; }
 
  private:
@@ -62,13 +62,11 @@ class ScriptInjection {
   void SendInjectionMessage(bool request_permission);
 
   // Injects the script, optionally populating |scripts_run_info|.
-  void Inject(const InjectionHost* injection_host,
-              ScriptsRunInfo* scripts_run_info);
+  void Inject(ScriptsRunInfo* scripts_run_info);
 
   // Inject any JS scripts into the |frame|, optionally populating
   // |execution_results|.
-  void InjectJs(const InjectionHost* injection_host,
-                blink::WebLocalFrame* frame,
+  void InjectJs(blink::WebLocalFrame* frame,
                 base::ListValue* execution_results);
 
   // Inject any CSS source into the |frame|.
@@ -83,8 +81,8 @@ class ScriptInjection {
   // The (main) WebFrame into which this should inject the script.
   blink::WebLocalFrame* web_frame_;
 
-  // The id of the associated injection_host.
-  HostID host_id_;
+  // The associated injection host.
+  scoped_ptr<const InjectionHost> injection_host_;
 
   // The location in the document load at which we inject the script.
   UserScript::RunLocation run_location_;

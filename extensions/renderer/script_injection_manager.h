@@ -45,6 +45,9 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   // Notifies that a new render view has been created.
   void OnRenderViewCreated(content::RenderView* render_view);
 
+  // Removes pending injections of the unloaded extension.
+  void OnExtensionUnloaded(const std::string& extension_id);
+
  private:
   // A RenderViewObserver implementation which watches the various render views
   // in order to notify the ScriptInjectionManager of different document load

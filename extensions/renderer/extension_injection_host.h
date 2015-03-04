@@ -10,17 +10,23 @@
 #include "extensions/renderer/injection_host.h"
 
 namespace extensions {
+class ExtensionSet;
 
 // A wrapper class that holds an extension and implements the InjectionHost
 // interface.
 class ExtensionInjectionHost : public InjectionHost {
  public:
-  ExtensionInjectionHost(const scoped_refptr<const Extension>& extension);
+  ExtensionInjectionHost(const Extension* extension);
   ~ExtensionInjectionHost() override;
+
+  // Create an ExtensionInjectionHost object. If the extension is gone, returns
+  // a null scoped ptr.
+  static scoped_ptr<const ExtensionInjectionHost> Create(
+      const std::string& extension_id, const ExtensionSet* extensions);
 
  private:
   // InjectionHost:
-  const std::string& GetContentSecurityPolicy() const override;
+  std::string GetContentSecurityPolicy() const override;
   const GURL& url() const override;
   const std::string& name() const override;
   PermissionsData::AccessType CanExecuteOnFrame(
@@ -30,7 +36,7 @@ class ExtensionInjectionHost : public InjectionHost {
       bool is_declarative) const override;
   bool ShouldNotifyBrowserOfInjection() const override;
 
-  scoped_refptr<const Extension> extension_;
+  const Extension* extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInjectionHost);
 };

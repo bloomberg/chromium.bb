@@ -1036,6 +1036,8 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   extensions_.Remove(id);
   active_extension_ids_.erase(id);
 
+  script_injection_manager_->OnExtensionUnloaded(id);
+
   // If the extension is later reloaded with a different set of permissions,
   // we'd like it to get a new isolated world ID, so that it can pick up the
   // changed origin whitelist.

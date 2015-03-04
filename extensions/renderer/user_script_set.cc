@@ -12,9 +12,11 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/extensions_renderer_client.h"
+#include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/user_script_injector.h"
+#include "extensions/renderer/web_ui_injection_host.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "url/gurl.h"
@@ -55,6 +57,8 @@ void UserScriptSet::GetActiveExtensionIds(
   for (ScopedVector<UserScript>::const_iterator iter = scripts_.begin();
        iter != scripts_.end();
        ++iter) {
+    if ((*iter)->host_id().type() != HostID::EXTENSIONS)
+      continue;
     DCHECK(!(*iter)->extension_id().empty());
     ids->insert((*iter)->extension_id());
   }
@@ -69,16 +73,12 @@ void UserScriptSet::GetInjections(
   for (ScopedVector<UserScript>::const_iterator iter = scripts_.begin();
        iter != scripts_.end();
        ++iter) {
-    const Extension* extension = extensions_->GetByID((*iter)->extension_id());
-    if (!extension)
-      continue;
     scoped_ptr<ScriptInjection> injection = GetInjectionForScript(
         *iter,
         web_frame,
         tab_id,
         run_location,
         document_url,
-        extension,
         false /* is_declarative */);
     if (injection.get())
       injections->push_back(injection.release());
@@ -155,8 +155,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
     blink::WebFrame* web_frame,
     int tab_id,
     UserScript::RunLocation run_location,
-    const GURL& document_url,
-    const Extension* extension) {
+    const GURL& document_url) {
   for (ScopedVector<UserScript>::const_iterator it = scripts_.begin();
        it != scripts_.end();
        ++it) {
@@ -166,7 +165,6 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
                                    tab_id,
                                    run_location,
                                    document_url,
-                                   extension,
                                    true /* is_declarative */);
     }
   }
@@ -181,9 +179,20 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
     int tab_id,
     UserScript::RunLocation run_location,
     const GURL& document_url,
-    const Extension* extension,
     bool is_declarative) {
   scoped_ptr<ScriptInjection> injection;
+  scoped_ptr<const InjectionHost> injection_host;
+
+  const HostID& host_id = script->host_id();
+  if (host_id.type() == HostID::EXTENSIONS) {
+    injection_host = ExtensionInjectionHost::Create(host_id.id(), extensions_);
+    if (!injection_host)
+      return injection.Pass();
+  } else {
+    DCHECK_EQ(host_id.type(), HostID::WEBUI);
+    injection_host.reset(new WebUIInjectionHost(host_id));
+  }
+
   if (web_frame->parent() && !script->match_all_frames())
     return injection.Pass();  // Only match subframes if the script declared it.
 
@@ -196,11 +205,8 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   scoped_ptr<ScriptInjector> injector(new UserScriptInjector(script,
                                                              this,
                                                              is_declarative));
-  HostID host_id(HostID::EXTENSIONS, extension->id());
-  ExtensionInjectionHost extension_injection_host(
-      make_scoped_refptr<const Extension>(extension));
   if (injector->CanExecuteOnFrame(
-          &extension_injection_host,
+          injection_host.get(),
           web_frame,
           -1,  // Content scripts are not tab-specific.
           web_frame->top()->document().url()) ==
@@ -216,7 +222,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
     injection.reset(new ScriptInjection(
         injector.Pass(),
         web_frame->toWebLocalFrame(),
-        host_id,
+        injection_host.Pass(),
         run_location,
         tab_id));
   }

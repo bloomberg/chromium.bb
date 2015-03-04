@@ -970,6 +970,8 @@
       'renderer/v8_context_native_handler.h',
       'renderer/v8_schema_registry.cc',
       'renderer/v8_schema_registry.h',
+      'renderer/web_ui_injection_host.cc',
+      'renderer/web_ui_injection_host.h',
     ],
     'extensions_utility_sources': [
       'utility/unpacker.cc',

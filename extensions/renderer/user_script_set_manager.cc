@@ -38,9 +38,9 @@ UserScriptSetManager::GetInjectionForDeclarativeScript(
     blink::WebFrame* web_frame,
     int tab_id,
     const GURL& url,
-    const Extension* extension) {
+    const std::string& extension_id) {
   UserScriptSet* user_script_set =
-      GetProgrammaticScriptsByExtension(extension->id());
+      GetProgrammaticScriptsByExtension(extension_id);
   if (!user_script_set)
     return scoped_ptr<ScriptInjection>();
 
@@ -49,8 +49,7 @@ UserScriptSetManager::GetInjectionForDeclarativeScript(
       web_frame,
       tab_id,
       UserScript::BROWSER_DRIVEN,
-      url,
-      extension);
+      url);
 }
 
 bool UserScriptSetManager::OnControlMessageReceived(
