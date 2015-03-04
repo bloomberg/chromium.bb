@@ -323,6 +323,22 @@ Security-enhanced PNaCl
 * **Knowledge Prerequisite:** Security.
 * **Mentor:** JF Bastien.
 
+Sanitizer Support
+^^^^^^^^^^^^^^^^^
+
+* **Project:** Sanitizer support for untrusted code.
+* **Brief explanation:** LLVM supports many sanitizers_ for C/C++ using the
+  ``-fsanitize=<name>``. Some of these sanitizers currently work, and some don't
+  because they use clever tricks to perform their work, such as using ``mmap``
+  to allocate a special shadow memory region with a specific address. This
+  project requires adding full support to all of LLVM's sanitizers for untrusted
+  user code within PNaCl.
+* **Expected results:** The sanitizer tests successfully run as untrusted code
+  within PNaCl.
+* **Knowledge Prerequisite:** Compilers.
+* **Mentor:** JF Bastien.
+
+.. _sanitizers: http://clang.llvm.org/docs/UsersManual.html#controlling-code-generation
 
 NaCl
 ----

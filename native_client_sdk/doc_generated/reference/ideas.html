@@ -33,13 +33,14 @@
 <li><a class="reference internal" href="#vector-support" id="id27">Vector Support</a></li>
 <li><a class="reference internal" href="#atomics" id="id28">Atomics</a></li>
 <li><a class="reference internal" href="#security-enhanced-pnacl" id="id29">Security-enhanced PNaCl</a></li>
+<li><a class="reference internal" href="#sanitizer-support" id="id30">Sanitizer Support</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#nacl" id="id30">NaCl</a></p>
+<li><p class="first"><a class="reference internal" href="#nacl" id="id31">NaCl</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#auto-sandboxing" id="id31">Auto-Sandboxing</a></li>
-<li><a class="reference internal" href="#new-sandbox" id="id32">New Sandbox</a></li>
-<li><a class="reference internal" href="#bit-sandbox" id="id33">64-bit Sandbox</a></li>
+<li><a class="reference internal" href="#auto-sandboxing" id="id32">Auto-Sandboxing</a></li>
+<li><a class="reference internal" href="#new-sandbox" id="id33">New Sandbox</a></li>
+<li><a class="reference internal" href="#bit-sandbox" id="id34">64-bit Sandbox</a></li>
 </ul>
 </li>
 </ul>
@@ -285,6 +286,20 @@ tuning to the hardware and operating system the untrusted code is running on.</l
 <li><strong>Expected results:</strong> The security design and implementation successfully pass
 a review with the Chrome security team.</li>
 <li><strong>Knowledge Prerequisite:</strong> Security.</li>
+<li><strong>Mentor:</strong> JF Bastien.</li>
+</ul>
+<h4 id="sanitizer-support">Sanitizer Support</h4>
+<ul class="small-gap">
+<li><strong>Project:</strong> Sanitizer support for untrusted code.</li>
+<li><strong>Brief explanation:</strong> LLVM supports many <a class="reference external" href="http://clang.llvm.org/docs/UsersManual.html#controlling-code-generation">sanitizers</a> for C/C++ using the
+<code>-fsanitize=&lt;name&gt;</code>. Some of these sanitizers currently work, and some don&#8217;t
+because they use clever tricks to perform their work, such as using <code>mmap</code>
+to allocate a special shadow memory region with a specific address. This
+project requires adding full support to all of LLVM&#8217;s sanitizers for untrusted
+user code within PNaCl.</li>
+<li><strong>Expected results:</strong> The sanitizer tests successfully run as untrusted code
+within PNaCl.</li>
+<li><strong>Knowledge Prerequisite:</strong> Compilers.</li>
 <li><strong>Mentor:</strong> JF Bastien.</li>
 </ul>
 <h3 id="nacl">NaCl</h3>
