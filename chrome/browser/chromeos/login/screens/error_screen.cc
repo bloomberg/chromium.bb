@@ -241,7 +241,9 @@ void ErrorScreen::OnOnlineChecked(const std::string& username, bool success) {
 void ErrorScreen::DefaultHideCallback() {
   if (parent_screen_ != OobeUI::SCREEN_UNKNOWN && view_)
     view_->ShowScreen(parent_screen_);
-  SetParentScreen(OobeUI::SCREEN_UNKNOWN);
+
+  // TODO(antrim): Due to potential race with GAIA reload and hiding network
+  // error UI we can't just reset parent screen to SCREEN_UNKNOWN here.
 }
 
 void ErrorScreen::OnConfigureCerts() {
