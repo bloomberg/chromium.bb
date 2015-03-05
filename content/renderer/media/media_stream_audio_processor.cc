@@ -30,11 +30,6 @@ namespace {
 
 using webrtc::AudioProcessing;
 
-#if defined(OS_ANDROID)
-const int kAudioProcessingSampleRate = 16000;
-#else
-const int kAudioProcessingSampleRate = 32000;
-#endif
 const int kAudioProcessingNumberOfChannels = 1;
 
 AudioProcessing::ChannelLayout MapLayout(media::ChannelLayout media_layout) {
@@ -245,7 +240,8 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       playout_data_source_(playout_data_source),
       audio_mirroring_(false),
       typing_detected_(false),
-      stopped_(false) {
+      stopped_(false),
+      audio_proc_48kHz_support_(false) {
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, effects);
@@ -460,9 +456,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       MediaAudioConstraints::kGoogExperimentalNoiseSuppression);
   const bool goog_beamforming = audio_constraints.GetProperty(
       MediaAudioConstraints::kGoogBeamforming);
- const bool goog_high_pass_filter = audio_constraints.GetProperty(
-     MediaAudioConstraints::kGoogHighpassFilter);
-
+  const bool goog_high_pass_filter = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogHighpassFilter);
+  audio_proc_48kHz_support_ = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogAudioProcessing48kHzSupport);
   // Return immediately if no goog constraint is enabled.
   if (!echo_cancellation && !goog_experimental_aec && !goog_ns &&
       !goog_high_pass_filter && !goog_typing_detection &&
@@ -481,6 +478,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     config.Set<webrtc::ReportedDelay>(new webrtc::ReportedDelay(false));
   if (goog_beamforming) {
     ConfigureBeamforming(&config);
+  }
+  if (audio_proc_48kHz_support_) {
+    config.Set<webrtc::AudioProcessing48kHzSupport>(
+        new webrtc::AudioProcessing48kHzSupport(true));
   }
 
   // Create and configure the webrtc::AudioProcessing.
@@ -544,8 +545,16 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   // use the input parameters (in which case, audio processing will convert
   // at output) or ideally, have a backchannel from the sink to know what
   // format it would prefer.
+#if defined(OS_ANDROID)
+  int audio_processing_sample_rate = AudioProcessing::kSampleRate16kHz;
+#else
+  int audio_processing_sample_rate = audio_proc_48kHz_support_ ?
+                                     AudioProcessing::kSampleRate48kHz :
+                                     AudioProcessing::kSampleRate32kHz;
+#endif
   const int output_sample_rate = audio_processing_ ?
-      kAudioProcessingSampleRate : input_format.sample_rate();
+                                 audio_processing_sample_rate :
+                                 input_format.sample_rate();
   media::ChannelLayout output_channel_layout = audio_processing_ ?
       media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
       input_format.channel_layout();

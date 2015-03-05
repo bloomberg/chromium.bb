@@ -201,6 +201,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // the libjingle thread through GetStats().
   scoped_ptr<EchoInformation> echo_information_;
 
+  // Flag is enabled if AudioProcessing supports 48kHz sample rate.
+  bool audio_proc_48kHz_support_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioProcessor);
 };
 

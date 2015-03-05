@@ -39,6 +39,8 @@ const char MediaAudioConstraints::kGoogHighpassFilter[] = "googHighpassFilter";
 const char MediaAudioConstraints::kGoogTypingNoiseDetection[] =
     "googTypingNoiseDetection";
 const char MediaAudioConstraints::kGoogAudioMirroring[] = "googAudioMirroring";
+const char MediaAudioConstraints::kGoogAudioProcessing48kHzSupport[] =
+    "googAudioProcessing48kHzSupport";
 
 namespace {
 
@@ -69,6 +71,7 @@ struct {
   { kMediaStreamAudioDucking, false },
 #endif
   { kMediaStreamAudioHotword, false },
+  { MediaAudioConstraints::kGoogAudioProcessing48kHzSupport, false },
 };
 
 bool IsAudioProcessingConstraint(const std::string& key) {

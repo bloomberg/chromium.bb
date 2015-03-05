@@ -45,6 +45,7 @@ class CONTENT_EXPORT MediaAudioConstraints {
   static const char kGoogHighpassFilter[];
   static const char kGoogTypingNoiseDetection[];
   static const char kGoogAudioMirroring[];
+  static const char kGoogAudioProcessing48kHzSupport[];
 
   // Merge |constraints| with |kDefaultAudioConstraints|. For any key which
   // exists in both, the value from |constraints| is maintained, including its
