@@ -183,7 +183,8 @@
   ],
   "documentScan": {
     "channel": "dev",
-    "extension_types": ["extension", "platform_app"]
+    "extension_types": ["extension", "platform_app"],
+    "platforms": ["chromeos"]
   },
   "extensionview": {
     "channel": "dev",

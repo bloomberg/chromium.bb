@@ -116,7 +116,6 @@
     "contexts": ["blessed_extension"]
   },
   "documentScan": {
-    "platforms": ["chromeos"],
     "dependencies": ["permission:documentScan"],
     "contexts": ["blessed_extension"]
   },
