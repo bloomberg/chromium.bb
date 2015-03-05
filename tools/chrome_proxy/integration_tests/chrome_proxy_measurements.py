@@ -217,11 +217,14 @@ class ChromeProxyHTTPFallbackProbeURL(ChromeProxyValidation):
   def CustomizeBrowserOptions(self, options):
     super(ChromeProxyHTTPFallbackProbeURL,
           self).CustomizeBrowserOptions(options)
-    # Use the test server probe URL which returns the response
-    # body as specified by respBody.
-    probe_url = GetResponseOverrideURL(respBody='not OK')
+    # Set the secure proxy check URL to the google.com favicon, which will be
+    # interpreted as a secure proxy check failure since the response body is not
+    # "OK". The google.com favicon is used because it will load reliably fast,
+    # and there have been problems with chromeproxy-test.appspot.com being slow
+    # and causing tests to flake.
     options.AppendExtraBrowserArgs(
-        '--data-reduction-proxy-secure-proxy-check-url=%s' % probe_url)
+        '--data-reduction-proxy-secure-proxy-check-url='
+        'http://www.google.com/favicon.ico')
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForHTTPFallback(tab, results)
