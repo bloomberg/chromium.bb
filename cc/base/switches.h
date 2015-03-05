@@ -20,7 +20,6 @@ CC_EXPORT extern const char kDisableThreadedAnimation[];
 CC_EXPORT extern const char kDisableCompositedAntialiasing[];
 CC_EXPORT extern const char kDisableMainFrameBeforeActivation[];
 CC_EXPORT extern const char kEnableMainFrameBeforeActivation[];
-CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
 CC_EXPORT extern const char kTopControlsHideThreshold[];
 CC_EXPORT extern const char kTopControlsShowThreshold[];
