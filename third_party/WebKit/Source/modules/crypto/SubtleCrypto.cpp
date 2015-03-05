@@ -59,38 +59,6 @@ DOMArrayPiece::DOMArrayPiece(const BufferSource& bufferSource)
     initWithData(data, len);
 }
 
-// Seems like the generated bindings should take care of these however it
-// currently doesn't. See also http://crbug.com/264520
-static bool ensureNotNull(const DOMArrayPiece& x, const char* paramName, CryptoResult* result)
-{
-    if (x.isNull()) {
-        String message = String("Invalid ") + paramName + String(" argument");
-        result->completeWithError(WebCryptoErrorTypeType, WebString(message));
-        return false;
-    }
-    return true;
-}
-
-static bool ensureNotNull(const ArrayBufferOrArrayBufferViewOrDictionary& dictionary, const char* paramName, CryptoResult* result)
-{
-    if (dictionary.isNull()) {
-        String message = String("Invalid ") + paramName + String(" argument");
-        result->completeWithError(WebCryptoErrorTypeType, WebString(message));
-        return false;
-    }
-    return true;
-}
-
-static bool ensureNotNull(CryptoKey* key, const char* paramName, CryptoResult* result)
-{
-    if (!key) {
-        String message = String("Invalid ") + paramName + String(" argument");
-        result->completeWithError(WebCryptoErrorTypeType, WebString(message));
-        return false;
-    }
-    return true;
-}
-
 static bool parseAlgorithm(const AlgorithmIdentifier& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, CryptoResult* result)
 {
     AlgorithmError error;
@@ -175,11 +143,6 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const AlgorithmIde
     if (!canAccessWebCrypto(scriptState, result.get()))
         return promise;
 
-    if (!ensureNotNull(key, "key", result.get()))
-        return promise;
-    if (!ensureNotNull(data, "dataBuffer", result.get()))
-        return promise;
-
     WebCryptoAlgorithm algorithm;
     if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationEncrypt, algorithm, result.get()))
         return promise;
@@ -197,11 +160,6 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const AlgorithmIde
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
-        return promise;
-
-    if (!ensureNotNull(key, "key", result.get()))
-        return promise;
-    if (!ensureNotNull(data, "dataBuffer", result.get()))
         return promise;
 
     WebCryptoAlgorithm algorithm;
@@ -223,11 +181,6 @@ ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const AlgorithmIdenti
     if (!canAccessWebCrypto(scriptState, result.get()))
         return promise;
 
-    if (!ensureNotNull(key, "key", result.get()))
-        return promise;
-    if (!ensureNotNull(data, "dataBuffer", result.get()))
-        return promise;
-
     WebCryptoAlgorithm algorithm;
     if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationSign, algorithm, result.get()))
         return promise;
@@ -247,13 +200,6 @@ ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Algo
     if (!canAccessWebCrypto(scriptState, result.get()))
         return promise;
 
-    if (!ensureNotNull(key, "key", result.get()))
-        return promise;
-    if (!ensureNotNull(data, "dataBuffer", result.get()))
-        return promise;
-    if (!ensureNotNull(signature, "signature", result.get()))
-        return promise;
-
     WebCryptoAlgorithm algorithm;
     if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationVerify, algorithm, result.get()))
         return promise;
@@ -271,9 +217,6 @@ ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const AlgorithmIden
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
-        return promise;
-
-    if (!ensureNotNull(data, "dataBuffer", result.get()))
         return promise;
 
     WebCryptoAlgorithm algorithm;
@@ -310,9 +253,6 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
-        return promise;
-
-    if (!ensureNotNull(keyData, "keyData", result.get()))
         return promise;
 
     WebCryptoKeyFormat format;
@@ -365,9 +305,6 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& ra
     if (!canAccessWebCrypto(scriptState, result.get()))
         return promise;
 
-    if (!ensureNotNull(key, "key", result.get()))
-        return promise;
-
     WebCryptoKeyFormat format;
     if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
@@ -387,12 +324,6 @@ ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawF
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
-        return promise;
-
-    if (!ensureNotNull(key, "key", result.get()))
-        return promise;
-
-    if (!ensureNotNull(wrappingKey, "wrappingKey", result.get()))
         return promise;
 
     WebCryptoKeyFormat format;
@@ -421,11 +352,6 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
-        return promise;
-
-    if (!ensureNotNull(wrappedKey, "wrappedKey", result.get()))
-        return promise;
-    if (!ensureNotNull(unwrappingKey, "unwrappingKey", result.get()))
         return promise;
 
     WebCryptoKeyFormat format;
@@ -459,9 +385,6 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* scriptState, const Algorithm
     if (!canAccessWebCrypto(scriptState, result.get()))
         return promise;
 
-    if (!ensureNotNull(baseKey, "baseKey", result.get()))
-        return promise;
-
     WebCryptoAlgorithm algorithm;
     if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationDeriveBits, algorithm, result.get()))
         return promise;
@@ -479,9 +402,6 @@ ScriptPromise SubtleCrypto::deriveKey(ScriptState* scriptState, const AlgorithmI
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
-        return promise;
-
-    if (!ensureNotNull(baseKey, "baseKey", result.get()))
         return promise;
 
     WebCryptoKeyUsageMask keyUsages;

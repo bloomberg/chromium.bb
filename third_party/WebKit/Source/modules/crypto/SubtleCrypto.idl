@@ -36,7 +36,8 @@ typedef (Dictionary or DOMString) AlgorithmIdentifier;
 
 [
     GarbageCollected,
-    Exposed=(Window,Worker)
+    Exposed=(Window,Worker),
+    TypeChecking=Interface,
 ] interface SubtleCrypto {
     [CallWith=ScriptState] Promise encrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
     [CallWith=ScriptState] Promise decrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);

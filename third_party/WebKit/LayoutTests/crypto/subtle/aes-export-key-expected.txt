@@ -4,10 +4,10 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 error is: TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': 2 arguments required, but only 1 present.
-error is: TypeError: Invalid key argument
-error is: TypeError: Invalid key argument
-error is: TypeError: Invalid key argument
-error is: TypeError: Invalid key argument
+error is: TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': parameter 2 is not of type 'CryptoKey'.
+error is: TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': parameter 2 is not of type 'CryptoKey'.
+error is: TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': parameter 2 is not of type 'CryptoKey'.
+error is: TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': parameter 2 is not of type 'CryptoKey'.
 
 Importing a JWK key...
 error is: TypeError: Invalid keyFormat argument

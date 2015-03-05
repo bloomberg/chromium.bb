@@ -41,7 +41,7 @@ importUnwrappingKey().then(function(result) {
     logError(result);
 
     // Invalid keyUsages (also, unwrappedKeyAlgorithm is set to null).
-    return crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9);
+    return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, null, extractable, 9);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
