@@ -5,6 +5,7 @@
             "trybots": {
                 "launched": {
                     "tryserver.chromium.linux": {
+                        "android_amp_rel_tests_recipe": ["defaulttests"],
                         "cast_shell": ["defaulttests"],
                         "cast_shell_apk": ["defaulttests"],
                         "linux_android_rel_ng": ["defaulttests"],
