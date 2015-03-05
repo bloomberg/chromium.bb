@@ -31895,6 +31895,7 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "lkgm_manifest": "project-sdk/latest.xml",
+        "manifest": "project_sdk.xml",
         "name": "panther_embedded-project-sdk",
         "profile": "minimal",
         "sync_chrome": false,
@@ -53202,6 +53203,24 @@
         "vm_tests": [
             "smoke_suite"
         ]
+    },
+    "trybot-project-sdk": {
+        "boards": [
+            "panther_embedded"
+        ],
+        "build_type": "project-sdk",
+        "description": "Produce Project SDK build artifacts.",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "lkgm_manifest": "project-sdk/latest.xml",
+        "manifest": "project_sdk.xml",
+        "name": "trybot-project-sdk",
+        "profile": "minimal",
+        "sync_chrome": false,
+        "uprev": false,
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "urara-chrome-pfq": {
         "boards": [

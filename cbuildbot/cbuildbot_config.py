@@ -1242,6 +1242,9 @@ project_sdk = _config(
   chrome_sdk=False,
   uprev=False,
 
+  # Proper manifest for TOT builds. Not used, outside of tryjobs.
+  manifest=constants.PROJECT_MANIFEST,
+
   # Use the SDK manifest published by the Canary master for most builds.
   lkgm_manifest=constants.LATEST_PROJECT_SDK_MANIFEST,
   use_lkgm=True,
@@ -3202,6 +3205,15 @@ def _AddProjectSdkConfigs():
     project_sdk.add_config(name, boards=[board])
 
 _AddProjectSdkConfigs()
+
+# LKGM builds don't work for tryjobs. Add this as a workaround, for now.
+project_sdk.add_config(
+  'trybot-project-sdk',
+  boards=['panther_embedded'],
+
+  # Don't use LKGM
+  use_lkgm=False,
+)
 
 def GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
   """Given a config_name, return display position specified by suffix_order.
