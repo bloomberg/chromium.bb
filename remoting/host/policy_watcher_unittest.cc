@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/mock_log.h"
 #include "components/policy/core/common/fake_async_policy_loader.h"
 #include "policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
@@ -438,6 +439,43 @@ TEST_F(PolicyWatcherTest, FilterUnknownPolicies) {
   SetPolicies(unknown_policies_);
   SetPolicies(empty_);
 }
+
+class MisspelledPolicyTest : public PolicyWatcherTest,
+                             public ::testing::WithParamInterface<const char*> {
+};
+
+// Verify that a misspelled policy causes a warning written to the log.
+TEST_P(MisspelledPolicyTest, WarningLogged) {
+  const char* misspelled_policy_name = GetParam();
+  base::test::MockLog mock_log;
+
+  ON_CALL(mock_log, Log(testing::_, testing::_, testing::_, testing::_,
+                        testing::_)).WillByDefault(testing::Return(true));
+
+  EXPECT_CALL(mock_log,
+              Log(logging::LOG_WARNING, testing::_, testing::_, testing::_,
+                  testing::HasSubstr(misspelled_policy_name))).Times(1);
+
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+
+  base::DictionaryValue misspelled_policies;
+  misspelled_policies.SetString(misspelled_policy_name, "some test value");
+  mock_log.StartCapturingLogs();
+
+  SetPolicies(misspelled_policies);
+  StartWatching();
+
+  mock_log.StopCapturingLogs();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    PolicyWatcherTest,
+    MisspelledPolicyTest,
+    ::testing::Values("RemoteAccessHostDomainX",
+                      "XRemoteAccessHostDomain",
+                      "RemoteAccessHostdomain",
+                      "RemoteAccessHostPolicyForFutureVersion"));
 
 TEST_F(PolicyWatcherTest, DebugOverrideNatPolicy) {
 #if !defined(NDEBUG)
