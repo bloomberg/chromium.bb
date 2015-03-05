@@ -116,23 +116,22 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   base::File base_file = IPC::PlatformFileForTransitToFile(file);
   CacheRequestInfoMap::iterator it = pending_cache_requests_.find(instance);
-  int32_t status = PP_ERROR_FAILED;
-  // Handle the expected successful case first.
-  PP_FileHandle file_handle = PP_kInvalidFileHandle;
-  if (it != pending_cache_requests_.end() && base_file.IsValid()) {
-    file_handle = base_file.TakePlatformFile();
-    status = PP_OK;
+  if (!base_file.IsValid()) {
+    DLOG(ERROR) << "Got invalid platformfilefortransit";
   }
-  if (it == pending_cache_requests_.end()) {
-    DLOG(ERROR) << "Could not find pending request for reply";
-  } else {
+  if (it != pending_cache_requests_.end()) {
+    PP_FileHandle file_handle = PP_kInvalidFileHandle;
+    int32_t status = PP_ERROR_FAILED;
+    if (base_file.IsValid()) {
+      file_handle = base_file.TakePlatformFile();
+      status = PP_OK;
+    }
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
         FROM_HERE,
         base::Bind(it->second, status, is_hit, file_handle));
     pending_cache_requests_.erase(it);
-  }
-  if (!base_file.IsValid()) {
-    DLOG(ERROR) << "Got invalid platformfilefortransit";
+  } else {
+    DLOG(ERROR) << "Could not find pending request for reply";
   }
 }
 
