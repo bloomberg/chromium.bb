@@ -361,8 +361,6 @@
       'browser/download/drag_download_item.h',
       'browser/download/save_package_file_picker.cc',
       'browser/download/save_package_file_picker.h',
-      'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.cc',
-      'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.h',
       'browser/enumerate_modules_model_win.cc',
       'browser/enumerate_modules_model_win.h',
       # Oh hey, all the cool browser/extensions files are hanging out in
@@ -1241,6 +1239,8 @@
       'browser/enhanced_bookmarks/android/bookmark_image_service_factory.h',
       'browser/enhanced_bookmarks/android/enhanced_bookmark_tab_helper.cc',
       'browser/enhanced_bookmarks/android/enhanced_bookmark_tab_helper.h',
+      'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.cc',
+      'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.h',
       'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service.cc',
       'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service.h',
       'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service_factory.cc',
