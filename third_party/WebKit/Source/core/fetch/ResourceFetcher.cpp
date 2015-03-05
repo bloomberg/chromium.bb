@@ -285,7 +285,8 @@ Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
 
 ResourcePtr<Resource> ResourceFetcher::fetchSynchronously(FetchRequest& request)
 {
-    ASSERT(document());
+    if (!document())
+        return nullptr;
     request.mutableResourceRequest().setTimeoutInterval(10);
     ResourceLoaderOptions options(request.options());
     options.synchronousPolicy = RequestSynchronously;
