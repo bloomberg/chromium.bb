@@ -219,6 +219,7 @@ bool NotificationUIManagerAndroid::OnNotificationClosed(
 
   const Notification& notification = iter->second->notification();
   notification.delegate()->Close(true /** by_user **/);
+  RemoveProfileNotification(iter->second);
   return true;
 }
 

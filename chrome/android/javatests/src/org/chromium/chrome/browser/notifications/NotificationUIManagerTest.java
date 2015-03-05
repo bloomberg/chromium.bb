@@ -213,6 +213,27 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     }
 
     /*
+     * Verifies that starting the PendingIntent stored as the notification's delete intent will
+     * close the notification.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testNotificationDeleteIntentClosesNotification() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        Notification notification = showAndGetNotification("MyNotification", "{}");
+        assertEquals(1, mMockNotificationManager.getNotifications().size());
+
+        // Sending the PendingIntent simulates dismissing (swiping away) the notification.
+        assertNotNull(notification.deleteIntent);
+        notification.deleteIntent.send();
+        // The deleteIntent should trigger a call to cancel() in the NotificationManager.
+        assertTrue(waitForNotificationManagerMutation());
+
+        assertEquals(0, mMockNotificationManager.getNotifications().size());
+    }
+
+    /*
      * Verifies that starting the PendingIntent stored as the notification's content intent will
      * start up the associated Service Worker, where the JavaScript code will close the notification
      * by calling event.notification.close().
