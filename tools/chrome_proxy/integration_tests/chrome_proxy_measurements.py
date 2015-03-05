@@ -93,7 +93,7 @@ class ChromeProxyValidation(page_test.PageTest):
       if self._expect_timeout:
         raise metrics.ChromeProxyMetricException, (
             'Timeout was expected, but did not occur')
-    except exceptions.DevtoolsTargetCrashException, e:
+    except exceptions.TimeoutException as e:
       if self._expect_timeout:
         logging.warning('Navigation timeout on page %s',
                         page.name if page.name else page.url)

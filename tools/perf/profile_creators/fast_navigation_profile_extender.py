@@ -161,7 +161,7 @@ class FastNavigationProfileExtender(object):
     """Retrives the URL of the tab."""
     try:
       return tab.EvaluateJavaScript('document.URL', timeout)
-    except (exceptions.DevtoolsTargetCrashException,
+    except (exceptions.Error,
         devtools_http.DevToolsClientConnectionError,
         devtools_http.DevToolsClientUrlError):
       return None
@@ -204,7 +204,7 @@ class FastNavigationProfileExtender(object):
 
       try:
         tab.Navigate(url, None, timeout_in_seconds)
-      except (exceptions.DevtoolsTargetCrashException,
+      except (exceptions.Error,
           devtools_http.DevToolsClientConnectionError,
           devtools_http.DevToolsClientUrlError):
         # We expect a time out. It's possible for other problems to arise, but
@@ -242,7 +242,7 @@ class FastNavigationProfileExtender(object):
       except exceptions.TimeoutException:
         # Ignore time outs.
         pass
-      except (exceptions.DevtoolsTargetCrashException,
+      except (exceptions.Error,
           devtools_http.DevToolsClientConnectionError,
           devtools_http.DevToolsClientUrlError):
         # If any error occurs, remove the tab. it's probably in an
