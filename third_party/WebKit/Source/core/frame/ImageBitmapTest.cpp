@@ -71,7 +71,7 @@ protected:
         // Garbage collection is required prior to switching out the
         // test's memory cache; image resources are released, evicting
         // them from the cache.
-        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGCForTesting);
 
         replaceMemoryCacheForTesting(m_globalMemoryCache.release());
     }
@@ -157,7 +157,7 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
         ASSERT_EQ(memoryCache()->priority(imageOutsideCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);
     }
     // Force a garbage collection to sweep out the local ImageBitmaps.
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGCForTesting);
 
     // CacheLiveResourcePriroity should return to CacheLiveResourcePriorityLow when no ImageBitmaps reference the image.
     ASSERT_EQ(memoryCache()->priority(imageNoCrop->cachedImage()), MemoryCacheLiveResourcePriorityLow);

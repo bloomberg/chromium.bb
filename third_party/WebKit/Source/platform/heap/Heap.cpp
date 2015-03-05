@@ -2439,7 +2439,21 @@ void Heap::postGC(ThreadState::GCType gcType)
         state->postGC(gcType);
 }
 
-void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCType gcType)
+const char* Heap::gcReasonForTracingString(GCReasonForTracing reason)
+{
+    switch (reason) {
+#define STRINGIFY_REASON(reason) case reason: return #reason;
+        STRINGIFY_REASON(IdleGC);
+        STRINGIFY_REASON(PreciseGC);
+        STRINGIFY_REASON(ConservativeGC);
+        STRINGIFY_REASON(ForcedGCForTesting);
+#undef STRINGIFY_REASON
+    case NumberOfGCReasonForTracing: ASSERT_NOT_REACHED();
+    }
+    return "<Unknown>";
+}
+
+void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCType gcType, GCReasonForTracing reason)
 {
     ThreadState* state = ThreadState::current();
     ThreadState::GCState originalGCState = state->gcState();
@@ -2513,6 +2527,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
         Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
         Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", Heap::allocatedObjectSize() / 1024, 0, 4 * 1024 * 1024, 50);
         Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", Heap::allocatedSpace() / 1024, 0, 4 * 1024 * 1024, 50);
+        Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, NumberOfGCReasonForTracing);
     }
 
     if (state->isMainThread())
@@ -2615,7 +2630,7 @@ void Heap::collectAllGarbage()
     // some heap allocated objects own objects that contain persistents
     // pointing to other heap allocated objects.
     for (int i = 0; i < 5; ++i)
-        collectGarbage(ThreadState::NoHeapPointersOnStack);
+        collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, ForcedGCForTesting);
 }
 
 double Heap::estimatedMarkingTime()

@@ -563,7 +563,7 @@ void ThreadState::scheduleGCIfNeeded()
     if (shouldForceConservativeGC()) {
         // If GC is deemed urgent, eagerly sweep and finalize any external allocations right away.
         GCType gcType = Heap::isUrgentGCRequested() ? GCWithSweep : GCWithoutSweep;
-        Heap::collectGarbage(HeapPointersOnStack, gcType);
+        Heap::collectGarbage(HeapPointersOnStack, gcType, Heap::ConservativeGC);
         return;
     }
     if (shouldSchedulePreciseGC())
@@ -588,7 +588,7 @@ void ThreadState::performIdleGC(double deadlineSeconds)
     }
 
     // FIXME: Make this precise once idle task is guaranteed to be not in nested loop.
-    Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep);
+    Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::IdleGC);
 }
 
 void ThreadState::scheduleIdleGC()
@@ -683,7 +683,7 @@ void ThreadState::runScheduledGC(StackState stackState)
         Heap::collectAllGarbage();
         break;
     case PreciseGCScheduled:
-        Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep);
+        Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep, Heap::PreciseGC);
         break;
     case IdleGCScheduled:
         // Idle time GC will be scheduled by Blink Scheduler.
