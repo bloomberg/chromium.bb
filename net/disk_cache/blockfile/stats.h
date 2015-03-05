@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/addr.h"
 
 namespace base {
@@ -20,7 +21,7 @@ namespace disk_cache {
 typedef std::vector<std::pair<std::string, std::string> > StatsItems;
 
 // This class stores cache-specific usage information, for tunning purposes.
-class Stats {
+class NET_EXPORT_PRIVATE Stats {
  public:
   static const int kDataSizesLength = 28;
   enum Counters {

@@ -107,8 +107,18 @@ bool Stats::Init(void* data, int num_bytes, Addr address) {
     local_stats.size = sizeof(local_stats);
   } else if (num_bytes >= static_cast<int>(sizeof(*stats))) {
     stats = reinterpret_cast<OnDiskStats*>(data);
-    if (!VerifyStats(stats))
-      return false;
+    if (!VerifyStats(stats)) {
+      memset(&local_stats, 0, sizeof(local_stats));
+      if (memcmp(stats, &local_stats, sizeof(local_stats))) {
+        return false;
+      } else {
+        // The storage is empty which means that SerializeStats() was never
+        // called on the last run. Just re-initialize everything.
+        local_stats.signature = kDiskSignature;
+        local_stats.size = sizeof(local_stats);
+        stats = &local_stats;
+      }
+    }
   } else {
     return false;
   }

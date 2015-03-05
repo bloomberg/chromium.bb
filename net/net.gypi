@@ -1335,6 +1335,7 @@
       'disk_cache/blockfile/block_files_unittest.cc',
       'disk_cache/blockfile/index_table_v3_unittest.cc',
       'disk_cache/blockfile/mapped_file_unittest.cc',
+      'disk_cache/blockfile/stats_unittest.cc',
       'disk_cache/blockfile/storage_block_unittest.cc',
       'disk_cache/cache_util_unittest.cc',
       'disk_cache/entry_unittest.cc',
