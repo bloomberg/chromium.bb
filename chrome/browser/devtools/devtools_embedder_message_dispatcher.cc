@@ -9,6 +9,8 @@
 
 namespace {
 
+using DispatchCallback = DevToolsEmbedderMessageDispatcher::DispatchCallback;
+
 bool GetValue(const base::Value* value, std::string* result) {
   return value->GetAsString(result);
 }
@@ -78,13 +80,25 @@ struct ParamTuple<T, Ts...> {
 };
 
 template<typename... As>
-bool ParseAndHandle(const base::Callback<void(int, As...)>& handler,
-                    int request_id,
+bool ParseAndHandle(const base::Callback<void(As...)>& handler,
+                    const DispatchCallback& callback,
                     const base::ListValue& list) {
   ParamTuple<As...> tuple;
   if (!tuple.Parse(list, list.begin()))
     return false;
-  tuple.Apply(handler, request_id);
+  tuple.Apply(handler);
+  return true;
+}
+
+template<typename... As>
+bool ParseAndHandleWithCallback(
+    const base::Callback<void(const DispatchCallback&, As...)>& handler,
+    const DispatchCallback& callback,
+    const base::ListValue& list) {
+  ParamTuple<As...> tuple;
+  if (!tuple.Parse(list, list.begin()))
+    return false;
+  tuple.Apply(handler, callback);
   return true;
 }
 
@@ -102,23 +116,36 @@ class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
  public:
   ~DispatcherImpl() override {}
 
-  bool Dispatch(int request_id,
+  bool Dispatch(const DispatchCallback& callback,
                 const std::string& method,
                 const base::ListValue* params) override {
     HandlerMap::iterator it = handlers_.find(method);
-    return it != handlers_.end() && it->second.Run(request_id, *params);
+    return it != handlers_.end() && it->second.Run(callback, *params);
   }
 
-  template<typename T, typename... As>
+  template<typename... As>
   void RegisterHandler(const std::string& method,
-                       void (T::*handler)(int, As...), T* delegate) {
+                       void (Delegate::*handler)(As...),
+                       Delegate* delegate) {
     handlers_[method] = base::Bind(&ParseAndHandle<As...>,
                                    base::Bind(handler,
                                               base::Unretained(delegate)));
   }
 
+  template<typename... As>
+  void RegisterHandlerWithCallback(
+      const std::string& method,
+      void (Delegate::*handler)(const DispatchCallback&, As...),
+      Delegate* delegate) {
+    handlers_[method] = base::Bind(&ParseAndHandleWithCallback<As...>,
+                                   base::Bind(handler,
+                                              base::Unretained(delegate)));
+  }
+
+
  private:
-  using Handler = base::Callback<bool(int, const base::ListValue&)>;
+  using Handler = base::Callback<bool(const DispatchCallback&,
+                                      const base::ListValue&)>;
   using HandlerMap = std::map<std::string, Handler>;
   HandlerMap handlers_;
 };
@@ -138,7 +165,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::InspectElementCompleted, delegate);
   d->RegisterHandler("inspectedURLChanged",
                      &Delegate::InspectedURLChanged, delegate);
-  d->RegisterHandler("setIsDocked", &Delegate::SetIsDocked, delegate);
+  d->RegisterHandlerWithCallback("setIsDocked",
+                                 &Delegate::SetIsDocked, delegate);
   d->RegisterHandler("openInNewTab", &Delegate::OpenInNewTab, delegate);
   d->RegisterHandler("save", &Delegate::SaveToFile, delegate);
   d->RegisterHandler("append", &Delegate::AppendToFile, delegate);
@@ -149,8 +177,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
   d->RegisterHandler("upgradeDraggedFileSystemPermissions",
                      &Delegate::UpgradeDraggedFileSystemPermissions, delegate);
   d->RegisterHandler("indexPath", &Delegate::IndexPath, delegate);
-  d->RegisterHandler("loadNetworkResource",
-                     &Delegate::LoadNetworkResource, delegate);
+  d->RegisterHandlerWithCallback("loadNetworkResource",
+                                 &Delegate::LoadNetworkResource, delegate);
   d->RegisterHandler("stopIndexing", &Delegate::StopIndexing, delegate);
   d->RegisterHandler("searchInPath", &Delegate::SearchInPath, delegate);
   d->RegisterHandler("setWhitelistedShortcuts",

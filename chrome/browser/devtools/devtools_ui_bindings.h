@@ -97,56 +97,44 @@ class DevToolsUIBindings : public content::NotificationObserver,
                        bool replaced_with_another_client) override;
 
   // DevToolsEmbedderMessageDispatcher::Delegate implementation.
-  void ActivateWindow(int request_id) override;
-  void CloseWindow(int request_id) override;
-  void LoadCompleted(int request_id) override;
-  void SetInspectedPageBounds(int request_id,
-                              const gfx::Rect& rect) override;
-  void InspectElementCompleted(int request_id) override;
-  void InspectedURLChanged(int request_id, const std::string& url) override;
-  void LoadNetworkResource(int request_id,
+  void ActivateWindow() override;
+  void CloseWindow() override;
+  void LoadCompleted() override;
+  void SetInspectedPageBounds(const gfx::Rect& rect) override;
+  void InspectElementCompleted() override;
+  void InspectedURLChanged(const std::string& url) override;
+  void LoadNetworkResource(const DispatchCallback& callback,
                            const std::string& url,
                            const std::string& headers,
                            int stream_id) override;
-  void SetIsDocked(int request_id, bool is_docked) override;
-  void OpenInNewTab(int request_id, const std::string& url) override;
-  void SaveToFile(int request_id,
-                  const std::string& url,
+  void SetIsDocked(const DispatchCallback& callback, bool is_docked) override;
+  void OpenInNewTab(const std::string& url) override;
+  void SaveToFile(const std::string& url,
                   const std::string& content,
                   bool save_as) override;
-  void AppendToFile(int request_id,
-                    const std::string& url,
+  void AppendToFile(const std::string& url,
                     const std::string& content) override;
-  void RequestFileSystems(int request_id) override;
-  void AddFileSystem(int request_id) override;
-  void RemoveFileSystem(int request_id,
-                        const std::string& file_system_path) override;
+  void RequestFileSystems() override;
+  void AddFileSystem() override;
+  void RemoveFileSystem(const std::string& file_system_path) override;
   void UpgradeDraggedFileSystemPermissions(
-      int request_id,
       const std::string& file_system_url) override;
-  void IndexPath(int request_id,
-                 int index_request_id,
+  void IndexPath(int index_request_id,
                  const std::string& file_system_path) override;
-  void StopIndexing(int request_id, int index_request_id) override;
-  void SearchInPath(int request_id,
-                    int search_request_id,
+  void StopIndexing(int index_request_id) override;
+  void SearchInPath(int search_request_id,
                     const std::string& file_system_path,
                     const std::string& query) override;
-  void SetWhitelistedShortcuts(int request_id,
-                               const std::string& message) override;
-  void ZoomIn(int request_id) override;
-  void ZoomOut(int request_id) override;
-  void ResetZoom(int request_id) override;
-  void OpenUrlOnRemoteDeviceAndInspect(int request_id,
-                                       const std::string& browser_id,
+  void SetWhitelistedShortcuts(const std::string& message) override;
+  void ZoomIn() override;
+  void ZoomOut() override;
+  void ResetZoom() override;
+  void OpenUrlOnRemoteDeviceAndInspect(const std::string& browser_id,
                                        const std::string& url) override;
-  void SetDeviceCountUpdatesEnabled(int request_id, bool enabled) override;
-  void SetDevicesUpdatesEnabled(int request_id, bool enabled) override;
-  void SendMessageToBrowser(int request_id,
-                            const std::string& message) override;
-  void RecordActionUMA(int request_id,
-                       const std::string& name,
-                       int action) override;
+  void SetDeviceCountUpdatesEnabled(bool enabled) override;
+  void SetDevicesUpdatesEnabled(bool enabled) override;
+  void SendMessageToBrowser(const std::string& message) override;
+  void RecordActionUMA(const std::string& name, int action) override;
 
   // net::URLFetcherDelegate overrides.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -216,7 +204,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
   scoped_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   GURL url_;
-  using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
+  using PendingRequestsMap = std::map<const net::URLFetcher*, DispatchCallback>;
   PendingRequestsMap pending_requests_;
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
 
