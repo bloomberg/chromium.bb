@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
+#include "ui/gfx/win/dpi.h"
 
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
@@ -250,11 +251,24 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd,
   result.windowX = result.x;
   result.windowY = result.y;
 
-  POINT global_point = { result.x, result.y };
+  // The mouse coordinates received here are device independent (DIPs). We need
+  // to convert them to physical coordinates before calling Windows APIs like
+  // ClientToScreen, etc.
+  gfx::Point scaled_screen_point(result.x, result.y);
+  scaled_screen_point = gfx::win::DIPToScreenPoint(scaled_screen_point);
+
+  POINT global_point = { scaled_screen_point.x(), scaled_screen_point.y() };
   ClientToScreen(hwnd, &global_point);
 
-  result.globalX = global_point.x;
-  result.globalY = global_point.y;
+  scaled_screen_point.set_x(global_point.x);
+  scaled_screen_point.set_y(global_point.y);
+
+  // We need to convert the point back to DIP before using it.
+  gfx::Point dip_screen_point = gfx::win::ScreenToDIPPoint(
+      scaled_screen_point);
+
+  result.globalX = dip_screen_point.x();
+  result.globalY = dip_screen_point.y();
 
   // calculate number of clicks:
 
