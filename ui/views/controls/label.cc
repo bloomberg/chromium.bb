@@ -511,13 +511,6 @@ int Label::ComputeDrawStringFlags() const {
   if (SkColorGetA(background_color_) != 0xFF || !subpixel_rendering_enabled_)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
 
-  base::i18n::TextDirection direction =
-      base::i18n::GetFirstStrongCharacterDirection(layout_text_);
-  if (direction == base::i18n::RIGHT_TO_LEFT)
-    flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-  else
-    flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
-
   switch (GetHorizontalAlignment()) {
     case gfx::ALIGN_LEFT:
       flags |= gfx::Canvas::TEXT_ALIGN_LEFT;

@@ -357,25 +357,6 @@ TEST_F(LabelTest, MultiLineSizing) {
             required_size.width() + border.width());
 }
 
-TEST_F(LabelTest, DirectionalityFromText) {
-  Label label;
-  label.SetBounds(0, 0, 1000, 1000);
-
-  // Test text starts with RTL character.
-  label.SetText(base::WideToUTF16(L"  \x5d0\x5d1\x5d2 abc"));
-  const Label::DrawStringParams* params = label.CalculateDrawStringParams();
-  EXPECT_EQ(gfx::Canvas::FORCE_RTL_DIRECTIONALITY,
-            params->flags & (gfx::Canvas::FORCE_RTL_DIRECTIONALITY |
-                             gfx::Canvas::FORCE_LTR_DIRECTIONALITY));
-
-  // Test text starts with LTR character.
-  label.SetText(base::WideToUTF16(L"ltr \x5d0\x5d1\x5d2 abc"));
-  params = label.CalculateDrawStringParams();
-  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY,
-            params->flags & (gfx::Canvas::FORCE_RTL_DIRECTIONALITY |
-                             gfx::Canvas::FORCE_LTR_DIRECTIONALITY));
-}
-
 TEST_F(LabelTest, DrawSingleLineString) {
   Label label;
   label.SetFocusable(false);
@@ -512,8 +493,7 @@ TEST_F(LabelTest, DrawMultiLineString) {
   EXPECT_GT(params->bounds.width(), kMinTextDimension);
   EXPECT_GT(params->bounds.height(), kMinTextDimension);
   int expected_flags = gfx::Canvas::MULTI_LINE |
-                       gfx::Canvas::TEXT_ALIGN_CENTER |
-                       gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+                       gfx::Canvas::TEXT_ALIGN_CENTER;
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
@@ -529,8 +509,7 @@ TEST_F(LabelTest, DrawMultiLineString) {
   EXPECT_GT(params->bounds.width(), kMinTextDimension);
   EXPECT_GT(params->bounds.height(), kMinTextDimension);
   expected_flags = gfx::Canvas::MULTI_LINE |
-                   gfx::Canvas::TEXT_ALIGN_LEFT |
-                   gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+                   gfx::Canvas::TEXT_ALIGN_LEFT;
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
@@ -545,8 +524,7 @@ TEST_F(LabelTest, DrawMultiLineString) {
   EXPECT_GT(params->bounds.width(), kMinTextDimension);
   EXPECT_GT(params->bounds.height(), kMinTextDimension);
   expected_flags = gfx::Canvas::MULTI_LINE |
-                   gfx::Canvas::TEXT_ALIGN_RIGHT |
-                   gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+                   gfx::Canvas::TEXT_ALIGN_RIGHT;
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
@@ -570,8 +548,7 @@ TEST_F(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(center_bounds.width(), params->bounds.width());
   EXPECT_EQ(center_bounds.height(), params->bounds.height());
   expected_flags = gfx::Canvas::MULTI_LINE |
-                   gfx::Canvas::TEXT_ALIGN_CENTER |
-                   gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+                   gfx::Canvas::TEXT_ALIGN_CENTER;
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
@@ -586,8 +563,7 @@ TEST_F(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(center_bounds.width(), params->bounds.width());
   EXPECT_EQ(center_bounds.height(), params->bounds.height());
   expected_flags = gfx::Canvas::MULTI_LINE |
-                   gfx::Canvas::TEXT_ALIGN_LEFT |
-                   gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+                   gfx::Canvas::TEXT_ALIGN_LEFT;
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
@@ -602,8 +578,7 @@ TEST_F(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(center_bounds.width(), params->bounds.width());
   EXPECT_EQ(center_bounds.height(), params->bounds.height());
   expected_flags = gfx::Canvas::MULTI_LINE |
-                   gfx::Canvas::TEXT_ALIGN_RIGHT |
-                   gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+                   gfx::Canvas::TEXT_ALIGN_RIGHT;
 #if !defined(OS_WIN)
   expected_flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif

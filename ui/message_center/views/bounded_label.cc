@@ -199,11 +199,7 @@ int InnerBoundedLabel::GetTextFlags() {
   if (SkColorGetA(background_color()) != 0xFF)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
 
-  const base::i18n::TextDirection direction =
-      base::i18n::GetFirstStrongCharacterDirection(text());
-  if (direction == base::i18n::RIGHT_TO_LEFT)
-    return flags | gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-  return flags | gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+  return flags | gfx::Canvas::TEXT_ALIGN_TO_HEAD;
 }
 
 void InnerBoundedLabel::ClearCaches() {
