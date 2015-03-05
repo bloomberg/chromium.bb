@@ -761,9 +761,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case SyncXHRWithCredentials:
         return "Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.";
 
-    case EventSourceURL:
-        return replacedBy("EventSource.URL", "EventSource.url");
-
     case HTMLTableElementVspace:
         return "The 'vspace' attribute on table is deprecated. Please use CSS margin-top and margin-bottom property instead.";
 
