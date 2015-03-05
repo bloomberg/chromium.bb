@@ -122,49 +122,66 @@ IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, AcceleratorClose) {
   EXPECT_FALSE(service->GetAppListWindow());
 }
 
-// Browser Test for AppListController that ensures the App Info dialog opens
-// correctly.
-using AppListControllerAppInfoDialogBrowserTest = ExtensionBrowserTest;
+// Tests for opening the app info dialog from the app list.
+class AppListControllerAppInfoDialogBrowserTest : public ExtensionBrowserTest {
+ public:
+  AppListControllerAppInfoDialogBrowserTest() {}
+  ~AppListControllerAppInfoDialogBrowserTest() override {}
+
+ protected:
+  // content::BrowserTestBase:
+  void SetUpOnMainThread() override {
+    // Install a test extension.
+    base::FilePath test_extension_path;
+    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));
+    test_extension_path = test_extension_path.AppendASCII("extensions")
+                              .AppendASCII("platform_apps")
+                              .AppendASCII("minimal");
+    extension_ = InstallExtension(
+        test_extension_path, 1 /* expected_change: new install */);
+    EXPECT_TRUE(extension_);
+
+    // Open the app list.
+    service_ = test::GetAppListService();
+    EXPECT_FALSE(service_->GetAppListWindow());
+    service_->ShowForProfile(browser()->profile());
+    app_list_view_ = GetAppListView(service_);
+    EXPECT_TRUE(app_list_view_);
+    native_view_ = app_list_view_->GetWidget()->GetNativeView();
+    EXPECT_TRUE(native_view_);
+  }
+
+  void OpenAppInfoDialog() {
+    AppListControllerDelegate* controller = service_->GetControllerDelegate();
+    EXPECT_TRUE(controller);
+    EXPECT_TRUE(controller->GetAppListWindow());
+    controller->DoShowAppInfoFlow(browser()->profile(), extension_->id());
+  }
+
+  AppListService* service_;
+  const extensions::Extension* extension_;
+  app_list::AppListView* app_list_view_;
+  gfx::NativeView native_view_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerAppInfoDialogBrowserTest);
+};
 
 // Test the DoShowAppInfoFlow function of the controller delegate.
 // flaky: http://crbug.com/378251
 IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
                        DISABLED_DoShowAppInfoFlow) {
-  // Install an extension to open the dialog for.
-  base::FilePath test_extension_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));
-  test_extension_path = test_extension_path.AppendASCII("extensions")
-                            .AppendASCII("platform_apps")
-                            .AppendASCII("minimal");
-  const extensions::Extension* extension = InstallExtension(
-      test_extension_path, 1 /* expected_change: new install */);
-  ASSERT_TRUE(extension);
+  test::AppListViewTestApi test_api(app_list_view_);
 
-  // Open the app list window.
-  AppListService* service = test::GetAppListService();
-  EXPECT_FALSE(service->GetAppListWindow());
-
-  service->ShowForProfile(browser()->profile());
-  app_list::AppListView* app_list_view = GetAppListView(service);
-  ASSERT_TRUE(app_list_view);
-  gfx::NativeView native_view = app_list_view->GetWidget()->GetNativeView();
-  ASSERT_TRUE(native_view);
-
-  test::AppListViewTestApi test_api(app_list_view);
-
-  // Open the app info dialog.
   views::Widget::Widgets owned_widgets;
-  views::Widget::GetAllOwnedWidgets(native_view, &owned_widgets);
+  views::Widget::GetAllOwnedWidgets(native_view_, &owned_widgets);
   EXPECT_EQ(0U, owned_widgets.size());
   EXPECT_FALSE(test_api.is_overlay_visible());
 
-  AppListControllerDelegate* controller = service->GetControllerDelegate();
-  ASSERT_TRUE(controller);
-  EXPECT_TRUE(controller->GetAppListWindow());
-  controller->DoShowAppInfoFlow(browser()->profile(), extension->id());
+  OpenAppInfoDialog();
 
   owned_widgets.clear();
-  views::Widget::GetAllOwnedWidgets(native_view, &owned_widgets);
+  views::Widget::GetAllOwnedWidgets(native_view_, &owned_widgets);
   EXPECT_EQ(1U, owned_widgets.size());
   EXPECT_TRUE(test_api.is_overlay_visible());
 
@@ -173,9 +190,20 @@ IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
   app_info_dialog->CloseNow();
 
   owned_widgets.clear();
-  views::Widget::GetAllOwnedWidgets(native_view, &owned_widgets);
+  views::Widget::GetAllOwnedWidgets(native_view_, &owned_widgets);
   EXPECT_EQ(0U, owned_widgets.size());
   EXPECT_FALSE(test_api.is_overlay_visible());
+}
+
+// Check that the app list can be closed with the app info dialog
+// open without crashing. This is a regression test for http://crbug.com/443066.
+IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
+                       CanCloseAppListWithAppInfoOpen) {
+  OpenAppInfoDialog();
+
+  // Close the app list window.
+  app_list_view_->GetWidget()->CloseNow();
+  EXPECT_FALSE(GetAppListView(service_));
 }
 
 using AppListServiceViewsExtensionBrowserTest = ExtensionBrowserTest;

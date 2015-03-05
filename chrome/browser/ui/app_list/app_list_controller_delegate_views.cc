@@ -36,8 +36,12 @@ void AppListControllerDelegateViews::OnShowChildDialog() {
 }
 
 void AppListControllerDelegateViews::OnCloseChildDialog() {
-  DCHECK(service_->shower().app_list());
-  service_->shower().app_list()->SetAppListOverlayVisible(false);
+  // If the app list is closed while a child dialog is open (for example,
+  // through an OS-level close command), then the app list view will already
+  // have been cleared from the shower by
+  // AppListShower::HandleViewBeingDestroyed().
+  if (service_->shower().app_list())
+    service_->shower().app_list()->SetAppListOverlayVisible(false);
   service_->set_can_dismiss(true);
 }
 
