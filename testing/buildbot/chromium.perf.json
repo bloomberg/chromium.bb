@@ -44,15 +44,6 @@
       }
     ]
   },
-  "Linux Perf (1)": {
-    "scripts": [
-      {
-	"name": "gpu_perftests",
-	"script": "gtest_perf_test.py",
-	"args": ["gpu_perftests", "--test-launcher-print-test-stdio=always"]
-      }
-    ]
-  },
   "Win 7 ATI GPU Perf": {
     "scripts": [
       {
