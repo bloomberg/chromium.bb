@@ -27,6 +27,17 @@ class DebugCommand(cros.CrosCommand):
   processes of an executable on the target device.
   """
 
+  EPILOG = """
+To list all running processes of an executable:
+  cros debug device --list --exe=/path/to/executable
+
+To debug an executable:
+  cros debug device --exe=/path/to/executable
+
+To debug a process by its pid:
+  cros debug device --pid=1234
+"""
+
   # Override base class property to enable stats upload.
   upload_stats = True
 
@@ -41,7 +52,6 @@ class DebugCommand(cros.CrosCommand):
     # The board name of the target device.
     self.board = None
     # Settings of the process to debug.
-    self.attach = False
     self.list = False
     self.exe = None
     self.pid = None
@@ -62,9 +72,6 @@ class DebugCommand(cros.CrosCommand):
         '--private-key', type='path', default=None,
         help='SSH identity file (private key).')
     parser.add_argument(
-        '--attach', action='store_true', default=False,
-        help='Attach GDB to an already running process on the target device.')
-    parser.add_argument(
         '-l', '--list', action='store_true', default=False,
         help='List running processes of the executable on the target device.')
     parser.add_argument(
@@ -82,12 +89,15 @@ class DebugCommand(cros.CrosCommand):
       except ValueError:
         cros_build_lib.Die('Parsing output failed:\n%s', result.output)
     except cros_build_lib.RunCommandError:
-      cros_build_lib.Die(
-          'Failed to find any running process of %s on device %s', self.exe,
-          self.ssh_hostname)
+      return []
 
   def _ListProcesses(self, device, pids):
     """Provided with a list of pids, print out information of the processes."""
+    if not pids:
+      logging.info(
+          'No running process of %s on device %s', self.exe, self.ssh_hostname)
+      return
+
     try:
       result = device.BaseRunCommand(['ps', 'aux'])
       lines = result.output.splitlines()
@@ -133,7 +143,6 @@ class DebugCommand(cros.CrosCommand):
     self.ssh_username = self.options.device.username
     self.ssh_port = self.options.device.port
     self.ssh_private_key = self.options.private_key
-    self.attach = self.options.attach
     self.list = self.options.list
     self.exe = self.options.exe
     self.pid = self.options.pid
@@ -151,40 +160,44 @@ class DebugCommand(cros.CrosCommand):
                                              override_board=self.options.board)
         logging.info('Board is %s', self.board)
 
+        if not (self.pid or self.exe):
+          cros_build_lib.Die(
+              'Must use --exe or --pid to specify the process to debug.')
+
         if self.pid:
-          # Ignore other flags and start GDB on the pid if it is provided.
+          if self.list or self.exe:
+            cros_build_lib.Die(
+                '--list and --exe are disallowed when --pid is used.')
           self._DebugRunningProcess(self.pid)
           return
 
-        if not (self.exe and self.exe.startswith('/')):
-          cros_build_lib.Die('--exe is required and must be a full pathname.')
-        logging.info('Executable path is %s', self.exe)
+        if not self.exe.startswith('/'):
+          cros_build_lib.Die('--exe must have a full pathname.')
+        logging.debug('Executable path is %s', self.exe)
         if not device.IsFileExecutable(self.exe):
           cros_build_lib.Die(
               'File path "%s" does not exist or is not executable on device %s',
               self.exe, self.ssh_hostname)
 
+        pids = self._GetRunningPids(device)
+        self._ListProcesses(device, pids)
+
         if self.list:
-          # If '--list' flag is on, list the processes without launching GDB.
-          pids = self._GetRunningPids(device)
-          self._ListProcesses(device, pids)
+          # If '--list' flag is on, do not launch GDB.
           return
 
-        if self.attach:
-          pids = self._GetRunningPids(device)
-          if not pids:
-            cros_build_lib.Die('No running process of %s is found on device %s',
-                               self.exe, self.ssh_hostname)
-          elif len(pids) == 1:
-            idx = 0
+        if pids:
+          choices = ['Start a new process under GDB']
+          choices.extend(pids)
+          idx = cros_build_lib.GetChoice(
+              'Please select the process pid to debug (select [0] to start a '
+              'new process):', choices)
+          if idx == 0:
+            self._DebugNewProcess()
           else:
-            self._ListProcesses(device, pids)
-            idx = cros_build_lib.GetChoice(
-                'Please select the process pid to debug:', pids)
-          self._DebugRunningProcess(pids[idx])
-          return
-
-        self._DebugNewProcess()
+            self._DebugRunningProcess(pids[idx - 1])
+        else:
+          self._DebugNewProcess()
 
     except (Exception, KeyboardInterrupt) as e:
       logging.error(e)

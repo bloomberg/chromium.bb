@@ -56,9 +56,19 @@ class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
     self.cmd_mock = None
     self.PatchObject(remote_access, 'ChromiumOSDevice')
 
-  def testMissingExecutable(self):
-    """Test that command fails when executable is not provided."""
+  def testMissingExeAndPid(self):
+    """Test that command fails when --exe and --pid are not provided."""
     self.SetupCommandMock([self.DEVICE])
+    self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
+
+  def testListDisallowedWithPid(self):
+    """Test that --list is disallowed when --pid is used."""
+    self.SetupCommandMock([self.DEVICE, '--list', '--pid', self.PID])
+    self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
+
+  def testExeDisallowedWithPid(self):
+    """Test that --exe is disallowed when --pid is used."""
+    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE, '--pid', self.PID])
     self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
 
   def testDebugProcessWithPid(self):
@@ -77,39 +87,37 @@ class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
     self.assertFalse(self.cmd_mock.patched['_DebugNewProcess'].called)
     self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
 
-  def testDebugNewProcess(self):
-    """Test that methods are called correctly for debugging a new process."""
-    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
-    self.cmd_mock.inst.Run()
-    self.assertFalse(self.cmd_mock.patched['_ListProcesses'].called)
-    self.assertTrue(self.cmd_mock.patched['_DebugNewProcess'].called)
-    self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
-
   def testDebugWithNoRunningProcess(self):
-    """Test that command fails when trying to attach a not running program."""
-    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE, '--attach'])
+    """Test that command starts a new process to debug if none is running."""
+    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
     with mock.patch.object(cros_debug.DebugCommand, '_GetRunningPids',
                            return_value=[]):
-      self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
+      self.cmd_mock.inst.Run()
+      self.assertTrue(self.cmd_mock.patched['_DebugNewProcess'].called)
+      self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
 
-  def testDebugWithOneRunningProcess(self):
-    """Test that methods are called correctly for attaching a single process."""
-    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE, '--attach'])
+  def testDebugNewProcess(self):
+    """Test that user can select zero to start a new process to debug."""
+    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
     with mock.patch.object(cros_debug.DebugCommand, '_GetRunningPids',
                            return_value=['1']):
-      self.cmd_mock.inst.Run()
-      self.assertFalse(self.cmd_mock.patched['_ListProcesses'].called)
-      self.assertFalse(self.cmd_mock.patched['_DebugNewProcess'].called)
-      self.assertTrue(self.cmd_mock.patched['_DebugRunningProcess'].called)
-
-  def testDebugWithMultipleRunningProcesses(self):
-    """Test that methods are called correctly with multiple processes found."""
-    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE, '--attach'])
-    with mock.patch.object(cros_debug.DebugCommand, '_GetRunningPids',
-                           return_value=['1', '2']):
-      with mock.patch.object(cros_build_lib, 'GetChoice') as mock_prompt:
+      with mock.patch.object(
+          cros_build_lib, 'GetChoice', return_value=0) as mock_prompt:
         self.cmd_mock.inst.Run()
+        self.assertTrue(mock_prompt.called)
+        self.assertTrue(self.cmd_mock.patched['_ListProcesses'].called)
+        self.assertTrue(self.cmd_mock.patched['_DebugNewProcess'].called)
+        self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
+
+  def testDebugRunningProcess(self):
+    """Test that user can select none-zero to debug a running process."""
+    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
+    with mock.patch.object(cros_debug.DebugCommand, '_GetRunningPids',
+                           return_value=['1']):
+      with mock.patch.object(
+          cros_build_lib, 'GetChoice', return_value=1) as mock_prompt:
+        self.cmd_mock.inst.Run()
+        self.assertTrue(mock_prompt.called)
         self.assertTrue(self.cmd_mock.patched['_ListProcesses'].called)
         self.assertFalse(self.cmd_mock.patched['_DebugNewProcess'].called)
-        self.assertTrue(mock_prompt.called)
         self.assertTrue(self.cmd_mock.patched['_DebugRunningProcess'].called)
