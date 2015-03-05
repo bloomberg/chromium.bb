@@ -1840,7 +1840,11 @@
 
           Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Extensions specified in this list are also automatically whitelisted for installation; the ExtensionsInstallBlacklist does not affect them.
 
-          If this policy is left not set the user can uninstall any extension  in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          Note that the source code of any extension may be altered (potentially
+          rendering the extension dysfunctional) by using Developer Tools. If
+          this is a concern, the DeveloperToolsDisabled policy should be set.
+
+          If this policy is left not set the user can uninstall any extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
           'label': '''Extension IDs and update URLs to be silently installed''',
         },
         {
