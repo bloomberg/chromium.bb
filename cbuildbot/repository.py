@@ -335,7 +335,8 @@ class RepoRepository(object):
       cmd = ['repo', '--time', 'sync']
       if jobs:
         cmd += ['--jobs', str(jobs)]
-      if not all_branches:
+      if not all_branches or self._depth is not None:
+        # Note that this option can break kernel checkouts. crbug.com/464536
         cmd.append('-c')
       # Do the network half of the sync; retry as necessary to get the content.
       retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd + ['-n'],

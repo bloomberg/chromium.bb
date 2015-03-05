@@ -41,17 +41,19 @@ class SdkCommand(cros.CrosCommand):
     if version.lower() == 'tot':
       manifest_url = constants.MANIFEST_URL
       manifest_path = constants.PROJECT_MANIFEST
+      depth = None
     else:
       manifest_url = cbuildbot_config.GetManifestVersionsRepoUrl(
           False, read_only=True)
       manifest_path = 'project-sdk/%s.xml' % version
+      depth = 1
 
     # Init new repo.
     repo = repository.RepoRepository(
-        manifest_url, sdk_dir, manifest=manifest_path)
+        manifest_url, sdk_dir, manifest=manifest_path, depth=depth)
 
     # Sync it.
-    repo.Sync(all_branches=False)
+    repo.Sync()
 
   @classmethod
   def AddParser(cls, parser):
