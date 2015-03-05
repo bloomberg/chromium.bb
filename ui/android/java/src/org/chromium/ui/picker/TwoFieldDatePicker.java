@@ -4,6 +4,7 @@
 
 package org.chromium.ui.picker;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.text.format.DateFormat;
@@ -112,12 +113,7 @@ public abstract class TwoFieldDatePicker extends FrameLayout {
         mYearSpinner.setOnLongPressUpdateInterval(100);
         mYearSpinner.setOnValueChangedListener(onChangeListener);
 
-        // TODO(tobiasjs): reorderSpinners causes a crash on Android versions before JB MR2 because
-        // it calls DateFormat.getBestDateTimePattern() which isn't available before then. Fix this
-        // crash and call reorderSpinners on all devices. http://crbug.com/463719
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            reorderSpinners();
-        }
+        reorderSpinners();
     }
 
     /**
@@ -125,35 +121,53 @@ public abstract class TwoFieldDatePicker extends FrameLayout {
      * Assumes that the order of month and year in the locale is also the right order
      * for the spinner columns.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void reorderSpinners() {
-        // logic duplicated from android.widget.DatePicker
+        boolean posInserted = false;
+        boolean yearInserted = false;
+
         LinearLayout pickers = (LinearLayout) findViewById(R.id.pickers);
+
         pickers.removeView(mPositionInYearSpinner);
         pickers.removeView(mYearSpinner);
 
-        String pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMMdd");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            // logic duplicated from android.widget.DatePicker
+            String pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "yyyyMMMdd");
 
-        boolean pos_inserted = false;
-        boolean year_inserted = false;
-
-        for (int i = 0; i < pattern.length(); ++i) {
-            char ch = pattern.charAt(i);
-            if (ch == '\'') {
-                i = pattern.indexOf('\'', i + 1);
-                if (i == -1) {
-                    throw new IllegalArgumentException("Bad quoting in " + pattern);
+            for (int i = 0; i < pattern.length(); ++i) {
+                char ch = pattern.charAt(i);
+                if (ch == '\'') {
+                    i = pattern.indexOf('\'', i + 1);
+                    if (i == -1) {
+                        throw new IllegalArgumentException("Bad quoting in " + pattern);
+                    }
+                } else if ((ch == 'M' || ch == 'L') && !posInserted) {
+                    pickers.addView(mPositionInYearSpinner);
+                    posInserted = true;
+                } else if (ch == 'y' && !yearInserted) {
+                    pickers.addView(mYearSpinner);
+                    yearInserted = true;
                 }
-            } else if ((ch == 'M' || ch == 'L') && !pos_inserted) {
-                pickers.addView(mPositionInYearSpinner);
-                pos_inserted = true;
-            } else if (ch == 'y' && !year_inserted) {
-                pickers.addView(mYearSpinner);
-                year_inserted = true;
+            }
+        } else {
+            // This method was used to order android.widget.DatePicker
+            // fields in JB prior to the availability of
+            // getBestDateTimePattern.
+            char[] order = DateFormat.getDateFormatOrder(getContext());
+            for (int i = 0; i < order.length; ++i) {
+                if (order[i] == 'M') {
+                    pickers.addView(mPositionInYearSpinner);
+                    posInserted = true;
+                } else if (order[i] == 'y') {
+                    pickers.addView(mYearSpinner);
+                    yearInserted = true;
+                }
             }
         }
 
-        if (!pos_inserted) pickers.addView(mPositionInYearSpinner);
-        if (!year_inserted) pickers.addView(mYearSpinner);
+        if (!posInserted) pickers.addView(mPositionInYearSpinner);
+        if (!yearInserted) pickers.addView(mYearSpinner);
     }
 
     /**
