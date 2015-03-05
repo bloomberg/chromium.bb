@@ -41,5 +41,10 @@
       "tools/perf/.*",
       "tools/telemetry/.*"
     ]
+  },
+  "ios": {
+    "exclusions": [
+      "ios/build/bots/.*"
+    ]
   }
 }
