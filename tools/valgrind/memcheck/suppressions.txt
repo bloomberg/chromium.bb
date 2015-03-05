@@ -501,6 +501,16 @@
    fun:_ZN10extensions19ExtensionManagement7RefreshEv
    fun:_ZN10extensions19ExtensionManagement22OnExtensionPrefChangedEv
 }
+{
+   bug_464462
+   Memcheck:Uninitialized
+   fun:_ZN7content14ManifestParser16ParseIconDensityERKN4base15DictionaryValueE
+   fun:_ZN7content14ManifestParser10ParseIconsERKN4base15DictionaryValueE
+   fun:_ZN7content14ManifestParser5ParseEv
+   fun:_ZN7content18ManifestParserTest21ParseManifestWithURLsERKN4base16BasicStringPieceISsEERK4GURLS8_
+   fun:_ZN7content18ManifestParserTest13ParseManifestERKN4base16BasicStringPieceISsEE
+   fun:_ZN7content45ManifestParserTest_IconDensityParseRules_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
