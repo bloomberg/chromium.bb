@@ -166,7 +166,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     // Content layer Observers and Delegates
     private ContentViewClient mContentViewClient;
     private WebContentsObserver mWebContentsObserver;
-    private VoiceSearchTabHelper mVoiceSearchTabHelper;
     private TabChromeWebContentsDelegateAndroid mWebContentsDelegate;
     private DomDistillerFeedbackReporter mDomDistillerFeedbackReporter;
 
@@ -1437,7 +1436,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         mWebContentsDelegate = createWebContentsDelegate();
         mWebContentsObserver = new TabWebContentsObserver(mContentViewCore.getWebContents());
-        mVoiceSearchTabHelper = new VoiceSearchTabHelper(mContentViewCore.getWebContents());
 
         if (mContentViewClient != null) mContentViewCore.setContentViewClient(mContentViewClient);
 
@@ -1876,11 +1874,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mWebContentsObserver != null) {
             mWebContentsObserver.destroy();
             mWebContentsObserver = null;
-        }
-
-        if (mVoiceSearchTabHelper != null) {
-            mVoiceSearchTabHelper.destroy();
-            mVoiceSearchTabHelper = null;
         }
 
         assert mNativeTabAndroid != 0;

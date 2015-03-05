@@ -1665,7 +1665,6 @@
       'android/java/src/org/chromium/chrome/browser/TtsPlatformImpl.java',
       'android/java/src/org/chromium/chrome/browser/UrlUtilities.java',
       'android/java/src/org/chromium/chrome/browser/util/FeatureUtilities.java',
-      'android/java/src/org/chromium/chrome/browser/VoiceSearchTabHelper.java',
       'android/java/src/org/chromium/chrome/browser/WebsiteSettingsPopup.java',
       'android/java/src/org/chromium/chrome/browser/infobar/AppBannerInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/AccountChooserInfoBar.java',

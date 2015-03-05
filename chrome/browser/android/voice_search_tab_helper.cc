@@ -10,38 +10,36 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
-#include "jni/VoiceSearchTabHelper_jni.h"
 
-using content::WebContents;
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(VoiceSearchTabHelper);
 
-// Register native methods
-bool RegisterVoiceSearchTabHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env);
+VoiceSearchTabHelper::VoiceSearchTabHelper(content::WebContents* contents)
+    : content::WebContentsObserver(contents) {
+  gesture_requirement_for_playback_disabled_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGestureRequirementForMediaPlayback);
 }
 
-static void UpdateAutoplayStatus(JNIEnv* env,
-                                 jobject obj,
-                                 jobject j_web_contents) {
+VoiceSearchTabHelper::~VoiceSearchTabHelper() {
+}
+
+void VoiceSearchTabHelper::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
   // In the case where media autoplay has been disabled by default (e.g. in
   // performance media tests) do not update it based on navigation changes.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(
-      switches::kDisableGestureRequirementForMediaPlayback))
+  if (gesture_requirement_for_playback_disabled_)
     return;
 
-  WebContents* web_contents = WebContents::FromJavaWebContents(j_web_contents);
-  content::RenderViewHost* host = web_contents->GetRenderViewHost();
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   content::WebPreferences prefs = host->GetWebkitPreferences();
 
   bool gesture_required =
-      !google_util::IsGoogleSearchUrl(web_contents->GetLastCommittedURL());
+      !google_util::IsGoogleSearchUrl(web_contents()->GetLastCommittedURL());
 
   if (gesture_required != prefs.user_gesture_required_for_media_playback) {
     // TODO(chrishtr): this is wrong. user_gesture_required_for_media_playback
     // will be reset the next time a preference changes.
-    prefs.user_gesture_required_for_media_playback =
-        !google_util::IsGoogleSearchUrl(web_contents->GetLastCommittedURL());
+    prefs.user_gesture_required_for_media_playback = gesture_required;
     host->UpdateWebkitPreferences(prefs);
   }
 }
