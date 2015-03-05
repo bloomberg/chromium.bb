@@ -88,6 +88,8 @@ void ChromeBrowserPolicyConnector::Init(
 
   BrowserPolicyConnector::Init(
       local_state, request_context, device_management_service.Pass());
+
+  AppendExtraFlagsPerPolicy();
 }
 
 ConfigurationPolicyProvider*
