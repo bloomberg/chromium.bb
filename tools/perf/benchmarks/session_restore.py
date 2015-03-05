@@ -85,7 +85,7 @@ class SessionRestoreColdTypical25(_SessionRestoreTypical25):
 
 
 # crbug.com/325479, crbug.com/381990
-@benchmark.Disabled('android', 'linux', 'reference')
+@benchmark.Disabled('android', 'linux', 'reference', 'xp')
 class SessionRestoreWarmTypical25(_SessionRestoreTypical25):
   """Test without clearing system cache or profile before repeats.
 
