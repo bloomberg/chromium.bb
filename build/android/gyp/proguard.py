@@ -28,7 +28,31 @@ def DoProguard(options):
                   '-outjars', outjars,
                   '-libraryjars', libraryjars,
                   '@' + options.proguard_config]
-  build_utils.CheckOutput(proguard_cmd, print_stdout=True)
+  build_utils.CheckOutput(proguard_cmd, print_stdout=True,
+                          stdout_filter=FilterProguardOutput)
+
+
+def FilterProguardOutput(output):
+  '''ProGuard outputs boring stuff to stdout (proguard version, jar path, etc)
+  as well as interesting stuff (notes, warnings, etc). If stdout is entirely
+  boring, this method suppresses the output.
+  '''
+  ignore_patterns = [
+    'ProGuard, version ',
+    'Reading program jar [',
+    'Reading library jar [',
+    'Preparing output jar [',
+    '  Copying resources from program jar [',
+  ]
+  for line in output.splitlines():
+    for pattern in ignore_patterns:
+      if line.startswith(pattern):
+        break
+    else:
+      # line doesn't match any of the patterns; it's probably something worth
+      # printing out.
+      return output
+  return ''
 
 
 def main(args):
