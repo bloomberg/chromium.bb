@@ -609,7 +609,7 @@ class EBuild(object):
           self._ebuild_path_no_version,
           'Package has a chromeos-version.sh script but is not workon-able.')
 
-    srcdirs = self.GetSourcePath(srcroot, manifest)[1]
+    _, srcdirs = self.GetSourcePath(srcroot, manifest)
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
@@ -686,7 +686,7 @@ class EBuild(object):
       cros_build_lib.Die('Missing unstable ebuild: %s' %
                          self._unstable_ebuild_path)
 
-    srcdirs = self.GetSourcePath(srcroot, manifest)[1]
+    _, srcdirs = self.GetSourcePath(srcroot, manifest)
     commit_ids = map(self.GetCommitId, srcdirs)
     tree_ids = map(self.GetTreeId, srcdirs)
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
@@ -759,7 +759,7 @@ class EBuild(object):
     ebuild_projects = {}
     for ebuilds in overlay_dict.itervalues():
       for ebuild in ebuilds:
-        _projects, paths = ebuild.GetSourcePath(directory_src, manifest)
+        _, paths = ebuild.GetSourcePath(directory_src, manifest)
         if changed_paths.intersection(paths):
           ebuild_projects[ebuild] = paths
 
