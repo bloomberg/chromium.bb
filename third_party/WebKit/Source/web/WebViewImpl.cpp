@@ -3446,7 +3446,7 @@ void WebViewImpl::updateMainFrameLayoutSize()
     WebSize layoutSize = m_size;
 
     if (settings()->viewportEnabled())
-        layoutSize = m_pageScaleConstraintsSet.layoutSize();
+        layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
 
     if (page()->settings().forceZeroLayoutHeight())
         layoutSize.height = 0;

@@ -531,8 +531,6 @@ public:
 
     IntSize mainFrameSize();
 
-    PageScaleConstraintsSet& pageScaleConstraintsSet() { return m_pageScaleConstraintsSet; }
-
 private:
     // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
     // prevent external usage

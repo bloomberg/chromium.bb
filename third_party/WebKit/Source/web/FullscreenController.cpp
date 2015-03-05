@@ -74,12 +74,6 @@ void FullscreenController::didEnterFullScreen()
         m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
         m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
         m_exitFullscreenPinchViewportOffset = m_webViewImpl->pinchViewportOffset();
-
-        PageScaleConstraints fullscreenConstraints(1.0, 1.0, 1.0);
-        fullscreenConstraints.layoutSize = IntSize(m_webViewImpl->size());
-        m_webViewImpl->pageScaleConstraintsSet().setFullscreenConstraints(fullscreenConstraints);
-        m_webViewImpl->pageScaleConstraintsSet().computeFinalConstraints();
-        m_webViewImpl->updateMainFrameLayoutSize();
         m_webViewImpl->setPageScaleFactor(1.0f);
         m_webViewImpl->setMainFrameScrollOffset(IntPoint());
         m_webViewImpl->setPinchViewportOffset(FloatPoint());
@@ -122,9 +116,6 @@ void FullscreenController::didExitFullScreen()
                     m_webViewImpl->layerTreeView()->setHasTransparentBackground(m_webViewImpl->isTransparent());
 
                 if (m_exitFullscreenPageScaleFactor) {
-                    m_webViewImpl->pageScaleConstraintsSet().setFullscreenConstraints(PageScaleConstraints());
-                    m_webViewImpl->pageScaleConstraintsSet().computeFinalConstraints();
-                    m_webViewImpl->updateMainFrameLayoutSize();
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
                     m_webViewImpl->setMainFrameScrollOffset(IntPoint(m_exitFullscreenScrollOffset));
                     m_webViewImpl->setPinchViewportOffset(m_exitFullscreenPinchViewportOffset);

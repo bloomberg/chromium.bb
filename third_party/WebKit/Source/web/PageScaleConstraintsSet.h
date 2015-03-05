@@ -59,9 +59,6 @@ public:
     const PageScaleConstraints& userAgentConstraints() const { return m_userAgentConstraints; }
     void setUserAgentConstraints(const PageScaleConstraints&);
 
-    const PageScaleConstraints& fullscreenConstraints() const { return m_fullscreenConstraints; }
-    void setFullscreenConstraints(const PageScaleConstraints&);
-
     // Actual computed values, taking into account the above plus the current
     // viewport size and document width.
     const PageScaleConstraints& finalConstraints() const { return m_finalConstraints; }
@@ -82,15 +79,12 @@ public:
 
     IntSize mainFrameSize() const;
 
-    IntSize layoutSize() const;
-
 private:
     PageScaleConstraints computeConstraintsStack() const;
 
     PageScaleConstraints m_defaultConstraints;
     PageScaleConstraints m_pageDefinedConstraints;
     PageScaleConstraints m_userAgentConstraints;
-    PageScaleConstraints m_fullscreenConstraints;
     PageScaleConstraints m_finalConstraints;
 
     int m_lastContentsWidth;

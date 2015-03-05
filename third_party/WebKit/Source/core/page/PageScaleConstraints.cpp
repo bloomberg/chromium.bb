@@ -52,7 +52,7 @@ void PageScaleConstraints::overrideWith(const PageScaleConstraints& other)
         minimumScale = other.minimumScale;
     if (other.maximumScale != -1)
         maximumScale = other.maximumScale;
-    if (!other.layoutSize.isZero())
+    if (!other.layoutSize.isEmpty())
         layoutSize = other.layoutSize;
     clampAll();
 }
