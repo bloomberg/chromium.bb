@@ -22,19 +22,25 @@ MTPDeviceTaskHelperMapService* MTPDeviceTaskHelperMapService::GetInstance() {
 }
 
 MTPDeviceTaskHelper* MTPDeviceTaskHelperMapService::CreateDeviceTaskHelper(
-    const std::string& storage_name) {
+    const std::string& storage_name,
+    const bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!storage_name.empty());
-  DCHECK(!ContainsKey(task_helper_map_, storage_name));
+  const MTPDeviceTaskHelperKey key =
+      GetMTPDeviceTaskHelperKey(storage_name, read_only);
+  DCHECK(!ContainsKey(task_helper_map_, key));
   MTPDeviceTaskHelper* task_helper = new MTPDeviceTaskHelper();
-  task_helper_map_[storage_name] = task_helper;
+  task_helper_map_[key] = task_helper;
   return task_helper;
 }
 
 void MTPDeviceTaskHelperMapService::DestroyDeviceTaskHelper(
-    const std::string& storage_name) {
+    const std::string& storage_name,
+    const bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  TaskHelperMap::iterator it = task_helper_map_.find(storage_name);
+  const MTPDeviceTaskHelperKey key =
+      GetMTPDeviceTaskHelperKey(storage_name, read_only);
+  TaskHelperMap::iterator it = task_helper_map_.find(key);
   if (it == task_helper_map_.end())
     return;
   delete it->second;
@@ -42,11 +48,23 @@ void MTPDeviceTaskHelperMapService::DestroyDeviceTaskHelper(
 }
 
 MTPDeviceTaskHelper* MTPDeviceTaskHelperMapService::GetDeviceTaskHelper(
-    const std::string& storage_name) {
+    const std::string& storage_name,
+    const bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!storage_name.empty());
-  TaskHelperMap::const_iterator it = task_helper_map_.find(storage_name);
+  const MTPDeviceTaskHelperKey key =
+      GetMTPDeviceTaskHelperKey(storage_name, read_only);
+  TaskHelperMap::const_iterator it = task_helper_map_.find(key);
   return (it != task_helper_map_.end()) ? it->second : NULL;
+}
+
+// static
+MTPDeviceTaskHelperMapService::MTPDeviceTaskHelperKey
+MTPDeviceTaskHelperMapService::GetMTPDeviceTaskHelperKey(
+    const std::string& storage_name,
+    const bool read_only) {
+  return (read_only ? "ReadOnly" : "ReadWrite") + std::string("|") +
+         storage_name;
 }
 
 MTPDeviceTaskHelperMapService::MTPDeviceTaskHelperMapService() {

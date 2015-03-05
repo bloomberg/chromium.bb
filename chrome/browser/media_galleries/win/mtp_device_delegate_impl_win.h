@@ -110,6 +110,12 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
                          int buf_len,
                          const ReadBytesSuccessCallback& success_callback,
                          const ErrorCallback& error_callback) override;
+  bool IsReadOnly() override;
+  void CopyFileFromLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) override;
   virtual void CancelPendingTasksAndDeleteDelegate() override;
 
   // Ensures the device is initialized for communication by doing a

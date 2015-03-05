@@ -59,6 +59,10 @@ class MediaTransferProtocolManager {
   typedef base::Callback<void(const MtpFileEntry& file_entry,
                               bool error)> GetFileInfoCallback;
 
+  // A callback to handle the result of CopyFileFromLocal.
+  // The first argument is true if there was an error.
+  typedef base::Callback<void(bool error)> CopyFileFromLocalCallback;
+
   // Implement this interface to be notified about MTP storage
   // attachment / detachment events.
   class Observer {
@@ -114,6 +118,14 @@ class MediaTransferProtocolManager {
   virtual void GetFileInfo(const std::string& storage_handle,
                            uint32 file_id,
                            const GetFileInfoCallback& callback) = 0;
+
+  // Copies the file from |source_file_descriptor| to |file_name| on
+  // |parent_id|.
+  virtual void CopyFileFromLocal(const std::string& storage_handle,
+                                 const int source_file_descriptor,
+                                 const uint32 parent_id,
+                                 const std::string& file_name,
+                                 const CopyFileFromLocalCallback& callback) = 0;
 
   // Creates and returns the global MediaTransferProtocolManager instance.
   // On Linux, |task_runner| specifies the task runner to process asynchronous

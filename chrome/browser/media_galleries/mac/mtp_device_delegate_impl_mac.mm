@@ -209,6 +209,18 @@ void MTPDeviceDelegateImplMac::ReadBytes(
   NOTREACHED();
 }
 
+bool MTPDeviceDelegateImplMac::IsReadOnly() {
+  return true;
+}
+
+void MTPDeviceDelegateImplMac::CopyFileFromLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CopyFileFromLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
 void MTPDeviceDelegateImplMac::CancelPendingTasksAndDeleteDelegate() {
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&MTPDeviceDelegateImplMac::CancelAndDelete,
@@ -480,7 +492,11 @@ MTPDeviceDelegateImplMac::ReadDirectoryRequest::~ReadDirectoryRequest() {}
 
 void CreateMTPDeviceAsyncDelegate(
     const base::FilePath::StringType& device_location,
+    const bool read_only,
     const CreateMTPDeviceAsyncDelegateCallback& cb) {
+  // Write operation is not supported on Mac.
+  DCHECK(read_only);
+
   std::string device_name = base::FilePath(device_location).BaseName().value();
   std::string device_id;
   storage_monitor::StorageInfo::Type type;

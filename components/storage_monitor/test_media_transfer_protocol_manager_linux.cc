@@ -66,4 +66,13 @@ void TestMediaTransferProtocolManagerLinux::GetFileInfo(
   callback.Run(MtpFileEntry(), true);
 }
 
+void TestMediaTransferProtocolManagerLinux::CopyFileFromLocal(
+    const std::string& storage_handle,
+    const int source_file_descriptor,
+    const uint32 parent_id,
+    const std::string& file_name,
+    const CopyFileFromLocalCallback& callback) {
+  callback.Run(true /* error */);
+}
+
 }  // namespace storage_monitor

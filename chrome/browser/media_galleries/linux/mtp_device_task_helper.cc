@@ -59,6 +59,7 @@ MTPDeviceTaskHelper::~MTPDeviceTaskHelper() {
 }
 
 void MTPDeviceTaskHelper::OpenStorage(const std::string& storage_name,
+                                      const bool read_only,
                                       const OpenStorageCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!storage_name.empty());
@@ -68,11 +69,12 @@ void MTPDeviceTaskHelper::OpenStorage(const std::string& storage_name,
                                      base::Bind(callback, true));
     return;
   }
+
+  const std::string mode =
+      read_only ? mtpd::kReadOnlyMode : mtpd::kReadWriteMode;
   GetMediaTransferProtocolManager()->OpenStorage(
-      storage_name, mtpd::kReadOnlyMode,
-      base::Bind(&MTPDeviceTaskHelper::OnDidOpenStorage,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+      storage_name, mode, base::Bind(&MTPDeviceTaskHelper::OnDidOpenStorage,
+                                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void MTPDeviceTaskHelper::GetFileInfo(
@@ -134,6 +136,22 @@ void MTPDeviceTaskHelper::ReadBytes(
       device_handle_, request.file_id,
       base::Bind(&MTPDeviceTaskHelper::OnGetFileInfoToReadBytes,
                  weak_ptr_factory_.GetWeakPtr(), request));
+}
+
+void MTPDeviceTaskHelper::CopyFileFromLocal(
+    const std::string& storage_name,
+    const int source_file_descriptor,
+    const uint32 parent_id,
+    const std::string& file_name,
+    const CopyFileFromLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  GetMediaTransferProtocolManager()->CopyFileFromLocal(
+      device_handle_, source_file_descriptor, parent_id, file_name,
+      base::Bind(&MTPDeviceTaskHelper::OnCopyFileFromLocal,
+                 weak_ptr_factory_.GetWeakPtr(), success_callback,
+                 error_callback));
 }
 
 void MTPDeviceTaskHelper::CloseStorage() const {
@@ -264,6 +282,22 @@ void MTPDeviceTaskHelper::OnDidReadBytes(
                                    FROM_HERE,
                                    base::Bind(request.success_callback,
                                               file_info, data.length()));
+}
+
+void MTPDeviceTaskHelper::OnCopyFileFromLocal(
+    const CopyFileFromLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    const bool error) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (error) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(error_callback, base::File::FILE_ERROR_FAILED));
+    return;
+  }
+
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   base::Bind(success_callback));
 }
 
 void MTPDeviceTaskHelper::HandleDeviceError(

@@ -223,6 +223,25 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  void CopyFileFromLocal(const std::string& storage_handle,
+                         const int source_file_descriptor,
+                         const uint32 parent_id,
+                         const std::string& file_name,
+                         const CopyFileFromLocalCallback& callback) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+      callback.Run(true /* error */);
+      return;
+    }
+    copy_file_from_local_callbacks_.push(callback);
+    mtp_client_->CopyFileFromLocal(
+        storage_handle, source_file_descriptor, parent_id, file_name,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnCopyFileFromLocal,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnCopyFileFromLocalError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
  private:
   // Map of storage names to storage info.
   typedef std::map<std::string, MtpStorageInfo> StorageInfoMap;
@@ -235,6 +254,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   typedef std::queue<ReadDirectoryCallback> ReadDirectoryCallbackQueue;
   typedef std::queue<ReadFileCallback> ReadFileCallbackQueue;
   typedef std::queue<GetFileInfoCallback> GetFileInfoCallbackQueue;
+  typedef std::queue<CopyFileFromLocalCallback> CopyFileFromLocalCallbackQueue;
 
   void OnStorageAttached(const std::string& storage_name) {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -451,6 +471,18 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     get_file_info_callbacks_.pop();
   }
 
+  void OnCopyFileFromLocal() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    copy_file_from_local_callbacks_.front().Run(false /* no error */);
+    copy_file_from_local_callbacks_.pop();
+  }
+
+  void OnCopyFileFromLocalError() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    copy_file_from_local_callbacks_.front().Run(true /* error */);
+    copy_file_from_local_callbacks_.pop();
+  }
+
   // Get the Bus object used to communicate with mtpd.
   dbus::Bus* GetBus() {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -532,6 +564,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   ReadDirectoryCallbackQueue read_directory_callbacks_;
   ReadFileCallbackQueue read_file_callbacks_;
   GetFileInfoCallbackQueue get_file_info_callbacks_;
+  CopyFileFromLocalCallbackQueue copy_file_from_local_callbacks_;
 
   base::ThreadChecker thread_checker_;
 

@@ -63,6 +63,9 @@ class MTPDeviceAsyncDelegate {
     ErrorCallback error_callback;
   };
 
+  // A callback to be called when CopyFileFromLocal method call succeeds.
+  typedef base::Closure CopyFileFromLocalSuccessCallback;
+
   // Gets information about the given |file_path| and invokes the appropriate
   // callback asynchronously when complete.
   virtual void GetFileInfo(
@@ -99,6 +102,16 @@ class MTPDeviceAsyncDelegate {
                          const ReadBytesSuccessCallback& success_callback,
                          const ErrorCallback& error_callback) = 0;
 
+  // Returns true if storage is opened for read only.
+  virtual bool IsReadOnly() = 0;
+
+  // Copies a file from |source_file_path| to |device_file_path|.
+  virtual void CopyFileFromLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) = 0;
+
   // Called when the
   // (1) Browser application is in shutdown mode (or)
   // (2) Last extension using this MTP device is destroyed (or)
@@ -119,6 +132,7 @@ typedef base::Callback<void(MTPDeviceAsyncDelegate*)>
 
 void CreateMTPDeviceAsyncDelegate(
     const base::FilePath::StringType& device_location,
+    const bool read_only,
     const CreateMTPDeviceAsyncDelegateCallback& callback);
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_

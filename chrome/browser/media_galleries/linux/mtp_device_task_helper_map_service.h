@@ -20,25 +20,36 @@ class MTPDeviceTaskHelperMapService {
 
   // Creates and returns the MTPDeviceTaskHelper object for the storage device
   // specified by the |storage_name|.
-  MTPDeviceTaskHelper* CreateDeviceTaskHelper(const std::string& storage_name);
+  MTPDeviceTaskHelper* CreateDeviceTaskHelper(const std::string& storage_name,
+                                              const bool read_only);
 
   // Destroys the MTPDeviceTaskHelper object created by
   // CreateDeviceTaskHelper().
   // |storage_name| specifies the name of the storage device.
-  void DestroyDeviceTaskHelper(const std::string& storage_name);
+  void DestroyDeviceTaskHelper(const std::string& storage_name,
+                               const bool read_only);
 
   // Gets the MTPDeviceTaskHelper object associated with the device storage.
   // |storage_name| specifies the name of the storage device.
   // Return NULL if the |storage_name| is no longer valid (e.g. because the
   // corresponding storage device is detached, etc).
-  MTPDeviceTaskHelper* GetDeviceTaskHelper(const std::string& storage_name);
+  MTPDeviceTaskHelper* GetDeviceTaskHelper(const std::string& storage_name,
+                                           const bool read_only);
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MTPDeviceTaskHelperMapService>;
 
-  // Key: Storage name.
+  // A key to be used in TaskHelperMap.
+  typedef std::string MTPDeviceTaskHelperKey;
+
+  // Gets a key from |storage_name| and |read_only|.
+  static MTPDeviceTaskHelperKey GetMTPDeviceTaskHelperKey(
+      const std::string& storage_name,
+      const bool read_only);
+
+  // Key: A combined value with storage_name and read_only.
   // Value: MTPDeviceTaskHelper object.
-  typedef std::map<std::string, MTPDeviceTaskHelper*> TaskHelperMap;
+  typedef std::map<MTPDeviceTaskHelperKey, MTPDeviceTaskHelper*> TaskHelperMap;
 
   // Get access to this class using GetInstance() method.
   MTPDeviceTaskHelperMapService();

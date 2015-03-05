@@ -661,18 +661,23 @@ void VolumeManager::OnRemovableStorageAttached(
           storage::FileSystemMountOption(),
           path);
   DCHECK(result);
+
+  // TODO(yawano) A variable to switch MTP write support. This variable should
+  // be false until MTP write operation is implemented and shipped.
+  bool write_supported = false;
+
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE, base::Bind(
-          &MTPDeviceMapService::RegisterMTPFileSystem,
-          base::Unretained(MTPDeviceMapService::GetInstance()),
-          info.location(), fsid));
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&MTPDeviceMapService::RegisterMTPFileSystem,
+                 base::Unretained(MTPDeviceMapService::GetInstance()),
+                 info.location(), fsid, !write_supported /* read_only  */));
 
   VolumeInfo volume_info;
   volume_info.type = VOLUME_TYPE_MTP;
   volume_info.mount_path = path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = true;
-  volume_info.is_read_only = true;
+  volume_info.is_read_only = !write_supported;
   volume_info.volume_id = kMtpVolumeIdPrefix + label;
   volume_info.volume_label = label;
   volume_info.source_path = path;

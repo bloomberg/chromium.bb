@@ -54,6 +54,12 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
                  int buf_len,
                  const ReadBytesSuccessCallback& success_callback,
                  const ErrorCallback& error_callback) override;
+  bool IsReadOnly() override;
+  void CopyFileFromLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) override;
   void CancelPendingTasksAndDeleteDelegate() override;
 
   // Forward delegates for ImageCaptureDeviceListener. These are

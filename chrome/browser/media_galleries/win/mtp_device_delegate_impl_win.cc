@@ -315,8 +315,13 @@ void OnGetStorageInfoCreateDelegate(
 
 void CreateMTPDeviceAsyncDelegate(
     const base::string16& device_location,
+    const bool read_only,
     const CreateMTPDeviceAsyncDelegateCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // Write operation is not supported on Windows.
+  DCHECK(read_only);
+
   DCHECK(!device_location.empty());
   base::string16* pnp_device_id = new base::string16;
   base::string16* storage_object_id = new base::string16;
@@ -452,6 +457,18 @@ void MTPDeviceDelegateImplWin::ReadBytes(
     int64 offset,
     int buf_len,
     const ReadBytesSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+bool MTPDeviceDelegateImplWin::IsReadOnly() {
+  return true;
+}
+
+void MTPDeviceDelegateImplWin::CopyFileFromLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CopyFileFromLocalSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   NOTREACHED();
 }

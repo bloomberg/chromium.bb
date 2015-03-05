@@ -68,6 +68,9 @@ class MediaTransferProtocolDaemonClient {
   // The argument is a string containing the file data.
   typedef base::Callback<void(const std::string& data)> ReadFileCallback;
 
+  // A callback to handle the result of CopyFileFromLocal.
+  typedef base::Closure CopyFileFromLocalCallback;
+
   // A callback to handle storage attach/detach events.
   // The first argument is true for attach, false for detach.
   // The second argument is the storage name.
@@ -136,6 +139,18 @@ class MediaTransferProtocolDaemonClient {
                              uint32 bytes_to_read,
                              const ReadFileCallback& callback,
                              const ErrorCallback& error_callback) = 0;
+
+  // Calls CopyFileFromLocal method. |callback| is called after the method call
+  // succeeds, otherwise, |error_callback| is called.
+  // |source_file_descriptor| is a file descriptor of source file.
+  // |parent_id| is a object id of a target directory.
+  // |file_name| is a file name of a target file.
+  virtual void CopyFileFromLocal(const std::string& handle,
+                                 const int source_file_descriptor,
+                                 const uint32 parent_id,
+                                 const std::string& file_name,
+                                 const CopyFileFromLocalCallback& callback,
+                                 const ErrorCallback& error_callback) = 0;
 
   // Registers given callback for events. Should only be called once.
   // |storage_event_handler| is called when a mtp storage attach or detach

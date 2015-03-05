@@ -29,14 +29,14 @@ class MTPDeviceMapService {
       const std::string& filesystem_id);
 
   // Register that an MTP filesystem is in use for the given |device_location|.
-  void RegisterMTPFileSystem(
-    const base::FilePath::StringType& device_location,
-    const std::string& fsid);
+  void RegisterMTPFileSystem(const base::FilePath::StringType& device_location,
+                             const std::string& filesystem_id,
+                             const bool read_only);
 
   // Removes the MTP entry associated with the given
   // |device_location|. Signals the MTPDeviceMapService to destroy the
   // delegate if there are no more uses of it.
-  void RevokeMTPFileSystem(const std::string& fsid);
+  void RevokeMTPFileSystem(const std::string& filesystem_id);
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MTPDeviceMapService>;
@@ -45,27 +45,34 @@ class MTPDeviceMapService {
   // specifies the mount location of the MTP device.
   // Called on the IO thread.
   void AddAsyncDelegate(const base::FilePath::StringType& device_location,
+                        const bool read_only,
                         MTPDeviceAsyncDelegate* delegate);
 
   // Removes the MTP device delegate from the map service. |device_location|
   // specifies the mount location of the MTP device.
   // Called on the IO thread.
-  void RemoveAsyncDelegate(const base::FilePath::StringType& device_location);
+  void RemoveAsyncDelegate(const base::FilePath::StringType& device_location,
+                           const bool read_only);
+
+  // A key to be used in AsyncDelegateMap and MTPDeviceUsageMap.
+  typedef base::FilePath::StringType AsyncDelegateKey;
+
+  // Gets a key from |device_location| and |read_only|.
+  static AsyncDelegateKey GetAsyncDelegateKey(
+      const base::FilePath::StringType& device_location,
+      const bool read_only);
 
   // Mapping of device_location and MTPDeviceAsyncDelegate* object. It is safe
   // to store and access the raw pointer. This class operates on the IO thread.
-  typedef std::map<base::FilePath::StringType, MTPDeviceAsyncDelegate*>
-      AsyncDelegateMap;
+  typedef std::map<AsyncDelegateKey, MTPDeviceAsyncDelegate*> AsyncDelegateMap;
 
   // Map a filesystem id (fsid) to an MTP device location.
-  typedef std::map<std::string, base::FilePath::StringType>
-      MTPDeviceFileSystemMap;
+  typedef std::pair<base::FilePath::StringType, bool> MTPDeviceInfo;
+  typedef std::map<std::string, MTPDeviceInfo> MTPDeviceFileSystemMap;
 
   // Map a MTP or PTP device location to a count of current uses of that
   // location.
-  typedef std::map<const base::FilePath::StringType, int>
-      MTPDeviceUsageMap;
-
+  typedef std::map<AsyncDelegateKey, int> MTPDeviceUsageMap;
 
   // Get access to this class using GetInstance() method.
   MTPDeviceMapService();

@@ -39,6 +39,11 @@ class TestMediaTransferProtocolManagerLinux
   void GetFileInfo(const std::string& storage_handle,
                    uint32 file_id,
                    const GetFileInfoCallback& callback) override;
+  void CopyFileFromLocal(const std::string& storage_handle,
+                         const int source_file_descriptor,
+                         const uint32 parent_id,
+                         const std::string& file_name,
+                         const CopyFileFromLocalCallback& callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);
 };

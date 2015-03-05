@@ -79,6 +79,13 @@ void OnReadDirectoryError(const AsyncFileUtil::ReadDirectoryCallback& callback,
   callback.Run(error, AsyncFileUtil::EntryList(), false /*no more*/);
 }
 
+// Called when CopyInForeignFile method call failed.
+void OnCopyInForeignFileError(const AsyncFileUtil::StatusCallback& callback,
+                              base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  callback.Run(error);
+}
+
 // Called on a blocking pool thread to create a snapshot file to hold the
 // contents of |device_file_path|. The snapshot file is created in the
 // "profile_path/kDeviceMediaAsyncFileUtilTempDir" directory. Return the
@@ -330,6 +337,7 @@ void DeviceMediaAsyncFileUtil::ReadDirectory(
     OnReadDirectoryError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
+
   delegate->ReadDirectory(
       url.path(),
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidReadDirectory,
@@ -389,8 +397,22 @@ void DeviceMediaAsyncFileUtil::CopyInForeignFile(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_SECURITY);
+
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(dest_url);
+  if (!delegate) {
+    OnCopyInForeignFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  if (delegate->IsReadOnly()) {
+    OnCopyInForeignFileError(callback, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  delegate->CopyFileFromLocal(
+      src_file_path, dest_url.path(),
+      base::Bind(&DeviceMediaAsyncFileUtil::OnDidCopyInForeignFile,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&OnCopyInForeignFileError, callback));
 }
 
 void DeviceMediaAsyncFileUtil::DeleteFile(
@@ -509,6 +531,13 @@ void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
                  media_path_filter_wrapper_,
                  file_list),
       base::Bind(&OnDidCheckMediaForReadDirectory, callback, has_more));
+}
+
+void DeviceMediaAsyncFileUtil::OnDidCopyInForeignFile(
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  callback.Run(base::File::FILE_OK);
 }
 
 bool DeviceMediaAsyncFileUtil::validate_media_files() const {

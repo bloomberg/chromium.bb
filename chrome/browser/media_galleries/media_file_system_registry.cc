@@ -722,10 +722,11 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
         storage::FileSystemMountOption(),
         path);
     CHECK(result);
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-        &MTPDeviceMapService::RegisterMTPFileSystem,
-        base::Unretained(MTPDeviceMapService::GetInstance()),
-        path.value(), fs_name));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MTPDeviceMapService::RegisterMTPFileSystem,
+                   base::Unretained(MTPDeviceMapService::GetInstance()),
+                   path.value(), fs_name, true /* read only */));
     return result;
   }
 

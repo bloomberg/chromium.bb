@@ -4,11 +4,13 @@
 
 #include "chrome/browser/media_galleries/linux/mtp_device_delegate_impl_linux.h"
 
+#include <fcntl.h>
 #include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -51,13 +53,16 @@ std::string GetDeviceRelativePath(const base::FilePath& registered_dev_path,
 // storage.
 //
 // |storage_name| specifies the name of the storage device.
+// |read_only| specifies the mode of the storage device.
 // Returns NULL if the |storage_name| is no longer valid (e.g. because the
 // corresponding storage device is detached, etc).
 MTPDeviceTaskHelper* GetDeviceTaskHelperForStorage(
-    const std::string& storage_name) {
+    const std::string& storage_name,
+    const bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return MTPDeviceTaskHelperMapService::GetInstance()->GetDeviceTaskHelper(
-      storage_name);
+      storage_name,
+      read_only);
 }
 
 // Opens the storage device for communication.
@@ -66,20 +71,22 @@ MTPDeviceTaskHelper* GetDeviceTaskHelperForStorage(
 // MediaTransferProtocolManager.
 //
 // |storage_name| specifies the name of the storage device.
+// |read_only| specifies the mode of the storage device.
 // |reply_callback| is called when the OpenStorage request completes.
 // |reply_callback| runs on the IO thread.
 void OpenStorageOnUIThread(
     const std::string& storage_name,
+    const bool read_only,
     const MTPDeviceTaskHelper::OpenStorageCallback& reply_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
-      GetDeviceTaskHelperForStorage(storage_name);
+      GetDeviceTaskHelperForStorage(storage_name, read_only);
   if (!task_helper) {
     task_helper =
         MTPDeviceTaskHelperMapService::GetInstance()->CreateDeviceTaskHelper(
-            storage_name);
+            storage_name, read_only);
   }
-  task_helper->OpenStorage(storage_name, reply_callback);
+  task_helper->OpenStorage(storage_name, read_only, reply_callback);
 }
 
 // Enumerates the |dir_id| directory file entries.
@@ -88,17 +95,19 @@ void OpenStorageOnUIThread(
 // MediaTransferProtocolManager.
 //
 // |storage_name| specifies the name of the storage device.
+// |read_only| specifies the mode of the storage device.
 // |success_callback| is called when the ReadDirectory request succeeds.
 // |error_callback| is called when the ReadDirectory request fails.
 // |success_callback| and |error_callback| runs on the IO thread.
 void ReadDirectoryOnUIThread(
     const std::string& storage_name,
+    const bool read_only,
     uint32 dir_id,
     const MTPDeviceTaskHelper::ReadDirectorySuccessCallback& success_callback,
     const MTPDeviceTaskHelper::ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
-      GetDeviceTaskHelperForStorage(storage_name);
+      GetDeviceTaskHelperForStorage(storage_name, read_only);
   if (!task_helper)
     return;
   task_helper->ReadDirectory(dir_id, success_callback, error_callback);
@@ -110,17 +119,19 @@ void ReadDirectoryOnUIThread(
 // MediaTransferProtocolManager.
 //
 // |storage_name| specifies the name of the storage device.
+// |read_only| specifies the mode of the storage device.
 // |success_callback| is called when the GetFileInfo request succeeds.
 // |error_callback| is called when the GetFileInfo request fails.
 // |success_callback| and |error_callback| runs on the IO thread.
 void GetFileInfoOnUIThread(
     const std::string& storage_name,
+    const bool read_only,
     uint32 file_id,
     const MTPDeviceTaskHelper::GetFileInfoSuccessCallback& success_callback,
     const MTPDeviceTaskHelper::ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
-      GetDeviceTaskHelperForStorage(storage_name);
+      GetDeviceTaskHelperForStorage(storage_name, read_only);
   if (!task_helper)
     return;
   task_helper->GetFileInfo(file_id, success_callback, error_callback);
@@ -132,6 +143,7 @@ void GetFileInfoOnUIThread(
 // MediaTransferProtocolManager.
 //
 // |storage_name| specifies the name of the storage device.
+// |read_only| specifies the mode of the storage device.
 // |device_file_path| specifies the media device file path.
 // |snapshot_file_path| specifies the platform path of the snapshot file.
 // |file_size| specifies the number of bytes that will be written to the
@@ -141,11 +153,12 @@ void GetFileInfoOnUIThread(
 // |success_callback| and |error_callback| runs on the IO thread.
 void WriteDataIntoSnapshotFileOnUIThread(
     const std::string& storage_name,
+    const bool read_only,
     const SnapshotRequestInfo& request_info,
     const base::File::Info& snapshot_file_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
-      GetDeviceTaskHelperForStorage(storage_name);
+      GetDeviceTaskHelperForStorage(storage_name, read_only);
   if (!task_helper)
     return;
   task_helper->WriteDataIntoSnapshotFile(request_info, snapshot_file_info);
@@ -157,16 +170,48 @@ void WriteDataIntoSnapshotFileOnUIThread(
 // MediaTransferProtocolManager.
 //
 // |storage_name| specifies the name of the storage device.
+// |read_only| specifies the mode of the storage device.
 // |request| is a struct containing details about the byte read request.
 void ReadBytesOnUIThread(
     const std::string& storage_name,
+    const bool read_only,
     const MTPDeviceAsyncDelegate::ReadBytesRequest& request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
-      GetDeviceTaskHelperForStorage(storage_name);
+      GetDeviceTaskHelperForStorage(storage_name, read_only);
   if (!task_helper)
     return;
   task_helper->ReadBytes(request);
+}
+
+// Copies the file |source_file_descriptor| to |file_name| in |parent_id|.
+//
+// |storage_name| specifies the name of the storage device.
+// |read_only| specifies the mode of the storage device.
+// |source_file_descriptor| file descriptor of source file.
+// |parent_id| object id of a target directory.
+// |file_name| file name of a target file.
+// |success_callback| is called when the file is copied successfully.
+// |error_callback| is called when it fails to copy file.
+// Since this method does not close the file descriptor, callbacks are
+// responsible for closing it.
+void CopyFileFromLocalOnUIThread(
+    const std::string& storage_name,
+    const bool read_only,
+    const int source_file_descriptor,
+    const uint32 parent_id,
+    const std::string& file_name,
+    const MTPDeviceTaskHelper::CopyFileFromLocalSuccessCallback&
+        success_callback,
+    const MTPDeviceTaskHelper::ErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  MTPDeviceTaskHelper* task_helper =
+      GetDeviceTaskHelperForStorage(storage_name, read_only);
+  if (!task_helper)
+    return;
+  task_helper->CopyFileFromLocal(storage_name, source_file_descriptor,
+                                 parent_id, file_name, success_callback,
+                                 error_callback);
 }
 
 // Closes the device storage specified by the |storage_name| and destroys the
@@ -175,15 +220,30 @@ void ReadBytesOnUIThread(
 // Called on the UI thread to dispatch the request to the
 // MediaTransferProtocolManager.
 void CloseStorageAndDestroyTaskHelperOnUIThread(
-    const std::string& storage_name) {
+    const std::string& storage_name,
+    const bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
-      GetDeviceTaskHelperForStorage(storage_name);
+      GetDeviceTaskHelperForStorage(storage_name, read_only);
   if (!task_helper)
     return;
   task_helper->CloseStorage();
   MTPDeviceTaskHelperMapService::GetInstance()->DestroyDeviceTaskHelper(
-      storage_name);
+      storage_name, read_only);
+}
+
+// Opens |file_path| with |flags|.
+int OpenFileDescriptor(const char* file_path, const int flags) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+
+  return open(file_path, flags);
+}
+
+// Closes |file_descriptor| on file thread.
+void CloseFileDescriptor(const int file_descriptor) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+
+  IGNORE_EINTR(close(file_descriptor));
 }
 
 }  // namespace
@@ -310,10 +370,12 @@ bool MTPDeviceDelegateImplLinux::MTPFileNode::DeleteChild(uint32 file_id) {
 }
 
 MTPDeviceDelegateImplLinux::MTPDeviceDelegateImplLinux(
-    const std::string& device_location)
+    const std::string& device_location,
+    const bool read_only)
     : init_state_(UNINITIALIZED),
       task_in_progress_(false),
       device_path_(device_location),
+      read_only_(read_only),
       root_node_(new MTPFileNode(mtpd::kRootFileId,
                                  "",    // Root node has no name.
                                  NULL,  // And no parent node.
@@ -432,13 +494,41 @@ void MTPDeviceDelegateImplLinux::ReadBytes(
                                        closure));
 }
 
+bool MTPDeviceDelegateImplLinux::IsReadOnly() {
+  return read_only_;
+}
+
+void MTPDeviceDelegateImplLinux::CopyFileFromLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CopyFileFromLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(!source_file_path.empty());
+  DCHECK(!device_file_path.empty());
+
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&OpenFileDescriptor,
+                 source_file_path.value().c_str(),
+                 O_RDONLY),
+      base::Bind(&MTPDeviceDelegateImplLinux::CopyFileFromLocalInternal,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 device_file_path,
+                 success_callback,
+                 error_callback));
+}
+
 void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // To cancel all the pending tasks, destroy the MTPDeviceTaskHelper object.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&CloseStorageAndDestroyTaskHelperOnUIThread, storage_name_));
+      base::Bind(&CloseStorageAndDestroyTaskHelperOnUIThread,
+                 storage_name_,
+                 read_only_));
   delete this;
 }
 
@@ -463,6 +553,7 @@ void MTPDeviceDelegateImplLinux::GetFileInfoInternal(
 
     base::Closure closure = base::Bind(&GetFileInfoOnUIThread,
                                        storage_name_,
+                                       read_only_,
                                        file_id,
                                        success_callback_wrapper,
                                        error_callback_wrapper);
@@ -497,6 +588,7 @@ void MTPDeviceDelegateImplLinux::ReadDirectoryInternal(
                    dir_id);
     base::Closure closure = base::Bind(&GetFileInfoOnUIThread,
                                        storage_name_,
+                                       read_only_,
                                        dir_id,
                                        success_callback_wrapper,
                                        error_callback_wrapper);
@@ -536,6 +628,7 @@ void MTPDeviceDelegateImplLinux::CreateSnapshotFileInternal(
                    file_id);
     base::Closure closure = base::Bind(&GetFileInfoOnUIThread,
                                        storage_name_,
+                                       read_only_,
                                        file_id,
                                        success_callback_wrapper,
                                        error_callback_wrapper);
@@ -569,7 +662,7 @@ void MTPDeviceDelegateImplLinux::ReadBytesInternal(
                    file_id));
 
     base::Closure closure =
-        base::Bind(base::Bind(&ReadBytesOnUIThread, storage_name_, request));
+        base::Bind(&ReadBytesOnUIThread, storage_name_, read_only_, request);
     EnsureInitAndRunTask(PendingTaskInfo(base::FilePath(),
                                          content::BrowserThread::UI,
                                          FROM_HERE,
@@ -577,6 +670,49 @@ void MTPDeviceDelegateImplLinux::ReadBytesInternal(
   } else {
     error_callback.Run(base::File::FILE_ERROR_NOT_FOUND);
   }
+  PendingRequestDone();
+}
+
+void MTPDeviceDelegateImplLinux::CopyFileFromLocalInternal(
+    const base::FilePath& device_file_path,
+    const CopyFileFromLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    const int source_file_descriptor) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (source_file_descriptor < 0) {
+    error_callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    PendingRequestDone();
+    return;
+  }
+
+  uint32 parent_id;
+  if (CachedPathToId(device_file_path.DirName(), &parent_id)) {
+    CopyFileFromLocalSuccessCallback success_callback_wrapper =
+        base::Bind(&MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal,
+                   weak_ptr_factory_.GetWeakPtr(), success_callback,
+                   source_file_descriptor);
+
+    ErrorCallback error_callback_wrapper = base::Bind(
+        &MTPDeviceDelegateImplLinux::HandleCopyFileFromLocalError,
+        weak_ptr_factory_.GetWeakPtr(), error_callback, source_file_descriptor);
+
+    base::Closure closure = base::Bind(&CopyFileFromLocalOnUIThread,
+                                       storage_name_,
+                                       read_only_,
+                                       source_file_descriptor,
+                                       parent_id,
+                                       device_file_path.BaseName().value(),
+                                       success_callback_wrapper,
+                                       error_callback_wrapper);
+
+    EnsureInitAndRunTask(PendingTaskInfo(
+        base::FilePath(), content::BrowserThread::UI, FROM_HERE, closure));
+  } else {
+    HandleCopyFileFromLocalError(error_callback, source_file_descriptor,
+                                 base::File::FILE_ERROR_INVALID_OPERATION);
+  }
+
   PendingRequestDone();
 }
 
@@ -599,10 +735,8 @@ void MTPDeviceDelegateImplLinux::EnsureInitAndRunTask(
     init_state_ = PENDING_INIT;
     task_in_progress_ = true;
     content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&OpenStorageOnUIThread,
-                   storage_name_,
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&OpenStorageOnUIThread, storage_name_, read_only_,
                    base::Bind(&MTPDeviceDelegateImplLinux::OnInitCompleted,
                               weak_ptr_factory_.GetWeakPtr())));
   }
@@ -649,6 +783,7 @@ void MTPDeviceDelegateImplLinux::WriteDataIntoSnapshotFile(
 
   base::Closure task_closure = base::Bind(&WriteDataIntoSnapshotFileOnUIThread,
                                           storage_name_,
+                                          read_only_,
                                           request_info,
                                           file_info);
   content::BrowserThread::PostTask(content::BrowserThread::UI,
@@ -657,6 +792,7 @@ void MTPDeviceDelegateImplLinux::WriteDataIntoSnapshotFile(
 }
 
 void MTPDeviceDelegateImplLinux::PendingRequestDone() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(task_in_progress_);
   task_in_progress_ = false;
   ProcessNextPendingRequest();
@@ -703,6 +839,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory(
   base::Closure task_closure =
       base::Bind(&ReadDirectoryOnUIThread,
                  storage_name_,
+                 read_only_,
                  dir_id,
                  base::Bind(&MTPDeviceDelegateImplLinux::OnDidReadDirectory,
                             weak_ptr_factory_.GetWeakPtr(),
@@ -854,6 +991,37 @@ void MTPDeviceDelegateImplLinux::OnFillFileCacheFailed(
   pending_tasks_.front().path.clear();
 }
 
+void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal(
+    const CopyFileFromLocalSuccessCallback& success_callback,
+    const int source_file_descriptor) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  const base::Closure closure = base::Bind(&CloseFileDescriptor,
+                                           source_file_descriptor);
+
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+                                   closure);
+
+  success_callback.Run();
+  PendingRequestDone();
+}
+
+void MTPDeviceDelegateImplLinux::HandleCopyFileFromLocalError(
+    const ErrorCallback& error_callback,
+    const int source_file_descriptor,
+    base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  const base::Closure closure = base::Bind(&CloseFileDescriptor,
+                                           source_file_descriptor);
+
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+                                   closure);
+
+  error_callback.Run(error);
+  PendingRequestDone();
+}
+
 void MTPDeviceDelegateImplLinux::HandleDeviceFileError(
     const ErrorCallback& error_callback,
     uint32 file_id,
@@ -943,7 +1111,8 @@ bool MTPDeviceDelegateImplLinux::CachedPathToId(const base::FilePath& path,
 
 void CreateMTPDeviceAsyncDelegate(
     const std::string& device_location,
+    const bool read_only,
     const CreateMTPDeviceAsyncDelegateCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  callback.Run(new MTPDeviceDelegateImplLinux(device_location));
+  callback.Run(new MTPDeviceDelegateImplLinux(device_location, read_only));
 }

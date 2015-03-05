@@ -72,8 +72,8 @@ class MediaTransferProtocolDaemonClientImpl
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kOpenStorage);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(storage_name);
-    DCHECK_EQ(mtpd::kReadOnlyMode, mode);
-    writer.AppendString(mtpd::kReadOnlyMode);
+    DCHECK(mode == mtpd::kReadOnlyMode || mode == mtpd::kReadWriteMode);
+    writer.AppendString(mode);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&MediaTransferProtocolDaemonClientImpl::OnOpenStorage,
@@ -169,6 +169,28 @@ class MediaTransferProtocolDaemonClientImpl
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
                    error_callback));
+  }
+
+  void CopyFileFromLocal(const std::string& handle,
+                         const int source_file_descriptor,
+                         const uint32 parent_id,
+                         const std::string& file_name,
+                         const CopyFileFromLocalCallback& callback,
+                         const ErrorCallback& error_callback) override {
+    dbus::FileDescriptor file_descriptor(source_file_descriptor);
+    file_descriptor.CheckValidity();
+
+    dbus::MethodCall method_call(mtpd::kMtpdInterface,
+                                 mtpd::kCopyFileFromLocal);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(handle);
+    writer.AppendFileDescriptor(file_descriptor);
+    writer.AppendUint32(parent_id);
+    writer.AppendString(file_name);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
+        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnCopyFileFromLocal,
+                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
   }
 
   // MediaTransferProtocolDaemonClient override.
@@ -347,6 +369,17 @@ class MediaTransferProtocolDaemonClientImpl
     }
     std::string data(reinterpret_cast<const char*>(data_bytes), data_length);
     callback.Run(data);
+  }
+
+  void OnCopyFileFromLocal(const CopyFileFromLocalCallback& callback,
+                           const ErrorCallback& error_callback,
+                           dbus::Response* response) {
+    if (!response) {
+      error_callback.Run();
+      return;
+    }
+
+    callback.Run();
   }
 
   // Handles MTPStorageAttached/Dettached signals and calls |handler|.

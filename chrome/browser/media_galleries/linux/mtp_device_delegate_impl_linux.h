@@ -32,6 +32,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
  private:
   friend void CreateMTPDeviceAsyncDelegate(
       const std::string&,
+      const bool read_only,
       const CreateMTPDeviceAsyncDelegateCallback&);
 
   enum InitializationState {
@@ -66,7 +67,8 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Should only be called by CreateMTPDeviceAsyncDelegate() factory call.
   // Defer the device initializations until the first file operation request.
   // Do all the initializations in EnsureInitAndRunTask() function.
-  explicit MTPDeviceDelegateImplLinux(const std::string& device_location);
+  MTPDeviceDelegateImplLinux(const std::string& device_location,
+                             const bool read_only);
 
   // Destructed via CancelPendingTasksAndDeleteDelegate().
   ~MTPDeviceDelegateImplLinux() override;
@@ -90,6 +92,12 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
                  int buf_len,
                  const ReadBytesSuccessCallback& success_callback,
                  const ErrorCallback& error_callback) override;
+  bool IsReadOnly() override;
+  void CopyFileFromLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) override;
   void CancelPendingTasksAndDeleteDelegate() override;
 
   // The internal methods correspond to the similarly named methods above.
@@ -112,6 +120,11 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       net::IOBuffer* buf, int64 offset, int buf_len,
       const ReadBytesSuccessCallback& success_callback,
       const ErrorCallback& error_callback);
+  virtual void CopyFileFromLocalInternal(
+      const base::FilePath& device_file_path,
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const int source_file_descriptor);
 
   // Ensures the device is initialized for communication.
   // If the device is already initialized, call RunTask().
@@ -222,6 +235,16 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Called when FillFileCache() fails.
   void OnFillFileCacheFailed(base::File::Error error);
 
+  // Called when CopyFileFromLocal() succeeds.
+  void OnDidCopyFileFromLocal(
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const int source_file_descriptor);
+
+  // Called when CopyFileFromLocal() fails.
+  void HandleCopyFileFromLocalError(const ErrorCallback& error_callback,
+                                    const int source_file_descriptor,
+                                    base::File::Error error);
+
   // Handles the device file |error| while operating on |file_id|.
   // |error_callback| is invoked to notify the caller about the file error.
   void HandleDeviceFileError(const ErrorCallback& error_callback,
@@ -256,6 +279,9 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   // MTP device storage name (e.g. "usb:2,2:81282").
   std::string storage_name_;
+
+  // Mode for opening storage.
+  const bool read_only_;
 
   // A list of pending tasks that needs to be run when the device is
   // initialized or when the current task in progress is complete.

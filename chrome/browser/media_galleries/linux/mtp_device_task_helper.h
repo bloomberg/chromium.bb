@@ -36,6 +36,8 @@ class MTPDeviceTaskHelper {
   typedef base::Callback<void(const storage::AsyncFileUtil::EntryList& entries,
                               bool has_more)> ReadDirectorySuccessCallback;
 
+  typedef base::Closure CopyFileFromLocalSuccessCallback;
+
   typedef MTPDeviceAsyncDelegate::ErrorCallback ErrorCallback;
 
   MTPDeviceTaskHelper();
@@ -48,6 +50,7 @@ class MTPDeviceTaskHelper {
   // |callback| is called when the OpenStorage request completes. |callback|
   // runs on the IO thread.
   void OpenStorage(const std::string& storage_name,
+                   const bool read_only,
                    const OpenStorageCallback& callback);
 
   // Dispatches the GetFileInfo request to the MediaTransferProtocolManager.
@@ -94,6 +97,15 @@ class MTPDeviceTaskHelper {
   // byte range, and the callbacks. The callbacks specified within |request| are
   // called on the IO thread to notify the caller about success or failure.
   void ReadBytes(const MTPDeviceAsyncDelegate::ReadBytesRequest& request);
+
+  // Forwards CopyFileFromLocal request to the MediaTransferProtocolManager.
+  void CopyFileFromLocal(
+      const std::string& storage_name,
+      const int source_file_descriptor,
+      const uint32 parent_id,
+      const std::string& file_name,
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback);
 
   // Dispatches the CloseStorage request to the MediaTransferProtocolManager.
   void CloseStorage() const;
@@ -158,6 +170,13 @@ class MTPDeviceTaskHelper {
       const base::File::Info& file_info,
       const std::string& data,
       bool error) const;
+
+  // Called when CopyFileFromLocal completed no matter if it succeeded or
+  // failed.
+  void OnCopyFileFromLocal(
+      const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const bool error) const;
 
   // Called when the device is uninitialized.
   //
