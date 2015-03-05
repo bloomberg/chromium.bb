@@ -211,9 +211,16 @@ region_intersect_only_translation(pixman_region32_t *result_global,
 	pixman_region32_intersect(result_global, result_global, global);
 }
 
+/** Paint an intersected region
+ *
+ * \param ev The view to be painted.
+ * \param output The output being painted.
+ * \param repaint_output The region to be painted in output coordinates.
+ * \param pixman_op Compositing operator, either SRC or OVER.
+ */
 static void
 repaint_region(struct weston_view *ev, struct weston_output *output,
-	       pixman_region32_t *region, pixman_region32_t *surf_region,
+	       pixman_region32_t *repaint_output,
 	       pixman_op_t pixman_op)
 {
 	struct pixman_renderer *pr =
@@ -221,30 +228,12 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	struct pixman_surface_state *ps = get_surface_state(ev->surface);
 	struct pixman_output_state *po = get_output_state(output);
 	struct weston_buffer_viewport *vp = &ev->surface->buffer_viewport;
-	pixman_region32_t final_region;
 	pixman_transform_t transform;
 	pixman_image_t *mask_image;
 	pixman_color_t mask = { 0, };
 
-	/* The final region to be painted is the intersection of
-	 * 'region' and 'surf_region'. However, 'region' is in the global
-	 * coordinates, and 'surf_region' is in the surface-local
-	 * coordinates
-	 */
-	pixman_region32_init(&final_region);
-	if (surf_region) {
-		region_intersect_only_translation(&final_region, region,
-						  surf_region, ev);
-	} else {
-		/* If there is no surface region, just use the global region */
-		pixman_region32_copy(&final_region, region);
-	}
-
-	/* Convert from global to output coord */
-	region_global_to_output(output, &final_region);
-
-	/* And clip to it */
-	pixman_image_set_clip_region32 (po->shadow_image, &final_region);
+	/* Clip rendering to the damaged output region */
+	pixman_image_set_clip_region32(po->shadow_image, repaint_output);
 
 	pixman_renderer_compute_transform(&transform, ev, output);
 	pixman_image_set_transform(ps->image, &transform);
@@ -292,8 +281,6 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 					 pixman_image_get_height (po->shadow_image) /* height */);
 
 	pixman_image_set_clip_region32 (po->shadow_image, NULL);
-
-	pixman_region32_fini(&final_region);
 }
 
 static void
@@ -306,6 +293,7 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	pixman_region32_t repaint;
 	/* non-opaque region in surface coordinates: */
 	pixman_region32_t surface_blend;
+	pixman_region32_t repaint_output;
 
 	/* No buffer attached */
 	if (!ps->image)
@@ -326,21 +314,37 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 
 	/* TODO: Implement repaint_region_complex() using pixman_composite_trapezoids() */
 	if (ev->alpha != 1.0 || !view_transformation_is_translation(ev)) {
-		repaint_region(ev, output, &repaint, NULL, PIXMAN_OP_OVER);
+		region_global_to_output(output, &repaint);
+		repaint_region(ev, output, &repaint, PIXMAN_OP_OVER);
 	} else {
+		pixman_region32_init(&repaint_output);
+
 		/* blended region is whole surface minus opaque region: */
 		pixman_region32_init_rect(&surface_blend, 0, 0,
 					  ev->surface->width, ev->surface->height);
 		pixman_region32_subtract(&surface_blend, &surface_blend, &ev->surface->opaque);
 
 		if (pixman_region32_not_empty(&ev->surface->opaque)) {
-			repaint_region(ev, output, &repaint, &ev->surface->opaque, PIXMAN_OP_SRC);
+			region_intersect_only_translation(&repaint_output,
+							  &repaint,
+							  &ev->surface->opaque,
+							  ev);
+			region_global_to_output(output, &repaint_output);
+			repaint_region(ev, output, &repaint_output,
+				       PIXMAN_OP_SRC);
 		}
 
 		if (pixman_region32_not_empty(&surface_blend)) {
-			repaint_region(ev, output, &repaint, &surface_blend, PIXMAN_OP_OVER);
+			region_intersect_only_translation(&repaint_output,
+							  &repaint,
+							  &surface_blend,
+							  ev);
+			region_global_to_output(output, &repaint_output);
+			repaint_region(ev, output, &repaint_output,
+				       PIXMAN_OP_OVER);
 		}
 		pixman_region32_fini(&surface_blend);
+		pixman_region32_fini(&repaint_output);
 	}
 
 
