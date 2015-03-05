@@ -55,7 +55,7 @@
 #include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
-#include "platform/graphics/gpu/WebGLImageBufferSurface.h"
+#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
 #include <math.h>
@@ -611,7 +611,7 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
         // doing GPU-based rasterization.
         if (m_accelerationDisabled)
             return adoptPtr(new UnacceleratedImageBufferSurface(deviceSize, opacityMode));
-        return adoptPtr(new WebGLImageBufferSurface(deviceSize, opacityMode));
+        return adoptPtr(new AcceleratedImageBufferSurface(deviceSize, opacityMode));
     }
 
     OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = createSurfaceFactory(deviceSize, msaaSampleCount);
@@ -867,10 +867,6 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mod
 
     if (m_context->is3d()) {
         m_context->paintRenderingResultsToCanvas(BackBuffer);
-        *status = ExternalSourceImageStatus;
-
-        // can't create SkImage from WebGLImageBufferSurface (contains only SkBitmap)
-        return buffer()->copyImage(DontCopyBackingStore, Unscaled);
     }
 
     RefPtr<SkImage> image = buffer()->newImageSnapshot();
