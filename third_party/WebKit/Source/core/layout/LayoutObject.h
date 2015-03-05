@@ -56,7 +56,6 @@ class AffineTransform;
 class Cursor;
 class DisplayItemList;
 class Document;
-class GraphicsLayer;
 class HitTestLocation;
 class HitTestResult;
 class InlineBox;
@@ -1244,7 +1243,6 @@ private:
     static bool isAllowedToModifyRenderTreeStructure(Document&);
 
     const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
-    GraphicsLayer* graphicsLayerBackingForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
     RefPtr<LayoutStyle> m_style;
 
