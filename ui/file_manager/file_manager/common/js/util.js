@@ -767,7 +767,10 @@ util.getCurrentLocaleOrDefault = function() {
  */
 util.entriesToURLs = function(entries) {
   return entries.map(function(entry) {
-    return entry.toURL();
+    // When building background.js, cachedUrl is not refered other than here.
+    // Thus closure compiler raises an error if we refer the property like
+    // entry.cachedUrl.
+    return entry['cachedUrl'] || entry.toURL();
   });
 };
 

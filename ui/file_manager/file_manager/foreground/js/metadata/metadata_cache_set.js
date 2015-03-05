@@ -30,9 +30,10 @@ MetadataCacheSet.prototype.__proto__ = cr.EventTarget.prototype;
  * @return {!Array<!MetadataRequest>}
  */
 MetadataCacheSet.prototype.createRequests = function(entries, names) {
+  var urls = util.entriesToURLs(entries);
   var requests = [];
   for (var i = 0; i < entries.length; i++) {
-    var item = this.items_.peek(entries[i].toURL());
+    var item = this.items_.peek(urls[i]);
     var requestedNames = item ? item.createRequests(names) : names;
     if (requestedNames.length)
       requests.push(new MetadataRequest(entries[i], requestedNames));
@@ -48,7 +49,7 @@ MetadataCacheSet.prototype.createRequests = function(entries, names) {
 MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
   for (var i = 0; i < requests.length; i++) {
     var request = requests[i];
-    var url = request.entry.toURL();
+    var url = requests[i].entry.cachedUrl || requests[i].entry.toURL();
     var item = this.items_.peek(url);
     if (!item) {
       item = new MetadataCacheItem();
@@ -69,8 +70,9 @@ MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
 MetadataCacheSet.prototype.storeProperties = function(
     requestId, entries, results) {
   var changedEntries = [];
+  var urls = util.entriesToURLs(entries);
   for (var i = 0; i < entries.length; i++) {
-    var url = entries[i].toURL();
+    var url = urls[i];
     var item = this.items_.peek(url);
     if (item && item.storeProperties(requestId, results[i]))
       changedEntries.push(entries[i]);
@@ -93,8 +95,9 @@ MetadataCacheSet.prototype.storeProperties = function(
  */
 MetadataCacheSet.prototype.get = function(entries, names) {
   var results = [];
+  var urls = util.entriesToURLs(entries);
   for (var i = 0; i < entries.length; i++) {
-    var item = this.items_.get(entries[i].toURL());
+    var item = this.items_.get(urls[i]);
     results.push(item ? item.get(names) : {});
   }
   return results;
@@ -108,8 +111,9 @@ MetadataCacheSet.prototype.get = function(entries, names) {
  * @param {!Array<!Entry>} entries
  */
 MetadataCacheSet.prototype.invalidate = function(requestId, entries) {
+  var urls = util.entriesToURLs(entries);
   for (var i = 0; i < entries.length; i++) {
-    var item = this.items_.peek(entries[i].toURL());
+    var item = this.items_.peek(urls[i]);
     if (item)
       item.invalidate(requestId);
   }
@@ -138,8 +142,9 @@ MetadataCacheSet.prototype.clearAll = function() {
  */
 MetadataCacheSet.prototype.createSnapshot = function(entries) {
   var items = {};
+  var urls = util.entriesToURLs(entries);
   for (var i = 0; i < entries.length; i++) {
-    var url = entries[i].toURL();
+    var url = urls[i];
     var item = this.items_.peek(url);
     if (item)
       items[url] = item.clone();
@@ -156,8 +161,9 @@ MetadataCacheSet.prototype.createSnapshot = function(entries) {
 MetadataCacheSet.prototype.hasFreshCache = function(entries, names) {
   if (!names.length)
     return true;
+  var urls = util.entriesToURLs(entries);
   for (var i = 0; i < entries.length; i++) {
-    var item = this.items_.peek(entries[i].toURL());
+    var item = this.items_.peek(urls[i]);
     if (!(item && item.hasFreshCache(names)))
       return false;
   }
