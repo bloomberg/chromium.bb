@@ -49,8 +49,11 @@
       "scripts": [
         "chrome://resources/js/cr.js",
         "chrome://resources/js/cr/event_target.js",
+        "chrome://resources/js/cr/ui.js",
         "chrome://resources/js/cr/ui/array_data_model.js",
+        "chrome://resources/js/cr/ui/dialogs.js",
         "chrome://resources/js/load_time_data.js",
+        "chrome://resources/js/util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/async_util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
@@ -59,6 +62,7 @@
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/background_base.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/test_util_base.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/volume_manager.js",
+        "js/error_util.js",
         // The main background script must be at the end.
         "js/background.js"
       ]

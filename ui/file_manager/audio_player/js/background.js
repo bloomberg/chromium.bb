@@ -105,7 +105,8 @@ function onRestarted() {
 /**
  * Opens player window.
  * @param {Object} playlist List of audios to play and index to start playing.
- * @param {Promise} Promise to be fulfilled on success, or rejected on error.
+ * @param {boolean} reopen
+ * @return {Promise} Promise to be fulfilled on success, or rejected on error.
  */
 function open(playlist, reopen) {
   var items = playlist.items;
@@ -152,7 +153,9 @@ function open(playlist, reopen) {
     // Opens the audio player panel.
     return new Promise(function(fulfill, reject) {
       var urls = util.entriesToURLs(audioEntries);
-      audioPlayer.launch({items: urls, position: position}, reopen, fulfill);
+      audioPlayer.launch({items: urls, position: position},
+                         reopen,
+                         fulfill.bind(null, null));
     });
   }).then(function() {
     audioPlayer.setIcon('icons/audio-player-64.png');
