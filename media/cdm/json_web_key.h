@@ -67,6 +67,14 @@ MEDIA_EXPORT bool ExtractKeysFromJWKSet(const std::string& jwk_set,
                                         KeyIdAndKeyPairs* keys,
                                         MediaKeys::SessionType* session_type);
 
+// Extracts the Key Ids from a Key IDs Initialization Data
+// (https://w3c.github.io/encrypted-media/keyids-format.html). If |input| looks
+// valid, then true is returned and |key_ids| is updated to contain the values
+// found. Otherwise return false and |error_message| contains the reason.
+MEDIA_EXPORT bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
+                                                  KeyIdList* key_ids,
+                                                  std::string* error_message);
+
 // Creates a license request message for the |key_ids| and |session_type|
 // specified. |license| is updated to contain the resulting JSON string.
 MEDIA_EXPORT void CreateLicenseRequest(const KeyIdList& key_ids,

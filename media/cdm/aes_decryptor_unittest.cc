@@ -252,7 +252,8 @@ class AesDecryptorTest : public testing::Test {
                 MediaKeys::Exception exception_code,
                 uint32 system_code,
                 const std::string& error_message) {
-    EXPECT_EQ(expected_result, REJECTED) << "Unexpectedly rejected.";
+    EXPECT_EQ(expected_result, REJECTED)
+        << "Unexpectedly rejected with message: " << error_message;
   }
 
   scoped_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected_result) {
@@ -452,6 +453,40 @@ TEST_F(AesDecryptorTest, MultipleCreateSession) {
   decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
                                              "webm", NULL, 0,
                                              CreateSessionPromise(RESOLVED));
+}
+
+TEST_F(AesDecryptorTest, CreateSessionWithCencInitData) {
+  const uint8 init_data[] = {
+      0x00, 0x00, 0x00, 0x44,                          // size = 68
+      0x70, 0x73, 0x73, 0x68,                          // 'pssh'
+      0x01,                                            // version
+      0x00, 0x00, 0x00,                                // flags
+      0x10, 0x77, 0xEF, 0xEC, 0xC0, 0xB2, 0x4D, 0x02,  // SystemID
+      0xAC, 0xE3, 0x3C, 0x1E, 0x52, 0xE2, 0xFB, 0x4B,
+      0x00, 0x00, 0x00, 0x02,                          // key count
+      0x7E, 0x57, 0x1D, 0x03, 0x7E, 0x57, 0x1D, 0x03,  // key1
+      0x7E, 0x57, 0x1D, 0x03, 0x7E, 0x57, 0x1D, 0x03,
+      0x7E, 0x57, 0x1D, 0x04, 0x7E, 0x57, 0x1D, 0x04,  // key2
+      0x7E, 0x57, 0x1D, 0x04, 0x7E, 0x57, 0x1D, 0x04,
+      0x00, 0x00, 0x00, 0x00  // datasize
+  };
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
+                                      GURL::EmptyGURL()));
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, "cenc", init_data, arraysize(init_data),
+      CreateSessionPromise(RESOLVED));
+}
+
+TEST_F(AesDecryptorTest, CreateSessionWithKeyIdsInitData) {
+  const char init_data[] =
+      "{\"kids\":[\"AQI\",\"AQIDBA\",\"AQIDBAUGBwgJCgsMDQ4PEA\"]}";
+
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
+                                      GURL::EmptyGURL()));
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, "keyids",
+      reinterpret_cast<const uint8*>(init_data), arraysize(init_data) - 1,
+      CreateSessionPromise(RESOLVED));
 }
 
 TEST_F(AesDecryptorTest, NormalDecryption) {

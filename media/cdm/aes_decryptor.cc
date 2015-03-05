@@ -273,8 +273,15 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
         promise->reject(NOT_SUPPORTED_ERROR, 0, "No supported PSSH box found.");
         return;
       }
+    } else if (init_data_type == "keyids") {
+      std::string init_data_string(init_data, init_data + init_data_length);
+      std::string error_message;
+      if (!ExtractKeyIdsFromKeyIdsInitData(init_data_string, &keys,
+                                           &error_message)) {
+        promise->reject(NOT_SUPPORTED_ERROR, 0, error_message);
+        return;
+      }
     } else {
-      // TODO(jrummell): Support init_data_type == "keyids".
       promise->reject(NOT_SUPPORTED_ERROR, 0, "init_data_type not supported.");
       return;
     }

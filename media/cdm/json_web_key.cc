@@ -10,6 +10,7 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 
@@ -86,6 +87,21 @@ static std::string DecodeBase64Url(const std::string& encoded_text) {
   }
 
   return decoded_text;
+}
+
+static std::string ShortenTo64Characters(const std::string& input) {
+  // Convert |input| into a string with escaped characters replacing any
+  // non-ASCII characters. Limiting |input| to the first 65 characters so
+  // we don't waste time converting a potentially long string and then
+  // throwing away the excess.
+  std::string escaped_str =
+      base::EscapeBytesAsInvalidJSONString(input.substr(0, 65), false);
+  if (escaped_str.length() <= 64u)
+    return escaped_str;
+
+  // This may end up truncating an escaped character, but the first part of
+  // the string should provide enough information.
+  return escaped_str.substr(0, 61).append("...");
 }
 
 std::string GenerateJWKSet(const uint8* key, int key_length,
@@ -223,6 +239,70 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
 
   // All done.
   keys->swap(local_keys);
+  return true;
+}
+
+bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
+                                     KeyIdList* key_ids,
+                                     std::string* error_message) {
+  if (!base::IsStringASCII(input)) {
+    error_message->assign("Non ASCII: ");
+    error_message->append(ShortenTo64Characters(input));
+    return false;
+  }
+
+  scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(input));
+  if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY) {
+    error_message->assign("Not valid JSON: ");
+    error_message->append(ShortenTo64Characters(input));
+    return false;
+  }
+
+  // Locate the set from the dictionary.
+  base::DictionaryValue* dictionary =
+      static_cast<base::DictionaryValue*>(root.get());
+  base::ListValue* list_val = NULL;
+  if (!dictionary->GetList(kKeyIdsTag, &list_val)) {
+    error_message->assign("Missing '");
+    error_message->append(kKeyIdsTag);
+    error_message->append("' parameter or not a list");
+    return false;
+  }
+
+  // Create a local list of key ids, so that |key_ids| only gets updated on
+  // success.
+  KeyIdList local_key_ids;
+  for (size_t i = 0; i < list_val->GetSize(); ++i) {
+    std::string encoded_key_id;
+    if (!list_val->GetString(i, &encoded_key_id)) {
+      error_message->assign("'");
+      error_message->append(kKeyIdsTag);
+      error_message->append("'[");
+      error_message->append(base::UintToString(i));
+      error_message->append("] is not string.");
+      return false;
+    }
+
+    // Key ID is a base64-encoded string, so decode it.
+    std::string raw_key_id = DecodeBase64Url(encoded_key_id);
+    if (raw_key_id.empty()) {
+      error_message->assign("'");
+      error_message->append(kKeyIdsTag);
+      error_message->append("'[");
+      error_message->append(base::UintToString(i));
+      error_message->append("] is not valid base64url encoded. Value: ");
+      error_message->append(ShortenTo64Characters(encoded_key_id));
+      return false;
+    }
+
+    // Add the decoded key ID to the list.
+    local_key_ids.push_back(std::vector<uint8>(
+        raw_key_id.data(), raw_key_id.data() + raw_key_id.length()));
+  }
+
+  // All done.
+  key_ids->swap(local_key_ids);
+  error_message->clear();
   return true;
 }
 
