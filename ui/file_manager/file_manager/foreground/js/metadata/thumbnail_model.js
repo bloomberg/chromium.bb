@@ -44,12 +44,16 @@ ThumbnailModel.prototype.get = function(entries) {
           // using old metadata format.
           results[url] = {
             filesystem: {
-              modificationTime: metadataList[i].modificationTime
+              modificationTime: metadataList[i].modificationTime,
+              modificationTimeError: metadataList[i].modificationTimeError
             },
             external: {
               thumbnailUrl: metadataList[i].thumbnailUrl,
+              thumbnailUrlError: metadataList[i].thumbnailUrlError,
               customIconUrl: metadataList[i].customIconUrl,
-              dirty: metadataList[i].dirty
+              customIconUrlError: metadataList[i].customIconUrlError,
+              dirty: metadataList[i].dirty,
+              dirtyError: metadataList[i].dirtyError
             },
             thumbnail: {},
             media: {}
@@ -71,10 +75,16 @@ ThumbnailModel.prototype.get = function(entries) {
                   var url = contentRequestEntries[i].toURL();
                   results[url].thumbnail.url =
                       contentMetadataList[i].contentThumbnailUrl;
+                  results[url].thumbnail.urlError =
+                      contentMetadataList[i].contentThumbnailUrlError;
                   results[url].thumbnail.transform =
                       contentMetadataList[i].contentThumbnailTransform;
+                  results[url].thumbnail.transformError =
+                      contentMetadataList[i].contentThumbnailTransformError;
                   results[url].media.imageTransform =
                       contentMetadataList[i].contentImageTransform;
+                  results[url].media.imageTransformError =
+                      contentMetadataList[i].contentImageTransformError;
                 }
               });
         }

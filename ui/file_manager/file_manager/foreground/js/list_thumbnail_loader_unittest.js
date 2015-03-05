@@ -92,7 +92,7 @@ function getKeyOfGetCallback_(entries) {
 function resolveGetLatestCallback(entries) {
   var key = getKeyOfGetCallback_(entries);
   assert(getCallbacks[key]);
-  getCallbacks[key](entries.map(function() { return {}; }));
+  getCallbacks[key](entries.map(function() { return { thumbnail: {} }; }));
   delete getCallbacks[key];
 }
 

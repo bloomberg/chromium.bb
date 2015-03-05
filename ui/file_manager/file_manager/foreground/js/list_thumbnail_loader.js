@@ -343,6 +343,10 @@ ListThumbnailLoader.Task = function(
  */
 ListThumbnailLoader.Task.prototype.fetch = function() {
   return this.thumbnailModel_.get([this.entry_]).then(function(metadatas) {
+    // When an error happens during metadata fetch, abort here.
+    if (metadatas[0].thumbnail.urlError)
+      throw metadatas[0].thumbnail.urlError;
+
     return new this.thumbnailLoaderConstructor_(
         this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadatas[0])
         .loadAsDataUrl();
