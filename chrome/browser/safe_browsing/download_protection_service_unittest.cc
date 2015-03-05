@@ -111,7 +111,8 @@ class MockBinaryFeatureExtractor : public BinaryFeatureExtractor {
   MockBinaryFeatureExtractor() {}
   MOCK_METHOD2(CheckSignature, void(const base::FilePath&,
                                     ClientDownloadRequest_SignatureInfo*));
-  MOCK_METHOD2(ExtractImageHeaders, void(const base::FilePath&,
+  MOCK_METHOD3(ExtractImageHeaders, bool(const base::FilePath&,
+                                         ExtractHeadersOption,
                                          ClientDownloadRequest_ImageHeaders*));
 
  protected:
@@ -156,7 +157,8 @@ ACTION_P(SetCertificateContents, contents) {
 }
 
 ACTION_P(SetDosHeaderContents, contents) {
-  arg1->mutable_pe_headers()->set_dos_header(contents);
+  arg2->mutable_pe_headers()->set_dos_header(contents);
+  return true;
 }
 
 ACTION_P(TrustSignature, certificate_file) {
@@ -215,6 +217,8 @@ class DownloadProtectionServiceTest : public testing::Test {
     sb_service_ = new StrictMock<FakeSafeBrowsingService>();
     sb_service_->Initialize();
     binary_feature_extractor_ = new StrictMock<MockBinaryFeatureExtractor>();
+    ON_CALL(*binary_feature_extractor_, ExtractImageHeaders(_, _, _))
+        .WillByDefault(Return(true));
     download_service_ = sb_service_->download_protection_service();
     download_service_->binary_feature_extractor_ = binary_feature_extractor_;
     download_service_->SetEnabled(true);
@@ -496,8 +500,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
   EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
       .Times(4);
-  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _))
-      .Times(4);
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageHeaders(
+                  a_tmp, BinaryFeatureExtractor::kDefaultOptions, _)).Times(4);
 
   // We should not get whilelist checks for other URLs than specified below.
   EXPECT_CALL(*sb_service_->mock_database_manager(),
@@ -620,7 +625,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _));
-  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _));
+  EXPECT_CALL(
+      *binary_feature_extractor_.get(),
+      ExtractImageHeaders(a_tmp, BinaryFeatureExtractor::kDefaultOptions, _));
 
   download_service_->CheckClientDownload(
       &item,
@@ -665,8 +672,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
       .Times(6);
-  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _))
-      .Times(6);
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageHeaders(
+                  a_tmp, BinaryFeatureExtractor::kDefaultOptions, _)).Times(6);
 
   download_service_->CheckClientDownload(
       &item,
@@ -853,8 +861,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
       .Times(1);
-  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _))
-      .Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageHeaders(
+                  a_tmp, BinaryFeatureExtractor::kDefaultOptions, _)).Times(1);
 
   download_service_->CheckClientDownload(
       &item,
@@ -909,8 +918,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
               MatchDownloadWhitelistUrl(_)).WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
       .Times(1);
-  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _))
-      .Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageHeaders(
+                  a_tmp, BinaryFeatureExtractor::kDefaultOptions, _)).Times(1);
 
   download_service_->CheckClientDownload(
       &item,
@@ -969,8 +979,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
               MatchDownloadWhitelistUrl(_)).WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
       .Times(1);
-  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _))
-      .Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageHeaders(
+                  a_tmp, BinaryFeatureExtractor::kDefaultOptions, _)).Times(1);
 
   download_service_->CheckClientDownload(
       &item,
@@ -1206,8 +1217,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
       .Times(1);
-  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _))
-      .Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageHeaders(
+                  a_tmp, BinaryFeatureExtractor::kDefaultOptions, _)).Times(1);
 
   EXPECT_FALSE(download_service_->IsSupportedDownload(item, a_crx));
   download_service_->CheckClientDownload(
@@ -1254,8 +1266,9 @@ TEST_F(DownloadProtectionServiceTest,
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _))
       .WillOnce(SetCertificateContents("dummy cert data"));
-  EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageHeaders(tmp_path, _))
+  EXPECT_CALL(
+      *binary_feature_extractor_.get(),
+      ExtractImageHeaders(tmp_path, BinaryFeatureExtractor::kDefaultOptions, _))
       .WillOnce(SetDosHeaderContents("dummy dos header"));
   download_service_->CheckClientDownload(
       &item,
@@ -1300,8 +1313,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _))
       .WillOnce(SetCertificateContents("dummy cert data"));
-  EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageHeaders(tmp_path, _))
+  EXPECT_CALL(
+      *binary_feature_extractor_.get(),
+      ExtractImageHeaders(tmp_path, BinaryFeatureExtractor::kDefaultOptions, _))
       .WillOnce(SetDosHeaderContents("dummy dos header"));
   download_service_->CheckClientDownload(
       &item,
@@ -1390,7 +1404,8 @@ TEST_F(DownloadProtectionServiceTest,
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
   EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageHeaders(tmp_path, _));
+              ExtractImageHeaders(tmp_path,
+                                  BinaryFeatureExtractor::kDefaultOptions, _));
   download_service_->CheckClientDownload(
       &item,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1475,8 +1490,9 @@ TEST_F(DownloadProtectionServiceTest,
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _))
       .WillRepeatedly(SetCertificateContents("dummy cert data"));
-  EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageHeaders(tmp_path, _))
+  EXPECT_CALL(
+      *binary_feature_extractor_.get(),
+      ExtractImageHeaders(tmp_path, BinaryFeatureExtractor::kDefaultOptions, _))
       .WillRepeatedly(SetDosHeaderContents("dummy dos header"));
 
   // First test with no history match for the tab URL.
@@ -1718,7 +1734,8 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
   EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageHeaders(tmp_path, _));
+              ExtractImageHeaders(tmp_path,
+                                  BinaryFeatureExtractor::kDefaultOptions, _));
 
   download_service_->download_request_timeout_ms_ = 10;
   download_service_->CheckClientDownload(
@@ -1769,7 +1786,8 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
     EXPECT_CALL(*binary_feature_extractor_.get(),
-                ExtractImageHeaders(tmp_path, _));
+                ExtractImageHeaders(
+                    tmp_path, BinaryFeatureExtractor::kDefaultOptions, _));
 
     download_service_->CheckClientDownload(
         &item,
@@ -1817,7 +1835,8 @@ TEST_F(DownloadProtectionServiceTest,
       }));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
   EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageHeaders(tmp_path, _));
+              ExtractImageHeaders(tmp_path,
+                                  BinaryFeatureExtractor::kDefaultOptions, _));
 
   download_service_->CheckClientDownload(
       item.get(),

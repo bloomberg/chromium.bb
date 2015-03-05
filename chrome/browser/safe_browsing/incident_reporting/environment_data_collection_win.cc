@@ -8,12 +8,14 @@
 #include <set>
 
 #include "base/i18n/case_conversion.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/install_verification/win/module_info.h"
 #include "chrome/browser/install_verification/win/module_verification_common.h"
 #include "chrome/browser/net/service_providers_win.h"
+#include "chrome/browser/safe_browsing/binary_feature_extractor.h"
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_verifier_win.h"
 #include "chrome/browser/safe_browsing/path_sanitizer.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -59,18 +61,28 @@ bool CollectDlls(ClientIncidentReport_EnvironmentData_Process* process) {
   if (!GetLoadedModules(&loaded_modules))
     return false;
 
-  // Sanitize path of each module and add it to the incident report.
+  // Sanitize path of each module and add it to the incident report along with
+  // its headers.
   PathSanitizer path_sanitizer;
-  for (std::set<ModuleInfo>::const_iterator it = loaded_modules.begin();
-       it != loaded_modules.end();
-       ++it) {
-    base::FilePath dll_path(it->name);
-    path_sanitizer.StripHomeDirectory(&dll_path);
+  scoped_refptr<BinaryFeatureExtractor> feature_extractor(
+      new BinaryFeatureExtractor());
+  for (const auto& module : loaded_modules) {
+    base::FilePath dll_path(module.name);
+    base::FilePath sanitized_path(dll_path);
+    path_sanitizer.StripHomeDirectory(&sanitized_path);
 
     ClientIncidentReport_EnvironmentData_Process_Dll* dll = process->add_dll();
-    dll->set_path(base::WideToUTF8(base::i18n::ToLower(dll_path.value())));
-    dll->set_base_address(it->base_address);
-    dll->set_length(it->size);
+    dll->set_path(
+        base::WideToUTF8(base::i18n::ToLower(sanitized_path.value())));
+    dll->set_base_address(module.base_address);
+    dll->set_length(module.size);
+    // TODO(grt): Consider skipping this for valid system modules.
+    if (!feature_extractor->ExtractImageHeaders(
+            dll_path,
+            BinaryFeatureExtractor::kOmitExports,
+            dll->mutable_image_headers())) {
+      dll->clear_image_headers();
+    }
   }
 
   return true;

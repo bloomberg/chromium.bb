@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/environment_data_collection_win.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/base_paths.h"
@@ -21,43 +22,39 @@
 #include "net/base/winsock_init.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace safe_browsing {
+
 namespace {
 
 const wchar_t test_dll[] = L"test_name.dll";
 
-// Helper function that returns true if a dll with filename |dll_name| is
-// found in |process_report|.
-bool ProcessReportContainsDll(
-    const safe_browsing::ClientIncidentReport_EnvironmentData_Process&
-        process_report,
-    const base::FilePath& dll_name) {
-  for (int i = 0; i < process_report.dll_size(); ++i) {
-    base::FilePath current_dll =
-        base::FilePath::FromUTF8Unsafe(process_report.dll(i).path());
-
-    if (current_dll.BaseName() == dll_name)
+// Returns true if a dll with filename |dll_name| is found in |process_report|,
+// providing a copy of it in |result|.
+bool GetProcessReportDll(
+    const ClientIncidentReport_EnvironmentData_Process& process_report,
+    const base::FilePath& dll_name,
+    ClientIncidentReport_EnvironmentData_Process_Dll* result) {
+  for (const auto& dll : process_report.dll()) {
+    if (base::FilePath::FromUTF8Unsafe(dll.path()).BaseName() == dll_name) {
+      result->CopyFrom(dll);
       return true;
+    }
   }
-
   return false;
 }
 
 // Look through dll entries and check for the presence of the LSP feature for
-// |dll|.
+// |dll_path|.
 bool DllEntryContainsLspFeature(
-    const safe_browsing::ClientIncidentReport_EnvironmentData_Process&
-        process_report,
-    const std::string& dll) {
-  for (int i = 0; i < process_report.dll_size(); ++i) {
-    if (process_report.dll(i).path() == dll) {
-      // Verify each feature of |dll|.
-      for (int j = 0; j < process_report.dll(i).feature_size(); ++j) {
-        if (process_report.dll(i).feature(j) ==
-            safe_browsing::ClientIncidentReport_EnvironmentData_Process_Dll::
-                LSP)
-          // LSP feature found.
-          return true;
-      }
+    const ClientIncidentReport_EnvironmentData_Process& process_report,
+    const std::string& dll_path) {
+  for (const auto& dll : process_report.dll()) {
+    if (dll.path() == dll_path &&
+        std::find(dll.feature().begin(), dll.feature().end(),
+                  ClientIncidentReport_EnvironmentData_Process_Dll::LSP) !=
+        dll.feature().end()) {
+      // LSP feature found.
+      return true;
     }
   }
 
@@ -73,26 +70,28 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDlls) {
   // msvidc32.dll exists in both 32 and 64 bit versions.
   base::FilePath msvdc32_dll(L"msvidc32.dll");
 
-  safe_browsing::ClientIncidentReport_EnvironmentData_Process process_report;
-  safe_browsing::CollectDlls(&process_report);
+  ClientIncidentReport_EnvironmentData_Process process_report;
+  CollectDlls(&process_report);
 
-  ASSERT_FALSE(ProcessReportContainsDll(process_report, msvdc32_dll));
+  ClientIncidentReport_EnvironmentData_Process_Dll dll;
+  ASSERT_FALSE(GetProcessReportDll(process_report, msvdc32_dll, &dll));
 
   // Redo the same verification after loading a new dll.
   base::ScopedNativeLibrary library(msvdc32_dll);
 
   process_report.clear_dll();
-  safe_browsing::CollectDlls(&process_report);
+  CollectDlls(&process_report);
 
-  ASSERT_TRUE(ProcessReportContainsDll(process_report, msvdc32_dll));
+  ASSERT_TRUE(GetProcessReportDll(process_report, msvdc32_dll, &dll));
+  ASSERT_TRUE(dll.has_image_headers());
 }
 
 TEST(SafeBrowsingEnvironmentDataCollectionWinTest, RecordLspFeature) {
   net::EnsureWinsockInit();
 
   // Populate our incident report with loaded modules.
-  safe_browsing::ClientIncidentReport_EnvironmentData_Process process_report;
-  safe_browsing::CollectDlls(&process_report);
+  ClientIncidentReport_EnvironmentData_Process process_report;
+  CollectDlls(&process_report);
 
   // We'll test RecordLspFeatures against a real dll registered as a LSP. All
   // dll paths are expected to be lowercase in the process report.
@@ -100,7 +99,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, RecordLspFeature) {
   int base_address = 0x77770000;
   int length = 0x180000;
 
-  safe_browsing::RecordLspFeature(&process_report);
+  RecordLspFeature(&process_report);
 
   // Return successfully if LSP feature is found.
   if (DllEntryContainsLspFeature(process_report, lsp))
@@ -108,13 +107,13 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, RecordLspFeature) {
 
   // |lsp| was not already loaded into the current process. Manually add it
   // to the process report so that it will get marked as a LSP.
-  safe_browsing::ClientIncidentReport_EnvironmentData_Process_Dll* dll =
+  ClientIncidentReport_EnvironmentData_Process_Dll* dll =
       process_report.add_dll();
   dll->set_path(lsp);
   dll->set_base_address(base_address);
   dll->set_length(length);
 
-  safe_browsing::RecordLspFeature(&process_report);
+  RecordLspFeature(&process_report);
 
   // Return successfully if LSP feature is found.
   if (DllEntryContainsLspFeature(process_report, lsp))
@@ -134,14 +133,14 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDllBlacklistData) {
                                            KEY_QUERY_VALUE | KEY_SET_VALUE);
 
   // Check that with an empty registry the blacklisted dlls field is left empty.
-  safe_browsing::ClientIncidentReport_EnvironmentData_Process process_report;
-  safe_browsing::CollectDllBlacklistData(&process_report);
+  ClientIncidentReport_EnvironmentData_Process process_report;
+  CollectDllBlacklistData(&process_report);
   EXPECT_EQ(0, process_report.blacklisted_dll_size());
 
   // Check that after adding exactly one dll to the registry it appears in the
   // process report.
   blacklist_registry_key.WriteValue(test_dll, test_dll);
-  safe_browsing::CollectDllBlacklistData(&process_report);
+  CollectDllBlacklistData(&process_report);
   ASSERT_EQ(1, process_report.blacklisted_dll_size());
 
   base::string16 process_report_dll =
@@ -163,7 +162,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDllBlacklistData) {
                                   .AsUTF8Unsafe();
 
   blacklist_registry_key.WriteValue(input_path.c_str(), input_path.c_str());
-  safe_browsing::CollectDllBlacklistData(&process_report);
+  CollectDllBlacklistData(&process_report);
 
   ASSERT_EQ(1, process_report.blacklisted_dll_size());
   std::string process_report_path = process_report.blacklisted_dll(0);
@@ -172,19 +171,18 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDllBlacklistData) {
 
 TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   //  Load the test modules.
-  std::vector<base::ScopedNativeLibrary> test_dlls(
-      safe_browsing::kTestDllNamesCount);
-  for (size_t i = 0; i < safe_browsing::kTestDllNamesCount; ++i) {
-    test_dlls[i].Reset(LoadNativeLibrary(
-        base::FilePath(safe_browsing::kTestDllNames[i]), NULL));
+  std::vector<base::ScopedNativeLibrary> test_dlls(kTestDllNamesCount);
+  for (size_t i = 0; i < kTestDllNamesCount; ++i) {
+    test_dlls[i].Reset(
+        LoadNativeLibrary(base::FilePath(kTestDllNames[i]), NULL));
   }
 
   // Edit the first byte of the function exported by the first module. Calling
   // GetModuleHandle so we do not increment the library ref count.
-  HMODULE module_handle = GetModuleHandle(safe_browsing::kTestDllNames[0]);
+  HMODULE module_handle = GetModuleHandle(kTestDllNames[0]);
   ASSERT_NE(reinterpret_cast<HANDLE>(NULL), module_handle);
   uint8_t* export_addr = reinterpret_cast<uint8_t*>(
-      GetProcAddress(module_handle, safe_browsing::kTestExportName));
+      GetProcAddress(module_handle, kTestExportName));
   ASSERT_NE(reinterpret_cast<uint8_t*>(NULL), export_addr);
 
   uint8_t new_val = (*export_addr) + 1;
@@ -196,11 +194,9 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
                      &bytes_written);
   ASSERT_EQ(1, bytes_written);
 
-  safe_browsing::ClientIncidentReport_EnvironmentData_Process process_report;
-  safe_browsing::CollectModuleVerificationData(
-      safe_browsing::kTestDllNames,
-      safe_browsing::kTestDllNamesCount,
-      &process_report);
+  ClientIncidentReport_EnvironmentData_Process process_report;
+  CollectModuleVerificationData(kTestDllNames, kTestDllNamesCount,
+                                &process_report);
 
   // CollectModuleVerificationData should return the single modified module and
   // its modified export.  The other module, being unmodified, is omitted from
@@ -214,12 +210,13 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   EXPECT_EQ(1, process_report.module_state(0).modified_export_size());
 #endif
 
-  EXPECT_EQ(base::WideToUTF8(safe_browsing::kTestDllNames[0]),
+  EXPECT_EQ(base::WideToUTF8(kTestDllNames[0]),
             process_report.module_state(0).name());
-  EXPECT_EQ(
-      safe_browsing::ClientIncidentReport_EnvironmentData_Process_ModuleState::
-          MODULE_STATE_MODIFIED,
-      process_report.module_state(0).modified_state());
-  EXPECT_EQ(std::string(safe_browsing::kTestExportName),
+  EXPECT_EQ(ClientIncidentReport_EnvironmentData_Process_ModuleState::
+                MODULE_STATE_MODIFIED,
+            process_report.module_state(0).modified_state());
+  EXPECT_EQ(std::string(kTestExportName),
             process_report.module_state(0).modified_export(0));
 }
+
+}  // namespace safe_browsing

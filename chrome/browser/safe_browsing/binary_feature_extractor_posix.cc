@@ -17,8 +17,11 @@ void BinaryFeatureExtractor::CheckSignature(
     const base::FilePath& file_path,
     ClientDownloadRequest_SignatureInfo* signature_info) {}
 
-void BinaryFeatureExtractor::ExtractImageHeaders(
+bool BinaryFeatureExtractor::ExtractImageHeaders(
     const base::FilePath& file_path,
-    ClientDownloadRequest_ImageHeaders* image_headers) {}
+    ExtractHeadersOption options,
+    ClientDownloadRequest_ImageHeaders* image_headers) {
+  return false;
+}
 
 }  // namespace safe_browsing

@@ -433,6 +433,7 @@ message ClientIncidentReport {
         optional uint64 base_address = 2;
         optional uint32 length = 3;
         repeated Feature feature = 4;
+        optional ClientDownloadRequest.ImageHeaders image_headers = 5;
       }
       repeated Dll dll = 9;
       repeated string blacklisted_dll = 10;

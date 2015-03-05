@@ -23,6 +23,12 @@ class ClientDownloadRequest_SignatureInfo;
 class BinaryFeatureExtractor
     : public base::RefCountedThreadSafe<BinaryFeatureExtractor> {
  public:
+  // The type and defined values for a bitfield that controls aspects of image
+  // header extraction.
+  typedef uint32_t ExtractHeadersOption;
+  static const ExtractHeadersOption kDefaultOptions = 0;
+  static const ExtractHeadersOption kOmitExports = 1U << 0;
+
   BinaryFeatureExtractor();
 
   // Fills in the DownloadRequest_SignatureInfo for the given file path.
@@ -32,8 +38,11 @@ class BinaryFeatureExtractor
       ClientDownloadRequest_SignatureInfo* signature_info);
 
   // Populates |image_headers| with the PE image headers of |file_path|.
-  virtual void ExtractImageHeaders(
+  // |options| is a bitfield controlling aspects of extraction. Returns true if
+  // |image_headers| is populated with any information.
+  virtual bool ExtractImageHeaders(
       const base::FilePath& file_path,
+      ExtractHeadersOption options,
       ClientDownloadRequest_ImageHeaders* image_headers);
 
   // Populates |digests.sha256| with the SHA256 digest of |file_path|.

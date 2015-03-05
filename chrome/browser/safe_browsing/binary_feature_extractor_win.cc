@@ -90,17 +90,18 @@ void BinaryFeatureExtractor::CheckSignature(
   }
 }
 
-void BinaryFeatureExtractor::ExtractImageHeaders(
+bool BinaryFeatureExtractor::ExtractImageHeaders(
     const base::FilePath& file_path,
+    ExtractHeadersOption options,
     ClientDownloadRequest_ImageHeaders* image_headers) {
   // Map the file into memory.
   base::MemoryMappedFile file;
   if (!file.Initialize(file_path))
-    return;
+    return false;
 
   PeImageReader pe_image;
   if (!pe_image.Initialize(file.data(), file.length()))
-    return;
+    return false;
 
   // Copy the headers.
   ClientDownloadRequest_PEImageHeaders* pe_headers =
@@ -123,10 +124,12 @@ void BinaryFeatureExtractor::ExtractImageHeaders(
     pe_headers->add_section_header(pe_image.GetSectionHeaderAt(i),
                                    sizeof(IMAGE_SECTION_HEADER));
   }
-  size_t export_size = 0;
-  const uint8_t* export_section = pe_image.GetExportSection(&export_size);
-  if (export_section)
-    pe_headers->set_export_section_data(export_section, export_size);
+  if (!(options & kOmitExports)) {
+    size_t export_size = 0;
+    const uint8_t* export_section = pe_image.GetExportSection(&export_size);
+    if (export_section)
+      pe_headers->set_export_section_data(export_section, export_size);
+  }
   size_t number_of_debug_entries = pe_image.GetNumberOfDebugEntries();
   for (size_t i = 0; i != number_of_debug_entries; ++i) {
     const uint8_t* raw_data = NULL;
@@ -142,6 +145,8 @@ void BinaryFeatureExtractor::ExtractImageHeaders(
         debug_data->set_raw_data(raw_data, raw_data_size);
     }
   }
+
+  return true;
 }
 
 }  // namespace safe_browsing
