@@ -62,10 +62,10 @@ fun:*ThreadSafeRefCountedGarbageCollected*makeKeepAlive*
 
 type:*content*RenderWidgetHost*
 
-# Match mangled name for content::RenderViewHostImpl::~RenderViewHostImpl().
-fun:*content*RenderViewHostImplD*
-# Match mangled name for content::RenderThreadImpl::~RenderThreadImpl().
+# Match mangled name for X::~X().
 fun:*content*RenderThreadImplD*
+fun:*content*RenderViewHostImplD*
+fun:*content*UtilityThreadImplD*
 
 #############################################################################
 # Using raw pointer values.
