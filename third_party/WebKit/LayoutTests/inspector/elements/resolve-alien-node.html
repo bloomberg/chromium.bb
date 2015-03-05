@@ -10,7 +10,7 @@ function test()
     function step1(error, result, wasThrown)
     {
         var spanWrapper = InspectorTest.runtimeModel.createRemoteObject(result);
-        spanWrapper.pushNodeToFrontend(step2);
+        InspectorTest.domModel.pushObjectAsNodeToFrontend(spanWrapper, step2);
     }
 
     function step2(node)
