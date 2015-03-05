@@ -43,7 +43,6 @@ public:
     // The ordering here is important: 'Upgrade' overrides 'Monitor', which overrides 'DoNotUpgrade'.
     enum InsecureContentPolicy {
         InsecureContentDoNotUpgrade = 0,
-        InsecureContentMonitor,
         InsecureContentUpgrade
     };
 

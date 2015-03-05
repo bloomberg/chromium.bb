@@ -219,21 +219,6 @@ TEST_F(DOMWebSocketTest, insecureContentDoNotUpgrade)
     EXPECT_EQ(KURL(KURL(), "ws://example.com/endpoint"), m_websocket->url());
 }
 
-TEST_F(DOMWebSocketTest, insecureContentMonitor)
-{
-    {
-        InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/endpoint"), String())).WillOnce(Return(true));
-    }
-
-    m_pageHolder->document().setInsecureContentPolicy(SecurityContext::InsecureContentMonitor);
-    m_websocket->connect("ws://example.com/endpoint", Vector<String>(), m_exceptionState);
-
-    EXPECT_FALSE(m_exceptionState.hadException());
-    EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
-    EXPECT_EQ(KURL(KURL(), "ws://example.com/endpoint"), m_websocket->url());
-}
-
 TEST_F(DOMWebSocketTest, channelConnectSuccess)
 {
     Vector<String> subprotocols;

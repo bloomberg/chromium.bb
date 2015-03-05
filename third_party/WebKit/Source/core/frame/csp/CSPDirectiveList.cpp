@@ -581,14 +581,17 @@ void CSPDirectiveList::enforceStrictMixedContentChecking(const String& name, con
 
 void CSPDirectiveList::enableInsecureContentUpgrade(const String& name, const String& value)
 {
+    if (m_reportOnly) {
+        m_policy->reportInvalidInReportOnly(name);
+        return;
+    }
     if (m_upgradeInsecureRequests) {
         m_policy->reportDuplicateDirective(name);
         return;
     }
     m_upgradeInsecureRequests = true;
-    // FIXME: Monitoring insecure content currently has no effect. We'll eventually wire it up
-    // to the CSP reporting mechanism if we go this route. https://crbug.com/455674
-    m_policy->setInsecureContentPolicy(m_reportOnly ? SecurityContext::InsecureContentMonitor : SecurityContext::InsecureContentUpgrade);
+
+    m_policy->setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
     if (!value.isEmpty())
         m_policy->reportValueForEmptyDirective(name, value);
 }

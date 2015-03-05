@@ -194,24 +194,6 @@ TEST_F(ResourceFetcherUpgradeTest, DoNotUpgradeInsecureResourceRequests)
     expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
 }
 
-TEST_F(ResourceFetcherUpgradeTest, MonitorInsecureResourceRequests)
-{
-    document->setSecurityOrigin(secureOrigin);
-    document->setInsecureContentPolicy(SecurityContext::InsecureContentMonitor);
-
-    expectUpgrade("http://example.test/image.png", "http://example.test/image.png");
-    expectUpgrade("http://example.test:80/image.png", "http://example.test:80/image.png");
-    expectUpgrade("http://example.test:1212/image.png", "http://example.test:1212/image.png");
-
-    expectUpgrade("https://example.test/image.png", "https://example.test/image.png");
-    expectUpgrade("https://example.test:80/image.png", "https://example.test:80/image.png");
-    expectUpgrade("https://example.test:1212/image.png", "https://example.test:1212/image.png");
-
-    expectUpgrade("ftp://example.test/image.png", "ftp://example.test/image.png");
-    expectUpgrade("ftp://example.test:21/image.png", "ftp://example.test:21/image.png");
-    expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
-}
-
 TEST_F(ResourceFetcherUpgradeTest, SendPreferHeader)
 {
     struct TestCase {
@@ -234,9 +216,6 @@ TEST_F(ResourceFetcherUpgradeTest, SendPreferHeader)
         expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
 
         document->setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
-        expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
-
-        document->setInsecureContentPolicy(SecurityContext::InsecureContentMonitor);
         expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
     }
 }

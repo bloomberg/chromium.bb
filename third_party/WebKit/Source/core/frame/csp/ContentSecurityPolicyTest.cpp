@@ -72,10 +72,10 @@ TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(true);
     csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureContentMonitor, csp->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureContentDoNotUpgrade, csp->insecureContentPolicy());
 
     csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureContentMonitor, document->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureContentDoNotUpgrade, document->insecureContentPolicy());
 }
 
 } // namespace
