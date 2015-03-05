@@ -174,7 +174,6 @@
       'WebIDBKey.cpp',
       'WebIDBKeyPath.cpp',
       'WebIDBKeyRange.cpp',
-      'WebIDBMetadata.cpp',
       'WebImageCache.cpp',
       'WebImageDecoder.cpp',
       'WebImageGenerator.cpp',

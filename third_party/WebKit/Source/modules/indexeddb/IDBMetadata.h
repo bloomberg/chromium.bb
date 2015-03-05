@@ -30,6 +30,7 @@
 #define IDBMetadata_h
 
 #include "modules/indexeddb/IDBKeyPath.h"
+#include "public/platform/WebIDBMetadata.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
@@ -88,6 +89,7 @@ struct IDBDatabaseMetadata {
         : intVersion(NoIntVersion)
     {
     }
+
     IDBDatabaseMetadata(const String& name, int64_t id, const String& version, int64_t intVersion, int64_t maxObjectStoreId)
         : name(name)
         , id(id)
@@ -96,6 +98,8 @@ struct IDBDatabaseMetadata {
         , maxObjectStoreId(maxObjectStoreId)
     {
     }
+
+    explicit IDBDatabaseMetadata(const WebIDBMetadata&);
 
     String name;
     int64_t id;

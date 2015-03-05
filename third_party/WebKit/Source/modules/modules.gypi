@@ -732,6 +732,7 @@
       'indexeddb/IDBKeyPath.h',
       'indexeddb/IDBKeyRange.cpp',
       'indexeddb/IDBKeyRange.h',
+      'indexeddb/IDBMetadata.cpp',
       'indexeddb/IDBMetadata.h',
       'indexeddb/IDBObjectStore.cpp',
       'indexeddb/IDBObjectStore.h',
