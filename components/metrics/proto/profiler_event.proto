@@ -10,26 +10,58 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-
-// Next tag: 4
+// Next tag: 7
 message ProfilerEventProto {
-  // The type of this profile.
-  enum ProfileType {
-    UNKNOWN_PROFILE = 0;  // Unknown type (should not reach here).
-    STARTUP_PROFILE = 1;  // Startup profile, logged approximately 60 seconds
-                          // after launch.
+  // The version of this profile.
+  enum ProfileVersion {
+    VERSION_UNKNOWN = 0;          // Unknown version (should not reach here).
+    VERSION_STARTUP_PROFILE = 1;  // Startup profile, logged approximately 60
+                                  // seconds after launch.
+    VERSION_SPLIT_PROFILE = 2;    // Part of a profile logged in pieces, where
+                                  // we finish a piece when a ProfilerEvent or a
+                                  // special end-of-recording event gets
+                                  // triggered.
   }
-  optional ProfileType profile_type = 1;
+  optional ProfileVersion profile_version = 1;
 
   // The source based upon which "time" measurements are made.
   // We currently only measure wall clock time; but we are exploring other
   // measurement sources as well, such as CPU time or TCMalloc statistics.
   enum TimeSource {
-    UNKNOWN_TIME_SOURCE = 0;  // Unknown source (should not reach here).
+    UNKNOWN_TIME_SOURCE = 0;  // Unknown type (should not reach here).
     WALL_CLOCK_TIME = 1;      // Total time elapsed between the start and end of
                               // the task's execution.
   }
   optional TimeSource time_source = 2;
+
+  // An event in the browser life that causes the client-side profiler framework
+  // to finish recording of its current instance of ProfilerEventProto, and
+  // start recording a new one.
+  // It's not guaranteed that the events get triggered in the order they are
+  // defined.
+  enum ProfilerEvent {
+    // The first non-empty paint of the first web contents happened.
+    // Corresponds to the Startup.FirstWebContents.NonEmptyPaint histogram.
+    EVENT_FIRST_NONEMPTY_PAINT = 0;
+  }
+
+  // The set of events, in no particular order, that were triggered in the
+  // current Chrome session before the recording of this ProfilerEventProto
+  // started. It doesn't include the event that triggered the end of this
+  // ProfilerEventProto. A given event will not occur twice in this set.
+  // The field can be used to find all ProfilerEventProto instances recorded
+  // before or not before a given event.
+  repeated ProfilerEvent past_session_events = 4;
+
+  // Time when profiling started. This is recorded as a time delta relative to
+  // the start time of the profiler data recording in the current browser
+  // session.
+  optional int64 profiling_start_ms = 5;
+
+  // Time when profiling finished. This is recorded as a time delta relative to
+  // the start time of the profiler data recording in the current browser
+  // session.
+  optional int64 profiling_finish_ms = 6;
 
   // Data for a single tracked object (typically, a Task).
   message TrackedObject {

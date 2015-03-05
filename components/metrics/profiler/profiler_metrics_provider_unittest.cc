@@ -97,8 +97,8 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
     profiler_metrics_provider.ProvideGeneralMetrics(&uma_proto);
 
     ASSERT_EQ(1, uma_proto.profiler_event_size());
-    EXPECT_EQ(ProfilerEventProto::STARTUP_PROFILE,
-              uma_proto.profiler_event(0).profile_type());
+    EXPECT_EQ(ProfilerEventProto::VERSION_STARTUP_PROFILE,
+              uma_proto.profiler_event(0).profile_version());
     EXPECT_EQ(ProfilerEventProto::WALL_CLOCK_TIME,
               uma_proto.profiler_event(0).time_source());
     ASSERT_EQ(4, uma_proto.profiler_event(0).tracked_object_size());

@@ -154,7 +154,8 @@ void ProfilerMetricsProvider::RecordProfilerData(
   }
 
   has_profiler_data_ = true;
-  profiler_event_cache_.set_profile_type(ProfilerEventProto::STARTUP_PROFILE);
+  profiler_event_cache_.set_profile_version(
+      ProfilerEventProto::VERSION_STARTUP_PROFILE);
   profiler_event_cache_.set_time_source(ProfilerEventProto::WALL_CLOCK_TIME);
   WriteProfilerData(process_data, process_type, &profiler_event_cache_);
 }
