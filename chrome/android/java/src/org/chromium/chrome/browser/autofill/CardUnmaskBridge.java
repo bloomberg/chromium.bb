@@ -92,10 +92,14 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
 
     /**
      * Indicate that verification failed, allow user to retry.
+     * @param errorMessage The error to display, or null to signal success.
+     * @param allowRetry If there was an error, indicates whether to allow another attempt.
      */
     @CalledByNative
-    private void verificationFinished(boolean success) {
-        if (mCardUnmaskPrompt != null) mCardUnmaskPrompt.verificationFinished(success);
+    private void verificationFinished(String errorMessage, boolean allowRetry) {
+        if (mCardUnmaskPrompt != null) {
+            mCardUnmaskPrompt.verificationFinished(errorMessage, allowRetry);
+        }
     }
 
     private native void nativePromptDismissed(long nativeCardUnmaskPromptViewAndroid);

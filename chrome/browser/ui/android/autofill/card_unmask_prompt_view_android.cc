@@ -92,9 +92,12 @@ void CardUnmaskPromptViewAndroid::GotVerificationResult(
     const base::string16& error_message,
     bool allow_retry) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  // TODO(estade): pass |error_message| and |allow_retry|.
+  ScopedJavaLocalRef<jstring> message;
+  if (!error_message.empty())
+      message = base::android::ConvertUTF16ToJavaString(env, error_message);
+
   Java_CardUnmaskBridge_verificationFinished(env, java_object_.obj(),
-                                             error_message.empty());
+                                             message.obj(), allow_retry);
 }
 
 // static

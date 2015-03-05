@@ -16,6 +16,21 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/no_retry_error_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="10dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:gravity="start"
+            android:textColor="@color/input_underline_error_color"
+            android:background="#e0e0e0"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/instructions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

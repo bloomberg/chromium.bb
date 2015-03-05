@@ -39,13 +39,14 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     private final boolean mShouldRequestExpirationDate;
     private final int mThisYear;
 
+    private final TextView mNoRetryErrorMessage;
     private final EditText mCardUnmaskInput;
     private final EditText mMonthInput;
     private final EditText mYearInput;
     private final View mExpirationContainer;
     private final TextView mErrorMessage;
     private final CheckBox mStoreLocallyCheckbox;
-    private final View mMainContents;
+    private final ViewGroup mMainContents;
     private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
     private final TextView mVerificationView;
@@ -84,6 +85,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         View v = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
         ((TextView) v.findViewById(R.id.instructions)).setText(instructions);
 
+        mNoRetryErrorMessage = (TextView) v.findViewById(R.id.no_retry_error_message);
         mCardUnmaskInput = (EditText) v.findViewById(R.id.card_unmask_input);
         mMonthInput = (EditText) v.findViewById(R.id.expiration_month);
         mYearInput = (EditText) v.findViewById(R.id.expiration_year);
@@ -91,7 +93,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mErrorMessage = (TextView) v.findViewById(R.id.error_message);
         mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
         mStoreLocallyCheckbox.setChecked(defaultToStoringLocally);
-        mMainContents = v.findViewById(R.id.main_contents);
+        mMainContents = (ViewGroup) v.findViewById(R.id.main_contents);
         mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
         mVerificationView = (TextView) v.findViewById(R.id.verification_message);
@@ -147,22 +149,24 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
 
     public void disableAndWaitForVerification() {
         setInputsEnabled(false);
+        setOverlayVisibility(View.VISIBLE);
         mVerificationProgressBar.setVisibility(View.VISIBLE);
         // TODO(estade): l10n
         mVerificationView.setText("Verifying card");
         setInputError(null);
     }
 
-    public void verificationFinished(boolean success) {
-        if (!success) {
-            setInputsEnabled(true);
-            setInputError("Credit card could not be verified. Try again.");
-            // TODO(estade): depending on the type of error, we may not want to disable the
-            // verify button. But for the common case, where unmasking failed due to a bad
-            // value, verify should be disabled until the user makes some change.
-            mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-            setInitialFocus();
-            // TODO(estade): UI decision - should we clear the input?
+    public void verificationFinished(String errorMessage, boolean allowRetry) {
+        if (errorMessage != null) {
+            setOverlayVisibility(View.GONE);
+            if (allowRetry) {
+                setInputError(errorMessage);
+                setInputsEnabled(true);
+                setInitialFocus();
+            } else {
+                setInputError(null);
+                setNoRetryError(errorMessage);
+            }
         } else {
             mVerificationProgressBar.setVisibility(View.GONE);
             mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
@@ -173,7 +177,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
                 public void run() {
                     dismiss();
                 }
-            }, 500);
+            }, 1000);
         }
     }
 
@@ -224,16 +228,24 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mCardUnmaskInput.setEnabled(enabled);
         mMonthInput.setEnabled(enabled);
         mYearInput.setEnabled(enabled);
-        mMainContents.setAlpha(enabled ? 1.0f : 0.15f);
-        ViewCompat.setImportantForAccessibility(mMainContents,
-                enabled ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
-                        : View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
-        ((ViewGroup) mMainContents).setDescendantFocusability(
-                enabled ? ViewGroup.FOCUS_BEFORE_DESCENDANTS
-                        : ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        mStoreLocallyCheckbox.setEnabled(enabled);
         mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(enabled);
+    }
 
-        mVerificationOverlay.setVisibility(enabled ? View.GONE : View.VISIBLE);
+    /**
+     * Updates the verification overlay and main contents such that the overlay has |visibility|.
+     * @param visibility A View visibility enumeration value.
+     */
+    private void setOverlayVisibility(int visibility) {
+        mVerificationOverlay.setVisibility(visibility);
+        boolean contentsShowing = visibility == View.GONE;
+        mMainContents.setAlpha(contentsShowing ? 1.0f : 0.15f);
+        ViewCompat.setImportantForAccessibility(mMainContents,
+                contentsShowing ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+                                : View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+        mMainContents.setDescendantFocusability(
+                contentsShowing ? ViewGroup.FOCUS_BEFORE_DESCENDANTS
+                                : ViewGroup.FOCUS_BLOCK_DESCENDANTS);
     }
 
     /**
@@ -259,6 +271,14 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         updateColorForInput(mCardUnmaskInput, filter);
         updateColorForInput(mMonthInput, filter);
         updateColorForInput(mYearInput, filter);
+    }
+
+    /**
+     * Displays an error that indicates the user can't retry.
+     */
+    private void setNoRetryError(String message) {
+        mNoRetryErrorMessage.setText(message);
+        mNoRetryErrorMessage.setVisibility(View.VISIBLE);
     }
 
     /**
