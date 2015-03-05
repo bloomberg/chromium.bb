@@ -46,6 +46,15 @@ Polymer('cr-input', {
     disabled: {value: false, reflect: true},
 
     /**
+     * Set to true to make the input read-only.
+     *
+     * @attribute readonly
+     * @type boolean
+     * @default false
+     */
+    readonly: {value: false, reflect: true},
+
+    /**
      * Set to true to mark the input as required.
      *
      * @attribute required
