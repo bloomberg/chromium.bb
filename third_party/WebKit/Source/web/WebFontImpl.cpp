@@ -85,6 +85,12 @@ float WebFontImpl::xHeight() const
 }
 
 void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFloatPoint& leftBaseline,
+                           WebColor color, const WebRect& clip) const
+{
+    drawText(canvas, run, leftBaseline, color, clip, true);
+}
+
+void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFloatPoint& leftBaseline,
                            WebColor color, const WebRect& clip, bool canvasIsOpaque,
                            int from, int to) const
 {

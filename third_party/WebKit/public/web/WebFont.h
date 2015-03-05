@@ -67,9 +67,15 @@ public:
     //
     // |from| and |to| allow the caller to specify a subrange of the given text
     // run to draw. If |to| is -1, the entire run will be drawn.
+    //
+    // Deprecated, pending clients migration to the simplified version below.
     virtual void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
                           const WebRect& clip, bool canvasIsOpaque,
                           int from = 0, int to = -1) const = 0;
+
+    virtual void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
+                          const WebRect& clip) const = 0;
+
 
     // Measures the width in pixels of the given text run.
     virtual int calculateWidth(const WebTextRun&) const = 0;
