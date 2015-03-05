@@ -45,7 +45,6 @@
     'model_cc': '<(dirname)/<!(<(helper_cl) --output=model_cc)',
     'model_h': '<(dirname)/<!(<(helper_cl) --output=model_h)',
     'export_h': '<(dirname)/<!(<(helper_cl) --output=export_h)',
-    'export_h': '<(dirname)/<!(<(helper_cl) --output=export_h)',
     'impl_macro': '<!(<(helper_cl) --output=impl_macro)',
   },
   'target_name': '<!(<(helper_cl) --output=target_name)',
