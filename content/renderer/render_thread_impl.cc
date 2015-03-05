@@ -667,12 +667,6 @@ void RenderThreadImpl::Init() {
     DCHECK(parsed_num_raster_threads) << string_value;
     DCHECK_GT(num_raster_threads, 0);
 
-    // Force maximum 1 thread for threaded GPU rasterization.
-    // TODO(vmiura): crbug.com/459760 Support existence of multiple raster
-    // threads in GPU raster mode.
-    if (is_threaded_gpu_rasterization_enabled_)
-      num_raster_threads = 1;
-
     // In single process, browser compositor already initialized and set up
     // worker threads, can't change the number later for the renderer compistor
     // in the same process.
