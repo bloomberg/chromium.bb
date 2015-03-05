@@ -12,3 +12,8 @@ machenbach@chromium.org
 phajdan.jr@chromium.org
 sky@chromium.org
 thakis@chromium.org
+
+per-file chromium.perf.json=eakuefner@chromium.org
+per-file chromium.perf.json=fmeawad@chromium.org
+per-file chromium.perf.json=simonhatch@chromium.org
+per-file chromium.perf.json=sullivan@chromium.org
