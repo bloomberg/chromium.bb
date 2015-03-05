@@ -211,16 +211,114 @@ region_intersect_only_translation(pixman_region32_t *result_global,
 	pixman_region32_intersect(result_global, result_global, global);
 }
 
+static void
+composite_whole(pixman_op_t op,
+		pixman_image_t *src,
+		pixman_image_t *mask,
+		pixman_image_t *dest,
+		const pixman_transform_t *transform,
+		pixman_filter_t filter)
+{
+	int32_t dest_width;
+	int32_t dest_height;
+
+	dest_width = pixman_image_get_width(dest);
+	dest_height = pixman_image_get_height(dest);
+
+	pixman_image_set_transform(src, transform);
+	pixman_image_set_filter(src, filter, NULL, 0);
+
+	pixman_image_composite32(op, src, mask, dest,
+				 0, 0, /* src_x, src_y */
+				 0, 0, /* mask_x, mask_y */
+				 0, 0, /* dest_x, dest_y */
+				 dest_width, dest_height);
+}
+
+static void
+composite_clipped(pixman_image_t *src,
+		  pixman_image_t *mask,
+		  pixman_image_t *dest,
+		  const pixman_transform_t *transform,
+		  pixman_filter_t filter,
+		  pixman_region32_t *src_clip)
+{
+	int n_box;
+	pixman_box32_t *boxes;
+	int32_t dest_width;
+	int32_t dest_height;
+	int src_stride;
+	int bitspp;
+	pixman_format_code_t src_format;
+	void *src_data;
+	int i;
+
+	/* Hardcoded to use PIXMAN_OP_OVER, because sampling outside of
+	 * a Pixman image produces (0,0,0,0) instead of discarding the
+	 * fragment.
+	 */
+
+	dest_width = pixman_image_get_width(dest);
+	dest_height = pixman_image_get_height(dest);
+	src_format = pixman_image_get_format(src);
+	src_stride = pixman_image_get_stride(src);
+	bitspp = PIXMAN_FORMAT_BPP(src_format);
+	src_data = pixman_image_get_data(src);
+
+	assert(src_format);
+
+	/* This would be massive overdraw, except when n_box is 1. */
+	boxes = pixman_region32_rectangles(src_clip, &n_box);
+	for (i = 0; i < n_box; i++) {
+		uint8_t *ptr = src_data;
+		pixman_image_t *boximg;
+		pixman_transform_t adj = *transform;
+
+		ptr += boxes[i].y1 * src_stride;
+		ptr += boxes[i].x1 * bitspp / 8;
+		boximg = pixman_image_create_bits_no_clear(src_format,
+					boxes[i].x2 - boxes[i].x1,
+					boxes[i].y2 - boxes[i].y1,
+					(uint32_t *)ptr, src_stride);
+
+		pixman_transform_translate(&adj, NULL,
+					   pixman_int_to_fixed(-boxes[i].x1),
+					   pixman_int_to_fixed(-boxes[i].y1));
+		pixman_image_set_transform(boximg, &adj);
+
+		pixman_image_set_filter(boximg, filter, NULL, 0);
+		pixman_image_composite32(PIXMAN_OP_OVER, boximg, mask, dest,
+					 0, 0, /* src_x, src_y */
+					 0, 0, /* mask_x, mask_y */
+					 0, 0, /* dest_x, dest_y */
+					 dest_width, dest_height);
+
+		pixman_image_unref(boximg);
+	}
+
+	if (n_box > 1) {
+		static bool warned = false;
+
+		if (!warned)
+			weston_log("Pixman-renderer warning: %dx overdraw\n",
+				   n_box);
+		warned = true;
+	}
+}
+
 /** Paint an intersected region
  *
  * \param ev The view to be painted.
  * \param output The output being painted.
  * \param repaint_output The region to be painted in output coordinates.
+ * \param source_clip The region of the source image to use, in source image
+ *                    coordinates. If NULL, use the whole source image.
  * \param pixman_op Compositing operator, either SRC or OVER.
  */
 static void
 repaint_region(struct weston_view *ev, struct weston_output *output,
 	       pixman_region32_t *repaint_output,
+	       pixman_region32_t *source_clip,
 	       pixman_op_t pixman_op)
 {
 	struct pixman_renderer *pr =
@@ -229,6 +327,7 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	struct pixman_output_state *po = get_output_state(output);
 	struct weston_buffer_viewport *vp = &ev->surface->buffer_viewport;
 	pixman_transform_t transform;
+	pixman_filter_t filter;
 	pixman_image_t *mask_image;
 	pixman_color_t mask = { 0, };
 
@@ -236,12 +335,11 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	pixman_image_set_clip_region32(po->shadow_image, repaint_output);
 
 	pixman_renderer_compute_transform(&transform, ev, output);
-	pixman_image_set_transform(ps->image, &transform);
 
 	if (ev->transform.enabled || output->current_scale != vp->buffer.scale)
-		pixman_image_set_filter(ps->image, PIXMAN_FILTER_BILINEAR, NULL, 0);
+		filter = PIXMAN_FILTER_BILINEAR;
 	else
-		pixman_image_set_filter(ps->image, PIXMAN_FILTER_NEAREST, NULL, 0);
+		filter = PIXMAN_FILTER_NEAREST;
 
 	if (ps->buffer_ref.buffer)
 		wl_shm_buffer_begin_access(ps->buffer_ref.buffer->shm_buffer);
@@ -253,15 +351,12 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 		mask_image = NULL;
 	}
 
-	pixman_image_composite32(pixman_op,
-				 ps->image, /* src */
-				 mask_image, /* mask */
-				 po->shadow_image, /* dest */
-				 0, 0, /* src_x, src_y */
-				 0, 0, /* mask_x, mask_y */
-				 0, 0, /* dest_x, dest_y */
-				 pixman_image_get_width (po->shadow_image), /* width */
-				 pixman_image_get_height (po->shadow_image) /* height */);
+	if (source_clip)
+		composite_clipped(ps->image, mask_image, po->shadow_image,
+				  &transform, filter, source_clip);
+	else
+		composite_whole(pixman_op, ps->image, mask_image,
+				po->shadow_image, &transform, filter);
 
 	if (mask_image)
 		pixman_image_unref(mask_image);
@@ -312,7 +407,7 @@ draw_view_translated(struct weston_view *view, struct weston_output *output,
 							  view);
 			region_global_to_output(output, &repaint_output);
 
-			repaint_region(view, output, &repaint_output,
+			repaint_region(view, output, &repaint_output, NULL,
 				       PIXMAN_OP_SRC);
 		}
 	}
@@ -323,12 +418,44 @@ draw_view_translated(struct weston_view *view, struct weston_output *output,
 						  &surface_blend, view);
 		region_global_to_output(output, &repaint_output);
 
-		repaint_region(view, output, &repaint_output,
+		repaint_region(view, output, &repaint_output, NULL,
 			       PIXMAN_OP_OVER);
 	}
 
 	pixman_region32_fini(&surface_blend);
 	pixman_region32_fini(&repaint_output);
+}
+
+static void
+draw_view_source_clipped(struct weston_view *view,
+			 struct weston_output *output,
+			 pixman_region32_t *repaint_global)
+{
+	struct weston_surface *surface = view->surface;
+	pixman_region32_t surf_region;
+	pixman_region32_t buffer_region;
+	pixman_region32_t repaint_output;
+
+	/* Do not bother separating the opaque region from non-opaque.
+	 * Source clipping requires PIXMAN_OP_OVER in all cases, so painting
+	 * opaque separately has no benefit.
+	 */
+
+	pixman_region32_init_rect(&surf_region, 0, 0,
+				  surface->width, surface->height);
+	pixman_region32_init(&buffer_region);
+	weston_surface_to_buffer_region(surface, &surf_region, &buffer_region);
+
+	pixman_region32_init(&repaint_output);
+	pixman_region32_copy(&repaint_output, repaint_global);
+	region_global_to_output(output, &repaint_output);
+
+	repaint_region(view, output, &repaint_output, &buffer_region,
+		       PIXMAN_OP_OVER);
+
+	pixman_region32_fini(&repaint_output);
+	pixman_region32_fini(&buffer_region);
+	pixman_region32_fini(&surf_region);
 }
 
 static void
@@ -357,12 +484,22 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 		zoom_logged = 1;
 	}
 
-	/* TODO: Implement repaint_region_complex() using pixman_composite_trapezoids() */
 	if (view_transformation_is_translation(ev)) {
+		/* The simple case: The surface regions opaque, non-opaque,
+		 * etc. are convertible to global coordinate space.
+		 * There is no need to use a source clip region.
+		 * It is possible to paint opaque region as PIXMAN_OP_SRC.
+		 */
 		draw_view_translated(ev, output, &repaint);
 	} else {
-		region_global_to_output(output, &repaint);
-		repaint_region(ev, output, &repaint, PIXMAN_OP_OVER);
+		/* The complex case: the view transformation does not allow
+		 * converting opaque etc. regions into global coordinate space.
+		 * Therefore we need source clipping to avoid sampling from
+		 * unwanted source image areas, unless the source image is
+		 * to be used whole. Source clipping does not work with
+		 * PIXMAN_OP_SRC.
+		 */
+		draw_view_source_clipped(ev, output, &repaint);
 	}
 
 out:
