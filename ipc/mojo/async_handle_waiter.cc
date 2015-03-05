@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 namespace IPC {
@@ -32,7 +31,7 @@ class AsyncHandleWaiter::Context
       : io_runner_(base::MessageLoopForIO::current()->task_runner()),
         waiter_(waiter),
         last_result_(MOJO_RESULT_INTERNAL),
-        processing_(false),
+        io_loop_level_(0),
         should_invoke_callback_(false) {
     base::MessageLoopForIO::current()->AddIOObserver(this);
   }
@@ -67,7 +66,7 @@ class AsyncHandleWaiter::Context
       return false;
     if (loop->task_runner() != io_runner_)
       return false;
-    return processing_;
+    return io_loop_level_ > 0;
   }
 
   // Called from |io_runner_| thus safe to touch |waiter_|.
@@ -81,19 +80,25 @@ class AsyncHandleWaiter::Context
   // IOObserver implementation:
 
   void WillProcessIOEvent() override {
-    DCHECK(!should_invoke_callback_);
-    DCHECK(!processing_);
-    processing_ = true;
+    DCHECK(io_loop_level_ != 0 || !should_invoke_callback_);
+    DCHECK_GE(io_loop_level_, 0);
+    io_loop_level_++;
   }
 
   void DidProcessIOEvent() override {
-    DCHECK(processing_);
+    DCHECK_GE(io_loop_level_, 1);
+
+    // Leaving a nested loop.
+    if (io_loop_level_ > 1) {
+      io_loop_level_--;
+      return;
+    }
 
     // The zero |waiter_| indicates that |this| have lost the owner and can be
     // under destruction. So we cannot wrap it with a |scoped_refptr| anymore.
     if (!waiter_) {
       should_invoke_callback_ = false;
-      processing_ = false;
+      io_loop_level_--;
       return;
     }
 
@@ -105,7 +110,7 @@ class AsyncHandleWaiter::Context
       InvokeWaiterCallback();
     }
 
-    processing_ = false;
+    io_loop_level_--;
   }
 
   // Only |io_runner_| is accessed from arbitrary threads.  Others are touched
@@ -114,7 +119,7 @@ class AsyncHandleWaiter::Context
 
   const base::WeakPtr<AsyncHandleWaiter> waiter_;
   MojoResult last_result_;
-  bool processing_;
+  int io_loop_level_;
   bool should_invoke_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
@@ -137,6 +142,14 @@ MojoResult AsyncHandleWaiter::Wait(MojoHandle handle,
 
 void AsyncHandleWaiter::InvokeCallback(MojoResult result) {
   callback_.Run(result);
+}
+
+base::MessageLoopForIO::IOObserver* AsyncHandleWaiter::GetIOObserverForTest() {
+  return context_.get();
+}
+
+base::Callback<void(MojoResult)> AsyncHandleWaiter::GetWaitCallbackForTest() {
+  return base::Bind(&Context::HandleIsReady, context_);
 }
 
 // static

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "ipc/ipc_export.h"
 #include "third_party/mojo/src/mojo/public/c/system/types.h"
 
@@ -31,6 +32,9 @@ class IPC_MOJO_EXPORT AsyncHandleWaiter {
   ~AsyncHandleWaiter();
 
   MojoResult Wait(MojoHandle handle, MojoHandleSignals signals);
+
+  base::MessageLoopForIO::IOObserver* GetIOObserverForTest();
+  base::Callback<void(MojoResult)> GetWaitCallbackForTest();
 
  private:
   void InvokeCallback(MojoResult result);

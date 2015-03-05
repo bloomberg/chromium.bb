@@ -204,6 +204,53 @@ TEST_F(AsyncHandleWaiterTest, RestartWaitingWhileSignaled) {
   ignore_result(pipe_to_read_.release());
 }
 
+class AsyncHandleWaiterIOObserverTest : public testing::Test {
+ public:
+  void SetUp() override {
+    message_loop_.reset(new base::MessageLoopForIO());
+    target_.reset(new AsyncHandleWaiter(
+        base::Bind(&AsyncHandleWaiterIOObserverTest::HandleIsReady,
+                   base::Unretained(this))));
+    invocation_count_ = 0;
+  }
+
+  void HandleIsReady(MojoResult result) { invocation_count_++; }
+
+  scoped_ptr<base::MessageLoop> message_loop_;
+  scoped_ptr<AsyncHandleWaiter> target_;
+  size_t invocation_count_;
+};
+
+TEST_F(AsyncHandleWaiterIOObserverTest, OutsideIOEvnet) {
+  target_->GetWaitCallbackForTest().Run(MOJO_RESULT_OK);
+  EXPECT_EQ(0U, invocation_count_);
+  message_loop_->RunUntilIdle();
+  EXPECT_EQ(1U, invocation_count_);
+}
+
+TEST_F(AsyncHandleWaiterIOObserverTest, InsideIOEvnet) {
+  target_->GetIOObserverForTest()->WillProcessIOEvent();
+  target_->GetWaitCallbackForTest().Run(MOJO_RESULT_OK);
+  EXPECT_EQ(0U, invocation_count_);
+  target_->GetIOObserverForTest()->DidProcessIOEvent();
+  EXPECT_EQ(1U, invocation_count_);
+}
+
+TEST_F(AsyncHandleWaiterIOObserverTest, Reenter) {
+  target_->GetIOObserverForTest()->WillProcessIOEvent();
+  target_->GetWaitCallbackForTest().Run(MOJO_RESULT_OK);
+  EXPECT_EQ(0U, invocation_count_);
+
+  // As if some other io handler start nested loop.
+  target_->GetIOObserverForTest()->WillProcessIOEvent();
+  target_->GetWaitCallbackForTest().Run(MOJO_RESULT_OK);
+  target_->GetIOObserverForTest()->DidProcessIOEvent();
+  EXPECT_EQ(0U, invocation_count_);
+
+  target_->GetIOObserverForTest()->DidProcessIOEvent();
+  EXPECT_EQ(1U, invocation_count_);
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace IPC
