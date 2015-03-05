@@ -30,6 +30,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -65,6 +66,7 @@
 using base::ASCIIToUTF16;
 using base::TimeTicks;
 using content::InterstitialPage;
+using content::InterstitialPageDelegate;
 using content::NavigationController;
 using content::NavigationEntry;
 
@@ -212,7 +214,7 @@ bool IsErrorDueToBadClock(const base::Time& now, int error) {
 }  // namespace
 
 // static
-const void* SSLBlockingPage::kTypeForTesting =
+InterstitialPageDelegate::TypeID SSLBlockingPage::kTypeForTesting =
     &SSLBlockingPage::kTypeForTesting;
 
 // Note that we always create a navigation entry with SSL errors.
@@ -268,7 +270,7 @@ bool SSLBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-const void* SSLBlockingPage::GetTypeForTesting() const {
+InterstitialPageDelegate::TypeID SSLBlockingPage::GetTypeForTesting() const {
   return SSLBlockingPage::kTypeForTesting;
 }
 

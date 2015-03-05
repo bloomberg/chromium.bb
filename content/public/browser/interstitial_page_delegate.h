@@ -16,8 +16,11 @@ struct RendererPreferences;
 
 // Controls and provides the html for an interstitial page. The delegate is
 // owned by the InterstitialPage.
-class InterstitialPageDelegate {
+class CONTENT_EXPORT InterstitialPageDelegate {
  public:
+  // An identifier used to identify an InterstitialPage.
+  typedef const void* TypeID;
+
   virtual ~InterstitialPageDelegate() {}
 
   // Return the HTML that should be displayed in the page.
@@ -42,6 +45,9 @@ class InterstitialPageDelegate {
   // Allows the delegate to override the renderer preferences structure that's
   // sent to the new RenderViewHost.
   virtual void OverrideRendererPrefs(content::RendererPreferences* prefs) {}
+
+  // Return the interstitial type for testing.
+  virtual TypeID GetTypeForTesting() const;
 };
 
 }  // namespace content

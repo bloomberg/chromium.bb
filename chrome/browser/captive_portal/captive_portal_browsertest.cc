@@ -900,7 +900,8 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   bool CheckPending(Browser* browser);
 
   // Returns the type of the interstitial being shown.
-  const void* GetInterstitialType(WebContents* contents) const;
+  content::InterstitialPageDelegate::TypeID GetInterstitialType(
+      WebContents* contents) const;
 
   // Returns the CaptivePortalTabReloader::State of |web_contents|.
   CaptivePortalTabReloader::State GetStateOfTabReloader(
@@ -1142,14 +1143,13 @@ bool CaptivePortalBrowserTest::CheckPending(Browser* browser) {
       captive_portal_service->TimerRunning();
 }
 
-const void* CaptivePortalBrowserTest::GetInterstitialType(
-    WebContents* contents) const {
+content::InterstitialPageDelegate::TypeID
+CaptivePortalBrowserTest::GetInterstitialType(WebContents* contents) const {
   if (!contents->ShowingInterstitialPage())
     return nullptr;
-  SecurityInterstitialPage* blocking_page =
-      static_cast<SecurityInterstitialPage*>(
-          contents->GetInterstitialPage()->GetDelegateForTesting());
-  return blocking_page->GetTypeForTesting();
+  return contents->GetInterstitialPage()
+      ->GetDelegateForTesting()
+      ->GetTypeForTesting();
 }
 
 CaptivePortalTabReloader::State CaptivePortalBrowserTest::GetStateOfTabReloader(

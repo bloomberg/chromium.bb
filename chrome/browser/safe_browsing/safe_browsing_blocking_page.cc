@@ -133,8 +133,9 @@ static base::LazyInstance<SafeBrowsingBlockingPageFactoryImpl>
     g_safe_browsing_blocking_page_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 // static
-const void* SafeBrowsingBlockingPage::kTypeForTesting =
-    &SafeBrowsingBlockingPage::kTypeForTesting;
+content::InterstitialPageDelegate::TypeID
+    SafeBrowsingBlockingPage::kTypeForTesting =
+        &SafeBrowsingBlockingPage::kTypeForTesting;
 
 SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     SafeBrowsingUIManager* ui_manager,
@@ -409,7 +410,8 @@ void SafeBrowsingBlockingPage::OnProceed() {
     blocking_page->Show();
 }
 
-const void* SafeBrowsingBlockingPage::GetTypeForTesting() const {
+content::InterstitialPageDelegate::TypeID
+SafeBrowsingBlockingPage::GetTypeForTesting() const {
   return SafeBrowsingBlockingPage::kTypeForTesting;
 }
 

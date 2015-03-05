@@ -26,6 +26,9 @@ class AuthChallengeInfo;
 // omnibox show the correct url when the login prompt is visible.
 class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
  public:
+  // Interstitial type, used in tests.
+  static content::InterstitialPageDelegate::TypeID kTypeForTesting;
+
   LoginInterstitialDelegate(content::WebContents* web_contents,
                             const GURL& request_url,
                             base::Closure& callback);
@@ -34,6 +37,7 @@ class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
 
   // content::InterstitialPageDelegate:
   void CommandReceived(const std::string& command) override;
+  content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
  protected:
   std::string GetHTMLContents() override;

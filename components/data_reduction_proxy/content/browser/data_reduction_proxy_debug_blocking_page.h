@@ -55,6 +55,9 @@ class DataReductionProxyDebugBlockingPage
 
   ~DataReductionProxyDebugBlockingPage() override;
 
+  // Interstitial type for testing.
+  static content::InterstitialPageDelegate::TypeID kTypeForTesting;
+
   // Creates a blocking page. Use ShowBlockingPage when access to the blocking
   // page directly isn't needed.
   static DataReductionProxyDebugBlockingPage* CreateBlockingPage(
@@ -88,6 +91,7 @@ class DataReductionProxyDebugBlockingPage
   void OnProceed() override;
   void OnDontProceed() override;
   void CommandReceived(const std::string& command) override;
+  content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
  protected:
   friend class DataReductionProxyDebugBlockingPageFactoryImpl;

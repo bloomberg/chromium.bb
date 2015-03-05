@@ -57,7 +57,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   };
 
   // Interstitial type, used in tests.
-  static const void* kTypeForTesting;
+  static InterstitialPageDelegate::TypeID kTypeForTesting;
 
   ~SSLBlockingPage() override;
 
@@ -73,8 +73,8 @@ class SSLBlockingPage : public SecurityInterstitialPage {
                   const base::Time& time_triggered,
                   const base::Callback<void(bool)>& callback);
 
-  // SecurityInterstitialPage method:
-  const void* GetTypeForTesting() const override;
+  // InterstitialPageDelegate method:
+  InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
   // Returns true if |options_mask| refers to an overridable SSL error.
   static bool IsOptionsOverridable(int options_mask);

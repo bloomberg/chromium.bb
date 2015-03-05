@@ -138,6 +138,8 @@
       'public/browser/indexed_db_info.cc',
       'public/browser/indexed_db_info.h',
       'public/browser/interstitial_page.h',
+      'public/browser/interstitial_page_delegate.cc',
+      'public/browser/interstitial_page_delegate.h',
       'public/browser/invalidate_type.h',
       'public/browser/javascript_dialog_manager.cc',
       'public/browser/javascript_dialog_manager.h',

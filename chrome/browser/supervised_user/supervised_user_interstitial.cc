@@ -99,6 +99,10 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabCloser);
 
+content::InterstitialPageDelegate::TypeID
+    SupervisedUserInterstitial::kTypeForTesting =
+        &SupervisedUserInterstitial::kTypeForTesting;
+
 // static
 void SupervisedUserInterstitial::Show(
     WebContents* web_contents,
@@ -348,6 +352,11 @@ void SupervisedUserInterstitial::OnProceed() {
 
 void SupervisedUserInterstitial::OnDontProceed() {
   DispatchContinueRequest(false);
+}
+
+content::InterstitialPageDelegate::TypeID
+SupervisedUserInterstitial::GetTypeForTesting() const {
+  return SupervisedUserInterstitial::kTypeForTesting;
 }
 
 void SupervisedUserInterstitial::OnURLFilterChanged() {

@@ -37,6 +37,7 @@
 #include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
 class MalwareDetails;
@@ -53,7 +54,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   typedef std::map<content::WebContents*, UnsafeResourceList> UnsafeResourceMap;
 
   // Interstitial type, used in tests.
-  static const void* kTypeForTesting;
+  static content::InterstitialPageDelegate::TypeID kTypeForTesting;
 
   ~SafeBrowsingBlockingPage() override;
 
@@ -83,9 +84,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   void OnDontProceed() override;
   void CommandReceived(const std::string& command) override;
   void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
-
-  // SecurityInterstitialPage method:
-  const void* GetTypeForTesting() const override;
+  content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
  protected:
   friend class SafeBrowsingBlockingPageTest;

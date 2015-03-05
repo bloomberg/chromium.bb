@@ -144,7 +144,9 @@ class DataReductionProxyDebugBlockingPageTest
         content::InterstitialPage::GetInterstitialPage(web_contents());
     if (!interstitial)
       return NULL;
-    return  static_cast<DataReductionProxyDebugBlockingPage*>(
+    EXPECT_EQ(DataReductionProxyDebugBlockingPage::kTypeForTesting,
+              interstitial->GetDelegateForTesting()->GetTypeForTesting());
+    return static_cast<DataReductionProxyDebugBlockingPage*>(
         interstitial->GetDelegateForTesting());
   }
 

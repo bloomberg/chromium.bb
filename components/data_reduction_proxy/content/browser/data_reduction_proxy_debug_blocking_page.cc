@@ -64,6 +64,11 @@ static base::LazyInstance<DataReductionProxyDebugBlockingPageFactoryImpl>
     g_data_reduction_proxy_blocking_page_factory_impl =
         LAZY_INSTANCE_INITIALIZER;
 
+// static
+content::InterstitialPageDelegate::TypeID
+    DataReductionProxyDebugBlockingPage::kTypeForTesting =
+        &DataReductionProxyDebugBlockingPage::kTypeForTesting;
+
 DataReductionProxyDebugBlockingPage::DataReductionProxyDebugBlockingPage(
     DataReductionProxyDebugUIManager* ui_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
@@ -135,6 +140,11 @@ void DataReductionProxyDebugBlockingPage::CommandReceived(
     }
     return;
   }
+}
+
+content::InterstitialPageDelegate::TypeID
+DataReductionProxyDebugBlockingPage::GetTypeForTesting() const {
+  return DataReductionProxyDebugBlockingPage::kTypeForTesting;
 }
 
 void DataReductionProxyDebugBlockingPage::OnProceed() {

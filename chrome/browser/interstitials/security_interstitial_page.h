@@ -27,9 +27,6 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // Creates an interstitial and shows it.
   virtual void Show();
 
-  // Returns interstitial type for testing.
-  virtual const void* GetTypeForTesting() const = 0;
-
   // Prevents creating the actual interstitial view for testing.
   void DontCreateViewForTesting();
 

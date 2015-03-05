@@ -12,6 +12,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/login/login_interstitial_delegate.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/login/login_prompt_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1170,6 +1171,10 @@ void LoginPromptBrowserTest::TestCrossOriginPrompt(
     // login prompt is shown.
     EXPECT_EQ(auth_host, contents->GetVisibleURL().host());
     EXPECT_TRUE(contents->ShowingInterstitialPage());
+    EXPECT_EQ(LoginInterstitialDelegate::kTypeForTesting,
+              contents->GetInterstitialPage()
+                  ->GetDelegateForTesting()
+                  ->GetTypeForTesting());
 
     // Cancel and wait for the interstitial to detach.
     LoginHandler* handler = *observer.handlers().begin();
@@ -1248,6 +1253,10 @@ IN_PROC_BROWSER_TEST_F(
     // being displayed.
     EXPECT_EQ("127.0.0.1", contents->GetVisibleURL().host());
     EXPECT_TRUE(contents->ShowingInterstitialPage());
+    EXPECT_EQ(LoginInterstitialDelegate::kTypeForTesting,
+              contents->GetInterstitialPage()
+                  ->GetDelegateForTesting()
+                  ->GetTypeForTesting());
 
     // Cancelling the login prompt should detach the interstitial while keeping
     // the correct origin.

@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
 
+content::InterstitialPageDelegate::TypeID
+    LoginInterstitialDelegate::kTypeForTesting =
+        &LoginInterstitialDelegate::kTypeForTesting;
+
 LoginInterstitialDelegate::LoginInterstitialDelegate(
     content::WebContents* web_contents,
     const GURL& request_url,
@@ -23,6 +27,11 @@ LoginInterstitialDelegate::~LoginInterstitialDelegate() {
 
 void LoginInterstitialDelegate::CommandReceived(const std::string& command) {
   callback_.Run();
+}
+
+content::InterstitialPageDelegate::TypeID
+LoginInterstitialDelegate::GetTypeForTesting() const {
+  return LoginInterstitialDelegate::kTypeForTesting;
 }
 
 std::string LoginInterstitialDelegate::GetHTMLContents() {
