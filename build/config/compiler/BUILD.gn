@@ -302,7 +302,7 @@ config("compiler") {
             "-mips32r2",
             "-Wa,-mips32r2",
           ]
-          if (mips_fpu_mode != "") {
+          if (mips_float_abi == "hard" && mips_fpu_mode != "") {
             cflags += [ "-m$mips_fpu_mode" ]
           }
         } else if (mips_arch_variant == "r1") {

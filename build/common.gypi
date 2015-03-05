@@ -2302,12 +2302,12 @@
         'arm_thumb%': 1,
       }],
 
-      # Set default compiler flags depending on MIPS architecture variant.
-      ['target_arch=="mipsel" and mips_arch_variant=="r2" and android_webview_build==0', {
-        'mips_fpu_mode%': 'fp32',
-      }],
+      # Set default compiler flags for MIPS floating-point support.
       ['target_arch=="mipsel" and android_webview_build==0', {
         'mips_float_abi%': 'hard',
+      }],
+      ['target_arch=="mipsel" and mips_arch_variant=="r2" and android_webview_build==0', {
+        'mips_fpu_mode%': 'fp32',
       }],
 
       ['android_webview_build==1', {
@@ -2317,8 +2317,8 @@
         'arm_fpu%': '',
         'arm_float_abi%': '',
         'arm_thumb%': 0,
-        'mips_fpu_mode%': '',
         'mips_float_abi%': '',
+        'mips_fpu_mode%': '',
       }],
 
       # Enable brlapi by default for chromeos.
@@ -4081,7 +4081,7 @@
                       ['mips_arch_variant=="r2"', {
                         'cflags': ['-mips32r2', '-Wa,-mips32r2'],
                         'conditions': [
-                          ['mips_fpu_mode!=""', {
+                          ['mips_float_abi=="hard" and mips_fpu_mode!=""', {
                             'cflags': ['-m<(mips_fpu_mode)'],
                           }],
                         ],
