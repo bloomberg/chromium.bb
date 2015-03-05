@@ -133,6 +133,10 @@ void SetVp9CodecOptions(vpx_codec_ctx_t* codec, bool lossless_encode) {
   ret = vpx_codec_control(
       codec, VP9E_SET_TUNE_CONTENT, VP9E_CONTENT_SCREEN);
   DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set screen content mode";
+
+  // VP9 tiles allow for parallelism on both encode and decode
+  ret = vpx_codec_control(codec, VP9E_SET_TILE_COLUMNS, 1);
+  DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set tile columns";
 }
 
 void CreateImage(bool use_i444,
