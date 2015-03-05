@@ -76,12 +76,15 @@ class CONTENT_EXPORT MediaStreamVideoSource
   static const char kMaxFrameRate[];  // maxFrameRate
   static const char kMinFrameRate[];  // minFrameRate
 
-  // Default resolution. If no constraints are specified and the delegate
-  // support it, this is the resolution that will be used.
-  static const int kDefaultWidth;
-  static const int kDefaultHeight;
-  static const int kDefaultFrameRate;
-  static const int kUnknownFrameRate;
+  enum {
+    // Default resolution. If no constraints are specified and the delegate
+    // support it, this is the resolution that will be used.
+    kDefaultWidth = 640,
+    kDefaultHeight = 480,
+
+    kDefaultFrameRate = 30,
+    kUnknownFrameRate = 0,
+  };
 
  protected:
   void DoStopSource() override;

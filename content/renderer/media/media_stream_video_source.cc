@@ -39,11 +39,6 @@ const char* kSupportedConstraints[] = {
   MediaStreamVideoSource::kMinFrameRate,
 };
 
-const int MediaStreamVideoSource::kDefaultWidth = 640;
-const int MediaStreamVideoSource::kDefaultHeight = 480;
-const int MediaStreamVideoSource::kDefaultFrameRate = 30;
-const int MediaStreamVideoSource::kUnknownFrameRate = 0;
-
 namespace {
 
 // Google-specific key prefix. Constraints with this prefix are ignored if they
@@ -331,8 +326,10 @@ void GetBestCaptureFormat(
 
   *capture_format = GetBestFormatBasedOnArea(
       formats,
-      std::min(max_width, MediaStreamVideoSource::kDefaultWidth) *
-      std::min(max_height, MediaStreamVideoSource::kDefaultHeight));
+      std::min(max_width,
+               static_cast<int>(MediaStreamVideoSource::kDefaultWidth)) *
+          std::min(max_height,
+                   static_cast<int>(MediaStreamVideoSource::kDefaultHeight)));
 }
 
 }  // anonymous namespace
