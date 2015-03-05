@@ -157,7 +157,6 @@
     "foreground/js/metadata/function_sequence.js",
     "foreground/js/metadata/id3_parser.js",
     "foreground/js/metadata/image_parsers.js",
-    "foreground/js/metadata/metadata_cache.js",
     "foreground/js/metadata/metadata_dispatcher.js",
     "foreground/js/metadata/metadata_parser.js",
     "foreground/js/metadata/mpeg_parser.js"

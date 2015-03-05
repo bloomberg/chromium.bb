@@ -30,11 +30,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DeviceHandlerTest) {
       FILE_PATH_LITERAL("background/js/device_handler_unittest.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/metadata_cache_unittest.html")));
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationManagerTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("background/js/file_operation_manager_unittest.html")));

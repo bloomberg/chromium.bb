@@ -70,7 +70,6 @@
           '../../file_manager/foreground/js/metadata/exif_constants.js',
           '../../file_manager/foreground/js/metadata/external_metadata_provider.js',
           '../../file_manager/foreground/js/metadata/file_system_metadata_provider.js',
-          '../../file_manager/foreground/js/metadata/metadata_cache.js',
           '../../file_manager/foreground/js/metadata/metadata_cache_item.js',
           '../../file_manager/foreground/js/metadata/metadata_cache_set.js',
           '../../file_manager/foreground/js/metadata/metadata_item.js',

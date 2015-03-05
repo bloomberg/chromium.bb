@@ -49,7 +49,6 @@
 //<include src="../../file_manager/foreground/js/metadata/exif_constants.js">
 //<include src="../../file_manager/foreground/js/metadata/external_metadata_provider.js">
 //<include src="../../file_manager/foreground/js/metadata/file_system_metadata_provider.js">
-//<include src="../../file_manager/foreground/js/metadata/metadata_cache.js">
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache_item.js">
 //<include src="../../file_manager/foreground/js/metadata/metadata_item.js">
 //<include src="../../file_manager/foreground/js/metadata/metadata_model.js">

@@ -6,7 +6,6 @@
  * Overrided metadata worker's path.
  * @type {string}
  */
-ContentProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
 ContentMetadataProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
 
 /**
@@ -21,9 +20,9 @@ function Gallery(volumeManager) {
   /**
    * @type {{appWindow: chrome.app.window.AppWindow, onClose: function(),
    *     onMaximize: function(), onMinimize: function(),
-   *     onAppRegionChanged: function(), metadataCache: MetadataCache,
-   *     readonlyDirName: string, displayStringFunction: function(),
-   *     loadTimeData: Object, curDirEntry: Entry, searchResults: *}}
+   *     onAppRegionChanged: function(), readonlyDirName: string,
+   *     displayStringFunction: function(), loadTimeData: Object,
+   *     curDirEntry: Entry, searchResults: *}}
    * @private
    *
    * TODO(yawano): curDirEntry and searchResults seem not to be used.
@@ -41,7 +40,6 @@ function Gallery(volumeManager) {
     },
     onMinimize: function() { chrome.app.window.current().minimize(); },
     onAppRegionChanged: function() {},
-    metadataCache: MetadataCache.createFull(volumeManager),
     readonlyDirName: '',
     displayStringFunction: function() { return ''; },
     loadTimeData: {},
@@ -50,7 +48,6 @@ function Gallery(volumeManager) {
   };
   this.container_ = queryRequiredElement(document, '.gallery');
   this.document_ = document;
-  this.metadataCache_ = this.context_.metadataCache;
   this.volumeManager_ = volumeManager;
   /**
    * @private {!MetadataModel}
@@ -63,7 +60,6 @@ function Gallery(volumeManager) {
    */
   this.thumbnailModel_ = new ThumbnailModel(this.metadataModel_);
   this.selectedEntry_ = null;
-  this.metadataCacheObserverId_ = null;
   this.onExternallyUnmountedBound_ = this.onExternallyUnmounted_.bind(this);
   this.initialized_ = false;
 
@@ -204,15 +200,7 @@ function Gallery(volumeManager) {
   this.inactivityWatcher_ = new MouseInactivityWatcher(
       this.container_, Gallery.FADE_TIMEOUT, this.hasActiveTool.bind(this));
 
-  // Search results may contain files from different subdirectories so
-  // the observer is not going to work.
-  if (!this.context_.searchResults && this.context_.curDirEntry) {
-    this.metadataCacheObserverId_ = this.metadataCache_.addObserver(
-        this.context_.curDirEntry,
-        MetadataCache.CHILDREN,
-        'thumbnail',
-        this.updateThumbnails_.bind(this));
-  }
+  // TODO(hirono): Add observer to handle thumbnail update.
   this.volumeManager_.addEventListener(
       'externally-unmounted', this.onExternallyUnmountedBound_);
   // The 'pagehide' event is called when the app window is closed.
@@ -249,13 +237,6 @@ Gallery.MOSAIC_BACKGROUND_INIT_DELAY = 1000;
 /**
  * Types of metadata Gallery uses (to query the metadata cache).
  * @const
- * @type {string}
- */
-Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|external';
-
-/**
- * Types of metadata Gallery uses (to query the metadata cache).
- * @const
  * @type {!Array<string>}
  */
 Gallery.PREFETCH_PROPERTY_NAMES =
@@ -281,8 +262,6 @@ Gallery.prototype.onExternallyUnmounted_ = function(event) {
  * @private
  */
 Gallery.prototype.onPageHide_ = function() {
-  if (this.metadataCacheObserverId_ !== null)
-    this.metadataCache_.removeObserver(this.metadataCacheObserverId_);
   this.volumeManager_.removeEventListener(
       'externally-unmounted', this.onExternallyUnmountedBound_);
 };

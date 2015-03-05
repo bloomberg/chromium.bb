@@ -110,7 +110,6 @@
 //<include src="metadata/content_metadata_provider.js">
 //<include src="metadata/external_metadata_provider.js">
 //<include src="metadata/file_system_metadata_provider.js">
-//<include src="metadata/metadata_cache.js">
 //<include src="metadata/metadata_cache_item.js">
 //<include src="metadata/metadata_item.js">
 //<include src="metadata/metadata_model.js">
