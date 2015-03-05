@@ -10782,6 +10782,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The HRESULT for a failed on-demand update check.</summary>
 </histogram>
 
+<histogram name="GoogleUpdate.InfoBar.ActionTaken"
+    enum="GoogleUpdateInfoBarActions">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    (Android-only) Records what action the user took (if any) on the InfoBar
+    indicating that a new version of Chrome is available.
+  </summary>
+</histogram>
+
+<histogram name="GoogleUpdate.InfoBar.TimeShown" units="milliseconds">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    (Android-only) The amount of time which the InfoBar indicating a new version
+    is available is visible.
+  </summary>
+</histogram>
+
 <histogram name="GoogleUpdate.UpdateErrorCode" enum="GoogleUpdateErrorCode">
   <owner>grt@chromium.org</owner>
   <summary>The error code for a failed on-demand update check.</summary>
@@ -50567,6 +50586,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="GOOGLE_UPDATE_ERROR_UPDATING"/>
   <int value="8" label="GOOGLE_UPDATE_DISABLED_BY_POLICY"/>
   <int value="9" label="GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY"/>
+</enum>
+
+<enum name="GoogleUpdateInfoBarActions" type="int">
+  <int value="0" label="Clicked close"/>
+  <int value="1" label="Clicked to update but failed"/>
+  <int value="2" label="Clicked to update appears successful"/>
+  <int value="3" label="InfoBar dismissed implicitly (no interaction)"/>
 </enum>
 
 <enum name="GoogleUpdateUpgradeResult" type="int">
