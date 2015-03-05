@@ -24,12 +24,14 @@ void CastReceiverSessionDelegate::Start(
     const net::IPEndPoint& local_endpoint,
     const net::IPEndPoint& remote_endpoint,
     scoped_ptr<base::DictionaryValue> options,
-    const media::VideoCaptureFormat& format) {
+    const media::VideoCaptureFormat& format,
+    const ErrorCallback& error_callback) {
   format_ = format;
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   CastSessionDelegateBase::StartUDP(local_endpoint,
                                     remote_endpoint,
-                                    options.Pass());
+                                    options.Pass(),
+                                    error_callback);
   cast_receiver_ = media::cast::CastReceiver::Create(cast_environment_,
                                                      audio_config,
                                                      video_config,

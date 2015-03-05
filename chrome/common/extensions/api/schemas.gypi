@@ -120,6 +120,7 @@
     ],
 
     'webrtc_schema_files': [
+      'cast_streaming_receiver_session.idl',
       'cast_streaming_rtp_stream.idl',
       'cast_streaming_session.idl',
       'cast_streaming_udp_transport.idl',

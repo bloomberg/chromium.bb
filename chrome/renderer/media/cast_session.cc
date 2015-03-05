@@ -85,7 +85,8 @@ void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
 }
 
 void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,
-                           scoped_ptr<base::DictionaryValue> options) {
+                           scoped_ptr<base::DictionaryValue> options,
+                           const ErrorCallback& error_callback) {
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(
@@ -93,7 +94,8 @@ void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,
           base::Unretained(delegate_.get()),
           net::IPEndPoint(),
           remote_endpoint,
-          base::Passed(&options)));
+          base::Passed(&options),
+          media::BindToCurrentLoop(error_callback)));
 }
 
 void CastSession::ToggleLogging(bool is_audio, bool enable) {

@@ -162,6 +162,10 @@
     "dependencies": ["permission:cast.streaming"],
     "contexts": ["blessed_extension"]
   },
+  "cast.streaming.receiverSession": {
+    "dependencies": ["permission:cast.streaming"],
+    "contexts": ["blessed_extension"]
+  },
   "cast.streaming.session": {
     "dependencies": ["permission:cast.streaming"],
     "contexts": ["blessed_extension"]

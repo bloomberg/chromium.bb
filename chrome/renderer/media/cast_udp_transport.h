@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/renderer/media/cast_session_delegate.h"
 #include "net/base/ip_endpoint.h"
 
 namespace base {
@@ -25,7 +26,8 @@ class CastUdpTransport {
   virtual ~CastUdpTransport();
 
   // Specify the remote IP address and port.
-  void SetDestination(const net::IPEndPoint& remote_address);
+  void SetDestination(const net::IPEndPoint& remote_address,
+                      const CastSessionDelegate::ErrorCallback& error_callback);
 
   // Set options.
   void SetOptions(scoped_ptr<base::DictionaryValue> options);

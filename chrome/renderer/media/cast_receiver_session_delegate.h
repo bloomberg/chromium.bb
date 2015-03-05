@@ -13,6 +13,8 @@
 
 class CastReceiverSessionDelegate : public CastSessionDelegateBase {
  public:
+  typedef base::Callback<void(const std::string&)> ErrorCallback;
+
   CastReceiverSessionDelegate();
   ~CastReceiverSessionDelegate() override;
 
@@ -26,7 +28,8 @@ class CastReceiverSessionDelegate : public CastSessionDelegateBase {
              const net::IPEndPoint& local_endpoint,
              const net::IPEndPoint& remote_endpoint,
              scoped_ptr<base::DictionaryValue> options,
-             const media::VideoCaptureFormat& format);
+             const media::VideoCaptureFormat& format,
+             const ErrorCallback& error_callback);
 
   void StartAudio(scoped_refptr<CastReceiverAudioValve> audio_valve);
 

@@ -45,7 +45,8 @@ CastSessionDelegateBase::~CastSessionDelegateBase() {
 void CastSessionDelegateBase::StartUDP(
     const net::IPEndPoint& local_endpoint,
     const net::IPEndPoint& remote_endpoint,
-    scoped_ptr<base::DictionaryValue> options) {
+    scoped_ptr<base::DictionaryValue> options,
+    const ErrorCallback& error_callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   // CastSender uses the renderer's IO thread as the main thread. This reduces
@@ -66,15 +67,30 @@ void CastSessionDelegateBase::StartUDP(
       base::Bind(&CastSessionDelegateBase::ReceivePacket,
                  base::Unretained(this)),
       base::Bind(&CastSessionDelegateBase::StatusNotificationCB,
-                 base::Unretained(this)),
+                 base::Unretained(this), error_callback),
       base::Bind(&CastSessionDelegateBase::LogRawEvents,
                  base::Unretained(this))));
 }
 
 void CastSessionDelegateBase::StatusNotificationCB(
-    media::cast::CastTransportStatus unused_status) {
+    const ErrorCallback& error_callback,
+    media::cast::CastTransportStatus status) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  // TODO(hubbe): Call javascript UDPTransport error function.
+  std::string error_message;
+
+  switch (status) {
+    case media::cast::TRANSPORT_AUDIO_UNINITIALIZED:
+    case media::cast::TRANSPORT_VIDEO_UNINITIALIZED:
+    case media::cast::TRANSPORT_AUDIO_INITIALIZED:
+    case media::cast::TRANSPORT_VIDEO_INITIALIZED:
+      return; // Not errors, do nothing.
+    case media::cast::TRANSPORT_INVALID_CRYPTO_CONFIG:
+      error_callback.Run("Invalid encrypt/decrypt configuration.");
+      break;
+    case media::cast::TRANSPORT_SOCKET_ERROR:
+      error_callback.Run("Socket error.");
+      break;
+  }
 }
 
 CastSessionDelegate::CastSessionDelegate()
@@ -132,11 +148,13 @@ void CastSessionDelegate::StartVideo(
 void CastSessionDelegate::StartUDP(
     const net::IPEndPoint& local_endpoint,
     const net::IPEndPoint& remote_endpoint,
-    scoped_ptr<base::DictionaryValue> options) {
+    scoped_ptr<base::DictionaryValue> options,
+    const ErrorCallback& error_callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   CastSessionDelegateBase::StartUDP(local_endpoint,
                                     remote_endpoint,
-                                    options.Pass());
+                                    options.Pass(),
+                                    error_callback);
   event_subscribers_.reset(
       new media::cast::RawEventSubscriberBundle(cast_environment_));
 

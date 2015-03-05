@@ -17,12 +17,15 @@ CastUdpTransport::CastUdpTransport(
 CastUdpTransport::~CastUdpTransport() {
 }
 
-void CastUdpTransport::SetDestination(const net::IPEndPoint& remote_address) {
+void CastUdpTransport::SetDestination(
+    const net::IPEndPoint& remote_address,
+    const CastSessionDelegate::ErrorCallback& error_callback) {
   DVLOG(1) << "CastUdpTransport::SetDestination = "
            << remote_address.ToString();
   remote_address_ = remote_address;
   cast_session_->StartUDP(remote_address,
-                          make_scoped_ptr(options_->DeepCopy()));
+                          make_scoped_ptr(options_->DeepCopy()),
+                          error_callback);
 }
 
 void CastUdpTransport::SetOptions(scoped_ptr<base::DictionaryValue> options) {

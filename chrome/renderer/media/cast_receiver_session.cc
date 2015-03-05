@@ -8,6 +8,7 @@
 #include "chrome/renderer/media/cast_receiver_audio_valve.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/audio_capturer_source.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -71,7 +72,8 @@ void CastReceiverSession::Start(
     const net::IPEndPoint& remote_endpoint,
     scoped_ptr<base::DictionaryValue> options,
     const media::VideoCaptureFormat& capture_format,
-    const StartCB& start_callback) {
+    const StartCB& start_callback,
+    const CastReceiverSessionDelegate::ErrorCallback& error_callback) {
   audio_config_ = audio_config;
   video_config_ = video_config;
   format_ = capture_format;
@@ -84,7 +86,8 @@ void CastReceiverSession::Start(
                  local_endpoint,
                  remote_endpoint,
                  base::Passed(&options),
-                 format_));
+                 format_,
+                 media::BindToCurrentLoop(error_callback)));
   scoped_refptr<media::AudioCapturerSource> audio(
       new CastReceiverSession::AudioCapturerSource(this));
   scoped_ptr<media::VideoCapturerSource> video(

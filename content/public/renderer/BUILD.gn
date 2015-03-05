@@ -49,6 +49,7 @@ source_set("renderer_sources") {
         rebase_path(content_renderer_gypi_values.public_renderer_webrtc_sources,
                     ".",
                     "//content")
+    deps += [ "//third_party/webrtc" ]
   }
 
   if (enable_plugins) {

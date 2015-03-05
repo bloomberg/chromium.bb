@@ -49,7 +49,8 @@ class CastReceiverSession : public base::RefCounted<CastReceiverSession> {
              const net::IPEndPoint& remote_endpoint,
              scoped_ptr<base::DictionaryValue> options,
              const media::VideoCaptureFormat& capture_format,
-             const StartCB& start_callback);
+             const StartCB& start_callback,
+             const CastReceiverSessionDelegate::ErrorCallback& error_callback);
 
  private:
   class VideoCapturerSource;

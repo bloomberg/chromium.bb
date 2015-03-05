@@ -71,7 +71,8 @@ class CastSession : public base::RefCounted<CastSession> {
   // udp transport.
   // Must be called before initialization of audio or video.
   void StartUDP(const net::IPEndPoint& remote_endpoint,
-                scoped_ptr<base::DictionaryValue> options);
+                scoped_ptr<base::DictionaryValue> options,
+                const ErrorCallback& error_callback);
 
   // Creates or destroys event subscriber for the audio or video stream.
   // |is_audio|: true if the event subscriber is for audio. Video otherwise.

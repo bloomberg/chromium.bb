@@ -588,6 +588,8 @@
       'renderer/render_widget_fullscreen_pepper.h',
     ],
     'public_renderer_webrtc_sources': [
+      'public/renderer/media_stream_api.cc',
+      'public/renderer/media_stream_api.h',
       'public/renderer/media_stream_audio_sink.cc',
       'public/renderer/media_stream_audio_sink.h',
       'public/renderer/media_stream_sink.h',

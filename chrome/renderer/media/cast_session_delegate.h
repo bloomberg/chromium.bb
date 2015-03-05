@@ -43,6 +43,8 @@ class CastTransportSender;
 // CastReceiverSessionDelegate.
 class CastSessionDelegateBase {
  public:
+  typedef base::Callback<void(const std::string&)> ErrorCallback;
+
   CastSessionDelegateBase();
   virtual ~CastSessionDelegateBase();
 
@@ -51,10 +53,12 @@ class CastSessionDelegateBase {
   // Must be called before initialization of audio or video.
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint,
-                scoped_ptr<base::DictionaryValue> options);
+                scoped_ptr<base::DictionaryValue> options,
+                const ErrorCallback& error_callback);
 
  protected:
   void StatusNotificationCB(
+      const ErrorCallback& error_callback,
       media::cast::CastTransportStatus status);
 
   virtual void ReceivePacket(scoped_ptr<media::cast::Packet> packet) = 0;
@@ -85,14 +89,14 @@ class CastSessionDelegate : public CastSessionDelegateBase {
       media::cast::VideoFrameInput>&)> VideoFrameInputAvailableCallback;
   typedef base::Callback<void(scoped_ptr<base::BinaryValue>)> EventLogsCallback;
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
 
   CastSessionDelegate();
   ~CastSessionDelegate() override;
 
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint,
-                scoped_ptr<base::DictionaryValue> options);
+                scoped_ptr<base::DictionaryValue> options,
+                const ErrorCallback& error_callback);
 
   // After calling StartAudio() or StartVideo() encoding of that media will
   // begin as soon as data is delivered to its sink, if the second method is
