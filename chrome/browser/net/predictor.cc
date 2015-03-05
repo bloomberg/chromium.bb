@@ -467,7 +467,7 @@ void Predictor::Resolve(const GURL& url,
 void Predictor::LearnFromNavigation(const GURL& referring_url,
                                     const GURL& target_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!predictor_enabled_ || !CanPrefetchAndPrerender())
+  if (!predictor_enabled_ || !CanPreresolveAndPreconnect())
     return;
   DCHECK_EQ(referring_url, Predictor::CanonicalizeUrl(referring_url));
   DCHECK_NE(referring_url, GURL::EmptyGURL());
@@ -491,7 +491,7 @@ void Predictor::PredictorGetHtmlInfo(Predictor* predictor,
                  // "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
                  "</head><body>");
   if (predictor && predictor->predictor_enabled() &&
-      predictor->CanPrefetchAndPrerender()) {
+      predictor->CanPreresolveAndPreconnect()) {
     predictor->GetHtmlInfo(output);
   } else {
     output->append("DNS pre-resolution and TCP pre-connection is disabled.");
@@ -749,7 +749,7 @@ void Predictor::FinalizeInitializationOnIOThread(
 void Predictor::LearnAboutInitialNavigation(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_ || NULL == initial_observer_.get() ||
-      !CanPrefetchAndPrerender()) {
+      !CanPreresolveAndPreconnect()) {
     return;
   }
   initial_observer_->Append(url, this);
@@ -785,7 +785,7 @@ void Predictor::DnsPrefetchMotivatedList(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_)
     return;
-  if (!CanPrefetchAndPrerender())
+  if (!CanPreresolveAndPreconnect())
     return;
 
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
@@ -821,7 +821,7 @@ static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
 void Predictor::SaveStateForNextStartupAndTrim() {
   if (!predictor_enabled_)
     return;
-  if (!CanPrefetchAndPrerender())
+  if (!CanPreresolveAndPreconnect())
     return;
 
   base::WaitableEvent completion(true, false);
@@ -919,7 +919,7 @@ void Predictor::PredictFrameSubresources(const GURL& url,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_)
     return;
-  if (!CanPrefetchAndPrerender())
+  if (!CanPreresolveAndPreconnect())
     return;
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   // Add one pass through the message loop to allow current navigation to
