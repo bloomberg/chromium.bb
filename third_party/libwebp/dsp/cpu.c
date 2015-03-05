@@ -29,16 +29,18 @@ static WEBP_INLINE void GetCPUInfo(int cpu_info[4], int info_type) {
     "cpuid\n"
     "xchg %%edi, %%ebx\n"
     : "=a"(cpu_info[0]), "=D"(cpu_info[1]), "=c"(cpu_info[2]), "=d"(cpu_info[3])
-    : "a"(info_type));
+    : "a"(info_type), "c"(0));
 }
 #elif defined(__i386__) || defined(__x86_64__)
 static WEBP_INLINE void GetCPUInfo(int cpu_info[4], int info_type) {
   __asm__ volatile (
     "cpuid\n"
     : "=a"(cpu_info[0]), "=b"(cpu_info[1]), "=c"(cpu_info[2]), "=d"(cpu_info[3])
-    : "a"(info_type));
+    : "a"(info_type), "c"(0));
 }
-#elif defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 150030729  // >= VS2008 SP1
+#elif (defined(_M_X64) || defined(_M_IX86)) && \
+      defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 150030729  // >= VS2008 SP1
+#include <intrin.h>
 #define GetCPUInfo(info, type) __cpuidex(info, type, 0)  // set ecx=0
 #elif defined(WEBP_MSC_SSE2)
 #define GetCPUInfo __cpuid
@@ -55,7 +57,9 @@ static WEBP_INLINE uint64_t xgetbv(void) {
     : "=a"(eax), "=d"(edx) : "c" (ecx));
   return ((uint64_t)edx << 32) | eax;
 }
-#elif defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 160040219  // >= VS2010 SP1
+#elif (defined(_M_X64) || defined(_M_IX86)) && \
+      defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 160040219  // >= VS2010 SP1
+#include <immintrin.h>
 #define xgetbv() _xgetbv(0)
 #elif defined(_MSC_VER) && defined(_M_IX86)
 static WEBP_INLINE uint64_t xgetbv(void) {

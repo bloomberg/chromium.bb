@@ -311,7 +311,12 @@ int (*WebPExtractAlpha)(const uint8_t*, int, int, int, uint8_t*, int);
 
 extern void WebPInitAlphaProcessingSSE2(void);
 
+static volatile VP8CPUInfo alpha_processing_last_cpuinfo_used =
+    (VP8CPUInfo)&alpha_processing_last_cpuinfo_used;
+
 void WebPInitAlphaProcessing(void) {
+  if (alpha_processing_last_cpuinfo_used == VP8GetCPUInfo) return;
+
   WebPMultARGBRow = MultARGBRow;
   WebPMultRow = MultRow;
   WebPApplyAlphaMultiply = ApplyAlphaMultiply;
@@ -326,4 +331,5 @@ void WebPInitAlphaProcessing(void) {
     }
 #endif
   }
+  alpha_processing_last_cpuinfo_used = VP8GetCPUInfo;
 }

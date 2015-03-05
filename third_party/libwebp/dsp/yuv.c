@@ -123,7 +123,12 @@ WebPSamplerRowFunc WebPSamplers[MODE_LAST];
 extern void WebPInitSamplersSSE2(void);
 extern void WebPInitSamplersMIPS32(void);
 
+static volatile VP8CPUInfo yuv_last_cpuinfo_used =
+    (VP8CPUInfo)&yuv_last_cpuinfo_used;
+
 void WebPInitSamplers(void) {
+  if (yuv_last_cpuinfo_used == VP8GetCPUInfo) return;
+
   WebPSamplers[MODE_RGB]       = YuvToRgbRow;
   WebPSamplers[MODE_RGBA]      = YuvToRgbaRow;
   WebPSamplers[MODE_BGR]       = YuvToBgrRow;
@@ -149,6 +154,7 @@ void WebPInitSamplers(void) {
     }
 #endif  // WEBP_USE_MIPS32
   }
+  yuv_last_cpuinfo_used = VP8GetCPUInfo;
 }
 
 //-----------------------------------------------------------------------------

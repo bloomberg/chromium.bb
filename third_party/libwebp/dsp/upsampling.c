@@ -189,7 +189,12 @@ const WebPYUV444Converter WebPYUV444Converters[MODE_LAST] = {
 extern void WebPInitUpsamplersSSE2(void);
 extern void WebPInitUpsamplersNEON(void);
 
+static volatile VP8CPUInfo upsampling_last_cpuinfo_used2 =
+    (VP8CPUInfo)&upsampling_last_cpuinfo_used2;
+
 void WebPInitUpsamplers(void) {
+  if (upsampling_last_cpuinfo_used2 == VP8GetCPUInfo) return;
+
 #ifdef FANCY_UPSAMPLING
   WebPUpsamplers[MODE_RGB]       = UpsampleRgbLinePair;
   WebPUpsamplers[MODE_RGBA]      = UpsampleRgbaLinePair;
@@ -217,6 +222,7 @@ void WebPInitUpsamplers(void) {
 #endif
   }
 #endif  // FANCY_UPSAMPLING
+  upsampling_last_cpuinfo_used2 = VP8GetCPUInfo;
 }
 
 //------------------------------------------------------------------------------

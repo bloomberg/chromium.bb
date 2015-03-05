@@ -1590,7 +1590,12 @@ extern void VP8LDspInitSSE2(void);
 extern void VP8LDspInitNEON(void);
 extern void VP8LDspInitMIPS32(void);
 
+static volatile VP8CPUInfo lossless_last_cpuinfo_used =
+    (VP8CPUInfo)&lossless_last_cpuinfo_used;
+
 void VP8LDspInit(void) {
+  if (lossless_last_cpuinfo_used == VP8GetCPUInfo) return;
+
   memcpy(VP8LPredictors, kPredictorsC, sizeof(VP8LPredictors));
 
   VP8LSubtractGreenFromBlueAndRed = VP8LSubtractGreenFromBlueAndRed_C;
@@ -1634,6 +1639,7 @@ void VP8LDspInit(void) {
     }
 #endif
   }
+  lossless_last_cpuinfo_used = VP8GetCPUInfo;
 }
 
 //------------------------------------------------------------------------------
