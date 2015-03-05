@@ -35,6 +35,150 @@
       }
     ]
   },
+  "WebKit Win7 (dbg)": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac10.6": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac10.7": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac10.8": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac10.8 (retina)": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac10.9": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac10.6 (dbg)": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
+  "WebKit Mac10.7 (dbg)": {
+    "gtest_tests": [
+      "blink_heap_unittests",
+      "blink_platform_unittests",
+      "webkit_unit_tests",
+      "wtf_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "webkit_lint.py"
+      },
+      {
+        "name": "webkit_python_tests",
+        "script": "webkit_python_tests.py"
+      }
+    ]
+  },
   "WebKit Linux": {
     "gtest_tests": [
       "blink_heap_unittests",
