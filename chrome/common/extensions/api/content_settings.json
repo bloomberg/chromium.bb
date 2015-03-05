@@ -245,22 +245,6 @@
           {"type":"string", "enum": ["allow", "block", "ask"]}
         ]
       },
-      "microphone": {
-        "$ref": "ContentSetting",
-        "description": "Whether to allow sites to access the microphone. One of <br><var>allow</var>: Allow sites to access the microphone,<br><var>block</var>: Don't allow sites to access the microphone,<br><var>ask</var>: Ask when a site wants to access the microphone. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the document which requested microphone access. The secondary URL is not used.",
-        "value": [
-          "media-stream-mic",
-          {"type":"string", "enum": ["allow", "block", "ask"]}
-        ]
-      },
-      "camera": {
-        "$ref": "ContentSetting",
-        "description": "Whether to allow sites to access the camera. One of <br><var>allow</var>: Allow sites to access the camera,<br><var>block</var>: Don't allow sites to access the camera,<br><var>ask</var>: Ask when a site wants to access the camera. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the document which requested camera access. The secondary URL is not used.",
-        "value": [
-          "media-stream-camera",
-          {"type":"string", "enum": ["allow", "block", "ask"]}
-        ]
-      },
       "unsandboxedPlugins": {
         "$ref": "ContentSetting",
         "description": "Whether to allow sites to run plug-ins unsandboxed. One of <br><var>allow</var>: Allow sites to run plug-ins unsandboxed,<br><var>block</var>: Don't allow sites to run plug-ins unsandboxed,<br><var>ask</var>: Ask when a site wants to run a plug-in unsandboxed. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
