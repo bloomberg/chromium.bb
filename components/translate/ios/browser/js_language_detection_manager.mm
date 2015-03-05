@@ -8,8 +8,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/web/public/web_state/js/crw_js_base_manager.h"
-#import "ios/web/public/web_state/js/crw_js_message_manager.h"
+#import "ios/web/public/web_state/js/crw_js_early_script_manager.h"
 
 namespace language_detection {
 // Note: This should stay in sync with the constant in language_detection.js.
@@ -29,7 +28,7 @@ const size_t kMaxIndexChars = 65535;
 }
 
 - (NSArray*)directDependencies {
-  return @[ [CRWJSBaseManager class], [CRWJSMessageManager class], ];
+  return @[ [CRWJSEarlyScriptManager class] ];
 }
 
 #pragma mark - Public methods
