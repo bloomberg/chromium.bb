@@ -1,0 +1,78 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/core-label/core-label.html">
+<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
+<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
+
+<polymer-element name="cr-settings-a11y-page" layout vertical>
+  <template>
+    <link rel="stylesheet" href="a11y_page.css">
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.a11y.enableMenu}}" for>
+      </cr-checkbox>
+      <span>Show accessibility options in the system menu</span>
+    </core-label>
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.a11y.largeCursorEnabled}}" for>
+      </cr-checkbox>
+      <span>Show large mouse cursor</span>
+    </core-label>
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.a11y.highContrastEnabled}}" for>
+      </cr-checkbox>
+      <span>Use high contrast mode</span>
+    </core-label>
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.a11y.stickyKeysEnabled}}" for>
+      </cr-checkbox>
+      <span>Enable sticky keys</span>
+      <span class="sub-label">
+        (to perform keyboard shortcuts by typing them sequentially)
+      </span>
+    </core-label>
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.accessibility}}" for>
+      </cr-checkbox>
+      <span>Enable ChromeVox</span>
+      <span class="sub-label">
+        (spoken feedback)
+      </span>
+    </core-label>
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.a11y.screenMagnifier}}" for>
+      </cr-checkbox>
+      <span>Enable screen magnifier</span>
+    </core-label>
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.touchpad.enableTapDragging}}" for>
+      </cr-checkbox>
+      <span>Enable tap dragging</span>
+    </core-label>
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.a11y.autoclick}}" for>
+      </cr-checkbox>
+      <span>Automatically click when the mouse pointer stops</span>
+    </core-label>
+    <core-label horizontal layout center class="autoclick-delay-label"
+        hidden?="{{!prefs.settings.a11y.autoclick}}">
+      <span>Delay before click:</span>
+      <cr-dropdown-menu class="autoclick-dropdown">
+        <core-menu class="menu" valueAttr="value" selectedAttribute=""
+            selected="{{prefs.settings.a11y.autoclickDelayMs}}">
+          <paper-item value="200">extremely short</paper-item>
+          <paper-item value="400">very short</paper-item>
+          <paper-item value="600">short</paper-item>
+          <paper-item value="800">long</paper-item>
+          <paper-item value="1000">very long</paper-item>
+        </core-menu>
+      </cr-dropdown-menu>
+    </core-label>
+    <core-label horizontal layout>
+      <cr-checkbox checked="{{prefs.settings.a11y.virtualKeyboard}}" for>
+      </cr-checkbox>
+      <span>Enable on-screen keyboard</span>
+    </core-label>
+  </template>
+  <script src="a11y_page.js"></script>
+</polymer-element>

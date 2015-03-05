@@ -126,6 +126,12 @@
   <structure name="IDR_POLYMER_CORE_ITEM_CORE_ITEM_HTML"
              file="../../../third_party/polymer/components-chromium/core-item/core-item.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_LABEL_CORE_LABEL_EXTRACTED_JS"
+             file="../../../third_party/polymer/components-chromium/core-label/core-label-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_LABEL_CORE_LABEL_HTML"
+             file="../../../third_party/polymer/components-chromium/core-label/core-label.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_CORE_LIST_CORE_LIST_CSS"
              file="../../../third_party/polymer/components-chromium/core-list/core-list.css"
              type="chrome_html" />
