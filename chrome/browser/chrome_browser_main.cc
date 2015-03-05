@@ -130,7 +130,6 @@
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/net_module.h"
-#include "net/base/sdch_manager.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
@@ -1431,24 +1430,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // needs to read prefs that get set after that runs.
   browser_process_->intranet_redirect_detector();
   GoogleSearchCounter::RegisterForNotifications();
-
-  // Check SDCH field trial.  Default is now that everything is enabled,
-  // so provide options for disabling HTTPS or all of SDCH.
-  const char kSdchFieldTrialName[] = "SDCH";
-  const char kEnabledHttpOnlyGroupName[] = "EnabledHttpOnly";
-  const char kDisabledAllGroupName[] = "DisabledAll";
-
-  // Store in a string on return to keep underlying storage for
-  // StringPiece stable.
-  std::string sdch_trial_group_string =
-      base::FieldTrialList::FindFullName(kSdchFieldTrialName);
-  base::StringPiece sdch_trial_group(sdch_trial_group_string);
-  if (sdch_trial_group.starts_with(kEnabledHttpOnlyGroupName)) {
-    net::SdchManager::EnableSdchSupport(true);
-    net::SdchManager::EnableSecureSchemeSupport(false);
-  } else if (sdch_trial_group.starts_with(kDisabledAllGroupName)) {
-    net::SdchManager::EnableSdchSupport(false);
-  }
 
 #if defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
   if (parsed_command_line().HasSwitch(switches::kDebugPrint)) {

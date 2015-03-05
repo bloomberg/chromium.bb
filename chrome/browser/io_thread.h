@@ -269,6 +269,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // Sets up TCP FastOpen if enabled via field trials or via the command line.
   void ConfigureTCPFastOpen(const base::CommandLine& command_line);
 
+  // Sets up SDCH based on field trials.
+  void ConfigureSdch();
+
   // Enable SPDY with the given mode, which may contain the following:
   //
   //   "off"                      : Disables SPDY support entirely.

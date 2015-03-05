@@ -49,6 +49,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
+#include "net/base/sdch_manager.h"
 #include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
@@ -813,6 +814,7 @@ void IOThread::InitializeNetworkOptions(const base::CommandLine& command_line) {
   }
 
   ConfigureTCPFastOpen(command_line);
+  ConfigureSdch();
 
   // TODO(rch): Make the client socket factory a per-network session
   // instance, constructed from a NetworkSession::Params, to allow us
@@ -830,6 +832,26 @@ void IOThread::ConfigureTCPFastOpen(const base::CommandLine& command_line) {
   // Check for OS support of TCP FastOpen, and turn it on for all connections
   // if indicated by user.
   net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_if_supported);
+}
+
+void IOThread::ConfigureSdch() {
+  // Check SDCH field trial.  Default is now that everything is enabled,
+  // so provide options for disabling HTTPS or all of SDCH.
+  const char kSdchFieldTrialName[] = "SDCH";
+  const char kEnabledHttpOnlyGroupName[] = "EnabledHttpOnly";
+  const char kDisabledAllGroupName[] = "DisabledAll";
+
+  // Store in a string on return to keep underlying storage for
+  // StringPiece stable.
+  std::string sdch_trial_group_string =
+      base::FieldTrialList::FindFullName(kSdchFieldTrialName);
+  base::StringPiece sdch_trial_group(sdch_trial_group_string);
+  if (sdch_trial_group.starts_with(kEnabledHttpOnlyGroupName)) {
+    net::SdchManager::EnableSdchSupport(true);
+    net::SdchManager::EnableSecureSchemeSupport(false);
+  } else if (sdch_trial_group.starts_with(kDisabledAllGroupName)) {
+    net::SdchManager::EnableSdchSupport(false);
+  }
 }
 
 void IOThread::ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
