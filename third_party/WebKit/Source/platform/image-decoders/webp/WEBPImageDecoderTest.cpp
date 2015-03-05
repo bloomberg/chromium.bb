@@ -636,7 +636,7 @@ TEST(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache)
     testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
 }
 
-TEST(AnimatedWebPTests, resumePartialDecodeAfterClearFrameBufferCache)
+TEST(AnimatedWebPTests, DISABLED_resumePartialDecodeAfterClearFrameBufferCache)
 {
     RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/webp-animated-large.webp");
     ASSERT_TRUE(fullData.get());
