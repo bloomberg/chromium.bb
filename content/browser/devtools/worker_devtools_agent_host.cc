@@ -92,9 +92,9 @@ void WorkerDevToolsAgentHost::WorkerDestroyed() {
     base::Callback<void(const std::string&)> raw_message_callback(
         base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
                 base::Unretained(this)));
-    devtools::worker::Client worker(raw_message_callback);
-    worker.DisconnectedFromWorker(
-        devtools::worker::DisconnectedFromWorkerParams::Create());
+    devtools::inspector::Client inspector(raw_message_callback);
+    inspector.TargetCrashed(
+        devtools::inspector::TargetCrashedParams::Create());
     DetachFromWorker();
   }
   state_ = WORKER_TERMINATED;

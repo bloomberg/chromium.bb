@@ -16,8 +16,7 @@ WorkerHandler::WorkerHandler() {
 WorkerHandler::~WorkerHandler() {
 }
 
-void WorkerHandler::SetClient(scoped_ptr<Client> client) {
-  client_.swap(client);
+void WorkerHandler::SetClient(scoped_ptr<DevToolsProtocolClient> client) {
 }
 
 Response WorkerHandler::DisconnectFromWorker(int worker_id) {

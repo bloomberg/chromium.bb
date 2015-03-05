@@ -18,14 +18,14 @@ class WorkerHandler {
   WorkerHandler();
   virtual ~WorkerHandler();
 
-  void SetClient(scoped_ptr<Client> client);
+  void SetClient(scoped_ptr<DevToolsProtocolClient> client);
 
   Response DisconnectFromWorker(int worker_id);
 
   Response DisconnectFromWorker(const std::string& worker_id);
 
  private:
-  scoped_ptr<Client> client_;
+  scoped_ptr<DevToolsProtocolClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerHandler);
 };
