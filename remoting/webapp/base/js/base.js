@@ -534,7 +534,7 @@ base.EventSourceImpl.prototype = {
   *
   * @param {base.EventSource} src
   * @param {string} eventName
-  * @param {function(...?)} listener
+  * @param {Function} listener
   *
   * @constructor
   * @implements {base.Disposable}
@@ -553,9 +553,9 @@ base.EventHook.prototype.dispose = function() {
 /**
   * An event hook implementation for DOM Events.
   *
-  * @param {HTMLElement|Element} src
+  * @param {HTMLElement|Element|Window|HTMLDocument} src
   * @param {string} eventName
-  * @param {function(...?)} listener
+  * @param {Function} listener
   * @param {boolean} capture
   *
   * @constructor
@@ -578,7 +578,7 @@ base.DomEventHook.prototype.dispose = function() {
   * An event hook implementation for Chrome Events.
   *
   * @param {chrome.Event} src
-  * @param {function(...?)} listener
+  * @param {Function} listener
   *
   * @constructor
   * @implements {base.Disposable}
@@ -593,6 +593,21 @@ base.ChromeEventHook.prototype.dispose = function() {
   this.src_.removeListener(this.listener_);
 };
 
+/**
+ * A disposable repeating timer.
+ *
+ * @constructor
+ * @implements {base.Disposable}
+ */
+base.RepeatingTimer = function(/** Function */callback, /** number */interval) {
+  /** @private */
+  this.intervalId_ = window.setInterval(callback, interval);
+};
+
+base.RepeatingTimer.prototype.dispose = function() {
+  window.clearInterval(this.intervalId_);
+  this.intervalId_ = null;
+};
 
 /**
   * Converts UTF-8 string to ArrayBuffer.

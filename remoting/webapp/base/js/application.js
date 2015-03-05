@@ -13,6 +13,19 @@
 var remoting = remoting || {};
 
 /**
+ * @type {remoting.ClientSession} The client session object, set once the
+ *     connector has invoked its onOk callback.
+ * TODO(garykac): Make clientSession a member var of Application.
+ */
+remoting.clientSession = null;
+
+/**
+ * @type {remoting.DesktopConnectedView} The client session view object, set
+ *     once the connector has invoked its onOk callback.
+ */
+remoting.desktopConnectedView = null;
+
+/**
  * @param {Array<string>} app_capabilities Array of application capabilities.
  * @constructor
  */
@@ -40,6 +53,9 @@ remoting.Application = function(app_capabilities) {
    * @private
    */
   this.session_connector_ = null;
+
+  /** @private {base.Disposable} */
+  this.sessionConnectedHooks_ = null;
 };
 
 /**
@@ -93,6 +109,14 @@ remoting.Application.prototype.start = function() {
   this.delegate_.init(this.getSessionConnector());
 };
 
+/** Disconnect the remoting client. */
+remoting.Application.prototype.disconnect = function() {
+  if (remoting.clientSession) {
+    remoting.clientSession.disconnect(remoting.Error.NONE);
+    console.log('Disconnected.');
+  }
+};
+
 /**
  * Called when a new session has been connected.
  *
@@ -100,12 +124,13 @@ remoting.Application.prototype.start = function() {
  * @return {void} Nothing.
  */
 remoting.Application.prototype.onConnected = function(clientSession) {
-  // TODO(garykac): Make clientSession a member var of Application.
   remoting.clientSession = clientSession;
-  remoting.clientSession.addEventListener('stateChanged', onClientStateChange_);
-
+  this.sessionConnectedHooks_ = new base.Disposables(
+    new base.EventHook(
+      clientSession, 'stateChanged', this.onClientStateChange_.bind(this)),
+    new base.RepeatingTimer(this.updateStatistics_.bind(this), 1000)
+  );
   remoting.clipboard.startSession();
-  updateStatistics_();
 
   this.delegate_.handleConnected(clientSession);
 };
@@ -192,6 +217,48 @@ remoting.Application.prototype.getSessionConnector = function() {
   return this.session_connector_;
 };
 
+/**
+ * Callback function called when the state of the client plugin changes. The
+ * current and previous states are available via the |state| member variable.
+ *
+ * @param {remoting.ClientSession.StateEvent=} state
+ * @private
+ */
+remoting.Application.prototype.onClientStateChange_ = function(state) {
+  switch (state.current) {
+    case remoting.ClientSession.State.CLOSED:
+      console.log('Connection closed by host');
+      this.onDisconnected();
+      break;
+    case remoting.ClientSession.State.FAILED:
+      var error = remoting.clientSession.getError();
+      console.error('Client plugin reported connection failed: ' + error);
+      if (error === null) {
+        error = remoting.Error.UNEXPECTED;
+      }
+      this.onError(error);
+      break;
+
+    default:
+      console.error('Unexpected client plugin state: ' + state.current);
+      // This should only happen if the web-app and client plugin get out of
+      // sync, so MISSING_PLUGIN is a suitable error.
+      this.onError(remoting.Error.MISSING_PLUGIN);
+      break;
+  }
+
+  base.dispose(this.sessionConnectedHooks_);
+  this.sessionConnectedHooks_= null;
+  remoting.clientSession.dispose();
+  remoting.clientSession = null;
+};
+
+/** @private */
+remoting.Application.prototype.updateStatistics_ = function() {
+  var perfstats = remoting.clientSession.getPerfStats();
+  remoting.stats.update(perfstats);
+  remoting.clientSession.logStatistics(perfstats);
+};
 
 /**
  * @interface

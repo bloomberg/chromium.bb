@@ -60,9 +60,6 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
    */
   this.onInitialized_ = onInitialized;
 
-  /** @type {function(boolean=):void} @private */
-  this.callOnFullScreenChanged_ = this.onFullScreenChanged_.bind(this)
-
   /** @private */
   this.callPluginLostFocus_ = this.pluginLostFocus_.bind(this);
   /** @private */
@@ -88,6 +85,9 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
 
   /** @type {remoting.VideoFrameRecorder} @private */
   this.videoFrameRecorder_ = null;
+
+  /** private {base.Disposable} */
+  this.eventHooks_ = null;
 };
 
 // The mode of this session.
@@ -222,11 +222,20 @@ remoting.DesktopConnectedView.prototype.onPluginInitialized_ = function(
  * This is a callback that gets called when the window is resized.
  *
  * @return {void} Nothing.
+ * @private.
  */
-remoting.DesktopConnectedView.prototype.onResize = function() {
+remoting.DesktopConnectedView.prototype.onResize_ = function() {
   if (this.viewport_) {
     this.viewport_.onResize();
   }
+};
+
+/**
+ * Called when the app window is hidden.
+ * @return {void} Nothing.
+ */
+remoting.DesktopConnectedView.prototype.onVisibilityChanged_ = function() {
+  this.pauseVideo(document.hidden);
 };
 
 /**
@@ -269,7 +278,7 @@ remoting.DesktopConnectedView.prototype.removePlugin = function() {
  */
 remoting.DesktopConnectedView.prototype.updateClientSessionUi_ = function(
     clientSession) {
-  if (clientSession == null) {
+  if (clientSession === null) {
     if (remoting.windowFrame) {
       remoting.windowFrame.setDesktopConnectedView(null);
     }
@@ -283,9 +292,8 @@ remoting.DesktopConnectedView.prototype.updateClientSessionUi_ = function(
     document.body.classList.remove('connected');
     this.container_.removeEventListener(
         'mousemove', this.updateMouseCursorPosition_, true);
-    // Stop listening for full-screen events.
-    remoting.fullscreen.removeListener(this.callOnFullScreenChanged_);
-
+    base.dispose(this.eventHooks_);
+    this.eventHooks_ = null;
     base.dispose(this.viewport_);
     this.viewport_ = null;
   } else {
@@ -307,11 +315,15 @@ remoting.DesktopConnectedView.prototype.updateClientSessionUi_ = function(
     document.body.classList.add('connected');
     this.container_.addEventListener(
         'mousemove', this.updateMouseCursorPosition_, true);
-
     // Activate full-screen related UX.
-    remoting.fullscreen.addListener(this.callOnFullScreenChanged_);
-    this.onFullScreenChanged_(remoting.fullscreen.isActive());
     this.setFocusHandlers_();
+    this.eventHooks_ = new base.Disposables(
+      new base.DomEventHook(window, 'resize', this.onResize_.bind(this), false),
+      new base.DomEventHook(document, 'visibilitychange',
+                            this.onVisibilityChanged_.bind(this), false),
+      new remoting.Fullscreen.EventHook(this.onFullScreenChanged_.bind(this))
+    );
+    this.onFullScreenChanged_(remoting.fullscreen.isActive());
   }
 };
 
@@ -356,6 +368,12 @@ remoting.DesktopConnectedView.prototype.setScreenMode =
 remoting.DesktopConnectedView.prototype.onFullScreenChanged_ = function (
     fullscreen) {
   if (this.viewport_) {
+    // When a window goes full-screen, a resize event is triggered, but the
+    // Fullscreen.isActive call is not guaranteed to return true until the
+    // full-screen event is triggered. In apps v2, the size of the window's
+    // client area is calculated differently in full-screen mode, so register
+    // for both events.
+    this.viewport_.onResize();
     this.viewport_.enableBumpScroll(Boolean(fullscreen));
   }
 };
@@ -582,4 +600,4 @@ remoting.DesktopConnectedView.prototype.handleDebugRegion = function(region) {
       this.debugRegionContainer_.appendChild(rect);
     }
   }
-}
+};

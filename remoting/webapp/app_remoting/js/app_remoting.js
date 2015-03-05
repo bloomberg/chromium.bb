@@ -144,7 +144,7 @@ remoting.AppRemoting.prototype.init = function(connector) {
 
         var idleDetector = new remoting.IdleDetector(
             document.getElementById('idle-dialog'),
-            remoting.disconnect);
+            remoting.app.disconnect.bind(remoting.app));
 
         /**
          * @param {string} tokenUrl Token-issue URL received from the host.

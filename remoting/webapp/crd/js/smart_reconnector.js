@@ -68,7 +68,7 @@ remoting.SmartReconnector.kConnectionTimeout = 10000;
 remoting.SmartReconnector.prototype = {
   reconnect_: function() {
     this.cancelPending_();
-    remoting.disconnect();
+    remoting.app.disconnect();
     remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
     this.connector_.reconnect();
   },

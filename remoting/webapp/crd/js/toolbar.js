@@ -63,9 +63,10 @@ remoting.Toolbar = function(toolbar) {
   window.addEventListener('mousemove', remoting.Toolbar.onMouseMove, false);
   window.addEventListener('resize', this.center.bind(this), false);
 
-  registerEventListener('toolbar-disconnect', 'click', remoting.disconnect);
-  registerEventListener('toolbar-stub', 'click',
-      function() { remoting.toolbar.toggle(); });
+  registerEventListener('toolbar-disconnect', 'click',
+                        remoting.app.disconnect.bind(remoting.app));
+  registerEventListener('toolbar-stub',
+                        'click', function() { remoting.toolbar.toggle(); });
 
   // Prevent the preview canceling if the user is interacting with the tool-bar.
   /** @type {remoting.Toolbar} */

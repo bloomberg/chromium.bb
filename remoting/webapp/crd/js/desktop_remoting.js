@@ -97,16 +97,9 @@ remoting.DesktopRemoting.prototype.init = function() {
     remoting.optionsMenu = remoting.toolbar.createOptionsMenu();
 
     window.addEventListener('beforeunload', remoting.promptClose, false);
-    window.addEventListener('unload', remoting.disconnect, false);
+    window.addEventListener('unload',
+                            remoting.app.disconnect.bind(remoting.app), false);
   }
-
-  // When a window goes full-screen, a resize event is triggered, but the
-  // Fullscreen.isActive call is not guaranteed to return true until the
-  // full-screen event is triggered. In apps v2, the size of the window's
-  // client area is calculated differently in full-screen mode, so register
-  // for both events.
-  window.addEventListener('resize', remoting.onResize, false);
-  remoting.fullscreen.addListener(remoting.onResize);
 
   remoting.initHostlist_();
 
@@ -233,6 +226,12 @@ remoting.DesktopRemoting.prototype.handleConnected = function(clientSession) {
  * @return {void} Nothing.
  */
 remoting.DesktopRemoting.prototype.handleDisconnected = function() {
+  if (remoting.desktopConnectedView.getMode() ==
+      remoting.DesktopConnectedView.Mode.IT2ME) {
+    remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
+  } else {
+    remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
+  }
 };
 
 /**

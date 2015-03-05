@@ -50,3 +50,22 @@ remoting.Fullscreen.prototype.removeListener = function(callback) { };
 
 /** @type {remoting.Fullscreen} */
 remoting.fullscreen = null;
+
+
+/**
+ * @constructor
+ * @param {function(boolean=)} listener
+ * @implements {base.Disposable}
+ */
+remoting.Fullscreen.EventHook = function(listener) {
+  /** @private */
+  this.src_ = remoting.fullscreen;
+  /** @private */
+  this.listener_ = listener;
+
+  this.src_.addListener(listener);
+};
+
+remoting.Fullscreen.EventHook.prototype.dispose = function() {
+  this.src_.removeListener(this.listener_);
+};

@@ -150,7 +150,7 @@ remoting.WindowFrame.prototype.disconnectSession_ = function() {
   if (chrome.app.window.current().isFullscreen()) {
     chrome.app.window.current().restore();
   }
-  remoting.disconnect();
+  remoting.app.disconnect();
 };
 
 /**

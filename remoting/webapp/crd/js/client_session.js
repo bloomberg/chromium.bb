@@ -42,6 +42,7 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  *     when the client doesn't define any.
  * @constructor
  * @extends {base.EventSourceImpl}
+ * @implements {base.Disposable}
  */
 remoting.ClientSession = function(host, signalStrategy, credentialsProvider,
                                   container, mode, defaultRemapKeys) {
@@ -311,12 +312,13 @@ remoting.ClientSession.prototype.resetWithError_ = function(error) {
 remoting.ClientSession.prototype.removePlugin = function() {
   this.uiHandler_.removePlugin();
   this.plugin_ = null;
+  remoting.desktopConnectedView = null;
 };
 
 /**
  * Disconnect the current session with a particular |error|.  The session will
  * raise a |stateChanged| event in response to it.  The caller should then call
- * |cleanup| to remove and destroy the <embed> element.
+ * dispose() to remove and destroy the <embed> element.
  *
  * @param {remoting.Error} error The reason for the disconnection.  Use
  *    remoting.Error.NONE if there is no error.
@@ -339,7 +341,7 @@ remoting.ClientSession.prototype.disconnect = function(error) {
  *
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.cleanup = function() {
+remoting.ClientSession.prototype.dispose = function() {
   this.sendIq_(
       '<cli:iq ' +
           'to="' + this.host_.jabberId + '" ' +

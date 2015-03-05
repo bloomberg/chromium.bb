@@ -146,10 +146,6 @@
       'webapp/crd/js/client_plugin.js',
       'webapp/crd/js/client_plugin_impl.js',
       'webapp/crd/js/client_plugin_host_desktop_impl.js',
-      # TODO(garykac) For client_screen:
-      # * Split out pin/access code stuff into separate file.
-      # * Move client logic into session_connector
-      'webapp/crd/js/client_screen.js',
       'webapp/crd/js/client_session.js',
       'webapp/crd/js/clipboard.js',
       'webapp/crd/js/credentials_provider.js',
