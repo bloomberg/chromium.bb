@@ -126,9 +126,6 @@ bool GetSystemFlashDirectory(base::FilePath* out_path) {
     return false;
   base::FilePath plugin_path = base::FilePath(path_str).DirName();
 
-  if (!base::PathExists(plugin_path))
-    return false;
-
   *out_path = plugin_path;
   return true;
 }
