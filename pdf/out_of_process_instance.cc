@@ -550,8 +550,12 @@ bool OutOfProcessInstance::HandleInputEvent(
   if (engine_->HandleEvent(offset_event))
     return true;
 
-  // TODO(raymes): Implement this scroll behavior in JS:
-  // When click+dragging, scroll the document correctly.
+  // Middle click is used for scrolling and is handled by the container page.
+  pp::MouseInputEvent mouse_event(event_device_res);
+  if (!mouse_event.is_null() &&
+      mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
+    return false;
+  }
 
   // Return true for unhandled clicks so the plugin takes focus.
   return (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN);
