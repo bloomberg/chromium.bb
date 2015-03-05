@@ -47,6 +47,8 @@ ChromeSessionManager::CreateSessionManager(
   std::string login_user_id =
       parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
 
+  KioskAppManager::RemoveObsoleteCryptohomes();
+
   if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
     VLOG(1) << "Starting Chrome with KioskAutoLauncherSessionManagerDelegate";
     return scoped_ptr<session_manager::SessionManager>(new ChromeSessionManager(
