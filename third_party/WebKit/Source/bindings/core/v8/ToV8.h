@@ -216,6 +216,15 @@ inline v8::Handle<v8::Value> toV8(const HeapVector<T, inlineCapacity>& value, v8
     return toV8SequenceInternal(value, creationContext, isolate);
 }
 
+template<typename T>
+inline v8::Handle<v8::Value> toV8(const Vector<std::pair<String, T>>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    v8::Local<v8::Object> object = v8::Object::New(isolate);
+    for (unsigned i = 0; i < value.size(); ++i)
+        object->Set(v8String(isolate, value[i].first), toV8(value[i].second, creationContext, isolate));
+    return object;
+}
+
 } // namespace blink
 
 #endif // ToV8_h

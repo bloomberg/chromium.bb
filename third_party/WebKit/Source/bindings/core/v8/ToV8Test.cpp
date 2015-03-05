@@ -227,6 +227,17 @@ TEST_F(ToV8Test, basicTypeVectors)
     TEST_TOV8("true,true,false", boolVector);
 }
 
+TEST_F(ToV8Test, dictionaryVector)
+{
+    Vector<std::pair<String, int>> dictionary;
+    dictionary.append(std::make_pair("one", 1));
+    dictionary.append(std::make_pair("two", 2));
+    TEST_TOV8("[object Object]", dictionary);
+    v8::Handle<v8::Object> result = toV8(dictionary, m_scope.scriptState()->context()->Global(), m_scope.isolate())->ToObject();
+    EXPECT_EQ(1, result->Get(v8String(m_scope.isolate(), "one"))->NumberValue());
+    EXPECT_EQ(2, result->Get(v8String(m_scope.isolate(), "two"))->NumberValue());
+}
+
 TEST_F(ToV8Test, heapVector)
 {
     HeapVector<Member<GarbageCollectedScriptWrappable>> v;

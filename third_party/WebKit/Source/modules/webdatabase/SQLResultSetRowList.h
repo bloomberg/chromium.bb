@@ -35,6 +35,9 @@
 #include "wtf/Forward.h"
 
 namespace blink {
+class ScriptValue;
+class ScriptState;
+class ExceptionState;
 
 class SQLResultSetRowList : public GarbageCollectedFinalized<SQLResultSetRowList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -49,6 +52,7 @@ public:
     void addResult(const SQLValue& result) { m_result.append(result); }
 
     unsigned length() const;
+    ScriptValue item(ScriptState*, unsigned index, ExceptionState&);
 
 private:
     SQLResultSetRowList() { }

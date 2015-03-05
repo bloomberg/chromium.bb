@@ -19,6 +19,7 @@
             'ScriptValueSerializerForModules.h',
             'SerializedScriptValueForModulesFactory.cpp',
             'SerializedScriptValueForModulesFactory.h',
+            'ToV8ForModules.h',
         ],
         # Note: list duplicated in v8.gni.
         'bindings_modules_v8_unittest_files': [

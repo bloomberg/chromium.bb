@@ -31,5 +31,5 @@
     GarbageCollected,
 ] interface SQLResultSetRowList {
     readonly attribute unsigned long length;
-    [Custom] object item(unsigned long index);
+    [RaisesException, CallWith=ScriptState] getter any item(unsigned long index);
 };

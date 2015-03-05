@@ -29,6 +29,11 @@
 #include "config.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
 
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ToV8.h"
+#include "bindings/modules/v8/ToV8ForModules.h"
+#include "core/dom/ExceptionCode.h"
+
 namespace blink {
 
 unsigned SQLResultSetRowList::length() const
@@ -41,4 +46,21 @@ unsigned SQLResultSetRowList::length() const
     return m_result.size() / m_columns.size();
 }
 
+ScriptValue SQLResultSetRowList::item(ScriptState* scriptState, unsigned index, ExceptionState& exceptionState)
+{
+    if (index >= length()) {
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound<unsigned>("index", index, length()));
+        return ScriptValue();
+    }
+
+    unsigned numColumns = m_columns.size();
+    unsigned valuesIndex = index * numColumns;
+
+    Vector<std::pair<String, SQLValue>> dataArray;
+    for (unsigned i = 0; i < numColumns; ++i)
+        dataArray.append(std::make_pair(m_columns[i], m_result[valuesIndex + i]));
+
+    return ScriptValue::from(scriptState, dataArray);
 }
+
+} // namespace blink

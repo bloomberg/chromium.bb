@@ -44,6 +44,12 @@ class JSONValue;
 
 class ScriptValue final {
 public:
+    template<typename T>
+    static ScriptValue from(ScriptState* scriptState, T value)
+    {
+        return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
+    }
+
     ScriptValue() { }
 
     ScriptValue(ScriptState* scriptState, v8::Handle<v8::Value> value)
