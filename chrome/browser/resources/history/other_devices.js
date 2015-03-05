@@ -513,9 +513,9 @@ DevicesView.prototype.displayResults_ = function() {
       continue;
 
     var grid = new cr.ui.FocusGrid();
-    for (var i = 0; i < rows.length; ++i) {
-      DevicesViewFocusRow.decorate(rows[i], devices[i]);
-      grid.addRow(rows[i]);
+    for (var j = 0; j < rows.length; ++j) {
+      DevicesViewFocusRow.decorate(rows[j], devices[i]);
+      grid.addRow(rows[j]);
     }
     this.focusGrids_.push(grid);
   }
