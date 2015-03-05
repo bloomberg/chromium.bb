@@ -41,6 +41,7 @@
         'color_utils_unittest.cc',
         'display_change_notifier_unittest.cc',
         'display_unittest.cc',
+        'font_fallback_mac_unittest.cc',
         'font_list_unittest.cc',
         'font_render_params_linux_unittest.cc',
         'geometry/box_unittest.cc',

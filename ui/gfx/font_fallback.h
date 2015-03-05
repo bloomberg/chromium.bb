@@ -8,11 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "ui/gfx/gfx_export.h"
+
 namespace gfx {
 
 // Given a font family name, returns the names of font families that are
 // suitable for fallback.
-std::vector<std::string> GetFallbackFontFamilies(
+GFX_EXPORT std::vector<std::string> GetFallbackFontFamilies(
     const std::string& font_family);
 
 }  // namespace gfx

@@ -362,6 +362,7 @@ CF_CAST_DEFN(CFUUID);
 
 CF_CAST_DEFN(CGColor);
 
+CF_CAST_DEFN(CTFontDescriptor);
 CF_CAST_DEFN(CTRun);
 
 #if defined(OS_IOS)

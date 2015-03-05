@@ -174,6 +174,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemePartition);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_NonExistentFont);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UnicodeFallback);
 
   // Specify the width of a glyph for test. The width of glyphs is very
   // platform-dependent and environment-dependent. Otherwise multiline test

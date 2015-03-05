@@ -2569,6 +2569,24 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
 }
 #endif  // defined(OS_WIN)
 
+// Ensure that the fallback fonts offered by gfx::GetFallbackFontFamilies() are
+// tried. Note this test assumes the font "Arial" doesn't provide a unicode
+// glyph for a particular character, and that there exists a system fallback
+// font which does.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
+  RenderTextHarfBuzz render_text;
+  render_text.SetFontList(FontList("Arial, 12px"));
+
+  // Korean character "han".
+  render_text.SetText(WideToUTF16(L"\xd55c"));
+  render_text.EnsureLayout();
+  internal::TextRunList* run_list = render_text.GetRunList();
+  ASSERT_EQ(1U, run_list->size());
+  EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
+}
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks whether any pixel beyond the width is colored.
 TEST_F(RenderTextTest, TextDoesntClip) {
