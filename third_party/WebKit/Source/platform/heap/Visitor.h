@@ -974,7 +974,7 @@ private:
 
 template<typename T>
 struct GCInfoAtBase {
-    static size_t index()
+    static ALWAYS_INLINE size_t index()
     {
         static const GCInfo gcInfo = {
             TraceTrait<T>::trace,

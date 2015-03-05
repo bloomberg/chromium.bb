@@ -295,7 +295,7 @@ public:
     // can no longer use the garbage collected heap after this call.
     static void detach();
 
-    static ThreadState* current()
+    static ALWAYS_INLINE ThreadState* current()
     {
 #if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
         // TLS lookup is fast in these platforms.
