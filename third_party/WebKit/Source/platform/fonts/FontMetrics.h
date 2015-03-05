@@ -39,6 +39,8 @@ public:
         , m_zeroWidth(0)
         , m_underlinethickness(0)
         , m_underlinePosition(0)
+        , m_ascentInt(0)
+        , m_descentInt(0)
         , m_hasXHeight(false)
         , m_hasZeroWidth(false)
     {
@@ -54,7 +56,11 @@ public:
         return floatHeight() / 2;
     }
 
-    void setAscent(float ascent) { m_ascent = ascent; }
+    void setAscent(float ascent)
+    {
+        m_ascent = ascent;
+        m_ascentInt = lroundf(ascent);
+    }
 
     float floatDescent(FontBaseline baselineType = AlphabeticBaseline) const
     {
@@ -63,11 +69,15 @@ public:
         return floatHeight() / 2;
     }
 
-    void setDescent(float descent) { m_descent = descent; }
+    void setDescent(float descent)
+    {
+        m_descent = descent;
+        m_descentInt = lroundf(descent);
+    }
 
     float floatHeight(FontBaseline baselineType = AlphabeticBaseline) const
     {
-        return floatAscent(baselineType) + floatDescent(baselineType);
+        return floatAscent() + floatDescent();
     }
 
     float floatLineGap() const { return m_lineGap; }
@@ -90,20 +100,20 @@ public:
     int ascent(FontBaseline baselineType = AlphabeticBaseline) const
     {
         if (baselineType == AlphabeticBaseline)
-            return lroundf(m_ascent);
+            return m_ascentInt;
         return height() - height() / 2;
     }
 
     int descent(FontBaseline baselineType = AlphabeticBaseline) const
     {
         if (baselineType == AlphabeticBaseline)
-            return lroundf(m_descent);
+            return m_descentInt;
         return height() / 2;
     }
 
     int height(FontBaseline baselineType = AlphabeticBaseline) const
     {
-        return ascent(baselineType) + descent(baselineType);
+        return ascent() + descent();
     }
 
     int lineGap() const { return lroundf(m_lineGap); }
@@ -138,6 +148,8 @@ private:
         m_unitsPerEm = gDefaultUnitsPerEm;
         m_ascent = 0;
         m_descent = 0;
+        m_ascentInt = 0;
+        m_descentInt = 0;
         m_lineGap = 0;
         m_lineSpacing = 0;
         m_xHeight = 0;
@@ -155,6 +167,8 @@ private:
     float m_zeroWidth;
     float m_underlinethickness;
     float m_underlinePosition;
+    int m_ascentInt;
+    int m_descentInt;
     bool m_hasXHeight;
     bool m_hasZeroWidth;
 };
