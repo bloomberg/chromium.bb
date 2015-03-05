@@ -55,8 +55,15 @@ class TooltipAura::TooltipView : public views::View {
   TooltipView()
       : render_text_(gfx::RenderText::CreateInstance()),
         max_width_(0) {
+    const int kHorizontalPadding = 3;
+    const int kVerticalPadding = 2;
+    SetBorder(Border::CreateEmptyBorder(
+        kVerticalPadding, kHorizontalPadding,
+        kVerticalPadding, kHorizontalPadding));
+
     set_owned_by_client();
     render_text_->SetMultiline(true);
+
     ResetDisplayRect();
   }
 
@@ -65,13 +72,22 @@ class TooltipAura::TooltipView : public views::View {
   // views:View:
   void OnPaint(gfx::Canvas* canvas) override {
     OnPaintBackground(canvas);
-    render_text_->SetDisplayRect(gfx::Rect(size()));
+    gfx::Size text_size = size();
+    gfx::Insets insets = border()->GetInsets();
+    text_size.Enlarge(-insets.width(), -insets.height());
+    render_text_->SetDisplayRect(gfx::Rect(text_size));
+    canvas->Save();
+    canvas->Translate(gfx::Vector2d(insets.left(), insets.top()));
     render_text_->Draw(canvas);
+    canvas->Restore();
     OnPaintBorder(canvas);
   }
 
   gfx::Size GetPreferredSize() const override {
-    return render_text_->GetStringSize();
+    gfx::Size view_size = render_text_->GetStringSize();
+    gfx::Insets insets = border()->GetInsets();
+    view_size.Enlarge(insets.width(), insets.height());
+    return view_size;
   }
 
   const char* GetClassName() const override {
@@ -94,7 +110,9 @@ class TooltipAura::TooltipView : public views::View {
 
  private:
   void ResetDisplayRect() {
-    render_text_->SetDisplayRect(gfx::Rect(0, 0, max_width_, 100000));
+    gfx::Insets insets = border()->GetInsets();
+    int max_text_width = max_width_ - insets.width();
+    render_text_->SetDisplayRect(gfx::Rect(0, 0, max_text_width, 100000));
   }
 
   scoped_ptr<gfx::RenderText> render_text_;
@@ -107,12 +125,6 @@ TooltipAura::TooltipAura()
     : tooltip_view_(new TooltipView),
       widget_(NULL),
       tooltip_window_(NULL) {
-
-  const int kHorizontalPadding = 3;
-  const int kVerticalPadding = 2;
-  tooltip_view_->SetBorder(Border::CreateEmptyBorder(
-      kVerticalPadding, kHorizontalPadding,
-      kVerticalPadding, kHorizontalPadding));
 }
 
 TooltipAura::~TooltipAura() {
