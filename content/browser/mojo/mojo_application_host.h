@@ -40,6 +40,9 @@ class CONTENT_EXPORT MojoApplicationHost {
 
   void WillDestroySoon();
 
+  // Shuts down the Mojo channel. Must be called from the IO thread.
+  void ShutdownOnIOThread();
+
   ServiceRegistry* service_registry() { return &service_registry_; }
 
 #if defined(OS_ANDROID)

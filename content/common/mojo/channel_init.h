@@ -36,6 +36,9 @@ class CONTENT_EXPORT ChannelInit {
   // Notifies the channel that we (hence it) will soon be destroyed.
   void WillDestroySoon();
 
+  // Shuts down the channel. Must be called from the IO thread.
+  void ShutdownOnIOThread();
+
   // Get/Set a shared I/O TaskRunner for children to use in single process mode.
   static scoped_refptr<base::TaskRunner> GetSingleProcessIOTaskRunner();
   static void SetSingleProcessIOTaskRunner(
