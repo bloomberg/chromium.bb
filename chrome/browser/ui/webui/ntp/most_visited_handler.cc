@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
+#include "chrome/browser/ui/webui/fallback_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/ntp_stats.h"
@@ -78,6 +79,9 @@ void MostVisitedHandler::RegisterMessages() {
 
   // Set up our sources for top-sites data.
   content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
+
+  // Register chrome://fallback-icon as a data source for fallback icons.
+  content::URLDataSource::Add(profile, new FallbackIconSource());
 
   // Register chrome://favicon as a data source for favicons.
   content::URLDataSource::Add(

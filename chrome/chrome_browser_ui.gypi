@@ -1040,6 +1040,8 @@
       'browser/ui/webui/device_log_ui.h',
       'browser/ui/webui/domain_reliability_internals_ui.cc',
       'browser/ui/webui/domain_reliability_internals_ui.h',
+      'browser/ui/webui/fallback_icon_source.cc',
+      'browser/ui/webui/fallback_icon_source.h',
       'browser/ui/webui/favicon_source.cc',
       'browser/ui/webui/favicon_source.h',
       'browser/ui/webui/fileicon_source.cc',

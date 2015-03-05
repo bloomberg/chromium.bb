@@ -19,6 +19,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
+#include "chrome/browser/ui/webui/fallback_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -124,6 +125,7 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
 #endif  // !defined(OS_ANDROID)
 
+  content::URLDataSource::Add(profile_, new FallbackIconSource());
   content::URLDataSource::Add(
       profile_, new FaviconSource(profile_, FaviconSource::FAVICON));
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
