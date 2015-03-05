@@ -62,14 +62,9 @@ class NetworkIconImpl {
   // updates and generates the icon. Does nothing if network no longer exists.
   void Update(const chromeos::NetworkState* network);
 
-  // Returns the cached image url for |image_| based on |scale_factor|.
-  const std::string& GetImageUrl(float scale_factor);
-
   const gfx::ImageSkia& image() const { return image_; }
 
  private:
-  typedef std::map<float, std::string> ImageUrlMap;
-
   // Updates |strength_index_| for wireless networks. Returns true if changed.
   bool UpdateWirelessStrengthIndex(const chromeos::NetworkState* network);
 
@@ -114,10 +109,6 @@ class NetworkIconImpl {
 
   // Generated icon image.
   gfx::ImageSkia image_;
-
-  // Map of cached image urls by scale factor. Cleared whenever image_ is
-  // generated.
-  ImageUrlMap image_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkIconImpl);
 };
@@ -268,28 +259,6 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
 
 //------------------------------------------------------------------------------
 // Utilities for extracting icon images.
-
-// A struct used for caching image urls.
-struct ImageIdForNetworkType {
-  ImageIdForNetworkType(IconType icon_type,
-                        const std::string& network_type,
-                        float scale_factor) :
-      icon_type(icon_type),
-      network_type(network_type),
-      scale_factor(scale_factor) {}
-  bool operator<(const ImageIdForNetworkType& other) const {
-    if (icon_type != other.icon_type)
-      return icon_type < other.icon_type;
-    if (network_type != other.network_type)
-      return network_type < other.network_type;
-    return scale_factor < other.scale_factor;
-  }
-  IconType icon_type;
-  std::string network_type;
-  float scale_factor;
-};
-
-typedef std::map<ImageIdForNetworkType, std::string> ImageIdUrlMap;
 
 bool IconTypeIsDark(IconType icon_type) {
   return (icon_type != ICON_TYPE_TRAY);
@@ -557,16 +526,6 @@ gfx::ImageSkia GetConnectingImage(IconType icon_type,
       new NetworkIconImageSource(*icon, Badges()), icon->size());
 }
 
-std::string GetConnectingImageUrl(IconType icon_type,
-                                  const std::string& network_type,
-                                  float scale_factor) {
-  // Caching the connecting image is complicated and we will never draw more
-  // than a few per frame, so just generate the image url each time.
-  gfx::ImageSkia image = GetConnectingImage(icon_type, network_type);
-  gfx::ImageSkiaRep image_rep = image.GetRepresentation(scale_factor);
-  return webui::GetBitmapDataUrl(image_rep.sk_bitmap());
-}
-
 }  // namespace
 
 //------------------------------------------------------------------------------
@@ -720,19 +679,6 @@ void NetworkIconImpl::GenerateImage(const NetworkState* network) {
   GetBadges(network, &badges);
   image_ = gfx::ImageSkia(
       new NetworkIconImageSource(icon, badges), icon.size());
-  image_urls_.clear();
-}
-
-const std::string& NetworkIconImpl::GetImageUrl(float scale_factor) {
-  ImageUrlMap::iterator iter = image_urls_.find(scale_factor);
-  if (iter != image_urls_.end())
-    return iter->second;
-
-  VLOG(2) << "Generating bitmap URL for: " << network_path_;
-  gfx::ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
-  iter = image_urls_.insert(std::make_pair(
-      scale_factor, webui::GetBitmapDataUrl(image_rep.sk_bitmap()))).first;
-  return iter->second;
 }
 
 namespace {
@@ -771,18 +717,6 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
 
   NetworkIconImpl* icon = FindAndUpdateImageImpl(network, icon_type);
   return icon->image();
-}
-
-std::string GetImageUrlForNetwork(const NetworkState* network,
-                                  IconType icon_type,
-                                  float scale_factor) {
-  DCHECK(network);
-  // Handle connecting icons.
-  if (network->IsConnectingState())
-    return GetConnectingImageUrl(icon_type, network->type(), scale_factor);
-
-  NetworkIconImpl* icon = FindAndUpdateImageImpl(network, icon_type);
-  return icon->GetImageUrl(scale_factor);
 }
 
 gfx::ImageSkia GetImageForConnectedNetwork(IconType icon_type,

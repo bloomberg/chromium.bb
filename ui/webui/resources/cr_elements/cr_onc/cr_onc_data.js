@@ -68,3 +68,22 @@ Polymer('cr-onc-data', {
         this.data.Cellular.NetworkTechnology : CrOnc.NetworkTechnology.UNKNOWN;
   }
 });
+
+// Temporary constructor method. TODO(stevenjb): Replace with proper
+// construction after switching to Polymer 0.8.
+
+var CrOncDataElement = {};
+
+/**
+ * Helper method to create and return a typed cr-onc-data Polymer element.
+ * Sets the data property of the element to |state|.
+ *
+ * @param {!CrOnc.NetworkConfigType} state The network state properties.
+ * @return {!CrOncDataElement} A cr-onc-data element.
+ */
+CrOncDataElement.create = function(state) {
+  var oncData = /** @type {!CrOncDataElement} */ (
+      document.createElement('cr-onc-data'));
+  oncData.data = state;
+  return oncData;
+};

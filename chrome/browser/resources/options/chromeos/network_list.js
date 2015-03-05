@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 /**
+ * This partially describes the network list entries passed to
+ * refreshNetworkData. The contents of those lists actually match
+ * CrOnc.NetworkConfigType with the addition of the policyManaged and
+ * servicePath properties. TODO(stevenjb): Use networkingPrivate.getNetworks.
  * @typedef {{
  *   ConnectionState: string,
- *   iconURL: string,
+ *   Type: string,
  *   policyManaged: boolean,
  *   servicePath: string
  * }}
@@ -34,6 +38,20 @@ cr.define('options.network', function() {
   Constants.ACTIVATION_STATE_ACTIVATING = 2;
   Constants.ACTIVATION_STATE_NOT_ACTIVATED = 3;
   Constants.ACTIVATION_STATE_PARTIALLY_ACTIVATED = 4;
+
+  /**
+   * Valid network type names.
+   */
+  Constants.NETWORK_TYPES = ['Ethernet', 'WiFi', 'WiMAX', 'Cellular', 'VPN'];
+
+  /**
+   * Helper function to check whether |type| is a valid network type.
+   * @param {string} type A string that may contain a valid network type.
+   * @return {boolean} Whether the string represents a valid network type.
+   */
+  function isNetworkType(type) {
+    return (Constants.NETWORK_TYPES.indexOf(type) != -1);
+  }
 
   /**
    * Order in which controls are to appear in the network list sorted by key.
@@ -109,13 +127,6 @@ cr.define('options.network', function() {
   var enableDataRoaming_ = false;
 
   /**
-   * Icon to use when not connected to a particular type of network.
-   * @type {!Object<string, string>} Mapping of network type to icon data url.
-   * @private
-   */
-  var defaultIcons_ = {};
-
-  /**
    * Returns the display name for 'network'.
    * @param {Object} data The network data dictionary.
    */
@@ -185,18 +196,11 @@ cr.define('options.network', function() {
     subtitle_: null,
 
     /**
-     * Icon for the network control.
+     * Div containing the list item icon.
      * @type {?Element}
      * @private
      */
-    icon_: null,
-
-    /**
-     * Indicates if in the process of connecting to a network.
-     * @type {boolean}
-     * @private
-     */
-    connecting_: false,
+    iconDiv_: null,
 
     /**
      * Description of the network control.
@@ -217,42 +221,51 @@ cr.define('options.network', function() {
     },
 
     /**
-     * URL for the network icon.
-     * @type {string}
+     * Sets the icon based on a network state object.
+     * @param {!Object} data Object containing network state data.
      */
-    set iconURL(iconURL) {
-      this.icon_.style.backgroundImage = url(iconURL);
+    set iconData(data) {
+      if (!isNetworkType(data.Type))
+        return;
+      var networkIcon = this.getNetworkIcon();
+      networkIcon.networkState = CrOncDataElement.create(
+          /** @type {CrOnc.NetworkConfigType} */ (data));
     },
 
     /**
-     * Type of network icon.  Each type corresponds to a CSS rule.
+     * Sets the icon based on a network type or a special type indecator, e.g.
+     * 'add-connection'
      * @type {string}
      */
     set iconType(type) {
-      if (defaultIcons_[type])
-        this.iconURL = defaultIcons_[type];
-      else
-        this.icon_.classList.add('network-' + type.toLowerCase());
+      if (isNetworkType(type)) {
+        var networkIcon = this.getNetworkIcon();
+        networkIcon.networkType = type;
+      } else {
+        // Special cases. e.g. 'add-connection'. Background images are
+        // defined in browser_options.css.
+        var oldIcon = /** @type {CrNetworkIconElement} */ (
+            this.iconDiv_.querySelector('cr-network-icon'));
+        if (oldIcon)
+          this.iconDiv_.removeChild(oldIcon);
+        this.iconDiv_.classList.add('network-' + type.toLowerCase());
+      }
     },
 
     /**
-     * Indicates if the network is in the process of being connected.
-     * @type {boolean}
+     * Returns any existing network icon for the list item or creates a new one.
+     * @return {!CrNetworkIconElement} The network icon for the list item.
      */
-    set connecting(state) {
-      this.connecting_ = state;
-      if (state)
-        this.icon_.classList.add('network-connecting');
-      else
-        this.icon_.classList.remove('network-connecting');
-    },
-
-    /**
-     * Indicates if the network is in the process of being connected.
-     * @type {boolean}
-     */
-    get connecting() {
-      return this.connecting_;
+    getNetworkIcon: function() {
+      var networkIcon = /** @type {CrNetworkIconElement} */ (
+          this.iconDiv_.querySelector('cr-network-icon'));
+      if (!networkIcon) {
+        networkIcon = /** @type {!CrNetworkIconElement} */ (
+            document.createElement('cr-network-icon'));
+        networkIcon.isListItem = false;
+        this.iconDiv_.appendChild(networkIcon);
+      }
+      return networkIcon;
     },
 
     /**
@@ -281,9 +294,9 @@ cr.define('options.network', function() {
     decorate: function() {
       ListItem.prototype.decorate.call(this);
       this.className = 'network-group';
-      this.icon_ = this.ownerDocument.createElement('div');
-      this.icon_.className = 'network-icon';
-      this.appendChild(this.icon_);
+      this.iconDiv_ = this.ownerDocument.createElement('div');
+      this.iconDiv_.className = 'network-icon';
+      this.appendChild(this.iconDiv_);
       var textContent = this.ownerDocument.createElement('div');
       textContent.className = 'network-group-labels';
       this.appendChild(textContent);
@@ -434,7 +447,7 @@ cr.define('options.network', function() {
       var policyManaged = false;
       this.subtitle = loadTimeData.getString('OncConnectionStateNotConnected');
       var list = this.data_.networkList;
-      var candidateURL = null;
+      var candidateData = null;
       for (var i = 0; i < list.length; i++) {
         var networkDetails = list[i];
         if (networkDetails.ConnectionState == 'Connecting' ||
@@ -442,19 +455,16 @@ cr.define('options.network', function() {
           this.subtitle = getNetworkName(networkDetails);
           this.setSubtitleDirection('ltr');
           policyManaged = networkDetails.policyManaged;
-          candidateURL = networkDetails.iconURL;
+          candidateData = networkDetails;
           // Only break when we see a connecting network as it is possible to
           // have a connected network and a connecting network at the same
           // time.
-          if (networkDetails.ConnectionState == 'Connecting') {
-            this.connecting = true;
-            candidateURL = null;
+          if (networkDetails.ConnectionState == 'Connecting')
             break;
-          }
         }
       }
-      if (candidateURL)
-        this.iconURL = candidateURL;
+      if (candidateData)
+        this.iconData = candidateData;
       else
         this.iconType = this.data.key;
 
@@ -715,8 +725,7 @@ cr.define('options.network', function() {
       var menuItem = createCallback_(parent,
                                      data,
                                      getNetworkName(data),
-                                     showDetails.bind(null, servicePath),
-                                     data.iconURL);
+                                     showDetails.bind(null, servicePath));
       if (data.policyManaged)
         menuItem.appendChild(new ManagedNetworkIndicator());
       if (data.ConnectionState == 'Connected' ||
@@ -753,8 +762,8 @@ cr.define('options.network', function() {
        this.subtitle = null;
       if (this.data.command)
         this.addEventListener('click', this.data.command);
-      if (this.data.iconURL)
-        this.iconURL = this.data.iconURL;
+      if (this.data.iconData)
+        this.iconData = this.data.iconData;
       else if (this.data.iconType)
         this.iconType = this.data.iconType;
       if (this.data.policyManaged)
@@ -768,19 +777,23 @@ cr.define('options.network', function() {
    * @param {Object} data Description of the network.
    * @param {!string} label Display name for the menu item.
    * @param {!Function} command Callback function.
-   * @param {string=} opt_iconURL Optional URL to an icon for the menu item.
    * @return {!Element} The created menu item.
    * @private
    */
-  function createCallback_(menu, data, label, command, opt_iconURL) {
+  function createCallback_(menu, data, label, command) {
     var button = menu.ownerDocument.createElement('div');
     button.className = 'network-menu-item';
 
-    var buttonIcon = menu.ownerDocument.createElement('div');
-    buttonIcon.className = 'network-menu-item-icon';
-    button.appendChild(buttonIcon);
-    if (opt_iconURL)
-      buttonIcon.style.backgroundImage = url(opt_iconURL);
+    var buttonIconDiv = menu.ownerDocument.createElement('div');
+    buttonIconDiv.className = 'network-icon';
+    button.appendChild(buttonIconDiv);
+    if (data && isNetworkType(data.Type)) {
+      var networkIcon = /** @type {!CrNetworkIconElement} */ (
+          document.createElement('cr-network-icon'));
+      buttonIconDiv.appendChild(networkIcon);
+      networkIcon.isListItem = true;
+      networkIcon.networkState = CrOncDataElement.create(data);
+    }
 
     var buttonLabel = menu.ownerDocument.createElement('span');
     buttonLabel.className = 'network-menu-item-label';
@@ -986,20 +999,10 @@ cr.define('options.network', function() {
       var index = this.indexOf(key);
       if (index != undefined) {
         var entry = this.dataModel.item(index);
-        entry.iconType = active ? 'control-active' :
-            'control-inactive';
+        entry.iconType = active ? 'control-active' : 'control-inactive';
         this.update(entry);
       }
     }
-  };
-
-  /**
-   * Sets the default icon to use for each network type if disconnected.
-   * @param {!Object<string, string>} data Mapping of network type to icon
-   *     data url.
-   */
-  NetworkList.setDefaultNetworkIcons = function(data) {
-    defaultIcons_ = Object.create(data);
   };
 
   /**
@@ -1041,7 +1044,7 @@ cr.define('options.network', function() {
       networkList.update(
           { key: 'Ethernet',
             subtitle: loadTimeData.getString('OncConnectionStateConnected'),
-            iconURL: ethernetConnection.iconURL,
+            iconData: ethernetConnection,
             command: ethernetOptions,
             policyManaged: ethernetConnection.policyManaged }
           );
@@ -1089,7 +1092,6 @@ cr.define('options.network', function() {
    */
   function addEnableNetworkButton_(type) {
     var subtitle = loadTimeData.getString('networkDisabled');
-    var icon = (type == 'WiMAX') ? 'Cellular' : type;
     var enableNetwork = function() {
       if (type == 'WiFi')
         sendChromeMetricsAction('Options_NetworkWifiToggle');
@@ -1107,7 +1109,7 @@ cr.define('options.network', function() {
     };
     $('network-list').update({key: type,
                               subtitle: subtitle,
-                              iconType: icon,
+                              iconType: type,
                               command: enableNetwork});
   }
 

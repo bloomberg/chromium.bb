@@ -63,9 +63,6 @@ class InternetOptionsHandler
   void StartConnectCallback(const base::ListValue* args);
   void StartDisconnectCallback(const base::ListValue* args);
 
-  // Retrieves a data url for a resource.
-  std::string GetIconDataUrl(int resource_id) const;
-
   // Refreshes the display of network information.
   void RefreshNetworkData();
 
@@ -98,9 +95,6 @@ class InternetOptionsHandler
 
   // Gets the native window for hosting dialogs, etc.
   gfx::NativeWindow GetNativeWindow() const;
-
-  // Gets the UI scale factor.
-  float GetScaleFactor() const;
 
   // Gets the user PrefService associated with the WebUI.
   const PrefService* GetPrefs() const;

@@ -50,13 +50,9 @@
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/ui_chromeos_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/network/network_connect.h"
-#include "ui/chromeos/network/network_icon.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 namespace options {
@@ -70,14 +66,11 @@ const char kNetworkDataKey[] = "networkData";
 
 // Keys for the network description dictionary passed to the web ui. Make sure
 // to keep the strings in sync with what the JavaScript side uses.
-const char kNetworkInfoKeyIconURL[] = "iconURL";
 const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 
 // Functions we call in JavaScript.
 const char kRefreshNetworkDataFunction[] =
     "options.network.NetworkList.refreshNetworkData";
-const char kSetDefaultNetworkIconsFunction[] =
-    "options.network.NetworkList.setDefaultNetworkIcons";
 const char kGetManagedPropertiesResultFunction[] =
     "options.internet.DetailsInternetPage.getManagedPropertiesResult";
 const char kUpdateConnectionDataFunction[] =
@@ -151,12 +144,11 @@ const NetworkState* GetNetworkState(const std::string& service_path) {
       GetNetworkState(service_path);
 }
 
-// Builds a dictionary with network information and an icon used for the
-// NetworkList on the settings page. Ownership of the returned pointer is
-// transferred to the caller.
+// Builds a dictionary with network information for the NetworkList on the
+// settings page. Ownership of the returned pointer is transferred to the
+// caller. TODO(stevenjb): Replace with calls to networkingPrivate.getNetworks.
 base::DictionaryValue* BuildNetworkDictionary(
     const NetworkState* network,
-    float icon_scale_factor,
     const PrefService* profile_prefs) {
   scoped_ptr<base::DictionaryValue> network_info =
       network_util::TranslateNetworkStateToONC(network);
@@ -165,10 +157,6 @@ base::DictionaryValue* BuildNetworkDictionary(
       profile_prefs, g_browser_process->local_state(), *network);
   network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, has_policy);
 
-  std::string icon_url = ui::network_icon::GetImageUrlForNetwork(
-      network, ui::network_icon::ICON_TYPE_LIST, icon_scale_factor);
-
-  network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
   network_info->SetString(kNetworkInfoKeyServicePath, network->path());
 
   return network_info.release();
@@ -252,15 +240,6 @@ void InternetOptionsHandler::GetLocalizedValues(
 }
 
 void InternetOptionsHandler::InitializePage() {
-  base::DictionaryValue dictionary;
-  dictionary.SetString(::onc::network_type::kCellular,
-      GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK));
-  dictionary.SetString(::onc::network_type::kWiFi,
-      GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK));
-  dictionary.SetString(::onc::network_type::kVPN,
-      GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_VPN));
-  web_ui()->CallJavascriptFunction(kSetDefaultNetworkIconsFunction,
-                                   dictionary);
   NetworkHandler::Get()->network_state_handler()->RequestScan();
   RefreshNetworkData();
 }
@@ -472,14 +451,6 @@ void InternetOptionsHandler::StartDisconnectCallback(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string InternetOptionsHandler::GetIconDataUrl(int resource_id) const {
-  gfx::ImageSkia* icon =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  gfx::ImageSkiaRep image_rep = icon->GetRepresentation(
-      web_ui()->GetDeviceScaleFactor());
-  return webui::GetBitmapDataUrl(image_rep.sk_bitmap());
-}
-
 void InternetOptionsHandler::RefreshNetworkData() {
   base::DictionaryValue dictionary;
   FillNetworkInfo(&dictionary);
@@ -588,10 +559,6 @@ gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 
-float InternetOptionsHandler::GetScaleFactor() const {
-  return web_ui()->GetDeviceScaleFactor();
-}
-
 const PrefService* InternetOptionsHandler::GetPrefs() const {
   return Profile::FromWebUI(web_ui())->GetPrefs();
 }
@@ -649,7 +616,7 @@ base::ListValue* InternetOptionsHandler::GetWiredList() {
       FirstNetworkByType(NetworkTypePattern::Ethernet());
   if (!network)
     return list;
-  list->Append(BuildNetworkDictionary(network, GetScaleFactor(), GetPrefs()));
+  list->Append(BuildNetworkDictionary(network, GetPrefs()));
   return list;
 }
 
@@ -661,7 +628,7 @@ base::ListValue* InternetOptionsHandler::GetWirelessList() {
       NetworkTypePattern::Wireless(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
-    list->Append(BuildNetworkDictionary(*iter, GetScaleFactor(), GetPrefs()));
+    list->Append(BuildNetworkDictionary(*iter, GetPrefs()));
   }
 
   return list;
@@ -675,7 +642,7 @@ base::ListValue* InternetOptionsHandler::GetVPNList() {
       NetworkTypePattern::VPN(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
-    list->Append(BuildNetworkDictionary(*iter, GetScaleFactor(), GetPrefs()));
+    list->Append(BuildNetworkDictionary(*iter, GetPrefs()));
   }
 
   return list;
@@ -695,12 +662,10 @@ base::ListValue* InternetOptionsHandler::GetRememberedList() {
            networks.begin(); iter != networks.end(); ++iter) {
     const NetworkState* network = *iter;
     if (network->type() != shill::kTypeWifi &&
-        network->type() != shill::kTypeVPN)
+        network->type() != shill::kTypeVPN) {
       continue;
-    list->Append(
-        BuildNetworkDictionary(network,
-                               web_ui()->GetDeviceScaleFactor(),
-                               Profile::FromWebUI(web_ui())->GetPrefs()));
+    }
+    list->Append(BuildNetworkDictionary(network, GetPrefs()));
   }
 
   return list;

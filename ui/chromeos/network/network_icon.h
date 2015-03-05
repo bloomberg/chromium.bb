@@ -34,13 +34,6 @@ UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);
 
-// Similar to GetImageForNetwork but returns the cached image url based on
-// |scale_factor| instead.
-UI_CHROMEOS_EXPORT std::string GetImageUrlForNetwork(
-    const chromeos::NetworkState* network,
-    IconType icon_type,
-    float scale_factor);
-
 // Gets the fulls strength image for a connected network type.
 UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForConnectedNetwork(
     IconType icon_type,

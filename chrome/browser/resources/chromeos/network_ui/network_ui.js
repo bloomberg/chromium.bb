@@ -36,20 +36,6 @@ var NetworkUI = (function() {
   ];
 
   /**
-   * Creates and returns a typed cr-onc-data Polymer element for connecting to
-   * cr-network-icon elements. Sets the data property of the element to |state|.
-   *
-   * @param {!CrOnc.NetworkConfigType} state The network state properties.
-   * @return {!CrOncDataElement} A cr-onc-data element.
-   */
-  var createNetworkState = function(state) {
-    var oncData = /** @type {!CrOncDataElement} */(
-        document.createElement('cr-onc-data'));
-    oncData.data = state;
-    return oncData;
-  };
-
-  /**
    * Creates and returns a typed HTMLTableCellElement.
    *
    * @return {!HTMLTableCellElement} A new td element.
@@ -124,7 +110,7 @@ var NetworkUI = (function() {
     var icon = /** @type {!CrNetworkIconElement} */(
         document.createElement('cr-network-icon'));
     icon.isListItem = true;
-    icon.networkState = createNetworkState(networkState);
+    icon.networkState = CrOncDataElement.create(networkState);
     cell.appendChild(icon);
     return cell;
   };
@@ -219,7 +205,7 @@ var NetworkUI = (function() {
           loadTimeData.getStringF('defaultNetworkText',
                                   defaultState.Name,
                                   defaultState.ConnectionState);
-      icon.networkState = createNetworkState(defaultState);
+      icon.networkState = CrOncDataElement.create(defaultState);
     } else {
       $('default-network-text').textContent =
           loadTimeData.getString('noNetworkText');
