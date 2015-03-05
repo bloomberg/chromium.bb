@@ -109,6 +109,10 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   // This is parallel to |shm_buffers_|.
   std::vector<uint8_t> shm_buffer_busy_;
 
+  typedef std::set<uint32_t> TextureSet;
+  TextureSet pictures_in_use_;
+  TextureSet dismissed_pictures_in_use_;
+
   // Maps decode uid to PendingDecode info.
   typedef base::hash_map<int32_t, PendingDecode> PendingDecodeMap;
   PendingDecodeMap pending_decodes_;
