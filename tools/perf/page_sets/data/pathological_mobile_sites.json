@@ -8,6 +8,12 @@
             "http://www.pbs.org/newshour/bb/much-really-cost-live-city-like-seattle/#the-rundown", 
             "http://www.zdnet.com", 
             "http://m.espn.go.com/nhl/rankings"
+        ], 
+        "pathological_mobile_sites_008.wpr": [
+            "http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria"
+        ], 
+        "pathological_mobile_sites_009.wpr": [
+            "https://www.linkedin.com/in/linustorvalds"
         ]
     }
 }

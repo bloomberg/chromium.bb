@@ -36,8 +36,9 @@ class PathologicalMobileSitesPageSet(page_set_module.PageSet):
              'http://www.latimes.com',
              ('http://www.pbs.org/newshour/bb/'
               'much-really-cost-live-city-like-seattle/#the-rundown'),
-             'http://www.zdnet.com']
+             'http://www.zdnet.com',
+             'http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria',
+             'https://www.linkedin.com/in/linustorvalds']
 
     for site in sites:
       self.AddUserStory(PathologicalMobileSitesPage(site, self))
-
