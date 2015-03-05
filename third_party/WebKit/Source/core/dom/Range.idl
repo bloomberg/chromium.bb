@@ -18,13 +18,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
+// https://dom.spec.whatwg.org/#interface-range
+
+// FIXME: All long types in this interface should be unsigned long.
 [
     Constructor,
     ConstructorCallWith=Document,
     WillBeGarbageCollected,
 ] interface Range {
-
     readonly attribute Node startContainer;
     readonly attribute long startOffset;
     readonly attribute Node endContainer;
@@ -32,58 +33,54 @@
     readonly attribute boolean collapsed;
     readonly attribute Node commonAncestorContainer;
 
-    [RaisesException] void setStart(Node refNode, long offset);
-    [RaisesException] void setEnd(Node refNode, long offset);
-    [RaisesException] void setStartBefore(Node refNode);
-    [RaisesException] void setStartAfter(Node refNode);
-    [RaisesException] void setEndBefore(Node refNode);
-    [RaisesException] void setEndAfter(Node refNode);
+    [RaisesException] void setStart(Node node, long offset);
+    [RaisesException] void setEnd(Node node, long offset);
+    [RaisesException] void setStartBefore(Node node);
+    [RaisesException] void setStartAfter(Node node);
+    [RaisesException] void setEndBefore(Node node);
+    [RaisesException] void setEndAfter(Node node);
     void collapse(optional boolean toStart = false);
-    [RaisesException] void selectNode(Node refNode);
-    [RaisesException] void selectNodeContents(Node refNode);
+    [RaisesException] void selectNode(Node node);
+    [RaisesException] void selectNodeContents(Node node);
 
-    // CompareHow
     const unsigned short START_TO_START = 0;
-    const unsigned short START_TO_END   = 1;
-    const unsigned short END_TO_END     = 2;
-    const unsigned short END_TO_START   = 3;
-
+    const unsigned short START_TO_END = 1;
+    const unsigned short END_TO_END = 2;
+    const unsigned short END_TO_START = 3;
     [RaisesException, TypeChecking=Interface] short compareBoundaryPoints(unsigned short how, Range sourceRange);
 
     [RaisesException, CustomElementCallbacks] void deleteContents();
     [RaisesException, CustomElementCallbacks] DocumentFragment extractContents();
     [RaisesException, CustomElementCallbacks] DocumentFragment cloneContents();
-    [RaisesException, CustomElementCallbacks] void insertNode(Node newNode);
+    [RaisesException, CustomElementCallbacks] void insertNode(Node node);
     [RaisesException, CustomElementCallbacks] void surroundContents(Node newParent);
+
     Range cloneRange();
+    [DeprecateAs=RangeDetach] void detach();
+
+    [RaisesException] boolean isPointInRange(Node node, long offset);
+    [RaisesException, TypeChecking=Interface] short comparePoint(Node node, long offset);
+
+    [RaisesException] boolean intersectsNode(Node node);
 
     stringifier;
 
-    [DeprecateAs=RangeDetach] void detach();
-
-    [RaisesException] boolean isPointInRange(Node refNode, long offset);
-    [RaisesException, TypeChecking=Interface] short comparePoint(Node refNode, long offset);
-
-    [RaisesException] boolean intersectsNode(Node refNode);
-
-    // CSSOM View Module API extensions
-
+    // CSSOM View Module
+    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-range-interface
+    // FIXME: getClientRect() and getBoundingClientRect() should
+    // return DOMRectList and DOMRect respectively.
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
 
     // DOM Parsing and Serialization
+    // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-range-interface
+    [RaisesException, CustomElementCallbacks] DocumentFragment createContextualFragment(DOMString fragment);
 
-    [RaisesException, CustomElementCallbacks] DocumentFragment createContextualFragment(DOMString html);
-
-    // WebKit extensions
-
-    // CompareResults
+    // Non-standard APIs
     const unsigned short NODE_BEFORE           = 0;
     const unsigned short NODE_AFTER            = 1;
     const unsigned short NODE_BEFORE_AND_AFTER = 2;
     const unsigned short NODE_INSIDE           = 3;
-
     [RaisesException, DeprecateAs=RangeCompareNode] short compareNode([Default=Undefined] optional Node refNode);
-
     [RaisesException, DeprecateAs=RangeExpand] void expand([Default=Undefined] optional DOMString unit);
 };
