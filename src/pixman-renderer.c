@@ -284,6 +284,54 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 }
 
 static void
+draw_view_translated(struct weston_view *view, struct weston_output *output,
+		     pixman_region32_t *repaint_global)
+{
+	struct weston_surface *surface = view->surface;
+	/* non-opaque region in surface coordinates: */
+	pixman_region32_t surface_blend;
+	/* region to be painted in output coordinates: */
+	pixman_region32_t repaint_output;
+
+	pixman_region32_init(&repaint_output);
+
+	/* Blended region is whole surface minus opaque region,
+	 * unless surface alpha forces us to blend all.
+	 */
+	pixman_region32_init_rect(&surface_blend, 0, 0,
+				  surface->width, surface->height);
+
+	if (!(view->alpha < 1.0)) {
+		pixman_region32_subtract(&surface_blend, &surface_blend,
+					 &surface->opaque);
+
+		if (pixman_region32_not_empty(&surface->opaque)) {
+			region_intersect_only_translation(&repaint_output,
+							  repaint_global,
+							  &surface->opaque,
+							  view);
+			region_global_to_output(output, &repaint_output);
+
+			repaint_region(view, output, &repaint_output,
+				       PIXMAN_OP_SRC);
+		}
+	}
+
+	if (pixman_region32_not_empty(&surface_blend)) {
+		region_intersect_only_translation(&repaint_output,
+						  repaint_global,
+						  &surface_blend, view);
+		region_global_to_output(output, &repaint_output);
+
+		repaint_region(view, output, &repaint_output,
+			       PIXMAN_OP_OVER);
+	}
+
+	pixman_region32_fini(&surface_blend);
+	pixman_region32_fini(&repaint_output);
+}
+
+static void
 draw_view(struct weston_view *ev, struct weston_output *output,
 	  pixman_region32_t *damage) /* in global coordinates */
 {
@@ -291,9 +339,6 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	struct pixman_surface_state *ps = get_surface_state(ev->surface);
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
-	/* non-opaque region in surface coordinates: */
-	pixman_region32_t surface_blend;
-	pixman_region32_t repaint_output;
 
 	/* No buffer attached */
 	if (!ps->image)
@@ -313,40 +358,12 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	}
 
 	/* TODO: Implement repaint_region_complex() using pixman_composite_trapezoids() */
-	if (ev->alpha != 1.0 || !view_transformation_is_translation(ev)) {
+	if (view_transformation_is_translation(ev)) {
+		draw_view_translated(ev, output, &repaint);
+	} else {
 		region_global_to_output(output, &repaint);
 		repaint_region(ev, output, &repaint, PIXMAN_OP_OVER);
-	} else {
-		pixman_region32_init(&repaint_output);
-
-		/* blended region is whole surface minus opaque region: */
-		pixman_region32_init_rect(&surface_blend, 0, 0,
-					  ev->surface->width, ev->surface->height);
-		pixman_region32_subtract(&surface_blend, &surface_blend, &ev->surface->opaque);
-
-		if (pixman_region32_not_empty(&ev->surface->opaque)) {
-			region_intersect_only_translation(&repaint_output,
-							  &repaint,
-							  &ev->surface->opaque,
-							  ev);
-			region_global_to_output(output, &repaint_output);
-			repaint_region(ev, output, &repaint_output,
-				       PIXMAN_OP_SRC);
-		}
-
-		if (pixman_region32_not_empty(&surface_blend)) {
-			region_intersect_only_translation(&repaint_output,
-							  &repaint,
-							  &surface_blend,
-							  ev);
-			region_global_to_output(output, &repaint_output);
-			repaint_region(ev, output, &repaint_output,
-				       PIXMAN_OP_OVER);
-		}
-		pixman_region32_fini(&surface_blend);
-		pixman_region32_fini(&repaint_output);
 	}
-
 
 out:
 	pixman_region32_fini(&repaint);
