@@ -129,6 +129,7 @@ class JSChecker(object):
 
       from closure_linter import errors, runner
       from closure_linter.common import errorhandler
+      import gflags
 
     finally:
       sys.path = old_path
@@ -181,6 +182,9 @@ class JSChecker(object):
             errors.MISSING_JSDOC_TAG_THIS,
         ]
 
+    # Whitelist Polymer-specific JsDoc tags.
+    gflags.FLAGS.custom_jsdoc_tags = ('group', 'element', 'attribute',
+                                      'default')
     error_handler = ErrorHandlerImpl(self.input_api.re)
     runner.Run(file_to_lint, error_handler, source=source)
     return error_handler.GetErrors()
