@@ -951,6 +951,12 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
     }
 }
 
+void GraphicsLayer::invalidateDisplayItemClient(DisplayItemClient displayItemClient)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+    displayItemList()->invalidate(displayItemClient);
+}
+
 void GraphicsLayer::setContentsRect(const IntRect& rect)
 {
     if (rect == m_contentsRect)

@@ -43,7 +43,6 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRunIterator.h"
@@ -1893,11 +1892,11 @@ PassRefPtr<AbstractInlineTextBox> LayoutText::firstAbstractInlineTextBox()
     return AbstractInlineTextBox::getOrCreate(this, m_firstTextBox);
 }
 
-void LayoutText::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
+void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
 {
-    LayoutObject::invalidateDisplayItemClients(displayItemList);
+    LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer);
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-        displayItemList->invalidate(box->displayItemClient());
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(box->displayItemClient());
 }
 
 } // namespace blink

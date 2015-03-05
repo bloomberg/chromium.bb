@@ -2055,11 +2055,24 @@ struct SetContentsNeedsDisplayInRectFunctor {
 void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason)
 {
     // FIXME: need to split out paint invalidations for the background.
+    // FIXME: need to distinguish invalidations for different layers (e.g. the main layer and scrolling layer). crbug.com/416535.
     SetContentsNeedsDisplayInRectFunctor functor = {
         pixelSnappedIntRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size()),
         invalidationReason
     };
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
+}
+
+void CompositedLayerMapping::invalidateDisplayItemClient(DisplayItemClient displayItemClient)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+
+    // FIXME: need to split out paint invalidations for the background.
+    // FIXME: need to distinguish invalidations for different layers (e.g. the main layer and scrolling layer). crbug.com/416535.
+    ApplyToGraphicsLayers(this, [displayItemClient](GraphicsLayer* layer) {
+        if (layer->drawsContent())
+            layer->invalidateDisplayItemClient(displayItemClient);
+    }, ApplyToContentLayers);
 }
 
 const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const LayoutObject* layoutObject, const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex)

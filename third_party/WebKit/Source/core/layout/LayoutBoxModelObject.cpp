@@ -276,6 +276,18 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     }
 }
 
+void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(DisplayItemClient displayItemClient) const
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+
+    if (layer()->groupedMapping()) {
+        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
+            squashingLayer->invalidateDisplayItemClient(displayItemClient);
+    } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
+        compositedLayerMapping->invalidateDisplayItemClient(displayItemClient);
+    }
+}
+
 void LayoutBoxModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     for (LayoutObject* current = slowFirstChild(); current; current = current->nextSibling()) {

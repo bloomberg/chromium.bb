@@ -121,6 +121,8 @@ public:
     // r is in the coordinate space of the layer's render object
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason);
 
+    void invalidateDisplayItemClient(DisplayItemClient);
+
     // Notification from the renderer that its content changed.
     void contentChanged(ContentChangeType);
 

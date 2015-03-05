@@ -333,7 +333,7 @@ void LayoutView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
         Layer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            invalidateDisplayItemClientsUsingContainer(*paintInvalidationContainer);
+            invalidateDisplayItemClients(*paintInvalidationContainer);
     }
     LayoutBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }

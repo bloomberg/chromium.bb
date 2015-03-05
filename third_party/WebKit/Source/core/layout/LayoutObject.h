@@ -54,7 +54,6 @@ namespace blink {
 
 class AffineTransform;
 class Cursor;
-class DisplayItemList;
 class Document;
 class HitTestLocation;
 class HitTestResult;
@@ -1208,8 +1207,7 @@ protected:
     // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
     // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
     // parts which are invalidated separately (e.g. scrollbars).
-    virtual void invalidateDisplayItemClients(DisplayItemList*) const;
-    void invalidateDisplayItemClientsUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer) const;
+    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
     void setLayoutDidGetCalledSinceLastFrame()

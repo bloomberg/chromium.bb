@@ -154,7 +154,7 @@ protected:
 
     virtual InlineTextBox* createTextBox(int start, unsigned short length); // Subclassed by SVG.
 
-    virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
+    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const override;
 
 private:
     void computePreferredLogicalWidths(float leadWidth);

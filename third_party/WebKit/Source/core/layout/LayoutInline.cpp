@@ -42,7 +42,6 @@
 #include "core/paint/ObjectPainter.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
 
@@ -1455,11 +1454,11 @@ void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     regions.append(region);
 }
 
-void LayoutInline::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
+void LayoutInline::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
 {
-    LayoutBoxModelObject::invalidateDisplayItemClients(displayItemList);
+    LayoutBoxModelObject::invalidateDisplayItemClients(paintInvalidationContainer);
     for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
-        displayItemList->invalidate(box->displayItemClient());
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(box->displayItemClient());
 }
 
 } // namespace blink

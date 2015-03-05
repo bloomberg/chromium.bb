@@ -199,6 +199,8 @@ public:
 
     void setContentsNeedsDisplay();
 
+    void invalidateDisplayItemClient(DisplayItemClient);
+
     // Set that the position/size of the contents (image or video).
     void setContentsRect(const IntRect&);
 
