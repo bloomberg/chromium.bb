@@ -6,10 +6,13 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/supports_user_data.h"
+#include "base/trace_event/trace_event.h"
 #include "components/keyed_service/core/dependency_manager.h"
 
 void KeyedServiceBaseFactory::RegisterUserPrefsOnContextForTest(
     base::SupportsUserData* context) {
+  TRACE_EVENT0("browser,startup",
+               "KeyedServiceBaseFactory::RegisterUserPrefsOnContextForTest");
   // Safe timing for pref registration is hard. Previously, we made
   // context responsible for all pref registration on every service
   // that used contexts. Now we don't and there are timing issues.

@@ -9,9 +9,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
@@ -35,6 +37,8 @@ namespace extensions {
 
 ExtensionManagement::ExtensionManagement(PrefService* pref_service)
     : pref_service_(pref_service) {
+  TRACE_EVENT0("browser,startup",
+               "ExtensionManagement::ExtensionManagement::ctor");
   pref_change_registrar_.Init(pref_service_);
   base::Closure pref_change_callback = base::Bind(
       &ExtensionManagement::OnExtensionPrefChanged, base::Unretained(this));
@@ -234,6 +238,8 @@ bool ExtensionManagement::CheckMinimumVersion(
 }
 
 void ExtensionManagement::Refresh() {
+  TRACE_EVENT0("browser,startup", "ExtensionManagement::Refresh");
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ExtensionManagement_RefreshTime");
   // Load all extension management settings preferences.
   const base::ListValue* allowed_list_pref =
       static_cast<const base::ListValue*>(LoadPreference(
@@ -474,6 +480,8 @@ ExtensionManagementFactory::~ExtensionManagementFactory() {
 
 KeyedService* ExtensionManagementFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  TRACE_EVENT0("browser,startup",
+               "ExtensionManagementFactory::BuildServiceInstanceFor");
   return new ExtensionManagement(
       Profile::FromBrowserContext(context)->GetPrefs());
 }

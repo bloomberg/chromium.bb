@@ -315,7 +315,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 #if defined(OS_CHROMEOS)
   if (!extensions_enabled)
     autoupdate_enabled = false;
-#endif
+#endif  // defined(OS_CHROMEOS)
   extension_service_.reset(new ExtensionService(
       profile_, base::CommandLine::ForCurrentProcess(),
       profile_->GetPath().AppendASCII(extensions::kInstallDirectoryName),
@@ -334,7 +334,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
         ContentVerifierDelegateImpl::GetDefaultMode();
 #if defined(OS_CHROMEOS)
     mode = std::max(mode, ContentVerifierDelegate::BOOTSTRAP);
-#endif
+#endif  // defined(OS_CHROMEOS)
     if (mode >= ContentVerifierDelegate::BOOTSTRAP)
       content_verifier_->Start();
     info_map()->SetContentVerifier(content_verifier_.get());

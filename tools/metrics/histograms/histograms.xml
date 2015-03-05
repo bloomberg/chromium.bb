@@ -8784,6 +8784,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ExtensionManagement_RefreshTime"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during ExtensionManagement::Refresh.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ExtensionRootPathLength">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

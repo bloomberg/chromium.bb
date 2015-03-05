@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/keyed_service/core/dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -58,6 +59,7 @@ KeyedService* KeyedServiceFactory::SetTestingFactoryAndUse(
 KeyedService* KeyedServiceFactory::GetServiceForContext(
     base::SupportsUserData* context,
     bool create) {
+  TRACE_EVENT0("browser,startup", "KeyedServiceFactory::GetServiceForContext");
   context = GetContextToUse(context);
   if (!context)
     return nullptr;

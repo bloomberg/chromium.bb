@@ -13,6 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -364,6 +365,8 @@ void ExternalProviderImpl::CreateExternalProviders(
     VisitorInterface* service,
     Profile* profile,
     ProviderCollection* provider_list) {
+  TRACE_EVENT0("browser,startup",
+               "ExternalProviderImpl::CreateExternalProviders");
   scoped_refptr<ExternalLoader> external_loader;
   scoped_refptr<ExternalLoader> external_recommended_loader;
   extensions::Manifest::Location crx_location = Manifest::INVALID_LOCATION;

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_signer.h"
@@ -204,6 +205,7 @@ bool InstallVerifier::IsFromStore(const Extension& extension) {
 }
 
 void InstallVerifier::Init() {
+  TRACE_EVENT0("browser,startup", "extensions::InstallVerifier::Init");
   UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.ExperimentStatus",
                             GetExperimentStatus(), VERIFY_STATUS_MAX);
   UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.ActualStatus",

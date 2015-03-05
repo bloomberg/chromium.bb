@@ -286,6 +286,7 @@ ExtensionService::ExtensionService(Profile* profile,
       shared_module_service_(new extensions::SharedModuleService(profile_)),
       app_data_migrator_(new extensions::AppDataMigrator(profile_, registry_)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TRACE_EVENT0("browser,startup", "ExtensionService::ExtensionService::ctor");
 
   // Figure out if extension installation should be enabled.
   if (extensions::ExtensionsBrowserClient::Get()->AreExtensionsDisabled(
@@ -308,7 +309,7 @@ ExtensionService::ExtensionService(Profile* profile,
   extensions::ExtensionManagementFactory::GetForBrowserContext(profile_)
       ->AddObserver(this);
 
-  // Set up the ExtensionUpdater
+  // Set up the ExtensionUpdater.
   if (autoupdate_enabled) {
     int update_frequency = extensions::kDefaultUpdateFrequencySeconds;
     if (command_line->HasSwitch(switches::kExtensionsUpdateFrequency)) {
