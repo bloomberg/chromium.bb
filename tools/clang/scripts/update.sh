@@ -58,6 +58,7 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
   # --print-revision, stamp file logic, etc. all works naturally.
   CLANG_REVISION=$(svn info "$LLVM_REPO_URL" \
       | grep 'Last Changed Rev' | awk '{ printf $4; }')
+  PACKAGE_VERSION="${CLANG_REVISION}-0"
 fi
 
 # Use both the clang revision and the plugin revisions to test for updates.
