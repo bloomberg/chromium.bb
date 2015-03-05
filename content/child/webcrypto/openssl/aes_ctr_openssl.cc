@@ -108,7 +108,7 @@ crypto::ScopedBIGNUM GetCounter(const CryptoData& counter_block,
   counter[0] &= ~(0xFF << counter_length_remainder_bits);
 
   return crypto::ScopedBIGNUM(
-      BN_bin2bn(&counter.front(), counter.size(), NULL));
+      BN_bin2bn(vector_as_array(&counter), counter.size(), NULL));
 }
 
 // Returns a counter block with the counter bits all set all zero.

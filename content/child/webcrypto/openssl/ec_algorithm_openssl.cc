@@ -161,8 +161,10 @@ Status WritePaddedBIGNUM(const std::string& member_name,
                          size_t padded_length,
                          JwkWriter* jwk) {
   std::vector<uint8_t> padded_bytes(padded_length);
-  if (!BN_bn2bin_padded(&padded_bytes.front(), padded_bytes.size(), value))
+  if (!BN_bn2bin_padded(vector_as_array(&padded_bytes), padded_bytes.size(),
+                        value)) {
     return Status::OperationError();
+  }
   jwk->SetBytes(member_name, CryptoData(padded_bytes));
   return Status::Success();
 }

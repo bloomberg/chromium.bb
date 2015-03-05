@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/child/webcrypto/crypto_data.h"
+#include "base/stl_util.h"
 
 namespace content {
 
@@ -16,7 +17,7 @@ CryptoData::CryptoData(const unsigned char* bytes, unsigned int byte_length)
 }
 
 CryptoData::CryptoData(const std::vector<unsigned char>& bytes)
-    : bytes_(bytes.size() ? &bytes[0] : NULL), byte_length_(bytes.size()) {
+    : bytes_(vector_as_array(&bytes)), byte_length_(bytes.size()) {
 }
 
 CryptoData::CryptoData(const std::string& bytes)

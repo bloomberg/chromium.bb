@@ -69,7 +69,7 @@ TEST(WebCryptoShaTest, DigestSampleSetsInChunks) {
       size_t chunk_length = std::min(kChunkSizeBytes, length - chunk_index);
       std::vector<uint8_t> chunk(begin, begin + chunk_length);
       ASSERT_TRUE(chunk.size() > 0);
-      EXPECT_TRUE(digestor->consume(&chunk.front(), chunk.size()));
+      EXPECT_TRUE(digestor->consume(vector_as_array(&chunk), chunk.size()));
       chunk_index = chunk_index + chunk_length;
       begin = begin + chunk_length;
     }

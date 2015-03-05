@@ -72,13 +72,10 @@ class HkdfImplementation : public AlgorithmImplementation {
     // |algorithm|.
     const std::vector<uint8_t>& raw_key =
         SymKeyOpenSsl::Cast(base_key)->raw_key_data();
-    const uint8_t* raw_key_ptr = raw_key.empty() ? NULL : &raw_key.front();
-    uint8_t* derived_bytes_ptr =
-        derived_bytes->empty() ? NULL : &derived_bytes->front();
-    if (!HKDF(derived_bytes_ptr, derived_bytes_len, digest_algorithm,
-              raw_key_ptr, raw_key.size(), params->salt().data(),
-              params->salt().size(), params->info().data(),
-              params->info().size())) {
+    if (!HKDF(vector_as_array(derived_bytes), derived_bytes_len,
+              digest_algorithm, vector_as_array(&raw_key), raw_key.size(),
+              params->salt().data(), params->salt().size(),
+              params->info().data(), params->info().size())) {
       uint32_t error = ERR_get_error();
       if (ERR_GET_LIB(error) == ERR_LIB_HKDF &&
           ERR_GET_REASON(error) == HKDF_R_OUTPUT_TOO_LARGE) {

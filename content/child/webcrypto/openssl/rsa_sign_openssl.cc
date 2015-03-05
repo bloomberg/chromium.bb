@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
 #include "content/child/webcrypto/openssl/rsa_sign_openssl.h"
@@ -103,7 +104,7 @@ Status RsaSign(const blink::WebCryptoKey& key,
   }
 
   buffer->resize(sig_len);
-  if (!EVP_DigestSignFinal(ctx.get(), &buffer->front(), &sig_len))
+  if (!EVP_DigestSignFinal(ctx.get(), vector_as_array(buffer), &sig_len))
     return Status::OperationError();
 
   buffer->resize(sig_len);

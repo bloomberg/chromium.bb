@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
@@ -75,16 +76,11 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
     const std::vector<uint8_t>& password =
         SymKeyOpenSsl::Cast(base_key)->raw_key_data();
 
-    if (keylen_bytes == 0)
-      return Status::Success();
-
-    const char* password_ptr =
-        password.empty() ? NULL : reinterpret_cast<const char*>(&password[0]);
-
-    if (!PKCS5_PBKDF2_HMAC(password_ptr, password.size(), params->salt().data(),
-                           params->salt().size(), params->iterations(),
-                           digest_algorithm, keylen_bytes,
-                           &derived_bytes->front())) {
+    if (!PKCS5_PBKDF2_HMAC(
+            reinterpret_cast<const char*>(vector_as_array(&password)),
+            password.size(), params->salt().data(), params->salt().size(),
+            params->iterations(), digest_algorithm, keylen_bytes,
+            vector_as_array(derived_bytes))) {
       return Status::OperationError();
     }
     return Status::Success();
