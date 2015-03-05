@@ -684,7 +684,7 @@ int GetChangedMouseButtonFlagsFromNative(
   switch (native_event->type) {
     case ButtonPress:
     case ButtonRelease:
-      return GetEventFlagsFromXState(native_event->xbutton.state);
+      return GetEventFlagsForButton(native_event->xbutton.button);
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
