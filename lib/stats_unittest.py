@@ -225,5 +225,22 @@ class UploadContextTest(cros_test_lib.MockLoggingTestCase):
       self.assertRaises(e, RaiseContext, e)
 
 
+class UploadContextParallelTest(cros_test_lib.MockLoggingTestCase):
+  """Test UploadContext using the real parallel library."""
+
+  def testKeyboardInterruptHandling(self):
+    """Test that KeyboardInterrupts during upload aren't logged.
+
+    This must use the parallel library so that exceptions are converted into
+    BackgroundFailures as they are in a real run.
+    """
+    self.PatchObject(stats.StatsUploader, '_Upload',
+                     side_effect=KeyboardInterrupt())
+    with cros_test_lib.LoggingCapturer() as logs:
+      with stats.UploadContext() as queue:
+        queue.put([stats.Stats()])
+      self.AssertLogsContain(logs, stats.UNCAUGHT_UPLOAD_ERROR, inverted=True)
+
+
 def main(_argv):
   cros_test_lib.main(level='debug', module=__name__)

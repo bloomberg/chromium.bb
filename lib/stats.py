@@ -199,6 +199,10 @@ def UploadContext():
     with parallel.BackgroundTaskRunner(
         StatsUploader.Upload, processes=1) as queue:
       yield queue
-  except parallel.BackgroundFailure:
+  except parallel.BackgroundFailure as e:
     # Display unexpected errors, but don't propagate the error.
+    # KeyboardInterrupts are OK to skip since the user initiated it.
+    if (e.exc_infos and
+        all(exc_info.type == KeyboardInterrupt for exc_info in e.exc_infos)):
+      return
     logging.error('Uncaught command stats exception', exc_info=True)

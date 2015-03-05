@@ -15,6 +15,7 @@ See cros/command/cros_XXX.py for actual command implementations.
 
 from __future__ import print_function
 
+import logging
 import sys
 
 from chromite.cros import commands
@@ -47,26 +48,30 @@ def _RunSubCommand(subcommand):
 
 
 def main(argv):
-  parser = GetOptions(commands.ListCommands())
-  # Cros currently does nothing without a subcmd. Print help if no args are
-  # specified.
-  if not argv:
-    parser.print_help()
+  try:
+    parser = GetOptions(commands.ListCommands())
+    # Cros currently does nothing without a subcmd. Print help if no args are
+    # specified.
+    if not argv:
+      parser.print_help()
+      return 1
+
+    namespace = parser.parse_args(argv)
+    subcommand = namespace.cros_class(namespace)
+    with stats.UploadContext() as queue:
+      if subcommand.upload_stats:
+        cmd_base = subcommand.options.cros_class.command_name
+        cmd_stats = stats.Stats.SafeInit(cmd_line=sys.argv, cmd_base=cmd_base)
+        if cmd_stats:
+          queue.put([cmd_stats, stats.StatsUploader.URL,
+                     subcommand.upload_stats_timeout])
+      # TODO: to make command completion faster, send an interrupt signal to the
+      # stats uploader task after the subcommand completes.
+      code = _RunSubCommand(subcommand)
+      if code is not None:
+        return code
+
+    return 0
+  except KeyboardInterrupt:
+    logging.debug('Aborted due to keyboard interrupt.')
     return 1
-
-  namespace = parser.parse_args(argv)
-  subcommand = namespace.cros_class(namespace)
-  with stats.UploadContext() as queue:
-    if subcommand.upload_stats:
-      cmd_base = subcommand.options.cros_class.command_name
-      cmd_stats = stats.Stats.SafeInit(cmd_line=sys.argv, cmd_base=cmd_base)
-      if cmd_stats:
-        queue.put([cmd_stats, stats.StatsUploader.URL,
-                   subcommand.upload_stats_timeout])
-    # TODO: to make command completion faster, send an interrupt signal to the
-    # stats uploader task after the subcommand completes.
-    code = _RunSubCommand(subcommand)
-    if code is not None:
-      return code
-
-  return 0

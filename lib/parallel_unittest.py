@@ -149,6 +149,18 @@ class BackgroundTaskVerifier(partial_mock.PartialMock):
         raise AssertionError('Expected empty queue after BackgroundTaskRunner')
 
 
+class TestManager(cros_test_lib.TestCase):
+  """Test parallel.Manager()."""
+
+  def testSigint(self):
+    """Tests that parallel.Manager() ignores SIGINT."""
+    with parallel.Manager() as manager:
+      queue = manager.Queue()
+      os.kill(manager._process.pid, signal.SIGINT)
+      with self.assertRaises(Queue.Empty):
+        queue.get(block=False)
+
+
 class TestBackgroundWrapper(cros_test_lib.TestCase):
   """Unittests for background wrapper."""
 
@@ -372,6 +384,9 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
   def _BadPickler(self):
     return self._BadPickler
 
+  class _TestException(Exception):
+    """Custom exception for testing."""
+
   def _VerifyExceptionRaised(self, fn, exc_type):
     """A helper function to verify the correct |exc_type| is raised."""
     for task in (lambda: parallel.RunTasksInProcessPool(fn, [[]]),
@@ -392,6 +407,15 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
     self.StartPatcher(BackgroundTaskVerifier())
     self._VerifyExceptionRaised(self._KeyboardInterrupt, KeyboardInterrupt)
     self._VerifyExceptionRaised(self._SystemExit, SystemExit)
+
+  def testExceptionPriority(self):
+    """Tests that foreground exceptions take priority over background."""
+    self.StartPatcher(BackgroundTaskVerifier())
+    with self.assertRaises(self._TestException):
+      with parallel.BackgroundTaskRunner(self._KeyboardInterrupt,
+                                         processes=1) as queue:
+        queue.put([])
+        raise self._TestException()
 
   def testFailedPickle(self):
     """PicklingError should be thrown when an argument fails to pickle."""

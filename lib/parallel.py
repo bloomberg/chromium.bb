@@ -65,6 +65,11 @@ class HackTimeoutSyncManager(SyncManager):
     SyncManager._finalize_manager(process, *args, **kwargs)
 
 
+def IgnoreSigint():
+  """Ignores any future SIGINTs."""
+  signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
 def Manager():
   """Create a background process for managing interprocess communication.
 
@@ -84,7 +89,11 @@ def Manager():
   old_tempdir_value, old_tempdir_env = osutils.SetGlobalTempDir('/tmp')
   try:
     m = HackTimeoutSyncManager()
-    m.start()
+    # SyncManager doesn't handle KeyboardInterrupt exceptions well; pipes get
+    # broken and E_NOENT or E_PIPE errors are thrown from various places. We
+    # can just ignore SIGINT in the SyncManager and things will close properly
+    # when the enclosing with-statement exits.
+    m.start(IgnoreSigint)
     return m
   finally:
     osutils.SetGlobalTempDir(old_tempdir_value, old_tempdir_env)
@@ -524,8 +533,11 @@ class _BackgroundTask(multiprocessing.Process):
         task.start()
         bg_tasks.append(task)
 
+      foreground_except = None
       try:
         yield
+      except BaseException:
+        foreground_except = sys.exc_info()
       finally:
         # Wait for each step to complete.
         errors = []
@@ -541,7 +553,10 @@ class _BackgroundTask(multiprocessing.Process):
         if bg_tasks:
           cls._KillChildren(bg_tasks, log_level=logging.DEBUG)
 
-        # Propagate any exceptions.
+        # Propagate any exceptions; foreground exceptions take precedence.
+        if foreground_except is not None:
+          # contextlib ignores caught exceptions unless explicitly re-raised.
+          raise foreground_except[0], foreground_except[1], foreground_except[2]
         if errors:
           raise BackgroundFailure(exc_infos=errors)
 
