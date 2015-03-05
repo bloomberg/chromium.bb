@@ -10,6 +10,7 @@
 
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -438,6 +439,18 @@ TEST(NetUtilTest, IDNToUnicodeSlow) {
           ASCIIToUTF16(idn_cases[i].input));
       AppendLanguagesToOutputs(kLanguages[j], &expected, &output);
       EXPECT_EQ(expected, output);
+    }
+  }
+}
+
+// ulocdata_getExemplarSet may fail with some locales (currently bn, gu, and
+// te), which was causing a crash (See http://crbug.com/510551).  This may be an
+// icu bug, but regardless, that should not cause a crash.
+TEST(NetUtilTest, IDNToUnicodeNeverCrashes) {
+  for (char c1 = 'a'; c1 <= 'z'; c1++) {
+    for (char c2 = 'a'; c2 <= 'z'; c2++) {
+      std::string lang = base::StringPrintf("%c%c", c1, c2);
+      base::string16 output(IDNToUnicode("xn--74h", lang));
     }
   }
 }
