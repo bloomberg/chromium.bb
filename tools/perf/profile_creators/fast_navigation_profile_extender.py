@@ -7,7 +7,6 @@ from telemetry.core import browser_finder
 from telemetry.core import browser_finder_exceptions
 from telemetry.core import exceptions
 from telemetry.core import platform
-from telemetry.core.backends.chrome_inspector import devtools_http
 
 
 class FastNavigationProfileExtender(object):
@@ -161,9 +160,7 @@ class FastNavigationProfileExtender(object):
     """Retrives the URL of the tab."""
     try:
       return tab.EvaluateJavaScript('document.URL', timeout)
-    except (exceptions.Error,
-        devtools_http.DevToolsClientConnectionError,
-        devtools_http.DevToolsClientUrlError):
+    except exceptions.Error:
       return None
 
   def _WaitForUrlToChange(self, tab, initial_url, timeout):
@@ -204,9 +201,7 @@ class FastNavigationProfileExtender(object):
 
       try:
         tab.Navigate(url, None, timeout_in_seconds)
-      except (exceptions.Error,
-          devtools_http.DevToolsClientConnectionError,
-          devtools_http.DevToolsClientUrlError):
+      except exceptions.Error:
         # We expect a time out. It's possible for other problems to arise, but
         # this method is not responsible for dealing with them. Ignore all
         # exceptions.
@@ -242,9 +237,7 @@ class FastNavigationProfileExtender(object):
       except exceptions.TimeoutException:
         # Ignore time outs.
         pass
-      except (exceptions.Error,
-          devtools_http.DevToolsClientConnectionError,
-          devtools_http.DevToolsClientUrlError):
+      except exceptions.Error:
         # If any error occurs, remove the tab. it's probably in an
         # unrecoverable state.
         self._RemoveNavigationTab(tab)
