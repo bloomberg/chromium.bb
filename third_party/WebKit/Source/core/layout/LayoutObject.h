@@ -1246,6 +1246,8 @@ private:
 
     void markContainingBlockChainForPaintInvalidation();
 
+    bool isTextOrSVGChild() const { return isText() || (isSVG() && !isSVGRoot()); }
+
     static bool isAllowedToModifyRenderTreeStructure(Document&);
 
     const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;

@@ -678,7 +678,7 @@ void LayoutObject::markContainingBlocksForLayout(bool scheduleRelayout, LayoutOb
         LayoutObject* container = object->container();
         if (!container && !object->isLayoutView())
             return;
-        if (!last->isText() && last->style()->hasOutOfFlowPosition()) {
+        if (!last->isTextOrSVGChild() && last->style()->hasOutOfFlowPosition()) {
             bool willSkipRelativelyPositionedInlines = !object->isLayoutBlock() || object->isAnonymousBlock();
             // Skip relatively positioned inlines and anonymous blocks to get to the enclosing LayoutBlock.
             while (object && (!object->isLayoutBlock() || object->isAnonymousBlock()))
@@ -786,9 +786,9 @@ LayoutBlock* LayoutObject::containingBlock() const
     LayoutObject* o = parent();
     if (!o && isLayoutScrollbarPart())
         o = toLayoutScrollbarPart(this)->rendererOwningScrollbar();
-    if (!isText() && m_style->position() == FixedPosition)
+    if (!isTextOrSVGChild() && m_style->position() == FixedPosition)
         return containerForFixedPosition();
-    if (!isText() && m_style->position() == AbsolutePosition) {
+    if (!isTextOrSVGChild() && m_style->position() == AbsolutePosition) {
         while (o) {
             // For relpositioned inlines, we return the nearest non-anonymous enclosing block. We don't try
             // to return the inline itself.  This allows us to avoid having a positioned objects
@@ -2267,7 +2267,7 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidat
     // computePositionedLogicalHeight have to use container().
     LayoutObject* o = parent();
 
-    if (isText())
+    if (isTextOrSVGChild())
         return o;
 
     EPosition pos = m_style->position();
