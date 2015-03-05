@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_DRIVER_IOS_BRIDGE_H_
 #define COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_DRIVER_IOS_BRIDGE_H_
 
+#include <vector>
+
+#include "base/basictypes.h"
+
 namespace autofill {
 struct FormData;
 class FormStructure;
