@@ -28,7 +28,6 @@ class InfoBarDelegate;
 // Protocol for basic container methods, as needed by an InfoBarController.
 // This protocol exists to make mocking easier in unittests.
 @protocol InfoBarContainerControllerBase
-- (BrowserWindowController*)browserWindowController;
 - (BOOL)shouldSuppressTopInfoBarTip;
 - (CGFloat)infobarArrowX;
 @end
@@ -56,11 +55,15 @@ class InfoBarDelegate;
   // If YES then the first info bar doesn't draw a tip.
   BOOL shouldSuppressTopInfoBarTip_;
 
+  // The x-position of the infobar arrow.
+  CGFloat infobarArrowX_;
+
   // If YES then an infobar animation is in progress.
   BOOL isAnimating_;
 }
 
 @property(nonatomic, assign) BOOL shouldSuppressTopInfoBarTip;
+@property(nonatomic, assign) CGFloat infobarArrowX;
 
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate;
 

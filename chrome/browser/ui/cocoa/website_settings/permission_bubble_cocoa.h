@@ -40,6 +40,9 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
   // Returns the NSWindow containing the bubble.
   NSWindow* window();
 
+  // Change the parent window to be used the next time the bubble is shown.
+  void SwitchParentWindow(NSWindow* parent);
+
 private:
   NSWindow* parent_window_;  // Weak.
   Delegate* delegate_;  // Weak.

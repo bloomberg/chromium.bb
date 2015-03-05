@@ -388,6 +388,8 @@ willPositionSheet:(NSWindow*)sheet
   if (statusBubble_)
     statusBubble_->SwitchParentWindow(destWindow);
 
+  permissionBubbleCocoa_->SwitchParentWindow(destWindow);
+
   // Move the title over.
   [destWindow setTitle:[sourceWindow title]];
 
@@ -921,6 +923,8 @@ willPositionSheet:(NSWindow*)sheet
   [[infoBarContainerController_ view] setFrame:output.infoBarFrame];
   [infoBarContainerController_
       setMaxTopArrowHeight:output.infoBarMaxTopArrowHeight];
+  [infoBarContainerController_
+      setInfobarArrowX:[self locationBarBridge]->GetPageInfoBubblePoint().x];
 
   if (!NSIsEmptyRect(output.downloadShelfFrame))
     [[downloadShelfController_ view] setFrame:output.downloadShelfFrame];

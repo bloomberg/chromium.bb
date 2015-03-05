@@ -65,10 +65,15 @@ void PermissionBubbleCocoa::OnBubbleClosing() {
 NSPoint PermissionBubbleCocoa::GetAnchorPoint() {
   LocationBarViewMac* location_bar =
       [[parent_window_ windowController] locationBarBridge];
+  DCHECK(location_bar);
   NSPoint anchor = location_bar->GetPageInfoBubblePoint();
   return [parent_window_ convertBaseToScreen:anchor];
 }
 
 NSWindow* PermissionBubbleCocoa::window() {
   return [bubbleController_ window];
+}
+
+void PermissionBubbleCocoa::SwitchParentWindow(NSWindow* parent) {
+  parent_window_ = parent;
 }

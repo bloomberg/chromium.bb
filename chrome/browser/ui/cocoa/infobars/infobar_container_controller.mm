@@ -6,11 +6,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
@@ -27,6 +25,7 @@
 @implementation InfoBarContainerController
 
 @synthesize shouldSuppressTopInfoBarTip = shouldSuppressTopInfoBarTip_;
+@synthesize infobarArrowX = infobarArrowX_;
 
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate {
   DCHECK(resizeDelegate);
@@ -53,19 +52,6 @@
   DCHECK_EQ([infobarControllers_ count], 0U);
   view_id_util::UnsetID([self view]);
   [super dealloc];
-}
-
-- (BrowserWindowController*)browserWindowController {
-  id controller = [[[self view] window] windowController];
-  if (![controller isKindOfClass:[BrowserWindowController class]])
-    return nil;
-  return controller;
-}
-
-- (CGFloat)infobarArrowX {
-  LocationBarViewMac* locationBar =
-      [[self browserWindowController] locationBarBridge];
-  return locationBar->GetPageInfoBubblePoint().x;
 }
 
 - (void)changeWebContents:(content::WebContents*)contents {
