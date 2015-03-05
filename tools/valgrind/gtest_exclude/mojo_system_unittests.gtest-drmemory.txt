@@ -3,4 +3,4 @@ RemoteMessagePipeTest.HandlePassing
 # crbug.com/440828
 EmbedderTest.MultiprocessChannels
 # crbug.com/464019
-DataPipeImplTest.TwoPhaseAllOrNone
+DataPipeImplTest*.TwoPhaseAllOrNone
