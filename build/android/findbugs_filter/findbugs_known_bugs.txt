@@ -7,3 +7,4 @@ M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.url  In PendingDocumentData.java
 M D UuF: Unused public or protected field: org.chromium.chrome.browser.document.PendingDocumentData.requestId  In PendingDocumentData.java
 M D BC: Unchecked/unconfirmed cast from android.view.View to org.chromium.chrome.browser.firstrun.AccountFirstRunView in org.chromium.chrome.browser.firstrun.AccountFirstRunFragment.onViewCreated(View, Bundle)  At AccountFirstRunFragment.java
+M M LI: Incorrect lazy initialization and update of static field org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings.sSettings in org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings.initialize(Context)  At DataReductionProxySettings.java

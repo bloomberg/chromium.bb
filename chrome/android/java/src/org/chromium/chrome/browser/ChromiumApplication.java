@@ -15,6 +15,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryProcessType;;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -88,7 +89,9 @@ public abstract class ChromiumApplication extends ContentApplication {
      * Should be called almost immediately after the native library has loaded to initialize things
      * that really, really have to be set up early.  Avoid putting any long tasks here.
      */
-    public void initializeProcess() { }
+    public void initializeProcess() {
+        DataReductionProxySettings.initialize(getApplicationContext());
+    }
 
     /**
      * Start the browser process asynchronously. This will set up a queue of UI

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +13,15 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
+
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 /**
  * This class is a singleton that holds utilities for warming up Chrome and prerendering urls
@@ -154,5 +161,40 @@ public final class WarmupManager {
         ViewGroup mainView = mMainView;
         mMainView = null;
         return mainView;
+    }
+
+    /**
+     * Launches a background DNS query for a given URL.
+     *
+     * @param urlString URL from which the domain to query is extracted.
+     */
+    private static void prefetchDnsForUrlInBackground(String urlString) {
+        new AsyncTask<String, Void, Void>() {
+            @Override
+            protected Void doInBackground(String... params) {
+                try {
+                    URL url = new URL(params[0]);
+                    InetAddress.getByName(url.getHost());
+                } catch (MalformedURLException e) {
+                    // We don't do anything with the result of the resolution,
+                    // it is only here to warm the DNS cache. So ignoring all
+                    // exceptions is fine.
+                } catch (UnknownHostException e) {
+                    // Idem
+                }
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, urlString);
+    }
+
+    /** Launches a background DNS query for a given URL if the data reduction proxy is not in use.
+     *
+     * @param context The Application context.
+     * @param url URL from which the domain to query is extracted.
+     */
+    public static void maybePrefetchDnsForUrlInBackground(Context context, String url) {
+        if (!DataReductionProxySettings.isEnabledBeforeNativeLoad(context)) {
+            prefetchDnsForUrlInBackground(url);
+        }
     }
 }

@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.net.spdyproxy;
 
+import android.content.Context;
+import android.preference.PreferenceManager;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 
@@ -44,14 +47,51 @@ public class DataReductionProxySettings {
 
     private static DataReductionProxySettings sSettings;
 
+    private static final String ENABLED_PREFERENCE_TAG = "BANDWIDTH_REDUCTION_PROXY_ENABLED";
+
+    /** Returns whether the data reduction proxy is enabled.
+     *
+     * The knowledge of the data reduction proxy status is needed before the
+     * native library is loaded.
+     *
+     * Note that the returned value can be out-of-date if the Data Reduction
+     * Proxy is enabled/disabled from the native side without going through the
+     * UI. The discrepancy will however be fixed at the next launch, so the
+     * value returned here can be wrong (both false-positive and false-negative)
+     * right after such a change.
+     *
+     * @param context The application context.
+     * @return Whether the data reduction proxy is enabled.
+     */
+    public static boolean isEnabledBeforeNativeLoad(Context context) {
+        // TODO(lizeb): Add a listener for the native preference change to keep
+        // both in sync and avoid the false-positives and false-negatives.
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+            ENABLED_PREFERENCE_TAG, false);
+    }
+
+    /** Initializes DataReductionProxySettings.
+     *
+     * This method must be called before getInstance().
+     *
+     * @param context The application context.
+     */
+    public static void initialize(Context context) {
+        ThreadUtils.assertOnUiThread();
+        if (sSettings == null) {
+            sSettings = new DataReductionProxySettings();
+            boolean enabled = sSettings.isDataReductionProxyEnabled();
+            PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putBoolean(ENABLED_PREFERENCE_TAG, enabled).apply();
+        }
+    }
+
     /**
      * Returns a singleton instance of the settings object.
      */
     public static DataReductionProxySettings getInstance() {
         ThreadUtils.assertOnUiThread();
-        if (sSettings == null) {
-            sSettings = new DataReductionProxySettings();
-        }
+        assert sSettings != null : "initialize() must be called first.";
         return sSettings;
     }
 
@@ -90,7 +130,9 @@ public class DataReductionProxySettings {
      * Sets the preference on whether to enable/disable the SPDY proxy. This will zero out the
      * data reduction statistics if this is the first time the SPDY proxy has been enabled.
      */
-    public void setDataReductionProxyEnabled(boolean enabled) {
+    public void setDataReductionProxyEnabled(Context context, boolean enabled) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putBoolean(ENABLED_PREFERENCE_TAG, enabled).apply();
         nativeSetDataReductionProxyEnabled(mNativeDataReductionProxySettings, enabled);
     }
 

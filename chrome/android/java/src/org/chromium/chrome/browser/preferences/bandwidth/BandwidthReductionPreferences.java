@@ -200,7 +200,7 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
     }
 
     private void createReduceDataUsageSwitch(boolean isEnabled) {
-        ChromeSwitchPreference reduceDataUsageSwitch =
+        final ChromeSwitchPreference reduceDataUsageSwitch =
                 new ChromeSwitchPreference(getActivity(), null);
         reduceDataUsageSwitch.setKey(PREF_REDUCE_DATA_USAGE_SWITCH);
         reduceDataUsageSwitch.setSummaryOn(R.string.text_on);
@@ -210,7 +210,7 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        (boolean) newValue);
+                        reduceDataUsageSwitch.getContext(), (boolean) newValue);
                 BandwidthReductionPreferences.this.updatePreferences((boolean) newValue);
                 return true;
             }
