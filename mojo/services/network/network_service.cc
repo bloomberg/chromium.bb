@@ -36,6 +36,13 @@ class NetworkServiceDelegate
     return true;
   }
 
+  void Quit() override {
+    // Destroy the NetworkContext now as it requires MessageLoop::current() upon
+    // destruction and it is the last moment we know for sure that it is
+    // running.
+    context_.reset();
+  }
+
   // mojo::InterfaceFactory<mojo::NetworkService> implementation.
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NetworkService> request) override {
