@@ -56,8 +56,6 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
     Vector<ContextLifecycleObserver*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (ContextLifecycleObserver* observer : snapshotOfObservers) {
-        if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
-            continue;
         // FIXME: Oilpan: At the moment, it's possible that a ActiveDOMObject
         // observer is destructed while iterating. Once we enable Oilpan by default
         // for all LifecycleObserver<T>s, we can remove the hack by making m_observers
@@ -65,6 +63,8 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
         // (i.e., we can just iterate m_observers without taking a snapshot).
         // For more details, see https://codereview.chromium.org/247253002/.
         if (m_observers.contains(observer)) {
+            if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
+                continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
             ASSERT(activeDOMObject->executionContext() == context());
             ASSERT(activeDOMObject->suspendIfNeededCalled());
@@ -79,11 +79,11 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
     Vector<ContextLifecycleObserver*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (ContextLifecycleObserver* observer : snapshotOfObservers) {
-        if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
-            continue;
         // It's possible that the ActiveDOMObject is already destructed.
         // See a FIXME above.
         if (m_observers.contains(observer)) {
+            if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
+                continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
             ASSERT(activeDOMObject->executionContext() == context());
             ASSERT(activeDOMObject->suspendIfNeededCalled());
@@ -98,11 +98,11 @@ void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
     Vector<ContextLifecycleObserver*> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (ContextLifecycleObserver* observer : snapshotOfObservers) {
-        if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
-            continue;
         // It's possible that the ActiveDOMObject is already destructed.
         // See a FIXME above.
         if (m_observers.contains(observer)) {
+            if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
+                continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
             ASSERT(activeDOMObject->executionContext() == context());
             ASSERT(activeDOMObject->suspendIfNeededCalled());
