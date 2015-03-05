@@ -53,10 +53,6 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
     return false;
   }
 
-  // This should not be possible, but it looks like the source of the crash in
-  // http://crbug.com/445683. Perhaps something is overwriting the stack.
-  CHECK(info);
-
   // HasPath checks for whether the manifest is allowed to have
   // oauth2.auto_approve based on whitelist, and if it is present.
   // GetBoolean reads the value of auto_approve directly from dict to prevent
