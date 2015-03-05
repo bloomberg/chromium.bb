@@ -33524,6 +33524,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.StartWorker.Status"
+    units="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>The result of trying to start a Service Worker.</summary>
+</histogram>
+
+<histogram name="ServiceWorker.StartWorker.Time" units="milliseconds">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken to start a Service Worker end-to-end, from process allocation
+    to ACK of started from the renderer. This possibly includes script download
+    time, but the metric is not recorded if DevTools was ever attached to the
+    Service Worker during startup.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.StartWorker.TimeoutPhase"
+    units="EmbeddedWorkerStartingPhase">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The phase the EmbeddedWorker was in when ServiceWorker startup timed out.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorkerCache.Cache" units="milliseconds">
   <owner>dmurph@chromium.org</owner>
   <summary>
@@ -46815,6 +46839,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Screen unlocked (via EasyUnlock)"/>
 </enum>
 
+<enum name="EmbeddedWorkerStartingPhase" type="int">
+  <int value="0" label="NOT_STARTING"/>
+  <int value="1" label="ALLOCATING_PROCESS"/>
+  <int value="2" label="REGISTERING_TO_DEVTOOLS"/>
+  <int value="3" label="SENT_START_WORKER"/>
+  <int value="4" label="SCRIPT_DOWNLOADING"/>
+  <int value="5" label="SCRIPT_LOADED"/>
+  <int value="6" label="SCRIPT_EVALUATED"/>
+</enum>
+
 <enum name="EnterpriseCheckError" type="int">
   <summary>
     Defined as DomainCheckErrors in
@@ -58366,6 +58400,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="OK"/>
   <int value="1" label="Read headers error"/>
   <int value="2" label="Read data error"/>
+</enum>
+
+<enum name="ServiceWorkerStatusCode" type="int">
+  <int value="0" label="SERVICE_WORKER_OK"/>
+  <int value="1" label="SERVICE_WORKER_ERROR_FAILED"/>
+  <int value="2" label="SERVICE_WORKER_ERROR_ABORT"/>
+  <int value="3" label="SERVICE_WORKER_ERROR_START_WORKER_FAILED"/>
+  <int value="4" label="SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND"/>
+  <int value="5" label="SERVICE_WORKER_ERROR_NOT_FOUND"/>
+  <int value="6" label="SERVICE_WORKER_ERROR_EXISTS"/>
+  <int value="7" label="SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED"/>
+  <int value="8" label="SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED"/>
+  <int value="9" label="SERVICE_WORKER_ERROR_IPC_FAILED"/>
+  <int value="10" label="SERVICE_WORKER_ERROR_NETWORK"/>
+  <int value="11" label="SERVICE_WORKER_ERROR_SECURITY"/>
+  <int value="12" label="SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED"/>
+  <int value="13" label="SERVICE_WORKER_ERROR_STATE"/>
+  <int value="14" label="SERVICE_WORKER_ERROR_TIMEOUT"/>
 </enum>
 
 <enum name="ServiceWorkerWriteResponseResult" type="int">

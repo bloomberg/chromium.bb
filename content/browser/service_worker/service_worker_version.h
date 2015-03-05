@@ -66,8 +66,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode,
-                              const IPC::Message& message)> MessageCallback;
-  typedef base::Callback<void(ServiceWorkerStatusCode,
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&)> FetchCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode, bool)>
@@ -309,6 +307,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ScheduleStopWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, KeepAlive);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ListenerAvailability);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutStartingWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
@@ -336,7 +335,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                               const GURL& source_url) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnStartMessageSent(ServiceWorkerStatusCode status);
+  void OnStartSentAndScriptEvaluated(ServiceWorkerStatusCode status);
 
   void DispatchInstallEventAfterStartWorker(const StatusCallback& callback);
   void DispatchActivateEventAfterStartWorker(const StatusCallback& callback);
@@ -410,6 +409,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StopWorkerIfIdle();
   bool HasInflightRequests() const;
 
+  // ScheduleStartWorkerTimeout is called when attempting to the start the
+  // embedded worker. It sets a timer for calling OnStartWorkerTimeout, which
+  // invokes start callbacks with ERROR_TIMEOUT. It also adds its own start
+  // callback RecordStartWorkerResult which cancels the timer and records
+  // metrics about startup.
+  void ScheduleStartWorkerTimeout();
+  void RecordStartWorkerResult(ServiceWorkerStatusCode status);
+  void OnStartWorkerTimeout();
+
   void DoomInternal();
 
   template <typename IDMAP>
@@ -449,6 +457,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::OneShotTimer<ServiceWorkerVersion> stop_worker_timer_;
   base::OneShotTimer<ServiceWorkerVersion> update_timer_;
   base::OneShotTimer<ServiceWorkerVersion> ping_worker_timer_;
+  base::OneShotTimer<ServiceWorkerVersion> start_worker_timeout_timer_;
+  base::TimeTicks start_timing_;
   bool ping_timed_out_;
   bool is_doomed_;
   std::vector<int> pending_skip_waiting_requests_;

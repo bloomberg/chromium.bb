@@ -450,4 +450,25 @@ TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 }
 
+TEST_F(ServiceWorkerFailToStartTest, Timeout) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
+
+  // We could just call StartWorker but make it interesting and test
+  // starting the worker as part of dispatching an event.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
+  version_->DispatchActivateEvent(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+
+  // Callback has not completed yet.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NETWORK, status);
+  EXPECT_EQ(ServiceWorkerVersion::STARTING, version_->running_status());
+
+  // Simulate timeout.
+  EXPECT_TRUE(version_->start_worker_timeout_timer_.IsRunning());
+  version_->start_worker_timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
+}
+
 }  // namespace content

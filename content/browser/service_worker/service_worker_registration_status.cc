@@ -47,6 +47,10 @@ void GetServiceWorkerRegistrationStatusResponse(
       *error_type = WebServiceWorkerError::ErrorTypeSecurity;
       return;
 
+    case SERVICE_WORKER_ERROR_TIMEOUT:
+      *error_type = WebServiceWorkerError::ErrorTypeTimeout;
+      return;
+
     case SERVICE_WORKER_ERROR_ABORT:
       *error_type = WebServiceWorkerError::ErrorTypeAbort;
       return;
@@ -57,6 +61,7 @@ void GetServiceWorkerRegistrationStatusResponse(
     case SERVICE_WORKER_ERROR_EXISTS:
     case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
     case SERVICE_WORKER_ERROR_STATE:
+    case SERVICE_WORKER_ERROR_MAX_VALUE:
       // Unexpected, or should have bailed out before calling this, or we don't
       // have a corresponding blink error code yet.
       break;  // Fall through to NOTREACHED().

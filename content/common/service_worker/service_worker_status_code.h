@@ -10,6 +10,8 @@
 namespace content {
 
 // Generic service worker operation statuses.
+// This enum is used in UMA histograms, so don't change the order or remove
+// entries.
 enum ServiceWorkerStatusCode {
   // Operation succeeded.
   SERVICE_WORKER_OK,
@@ -54,6 +56,11 @@ enum ServiceWorkerStatusCode {
 
   // An error triggered by invalid worker state.
   SERVICE_WORKER_ERROR_STATE,
+
+  // The Service Worker took too long to finish a task.
+  SERVICE_WORKER_ERROR_TIMEOUT,
+
+  SERVICE_WORKER_ERROR_MAX_VALUE
 };
 
 CONTENT_EXPORT const char* ServiceWorkerStatusToString(

@@ -354,6 +354,10 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     if (message.empty())
       message = kFetchScriptError;
   }
+
+  if (status == SERVICE_WORKER_ERROR_TIMEOUT)
+    message = "Timed out while trying to start the Service Worker.";
+
   Complete(status, message);
 }
 
@@ -389,8 +393,6 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
 
 void ServiceWorkerRegisterJob::OnInstallFinished(
     ServiceWorkerStatusCode status) {
-  // TODO(kinuko,falken): For some error cases (e.g. ServiceWorker is
-  // unexpectedly terminated) we may want to retry sending the event again.
   if (status != SERVICE_WORKER_OK) {
     // "8. If installFailed is true, then:..."
     Complete(status);

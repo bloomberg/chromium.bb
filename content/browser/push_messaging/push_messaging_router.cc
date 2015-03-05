@@ -107,6 +107,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
     case SERVICE_WORKER_ERROR_NOT_FOUND:
     case SERVICE_WORKER_ERROR_IPC_FAILED:
+    case SERVICE_WORKER_ERROR_TIMEOUT:
       delivery_status = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;
       break;
     case SERVICE_WORKER_ERROR_EXISTS:
@@ -115,6 +116,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     case SERVICE_WORKER_ERROR_NETWORK:
     case SERVICE_WORKER_ERROR_SECURITY:
     case SERVICE_WORKER_ERROR_STATE:
+    case SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
       delivery_status = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;

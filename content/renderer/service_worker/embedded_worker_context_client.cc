@@ -208,13 +208,6 @@ void EmbeddedWorkerContextClient::workerContextStarted(
       WorkerTaskRunner::Instance()->CurrentWorkerId(),
       provider_context_->provider_id()));
 
-  // Schedule a task to send back WorkerStarted asynchronously,
-  // so that at the time we send it we can be sure that the worker
-  // script has been evaluated and worker run loop has been started.
-  worker_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&EmbeddedWorkerContextClient::SendWorkerStarted,
-                 weak_factory_.GetWeakPtr()));
   TRACE_EVENT_ASYNC_STEP_INTO0(
       "ServiceWorker",
       "EmbeddedWorkerContextClient::StartingWorkerContext",
@@ -225,6 +218,13 @@ void EmbeddedWorkerContextClient::workerContextStarted(
 void EmbeddedWorkerContextClient::didEvaluateWorkerScript(bool success) {
   Send(new EmbeddedWorkerHostMsg_WorkerScriptEvaluated(
       embedded_worker_id_, success));
+
+  // Schedule a task to send back WorkerStarted asynchronously,
+  // so that at the time we send it we can be sure that the
+  // worker run loop has been started.
+  worker_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&EmbeddedWorkerContextClient::SendWorkerStarted,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void EmbeddedWorkerContextClient::willDestroyWorkerContext() {

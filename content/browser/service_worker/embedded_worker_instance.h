@@ -53,6 +53,19 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     STOPPING,
   };
 
+  // This enum is used in UMA histograms, so don't change the order or remove
+  // entries.
+  enum StartingPhase {
+    NOT_STARTING,
+    ALLOCATING_PROCESS,
+    REGISTERING_TO_DEVTOOLS,
+    SENT_START_WORKER,
+    SCRIPT_DOWNLOADING,
+    SCRIPT_LOADED,
+    SCRIPT_EVALUATED,
+    STARTING_PHASE_MAX_VALUE,
+  };
+
   class Listener {
    public:
     virtual ~Listener() {}
@@ -106,6 +119,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   int embedded_worker_id() const { return embedded_worker_id_; }
   Status status() const { return status_; }
+  StartingPhase starting_phase() const {
+    DCHECK_EQ(STARTING, status());
+    return starting_phase_;
+  }
   int process_id() const { return process_id_; }
   int thread_id() const { return thread_id_; }
   int worker_devtools_agent_route_id() const;
@@ -115,9 +132,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void RemoveListener(Listener* listener);
 
   void set_devtools_attached(bool attached) { devtools_attached_ = attached; }
+  bool devtools_attached() const { return devtools_attached_; }
 
   // Called when the script load request accessed the network.
   void OnNetworkAccessedForScriptLoad();
+
+  static std::string StatusToString(Status status);
+  static std::string StartingPhaseToString(StartingPhase phase);
 
  private:
   typedef ObserverList<Listener> ListenerList;
@@ -202,6 +223,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   scoped_refptr<EmbeddedWorkerRegistry> registry_;
   const int embedded_worker_id_;
   Status status_;
+  StartingPhase starting_phase_;
 
   // Current running information. -1 indicates the worker is not running.
   int process_id_;

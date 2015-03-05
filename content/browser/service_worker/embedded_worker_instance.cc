@@ -145,6 +145,7 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
   DCHECK(status_ == STOPPED);
   start_timing_ = base::TimeTicks::Now();
   status_ = STARTING;
+  starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
   scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
       new EmbeddedWorkerMsg_StartWorker_Params());
@@ -214,6 +215,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       registry_(context->embedded_worker_registry()),
       embedded_worker_id_(embedded_worker_id),
       status_(STOPPED),
+      starting_phase_(NOT_STARTING),
       process_id_(-1),
       thread_id_(kInvalidEmbeddedWorkerThreadId),
       devtools_attached_(false),
@@ -266,6 +268,7 @@ void EmbeddedWorkerInstance::ProcessAllocated(
 
   // Register this worker to DevToolsManager on UI thread, then continue to
   // call SendStartWorker on IO thread.
+  starting_phase_ = REGISTERING_TO_DEVTOOLS;
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -305,6 +308,8 @@ void EmbeddedWorkerInstance::SendStartWorker(
     // allocation time.
     start_timing_ = base::TimeTicks::Now();
   }
+
+  starting_phase_ = SENT_START_WORKER;
   ServiceWorkerStatusCode status =
       registry_->SendStartWorker(params.Pass(), process_id_);
   if (status != SERVICE_WORKER_OK) {
@@ -321,6 +326,7 @@ void EmbeddedWorkerInstance::OnReadyForInspection() {
 }
 
 void EmbeddedWorkerInstance::OnScriptLoaded(int thread_id) {
+  starting_phase_ = SCRIPT_LOADED;
   if (!start_timing_.is_null()) {
     if (network_accessed_for_script_) {
       UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ScriptLoadWithNetworkAccess",
@@ -342,6 +348,7 @@ void EmbeddedWorkerInstance::OnScriptLoadFailed() {
 }
 
 void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
+  starting_phase_ = SCRIPT_EVALUATED;
   if (success && !start_timing_.is_null()) {
     UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ScriptEvaluate",
                         base::TimeTicks::Now() - start_timing_);
@@ -434,7 +441,48 @@ void EmbeddedWorkerInstance::RemoveListener(Listener* listener) {
 }
 
 void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
+  starting_phase_ = SCRIPT_DOWNLOADING;
   network_accessed_for_script_ = true;
+}
+
+// static
+std::string EmbeddedWorkerInstance::StatusToString(Status status) {
+  switch (status) {
+    case STOPPED:
+      return "STOPPED";
+    case STARTING:
+      return "STARTING";
+    case RUNNING:
+      return "RUNNING";
+    case STOPPING:
+      return "STOPPING";
+  }
+  NOTREACHED() << status;
+  return std::string();
+}
+
+// static
+std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
+  switch (phase) {
+    case NOT_STARTING:
+      return "Not in STARTING status";
+    case ALLOCATING_PROCESS:
+      return "Allocating process";
+    case REGISTERING_TO_DEVTOOLS:
+      return "Registering to DevTools";
+    case SENT_START_WORKER:
+      return "Sent StartWorker message to renderer";
+    case SCRIPT_DOWNLOADING:
+      return "Script downloading";
+    case SCRIPT_LOADED:
+      return "Script loaded";
+    case SCRIPT_EVALUATED:
+      return "Script evaluated";
+    case STARTING_PHASE_MAX_VALUE:
+      NOTREACHED();
+  }
+  NOTREACHED() << phase;
+  return std::string();
 }
 
 }  // namespace content

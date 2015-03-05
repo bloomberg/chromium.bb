@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,7 +37,6 @@
 namespace content {
 
 typedef ServiceWorkerVersion::StatusCallback StatusCallback;
-typedef ServiceWorkerVersion::MessageCallback MessageCallback;
 
 class ServiceWorkerVersion::GetClientDocumentsCallback
     : public base::RefCounted<GetClientDocumentsCallback> {
@@ -90,6 +90,13 @@ const int kPingIntervalTime = 10;  // 10 secs.
 
 // Timeout for waiting for a response to a ping.
 const int kPingTimeoutTime = 30;  // 30 secs.
+
+// Timeout for the worker to start.
+const int kStartWorkerTimeoutMinutes = 5;
+
+// If the SW was destructed while starting up, how many seconds it
+// had to start up for this to be considered a timeout occurrence.
+const int kDestructedStartingWorkerTimeoutThresholdSeconds = 5;  // 5 secs.
 
 const char kClaimClientsStateErrorMesage[] =
     "Only the active worker can claim clients.";
@@ -307,6 +314,15 @@ ServiceWorkerVersion::ServiceWorkerVersion(
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() {
+  // The user may have closed the tab waiting for SW to start up.
+  if (start_worker_timeout_timer_.IsRunning() && !start_timing_.is_null()) {
+    if ((base::TimeTicks::Now() - start_timing_) >
+        base::TimeDelta::FromSeconds(
+            kDestructedStartingWorkerTimeoutThresholdSeconds)) {
+      RecordStartWorkerResult(SERVICE_WORKER_ERROR_TIMEOUT);
+    }
+  }
+
   embedded_worker_->RemoveListener(this);
   if (context_)
     context_->RemoveLiveVersion(version_id_);
@@ -368,16 +384,15 @@ void ServiceWorkerVersion::StartWorker(
     case STOPPING:
     case STOPPED:
     case STARTING:
+      if (!start_worker_timeout_timer_.IsRunning())
+        ScheduleStartWorkerTimeout();
       start_callbacks_.push_back(callback);
       if (running_status() == STOPPED) {
         DCHECK(!cache_listener_.get());
         cache_listener_.reset(new ServiceWorkerCacheListener(this, context_));
         embedded_worker_->Start(
-            version_id_,
-            scope_,
-            script_url_,
-            pause_after_download,
-            base::Bind(&ServiceWorkerVersion::OnStartMessageSent,
+            version_id_, scope_, script_url_, pause_after_download,
+            base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                        weak_factory_.GetWeakPtr()));
       }
       return;
@@ -768,14 +783,19 @@ void ServiceWorkerVersion::Doom() {
 
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   embedded_worker()->set_devtools_attached(attached);
-  if (attached)
+  if (attached) {
+    // Set to null time so we don't record the startup time metric.
+    start_timing_ = base::TimeTicks();
     return;
+  }
   // If devtools is detached try scheduling the timers for stopping the worker
   // now.
   if (!stop_worker_timer_.IsRunning())
     ScheduleStopWorker();
   if (!ping_worker_timer_.IsRunning())
     StartPingWorker();
+  if (!start_worker_timeout_timer_.IsRunning() && !start_callbacks_.empty())
+    ScheduleStartWorkerTimeout();
 }
 
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
@@ -859,10 +879,11 @@ void ServiceWorkerVersion::OnStopped(
 
   // Restart worker if we have any start callbacks and the worker isn't doomed.
   if (should_restart) {
+    start_worker_timeout_timer_.Reset();
     cache_listener_.reset(new ServiceWorkerCacheListener(this, context_));
     embedded_worker_->Start(
         version_id_, scope_, script_url_, false /* pause_after_download */,
-        base::Bind(&ServiceWorkerVersion::OnStartMessageSent,
+        base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                    weak_factory_.GetWeakPtr()));
   }
 }
@@ -935,7 +956,7 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ServiceWorkerVersion::OnStartMessageSent(
+void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
     ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK)
     RunCallbacks(this, &start_callbacks_, status);
@@ -1436,7 +1457,8 @@ void ServiceWorkerVersion::OnPingTimeout() {
     return;
   ping_timed_out_ = true;
   // TODO(falken): Show a message to the developer that the SW was stopped due
-  // to timeout (crbug.com/457968).
+  // to timeout (crbug.com/457968). Also, change the error code to
+  // SERVICE_WORKER_ERROR_TIMEOUT.
   StopWorkerIfIdle();
 }
 
@@ -1478,6 +1500,70 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
     !geofencing_callbacks_.IsEmpty() ||
     !cross_origin_connect_callbacks_.IsEmpty() ||
     !streaming_url_request_jobs_.empty();
+}
+
+void ServiceWorkerVersion::ScheduleStartWorkerTimeout() {
+  DCHECK(!start_worker_timeout_timer_.IsRunning());
+  start_timing_ = embedded_worker_->devtools_attached()
+                      ? base::TimeTicks()
+                      : base::TimeTicks::Now();
+  start_callbacks_.push_back(
+      base::Bind(&ServiceWorkerVersion::RecordStartWorkerResult,
+                 weak_factory_.GetWeakPtr()));
+  start_worker_timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMinutes(kStartWorkerTimeoutMinutes),
+      base::Bind(&ServiceWorkerVersion::OnStartWorkerTimeout,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerVersion::OnStartWorkerTimeout() {
+  DCHECK(running_status() == STARTING || running_status() == STOPPING)
+      << running_status();
+
+  if (embedded_worker_->devtools_attached()) {
+    start_worker_timeout_timer_.Stop();
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerVersion> protect(this);
+  RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_ERROR_TIMEOUT);
+  if (running_status() == STARTING)
+    embedded_worker_->Stop();
+}
+
+void ServiceWorkerVersion::RecordStartWorkerResult(
+    ServiceWorkerStatusCode status) {
+  start_worker_timeout_timer_.Stop();
+
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
+                            SERVICE_WORKER_ERROR_MAX_VALUE);
+  if (status == SERVICE_WORKER_OK && !start_timing_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartWorker.Time",
+                               base::TimeTicks::Now() - start_timing_);
+  }
+
+  if (status != SERVICE_WORKER_ERROR_TIMEOUT)
+    return;
+  EmbeddedWorkerInstance::StartingPhase phase =
+      EmbeddedWorkerInstance::NOT_STARTING;
+  EmbeddedWorkerInstance::Status running_status = embedded_worker_->status();
+  // Build an artifical JavaScript exception to show in the ServiceWorker
+  // log for developers; it's not user-facing so it's not a localized resource.
+  std::string message = "ServiceWorker startup timed out. ";
+  if (running_status != EmbeddedWorkerInstance::STARTING) {
+    message.append("The worker had unexpected status: ");
+    message.append(EmbeddedWorkerInstance::StatusToString(running_status));
+  } else {
+    phase = embedded_worker_->starting_phase();
+    message.append("The worker was in startup phase: ");
+    message.append(EmbeddedWorkerInstance::StartingPhaseToString(phase));
+  }
+  message.append(".");
+  OnReportException(base::UTF8ToUTF16(message), -1, -1, GURL());
+  DVLOG(1) << message;
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.TimeoutPhase",
+                            phase,
+                            EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE);
 }
 
 void ServiceWorkerVersion::DoomInternal() {

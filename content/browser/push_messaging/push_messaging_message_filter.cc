@@ -552,6 +552,8 @@ void PushMessagingMessageFilter::UnregisterHavingGottenSenderId(
     case SERVICE_WORKER_ERROR_SECURITY:
     case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
     case SERVICE_WORKER_ERROR_STATE:
+    case SERVICE_WORKER_ERROR_TIMEOUT:
+    case SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
       DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR);
@@ -733,6 +735,8 @@ void PushMessagingMessageFilter::DidGetRegistration(
     case SERVICE_WORKER_ERROR_SECURITY:
     case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
     case SERVICE_WORKER_ERROR_STATE:
+    case SERVICE_WORKER_ERROR_TIMEOUT:
+    case SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
       get_status = PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
