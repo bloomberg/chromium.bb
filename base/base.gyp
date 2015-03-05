@@ -338,6 +338,8 @@
       ],
       'sources': [
         'prefs/base_prefs_export.h',
+        'prefs/base_prefs_switches.cc',
+        'prefs/base_prefs_switches.h',
         'prefs/default_pref_store.cc',
         'prefs/default_pref_store.h',
         'prefs/json_pref_store.cc',
