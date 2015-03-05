@@ -810,14 +810,21 @@ void DisplayManager::UpdateDisplays(
   // http://crbug.com/155948.
   if (display_changes.empty() && added_display_indices.empty() &&
       removed_displays.empty()) {
-    // When changing from software mirroring mode to sinlge display mode, it
-    // is possible there is no need to update |displays_| and we early out
-    // here. But we still want to run the PostDisplayConfigurationChange()
-    // cause there are some clients need to act on this, e.g.
-    // TouchTransformerController needs to adjust the TouchTransformer when
-    // switching from dual displays to single display.
-    if (delegate_)
+    // When changing from software mirroring mode to sinlge display
+    // mode, it is possible there is no need to update |displays_| and
+    // we early out here. But we still need to update the mirroring
+    // window and call the PostDisplayConfigurationChange() cause
+    // there are some clients need to act on this,
+    // e.g. TouchTransformerController needs to adjust the
+    // TouchTransformer when/ switching from dual displays to single
+    // display.
+    if (delegate_) {
+      if (HasSoftwareMirroringDisplay())
+        CreateMirrorWindowAsyncIfAny();
+      else
+        delegate_->CloseMirroringDisplay();
       delegate_->PostDisplayConfigurationChange();
+    }
     return;
   }
 
@@ -911,8 +918,7 @@ void DisplayManager::UpdateDisplays(
   // Create the mirroring window asynchronously after all displays
   // are added so that it can mirror the display newly added. This can
   // happen when switching from dock mode to software mirror mode.
-  if (has_mirroring_display && delegate_)
-    CreateMirrorWindowAsyncIfAny();
+  CreateMirrorWindowAsyncIfAny();
 }
 
 const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
@@ -1062,6 +1068,9 @@ bool DisplayManager::UpdateDisplayBounds(int64 display_id,
 }
 
 void DisplayManager::CreateMirrorWindowAsyncIfAny() {
+  // Do not post a task if the software mirroring doesn't exist.
+  if (!HasSoftwareMirroringDisplay())
+    return;
   base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,
       base::Bind(&DisplayManager::CreateMirrorWindowIfAny,

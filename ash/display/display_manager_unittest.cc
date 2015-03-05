@@ -9,6 +9,7 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_util.h"
+#include "ash/display/mirror_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -1340,6 +1341,27 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
             test_api.GetHost()->window()->bounds().size().ToString());
 
   Shell::GetScreen()->RemoveObserver(&display_observer);
+}
+
+TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
+  if (!SupportsMultipleDisplays())
+    return;
+  UpdateDisplay("600x400");
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
+  UpdateDisplay("600x400,600x400");
+
+  EXPECT_TRUE(display_manager->IsMirrored());
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  DisplayController* display_controller =
+      ash::Shell::GetInstance()->display_controller();
+  EXPECT_TRUE(display_controller->mirror_window_controller()->GetWindow());
+
+  UpdateDisplay("600x400");
+  EXPECT_FALSE(display_manager->IsMirrored());
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  EXPECT_FALSE(display_controller->mirror_window_controller()->GetWindow());
 }
 
 #if defined(OS_CHROMEOS)
