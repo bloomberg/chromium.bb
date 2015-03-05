@@ -87,7 +87,6 @@
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/text/TextStream.h"
-#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
@@ -840,11 +839,6 @@ void FrameView::performPreLayoutTasks()
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 }
 
-void FrameView::lineLayoutTime(double ms)
-{
-    m_lineLayoutMs += ms;
-}
-
 static void gatherDebugLayoutRects(LayoutObject& layoutRoot)
 {
     bool isTracing;
@@ -882,9 +876,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
 {
     ASSERT(inSubtreeLayout || m_layoutSubtreeRoots.isEmpty());
 
-    m_lineLayoutMs = 0;
     TRACE_EVENT0("blink,benchmark", "FrameView::performLayout");
-    double start = WTF::currentTimeMS();
 
     ScriptForbiddenScope forbidScript;
 
@@ -919,10 +911,6 @@ void FrameView::performLayout(bool inSubtreeLayout)
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
-    int layoutMs = (WTF::currentTimeMS() - start);
-    Platform::current()->histogramCustomCounts("Renderer.LayoutMs", layoutMs, 0, 1000 * 60, 50);
-    // TODO(benjhayden): re-enable when safe
-    // Platform::current()->histogramCustomCounts("Renderer.LineLayoutMs", m_lineLayoutMs, 0, 1000 * 60, 50);
 }
 
 void FrameView::scheduleOrPerformPostLayoutTasks()
