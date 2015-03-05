@@ -99,7 +99,7 @@ CompositingStateTransitionType CompositingLayerAssigner::computeCompositedLayerU
         if (layer->hasCompositedLayerMapping())
             update = RemoveOwnCompositedLayerMapping;
 
-        if (!layer->subtreeIsInvisible() && requiresSquashing(layer->compositingReasons())) {
+        if (!layer->subtreeIsInvisible() && m_compositor->canBeComposited(layer) && requiresSquashing(layer->compositingReasons())) {
             // We can't compute at this time whether the squashing layer update is a no-op,
             // since that requires walking the render layer tree.
             update = PutInSquashingLayer;
