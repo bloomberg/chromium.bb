@@ -12,8 +12,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
-class GURL;
-
 namespace mojo {
 
 template <>
@@ -34,16 +32,6 @@ struct MOJO_COMMON_EXPORT TypeConverter<String, base::string16> {
 template <>
 struct MOJO_COMMON_EXPORT TypeConverter<base::string16, String> {
   static base::string16 Convert(const String& input);
-};
-
-template <>
-struct MOJO_COMMON_EXPORT TypeConverter<String, GURL> {
-  static String Convert(const GURL& input);
-};
-
-template <>
-struct MOJO_COMMON_EXPORT TypeConverter<GURL, String> {
-  static GURL Convert(const String& input);
 };
 
 // TODO(erg): In the very long term, we will want to remove conversion between

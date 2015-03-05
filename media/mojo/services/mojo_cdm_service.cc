@@ -11,6 +11,7 @@
 #include "media/mojo/services/media_type_converters.h"
 #include "media/mojo/services/mojo_cdm_promise.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/common/url_type_converters.h"
 
 namespace media {
 

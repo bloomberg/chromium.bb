@@ -44,7 +44,6 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../url/url.gyp:url_lib',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(mojo_system_for_component)',
       ],
@@ -66,6 +65,24 @@
       ],
     },
     {
+      # GN version: //mojo/common:url_type_converters
+      'target_name': 'mojo_url_type_converters',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../url/url.gyp:url_lib',
+        '<(mojo_system_for_component)',
+      ],
+      'export_dependent_settings': [
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      ],
+      'sources': [
+        'common/url_type_converters.cc',
+        'common/url_type_converters.h',
+      ],
+    },
+    {
       # GN version: //mojo/common:mojo_common_unittests
       'target_name': 'mojo_common_unittests',
       'type': 'executable',
@@ -76,6 +93,7 @@
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
         'mojo_common_lib',
+        'mojo_url_type_converters',
         '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
         '../third_party/mojo/mojo_edk.gyp:mojo_common_test_support',
         '../third_party/mojo/mojo_edk.gyp:mojo_run_all_unittests',

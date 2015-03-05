@@ -50,7 +50,7 @@ component("chromium_impl") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//mojo/common",
+    "//mojo/common:common_base",
     "//third_party/mojo/src/mojo/public/c/environment",
   ]
 }

@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/common/url_type_converters.h"
 #include "mojo/services/html_viewer/blink_url_request_type_converters.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "net/base/net_errors.h"

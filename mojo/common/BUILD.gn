@@ -4,8 +4,15 @@
 
 import("//testing/test.gni")
 
+group("common") {
+  deps = [
+    ":common_base",
+    ":url_type_converters",
+  ]
+}
+
 # GYP version: mojo/mojo_base.gyp:mojo_common_lib
-component("common") {
+component("common_base") {
   output_name = "mojo_common_lib"
 
   sources = [
@@ -28,6 +35,22 @@ component("common") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_url_type_converters
+source_set("url_type_converters") {
+  sources = [
+    "url_type_converters.cc",
+    "url_type_converters.h",
+  ]
+
+  include_dirs = [ "//third_party/mojo/src/" ]
+
+  deps = [
+    ":common_base",
+    "//base",
+    "//base/third_party/dynamic_annotations",
     "//url",
   ]
 }

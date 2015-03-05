@@ -7,6 +7,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/common/url_type_converters.h"
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/network_context.h"
 #include "net/base/elements_upload_data_stream.h"

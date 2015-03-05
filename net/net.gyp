@@ -1302,7 +1302,7 @@
             'mojo_type_converters',
             'net',
             'net_interfaces',
-            '../mojo/mojo_base.gyp:mojo_common_lib',
+            '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
           ],
         },
