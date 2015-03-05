@@ -105,13 +105,9 @@ struct CONTENT_EXPORT BeginNavigationParams {
 // PlzNavigate: sent to the renderer when the navigation is ready to commit.
 struct CONTENT_EXPORT CommitNavigationParams {
   CommitNavigationParams();
-  CommitNavigationParams(const PageState& page_state,
-                         bool is_overriding_user_agent,
+  CommitNavigationParams(bool is_overriding_user_agent,
                          base::TimeTicks navigation_start);
   ~CommitNavigationParams();
-
-  // Opaque history state (received by ViewHostMsg_UpdateState).
-  PageState page_state;
 
   // Whether or not the user agent override string should be used.
   bool is_overriding_user_agent;
@@ -120,6 +116,42 @@ struct CONTENT_EXPORT CommitNavigationParams {
   base::TimeTicks browser_navigation_start;
 
   // TODO(clamy): Move the redirect chain here.
+};
+
+// Used by FrameMsg_Navigate.
+// PlzNavigate: sent to the renderer when the navigation is ready to commit.
+struct CONTENT_EXPORT HistoryNavigationParams {
+  HistoryNavigationParams();
+  HistoryNavigationParams(const PageState& page_state,
+                          int32 page_id,
+                          int pending_history_list_offset,
+                          int current_history_list_offset,
+                          int current_history_list_length,
+                          bool should_clear_history_list);
+  ~HistoryNavigationParams();
+
+  // Opaque history state (received by ViewHostMsg_UpdateState).
+  PageState page_state;
+
+  // The page_id for this navigation, or -1 if it is a new navigation.  Back,
+  // Forward, and Reload navigations should have a valid page_id.  If the load
+  // succeeds, then this page_id will be reflected in the resultant
+  // FrameHostMsg_DidCommitProvisionalLoad message.
+  int32 page_id;
+
+  // For history navigations, this is the offset in the history list of the
+  // pending load. For non-history navigations, this will be ignored.
+  int pending_history_list_offset;
+
+  // Where its current page contents reside in session history and the total
+  // size of the session history list.
+  int current_history_list_offset;
+  int current_history_list_length;
+
+  // Whether session history should be cleared. In that case, the RenderView
+  // needs to notify the browser that the clearing was succesful when the
+  // navigation commits.
+  bool should_clear_history_list;
 };
 
 }  // namespace content

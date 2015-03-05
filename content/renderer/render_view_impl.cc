@@ -2245,7 +2245,7 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
 
   if (IsReload(params.common_params.navigation_type))
     document_state->set_load_type(DocumentState::RELOAD);
-  else if (params.commit_params.page_state.IsValid())
+  else if (params.history_params.page_state.IsValid())
     document_state->set_load_type(DocumentState::HISTORY_LOAD);
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
@@ -2267,9 +2267,9 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
   // initiated any load resulting from JS execution.
   if (!params.common_params.url.SchemeIs(url::kJavaScriptScheme)) {
     navigation_state = NavigationState::CreateBrowserInitiated(
-        params.page_id,
-        params.pending_history_list_offset,
-        params.should_clear_history_list,
+        params.history_params.page_id,
+        params.history_params.pending_history_list_offset,
+        params.history_params.should_clear_history_list,
         params.common_params.transition);
     navigation_state->set_should_replace_current_entry(
         params.should_replace_current_entry);

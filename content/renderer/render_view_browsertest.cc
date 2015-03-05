@@ -363,7 +363,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   nav_params.common_params.url = GURL("data:text/html,<div>Page</div>");
   nav_params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  nav_params.page_id = -1;
+  nav_params.history_params.page_id = -1;
   nav_params.is_post = true;
   nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
@@ -571,10 +571,10 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   nav_params.common_params.url = GURL("data:text/html,<div>Page B</div>");
   nav_params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  nav_params.current_history_list_length = 1;
-  nav_params.current_history_list_offset = 0;
-  nav_params.pending_history_list_offset = 1;
-  nav_params.page_id = -1;
+  nav_params.history_params.current_history_list_length = 1;
+  nav_params.history_params.current_history_list_offset = 0;
+  nav_params.history_params.pending_history_list_offset = 1;
+  nav_params.history_params.page_id = -1;
   nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(nav_params);
@@ -609,14 +609,17 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   FrameMsg_Navigate_Params params_A;
   params_A.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params_A.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  params_A.current_history_list_length = 2;
-  params_A.current_history_list_offset = 1;
-  params_A.pending_history_list_offset = 0;
-  params_A.page_id = 1;
-  params_A.commit_params.page_state = state_A;
+  params_A.history_params.current_history_list_length = 2;
+  params_A.history_params.current_history_list_offset = 1;
+  params_A.history_params.pending_history_list_offset = 0;
+  params_A.history_params.page_id = 1;
+  params_A.history_params.page_state = state_A;
   params_A.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_A);
+  EXPECT_EQ(1, view()->historyBackListCount());
+  EXPECT_EQ(2, view()->historyBackListCount() +
+      view()->historyForwardListCount() + 1);
   ProcessPendingMessages();
 
   // Respond to a swap out request.
@@ -637,11 +640,11 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   nav_params.common_params.url = GURL("data:text/html,<div>Page A</div>");
   nav_params.common_params.navigation_type = FrameMsg_Navigate_Type::RELOAD;
   nav_params.common_params.transition = ui::PAGE_TRANSITION_RELOAD;
-  nav_params.current_history_list_length = 2;
-  nav_params.current_history_list_offset = 0;
-  nav_params.pending_history_list_offset = 0;
-  nav_params.page_id = 1;
-  nav_params.commit_params.page_state = state_A;
+  nav_params.history_params.current_history_list_length = 2;
+  nav_params.history_params.current_history_list_offset = 0;
+  nav_params.history_params.pending_history_list_offset = 0;
+  nav_params.history_params.page_id = 1;
+  nav_params.history_params.page_state = state_A;
   nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(nav_params);
@@ -756,11 +759,11 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   FrameMsg_Navigate_Params params_C;
   params_C.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params_C.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  params_C.current_history_list_length = 4;
-  params_C.current_history_list_offset = 3;
-  params_C.pending_history_list_offset = 2;
-  params_C.page_id = 3;
-  params_C.commit_params.page_state = state_C;
+  params_C.history_params.current_history_list_length = 4;
+  params_C.history_params.current_history_list_offset = 3;
+  params_C.history_params.pending_history_list_offset = 2;
+  params_C.history_params.page_id = 3;
+  params_C.history_params.page_state = state_C;
   params_C.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_C);
@@ -775,11 +778,11 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   FrameMsg_Navigate_Params params_B;
   params_B.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params_B.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  params_B.current_history_list_length = 4;
-  params_B.current_history_list_offset = 2;
-  params_B.pending_history_list_offset = 1;
-  params_B.page_id = 2;
-  params_B.commit_params.page_state = state_B;
+  params_B.history_params.current_history_list_length = 4;
+  params_B.history_params.current_history_list_offset = 2;
+  params_B.history_params.pending_history_list_offset = 1;
+  params_B.history_params.page_id = 2;
+  params_B.history_params.page_state = state_B;
   params_B.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_B);
@@ -788,11 +791,11 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   FrameMsg_Navigate_Params params;
   params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  params_B.current_history_list_length = 4;
-  params_B.current_history_list_offset = 2;
-  params_B.pending_history_list_offset = 0;
-  params.page_id = 1;
-  params.commit_params.page_state = state_A;
+  params.history_params.current_history_list_length = 4;
+  params.history_params.current_history_list_offset = 2;
+  params.history_params.pending_history_list_offset = 0;
+  params.history_params.page_id = 1;
+  params.history_params.page_state = state_A;
   params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params);
@@ -841,11 +844,11 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   FrameMsg_Navigate_Params params_A;
   params_A.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params_A.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  params_A.current_history_list_length = 2;
-  params_A.current_history_list_offset = 1;
-  params_A.pending_history_list_offset = 0;
-  params_A.page_id = 1;
-  params_A.commit_params.page_state = state_A;
+  params_A.history_params.current_history_list_length = 2;
+  params_A.history_params.current_history_list_offset = 1;
+  params_A.history_params.pending_history_list_offset = 0;
+  params_A.history_params.page_id = 1;
+  params_A.history_params.page_state = state_A;
   params_A.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_A);
@@ -861,11 +864,11 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   FrameMsg_Navigate_Params params_B;
   params_B.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params_B.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  params_B.current_history_list_length = 2;
-  params_B.current_history_list_offset = 0;
-  params_B.pending_history_list_offset = 1;
-  params_B.page_id = 2;
-  params_B.commit_params.page_state =
+  params_B.history_params.current_history_list_length = 2;
+  params_B.history_params.current_history_list_offset = 0;
+  params_B.history_params.pending_history_list_offset = 1;
+  params_B.history_params.page_id = 2;
+  params_B.history_params.page_state =
       state_A;  // Doesn't matter, just has to be present.
   params_B.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
@@ -1582,7 +1585,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   FrameMsg_Navigate_Params params;
-  params.page_id = -1;
+  params.history_params.page_id = -1;
   params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.common_params.url = GURL("data:text/html,test data");
   params.commit_params.browser_navigation_start =
@@ -1606,7 +1609,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   FrameMsg_Navigate_Params params;
-  params.page_id = -1;
+  params.history_params.page_id = -1;
   params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.common_params.url = GURL("data:text/html,test data");
   params.commit_params.browser_navigation_start =
@@ -1802,7 +1805,7 @@ TEST_F(RenderViewImplTest, ZoomLimit) {
   const double kMaxZoomLevel = ZoomFactorToZoomLevel(kMaximumZoomFactor);
 
   FrameMsg_Navigate_Params params;
-  params.page_id = -1;
+  params.history_params.page_id = -1;
   params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
@@ -1885,10 +1888,10 @@ TEST_F(RenderViewImplTest, NavigateFrame) {
   nav_params.common_params.url = GURL("data:text/html,world");
   nav_params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  nav_params.current_history_list_length = 1;
-  nav_params.current_history_list_offset = 0;
-  nav_params.pending_history_list_offset = 1;
-  nav_params.page_id = -1;
+  nav_params.history_params.current_history_list_length = 1;
+  nav_params.history_params.current_history_list_offset = 0;
+  nav_params.history_params.pending_history_list_offset = 1;
+  nav_params.history_params.page_id = -1;
   nav_params.frame_to_navigate = "frame";
   nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
@@ -2007,7 +2010,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   FrameMsg_Navigate_Params params;
-  params.page_id = -1;
+  params.history_params.page_id = -1;
   params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.common_params.url = GURL("data:text/html,test data");
   params.commit_params.browser_navigation_start =
@@ -2038,7 +2041,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   FrameMsg_Navigate_Params params;
-  params.page_id = -1;
+  params.history_params.page_id = -1;
   params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.common_params.url = GURL("data:text/html,test data");
   params.commit_params.browser_navigation_start =
@@ -2247,7 +2250,7 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   early_nav_params.common_params.navigation_type =
       FrameMsg_Navigate_Type::NORMAL;
   early_nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  early_nav_params.page_id = -1;
+  early_nav_params.history_params.page_id = -1;
   early_nav_params.is_post = true;
   early_nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
@@ -2268,7 +2271,7 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   late_nav_params.common_params.navigation_type =
       FrameMsg_Navigate_Type::NORMAL;
   late_nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  late_nav_params.page_id = -1;
+  late_nav_params.history_params.page_id = -1;
   late_nav_params.is_post = true;
   late_nav_params.commit_params.browser_navigation_start =
       base::TimeTicks::Now() + base::TimeDelta::FromDays(42);
@@ -2295,6 +2298,31 @@ TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   SetZoomLevel(ZoomFactorToZoomLevel(2.0));
   size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(800, 800), size);
+}
+
+// Ensure the RenderViewImpl history list is properly updated when starting a
+// new browser-initiated navigation.
+TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
+  EXPECT_EQ(0, view()->historyBackListCount());
+  EXPECT_EQ(0, view()->historyBackListCount() +
+      view()->historyForwardListCount() + 1);
+
+  // Receive a Navigate message with history parameters.
+  FrameMsg_Navigate_Params params;
+  params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  params.common_params.transition = ui::PAGE_TRANSITION_LINK;
+  params.history_params.current_history_list_length = 2;
+  params.history_params.current_history_list_offset = 1;
+  params.history_params.pending_history_list_offset = 2;
+  params.history_params.page_id = -1;
+  params.commit_params.browser_navigation_start =
+      base::TimeTicks::FromInternalValue(1);
+  frame()->OnNavigate(params);
+
+  // The history list in RenderView should have been updated.
+  EXPECT_EQ(1, view()->historyBackListCount());
+  EXPECT_EQ(2, view()->historyBackListCount() +
+      view()->historyForwardListCount() + 1);
 }
 
 }  // namespace content

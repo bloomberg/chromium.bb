@@ -61,7 +61,8 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
     const NavigationEntryImpl& entry,
     FrameMsg_Navigate_Type::Value navigation_type,
-    base::TimeTicks navigation_start) {
+    base::TimeTicks navigation_start,
+    const HistoryNavigationParams& history_params) {
   std::string method = entry.GetHasPostData() ? "POST" : "GET";
 
   // Copy existing headers and add necessary headers that may not be present
@@ -94,18 +95,15 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node,
-      CommonNavigationParams(entry.GetURL(), entry.GetReferrer(),
-                             entry.GetTransitionType(), navigation_type,
-                             !entry.IsViewSourceMode(),ui_timestamp,
-                             report_type, entry.GetBaseURLForDataURL(),
-                             entry.GetHistoryURLForDataURL()),
+      CommonNavigationParams(
+          entry.GetURL(), entry.GetReferrer(), entry.GetTransitionType(),
+          navigation_type, !entry.IsViewSourceMode(), ui_timestamp, report_type,
+          entry.GetBaseURLForDataURL(), entry.GetHistoryURLForDataURL()),
       BeginNavigationParams(method, headers.ToString(),
-                            LoadFlagFromNavigationType(navigation_type),
-                            false),
-      CommitNavigationParams(entry.GetPageState(),
-                             entry.GetIsOverridingUserAgent(),
+                            LoadFlagFromNavigationType(navigation_type), false),
+      CommitNavigationParams(entry.GetIsOverridingUserAgent(),
                              navigation_start),
-      request_body, true, &entry));
+      history_params, request_body, true, &entry));
   return navigation_request.Pass();
 }
 
@@ -114,7 +112,9 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
-    scoped_refptr<ResourceRequestBody> body) {
+    scoped_refptr<ResourceRequestBody> body,
+    int current_history_list_offset,
+    int current_history_list_length) {
   // TODO(clamy): Check if some PageState should be provided here.
   // TODO(clamy): See how we should handle override of the user agent when the
   // navigation may start in a renderer and commit in another one.
@@ -122,7 +122,9 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // renderer and sent to the browser instead of being measured here.
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params, begin_params,
-      CommitNavigationParams(PageState(), false, base::TimeTicks::Now()),
+      CommitNavigationParams(false, base::TimeTicks::Now()),
+      HistoryNavigationParams(PageState(), -1, -1, current_history_list_offset,
+                              current_history_list_length, false),
       body, false, nullptr));
   return navigation_request.Pass();
 }
@@ -132,6 +134,7 @@ NavigationRequest::NavigationRequest(
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
     const CommitNavigationParams& commit_params,
+    const HistoryNavigationParams& history_params,
     scoped_refptr<ResourceRequestBody> body,
     bool browser_initiated,
     const NavigationEntryImpl* entry)
@@ -139,6 +142,7 @@ NavigationRequest::NavigationRequest(
       common_params_(common_params),
       begin_params_(begin_params),
       commit_params_(commit_params),
+      history_params_(history_params),
       browser_initiated_(browser_initiated),
       state_(NOT_STARTED),
       restore_type_(NavigationEntryImpl::RESTORE_NONE),

@@ -224,9 +224,17 @@ IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(page_state)
   IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
   IPC_STRUCT_TRAITS_MEMBER(browser_navigation_start)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::HistoryNavigationParams)
+  IPC_STRUCT_TRAITS_MEMBER(page_state)
+  IPC_STRUCT_TRAITS_MEMBER(page_id)
+  IPC_STRUCT_TRAITS_MEMBER(pending_history_list_offset)
+  IPC_STRUCT_TRAITS_MEMBER(current_history_list_offset)
+  IPC_STRUCT_TRAITS_MEMBER(current_history_list_length)
+  IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
@@ -255,6 +263,7 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   // These structs contain parameters shared by other navigation IPCs.
   IPC_STRUCT_MEMBER(content::CommonNavigationParams, common_params)
   IPC_STRUCT_MEMBER(content::CommitNavigationParams, commit_params)
+  IPC_STRUCT_MEMBER(content::HistoryNavigationParams, history_params)
 
   // Whether the navigation is a POST request (as opposed to a GET).
   IPC_STRUCT_MEMBER(bool, is_post)
@@ -265,26 +274,6 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   // If is_post is true, holds the post_data information from browser. Empty
   // otherwise.
   IPC_STRUCT_MEMBER(std::vector<unsigned char>, browser_initiated_post_data)
-
-  // The page_id for this navigation, or -1 if it is a new navigation.  Back,
-  // Forward, and Reload navigations should have a valid page_id.  If the load
-  // succeeds, then this page_id will be reflected in the resultant
-  // FrameHostMsg_DidCommitProvisionalLoad message.
-  IPC_STRUCT_MEMBER(int32, page_id)
-
-  // For history navigations, this is the offset in the history list of the
-  // pending load. For non-history navigations, this will be ignored.
-  IPC_STRUCT_MEMBER(int, pending_history_list_offset)
-
-  // Informs the RenderView of where its current page contents reside in
-  // session history and the total size of the session history list.
-  IPC_STRUCT_MEMBER(int, current_history_list_offset)
-  IPC_STRUCT_MEMBER(int, current_history_list_length)
-
-  // Informs the RenderView the session history should be cleared. In that
-  // case, the RenderView needs to notify the browser that the clearing was
-  // succesful when the navigation commits.
-  IPC_STRUCT_MEMBER(bool, should_clear_history_list)
 
   // Any redirect URLs that occurred before |url|. Useful for cross-process
   // navigations; defaults to empty.
@@ -537,11 +526,12 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
 // Tells the renderer that a navigation is ready to commit.  The renderer should
 // request |stream_url| to get access to the stream containing the body of the
 // response.
-IPC_MESSAGE_ROUTED4(FrameMsg_CommitNavigation,
-                    content::ResourceResponseHead, /* response */
-                    GURL, /* stream_url */
+IPC_MESSAGE_ROUTED5(FrameMsg_CommitNavigation,
+                    content::ResourceResponseHead,   /* response */
+                    GURL,                            /* stream_url */
                     content::CommonNavigationParams, /* common_params */
-                    content::CommitNavigationParams /* commit_params */)
+                    content::CommitNavigationParams, /* commit_params */
+                    content::HistoryNavigationParams /* history_params */)
 
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.

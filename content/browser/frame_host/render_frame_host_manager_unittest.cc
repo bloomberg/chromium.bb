@@ -381,9 +381,9 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableBrowserSideNavigation)) {
       scoped_ptr<NavigationRequest> navigation_request =
-        NavigationRequest::CreateBrowserInitiated(
-            manager->frame_tree_node_, entry, FrameMsg_Navigate_Type::NORMAL,
-            base::TimeTicks::Now());
+          NavigationRequest::CreateBrowserInitiated(
+              manager->frame_tree_node_, entry, FrameMsg_Navigate_Type::NORMAL,
+              base::TimeTicks::Now(), HistoryNavigationParams());
       return manager->GetFrameHostForNavigation(*navigation_request);
     }
     return manager->Navigate(entry);

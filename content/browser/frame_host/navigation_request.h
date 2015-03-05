@@ -61,7 +61,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       FrameTreeNode* frame_tree_node,
       const NavigationEntryImpl& entry,
       FrameMsg_Navigate_Type::Value navigation_type,
-      base::TimeTicks navigation_start);
+      base::TimeTicks navigation_start,
+      const HistoryNavigationParams& history_params);
 
   // Creates a request for a renderer-intiated navigation.
   // Note: |body| is sent to the IO thread when calling BeginNavigation, and
@@ -70,7 +71,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       FrameTreeNode* frame_tree_node,
       const CommonNavigationParams& common_params,
       const BeginNavigationParams& begin_params,
-      scoped_refptr<ResourceRequestBody> body);
+      scoped_refptr<ResourceRequestBody> body,
+      int current_history_list_offset,
+      int current_history_list_length);
 
   ~NavigationRequest() override;
 
@@ -85,6 +88,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   const BeginNavigationParams& begin_params() const { return begin_params_; }
 
   const CommitNavigationParams& commit_params() const { return commit_params_; }
+
+  const HistoryNavigationParams& history_params() const {
+    return history_params_;
+  }
 
   NavigationURLLoader* loader_for_testing() const { return loader_.get(); }
 
@@ -118,6 +125,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                     const CommonNavigationParams& common_params,
                     const BeginNavigationParams& begin_params,
                     const CommitNavigationParams& commit_params,
+                    const HistoryNavigationParams& history_params,
                     scoped_refptr<ResourceRequestBody> body,
                     bool browser_initiated,
                     const NavigationEntryImpl* navitation_entry);
@@ -141,6 +149,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   CommonNavigationParams common_params_;
   const BeginNavigationParams begin_params_;
   const CommitNavigationParams commit_params_;
+  const HistoryNavigationParams history_params_;
   const bool browser_initiated_;
 
   NavigationState state_;

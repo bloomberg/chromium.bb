@@ -1514,9 +1514,9 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
   // file access.  If this is a different process, we will need to grant the
   // access again.  The files listed in the page state are validated when they
   // are received from the renderer to prevent abuse.
-  if (params.commit_params.page_state.IsValid()) {
+  if (params.history_params.page_state.IsValid()) {
     render_view_host_->GrantFileAccessFromPageState(
-        params.commit_params.page_state);
+        params.history_params.page_state);
   }
 
   // Only send the message if we aren't suspended at the start of a cross-site
@@ -1557,10 +1557,10 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   params.common_params.transition = ui::PAGE_TRANSITION_LINK;
   params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.commit_params.browser_navigation_start = base::TimeTicks::Now();
-  params.page_id = -1;
-  params.pending_history_list_offset = -1;
-  params.current_history_list_offset = -1;
-  params.current_history_list_length = 0;
+  params.history_params.page_id = -1;
+  params.history_params.pending_history_list_offset = -1;
+  params.history_params.current_history_list_offset = -1;
+  params.history_params.current_history_list_length = 0;
   Navigate(params);
 }
 
@@ -1672,7 +1672,8 @@ void RenderFrameHostImpl::CommitNavigation(
     ResourceResponse* response,
     scoped_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params) {
+    const CommitNavigationParams& commit_params,
+    const HistoryNavigationParams& history_params) {
   DCHECK((response && body.get()) ||
           !NavigationRequest::ShouldMakeNetworkRequest(common_params.url));
   // TODO(clamy): Check if we have to add security checks for the browser plugin
@@ -1685,8 +1686,8 @@ void RenderFrameHostImpl::CommitNavigation(
   const GURL body_url = body.get() ? body->GetURL() : GURL();
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
-  Send(new FrameMsg_CommitNavigation(
-      routing_id_, head, body_url, common_params, commit_params));
+  Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, common_params,
+                                     commit_params, history_params));
   // TODO(clamy): Check if we should start the throbber for non javascript urls
   // here.
 

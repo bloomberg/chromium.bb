@@ -77,6 +77,26 @@ RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
   return rfh->frame_tree_node()->frame_tree()->root()->render_manager();
 }
 
+HistoryNavigationParams MakeHistoryParams(
+    const NavigationEntryImpl& entry,
+    NavigationControllerImpl* controller) {
+  int pending_history_list_offset = controller->GetIndexOfEntry(&entry);
+  int current_history_list_offset = controller->GetLastCommittedEntryIndex();
+  int current_history_list_length = controller->GetEntryCount();
+  if (entry.should_clear_history_list()) {
+    // Set the history list related parameters to the same values a
+    // NavigationController would return before its first navigation. This will
+    // fully clear the RenderView's view of the session history.
+    pending_history_list_offset = -1;
+    current_history_list_offset = -1;
+    current_history_list_length = 0;
+  }
+  return HistoryNavigationParams(
+      entry.GetPageState(), entry.GetPageID(), pending_history_list_offset,
+      current_history_list_offset, current_history_list_length,
+      entry.should_clear_history_list());
+}
+
 void MakeNavigateParams(const NavigationEntryImpl& entry,
                         NavigationControllerImpl* controller,
                         NavigationController::ReloadType reload_type,
@@ -97,7 +117,9 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
       !entry.IsViewSourceMode(), ui_timestamp, report_type,
       entry.GetBaseURLForDataURL(), entry.GetHistoryURLForDataURL());
   params->commit_params = CommitNavigationParams(
-      entry.GetPageState(), entry.GetIsOverridingUserAgent(), navigation_start);
+      entry.GetIsOverridingUserAgent(), navigation_start);
+  params->history_params = MakeHistoryParams(entry, controller);
+
   params->is_post = entry.GetHasPostData();
   params->extra_headers = entry.extra_headers();
   if (entry.GetBrowserInitiatedPostData()) {
@@ -117,21 +139,6 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   params->transferred_request_request_id =
       entry.transferred_global_request_id().request_id;
 
-  params->page_id = entry.GetPageID();
-  params->should_clear_history_list = entry.should_clear_history_list();
-  if (entry.should_clear_history_list()) {
-    // Set the history list related parameters to the same values a
-    // NavigationController would return before its first navigation. This will
-    // fully clear the RenderView's view of the session history.
-    params->pending_history_list_offset = -1;
-    params->current_history_list_offset = -1;
-    params->current_history_list_length = 0;
-  } else {
-    params->pending_history_list_offset = controller->GetIndexOfEntry(&entry);
-    params->current_history_list_offset =
-        controller->GetLastCommittedEntryIndex();
-    params->current_history_list_length = controller->GetEntryCount();
-  }
   // Set the redirect chain to the navigation's redirects, unless we are
   // returning to a completed navigation (whose previous redirects don't apply).
   if (ui::PageTransitionIsNewNavigation(params->common_params.transition)) {
@@ -713,7 +720,9 @@ void NavigatorImpl::OnBeginNavigation(
   // happens when the existing request map entry is replaced and destroyed.
   scoped_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateRendererInitiated(
-          frame_tree_node, common_params, begin_params, body);
+          frame_tree_node, common_params, begin_params, body,
+          controller_->GetLastCommittedEntryIndex(),
+          controller_->GetEntryCount());
   navigation_request_map_.set(
       frame_tree_node->frame_tree_node_id(), navigation_request.Pass());
 
@@ -755,7 +764,8 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
 
   render_frame_host->CommitNavigation(response, body.Pass(),
                                       navigation_request->common_params(),
-                                      navigation_request->commit_params());
+                                      navigation_request->commit_params(),
+                                      navigation_request->history_params());
 }
 
 // PlzNavigate
@@ -839,7 +849,8 @@ void NavigatorImpl::RequestNavigation(
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
   scoped_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          frame_tree_node, entry, navigation_type, navigation_start);
+          frame_tree_node, entry, navigation_type, navigation_start,
+          MakeHistoryParams(entry, controller_));
   // TODO(clamy): Check if navigations are blocked and if so store the
   // parameters.
 

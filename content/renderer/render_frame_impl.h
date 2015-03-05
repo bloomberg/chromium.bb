@@ -103,6 +103,7 @@ struct CommitNavigationParams;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FrameReplicationState;
+struct HistoryNavigationParams;
 struct RequestNavigationParams;
 struct ResourceResponseHead;
 
@@ -633,7 +634,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnCommitNavigation(const ResourceResponseHead& response,
                           const GURL& stream_url,
                           const CommonNavigationParams& common_params,
-                          const CommitNavigationParams& commit_params);
+                          const CommitNavigationParams& commit_params,
+                          const HistoryNavigationParams& history_params);
 
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
@@ -699,9 +701,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // the return value is false, the navigation should be abandoned.
   bool PrepareRenderViewForNavigation(
       const GURL& url,
-      bool check_for_stale_navigation,
       bool is_history_navigation,
-      int current_history_list_offset,
+      const HistoryNavigationParams& history_params,
       bool* is_reload,
       blink::WebURLRequest::CachePolicy* cache_policy);
 

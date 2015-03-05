@@ -71,6 +71,7 @@ struct CommitNavigationParams;
 struct CommonNavigationParams;
 struct ContextMenuParams;
 struct GlobalRequestID;
+struct HistoryNavigationParams;
 struct Referrer;
 struct ResourceResponse;
 struct TransitionLayerData;
@@ -442,7 +443,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CommitNavigation(ResourceResponse* response,
                         scoped_ptr<StreamHandle> body,
                         const CommonNavigationParams& common_params,
-                        const CommitNavigationParams& commit_params);
+                        const CommitNavigationParams& commit_params,
+                        const HistoryNavigationParams& history_params);
 
   // Sets up the Mojo connection between this instance and its associated render
   // frame if it has not yet been set up.
