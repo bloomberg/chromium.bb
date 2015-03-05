@@ -34,6 +34,10 @@ class SANDBOX_EXPORT PolicyCompiler {
   // compiles the policy to a BPF program, which it returns.
   scoped_ptr<CodeGen::Program> Compile();
 
+  // DangerousSetEscapePC sets the "escape PC" that is allowed to issue any
+  // system calls, regardless of policy.
+  void DangerousSetEscapePC(uint64_t escapepc);
+
   // Error returns an ErrorCode to indicate the system call should fail with
   // the specified error number.
   ErrorCode Error(int err);
@@ -88,7 +92,7 @@ class SANDBOX_EXPORT PolicyCompiler {
   CodeGen::Node CheckArch(CodeGen::Node passed);
 
   // If |has_unsafe_traps_| is true, returns an instruction sequence
-  // that allows all system calls from Syscall::Call(), and otherwise
+  // that allows all system calls from |escapepc_|, and otherwise
   // passes control to |rest|. Otherwise, simply returns |rest|.
   CodeGen::Node MaybeAddEscapeHatch(CodeGen::Node rest);
 
@@ -140,6 +144,7 @@ class SANDBOX_EXPORT PolicyCompiler {
 
   const Policy* policy_;
   TrapRegistry* registry_;
+  uint64_t escapepc_;
 
   Conds conds_;
   CodeGen gen_;

@@ -79,6 +79,14 @@ bool KernelSupportsSeccompTsync() {
   }
 }
 
+uint64_t EscapePC() {
+  intptr_t rv = Syscall::Call(-1);
+  if (rv == -1 && errno == ENOSYS) {
+    return 0;
+  }
+  return static_cast<uint64_t>(static_cast<uintptr_t>(rv));
+}
+
 }  // namespace
 
 SandboxBPF::SandboxBPF(bpf_dsl::Policy* policy)
@@ -185,6 +193,9 @@ scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
 #endif
   DCHECK(policy_);
   bpf_dsl::PolicyCompiler compiler(policy_.get(), Trap::Registry());
+  if (Trap::SandboxDebuggingAllowedByUser()) {
+    compiler.DangerousSetEscapePC(EscapePC());
+  }
   scoped_ptr<CodeGen::Program> program = compiler.Compile();
 
   // Make sure compilation resulted in a BPF program that executes

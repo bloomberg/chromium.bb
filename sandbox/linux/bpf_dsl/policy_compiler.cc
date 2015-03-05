@@ -20,7 +20,6 @@
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 
 namespace sandbox {
@@ -86,6 +85,7 @@ struct PolicyCompiler::Range {
 PolicyCompiler::PolicyCompiler(const Policy* policy, TrapRegistry* registry)
     : policy_(policy),
       registry_(registry),
+      escapepc_(0),
       conds_(),
       gen_(),
       has_unsafe_traps_(HasUnsafeTraps(policy_)) {
@@ -106,11 +106,8 @@ scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
     // measures that the sandbox provides, we print a big warning message --
     // and of course, we make sure to only ever enable this feature if it
     // is actually requested by the sandbox policy.
-    if (Syscall::Call(-1) == -1 && errno == ENOSYS) {
-      SANDBOX_DIE(
-          "Support for UnsafeTrap() has not yet been ported to this "
-          "architecture");
-    }
+
+    CHECK_NE(0U, escapepc_) << "UnsafeTrap() requires a valid escape PC";
 
     for (int sysnum : kSyscallsRequiredForUnsafeTraps) {
       if (!policy_->EvaluateSyscall(sysnum)->IsAllow()) {
@@ -134,6 +131,10 @@ scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
   scoped_ptr<CodeGen::Program> program(new CodeGen::Program());
   gen_.Compile(AssemblePolicy(), program.get());
   return program.Pass();
+}
+
+void PolicyCompiler::DangerousSetEscapePC(uint64_t escapepc) {
+  escapepc_ = escapepc;
 }
 
 CodeGen::Node PolicyCompiler::AssemblePolicy() {
@@ -162,12 +163,13 @@ CodeGen::Node PolicyCompiler::MaybeAddEscapeHatch(CodeGen::Node rest) {
     return rest;
   }
 
-  // Allow system calls, if they originate from our magic return address
-  // (which we can query by calling Syscall::Call(-1)).
-  uint64_t syscall_entry_point =
-      static_cast<uint64_t>(static_cast<uintptr_t>(Syscall::Call(-1)));
-  uint32_t low = static_cast<uint32_t>(syscall_entry_point);
-  uint32_t hi = static_cast<uint32_t>(syscall_entry_point >> 32);
+  // We already enabled unsafe traps in Compile, but enable them again to give
+  // the trap registry a second chance to complain before we add the backdoor.
+  CHECK(registry_->EnableUnsafeTraps());
+
+  // Allow system calls, if they originate from our magic return address.
+  const uint32_t lopc = static_cast<uint32_t>(escapepc_);
+  const uint32_t hipc = static_cast<uint32_t>(escapepc_ >> 32);
 
   // BPF cannot do native 64-bit comparisons, so we have to compare
   // both 32-bit halves of the instruction pointer. If they match what
@@ -179,10 +181,10 @@ CodeGen::Node PolicyCompiler::MaybeAddEscapeHatch(CodeGen::Node rest) {
   return gen_.MakeInstruction(
       BPF_LD + BPF_W + BPF_ABS, SECCOMP_IP_LSB_IDX,
       gen_.MakeInstruction(
-          BPF_JMP + BPF_JEQ + BPF_K, low,
+          BPF_JMP + BPF_JEQ + BPF_K, lopc,
           gen_.MakeInstruction(
               BPF_LD + BPF_W + BPF_ABS, SECCOMP_IP_MSB_IDX,
-              gen_.MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, hi,
+              gen_.MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, hipc,
                                    CompileResult(Allow()), rest)),
           rest));
 }

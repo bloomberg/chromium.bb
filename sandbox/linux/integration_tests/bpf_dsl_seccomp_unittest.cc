@@ -557,11 +557,11 @@ SANDBOX_TEST(SandboxBPF, EnableUnsafeTrapsInSigSysHandler) {
   Die::SuppressInfoMessages(true);
 
   unsetenv(kSandboxDebuggingEnv);
-  SANDBOX_ASSERT(Trap::EnableUnsafeTrapsInSigSysHandler() == false);
+  SANDBOX_ASSERT(Trap::Registry()->EnableUnsafeTraps() == false);
   setenv(kSandboxDebuggingEnv, "", 1);
-  SANDBOX_ASSERT(Trap::EnableUnsafeTrapsInSigSysHandler() == false);
+  SANDBOX_ASSERT(Trap::Registry()->EnableUnsafeTraps() == false);
   setenv(kSandboxDebuggingEnv, "t", 1);
-  SANDBOX_ASSERT(Trap::EnableUnsafeTrapsInSigSysHandler() == true);
+  SANDBOX_ASSERT(Trap::Registry()->EnableUnsafeTraps() == true);
 }
 
 intptr_t PrctlHandler(const struct arch_seccomp_data& args, void*) {
