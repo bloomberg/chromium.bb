@@ -444,7 +444,7 @@ void UserScriptLoader::OnScriptsLoaded(
   // We've got scripts ready to go.
   shared_memory_.reset(shared_memory.release());
 
-  // If user scripts are comming from a <webview>, will only notify the
+  // If user scripts are coming from a <webview>, will only notify the
   // RenderProcessHost of that <webview>; otherwise will notify all of the
   // RenderProcessHosts.
   if (user_scripts && !user_scripts->empty() &&

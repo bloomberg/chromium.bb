@@ -81,6 +81,7 @@ UserScript::File::~File() {}
 
 UserScript::UserScript()
     : run_location_(DOCUMENT_IDLE),
+      consumer_instance_type_(TAB),
       user_script_id_(-1),
       emulate_greasemonkey_(false),
       match_all_frames_(false),
