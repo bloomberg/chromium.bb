@@ -239,7 +239,7 @@ void ErrorScreen::OnOnlineChecked(const std::string& username, bool success) {
 }
 
 void ErrorScreen::DefaultHideCallback() {
-  if (view_)
+  if (parent_screen_ != OobeUI::SCREEN_UNKNOWN && view_)
     view_->ShowScreen(parent_screen_);
   SetParentScreen(OobeUI::SCREEN_UNKNOWN);
 }

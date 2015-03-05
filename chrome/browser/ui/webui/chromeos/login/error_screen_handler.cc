@@ -46,6 +46,8 @@ void ErrorScreenHandler::Show() {
 }
 
 void ErrorScreenHandler::Hide() {
+  if (model_)
+   model_->OnHide();
 }
 
 void ErrorScreenHandler::Bind(NetworkErrorModel& model) {
