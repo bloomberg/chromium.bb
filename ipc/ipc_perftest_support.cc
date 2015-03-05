@@ -103,8 +103,8 @@ class ChannelReflectorListener : public Listener {
     EXPECT_TRUE(iter.ReadInt64(&time_internal));
     int msgid;
     EXPECT_TRUE(iter.ReadInt(&msgid));
-    base::StringPiece payload;
-    EXPECT_TRUE(iter.ReadStringPiece(&payload));
+    std::string payload;
+    EXPECT_TRUE(iter.ReadString(&payload));
 
     // Include message deserialization in latency.
     base::TimeTicks now = base::TimeTicks::Now();
