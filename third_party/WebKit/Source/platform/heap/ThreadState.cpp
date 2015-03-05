@@ -45,6 +45,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #if ENABLE(GC_PROFILING)
 #include "platform/TracedValue.h"
+#include "wtf/text/StringHash.h"
 #endif
 
 #if OS(WIN)
