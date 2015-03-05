@@ -540,6 +540,15 @@ class CBuildBotTest(cros_test_lib.TestCase):
             test_config.priority in constants.HWTEST_VALID_PRIORITIES,
             '%s has an invalid hwtest priority.' % build_name)
 
+  def testAllBoardsExist(self):
+    """Verifies that all config boards are in _all_boards."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      for board in config['boards']:
+        # pylint: disable=protected-access
+        self.assertIn(board, cbuildbot_config._all_boards,
+                      'Config %s has unknown board %s.' %
+                      (build_name, board))
+
   def testPushImagePaygenDependancies(self):
     """Paygen requires PushImage."""
     for build_name, config in cbuildbot_config.config.iteritems():
@@ -709,6 +718,10 @@ class FindFullTest(cros_test_lib.TestCase):
     assert boards
 
     for b in boards:
+      # TODO(akeshet): Figure out why we have both panther_embedded-minimal
+      # release and panther_embedded-release, and eliminate one of them.
+      if b == 'panther_embedded':
+        continue
       external, internal = cbuildbot_config.FindFullConfigsForBoard(b)
       AtMostOneConfig(b, 'external', external)
       AtMostOneConfig(b, 'internal', internal)

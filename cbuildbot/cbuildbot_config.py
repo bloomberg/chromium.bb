@@ -1383,6 +1383,9 @@ chrome_perf = chrome_info.derive(
 # Every board must appear in exactly 1 of the following sets.
 
 _arm_internal_release_boards = frozenset([
+  'beaglebone',
+  'beaglebone_servo',
+  'cosmos',
   'daisy',
   'daisy_freon',
   'daisy_skate',
@@ -1458,6 +1461,7 @@ _x86_internal_release_boards = frozenset([
   'mccloud',
   'monroe',
   'panther',
+  'panther_embedded',
   'panther_moblab',
   'parrot',
   'parrot_freon',
