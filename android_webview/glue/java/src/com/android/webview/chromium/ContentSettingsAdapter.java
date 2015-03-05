@@ -4,7 +4,6 @@
 
 package com.android.webview.chromium;
 
-import android.util.Log;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebSettings.PluginState;
 import android.webkit.WebSettings.RenderPriority;
@@ -18,9 +17,6 @@ import org.chromium.android_webview.AwSettings;
  */
 @SuppressWarnings("deprecation")
 public class ContentSettingsAdapter extends android.webkit.WebSettings {
-    private static final String LOGTAG = ContentSettingsAdapter.class.getSimpleName();
-    private static final boolean TRACE = false;
-
     private AwSettings mAwSettings;
 
     public ContentSettingsAdapter(AwSettings awSettings) {
@@ -46,7 +42,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setSupportZoom(boolean support) {
-        if (TRACE) Log.d(LOGTAG, "setSupportZoom=" + support);
         mAwSettings.setSupportZoom(support);
     }
 
@@ -57,7 +52,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setBuiltInZoomControls(boolean enabled) {
-        if (TRACE) Log.d(LOGTAG, "setBuiltInZoomControls=" + enabled);
         mAwSettings.setBuiltInZoomControls(enabled);
     }
 
@@ -68,7 +62,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setDisplayZoomControls(boolean enabled) {
-        if (TRACE) Log.d(LOGTAG, "setDisplayZoomControls=" + enabled);
         mAwSettings.setDisplayZoomControls(enabled);
     }
 
@@ -79,7 +72,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setAllowFileAccess(boolean allow) {
-        if (TRACE) Log.d(LOGTAG, "setAllowFileAccess=" + allow);
         mAwSettings.setAllowFileAccess(allow);
     }
 
@@ -90,7 +82,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setAllowContentAccess(boolean allow) {
-        if (TRACE) Log.d(LOGTAG, "setAllowContentAccess=" + allow);
         mAwSettings.setAllowContentAccess(allow);
     }
 
@@ -101,7 +92,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setLoadWithOverviewMode(boolean overview) {
-        if (TRACE) Log.d(LOGTAG, "setLoadWithOverviewMode=" + overview);
         mAwSettings.setLoadWithOverviewMode(overview);
     }
 
@@ -112,7 +102,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setAcceptThirdPartyCookies(boolean accept) {
-        if (TRACE) Log.d(LOGTAG, "setAcceptThirdPartyCookies=" + accept);
         mAwSettings.setAcceptThirdPartyCookies(accept);
     }
 
@@ -145,7 +134,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setSaveFormData(boolean save) {
-        if (TRACE) Log.d(LOGTAG, "setSaveFormData=" + save);
         mAwSettings.setSaveFormData(save);
     }
 
@@ -167,7 +155,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setTextZoom(int textZoom) {
-        if (TRACE) Log.d(LOGTAG, "setTextZoom=" + textZoom);
         mAwSettings.setTextZoom(textZoom);
     }
 
@@ -178,15 +165,12 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setDefaultZoom(ZoomDensity zoom) {
-        if (zoom != ZoomDensity.MEDIUM) {
-            Log.w(LOGTAG, "setDefaultZoom not supported, zoom=" + zoom);
-        }
+        mAwSettings.setDefaultZoom(zoom);
     }
 
     @Override
     public ZoomDensity getDefaultZoom() {
-        // Intentional no-op.
-        return ZoomDensity.MEDIUM;
+        return mAwSettings.getDefaultZoom();
     }
 
     @Override
@@ -202,12 +186,7 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setUserAgent(int ua) {
-        // Minimal implementation for backwards compatibility: just supports resetting to default.
-        if (ua == 0) {
-            setUserAgentString(null);
-        } else {
-            Log.w(LOGTAG, "setUserAgent not supported, ua=" + ua);
-        }
+        mAwSettings.setUserAgent(ua);
     }
 
     @Override
@@ -218,7 +197,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setUseWideViewPort(boolean use) {
-        if (TRACE) Log.d(LOGTAG, "setUseWideViewPort=" + use);
         mAwSettings.setUseWideViewPort(use);
     }
 
@@ -229,7 +207,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setSupportMultipleWindows(boolean support) {
-        if (TRACE) Log.d(LOGTAG, "setSupportMultipleWindows=" + support);
         mAwSettings.setSupportMultipleWindows(support);
     }
 
@@ -240,7 +217,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setLayoutAlgorithm(LayoutAlgorithm l) {
-        if (TRACE) Log.d(LOGTAG, "setLayoutAlgorithm=" + l);
         mAwSettings.setLayoutAlgorithm(l);
     }
 
@@ -251,7 +227,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setStandardFontFamily(String font) {
-        if (TRACE) Log.d(LOGTAG, "setStandardFontFamily=" + font);
         mAwSettings.setStandardFontFamily(font);
     }
 
@@ -262,7 +237,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setFixedFontFamily(String font) {
-        if (TRACE) Log.d(LOGTAG, "setFixedFontFamily=" + font);
         mAwSettings.setFixedFontFamily(font);
     }
 
@@ -273,7 +247,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setSansSerifFontFamily(String font) {
-        if (TRACE) Log.d(LOGTAG, "setSansSerifFontFamily=" + font);
         mAwSettings.setSansSerifFontFamily(font);
     }
 
@@ -284,7 +257,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setSerifFontFamily(String font) {
-        if (TRACE) Log.d(LOGTAG, "setSerifFontFamily=" + font);
         mAwSettings.setSerifFontFamily(font);
     }
 
@@ -295,7 +267,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setCursiveFontFamily(String font) {
-        if (TRACE) Log.d(LOGTAG, "setCursiveFontFamily=" + font);
         mAwSettings.setCursiveFontFamily(font);
     }
 
@@ -306,7 +277,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setFantasyFontFamily(String font) {
-        if (TRACE) Log.d(LOGTAG, "setFantasyFontFamily=" + font);
         mAwSettings.setFantasyFontFamily(font);
     }
 
@@ -317,7 +287,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setMinimumFontSize(int size) {
-        if (TRACE) Log.d(LOGTAG, "setMinimumFontSize=" + size);
         mAwSettings.setMinimumFontSize(size);
     }
 
@@ -328,7 +297,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setMinimumLogicalFontSize(int size) {
-        if (TRACE) Log.d(LOGTAG, "setMinimumLogicalFontSize=" + size);
         mAwSettings.setMinimumLogicalFontSize(size);
     }
 
@@ -339,7 +307,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setDefaultFontSize(int size) {
-        if (TRACE) Log.d(LOGTAG, "setDefaultFontSize=" + size);
         mAwSettings.setDefaultFontSize(size);
     }
 
@@ -350,7 +317,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setDefaultFixedFontSize(int size) {
-        if (TRACE) Log.d(LOGTAG, "setDefaultFixedFontSize=" + size);
         mAwSettings.setDefaultFixedFontSize(size);
     }
 
@@ -361,7 +327,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setLoadsImagesAutomatically(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setLoadsImagesAutomatically=" + flag);
         mAwSettings.setLoadsImagesAutomatically(flag);
     }
 
@@ -372,7 +337,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setBlockNetworkImage(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setBlockNetworkImage=" + flag);
         mAwSettings.setImagesEnabled(!flag);
     }
 
@@ -383,7 +347,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setBlockNetworkLoads(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setBlockNetworkLoads=" + flag);
         mAwSettings.setBlockNetworkLoads(flag);
     }
 
@@ -394,31 +357,26 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setJavaScriptEnabled(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setJavaScriptEnabled=" + flag);
         mAwSettings.setJavaScriptEnabled(flag);
     }
 
     @Override
     public void setAllowUniversalAccessFromFileURLs(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setAllowUniversalAccessFromFileURLs=" + flag);
         mAwSettings.setAllowUniversalAccessFromFileURLs(flag);
     }
 
     @Override
     public void setAllowFileAccessFromFileURLs(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setAllowFileAccessFromFileURLs=" + flag);
         mAwSettings.setAllowFileAccessFromFileURLs(flag);
     }
 
     @Override
     public synchronized void setPluginsEnabled(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setPluginsEnabled=" + flag);
         mAwSettings.setPluginsEnabled(flag);
     }
 
     @Override
     public synchronized void setPluginState(PluginState state) {
-        if (TRACE) Log.d(LOGTAG, "setPluginState=" + state);
         mAwSettings.setPluginState(state);
     }
 
@@ -434,13 +392,11 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setAppCacheEnabled(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setAppCacheEnabled=" + flag);
         mAwSettings.setAppCacheEnabled(flag);
     }
 
     @Override
     public synchronized void setAppCachePath(String appCachePath) {
-        if (TRACE) Log.d(LOGTAG, "setAppCachePath=" + appCachePath);
         mAwSettings.setAppCachePath(appCachePath);
     }
 
@@ -451,13 +407,11 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setDatabaseEnabled(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setDatabaseEnabled=" + flag);
         mAwSettings.setDatabaseEnabled(flag);
     }
 
     @Override
     public synchronized void setDomStorageEnabled(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setDomStorageEnabled=" + flag);
         mAwSettings.setDomStorageEnabled(flag);
     }
 
@@ -479,7 +433,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setGeolocationEnabled(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setGeolocationEnabled=" + flag);
         mAwSettings.setGeolocationEnabled(flag);
     }
 
@@ -510,7 +463,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setJavaScriptCanOpenWindowsAutomatically(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setJavaScriptCanOpenWindowsAutomatically=" + flag);
         mAwSettings.setJavaScriptCanOpenWindowsAutomatically(flag);
     }
 
@@ -521,7 +473,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setDefaultTextEncodingName(String encoding) {
-        if (TRACE) Log.d(LOGTAG, "setDefaultTextEncodingName=" + encoding);
         mAwSettings.setDefaultTextEncodingName(encoding);
     }
 
@@ -532,7 +483,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setUserAgentString(String ua) {
-        if (TRACE) Log.d(LOGTAG, "setUserAgentString=" + ua);
         mAwSettings.setUserAgentString(ua);
     }
 
@@ -543,7 +493,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setNeedInitialFocus(boolean flag) {
-        if (TRACE) Log.d(LOGTAG, "setNeedInitialFocus=" + flag);
         mAwSettings.setShouldFocusFirstNode(flag);
     }
 
@@ -554,7 +503,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setCacheMode(int mode) {
-        if (TRACE) Log.d(LOGTAG, "setCacheMode=" + mode);
         mAwSettings.setCacheMode(mode);
     }
 
@@ -565,7 +513,6 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setMediaPlaybackRequiresUserGesture(boolean require) {
-        if (TRACE) Log.d(LOGTAG, "setMediaPlaybackRequiresUserGesture=" + require);
         mAwSettings.setMediaPlaybackRequiresUserGesture(require);
     }
 
