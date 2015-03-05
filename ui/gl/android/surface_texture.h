@@ -46,9 +46,6 @@ class GL_EXPORT SurfaceTexture
   // texture image set by the most recent call to updateTexImage.
   void GetTransformMatrix(float mtx[16]);
 
-  // Set the default size of the image buffers.
-  void SetDefaultBufferSize(int width, int height);
-
   // Attach the SurfaceTexture to the texture currently bound to
   // GL_TEXTURE_EXTERNAL_OES.
   void AttachToGLContext();

@@ -4,6 +4,7 @@
 
 package org.chromium.ui.gfx;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -57,6 +58,7 @@ public class DeviceDisplayInfo {
     /**
      * @return Real physical display height in physical pixels.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @CalledByNative
     public int getPhysicalDisplayHeight() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -69,6 +71,7 @@ public class DeviceDisplayInfo {
     /**
      * @return Real physical display width in physical pixels.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @CalledByNative
     public int getPhysicalDisplayWidth() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {

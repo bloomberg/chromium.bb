@@ -87,19 +87,6 @@ void SurfaceTexture::GetTransformMatrix(float mtx[16]) {
   env->ReleaseFloatArrayElements(jmatrix.obj(), elements, JNI_ABORT);
 }
 
-void SurfaceTexture::SetDefaultBufferSize(int width, int height) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  if (width > 0 && height > 0) {
-    Java_SurfaceTexturePlatformWrapper_setDefaultBufferSize(
-        env, j_surface_texture_.obj(), static_cast<jint>(width),
-        static_cast<jint>(height));
-  } else {
-    LOG(WARNING) << "Not setting surface texture buffer size - "
-                    "width or height is 0";
-  }
-}
-
 void SurfaceTexture::AttachToGLContext() {
   if (GlContextMethodsAvailable()) {
     int texture_id;

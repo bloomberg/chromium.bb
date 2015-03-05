@@ -72,13 +72,6 @@ public class ApiCompatibilityUtils {
     }
 
     /**
-     * @return True if the running version of the Android supports HTML clipboard.
-     */
-    public static boolean isHTMLClipboardSupported() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
-    }
-
-    /**
      * @see android.view.View#setLayoutDirection(int)
      */
     public static void setLayoutDirection(View view, int layoutDirection) {

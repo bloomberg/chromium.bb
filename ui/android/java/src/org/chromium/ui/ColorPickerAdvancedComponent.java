@@ -4,6 +4,7 @@
 
 package org.chromium.ui;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
@@ -82,6 +83,7 @@ public class ColorPickerAdvancedComponent {
      *
      * @param newColors The set of colors representing the interpolation points for the gradient.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void setGradientColors(int[] newColors) {
         mGradientColors = newColors.clone();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
