@@ -23,19 +23,9 @@ var AUTO_SIZE_ATTRIBUTES = {
 
 function ExtensionOptionsImpl(extensionoptionsElement) {
   GuestViewContainer.call(this, extensionoptionsElement, 'extensionoptions');
-
-  // on* Event handlers.
-  this.eventHandlers = {};
-
-  // setupEventProperty is normally called in extension_options_events.js to
-  // register events, but the createfailed event is registered here because
-  // the event is fired from here instead of through
-  // extension_options_events.js.
-  this.setupEventProperty('createfailed');
-  new ExtensionOptionsEvents(this, this.viewInstanceId);
-
   this.autosizeDeferred = false;
 
+  new ExtensionOptionsEvents(this);
   this.setupElementProperties();
 };
 
@@ -88,11 +78,6 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
       this.attachWindow();
     }
   }.bind(this));
-};
-
-ExtensionOptionsImpl.prototype.dispatchEvent =
-    function(extensionOptionsEvent) {
-  return this.element.dispatchEvent(extensionOptionsEvent);
 };
 
 ExtensionOptionsImpl.prototype.handleAttributeMutation =
@@ -165,27 +150,6 @@ ExtensionOptionsImpl.prototype.resize =
       'width': parseInt(this.maxwidth || 0),
       'height': parseInt(this.maxheight || 0)
     }
-  });
-};
-
-// Adds an 'on<event>' property on the view, which can be used to set/unset
-// an event handler.
-ExtensionOptionsImpl.prototype.setupEventProperty = function(eventName) {
-  var propertyName = 'on' + eventName.toLowerCase();
-  var element = this.element;
-  Object.defineProperty(element, propertyName, {
-    get: function() {
-      return this.eventHandlers[propertyName];
-    }.bind(this),
-    set: function(value) {
-      if (this.eventHandlers[propertyName])
-        element.removeEventListener(
-            eventName, this.eventHandlers[propertyName]);
-      this.eventHandlers[propertyName] = value;
-      if (value)
-        element.addEventListener(eventName, value);
-    }.bind(this),
-    enumerable: true
   });
 };
 

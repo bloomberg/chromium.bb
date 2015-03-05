@@ -159,10 +159,6 @@ WebViewImpl.prototype.onFrameNameChanged = function(name) {
   this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValueIgnoreMutation(name);
 };
 
-WebViewImpl.prototype.dispatchEvent = function(webViewEvent) {
-  return this.element.dispatchEvent(webViewEvent);
-};
-
 // Updates state upon loadcommit.
 WebViewImpl.prototype.onLoadCommit = function(
     baseUrlForDataUrl, currentEntryIndex, entryCount,

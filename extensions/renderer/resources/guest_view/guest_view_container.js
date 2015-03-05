@@ -129,6 +129,10 @@ GuestViewContainer.prototype.buildParams = function() {
   return params;
 };
 
+GuestViewContainer.prototype.dispatchEvent = function(event) {
+  return this.element.dispatchEvent(event);
+}
+
 // Implemented by the specific view type, if needed.
 GuestViewContainer.prototype.buildContainerParams = function() { return {}; };
 GuestViewContainer.prototype.handleAttributeMutation = function() {};

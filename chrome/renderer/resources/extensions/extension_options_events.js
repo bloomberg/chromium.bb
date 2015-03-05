@@ -2,27 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var EventBindings = require('event_bindings');
+var CreateEvent = require('guestViewEvents').CreateEvent;
+var GuestViewEvents = require('guestViewEvents').GuestViewEvents;
 
-var CreateEvent = function(name) {
-  var eventOpts = {supportsListeners: true, supportsFilters: true};
-  return new EventBindings.Event(name, undefined, eventOpts);
-};
+function ExtensionOptionsEvents(extensionOptionsImpl) {
+  GuestViewEvents.call(this, extensionOptionsImpl);
 
-var EXTENSION_OPTIONS_EVENTS = {
+  // setupEventProperty is normally called automatically, but the 'createfailed'
+  // event is registered here because the event is fired from
+  // ExtensionOptionsImpl instead of in response to an extension event.
+  this.setupEventProperty('createfailed');
+}
+
+ExtensionOptionsEvents.prototype.__proto__ = GuestViewEvents.prototype;
+
+// A dictionary of <extensionoptions> extension events to be listened for. This
+// dictionary augments |GuestViewEvents.EVENTS| in guest_view_events.js. See the
+// documentation there for details.
+ExtensionOptionsEvents.EVENTS = {
   'close': {
-    evt: CreateEvent('extensionOptionsInternal.onClose'),
-    fields: []
+    evt: CreateEvent('extensionOptionsInternal.onClose')
   },
   'load': {
-    evt: CreateEvent('extensionOptionsInternal.onLoad'),
-    fields: []
+    evt: CreateEvent('extensionOptionsInternal.onLoad')
   },
   'sizechanged': {
     evt: CreateEvent('extensionOptionsInternal.onSizeChanged'),
-    customHandler: function(handler, event, extensionOptionsEvent) {
-      handler.handleSizeChangedEvent(event, extensionOptionsEvent);
-    },
+    handler: 'handleSizeChangedEvent',
     fields:['newWidth', 'newHeight', 'oldWidth', 'oldHeight']
   },
   'preferredsizechanged': {
@@ -31,52 +37,17 @@ var EXTENSION_OPTIONS_EVENTS = {
   }
 }
 
-/**
- * @constructor
- */
-function ExtensionOptionsEvents(extensionOptionsInternal, viewInstanceId) {
-  this.extensionOptionsInternal = extensionOptionsInternal;
-  this.viewInstanceId = viewInstanceId;
-  this.setup();
-}
-
-// Sets up events.
-ExtensionOptionsEvents.prototype.setup = function() {
-  for (var eventName in EXTENSION_OPTIONS_EVENTS) {
-    this.setupEvent(eventName, EXTENSION_OPTIONS_EVENTS[eventName]);
-  }
+ExtensionOptionsEvents.prototype.getEvents = function() {
+  return ExtensionOptionsEvents.EVENTS;
 };
 
-ExtensionOptionsEvents.prototype.setupEvent = function(name, info) {
-  var self = this;
-  info.evt.addListener(function(e) {
-    var details = {bubbles:true};
-    if (info.cancelable)
-      details.cancelable = true;
-    var extensionOptionsEvent = new Event(name, details);
-    $Array.forEach(info.fields, function(field) {
-      if (e.hasOwnProperty(field)) {
-        extensionOptionsEvent[field] = e[field];
-      }
-    });
-    if (info.customHandler) {
-      info.customHandler(self, e, extensionOptionsEvent);
-      return;
-    }
-    self.extensionOptionsInternal.dispatchEvent(extensionOptionsEvent);
-  }, {instanceId: self.viewInstanceId});
-
-  this.extensionOptionsInternal.setupEventProperty(name);
-};
-
-ExtensionOptionsEvents.prototype.handleSizeChangedEvent = function(
-    event, extensionOptionsEvent) {
-  this.extensionOptionsInternal.onSizeChanged(extensionOptionsEvent.newWidth,
-                                              extensionOptionsEvent.newHeight,
-                                              extensionOptionsEvent.oldWidth,
-                                              extensionOptionsEvent.oldHeight);
-  this.extensionOptionsInternal.dispatchEvent(extensionOptionsEvent);
+ExtensionOptionsEvents.prototype.handleSizeChangedEvent = function(event,
+                                                                   eventName) {
+  this.view.onSizeChanged(
+      event.newWidth, event.newHeight, event.oldWidth, event.oldHeight);
+  var extensionOptionsEvent = this.makeDomEvent(event, eventName);
+  this.view.dispatchEvent(extensionOptionsEvent);
 }
 
+// Exports.
 exports.ExtensionOptionsEvents = ExtensionOptionsEvents;
-exports.CreateEvent = CreateEvent;

@@ -5,8 +5,9 @@
 // This module implements chrome-specific <webview> API.
 
 var ChromeWebView = require('chromeWebViewInternal').ChromeWebView;
-var CreateEvent = require('webViewEvents').CreateEvent;
+var CreateEvent = require('guestViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
+var WebViewEvents = require('webViewEvents').WebViewEvents;
 var WebViewImpl = require('webView').WebViewImpl;
 
 var CHROME_WEB_VIEW_EVENTS = {
@@ -18,14 +19,6 @@ var CHROME_WEB_VIEW_EVENTS = {
     },
     fields: ['items']
   }
-};
-
-/**
- * Implemented when the ChromeWebView API is available.
- * @private
- */
-WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {
-  return CHROME_WEB_VIEW_EVENTS;
 };
 
 /**
@@ -41,3 +34,10 @@ WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   var params = undefined;
   ChromeWebView.showContextMenu(this.guest.getId(), requestId, params);
 };
+
+// Exposes |CHROME_WEB_VIEW_EVENTS| when the ChromeWebView API is available.
+(function() {
+  for (var eventName in CHROME_WEB_VIEW_EVENTS) {
+    WebViewEvents.EVENTS[eventName] = CHROME_WEB_VIEW_EVENTS[eventName];
+  }
+})();

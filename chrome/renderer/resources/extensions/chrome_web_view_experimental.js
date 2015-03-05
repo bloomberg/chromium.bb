@@ -13,7 +13,7 @@ var ChromeWebViewSchema =
     requireNative('schema_registry').GetSchema('chromeWebViewInternal');
 var ContextMenusSchema =
     requireNative('schema_registry').GetSchema('contextMenus');
-var CreateEvent = require('webViewEvents').CreateEvent;
+var CreateEvent = require('guestViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
 var idGeneratorNatives = requireNative('id_generator');
 var MessagingNatives = requireNative('messaging_natives');
