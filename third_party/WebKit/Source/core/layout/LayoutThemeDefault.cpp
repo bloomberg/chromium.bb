@@ -132,15 +132,21 @@ Color LayoutThemeDefault::systemColor(CSSValueID cssValueId) const
 // Use the Windows style sheets to match their metrics.
 String LayoutThemeDefault::extraDefaultStyleSheet()
 {
+    String legacyOptionStyle;
+    if (!RuntimeEnabledFeatures::htmlPopupMenuEnabled()) {
+        // Option font must be inherited because we depend on computing the size
+        // of the <select> based on the size of the options, and they must use
+        // the same font for that computation to be correct.
+        legacyOptionStyle = "option { font: inherit !important; }";
+    }
     return LayoutTheme::extraDefaultStyleSheet()
         + loadResourceAsASCIIString("themeWin.css")
         + loadResourceAsASCIIString("themeChromiumSkia.css")
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
         + loadResourceAsASCIIString("themeChromium.css")
-        + loadResourceAsASCIIString("themeInputMultipleFields.css");
-#else
-        + loadResourceAsASCIIString("themeChromium.css");
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+        + loadResourceAsASCIIString("themeInputMultipleFields.css")
 #endif
+        + legacyOptionStyle;
 }
 
 String LayoutThemeDefault::extraQuirksStyleSheet()

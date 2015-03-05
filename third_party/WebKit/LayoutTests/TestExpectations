@@ -27,6 +27,9 @@ crbug.com/461283 [ Mac ] fast/workers/worker-multi-startup.html [ Pass Crash ]
 crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure NeedsManualRebaseline ]
 
 crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure NeedsManualRebaseline ]
+crbug.com/463810 fast/forms/select/listbox-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/463810 fast/forms/select/popup-menu-appearance-styled.html [ NeedsRebaseline ]
+crbug.com/463810 fast/forms/select/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 

@@ -155,7 +155,6 @@ void PopupMenuImpl::addElementStyle(HTMLElement& element, SharedBuffer* data)
     addProperty("display", String(style->display() == NONE ? "none" : "block"), data);
     addProperty("direction", String(style->direction() == RTL ? "rtl" : "ltr"), data);
     addProperty("unicodeBidi", String(isOverride(style->unicodeBidi()) ? "bidi-override" : "normal"), data);
-    addProperty("zoom", serializeForNumberType(style->effectiveZoom()), data);
     PagePopupClient::addString("},\n", data);
 }
 

@@ -121,13 +121,6 @@ select[size][multiple] {
     border: 1px solid #a9a9a9;
 }
 
-/* Option font must be inherited because we depend on computing the size of the
-   <select> based on the size of the options, and they must use the same font
-   for that computation to be correct */
-option {
-    font: inherit !important;
-}
-
 textarea {
     font-family: monospace;
     /* Same as native_theme_base. */
