@@ -13,6 +13,7 @@ import android.widget.PopupWindow;
 import org.chromium.ui.DropdownAdapter;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindow;
+import org.chromium.ui.R;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
 import java.util.ArrayList;
@@ -68,6 +69,8 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         setOnItemClickListener(this);
         setOnDismissListener(this);
         disableHideOnOutsideTap();
+        setContentDescriptionForAccessibility(
+                mContext.getString(R.string.autofill_popup_content_description));
     }
 
     /**

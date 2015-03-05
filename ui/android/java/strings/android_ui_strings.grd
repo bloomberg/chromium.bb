@@ -224,6 +224,14 @@
         Clear
       </message>
 
+      <!-- Accessibility content description -->
+      <message name="IDS_AUTOFILL_POPUP_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill popup is shown.">
+        Showing autofill popup
+      </message>
+      <message name="IDS_PASSWORD_GENERATION_POPUP_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the password generation popup is shown.">
+        Showing password generation popup
+      </message>
+
     </messages>
   </release>
 </grit>

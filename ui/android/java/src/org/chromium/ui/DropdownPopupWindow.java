@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
@@ -36,6 +37,7 @@ public class DropdownPopupWindow extends ListPopupWindow {
     private boolean mRtl;
     private OnLayoutChangeListener mLayoutChangeListener;
     private PopupWindow.OnDismissListener mOnDismissListener;
+    private CharSequence mDescription;
     ListAdapter mAdapter;
 
     /**
@@ -130,10 +132,15 @@ public class DropdownPopupWindow extends ListPopupWindow {
         }
         mViewAndroidDelegate.setAnchorViewPosition(mAnchorView, mAnchorX, mAnchorY, mAnchorWidth,
                 mAnchorHeight);
+        boolean wasShowing = isShowing();
         super.show();
         getListView().setDividerHeight(0);
         ApiCompatibilityUtils.setLayoutDirection(getListView(),
                 mRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        if (!wasShowing) {
+            getListView().setContentDescription(mDescription);
+            getListView().sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
+        }
     }
 
     @Override
@@ -143,7 +150,7 @@ public class DropdownPopupWindow extends ListPopupWindow {
 
     /**
      * Sets the text direction in the dropdown. Should be called before show().
-     * @param isRtl If true, then dropdown text direciton is right to left.
+     * @param isRtl If true, then dropdown text direction is right to left.
      */
     public void setRtl(boolean isRtl) {
         mRtl = isRtl;
@@ -167,6 +174,15 @@ public class DropdownPopupWindow extends ListPopupWindow {
                     "ListPopupWindow.setForceIgnoreOutsideTouch not found",
                     e);
         }
+    }
+
+    /**
+     * Sets the content description to be announced by accessibility services when the dropdown is
+     * shown.
+     * @param description The description of the content to be announced.
+     */
+    public void setContentDescriptionForAccessibility(CharSequence description) {
+        mDescription = description;
     }
 
     /**

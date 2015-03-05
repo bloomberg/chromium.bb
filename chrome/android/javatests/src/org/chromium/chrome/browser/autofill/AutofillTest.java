@@ -38,7 +38,7 @@ public class AutofillTest extends ChromeShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ChromeShellActivity activity = launchChromeShellWithBlankPage();
+        final ChromeShellActivity activity = launchChromeShellWithBlankPage();
         assertNotNull(activity);
         waitForActiveShellToBeDoneLoading();
 
@@ -50,9 +50,7 @@ public class AutofillTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mAutofillPopup = new AutofillPopup(mWindowAndroid.getActivity().get(),
-                        viewDelegate,
-                        mMockAutofillCallback);
+                mAutofillPopup = new AutofillPopup(activity, viewDelegate, mMockAutofillCallback);
                 mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false);
                 mAutofillPopup.setAnchorRect(50, 500, 500, 50);
             }
