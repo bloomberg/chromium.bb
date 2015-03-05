@@ -288,6 +288,7 @@ const char kChromeUIMobileSetupHost[] = "mobilesetup";
 const char kChromeUINfcDebugHost[] = "nfc-debug";
 const char kChromeUINetworkHost[] = "network";
 const char kChromeUIOobeHost[] = "oobe";
+const char kChromeUIOobeMdHost[] = "oobe-md";
 const char kChromeUIOSCreditsHost[] = "os-credits";
 const char kChromeUIPowerHost[] = "power";
 const char kChromeUIProvidedFileSystemsHost[] = "provided-file-systems";
@@ -651,6 +652,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUILoginHost,
   kChromeUINetworkHost,
   kChromeUIOobeHost,
+  kChromeUIOobeMdHost,
   kChromeUIOSCreditsHost,
   kChromeUIPowerHost,
   kChromeUIProxySettingsHost,

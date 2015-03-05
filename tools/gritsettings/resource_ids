@@ -215,6 +215,9 @@
   "ui/login/login_resources.grd": {
     "includes": [28300],
   },
+  "ui/oobe/oobe_resources.grd": {
+    "includes": [28310],
+  },
   "chrome/browser/resources/translate_internals_resources.grd": {
     "includes": [28500],
   },

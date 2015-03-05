@@ -110,7 +110,7 @@ const char kLoginURL[] = "chrome://oobe/login";
 const char kOobeURL[] = "chrome://oobe/oobe";
 
 // URL which corresponds to the new implementation of OOBE WebUI.
-const char kNewOobeURL[] = "chrome://oobe/new-oobe";
+const char kNewOobeURL[] = "chrome://oobe-md/";
 
 // URL which corresponds to the user adding WebUI.
 const char kUserAddingURL[] = "chrome://oobe/user-adding";
@@ -273,6 +273,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       startup_sound_played_(false),
       startup_sound_honors_spoken_feedback_(false),
       is_observing_keyboard_(false),
+      is_new_oobe_(false),
       pointer_factory_(this),
       animation_weak_ptr_factory_(this) {
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
@@ -498,8 +499,8 @@ void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
   VLOG(1) << "Login WebUI >> wizard";
 
   if (!login_window_) {
-    LoadURL(StartupUtils::IsNewOobeActivated() ? GURL(kNewOobeURL)
-                                               : GURL(kOobeURL));
+    is_new_oobe_ = StartupUtils::IsNewOobeActivated();
+    LoadURL(is_new_oobe_ ? GURL(kNewOobeURL) : GURL(kOobeURL));
   }
 
   DVLOG(1) << "Starting wizard, first_screen_name: " << first_screen_name;
@@ -509,6 +510,9 @@ void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
   // is done before new controller creation.
   wizard_controller_.reset();
   wizard_controller_.reset(CreateWizardController());
+
+  if (is_new_oobe_)
+    return;
 
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);

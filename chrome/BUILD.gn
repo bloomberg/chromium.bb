@@ -487,7 +487,9 @@ repack("packed_extra_resources") {
   }
   if (is_chromeos) {
     sources += [ "$root_gen_dir/ui/file_manager/file_manager_resources.pak" ]
+    sources += [ "$root_gen_dir/ui/oobe/oobe_resources.pak" ]
     deps += [ "//ui/file_manager:resources" ]
+    deps += [ "//ui/oobe:resources" ]
   }
   if (enable_extensions) {
     sources += [

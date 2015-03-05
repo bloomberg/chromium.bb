@@ -1,0 +1,48 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/webui_generator/generator/wug.gni")
+import("//tools/grit/grit_rule.gni")
+
+wug("oobe_wug_generated") {
+  source = "declarations/oobe.json"
+}
+
+grit("resources") {
+  source = "oobe_resources.grd"
+  outputs = [
+    "grit/oobe_resources.h",
+    "grit/oobe_resources_map.cc",
+    "grit/oobe_resources_map.h",
+    "oobe_resources.pak",
+    "oobe_resources.rc",
+  ]
+}
+
+group("oobe_gen") {
+  public_deps = [
+    ":oobe_wug_generated",
+    "//components/webui_generator",
+  ]
+}
+
+component("oobe") {
+  sources = [
+    "oobe_export.h",
+    "oobe_md_ui.cc",
+    "oobe_md_ui.h",
+  ]
+
+  defines = [ "OOBE_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    ":resources",
+    ":oobe_gen",
+  ]
+
+  public_deps = [
+    "//content/public/browser",
+  ]
+}

@@ -74,8 +74,7 @@ const char* kKnownDisplayTypes[] = {
   OobeUI::kLoginDisplay,
   OobeUI::kLockDisplay,
   OobeUI::kUserAddingDisplay,
-  OobeUI::kAppLaunchSplashDisplay,
-  OobeUI::kNewOobeDisplay
+  OobeUI::kAppLaunchSplashDisplay
 };
 
 const char kStringsJSPath[] = "strings.js";
@@ -90,24 +89,10 @@ const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
 
-content::WebUIDataSource* CreateNewOobeUIDataSource(
-    const base::DictionaryValue& localized_strings) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIOobeHost);
-  source->AddLocalizedStrings(localized_strings);
-  source->SetJsonPath(kStringsJSPath);
-  source->SetDefaultResource(IDR_NEW_OOBE_HTML);
-  source->AddResourcePath(kOobeJSPath, IDR_NEW_OOBE_JS);
-  return source;
-}
-
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
     const base::DictionaryValue& localized_strings,
     const std::string& display_type) {
-  if (display_type == OobeUI::kNewOobeDisplay) {
-    return CreateNewOobeUIDataSource(localized_strings);
-  }
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOobeHost);
   source->AddLocalizedStrings(localized_strings);
@@ -168,7 +153,6 @@ const char OobeUI::kLoginDisplay[] = "login";
 const char OobeUI::kLockDisplay[] = "lock";
 const char OobeUI::kUserAddingDisplay[] = "user-adding";
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
-const char OobeUI::kNewOobeDisplay[] = "new-oobe";
 
 // static
 const char OobeUI::kScreenOobeHIDDetection[] = "hid-detection";
@@ -243,7 +227,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(update_screen_handler_);
   network_dropdown_handler_->AddObserver(update_screen_handler_);
 
-  if (display_type_ == kOobeDisplay || display_type_ == kNewOobeDisplay) {
+  if (display_type_ == kOobeDisplay) {
     NetworkScreenHandler* network_screen_handler =
         new NetworkScreenHandler(core_handler_);
     network_view_ = network_screen_handler;

@@ -72,6 +72,7 @@ source_set("chromeos") {
     # be generated before code in this target can start building.
     "//components/strings",
     "//components/variations",
+    "//components/webui_generator",
     "//content/public/browser",
     "//content/public/common",
     "//crypto",
@@ -114,6 +115,8 @@ source_set("chromeos") {
     "//ui/events:dom4_keycode_converter",
     "//ui/file_manager",
     "//ui/message_center",
+    "//ui/oobe:oobe",
+    "//ui/oobe:oobe_gen",
     "//ui/surface",
     "//ui/views",
     "//ui/views/controls/webview",

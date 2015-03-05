@@ -24,6 +24,7 @@
       ['chromeos==1', {
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/ui/file_manager/file_manager_resources.pak',
+          '<(SHARED_INTERMEDIATE_DIR)/ui/oobe/oobe_resources.pak',
         ],
       }],
       ['OS != "ios"', {

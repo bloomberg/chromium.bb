@@ -308,6 +308,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // The bounds of the virtual keyboard.
   gfx::Rect keyboard_bounds_;
 
+  // True if the host is showing a new version of OOBE screen.
+  bool is_new_oobe_;
+
   base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
   base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;
 

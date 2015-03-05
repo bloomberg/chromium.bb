@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/oobe_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="grit/oobe_resources_map.cc" type="resource_file_map_source" />
+    <output filename="grit/oobe_resources_map.h" type="resource_map_header" />
+    <output filename="oobe_resources.pak" type="data_package" />
+    <output filename="oobe_resources.rc" type="rc_all" />
+  </outputs>
+  <release seq="1">
+    <includes>
+      <if expr="chromeos">
+        <include name="IDR_OOBE_UI_HTML" file="resources/oobe_ui.html" type="chrome_html" />
+        <include name="IDR_OOBE_UI_JS" file="resources/oobe_ui.js" type="chrome_html" />
+        <include name="IDR_OOBE_ELEMENT_HTML" file="resources/oobe-element.html" type="chrome_html" />
+        <include name="IDR_OOBE_ELEMENT_JS" file="resources/oobe-element.js" type="chrome_html" />
+      </if>
+    </includes>
+  </release>
+</grit>
