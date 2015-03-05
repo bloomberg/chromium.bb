@@ -30,6 +30,7 @@ class DebugDaemonClient;
 class EasyUnlockClient;
 class LeadershipDaemonManagerClient;
 class LorgnetteManagerClient;
+class MetronomeClient;
 class ShillDeviceClient;
 class ShillIPConfigClient;
 class ShillManagerClient;
@@ -85,6 +86,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     UPDATE_ENGINE =        1 << 18,
     PEER_DAEMON =          1 << 19,
     LEADERSHIP_DAEMON =    1 << 20,
+    METRONOME =            1 << 21,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -174,6 +176,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
   LorgnetteManagerClient* lorgnette_manager_client() {
     return lorgnette_manager_client_.get();
   }
+
+  MetronomeClient* metronome_client() { return metronome_client_.get(); }
 
   ShillDeviceClient* shill_device_client() {
     return shill_device_client_.get();
@@ -289,6 +293,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
   scoped_ptr<EasyUnlockClient> easy_unlock_client_;
   scoped_ptr<LeadershipDaemonManagerClient> leadership_daemon_manager_client_;
   scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
+  scoped_ptr<MetronomeClient> metronome_client_;
   scoped_ptr<PeerDaemonManagerClient> peer_daemon_manager_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;

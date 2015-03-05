@@ -296,6 +296,9 @@ const char kForceFirstRunUI[] = "force-first-run-ui";
 // Enables testing for auto update UI.
 const char kTestAutoUpdateUI[] = "test-auto-update-ui";
 
+// Enables testing Metronome client with a periodic timer.
+const char kTestMetronomeTimer[] = "test-metronome-timer";
+
 // Disable memory pressure checks on ChromeOS.
 const char kDisableMemoryPressureSystemChromeOS[] =
     "disable-memory-pressure-chromeos";
