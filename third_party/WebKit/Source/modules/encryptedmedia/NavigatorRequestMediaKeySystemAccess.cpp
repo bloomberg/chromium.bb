@@ -29,7 +29,7 @@ namespace blink {
 
 namespace {
 
-    static WebVector<WebEncryptedMediaInitDataType> convertInitDataTypes(const Vector<String>& initDataTypes)
+static WebVector<WebEncryptedMediaInitDataType> convertInitDataTypes(const Vector<String>& initDataTypes)
 {
     WebVector<WebEncryptedMediaInitDataType> result(initDataTypes.size());
     for (size_t i = 0; i < initDataTypes.size(); ++i)
@@ -101,7 +101,7 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* sc
         const MediaKeySystemConfiguration& config = supportedConfigurations[i];
         WebMediaKeySystemConfiguration webConfig;
         if (config.hasInitDataTypes())
-            webConfig.setInitDataTypes(convertInitDataTypes(config.initDataTypes()));
+            webConfig.initDataTypes = convertInitDataTypes(config.initDataTypes());
         if (config.hasAudioCapabilities())
             webConfig.audioCapabilities = convertCapabilities(config.audioCapabilities());
         if (config.hasVideoCapabilities())

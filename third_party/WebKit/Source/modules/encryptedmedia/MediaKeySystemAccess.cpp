@@ -116,7 +116,7 @@ MediaKeySystemAccess::~MediaKeySystemAccess()
 void MediaKeySystemAccess::getConfiguration(MediaKeySystemConfiguration& result)
 {
     WebMediaKeySystemConfiguration configuration = m_access->getConfiguration();
-    result.setInitDataTypes(convertInitDataTypes(configuration.getInitDataTypes()));
+    result.setInitDataTypes(convertInitDataTypes(configuration.initDataTypes));
     result.setAudioCapabilities(convertCapabilities(configuration.audioCapabilities));
     result.setVideoCapabilities(convertCapabilities(configuration.videoCapabilities));
     result.setDistinctiveIdentifier(convertMediaKeysRequirement(configuration.distinctiveIdentifier));
@@ -133,7 +133,7 @@ ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* scriptState)
     WebMediaKeySystemConfiguration configuration = m_access->getConfiguration();
 
     // 1. Let promise be a new promise.
-    NewCdmResultPromise* helper = new NewCdmResultPromise(scriptState, m_keySystem, configuration.getSessionTypes());
+    NewCdmResultPromise* helper = new NewCdmResultPromise(scriptState, m_keySystem, configuration.sessionTypes);
     ScriptPromise promise = helper->promise();
 
     // 2. Asynchronously create and initialize the MediaKeys object.

@@ -7,7 +7,6 @@
 
 #include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebMediaKeySystemMediaCapability.h"
-#include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
@@ -25,18 +24,17 @@ struct WebMediaKeySystemConfiguration {
     {
     }
 
-    WebVector<WebString> initDataTypes;
+    WebVector<WebEncryptedMediaInitDataType> initDataTypes;
     WebVector<WebMediaKeySystemMediaCapability> audioCapabilities;
     WebVector<WebMediaKeySystemMediaCapability> videoCapabilities;
     Requirement distinctiveIdentifier;
     Requirement persistentState;
-    WebVector<WebString> sessionTypes;
+    WebVector<WebEncryptedMediaSessionType> sessionTypes;
 
     // FIXME: Temporary methods until |initDataTypes| and |sessionTypes|
     // can be converted to be WebVector<enum>.
     BLINK_PLATFORM_EXPORT WebVector<WebEncryptedMediaInitDataType> getInitDataTypes() const;
     BLINK_PLATFORM_EXPORT void setInitDataTypes(const WebVector<WebEncryptedMediaInitDataType>&);
-    BLINK_PLATFORM_EXPORT WebVector<WebEncryptedMediaSessionType> getSessionTypes() const;
     BLINK_PLATFORM_EXPORT void setSessionTypes(const WebVector<WebEncryptedMediaSessionType>&);
 };
 
