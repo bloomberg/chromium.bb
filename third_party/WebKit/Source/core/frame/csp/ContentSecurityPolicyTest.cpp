@@ -42,40 +42,40 @@ TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsDisabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(false);
     csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureContentDoNotUpgrade, csp->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, csp->insecureRequestsPolicy());
 
     csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureContentDoNotUpgrade, document->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsEnabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(true);
     csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureContentUpgrade, csp->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureRequestsUpgrade, csp->insecureRequestsPolicy());
 
     csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureContentUpgrade, document->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureRequestsUpgrade, document->insecureRequestsPolicy());
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsDisabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(false);
     csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureContentDoNotUpgrade, csp->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, csp->insecureRequestsPolicy());
 
     csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureContentDoNotUpgrade, document->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(true);
     csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureContentDoNotUpgrade, csp->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, csp->insecureRequestsPolicy());
 
     csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureContentDoNotUpgrade, document->insecureContentPolicy());
+    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
 }
 
 } // namespace

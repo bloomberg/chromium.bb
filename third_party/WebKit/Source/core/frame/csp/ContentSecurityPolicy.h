@@ -199,8 +199,8 @@ public:
     void enforceStrictMixedContentChecking();
     String evalDisabledErrorMessage() const;
 
-    void setInsecureContentPolicy(SecurityContext::InsecureContentPolicy);
-    SecurityContext::InsecureContentPolicy insecureContentPolicy() const { return m_insecureContentPolicy; };
+    void setInsecureRequestsPolicy(SecurityContext::InsecureRequestsPolicy);
+    SecurityContext::InsecureRequestsPolicy insecureRequestsPolicy() const { return m_insecureRequestsPolicy; };
 
     bool urlMatchesSelf(const KURL&) const;
     bool protocolMatchesSelf(const KURL&) const;
@@ -244,7 +244,7 @@ private:
     bool m_enforceStrictMixedContentChecking;
     ReferrerPolicy m_referrerPolicy;
     String m_disableEvalErrorMessage;
-    SecurityContext::InsecureContentPolicy m_insecureContentPolicy;
+    SecurityContext::InsecureRequestsPolicy m_insecureRequestsPolicy;
 
     OwnPtr<CSPSource> m_selfSource;
     String m_selfProtocol;

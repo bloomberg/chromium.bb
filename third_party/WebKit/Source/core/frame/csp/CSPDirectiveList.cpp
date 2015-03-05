@@ -579,7 +579,7 @@ void CSPDirectiveList::enforceStrictMixedContentChecking(const String& name, con
         m_policy->reportValueForEmptyDirective(name, value);
 }
 
-void CSPDirectiveList::enableInsecureContentUpgrade(const String& name, const String& value)
+void CSPDirectiveList::enableInsecureRequestsUpgrade(const String& name, const String& value)
 {
     if (m_reportOnly) {
         m_policy->reportInvalidInReportOnly(name);
@@ -591,7 +591,7 @@ void CSPDirectiveList::enableInsecureContentUpgrade(const String& name, const St
     }
     m_upgradeInsecureRequests = true;
 
-    m_policy->setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
+    m_policy->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
     if (!value.isEmpty())
         m_policy->reportValueForEmptyDirective(name, value);
 }
@@ -747,7 +747,7 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         else if (equalIgnoringCase(name, ContentSecurityPolicy::BlockAllMixedContent))
             enforceStrictMixedContentChecking(name, value);
         else if (equalIgnoringCase(name, ContentSecurityPolicy::UpgradeInsecureRequests))
-            enableInsecureContentUpgrade(name, value);
+            enableInsecureRequestsUpgrade(name, value);
         else
             m_policy->reportUnsupportedDirective(name);
     } else {

@@ -151,7 +151,7 @@ TEST_F(ResourceFetcherUpgradeTest, UpgradeInsecureResourceRequests)
         { "ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png" },
     };
 
-    document->setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
+    document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
 
     for (auto test : tests) {
         // secureOrigin's host is 'secureorigin.test', not 'example.test'
@@ -179,7 +179,7 @@ TEST_F(ResourceFetcherUpgradeTest, UpgradeInsecureResourceRequests)
 TEST_F(ResourceFetcherUpgradeTest, DoNotUpgradeInsecureResourceRequests)
 {
     document->setSecurityOrigin(secureOrigin);
-    document->setInsecureContentPolicy(SecurityContext::InsecureContentDoNotUpgrade);
+    document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
 
     expectUpgrade("http://example.test/image.png", "http://example.test/image.png");
     expectUpgrade("http://example.test:80/image.png", "http://example.test:80/image.png");
@@ -212,10 +212,10 @@ TEST_F(ResourceFetcherUpgradeTest, SendPreferHeader)
     };
 
     for (auto test : tests) {
-        document->setInsecureContentPolicy(SecurityContext::InsecureContentDoNotUpgrade);
+        document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
         expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
 
-        document->setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
+        document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
         expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
     }
 }

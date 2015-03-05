@@ -125,10 +125,10 @@ bool DocumentInit::shouldEnforceStrictMixedContentChecking() const
     return frameForSecurityContext()->loader().shouldEnforceStrictMixedContentChecking();
 }
 
-SecurityContext::InsecureContentPolicy DocumentInit::insecureContentPolicy() const
+SecurityContext::InsecureRequestsPolicy DocumentInit::insecureRequestsPolicy() const
 {
     ASSERT(frameForSecurityContext());
-    return frameForSecurityContext()->loader().insecureContentPolicy();
+    return frameForSecurityContext()->loader().insecureRequestsPolicy();
 }
 
 bool DocumentInit::isHostedInReservedIPRange() const

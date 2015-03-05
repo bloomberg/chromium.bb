@@ -281,7 +281,7 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
     WTF_LOG(Network, "WebSocket %p connect() url='%s'", this, url.utf8().data());
     m_url = KURL(KURL(), url);
 
-    if (executionContext()->securityContext().insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && m_url.protocol() == "ws") {
+    if (executionContext()->securityContext().insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && m_url.protocol() == "ws") {
         m_url.setProtocol("wss");
         if (m_url.port() == 80)
             m_url.setPort(443);

@@ -1401,18 +1401,18 @@ bool FrameLoader::shouldEnforceStrictMixedContentChecking() const
     return toLocalFrame(parentFrame)->document()->shouldEnforceStrictMixedContentChecking();
 }
 
-SecurityContext::InsecureContentPolicy FrameLoader::insecureContentPolicy() const
+SecurityContext::InsecureRequestsPolicy FrameLoader::insecureRequestsPolicy() const
 {
     Frame* parentFrame = m_frame->tree().parent();
     if (!parentFrame)
-        return SecurityContext::InsecureContentDoNotUpgrade;
+        return SecurityContext::InsecureRequestsDoNotUpgrade;
 
-    // FIXME: We need a way to propagate insecure content policy flags to
+    // FIXME: We need a way to propagate insecure requests policy flags to
     // out-of-process frames. For now, we'll always use default behavior.
     if (!parentFrame->isLocalFrame())
-        return SecurityContext::InsecureContentDoNotUpgrade;
+        return SecurityContext::InsecureRequestsDoNotUpgrade;
 
-    return toLocalFrame(parentFrame)->document()->insecureContentPolicy();
+    return toLocalFrame(parentFrame)->document()->insecureRequestsPolicy();
 }
 
 } // namespace blink

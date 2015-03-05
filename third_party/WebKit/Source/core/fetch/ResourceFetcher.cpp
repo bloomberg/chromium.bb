@@ -885,7 +885,7 @@ void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
     if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone && !SecurityOrigin::isSecure(url))
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "return=secure-representation");
 
-    if (document()->insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && url.protocolIs("http")) {
+    if (document()->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
         // We always upgrade subresource requests and nested frames, we always upgrade form
         // submissions, and we always upgrade requests whose host matches the host of the
         // containing document's security origin.

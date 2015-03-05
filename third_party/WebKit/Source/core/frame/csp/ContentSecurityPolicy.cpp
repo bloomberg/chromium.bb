@@ -148,7 +148,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
     , m_sandboxMask(0)
     , m_enforceStrictMixedContentChecking(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
-    , m_insecureContentPolicy(SecurityContext::InsecureContentDoNotUpgrade)
+    , m_insecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade)
 {
 }
 
@@ -176,8 +176,8 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
             document->enforceStrictMixedContentChecking();
         if (didSetReferrerPolicy())
             document->setReferrerPolicy(m_referrerPolicy);
-        if (m_insecureContentPolicy > document->insecureContentPolicy())
-            document->setInsecureContentPolicy(m_insecureContentPolicy);
+        if (m_insecureRequestsPolicy > document->insecureRequestsPolicy())
+            document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);
 
         for (const auto& consoleMessage : m_consoleMessages)
             m_executionContext->addConsoleMessage(consoleMessage);
@@ -632,10 +632,10 @@ void ContentSecurityPolicy::enforceStrictMixedContentChecking()
     m_enforceStrictMixedContentChecking = true;
 }
 
-void ContentSecurityPolicy::setInsecureContentPolicy(SecurityContext::InsecureContentPolicy policy)
+void ContentSecurityPolicy::setInsecureRequestsPolicy(SecurityContext::InsecureRequestsPolicy policy)
 {
-    if (policy > m_insecureContentPolicy)
-        m_insecureContentPolicy = policy;
+    if (policy > m_insecureRequestsPolicy)
+        m_insecureRequestsPolicy = policy;
 }
 
 static String stripURLForUseInReport(Document* document, const KURL& url)
