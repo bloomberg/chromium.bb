@@ -2303,7 +2303,7 @@ void WebContentsImpl::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!IsSavable()) {
     RecordDownloadSource(INITIATED_BY_SAVE_PACKAGE_ON_NON_HTML);
-    SaveFrame(GetURL(), Referrer());
+    SaveFrame(GetLastCommittedURL(), Referrer());
     return;
   }
 
@@ -2331,12 +2331,14 @@ bool WebContentsImpl::SavePage(const base::FilePath& main_file,
 
 void WebContentsImpl::SaveFrame(const GURL& url,
                                 const Referrer& referrer) {
-  if (!GetURL().is_valid())
+  if (!GetLastCommittedURL().is_valid())
     return;
   if (delegate_ && delegate_->SaveFrame(url, referrer))
     return;
 
-  bool is_main_frame = (url == GetURL());
+  // TODO(nasko): This check for main frame is incorrect and should be fixed
+  // by explicitly passing in which frame this method should target.
+  bool is_main_frame = (url == GetLastCommittedURL());
 
   DownloadManager* dlm =
       BrowserContext::GetDownloadManager(GetBrowserContext());
