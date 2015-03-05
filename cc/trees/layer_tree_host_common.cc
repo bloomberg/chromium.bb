@@ -2495,12 +2495,6 @@ static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
          std::abs(r1.height() - r2.height()) <= tolerance;
 }
 
-static bool ApproximatelyEqual(const gfx::Transform& a,
-                               const gfx::Transform& b) {
-  static const float tolerance = 0.01f;
-  return gfx::MatrixDistance(a, b) < tolerance;
-}
-
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsMainInputs* inputs) {
   UpdateRenderSurfaces(inputs->root_layer,
@@ -2561,11 +2555,6 @@ void LayerTreeHostCommon::CalculateDrawProperties(
           ApproximatelyEqual(current_layer->visible_content_rect(),
                              current_layer->visible_rect_from_property_trees());
       CHECK(visible_rects_match);
-
-      const bool draw_transforms_match = ApproximatelyEqual(
-          current_layer->draw_transform(),
-          current_layer->draw_transform_from_property_trees(transform_tree));
-      CHECK(draw_transforms_match);
 
       const bool draw_opacities_match =
           current_layer->draw_opacity() ==
