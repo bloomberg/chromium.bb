@@ -451,10 +451,32 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   virtual void getQueryObjectuivEXT(
       WebGLId query, WGC3Denum pname, WGC3Duint* params);
 
-  virtual void copyTextureCHROMIUM(WGC3Denum target, WebGLId source_id,
-                                   WebGLId dest_id, WGC3Dint level,
+  // TODO(dshwang): Remove |level| in Blink and then remove it.
+  void copyTextureCHROMIUM(WGC3Denum target,
+                           WebGLId source_id,
+                           WebGLId dest_id,
+                           WGC3Dint level,
+                           WGC3Denum internal_format,
+                           WGC3Denum dest_type) override;
+
+  void copySubTextureCHROMIUM(WGC3Denum target,
+                              WebGLId source_id,
+                              WebGLId dest_id,
+                              WGC3Dint level,
+                              WGC3Dint xoffset,
+                              WGC3Dint yoffset) override;
+
+  virtual void copyTextureCHROMIUM(WGC3Denum target,
+                                   WebGLId source_id,
+                                   WebGLId dest_id,
                                    WGC3Denum internal_format,
                                    WGC3Denum dest_type);
+
+  virtual void copySubTextureCHROMIUM(WGC3Denum target,
+                                      WebGLId sourceId,
+                                      WebGLId destId,
+                                      WGC3Dint xoffset,
+                                      WGC3Dint yoffset);
 
   virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location,
                                            const WGC3Dchar* uniform);

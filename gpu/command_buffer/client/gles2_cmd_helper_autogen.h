@@ -2312,13 +2312,24 @@ void TexImageIOSurface2DCHROMIUM(GLenum target,
 void CopyTextureCHROMIUM(GLenum target,
                          GLenum source_id,
                          GLenum dest_id,
-                         GLint level,
                          GLint internalformat,
                          GLenum dest_type) {
   gles2::cmds::CopyTextureCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CopyTextureCHROMIUM>();
   if (c) {
-    c->Init(target, source_id, dest_id, level, internalformat, dest_type);
+    c->Init(target, source_id, dest_id, internalformat, dest_type);
+  }
+}
+
+void CopySubTextureCHROMIUM(GLenum target,
+                            GLenum source_id,
+                            GLenum dest_id,
+                            GLint xoffset,
+                            GLint yoffset) {
+  gles2::cmds::CopySubTextureCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::CopySubTextureCHROMIUM>();
+  if (c) {
+    c->Init(target, source_id, dest_id, xoffset, yoffset);
   }
 }
 

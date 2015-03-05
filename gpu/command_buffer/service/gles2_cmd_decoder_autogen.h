@@ -4330,7 +4330,6 @@ error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum source_id = static_cast<GLenum>(c.source_id);
   GLenum dest_id = static_cast<GLenum>(c.dest_id);
-  GLint level = static_cast<GLint>(c.level);
   GLint internalformat = static_cast<GLint>(c.internalformat);
   GLenum dest_type = static_cast<GLenum>(c.dest_type);
   if (!validators_->texture_internal_format.IsValid(internalformat)) {
@@ -4343,8 +4342,22 @@ error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
                                     "dest_type");
     return error::kNoError;
   }
-  DoCopyTextureCHROMIUM(target, source_id, dest_id, level, internalformat,
-                        dest_type);
+  DoCopyTextureCHROMIUM(target, source_id, dest_id, internalformat, dest_type);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::CopySubTextureCHROMIUM& c =
+      *static_cast<const gles2::cmds::CopySubTextureCHROMIUM*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum source_id = static_cast<GLenum>(c.source_id);
+  GLenum dest_id = static_cast<GLenum>(c.dest_id);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  DoCopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset);
   return error::kNoError;
 }
 

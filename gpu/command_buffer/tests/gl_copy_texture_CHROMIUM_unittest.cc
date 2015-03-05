@@ -17,8 +17,18 @@
 
 namespace gpu {
 
+namespace {
+enum CopyType { TexImage, TexSubImage };
+const CopyType kCopyTypes[] = {
+    TexImage,
+    TexSubImage,
+};
+}
+
 // A collection of tests that exercise the GL_CHROMIUM_copy_texture extension.
-class GLCopyTextureCHROMIUMTest : public testing::Test {
+class GLCopyTextureCHROMIUMTest
+    : public testing::Test,
+      public ::testing::WithParamInterface<CopyType> {
  protected:
   void SetUp() override {
     gl_.Initialize(GLManager::Options());
@@ -50,16 +60,29 @@ class GLCopyTextureCHROMIUMTest : public testing::Test {
   GLuint framebuffer_id_;
 };
 
+INSTANTIATE_TEST_CASE_P(CopyType,
+                        GLCopyTextureCHROMIUMTest,
+                        ::testing::ValuesIn(kCopyTypes));
+
 // Test to ensure that the basic functionality of the extension works.
-TEST_F(GLCopyTextureCHROMIUMTest, Basic) {
+TEST_P(GLCopyTextureCHROMIUMTest, Basic) {
+  CopyType copy_type = GetParam();
   uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
 
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
 
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Check the FB is still bound.
@@ -76,7 +99,51 @@ TEST_F(GLCopyTextureCHROMIUMTest, Basic) {
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
-TEST_F(GLCopyTextureCHROMIUMTest, InternalFormat) {
+TEST_P(GLCopyTextureCHROMIUMTest, ImmutableTexture) {
+  if (!GLTestHelper::HasExtension("GL_EXT_texture_storage")) {
+    LOG(INFO) << "GL_EXT_texture_storage not supported. Skipping test...";
+    return;
+  }
+  CopyType copy_type = GetParam();
+
+  uint8 pixels[1 * 4] = {255u, 0u, 0u, 255u};
+
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8_OES, 1, 1);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                  pixels);
+
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);
+  glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8_OES, 1, 1);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         textures_[1], 0);
+  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+    EXPECT_TRUE(glGetError() == GL_INVALID_OPERATION);
+  } else {
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+    EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+
+    // Check the FB is still bound.
+    GLint value = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &value);
+    GLuint fb_id = value;
+    EXPECT_EQ(framebuffer_id_, fb_id);
+
+    // Check that FB is complete.
+    EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+              glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
+    EXPECT_TRUE(GL_NO_ERROR == glGetError());
+  }
+}
+
+TEST_P(GLCopyTextureCHROMIUMTest, InternalFormat) {
+  CopyType copy_type = GetParam();
   GLint src_formats[] = {GL_ALPHA,     GL_RGB,             GL_RGBA,
                          GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_BGRA_EXT};
   GLint dest_formats[] = {GL_RGB, GL_RGBA};
@@ -85,33 +152,34 @@ TEST_F(GLCopyTextureCHROMIUMTest, InternalFormat) {
     for (size_t dest_index = 0; dest_index < arraysize(dest_formats);
          dest_index++) {
       glBindTexture(GL_TEXTURE_2D, textures_[0]);
-      glTexImage2D(GL_TEXTURE_2D,
-                   0,
-                   src_formats[src_index],
-                   1,
-                   1,
-                   0,
-                   src_formats[src_index],
-                   GL_UNSIGNED_BYTE,
-                   NULL);
+      glTexImage2D(GL_TEXTURE_2D, 0, src_formats[src_index], 1, 1, 0,
+                   src_formats[src_index], GL_UNSIGNED_BYTE, nullptr);
       EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
-      glCopyTextureCHROMIUM(GL_TEXTURE_2D,
-                            textures_[0],
-                            textures_[1],
-                            0,
-                            dest_formats[dest_index],
-                            GL_UNSIGNED_BYTE);
+      if (copy_type == TexImage) {
+        glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1],
+                              dest_formats[dest_index], GL_UNSIGNED_BYTE);
+      } else {
+        glBindTexture(GL_TEXTURE_2D, textures_[1]);
+        glTexImage2D(GL_TEXTURE_2D, 0, dest_formats[dest_index], 1, 1, 0,
+                     dest_formats[dest_index], GL_UNSIGNED_BYTE, nullptr);
+        EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+        glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0,
+                                 0);
+      }
+
       EXPECT_TRUE(GL_NO_ERROR == glGetError()) << "src_index:" << src_index
                                                << " dest_index:" << dest_index;
     }
   }
 }
 
-TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
+TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
+  CopyType copy_type = GetParam();
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
-  glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               nullptr);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   // Check unsupported format reports error.
@@ -119,12 +187,17 @@ TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
                                       GL_LUMINANCE_ALPHA};
   for (size_t dest_index = 0; dest_index < arraysize(unsupported_dest_formats);
        dest_index++) {
-    glCopyTextureCHROMIUM(GL_TEXTURE_2D,
-                          textures_[0],
-                          textures_[1],
-                          0,
-                          unsupported_dest_formats[dest_index],
-                          GL_UNSIGNED_BYTE);
+    if (copy_type == TexImage) {
+      glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1],
+                            unsupported_dest_formats[dest_index],
+                            GL_UNSIGNED_BYTE);
+    } else {
+      glBindTexture(GL_TEXTURE_2D, textures_[1]);
+      glTexImage2D(GL_TEXTURE_2D, 0, unsupported_dest_formats[dest_index], 1, 1,
+                   0, unsupported_dest_formats[dest_index], GL_UNSIGNED_BYTE,
+                   nullptr);
+      glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+    }
     EXPECT_TRUE(GL_INVALID_OPERATION == glGetError())
         << "dest_index:" << dest_index;
   }
@@ -163,8 +236,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, RedefineDestinationTexture) {
 
   // If the dest texture has different properties, glCopyTextureCHROMIUM()
   // redefines them.
-  glCopyTextureCHROMIUM(
-      GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                        GL_UNSIGNED_BYTE);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   // glTexSubImage2D() succeeds because textures_[1] is redefined into 2x2
@@ -189,7 +262,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, RedefineDestinationTexture) {
 }
 
 // Test that the extension respects the flip-y pixel storage setting.
-TEST_F(GLCopyTextureCHROMIUMTest, FlipY) {
+TEST_P(GLCopyTextureCHROMIUMTest, FlipY) {
+  CopyType copy_type = GetParam();
   uint8 pixels[2][2][4];
   for (int x = 0; x < 2; ++x) {
     for (int y = 0; y < 2; ++y) {
@@ -205,8 +279,16 @@ TEST_F(GLCopyTextureCHROMIUMTest, FlipY) {
                pixels);
 
   glPixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE);
+
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   uint8 copied_pixels[2][2][4] = {{{0}}};
@@ -225,7 +307,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, FlipY) {
 
 // Test that the extension respects the GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM
 // storage setting.
-TEST_F(GLCopyTextureCHROMIUMTest, PremultiplyAlpha) {
+TEST_P(GLCopyTextureCHROMIUMTest, PremultiplyAlpha) {
+  CopyType copy_type = GetParam();
   uint8 pixels[1 * 4] = { 2, 2, 2, 128 };
 
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
@@ -233,8 +316,15 @@ TEST_F(GLCopyTextureCHROMIUMTest, PremultiplyAlpha) {
                pixels);
 
   glPixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, GL_TRUE);
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
-                       GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   uint8 copied_pixels[1 * 4] = {0};
@@ -249,7 +339,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, PremultiplyAlpha) {
 
 // Test that the extension respects the GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM
 // storage setting.
-TEST_F(GLCopyTextureCHROMIUMTest, UnpremultiplyAlpha) {
+TEST_P(GLCopyTextureCHROMIUMTest, UnpremultiplyAlpha) {
+  CopyType copy_type = GetParam();
   uint8 pixels[1 * 4] = { 16, 16, 16, 128 };
 
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
@@ -257,8 +348,15 @@ TEST_F(GLCopyTextureCHROMIUMTest, UnpremultiplyAlpha) {
                pixels);
 
   glPixelStorei(GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, GL_TRUE);
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   uint8 copied_pixels[1 * 4] = {0};
@@ -271,7 +369,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, UnpremultiplyAlpha) {
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
-TEST_F(GLCopyTextureCHROMIUMTest, FlipYAndPremultiplyAlpha) {
+TEST_P(GLCopyTextureCHROMIUMTest, FlipYAndPremultiplyAlpha) {
+  CopyType copy_type = GetParam();
   uint8 pixels[2][2][4];
   for (int x = 0; x < 2; ++x) {
     for (int y = 0; y < 2; ++y) {
@@ -289,8 +388,15 @@ TEST_F(GLCopyTextureCHROMIUMTest, FlipYAndPremultiplyAlpha) {
 
   glPixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
   glPixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, GL_TRUE);
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   uint8 copied_pixels[2][2][4] = {{{0}}};
@@ -307,7 +413,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, FlipYAndPremultiplyAlpha) {
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
-TEST_F(GLCopyTextureCHROMIUMTest, FlipYAndUnpremultiplyAlpha) {
+TEST_P(GLCopyTextureCHROMIUMTest, FlipYAndUnpremultiplyAlpha) {
+  CopyType copy_type = GetParam();
   uint8 pixels[2][2][4];
   for (int x = 0; x < 2; ++x) {
     for (int y = 0; y < 2; ++y) {
@@ -325,8 +432,15 @@ TEST_F(GLCopyTextureCHROMIUMTest, FlipYAndUnpremultiplyAlpha) {
 
   glPixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
   glPixelStorei(GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, GL_TRUE);
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   uint8 copied_pixels[2][2][4] = {{{0}}};
@@ -356,7 +470,8 @@ void glEnableDisable(GLint param, GLboolean value) {
 
 // Validate that some basic GL state is not touched upon execution of
 // the extension.
-TEST_F(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
+TEST_P(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
+  CopyType copy_type = GetParam();
   uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -364,6 +479,12 @@ TEST_F(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
+
+  if (copy_type == TexSubImage) {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+  }
 
   GLboolean reference_settings[2] = { GL_TRUE, GL_FALSE };
   for (int x = 0; x < 2; ++x) {
@@ -378,8 +499,12 @@ TEST_F(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
 
     glActiveTexture(GL_TEXTURE1 + x);
 
-    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0,
-                          GL_RGBA, GL_UNSIGNED_BYTE);
+    if (copy_type == TexImage) {
+      glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                            GL_UNSIGNED_BYTE);
+    } else {
+      glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+    }
     EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
     EXPECT_EQ(setting, glIsEnabled(GL_DEPTH_TEST));
@@ -409,12 +534,19 @@ TEST_F(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
 
 // Verify that invocation of the extension does not modify the bound
 // texture state.
-TEST_F(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {
+TEST_P(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {
+  CopyType copy_type = GetParam();
   // Setup the texture used for the extension invocation.
   uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
+
+  if (copy_type == TexSubImage) {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+  }
 
   GLuint texture_ids[2];
   glGenTextures(2, texture_ids);
@@ -425,8 +557,12 @@ TEST_F(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, texture_ids[1]);
 
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0,
-                        GL_RGBA, GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   GLint active_texture = 0;
@@ -451,12 +587,19 @@ TEST_F(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {
 
 // Verify that invocation of the extension does not perturb the currently
 // bound FBO state.
-TEST_F(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
+TEST_P(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
+  CopyType copy_type = GetParam();
   // Setup the texture used for the extension invocation.
   uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
+
+  if (copy_type == TexSubImage) {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+  }
 
   GLuint texture_id;
   glGenTextures(1, &texture_id);
@@ -485,8 +628,12 @@ TEST_F(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
   glClear(GL_COLOR_BUFFER_BIT);
   GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color);
 
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0,
-                        GL_RGBA, GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   EXPECT_TRUE(glIsFramebuffer(framebuffer_id));
@@ -534,7 +681,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
-TEST_F(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
+TEST_P(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
+  CopyType copy_type = GetParam();
   // unbind the one created in setup.
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -588,8 +736,15 @@ TEST_F(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
 
   // test using program after
   glClear(GL_COLOR_BUFFER_BIT);
@@ -605,14 +760,22 @@ TEST_F(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
 }
 
 // Test that glCopyTextureCHROMIUM doesn't leak uninitialized textures.
-TEST_F(GLCopyTextureCHROMIUMTest, UninitializedSource) {
+TEST_P(GLCopyTextureCHROMIUMTest, UninitializedSource) {
+  CopyType copy_type = GetParam();
   const GLsizei kWidth = 64, kHeight = 64;
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight,
-               0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, nullptr);
 
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE);
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], GL_RGBA,
+                          GL_UNSIGNED_BYTE);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, textures_[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, 0);
+  }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   uint8 pixels[kHeight][kWidth][4] = {{{1}}};
@@ -626,6 +789,58 @@ TEST_F(GLCopyTextureCHROMIUMTest, UninitializedSource) {
     }
   }
 
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+}
+
+TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureDimension) {
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               nullptr);
+
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               nullptr);
+
+  glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 1, 1);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  // xoffset < 0
+  glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], -1, 1);
+  EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+
+  // xoffset + source_width > dest_width
+  glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 2, 2);
+  EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+}
+
+TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureOffset) {
+  uint8 red[1 * 4] = {255u, 0u, 0u, 255u};
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               red);
+
+  uint8 transparent_pixel[4 * 4] = {
+      0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u};
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               transparent_pixel);
+
+  glCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 1, 1);
+  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+
+  // Check the FB is still bound.
+  GLint value = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &value);
+  GLuint fb_id = value;
+  EXPECT_EQ(framebuffer_id_, fb_id);
+
+  // Check that FB is complete.
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+            glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+  uint8 transparent[1 * 4] = {0u, 0u, 0u, 0u};
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, transparent);
+  GLTestHelper::CheckPixels(1, 1, 1, 1, 0, red);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
