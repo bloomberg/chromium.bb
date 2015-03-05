@@ -67,24 +67,21 @@ class CONTENT_EXPORT VideoCaptureImpl
   // used later to stop receiving video frames.
   // |state_update_cb| will be called when state changes.
   // |deliver_frame_cb| will be called when a frame is ready.
-  void StartCapture(
-      int client_id,
-      const media::VideoCaptureParams& params,
-      const VideoCaptureStateUpdateCB& state_update_cb,
-      const VideoCaptureDeliverFrameCB& deliver_frame_cb);
+  void StartCapture(int client_id,
+                    const media::VideoCaptureParams& params,
+                    const VideoCaptureStateUpdateCB& state_update_cb,
+                    const VideoCaptureDeliverFrameCB& deliver_frame_cb);
 
   // Stop capturing. |client_id| is the identifier used to call StartCapture.
   void StopCapture(int client_id);
 
   // Get capturing formats supported by this device.
   // |callback| will be invoked with the results.
-  void GetDeviceSupportedFormats(
-      const VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceSupportedFormats(const VideoCaptureDeviceFormatsCB& callback);
 
   // Get capturing formats currently in use by this device.
   // |callback| will be invoked with the results.
-  void GetDeviceFormatsInUse(
-      const VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceFormatsInUse(const VideoCaptureDeviceFormatsCB& callback);
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }
 
@@ -174,7 +171,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   VideoCaptureState state_;
 
   // |weak_factory_| and |thread_checker_| are bound to the IO thread.
-  base::ThreadChecker thread_checker_;
+  base::ThreadChecker render_io_thread_checker_;
 
   // WeakPtrFactory pointing back to |this| object, for use with
   // media::VideoFrames constructed in OnBufferReceived() from buffers cached

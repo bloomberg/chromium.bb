@@ -76,15 +76,13 @@ class CONTENT_EXPORT VideoCaptureImplManager {
 
   // Get supported formats supported by the device for the given session
   // ID. |callback| will be called on the IO thread.
-  void GetDeviceSupportedFormats(
-      media::VideoCaptureSessionId id,
-      const VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceSupportedFormats(media::VideoCaptureSessionId id,
+                                 const VideoCaptureDeviceFormatsCB& callback);
 
   // Get supported formats currently in use for the given session ID.
   // |callback| will be called on the IO thread.
-  void GetDeviceFormatsInUse(
-      media::VideoCaptureSessionId id,
-      const VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceFormatsInUse(media::VideoCaptureSessionId id,
+                             const VideoCaptureDeviceFormatsCB& callback);
 
   // Make all existing VideoCaptureImpl instances stop/resume delivering
   // video frames to their clients, depends on flag |suspend|.
@@ -116,10 +114,10 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // The ID is global for the render process.
   int next_client_id_;
 
-  scoped_refptr<VideoCaptureMessageFilter> filter_;
+  const scoped_refptr<VideoCaptureMessageFilter> filter_;
 
   // Bound to the render thread.
-  base::ThreadChecker thread_checker_;
+  base::ThreadChecker render_main_thread_checker_;
 
   // Bound to the render thread.
   // NOTE: Weak pointers must be invalidated before all other member variables.
