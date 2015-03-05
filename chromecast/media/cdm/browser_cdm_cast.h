@@ -45,6 +45,12 @@ class BrowserCdmCast : public ::media::BrowserCdm {
                      const base::Closure& cdm_unset_cb) override;
   void UnregisterPlayer(int registration_id) override;
 
+  // ::media::BrowserCdm implementation:
+  void LoadSession(::media::MediaKeys::SessionType session_type,
+                   const std::string& session_id,
+                   scoped_ptr<::media::NewSessionCdmPromise> promise) override;
+  ::media::CdmContext* GetCdmContext() override;
+
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|.
   // Returns null if |key_id| is not available.
