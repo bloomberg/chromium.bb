@@ -160,7 +160,7 @@ def GetBotStepMap():
       B('chromedriver-fyi-tests-dbg', H(std_test_steps),
         T(['chromedriver'],
           ['--install=ChromeShell', '--install=ChromeDriverWebViewShell',
-           '--skip-wipe', '--cleanup'])),
+           '--skip-wipe', '--disable-location', '--cleanup'])),
       B('fyi-x86-builder-dbg',
         H(compile_step + std_host_tests, experimental, target_arch='ia32')),
       B('fyi-builder-dbg',
