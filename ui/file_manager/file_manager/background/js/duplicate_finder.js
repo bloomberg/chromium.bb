@@ -6,63 +6,27 @@
 var importer = importer || {};
 
 /**
- * Interface for import deduplicators.  A duplicate finder is linked to an
- * import destination, and will check whether files already exist in that import
- * destination.
- * @interface
- */
-importer.DuplicateFinder = function() {};
-
-/**
- * Checks whether the given file already exists in the import destination.
- * @param {!FileEntry} entry The file entry to check.
- * @return {!Promise<boolean>}
- */
-importer.DuplicateFinder.prototype.checkDuplicate;
-
-/**
- * A factory for producing duplicate finders.
- * @interface
- */
-importer.DuplicateFinder.Factory = function() {};
-
-/** @return {!importer.DuplicateFinder} */
-importer.DuplicateFinder.Factory.prototype.create;
-
-/**
  * A duplicate finder for Google Drive.
  *
  * @constructor
- * @implements {importer.DuplicateFinder}
  * @struct
+ *
+ * @param {!analytics.Tracker} tracker
  */
-importer.DriveDuplicateFinder = function() {
+importer.DriveDuplicateFinder = function(tracker) {
+
+  /** @private {!analytics.Tracker} */
+  this.tracker_ = tracker;
+
   /** @private {Promise<string>} */
   this.driveIdPromise_ = null;
-
-  /**
-   * Aggregate time spent computing content hashes (in ms).
-   * @private {number}
-   */
-  this.computeHashTime_ = 0;
-
-  /**
-   * Aggregate time spent performing content hash searches (in ms).
-   * @private {number}
-   */
-  this.searchHashTime_ = 0;
 };
 
 /**
- * @typedef {{
- *   computeHashTime: number,
- *   searchHashTime: number
- * }}
+ * @param {!FileEntry} entry
+ * @return {!Promise<boolean>}
  */
-importer.DriveDuplicateFinder.Statistics;
-
-/** @override */
-importer.DriveDuplicateFinder.prototype.checkDuplicate = function(entry) {
+importer.DriveDuplicateFinder.prototype.isDuplicate = function(entry) {
   return this.computeHash_(entry)
       .then(this.findByHash_.bind(this))
       .then(
@@ -74,6 +38,12 @@ importer.DriveDuplicateFinder.prototype.checkDuplicate = function(entry) {
             return urls.length > 0;
           });
 };
+
+/** @private @const {number} */
+importer.DriveDuplicateFinder.HASH_EVENT_THRESHOLD_ = 5000;
+
+/** @private @const {number} */
+importer.DriveDuplicateFinder.SEARCH_EVENT_THRESHOLD_ = 1000;
 
 /**
  * Computes the content hash for the given file entry.
@@ -87,16 +57,27 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
         var startTime = new Date().getTime();
         chrome.fileManagerPrivate.computeChecksum(
             entry.toURL(),
-            /** @param {string} result The content hash. */
+            /**
+             * @param {string} result The content hash.
+             * @this {importer.DriveDuplicateFinder}
+             */
             function(result) {
-              var endTime = new Date().getTime();
-              this.searchHashTime_ += endTime - startTime;
+              var elapsedTime = new Date().getTime() - startTime;
+              // Send the timing to GA only if it is sorta exceptionally long.
+              // A one second, CPU intensive operation, is pretty long.
+              if (elapsedTime >=
+                  importer.DriveDuplicateFinder.HASH_EVENT_THRESHOLD_) {
+                this.tracker_.sendTiming(
+                   metrics.Categories.ACQUISITION,
+                   metrics.timing.Variables.COMPUTE_HASH,
+                   elapsedTime);
+              }
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
               } else {
                 resolve(result);
               }
-            });
+            }.bind(this));
       }.bind(this));
 };
 
@@ -152,8 +133,15 @@ importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
              * @this {importer.DriveDuplicateFinder}
              */
             function(urls) {
-              var endTime = new Date().getTime();
-              this.searchHashTime_ += endTime - startTime;
+              var elapsedTime = new Date().getTime() - startTime;
+              // Send the timing to GA only if it is sorta exceptionally long.
+              if (elapsedTime >=
+                  importer.DriveDuplicateFinder.SEARCH_EVENT_THRESHOLD_) {
+                this.tracker_.sendTiming(
+                   metrics.Categories.ACQUISITION,
+                   metrics.timing.Variables.SEARCH_BY_HASH,
+                   elapsedTime);
+              }
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
               } else {
@@ -163,21 +151,110 @@ importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
       }.bind(this));
 };
 
-/** @return {!importer.DriveDuplicateFinder.Statistics} */
-importer.DriveDuplicateFinder.prototype.getStatistics = function() {
-  return {
-    computeHashTime: this.computeHashTime_,
-    searchHashTime: this.searchHashTime_
-  };
+/**
+ * A class that aggregates history/content-dupe checking
+ * into a single "Disposition" value. Should now be the
+ * primary source for duplicate checking (with the exception
+ * of in-scan deduplication, where duplicate results that
+ * are within the scan are ignored).
+ *
+ * @constructor
+ *
+ * @param {!importer.HistoryLoader} historyLoader
+ * @param {!importer.DriveDuplicateFinder} contentMatcher
+ */
+importer.DispositionChecker = function(historyLoader, contentMatcher) {
+  /** @private {!importer.HistoryLoader} */
+  this.historyLoader_ = historyLoader;
+
+  /** @private {!importer.DriveDuplicateFinder} */
+  this.contentMatcher_ = contentMatcher;
 };
 
 /**
- * @constructor
- * @implements {importer.DuplicateFinder.Factory}
+ * @param {!FileEntry} entry
+ * @param {!importer.Destination} destination
+ * @return {!Promise<!importer.Disposition>}
  */
-importer.DriveDuplicateFinder.Factory = function() {};
+importer.DispositionChecker.prototype.getDisposition =
+    function(entry, destination) {
+  if (destination !== importer.Destination.GOOGLE_DRIVE) {
+    return Promise.reject('Unsupported destination: ' + destination);
+  }
 
-/** @override */
-importer.DriveDuplicateFinder.Factory.prototype.create = function() {
-  return new importer.DriveDuplicateFinder();
+  return new Promise(
+      /** @this {importer.DispositionChecker} */
+      function(resolve, reject) {
+        this.hasHistoryDuplicate_(entry, destination)
+            .then(
+                /**
+                 * @param {boolean} duplicate
+                 * @this {importer.DispositionChecker}
+                 */
+                function(duplicate) {
+                  if (duplicate) {
+                    resolve(importer.Disposition.HISTORY_DUPLICATE);
+                  } else {
+                    this.contentMatcher_.isDuplicate(entry)
+                        .then(
+                            /** @param {boolean} duplicate */
+                            function(duplicate) {
+                              if (duplicate) {
+                                resolve(
+                                    importer.Disposition.CONTENT_DUPLICATE);
+                              } else {
+                                resolve(importer.Disposition.ORIGINAL);
+                              }
+                            });
+                    }
+                  }.bind(this));
+            }.bind(this));
+};
+
+/**
+ * @param {!FileEntry} entry
+ * @param {!importer.Destination} destination
+ * @return {!Promise.<boolean>} True if there is a history-entry-duplicate
+ *     for the file.
+ * @private
+ */
+importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
+    function(entry, destination) {
+  return this.historyLoader_.getHistory()
+      .then(
+          /**
+           * @param {!importer.ImportHistory} history
+           * @return {!Promise}
+           * @this {importer.DefaultMediaScanner}
+           */
+          function(history) {
+            return Promise.all([
+              history.wasCopied(entry, destination),
+              history.wasImported(entry, destination)
+            ]).then(
+                /**
+                 * @param {!Array<boolean>} results
+                 * @return {boolean}
+                 */
+                function(results) {
+                  return results[0] || results[1];
+                });
+          }.bind(this));
+};
+
+/**
+ * Factory for a function that returns an entry's disposition.
+ *
+ * @param {!importer.HistoryLoader} historyLoader
+ * @param {!analytics.Tracker} tracker
+ *
+ * @return {function(!FileEntry, !importer.Destination):
+ *     !Promise<!importer.Disposition>}
+ */
+importer.DispositionChecker.createChecker =
+    function(historyLoader, tracker) {
+  var checker = new importer.DispositionChecker(
+      historyLoader,
+      new importer.DriveDuplicateFinder(tracker));
+  return checker.getDisposition.bind(checker);
 };

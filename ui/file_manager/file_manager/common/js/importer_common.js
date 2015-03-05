@@ -13,6 +13,18 @@ importer.ScanEvent = {
 };
 
 /**
+ * Disposition of an entry with respect to it's
+ * presence in import history, drive, and so on.
+ * @enum {string}
+ */
+importer.Disposition = {
+  CONTENT_DUPLICATE: 'content-dupe',
+  HISTORY_DUPLICATE: 'history-dupe',
+  ORIGINAL: 'original',
+  SCAN_DUPLICATE: 'scan-dupe'
+};
+
+/**
  * Storage keys for settings saved by importer.
  * @enum {string}
  */

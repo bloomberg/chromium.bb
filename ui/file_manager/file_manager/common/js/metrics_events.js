@@ -62,32 +62,23 @@ metrics.ImportEvents = {
       .dimension(metrics.Dimensions.SESSION_TYPE_IMPORT)
       .dimension(metrics.Dimensions.USER_TYPE_IMPORT),
 
-  ENDED: metrics.event.Builders_.IMPORT
-      .action('Import Completed'),
-
   CANCELLED: metrics.event.Builders_.IMPORT
       .action('Import Cancelled'),
 
-  ERROR: metrics.event.Builders_.IMPORT
-      .action('Import Error'),
+  ERRORS: metrics.event.Builders_.IMPORT
+      .action('Import Error Count'),
 
-  FILE_COUNT: metrics.event.Builders_.IMPORT
+  FILES_IMPORTED: metrics.event.Builders_.IMPORT
       .action('Files Imported'),
 
-  BYTE_COUNT: metrics.event.Builders_.IMPORT
-      .action('Total Bytes Imported'),
+  MEGABYTES_IMPORTED: metrics.event.Builders_.IMPORT
+      .action('Megabytes Imported'),
 
   DEVICE_YANKED: metrics.event.Builders_.IMPORT
       .action('Device Yanked'),
 
-  HISTORY_DEDUPE_COUNT: metrics.event.Builders_.IMPORT
-      .action('Files Deduped By History'),
-
-  CONTENT_DEDUPE_COUNT: metrics.event.Builders_.IMPORT
-      .action('Files Deduped By Content'),
-
-  HISTORY_CHANGED: metrics.event.Builders_.IMPORT
-      .action('History Changed')
+  FILES_DEDUPLICATED: metrics.event.Builders_.IMPORT
+      .action('Files Deduplicated')
 };
 
 // namespace

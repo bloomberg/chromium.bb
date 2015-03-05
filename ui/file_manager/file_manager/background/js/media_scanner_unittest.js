@@ -20,16 +20,32 @@ var importHistory;
 /** @type {!importer.TestDirectoryWatcher} */
 var watcher;
 
+/**
+ * @type {function(!FileEntry, !importer.Destination):
+ *     !Promise<!importer.Disposition>}
+ */
+var dispositionChecker;
+
 // Set up the test components.
 function setUp() {
 
+
   importHistory = new importer.TestImportHistory();
+  // This is the default disposition checker.
+  // Tests can replace this at runtime if they
+  // want specialized behaviors.
+  dispositionChecker = function() {
+    return Promise.resolve(importer.Disposition.ORIGINAL);
+  };
+
   scanner = new importer.DefaultMediaScanner(
       /** @param {!FileEntry} entry */
       function(entry) {
         return Promise.resolve(entry.name);
       },
-      importHistory,
+      function(entry, destination) {
+        return dispositionChecker(entry, destination);
+      },
       function(callback) {
         watcher = new TestDirectoryWatcher(callback);
         return watcher;
@@ -160,11 +176,25 @@ function testIgnoresPreviousImports(callback) {
       '/testIgnoresPreviousImports/oldimage1234.jpg'] =
           [importer.Destination.GOOGLE_DRIVE];
   var filenames = [
-    'oldimage1234.jpg',
+    'oldimage1234.jpg',    // a history duplicate
+    'driveimage1234.jpg',  // a content duplicate
     'foo.jpg',
     'bar.gif',
     'baz.avi'
   ];
+
+  // Replace the default dispositionChecker with a function
+  // that treats our dupes accordingly.
+  dispositionChecker = function(entry, destination) {
+    if (entry.name === filenames[0]) {
+      return Promise.resolve(importer.Disposition.HISTORY_DUPLICATE);
+    }
+    if (entry.name === filenames[1]) {
+      return Promise.resolve(importer.Disposition.CONTENT_DUPLICATE);
+    }
+    return Promise.resolve(importer.Disposition.ORIGINAL);
+  };
+
   var expectedFiles = [
     '/testIgnoresPreviousImports/foo.jpg',
     '/testIgnoresPreviousImports/bar.gif',
@@ -270,7 +300,7 @@ function testMultipleDirectories(callback) {
       callback);
 }
 
-function testDedupesFiles(callback) {
+function testDedupesFilesInScanResult(callback) {
   var filenames = [
     [
       'a',

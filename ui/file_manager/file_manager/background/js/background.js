@@ -79,7 +79,9 @@ function FileBrowserBackground() {
    */
   this.mediaScanner = new importer.DefaultMediaScanner(
       importer.createMetadataHashcode,
-      this.historyLoader,
+      importer.DispositionChecker.createChecker(
+          this.historyLoader,
+          this.tracker),
       importer.DefaultDirectoryWatcher.create);
 
   /**
@@ -87,12 +89,10 @@ function FileBrowserBackground() {
    * devices.
    * @type {!importer.MediaImportHandler}
    */
-  this.mediaImportHandler =
-      new importer.MediaImportHandler(
-          this.progressCenter,
-          this.historyLoader,
-          new importer.DriveDuplicateFinder.Factory(),
-          this.tracker);
+  this.mediaImportHandler = new importer.MediaImportHandler(
+      this.progressCenter,
+      this.historyLoader,
+      this.tracker);
 
   /**
    * Promise of string data.

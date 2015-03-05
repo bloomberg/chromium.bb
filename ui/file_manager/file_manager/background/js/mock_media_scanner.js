@@ -115,9 +115,6 @@ function TestScanResult(fileEntries) {
   /** @type {number} */
   this.scanDuration = 100;
 
-  /** @type {number} */
-  this.duplicateFileCount = 0;
-
   /** @type {function} */
   this.resolveResult_;
 
@@ -171,7 +168,7 @@ TestScanResult.prototype.getStatistics = function() {
   return {
     scanDuration: this.scanDuration,
     newFileCount: this.fileEntries.length,
-    duplicateFileCount: this.duplicateFileCount,
+    duplicates: {},
     sizeBytes: this.totalBytes
   };
 };

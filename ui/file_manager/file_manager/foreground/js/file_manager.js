@@ -797,7 +797,6 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.onHistoryChanged_ = function(event) {
-    this.tracker_.send(metrics.ImportEvents.HISTORY_CHANGED);
     // Ignore any entry that isn't an immediate child of the
     // current directory.
     util.isChildEntry(event.entry, this.getCurrentDirectoryEntry())

@@ -23,6 +23,13 @@ var fileUrls = {};
 /** @type {!MockFileSystem} */
 var fileSystem;
 
+/** @type {!importer.TestImportHistory} */
+var testHistory;
+
+/** @type {function(!FileEntry, !importer.Destination):
+    !importer.Disposition} */
+var getDisposition;
+
 // Set up string assets.
 loadTimeData.data = {
   CLOUD_IMPORT_ITEMS_REMAINING: '',
@@ -68,7 +75,12 @@ function setUp() {
     }
   };
 
-  duplicateFinder = new importer.DriveDuplicateFinder();
+  testHistory = new importer.TestImportHistory();
+  var tracker = new TestTracker();
+  duplicateFinder = new importer.DriveDuplicateFinder(tracker);
+
+  getDisposition = importer.DispositionChecker.createChecker(
+      testHistory, tracker);
 }
 
 // Verifies the correct result when a duplicate exists.
@@ -78,7 +90,7 @@ function testCheckDuplicateTrue(callback) {
   var files = setupHashes(filePaths, fileHashes);
 
   reportPromise(
-      duplicateFinder.checkDuplicate(files[0])
+      duplicateFinder.isDuplicate(files[0])
           .then(
               function(isDuplicate) {
                 assertTrue(isDuplicate);
@@ -98,10 +110,63 @@ function testCheckDuplicateFalse(callback) {
   var newFile = fileSystem.entries[newFilePath];
 
   reportPromise(
-      duplicateFinder.checkDuplicate(newFile)
+      duplicateFinder.isDuplicate(newFile)
           .then(
               function(isDuplicate) {
                 assertFalse(isDuplicate);
+              }),
+      callback);
+};
+
+function testDispositionChecker_ContentDupe(callback) {
+  var filePaths = ['/foo.txt'];
+  var fileHashes = ['abc123'];
+  var files = setupHashes(filePaths, fileHashes);
+
+  reportPromise(
+      getDisposition(files[0], importer.Destination.GOOGLE_DRIVE)
+          .then(
+              function(disposition) {
+                assertEquals(
+                    importer.Disposition.CONTENT_DUPLICATE,
+                    disposition);
+              }),
+      callback);
+};
+
+function testDispositionChecker_HistoryDupe(callback) {
+  var filePaths = ['/foo.txt'];
+  var fileHashes = ['abc123'];
+  var files = setupHashes(filePaths, fileHashes);
+
+  testHistory.importedPaths['/foo.txt'] =
+      [importer.Destination.GOOGLE_DRIVE];
+
+  reportPromise(
+      getDisposition(files[0], importer.Destination.GOOGLE_DRIVE)
+          .then(
+              function(disposition) {
+                assertEquals(
+                    importer.Disposition.HISTORY_DUPLICATE,
+                    disposition);
+              }),
+      callback);
+};
+
+function testDispositionChecker_Original(callback) {
+  var filePaths = ['/foo.txt'];
+  var fileHashes = ['abc123'];
+  var files = setupHashes(filePaths, fileHashes);
+
+  var newFilePath = '/bar.txt';
+  fileSystem.populate([newFilePath]);
+  var newFile = fileSystem.entries[newFilePath];
+
+  reportPromise(
+      getDisposition(newFile, importer.Destination.GOOGLE_DRIVE)
+          .then(
+              function(disposition) {
+                assertEquals(importer.Disposition.ORIGINAL, disposition);
               }),
       callback);
 };
