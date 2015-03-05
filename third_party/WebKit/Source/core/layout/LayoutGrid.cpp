@@ -617,16 +617,17 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
     SubtreeLayoutScope layoutScope(child);
     LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child.hasOverrideContainingBlockLogicalWidth() ? child.overrideContainingBlockContentLogicalWidth() : LayoutUnit();
     LayoutUnit overrideContainingBlockContentLogicalWidth = gridAreaBreadthForChild(child, ForColumns, columnTracks);
-    if (child.style()->logicalHeight().isPercent() || oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth) {
+    if (child.hasRelativeLogicalHeight() || oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth) {
         layoutScope.setNeedsLayout(&child);
         // We need to clear the stretched height to properly compute logical height during layout.
         child.clearOverrideLogicalContentHeight();
     }
 
     child.setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
-    // If |child| has a percentage logical height, we shouldn't let it override its intrinsic height, which is
+    // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
     // what we are interested in here. Thus we need to set the override logical height to -1 (no possible resolution).
-    child.setOverrideContainingBlockContentLogicalHeight(-1);
+    if (child.hasRelativeLogicalHeight())
+        child.setOverrideContainingBlockContentLogicalHeight(-1);
     child.layoutIfNeeded();
     // If the child was stretched we should use its intrinsic height.
     return (child.hasOverrideHeight() ? childIntrinsicHeight(child) : child.logicalHeight()) + child.marginLogicalHeight();
@@ -640,9 +641,9 @@ LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirec
         return 0;
 
     if (direction == ForColumns) {
-        // If |child| has a percentage logical width, we shouldn't let it override its intrinsic width, which is
+        // If |child| has a relative logical width, we shouldn't let it override its intrinsic width, which is
         // what we are interested in here. Thus we need to set the override logical width to -1 (no possible resolution).
-        if (child.style()->logicalWidth().isPercent())
+        if (child.hasRelativeLogicalWidth())
             child.setOverrideContainingBlockContentLogicalWidth(-1);
 
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
@@ -661,9 +662,9 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirec
         return LayoutUnit();
 
     if (direction == ForColumns) {
-        // If |child| has a percentage logical width, we shouldn't let it override its intrinsic width, which is
+        // If |child| has a relative logical width, we shouldn't let it override its intrinsic width, which is
         // what we are interested in here. Thus we need to set the override logical width to -1 (no possible resolution).
-        if (child.style()->logicalWidth().isPercent())
+        if (child.hasRelativeLogicalWidth())
             child.setOverrideContainingBlockContentLogicalWidth(-1);
 
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.

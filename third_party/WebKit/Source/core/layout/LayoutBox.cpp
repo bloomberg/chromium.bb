@@ -4511,6 +4511,13 @@ LayoutPoint LayoutBox::topLeftLocation() const
     return containerBlock->flipForWritingModeForChild(this, location());
 }
 
+bool LayoutBox::hasRelativeLogicalWidth() const
+{
+    return style()->logicalWidth().isPercent()
+        || style()->logicalMinWidth().isPercent()
+        || style()->logicalMaxWidth().isPercent();
+}
+
 bool LayoutBox::hasRelativeLogicalHeight() const
 {
     return style()->logicalHeight().isPercent()

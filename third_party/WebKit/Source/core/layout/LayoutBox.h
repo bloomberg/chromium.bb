@@ -620,6 +620,7 @@ public:
     IntSize scrolledContentOffset() const;
     void applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const;
 
+    virtual bool hasRelativeLogicalWidth() const;
     virtual bool hasRelativeLogicalHeight() const;
 
     bool hasHorizontalLayoutOverflow() const
