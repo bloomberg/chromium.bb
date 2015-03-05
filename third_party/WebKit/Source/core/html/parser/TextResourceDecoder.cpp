@@ -37,8 +37,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-const int minimumLengthOfXMLDeclaration = 8;
-
 static inline bool bytesEqual(const char* p, char b0, char b1, char b2, char b3, char b4)
 {
     return p[0] == b0 && p[1] == b1 && p[2] == b2 && p[3] == b3 && p[4] == b4;
@@ -297,7 +295,7 @@ bool TextResourceDecoder::checkForXMLCharset(const char* data, size_t len, bool&
     const char* pEnd = ptr + m_buffer.size();
 
     // Is there enough data available to check for XML declaration?
-    if (m_buffer.size() < minimumLengthOfXMLDeclaration)
+    if (m_buffer.size() < 8)
         return false;
 
     // Handle XML declaration, which can have encoding in it. This encoding is honored even for HTML documents.
@@ -377,8 +375,7 @@ String TextResourceDecoder::decode(const char* data, size_t len)
             return emptyString();
     }
 
-    // We check XML declaration in HTML content only if there is enough data available
-    if (((m_contentType == HTMLContent && len >= minimumLengthOfXMLDeclaration) || m_contentType == XMLContent) && !m_checkedForXMLCharset) {
+    if ((m_contentType == HTMLContent || m_contentType == XMLContent) && !m_checkedForXMLCharset) {
         if (!checkForXMLCharset(data, len, movedDataToBuffer))
             return emptyString();
     }
