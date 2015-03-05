@@ -1821,6 +1821,10 @@ KERNELBASE.dll!WriteFile
 KERNEL32.dll!WriteFile
 mojo_system_impl.dll!mojo::system::`anonymous namespace'::RawChannelWin::WriteNoLock
 
+UNINITIALIZED READ
+name=bug_399842
+skia.dll!S32A_Opaque_BlitRow32_SSE4
+
 HANDLE LEAK
 name=bug_403544
 system call NtCreateSemaphore
@@ -1886,9 +1890,10 @@ name=bug_436131_c
 *!ash::test::ShelfViewTest_OverflowBubbleSize_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
 
-UNINITIALIZED READ
-name=bug_399842
-skia.dll!S32A_Opaque_BlitRow32_SSE4
+UNADDRESSABLE ACCESS
+name=bug_442969
+*!testing::internal::CmpHelperNE<>
+*!extensions::WebrtcAudioPrivateTest_GetAndSetWithMediaStream_Test::RunTestOnMainThread
 
 UNINITIALIZED READ
 name=bug_455417
