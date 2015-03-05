@@ -26,8 +26,4 @@ LIB_PATH = os.path.join(
     'libFindBadConstructs.' + LIBSUFFIX)
 
 print ('-Xclang -load -Xclang %s'
-       ' -Xclang -add-plugin -Xclang find-bad-constructs'
-       ' -Xclang -plugin-arg-find-bad-constructs'
-       ' -Xclang check-weak-ptr-factory-order'
-       ' -Xclang -plugin-arg-find-bad-constructs'
-       ' -Xclang strict-virtual-specifiers') % LIB_PATH
+       ' -Xclang -add-plugin -Xclang find-bad-constructs') % LIB_PATH

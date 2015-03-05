@@ -61,6 +61,7 @@
 
 #if defined(SANITIZER_COVERAGE)
 #include <sanitizer/common_interface_defs.h>
+#include <sanitizer/coverage_interface.h>
 #endif
 
 const int kGpuTimeout = 10000;
