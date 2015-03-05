@@ -112,8 +112,11 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
 
 void SystemModalContainerLayoutManager::OnWindowDestroying(
     aura::Window* window) {
-  if (modal_background_ && modal_background_->GetNativeView() == window)
+  if (modal_background_ && modal_background_->GetNativeView() == window) {
+    if (keyboard::KeyboardController::GetInstance())
+      keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
     modal_background_ = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

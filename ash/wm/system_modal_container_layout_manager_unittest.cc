@@ -493,13 +493,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
   }
 }
 
-// This is failing on release build. Re-enable once crbug.com/462714 is fixed.
-#if defined(NDEBUG)
-#define MAYBE_MultiDisplays DISABLED_MultiDisplays
-#else
-#define MAYBE_MultiDisplays MultiDisplays
-#endif
-TEST_F(SystemModalContainerLayoutManagerTest, MAYBE_MultiDisplays) {
+TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
