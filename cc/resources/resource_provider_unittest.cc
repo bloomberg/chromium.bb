@@ -97,10 +97,10 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
   MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
   MOCK_METHOD1(waitSyncPoint, void(GLuint sync_point));
   MOCK_METHOD0(insertSyncPoint, GLuint(void));
-  MOCK_METHOD2(produceTextureCHROMIUM,
-               void(GLenum target, const GLbyte* mailbox));
-  MOCK_METHOD2(consumeTextureCHROMIUM,
-               void(GLenum target, const GLbyte* mailbox));
+  MOCK_METHOD3(produceTextureDirectCHROMIUM,
+               void(GLuint texture, GLenum target, const GLbyte* mailbox));
+  MOCK_METHOD2(createAndConsumeTextureCHROMIUM,
+               unsigned(GLenum target, const GLbyte* mailbox));
 
   // Force all textures to be consecutive numbers starting at "1",
   // so we easily can test for them.
@@ -258,25 +258,27 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     return shared_data_->GenMailbox(mailbox);
   }
 
-  void produceTextureCHROMIUM(GLenum target, const GLbyte* mailbox) override {
-    CheckTextureIsBound(target);
-
+  void produceTextureDirectCHROMIUM(GLuint texture,
+                                    GLenum target,
+                                    const GLbyte* mailbox) override {
     // Delay moving the texture into the mailbox until the next
     // InsertSyncPoint, so that it is not visible to other contexts that
     // haven't waited on that sync point.
     scoped_ptr<PendingProduceTexture> pending(new PendingProduceTexture);
     memcpy(pending->mailbox, mailbox, sizeof(pending->mailbox));
     base::AutoLock lock_for_texture_access(namespace_->lock);
-    pending->texture = BoundTexture(target);
+    pending->texture = UnboundTexture(texture);
     pending_produce_textures_.push_back(pending.Pass());
   }
 
-  void consumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) override {
-    CheckTextureIsBound(target);
+  GLuint createAndConsumeTextureCHROMIUM(GLenum target,
+                                         const GLbyte* mailbox) override {
+    GLuint texture_id = createTexture();
     base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture =
         shared_data_->ConsumeTexture(mailbox, last_waited_sync_point_);
-    namespace_->textures.Replace(BoundTextureId(target), texture);
+    namespace_->textures.Replace(texture_id, texture);
+    return texture_id;
   }
 
   void GetPixels(const gfx::Size& size,
@@ -461,9 +463,9 @@ class ResourceProviderTest
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
       unsigned texture = child_context_->createTexture();
       gpu::Mailbox gpu_mailbox;
-      child_context_->bindTexture(GL_TEXTURE_2D, texture);
       child_context_->genMailboxCHROMIUM(gpu_mailbox.name);
-      child_context_->produceTextureCHROMIUM(GL_TEXTURE_2D, gpu_mailbox.name);
+      child_context_->produceTextureDirectCHROMIUM(texture, GL_TEXTURE_2D,
+                                                   gpu_mailbox.name);
       *sync_point = child_context_->insertSyncPoint();
       EXPECT_LT(0u, *sync_point);
 
@@ -666,12 +668,11 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   }
 
   GLuint external_texture_id = child_context_->createExternalTexture();
-  child_context_->bindTexture(GL_TEXTURE_EXTERNAL_OES, external_texture_id);
 
   gpu::Mailbox external_mailbox;
   child_context_->genMailboxCHROMIUM(external_mailbox.name);
-  child_context_->produceTextureCHROMIUM(GL_TEXTURE_EXTERNAL_OES,
-                                         external_mailbox.name);
+  child_context_->produceTextureDirectCHROMIUM(
+      external_texture_id, GL_TEXTURE_EXTERNAL_OES, external_mailbox.name);
   const GLuint external_sync_point = child_context_->insertSyncPoint();
   ResourceProvider::ResourceId id4 =
       child_resource_provider_->CreateResourceFromTextureMailbox(
@@ -1745,9 +1746,8 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
       resource_ids_to_transfer.push_back(id);
       TransferableResourceArray list;
 
-      EXPECT_CALL(*child_context, bindTexture(GL_TEXTURE_2D, child_texture_id));
       EXPECT_CALL(*child_context,
-                  produceTextureCHROMIUM(GL_TEXTURE_2D, _));
+                  produceTextureDirectCHROMIUM(_, GL_TEXTURE_2D, _));
       EXPECT_CALL(*child_context, insertSyncPoint());
       child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
                                                    &list);
@@ -1757,8 +1757,9 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
       EXPECT_EQ(static_cast<unsigned>(child_filter), list[0].filter);
 
       EXPECT_CALL(*parent_context,
-                  bindTexture(GL_TEXTURE_2D, parent_texture_id));
-      EXPECT_CALL(*parent_context, consumeTextureCHROMIUM(GL_TEXTURE_2D, _));
+                  createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, _))
+          .WillOnce(Return(parent_texture_id));
+
       parent_resource_provider->ReceiveFromChild(child_id, list);
       {
         parent_resource_provider->WaitSyncPointIfNeeded(list[0].id);
@@ -1842,7 +1843,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &data);
   gpu::Mailbox mailbox;
   context()->genMailboxCHROMIUM(mailbox.name);
-  context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  context()->produceTextureDirectCHROMIUM(texture, GL_TEXTURE_2D, mailbox.name);
   uint32 sync_point = context()->insertSyncPoint();
 
   // All the logic below assumes that the sync points are all positive.
@@ -1876,14 +1877,15 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     EXPECT_EQ(0u, release_sync_point);
 
     context()->waitSyncPoint(list[0].mailbox_holder.sync_point);
-    unsigned other_texture = context()->createTexture();
-    context()->bindTexture(GL_TEXTURE_2D, other_texture);
-    context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    unsigned other_texture =
+        context()->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint8_t test_data[4] = { 0 };
     context()->GetPixels(
         gfx::Size(1, 1), RGBA_8888, test_data);
     EXPECT_EQ(0, memcmp(data, test_data, sizeof(data)));
-    context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+
+    context()->produceTextureDirectCHROMIUM(other_texture, GL_TEXTURE_2D,
+                                            mailbox.name);
     context()->deleteTexture(other_texture);
     list[0].mailbox_holder.sync_point = context()->insertSyncPoint();
     EXPECT_LT(0u, list[0].mailbox_holder.sync_point);
@@ -1927,14 +1929,15 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     EXPECT_EQ(0u, release_sync_point);
 
     context()->waitSyncPoint(list[0].mailbox_holder.sync_point);
-    unsigned other_texture = context()->createTexture();
-    context()->bindTexture(GL_TEXTURE_2D, other_texture);
-    context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    unsigned other_texture =
+        context()->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint8_t test_data[4] = { 0 };
     context()->GetPixels(
         gfx::Size(1, 1), RGBA_8888, test_data);
     EXPECT_EQ(0, memcmp(data, test_data, sizeof(data)));
-    context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+
+    context()->produceTextureDirectCHROMIUM(other_texture, GL_TEXTURE_2D,
+                                            mailbox.name);
     context()->deleteTexture(other_texture);
     list[0].mailbox_holder.sync_point = context()->insertSyncPoint();
     EXPECT_LT(0u, list[0].mailbox_holder.sync_point);
@@ -1955,8 +1958,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   }
 
   context()->waitSyncPoint(release_sync_point);
-  context()->bindTexture(GL_TEXTURE_2D, texture);
-  context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  texture =
+      context()->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   context()->deleteTexture(texture);
 }
 
@@ -2264,7 +2267,7 @@ TEST_P(ResourceProviderTest, LostContext) {
   context()->bindTexture(GL_TEXTURE_2D, texture);
   gpu::Mailbox mailbox;
   context()->genMailboxCHROMIUM(mailbox.name);
-  context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  context()->produceTextureDirectCHROMIUM(texture, GL_TEXTURE_2D, mailbox.name);
   uint32 sync_point = context()->insertSyncPoint();
 
   EXPECT_LT(0u, sync_point);
@@ -2644,8 +2647,8 @@ class ResourceProviderTestTextureMailboxGLFilters
     EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
     EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
     EXPECT_CALL(*context, insertSyncPoint()).Times(0);
-    EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
-    EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+    EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
+    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
 
     gpu::Mailbox gpu_mailbox;
     memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
@@ -2674,12 +2677,12 @@ class ResourceProviderTestTextureMailboxGLFilters
       resource_provider->WaitSyncPointIfNeeded(id);
       Mock::VerifyAndClearExpectations(context);
 
-      // Using the texture does a consume of the mailbox.
-      EXPECT_CALL(*context, bindTexture(target, texture_id)).Times(2);
-      EXPECT_CALL(*context, consumeTextureCHROMIUM(target, _));
+      EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(target, _))
+          .WillOnce(Return(texture_id));
+      EXPECT_CALL(*context, bindTexture(target, texture_id));
 
       EXPECT_CALL(*context, insertSyncPoint()).Times(0);
-      EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+      EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
 
       // The sampler will reset these if |mailbox_nearest_neighbor| does not
       // match |sampler_filter|.
@@ -2698,10 +2701,10 @@ class ResourceProviderTestTextureMailboxGLFilters
       // necessary.
       EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
       EXPECT_CALL(*context, insertSyncPoint());
-      EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+      EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
 
       EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
-      EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+      EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
     }
 
     resource_provider->DeleteResource(id);
@@ -2786,15 +2789,14 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
                                false,
                                1));
 
-  unsigned texture_id = 1;
   uint32 sync_point = 30;
   unsigned target = GL_TEXTURE_EXTERNAL_OES;
 
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
   EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
   EXPECT_CALL(*context, insertSyncPoint()).Times(0);
-  EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
-  EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
+  EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
@@ -2816,12 +2818,13 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
     resource_provider->WaitSyncPointIfNeeded(id);
     Mock::VerifyAndClearExpectations(context);
 
-    // Using the texture does a consume of the mailbox.
-    EXPECT_CALL(*context, bindTexture(target, texture_id));
-    EXPECT_CALL(*context, consumeTextureCHROMIUM(target, _));
+    unsigned texture_id = 1;
+
+    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(target, _))
+        .WillOnce(Return(texture_id));
 
     EXPECT_CALL(*context, insertSyncPoint()).Times(0);
-    EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+    EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
 
     ResourceProvider::ScopedReadLockGL lock(resource_provider.get(), id);
     Mock::VerifyAndClearExpectations(context);
@@ -2830,10 +2833,10 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
     // necessary.
     EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
     EXPECT_CALL(*context, insertSyncPoint());
-    EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+    EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
 
     EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
-    EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
   }
 }
 
@@ -2867,8 +2870,8 @@ TEST_P(ResourceProviderTest,
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
   EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
   EXPECT_CALL(*context, insertSyncPoint()).Times(0);
-  EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
-  EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
+  EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
@@ -2926,8 +2929,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
   EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
   EXPECT_CALL(*context, insertSyncPoint()).Times(0);
-  EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
-  EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
+  EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);

@@ -32,7 +32,10 @@ void OrderedTextureMap::Replace(GLuint id,
 
 void OrderedTextureMap::Remove(GLuint id) {
   TextureMap::iterator map_it = textures_.find(id);
-  DCHECK(map_it != textures_.end());
+  // for some test we generate dummy tex id, which are not registered,
+  // nothing to remove in that case.
+  if (map_it == textures_.end())
+    return;
   textures_.erase(map_it);
 
   TextureList::iterator list_it =

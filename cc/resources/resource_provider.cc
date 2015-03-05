@@ -898,11 +898,9 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    resource->gl_id = texture_id_allocator_->NextId();
-    GLC(gl, gl->BindTexture(resource->target, resource->gl_id));
-    GLC(gl,
-        gl->ConsumeTextureCHROMIUM(resource->mailbox.target(),
-                                   resource->mailbox.name()));
+    resource->gl_id =
+        GLC(gl, gl->CreateAndConsumeTextureCHROMIUM(resource->mailbox.target(),
+                                                    resource->mailbox.name()));
   }
 
   if (!resource->pixels && resource->has_shared_bitmap_id &&
@@ -1595,9 +1593,6 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     LazyCreate(source);
     DCHECK(source->gl_id);
     DCHECK(source->origin == Resource::INTERNAL);
-    GLC(gl,
-        gl->BindTexture(resource->mailbox_holder.texture_target,
-                        source->gl_id));
     if (source->image_id) {
       DCHECK(source->dirty_image);
       BindImageForSampling(source);
@@ -1605,9 +1600,10 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     // This is a resource allocated by the compositor, we need to produce it.
     // Don't set a sync point, the caller will do it.
     GLC(gl, gl->GenMailboxCHROMIUM(resource->mailbox_holder.mailbox.name));
-    GLC(gl,
-        gl->ProduceTextureCHROMIUM(resource->mailbox_holder.texture_target,
-                                   resource->mailbox_holder.mailbox.name));
+    GLC(gl, gl->ProduceTextureDirectCHROMIUM(
+                source->gl_id, resource->mailbox_holder.texture_target,
+                resource->mailbox_holder.mailbox.name));
+
     source->mailbox = TextureMailbox(resource->mailbox_holder);
   } else {
     DCHECK(source->mailbox.IsTexture());

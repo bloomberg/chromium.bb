@@ -441,6 +441,7 @@ class TestWebGraphicsContext3D {
   void CreateNamespace();
   GLuint BoundTextureId(GLenum target);
   scoped_refptr<TestTexture> BoundTexture(GLenum target);
+  scoped_refptr<TestTexture> UnboundTexture(GLuint texture);
   void CheckTextureIsBound(GLenum target);
 
   unsigned context_id_;

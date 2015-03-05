@@ -1440,7 +1440,6 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
         // Verify that used texture is correct.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
-        context->ResetUsedTextures();
         break;
       case 1:
         // Number of textures should be doubled as the first context layer
@@ -1458,7 +1457,6 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
         // New textures should have been used.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
-        context->ResetUsedTextures();
         break;
       case 2:
         EndTest();
@@ -2658,8 +2656,8 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
                                   GLenum type,
                                   GLintptr offset));
   MOCK_METHOD1(deleteTexture, void(GLenum texture));
-  MOCK_METHOD2(produceTextureCHROMIUM,
-               void(GLenum target, const GLbyte* mailbox));
+  MOCK_METHOD3(produceTextureDirectCHROMIUM,
+               void(GLuint texture, GLenum target, const GLbyte* mailbox));
 };
 
 class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
@@ -2749,12 +2747,10 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
               resource_provider->TargetForTesting(
                   io_surface_draw_quad->io_surface_resource_id));
 
-    EXPECT_CALL(*mock_context_, bindTexture(GL_TEXTURE_RECTANGLE_ARB, 1))
-        .Times(1);
     if (delegating_renderer()) {
       // The io surface layer's resource should be sent to the parent.
-      EXPECT_CALL(*mock_context_,
-                  produceTextureCHROMIUM(GL_TEXTURE_RECTANGLE_ARB, _)).Times(1);
+      EXPECT_CALL(*mock_context_, produceTextureDirectCHROMIUM(
+                                      _, GL_TEXTURE_RECTANGLE_ARB, _)).Times(1);
     } else {
       // The io surface layer's texture is drawn.
       EXPECT_CALL(*mock_context_, activeTexture(GL_TEXTURE0)).Times(AtLeast(1));
