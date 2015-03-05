@@ -48,6 +48,7 @@ void WorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
   AgentHostMap::iterator it = workers_.find(id);
   DCHECK(it != workers_.end());
   scoped_refptr<WorkerDevToolsAgentHost> agent_host(it->second);
+  FOR_EACH_OBSERVER(Observer, observer_list_, WorkerDestroyed(it->second));
   agent_host->WorkerDestroyed();
   DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
 }
@@ -61,6 +62,14 @@ void WorkerDevToolsManager::WorkerReadyForInspection(int worker_process_id,
   it->second->WorkerReadyForInspection();
 }
 
+void WorkerDevToolsManager::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void WorkerDevToolsManager::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 WorkerDevToolsManager::WorkerDevToolsManager() {
 }
 
@@ -72,6 +81,15 @@ void WorkerDevToolsManager::RemoveInspectedWorkerData(WorkerId id) {
   workers_.erase(id);
 }
 
+void WorkerDevToolsManager::WorkerCreated(
+    const WorkerId& id,
+    WorkerDevToolsAgentHost* host) {
+  workers_[id] = host;
+  DevToolsManager::GetInstance()->AgentHostChanged(host);
+  scoped_refptr<WorkerDevToolsAgentHost> protector(host);
+  FOR_EACH_OBSERVER(Observer, observer_list_, WorkerCreated(host));
+}
+
 void WorkerDevToolsManager::WorkerRestarted(const WorkerId& id,
                                             const AgentHostMap::iterator& it) {
   WorkerDevToolsAgentHost* agent_host = it->second;
@@ -79,6 +97,10 @@ void WorkerDevToolsManager::WorkerRestarted(const WorkerId& id,
   workers_.erase(it);
   workers_[id] = agent_host;
   DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
+}
+
+void WorkerDevToolsManager::ResetForTesting() {
+  workers_.clear();
 }
 
 }  // namespace content

@@ -42,9 +42,6 @@ class CONTENT_EXPORT SharedWorkerDevToolsManager
   AgentHostMap::iterator FindExistingWorkerAgentHost(
       const SharedWorkerInstance& instance);
 
-  // Resets to its initial state as if newly created.
-  void ResetForTesting();
-
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsManager);
 };
 

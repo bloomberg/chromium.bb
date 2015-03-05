@@ -525,6 +525,8 @@
       'browser/devtools/protocol/page_handler.h',
       'browser/devtools/protocol/power_handler.cc',
       'browser/devtools/protocol/power_handler.h',
+      'browser/devtools/protocol/service_worker_handler.cc',
+      'browser/devtools/protocol/service_worker_handler.h',
       'browser/devtools/protocol/system_info_handler.cc',
       'browser/devtools/protocol/system_info_handler.h',
       'browser/devtools/protocol/tethering_handler.cc',

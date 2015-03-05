@@ -58,9 +58,9 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = FindExistingWorkerAgentHost(service_worker_id);
   if (it == workers().end()) {
-    workers()[id] = new ServiceWorkerDevToolsAgentHost(
-        id, service_worker_id, debug_service_worker_on_start_);
-    DevToolsManager::GetInstance()->AgentHostChanged(workers()[id]);
+    WorkerDevToolsManager::WorkerCreated(id,
+        new ServiceWorkerDevToolsAgentHost(id, service_worker_id,
+                                           debug_service_worker_on_start_));
     return debug_service_worker_on_start_;
   }
   WorkerRestarted(id, it);

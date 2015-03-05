@@ -25,8 +25,9 @@ bool SharedWorkerDevToolsManager::WorkerCreated(
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = FindExistingWorkerAgentHost(instance);
   if (it == workers().end()) {
-    workers()[id] = new SharedWorkerDevToolsAgentHost(id, instance);
-    DevToolsManager::GetInstance()->AgentHostChanged(workers()[id]);
+    WorkerDevToolsManager::WorkerCreated(
+        id,
+        new SharedWorkerDevToolsAgentHost(id, instance));
     return false;
   }
   WorkerRestarted(id, it);
@@ -49,10 +50,6 @@ SharedWorkerDevToolsManager::SharedWorkerDevToolsManager() {
 }
 
 SharedWorkerDevToolsManager::~SharedWorkerDevToolsManager() {
-}
-
-void SharedWorkerDevToolsManager::ResetForTesting() {
-  workers().clear();
 }
 
 }  // namespace content
