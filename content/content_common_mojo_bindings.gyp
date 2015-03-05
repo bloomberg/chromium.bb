@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      # GN version: //content:common:mojo_bindings
+      # GN version: //content/common:mojo_bindings
       'target_name': 'content_common_mojo_bindings_mojom',
       'type': 'none',
       'variables': {
