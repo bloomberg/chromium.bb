@@ -117,33 +117,33 @@ void LayoutTreeBuilderForElement::createRenderer()
 {
     LayoutStyle& style = this->style();
 
-    LayoutObject* newRenderer = m_node->createRenderer(style);
-    if (!newRenderer)
+    LayoutObject* newLayoutObject = m_node->createRenderer(style);
+    if (!newLayoutObject)
         return;
 
     LayoutObject* parentRenderer = this->parentRenderer();
 
-    if (!parentRenderer->isChildAllowed(newRenderer, style)) {
-        newRenderer->destroy();
+    if (!parentRenderer->isChildAllowed(newLayoutObject, style)) {
+        newLayoutObject->destroy();
         return;
     }
 
     // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
     // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
-    newRenderer->setFlowThreadState(parentRenderer->flowThreadState());
+    newLayoutObject->setFlowThreadState(parentRenderer->flowThreadState());
 
     LayoutObject* nextRenderer = this->nextRenderer();
-    m_node->setRenderer(newRenderer);
-    newRenderer->setStyle(&style); // setStyle() can depend on renderer() already being set.
+    m_node->setLayoutObject(newLayoutObject);
+    newLayoutObject->setStyle(&style); // setStyle() can depend on renderer() already being set.
 
     if (Fullscreen::isActiveFullScreenElement(*m_node)) {
-        newRenderer = LayoutFullScreen::wrapRenderer(newRenderer, parentRenderer, &m_node->document());
-        if (!newRenderer)
+        newLayoutObject = LayoutFullScreen::wrapRenderer(newLayoutObject, parentRenderer, &m_node->document());
+        if (!newLayoutObject)
             return;
     }
 
-    // Note: Adding newRenderer instead of renderer(). renderer() may be a child of newRenderer.
-    parentRenderer->addChild(newRenderer, nextRenderer);
+    // Note: Adding newLayoutObject instead of renderer(). renderer() may be a child of newLayoutObject.
+    parentRenderer->addChild(newLayoutObject, nextRenderer);
 }
 
 void LayoutTreeBuilderForText::createRenderer()
@@ -153,21 +153,21 @@ void LayoutTreeBuilderForText::createRenderer()
 
     ASSERT(m_node->textRendererIsNeeded(*style, *parentRenderer));
 
-    LayoutText* newRenderer = m_node->createTextRenderer(style);
-    if (!parentRenderer->isChildAllowed(newRenderer, *style)) {
-        newRenderer->destroy();
+    LayoutText* newLayoutObject = m_node->createTextRenderer(style);
+    if (!parentRenderer->isChildAllowed(newLayoutObject, *style)) {
+        newLayoutObject->destroy();
         return;
     }
 
     // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
     // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
-    newRenderer->setFlowThreadState(parentRenderer->flowThreadState());
+    newLayoutObject->setFlowThreadState(parentRenderer->flowThreadState());
 
     LayoutObject* nextRenderer = this->nextRenderer();
-    m_node->setRenderer(newRenderer);
+    m_node->setLayoutObject(newLayoutObject);
     // Parent takes care of the animations, no need to call setAnimatableStyle.
-    newRenderer->setStyle(style);
-    parentRenderer->addChild(newRenderer, nextRenderer);
+    newLayoutObject->setStyle(style);
+    parentRenderer->addChild(newLayoutObject, nextRenderer);
 }
 
 }

@@ -99,16 +99,16 @@ enum StyleChangeType {
 
 class NodeRareDataBase {
 public:
-    LayoutObject* renderer() const { return m_renderer; }
-    void setRenderer(LayoutObject* renderer) { m_renderer = renderer; }
+    LayoutObject* renderer() const { return m_layoutObject; }
+    void setLayoutObject(LayoutObject* layoutObject) { m_layoutObject = layoutObject; }
 
 protected:
-    NodeRareDataBase(LayoutObject* renderer)
-        : m_renderer(renderer)
+    NodeRareDataBase(LayoutObject* layoutObject)
+        : m_layoutObject(layoutObject)
     { }
 
 protected:
-    LayoutObject* m_renderer;
+    LayoutObject* m_layoutObject;
 };
 
 class Node;
@@ -500,13 +500,13 @@ public:
 
     // As renderer() includes a branch you should avoid calling it repeatedly in hot code paths.
     // Note that if a Node has a renderer, it's parentNode is guaranteed to have one as well.
-    LayoutObject* renderer() const { return hasRareData() ? m_data.m_rareData->renderer() : m_data.m_renderer; };
-    void setRenderer(LayoutObject* renderer)
+    LayoutObject* renderer() const { return hasRareData() ? m_data.m_rareData->renderer() : m_data.m_layoutObject; };
+    void setLayoutObject(LayoutObject* layoutObject)
     {
         if (hasRareData())
-            m_data.m_rareData->setRenderer(renderer);
+            m_data.m_rareData->setLayoutObject(layoutObject);
         else
-            m_data.m_renderer = renderer;
+            m_data.m_layoutObject = layoutObject;
     }
 
     // Use these two methods with caution.
@@ -817,8 +817,8 @@ private:
     RawPtrWillBeMember<Node> m_next;
     // When a node has rare data we move the renderer into the rare data.
     union DataUnion {
-        DataUnion() : m_renderer(nullptr) { }
-        LayoutObject* m_renderer;
+        DataUnion() : m_layoutObject(nullptr) { }
+        LayoutObject* m_layoutObject;
         NodeRareDataBase* m_rareData;
     } m_data;
 };

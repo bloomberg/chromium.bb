@@ -44,7 +44,7 @@ PassRefPtr<AXMenuList> AXMenuList::create(LayoutMenuList* layoutObject, AXObject
 
 bool AXMenuList::press() const
 {
-    LayoutMenuList* menuList = toLayoutMenuList(m_renderer);
+    LayoutMenuList* menuList = toLayoutMenuList(m_layoutObject);
     if (menuList->popupIsVisible())
         menuList->hidePopup();
     else
@@ -84,7 +84,7 @@ void AXMenuList::childrenChanged()
 
 bool AXMenuList::isCollapsed() const
 {
-    return !toLayoutMenuList(m_renderer)->popupIsVisible();
+    return !toLayoutMenuList(m_layoutObject)->popupIsVisible();
 }
 
 AccessibilityExpanded AXMenuList::isExpanded() const
@@ -105,7 +105,7 @@ bool AXMenuList::canSetFocusAttribute() const
 
 void AXMenuList::didUpdateActiveOption(int optionIndex)
 {
-    RefPtrWillBeRawPtr<Document> document(m_renderer->document());
+    RefPtrWillBeRawPtr<Document> document(m_layoutObject->document());
     AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
 
     const AccessibilityChildrenVector& childObjects = children();

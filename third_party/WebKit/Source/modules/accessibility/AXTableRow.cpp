@@ -113,7 +113,7 @@ AXObject* AXTableRow::headerObject()
 
 void AXTableRow::headerObjectsForRow(AccessibilityChildrenVector& headers)
 {
-    if (!m_renderer || !m_renderer->isTableRow())
+    if (!m_layoutObject || !m_layoutObject->isTableRow())
         return;
 
     AccessibilityChildrenVector rowChildren = children();

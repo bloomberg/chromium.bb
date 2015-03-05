@@ -58,10 +58,10 @@ bool AXList::computeAccessibilityIsIgnored() const
 
 bool AXList::isDescriptionList() const
 {
-    if (!m_renderer)
+    if (!m_layoutObject)
         return false;
 
-    Node* node = m_renderer->node();
+    Node* node = m_layoutObject->node();
     return node && node->hasTagName(dlTag);
 }
 

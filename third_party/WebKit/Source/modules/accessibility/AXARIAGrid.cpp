@@ -89,7 +89,7 @@ void AXARIAGrid::addChildren()
     }
 
     m_haveChildren = true;
-    if (!m_renderer)
+    if (!m_layoutObject)
         return;
 
     AXObjectCacheImpl* axCache = axObjectCache();

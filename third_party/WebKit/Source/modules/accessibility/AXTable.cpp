@@ -72,7 +72,7 @@ PassRefPtr<AXTable> AXTable::create(LayoutObject* renderer, AXObjectCacheImpl* a
 
 bool AXTable::hasARIARole() const
 {
-    if (!m_renderer)
+    if (!m_layoutObject)
         return false;
 
     AccessibilityRole ariaRole = ariaRoleAttribute();
@@ -84,7 +84,7 @@ bool AXTable::hasARIARole() const
 
 bool AXTable::isAXTable() const
 {
-    if (!m_renderer)
+    if (!m_layoutObject)
         return false;
 
     return m_isAXTable;
@@ -101,7 +101,7 @@ static bool elementHasAriaRole(const Element* element)
 
 bool AXTable::isDataTable() const
 {
-    if (!m_renderer || !node())
+    if (!m_layoutObject || !node())
         return false;
 
     // Do not consider it a data table if it has an ARIA role.
@@ -119,7 +119,7 @@ bool AXTable::isDataTable() const
     // Unfortunately, there is no good way to determine the difference
     // between a "layout" table and a "data" table.
 
-    LayoutTable* table = toLayoutTable(m_renderer);
+    LayoutTable* table = toLayoutTable(m_layoutObject);
     Node* tableNode = table->node();
     if (!isHTMLTableElement(tableNode))
         return false;
@@ -333,7 +333,7 @@ bool AXTable::isTableExposableThroughAccessibility() const
     // <table> should be exposed as an AXTable. The goal
     // is to only show "data" tables.
 
-    if (!m_renderer)
+    if (!m_layoutObject)
         return false;
 
     // If the developer assigned an aria role to this, then we
@@ -367,10 +367,10 @@ void AXTable::addChildren()
     ASSERT(!m_haveChildren);
 
     m_haveChildren = true;
-    if (!m_renderer || !m_renderer->isTable())
+    if (!m_layoutObject || !m_layoutObject->isTable())
         return;
 
-    LayoutTable* table = toLayoutTable(m_renderer);
+    LayoutTable* table = toLayoutTable(m_layoutObject);
     AXObjectCacheImpl* axCache = axObjectCache();
 
     Node* tableNode = table->node();
@@ -465,7 +465,7 @@ const AXObject::AccessibilityChildrenVector& AXTable::rows()
 
 void AXTable::columnHeaders(AccessibilityChildrenVector& headers)
 {
-    if (!m_renderer)
+    if (!m_layoutObject)
         return;
 
     updateChildrenIfNecessary();
@@ -476,7 +476,7 @@ void AXTable::columnHeaders(AccessibilityChildrenVector& headers)
 
 void AXTable::rowHeaders(AccessibilityChildrenVector& headers)
 {
-    if (!m_renderer)
+    if (!m_layoutObject)
         return;
 
     updateChildrenIfNecessary();
@@ -487,7 +487,7 @@ void AXTable::rowHeaders(AccessibilityChildrenVector& headers)
 
 void AXTable::cells(AXObject::AccessibilityChildrenVector& cells)
 {
-    if (!m_renderer)
+    if (!m_layoutObject)
         return;
 
     updateChildrenIfNecessary();
@@ -575,11 +575,11 @@ String AXTable::title(TextUnderElementMode mode) const
         return AXLayoutObject::title(mode);
 
     String title;
-    if (!m_renderer)
+    if (!m_layoutObject)
         return title;
 
     // see if there is a caption
-    Node* tableElement = m_renderer->node();
+    Node* tableElement = m_layoutObject->node();
     if (isHTMLTableElement(tableElement)) {
         HTMLTableCaptionElement* caption = toHTMLTableElement(tableElement)->caption();
         if (caption)

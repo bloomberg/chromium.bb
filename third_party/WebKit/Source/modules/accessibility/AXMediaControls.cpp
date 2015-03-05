@@ -152,7 +152,7 @@ String AccessibilityMediaControl::helpText() const
 
 bool AccessibilityMediaControl::computeAccessibilityIsIgnored() const
 {
-    if (!m_renderer || !m_renderer->style() || m_renderer->style()->visibility() != VISIBLE || controlType() == MediaTimelineContainer)
+    if (!m_layoutObject || !m_layoutObject->style() || m_layoutObject->style()->visibility() != VISIBLE || controlType() == MediaTimelineContainer)
         return true;
 
     return accessibilityIsIgnoredByDefault();
@@ -233,7 +233,7 @@ PassRefPtr<AXObject> AccessibilityMediaTimeline::create(LayoutObject* renderer, 
 
 String AccessibilityMediaTimeline::valueDescription() const
 {
-    Node* node = m_renderer->node();
+    Node* node = m_layoutObject->node();
     if (!isHTMLInputElement(node))
         return String();
 
@@ -261,10 +261,10 @@ PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(LayoutObject* rendere
 
 bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored() const
 {
-    if (!m_renderer || !m_renderer->style() || m_renderer->style()->visibility() != VISIBLE)
+    if (!m_layoutObject || !m_layoutObject->style() || m_layoutObject->style()->visibility() != VISIBLE)
         return true;
 
-    if (!m_renderer->style()->width().value())
+    if (!m_layoutObject->style()->width().value())
         return true;
 
     return accessibilityIsIgnoredByDefault();
@@ -279,10 +279,10 @@ String AccessibilityMediaTimeDisplay::accessibilityDescription() const
 
 String AccessibilityMediaTimeDisplay::stringValue() const
 {
-    if (!m_renderer || !m_renderer->node())
+    if (!m_layoutObject || !m_layoutObject->node())
         return String();
 
-    MediaControlTimeDisplayElement* element = static_cast<MediaControlTimeDisplayElement*>(m_renderer->node());
+    MediaControlTimeDisplayElement* element = static_cast<MediaControlTimeDisplayElement*>(m_layoutObject->node());
     float time = element->currentValue();
     return localizedMediaTimeDescription(fabsf(time));
 }

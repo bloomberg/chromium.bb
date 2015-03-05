@@ -2066,7 +2066,7 @@ void Document::attach(const AttachContext& context)
     ASSERT(!m_axObjectCache || this != &axObjectCacheOwner());
 
     m_layoutView = new LayoutView(this);
-    setRenderer(m_layoutView);
+    setLayoutObject(m_layoutView);
 
     m_layoutView->setIsInWindow(true);
     m_layoutView->setStyle(StyleResolver::styleForDocument(*this));

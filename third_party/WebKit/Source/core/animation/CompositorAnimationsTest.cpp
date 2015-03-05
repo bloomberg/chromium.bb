@@ -1203,8 +1203,8 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
 
     RefPtrWillBePersistent<Element> element = m_document->createElement("shared", ASSERT_NO_EXCEPTION);
 
-    LayoutObjectProxy* renderer = LayoutObjectProxy::create(element.get());
-    element->setRenderer(renderer);
+    LayoutObjectProxy* layoutObject = LayoutObjectProxy::create(element.get());
+    element->setLayoutObject(layoutObject);
 
     AnimatableValueKeyframeVector keyFrames;
     keyFrames.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
@@ -1242,8 +1242,8 @@ TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations
     EXPECT_EQ(2U, element->elementAnimations()->players().size());
     simulateFrame(1.);
 
-    element->setRenderer(nullptr);
-    LayoutObjectProxy::dispose(renderer);
+    element->setLayoutObject(nullptr);
+    LayoutObjectProxy::dispose(layoutObject);
 
     player1.release();
     player2.release();

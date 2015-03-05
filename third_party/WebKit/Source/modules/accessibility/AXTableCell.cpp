@@ -84,7 +84,7 @@ bool AXTableCell::computeAccessibilityIsIgnored() const
 
 AXObject* AXTableCell::parentTable() const
 {
-    if (!m_renderer || !m_renderer->isTableCell())
+    if (!m_layoutObject || !m_layoutObject->isTableCell())
         return 0;
 
     // If the document no longer exists, we might not have an axObjectCache.
@@ -96,7 +96,7 @@ AXObject* AXTableCell::parentTable() const
     // By using only get() implies that the AXTable must be created before AXTableCells. This should
     // always be the case when AT clients access a table.
     // https://bugs.webkit.org/show_bug.cgi?id=42652
-    return axObjectCache()->get(toLayoutTableCell(m_renderer)->table());
+    return axObjectCache()->get(toLayoutTableCell(m_layoutObject)->table());
 }
 
 bool AXTableCell::isTableCell() const
@@ -132,7 +132,7 @@ AccessibilityRole AXTableCell::scanToDecideHeaderRole()
         return ColumnHeaderRole;
 
     // Check the previous cell and the next cell on the same row.
-    LayoutTableCell* layoutCell = toLayoutTableCell(m_renderer);
+    LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
     AccessibilityRole headerRole = CellRole;
 
     // if header is preceded by header cells on the same row, then it is a
@@ -165,10 +165,10 @@ AccessibilityRole AXTableCell::determineAccessibilityRole()
 
 void AXTableCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
 {
-    if (!m_renderer || !m_renderer->isTableCell())
+    if (!m_layoutObject || !m_layoutObject->isTableCell())
         return;
 
-    LayoutTableCell* layoutCell = toLayoutTableCell(m_renderer);
+    LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
     rowRange.first = layoutCell->rowIndex();
     rowRange.second = layoutCell->rowSpan();
 
@@ -192,10 +192,10 @@ void AXTableCell::rowIndexRange(pair<unsigned, unsigned>& rowRange)
 
 void AXTableCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
 {
-    if (!m_renderer || !m_renderer->isTableCell())
+    if (!m_layoutObject || !m_layoutObject->isTableCell())
         return;
 
-    LayoutTableCell* cell = toLayoutTableCell(m_renderer);
+    LayoutTableCell* cell = toLayoutTableCell(m_layoutObject);
     columnRange.first = cell->table()->colToEffCol(cell->col());
     columnRange.second = cell->table()->colToEffCol(cell->col() + cell->colSpan()) - columnRange.first;
 }
@@ -225,7 +225,7 @@ AXObject* AXTableCell::titleUIElement() const
     // Try to find if the first cell in this row is a <th>. If it is,
     // then it can act as the title ui element. (This is only in the
     // case when the table is not appearing as an AXTable.)
-    if (isTableCell() || !m_renderer || !m_renderer->isTableCell())
+    if (isTableCell() || !m_layoutObject || !m_layoutObject->isTableCell())
         return 0;
 
     // Table cells that are th cannot have title ui elements, since by definition
@@ -233,7 +233,7 @@ AXObject* AXTableCell::titleUIElement() const
     if (isTableHeaderCell())
         return 0;
 
-    LayoutTableCell* layoutCell = toLayoutTableCell(m_renderer);
+    LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
 
     // If this cell is in the first column, there is no need to continue.
     int col = layoutCell->col();

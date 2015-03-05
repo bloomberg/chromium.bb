@@ -54,10 +54,10 @@ public:
     virtual ~AXLayoutObject();
 
     // Public, overridden from AXObject.
-    virtual LayoutObject* renderer() const override final { return m_renderer; }
+    virtual LayoutObject* renderer() const override final { return m_layoutObject; }
     virtual LayoutRect elementRect() const override;
 
-    void setRenderer(LayoutObject*);
+    void setLayoutObject(LayoutObject*);
     LayoutBoxModelObject* layoutBoxModelObject() const;
     Document* topDocument() const;
     bool shouldNotifyActiveDescendant() const;
@@ -67,7 +67,7 @@ public:
     void updateCachedElementRect() const;
 
 protected:
-    LayoutObject* m_renderer;
+    LayoutObject* m_layoutObject;
     mutable LayoutRect m_cachedElementRect;
     mutable LayoutRect m_cachedFrameRect;
     mutable IntPoint m_cachedScrollPosition;
@@ -79,7 +79,7 @@ protected:
 
     virtual void init() override;
     virtual void detach() override;
-    virtual bool isDetached() const override { return !m_renderer; }
+    virtual bool isDetached() const override { return !m_layoutObject; }
     virtual bool isAXLayoutObject() const override { return true; }
 
     // Check object role or purpose.

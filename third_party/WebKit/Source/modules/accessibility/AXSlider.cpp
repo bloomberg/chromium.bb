@@ -52,10 +52,10 @@ PassRefPtr<AXSlider> AXSlider::create(LayoutObject* renderer, AXObjectCacheImpl*
 AccessibilityOrientation AXSlider::orientation() const
 {
     // Default to horizontal in the unknown case.
-    if (!m_renderer)
+    if (!m_layoutObject)
         return AccessibilityOrientationHorizontal;
 
-    LayoutStyle* style = m_renderer->style();
+    LayoutStyle* style = m_layoutObject->style();
     if (!style)
         return AccessibilityOrientationHorizontal;
 
@@ -109,7 +109,7 @@ AXObject* AXSlider::elementAccessibilityHitTest(const IntPoint& point) const
             return m_children[0].get();
     }
 
-    return axObjectCache()->getOrCreate(m_renderer);
+    return axObjectCache()->getOrCreate(m_layoutObject);
 }
 
 void AXSlider::setValue(const String& value)
@@ -127,7 +127,7 @@ void AXSlider::setValue(const String& value)
 
 HTMLInputElement* AXSlider::element() const
 {
-    return toHTMLInputElement(m_renderer->node());
+    return toHTMLInputElement(m_layoutObject->node());
 }
 
 AXSliderThumb::AXSliderThumb(AXObjectCacheImpl* axObjectCache)

@@ -74,7 +74,7 @@ float AXProgressIndicator::minValueForRange() const
 
 HTMLProgressElement* AXProgressIndicator::element() const
 {
-    return toLayoutProgress(m_renderer)->progressElement();
+    return toLayoutProgress(m_layoutObject)->progressElement();
 }
 
 

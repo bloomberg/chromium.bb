@@ -354,9 +354,9 @@ NodeRareData& Node::ensureRareData()
         return *rareData();
 
     if (isElementNode())
-        m_data.m_rareData = ElementRareData::create(m_data.m_renderer);
+        m_data.m_rareData = ElementRareData::create(m_data.m_layoutObject);
     else
-        m_data.m_rareData = NodeRareData::create(m_data.m_renderer);
+        m_data.m_rareData = NodeRareData::create(m_data.m_layoutObject);
 
     ASSERT(m_data.m_rareData);
 
@@ -375,7 +375,7 @@ void Node::clearRareData()
         delete static_cast<ElementRareData*>(m_data.m_rareData);
     else
         delete static_cast<NodeRareData*>(m_data.m_rareData);
-    m_data.m_renderer = renderer;
+    m_data.m_layoutObject = renderer;
     clearFlag(HasRareDataFlag);
 }
 #endif
@@ -954,7 +954,7 @@ void Node::detach(const AttachContext& context)
 
     if (renderer())
         renderer()->destroyAndCleanupAnonymousWrappers();
-    setRenderer(nullptr);
+    setLayoutObject(nullptr);
 
     // Do not remove the element's hovered and active status
     // if performing a reattach.
@@ -2384,7 +2384,7 @@ DEFINE_TRACE(Node)
     visitor->trace(m_parentOrShadowHostNode);
     visitor->trace(m_previous);
     visitor->trace(m_next);
-    // rareData() and m_data.m_renderer share their storage. We have to trace
+    // rareData() and m_data.m_layoutObject share their storage. We have to trace
     // only one of them.
     if (hasRareData())
         visitor->trace(rareData());

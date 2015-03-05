@@ -47,7 +47,7 @@ void LayoutObjectChildList::destroyLeftoverChildren()
 
         // Destroy any anonymous children remaining in the render tree, as well as implicit (shadow) DOM elements like those used in the engine-based text fields.
         if (firstChild()->node())
-            firstChild()->node()->setRenderer(0);
+            firstChild()->node()->setLayoutObject(nullptr);
         firstChild()->destroy();
     }
 }

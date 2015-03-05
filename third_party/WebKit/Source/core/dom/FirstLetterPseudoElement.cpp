@@ -269,7 +269,7 @@ void FirstLetterPseudoElement::attachFirstLetterTextRenderers()
     remainingText->setStyle(nextRenderer->style());
 
     if (remainingText->node())
-        remainingText->node()->setRenderer(remainingText);
+        remainingText->node()->setLayoutObject(remainingText);
 
     m_remainingTextRenderer = remainingText;
 
