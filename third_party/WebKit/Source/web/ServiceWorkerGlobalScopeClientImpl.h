@@ -48,7 +48,7 @@ public:
     static PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> create(WebServiceWorkerContextClient&);
     virtual ~ServiceWorkerGlobalScopeClientImpl();
 
-    virtual void getClients(WebServiceWorkerClientsCallbacks*) override;
+    virtual void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks*) override;
     virtual void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) override;
     virtual void setCachedMetadata(const WebURL&, const char*, size_t) override;
     virtual void clearCachedMetadata(const WebURL&) override;

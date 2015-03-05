@@ -43,8 +43,9 @@
 
 namespace blink {
 
-class ExecutionContext;
 struct WebCrossOriginServiceWorkerClient;
+struct WebServiceWorkerClientQueryOptions;
+class ExecutionContext;
 class WebServiceWorkerCacheStorage;
 class WebServiceWorkerResponse;
 class WebURL;
@@ -57,7 +58,7 @@ public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
 
     // Called from ServiceWorkerClients.
-    virtual void getClients(WebServiceWorkerClientsCallbacks*) = 0;
+    virtual void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks*) = 0;
     virtual void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) = 0;
     virtual void setCachedMetadata(const WebURL&, const char*, size_t) = 0;
     virtual void clearCachedMetadata(const WebURL&) = 0;

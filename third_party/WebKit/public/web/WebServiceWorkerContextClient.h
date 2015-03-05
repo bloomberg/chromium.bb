@@ -42,6 +42,7 @@
 namespace blink {
 
 struct WebCrossOriginServiceWorkerClient;
+struct WebServiceWorkerClientQueryOptions;
 class WebDataSource;
 class WebServiceWorkerCacheStorage;
 class WebServiceWorkerContextProxy;
@@ -153,11 +154,17 @@ public:
     // This is called on the main thread.
     virtual WebServiceWorkerProvider* createServiceWorkerProvider() { return nullptr; }
 
+    // FIXME: Deprecate this version once the other getClients is implemented
+    // in the embedder.
+    virtual void getClients(WebServiceWorkerClientsCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callbacks after calling either onSuccess or onError.
     // WebServiceWorkerClientsInfo and WebServiceWorkerError ownerships are
     // passed to the WebServiceWorkerClientsCallbacks implementation.
-    virtual void getClients(WebServiceWorkerClientsCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    // FIXME: Remove the default implementation once this is implemented
+    // in the embedder.
+    virtual void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks* callbacks) { getClients(callbacks); }
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callbacks after calling either onSuccess or onError.
