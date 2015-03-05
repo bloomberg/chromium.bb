@@ -87,15 +87,16 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         String baseUrl = null;
         boolean navigationToDifferentPage = true;
         boolean fragmentNavigation = true;
+        int httpStatusCode = 200;
         callCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         mWebContentsObserver.didNavigateMainFrame(EXAMPLE_URL, baseUrl,
-                !navigationToDifferentPage, fragmentNavigation);
+                !navigationToDifferentPage, fragmentNavigation, httpStatusCode);
         assertEquals("onPageFinished should be called for main frame fragment navigations.",
                 callCount + 1, mContentsClient.getOnPageFinishedHelper().getCallCount());
 
         callCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         mWebContentsObserver.didNavigateMainFrame(EXAMPLE_URL, baseUrl,
-                !navigationToDifferentPage, !fragmentNavigation);
+                !navigationToDifferentPage, !fragmentNavigation, httpStatusCode);
         assertEquals("onPageFinished should be called only for main frame fragment navigations.",
                 callCount, mContentsClient.getOnPageFinishedHelper().getCallCount());
     }

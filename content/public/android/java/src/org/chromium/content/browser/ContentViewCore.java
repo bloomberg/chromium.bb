@@ -316,7 +316,7 @@ public class ContentViewCore
 
         @Override
         public void didNavigateMainFrame(String url, String baseUrl,
-                boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
+                boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
             if (!isNavigationToDifferentPage) return;
             resetPopupsAndInput();
         }

@@ -102,19 +102,13 @@ class WebContentsObserverProxy extends WebContentsObserver {
     }
 
     @Override
-    public void didNavigateMainFrame(String url, String baseUrl,
-            boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().didNavigateMainFrame(
-                    url, baseUrl, isNavigationToDifferentPage, isFragmentNavigation);
-        }
-    }
-
-    @Override
     @CalledByNative
     public void didNavigateMainFrame(String url, String baseUrl,
             boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
-        didNavigateMainFrame(url, baseUrl, isNavigationToDifferentPage, isFragmentNavigation);
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().didNavigateMainFrame(
+                    url, baseUrl, isNavigationToDifferentPage, isFragmentNavigation, statusCode);
+        }
     }
 
     @Override

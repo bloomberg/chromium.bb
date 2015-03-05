@@ -60,7 +60,7 @@ public class AwWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didNavigateMainFrame(String url, String baseUrl,
-            boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
+            boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
         // This is here to emulate the Classic WebView firing onPageFinished for main frame
         // navigations where only the hash fragment changes.
         if (isFragmentNavigation) {
