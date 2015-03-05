@@ -39,6 +39,7 @@ public:
     virtual void getPlaybackRate(ErrorString*, double* playbackRate) override;
     virtual void setPlaybackRate(ErrorString*, double playbackRate) override;
     virtual void setCurrentTime(ErrorString*, double currentTime) override;
+    virtual void setTiming(ErrorString*, const String& playerId, double duration, double delay) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimationPlayer(AnimationPlayer&);

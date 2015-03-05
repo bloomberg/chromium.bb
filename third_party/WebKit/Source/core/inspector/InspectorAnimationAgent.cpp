@@ -9,6 +9,7 @@
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationNode.h"
+#include "core/animation/AnimationNodeTiming.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/ComputedTimingProperties.h"
 #include "core/animation/ElementAnimation.h"
@@ -254,6 +255,19 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 void InspectorAnimationAgent::setCurrentTime(ErrorString*, double currentTime)
 {
     m_pageAgent->inspectedFrame()->document()->timeline().setCurrentTime(currentTime);
+}
+
+void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& playerId, double duration, double delay)
+{
+    AnimationPlayer* player = assertAnimationPlayer(errorString, playerId);
+    if (!player)
+        return;
+
+    RefPtrWillBeRawPtr<AnimationNodeTiming> timing = player->source()->timing();
+    UnrestrictedDoubleOrString unrestrictedDuration;
+    unrestrictedDuration.setUnrestrictedDouble(duration);
+    timing->setDuration(unrestrictedDuration);
+    timing->setDelay(delay);
 }
 
 void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
