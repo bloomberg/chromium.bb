@@ -88,8 +88,8 @@ bool IsTokenCacheable(const sandbox::PolicyBase* policy) {
   const sandbox::AppContainerAttributes* app_container =
       policy->GetAppContainer();
 
-  // We cannot cache tokens with an app container.
-  if (app_container)
+  // We cannot cache tokens with an app container or lowbox.
+  if (app_container || policy->GetLowBoxSid())
     return false;
 
   return true;
