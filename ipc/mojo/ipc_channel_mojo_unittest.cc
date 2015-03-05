@@ -431,7 +431,7 @@ TEST_F(IPCChannelMojoTest, SendMessagePipe) {
 
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendMessagePipeClient) {
   ListenerThatExpectsMessagePipe listener;
-  ChannelClient client(&listener, "IPCChannelMojoTestSendPlatformHandleClient");
+  ChannelClient client(&listener, "IPCChannelMojoTestSendMessagePipeClient");
   client.Connect();
   listener.set_sender(client.channel());
 
@@ -458,7 +458,7 @@ class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
     const base::ProcessHandle client = client_process().Handle();
     // Forces GetFileHandleForProcess() fail. It happens occasionally
     // in production, so we should exercise it somehow.
-    // TODO(morrita): figure out how to safely test this.
+    // TODO(morrita): figure out how to safely test this. See crbug.com/464109.
     // ::CloseHandle(client);
     host_->OnClientLaunched(client);
     return true;
@@ -482,9 +482,11 @@ TEST_F(IPCChannelMojoDeadHandleTest, InvalidClientHandle) {
 
   this->channel()->Close();
 
-  // WaitForClientShutdown() fails as client_hanadle() is already
-  // closed.
-  EXPECT_FALSE(WaitForClientShutdown());
+  // TODO(morrita): We need CloseHandle() call in DidStartClient(),
+  // which has been disabled since crrev.com/843113003, to
+  // make this fail. See crbug.com/464109.
+  // EXPECT_FALSE(WaitForClientShutdown());
+  WaitForClientShutdown();
   EXPECT_TRUE(listener.has_error());
 
   DestroyChannel();
