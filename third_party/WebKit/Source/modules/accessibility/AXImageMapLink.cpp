@@ -129,16 +129,16 @@ LayoutRect AXImageMapLink::elementRect() const
     if (!m_mapElement.get() || !m_areaElement.get())
         return LayoutRect();
 
-    LayoutObject* renderer;
+    LayoutObject* layoutObject;
     if (m_parent && m_parent->isAXLayoutObject())
-        renderer = toAXLayoutObject(m_parent)->renderer();
+        layoutObject = toAXLayoutObject(m_parent)->renderer();
     else
-        renderer = m_mapElement->renderer();
+        layoutObject = m_mapElement->renderer();
 
-    if (!renderer)
+    if (!layoutObject)
         return LayoutRect();
 
-    return m_areaElement->computeRect(renderer);
+    return m_areaElement->computeRect(layoutObject);
 }
 
 } // namespace blink

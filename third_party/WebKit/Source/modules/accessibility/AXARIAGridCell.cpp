@@ -36,8 +36,8 @@
 
 namespace blink {
 
-AXARIAGridCell::AXARIAGridCell(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXTableCell(renderer, axObjectCache)
+AXARIAGridCell::AXARIAGridCell(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXTableCell(layoutObject, axObjectCache)
 {
 }
 
@@ -45,9 +45,9 @@ AXARIAGridCell::~AXARIAGridCell()
 {
 }
 
-PassRefPtr<AXARIAGridCell> AXARIAGridCell::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXARIAGridCell> AXARIAGridCell::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXARIAGridCell(renderer, axObjectCache));
+    return adoptRef(new AXARIAGridCell(layoutObject, axObjectCache));
 }
 
 bool AXARIAGridCell::isAriaColumnHeader() const

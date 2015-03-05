@@ -48,8 +48,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTable::AXTable(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXLayoutObject(renderer, axObjectCache)
+AXTable::AXTable(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache)
     , m_headerContainer(nullptr)
     , m_isAXTable(true)
 {
@@ -65,9 +65,9 @@ void AXTable::init()
     m_isAXTable = isTableExposableThroughAccessibility();
 }
 
-PassRefPtr<AXTable> AXTable::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTable> AXTable::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXTable(renderer, axObjectCache));
+    return adoptRef(new AXTable(layoutObject, axObjectCache));
 }
 
 bool AXTable::hasARIARole() const

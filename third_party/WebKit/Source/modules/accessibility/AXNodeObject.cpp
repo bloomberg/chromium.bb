@@ -1321,7 +1321,7 @@ String AXNodeObject::textUnderElement(TextUnderElementMode mode) const
             }
         }
 
-        // If we're going between two renderers that are in separate LayoutBoxes, add
+        // If we're going between two layoutObjects that are in separate LayoutBoxes, add
         // whitespace if it wasn't there already. Intuitively if you have
         // <span>Hello</span><span>World</span>, those are part of the same LayoutBox
         // so we should return "HelloWorld", but given <div>Hello</div><div>World</div> the
@@ -1626,7 +1626,7 @@ void AXNodeObject::addChildren()
 
     m_haveChildren = true;
 
-    // The only time we add children from the DOM tree to a node with a renderer is when it's a canvas.
+    // The only time we add children from the DOM tree to a node with a layoutObject is when it's a canvas.
     if (renderer() && !isHTMLCanvasElement(*m_node))
         return;
 
@@ -1666,7 +1666,7 @@ void AXNodeObject::insertChild(AXObject* child, unsigned index)
 bool AXNodeObject::canHaveChildren() const
 {
     // If this is an AXLayoutObject, then it's okay if this object
-    // doesn't have a node - there are some renderers that don't have associated
+    // doesn't have a node - there are some layoutObjects that don't have associated
     // nodes, like scroll areas and css-generated text.
     if (!node() && !isAXLayoutObject())
         return false;

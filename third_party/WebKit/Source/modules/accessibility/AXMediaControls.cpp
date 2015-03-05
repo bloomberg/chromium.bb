@@ -43,28 +43,28 @@ static inline String queryString(WebLocalizedString::Name name)
     return Locale::defaultLocale().queryString(name);
 }
 
-AccessibilityMediaControl::AccessibilityMediaControl(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXLayoutObject(renderer, axObjectCache)
+AccessibilityMediaControl::AccessibilityMediaControl(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaControl::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXObject> AccessibilityMediaControl::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    ASSERT(renderer->node());
+    ASSERT(layoutObject->node());
 
-    switch (mediaControlElementType(renderer->node())) {
+    switch (mediaControlElementType(layoutObject->node())) {
     case MediaSlider:
-        return AccessibilityMediaTimeline::create(renderer, axObjectCache);
+        return AccessibilityMediaTimeline::create(layoutObject, axObjectCache);
 
     case MediaCurrentTimeDisplay:
     case MediaTimeRemainingDisplay:
-        return AccessibilityMediaTimeDisplay::create(renderer, axObjectCache);
+        return AccessibilityMediaTimeDisplay::create(layoutObject, axObjectCache);
 
     case MediaControlsPanel:
-        return AXMediaControlsContainer::create(renderer, axObjectCache);
+        return AXMediaControlsContainer::create(layoutObject, axObjectCache);
 
     default:
-        return adoptRef(new AccessibilityMediaControl(renderer, axObjectCache));
+        return adoptRef(new AccessibilityMediaControl(layoutObject, axObjectCache));
     }
 }
 
@@ -186,14 +186,14 @@ AccessibilityRole AccessibilityMediaControl::roleValue() const
 //
 // AXMediaControlsContainer
 
-AXMediaControlsContainer::AXMediaControlsContainer(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AccessibilityMediaControl(renderer, axObjectCache)
+AXMediaControlsContainer::AXMediaControlsContainer(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AccessibilityMediaControl(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AXMediaControlsContainer::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXObject> AXMediaControlsContainer::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXMediaControlsContainer(renderer, axObjectCache));
+    return adoptRef(new AXMediaControlsContainer(layoutObject, axObjectCache));
 }
 
 String AXMediaControlsContainer::accessibilityDescription() const
@@ -221,14 +221,14 @@ static String localizedMediaTimeDescription(float /*time*/)
     return String();
 }
 
-AccessibilityMediaTimeline::AccessibilityMediaTimeline(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXSlider(renderer, axObjectCache)
+AccessibilityMediaTimeline::AccessibilityMediaTimeline(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXSlider(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaTimeline::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXObject> AccessibilityMediaTimeline::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AccessibilityMediaTimeline(renderer, axObjectCache));
+    return adoptRef(new AccessibilityMediaTimeline(layoutObject, axObjectCache));
 }
 
 String AccessibilityMediaTimeline::valueDescription() const
@@ -249,14 +249,14 @@ String AccessibilityMediaTimeline::helpText() const
 //
 // AccessibilityMediaTimeDisplay
 
-AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AccessibilityMediaControl(renderer, axObjectCache)
+AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AccessibilityMediaControl(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AccessibilityMediaTimeDisplay(renderer, axObjectCache));
+    return adoptRef(new AccessibilityMediaTimeDisplay(layoutObject, axObjectCache));
 }
 
 bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored() const

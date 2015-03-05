@@ -39,14 +39,14 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXSlider::AXSlider(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXLayoutObject(renderer, axObjectCache)
+AXSlider::AXSlider(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXSlider> AXSlider::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSlider> AXSlider::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXSlider(renderer, axObjectCache));
+    return adoptRef(new AXSlider(layoutObject, axObjectCache));
 }
 
 AccessibilityOrientation AXSlider::orientation() const
@@ -145,10 +145,10 @@ LayoutRect AXSliderThumb::elementRect() const
     if (!m_parent)
         return LayoutRect();
 
-    LayoutObject* sliderRenderer = m_parent->renderer();
-    if (!sliderRenderer || !sliderRenderer->isSlider())
+    LayoutObject* sliderLayoutObject = m_parent->renderer();
+    if (!sliderLayoutObject || !sliderLayoutObject->isSlider())
         return LayoutRect();
-    return toElement(sliderRenderer->node())->closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->boundingBox();
+    return toElement(sliderLayoutObject->node())->closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->boundingBox();
 }
 
 bool AXSliderThumb::computeAccessibilityIsIgnored() const

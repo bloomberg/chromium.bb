@@ -71,8 +71,8 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
     if (!m_parent)
         return;
 
-    LayoutObject* renderer = m_parent->renderer();
-    if (!renderer)
+    LayoutObject* layoutObject = m_parent->renderer();
+    if (!layoutObject)
         return;
 
     if (!m_parent->isAXTable())
@@ -89,10 +89,10 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
         return;
     }
 
-    if (!renderer->isTable())
+    if (!layoutObject->isTable())
         return;
 
-    LayoutTable* table = toLayoutTable(renderer);
+    LayoutTable* table = toLayoutTable(layoutObject);
     LayoutTableSection* tableSection = table->topSection();
     for (; tableSection; tableSection = table->sectionBelow(tableSection, SkipEmptySections)) {
         unsigned numCols = tableSection->numColumns();

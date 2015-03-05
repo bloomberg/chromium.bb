@@ -38,8 +38,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableRow::AXTableRow(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXLayoutObject(renderer, axObjectCache)
+AXTableRow::AXTableRow(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
@@ -47,9 +47,9 @@ AXTableRow::~AXTableRow()
 {
 }
 
-PassRefPtr<AXTableRow> AXTableRow::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTableRow> AXTableRow::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXTableRow(renderer, axObjectCache));
+    return adoptRef(new AXTableRow(layoutObject, axObjectCache));
 }
 
 AccessibilityRole AXTableRow::determineAccessibilityRole()

@@ -30,14 +30,14 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXProgressIndicator::AXProgressIndicator(LayoutProgress* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXLayoutObject(renderer, axObjectCache)
+AXProgressIndicator::AXProgressIndicator(LayoutProgress* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXProgressIndicator> AXProgressIndicator::create(LayoutProgress* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXProgressIndicator> AXProgressIndicator::create(LayoutProgress* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXProgressIndicator(renderer, axObjectCache));
+    return adoptRef(new AXProgressIndicator(layoutObject, axObjectCache));
 }
 
 bool AXProgressIndicator::computeAccessibilityIsIgnored() const

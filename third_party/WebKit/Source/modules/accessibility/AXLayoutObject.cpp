@@ -596,8 +596,8 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
         AXObject* parent = parentObjectUnignored();
         if (parent && (parent->ariaRoleAttribute() == MenuItemRole || parent->ariaRoleAttribute() == MenuButtonRole))
             return true;
-        LayoutText* renderText = toLayoutText(m_layoutObject);
-        if (m_layoutObject->isBR() || !renderText->firstTextBox())
+        LayoutText* layoutText = toLayoutText(m_layoutObject);
+        if (m_layoutObject->isBR() || !layoutText->firstTextBox())
             return true;
 
         // Don't ignore static text in editable text controls.
@@ -608,7 +608,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
 
         // text elements that are just empty whitespace should not be returned
         // FIXME(dmazzoni): we probably shouldn't ignore this if the style is 'pre', or similar...
-        return renderText->text().impl()->containsOnlyWhitespace();
+        return layoutText->text().impl()->containsOnlyWhitespace();
     }
 
     if (isHeading())
@@ -1887,8 +1887,8 @@ void AXLayoutObject::addInlineTextBoxChildren(bool force)
         return;
     }
 
-    LayoutText* renderText = toLayoutText(renderer());
-    for (RefPtr<AbstractInlineTextBox> box = renderText->firstAbstractInlineTextBox(); box.get(); box = box->nextInlineTextBox()) {
+    LayoutText* layoutText = toLayoutText(renderer());
+    for (RefPtr<AbstractInlineTextBox> box = layoutText->firstAbstractInlineTextBox(); box.get(); box = box->nextInlineTextBox()) {
         AXObject* axObject = axObjectCache()->getOrCreate(box.get());
         if (!axObject->accessibilityIsIgnored())
             m_children.append(axObject);

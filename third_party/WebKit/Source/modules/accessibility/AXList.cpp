@@ -37,8 +37,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXList::AXList(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXLayoutObject(renderer, axObjectCache)
+AXList::AXList(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
@@ -46,9 +46,9 @@ AXList::~AXList()
 {
 }
 
-PassRefPtr<AXList> AXList::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXList> AXList::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXList(renderer, axObjectCache));
+    return adoptRef(new AXList(layoutObject, axObjectCache));
 }
 
 bool AXList::computeAccessibilityIsIgnored() const

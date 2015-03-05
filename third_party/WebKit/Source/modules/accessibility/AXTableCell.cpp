@@ -37,8 +37,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableCell::AXTableCell(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXLayoutObject(renderer, axObjectCache)
+AXTableCell::AXTableCell(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
@@ -46,9 +46,9 @@ AXTableCell::~AXTableCell()
 {
 }
 
-PassRefPtr<AXTableCell> AXTableCell::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTableCell> AXTableCell::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXTableCell(renderer, axObjectCache));
+    return adoptRef(new AXTableCell(layoutObject, axObjectCache));
 }
 
 bool AXTableCell::isTableHeaderCell() const

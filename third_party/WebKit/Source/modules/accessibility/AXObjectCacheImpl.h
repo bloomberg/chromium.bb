@@ -94,7 +94,7 @@ public:
 
     virtual void clearWeakMembers(Visitor*) override;
 
-    virtual void inlineTextBoxesUpdated(LayoutObject* renderer) override;
+    virtual void inlineTextBoxesUpdated(LayoutObject*) override;
 
     // Called when the scroll offset changes.
     virtual void handleScrollPositionChanged(FrameView*) override;
@@ -139,7 +139,7 @@ public:
     void handleAriaRoleChanged(Node*);
     void handleAriaExpandedChange(Node*);
 
-    void recomputeIsIgnored(LayoutObject* renderer);
+    void recomputeIsIgnored(LayoutObject*);
 
     bool accessibilityEnabled();
     bool inlineTextBoxAccessibilityEnabled();

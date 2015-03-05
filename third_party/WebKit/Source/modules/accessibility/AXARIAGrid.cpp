@@ -37,8 +37,8 @@
 
 namespace blink {
 
-AXARIAGrid::AXARIAGrid(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
-    : AXTable(renderer, axObjectCache)
+AXARIAGrid::AXARIAGrid(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+    : AXTable(layoutObject, axObjectCache)
 {
 }
 
@@ -46,9 +46,9 @@ AXARIAGrid::~AXARIAGrid()
 {
 }
 
-PassRefPtr<AXARIAGrid> AXARIAGrid::create(LayoutObject* renderer, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXARIAGrid> AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
 {
-    return adoptRef(new AXARIAGrid(renderer, axObjectCache));
+    return adoptRef(new AXARIAGrid(layoutObject, axObjectCache));
 }
 
 bool AXARIAGrid::addTableCellChild(AXObject* child, HashSet<AXObject*>& appendedRows, unsigned& columnCount)

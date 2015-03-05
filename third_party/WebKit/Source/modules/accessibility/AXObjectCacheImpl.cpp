@@ -188,12 +188,12 @@ AXObject* AXObjectCacheImpl::get(Widget* widget)
     return m_objects.get(axID);
 }
 
-AXObject* AXObjectCacheImpl::get(LayoutObject* renderer)
+AXObject* AXObjectCacheImpl::get(LayoutObject* layoutObject)
 {
-    if (!renderer)
+    if (!layoutObject)
         return 0;
 
-    AXID axID = m_layoutObjectMapping.get(renderer);
+    AXID axID = m_layoutObjectMapping.get(layoutObject);
     ASSERT(!HashTraits<AXID>::isDeletedValue(axID));
     if (!axID)
         return 0;
@@ -214,7 +214,7 @@ AXObject* AXObjectCacheImpl::get(Node* node)
 
     if (node->renderer() && nodeID && !layoutID) {
         // This can happen if an AXNodeObject is created for a node that's not
-        // laid out, but later something changes and it gets a renderer (like if it's
+        // laid out, but later something changes and it gets a layoutObject (like if it's
         // reparented).
         remove(nodeID);
         return 0;
@@ -252,37 +252,37 @@ bool nodeHasRole(Node* node, const String& role)
     return equalIgnoringCase(toElement(node)->getAttribute(roleAttr), role);
 }
 
-PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* renderer)
+PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutObject)
 {
-    // FIXME: How could renderer->node() ever not be an Element?
-    Node* node = renderer->node();
+    // FIXME: How could layoutObject->node() ever not be an Element?
+    Node* node = layoutObject->node();
 
     // If the node is aria role="list" or the aria role is empty and its a
     // ul/ol/dl type (it shouldn't be a list if aria says otherwise).
     if (node && ((nodeHasRole(node, "list") || nodeHasRole(node, "directory"))
         || (nodeHasRole(node, nullAtom) && (isHTMLUListElement(*node) || isHTMLOListElement(*node) || isHTMLDListElement(*node)))))
-        return AXList::create(renderer, this);
+        return AXList::create(layoutObject, this);
 
     // aria tables
     if (nodeHasRole(node, "grid") || nodeHasRole(node, "treegrid"))
-        return AXARIAGrid::create(renderer, this);
+        return AXARIAGrid::create(layoutObject, this);
     if (nodeHasRole(node, "row"))
-        return AXARIAGridRow::create(renderer, this);
+        return AXARIAGridRow::create(layoutObject, this);
     if (nodeHasRole(node, "gridcell") || nodeHasRole(node, "columnheader") || nodeHasRole(node, "rowheader"))
-        return AXARIAGridCell::create(renderer, this);
+        return AXARIAGridCell::create(layoutObject, this);
 
     // media controls
     if (node && node->isMediaControlElement())
-        return AccessibilityMediaControl::create(renderer, this);
+        return AccessibilityMediaControl::create(layoutObject, this);
 
     if (isHTMLOptionElement(node))
-        return AXListBoxOption::create(renderer, this);
+        return AXListBoxOption::create(layoutObject, this);
 
-    if (renderer->isSVGRoot())
-        return AXSVGRoot::create(renderer, this);
+    if (layoutObject->isSVGRoot())
+        return AXSVGRoot::create(layoutObject, this);
 
-    if (renderer->isBoxModelObject()) {
-        LayoutBoxModelObject* cssBox = toLayoutBoxModelObject(renderer);
+    if (layoutObject->isBoxModelObject()) {
+        LayoutBoxModelObject* cssBox = toLayoutBoxModelObject(layoutObject);
         if (cssBox->isListBox())
             return AXListBox::create(toLayoutListBox(cssBox), this);
         if (cssBox->isMenuList())
@@ -305,7 +305,7 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* rendere
             return AXSlider::create(toLayoutSlider(cssBox), this);
     }
 
-    return AXLayoutObject::create(renderer, this);
+    return AXLayoutObject::create(layoutObject, this);
 }
 
 PassRefPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
@@ -384,22 +384,22 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     return newObj.get();
 }
 
-AXObject* AXObjectCacheImpl::getOrCreate(LayoutObject* renderer)
+AXObject* AXObjectCacheImpl::getOrCreate(LayoutObject* layoutObject)
 {
-    if (!renderer)
+    if (!layoutObject)
         return 0;
 
-    if (AXObject* obj = get(renderer))
+    if (AXObject* obj = get(layoutObject))
         return obj;
 
-    RefPtr<AXObject> newObj = createFromRenderer(renderer);
+    RefPtr<AXObject> newObj = createFromRenderer(layoutObject);
 
-    // Will crash later if we have two objects for the same renderer.
-    ASSERT(!get(renderer));
+    // Will crash later if we have two objects for the same layoutObject.
+    ASSERT(!get(layoutObject));
 
     getAXID(newObj.get());
 
-    m_layoutObjectMapping.set(renderer, newObj->axObjectID());
+    m_layoutObjectMapping.set(layoutObject, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
     newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
@@ -502,14 +502,14 @@ void AXObjectCacheImpl::remove(AXID axID)
     ASSERT(m_objects.size() >= m_idsInUse.size());
 }
 
-void AXObjectCacheImpl::remove(LayoutObject* renderer)
+void AXObjectCacheImpl::remove(LayoutObject* layoutObject)
 {
-    if (!renderer)
+    if (!layoutObject)
         return;
 
-    AXID axID = m_layoutObjectMapping.get(renderer);
+    AXID axID = m_layoutObjectMapping.get(layoutObject);
     remove(axID);
-    m_layoutObjectMapping.remove(renderer);
+    m_layoutObjectMapping.remove(layoutObject);
 }
 
 void AXObjectCacheImpl::remove(Node* node)
@@ -635,9 +635,9 @@ void AXObjectCacheImpl::textChanged(Node* node)
     textChanged(getOrCreate(node));
 }
 
-void AXObjectCacheImpl::textChanged(LayoutObject* renderer)
+void AXObjectCacheImpl::textChanged(LayoutObject* layoutObject)
 {
-    textChanged(getOrCreate(renderer));
+    textChanged(getOrCreate(layoutObject));
 }
 
 void AXObjectCacheImpl::textChanged(AXObject* obj)
@@ -664,9 +664,9 @@ void AXObjectCacheImpl::childrenChanged(Node* node)
     childrenChanged(get(node));
 }
 
-void AXObjectCacheImpl::childrenChanged(LayoutObject* renderer)
+void AXObjectCacheImpl::childrenChanged(LayoutObject* layoutObject)
 {
-    childrenChanged(get(renderer));
+    childrenChanged(get(layoutObject));
 }
 
 void AXObjectCacheImpl::childrenChanged(AXObject* obj)
@@ -694,12 +694,12 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
 
 #if ENABLE(ASSERT)
         // Make sure none of the layout views are in the process of being layed out.
-        // Notifications should only be sent after the renderer has finished
+        // Notifications should only be sent after the layoutObject has finished
         if (obj->isAXLayoutObject()) {
             AXLayoutObject* layoutObj = toAXLayoutObject(obj);
-            LayoutObject* renderer = layoutObj->renderer();
-            if (renderer && renderer->view())
-                ASSERT(!renderer->view()->layoutState());
+            LayoutObject* layoutObject = layoutObj->renderer();
+            if (layoutObject && layoutObject->view())
+                ASSERT(!layoutObject->view()->layoutState());
         }
 #endif
 
@@ -713,25 +713,25 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
     m_notificationsToPost.clear();
 }
 
-void AXObjectCacheImpl::postNotification(LayoutObject* renderer, AXNotification notification, bool postToElement)
+void AXObjectCacheImpl::postNotification(LayoutObject* layoutObject, AXNotification notification, bool postToElement)
 {
-    if (!renderer)
+    if (!layoutObject)
         return;
 
     m_modificationCount++;
 
     // Get an accessibility object that already exists. One should not be created here
     // because a layout update may be in progress and creating an AX object can re-trigger a layout
-    RefPtr<AXObject> object = get(renderer);
-    while (!object && renderer) {
-        renderer = renderer->parent();
-        object = get(renderer);
+    RefPtr<AXObject> object = get(layoutObject);
+    while (!object && layoutObject) {
+        layoutObject = layoutObject->parent();
+        object = get(layoutObject);
     }
 
-    if (!renderer)
+    if (!layoutObject)
         return;
 
-    postNotification(object.get(), &renderer->document(), notification, postToElement);
+    postNotification(object.get(), &layoutObject->document(), notification, postToElement);
 }
 
 void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification, bool postToElement)
@@ -785,11 +785,11 @@ void AXObjectCacheImpl::selectedChildrenChanged(Node* node)
     postNotification(node, AXSelectedChildrenChanged, false);
 }
 
-void AXObjectCacheImpl::selectedChildrenChanged(LayoutObject* renderer)
+void AXObjectCacheImpl::selectedChildrenChanged(LayoutObject* layoutObject)
 {
     // postToElement is false so that you can pass in any child of an element and it will go up the parent tree
     // to find the container which should send out the notification.
-    postNotification(renderer, AXSelectedChildrenChanged, false);
+    postNotification(layoutObject, AXSelectedChildrenChanged, false);
 }
 
 void AXObjectCacheImpl::handleScrollbarUpdate(FrameView* view)
@@ -804,9 +804,9 @@ void AXObjectCacheImpl::handleScrollbarUpdate(FrameView* view)
     }
 }
 
-void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* renderer)
+void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* layoutObject)
 {
-    if (!renderer)
+    if (!layoutObject)
         return;
 
     m_modificationCount++;
@@ -814,7 +814,7 @@ void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* renderer)
     // Create the AXObject if it didn't yet exist - that's always safe at the end of a layout, and it
     // allows an AX notification to be sent when a page has its first layout, rather than when the
     // document first loads.
-    if (AXObject* obj = getOrCreate(renderer))
+    if (AXObject* obj = getOrCreate(layoutObject))
         postNotification(obj, obj->document(), AXLayoutComplete, true);
 }
 
@@ -876,23 +876,23 @@ void AXObjectCacheImpl::labelChanged(Element* element)
     textChanged(toHTMLLabelElement(element)->control());
 }
 
-void AXObjectCacheImpl::recomputeIsIgnored(LayoutObject* renderer)
+void AXObjectCacheImpl::recomputeIsIgnored(LayoutObject* layoutObject)
 {
-    if (AXObject* obj = get(renderer))
+    if (AXObject* obj = get(layoutObject))
         obj->notifyIfIgnoredValueChanged();
 }
 
-void AXObjectCacheImpl::inlineTextBoxesUpdated(LayoutObject* renderer)
+void AXObjectCacheImpl::inlineTextBoxesUpdated(LayoutObject* layoutObject)
 {
     if (!inlineTextBoxAccessibilityEnabled())
         return;
 
     // Only update if the accessibility object already exists and it's
     // not already marked as dirty.
-    if (AXObject* obj = get(renderer)) {
+    if (AXObject* obj = get(layoutObject)) {
         if (!obj->needsToUpdateChildren()) {
             obj->setNeedsToUpdateChildren();
-            postNotification(renderer, AXChildrenChanged, true);
+            postNotification(layoutObject, AXChildrenChanged, true);
         }
     }
 }

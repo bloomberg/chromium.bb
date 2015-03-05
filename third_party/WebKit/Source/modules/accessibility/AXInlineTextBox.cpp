@@ -127,8 +127,8 @@ AXObject* AXInlineTextBox::computeParent() const
     if (!m_inlineTextBox || !m_axObjectCache)
         return 0;
 
-    LayoutText* renderText = m_inlineTextBox->renderText();
-    return m_axObjectCache->getOrCreate(renderText);
+    LayoutText* layoutText = m_inlineTextBox->renderText();
+    return m_axObjectCache->getOrCreate(layoutText);
 }
 
 AccessibilityTextDirection AXInlineTextBox::textDirection() const
