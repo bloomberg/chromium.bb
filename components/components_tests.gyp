@@ -25,6 +25,7 @@
       'autofill/content/browser/wallet/wallet_items_unittest.cc',
       'autofill/content/browser/wallet/wallet_service_url_unittest.cc',
       'autofill/content/browser/wallet/wallet_signin_helper_unittest.cc',
+      'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
       'autofill/core/browser/address_field_unittest.cc',
       'autofill/core/browser/address_i18n_unittest.cc',
       'autofill/core/browser/address_unittest.cc',
@@ -99,6 +100,7 @@
       'crx_file/id_util_unittest.cc',
     ],
     'data_reduction_proxy_unittest_sources': [
+      'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_config_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_configurator_unittest.cc',
@@ -120,6 +122,8 @@
       'device_event_log/device_event_log_impl_unittest.cc',
     ],
     'dom_distiller_unittest_sources': [
+      'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
+      'dom_distiller/content/web_contents_main_frame_observer_unittest.cc',
       'dom_distiller/core/article_entry_unittest.cc',
       'dom_distiller/core/distilled_content_store_unittest.cc',
       'dom_distiller/core/distilled_page_prefs_unittests.cc',
@@ -153,6 +157,9 @@
       'enhanced_bookmarks/image_store_ios_unittest.mm',
       'enhanced_bookmarks/image_store_unittest.cc',
       'enhanced_bookmarks/item_position_unittest.cc',
+    ],
+    'error_page_unittest_sources': [
+      'error_page/renderer/net_error_helper_core_unittest.cc',
     ],
     'feedback_unittest_sources': [
       'feedback/feedback_common_unittest.cc',
@@ -209,6 +216,7 @@
     'metrics_unittest_sources': [
       'metrics/compression_utils_unittest.cc',
       'metrics/daily_event_unittest.cc',
+      'metrics/gpu/gpu_metrics_provider_unittest.cc',
       'metrics/histogram_encoder_unittest.cc',
       'metrics/histogram_manager_unittest.cc',
       'metrics/machine_id_provider_win_unittest.cc',
@@ -224,6 +232,10 @@
     ],
     'navigation_interception_unittest_sources': [
       'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
+    ],
+    'network_hints_unittest_sources': [
+      'network_hints/renderer/dns_prefetch_queue_unittest.cc',
+      'network_hints/renderer/renderer_dns_prefetch_unittest.cc',
     ],
     'network_time_unittest_sources': [
       'network_time/network_time_tracker_unittest.cc',
@@ -251,6 +263,8 @@
       'packed_ct_ev_whitelist/packed_ct_ev_whitelist_unittest.cc',
     ],
     'password_manager_unittest_sources': [
+      'password_manager/content/browser/credential_manager_dispatcher_unittest.cc',
+      'password_manager/content/common/credential_manager_types_unittest.cc',
       'password_manager/core/browser/affiliation_backend_unittest.cc',
       'password_manager/core/browser/affiliation_database_unittest.cc',
       'password_manager/core/browser/affiliation_fetch_throttler_unittest.cc',
@@ -270,6 +284,9 @@
       'password_manager/core/browser/password_store_unittest.cc',
       'password_manager/core/browser/password_syncable_service_unittest.cc',
       'password_manager/core/browser/psl_matching_helper_unittest.cc',
+    ],
+    'power_unittest_sources': [
+      'power/origin_power_map_unittest.cc',
     ],
     'precache_unittest_sources': [
       'precache/content/precache_manager_unittest.cc',
@@ -310,6 +327,7 @@
       'sessions/ios/ios_serialized_navigation_builder_unittest.cc',
       'sessions/ios/ios_serialized_navigation_driver_unittest.cc',
       'sessions/serialized_navigation_entry_unittest.cc',
+      'sessions/session_backend_unittest.cc',
       'sessions/session_types_unittest.cc',
     ],
     'signin_unittest_sources': [
@@ -656,17 +674,9 @@
             }],
             ['OS != "ios"', {
               'sources': [
-                'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
-                'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter_unittest.cc',
-                'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
-                'dom_distiller/content/web_contents_main_frame_observer_unittest.cc',
-                'error_page/renderer/net_error_helper_core_unittest.cc',
-                'metrics/gpu/gpu_metrics_provider_unittest.cc',
-                'network_hints/renderer/dns_prefetch_queue_unittest.cc',
-                'network_hints/renderer/renderer_dns_prefetch_unittest.cc',
-                'password_manager/content/browser/credential_manager_dispatcher_unittest.cc',
-                'password_manager/content/common/credential_manager_types_unittest.cc',
-                'power/origin_power_map_unittest.cc',
+                '<@(error_page_unittest_sources)',
+                '<@(network_hints_unittest_sources)',
+                '<@(power_unittest_sources)',
               ],
               'dependencies': [
                 '../skia/skia.gyp:skia',
@@ -694,13 +704,6 @@
                 'components.gyp:web_modal',
                 'components.gyp:web_modal_test_support',
               ],
-              'conditions': [
-                ['OS != "android"', {
-                  'sources': [
-                    'sessions/session_backend_unittest.cc',
-                   ],
-                }],
-              ],
             }, { # 'OS == "ios"'
               'sources': [
                 'open_from_clipboard/clipboard_recent_content_ios_unittest.mm',
@@ -720,7 +723,6 @@
                 ['include', '^bookmarks/'],
                 ['include', '^captive_portal/'],
                 ['include', '^cloud_devices/'],
-                ['include', '^component_updater/'],
                 ['include', '^content_settings/'],
                 ['include', '^crash/'],
                 ['include', '^cronet/'],
@@ -745,11 +747,11 @@
                 ['include', '^leveldb_proto/'],
                 ['include', '^login/'],
                 ['include', '^metrics/'],
+                ['exclude', '^metrics/gpu/'],
                 ['include', '^navigation_metrics/'],
                 ['include', '^network_hints/'],
                 ['include', '^network_time/'],
                 ['include', '^omnibox/'],
-                ['include', '^onc/'],
                 ['include', '^open_from_clipboard/'],
                 ['include', '^os_crypt/'],
                 ['include', '^ownership/'],
@@ -864,6 +866,7 @@
                 'gcm_driver/gcm_delayed_task_controller_unittest.cc',
                 'gcm_driver/gcm_driver_desktop_unittest.cc',
                 'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
+                'sessions/session_backend_unittest.cc',
                 'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
                 'storage_monitor/media_storage_util_unittest.cc',
                 'storage_monitor/storage_info_unittest.cc',
