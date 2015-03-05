@@ -31,13 +31,13 @@ if (ozone_platform_caca) {
 
 if (ozone_platform_dri) {
   ozone_platforms += [ "dri" ]
-  ozone_platform_deps += [ "platform/dri" ]
-  ozone_platform_test_deps += [ "platform/dri:dri_unittests" ]
+  ozone_platform_deps += [ "platform/drm" ]
+  ozone_platform_test_deps += [ "platform/drm:drm_unittests" ]
 }
 
 if (ozone_platform_gbm) {
   ozone_platforms += [ "gbm" ]
-  ozone_platform_deps += [ "platform/dri:gbm" ]
+  ozone_platform_deps += [ "platform/drm:gbm" ]
 }
 
 platform_list_cc_file = "$target_gen_dir/platform_list.cc"
