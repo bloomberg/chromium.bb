@@ -441,6 +441,56 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
                       git1, cid1, [], ' CQ-DEPEND=1')
 
 
+class TestGetOptionLinesFromCommitMessage(cros_test_lib.TestCase):
+  """Tests of GetOptionFromCommitMessage."""
+
+  _M1 = """jabberwocky: by Lewis Carroll
+
+'Twas brillig, and the slithy toves
+did gyre and gimble in the wabe.
+"""
+
+  _M2 = """jabberwocky: by Lewis Carroll
+
+All mimsy were the borogroves,
+And the mome wraths outgrabe.
+jabberwocky: Charles Lutwidge Dodgson
+"""
+
+  _M3 = """jabberwocky: by Lewis Carroll
+
+He took his vorpal sword in hand:
+Long time the manxome foe he sought
+jabberwocky:
+"""
+
+  _M4 = """the poem continues...
+
+jabberwocky: O frabjuous day!
+jabberwocky: Calloh! Callay!
+"""
+
+  def testNoMessage(self):
+    o = cros_patch.GetOptionLinesFromCommitMessage('', 'jabberwocky:')
+    self.assertEqual(None, o)
+
+  def testNoOption(self):
+    o = cros_patch.GetOptionLinesFromCommitMessage(self._M1, 'jabberwocky:')
+    self.assertEqual(None, o)
+
+  def testYesOption(self):
+    o = cros_patch.GetOptionLinesFromCommitMessage(self._M2, 'jabberwocky:')
+    self.assertEqual(['Charles Lutwidge Dodgson'], o)
+
+  def testEmptyOption(self):
+    o = cros_patch.GetOptionLinesFromCommitMessage(self._M3, 'jabberwocky:')
+    self.assertEqual([], o)
+
+  def testMultiOptino(self):
+    o = cros_patch.GetOptionLinesFromCommitMessage(self._M4, 'jabberwocky:')
+    self.assertEqual(['O frabjuous day!', 'Calloh! Callay!'], o)
+
+
 class TestApplyAgainstManifest(GitRepoPatchTestCase,
                                cros_test_lib.MockTestCase):
   """Test applying a patch against a manifest"""

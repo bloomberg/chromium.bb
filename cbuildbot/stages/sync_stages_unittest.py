@@ -499,6 +499,40 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.assertEqual(self.sync_stage.VerificationsForChange(change),
                      constants.PRE_CQ_DEFAULT_CONFIGS)
 
+  def testVerificationsForChangeFromInvalidCommitMessage(self):
+    change = MockPatch(commit_message="""First line.
+
+Third line.
+pre-cq-configs: insect-pre-cq
+""")
+    self.PatchObject(triage_lib, 'GetOptionForChange',
+                     return_value='lumpy-pre-cq')
+    self.assertEqual(self.sync_stage.VerificationsForChange(change),
+                     ['lumpy-pre-cq'])
+
+  def testVerificationsForChangeFromCommitMessage(self):
+    change = MockPatch(commit_message="""First line.
+
+Third line.
+pre-cq-configs: stumpy-pre-cq
+""")
+    self.PatchObject(triage_lib, 'GetOptionForChange',
+                     return_value='lumpy-pre-cq')
+    self.assertEqual(self.sync_stage.VerificationsForChange(change),
+                     ['stumpy-pre-cq'])
+
+  def testMultiVerificationsForChangeFromCommitMessage(self):
+    change = MockPatch(commit_message="""First line.
+
+Third line.
+pre-cq-configs: stumpy-pre-cq
+pre-cq-configs: link-pre-cq
+""")
+    self.PatchObject(triage_lib, 'GetOptionForChange',
+                     return_value='lumpy-pre-cq')
+    self.assertEqual(self.sync_stage.VerificationsForChange(change),
+                     ['stumpy-pre-cq', 'link-pre-cq'])
+
   def _PrepareChangesWithPendingVerifications(self, verifications=None):
     """Prepare changes and pending verifications for them.
 

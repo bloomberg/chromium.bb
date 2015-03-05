@@ -445,6 +445,11 @@ PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
 # The name of the Pre-CQ launcher on the waterfall.
 PRE_CQ_LAUNCHER_NAME = 'Pre-CQ Launcher'
 
+# The COMMIT-QUEUE.ini and commit message option that overrides pre-cq configs
+# to test with.
+PRE_CQ_CONFIGS_OPTION = 'pre-cq-configs'
+PRE_CQ_CONFIGS_OPTION_REGEX = PRE_CQ_CONFIGS_OPTION + ':'
+
 # Define pool of machines for Hardware tests.
 HWTEST_DEFAULT_NUM = 6
 HWTEST_TRYBOT_NUM = 3

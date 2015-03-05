@@ -1043,19 +1043,33 @@ class PreCQLauncherStage(SyncStage):
     Returns:
       A list of configs.
     """
-    configs_to_test = constants.PRE_CQ_DEFAULT_CONFIGS
+    configs_to_test = None
     try:
-      result = triage_lib.GetOptionForChange(
-          self._build_root, change, 'GENERAL', 'pre-cq-configs')
-      if (result and result.split() and
-          all(c in cbuildbot_config.config for c in result.split())):
-        configs_to_test = result.split()
+      # If a pre-cq config is specified in the commit message, use that.
+      # Otherwise, look in appropriate COMMIT-QUEUE.ini. Otherwise, default to
+      # constants.PRE_CQ_DEFAULT_CONFIGS
+      lines = cros_patch.GetOptionLinesFromCommitMessage(
+          change.commit_message, constants.PRE_CQ_CONFIGS_OPTION_REGEX)
+      if lines is not None:
+        configs_to_test = self._ParsePreCQOption(' '.join(lines))
+      configs_to_test = configs_to_test or self._ParsePreCQOption(
+          triage_lib.GetOptionForChange(
+              self._build_root, change, 'GENERAL',
+              constants.PRE_CQ_CONFIGS_OPTION))
     except ConfigParser.Error:
       cros_build_lib.Error('%s has malformed config file', change,
                            exc_info=True)
 
-    return configs_to_test
+    return configs_to_test or constants.PRE_CQ_DEFAULT_CONFIGS
 
+  def _ParsePreCQOption(self, pre_cq_option):
+    """Gets a valid config list, or None, from |pre_cq_option|."""
+    if (pre_cq_option and
+        pre_cq_option.split() and
+        all(c in cbuildbot_config.config for c in pre_cq_option.split())):
+      return pre_cq_option.split()
+    else:
+      return None
 
   def ScreenChangeForPreCQ(self, change):
     """Record which pre-cq tryjobs to test |change| with.

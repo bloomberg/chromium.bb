@@ -348,6 +348,8 @@ class IgnoredStagesTest(patch_unittest.MockPatchBase):
       self.assertEqual('bar baz', ignored)
 
 
+
+
 class ConfigFileTest(cros_test_lib.MockTestCase):
   """Tests for functions that read config information for a patch."""
   # pylint: disable=protected-access

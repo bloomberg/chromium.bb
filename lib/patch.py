@@ -487,6 +487,39 @@ def ParsePatchDep(text, no_change_id=False, no_sha1=False,
   raise ValueError('Cannot parse the dependency: %s' % original_text)
 
 
+def GetOptionLinesFromCommitMessage(commit_message, option_re):
+  """Finds lines in |commit_message| that start with |option_re|.
+
+  Args:
+    commit_message: (str) Text of the commit message.
+    option_re: (str) regular expression to match the key identifying this
+               option. Additionally, any whitespace surrounding the option
+               is ignored.
+
+  Returns:
+    list of line values that matched the option (with the option stripped
+    out) if at least 1 line matched the option (even if it provided no
+    valuse). None if no lines of the message matched the option.
+  """
+  option_lines = []
+  matched = False
+  lines = commit_message.splitlines()[2:]
+  for line in lines:
+    line = line.strip()
+    if re.match(option_re, line):
+      matched = True
+      line = re.sub(option_re, '', line, count=1).strip()
+      if line:
+        option_lines.append(line)
+
+  if matched:
+    return option_lines
+  else:
+    return None
+
+
+# TODO(akeshet): Refactor CQ-DEPEND parsing logic to use general purpose
+# GetOptionFromCommitMessage.
 def GetPaladinDeps(commit_message):
   """Get the paladin dependencies for the given |commit_message|."""
   PALADIN_DEPENDENCY_RE = re.compile(r'^([ \t]*CQ.?DEPEND.)(.*)$',
