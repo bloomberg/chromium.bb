@@ -16,7 +16,7 @@ BrandcodedDefaultSettings::BrandcodedDefaultSettings() {
 
 BrandcodedDefaultSettings::BrandcodedDefaultSettings(const std::string& prefs) {
   if (!prefs.empty()) {
-    JSONStringValueSerializer json(prefs);
+    JSONStringValueDeserializer json(prefs);
     std::string error;
     scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
     if (!root.get()) {

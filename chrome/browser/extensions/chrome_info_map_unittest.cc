@@ -24,8 +24,8 @@ scoped_refptr<Extension> LoadManifest(const std::string& dir,
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions").AppendASCII(dir).AppendASCII(test_file);
 
-  JSONFileValueSerializer serializer(path);
-  scoped_ptr<base::Value> result(serializer.Deserialize(NULL, NULL));
+  JSONFileValueDeserializer deserializer(path);
+  scoped_ptr<base::Value> result(deserializer.Deserialize(NULL, NULL));
   if (!result)
     return NULL;
 

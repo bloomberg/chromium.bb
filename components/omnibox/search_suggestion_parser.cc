@@ -351,7 +351,7 @@ scoped_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
     // Remove any XSSI guards to allow for JSON parsing.
     json_data.remove_prefix(response_start_index);
 
-    JSONStringValueSerializer deserializer(json_data);
+    JSONStringValueDeserializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
     scoped_ptr<base::Value> data(deserializer.Deserialize(&error_code, NULL));

@@ -125,9 +125,9 @@ scoped_ptr<base::DictionaryValue> ReadManifest(
       unpack_path.Append(FILE_PATH_LITERAL("manifest.json"));
   if (!base::PathExists(manifest))
     return scoped_ptr<base::DictionaryValue>();
-  JSONFileValueSerializer serializer(manifest);
+  JSONFileValueDeserializer deserializer(manifest);
   std::string error;
-  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &error));
   if (!root.get())
     return scoped_ptr<base::DictionaryValue>();
   if (!root->IsType(base::Value::TYPE_DICTIONARY))

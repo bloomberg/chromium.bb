@@ -49,10 +49,10 @@ scoped_ptr<base::DictionaryValue> ReadValue(const base::win::RegKey& key,
 
   // Parse the value.
   std::string value_json_utf8 = base::WideToUTF8(value_json);
-  JSONStringValueSerializer serializer(&value_json_utf8);
+  JSONStringValueDeserializer deserializer(value_json_utf8);
   int error_code;
   std::string error_message;
-  scoped_ptr<base::Value> value(serializer.Deserialize(&error_code,
+  scoped_ptr<base::Value> value(deserializer.Deserialize(&error_code,
                                                        &error_message));
   if (!value) {
     LOG(ERROR) << "Failed to parse '" << value_name << "': " << error_message

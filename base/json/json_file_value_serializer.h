@@ -14,10 +14,9 @@
 
 class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
  public:
-  // |json_file_path_| is the path of a file that will be source of the
-  // deserialization or the destination of the serialization.
-  // When deserializing, the file should exist, but when serializing, the
-  // serializer will attempt to create the file at the specified location.
+  // |json_file_path_| is the path of a file that will be destination of the
+  // serialization. The serializer will attempt to create the file at the
+  // specified location.
   explicit JSONFileValueSerializer(const base::FilePath& json_file_path);
 
   ~JSONFileValueSerializer() override;
@@ -35,6 +34,22 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   // Equivalent to Serialize(root) except binary values are omitted from the
   // output.
   bool SerializeAndOmitBinaryValues(const base::Value& root);
+
+ private:
+  bool SerializeInternal(const base::Value& root, bool omit_binary_values);
+
+  const base::FilePath json_file_path_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(JSONFileValueSerializer);
+};
+
+class BASE_EXPORT JSONFileValueDeserializer : public base::ValueDeserializer {
+ public:
+  // |json_file_path_| is the path of a file that will be source of the
+  // deserialization.
+  explicit JSONFileValueDeserializer(const base::FilePath& json_file_path);
+
+  ~JSONFileValueDeserializer() override;
 
   // Attempt to deserialize the data structure encoded in the file passed
   // in to the constructor into a structure of Value objects.  If the return
@@ -69,22 +84,20 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
     allow_trailing_comma_ = new_value;
   }
 
-  // Returns the syze (in bytes) of JSON string read from disk in the last
+  // Returns the size (in bytes) of JSON string read from disk in the last
   // successful |Deserialize()| call.
   size_t get_last_read_size() const { return last_read_size_; }
 
  private:
-  bool SerializeInternal(const base::Value& root, bool omit_binary_values);
+  // A wrapper for ReadFileToString which returns a non-zero JsonFileError if
+  // there were file errors.
+  int ReadFileToString(std::string* json_string);
 
   const base::FilePath json_file_path_;
   bool allow_trailing_comma_;
   size_t last_read_size_;
 
-  // A wrapper for ReadFileToString which returns a non-zero JsonFileError if
-  // there were file errors.
-  int ReadFileToString(std::string* json_string);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSONFileValueSerializer);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(JSONFileValueDeserializer);
 };
 
 #endif  // BASE_JSON_JSON_FILE_VALUE_SERIALIZER_H_

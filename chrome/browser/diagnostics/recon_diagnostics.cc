@@ -210,7 +210,7 @@ class JSONTest : public DiagnosticsTest {
       return true;
     }
 
-    JSONStringValueSerializer json(json_data);
+    JSONStringValueDeserializer json(json_data);
     int error_code = base::JSONReader::JSON_NO_ERROR;
     std::string error_message;
     scoped_ptr<base::Value> json_root(

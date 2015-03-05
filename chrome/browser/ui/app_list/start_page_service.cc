@@ -661,7 +661,7 @@ void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
   if (json_start_index != std::string::npos)
     json_data_substr.remove_prefix(json_start_index);
 
-  JSONStringValueSerializer deserializer(json_data_substr);
+  JSONStringValueDeserializer deserializer(json_data_substr);
   deserializer.set_allow_trailing_comma(true);
   int error_code = 0;
   scoped_ptr<base::Value> doodle_json(

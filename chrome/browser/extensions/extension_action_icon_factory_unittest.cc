@@ -107,10 +107,12 @@ class ExtensionActionIconFactoryTest
     test_file = test_file.AppendASCII("extensions/api_test").AppendASCII(name);
     int error_code = 0;
     std::string error;
-    JSONFileValueSerializer serializer(test_file.AppendASCII("manifest.json"));
+    JSONFileValueDeserializer deserializer(
+        test_file.AppendASCII("manifest.json"));
     scoped_ptr<base::DictionaryValue> valid_value(
-        static_cast<base::DictionaryValue*>(serializer.Deserialize(&error_code,
-                                                                   &error)));
+        static_cast<base::DictionaryValue*>(
+            deserializer.Deserialize(&error_code,
+                                     &error)));
     EXPECT_EQ(0, error_code) << error;
     if (error_code != 0)
       return NULL;

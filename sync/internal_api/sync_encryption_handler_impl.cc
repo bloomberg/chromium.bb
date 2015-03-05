@@ -174,7 +174,8 @@ bool UnpackKeystoreBootstrapToken(
                                 &decrypted_keystore_bootstrap)) {
     return false;
   }
-  JSONStringValueSerializer json(&decrypted_keystore_bootstrap);
+
+  JSONStringValueDeserializer json(decrypted_keystore_bootstrap);
   scoped_ptr<base::Value> deserialized_keystore_keys(
       json.Deserialize(NULL, NULL));
   if (!deserialized_keystore_keys)

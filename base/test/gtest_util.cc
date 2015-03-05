@@ -47,7 +47,7 @@ bool WriteCompiledInTestsToFile(const FilePath& path) {
 
 bool ReadTestNamesFromFile(const FilePath& path,
                            std::vector<SplitTestName>* output) {
-  JSONFileValueSerializer deserializer(path);
+  JSONFileValueDeserializer deserializer(path);
   int error_code = 0;
   std::string error_message;
   scoped_ptr<base::Value> value(
@@ -80,4 +80,4 @@ bool ReadTestNamesFromFile(const FilePath& path,
   return true;
 }
 
-}  // namespace
+}  // namespace base

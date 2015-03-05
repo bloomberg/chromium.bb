@@ -154,10 +154,10 @@ class BrowserThemePackTest : public ::testing::Test {
     base::FilePath manifest_path =
         extension_path.AppendASCII("manifest.json");
     std::string error;
-    JSONFileValueSerializer serializer(manifest_path);
+    JSONFileValueDeserializer deserializer(manifest_path);
     scoped_ptr<base::DictionaryValue> valid_value(
         static_cast<base::DictionaryValue*>(
-            serializer.Deserialize(NULL, &error)));
+            deserializer.Deserialize(NULL, &error)));
     EXPECT_EQ("", error);
     ASSERT_TRUE(valid_value.get());
     scoped_refptr<Extension> extension(

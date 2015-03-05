@@ -46,11 +46,11 @@ scoped_ptr<base::ListValue> PairingRegistryDelegateLinux::LoadAll() {
   for (base::FilePath pairing_file = enumerator.Next(); !pairing_file.empty();
        pairing_file = enumerator.Next()) {
     // Read the JSON containing pairing data.
-    JSONFileValueSerializer serializer(pairing_file);
+    JSONFileValueDeserializer deserializer(pairing_file);
     int error_code;
     std::string error_message;
     scoped_ptr<base::Value> pairing_json(
-        serializer.Deserialize(&error_code, &error_message));
+        deserializer.Deserialize(&error_code, &error_message));
     if (!pairing_json) {
       LOG(WARNING) << "Failed to load '" << pairing_file.value() << "' ("
                    << error_code << ").";
@@ -85,11 +85,11 @@ PairingRegistry::Pairing PairingRegistryDelegateLinux::Load(
   base::FilePath pairing_file = registry_path.Append(
       base::StringPrintf(kPairingFilenameFormat, client_id.c_str()));
 
-  JSONFileValueSerializer serializer(pairing_file);
+  JSONFileValueDeserializer deserializer(pairing_file);
   int error_code;
   std::string error_message;
   scoped_ptr<base::Value> pairing(
-      serializer.Deserialize(&error_code, &error_message));
+      deserializer.Deserialize(&error_code, &error_message));
   if (!pairing) {
     LOG(WARNING) << "Failed to load pairing information: " << error_message
                  << " (" << error_code << ").";

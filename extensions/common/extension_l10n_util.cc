@@ -38,8 +38,8 @@ base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
                                        std::string* error) {
   base::FilePath file =
       locale_path.AppendASCII(locale).Append(extensions::kMessagesFilename);
-  JSONFileValueSerializer messages_serializer(file);
-  base::Value* dictionary = messages_serializer.Deserialize(NULL, error);
+  JSONFileValueDeserializer messages_deserializer(file);
+  base::Value* dictionary = messages_deserializer.Deserialize(NULL, error);
   if (!dictionary) {
     if (error->empty()) {
       // JSONFileValueSerializer just returns NULL if file cannot be found. It

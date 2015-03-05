@@ -84,13 +84,13 @@ void PrintHelp() {
 
 scoped_ptr<base::DictionaryValue> ReadDictionary(std::string filename) {
   base::FilePath path(filename);
-  JSONFileValueSerializer serializer(path);
-  serializer.set_allow_trailing_comma(true);
+  JSONFileValueDeserializer deserializer(path);
+  deserializer.set_allow_trailing_comma(true);
 
   base::DictionaryValue* dict = NULL;
 
   std::string json_error;
-  base::Value* value = serializer.Deserialize(NULL, &json_error);
+  base::Value* value = deserializer.Deserialize(NULL, &json_error);
   if (!value) {
     LOG(ERROR) << "Couldn't json-deserialize file '" << filename
                << "': " << json_error;

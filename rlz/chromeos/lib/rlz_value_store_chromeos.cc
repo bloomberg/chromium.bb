@@ -211,14 +211,14 @@ void RlzValueStoreChromeOS::CollectGarbage() {
 void RlzValueStoreChromeOS::ReadStore() {
   int error_code = 0;
   std::string error_msg;
-  JSONFileValueSerializer serializer(store_path_);
+  JSONFileValueDeserializer deserializer(store_path_);
   scoped_ptr<base::Value> value(
-      serializer.Deserialize(&error_code, &error_msg));
+      deserializer.Deserialize(&error_code, &error_msg));
   switch (error_code) {
-    case JSONFileValueSerializer::JSON_NO_SUCH_FILE:
+    case JSONFileValueDeserializer::JSON_NO_SUCH_FILE:
       read_only_ = false;
       break;
-    case JSONFileValueSerializer::JSON_NO_ERROR:
+    case JSONFileValueDeserializer::JSON_NO_ERROR:
       read_only_ = false;
       rlz_store_.reset(static_cast<base::DictionaryValue*>(value.release()));
       break;

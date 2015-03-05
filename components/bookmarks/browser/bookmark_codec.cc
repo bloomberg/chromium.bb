@@ -386,8 +386,8 @@ bool BookmarkCodec::DecodeMetaInfo(const base::DictionaryValue& value,
   if (meta_info->IsType(base::Value::TYPE_STRING)) {
     std::string meta_info_str;
     meta_info->GetAsString(&meta_info_str);
-    JSONStringValueSerializer serializer(meta_info_str);
-    deserialized_holder.reset(serializer.Deserialize(nullptr, nullptr));
+    JSONStringValueDeserializer deserializer(meta_info_str);
+    deserialized_holder.reset(deserializer.Deserialize(nullptr, nullptr));
     if (!deserialized_holder)
       return false;
     meta_info = deserialized_holder.get();

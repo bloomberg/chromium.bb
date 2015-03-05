@@ -81,8 +81,8 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   base::FilePath path = GetTestFilePath(relative_path);
 
   std::string error;
-  JSONFileValueSerializer serializer(path);
-  scoped_ptr<base::Value> value(serializer.Deserialize(NULL, &error));
+  JSONFileValueDeserializer deserializer(path);
+  scoped_ptr<base::Value> value(deserializer.Deserialize(NULL, &error));
   LOG_IF(WARNING, !value.get()) << "Failed to parse " << path.value()
                                 << ": " << error;
   return value.Pass();

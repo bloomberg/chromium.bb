@@ -140,9 +140,9 @@ void SupervisedUserSiteList::ParseJson(
     const SupervisedUserSiteList::LoadedCallback& callback,
     const std::string& json) {
   if (g_load_in_process) {
-    JSONFileValueSerializer serializer(path);
+    JSONFileValueDeserializer deserializer(path);
     std::string error;
-    scoped_ptr<base::Value> value(serializer.Deserialize(nullptr, &error));
+    scoped_ptr<base::Value> value(deserializer.Deserialize(nullptr, &error));
     if (!value) {
       HandleError(path, error);
       return;

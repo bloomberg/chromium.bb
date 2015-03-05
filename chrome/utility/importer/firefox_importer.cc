@@ -538,9 +538,9 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
   // file exists only if the user has set keywords for search engines.
   base::FilePath search_metadata_json_file =
       source_path_.AppendASCII("search-metadata.json");
-  JSONFileValueSerializer metadata_serializer(search_metadata_json_file);
+  JSONFileValueDeserializer metadata_deserializer(search_metadata_json_file);
   scoped_ptr<base::Value> metadata_root(
-      metadata_serializer.Deserialize(NULL, NULL));
+      metadata_deserializer.Deserialize(NULL, NULL));
   const base::DictionaryValue* search_metadata_root = NULL;
   if (metadata_root)
     metadata_root->GetAsDictionary(&search_metadata_root);
@@ -550,8 +550,8 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
   if (!base::PathExists(search_json_file))
     return;
 
-  JSONFileValueSerializer serializer(search_json_file);
-  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, NULL));
+  JSONFileValueDeserializer deserializer(search_json_file);
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
   const base::DictionaryValue* search_root = NULL;
   if (!root || !root->GetAsDictionary(&search_root))
     return;

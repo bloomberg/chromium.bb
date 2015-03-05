@@ -30,8 +30,8 @@ base::ListValue* ReadCommands(const base::FilePath& unpack_path) {
   if (!base::PathExists(commands))
     return NULL;
 
-  JSONFileValueSerializer serializer(commands);
-  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, NULL));
+  JSONFileValueDeserializer deserializer(commands);
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
 
   return (root.get() && root->IsType(base::Value::TYPE_LIST))
              ? static_cast<base::ListValue*>(root.release())

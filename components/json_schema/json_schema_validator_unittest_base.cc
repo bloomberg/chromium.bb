@@ -36,8 +36,8 @@ base::Value* LoadValue(const std::string& filename) {
   EXPECT_TRUE(base::PathExists(path));
 
   std::string error_message;
-  JSONFileValueSerializer serializer(path);
-  base::Value* result = serializer.Deserialize(NULL, &error_message);
+  JSONFileValueDeserializer deserializer(path);
+  base::Value* result = deserializer.Deserialize(NULL, &error_message);
   if (!result)
     ADD_FAILURE() << "Could not parse JSON: " << error_message;
   return result;

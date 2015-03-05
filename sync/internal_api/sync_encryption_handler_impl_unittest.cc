@@ -665,7 +665,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
   ASSERT_TRUE(
       GetCryptographer()->encryptor()->DecryptString(decoded_bootstrap,
                                                      &decrypted_bootstrap));
-  JSONStringValueSerializer json(decrypted_bootstrap);
+  JSONStringValueDeserializer json(decrypted_bootstrap);
   scoped_ptr<base::Value> deserialized_keystore_keys(
       json.Deserialize(NULL, NULL));
   ASSERT_TRUE(deserialized_keystore_keys.get());

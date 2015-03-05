@@ -70,10 +70,11 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
 // occurs). An empty dictionary is returned in case of failure (e.g. invalid
 // path or json content).
 // Caller takes ownership of the returned dictionary.
-base::DictionaryValue* ExtractExtensionPrefs(base::ValueSerializer* serializer,
-                                             const base::FilePath& path) {
+base::DictionaryValue* ExtractExtensionPrefs(
+    base::ValueDeserializer* deserializer,
+    const base::FilePath& path) {
   std::string error_msg;
-  base::Value* extensions = serializer->Deserialize(NULL, &error_msg);
+  base::Value* extensions = deserializer->Deserialize(NULL, &error_msg);
   if (!extensions) {
     LOG(WARNING) << "Unable to deserialize json data: " << error_msg
                  << " in file " << path.value() << ".";
@@ -254,9 +255,9 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
 #endif  // defined(OS_MACOSX)
   }
 
-  JSONFileValueSerializer serializer(json_file);
+  JSONFileValueDeserializer deserializer(json_file);
   scoped_ptr<base::DictionaryValue> ext_prefs(
-      ExtractExtensionPrefs(&serializer, json_file));
+      ExtractExtensionPrefs(&deserializer, json_file));
   if (ext_prefs)
     prefs->MergeDictionary(ext_prefs.get());
 }
@@ -292,9 +293,9 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
     DVLOG(1) << "Reading json file: "
              << extension_candidate_path.LossyDisplayName();
 
-    JSONFileValueSerializer serializer(extension_candidate_path);
+    JSONFileValueDeserializer deserializer(extension_candidate_path);
     scoped_ptr<base::DictionaryValue> ext_prefs(
-        ExtractExtensionPrefs(&serializer, extension_candidate_path));
+        ExtractExtensionPrefs(&deserializer, extension_candidate_path));
     if (ext_prefs) {
       DVLOG(1) << "Adding extension with id: " << id;
       prefs->Set(id, ext_prefs.release());
@@ -307,9 +308,9 @@ ExternalTestingLoader::ExternalTestingLoader(
     const base::FilePath& fake_base_path)
     : fake_base_path_(fake_base_path) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JSONStringValueSerializer serializer(json_data);
+  JSONStringValueDeserializer deserializer(json_data);
   base::FilePath fake_json_path = fake_base_path.AppendASCII("fake.json");
-  testing_prefs_.reset(ExtractExtensionPrefs(&serializer, fake_json_path));
+  testing_prefs_.reset(ExtractExtensionPrefs(&deserializer, fake_json_path));
 }
 
 void ExternalTestingLoader::StartLoading() {

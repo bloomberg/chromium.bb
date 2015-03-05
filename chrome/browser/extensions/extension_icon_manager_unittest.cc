@@ -108,9 +108,10 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
   base::FilePath manifest_path = test_dir.AppendASCII(
       "extensions/image_loading_tracker/app.json");
 
-  JSONFileValueSerializer serializer(manifest_path);
+  JSONFileValueDeserializer deserializer(manifest_path);
   scoped_ptr<base::DictionaryValue> manifest(
-      static_cast<base::DictionaryValue*>(serializer.Deserialize(NULL, NULL)));
+      static_cast<base::DictionaryValue*>(deserializer.Deserialize(NULL,
+                                                                   NULL)));
   ASSERT_TRUE(manifest.get() != NULL);
 
   std::string error;
@@ -150,9 +151,10 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
   base::FilePath manifest_path = test_dir.AppendASCII(
       "extensions/file_manager/app.json");
 
-  JSONFileValueSerializer serializer(manifest_path);
+  JSONFileValueDeserializer deserializer(manifest_path);
   scoped_ptr<base::DictionaryValue> manifest(
-      static_cast<base::DictionaryValue*>(serializer.Deserialize(NULL, NULL)));
+      static_cast<base::DictionaryValue*>(deserializer.Deserialize(NULL,
+                                                                   NULL)));
   ASSERT_TRUE(manifest.get() != NULL);
 
   std::string error;

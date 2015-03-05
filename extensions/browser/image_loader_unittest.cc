@@ -81,11 +81,11 @@ class ImageLoaderTest : public ExtensionsTest {
     extension_dir = extension_dir.AppendASCII(dir_name);
     int error_code = 0;
     std::string error;
-    JSONFileValueSerializer serializer(
+    JSONFileValueDeserializer deserializer(
         extension_dir.AppendASCII("manifest.json"));
     scoped_ptr<base::DictionaryValue> valid_value(
-        static_cast<base::DictionaryValue*>(serializer.Deserialize(&error_code,
-                                                                   &error)));
+        static_cast<base::DictionaryValue*>(
+            deserializer.Deserialize(&error_code, &error)));
     EXPECT_EQ(0, error_code) << error;
     if (error_code != 0)
       return NULL;

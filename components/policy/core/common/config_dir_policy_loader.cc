@@ -31,11 +31,11 @@ const base::FilePath::CharType kRecommendedConfigDir[] =
 
 PolicyLoadStatus JsonErrorToPolicyLoadStatus(int status) {
   switch (status) {
-    case JSONFileValueSerializer::JSON_ACCESS_DENIED:
-    case JSONFileValueSerializer::JSON_CANNOT_READ_FILE:
-    case JSONFileValueSerializer::JSON_FILE_LOCKED:
+    case JSONFileValueDeserializer::JSON_ACCESS_DENIED:
+    case JSONFileValueDeserializer::JSON_CANNOT_READ_FILE:
+    case JSONFileValueDeserializer::JSON_FILE_LOCKED:
       return POLICY_LOAD_STATUS_READ_ERROR;
-    case JSONFileValueSerializer::JSON_NO_SUCH_FILE:
+    case JSONFileValueDeserializer::JSON_NO_SUCH_FILE:
       return POLICY_LOAD_STATUS_MISSING;
     case base::JSONReader::JSON_INVALID_ESCAPE:
     case base::JSONReader::JSON_SYNTAX_ERROR:
@@ -138,7 +138,7 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
   for (std::set<base::FilePath>::reverse_iterator config_file_iter =
            files.rbegin(); config_file_iter != files.rend();
        ++config_file_iter) {
-    JSONFileValueSerializer deserializer(*config_file_iter);
+    JSONFileValueDeserializer deserializer(*config_file_iter);
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
     std::string error_msg;

@@ -42,9 +42,9 @@ void ParseExternalUpdateManifest(
     return;
   }
 
-  JSONFileValueSerializer serializer(manifest);
+  JSONFileValueDeserializer deserializer(manifest);
   std::string error_msg;
-  base::Value* extensions = serializer.Deserialize(NULL, &error_msg);
+  base::Value* extensions = deserializer.Deserialize(NULL, &error_msg);
   if (!extensions) {
     *error_code = KioskExternalUpdater::ERROR_INVALID_MANIFEST;
     return;

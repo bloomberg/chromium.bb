@@ -56,8 +56,8 @@ void LoadCallback(const base::FilePath& path,
   bool load_index = false;
   bool bookmark_file_exists = base::PathExists(path);
   if (bookmark_file_exists) {
-    JSONFileValueSerializer serializer(path);
-    scoped_ptr<base::Value> root(serializer.Deserialize(NULL, NULL));
+    JSONFileValueDeserializer deserializer(path);
+    scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
 
     if (root.get()) {
       // Building the index can take a while, so we do it on the background

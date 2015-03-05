@@ -70,8 +70,8 @@ class ExtensionUITest : public testing::Test {
       std::string *error) {
     base::Value* value;
 
-    JSONFileValueSerializer serializer(path);
-    value = serializer.Deserialize(NULL, error);
+    JSONFileValueDeserializer deserializer(path);
+    value = deserializer.Deserialize(NULL, error);
 
     return static_cast<base::DictionaryValue*>(value);
   }

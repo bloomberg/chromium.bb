@@ -58,7 +58,7 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
     return std::string();
   }
 
-  JSONFileValueSerializer reader(file_path);
+  JSONFileValueDeserializer reader(file_path);
   std::string error_message;
   scoped_ptr<base::Value> root_value(reader.Deserialize(NULL, &error_message));
   if (!root_value) {

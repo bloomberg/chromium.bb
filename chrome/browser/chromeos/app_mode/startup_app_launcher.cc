@@ -125,17 +125,17 @@ void StartupAppLauncher::StartLoadingOAuthFile() {
 // static.
 void StartupAppLauncher::LoadOAuthFileOnBlockingPool(
     KioskOAuthParams* auth_params) {
-  int error_code = JSONFileValueSerializer::JSON_NO_ERROR;
+  int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
   std::string error_msg;
   base::FilePath user_data_dir;
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   base::FilePath auth_file = user_data_dir.Append(kOAuthFileName);
-  scoped_ptr<JSONFileValueSerializer> serializer(
-      new JSONFileValueSerializer(user_data_dir.Append(kOAuthFileName)));
+  scoped_ptr<JSONFileValueDeserializer> deserializer(
+      new JSONFileValueDeserializer(user_data_dir.Append(kOAuthFileName)));
   scoped_ptr<base::Value> value(
-      serializer->Deserialize(&error_code, &error_msg));
+      deserializer->Deserialize(&error_code, &error_msg));
   base::DictionaryValue* dict = NULL;
-  if (error_code != JSONFileValueSerializer::JSON_NO_ERROR ||
+  if (error_code != JSONFileValueDeserializer::JSON_NO_ERROR ||
       !value.get() || !value->GetAsDictionary(&dict)) {
     LOG(WARNING) << "Can't find auth file at " << auth_file.value();
     return;

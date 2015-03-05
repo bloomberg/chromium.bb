@@ -168,8 +168,8 @@ base::DictionaryValue* LoadManifest(
     return NULL;
   }
 
-  JSONFileValueSerializer serializer(manifest_path);
-  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, error));
+  JSONFileValueDeserializer deserializer(manifest_path);
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, error));
   if (!root.get()) {
     if (error->empty()) {
       // If |error| is empty, than the file could not be read.

@@ -74,10 +74,10 @@ bool ExtractUninstallMetrics(const base::DictionaryValue& root,
 
 bool ExtractUninstallMetricsFromFile(const base::FilePath& file_path,
                                      base::string16* uninstall_metrics_string) {
-  JSONFileValueSerializer json_serializer(file_path);
+  JSONFileValueDeserializer json_deserializer(file_path);
 
   std::string json_error_string;
-  scoped_ptr<base::Value> root(json_serializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root(json_deserializer.Deserialize(NULL, NULL));
   if (!root.get())
     return false;
 

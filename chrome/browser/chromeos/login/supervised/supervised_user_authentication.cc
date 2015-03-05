@@ -55,12 +55,13 @@ std::string BuildRawHMACKey() {
 }
 
 base::DictionaryValue* LoadPasswordData(base::FilePath profile_dir) {
-  JSONFileValueSerializer serializer(profile_dir.Append(kPasswordUpdateFile));
+  JSONFileValueDeserializer deserializer(
+      profile_dir.Append(kPasswordUpdateFile));
   std::string error_message;
-  int error_code = JSONFileValueSerializer::JSON_NO_ERROR;
+  int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
   scoped_ptr<base::Value> value(
-      serializer.Deserialize(&error_code, &error_message));
-  if (JSONFileValueSerializer::JSON_NO_ERROR != error_code) {
+      deserializer.Deserialize(&error_code, &error_message));
+  if (JSONFileValueDeserializer::JSON_NO_ERROR != error_code) {
     LOG(ERROR) << "Could not deserialize password data, error = " << error_code
                << " / " << error_message;
     return NULL;

@@ -165,7 +165,7 @@ void RecordPrintResult(size_t* call_count,
 scoped_ptr<base::ListValue> GetJSONAsListValue(const std::string& json,
                                                std::string* error) {
   scoped_ptr<base::Value> deserialized(
-      JSONStringValueSerializer(json).Deserialize(NULL, error));
+      JSONStringValueDeserializer(json).Deserialize(NULL, error));
   if (!deserialized)
     return scoped_ptr<base::ListValue>();
   base::ListValue* list = nullptr;
@@ -182,7 +182,7 @@ scoped_ptr<base::DictionaryValue> GetJSONAsDictionaryValue(
     const std::string& json,
     std::string* error) {
   scoped_ptr<base::Value> deserialized(
-      JSONStringValueSerializer(json).Deserialize(NULL, error));
+      JSONStringValueDeserializer(json).Deserialize(NULL, error));
   if (!deserialized)
     return scoped_ptr<base::DictionaryValue>();
   base::DictionaryValue* dictionary;

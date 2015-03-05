@@ -28,14 +28,14 @@ KioskOemManifestParser::Manifest::Manifest()
 bool KioskOemManifestParser::Load(
     const base::FilePath& kiosk_oem_file,
     KioskOemManifestParser::Manifest* manifest) {
-  int error_code = JSONFileValueSerializer::JSON_NO_ERROR;
+  int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
   std::string error_msg;
-  scoped_ptr<JSONFileValueSerializer> serializer(
-     new JSONFileValueSerializer(kiosk_oem_file));
+  scoped_ptr<JSONFileValueDeserializer> deserializer(
+     new JSONFileValueDeserializer(kiosk_oem_file));
   scoped_ptr<base::Value> value(
-      serializer->Deserialize(&error_code, &error_msg));
+      deserializer->Deserialize(&error_code, &error_msg));
   base::DictionaryValue* dict = NULL;
-  if (error_code != JSONFileValueSerializer::JSON_NO_ERROR ||
+  if (error_code != JSONFileValueDeserializer::JSON_NO_ERROR ||
       !value.get() ||
       !value->GetAsDictionary(&dict)) {
     return false;

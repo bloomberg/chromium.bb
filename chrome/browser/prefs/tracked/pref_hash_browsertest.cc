@@ -85,12 +85,12 @@ int GetTrackedPrefHistogramCount(const char* histogram_name,
 
 scoped_ptr<base::DictionaryValue> ReadPrefsDictionary(
     const base::FilePath& pref_file) {
-  JSONFileValueSerializer serializer(pref_file);
-  int error_code = JSONFileValueSerializer::JSON_NO_ERROR;
+  JSONFileValueDeserializer deserializer(pref_file);
+  int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
   std::string error_str;
   scoped_ptr<base::Value> prefs(
-      serializer.Deserialize(&error_code, &error_str));
-  if (!prefs || error_code != JSONFileValueSerializer::JSON_NO_ERROR) {
+      deserializer.Deserialize(&error_code, &error_str));
+  if (!prefs || error_code != JSONFileValueDeserializer::JSON_NO_ERROR) {
     ADD_FAILURE() << "Error #" << error_code << ": " << error_str;
     return scoped_ptr<base::DictionaryValue>();
   }

@@ -322,8 +322,8 @@ void ComponentExtensionIMEManagerImpl::Unload(Profile* profile,
 scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
     const std::string& manifest_string) {
   std::string error;
-  JSONStringValueSerializer serializer(manifest_string);
-  scoped_ptr<base::Value> manifest(serializer.Deserialize(NULL, &error));
+  JSONStringValueDeserializer deserializer(manifest_string);
+  scoped_ptr<base::Value> manifest(deserializer.Deserialize(NULL, &error));
   if (!manifest.get())
     LOG(ERROR) << "Failed at getting manifest";
 

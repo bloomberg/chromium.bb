@@ -43,7 +43,7 @@ TEST(UninstallMetricsTest, TestExtractUninstallMetrics) {
       L"&launch_count=11&page_load_count=68"
       L"&uptime_sec=809");
 
-  JSONStringValueSerializer json_deserializer(pref_string);
+  JSONStringValueDeserializer json_deserializer(pref_string);
   std::string error_message;
 
   scoped_ptr<base::Value> root(

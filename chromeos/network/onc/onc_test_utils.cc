@@ -48,11 +48,11 @@ scoped_ptr<base::DictionaryValue> ReadTestDictionary(
     return make_scoped_ptr(dict);
   }
 
-  JSONFileValueSerializer serializer(path);
-  serializer.set_allow_trailing_comma(true);
+  JSONFileValueDeserializer deserializer(path);
+  deserializer.set_allow_trailing_comma(true);
 
   std::string error_message;
-  base::Value* content = serializer.Deserialize(NULL, &error_message);
+  base::Value* content = deserializer.Deserialize(NULL, &error_message);
   CHECK(content != NULL) << "Couldn't json-deserialize file '"
                          << filename << "': " << error_message;
 

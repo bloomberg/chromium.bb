@@ -77,9 +77,9 @@ class SimpleTestJob : public net::URLRequestTestJob {
 base::DictionaryValue* LoadManifestFile(const base::FilePath path,
                                         std::string* error) {
   EXPECT_TRUE(base::PathExists(path));
-  JSONFileValueSerializer serializer(path);
+  JSONFileValueDeserializer deserializer(path);
   return static_cast<base::DictionaryValue*>(
-      serializer.Deserialize(NULL, error));
+      deserializer.Deserialize(NULL, error));
 }
 
 scoped_refptr<Extension> LoadExtension(const std::string& filename,

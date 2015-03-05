@@ -51,7 +51,7 @@ std::vector<std::string> GetNamedList(const char* name,
 
 base::DictionaryValue* ParseDistributionPreferences(
     const std::string& json_data) {
-  JSONStringValueSerializer json(json_data);
+  JSONStringValueDeserializer json(json_data);
   std::string error;
   scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
   if (!root.get()) {

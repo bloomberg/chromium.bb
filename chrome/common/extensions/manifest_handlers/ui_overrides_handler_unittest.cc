@@ -50,7 +50,7 @@ TEST_F(UIOverrideTest, ParseManifest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "--enable-override-bookmarks-ui", "1");
   std::string manifest(kManifest);
-  JSONStringValueSerializer json(&manifest);
+  JSONStringValueDeserializer json(manifest);
   std::string error;
   scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
@@ -78,7 +78,7 @@ TEST_F(UIOverrideTest, ParseBrokenManifest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "--enable-override-bookmarks-ui", "1");
   std::string manifest(kBrokenManifest);
-  JSONStringValueSerializer json(&manifest);
+  JSONStringValueDeserializer json(manifest);
   std::string error;
   scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);

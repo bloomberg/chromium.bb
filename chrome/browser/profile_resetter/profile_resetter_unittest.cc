@@ -960,7 +960,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializationTest) {
   for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
        ++field_mask) {
     std::string report = SerializeSettingsReport(nonorganic_snap, field_mask);
-    JSONStringValueSerializer json(report);
+    JSONStringValueDeserializer json(report);
     std::string error;
     scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
     ASSERT_TRUE(root) << error;

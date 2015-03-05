@@ -35,9 +35,9 @@ scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
              .AppendASCII(manifest_file);
 
   std::string error;
-  JSONFileValueSerializer serializer(path);
+  JSONFileValueDeserializer deserializer(path);
   scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
-      serializer.Deserialize(NULL, &error)));
+      deserializer.Deserialize(NULL, &error)));
   if (!value.get()) {
     LOG(ERROR) << error;
     return extension;

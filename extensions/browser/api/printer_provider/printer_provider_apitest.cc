@@ -212,10 +212,10 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
       const std::vector<std::string>& expected_printers) {
     ASSERT_EQ(expected_printers.size(), printers.GetSize());
     for (size_t i = 0; i < expected_printers.size(); ++i) {
-      JSONStringValueSerializer serializer(expected_printers[i]);
+      JSONStringValueDeserializer deserializer(expected_printers[i]);
       int error_code;
       scoped_ptr<base::Value> printer_value(
-          serializer.Deserialize(&error_code, NULL));
+          deserializer.Deserialize(&error_code, NULL));
       ASSERT_TRUE(printer_value) << "Failed to deserialize "
                                  << expected_printers[i] << ": "
                                  << "error code " << error_code;

@@ -167,7 +167,7 @@ scoped_ptr<LevelDBPrefStore::ReadingResults> LevelDBPrefStore::DoReading(
   // TODO(dgrogan): Is it really necessary to check it->status() each iteration?
   for (it->SeekToFirst(); it->Valid() && it->status().ok(); it->Next()) {
     const std::string value_string = it->value().ToString();
-    JSONStringValueSerializer deserializer(value_string);
+    JSONStringValueDeserializer deserializer(value_string);
     std::string error_message;
     int error_code;
     base::Value* json_value =

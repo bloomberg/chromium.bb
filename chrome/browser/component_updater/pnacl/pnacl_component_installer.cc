@@ -125,9 +125,9 @@ bool GetLatestPnaclDirectory(const scoped_refptr<PnaclComponentInstaller>& pci,
 
 // Read a manifest file in.
 base::DictionaryValue* ReadJSONManifest(const base::FilePath& manifest_path) {
-  JSONFileValueSerializer serializer(manifest_path);
+  JSONFileValueDeserializer deserializer(manifest_path);
   std::string error;
-  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &error));
   if (!root.get())
     return NULL;
   if (!root->IsType(base::Value::TYPE_DICTIONARY))

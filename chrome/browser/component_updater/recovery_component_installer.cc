@@ -90,9 +90,9 @@ bool SimulatingElevatedRecovery() {
 
 #if defined(OS_WIN)
 scoped_ptr<base::DictionaryValue> ReadManifest(const base::FilePath& manifest) {
-  JSONFileValueSerializer serializer(manifest);
+  JSONFileValueDeserializer deserializer(manifest);
   std::string error;
-  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, &error));
   if (root.get() && root->IsType(base::Value::TYPE_DICTIONARY)) {
     return scoped_ptr<base::DictionaryValue>(
         static_cast<base::DictionaryValue*>(root.release()));

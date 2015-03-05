@@ -10,16 +10,14 @@
 
 using base::FilePath;
 
-const char JSONFileValueSerializer::kAccessDenied[] = "Access denied.";
-const char JSONFileValueSerializer::kCannotReadFile[] = "Can't read file.";
-const char JSONFileValueSerializer::kFileLocked[] = "File locked.";
-const char JSONFileValueSerializer::kNoSuchFile[] = "File doesn't exist.";
+const char JSONFileValueDeserializer::kAccessDenied[] = "Access denied.";
+const char JSONFileValueDeserializer::kCannotReadFile[] = "Can't read file.";
+const char JSONFileValueDeserializer::kFileLocked[] = "File locked.";
+const char JSONFileValueDeserializer::kNoSuchFile[] = "File doesn't exist.";
 
 JSONFileValueSerializer::JSONFileValueSerializer(
     const base::FilePath& json_file_path)
-    : json_file_path_(json_file_path),
-      allow_trailing_comma_(false),
-      last_read_size_(0U) {
+    : json_file_path_(json_file_path) {
 }
 
 JSONFileValueSerializer::~JSONFileValueSerializer() {
@@ -53,7 +51,17 @@ bool JSONFileValueSerializer::SerializeInternal(const base::Value& root,
   return true;
 }
 
-int JSONFileValueSerializer::ReadFileToString(std::string* json_string) {
+JSONFileValueDeserializer::JSONFileValueDeserializer(
+    const base::FilePath& json_file_path)
+    : json_file_path_(json_file_path),
+      allow_trailing_comma_(false),
+      last_read_size_(0U) {
+}
+
+JSONFileValueDeserializer::~JSONFileValueDeserializer() {
+}
+
+int JSONFileValueDeserializer::ReadFileToString(std::string* json_string) {
   DCHECK(json_string);
   if (!base::ReadFileToString(json_file_path_, json_string)) {
 #if defined(OS_WIN)
@@ -74,7 +82,7 @@ int JSONFileValueSerializer::ReadFileToString(std::string* json_string) {
   return JSON_NO_ERROR;
 }
 
-const char* JSONFileValueSerializer::GetErrorMessageForCode(int error_code) {
+const char* JSONFileValueDeserializer::GetErrorMessageForCode(int error_code) {
   switch (error_code) {
     case JSON_NO_ERROR:
       return "";
@@ -92,8 +100,8 @@ const char* JSONFileValueSerializer::GetErrorMessageForCode(int error_code) {
   }
 }
 
-base::Value* JSONFileValueSerializer::Deserialize(int* error_code,
-                                                  std::string* error_str) {
+base::Value* JSONFileValueDeserializer::Deserialize(int* error_code,
+                                                    std::string* error_str) {
   std::string json_string;
   int error = ReadFileToString(&json_string);
   if (error != JSON_NO_ERROR) {
@@ -104,7 +112,7 @@ base::Value* JSONFileValueSerializer::Deserialize(int* error_code,
     return NULL;
   }
 
-  JSONStringValueSerializer serializer(json_string);
-  serializer.set_allow_trailing_comma(allow_trailing_comma_);
-  return serializer.Deserialize(error_code, error_str);
+  JSONStringValueDeserializer deserializer(json_string);
+  deserializer.set_allow_trailing_comma(allow_trailing_comma_);
+  return deserializer.Deserialize(error_code, error_str);
 }

@@ -74,7 +74,7 @@ class OverrideSettingsTest : public testing::Test {
 
 TEST_F(OverrideSettingsTest, ParseManifest) {
   std::string manifest(kManifest);
-  JSONStringValueSerializer json(&manifest);
+  JSONStringValueDeserializer json(manifest);
   std::string error;
   scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
@@ -117,7 +117,7 @@ TEST_F(OverrideSettingsTest, ParseManifest) {
 
 TEST_F(OverrideSettingsTest, ParsePrepopulatedId) {
   std::string manifest(kPrepopulatedManifest);
-  JSONStringValueSerializer json(&manifest);
+  JSONStringValueDeserializer json(manifest);
   std::string error;
   scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
@@ -150,7 +150,7 @@ TEST_F(OverrideSettingsTest, ParsePrepopulatedId) {
 
 TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
   std::string manifest(kBrokenManifest);
-  JSONStringValueSerializer json(&manifest);
+  JSONStringValueDeserializer json(manifest);
   std::string error;
   scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
