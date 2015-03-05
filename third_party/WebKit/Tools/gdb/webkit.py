@@ -345,6 +345,37 @@ class WTFVectorPrinter:
     def display_hint(self):
         return 'array'
 
+
+# Copied from //tools/gdb/gdb_chrome.py
+def typed_ptr(ptr):
+    """Prints a pointer along with its exact type.
+
+    By default, gdb would print just the address, which takes more
+    steps to interpret.
+    """
+    # Returning this as a cast expression surrounded by parentheses
+    # makes it easier to cut+paste inside of gdb.
+    return '((%s)%s)' % (ptr.dynamic_type, ptr)
+
+
+class WTFRefOrOwnPtrPrinter:
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        type_without_param = re.sub(r'<.*>', '', self.val.type.name)
+        return '%s%s' % (type_without_param, typed_ptr(self.val['m_ptr']))
+
+
+class BlinkDataRefPrinter:
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        return 'DataRef(%s)' % (
+            WTFRefOrOwnPtrPrinter(self.val['m_data']).to_string())
+
+
 def add_pretty_printers():
     pretty_printers = (
         (re.compile("^WTF::Vector<.*>$"), WTFVectorPrinter),
@@ -359,6 +390,8 @@ def add_pretty_printers():
         (re.compile("^blink::QualifiedName$"), blinkQualifiedNamePrinter),
         (re.compile("^blink::PixelsAndPercent$"), BlinkPixelsAndPercentPrinter),
         (re.compile("^blink::Length$"), BlinkLengthPrinter),
+        (re.compile("^WTF::(Ref|Own)Ptr<.*>$"), WTFRefOrOwnPtrPrinter),
+        (re.compile("^blink::DataRef<.*>$"), BlinkDataRefPrinter),
     )
 
     def lookup_function(val):
