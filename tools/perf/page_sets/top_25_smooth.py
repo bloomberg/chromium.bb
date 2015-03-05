@@ -75,25 +75,6 @@ class GoogleDocSmoothPage(top_pages.GoogleDocPage):
     interaction.End()
 
 
-class GoogleMapsPage(top_pages.GoogleMapsPage):
-
-  """ Why: productivity, top google properties; Supports drag gestures """
-
-  def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'DragAction', is_smooth=True)
-    action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.75,
-                           left_end_ratio=0.75, top_end_ratio=0.5)
-    interaction.End()
-    action_runner.Wait(2)
-    interaction = action_runner.BeginGestureInteraction(
-        'DragAction', is_smooth=True)
-    action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.5,
-                           left_end_ratio=0.35, top_end_ratio=0.75)
-    interaction.End()
-    # TODO(ssid): Add zoom gestures after fixing bug crbug.com/462214.
-
-
 class ESPNSmoothPage(top_pages.ESPNPage):
 
   """ Why: #1 sports """
@@ -145,7 +126,6 @@ class Top25SmoothPageSet(page_set_module.PageSet):
         top_pages.WeatherPage)(self))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.YahooGamesPage)(self))
-    self.AddUserStory(GoogleMapsPage(self))
 
     other_urls = [
         # Why: #1 news worldwide (Alexa global)
