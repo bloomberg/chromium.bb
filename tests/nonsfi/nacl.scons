@@ -8,6 +8,8 @@ Import('env')
 if not env.Bit('nonsfi_nacl'):
   Return()
 
+env.AddBiasForPNaCl()
+
 nexe = env.ComponentProgram('icache_test',
                             'icache_test.cc',
                             EXTRA_LIBS=['${NONIRT_LIBS}'])
@@ -103,3 +105,12 @@ node = env.CommandSelLdrTestNacl('signal_sigbus_test.out', nexe,
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_signal_sigbus_test',
                        is_broken=env.UsingEmulator())
+
+
+nexe = env.ComponentProgram('nonsfi_syscall_test',
+                            'syscall_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('nonsfi_syscall_test.out', nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nonsfi_syscall_test')

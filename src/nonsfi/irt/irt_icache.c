@@ -11,7 +11,7 @@
 #if defined(__arm__)  /* nacl_irt_icache is supported only on ARM. */
 
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
-#include "native_client/src/nonsfi/linux/linux_syscalls.h"
+#include "native_client/src/public/linux_syscalls/sys/syscall.h"
 
 
 int irt_clear_cache(void *addr, size_t size) {

@@ -27,10 +27,10 @@
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
-#include "native_client/src/nonsfi/linux/linux_syscalls.h"
 #include "native_client/src/public/linux_syscalls/poll.h"
 #include "native_client/src/public/linux_syscalls/sys/prctl.h"
 #include "native_client/src/public/linux_syscalls/sys/socket.h"
+#include "native_client/src/public/linux_syscalls/sys/syscall.h"
 #include "native_client/src/untrusted/nacl/getcwd.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
@@ -50,6 +50,20 @@ static uintptr_t errno_value_call(uintptr_t result) {
     return -1;
   }
   return result;
+}
+
+int syscall(int number, ...) {
+  va_list ap;
+  va_start(ap, number);
+  uint32_t arg1 = va_arg(ap, uint32_t);
+  uint32_t arg2 = va_arg(ap, uint32_t);
+  uint32_t arg3 = va_arg(ap, uint32_t);
+  uint32_t arg4 = va_arg(ap, uint32_t);
+  uint32_t arg5 = va_arg(ap, uint32_t);
+  uint32_t arg6 = va_arg(ap, uint32_t);
+  va_end(ap);
+  return errno_value_call(
+      linux_syscall6(number, arg1, arg2, arg3, arg4, arg5, arg6));
 }
 
 void _exit(int status) {

@@ -699,6 +699,7 @@ nonsfi_test_whitelist = set([
     'run_malloc_realloc_calloc_free_test',
     'run_mmap_test',
     'run_nanosleep_test',
+    'run_nonsfi_syscall_test',
     'run_prctl_test',
     'run_printf_test',
     'run_pwrite_test',

@@ -11,7 +11,7 @@
 #include "native_client/src/nonsfi/linux/abi_conversion.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
-#include "native_client/src/nonsfi/linux/linux_syscalls.h"
+#include "native_client/src/public/linux_syscalls/sys/syscall.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"

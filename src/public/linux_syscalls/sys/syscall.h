@@ -1,11 +1,21 @@
 /*
- * Copyright (c) 2014 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2015 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_NONSFI_LINUX_LINUX_SYSCALLS_H_
-#define NATIVE_CLIENT_SRC_NONSFI_LINUX_LINUX_SYSCALLS_H_ 1
+#ifndef NATIVE_CLIENT_SRC_PUBLIC_LINUX_SYSCALLS_SYS_SYSCALLS_H_
+#define NATIVE_CLIENT_SRC_PUBLIC_LINUX_SYSCALLS_SYS_SYSCALLS_H_ 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int syscall(int number, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* Definitions of Linux syscall numbers. */
 

@@ -9,7 +9,7 @@
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
-#include "native_client/src/nonsfi/linux/linux_syscalls.h"
+#include "native_client/src/public/linux_syscalls/sys/syscall.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
@@ -41,9 +41,12 @@ static int nacl_irt_thread_create(void (*start_func)(void), void *stack,
   /*
    * Make sure we can access stack[0] and align the stack address to a
    * 16-byte boundary.
+   * In addition, we reserve 6 * 4 bytes here for syscall(). Our syscall()
+   * implementation reads six 4-byte arguments regardless of its actual
+   * arguments.
    */
   static const int kStackAlignmentMask = ~15;
-  stack = (void *) (((uintptr_t) stack - sizeof(uintptr_t)) &
+  stack = (void *) (((uintptr_t) stack - sizeof(uintptr_t) * 7) &
                     kStackAlignmentMask);
   /* We pass start_func using the stack top. */
   ((uintptr_t *) stack)[0] = (uintptr_t) start_func;
