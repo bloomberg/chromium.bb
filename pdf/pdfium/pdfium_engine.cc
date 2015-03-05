@@ -33,6 +33,7 @@
 #include "ppapi/cpp/url_response_info.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
+#include "printing/units.h"
 #include "third_party/pdfium/fpdfsdk/include/fpdf_ext.h"
 #include "third_party/pdfium/fpdfsdk/include/fpdf_flatten.h"
 #include "third_party/pdfium/fpdfsdk/include/fpdf_searchex.h"
@@ -44,6 +45,11 @@
 #include "third_party/pdfium/fpdfsdk/include/pdfwindow/PDFWindow.h"
 #include "third_party/pdfium/fpdfsdk/include/pdfwindow/PWL_FontMap.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+
+using printing::ConvertUnit;
+using printing::ConvertUnitDouble;
+using printing::kPointsPerInch;
+using printing::kPixelsPerInch;
 
 namespace chrome_pdf {
 
@@ -90,28 +96,12 @@ const uint32 kPendingPageColor = 0xFFEEEEEE;
 // painting the scrollbars > 60 Hz.
 #define kMaxInitialProgressivePaintTimeMs 10
 
-// Copied from printing/units.cc because we don't want to depend on printing
-// since it brings in libpng which causes duplicate symbols with PDFium.
-const int kPointsPerInch = 72;
-const int kPixelsPerInch = 96;
-
 struct ClipBox {
   float left;
   float right;
   float top;
   float bottom;
 };
-
-int ConvertUnit(int value, int old_unit, int new_unit) {
-  // With integer arithmetic, to divide a value with correct rounding, you need
-  // to add half of the divisor value to the dividend value. You need to do the
-  // reverse with negative number.
-  if (value >= 0) {
-    return ((value * new_unit) + (old_unit / 2)) / old_unit;
-  } else {
-    return ((value * new_unit) - (old_unit / 2)) / old_unit;
-  }
-}
 
 std::vector<uint32_t> GetPageNumbersFromPrintPageNumberRange(
     const PP_PrintPageNumberRange_Dev* page_ranges,
@@ -1398,11 +1388,12 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
                         print_settings.orientation,
                         FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
 
-  double ratio_x = (static_cast<double>(bitmap_size.width()) * kPointsPerInch) /
-                   print_settings.dpi;
-  double ratio_y =
-      (static_cast<double>(bitmap_size.height()) * kPointsPerInch) /
-      print_settings.dpi;
+  double ratio_x = ConvertUnitDouble(bitmap_size.width(),
+                                     print_settings.dpi,
+                                     kPointsPerInch);
+  double ratio_y = ConvertUnitDouble(bitmap_size.height(),
+                                     print_settings.dpi,
+                                     kPointsPerInch);
 
   // Add the bitmap to an image object and add the image object to the output
   // page.
@@ -1450,10 +1441,10 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
                                                source_page_height));
 
     int width_in_pixels = ConvertUnit(source_page_width,
-                                      static_cast<int>(kPointsPerInch),
+                                      kPointsPerInch,
                                       print_settings.dpi);
     int height_in_pixels = ConvertUnit(source_page_height,
-                                       static_cast<int>(kPointsPerInch),
+                                       kPointsPerInch,
                                        print_settings.dpi);
 
     pp::Rect rect(width_in_pixels, height_in_pixels);
@@ -2506,10 +2497,12 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
     pp::Rect page_rect(page_rects[i]);
     page_rect.Inset(kPageShadowLeft, kPageShadowTop,
                     kPageShadowRight, kPageShadowBottom);
-    double width_in_points =
-        page_rect.width() * kPointsPerInch / kPixelsPerInch;
-    double height_in_points =
-        page_rect.height() * kPointsPerInch / kPixelsPerInch;
+    double width_in_points = ConvertUnitDouble(page_rect.width(),
+                                               kPixelsPerInch,
+                                               kPointsPerInch);
+    double height_in_points = ConvertUnitDouble(page_rect.height(),
+                                                kPixelsPerInch,
+                                                kPointsPerInch);
     FPDFPage_New(doc_, i, width_in_points, height_in_points);
     pages_.push_back(new PDFiumPage(this, i, page_rect, true));
   }
@@ -2793,9 +2786,9 @@ pp::Size PDFiumEngine::GetPageSize(int index) {
 
   if (rv) {
     int width_in_pixels = static_cast<int>(
-        width_in_points * kPixelsPerInch / kPointsPerInch);
+        ConvertUnitDouble(width_in_points, kPointsPerInch, kPixelsPerInch));
     int height_in_pixels = static_cast<int>(
-        height_in_points * kPixelsPerInch / kPointsPerInch);
+        ConvertUnitDouble(height_in_points, kPointsPerInch, kPixelsPerInch));
     if (current_rotation_ % 2 == 1)
       std::swap(width_in_pixels, height_in_pixels);
     size = pp::Size(width_in_pixels, height_in_pixels);
@@ -3780,10 +3773,12 @@ namespace {
 int CalculatePosition(FPDF_PAGE page,
                       const PDFiumEngineExports::RenderingSettings& settings,
                       pp::Rect* dest) {
-  int page_width = static_cast<int>(
-      FPDF_GetPageWidth(page) * settings.dpi_x / kPointsPerInch);
-  int page_height = static_cast<int>(
-      FPDF_GetPageHeight(page) * settings.dpi_y / kPointsPerInch);
+  int page_width = static_cast<int>(ConvertUnitDouble(FPDF_GetPageWidth(page),
+                                                      kPointsPerInch,
+                                                      settings.dpi_x));
+  int page_height = static_cast<int>(ConvertUnitDouble(FPDF_GetPageHeight(page),
+                                                       kPointsPerInch,
+                                                       settings.dpi_y));
 
   // Start by assuming that we will draw exactly to the bounds rect
   // specified.

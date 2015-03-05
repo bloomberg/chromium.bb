@@ -4,6 +4,7 @@ include_rules = [
   "+components/ui/zoom/page_zoom_constants.h",
   "+net",
   "+ppapi",
+  "+printing/units.h",
   "+third_party/pdfium/fpdfsdk/include",
   "+ui/events/keycodes/keyboard_codes.h",
   "+v8/include/v8.h"
