@@ -8,7 +8,6 @@ import android.view.KeyEvent;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -25,9 +24,6 @@ public class WebContentsDelegateAndroid {
     public static final int LOG_LEVEL_WARNING = 2;
     // Equivalent of WebCore::WebConsoleMessage::LevelError.
     public static final int LOG_LEVEL_ERROR = 3;
-
-    // TODO(mnaganov): Remove after getting rid of downstream usages.
-    public static final int INVALIDATE_TYPE_TAB = InvalidateTypes.TAB;
 
     // The most recent load progress callback received from WebContents, as a percentage.
     // Initialize to 100 to indicate that we're not in a loading state.
