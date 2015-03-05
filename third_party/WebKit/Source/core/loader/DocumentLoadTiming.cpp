@@ -64,6 +64,13 @@ double DocumentLoadTiming::monotonicTimeToPseudoWallTime(double monotonicTime) c
     return m_referenceWallTime + monotonicTime - m_referenceMonotonicTime;
 }
 
+double DocumentLoadTiming::pseudoWallTimeToMonotonicTime(double pseudoWallTime) const
+{
+    if (!pseudoWallTime)
+        return 0.0;
+    return m_referenceMonotonicTime + pseudoWallTime - m_referenceWallTime;
+}
+
 void DocumentLoadTiming::markNavigationStart()
 {
     TRACE_EVENT_MARK("blink.user_timing", "navigationStart");

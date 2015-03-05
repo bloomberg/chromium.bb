@@ -38,6 +38,7 @@ public:
 
     double monotonicTimeToZeroBasedDocumentTime(double) const;
     double monotonicTimeToPseudoWallTime(double) const;
+    double pseudoWallTimeToMonotonicTime(double) const;
 
     void markNavigationStart();
     void setNavigationStart(double);

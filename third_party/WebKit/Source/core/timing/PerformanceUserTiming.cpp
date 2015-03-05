@@ -33,6 +33,7 @@
 #include "core/timing/PerformanceMeasure.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
+#include "wtf/text/StringHash.h"
 
 namespace blink {
 
@@ -156,7 +157,15 @@ void UserTiming::measure(const String& measureName, const String& startMark, con
             return;
     }
 
-    TRACE_EVENT_COPY_MEASURE("blink.user_timing", measureName.utf8().data(), startMark.utf8().data(), endMark.utf8().data());
+    // User timing events are stored as integer milliseconds from the start of
+    // navigation, whereas trace events accept double seconds based off of
+    // CurrentTime::monotonicallyIncreasingTime().
+    double startTimeMonotonic = m_performance->timing()->integerMillisecondsToMonotonicTime(startTime + m_performance->timing()->navigationStart());
+    double endTimeMonotonic = m_performance->timing()->integerMillisecondsToMonotonicTime(endTime + m_performance->timing()->navigationStart());
+
+    TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0("blink.user_timing", measureName.utf8().data(), WTF::StringHash::hash(measureName), startTimeMonotonic);
+    TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0("blink.user_timing", measureName.utf8().data(), WTF::StringHash::hash(measureName), endTimeMonotonic);
+
     insertPerformanceEntry(m_measuresMap, PerformanceMeasure::create(measureName, startTime, endTime));
     if (endTime >= startTime)
         blink::Platform::current()->histogramCustomCounts("PLT.UserTiming_MeasureDuration", static_cast<int>(endTime - startTime), 0, 600000, 100);
