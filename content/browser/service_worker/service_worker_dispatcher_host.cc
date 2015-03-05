@@ -570,6 +570,9 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
   ServiceWorkerRegistration* registration =
       GetContext()->GetLiveRegistration(version->registration_id());
   DCHECK(registration);
+  // TODO(ksakamoto): This is a quick fix for crbug.com/459916.
+  if (!registration)
+    return;
 
   // Set the document URL to the script url in order to allow
   // register/unregister/getRegistration on ServiceWorkerGlobalScope.
