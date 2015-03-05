@@ -18,6 +18,7 @@ class FrameView;
 class FrameViewAutoSizeInfo final : public NoBaseWillBeGarbageCollected<FrameViewAutoSizeInfo> {
     WTF_MAKE_NONCOPYABLE(FrameViewAutoSizeInfo);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FrameViewAutoSizeInfo);
 public:
     static PassOwnPtrWillBeRawPtr<FrameViewAutoSizeInfo> create(FrameView* frameView)
     {
@@ -27,10 +28,12 @@ public:
     void configureAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
     void autoSizeIfNeeded();
 
+    DECLARE_TRACE();
+
 private:
     explicit FrameViewAutoSizeInfo(FrameView*);
 
-    FrameView* m_frameView;
+    RawPtrWillBeMember<FrameView> m_frameView;
 
     // The lower bound on the size when autosizing.
     IntSize m_minAutoSize;
