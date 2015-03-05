@@ -1544,6 +1544,12 @@ TransformationMatrix TransformationMatrix::to2dTransform() const
                                 m_matrix[3][0], m_matrix[3][1], 0, m_matrix[3][3]);
 }
 
+FloatSize TransformationMatrix::to2DTranslation() const
+{
+    ASSERT(isIdentityOr2DTranslation());
+    return FloatSize(m_matrix[3][0], m_matrix[3][1]);
+}
+
 void TransformationMatrix::toColumnMajorFloatArray(FloatMatrix4& result) const
 {
     result[0] = m11();

@@ -314,10 +314,19 @@ public:
             && m_matrix[3][3] == 1;
     }
 
+    bool isIdentityOr2DTranslation() const
+    {
+        return isIdentityOrTranslation() && m_matrix[3][2] == 0;
+    }
+
     bool isIntegerTranslation() const;
 
     // This method returns the matrix without 3D components.
     TransformationMatrix to2dTransform() const;
+
+    // If this transformation is identity or 2D translation, returns the
+    // translation.
+    FloatSize to2DTranslation() const;
 
     typedef float FloatMatrix4[16];
     void toColumnMajorFloatArray(FloatMatrix4& result) const;
