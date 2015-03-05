@@ -21,16 +21,16 @@ class ExtensionHostObserver {
   // Called when an ExtensionHost is destroyed.
   virtual void OnExtensionHostDestroyed(const ExtensionHost* host) {}
 
-  // Called when a message has been disptached to the RenderView corresponding
+  // Called when a message has been disptached to the event page corresponding
   // to |host|.
-  virtual void OnExtensionMessageDispatched(const ExtensionHost* host,
-                                            const std::string& event_name,
-                                            int message_id) {}
+  virtual void OnBackgroundEventDispatched(const ExtensionHost* host,
+                                           const std::string& event_name,
+                                           int event_id) {}
 
   // Called when a previously dispatched message has been acked by the
-  // RenderView for |host|.
-  virtual void OnExtensionMessageAcked(const ExtensionHost* host,
-                                       int message_id) {}
+  // event page for |host|.
+  virtual void OnBackgroundEventAcked(const ExtensionHost* host, int event_id) {
+  }
 
   // Called when the extension associated with |host| starts a new network
   // request.

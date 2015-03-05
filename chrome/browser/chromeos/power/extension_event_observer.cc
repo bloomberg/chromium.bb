@@ -147,26 +147,25 @@ void ExtensionEventObserver::OnExtensionHostDestroyed(
   MaybeReportSuspendReadiness();
 }
 
-void ExtensionEventObserver::OnExtensionMessageDispatched(
+void ExtensionEventObserver::OnBackgroundEventDispatched(
     const extensions::ExtensionHost* host,
     const std::string& event_name,
-    int message_id) {
+    int event_id) {
   DCHECK(keepalive_sources_.contains(host));
 
   if (event_name != extensions::api::gcm::OnMessage::kEventName)
     return;
 
-  keepalive_sources_.get(host)->unacked_push_messages.insert(message_id);
+  keepalive_sources_.get(host)->unacked_push_messages.insert(event_id);
   ++suspend_keepalive_count_;
 }
 
-void ExtensionEventObserver::OnExtensionMessageAcked(
+void ExtensionEventObserver::OnBackgroundEventAcked(
     const extensions::ExtensionHost* host,
-    int message_id) {
+    int event_id) {
   DCHECK(keepalive_sources_.contains(host));
 
-  if (keepalive_sources_.get(host)->unacked_push_messages.erase(message_id) >
-      0) {
+  if (keepalive_sources_.get(host)->unacked_push_messages.erase(event_id) > 0) {
     --suspend_keepalive_count_;
     MaybeReportSuspendReadiness();
   }
@@ -247,7 +246,7 @@ void ExtensionEventObserver::OnSuspendImminent(bool dark_suspend) {
                  weak_factory_.GetWeakPtr()));
 
   // Unfortunately, there is a race between the arrival of the
-  // DarkSuspendImminent signal and OnExtensionMessageDispatched.  As a result,
+  // DarkSuspendImminent signal and OnBackgroundEventDispatched.  As a result,
   // there is no way to tell from within this method if a push message is about
   // to arrive.  To try and deal with this, we wait one second before attempting
   // to report suspend readiness.  If there is a push message pending, we should

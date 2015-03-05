@@ -23,6 +23,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_host_observer.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -178,33 +179,33 @@ TEST_F(ExtensionEventObserverTest, PushMessagesDelaySuspend) {
   // Test that a push message received before a suspend attempt delays the
   // attempt.
   const int kSuspendPushId = 23874;
-  extension_event_observer_->OnExtensionMessageDispatched(
+  extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kSuspendPushId);
   power_manager_client_->SendSuspendImminent();
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
   EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
 
-  extension_event_observer_->OnExtensionMessageAcked(host, kSuspendPushId);
+  extension_event_observer_->OnBackgroundEventAcked(host, kSuspendPushId);
   EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
 
   // Now test receiving the suspend attempt before the push message.
   const int kDarkSuspendPushId = 56674;
   power_manager_client_->SendDarkSuspendImminent();
-  extension_event_observer_->OnExtensionMessageDispatched(
+  extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kDarkSuspendPushId);
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
   EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
 
-  extension_event_observer_->OnExtensionMessageAcked(host, kDarkSuspendPushId);
+  extension_event_observer_->OnBackgroundEventAcked(host, kDarkSuspendPushId);
   EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
 
   // Test that non-push messages do not delay the suspend.
   const int kNonPushId = 5687;
   power_manager_client_->SendDarkSuspendImminent();
-  extension_event_observer_->OnExtensionMessageDispatched(host, "FakeMessage",
-                                                          kNonPushId);
+  extension_event_observer_->OnBackgroundEventDispatched(host, "FakeMessage",
+                                                         kNonPushId);
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
   EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
@@ -245,14 +246,14 @@ TEST_F(ExtensionEventObserverTest, NetworkRequestsMayDelaySuspend) {
   const int kPushMessageId = 178674;
   const uint64 kNetworkRequestId = 78917089;
   power_manager_client_->SendDarkSuspendImminent();
-  extension_event_observer_->OnExtensionMessageDispatched(
+  extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kPushMessageId);
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
   EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
 
   extension_event_observer_->OnNetworkRequestStarted(host, kNetworkRequestId);
-  extension_event_observer_->OnExtensionMessageAcked(host, kPushMessageId);
+  extension_event_observer_->OnBackgroundEventAcked(host, kPushMessageId);
   EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
 
   extension_event_observer_->OnNetworkRequestDone(host, kNetworkRequestId);
@@ -276,7 +277,7 @@ TEST_F(ExtensionEventObserverTest, DeletedExtensionHostDoesNotBlockSuspend) {
 
   const int kPushId = 156178;
   const uint64 kNetworkId = 791605;
-  extension_event_observer_->OnExtensionMessageDispatched(
+  extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kPushId);
   extension_event_observer_->OnNetworkRequestStarted(host, kNetworkId);
 
@@ -301,7 +302,7 @@ TEST_F(ExtensionEventObserverTest, DoesNotDelaySuspendWhenDisabled) {
   // Test that disabling the suspend delay while a suspend is pending will cause
   // the ExtensionEventObserver to immediately report readiness.
   const int kPushId = 416753;
-  extension_event_observer_->OnExtensionMessageDispatched(
+  extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kPushId);
   power_manager_client_->SendSuspendImminent();
   EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());

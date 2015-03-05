@@ -82,11 +82,11 @@ class ExtensionEventObserver : public content::NotificationObserver,
 
   // extensions::ExtensionHostObserver overrides.
   void OnExtensionHostDestroyed(const extensions::ExtensionHost* host) override;
-  void OnExtensionMessageDispatched(const extensions::ExtensionHost* host,
-                                    const std::string& event_name,
-                                    int message_id) override;
-  void OnExtensionMessageAcked(const extensions::ExtensionHost* host,
-                               int message_id) override;
+  void OnBackgroundEventDispatched(const extensions::ExtensionHost* host,
+                                   const std::string& event_name,
+                                   int event_id) override;
+  void OnBackgroundEventAcked(const extensions::ExtensionHost* host,
+                              int event_id) override;
   void OnNetworkRequestStarted(const extensions::ExtensionHost* host,
                                uint64 request_id) override;
   void OnNetworkRequestDone(const extensions::ExtensionHost* host,

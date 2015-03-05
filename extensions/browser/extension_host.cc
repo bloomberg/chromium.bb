@@ -189,11 +189,12 @@ void ExtensionHost::RemoveObserver(ExtensionHostObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ExtensionHost::OnMessageDispatched(const std::string& event_name,
-                                        int message_id) {
-  unacked_messages_.insert(message_id);
+void ExtensionHost::OnBackgroundEventDispatched(const std::string& event_name,
+                                                int event_id) {
+  CHECK(IsBackgroundPage());
+  unacked_messages_.insert(event_id);
   FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
-                    OnExtensionMessageDispatched(this, event_name, message_id));
+                    OnBackgroundEventDispatched(this, event_name, event_id));
 }
 
 void ExtensionHost::OnNetworkRequestStarted(uint64 request_id) {
@@ -339,23 +340,33 @@ void ExtensionHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_.Dispatch(params, render_view_host());
 }
 
-void ExtensionHost::OnEventAck(int message_id) {
+void ExtensionHost::OnEventAck(int event_id) {
   EventRouter* router = EventRouter::Get(browser_context_);
   if (router)
     router->OnEventAck(browser_context_, extension_id());
 
-  // A compromised renderer could start sending out arbitrary message ids, which
+  // This should always be false since event acks are only sent by extensions
+  // with lazy background pages but it doesn't hurt to be extra careful.
+  if (!IsBackgroundPage()) {
+    NOTREACHED() << "Received EventAck from extension " << extension_id()
+                 << ", which does not have a lazy background page.";
+    return;
+  }
+
+  // A compromised renderer could start sending out arbitrary event ids, which
   // may affect other renderers by causing downstream methods to think that
-  // messages for other extensions have been acked.  Make sure that the message
-  // id sent by the renderer is one that this ExtensionHost expects to receive.
+  // events for other extensions have been acked.  Make sure that the event id
+  // sent by the renderer is one that this ExtensionHost expects to receive.
   // This way if a renderer _is_ compromised, it can really only affect itself.
-  if (unacked_messages_.erase(message_id) > 0) {
+  if (unacked_messages_.erase(event_id) > 0) {
     FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
-                      OnExtensionMessageAcked(this, message_id));
+                      OnBackgroundEventAcked(this, event_id));
   } else {
-    // We have received an unexpected message id from the renderer.  It might be
+    // We have received an unexpected event id from the renderer.  It might be
     // compromised or it might have some other issue.  Kill it just to be safe.
     DCHECK(render_process_host());
+    LOG(ERROR) << "Killing renderer for extension " << extension_id() << " for "
+               << "sending an EventAck message with a bad event id.";
     render_process_host()->ReceivedBadMessage();
   }
 }

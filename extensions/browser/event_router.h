@@ -203,6 +203,7 @@ class EventRouter : public content::NotificationObserver,
       IPC::Sender* ipc_sender,
       void* browser_context_id,
       const std::string& extension_id,
+      int event_id,
       const std::string& event_name,
       base::ListValue* event_args,
       UserGestureState user_gesture,
@@ -277,15 +278,18 @@ class EventRouter : public content::NotificationObserver,
   const base::DictionaryValue* GetFilteredEvents(
       const std::string& extension_id);
 
-  // Track of the number of dispatched events that have not yet sent an
-  // ACK from the renderer.
+  // Track the dispatched events that have not yet sent an ACK from the
+  // renderer.
   void IncrementInFlightEvents(content::BrowserContext* context,
-                               const Extension* extension);
+                               const Extension* extension,
+                               int event_id,
+                               const std::string& event_name);
 
   // static
-  static void IncrementInFlightEventsOnUI(
-      void* browser_context_id,
-      const std::string& extension_id);
+  static void IncrementInFlightEventsOnUI(void* browser_context_id,
+                                          const std::string& extension_id,
+                                          int event_id,
+                                          const std::string& event_name);
 
   void DispatchPendingEvent(const linked_ptr<Event>& event,
                             ExtensionHost* host);

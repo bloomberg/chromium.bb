@@ -84,9 +84,9 @@ class ExtensionHost : public DeferredStartRenderHost,
   void AddObserver(ExtensionHostObserver* observer);
   void RemoveObserver(ExtensionHostObserver* observer);
 
-  // Called when an IPC message is dispatched to the RenderView associated with
-  // this ExtensionHost.
-  void OnMessageDispatched(const std::string& event_name, int message_id);
+  // Called when an event is dispatched to the event page associated with this
+  // ExtensionHost.
+  void OnBackgroundEventDispatched(const std::string& event_name, int event_id);
 
   // Called by the ProcessManager when a network request is started by the
   // extension corresponding to this ExtensionHost.
@@ -151,7 +151,7 @@ class ExtensionHost : public DeferredStartRenderHost,
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
-  void OnEventAck(int message_id);
+  void OnEventAck(int event_id);
   void OnIncrementLazyKeepaliveCount();
   void OnDecrementLazyKeepaliveCount();
 
