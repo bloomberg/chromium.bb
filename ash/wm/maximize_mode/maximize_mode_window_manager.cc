@@ -95,9 +95,15 @@ void MaximizeModeWindowManager::OnOverviewModeEnded() {
 }
 
 void MaximizeModeWindowManager::OnWindowDestroying(aura::Window* window) {
-  // If a known window gets destroyed we need to remove all knowledge about it.
-  if (!IsContainerWindow(window))
+  if (IsContainerWindow(window)) {
+    // container window can be removed on display destruction.
+    window->RemoveObserver(this);
+    observed_container_windows_.erase(window);
+  } else {
+    // If a known window gets destroyed we need to remove all knowledge about
+    // it.
     ForgetWindow(window);
+  }
 }
 
 void MaximizeModeWindowManager::OnWindowAdded(aura::Window* window) {

@@ -110,6 +110,10 @@ void WorkspaceBackdropDelegate::RestackBackdrop() {
       background_->IsVisible()) {
     return;
   }
+  if (window->GetRootWindow() !=
+      background_->GetNativeWindow()->GetRootWindow()) {
+    return;
+  }
   // We are changing the order of windows which will cause recursion.
   base::AutoReset<bool> lock(&in_restacking_, true);
   if (!background_->IsVisible())

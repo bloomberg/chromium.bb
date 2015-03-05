@@ -14,6 +14,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "base/command_line.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
@@ -363,6 +364,27 @@ TEST_F(MaximizeModeControllerTest,
   ASSERT_FALSE(IsMaximizeModeStarted());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
   ASSERT_TRUE(IsMaximizeModeStarted());
+}
+
+// Test if this case does not crash. See http://crbug.com/462806
+TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("800x600,800x600");
+  scoped_ptr<aura::Window> w1(
+      CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> w2(
+      CreateTestWindowInShellWithBounds(gfx::Rect(800, 0, 100, 100)));
+  ASSERT_NE(w1->GetRootWindow(), w2->GetRootWindow());
+
+  maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
+  Shell::GetInstance()->window_selector_controller()->ToggleOverview();
+
+  UpdateDisplay("800x600");
+  EXPECT_FALSE(
+      Shell::GetInstance()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
 }
 
 class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
