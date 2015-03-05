@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.compositor.layouts.eventfilter;
 
 import android.view.MotionEvent;
-import android.view.View;
 
 /**
  * The interface an host view that want its event to be filtered need to provide.
@@ -21,18 +20,7 @@ public interface EventFilterHost {
     public boolean propagateEvent(MotionEvent e);
 
     /**
-     * Notifies when a gesture starts. A gesture may live across
-     * {@link com.google.android.apps.chrome.tabs.layout.Layout} changes.
+     * @return The width of the current viewport or host {@link android.view.View}.
      */
-    public void onStartGesture();
-
-    /**
-     * Notifies when a gesture ends.
-     */
-    public void onEndGesture();
-
-    /**
-     * @return The {@link View} capturing the event in the first place.
-     */
-    public View getView();
+    public int getViewportWidth();
 }

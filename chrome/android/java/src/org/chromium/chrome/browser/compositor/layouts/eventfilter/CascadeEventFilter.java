@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.layouts.eventfilter;
 
+import android.content.Context;
 import android.view.MotionEvent;
 
 import java.util.Arrays;
@@ -24,11 +25,12 @@ public class CascadeEventFilter extends EventFilter {
      * subsequent events for the same gesture to
      * {@link EventFilter#onTouchEventInternal(MotionEvent)}.
      *
-     * @param host The host that is responsible for managing event filter status changes.
+     * @param context   A {@link Context} instance.
+     * @param host      The host that is responsible for managing event filter status changes.
      * @param delegates The list of delegates to be given the chance to process the event.
      */
-    public CascadeEventFilter(EventFilterHost host, EventFilter[] delegates) {
-        super(host, false);
+    public CascadeEventFilter(Context context, EventFilterHost host, EventFilter[] delegates) {
+        super(context, host, false);
         mDelegates = Arrays.copyOf(delegates, delegates.length);
     }
 

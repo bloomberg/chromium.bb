@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.layouts.eventfilter;
 
+import android.content.Context;
 import android.view.MotionEvent;
 
 /**
@@ -12,9 +13,11 @@ import android.view.MotionEvent;
 public class BlackHoleEventFilter extends EventFilter {
     /**
      * Creates a {@link BlackHoleEventFilter}.
+     * @param context A {@link Context} instance.
+     * @param host    A {@link EventFilterHost} instance.
      */
-    public BlackHoleEventFilter(EventFilterHost host) {
-        super(host);
+    public BlackHoleEventFilter(Context context, EventFilterHost host) {
+        super(context, host);
     }
 
     @Override

@@ -66,13 +66,13 @@ public class EdgeSwipeEventFilter extends EventFilter {
     /**
      * Creates a {@link EdgeSwipeEventFilter} captures event either in edge swipe gestures or
      * propagate them.
-     * @param context          The Android's context.
+     * @param context          A {@link Context} instance.
      * @param host             The {@link EventFilterHost} where the event is coming from.
      * @param edgeSwipeHandler The {@link EdgeSwipeHandler} that is going to get notified.
      */
     public EdgeSwipeEventFilter(
             Context context, EventFilterHost host, EdgeSwipeHandler edgeSwipeHandler) {
-        super(host, false);
+        super(context, host, false);
         mEnableTabSwiping = TAB_SWIPING_ENABLED;
         mScrollDirection = ScrollDirection.UNKNOWN;
 
@@ -191,7 +191,7 @@ public class EdgeSwipeEventFilter extends EventFilter {
                         e2.getX() + mCurrentTouchOffsetX, dt);
                 break;
             case LEFT:
-                dist = mHost.getView().getWidth() * mPxToDp
+                dist = mHost.getViewportWidth() * mPxToDp
                         - calculateBiasedPosition(
                                 e1.getX() + mCurrentTouchOffsetX,
                                 e2.getX() + mCurrentTouchOffsetX, dt);
@@ -249,7 +249,7 @@ public class EdgeSwipeEventFilter extends EventFilter {
             ScrollDirection direction = ScrollDirection.UNKNOWN;
             if ((e.getX() + mCurrentTouchOffsetX) * mPxToDp < SWIPE_REGION_DP) {
                 direction = ScrollDirection.RIGHT;
-            } else if (mHost.getView().getWidth() * mPxToDp
+            } else if (mHost.getViewportWidth() * mPxToDp
                     - (e.getX() + mCurrentTouchOffsetX) * mPxToDp < SWIPE_REGION_DP) {
                 direction = ScrollDirection.LEFT;
             } else if ((e.getY() + mCurrentTouchOffsetY) * mPxToDp < SWIPE_REGION_DP) {

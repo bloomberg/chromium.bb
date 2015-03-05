@@ -82,9 +82,9 @@ public class GestureEventFilter extends EventFilter {
      */
     public GestureEventFilter(Context context, EventFilterHost host, GestureHandler handler,
             boolean autoOffset, boolean useDefaultLongPress) {
-        super(host, autoOffset);
+        super(context, host, autoOffset);
         mScaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-        mLongPressTimeoutMs = ViewConfiguration.get(context).getLongPressTimeout();
+        mLongPressTimeoutMs = ViewConfiguration.getLongPressTimeout();
         mUseDefaultLongPress = useDefaultLongPress;
         mHandler = handler;
         context.getResources();

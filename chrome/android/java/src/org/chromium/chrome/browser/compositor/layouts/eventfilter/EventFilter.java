@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.layouts.eventfilter;
 
+import android.content.Context;
 import android.view.MotionEvent;
 
 import org.chromium.base.VisibleForTesting;
@@ -23,10 +24,11 @@ public abstract class EventFilter {
 
     /**
      * Creates a {@link EventFilter}.
-     * @param host The host of this EventFilter.
+     * @param context A {@link Context} instance.
+     * @param host    The host of this EventFilter.
      */
-    public EventFilter(EventFilterHost host) {
-        this(host, true);
+    public EventFilter(Context context, EventFilterHost host) {
+        this(context, host, true);
     }
 
     /**
@@ -38,9 +40,9 @@ public abstract class EventFilter {
      *                   {@link #mCurrentTouchOffsetY} internally.  This is so that propagated
      *                   events aren't translated, as the host view needs the original event data.
      */
-    public EventFilter(EventFilterHost host, boolean autoOffset) {
+    public EventFilter(Context context, EventFilterHost host, boolean autoOffset) {
         mHost = host;
-        mPxToDp = 1.0f / host.getView().getContext().getResources().getDisplayMetrics().density;
+        mPxToDp = 1.0f / context.getResources().getDisplayMetrics().density;
         mAutoOffset = autoOffset;
     }
 
