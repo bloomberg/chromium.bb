@@ -59,6 +59,12 @@ enum BlendMode {
   LAST_BLEND_MODE = BLEND_MODE_LUMINOSITY
 };
 
+enum MaskMode {
+  NO_MASK = 0,
+  HAS_MASK = 1,
+  LAST_MASK_VALUE = HAS_MASK
+};
+
 struct ShaderLocations {
   ShaderLocations();
 
@@ -76,6 +82,7 @@ struct ShaderLocations {
   int tex_transform = -1;
   int backdrop = -1;
   int backdrop_rect = -1;
+  int original_backdrop = -1;
 };
 
 // Note: The highp_threshold_cache must be provided by the caller to make
@@ -346,11 +353,16 @@ class VertexShaderVideoTransform {
 class FragmentTexBlendMode {
  public:
   int backdrop_location() const { return backdrop_location_; }
+  int original_backdrop_location() const { return original_backdrop_location_; }
   int backdrop_rect_location() const { return backdrop_rect_location_; }
 
   BlendMode blend_mode() const { return blend_mode_; }
   void set_blend_mode(BlendMode blend_mode) { blend_mode_ = blend_mode; }
   bool has_blend_mode() const { return blend_mode_ != BLEND_MODE_NONE; }
+  void set_mask_for_background(bool mask_for_background) {
+    mask_for_background_ = mask_for_background;
+  }
+  bool mask_for_background() const { return mask_for_background_; }
 
  protected:
   FragmentTexBlendMode();
@@ -358,10 +370,12 @@ class FragmentTexBlendMode {
   std::string SetBlendModeFunctions(std::string shader_string) const;
 
   int backdrop_location_;
+  int original_backdrop_location_;
   int backdrop_rect_location_;
 
  private:
   BlendMode blend_mode_;
+  bool mask_for_background_;
 
   std::string GetHelperFunctions() const;
   std::string GetBlendFunction() const;

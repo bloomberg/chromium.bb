@@ -741,19 +741,24 @@ std::string VertexShaderVideoTransform::GetShaderBody() {
   });
 }
 
-#define BLEND_MODE_UNIFORMS "s_backdropTexture", "backdropRect"
-#define UNUSED_BLEND_MODE_UNIFORMS (!has_blend_mode() ? 2 : 0)
+#define BLEND_MODE_UNIFORMS "s_backdropTexture", \
+                            "s_originalBackdropTexture", \
+                            "backdropRect"
+#define UNUSED_BLEND_MODE_UNIFORMS (!has_blend_mode() ? 3 : 0)
 #define BLEND_MODE_SET_LOCATIONS(X, POS)                   \
   if (has_blend_mode()) {                                  \
-    DCHECK_LT(static_cast<size_t>(POS) + 1, arraysize(X)); \
+    DCHECK_LT(static_cast<size_t>(POS) + 2, arraysize(X)); \
     backdrop_location_ = locations[POS];                   \
-    backdrop_rect_location_ = locations[POS + 1];          \
+    original_backdrop_location_ = locations[POS + 1];      \
+    backdrop_rect_location_ = locations[POS + 2];          \
   }
 
 FragmentTexBlendMode::FragmentTexBlendMode()
     : backdrop_location_(-1),
+      original_backdrop_location_(-1),
       backdrop_rect_location_(-1),
-      blend_mode_(BLEND_MODE_NONE) {
+      blend_mode_(BLEND_MODE_NONE),
+      mask_for_background_(false) {
 }
 
 std::string FragmentTexBlendMode::SetBlendModeFunctions(
@@ -762,28 +767,50 @@ std::string FragmentTexBlendMode::SetBlendModeFunctions(
     return shader_string;
 
   if (!has_blend_mode()) {
-    return "#define ApplyBlendMode(X) (X)\n" + shader_string;
+    return "#define ApplyBlendMode(X, Y) (X)\n" + shader_string;
+  }
+
+  static const std::string kUniforms = SHADER0([]() {
+    uniform sampler2D s_backdropTexture;
+    uniform sampler2D s_originalBackdropTexture;
+    uniform TexCoordPrecision vec4 backdropRect;
+  });
+
+  std::string mixFunction;
+  if (mask_for_background()) {
+    mixFunction = SHADER0([]() {
+      vec4 MixBackdrop(TexCoordPrecision vec2 bgTexCoord, float mask) {
+        vec4 backdrop = texture2D(s_backdropTexture, bgTexCoord);
+        vec4 original_backdrop =
+            texture2D(s_originalBackdropTexture, bgTexCoord);
+        return mix(original_backdrop, backdrop, mask);
+      }
+    });
+  } else {
+    mixFunction = SHADER0([]() {
+      vec4 MixBackdrop(TexCoordPrecision vec2 bgTexCoord, float mask) {
+        return texture2D(s_backdropTexture, bgTexCoord);
+      }
+    });
   }
 
   static const std::string kFunctionApplyBlendMode = SHADER0([]() {
-    uniform sampler2D s_backdropTexture;
-    uniform TexCoordPrecision vec4 backdropRect;
-
-    vec4 GetBackdropColor() {
+    vec4 GetBackdropColor(float mask) {
       TexCoordPrecision vec2 bgTexCoord = gl_FragCoord.xy - backdropRect.xy;
       bgTexCoord.x /= backdropRect.z;
       bgTexCoord.y /= backdropRect.w;
-      return texture2D(s_backdropTexture, bgTexCoord);
+      return MixBackdrop(bgTexCoord, mask);
     }
 
-    vec4 ApplyBlendMode(vec4 src) {
-      vec4 dst = GetBackdropColor();
+    vec4 ApplyBlendMode(vec4 src, float mask) {
+      vec4 dst = GetBackdropColor(mask);
       return Blend(src, dst);
     }
   });
 
   return "precision mediump float;" + GetHelperFunctions() +
-         GetBlendFunction() + kFunctionApplyBlendMode + shader_string;
+         GetBlendFunction() + kUniforms + mixFunction +
+         kFunctionApplyBlendMode + shader_string;
 }
 
 std::string FragmentTexBlendMode::GetHelperFunctions() const {
@@ -1119,7 +1146,7 @@ std::string FragmentShaderRGBATexAlpha::GetShaderBody() {
   return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      gl_FragColor = ApplyBlendMode(texColor * alpha);
+      gl_FragColor = ApplyBlendMode(texColor * alpha, 0.0);
     }
   });
 }
@@ -1158,7 +1185,7 @@ std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderBody() {
       texColor = colorMatrix * texColor + colorOffset;
       texColor.rgb *= texColor.a;
       texColor = clamp(texColor, 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(texColor * alpha);
+      gl_FragColor = ApplyBlendMode(texColor * alpha, 0.0);
     }
   });
 }
@@ -1437,7 +1464,7 @@ std::string FragmentShaderRGBATexAlphaAA::GetShaderBody() {
       vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(texColor * alpha * aa);
+      gl_FragColor = ApplyBlendMode(texColor * alpha * aa, 0.0);
     }
   });
 }
@@ -1600,7 +1627,8 @@ std::string FragmentShaderRGBATexAlphaMask::GetShaderBody() {
           vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
                maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
       vec4 maskColor = TextureLookup(s_mask, maskTexCoord);
-      gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w);
+      gl_FragColor = ApplyBlendMode(
+          texColor * alpha * maskColor.w, maskColor.w);
     }
   });
 }
@@ -1614,6 +1642,8 @@ void FragmentShaderRGBATexAlphaMask::FillLocations(
   locations->alpha = alpha_location();
   locations->backdrop = backdrop_location();
   locations->backdrop_rect = backdrop_rect_location();
+  if (mask_for_background())
+    locations->original_backdrop = original_backdrop_location();
 }
 
 FragmentShaderRGBATexAlphaMaskAA::FragmentShaderRGBATexAlphaMaskAA()
@@ -1681,7 +1711,8 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderBody() {
       vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w * aa);
+      gl_FragColor = ApplyBlendMode(
+          texColor * alpha * maskColor.w * aa, maskColor.w);
     }
   });
 }
@@ -1695,6 +1726,8 @@ void FragmentShaderRGBATexAlphaMaskAA::FillLocations(
   locations->alpha = alpha_location();
   locations->backdrop = backdrop_location();
   locations->backdrop_rect = backdrop_rect_location();
+  if (mask_for_background())
+    locations->original_backdrop = original_backdrop_location();
 }
 
 FragmentShaderRGBATexAlphaMaskColorMatrixAA::
@@ -1776,7 +1809,8 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderBody() {
       vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w * aa);
+      gl_FragColor = ApplyBlendMode(
+          texColor * alpha * maskColor.w * aa, maskColor.w);
     }
   });
 }
@@ -1792,6 +1826,8 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::FillLocations(
   locations->color_offset = color_offset_location();
   locations->backdrop = backdrop_location();
   locations->backdrop_rect = backdrop_rect_location();
+  if (mask_for_background())
+    locations->original_backdrop = original_backdrop_location();
 }
 
 FragmentShaderRGBATexAlphaColorMatrixAA::
@@ -1853,7 +1889,7 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderBody() {
       vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(texColor * alpha * aa);
+      gl_FragColor = ApplyBlendMode(texColor * alpha * aa, 0.0);
     }
   });
 }
@@ -1940,7 +1976,8 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderBody() {
           vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
                maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
       vec4 maskColor = TextureLookup(s_mask, maskTexCoord);
-      gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w);
+      gl_FragColor = ApplyBlendMode(
+          texColor * alpha * maskColor.w, maskColor.w);
     }
   });
 }
@@ -1956,6 +1993,8 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::FillLocations(
   locations->color_offset = color_offset_location();
   locations->backdrop = backdrop_location();
   locations->backdrop_rect = backdrop_rect_location();
+  if (mask_for_background())
+    locations->original_backdrop = original_backdrop_location();
 }
 
 FragmentShaderYUVVideo::FragmentShaderYUVVideo()

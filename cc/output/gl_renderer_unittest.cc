@@ -149,14 +149,20 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
         renderer()->GetTileProgramSwizzleAA(precision, sampler));
     for (int i = 0; i <= LAST_BLEND_MODE; ++i) {
       BlendMode blend_mode = static_cast<BlendMode>(i);
-      EXPECT_PROGRAM_VALID(
-          renderer()->GetRenderPassMaskProgram(precision, sampler, blend_mode));
-      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgramAA(
-          precision, sampler, blend_mode));
-      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgramAA(
-          precision, sampler, blend_mode));
-      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgram(
-          precision, sampler, blend_mode));
+      for (int l = 0; l <= 1; ++l) {
+        bool mask_for_background = (l == 1);
+        EXPECT_PROGRAM_VALID(
+            renderer()->GetRenderPassMaskProgram(precision,
+                                                 sampler,
+                                                 blend_mode,
+                                                 mask_for_background));
+        EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgramAA(
+            precision, sampler, blend_mode, mask_for_background));
+        EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgramAA(
+            precision, sampler, blend_mode, mask_for_background));
+        EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgram(
+            precision, sampler, blend_mode, mask_for_background));
+      }
     }
   }
 };
@@ -269,10 +275,15 @@ class GLRendererShaderTest : public GLRendererTest {
                                  SamplerType sampler,
                                  BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_mask_program_[precision][sampler][blend_mode]);
+        &renderer_->render_pass_mask_program_[precision]
+                                             [sampler]
+                                             [blend_mode]
+                                             [NO_MASK]);
     EXPECT_EQ(
-        renderer_->render_pass_mask_program_[precision][sampler][blend_mode]
-            .program(),
+        renderer_->render_pass_mask_program_[precision]
+                                            [sampler]
+                                            [blend_mode]
+                                            [NO_MASK].program(),
         renderer_->program_shadow_);
   }
 
@@ -280,9 +291,9 @@ class GLRendererShaderTest : public GLRendererTest {
                                             SamplerType sampler,
                                             BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_
-                              [precision][sampler][blend_mode]);
+                              [precision][sampler][blend_mode][NO_MASK]);
     EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_
-                  [precision][sampler][blend_mode].program(),
+                  [precision][sampler][blend_mode][NO_MASK].program(),
               renderer_->program_shadow_);
   }
 
@@ -311,10 +322,11 @@ class GLRendererShaderTest : public GLRendererTest {
                                    BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(
         &renderer_
-             ->render_pass_mask_program_aa_[precision][sampler][blend_mode]);
+             ->render_pass_mask_program_aa_
+                 [precision][sampler][blend_mode][NO_MASK]);
     EXPECT_EQ(
         renderer_->render_pass_mask_program_aa_[precision][sampler][blend_mode]
-            .program(),
+            [NO_MASK].program(),
         renderer_->program_shadow_);
   }
 
@@ -322,9 +334,9 @@ class GLRendererShaderTest : public GLRendererTest {
                                               SamplerType sampler,
                                               BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_aa_
-                              [precision][sampler][blend_mode]);
+                              [precision][sampler][blend_mode][NO_MASK]);
     EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_aa_
-                  [precision][sampler][blend_mode].program(),
+                  [precision][sampler][blend_mode][NO_MASK].program(),
               renderer_->program_shadow_);
   }
 

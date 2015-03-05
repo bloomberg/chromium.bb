@@ -58,8 +58,24 @@ class ProgramBinding : public ProgramBindingBase {
 
   void Initialize(ContextProvider* context_provider,
                   TexCoordPrecision precision,
+                  SamplerType sampler) {
+    return Initialize(
+        context_provider, precision, sampler, BLEND_MODE_NONE, false);
+  }
+
+  void Initialize(ContextProvider* context_provider,
+                  TexCoordPrecision precision,
                   SamplerType sampler,
-                  BlendMode blend_mode = BLEND_MODE_NONE) {
+                  BlendMode blend_mode) {
+    return Initialize(
+        context_provider, precision, sampler, blend_mode, false);
+  }
+
+  void Initialize(ContextProvider* context_provider,
+                  TexCoordPrecision precision,
+                  SamplerType sampler,
+                  BlendMode blend_mode,
+                  bool mask_for_background) {
     DCHECK(context_provider);
     DCHECK(!initialized_);
 
@@ -67,6 +83,7 @@ class ProgramBinding : public ProgramBindingBase {
       return;
 
     fragment_shader_.set_blend_mode(blend_mode);
+    fragment_shader_.set_mask_for_background(mask_for_background);
 
     if (!ProgramBindingBase::Init(
             context_provider->ContextGL(),

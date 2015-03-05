@@ -334,11 +334,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   const RenderPassMaskProgram* GetRenderPassMaskProgram(
       TexCoordPrecision precision,
       SamplerType sampler,
-      BlendMode blend_mode);
+      BlendMode blend_mode,
+      bool mask_for_background);
   const RenderPassMaskProgramAA* GetRenderPassMaskProgramAA(
       TexCoordPrecision precision,
       SamplerType sampler,
-      BlendMode blend_mode);
+      BlendMode blend_mode,
+      bool mask_for_background);
   const RenderPassColorMatrixProgram* GetRenderPassColorMatrixProgram(
       TexCoordPrecision precision,
       BlendMode blend_mode);
@@ -348,11 +350,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   const RenderPassMaskColorMatrixProgram* GetRenderPassMaskColorMatrixProgram(
       TexCoordPrecision precision,
       SamplerType sampler,
-      BlendMode blend_mode);
+      BlendMode blend_mode,
+      bool mask_for_background);
   const RenderPassMaskColorMatrixProgramAA*
   GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
                                         SamplerType sampler,
-                                        BlendMode blend_mode);
+                                        BlendMode blend_mode,
+                                        bool mask_for_background);
 
   const TextureProgram* GetTextureProgram(
       TexCoordPrecision precision);
@@ -407,12 +411,15 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   RenderPassProgramAA render_pass_program_aa_[LAST_TEX_COORD_PRECISION +
                                               1][LAST_BLEND_MODE + 1];
   RenderPassMaskProgram
-      render_pass_mask_program_[LAST_TEX_COORD_PRECISION +
-                                1][LAST_SAMPLER_TYPE + 1][LAST_BLEND_MODE + 1];
+      render_pass_mask_program_[LAST_TEX_COORD_PRECISION + 1]
+                               [LAST_SAMPLER_TYPE + 1]
+                               [LAST_BLEND_MODE + 1]
+                               [LAST_MASK_VALUE + 1];
   RenderPassMaskProgramAA
-      render_pass_mask_program_aa_[LAST_TEX_COORD_PRECISION +
-                                   1][LAST_SAMPLER_TYPE + 1][LAST_BLEND_MODE +
-                                                             1];
+      render_pass_mask_program_aa_[LAST_TEX_COORD_PRECISION + 1]
+                                  [LAST_SAMPLER_TYPE + 1]
+                                  [LAST_BLEND_MODE + 1]
+                                  [LAST_MASK_VALUE + 1];
   RenderPassColorMatrixProgram
       render_pass_color_matrix_program_[LAST_TEX_COORD_PRECISION +
                                         1][LAST_BLEND_MODE + 1];
@@ -420,13 +427,15 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       render_pass_color_matrix_program_aa_[LAST_TEX_COORD_PRECISION +
                                            1][LAST_BLEND_MODE + 1];
   RenderPassMaskColorMatrixProgram
-      render_pass_mask_color_matrix_program_[LAST_TEX_COORD_PRECISION +
-                                             1][LAST_SAMPLER_TYPE +
-                                                1][LAST_BLEND_MODE + 1];
+      render_pass_mask_color_matrix_program_[LAST_TEX_COORD_PRECISION + 1]
+                                            [LAST_SAMPLER_TYPE + 1]
+                                            [LAST_BLEND_MODE + 1]
+                                            [LAST_MASK_VALUE + 1];
   RenderPassMaskColorMatrixProgramAA
-      render_pass_mask_color_matrix_program_aa_[LAST_TEX_COORD_PRECISION +
-                                                1][LAST_SAMPLER_TYPE +
-                                                   1][LAST_BLEND_MODE + 1];
+      render_pass_mask_color_matrix_program_aa_[LAST_TEX_COORD_PRECISION + 1]
+                                               [LAST_SAMPLER_TYPE + 1]
+                                               [LAST_BLEND_MODE + 1]
+                                               [LAST_MASK_VALUE + 1];
 
   VideoYUVProgram video_yuv_program_[LAST_TEX_COORD_PRECISION + 1];
   VideoYUVAProgram video_yuva_program_[LAST_TEX_COORD_PRECISION + 1];

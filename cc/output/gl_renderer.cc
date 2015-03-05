@@ -940,7 +940,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       DCHECK(!background_image);
       use_shaders_for_blending = false;
     } else if (background_image) {
-      background_texture.reset();
+      // Reset original background texture if there is not any mask
+      if (!quad->mask_resource_id)
+        background_texture.reset();
     } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
                ShouldApplyBackgroundFilters(frame, quad)) {
       // Something went wrong with applying background filters to the backdrop.
@@ -948,7 +950,11 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       background_texture.reset();
     }
   }
-
+  // Need original background texture for mask?
+  bool mask_for_background =
+      background_texture &&    // Have original background texture
+      background_image &&      // Have filtered background texture
+      quad->mask_resource_id;  // Have mask texture
   SetBlendEnabled(
       !use_shaders_for_blending &&
       (quad->ShouldDrawWithBlending() || !IsDefaultBlendMode(blend_mode)));
@@ -1027,14 +1033,16 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   if (use_aa && mask_texture_id && !use_color_matrix) {
     const RenderPassMaskProgramAA* program = GetRenderPassMaskProgramAA(
-        tex_coord_precision, mask_sampler, shader_blend_mode);
+        tex_coord_precision, mask_sampler,
+        shader_blend_mode, mask_for_background);
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
     GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
   } else if (!use_aa && mask_texture_id && !use_color_matrix) {
     const RenderPassMaskProgram* program = GetRenderPassMaskProgram(
-        tex_coord_precision, mask_sampler, shader_blend_mode);
+        tex_coord_precision, mask_sampler,
+        shader_blend_mode, mask_for_background);
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
@@ -1049,7 +1057,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   } else if (use_aa && mask_texture_id && use_color_matrix) {
     const RenderPassMaskColorMatrixProgramAA* program =
         GetRenderPassMaskColorMatrixProgramAA(
-            tex_coord_precision, mask_sampler, shader_blend_mode);
+            tex_coord_precision, mask_sampler,
+            shader_blend_mode, mask_for_background);
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
@@ -1065,7 +1074,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   } else if (!use_aa && mask_texture_id && use_color_matrix) {
     const RenderPassMaskColorMatrixProgram* program =
         GetRenderPassMaskColorMatrixProgram(
-            tex_coord_precision, mask_sampler, shader_blend_mode);
+            tex_coord_precision, mask_sampler,
+            shader_blend_mode, mask_for_background);
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
@@ -1179,7 +1189,11 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       GLC(gl_, gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit));
       gl_->BindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
       GLC(gl_, gl_->ActiveTexture(GL_TEXTURE0));
-    } else {
+      if (mask_for_background)
+        GLC(gl_, gl_->Uniform1i(locations.original_backdrop,
+                                ++last_texture_unit));
+    }
+    if (background_texture) {
       shader_background_sampler_lock = make_scoped_ptr(
           new ResourceProvider::ScopedSamplerGL(resource_provider_,
                                                 background_texture->id(),
@@ -2695,7 +2709,8 @@ const GLRenderer::RenderPassProgramAA* GLRenderer::GetRenderPassProgramAA(
 const GLRenderer::RenderPassMaskProgram* GLRenderer::GetRenderPassMaskProgram(
     TexCoordPrecision precision,
     SamplerType sampler,
-    BlendMode blend_mode) {
+    BlendMode blend_mode,
+    bool mask_for_background) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
   DCHECK_GE(sampler, 0);
@@ -2703,11 +2718,13 @@ const GLRenderer::RenderPassMaskProgram* GLRenderer::GetRenderPassMaskProgram(
   DCHECK_GE(blend_mode, 0);
   DCHECK_LE(blend_mode, LAST_BLEND_MODE);
   RenderPassMaskProgram* program =
-      &render_pass_mask_program_[precision][sampler][blend_mode];
+      &render_pass_mask_program_[precision][sampler][blend_mode]
+                                [mask_for_background ? HAS_MASK : NO_MASK];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgram::initialize");
     program->Initialize(
-        output_surface_->context_provider(), precision, sampler, blend_mode);
+        output_surface_->context_provider(), precision,
+        sampler, blend_mode, mask_for_background);
   }
   return program;
 }
@@ -2715,7 +2732,8 @@ const GLRenderer::RenderPassMaskProgram* GLRenderer::GetRenderPassMaskProgram(
 const GLRenderer::RenderPassMaskProgramAA*
 GLRenderer::GetRenderPassMaskProgramAA(TexCoordPrecision precision,
                                        SamplerType sampler,
-                                       BlendMode blend_mode) {
+                                       BlendMode blend_mode,
+                                       bool mask_for_background) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
   DCHECK_GE(sampler, 0);
@@ -2723,11 +2741,13 @@ GLRenderer::GetRenderPassMaskProgramAA(TexCoordPrecision precision,
   DCHECK_GE(blend_mode, 0);
   DCHECK_LE(blend_mode, LAST_BLEND_MODE);
   RenderPassMaskProgramAA* program =
-      &render_pass_mask_program_aa_[precision][sampler][blend_mode];
+      &render_pass_mask_program_aa_[precision][sampler][blend_mode]
+                                   [mask_for_background ? HAS_MASK : NO_MASK];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgramAA::initialize");
     program->Initialize(
-        output_surface_->context_provider(), precision, sampler, blend_mode);
+        output_surface_->context_provider(), precision,
+        sampler, blend_mode, mask_for_background);
   }
   return program;
 }
@@ -2768,9 +2788,11 @@ GLRenderer::GetRenderPassColorMatrixProgramAA(TexCoordPrecision precision,
 }
 
 const GLRenderer::RenderPassMaskColorMatrixProgram*
-GLRenderer::GetRenderPassMaskColorMatrixProgram(TexCoordPrecision precision,
-                                                SamplerType sampler,
-                                                BlendMode blend_mode) {
+GLRenderer::GetRenderPassMaskColorMatrixProgram(
+    TexCoordPrecision precision,
+    SamplerType sampler,
+    BlendMode blend_mode,
+    bool mask_for_background) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
   DCHECK_GE(sampler, 0);
@@ -2778,20 +2800,24 @@ GLRenderer::GetRenderPassMaskColorMatrixProgram(TexCoordPrecision precision,
   DCHECK_GE(blend_mode, 0);
   DCHECK_LE(blend_mode, LAST_BLEND_MODE);
   RenderPassMaskColorMatrixProgram* program =
-      &render_pass_mask_color_matrix_program_[precision][sampler][blend_mode];
+      &render_pass_mask_color_matrix_program_[precision][sampler][blend_mode]
+          [mask_for_background ? HAS_MASK : NO_MASK];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::renderPassMaskColorMatrixProgram::initialize");
     program->Initialize(
-        output_surface_->context_provider(), precision, sampler, blend_mode);
+        output_surface_->context_provider(), precision,
+        sampler, blend_mode, mask_for_background);
   }
   return program;
 }
 
 const GLRenderer::RenderPassMaskColorMatrixProgramAA*
-GLRenderer::GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
-                                                  SamplerType sampler,
-                                                  BlendMode blend_mode) {
+GLRenderer::GetRenderPassMaskColorMatrixProgramAA(
+    TexCoordPrecision precision,
+    SamplerType sampler,
+    BlendMode blend_mode,
+    bool mask_for_background) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
   DCHECK_GE(sampler, 0);
@@ -2799,13 +2825,14 @@ GLRenderer::GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
   DCHECK_GE(blend_mode, 0);
   DCHECK_LE(blend_mode, LAST_BLEND_MODE);
   RenderPassMaskColorMatrixProgramAA* program =
-      &render_pass_mask_color_matrix_program_aa_[precision][sampler]
-                                                [blend_mode];
+      &render_pass_mask_color_matrix_program_aa_[precision][sampler][blend_mode]
+          [mask_for_background ? HAS_MASK : NO_MASK];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::renderPassMaskColorMatrixProgramAA::initialize");
     program->Initialize(
-        output_surface_->context_provider(), precision, sampler, blend_mode);
+        output_surface_->context_provider(), precision,
+        sampler, blend_mode, mask_for_background);
   }
   return program;
 }
@@ -3032,10 +3059,12 @@ void GLRenderer::CleanupSharedObjects() {
       tile_program_swizzle_aa_[i][j].Cleanup(gl_);
 
       for (int k = 0; k <= LAST_BLEND_MODE; k++) {
-        render_pass_mask_program_[i][j][k].Cleanup(gl_);
-        render_pass_mask_program_aa_[i][j][k].Cleanup(gl_);
-        render_pass_mask_color_matrix_program_aa_[i][j][k].Cleanup(gl_);
-        render_pass_mask_color_matrix_program_[i][j][k].Cleanup(gl_);
+        for (int l = 0; l <= LAST_MASK_VALUE; ++l) {
+          render_pass_mask_program_[i][j][k][l].Cleanup(gl_);
+          render_pass_mask_program_aa_[i][j][k][l].Cleanup(gl_);
+          render_pass_mask_color_matrix_program_aa_[i][j][k][l].Cleanup(gl_);
+          render_pass_mask_color_matrix_program_[i][j][k][l].Cleanup(gl_);
+        }
       }
     }
     for (int j = 0; j <= LAST_BLEND_MODE; j++) {
