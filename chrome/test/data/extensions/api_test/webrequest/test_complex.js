@@ -253,6 +253,7 @@ runTests([
             type: "main_frame",
             url: getURLHttpXHR(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           }
         },
         { label: "onResponseStarted-1",
@@ -305,6 +306,7 @@ runTests([
             type: "script",
             url: getURLHttpXHRJavaScript(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           }
         },
         { label: "a.js-onResponseStarted",
@@ -357,6 +359,7 @@ runTests([
             type: "xmlhttprequest",
             url: getURLHttpXHRData(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           }
         },
         { label: "onResponseStarted-2",

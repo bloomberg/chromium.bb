@@ -80,7 +80,8 @@ function cancelThirdPartyExpected() {
         event: "onHeadersReceived",
         details: {
           url: getURLOfHTMLWithThirdParty(),
-          statusLine: "HTTP/1.1 200 OK"
+          statusLine: "HTTP/1.1 200 OK",
+          statusCode: 200
         }
       },
       { label: "onResponseStarted",
@@ -198,6 +199,7 @@ runTests([
           details: {
             statusLine: "HTTP/1.1 200 OK",
             url: getURLHttpWithHeaders(),
+            statusCode: 200
           }
         },
         { label: "onErrorOccurred",

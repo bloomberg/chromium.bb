@@ -80,7 +80,8 @@ runTests([
           details: {
             url: getURLHttpSimpleLoadRedirect(),
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 301 Moved Permanently"
+            statusLine: "HTTP/1.1 301 Moved Permanently",
+            statusCode: 301
           }
         },
         { label: "onBeforeRedirect",
@@ -122,6 +123,7 @@ runTests([
             url: getURLHttpSimpleLoad(),
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200
           }
         },
         { label: "onResponseStarted",

@@ -101,6 +101,7 @@ runTests([
           details: {
             url: getURLHttpSimpleLoad(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           },
           retval: {cancel: true}
         },
@@ -160,6 +161,7 @@ runTests([
           details: {
             url: getURLHttpSimpleLoad(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           }
         },
         { label: "onResponseStarted",
@@ -230,6 +232,7 @@ runTests([
           details: {
             url: getURLHttpSimpleLoad(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           }
         },
         { label: "onResponseStarted",
@@ -364,6 +367,7 @@ runTests([
           details: {
             url: getURLEchoUserAgent(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           }
         },
         { label: "onResponseStarted",
@@ -439,6 +443,7 @@ runTests([
           details: {
             url: getURLEchoUserAgent(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           }
         },
         { label: "onResponseStarted",
@@ -512,6 +517,7 @@ runTests([
           details: {
             url: getURLSetCookie(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
             responseHeadersExist: true,
           },
           retval_function: function(name, details) {
@@ -602,6 +608,7 @@ runTests([
           details: {
             url: getURLNonUTF8SetCookie(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
             responseHeadersExist: true,
           },
           retval_function: function(name, details) {
@@ -699,6 +706,7 @@ runTests([
           details: {
             url: getURLHttpSimpleLoad(),
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           },
           retval: {redirectUrl: getURL("simpleLoad/a.html")}
         },
@@ -943,6 +951,7 @@ runTests([
             tabId: 1,
             type: "xmlhttprequest",
             statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
           }
         },
         { label: "x-onCompleted",
@@ -1074,6 +1083,7 @@ function testLoadCORSImage(crossOriginAttributeValue) {
           type: "image",
           url: redirectTarget,
           statusLine: "HTTP/1.1 200 OK",
+          statusCode: 200,
         }
       },
       { label: "onResponseStarted",

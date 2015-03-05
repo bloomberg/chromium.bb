@@ -41,7 +41,8 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onAuthRequired",
@@ -119,7 +120,8 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onAuthRequired",
@@ -199,7 +201,8 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onAuthRequired",
@@ -281,7 +284,8 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onAuthRequired",
@@ -361,7 +365,8 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onAuthRequired",
@@ -441,7 +446,8 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onAuthRequired",
@@ -523,7 +529,8 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onAuthRequired",

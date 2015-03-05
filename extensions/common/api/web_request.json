@@ -289,7 +289,8 @@
               "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
               "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."},
               "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line)."},
-              "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that have been received with this response."}
+              "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that have been received with this response."},
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."}
              }
           }
         ],
@@ -339,7 +340,8 @@
               "challenger": {"type": "object", "description": "The server requesting authentication.", "properties": {"host": {"type": "string"}, "port": {"type": "integer"}}},
               "isProxy": {"type": "boolean", "description": "True for Proxy-Authenticate, false for WWW-Authenticate."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
-              "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."}
+              "statusLine": {"type": "string", "description": "HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line) or an empty string if there are no headers."},
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."}
             }
           },
           {
