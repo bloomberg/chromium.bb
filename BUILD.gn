@@ -304,7 +304,7 @@ if (is_linux) {
       "//ipc/mojo:ipc_mojo_unittests",  # PASSES 2/25/2015
       "//jingle:jingle_unittests",  # PASSES 2/25/2015
       "//media/cast:cast_unittests",  # PASSES 2/25/2015
-      "//media:media_unittests",  # TODO(GYP) MidiManagerTest fails.
+      "//media:media_unittests",  # PASSES 3/3/2015
       "//mojo/common:mojo_common_unittests",  # PASSES 2/25/2015
       "//net:net_unittests",  # PASSES 2/25/2015
       "//ppapi:ppapi_unittests",  # PASSES 2/26/2015

@@ -32,6 +32,9 @@ config("media_config") {
   if (use_cras) {
     defines += [ "USE_CRAS" ]
   }
+  if (use_alsa) {
+    defines += [ "USE_ALSA" ]
+  }
 }
 
 config("media_dependent_config") {
@@ -352,7 +355,6 @@ component("media") {
 
   if (use_alsa) {
     libs += [ "asound" ]
-    defines += [ "USE_ALSA" ]
     sources += [
       "midi/midi_manager_alsa.cc",
       "midi/midi_manager_alsa.h",
