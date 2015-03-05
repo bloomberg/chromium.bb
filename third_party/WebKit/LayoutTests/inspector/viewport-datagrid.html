@@ -1,0 +1,83 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/network-test.js"></script>
+<script>
+
+function test()
+{
+    function attach(parent, child)
+    {
+        var parentName = parent === root ? "root" : parent.data.id;
+        parent.appendChild(child);
+        InspectorTest.addResult("Attached " + child.data.id + " to " + parentName);
+    }
+
+    function dumpNodes()
+    {
+        InspectorTest.addResult("");
+        InspectorTest.addResult("Tree:");
+        var flatNodes = dataGrid._flatNodesList();
+        for (var i = 0; i < flatNodes.length; ++i) {
+            var node = flatNodes[i];
+            InspectorTest.addResult(" ".repeat(node.depth + 1) + node.data.id);
+        }
+        InspectorTest.addResult("");
+    }
+
+    function expand(node)
+    {
+        node.expand();
+        InspectorTest.addResult("Expanded node " + node.data.id);
+    }
+
+    function collapse(node)
+    {
+        node.collapse();
+        InspectorTest.addResult("Collapsed node " + node.data.id);
+    }
+
+    var columns = [{id: "id"}];
+    var dataGrid = new WebInspector.ViewportDataGrid(columns);
+    var a = new WebInspector.ViewportDataGridNode({id: "a"});
+    var aa = new WebInspector.ViewportDataGridNode({id: "aa"});
+    var aaa = new WebInspector.ViewportDataGridNode({id: "aaa"});
+    var aab = new WebInspector.ViewportDataGridNode({id: "aab"});
+    var ab = new WebInspector.ViewportDataGridNode({id: "ab"});
+    var b = new WebInspector.ViewportDataGridNode({id: "b"});
+
+    var root = dataGrid.rootNode();
+
+    InspectorTest.addResult("Building tree.");
+
+    // Appending to detached node.
+    attach(aa, aaa);
+    aaa.dataGrid = dataGrid;
+    attach(aa, aab);
+    aab.dataGrid = dataGrid;
+
+    // Appending to tree.
+    attach(root, a);
+    attach(a, aa);
+    attach(a, ab);
+    attach(root, b);
+
+    dumpNodes();
+
+    expand(a);
+    dumpNodes();
+
+    expand(aa);
+    dumpNodes();
+
+    collapse(a);
+    dumpNodes();
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests ViewportDataGrid.</p>
+</body>
+</html>

@@ -1,0 +1,39 @@
+Tests ViewportDataGrid.
+
+Building tree.
+Attached aaa to aa
+Attached aab to aa
+Attached a to root
+Attached aa to a
+Attached ab to a
+Attached b to root
+
+Tree:
+ a
+ b
+
+Expanded node a
+
+Tree:
+ a
+  aa
+  ab
+ b
+
+Expanded node aa
+
+Tree:
+ a
+  aa
+   aaa
+   aab
+  ab
+ b
+
+Collapsed node a
+
+Tree:
+ a
+ b
+
+
