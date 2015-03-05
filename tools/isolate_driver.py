@@ -24,6 +24,7 @@ import json
 import logging
 import os
 import posixpath
+import re
 import StringIO
 import subprocess
 import sys
@@ -141,7 +142,9 @@ def raw_build_to_deps(item):
   # TODO(maruel): Use a whitelist instead? .stamp, .so.TOC, .dylib.TOC,
   # .dll.lib, .exe and empty.
   # The first item is the build rule, e.g. 'link', 'cxx', 'phony', etc.
-  return filter(using_blacklist, item.split(' ')[1:])
+  # In ninja build files, spaces in targets are escaped with a $-prefix.
+  # Use a negative lookbehind to not split on a space that is following a $.
+  return filter(using_blacklist, re.split('(?<!\$) ', item)[1:])
 
 
 def collect_deps(target, build_steps, dependencies_added, rules_seen):
