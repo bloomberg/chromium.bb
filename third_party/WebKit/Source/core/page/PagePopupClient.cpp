@@ -43,9 +43,16 @@ void PagePopupClient::addJavaScriptString(const String& str, SharedBuffer* data)
     StringBuilder builder;
     builder.reserveCapacity(str.length());
     for (unsigned i = 0; i < str.length(); ++i) {
-        if (str[i] == '\\' || str[i] == '"')
+        if (str[i] == '\r') {
+            builder.append("\\r");
+        } else if (str[i] == '\n') {
+            builder.append("\\n");
+        } else if (str[i] == '\\' || str[i] == '"') {
             builder.append('\\');
-        builder.append(str[i]);
+            builder.append(str[i]);
+        } else {
+            builder.append(str[i]);
+        }
     }
     addString(builder.toString(), data);
     addLiteral("\"", data);
