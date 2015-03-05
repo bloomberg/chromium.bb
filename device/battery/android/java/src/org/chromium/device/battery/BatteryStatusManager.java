@@ -16,6 +16,8 @@ import android.util.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.mojom.device.BatteryStatus;
 
+import javax.annotation.Nullable;
+
 /**
  * Data source for battery status information. This class registers for battery status notifications
  * from the system and calls the callback passed on construction whenever a notification is
@@ -50,7 +52,7 @@ class BatteryStatusManager {
 
     private BatteryStatusManager(
             Context context, BatteryStatusCallback callback, boolean ignoreBatteryPresentState,
-            BatteryManager batteryManager) {
+            @Nullable BatteryManager batteryManager) {
         mAppContext = context.getApplicationContext();
         mCallback = callback;
         mIgnoreBatteryPresentState = ignoreBatteryPresentState;
@@ -72,7 +74,7 @@ class BatteryStatusManager {
     static BatteryStatusManager createBatteryStatusManagerForTesting(
             Context context,
             BatteryStatusCallback callback,
-            BatteryManager batteryManager) {
+            @Nullable BatteryManager batteryManager) {
         return new BatteryStatusManager(context, callback, false, batteryManager);
     }
 
