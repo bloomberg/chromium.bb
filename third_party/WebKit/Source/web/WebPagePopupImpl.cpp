@@ -368,7 +368,7 @@ void WebPagePopupImpl::layout()
 void WebPagePopupImpl::paint(WebCanvas* canvas, const WebRect& rect)
 {
     if (!m_closing)
-        PageWidgetDelegate::paint(*m_page, 0, canvas, rect, PageWidgetDelegate::Opaque, *m_page->deprecatedLocalMainFrame());
+        PageWidgetDelegate::paint(*m_page, 0, canvas, rect, *m_page->deprecatedLocalMainFrame());
 }
 
 void WebPagePopupImpl::resize(const WebSize& newSize)

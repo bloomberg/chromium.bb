@@ -66,7 +66,8 @@ void PageWidgetDelegate::layout(Page& page, LocalFrame& root)
     page.animator().updateLayoutAndStyleForPainting(&root);
 }
 
-void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background, LocalFrame& root)
+void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas* canvas,
+    const WebRect& rect, LocalFrame& root)
 {
     if (rect.isEmpty())
         return;
@@ -80,9 +81,8 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
         graphicsContext = adoptPtr(new GraphicsContext(canvas, nullptr));
     }
 
-    // FIXME: opaqueness and device scale factor settings are layering violations and should not
+    // FIXME: device scale factor settings are layering violations and should not
     // be used within Blink paint code.
-    graphicsContext->setCertainlyOpaque(background == Opaque);
     float scaleFactor = page.deviceScaleFactor();
     graphicsContext->setDeviceScaleFactor(scaleFactor);
 
