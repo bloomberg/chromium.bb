@@ -95,9 +95,19 @@ bool ProxyClientSocket::SanitizeProxyAuth(HttpResponseInfo* response) {
   scoped_refptr<HttpResponseHeaders> new_headers = new HttpResponseHeaders(
       HttpUtil::AssembleRawHeaders(kHeaders, arraysize(kHeaders)));
 
+  // Copy status line and all hop-by-hop headers to preserve keep-alive
+  // behavior.
   new_headers->ReplaceStatusLine(old_headers->GetStatusLine());
-  CopyHeaderValues(old_headers, new_headers, "Connection");
-  CopyHeaderValues(old_headers, new_headers, "Proxy-Authenticate");
+  CopyHeaderValues(old_headers, new_headers, "connection");
+  CopyHeaderValues(old_headers, new_headers, "proxy-connection");
+  CopyHeaderValues(old_headers, new_headers, "keep-alive");
+  CopyHeaderValues(old_headers, new_headers, "trailer");
+  CopyHeaderValues(old_headers, new_headers, "transfer-encoding");
+  CopyHeaderValues(old_headers, new_headers, "upgrade");
+
+  CopyHeaderValues(old_headers, new_headers, "content-length");
+
+  CopyHeaderValues(old_headers, new_headers, "proxy-authenticate");
 
   response->headers = new_headers;
   return true;
