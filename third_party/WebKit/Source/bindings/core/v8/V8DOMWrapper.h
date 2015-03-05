@@ -46,15 +46,17 @@ struct WrapperTypeInfo;
 class V8DOMWrapper {
 public:
     static v8::Local<v8::Object> createWrapper(v8::Isolate*, v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappable*);
+    static bool isWrapper(v8::Isolate*, v8::Local<v8::Value>);
 
     static v8::Handle<v8::Object> associateObjectWithWrapper(v8::Isolate*, ScriptWrappable*, const WrapperTypeInfo*, v8::Handle<v8::Object>);
     static v8::Handle<v8::Object> associateObjectWithWrapper(v8::Isolate*, Node*, const WrapperTypeInfo*, v8::Handle<v8::Object>);
     static void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappable*);
     static void clearNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*);
-
-    // Note: This function is only for ASSERT() purposes. isDOMWrapper() may
-    // return true for non-DOM wrapper in some cases.
-    static bool isDOMWrapper(v8::Handle<v8::Value>);
+    // hasInternalFieldsSet only checks if the value has the internal fields for
+    // wrapper obejct and type, and does not check if it's valid or not.  The
+    // value may not be a Blink's wrapper object.  In order to make sure of it,
+    // Use isWrapper function instead.
+    static bool hasInternalFieldsSet(v8::Local<v8::Value>);
 };
 
 inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappable* scriptWrappable)
@@ -80,7 +82,7 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isola
 {
     wrapperTypeInfo->refObject(impl);
     setNativeInfo(wrapper, wrapperTypeInfo, impl);
-    ASSERT(isDOMWrapper(wrapper));
+    ASSERT(hasInternalFieldsSet(wrapper));
     DOMDataStore::setWrapper(impl, wrapper, isolate, wrapperTypeInfo);
     return wrapper;
 }
@@ -89,7 +91,7 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isola
 {
     wrapperTypeInfo->refObject(ScriptWrappable::fromNode(node));
     setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromNode(node));
-    ASSERT(isDOMWrapper(wrapper));
+    ASSERT(hasInternalFieldsSet(wrapper));
     DOMDataStore::setWrapper(node, wrapper, isolate, wrapperTypeInfo);
     return wrapper;
 }

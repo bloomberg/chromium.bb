@@ -97,7 +97,7 @@ public:
     v8::Handle<v8::FunctionTemplate> existingDOMTemplate(void* domTemplateKey);
     void setDOMTemplate(void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
 
-    bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>);
+    bool hasInstance(const WrapperTypeInfo* untrusted, v8::Handle<v8::Value>);
     v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Local<v8::Value>);
 
     v8::Local<v8::Context> ensureScriptRegexpContext();
@@ -119,7 +119,7 @@ private:
 
     typedef HashMap<const void*, v8::Eternal<v8::FunctionTemplate>> DOMTemplateMap;
     DOMTemplateMap& currentDOMTemplateMap();
-    bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
+    bool hasInstance(const WrapperTypeInfo* untrusted, v8::Handle<v8::Value>, DOMTemplateMap&);
     v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Local<v8::Value>, DOMTemplateMap&);
 
     bool m_destructionPending;

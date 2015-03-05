@@ -120,9 +120,9 @@ static String extractResourceName(v8::Handle<v8::Message> message, const Documen
     return shouldUseDocumentURL ? document->url() : toCoreString(resourceName.As<v8::String>());
 }
 
-static String extractMessageForConsole(v8::Handle<v8::Value> data)
+static String extractMessageForConsole(v8::Isolate* isolate, v8::Handle<v8::Value> data)
 {
-    if (V8DOMWrapper::isDOMWrapper(data)) {
+    if (V8DOMWrapper::isWrapper(isolate, data)) {
         v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
         const WrapperTypeInfo* type = toWrapperTypeInfo(obj);
         if (V8DOMException::wrapperTypeInfo.isSubclass(type)) {
@@ -158,7 +158,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     String errorMessage = toCoreStringWithNullCheck(message->Get());
     RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resourceName, message->GetLineNumber(), message->GetStartColumn() + 1, &scriptState->world());
 
-    String messageForConsole = extractMessageForConsole(data);
+    String messageForConsole = extractMessageForConsole(isolate, data);
     if (!messageForConsole.isEmpty())
         event->setUnsanitizedMessage("Uncaught " + messageForConsole);
 
@@ -231,7 +231,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
         return;
 
     v8::Handle<v8::Value> exception = data.GetValue();
-    if (V8DOMWrapper::isDOMWrapper(exception)) {
+    if (V8DOMWrapper::isWrapper(isolate, exception)) {
         // Try to get the stack & location from a wrapped exception object (e.g. DOMException).
         ASSERT(exception->IsObject());
         v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(exception);
@@ -259,7 +259,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
         errorMessage = "Uncaught " + String::number(exception.As<v8::Integer>()->Value());
     }
 
-    String messageForConsole = extractMessageForConsole(data.GetValue());
+    String messageForConsole = extractMessageForConsole(isolate, data.GetValue());
     if (!messageForConsole.isEmpty())
         errorMessage = "Uncaught " + messageForConsole;
 

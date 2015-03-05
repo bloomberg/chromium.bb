@@ -189,15 +189,15 @@ v8::Local<v8::Context> V8PerIsolateData::ensureScriptRegexpContext()
     return m_scriptRegexpScriptState->context();
 }
 
-bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
+bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Handle<v8::Value> value)
 {
-    return hasInstance(info, value, m_domTemplateMapForMainWorld)
-        || hasInstance(info, value, m_domTemplateMapForNonMainWorld);
+    return hasInstance(untrustedWrapperTypeInfo, value, m_domTemplateMapForMainWorld)
+        || hasInstance(untrustedWrapperTypeInfo, value, m_domTemplateMapForNonMainWorld);
 }
 
-bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, DOMTemplateMap& domTemplateMap)
+bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Handle<v8::Value> value, DOMTemplateMap& domTemplateMap)
 {
-    DOMTemplateMap::iterator result = domTemplateMap.find(info);
+    DOMTemplateMap::iterator result = domTemplateMap.find(untrustedWrapperTypeInfo);
     if (result == domTemplateMap.end())
         return false;
     v8::Handle<v8::FunctionTemplate> templ = result->value.Get(isolate());

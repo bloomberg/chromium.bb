@@ -129,7 +129,7 @@ public:
         // during the GC prologue.
         ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-        ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
+        ASSERT(V8DOMWrapper::hasInternalFieldsSet(*wrapper));
         ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
         Node* node = V8Node::toImpl(*wrapper);
         // A minor DOM GC can handle only node wrappers in the main world.
@@ -262,7 +262,7 @@ public:
         // during the GC prologue.
         ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-        ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
+        ASSERT(V8DOMWrapper::hasInternalFieldsSet(*wrapper));
 
         if (value->IsIndependent())
             return;
@@ -498,7 +498,7 @@ public:
         // during tracing.
         ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-        ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
+        ASSERT(V8DOMWrapper::hasInternalFieldsSet(*wrapper));
         if (m_visitor)
             toWrapperTypeInfo(*wrapper)->trace(m_visitor, toScriptWrappable(*wrapper));
     }

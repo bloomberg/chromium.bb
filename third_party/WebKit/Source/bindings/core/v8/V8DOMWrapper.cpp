@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8HTMLDocument.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PerContextData.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
 
@@ -81,22 +82,34 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Hand
     return wrapper;
 }
 
-bool V8DOMWrapper::isDOMWrapper(v8::Handle<v8::Value> value)
+bool V8DOMWrapper::isWrapper(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     if (value.IsEmpty() || !value->IsObject())
         return false;
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
 
-    if (v8::Handle<v8::Object>::Cast(value)->InternalFieldCount() < v8DefaultWrapperInternalFieldCount)
+    if (object->InternalFieldCount() < v8DefaultWrapperInternalFieldCount)
         return false;
 
-    v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(value);
-    ASSERT(wrapper->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
-    ASSERT(wrapper->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
+    const WrapperTypeInfo* untrustedWrapperTypeInfo = toWrapperTypeInfo(object);
+    V8PerIsolateData* perIsolateData = V8PerIsolateData::from(isolate);
+    return perIsolateData->hasInstance(untrustedWrapperTypeInfo, object);
+}
 
-    const WrapperTypeInfo* typeInfo = static_cast<const WrapperTypeInfo*>(wrapper->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
-    // FIXME: We should add a more strict way to check if the typeInfo is a typeInfo of some DOM wrapper.
-    // Even if it's a typeInfo of Blink, it's not guaranteed that it's a typeInfo of a DOM wrapper.
-    return typeInfo->ginEmbedder == gin::kEmbedderBlink;
+bool V8DOMWrapper::hasInternalFieldsSet(v8::Local<v8::Value> value)
+{
+    if (value.IsEmpty() || !value->IsObject())
+        return false;
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
+
+    if (object->InternalFieldCount() < v8DefaultWrapperInternalFieldCount)
+        return false;
+
+    const ScriptWrappable* untrustedScriptWrappable = toScriptWrappable(object);
+    const WrapperTypeInfo* untrustedWrapperTypeInfo = toWrapperTypeInfo(object);
+    return untrustedScriptWrappable
+        && untrustedWrapperTypeInfo
+        && untrustedWrapperTypeInfo->ginEmbedder == gin::kEmbedderBlink;
 }
 
 } // namespace blink

@@ -313,7 +313,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
         }
     }
 
-    if (V8DOMWrapper::isDOMWrapper(v8Value)) {
+    if (V8DOMWrapper::isWrapper(dictionary.isolate(), v8Value)) {
         v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
         value = toWrapperTypeInfo(wrapper)->toEventTarget(wrapper);
     }

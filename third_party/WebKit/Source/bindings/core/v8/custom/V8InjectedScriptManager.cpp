@@ -78,7 +78,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeR
     callbackData->handle.setWeak(callbackData, &InjectedScriptManager::setWeakCallback);
 
     V8DOMWrapper::setNativeInfo(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, host.get());
-    ASSERT(V8DOMWrapper::isDOMWrapper(wrapper));
+    ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
     return wrapper;
 }
 
