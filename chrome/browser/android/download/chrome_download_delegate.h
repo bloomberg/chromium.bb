@@ -6,7 +6,16 @@
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_CHROME_DOWNLOAD_DELEGATE_H_
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_weak_ref.h"
+#include "base/android/scoped_java_ref.h"
 
-bool RegisterChromeDownloadDeleagte(JNIEnv* env);
+class ChromeDownloadDelegate {
+ public:
+  static void EnqueueDownloadManagerRequest(jobject chrome_download_delegate,
+                                            bool overwrite,
+                                            jobject download_info);
+};
+
+bool RegisterChromeDownloadDelegate(JNIEnv* env);
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_CHROME_DOWNLOAD_DELEGATE_H_

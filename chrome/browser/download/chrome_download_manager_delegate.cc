@@ -49,6 +49,11 @@
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/chrome_download_manager_overwrite_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_service.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -573,7 +578,13 @@ void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
     const base::FilePath& suggested_path,
     const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(OS_ANDROID)
+  chrome::android::ChromeDownloadManagerOverwriteInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(download->GetWebContents()),
+      suggested_path, callback);
+#else
   DownloadFilePicker::ShowFilePicker(download, suggested_path, callback);
+#endif
 }
 
 void ChromeDownloadManagerDelegate::DetermineLocalPath(

@@ -210,7 +210,11 @@ DownloadTargetDeterminer::Result
       target_directory = download_prefs_->DownloadPath();
     }
     virtual_path_ = target_directory.Append(generated_filename);
+#if defined(OS_ANDROID)
+    conflict_action_ = DownloadPathReservationTracker::PROMPT;
+#else
     conflict_action_ = DownloadPathReservationTracker::UNIQUIFY;
+#endif
     should_notify_extensions_ = true;
   } else {
     virtual_path_ = download_->GetForcedFilePath();

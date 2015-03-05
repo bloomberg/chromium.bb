@@ -9,17 +9,18 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/android/download/android_download_manager_overwrite_infobar_delegate.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/download_extensions.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "jni/ChromeDownloadDelegate_jni.h"
 #include "ui/base/l10n/l10n_util.h"
-
-bool RegisterChromeDownloadDeleagte(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 // Gets the download warning text for the given file name.
 static jstring GetDownloadWarningText(
@@ -44,4 +45,42 @@ static void DangerousDownloadValidated(
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   content::DownloadControllerAndroid::Get()->DangerousDownloadValidated(
       tab_android->web_contents(), download_id, accept);
+}
+
+// static
+void ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
+    jobject chrome_download_delegate,
+    bool overwrite,
+    jobject download_info) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_ChromeDownloadDelegate_enqueueDownloadManagerRequestFromNative(
+      env, chrome_download_delegate, overwrite, download_info);
+}
+
+// Called when we need to interrupt download and ask users whether to overwrite
+// an existing file.
+static void LaunchDownloadOverwriteInfoBar(JNIEnv* env,
+                                           jclass clazz,
+                                           jobject delegate,
+                                           jobject tab,
+                                           jobject download_info,
+                                           jstring jfile_name,
+                                           jstring jdir_name,
+                                           jstring jdir_full_path) {
+  TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
+
+  std::string file_name =
+      base::android::ConvertJavaStringToUTF8(env, jfile_name);
+  std::string dir_name = base::android::ConvertJavaStringToUTF8(env, jdir_name);
+  std::string dir_full_path =
+      base::android::ConvertJavaStringToUTF8(env, jdir_full_path);
+
+  chrome::android::AndroidDownloadManagerOverwriteInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(tab_android->web_contents()), file_name,
+      dir_name, dir_full_path, delegate, download_info);
+}
+
+bool RegisterChromeDownloadDelegate(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }

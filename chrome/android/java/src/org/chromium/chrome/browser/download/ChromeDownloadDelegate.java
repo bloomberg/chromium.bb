@@ -18,6 +18,7 @@ import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.widget.Toast;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
@@ -307,11 +308,65 @@ public class ChromeDownloadDelegate
     }
 
     /**
+     * Launch an info bar if the file name already exists for the download.
+     * @param info The information of the file we are about to download.
+     * @return Whether an info bar has been launched or not.
+     */
+    private boolean launchInfoBarIfFileExists(final DownloadInfo info) {
+        // Checks if file exists.
+        final String fileName = info.getFileName();
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (!dir.mkdir() && !dir.isDirectory()) return false;
+        String dirName = dir.getName();
+        final File file = new File(dir, info.getFileName());
+        String fullDirPath = file.getParent();
+        if (!file.exists()) return false;
+        if (TextUtils.isEmpty(fileName) || TextUtils.isEmpty(dirName)
+                || TextUtils.isEmpty(fullDirPath)) {
+            return false;
+        }
+
+        nativeLaunchDownloadOverwriteInfoBar(
+                this, mTab, info, info.getFileName(), dirName, fullDirPath);
+        return true;
+    }
+
+    /**
      * Sends the download request to Android download manager.
      *
      * @param info Download information about the download.
      */
     protected void enqueueDownloadManagerRequest(final DownloadInfo info) {
+        if (!launchInfoBarIfFileExists(info)) {
+            enqueueDownloadManagerRequestInternal(info);
+        }
+    }
+
+    /**
+     * Enqueue download manager request, only from native side.
+     *
+     * @param overwrite Whether or not we will overwrite the file.
+     * @param downloadInfo The download info.
+     */
+    @CalledByNative
+    private void enqueueDownloadManagerRequestFromNative(
+            boolean overwrite, DownloadInfo downloadInfo) {
+        // Android DownloadManager does not have an overwriting option.
+        // We remove the file here instead.
+        if (overwrite) deleteFileForOverwrite(downloadInfo);
+        enqueueDownloadManagerRequestInternal(downloadInfo);
+    }
+
+    private void deleteFileForOverwrite(DownloadInfo info) {
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (!dir.isDirectory()) return;
+        final File file = new File(dir, info.getFileName());
+        if (!file.delete()) {
+            Log.e(LOGTAG, "Failed to delete a file." + info.getFileName());
+        }
+    }
+
+    private void enqueueDownloadManagerRequestInternal(final DownloadInfo info) {
         DownloadManagerService.getDownloadManagerService(
                 mContext.getApplicationContext()).enqueueDownloadManagerRequest(info, true);
         closeBlankTab();
@@ -495,4 +550,7 @@ public class ChromeDownloadDelegate
     private static native boolean nativeIsDownloadDangerous(String filename);
     private static native void nativeDangerousDownloadValidated(
             Object tab, int downloadId, boolean accept);
+    private static native void nativeLaunchDownloadOverwriteInfoBar(ChromeDownloadDelegate delegate,
+            Tab tab, DownloadInfo downloadInfo, String fileName, String dirName,
+            String dirFullPath);
 }

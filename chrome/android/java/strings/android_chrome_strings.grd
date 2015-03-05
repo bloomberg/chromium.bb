@@ -890,6 +890,17 @@ You are signing in with a managed account and giving its administrator control o
         Choose an account from your Google Smart Lock.
       </message>
 
+      <!-- DownloadOverwriteInfoBar -->
+      <message name="IDS_DOWNLOAD_OVERWRITE_INFOBAR_TEXT" desc="Prompt text for the confirmation dialog asking whether the user really wants to replace a file when there already exists a file with the same name">
+        Do you want to replace the existing <ph name="FILE_NAME">^1<ex>specialfile.pdf</ex></ph> in your <ph name="DIRECTORY_NAME">^2<ex>Downloads</ex></ph> directory?
+      </message>
+      <message name="IDS_DOWNLOAD_OVERWRITE_INFOBAR_REPLACE_FILE_BUTTON" desc="Label for choosing 'Replace file' in the prompt for replacing a file.[CHAR-LIMIT=32]">
+        Replace file
+      </message>
+      <message name="IDS_DOWNLOAD_OVERWRITE_INFOBAR_CREATE_NEW_FILE_BUTTON" desc="Label for choosing 'Create new file' in the prompt for replacing a file. [CHAR-LIMIT=32]">
+        Create new file
+      </message>
+
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_TEXT" desc="Text to display on the translate infobar to offer a translate. [CHAR-LIMIT=64]" meaning="Android">
         This page is in <ph name="SOURCE_LANGUAGE">^1<ex>English</ex></ph>. Translate it to <ph name="TARGET_LANGUAGE">^2<ex>FRENCH</ex></ph>?

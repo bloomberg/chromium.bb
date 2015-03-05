@@ -85,6 +85,7 @@
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
+#include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
 #include "chrome/browser/ui/android/infobars/generated_password_saved_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
@@ -117,7 +118,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AppMenuDragHelper", RegisterAppMenuDragHelper},
     {"Bookmarks", bookmarks::android::RegisterBookmarks},
     {"DomDistiller", dom_distiller::android::RegisterDomDistiller},
-    {"ChromeDownloadDelegate", RegisterChromeDownloadDeleagte},
+    {"ChromeDownloadDelegate", RegisterChromeDownloadDelegate},
     {"GCMDriver", gcm::android::RegisterGCMDriverJni},
     {"Invalidation", invalidation::android::RegisterInvalidationJni},
     {"NavigationInterception",
@@ -167,6 +168,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"DomDistillerServiceFactory",
      dom_distiller::android::DomDistillerServiceFactoryAndroid::Register},
     {"DomDistillerTabUtils", RegisterDomDistillerTabUtils},
+    {"DownloadOverwriteInfoBarDelegate",
+     RegisterDownloadOverwriteInfoBarDelegate},
     {"EnhancedBookmarksBridge",
      enhanced_bookmarks::android::RegisterEnhancedBookmarksBridge},
     {"ExternalPrerenderRequestHandler",

@@ -36,6 +36,10 @@ public abstract class InfoBar implements InfoBarView {
     public static final int ACTION_TYPE_TRANSLATE = 3;
     public static final int ACTION_TYPE_TRANSLATE_SHOW_ORIGINAL = 4;
 
+    // Download Overwrite InfoBar
+    public static final int ACTION_TYPE_OVERWRITE = 5;
+    public static final int ACTION_TYPE_CREATE_NEW_FILE = 6;
+
     private final int mIconDrawableId;
     private final Bitmap mIconBitmap;
     private final CharSequence mMessage;

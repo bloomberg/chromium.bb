@@ -654,8 +654,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
         @Override
         protected void onPostExecute(Boolean result) {
-            boolean isPendingOMADownload = mOMADownloadHandler.isPendingOMADownload(
-                    (long) mDownloadInfo.getDownloadId());
+            boolean isPendingOMADownload =
+                    mOMADownloadHandler.isPendingOMADownload(mDownloadInfo.getDownloadId());
             if (!result) {
                 Toast.makeText(mContext, mErrorId, Toast.LENGTH_SHORT).show();
                 if (isPendingOMADownload) {
