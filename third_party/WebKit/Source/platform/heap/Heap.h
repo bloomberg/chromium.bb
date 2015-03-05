@@ -132,7 +132,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
 public:
     // If gcInfoIndex is 0, this header is interpreted as a free list header.
     NO_SANITIZE_ADDRESS
-    ALWAYS_INLINE HeapObjectHeader(size_t size, size_t gcInfoIndex)
+    HeapObjectHeader(size_t size, size_t gcInfoIndex)
     {
 #if ENABLE(ASSERT)
         m_magic = magic;
@@ -548,7 +548,7 @@ public:
 #endif
     virtual size_t size()
     {
-        return pageHeaderSize() + sizeof(HeapObjectHeader) + m_payloadSize;
+        return pageHeaderSize() +  sizeof(HeapObjectHeader) + m_payloadSize;
     }
     static size_t pageHeaderSize()
     {
@@ -1401,7 +1401,7 @@ inline Address HeapObjectHeader::payloadEnd()
     return reinterpret_cast<Address>(this) + size();
 }
 
-NO_SANITIZE_ADDRESS ALWAYS_INLINE
+NO_SANITIZE_ADDRESS inline
 size_t HeapObjectHeader::payloadSize()
 {
     size_t size = m_encoded & headerSizeMask;
@@ -1451,7 +1451,7 @@ void HeapObjectHeader::markDead()
     m_encoded |= headerDeadBitMask;
 }
 
-ALWAYS_INLINE Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
+inline Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
 {
 #if ENABLE(GC_PROFILING)
     m_cumulativeAllocationSize += allocationSize;
