@@ -1226,7 +1226,6 @@ brillo = _config(
 
 moblab = _config(
   vm_tests=[],
-  hw_tests=[],
 )
 
 # Builds for the Project SDK.
@@ -2259,7 +2258,8 @@ def _CreatePaladinConfigs():
     if board in _paladin_moblab_hwtest_boards:
       customizations.update(
           hw_tests=[HWTestConfig(constants.HWTEST_MOBLAB_QUICK_SUITE,
-                                 blocking=True, num=1, timeout=30*60)])
+                                 blocking=True, num=1, timeout=120*60,
+                                 pool=constants.HWTEST_PALADIN_POOL)])
     if board not in _paladin_important_boards:
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
