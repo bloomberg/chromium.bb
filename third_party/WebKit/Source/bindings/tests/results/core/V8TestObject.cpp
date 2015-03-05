@@ -9523,13 +9523,46 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (exceptionState.throwIfNeeded())
             return;
     }
-    v8SetReturnValue(info, impl->item(index).v8Value());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptValue result = impl->item(scriptState, index);
+    v8SetReturnValue(info, result.v8Value());
 }
 
 static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestObjectV8Internal::itemMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "setItem", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 2)) {
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    unsigned index;
+    V8StringResource<> value;
+    {
+        index = toUInt32(info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        value = info[1];
+        if (!value.prepare())
+            return;
+    }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    String result = impl->setItem(scriptState, index, value);
+    v8SetReturnValueString(info, result, info.GetIsolate());
+}
+
+static void setItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::setItemMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -11810,7 +11843,8 @@ static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptValue result = impl->item(index);
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptValue result = impl->item(scriptState, index);
     if (result.isEmpty())
         return;
     v8SetReturnValue(info, result.v8Value());
@@ -11820,6 +11854,45 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMIndexedProperty");
     TestObjectV8Internal::indexedPropertyGetter(index, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    V8StringResource<> propertyValue = v8Value;
+    if (!propertyValue.prepare())
+        return;
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    bool result = impl->setItem(scriptState, index, propertyValue);
+    if (!result)
+        return;
+    v8SetReturnValue(info, v8Value);
+}
+
+static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMIndexedProperty");
+    TestObjectV8Internal::indexedPropertySetter(index, v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "TestObject", info.Holder(), info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    DeleteResult result = impl->anonymousIndexedDeleter(scriptState, index, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
+}
+
+static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMIndexedProperty");
+    TestObjectV8Internal::indexedPropertyDeleter(index, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -11835,7 +11908,8 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(nameString);
-    ScriptValue result = impl->anonymousNamedGetter(propertyName);
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    ScriptValue result = impl->anonymousNamedGetter(scriptState, propertyName);
     if (result.isEmpty())
         return;
     v8SetReturnValue(info, result.v8Value());
@@ -11845,6 +11919,37 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     TestObjectV8Internal::namedPropertyGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!name->IsString())
+        return;
+    auto nameString = name.As<v8::String>();
+    if (info.Holder()->HasRealNamedProperty(nameString))
+        return;
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(nameString).IsEmpty())
+        return;
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    V8StringResource<> propertyName(nameString);
+    if (!propertyName.prepare())
+        return;
+    V8StringResource<> propertyValue = v8Value;
+    if (!propertyValue.prepare())
+        return;
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    bool result = impl->anonymousNamedSetter(scriptState, propertyName, propertyValue);
+    if (!result)
+        return;
+    v8SetReturnValue(info, v8Value);
+}
+
+static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
+    TestObjectV8Internal::namedPropertySetter(name, v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -11868,6 +11973,25 @@ static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::Prope
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
     TestObjectV8Internal::namedPropertyQuery(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    if (!name->IsString())
+        return;
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    DeleteResult result = impl->anonymousNamedDeleter(scriptState, propertyName);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
+}
+
+static void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMNamedProperty");
+    TestObjectV8Internal::namedPropertyDeleter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -12222,6 +12346,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"promiseOverloadMethod", TestObjectV8Internal::promiseOverloadMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"item", TestObjectV8Internal::itemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"setItem", TestObjectV8Internal::setItemMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodClampUnsignedShortArg", TestObjectV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodClampUnsignedLongArg", TestObjectV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDefaultUndefinedTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
@@ -12384,11 +12509,11 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     static_assert(1 == TestObject::FEATURE_ENABLED_CONST, "the value of TestObject_FEATURE_ENABLED_CONST does not match with implementation");
     static_assert(1 == TestObject::CONST_IMPL, "the value of TestObject_CONST_IMPL does not match with implementation");
     {
-        v8::IndexedPropertyHandlerConfiguration config(TestObjectV8Internal::indexedPropertyGetterCallback, 0, 0, 0, indexedPropertyEnumerator<TestObject>);
+        v8::IndexedPropertyHandlerConfiguration config(TestObjectV8Internal::indexedPropertyGetterCallback, TestObjectV8Internal::indexedPropertySetterCallback, 0, TestObjectV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestObject>);
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
     {
-        v8::NamedPropertyHandlerConfiguration config(TestObjectV8Internal::namedPropertyGetterCallback, 0, TestObjectV8Internal::namedPropertyQueryCallback, 0, TestObjectV8Internal::namedPropertyEnumeratorCallback);
+        v8::NamedPropertyHandlerConfiguration config(TestObjectV8Internal::namedPropertyGetterCallback, TestObjectV8Internal::namedPropertySetterCallback, TestObjectV8Internal::namedPropertyQueryCallback, TestObjectV8Internal::namedPropertyDeleterCallback, TestObjectV8Internal::namedPropertyEnumeratorCallback);
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestObjectV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };

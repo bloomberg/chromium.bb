@@ -11,9 +11,17 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     {% if getter.is_raises_exception %}
     ExceptionState exceptionState(ExceptionState::IndexedGetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
+    {% if getter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    {% endif %}
     {% set getter_name = getter.name or 'anonymousIndexedGetter' %}
-    {% set getter_arguments = ['index', 'exceptionState']
-           if getter.is_raises_exception else ['index'] %}
+    {% set getter_arguments = ['index'] %}
+    {% if getter.is_call_with_script_state %}
+    {% set getter_arguments = ['scriptState'] + getter_arguments %}
+    {% endif %}
+    {% if getter.is_raises_exception %}
+    {% set getter_arguments = getter_arguments + ['exceptionState'] %}
+    {% endif %}
     {{getter.cpp_type}} result = impl->{{getter_name}}({{getter_arguments | join(', ')}});
     {% if getter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
@@ -68,9 +76,17 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
         return;
     }
     {% endif %}
+    {% if setter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    {% endif %}
     {% set setter_name = setter.name or 'anonymousIndexedSetter' %}
-    {% set setter_arguments = ['index', 'propertyValue', 'exceptionState']
-           if setter.is_raises_exception else ['index', 'propertyValue'] %}
+    {% set setter_arguments = ['index', 'propertyValue'] %}
+    {% if setter.is_call_with_script_state %}
+    {% set setter_arguments = ['scriptState'] + setter_arguments %}
+    {% endif %}
+    {% if setter.is_raises_exception %}
+    {% set setter_arguments = setter_arguments + ['exceptionState'] %}
+    {% endif %}
     bool result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
     {% if setter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
@@ -114,9 +130,17 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
     {% if deleter.is_raises_exception %}
     ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
+    {% if deleter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    {% endif %}
     {% set deleter_name = deleter.name or 'anonymousIndexedDeleter' %}
-    {% set deleter_arguments = ['index', 'exceptionState']
-           if deleter.is_raises_exception else ['index'] %}
+    {% set deleter_arguments = ['index'] %}
+    {% if deleter.is_call_with_script_state %}
+    {% set deleter_arguments = ['scriptState'] + deleter_arguments %}
+    {% endif %}
+    {% if deleter.is_raises_exception %}
+    {% set deleter_arguments = deleter_arguments + ['exceptionState'] %}
+    {% endif %}
     DeleteResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
     {% if deleter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
@@ -170,6 +194,9 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
     {% if getter.is_raises_exception %}
     v8::String::Utf8Value namedProperty(nameString);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {% endif %}
+    {% if getter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     {% endif %}
     {% if getter.use_output_parameter_for_result %}
     {{getter.cpp_type}} result;
@@ -245,11 +272,17 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
         return;
     }
     {% endif %}
+    {% if setter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    {% endif %}
     {% set setter_name = setter.name or 'anonymousNamedSetter' %}
-    {% set setter_arguments =
-           ['propertyName', 'propertyValue', 'exceptionState']
-           if setter.is_raises_exception else
-           ['propertyName', 'propertyValue'] %}
+    {% set setter_arguments = ['propertyName', 'propertyValue'] %}
+    {% if setter.is_call_with_script_state %}
+    {% set setter_arguments = ['scriptState'] + setter_arguments %}
+    {% endif %}
+    {% if setter.is_raises_exception %}
+    {% set setter_arguments =  setter_arguments + ['exceptionState'] %}
+    {% endif %}
     bool result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
     {% if setter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
@@ -342,9 +375,17 @@ static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCal
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::DeletionContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
+    {% if deleter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    {% endif %}
     {% set deleter_name = deleter.name or 'anonymousNamedDeleter' %}
-    {% set deleter_arguments = ['propertyName', 'exceptionState']
-           if deleter.is_raises_exception else ['propertyName'] %}
+    {% set deleter_arguments = ['propertyName'] %}
+    {% if deleter.is_call_with_script_state %}
+    {% set deleter_arguments = ['scriptState'] + deleter_arguments %}
+    {% endif %}
+    {% if deleter.is_raises_exception %}
+    {% set deleter_arguments = deleter_arguments + ['exceptionState'] %}
+    {% endif %}
     DeleteResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
     {% if deleter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())

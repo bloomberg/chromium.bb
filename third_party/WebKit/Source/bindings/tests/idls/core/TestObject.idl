@@ -477,8 +477,12 @@ interface TestObject {
     static void overloadedStaticMethod(long longArg1, long longArg2);
 
     // Special operations
-    getter any item(unsigned long index);
-    getter object(DOMString name);
+    [CallWith=ScriptState] getter any item(unsigned long index);
+    [CallWith=ScriptState] getter object(DOMString name);
+    [CallWith=ScriptState] setter DOMString setItem(unsigned long index, DOMString value);
+    [CallWith=ScriptState] setter DOMString(DOMString name, DOMString value);
+    [RaisesException, CallWith=ScriptState] deleter boolean(unsigned long index);
+    [CallWith=ScriptState] deleter boolean(DOMString name);
 
     // Extended attributes for arguments
     // [Clamp]

@@ -1235,12 +1235,15 @@ def property_getter(getter, cpp_arguments):
 
     idl_type = getter.idl_type
     extended_attributes = getter.extended_attributes
+    is_call_with_script_state = v8_utilities.has_extended_attribute_value(getter, 'CallWith', 'ScriptState')
     is_raises_exception = 'RaisesException' in extended_attributes
     use_output_parameter_for_result = idl_type.use_output_parameter_for_result
 
     # FIXME: make more generic, so can use v8_methods.cpp_value
     cpp_method_name = 'impl->%s' % cpp_name(getter)
 
+    if is_call_with_script_state:
+        cpp_arguments.insert(0, 'scriptState')
     if is_raises_exception:
         cpp_arguments.append('exceptionState')
     if use_output_parameter_for_result:
@@ -1252,6 +1255,7 @@ def property_getter(getter, cpp_arguments):
         'cpp_type': idl_type.cpp_type,
         'cpp_value': cpp_value,
         'do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
+        'is_call_with_script_state': is_call_with_script_state,
         'is_custom':
             'Custom' in extended_attributes and
             (not extended_attributes['Custom'] or
@@ -1275,6 +1279,7 @@ def property_setter(setter, interface):
 
     idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
+    is_call_with_script_state = v8_utilities.has_extended_attribute_value(setter, 'CallWith', 'ScriptState')
     is_raises_exception = 'RaisesException' in extended_attributes
 
     # [TypeChecking=Interface] / [LegacyInterfaceTypeChecking]
@@ -1287,6 +1292,7 @@ def property_setter(setter, interface):
                                 idl_type.v8_conversion_needs_exception_state),
         'has_type_checking_interface': has_type_checking_interface,
         'idl_type': idl_type.base_type,
+        'is_call_with_script_state': is_call_with_script_state,
         'is_custom': 'Custom' in extended_attributes,
         'is_nullable': idl_type.is_nullable,
         'is_raises_exception': is_raises_exception,
@@ -1302,7 +1308,9 @@ def property_deleter(deleter):
 
     idl_type = deleter.idl_type
     extended_attributes = deleter.extended_attributes
+    is_call_with_script_state = v8_utilities.has_extended_attribute_value(deleter, 'CallWith', 'ScriptState')
     return {
+        'is_call_with_script_state': is_call_with_script_state,
         'is_custom': 'Custom' in extended_attributes,
         'is_raises_exception': 'RaisesException' in extended_attributes,
         'name': cpp_name(deleter),
