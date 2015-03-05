@@ -17,6 +17,7 @@
   <div itemprop="articleBody" class="api">
     <h1>{{api.title}}</h1>
     {{+partials.intro_table api:api /}}
+    {{?chrome_os_only +partials.chrome_os_only/}}
     {{?intro}}
     <section>
       {{+intro platform:platform platformTitle:platformTitle /}}
