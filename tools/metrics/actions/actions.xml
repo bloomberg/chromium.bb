@@ -1146,8 +1146,19 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BadMessageTerminate_MIDI">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>toyoshim@chromium.org</owner>
+  <description>
+    Indicates that an IPC message to send a SysEx MIDI message is received from
+    a renderer that is not permitted to send a SysEx MIDI message.
+  </description>
+</action>
+
+<action name="BadMessageTerminate_MIDIPort">
+  <owner>toyoshim@chromium.org</owner>
+  <description>
+    Indicates that an IPC message to send a MIDI message against out of range
+    output port is received from a renderer.
+  </description>
 </action>
 
 <action name="BadMessageTerminate_NC">
