@@ -156,6 +156,11 @@ static inline bool checkForDifferentRootContainer(const RangeBoundaryPoint& star
 
 void Range::setStart(PassRefPtrWillBeRawPtr<Node> refNode, int offset, ExceptionState& exceptionState)
 {
+    if (!refNode) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided was null.");
+        return;
+    }
+
     bool didMoveDocument = false;
     if (refNode->document() != m_ownerDocument) {
         setDocument(refNode->document());
@@ -174,6 +179,11 @@ void Range::setStart(PassRefPtrWillBeRawPtr<Node> refNode, int offset, Exception
 
 void Range::setEnd(PassRefPtrWillBeRawPtr<Node> refNode, int offset, ExceptionState& exceptionState)
 {
+    if (!refNode) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided was null.");
+        return;
+    }
+
     bool didMoveDocument = false;
     if (refNode->document() != m_ownerDocument) {
         setDocument(refNode->document());
@@ -212,6 +222,11 @@ void Range::collapse(bool toStart)
 
 bool Range::isPointInRange(Node* refNode, int offset, ExceptionState& exceptionState)
 {
+    if (!refNode) {
+        exceptionState.throwDOMException(HierarchyRequestError, "The node provided was null.");
+        return false;
+    }
+
     if (!refNode->inActiveDocument() || refNode->document() != m_ownerDocument) {
         return false;
     }
@@ -264,6 +279,11 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionState& exceptio
     // http://developer.mozilla.org/en/docs/DOM:range.compareNode
     // This method returns 0, 1, 2, or 3 based on if the node is before, after,
     // before and after(surrounds), or inside the range, respectively
+
+    if (!refNode) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided was null.");
+        return NODE_BEFORE;
+    }
 
     if (!refNode->inActiveDocument()) {
         // Firefox doesn't throw an exception for this case; it returns 0.
@@ -450,8 +470,13 @@ void Range::deleteContents(ExceptionState& exceptionState)
     }
 }
 
-static bool nodeValidForIntersects(Node* refNode, Document* expectedDocument)
+static bool nodeValidForIntersects(Node* refNode, Document* expectedDocument, ExceptionState& exceptionState)
 {
+    if (!refNode) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        return false;
+    }
+
     if (!refNode->inActiveDocument() || refNode->document() != expectedDocument) {
         // Firefox doesn't throw an exception for these cases; it returns false.
         return false;
@@ -464,7 +489,7 @@ bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState)
 {
     // http://developer.mozilla.org/en/docs/DOM:range.intersectsNode
     // Returns a bool if the node intersects the range.
-    if (!nodeValidForIntersects(refNode, m_ownerDocument.get()))
+    if (!nodeValidForIntersects(refNode, m_ownerDocument.get(), exceptionState))
         return false;
 
     ContainerNode* parentNode = refNode->parentNode();
@@ -494,7 +519,7 @@ bool Range::intersectsNode(Node* refNode, const Position& start, const Position&
 {
     // http://developer.mozilla.org/en/docs/DOM:range.intersectsNode
     // Returns a bool if the node intersects the range.
-    if (!nodeValidForIntersects(refNode, start.document()))
+    if (!nodeValidForIntersects(refNode, start.document(), exceptionState))
         return false;
 
     ContainerNode* parentNode = refNode->parentNode();
@@ -834,6 +859,11 @@ void Range::insertNode(PassRefPtrWillBeRawPtr<Node> prpNewNode, ExceptionState& 
 {
     RefPtrWillBeRawPtr<Node> newNode = prpNewNode;
 
+    if (!newNode) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        return;
+    }
+
     // HierarchyRequestError: Raised if the container of the start of the Range is of a type that
     // does not allow children of the type of newNode or if newNode is an ancestor of the container.
 
@@ -1048,6 +1078,11 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
 
 void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
 {
+    if (!n) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        return;
+    }
+
     // InvalidNodeTypeError: Raised if the root container of refNode is not an
     // Attr, Document, DocumentFragment or ShadowRoot node, or part of a SVG shadow DOM tree,
     // or if refNode is a Document, DocumentFragment, ShadowRoot, Attr, Entity, or Notation node.
@@ -1126,6 +1161,11 @@ void Range::setEndAfter(Node* refNode, ExceptionState& exceptionState)
 
 void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
 {
+    if (!refNode) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        return;
+    }
+
     if (!refNode->parentNode()) {
         exceptionState.throwDOMException(InvalidNodeTypeError, "the given Node has no parent.");
         return;
@@ -1175,6 +1215,11 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
 
 void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
 {
+    if (!refNode) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        return;
+    }
+
     // InvalidNodeTypeError: Raised if refNode or an ancestor of refNode is an Entity, Notation
     // or DocumentType node.
     for (Node* n = refNode; n; n = n->parentNode()) {
@@ -1235,6 +1280,10 @@ bool Range::selectNodeContents(Node* refNode, Position& start, Position& end)
 void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<Node> newParent = passNewParent;
+    if (!newParent) {
+        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        return;
+    }
 
     // InvalidStateError: Raised if the Range partially selects a non-Text node.
     Node* startNonTextContainer = m_start.container();

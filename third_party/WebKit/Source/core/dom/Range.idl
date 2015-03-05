@@ -25,7 +25,6 @@
     Constructor,
     ConstructorCallWith=Document,
     WillBeGarbageCollected,
-    TypeChecking=Interface,
 ] interface Range {
     readonly attribute Node startContainer;
     readonly attribute long startOffset;
@@ -48,7 +47,7 @@
     const unsigned short START_TO_END = 1;
     const unsigned short END_TO_END = 2;
     const unsigned short END_TO_START = 3;
-    [RaisesException] short compareBoundaryPoints(unsigned short how, Range sourceRange);
+    [RaisesException, TypeChecking=Interface] short compareBoundaryPoints(unsigned short how, Range sourceRange);
 
     [RaisesException, CustomElementCallbacks] void deleteContents();
     [RaisesException, CustomElementCallbacks] DocumentFragment extractContents();
@@ -60,7 +59,7 @@
     [DeprecateAs=RangeDetach] void detach();
 
     [RaisesException] boolean isPointInRange(Node node, long offset);
-    [RaisesException] short comparePoint(Node node, long offset);
+    [RaisesException, TypeChecking=Interface] short comparePoint(Node node, long offset);
 
     [RaisesException] boolean intersectsNode(Node node);
 

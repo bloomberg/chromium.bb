@@ -1,6 +1,6 @@
 CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
 CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
-CONSOLE ERROR: line 66: Uncaught TypeError: Failed to execute 'surroundContents' on 'Range': parameter 1 is not of type 'Node'.
+CONSOLE ERROR: line 66: Uncaught NotFoundError: Failed to execute 'surroundContents' on 'Range': The node provided is null.
 \\\\\\m{VVVVVVVV\\\\\\m{VVVVVVVVVVVVVVV<};<WWWWW
  \\\\\\m{VVVVVVVVVVVVVVV<};<WWWWW
 xt

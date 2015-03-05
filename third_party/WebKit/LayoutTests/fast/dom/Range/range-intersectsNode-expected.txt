@@ -60,7 +60,7 @@ PASS range.selectNode(document) threw exception InvalidNodeTypeError: Failed to 
 PASS intersects is false
 
 2.6 Node deleted
-PASS range.intersectsNode(node) threw exception TypeError: Failed to execute 'intersectsNode' on 'Range': parameter 1 is not of type 'Node'..
+PASS range.intersectsNode(node) threw exception NotFoundError: Failed to execute 'intersectsNode' on 'Range': The node provided is null..
 
 PASS successfullyParsed is true
 
