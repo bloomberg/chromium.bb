@@ -4,6 +4,7 @@
 
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 
+#include "base/auto_reset.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/gin_java_bridge_messages.h"
@@ -32,32 +33,12 @@ bool GinJavaBridgeDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-namespace {
-
-class ScopedFlag {
- public:
-  ScopedFlag(bool* flag) : flag_(flag) {
-    DCHECK(!*flag_);
-    *flag_ = true;
-  }
-  ~ScopedFlag() {
-    DCHECK(*flag_);
-    *flag_ = false;
-  }
- private:
-  bool* flag_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedFlag);
-};
-
-}  // namespace
-
 void GinJavaBridgeDispatcher::DidClearWindowObject() {
   // Accessing window object when adding properties to it may trigger
   // a nested call to DidClearWindowObject.
   if (inside_did_clear_window_object_)
     return;
-  ScopedFlag flag(&inside_did_clear_window_object_);
+  base::AutoReset<bool> flag_entry(&inside_did_clear_window_object_, true);
   for (NamedObjectMap::const_iterator iter = named_objects_.begin();
        iter != named_objects_.end(); ++iter) {
     // Always create a new GinJavaBridgeObject, so we don't pull any of the V8
