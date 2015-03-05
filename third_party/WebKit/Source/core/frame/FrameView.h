@@ -235,7 +235,7 @@ public:
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
     void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
     void enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
-    void disableAutoSizeMode() { disposeAutoSizeInfo(); }
+    void disableAutoSizeMode();
 
     void forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor);
 
@@ -691,8 +691,6 @@ private:
     void removeFromAXObjectCache();
 
     void setLayoutSizeInternal(const IntSize&);
-
-    void disposeAutoSizeInfo();
 
     bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
     void adjustScrollbarOpacity();

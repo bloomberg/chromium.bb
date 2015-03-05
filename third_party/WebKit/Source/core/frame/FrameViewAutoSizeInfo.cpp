@@ -20,13 +20,6 @@ FrameViewAutoSizeInfo::FrameViewAutoSizeInfo(FrameView* view)
     ASSERT(m_frameView);
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FrameViewAutoSizeInfo);
-
-DEFINE_TRACE(FrameViewAutoSizeInfo)
-{
-    visitor->trace(m_frameView);
-}
-
 void FrameViewAutoSizeInfo::configureAutoSizeMode(const IntSize& minSize, const IntSize& maxSize)
 {
     ASSERT(!minSize.isEmpty());

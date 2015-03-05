@@ -177,6 +177,10 @@ FrameView::~FrameView()
 
 void FrameView::dispose()
 {
+    // Destroy |m_autoSizeInfo| as early as possible, to avoid dereferencing
+    // partially destroyed |this| via |m_autoSizeInfo->m_frameView|.
+    m_autoSizeInfo.clear();
+
     if (m_postLayoutTasksTimer.isActive())
         m_postLayoutTasksTimer.stop();
 
@@ -199,7 +203,6 @@ void FrameView::dispose()
     if (ownerElement && ownerElement->ownedWidget() == this)
         ownerElement->setWidget(nullptr);
 
-    disposeAutoSizeInfo();
 #if ENABLE(OILPAN) && ENABLE(ASSERT)
     m_hasBeenDisposed = true;
 #endif
@@ -2644,7 +2647,7 @@ void FrameView::enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSiz
     scheduleRelayout();
 }
 
-void FrameView::disposeAutoSizeInfo()
+void FrameView::disableAutoSizeMode()
 {
     if (!m_autoSizeInfo)
         return;
