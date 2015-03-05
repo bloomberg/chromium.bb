@@ -1431,16 +1431,7 @@ void Textfield::InsertChar(base::char16 ch, int flags) {
   if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE || !should_insert_char)
     return;
 
-  OnBeforeUserAction();
-  skip_input_method_cancel_composition_ = true;
-  if (GetRenderText()->insert_mode())
-    model_->InsertChar(ch);
-  else
-    model_->ReplaceChar(ch);
-  skip_input_method_cancel_composition_ = false;
-
-  UpdateAfterChange(true, true);
-  OnAfterUserAction();
+  DoInsertChar(ch);
 
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD &&
       password_reveal_duration_ != base::TimeDelta()) {
@@ -1623,6 +1614,19 @@ void Textfield::SetEditCommandForNextKeyEvent(int command_id) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, protected:
+
+void Textfield::DoInsertChar(base::char16 ch) {
+  OnBeforeUserAction();
+  skip_input_method_cancel_composition_ = true;
+  if (GetRenderText()->insert_mode())
+    model_->InsertChar(ch);
+  else
+    model_->ReplaceChar(ch);
+  skip_input_method_cancel_composition_ = false;
+
+  UpdateAfterChange(true, true);
+  OnAfterUserAction();
+}
 
 gfx::RenderText* Textfield::GetRenderText() const {
   return model_->render_text();

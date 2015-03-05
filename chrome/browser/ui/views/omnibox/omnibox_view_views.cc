@@ -333,6 +333,15 @@ void OmniboxViewViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   EmphasizeURLComponents();
 }
 
+void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
+  Textfield::OnPaint(canvas);
+  if (!insert_char_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency",
+                        base::TimeTicks::Now() - insert_char_time_);
+    insert_char_time_ = base::TimeTicks();
+  }
+}
+
 void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   // In the base class, touch text selection is deactivated when a command is
   // executed. Since we are not always calling the base class implementation
@@ -857,6 +866,14 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
 
 base::string16 OmniboxViewViews::GetSelectionClipboardText() const {
   return SanitizeTextForPaste(Textfield::GetSelectionClipboardText());
+}
+
+void OmniboxViewViews::DoInsertChar(base::char16 ch) {
+  // If |insert_char_time_| is not null, there's a pending insert char operation
+  // that hasn't been painted yet. Keep the earlier time.
+  if (insert_char_time_.is_null())
+    insert_char_time_ = base::TimeTicks::Now();
+  Textfield::DoInsertChar(ch);
 }
 
 #if defined(OS_CHROMEOS)

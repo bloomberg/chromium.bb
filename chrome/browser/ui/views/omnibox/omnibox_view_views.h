@@ -86,6 +86,7 @@ class OmniboxViewViews
 
   // views::Textfield:
   gfx::Size GetMinimumSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
@@ -162,6 +163,7 @@ class OmniboxViewViews
   void OnBlur() override;
   bool IsCommandIdEnabled(int command_id) const override;
   base::string16 GetSelectionClipboardText() const override;
+  void DoInsertChar(base::char16 ch) override;
 
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
 #if defined(OS_CHROMEOS)
@@ -226,6 +228,10 @@ class OmniboxViewViews
   // GESTURE_TAP. We want to select all only when the textfield is not in focus
   // and gets a tap. So we use this variable to remember focus state before tap.
   bool select_all_on_gesture_tap_;
+
+  // The time of the first character insert operation that has not yet been
+  // painted. Used to measure omnibox responsiveness with a histogram.
+  base::TimeTicks insert_char_time_;
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<OmniboxViewViews> weak_ptr_factory_;

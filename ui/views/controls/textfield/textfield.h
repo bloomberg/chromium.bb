@@ -308,6 +308,9 @@ class VIEWS_EXPORT Textfield : public View,
   void SetEditCommandForNextKeyEvent(int command_id) override;
 
  protected:
+  // Inserts or appends a character in response to an IME operation.
+  virtual void DoInsertChar(base::char16 ch);
+
   // Returns the TextfieldModel's text/cursor/selection rendering model.
   gfx::RenderText* GetRenderText() const;
 

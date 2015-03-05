@@ -23478,6 +23478,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.CharTypedToRepaintLatency">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records the time taken between a keystroke being typed in the omnibox and
+    the text being painted. If there are multiple keystrokes before a paint,
+    logs the time since the earliest one.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.CutOrCopyAllText" units="count">
   <owner>mpearson@chromium.org</owner>
   <summary>
