@@ -38,21 +38,20 @@ class FormField {
     // Attributes.
     MATCH_LABEL      = 1 << 0,
     MATCH_NAME       = 1 << 1,
-    MATCH_VALUE      = 1 << 2,
 
     // Input types.
-    MATCH_TEXT       = 1 << 3,
-    MATCH_EMAIL      = 1 << 4,
-    MATCH_TELEPHONE  = 1 << 5,
-    MATCH_SELECT     = 1 << 6,
-    MATCH_TEXT_AREA  = 1 << 7,
-    MATCH_PASSWORD   = 1 << 8,
+    MATCH_TEXT       = 1 << 2,
+    MATCH_EMAIL      = 1 << 3,
+    MATCH_TELEPHONE  = 1 << 4,
+    MATCH_SELECT     = 1 << 5,
+    MATCH_TEXT_AREA  = 1 << 6,
+    MATCH_PASSWORD   = 1 << 7,
     MATCH_ALL_INPUTS =
         MATCH_TEXT | MATCH_EMAIL | MATCH_TELEPHONE | MATCH_SELECT |
         MATCH_TEXT_AREA | MATCH_PASSWORD,
 
     // By default match label and name for input/text types.
-    MATCH_DEFAULT    = MATCH_LABEL | MATCH_NAME | MATCH_VALUE | MATCH_TEXT,
+    MATCH_DEFAULT    = MATCH_LABEL | MATCH_NAME | MATCH_TEXT,
   };
 
   // Only derived classes may instantiate.

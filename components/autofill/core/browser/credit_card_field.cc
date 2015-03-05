@@ -134,21 +134,19 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       // Look for a 2-digit year first.
       // We allow <select> fields, because they're used e.g. on qvc.com.
       scanner->Rewind();
-      if (ParseFieldSpecifics(
-              scanner,
-              base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
-              MATCH_LABEL | MATCH_VALUE | MATCH_TEXT | MATCH_SELECT,
-              &credit_card_field->expiration_date_)) {
+      if (ParseFieldSpecifics(scanner,
+                              base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
+                              MATCH_LABEL | MATCH_TEXT | MATCH_SELECT,
+                              &credit_card_field->expiration_date_)) {
         credit_card_field->exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
         credit_card_field->expiration_month_ = nullptr;
         continue;
       }
 
-      if (ParseFieldSpecifics(
-              scanner,
-              base::UTF8ToUTF16(kExpirationDateRe),
-              MATCH_LABEL | MATCH_VALUE | MATCH_TEXT | MATCH_SELECT,
-              &credit_card_field->expiration_date_)) {
+      if (ParseFieldSpecifics(scanner,
+                              base::UTF8ToUTF16(kExpirationDateRe),
+                              MATCH_LABEL | MATCH_TEXT | MATCH_SELECT,
+                              &credit_card_field->expiration_date_)) {
         credit_card_field->expiration_month_ = nullptr;
         continue;
       }
