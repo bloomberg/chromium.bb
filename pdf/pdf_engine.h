@@ -49,7 +49,6 @@ void ShutdownSDK();
 // This class encapsulates a PDF rendering engine.
 class PDFEngine {
  public:
-
   enum DocumentPermission {
     PERMISSION_COPY,
     PERMISSION_COPY_ACCESSIBLE,
@@ -178,7 +177,7 @@ class PDFEngine {
     virtual uint32 GetBackgroundColor() = 0;
 
     // Sets selection status.
-    virtual void IsSelectingChanged(bool is_selecting){};
+    virtual void IsSelectingChanged(bool is_selecting) {}
   };
 
   // Factory method to create an instance of the PDF Engine.
@@ -251,6 +250,8 @@ class PDFEngine {
   virtual bool GetPrintScaling() = 0;
   // Returns number of copies to be printed.
   virtual int GetCopiesToPrint() = 0;
+  // Returns the duplex setting.
+  virtual int GetDuplexType() = 0;
 
   // Returns a VarArray of Bookmarks, each a VarDictionary containing the
   // following key/values:
@@ -280,15 +281,15 @@ class PDFEngine {
 class PDFEngineExports {
  public:
   struct RenderingSettings {
-   RenderingSettings(int dpi_x,
-                     int dpi_y,
-                     const pp::Rect& bounds,
-                     bool fit_to_bounds,
-                     bool stretch_to_bounds,
-                     bool keep_aspect_ratio,
-                     bool center_in_bounds,
-                     bool autorotate)
-      : dpi_x(dpi_x), dpi_y(dpi_y), bounds(bounds),
+    RenderingSettings(int dpi_x,
+                      int dpi_y,
+                      const pp::Rect& bounds,
+                      bool fit_to_bounds,
+                      bool stretch_to_bounds,
+                      bool keep_aspect_ratio,
+                      bool center_in_bounds,
+                      bool autorotate)
+        : dpi_x(dpi_x), dpi_y(dpi_y), bounds(bounds),
         fit_to_bounds(fit_to_bounds), stretch_to_bounds(stretch_to_bounds),
         keep_aspect_ratio(keep_aspect_ratio),
         center_in_bounds(center_in_bounds), autorotate(autorotate) {

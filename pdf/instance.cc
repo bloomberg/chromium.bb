@@ -674,6 +674,8 @@ pp::Var Instance::GetInstanceObject() {
 void Instance::GetPrintPresetOptionsFromDocument(
     PP_PdfPrintPresetOptions_Dev* options) {
   options->is_scaling_disabled = PP_FromBool(IsPrintScalingDisabled());
+  options->duplex =
+      static_cast<PP_PrivateDuplexMode_Dev>(engine_->GetDuplexType());
   options->copies = engine_->GetCopiesToPrint();
 }
 

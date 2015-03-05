@@ -221,8 +221,8 @@ class PrintWebViewHelper
                               int* number_of_pages);
 
   // Set options for print preset from source PDF document.
-  void SetOptionsFromDocument(
-      PrintHostMsg_SetOptionsFromDocument_Params& params);
+  void SetOptionsFromPdfDocument(
+      PrintHostMsg_SetOptionsFromDocument_Params* options);
 
   // Update the current print settings with new |passed_job_settings|.
   // |passed_job_settings| dictionary contains print job details such as printer

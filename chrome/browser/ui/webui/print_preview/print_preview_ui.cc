@@ -632,6 +632,7 @@ void PrintPreviewUI::OnSetOptionsFromDocument(
   options.SetBoolean(printing::kSettingDisableScaling,
                      params.is_scaling_disabled);
   options.SetInteger(printing::kSettingCopies, params.copies);
+  options.SetInteger(printing::kSettingDuplexMode, params.duplex);
   web_ui()->CallJavascriptFunction("printPresetOptionsFromDocument", options);
 }
 

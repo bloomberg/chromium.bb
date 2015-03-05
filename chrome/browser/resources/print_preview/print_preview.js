@@ -996,6 +996,12 @@ cr.define('print_preview', function() {
         this.printTicketStore_.copies.updateValue(
             event.optionsFromDocument.copies);
       }
+
+      if (event.optionsFromDocument.duplex >= 0 &&
+          this.printTicketStore_.duplex.isCapabilityAvailable()) {
+        this.printTicketStore_.duplex.updateValue(
+            event.optionsFromDocument.duplex);
+      }
     },
 
     /**

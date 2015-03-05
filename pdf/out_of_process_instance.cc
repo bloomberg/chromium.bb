@@ -603,6 +603,8 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
 void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
     PP_PdfPrintPresetOptions_Dev* options) {
   options->is_scaling_disabled = PP_FromBool(IsPrintScalingDisabled());
+  options->duplex =
+      static_cast<PP_PrivateDuplexMode_Dev>(engine_->GetDuplexType());
   options->copies = engine_->GetCopiesToPrint();
 }
 
@@ -1183,7 +1185,7 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   // Send a progress value of -1 to indicate a failure.
   pp::VarDictionary message;
   message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-  message.Set(pp::Var(kJSProgressPercentage), pp::Var(-1)) ;
+  message.Set(pp::Var(kJSProgressPercentage), pp::Var(-1));
   PostMessage(message);
 }
 
@@ -1250,7 +1252,7 @@ void OutOfProcessInstance::DocumentLoadProgress(uint32 available,
     last_progress_sent_ = progress;
     pp::VarDictionary message;
     message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
-    message.Set(pp::Var(kJSProgressPercentage), pp::Var(progress)) ;
+    message.Set(pp::Var(kJSProgressPercentage), pp::Var(progress));
     PostMessage(message);
   }
 }

@@ -344,7 +344,7 @@ bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
 
 class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
  public:
-  PluginInstanceLockTarget(PepperPluginInstanceImpl* plugin)
+  explicit PluginInstanceLockTarget(PepperPluginInstanceImpl* plugin)
       : plugin_(plugin) {}
 
   void OnLockMouseACK(bool succeeded) override {
@@ -1822,6 +1822,20 @@ bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
   }
 
   preset_options->isScalingDisabled = PP_ToBool(options.is_scaling_disabled);
+  switch (options.duplex) {
+    case PP_PRIVATEDUPLEXMODE_SIMPLEX:
+      preset_options->duplexMode = blink::WebSimplex;
+      break;
+    case PP_PRIVATEDUPLEXMODE_SHORT_EDGE:
+      preset_options->duplexMode = blink::WebShortEdge;
+      break;
+    case PP_PRIVATEDUPLEXMODE_LONG_EDGE:
+      preset_options->duplexMode = blink::WebLongEdge;
+      break;
+    default:
+      preset_options->duplexMode = blink::WebUnknownDuplexMode;
+      break;
+  }
   preset_options->copies = options.copies;
 
   return true;
@@ -2567,7 +2581,6 @@ void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,
                                             tickmarks[i].point.y,
                                             tickmarks[i].size.width,
                                             tickmarks[i].size.height);
-    ;
   }
   blink::WebFrame* frame = render_frame_->GetWebFrame();
   frame->setTickmarks(tickmarks_converted);

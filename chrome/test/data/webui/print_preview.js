@@ -500,7 +500,7 @@ TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
 });
 
 // When the number of copies print preset is set for source 'PDF', we update
-// copies value if capability is supported by printer.
+// the copies value if capability is supported by printer.
 TEST_F('PrintPreviewWebUITest', 'CheckNumCopiesPrintPreset', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
   this.setInitialSettings();
@@ -521,6 +521,31 @@ TEST_F('PrintPreviewWebUITest', 'CheckNumCopiesPrintPreset', function() {
   expectEquals(
       printPresetOptions.copies,
       parseInt($('copies-settings').querySelector('.copies').value));
+
+  this.waitForAnimationToEnd('other-options-collapsible');
+});
+
+// When the duplex print preset is set for source 'PDF', we update the
+// duplex setting if capability is supported by printer.
+TEST_F('PrintPreviewWebUITest', 'CheckDuplexPrintPreset', function() {
+  this.initialSettings_.isDocumentModifiable_ = false;
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
+
+  // Indicate that the duplex print preset is set to "long edge" for source PDF.
+  var printPresetOptions = {
+    duplex: 1
+  };
+  var printPresetOptionsEvent = new Event(
+      print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS);
+  printPresetOptionsEvent.optionsFromDocument = printPresetOptions;
+  this.nativeLayer_.dispatchEvent(printPresetOptionsEvent);
+
+  var otherOptions = $('other-options-settings');
+  checkSectionVisible(otherOptions, true);
+  checkElementDisplayed(otherOptions.querySelector('.duplex-container'), true);
+  expectTrue(otherOptions.querySelector('.duplex-checkbox').checked);
 
   this.waitForAnimationToEnd('other-options-collapsible');
 });

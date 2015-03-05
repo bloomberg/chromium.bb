@@ -49,6 +49,17 @@ namespace printing {
 
 namespace {
 
+#define STATIC_ASSERT_PP_MATCHING_ENUM(a, b)                  \
+    static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                  "mismatching enums: " #a)
+
+// Check blink::WebDuplexMode and printing::DuplexMode are kept in sync.
+STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebUnknownDuplexMode,
+                               UNKNOWN_DUPLEX_MODE);
+STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebSimplex, SIMPLEX);
+STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebLongEdge, LONG_EDGE);
+STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebShortEdge, SHORT_EDGE);
+
 enum PrintPreviewHelperEvents {
   PREVIEW_EVENT_REQUESTED,
   PREVIEW_EVENT_CACHE_HIT,  // Unused
@@ -1005,9 +1016,9 @@ void PrintWebViewHelper::OnPrintPreview(const base::DictionaryValue& settings) {
   // message to browser.
   if (print_pages_params_->params.is_first_request &&
       !print_preview_context_.IsModifiable()) {
-    PrintHostMsg_SetOptionsFromDocument_Params params;
-    SetOptionsFromDocument(params);
-    Send(new PrintHostMsg_SetOptionsFromDocument(routing_id(), params));
+    PrintHostMsg_SetOptionsFromDocument_Params options;
+    SetOptionsFromPdfDocument(&options);
+    Send(new PrintHostMsg_SetOptionsFromDocument(routing_id(), options));
   }
 
   is_print_ready_metafile_sent_ = false;
@@ -1432,8 +1443,8 @@ bool PrintWebViewHelper::CalculateNumberOfPages(blink::WebLocalFrame* frame,
   return true;
 }
 
-void PrintWebViewHelper::SetOptionsFromDocument(
-    PrintHostMsg_SetOptionsFromDocument_Params& params) {
+void PrintWebViewHelper::SetOptionsFromPdfDocument(
+    PrintHostMsg_SetOptionsFromDocument_Params* options) {
   blink::WebLocalFrame* source_frame = print_preview_context_.source_frame();
   const blink::WebNode& source_node = print_preview_context_.source_node();
 
@@ -1443,8 +1454,22 @@ void PrintWebViewHelper::SetOptionsFromDocument(
     return;
   }
 
-  params.is_scaling_disabled = preset_options.isScalingDisabled;
-  params.copies = preset_options.copies;
+  options->is_scaling_disabled = preset_options.isScalingDisabled;
+  options->copies = preset_options.copies;
+
+  // TODO(thestig) This should be a straight pass-through, but print preview
+  // does not currently support short-edge printing.
+  switch (preset_options.duplexMode) {
+    case blink::WebSimplex:
+      options->duplex = SIMPLEX;
+      break;
+    case blink::WebLongEdge:
+      options->duplex = LONG_EDGE;
+      break;
+    default:
+      options->duplex = UNKNOWN_DUPLEX_MODE;
+      break;
+  }
 }
 
 bool PrintWebViewHelper::UpdatePrintSettings(

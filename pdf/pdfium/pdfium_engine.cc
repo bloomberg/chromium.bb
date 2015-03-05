@@ -2457,6 +2457,10 @@ int PDFiumEngine::GetCopiesToPrint() {
   return FPDF_VIEWERREF_GetNumCopies(doc_);
 }
 
+int PDFiumEngine::GetDuplexType() {
+  return static_cast<int>(FPDF_VIEWERREF_GetDuplex(doc_));
+}
+
 void PDFiumEngine::AppendBlankPages(int num_pages) {
   DCHECK(num_pages != 0);
 

@@ -705,7 +705,8 @@ cr.define('print_preview', function() {
     /**
      * Updates print preset options from source PDF document.
      * Called from PrintPreviewUI::OnSetOptionsFromDocument().
-     * @param {{disableScaling: boolean, copies: number}} options Specifies
+     * @param {{disableScaling: boolean, copies: number,
+     *          duplex: number}} options Specifies
      *     printing options according to source document presets.
      * @private
      */

@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppp_pdf.h"
 #include "third_party/pdfium/fpdfsdk/include/fpdf_fwlevent.h"
 #include "third_party/pdfium/fpdfsdk/include/fpdf_sysfontinfo.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -206,3 +207,8 @@ STATIC_ASSERT_MATCH(PP_PRIVATEFONTCHARSET_HANGUL, FXFONT_HANGEUL_CHARSET);
 STATIC_ASSERT_MATCH(PP_PRIVATEFONTCHARSET_GB2312, FXFONT_GB2312_CHARSET);
 STATIC_ASSERT_MATCH(PP_PRIVATEFONTCHARSET_CHINESEBIG5,
                     FXFONT_CHINESEBIG5_CHARSET);
+
+STATIC_ASSERT_MATCH(PP_PRIVATEDUPLEXMODE_NONE, DuplexUndefined);
+STATIC_ASSERT_MATCH(PP_PRIVATEDUPLEXMODE_SIMPLEX, Simplex);
+STATIC_ASSERT_MATCH(PP_PRIVATEDUPLEXMODE_SHORT_EDGE, DuplexFlipShortEdge);
+STATIC_ASSERT_MATCH(PP_PRIVATEDUPLEXMODE_LONG_EDGE, DuplexFlipLongEdge);
