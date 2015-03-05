@@ -243,9 +243,6 @@ WebNavigationTabObserver::WebNavigationTabObserver(
       render_view_host_(NULL),
       pending_render_view_host_(NULL) {
   g_tab_observer.Get().insert(TabObserverMap::value_type(web_contents, this));
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
-                 content::NotificationService::AllSources());
 }
 
 WebNavigationTabObserver::~WebNavigationTabObserver() {}
@@ -257,45 +254,8 @@ WebNavigationTabObserver* WebNavigationTabObserver::Get(
   return i == g_tab_observer.Get().end() ? NULL : i->second;
 }
 
-content::RenderViewHost* WebNavigationTabObserver::GetRenderViewHostInProcess(
-    int process_id) const {
-  if (render_view_host_ &&
-      render_view_host_->GetProcess()->GetID() == process_id) {
-    return render_view_host_;
-  }
-  if (pending_render_view_host_ &&
-      pending_render_view_host_->GetProcess()->GetID() == process_id) {
-    return pending_render_view_host_;
-  }
-  return NULL;
-}
-
-void WebNavigationTabObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
-      // The RenderView is technically not yet deleted, but the RenderViewHost
-      // already starts to filter out some IPCs. In order to not get confused,
-      // we consider the RenderView dead already now.
-      RenderViewDeleted(content::Source<content::RenderViewHost>(source).ptr());
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
-}
-
 void WebNavigationTabObserver::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
-  if (render_view_host != render_view_host_ &&
-      render_view_host != pending_render_view_host_) {
-    return;
-  }
   if (navigation_state_.CanSendEvents(render_frame_host) &&
       !navigation_state_.GetNavigationCompleted(render_frame_host)) {
     helpers::DispatchOnErrorOccurred(
@@ -305,22 +265,6 @@ void WebNavigationTabObserver::RenderFrameDeleted(
         net::ERR_ABORTED);
   }
   navigation_state_.FrameDetached(render_frame_host);
-}
-
-void WebNavigationTabObserver::RenderViewDeleted(
-    content::RenderViewHost* render_view_host) {
-  if (render_view_host == render_view_host_) {
-    render_view_host_ = NULL;
-    if (pending_render_view_host_) {
-      render_view_host_ = pending_render_view_host_;
-      pending_render_view_host_ = NULL;
-    }
-  } else if (render_view_host == pending_render_view_host_) {
-    pending_render_view_host_ = NULL;
-  } else {
-    return;
-  }
-  SendErrorEvents(web_contents(), render_view_host, NULL);
 }
 
 void WebNavigationTabObserver::AboutToNavigateRenderFrame(
