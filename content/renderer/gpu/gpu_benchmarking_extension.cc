@@ -407,7 +407,7 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
                                        start_y * page_scale_factor);
   gfx::PointF end_point(end_x * page_scale_factor,
                         end_y * page_scale_factor);
-  gfx::Vector2dF distance = gesture_params->start_point - end_point;
+  gfx::Vector2dF distance = end_point - gesture_params->start_point;
   gesture_params->distances.push_back(distance);
   gesture_params->speed_in_pixels_s = speed_in_pixels_s * page_scale_factor;
   gesture_params->gesture_source_type =
