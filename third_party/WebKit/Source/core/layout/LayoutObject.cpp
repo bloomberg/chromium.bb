@@ -1131,6 +1131,11 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject* pai
     }
 }
 
+GraphicsLayer* LayoutObject::graphicsLayerBackingForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer) const
+{
+    return this == paintInvalidationContainer ? paintInvalidationContainer.layer()->graphicsLayerBacking() : paintInvalidationContainer.layer()->graphicsLayerBackingForScrolling();
+}
+
 void LayoutObject::invalidateDisplayItemClient(DisplayItemClient client) const
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -1138,8 +1143,10 @@ void LayoutObject::invalidateDisplayItemClient(DisplayItemClient client) const
 
     // This is valid because we want to invalidate the client in the display item list of the current graphics layer.
     DisableCompositingQueryAsserts disabler;
-    if (Layer* container = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-        container->graphicsLayerBacking()->displayItemList()->invalidate(client);
+    if (const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation()) {
+        if (GraphicsLayer* backing = graphicsLayerBackingForPaintInvalidation(*paintInvalidationContainer))
+            backing->displayItemList()->invalidate(client);
+    }
 }
 
 void LayoutObject::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
@@ -1153,7 +1160,7 @@ void LayoutObject::invalidateDisplayItemClientsUsingContainer(const LayoutBoxMod
 
     // This is valid because we want to invalidate the client in the display item list of the current graphics layer.
     DisableCompositingQueryAsserts disabler;
-    if (GraphicsLayer* backing = paintInvalidationContainer.layer()->graphicsLayerBacking())
+    if (GraphicsLayer* backing = graphicsLayerBackingForPaintInvalidation(paintInvalidationContainer))
         invalidateDisplayItemClients(backing->displayItemList());
 }
 
