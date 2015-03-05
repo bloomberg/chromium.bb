@@ -570,6 +570,11 @@ chrome_variations::VariationsService* BrowserProcessImpl::variations_service() {
   return GetMetricsServicesManager()->GetVariationsService();
 }
 
+PromoResourceService* BrowserProcessImpl::promo_resource_service() {
+  DCHECK(CalledOnValidThread());
+  return promo_resource_service_.get();
+}
+
 BrowserProcessPlatformPart* BrowserProcessImpl::platform_part() {
   return platform_part_.get();
 }

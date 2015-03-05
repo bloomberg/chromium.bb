@@ -12,12 +12,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "components/web_resource/web_resource_switches.h"
-#include "content/public/browser/notification_service.h"
 #include "url/gurl.h"
 
 namespace {
@@ -100,6 +98,12 @@ PromoResourceService::PromoResourceService()
 PromoResourceService::~PromoResourceService() {
 }
 
+scoped_ptr<PromoResourceService::StateChangedSubscription>
+PromoResourceService::RegisterStateChangedCallback(
+    const base::Closure& closure) {
+  return callback_list_.Add(closure);
+}
+
 void PromoResourceService::ScheduleNotification(
     const NotificationPromo& notification_promo) {
   const double promo_start = notification_promo.StartTimeForGroup();
@@ -161,11 +165,7 @@ void PromoResourceService::PostNotification(int64 delay_ms) {
 }
 
 void PromoResourceService::PromoResourceStateChange() {
-  content::NotificationService* service =
-      content::NotificationService::current();
-  service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
-                  content::Source<WebResourceService>(this),
-                  content::NotificationService::NoDetails());
+  callback_list_.Notify();
 }
 
 void PromoResourceService::Unpack(const base::DictionaryValue& parsed_json) {

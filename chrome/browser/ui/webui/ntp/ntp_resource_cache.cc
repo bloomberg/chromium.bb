@@ -174,6 +174,13 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                  content::NotificationService::AllSources());
 
+  PromoResourceService* promo_service =
+      g_browser_process->promo_resource_service();
+  if (promo_service) {
+    promo_resource_subscription_ = promo_service->RegisterStateChangedCallback(
+        base::Bind(&NTPResourceCache::Invalidate, base::Unretained(this)));
+  }
+
   base::Closure callback = base::Bind(&NTPResourceCache::OnPreferenceChanged,
                                       base::Unretained(this));
 
@@ -275,10 +282,7 @@ void NTPResourceCache::Observe(int type,
   // Invalidate the cache.
   if (chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type ||
       chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED == type) {
-    new_tab_incognito_html_ = NULL;
-    new_tab_html_ = NULL;
-    new_tab_incognito_css_ = NULL;
-    new_tab_css_ = NULL;
+    Invalidate();
   } else {
     NOTREACHED();
   }
@@ -290,6 +294,14 @@ void NTPResourceCache::OnPreferenceChanged() {
   new_tab_incognito_html_ = NULL;
   new_tab_html_ = NULL;
   new_tab_css_ = NULL;
+}
+
+void NTPResourceCache::Invalidate() {
+  new_tab_incognito_html_ = nullptr;
+  new_tab_html_ = nullptr;
+  new_tab_incognito_css_ = nullptr;
+  // TODO(dbeam): Check if it is necessary to clear the CSS on promo changes.
+  new_tab_css_ = nullptr;
 }
 
 void NTPResourceCache::CreateNewTabIncognitoHTML() {

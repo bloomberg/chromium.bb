@@ -86,6 +86,7 @@ class BrowserProcessImpl : public BrowserProcess,
   PrefService* local_state() override;
   net::URLRequestContextGetter* system_request_context() override;
   chrome_variations::VariationsService* variations_service() override;
+  PromoResourceService* promo_resource_service() override;
   BrowserProcessPlatformPart* platform_part() override;
   extensions::EventRouterForwarder* extension_event_router_forwarder() override;
   NotificationUIManager* notification_ui_manager() override;

@@ -154,6 +154,10 @@ chrome_variations::VariationsService*
   return nullptr;
 }
 
+PromoResourceService* TestingBrowserProcess::promo_resource_service() {
+  return nullptr;
+}
+
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
