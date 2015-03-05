@@ -507,6 +507,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode,
 // Dispatch a load event in the iframe element containing this frame.
 IPC_MESSAGE_ROUTED0(FrameMsg_DispatchLoad)
 
+// Notifies the frame that its parent has changed the frame's sandbox flags.
+IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateSandboxFlags, content::SandboxFlags)
+
 #if defined(OS_ANDROID)
 
 // External popup menus.
@@ -642,6 +645,12 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisownOpener)
 // Notifies the browser that a page id was assigned.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAssignPageId,
                     int32 /* page_id */)
+
+// Notifies the browser that sandbox flags have changed for a subframe of this
+// frame.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeSandboxFlags,
+                    int32 /* subframe_routing_id */,
+                    content::SandboxFlags /* updated_flags */)
 
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes. Sent for top-level frames.

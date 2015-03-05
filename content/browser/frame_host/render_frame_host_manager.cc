@@ -445,6 +445,16 @@ void RenderFrameHostManager::ClearNavigationTransitionData() {
 void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {
+  CommitPendingIfNecessary(render_frame_host, was_caused_by_user_gesture);
+
+  // Make sure any dynamic changes to this frame's sandbox flags that were made
+  // prior to navigation take effect.
+  CommitPendingSandboxFlags();
+}
+
+void RenderFrameHostManager::CommitPendingIfNecessary(
+    RenderFrameHostImpl* render_frame_host,
+    bool was_caused_by_user_gesture) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     if (render_frame_host == speculative_render_frame_host_.get()) {
@@ -509,6 +519,27 @@ void RenderFrameHostManager::DidDisownOpener(
   if (pending_render_frame_host_ &&
       pending_render_frame_host_.get() != render_frame_host) {
     pending_render_frame_host_->DisownOpener();
+  }
+}
+
+void RenderFrameHostManager::CommitPendingSandboxFlags() {
+  // Return early if there were no pending sandbox flags updates.
+  if (!frame_tree_node_->CommitPendingSandboxFlags())
+    return;
+
+  // Sandbox flags updates can only happen when the frame has a parent.
+  CHECK(frame_tree_node_->parent());
+
+  // Notify all of the frame's proxies about updated sandbox flags, excluding
+  // the parent process since it already knows the latest flags.
+  SiteInstance* parent_site_instance =
+      frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
+  for (const auto& pair : proxy_hosts_) {
+    if (pair.second->GetSiteInstance() != parent_site_instance) {
+      pair.second->Send(new FrameMsg_DidUpdateSandboxFlags(
+          pair.second->GetRoutingID(),
+          frame_tree_node_->current_replication_state().sandbox_flags));
+    }
   }
 }
 

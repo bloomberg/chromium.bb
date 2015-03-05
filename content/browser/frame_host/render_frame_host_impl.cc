@@ -376,6 +376,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisownOpener, OnDidDisownOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAssignPageId, OnDidAssignPageId)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeSandboxFlags,
+                        OnDidChangeSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeginNavigation,
@@ -686,7 +688,10 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
   if (!new_frame)
     return;
 
+  // Set sandbox flags for the new frame.  The flags are committed immediately,
+  // since they should apply to the initial empty document in the frame.
   new_frame->frame_tree_node()->set_sandbox_flags(sandbox_flags);
+  new_frame->frame_tree_node()->CommitPendingSandboxFlags();
 
   // We know that the RenderFrame has been created in this case, immediately
   // after the CreateChildFrame IPC was sent.
@@ -1198,6 +1203,37 @@ void RenderFrameHostImpl::OnDidAssignPageId(int32 page_id) {
   // Update the RVH's current page ID so that future IPCs from the renderer
   // correspond to the new page.
   render_view_host_->page_id_ = page_id;
+}
+
+void RenderFrameHostImpl::OnDidChangeSandboxFlags(int32 frame_routing_id,
+                                                  SandboxFlags flags) {
+  FrameTree* frame_tree = frame_tree_node()->frame_tree();
+  FrameTreeNode* child =
+      frame_tree->FindByRoutingID(GetProcess()->GetID(), frame_routing_id);
+  if (!child)
+    return;
+
+  // Ensure that a frame can only update sandbox flags for its immediate
+  // children.  If this is not the case, the renderer is considered malicious
+  // and is killed.
+  if (child->parent() != frame_tree_node()) {
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RFH"));
+    GetProcess()->ReceivedBadMessage();
+    return;
+  }
+
+  child->set_sandbox_flags(flags);
+
+  // Notify the RenderFrame if it lives in a different process from its
+  // parent. The frame's proxies in other processes also need to learn about
+  // the updated sandbox flags, but these notifications are sent later in
+  // RenderFrameHostManager::CommitPendingSandboxFlags(), when the frame
+  // navigates and the new sandbox flags take effect.
+  RenderFrameHost* child_rfh = child->current_frame_host();
+  if (child_rfh->GetSiteInstance() != GetSiteInstance()) {
+    child_rfh->Send(
+        new FrameMsg_DidUpdateSandboxFlags(child_rfh->GetRoutingID(), flags));
+  }
 }
 
 void RenderFrameHostImpl::OnUpdateTitle(

@@ -92,9 +92,15 @@ class CONTENT_EXPORT FrameTreeNode {
     replication_state_.origin = origin;
   }
 
+  SandboxFlags effective_sandbox_flags() { return effective_sandbox_flags_; }
+
   void set_sandbox_flags(SandboxFlags sandbox_flags) {
     replication_state_.sandbox_flags = sandbox_flags;
   }
+
+  // Transfer any pending sandbox flags into |effective_sandbox_flags_|, and
+  // return true if the sandbox flags were changed.
+  bool CommitPendingSandboxFlags();
 
   bool HasSameOrigin(const FrameTreeNode& node) const {
     return replication_state_.origin.IsSameAs(node.replication_state_.origin);
@@ -155,6 +161,16 @@ class CONTENT_EXPORT FrameTreeNode {
   // Track information that needs to be replicated to processes that have
   // proxies for this frame.
   FrameReplicationState replication_state_;
+
+  // Track the effective sandbox flags for this frame.  When a parent frame
+  // dynamically updates sandbox flags for a child frame, the child's updated
+  // sandbox flags are stored in replication_state_.sandbox_flags. However, the
+  // update only takes effect on the next frame navigation, so the effective
+  // sandbox flags are tracked separately here.  When enforcing sandbox flags
+  // directives in the browser process, |effective_sandbox_flags_| should be
+  // used.  |effective_sandbox_flags_| is updated with any pending sandbox
+  // flags when a navigation for this frame commits.
+  SandboxFlags effective_sandbox_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

@@ -367,6 +367,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void willClose(blink::WebFrame* frame);
   virtual void didChangeName(blink::WebLocalFrame* frame,
                              const blink::WebString& name);
+  virtual void didChangeSandboxFlags(blink::WebFrame* child_frame,
+                                     blink::WebSandboxFlags flags);
   virtual void didMatchCSS(
       blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
@@ -623,6 +625,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnShowTransitionElements(const std::string& css_selector);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnDisownOpener();
+  void OnDidUpdateSandboxFlags(SandboxFlags flags);
 #if defined(OS_ANDROID)
   void OnSelectPopupMenuItems(bool canceled,
                               const std::vector<int>& selected_indices);

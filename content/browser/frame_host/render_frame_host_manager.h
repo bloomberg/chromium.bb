@@ -553,6 +553,14 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // RenderFrameHost to be the active one.
   void CommitPending();
 
+  // Helper to call CommitPending() in all necessary cases.
+  void CommitPendingIfNecessary(RenderFrameHostImpl* render_frame_host,
+                                bool was_caused_by_user_gesture);
+
+  // Commits any pending sandbox flag updates when the renderer's frame
+  // navigates.
+  void CommitPendingSandboxFlags();
+
   // Runs the unload handler in the old RenderFrameHost, after the new
   // RenderFrameHost has committed.  |old_render_frame_host| will either be
   // deleted or put on the pending delete list during this call.

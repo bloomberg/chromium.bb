@@ -34,7 +34,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                       manager_delegate),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(NULL),
-      replication_state_(name) {
+      replication_state_(name),
+      effective_sandbox_flags_(SandboxFlags::NONE) {
 }
 
 FrameTreeNode::~FrameTreeNode() {
@@ -134,6 +135,13 @@ double FrameTreeNode::GetLoadingProgress() const {
 
   DCHECK(current_frame_host);
   return current_frame_host->loading_progress();
+}
+
+bool FrameTreeNode::CommitPendingSandboxFlags() {
+  bool did_change_flags =
+      effective_sandbox_flags_ != replication_state_.sandbox_flags;
+  effective_sandbox_flags_ = replication_state_.sandbox_flags;
+  return did_change_flags;
 }
 
 }  // namespace content

@@ -581,7 +581,9 @@ void RenderFrameImpl::CreateFrame(
     render_frame = RenderFrameImpl::Create(proxy->render_view(), routing_id);
     web_frame = blink::WebLocalFrame::create(render_frame);
     render_frame->proxy_routing_id_ = proxy_routing_id;
-    web_frame->initializeToReplaceRemoteFrame(proxy->web_frame());
+    web_frame->initializeToReplaceRemoteFrame(
+        proxy->web_frame(), WebString::fromUTF8(replicated_state.name),
+        ContentToWebSandboxFlags(replicated_state.sandbox_flags));
   }
   render_frame->SetWebFrame(web_frame);
 
@@ -1018,6 +1020,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
+    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
@@ -1536,6 +1539,10 @@ void RenderFrameImpl::OnDisownOpener() {
 
   if (frame_->opener())
     frame_->setOpener(NULL);
+}
+
+void RenderFrameImpl::OnDidUpdateSandboxFlags(SandboxFlags flags) {
+  frame_->setFrameOwnerSandboxFlags(ContentToWebSandboxFlags(flags));
 }
 
 #if defined(OS_ANDROID)
@@ -2123,6 +2130,21 @@ void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
     return;
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeName(name));
+}
+
+void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
+                                            blink::WebSandboxFlags flags) {
+  int frame_routing_id = MSG_ROUTING_NONE;
+  if (child_frame->isWebRemoteFrame()) {
+    frame_routing_id =
+        RenderFrameProxy::FromWebFrame(child_frame)->routing_id();
+  } else {
+    frame_routing_id =
+        RenderFrameImpl::FromWebFrame(child_frame)->GetRoutingID();
+  }
+
+  Send(new FrameHostMsg_DidChangeSandboxFlags(routing_id_, frame_routing_id,
+                                              WebToContentSandboxFlags(flags)));
 }
 
 void RenderFrameImpl::didMatchCSS(
