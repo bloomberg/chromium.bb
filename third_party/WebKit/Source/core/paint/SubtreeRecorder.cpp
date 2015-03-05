@@ -48,7 +48,8 @@ void SubtreeRecorder::begin()
 void SubtreeRecorder::addDisplayItem(PassOwnPtr<DisplayItem> displayItem)
 {
 #ifndef NDEBUG
-    displayItem->setClientDebugString(String::format("subtreeRoot: \"%p %s\"", &m_subtreeRoot, m_subtreeRoot.debugName().utf8().data()));
+    displayItem->setClientDebugString(String::format("subtreeRoot: \"%p %s\"", &m_subtreeRoot,
+        m_subtreeRoot.debugName().utf8().data()));
 #endif
     m_displayItemList->add(displayItem);
 }

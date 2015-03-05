@@ -247,19 +247,6 @@ LayoutObject::~LayoutObject()
     --s_instanceCount;
 }
 
-String LayoutObject::debugName() const
-{
-    StringBuilder name;
-    name.append(this->name());
-
-    if (Node* node = this->node()) {
-        name.append(' ');
-        name.append(node->debugName());
-    }
-
-    return name.toString();
-}
-
 bool LayoutObject::isDescendantOf(const LayoutObject* obj) const
 {
     for (const LayoutObject* r = this; r; r = r->m_parent) {
@@ -1065,6 +1052,25 @@ const LayoutBoxModelObject* LayoutObject::adjustCompositedContainerForSpecialAnc
     return layoutView;
 }
 
+String LayoutObject::decoratedName() const
+{
+    StringBuilder name;
+    name.append(this->name());
+    return name.toString();
+}
+
+String LayoutObject::debugName() const
+{
+    StringBuilder name;
+    name.append(decoratedName());
+
+    if (const Node* node = this->node()) {
+        name.append(' ');
+        name.append(node->debugName());
+    }
+    return name.toString();
+}
+
 bool LayoutObject::isPaintInvalidationContainer() const
 {
     return hasLayer() && toLayoutBoxModelObject(this)->layer()->isPaintInvalidationContainer();
@@ -1463,7 +1469,7 @@ void LayoutObject::showLayoutObject() const
 
 void LayoutObject::showLayoutObject(int printedCharacters) const
 {
-    printedCharacters += fprintf(stderr, "%s %p", name(), this);
+    printedCharacters += fprintf(stderr, "%s %p", decoratedName().ascii().data(), this);
 
     if (isText() && toLayoutText(this)->isTextFragment())
         printedCharacters += fprintf(stderr, " \"%s\" ", toLayoutText(this)->text().ascii().data());

@@ -35,7 +35,8 @@ RenderDrawingRecorder::~RenderDrawingRecorder()
         return;
 
 #ifndef NDEBUG
-    m_drawingRecorder.setClientDebugString(String::format("renderer: \"%p %s\"", &m_renderer, m_renderer.debugName().utf8().data()));
+    m_drawingRecorder.setClientDebugString(String::format("renderer: \"%p %s\"", &m_renderer,
+        m_renderer.debugName().utf8().data()));
 #endif
 }
 

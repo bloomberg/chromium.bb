@@ -18,7 +18,7 @@ TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle)
 {
     LayoutObject* obj = LayoutBlockFlow::createAnonymous(&document());
     EXPECT_FALSE(obj->style());
-    EXPECT_STREQ("LayoutBlockFlow (generated)", obj->name());
+    EXPECT_STREQ("LayoutBlockFlow (generated)", obj->decoratedName().ascii().data());
     obj->destroy();
 }
 

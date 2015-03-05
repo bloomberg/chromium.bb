@@ -138,10 +138,16 @@ public:
     explicit LayoutObject(Node*);
     virtual ~LayoutObject();
 
+    // Note: This will soon just return the name of the object; Fix comment when crbug.com/463967 is done.
     // Returns the decorated name used by run-layout-tests. The name contains the name of the object
-    // along with extra information about the positioning.
+    // along with extra information about the layout object state (e.g. positioning).
     virtual const char* name() const = 0;
 
+    // Returns the decorated name used by run-layout-tests. The name contains the name of the object
+    // along with extra information about the layout object state (e.g. positioning).
+    String decoratedName() const;
+
+    // Returns the decorated name along with the debug information from the associated Node object.
     String debugName() const;
 
     LayoutObject* parent() const { return m_parent; }

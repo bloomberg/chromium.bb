@@ -177,9 +177,8 @@ Layer::~Layer()
 
 String Layer::debugName() const
 {
-    if (isReflection()) {
+    if (isReflection())
         return renderer()->parent()->debugName() + " (reflection)";
-    }
     return renderer()->debugName();
 }
 

@@ -141,7 +141,10 @@ void LayoutGeometryMap::dumpSteps() const
 {
     fprintf(stderr, "LayoutGeometryMap::dumpSteps accumulatedOffset=%d,%d\n", m_accumulatedOffset.width().toInt(), m_accumulatedOffset.height().toInt());
     for (int i = m_mapping.size() - 1; i >= 0; --i) {
-        fprintf(stderr, " [%d] %s: offset=%d,%d", i, m_mapping[i].m_renderer->debugName().ascii().data(), m_mapping[i].m_offset.width().toInt(), m_mapping[i].m_offset.height().toInt());
+        fprintf(stderr, " [%d] %s: offset=%d,%d", i,
+            m_mapping[i].m_renderer->debugName().ascii().data(),
+            m_mapping[i].m_offset.width().toInt(),
+            m_mapping[i].m_offset.height().toInt());
         if (m_mapping[i].m_hasTransform)
             fprintf(stderr, " hasTransform");
         fprintf(stderr, "\n");

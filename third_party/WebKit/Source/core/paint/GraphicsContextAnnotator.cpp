@@ -98,7 +98,7 @@ void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const Layout
     Element* element = object->node() && object->node()->isElementNode() ? toElement(object->node()) : 0;
 
     if (mode & AnnotateRendererName)
-        annotations.append(std::make_pair(AnnotationKeyRendererName, object->name()));
+        annotations.append(std::make_pair(AnnotationKeyRendererName, object->decoratedName()));
 
     if (mode & AnnotatePaintPhase)
         annotations.append(std::make_pair(AnnotationKeyPaintPhase, paintPhaseName(paintInfo.phase)));

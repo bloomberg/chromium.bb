@@ -163,7 +163,7 @@ TextStream& operator<<(TextStream& ts, const Color& c)
 
 void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, LayoutAsTextBehavior behavior)
 {
-    ts << o.name();
+    ts << o.decoratedName();
 
     if (behavior & LayoutAsTextShowAddresses)
         ts << " " << static_cast<const void*>(&o);
