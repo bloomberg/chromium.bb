@@ -178,3 +178,6 @@ use_gconf = is_linux && !is_chromeos
 # For official GYP builds, this flag is set, it will likely need to be
 # parameterized in the future for a similar use.
 enable_hangout_services_extension = false
+
+# Whether to back up data before sync.
+enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)

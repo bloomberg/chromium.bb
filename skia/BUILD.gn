@@ -139,7 +139,10 @@ config("skia_config") {
   defines += []
 
   if (component_mode == "shared_library") {
-    defines += [ "SKIA_DLL" ]
+    defines += [
+      "SKIA_DLL",
+      "GR_GL_IGNORE_ES3_MSAA=0",
+    ]
   }
 
   if (skia_support_gpu) {
@@ -244,7 +247,12 @@ config("skia_library_config") {
       "//third_party/skia/src/utils/win",
     ]
 
-    defines += [ "SK_FONTHOST_USES_FONTMGR" ]
+    defines += [
+      # On windows, GDI handles are a scarse system-wide resource so we have to
+      # keep the glyph cache, which holds up to 4 GDI handles per entry, to a
+      # fairly small size. http://crbug.com/314387
+      "SK_DEFAULT_FONT_CACHE_COUNT_LIMIT=256",
+    ]
 
     cflags = [
       "/wd4244",  # conversion from 'type1( __int64)' to 'type2 (unsigned int)'
@@ -255,6 +263,7 @@ config("skia_library_config") {
       "/wd4554",  # 'operator' : check operator precedence for possible error
       "/wd4748",  # compiler will disable optimizations if a function has inline
                   # assembly code contains flow control(jmp or jcc) statements.
+
       "/wd4800",  # forcing value to bool 'true/false'(assigning int to bool).
     ]
   }
@@ -498,14 +507,6 @@ component("skia") {
     "//base/third_party/dynamic_annotations",
     "//third_party/zlib",
   ]
-
-  if (is_win) {
-    configs -= [
-      # Some files define WIN32_LEAN_AND_MEAN and we want to avoid a duplicate
-      # definition warning.
-      "//build/config/win:lean_and_mean",
-    ]
-  }
 
   if (is_linux) {
     configs += [

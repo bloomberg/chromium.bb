@@ -17,6 +17,9 @@ config("sdk") {
     "PSAPI_VERSION=1",
     "WIN32",
     "_SECURE_ATL",
+
+    # This is required for ATL to use XP-safe versions of its functions.
+    "_USING_V110_SDK71_",
   ]
 }
 

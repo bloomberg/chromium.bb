@@ -100,10 +100,6 @@ config("compiler") {
       "/GS",  # Enable buffer security checking.
       "/FS",  # Preserve previous PDB behavior.
     ]
-    if (is_component_build) {
-      cflags += [ "/EHsc" ]  # Assume C functions can't throw exceptions and don't catch
-                             # structured exceptions (only C++ ones).
-    }
   } else {
     # Common GCC compiler flags setup.
     # --------------------------------
@@ -534,9 +530,6 @@ config("runtime_library") {
   } else {
     # Static CRT.
     if (is_win) {
-      # We don't use exceptions, and when we link statically we can just get
-      # rid of them entirely.
-      defines += [ "_HAS_EXCEPTIONS=0" ]
       if (is_debug) {
         cflags += [ "/MTd" ]
       } else {
@@ -548,10 +541,9 @@ config("runtime_library") {
   if (is_win) {
     defines += [
       "__STD_C",
-      "__STDC_CONSTANT_MACROS",
-      "__STDC_FORMAT_MACROS",
       "_CRT_RAND_S",
       "_CRT_SECURE_NO_DEPRECATE",
+      "_HAS_EXCEPTIONS=0",
       "_SCL_SECURE_NO_DEPRECATE",
     ]
   }

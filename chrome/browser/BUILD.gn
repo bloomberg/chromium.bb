@@ -337,7 +337,6 @@ static_library("browser") {
     if (!use_aura || is_win || is_chromeos) {
       sources -= [ "background/background_mode_manager_aura.cc" ]
     }
-    defines += [ "ENABLE_BACKGROUND=1" ]
   }
   if (enable_task_manager) {
     sources += rebase_path(gypi_values.chrome_browser_task_manager_sources,

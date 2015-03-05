@@ -183,10 +183,6 @@ source_set("test_support") {
     deps += [ "//ui/views:test_support" ]
   }
 
-  if (enable_background) {
-    defines += [ "ENABLE_BACKGROUND=1" ]
-  }
-
   if (enable_extensions) {
     deps += [
       "//chrome/common/extensions/api",
