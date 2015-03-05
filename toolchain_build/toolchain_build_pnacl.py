@@ -991,7 +991,7 @@ def GetUploadPackageTargets():
   # Unsandboxed target IRT libraries
   for os_name in ('linux', 'mac'):
     legal_triple = pynacl.gsd_storage.LegalizeName('x86-32-' + os_name)
-    host_packages[os_name].append('unsandboxed_irt_%s' % legal_triple)
+    host_packages[os_name].append('unsandboxed_runtime_%s' % legal_triple)
 
   for os_name, os_packages in host_packages.iteritems():
     package_target = '%s_x86' % pynacl.platform.GetOS(os_name)
@@ -1114,9 +1114,9 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.SDKCompiler(
                       ['le32'] + DIRECT_TO_NACL_ARCHES))
       packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical))
-      unsandboxed_irt_canonical = is_canonical or pynacl.platform.IsMac()
-      packages.update(pnacl_targetlibs.UnsandboxedIRT(
-          'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_irt_canonical))
+      unsandboxed_runtime_canonical = is_canonical or pynacl.platform.IsMac()
+      packages.update(pnacl_targetlibs.UnsandboxedRuntime(
+          'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_runtime_canonical))
 
     if args.build_sbtc and not args.pnacl_in_pnacl:
       packages.update(pnacl_sandboxed_translator.SandboxedTranslators(

@@ -575,6 +575,43 @@ def TargetLibs(bias_arch, is_canonical):
   return libs
 
 
+def SubzeroRuntimeCommands(arch, out_dir):
+  """Returns a list of commands to build the Subzero runtime.
+
+  When the commands are executed, temporary files are created in the current
+  directory, and .o files are created in the out_dir directory.  If arch isn't
+  among a whitelist, an empty list of commands is returned.
+  """
+  # LlcArchArgs contains arguments extracted from pnacl-translate.py.
+  if arch == 'x86-32-linux':
+    LlcArchArgs = [ '-mtriple=i686-linux-gnu', '-mcpu=pentium4m']
+  elif arch == 'x86-32':
+    LlcArchArgs = [ '-mtriple=i686-none-nacl-gnu', '-mcpu=pentium4m']
+  else:
+    return []
+  return [
+    command.Command([
+        PnaclTool('clang'), '-O2',
+        '-c', command.path.join('%(subzero_src)s', 'runtime', 'szrt.c'),
+        '-o', 'szrt.tmp.bc']),
+    command.Command([
+        PnaclTool('opt'), '-pnacl-abi-simplify-preopt',
+        '-pnacl-abi-simplify-postopt', '-pnaclabi-allow-debug-metadata',
+        'szrt.tmp.bc', '-S', '-o', 'szrt.ll']),
+    command.Command([
+        PnaclTool('llc'), '-externalize', '-function-sections', '-O2',
+        '-filetype=obj', '-bitcode-format=llvm',
+        '-o', os.path.join(out_dir, 'szrt.o'),
+        'szrt.ll'] +
+        LlcArchArgs),
+    command.Command([
+        PnaclTool('llc'), '-externalize', '-function-sections', '-O2',
+        '-filetype=obj', '-bitcode-format=llvm',
+        '-o', os.path.join(out_dir, 'szrt_ll.o'),
+        command.path.join('%(subzero_src)s', 'runtime', 'szrt_ll.ll')] +
+        LlcArchArgs),
+    ]
+
 def TranslatorLibs(arch, is_canonical):
   setjmp_arch = arch
   if setjmp_arch.endswith('-nonsfi'):
@@ -600,7 +637,7 @@ def TranslatorLibs(arch, is_canonical):
       GSDJoin('libs_support_translator', arch): {
           'type': TargetLibBuildType(is_canonical),
           'output_subdir': translator_lib_dir,
-          'dependencies': [ 'newlib_src', 'newlib_le32',
+          'dependencies': [ 'newlib_src', 'newlib_le32', 'subzero_src',
                             'target_lib_compiler'],
           # These libs include
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
@@ -609,7 +646,7 @@ def TranslatorLibs(arch, is_canonical):
                       'newlib_subset': os.path.join(
                           NACL_DIR, 'src', 'third_party',
                           'pnacl_native_newlib_subset')},
-          'commands': [
+          'commands': SubzeroRuntimeCommands(arch, '.') + [
               BuildTargetTranslatorCmd('crtbegin.c', 'crtbegin.o', arch,
                                        output_dir='%(output)s'),
               BuildTargetTranslatorCmd('crtbegin.c', 'crtbegin_for_eh.o', arch,
@@ -702,11 +739,12 @@ def TranslatorLibs(arch, is_canonical):
     })
   return libs
 
-def UnsandboxedIRT(arch, is_canonical):
+def UnsandboxedRuntime(arch, is_canonical):
   libs = {
-      GSDJoin('unsandboxed_irt', arch): {
+      GSDJoin('unsandboxed_runtime', arch): {
           'type': TargetLibBuildType(is_canonical),
           'output_subdir': os.path.join('translator', arch, 'lib'),
+          'dependencies': [ 'subzero_src', 'target_lib_compiler'],
           # This lib #includes
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
           'inputs': { 'support': os.path.join(NACL_DIR, 'src', 'nonsfi', 'irt'),
@@ -735,7 +773,7 @@ def UnsandboxedIRT(arch, is_canonical):
                   '-I%(top_srcdir)s/..',
                   '-c', command.path.join('%(untrusted)s', 'irt_query_list.c'),
                   '-o', command.path.join('%(output)s', 'irt_query_list.o')]),
-          ],
+          ] + SubzeroRuntimeCommands(arch, '%(output)s'),
       },
   }
   return libs
