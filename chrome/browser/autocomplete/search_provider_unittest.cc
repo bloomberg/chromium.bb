@@ -73,7 +73,7 @@ class SearchProviderForTest : public SearchProvider {
   SearchProviderForTest(AutocompleteProviderListener* listener,
                         TemplateURLService* template_url_service,
                         Profile* profile);
-  bool is_success() { return is_success_; };
+  bool is_success() { return is_success_; }
 
  protected:
   ~SearchProviderForTest() override;

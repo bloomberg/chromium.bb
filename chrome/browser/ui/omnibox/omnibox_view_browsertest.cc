@@ -1370,7 +1370,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_TabTraverseResultsTest) {
 
 // http://crbug.com/133347
 #if defined(OS_LINUX)
-#define MAYBE_PersistKeywordModeOnTabSwitch DISABLED_PersistKeywordModeOnTabSwitch
+#define MAYBE_PersistKeywordModeOnTabSwitch \
+    DISABLED_PersistKeywordModeOnTabSwitch
 #else
 #define MAYBE_PersistKeywordModeOnTabSwitch PersistKeywordModeOnTabSwitch
 #endif
@@ -1405,9 +1406,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 
 // http://crbug.com/133355
 #if defined(OS_LINUX)
-#define MAYBE_CtrlKeyPressedWithInlineAutocompleteTest DISABLED_CtrlKeyPressedWithInlineAutocompleteTest
+#define MAYBE_CtrlKeyPressedWithInlineAutocompleteTest \
+    DISABLED_CtrlKeyPressedWithInlineAutocompleteTest
 #else
-#define MAYBE_CtrlKeyPressedWithInlineAutocompleteTest CtrlKeyPressedWithInlineAutocompleteTest
+#define MAYBE_CtrlKeyPressedWithInlineAutocompleteTest \
+    CtrlKeyPressedWithInlineAutocompleteTest
 #endif
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
