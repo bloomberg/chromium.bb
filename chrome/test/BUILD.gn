@@ -490,108 +490,100 @@ if (!is_android) {
     }
   }
 
-  # TODO(GYP) when v8's GN build supports "//v8:d8" then enable the code
-  # controlled by this flag (and the flg itself can be deleted).
-  has_d8_definition = false
+  template("js2webui") {
+    action_name = target_name + "_action"
+    source_set_name = target_name
 
-  if (has_d8_definition) {
-    template("js2webui") {
-      action_name = target_name + "_action"
-      source_set_name = target_name
+    action_foreach(action_name) {
+      testonly = true
+      visibility = [ ":$source_set_name" ]
+      script = "//tools/gypv8sh.py"
 
-      action_foreach(action_name) {
-        testonly = true
-        visibility = [ ":$source_set_name" ]
-        script = "//tools/gypv8sh.py"
+      sources = invoker.sources
 
-        sources = invoker.sources
-
-        d8_path =
-            get_label_info("//v8:d8($host_toolchain)", "root_out_dir") + "/d8"
-        if (is_win) {
-          d8_path += ".exe"
-        }
-
-        input_js = [
-          "//chrome/third_party/mock4js/mock4js.js",
-          "//chrome/test/data/webui/test_api.js",
-          "//chrome/test/base/js2gtest.js",
-        ]
-        inputs = [ d8_path ] + input_js
-
-        outputs = [
-          "$target_gen_dir/{{source_name_part}}-gen.cc",
-          "$root_out_dir/test_data/chrome/{{source_root_relative_dir}}/{{source_file_part}}",
-        ]
-
-        args = [
-          # Need "./" for script to find binary (cur dir is not on path).
-          "./" + rebase_path(d8_path, root_build_dir),
-        ]
-        args += rebase_path(input_js, root_build_dir) + [ "webui" ]
-        if (v8_use_external_startup_data) {
-          args += [ "--external=y" ]
-        } else {
-          args += [ "--external=n" ]
-        }
-        args += [
-          "{{source}}",
-          "{{source_root_relative_dir}}/{{source_file_part}}",
-        ]
-        args += rebase_path(outputs, root_build_dir)
-
-        deps = [
-          "//v8:d8($host_toolchain)",
-        ]
+      d8_path =
+          get_label_info("//v8:d8($host_toolchain)", "root_out_dir") + "/d8"
+      if (is_win) {
+        d8_path += ".exe"
       }
 
-      source_set(source_set_name) {
-        testonly = true
-        if (defined(invoker.visibility)) {
-          visibility = invoker.visibility
-        }
-        sources = get_target_outputs(":$action_name")
-        defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-        deps = [
-          ":$action_name",
+      input_js = [
+        "//chrome/third_party/mock4js/mock4js.js",
+        "//chrome/test/data/webui/test_api.js",
+        "//chrome/test/base/js2gtest.js",
+      ]
+      inputs = [ d8_path ] + input_js
 
-          # The generator implicitly makes includes from these targets.
-          "//testing/gmock",
-          "//testing/gtest",
-          "//url",
-        ]
-        if (defined(invoker.deps)) {
-          deps += invoker.deps
-        }
-      }
-    }
+      outputs = [
+        "$target_gen_dir/{{source_name_part}}-gen.cc",
+        "$root_out_dir/test_data/chrome/{{source_root_relative_dir}}/{{source_file_part}}",
+      ]
 
-    js2webui("browser_tests_js_webui") {
-      sources = rebase_path(
-              chrome_tests_gypi_values.chrome_browser_tests_webui_js_sources,
-              ".",
-              "//chrome")
-      if (is_chrome_branded) {
-        # crbug.com/230471
-        sources -= [ "data/webui/accessibility_audit_browsertest.js" ]
+      args = [
+        # Need "./" for script to find binary (cur dir is not on path).
+        "./" + rebase_path(d8_path, root_build_dir),
+      ]
+      args += rebase_path(input_js, root_build_dir) + [ "webui" ]
+      if (v8_use_external_startup_data) {
+        args += [ "--external=y" ]
+      } else {
+        args += [ "--external=n" ]
       }
-      if (!is_chromeos) {
-        sources -= [
-          "data/webui/certificate_viewer_dialog_test.js",
-          "test/data/chromeos/oobe_webui_browsertest.js",
-        ]
-      }
-      if (!enable_app_list) {
-        sources -= [ "../browser/ui/webui/app_list/start_page_browsertest.js" ]
-      }
-      if (!enable_supervised_users) {
-        sources -=
-            [ "../browser/ui/webui/downloads_ui_supervised_browsertest.js" ]
-      }
+      args += [
+        "{{source}}",
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+      ]
+      args += rebase_path(outputs, root_build_dir)
+
       deps = [
-        "//skia",
+        "//v8:d8($host_toolchain)",
       ]
     }
+
+    source_set(source_set_name) {
+      testonly = true
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
+      sources = get_target_outputs(":$action_name")
+      defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+      deps = [
+        ":$action_name",
+
+        # The generator implicitly makes includes from these targets.
+        "//testing/gmock",
+        "//testing/gtest",
+        "//url",
+      ]
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
+    }
+  }
+
+  js2webui("browser_tests_js_webui") {
+    sources = rebase_path(
+            chrome_tests_gypi_values.chrome_browser_tests_webui_js_sources,
+            ".",
+            "//chrome")
+    if (is_chrome_branded) {
+      # crbug.com/230471
+      sources -= [ "data/webui/accessibility_audit_browsertest.js" ]
+    }
+    if (!is_chromeos) {
+      sources -= [ "data/webui/certificate_viewer_dialog_test.js" ]
+    }
+    if (!enable_app_list) {
+      sources -= [ "../browser/ui/webui/app_list/start_page_browsertest.js" ]
+    }
+    if (!enable_supervised_users) {
+      sources -=
+          [ "../browser/ui/webui/downloads_ui_supervised_browsertest.js" ]
+    }
+    deps = [
+      "//chrome/browser/ui",
+      "//skia",
+    ]
   }
 
   test("browser_tests") {
@@ -608,6 +600,7 @@ if (!is_android) {
             "//chrome")
 
     deps = [
+      ":browser_tests_js_webui",
       ":sync_integration_test_support",
       ":test_support",
       "//base",
@@ -620,6 +613,7 @@ if (!is_android) {
       "//chrome:resources",
       "//chrome:strings",
       "//chrome/browser",
+      "//chrome/browser/resources:extension_resource_demo",
       "//chrome/common/extensions/api",
       "//chrome/renderer",
       "//components/autofill/content/browser:risk_proto",
@@ -662,9 +656,6 @@ if (!is_android) {
       "//ui/web_dialogs:test_support",
       "//v8",
     ]
-    if (has_d8_definition) {
-      deps += [ ":browser_tests_js_webui" ]
-    }
 
     # Runtime dependencies
     data_deps = [

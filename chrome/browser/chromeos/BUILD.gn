@@ -10,7 +10,7 @@ import("//third_party/protobuf/proto_library.gni")
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("../../chrome_browser_chromeos.gypi") ],
                           "scope",
-                          [ "chrome_browser_chromeos.gypi" ])
+                          [ "../../chrome_browser_chromeos.gypi" ])
 
 source_set("chromeos") {
   assert(enable_extensions, "ChromeOS Chrome has to be built with extensions")

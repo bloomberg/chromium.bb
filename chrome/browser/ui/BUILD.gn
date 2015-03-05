@@ -30,6 +30,7 @@ static_library("ui") {
   # browser, then we can clean up these dependencies.
   public_deps = [
     "//components/dom_distiller/core",
+    "//content/public/browser",
     "//sync",
   ]
   deps = [
@@ -55,7 +56,6 @@ static_library("ui") {
     "//components/resources",
     "//components/strings",
     "//components/update_client",
-    "//content/public/browser",
     "//content/public/common",
     "//crypto",
     "//skia",
