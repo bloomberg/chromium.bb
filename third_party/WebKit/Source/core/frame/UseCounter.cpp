@@ -492,7 +492,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyJustifyItems: return 455;
     case CSSPropertyScrollBlocksOn: return 456;
     case CSSPropertyMotionPath: return 457;
-    case CSSPropertyMotionPosition: return 458;
+    case CSSPropertyMotionOffset: return 458;
     case CSSPropertyMotionRotation: return 459;
     case CSSPropertyMotion: return 460;
     case CSSPropertyX: return 461;

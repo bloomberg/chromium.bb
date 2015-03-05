@@ -1,0 +1,28 @@
+CSS Animations:
+PASS: motion-offset from [10px] to [50px] was [0px] at -0.3
+PASS: motion-offset from [10px] to [50px] was [10px] at 0
+PASS: motion-offset from [10px] to [50px] was [22px] at 0.3
+PASS: motion-offset from [10px] to [50px] was [34px] at 0.6
+PASS: motion-offset from [10px] to [50px] was [50px] at 1
+PASS: motion-offset from [10px] to [50px] was [70px] at 1.5
+PASS: motion-offset from [10px] to [100%] was [calc(13px + -30%)] at -0.3
+PASS: motion-offset from [10px] to [100%] was [10px] at 0
+PASS: motion-offset from [10px] to [100%] was [calc(7px + 30%)] at 0.3
+PASS: motion-offset from [10px] to [100%] was [calc(4px + 60%)] at 0.6
+PASS: motion-offset from [10px] to [100%] was [100%] at 1
+PASS: motion-offset from [10px] to [100%] was [calc(-5px + 150%)] at 1.5
+
+Web Animations API:
+PASS: motionOffset from [10px] to [50px] was [0px] at -0.3
+PASS: motionOffset from [10px] to [50px] was [10px] at 0
+PASS: motionOffset from [10px] to [50px] was [22px] at 0.3
+PASS: motionOffset from [10px] to [50px] was [34px] at 0.6
+PASS: motionOffset from [10px] to [50px] was [50px] at 1
+PASS: motionOffset from [10px] to [50px] was [70px] at 1.5
+PASS: motionOffset from [10px] to [100%] was [calc(13px + -30%)] at -0.3
+PASS: motionOffset from [10px] to [100%] was [10px] at 0
+PASS: motionOffset from [10px] to [100%] was [calc(7px + 30%)] at 0.3
+PASS: motionOffset from [10px] to [100%] was [calc(4px + 60%)] at 0.6
+PASS: motionOffset from [10px] to [100%] was [100%] at 1
+PASS: motionOffset from [10px] to [100%] was [calc(-5px + 150%)] at 1.5
+

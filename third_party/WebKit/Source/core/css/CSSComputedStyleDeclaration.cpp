@@ -482,7 +482,7 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<LayoutStyle> 
     case CSSPropertyTransformOrigin:
     case CSSPropertyWebkitTransformOrigin:
     case CSSPropertyMotionPath:
-    case CSSPropertyMotionPosition:
+    case CSSPropertyMotionOffset:
     case CSSPropertyMotionRotation:
     case CSSPropertyWidth:
     case CSSPropertyWebkitFilter:

@@ -830,7 +830,7 @@ public:
 
     StyleMotionPath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
     bool hasMotionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path; }
-    const Length& motionPosition() const { return rareNonInheritedData->m_transform->m_motion.m_position; }
+    const Length& motionOffset() const { return rareNonInheritedData->m_transform->m_motion.m_offset; }
     float motionRotation() const { return rareNonInheritedData->m_transform->m_motion.m_rotation; }
     MotionRotationType motionRotationType() const { return rareNonInheritedData->m_transform->m_motion.m_rotationType; }
 
@@ -1299,7 +1299,7 @@ public:
 
     void setMotionPath(PassRefPtr<StyleMotionPath>);
     void resetMotionPath();
-    void setMotionPosition(const Length& motionPosition) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_position, motionPosition); }
+    void setMotionOffset(const Length& motionOffset) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_offset, motionOffset); }
     void setMotionRotation(float motionRotation) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_rotation, motionRotation); }
     void setMotionRotationType(MotionRotationType motionRotationType) { SET_VAR(rareNonInheritedData.access()->m_transform, m_motion.m_rotationType, motionRotationType); }
 
@@ -1603,7 +1603,7 @@ public:
     static EPointerEvents initialPointerEvents() { return PE_AUTO; }
     static ETransformStyle3D initialTransformStyle3D() { return TransformStyle3DFlat; }
     static const StyleMotionPath* initialMotionPath() { return nullptr; }
-    static Length initialMotionPosition() { return Length(0, Fixed); }
+    static Length initialMotionOffset() { return Length(0, Fixed); }
     static float initialMotionRotation() { return 0; }
     static MotionRotationType initialMotionRotationType() { return MotionRotationAuto; }
     static EBackfaceVisibility initialBackfaceVisibility() { return BackfaceVisibilityVisible; }

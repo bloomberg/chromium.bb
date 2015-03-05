@@ -286,7 +286,7 @@ String StylePropertySerializer::asText() const
             shorthandPropertyID = CSSPropertyMargin;
             break;
         case CSSPropertyMotionPath:
-        case CSSPropertyMotionPosition:
+        case CSSPropertyMotionOffset:
         case CSSPropertyMotionRotation:
             shorthandPropertyID = CSSPropertyMotion;
             break;

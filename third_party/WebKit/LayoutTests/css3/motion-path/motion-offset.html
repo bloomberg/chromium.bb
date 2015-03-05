@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+#div2 {
+    motion-offset: 0;
+}
+#div3 {
+    motion-offset: 100px;
+}
+#div4 {
+    motion-offset: -200px;
+}
+#div5 {
+    motion-offset: 50%;
+}
+#div6 {
+    motion-offset: inherit;
+}
+</style>
+</head>
+<body>
+<div id="div1"></div>
+<div id="div2"></div>
+<div id="div3"></div>
+<div id="div4"></div>
+<div id="div5">
+    <div id="div6"></div>
+    <div id="div7"></div>
+</div>
+<span id="span1" style="motion-offset: 25%"></span>
+<script>
+"use strict";
+
+test(function() {
+    assert_equals(getComputedStyle(div1, null).motionOffset, '0px');
+}, 'motion-offset default is 0px');
+
+test(function() {
+    assert_equals(getComputedStyle(div2, null).motionOffset, '0px');
+}, 'motion-offset 0 is 0px');
+
+test(function() {
+    assert_equals(getComputedStyle(div3, null).motionOffset, '100px');
+}, 'motion-offset can be positive');
+
+test(function() {
+    assert_equals(getComputedStyle(div4, null).motionOffset, '0px');
+}, 'motion-offset does not allow negative values');
+
+test(function() {
+    assert_equals(getComputedStyle(div5, null).motionOffset, '50%');
+}, 'motion-offset can be a percentage');
+
+test(function() {
+    assert_equals(getComputedStyle(div6, null).motionOffset, '50%');
+}, 'motion-offset can be explicitly inherited');
+
+test(function() {
+    assert_equals(getComputedStyle(div7, null).motionOffset, '0px');
+}, 'motion-offset is not inherited by default');
+
+test(function() {
+    assert_equals(span1.style.motionOffset, '25%');
+}, 'motion-offset style can be set inline');
+
+</script>
+</body>
+</html>

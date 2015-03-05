@@ -210,8 +210,8 @@ max-width animatable, initial=initialMaxSize, converter=convertLengthMaxSizing
 min-height animatable, initial=initialMinSize, converter=convertLengthSizing
 min-width animatable, initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode runtime_flag=CSSCompositing, type_name=blink::WebBlendMode, name_for_methods=BlendMode
+motion-offset runtime_flag=CSSMotionPath, animatable, converter=convertLength
 motion-path runtime_flag=CSSMotionPath, custom_all
-motion-position runtime_flag=CSSMotionPath, animatable, converter=convertLength
 motion-rotation runtime_flag=CSSMotionPath, animatable, custom_all
 object-fit type_name=ObjectFit
 object-position animatable, converter=convertObjectPosition
@@ -476,7 +476,7 @@ grid-template runtime_flag=CSSGridLayout, longhands=grid-template-columns;grid-t
 list-style longhands=list-style-type;list-style-position;list-style-image
 margin longhands=margin-top;margin-right;margin-bottom;margin-left
 marker longhands=marker-start;marker-mid;marker-end
-motion runtime_flag=CSSMotionPath, longhands=motion-path;motion-position;motion-rotation
+motion runtime_flag=CSSMotionPath, longhands=motion-path;motion-offset;motion-rotation
 outline longhands=outline-color;outline-style;outline-width
 overflow longhands=overflow-x;overflow-y
 padding longhands=padding-top;padding-right;padding-bottom;padding-left

@@ -29,7 +29,7 @@ namespace blink {
 StyleTransformData::StyleTransformData()
     : m_operations(LayoutStyle::initialTransform())
     , m_origin(LayoutStyle::initialTransformOrigin())
-    , m_motion(nullptr, LayoutStyle::initialMotionPosition(), LayoutStyle::initialMotionRotation(), LayoutStyle::initialMotionRotationType())
+    , m_motion(nullptr, LayoutStyle::initialMotionOffset(), LayoutStyle::initialMotionRotation(), LayoutStyle::initialMotionRotationType())
 {
 }
 

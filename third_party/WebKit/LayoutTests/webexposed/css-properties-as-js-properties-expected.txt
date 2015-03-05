@@ -166,8 +166,8 @@ minWidth
 minZoom
 mixBlendMode
 motion
+motionOffset
 motionPath
-motionPosition
 motionRotation
 objectFit
 objectPosition

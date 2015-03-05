@@ -174,8 +174,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
         return a.minHeight() == b.minHeight();
     case CSSPropertyMinWidth:
         return a.minWidth() == b.minWidth();
-    case CSSPropertyMotionPosition:
-        return a.motionPosition() == b.motionPosition();
+    case CSSPropertyMotionOffset:
+        return a.motionOffset() == b.motionOffset();
     case CSSPropertyMotionRotation:
         return a.motionRotation() == b.motionRotation()
             && a.motionRotationType() == b.motionRotationType();

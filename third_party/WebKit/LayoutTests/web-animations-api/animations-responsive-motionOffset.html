@@ -8,8 +8,8 @@ var element = document.getElementById('element');
 
 test(function() {
     var keyframes = [
-        {motionPosition: '4%'},
-        {motionPosition: '12%'}
+        {motionOffset: '4%'},
+        {motionOffset: '12%'}
     ];
 
     element.style.width = '100';
@@ -19,13 +19,13 @@ test(function() {
     player.currentTime = 15;
     element.style.width = '300';
     element.style.height = '600';
-    assert_equals(getComputedStyle(element).motionPosition, '10%');
+    assert_equals(getComputedStyle(element).motionOffset, '10%');
 }, 'Motion position percentages are supported');
 
 test(function() {
     var keyframes = [
-        {motionPosition: '8em'},
-        {motionPosition: '16em'}
+        {motionOffset: '8em'},
+        {motionOffset: '16em'}
     ];
 
     element.style.fontSize = '10px';
@@ -33,7 +33,7 @@ test(function() {
     player.pause();
     player.currentTime = 5;
     element.style.fontSize = '20px';
-    assert_equals(getComputedStyle(element).motionPosition, '200px');
+    assert_equals(getComputedStyle(element).motionOffset, '200px');
 }, 'Motion position lengths respond to style changes');
 
 </script>

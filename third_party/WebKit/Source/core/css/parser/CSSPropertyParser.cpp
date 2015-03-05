@@ -1175,14 +1175,14 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     }
 
     case CSSPropertyMotion:
-        // <motion-path> && <motion-position> && <motion-rotation>
+        // <motion-path> && <motion-offset> && <motion-rotation>
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return parseShorthand(propId, parsingShorthandForProperty(CSSPropertyMotion), important);
     case CSSPropertyMotionPath:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         parsedValue = parseMotionPath();
         break;
-    case CSSPropertyMotionPosition:
+    case CSSPropertyMotionOffset:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));
         break;

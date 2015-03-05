@@ -953,7 +953,7 @@ void LayoutStyle::applyMotionPathTransform(TransformationMatrix& transform) cons
     ASSERT(motionData.m_path && motionData.m_path->isPathStyleMotionPath());
     const PathStyleMotionPath& motionPath = toPathStyleMotionPath(*motionData.m_path);
     float pathLength = motionPath.length();
-    float length = clampTo<float>(floatValueForLength(motionData.m_position, pathLength), 0, pathLength);
+    float length = clampTo<float>(floatValueForLength(motionData.m_offset, pathLength), 0, pathLength);
 
     FloatPoint point;
     float angle;

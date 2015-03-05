@@ -2369,9 +2369,9 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         return CSSPathValue::create(toPathStyleMotionPath(styleMotionPath)->pathString());
     }
 
-    case CSSPropertyMotionPosition:
+    case CSSPropertyMotionOffset:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        return zoomAdjustedPixelValueForLength(style.motionPosition(), style);
+        return zoomAdjustedPixelValueForLength(style.motionOffset(), style);
 
     case CSSPropertyMotionRotation: {
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());

@@ -13,9 +13,9 @@ namespace blink {
 
 class StyleMotionData {
 public:
-    StyleMotionData(StyleMotionPath* path, const Length& position, float rotation, MotionRotationType rotationType)
+    StyleMotionData(StyleMotionPath* path, const Length& offset, float rotation, MotionRotationType rotationType)
         : m_path(path)
-        , m_position(position)
+        , m_offset(offset)
         , m_rotation(rotation)
         , m_rotationType(rotationType)
     {
@@ -27,7 +27,7 @@ public:
 
     // Must be public for SET_VAR in LayoutStyle.h
     RefPtr<StyleMotionPath> m_path; // nullptr indicates path is 'none'
-    Length m_position;
+    Length m_offset;
     float m_rotation;
     MotionRotationType m_rotationType;
 };
