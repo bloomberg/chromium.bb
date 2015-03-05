@@ -15,7 +15,7 @@ function register() {
             var channel = new MessageChannel;
             channel.port1.onmessage = function(msg) {
                 if (msg.data.msg == 'registered') {
-                  unload_iframe(frame);
+                  frame.remove();
                   resolve();
                 } else {
                   reject(msg.data.msg);
@@ -33,7 +33,7 @@ function unregister_and_done(t) {
             var channel = new MessageChannel;
             channel.port1.onmessage = function(msg) {
                 if (msg.data.msg == 'unregistered') {
-                  unload_iframe(frame);
+                  frame.remove();
                   t.done();
                 } else {
                   reject(msg.data.msg);
@@ -117,7 +117,7 @@ function create_expected_body(boundary) {
 
 function as_text_test_frame_check(frame) {
   var data = JSON.parse(frame.contentDocument.body.textContent);
-  unload_iframe(frame);
+  frame.remove();
   assert_equals(data.method, 'POST');
   var boundary = get_boundary(data.headers);
   var expected_body = create_expected_body(boundary);
@@ -126,7 +126,7 @@ function as_text_test_frame_check(frame) {
 
 function as_blob_test_frame_check(frame) {
   var data = JSON.parse(frame.contentDocument.body.textContent);
-  unload_iframe(frame);
+  frame.remove();
   assert_equals(data.method, 'POST');
   var boundary = get_boundary(data.headers);
   var expected_body = create_expected_body(boundary);

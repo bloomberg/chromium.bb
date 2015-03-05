@@ -45,7 +45,7 @@ async_test(function(t) {
           assert_equals(new_registration.active.scriptURL,
                         normalizeURL(worker_url),
                         'before activated new_registration.active');
-          unload_iframe(iframe);
+          iframe.remove();
           return wait_for_state(t, registration.installing, 'activated');
         })
       .then(function() {
@@ -63,7 +63,7 @@ async_test(function(t) {
               frame.contentWindow.navigator.serviceWorker.controller.scriptURL,
               normalizeURL(new_worker_url),
               'the new worker should control a new document');
-          unload_iframe(frame);
+          frame.remove();
           return registration.unregister();
         })
       .then(function() {
@@ -92,7 +92,7 @@ async_test(function(t) {
       .then(function() {
           var promise = navigator.serviceWorker.register('this-will-404',
                                                          { scope: scope });
-          unload_iframe(iframe);
+          iframe.remove();
           return promise;
         })
       .then(
@@ -106,7 +106,7 @@ async_test(function(t) {
           assert_equals(frame.contentWindow.navigator.serviceWorker.controller,
                         null,
                         'document should not load with a controller');
-          unload_iframe(frame);
+          frame.remove();
           t.done();
         })
       .catch(unreached_rejection(t));
@@ -133,7 +133,7 @@ async_test(function(t) {
       .then(function() {
           var promise = navigator.serviceWorker.register(
               'resources/reject-install-worker.js', { scope: scope });
-          unload_iframe(iframe);
+          iframe.remove();
           return promise;
         })
       .then(function(r) {
@@ -147,7 +147,7 @@ async_test(function(t) {
           assert_equals(frame.contentWindow.navigator.serviceWorker.controller,
                         null,
                         'document should not load with a controller');
-          unload_iframe(frame);
+          frame.remove();
           return registration.unregister();
         })
       .then(function() {

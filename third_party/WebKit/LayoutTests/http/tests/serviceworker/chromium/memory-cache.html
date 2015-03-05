@@ -63,7 +63,7 @@ async_test(function(t) {
         assert_true(
           internals.isLoadingFromMemoryCache(json_url),
           'Response for non-controlled page should be cached');
-        unload_iframe(frame);
+        frame.remove();
         return registration.unregister();
       })
     .then(function() {

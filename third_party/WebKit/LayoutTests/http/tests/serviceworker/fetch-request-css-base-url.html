@@ -35,7 +35,7 @@ async_test(function(t) {
                   base + 'resources/fetch-request-css-base-url-style.css',
                   'While loading the image defined in CSS the referrer must ' +
                   'be the request URL of CSS.');
-                unload_iframe(frame);
+                frame.remove();
                 service_worker_unregister_and_done(t, SCOPE);
               });
               worker.postMessage(

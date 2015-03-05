@@ -112,9 +112,7 @@ async_test(function(t) {
           return navigator.serviceWorker.register(worker_url, { scope: scope });
         })
       .then(function() {
-          return unload_iframe(iframe);
-        })
-      .then(function() {
+          iframe.remove();
           return with_iframe(scope);
         })
       .then(function(frame) {

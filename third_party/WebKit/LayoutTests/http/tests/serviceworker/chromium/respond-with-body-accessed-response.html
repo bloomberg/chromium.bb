@@ -26,9 +26,9 @@ async_test(function(t) {
           return frame.contentWindow.do_test();
         })
       .then(function() {
-          return unload_iframe(frame);
+          frame.remove();
+          return service_worker_unregister_and_done(t, SCOPE);
         })
-      .then(function() { return service_worker_unregister_and_done(t, SCOPE); })
       .catch(unreached_rejection(t));
   }, 'Service Worker responds with .body accessed response.');
 

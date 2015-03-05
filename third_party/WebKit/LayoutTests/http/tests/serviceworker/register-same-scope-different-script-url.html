@@ -210,8 +210,8 @@ async_test(function(t) {
           var onactivated_promise = wait_for_state(t,
                                                    registration.waiting,
                                                    'activated');
-          unload_iframe(frame);
-          unload_iframe(iframe);
+          frame.remove();
+          iframe.remove();
           return onactivated_promise;
         })
       .then(function() {
@@ -221,7 +221,7 @@ async_test(function(t) {
           var sw_container = frame.contentWindow.navigator.serviceWorker;
           assert_equals(sw_container.controller.scriptURL, script2,
                         'the new version should control a new doc');
-          unload_iframe(frame);
+          frame.remove();
           return registration.unregister();
         })
       .then(function() {

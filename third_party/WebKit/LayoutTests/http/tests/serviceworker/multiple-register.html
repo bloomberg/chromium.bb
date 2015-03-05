@@ -79,7 +79,7 @@ async_test(function(t) {
           new_registration.active.state,
           'active workers should be in the same state');
 
-        unload_iframe(frame);
+        frame.remove();
         return registration.unregister();
       })
     .then(function() { t.done(); })

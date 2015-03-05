@@ -38,7 +38,7 @@ async_test(function(t) {
           registration.active.scriptURL, parsed_script,
           'worker\'s script must be the url parsed against calling ' +
           'document\'s url');
-        unload_iframe(frame);
+        frame.remove();
         return service_worker_unregister_and_done(t, scope);
       })
     .catch(unreached_rejection(t));
@@ -69,7 +69,7 @@ async_test(function(t) {
       },
       function(e) {
         assert_equals(e.name, 'NetworkError');
-        unload_iframe(frame);
+        frame.remove();
         return service_worker_unregister_and_done(t, scope);
       })
     .catch(unreached_rejection(t));
@@ -100,7 +100,7 @@ async_test(function(t) {
       },
       function(e) {
         assert_equals(e.name, 'SecurityError');
-        unload_iframe(frame);
+        frame.remove();
         return service_worker_unregister_and_done(t, scope);
       })
     .catch(unreached_rejection(t));

@@ -48,17 +48,6 @@ function with_iframe(url) {
     });
 }
 
-function unload_iframe(iframe) {
-  var saw_unload = new Promise(function(resolve) {
-      iframe.contentWindow.addEventListener('unload', function() {
-          resolve();
-        });
-    });
-  iframe.src = '';
-  iframe.remove();
-  return saw_unload;
-}
-
 function normalizeURL(url) {
   return new URL(url, self.location).toString().replace(/#.*$/, '');
 }
@@ -197,7 +186,7 @@ function test_login(test, origin, username, password, cookie) {
         .then(test.step_func(function(frame) {
             var channel = new MessageChannel();
             channel.port1.onmessage = test.step_func(function() {
-                unload_iframe(frame).catch(function() {});
+                frame.remove();
                 resolve();
               });
             frame.contentWindow.postMessage(

@@ -20,7 +20,7 @@ async_test(function(t) {
                         frame.contentWindow.Promise.prototype,
                         'the Promise should be in the context of the ' +
                         'related document');
-          unload_iframe(frame);
+          frame.remove();
           t.done();
         }));
   }, 'ready returns a Promise object in the context of the related document');
@@ -52,7 +52,7 @@ async_test(function(t) {
               expected_url,
               'controlled document should have a controller');
 
-          unload_iframe(frame);
+          frame.remove();
           service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -83,7 +83,7 @@ async_test(function(t) {
                         null,
                         'uncontrolled document should not have a controller');
 
-          unload_iframe(frame);
+          frame.remove();
           service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -121,7 +121,7 @@ async_test(function(t) {
               expected_url,
               'controlled document should have a controller');
 
-          unload_iframe(frame);
+          frame.remove();
           service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));

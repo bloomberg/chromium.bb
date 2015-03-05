@@ -29,7 +29,7 @@ async_test(function(t) {
             frame.contentDocument.body.textContent,
             '',
             'Basic type response could be loaded in the iframe.');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -52,7 +52,7 @@ async_test(function(t) {
             frame.contentDocument.body.textContent,
             '',
             'CORS type response could be loaded in the iframe.');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -80,7 +80,7 @@ async_test(function(t) {
             frame.contentDocument.body.textContent,
             '',
             'Opaque type response could not be loaded in the iframe.');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));

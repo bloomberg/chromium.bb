@@ -26,7 +26,7 @@ async_test(function(t) {
             frame.contentDocument.characterSet,
             'UTF-8',
             'The character set of the response created with a string should be UTF-8');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -44,7 +44,7 @@ async_test(function(t) {
             frame.contentDocument.body.textContent,
             'Test blob',
             'Service Worker should respond to fetch with a test string');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -62,7 +62,7 @@ async_test(function(t) {
             frame.contentDocument.body.textContent,
             'Referrer: ' + document.location.href,
             'Service Worker should respond to fetch with the referrer URL');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -79,7 +79,7 @@ async_test(function(t) {
           assert_equals(frame.contentDocument.body.textContent,
                         'Here\'s a simple html file.\n',
                         'Response should come from fallback to native fetch');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -96,7 +96,7 @@ async_test(function(t) {
           assert_equals(frame.contentDocument.body.textContent,
                         '',
                         'Response should be the empty string');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -113,7 +113,7 @@ async_test(function(t) {
           assert_equals(frame.contentDocument.body.textContent,
                         'Here\'s an other html file.\n',
                         'Response should come from fetched other file');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -174,7 +174,7 @@ async_test(function(t) {
             frame.contentDocument.body.textContent,
             '(0)',
             'Response should be the argument of the first respondWith() call.');
-          unload_iframe(frame);
+          frame.remove();
           return with_iframe(scope);
         })
       .then(function(frame) {
@@ -182,7 +182,7 @@ async_test(function(t) {
             frame.contentDocument.body.textContent,
             '(0)(1)[InvalidStateError](2)[InvalidStateError](0)',
             'Multiple calls of respondWith must throw InvalidStateErrors.');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -199,7 +199,7 @@ async_test(function(t) {
           assert_equals(frame.contentDocument.body.textContent,
                         'Here\'s an other html file.\n',
                         'Response should come from fetched other file');
-          unload_iframe(frame);
+          frame.remove();
           return with_iframe(scope);
         })
       .then(function(frame) {
@@ -211,7 +211,7 @@ async_test(function(t) {
             frame.contentDocument.body.textContent,
             'bodyUsed: true',
             'event.respondWith must set the used flag.');
-          unload_iframe(frame);
+          frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
