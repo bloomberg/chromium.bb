@@ -8,6 +8,7 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
 #include "base/command_line.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_ozone.h"
 #include "ui/events/null_event_targeter.h"
@@ -123,6 +124,7 @@ void AshWindowTreeHostOzone::SetBounds(const gfx::Rect& bounds) {
 }
 
 void AshWindowTreeHostOzone::DispatchEvent(ui::Event* event) {
+  TRACE_EVENT0("input", "AshWindowTreeHostOzone::DispatchEvent");
   if (event->IsLocatedEvent())
     TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
   SendEventToProcessor(event);
