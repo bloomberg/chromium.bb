@@ -149,7 +149,10 @@ void ChromeClassTester::BuildBannedLists() {
   banned_directories_.push_back("/courgette/");
   banned_directories_.push_back("/pdf/");
   banned_directories_.push_back("/ppapi/");
-  banned_directories_.push_back("/usr/");
+  banned_directories_.push_back("/usr/include/");
+  banned_directories_.push_back("/usr/lib/");
+  banned_directories_.push_back("/usr/local/include/");
+  banned_directories_.push_back("/usr/local/lib/");
   banned_directories_.push_back("/testing/");
   banned_directories_.push_back("/v8/");
   banned_directories_.push_back("/dart/");
@@ -262,11 +265,6 @@ bool ChromeClassTester::InBannedDirectory(SourceLocation loc) {
   if (realpath(filename.c_str(), resolvedPath)) {
     filename = resolvedPath;
   }
-
-  // On linux, chrome is often checked out to /usr/local/google. Due to the
-  // "usr" rule in banned_directories_, all diagnostics would be suppressed
-  // in that case. As a workaround, strip that prefix.
-  filename = lstrip(filename, "/usr/local/google");
 
   for (size_t i = 0; i < banned_directories_.size(); ++i) {
     // If any of the banned directories occur as a component in filename,

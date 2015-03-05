@@ -5894,6 +5894,17 @@
         ],
       },
     }],
+    ['use_lto==1 and clang==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'arflags': [
+              '--plugin', '../../<(make_clang_dir)/lib/LLVMgold.so',
+            ],
+          }],
+        ],
+      },
+    }],
     ['(use_lto==1 or use_lto_o2==1) and clang==0', {
       'target_defaults': {
         'target_conditions': [

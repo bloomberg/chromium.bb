@@ -95,6 +95,11 @@ mkdir $PDIR
 mkdir $PDIR/bin
 mkdir $PDIR/lib
 
+GOLDDIR=llvmgold-$R
+if [ "$(uname -s)" = "Linux" ]; then
+  mkdir -p $GOLDDIR/lib
+fi
+
 if [ "$(uname -s)" = "Darwin" ]; then
   SO_EXT="dylib"
 else
@@ -123,6 +128,11 @@ fi
 # care about.
 cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
 cp "${LLVM_LIB_DIR}/libBlinkGCPlugin.${SO_EXT}" $PDIR/lib
+
+# Copy gold plugin on Linux.
+if [ "$(uname -s)" = "Linux" ]; then
+  cp "${LLVM_LIB_DIR}/LLVMgold.${SO_EXT}" $GOLDDIR/lib
+fi
 
 if [[ -n "${gcc_toolchain}" ]]; then
   # Copy the stdlibc++.so.6 we linked Clang against so it can run.
@@ -169,6 +179,10 @@ else
   tar zcf $PDIR.tgz -C $PDIR bin lib buildlog.txt
 fi
 
+if [ "$(uname -s)" = "Linux" ]; then
+  tar zcf $GOLDDIR.tgz -C $GOLDDIR lib
+fi
+
 if [ "$(uname -s)" = "Darwin" ]; then
   PLATFORM=Mac
 else
@@ -178,5 +192,9 @@ fi
 echo To upload, run:
 echo gsutil cp -a public-read $PDIR.tgz \
      gs://chromium-browser-clang/$PLATFORM/$PDIR.tgz
+if [ "$(uname -s)" = "Linux" ]; then
+  echo gsutil cp -a public-read $GOLDDIR.tgz \
+       gs://chromium-browser-clang/$PLATFORM/$GOLDDIR.tgz
+fi
 
 # FIXME: Warn if the file already exists on the server.

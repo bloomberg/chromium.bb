@@ -28,6 +28,7 @@ LIBCXXABI_DIR="${LLVM_DIR}/projects/libcxxabi"
 ANDROID_NDK_DIR="${THIS_DIR}/../../../third_party/android_tools/ndk"
 STAMP_FILE="${LLVM_DIR}/../llvm-build/cr_build_revision"
 CHROMIUM_TOOLS_DIR="${THIS_DIR}/.."
+BINUTILS_DIR="${THIS_DIR}/../../../third_party/binutils"
 
 ABS_CHROMIUM_TOOLS_DIR="${PWD}/${CHROMIUM_TOOLS_DIR}"
 ABS_LIBCXX_DIR="${PWD}/${LIBCXX_DIR}"
@@ -35,6 +36,7 @@ ABS_LIBCXXABI_DIR="${PWD}/${LIBCXXABI_DIR}"
 ABS_LLVM_DIR="${PWD}/${LLVM_DIR}"
 ABS_LLVM_BUILD_DIR="${PWD}/${LLVM_BUILD_DIR}"
 ABS_COMPILER_RT_DIR="${PWD}/${COMPILER_RT_DIR}"
+ABS_BINUTILS_DIR="${PWD}/${BINUTILS_DIR}"
 
 # ${A:-a} returns $A if it's set, a else.
 LLVM_REPO_URL=${LLVM_URL:-https://llvm.org/svn/llvm-project}
@@ -543,6 +545,12 @@ if [ "${OS}" = "Darwin" ]; then
   LDFLAGS+="-stdlib=libc++ -L${PWD}/libcxxbuild"
 fi
 
+# Find the binutils include dir for the gold plugin.
+BINUTILS_INCDIR=""
+if [ "${OS}" = "Linux" ]; then
+  BINUTILS_INCDIR="${ABS_BINUTILS_DIR}/Linux_x64/Release/include"
+fi
+
 # Hook the Chromium tools into the LLVM build. Several Chromium tools have
 # dependencies on LLVM/Clang libraries. The LLVM build detects implicit tools
 # in the tools subdirectory, so install a shim CMakeLists.txt that forwards to
@@ -562,6 +570,7 @@ MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_ENABLE_THREADS=OFF \
+    -DLLVM_BINUTILS_INCDIR="${BINUTILS_INCDIR}" \
     -DCMAKE_C_COMPILER="${CC}" \
     -DCMAKE_CXX_COMPILER="${CXX}" \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
