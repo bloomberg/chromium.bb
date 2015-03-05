@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function startAnimationWithDelay()
+{
+    var player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 300, delay: 100 });
+}
+
+function startAnimationWithEndDelay()
+{
+    node.animate([{ width: "100px" }, { width: "200px" }], { duration: 300, delay: 100, endDelay: 200 });
+}
+
+function test()
+{
+    InspectorTest.selectNodeWithId("node", step1);
+    // Ensure the timeline is set up
+    var sidebarPane = WebInspector.panels.elements.sidebarPanes.animations;
+    sidebarPane.expand();
+    InspectorTest.animationModel.ensureEnabled();
+    // Override timeline width for testing
+    WebInspector.AnimationTimeline.prototype.width = function() { return 500; }
+
+    function step1()
+    {
+        InspectorTest.waitForAnimationAdded(step2);
+        InspectorTest.evaluateInPage("startAnimationWithDelay()");
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult(">>>> Animation with start delay only");
+        InspectorTest.dumpAnimationTimeline();
+        sidebarPane._timeline._reset();
+        InspectorTest.waitForAnimationAdded(step3);
+        InspectorTest.evaluateInPage("startAnimationWithEndDelay()");
+    }
+
+    function step3()
+    {
+        InspectorTest.addResult(">>>> Animation with start and end delay");
+        InspectorTest.dumpAnimationTimeline();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the display of animations on the animation timeline.
+</p>
+
+<div id="node" style="background-color: red; height: 100px"></div>
+
+</body>
+</html>
