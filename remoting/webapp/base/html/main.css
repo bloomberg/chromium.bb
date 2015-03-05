@@ -360,16 +360,15 @@ section {
   display: flex;
   -webkit-align-items: center;
   padding: 10px 0;
-  border-top: 1px solid #EBEBEB;
+  border-bottom: 1px solid #EBEBEB;
 }
 
 .section-row button {
   margin-__MSG_@@bidi_start_edge__: 20px;
 }
 
-.section-row:first-child,
-.section-row.no-non-local-hosts {
-  border-top: none;
+.daemon-control .section-row {
+  border-bottom: none;
 }
 
 .editbox-label {
@@ -501,7 +500,8 @@ thead {
   opacity: 0.5;
 }
 
-#this-host-connect {
+#this-host-connect,
+.host-enabled-other-account {
   -webkit-align-items: center;
   display: flex;
 }

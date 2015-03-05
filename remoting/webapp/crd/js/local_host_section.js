@@ -36,6 +36,7 @@ remoting.LocalHostSection = function(rootElement, controller) {
 
   var startButton = rootElement.querySelector('.start-daemon');
   var stopButton = rootElement.querySelector('.stop-daemon');
+  var stopLocalDaemonButton = rootElement.querySelector('.stop-local-daemon');
   var changePINButton = rootElement.querySelector('.change-daemon-pin');
 
   /** @private */
@@ -43,6 +44,8 @@ remoting.LocalHostSection = function(rootElement, controller) {
       new base.DomEventHook(startButton, 'click',
                             controller.start.bind(controller), false),
       new base.DomEventHook(stopButton, 'click',
+                            controller.stop.bind(controller), false),
+      new base.DomEventHook(stopLocalDaemonButton, 'click',
                             controller.stop.bind(controller), false),
       new base.DomEventHook(changePINButton, 'click',
                             controller.changePIN.bind(controller), false));
@@ -111,7 +114,15 @@ remoting.LocalHostSection.prototype.updateUI_ = function() {
   // Disable elements.
   var enabled = this.isEnabled_();
   var canChangeLocalHostState = this.canChangeState();
-  remoting.updateModalUi(enabled ? 'enabled' : 'disabled', 'data-daemon-state');
+  var daemonState = '';
+  if (!enabled) {
+    daemonState = 'disabled';
+  } else if (this.host_ !== null) {
+    daemonState = 'enabled';
+  } else {
+    daemonState = 'enabled-other-account';
+  }
+  remoting.updateModalUi(daemonState, 'data-daemon-state');
   this.rootElement_.hidden = !canChangeLocalHostState;
 };
 

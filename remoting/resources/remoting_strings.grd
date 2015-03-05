@@ -769,6 +769,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Button displayed when the current computer is not accepting remote connections. Clicking this button causes it to start accepting remote connections." name="IDS_HOME_DAEMON_START_BUTTON">
         Enable remote connections
       </message>
+      <message desc="Message displayed in the application to indicate that this computer is remotely accessible, but only from a different account than the one that the user is currently signed in as." name="IDS_HOME_DAEMON_HOST_ENABLED_OTHER_ACCOUNT">
+        This computer is currently shared under a different account.
+      </message>
       <message desc="Explanatory text displayed when the user enables remote access or changes the PIN." name="IDS_HOST_SETUP_DIALOG_DESCRIPTION">
         To protect access to this computer, please choose a PIN of <ph name="BOLD_START">$1<ex>&lt;b&gt;</ex></ph>at least six digits<ph name="BOLD_END">$2<ex>&lt;/b&gt;</ex></ph>. This PIN will be required when connecting from another location.
       </message>
