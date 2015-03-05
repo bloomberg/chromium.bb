@@ -47,7 +47,7 @@ remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_TYPE_ = 'signal-strategy-type';
 remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_PROGRESS_ =
     'signal-strategy-progress';
 /** @private */
-remoting.ServerLogEntry.KEY_ELAPSED_TIME_MS_ = 'elapsed-time';
+remoting.ServerLogEntry.KEY_SESSION_DURATION_SECONDS_ = 'session-duration';
 
 
 /**
@@ -451,14 +451,14 @@ remoting.ServerLogEntry.extractHostDataFrom_ = function(s) {
 };
 
 /**
- * Adds a field to this log entry specifying the elapsed time since the start of
- * the session to the current session state.
- * @param {number} elapsedTimeInMs
+ * Adds a field to this log entry specifying the time in seconds since the start
+ * of the session to the current event.
+ * @param {number} sessionDurationInSeconds
  */
-remoting.ServerLogEntry.prototype.addElapsedTimeMs =
-    function(elapsedTimeInMs) {
-  this.set_(remoting.ServerLogEntry.KEY_ELAPSED_TIME_MS_,
-            String(elapsedTimeInMs));
+remoting.ServerLogEntry.prototype.addSessionDuration =
+    function(sessionDurationInSeconds) {
+  this.set_(remoting.ServerLogEntry.KEY_SESSION_DURATION_SECONDS_,
+            String(sessionDurationInSeconds));
 };
 
 

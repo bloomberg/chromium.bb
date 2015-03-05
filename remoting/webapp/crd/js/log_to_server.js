@@ -174,8 +174,9 @@ remoting.LogToServer.prototype.logAccumulatedStatistics_ = function() {
  */
 remoting.LogToServer.prototype.log_ = function(entry) {
   // Log the time taken to get to this point from the time this session started.
-  var elapsedTimeInMs = new Date().getTime() - this.sessionStartTime_;
-  entry.addElapsedTimeMs(elapsedTimeInMs);
+  var sessionDurationInSeconds =
+      (new Date().getTime() - this.sessionStartTime_) / 1000.0;
+  entry.addSessionDuration(sessionDurationInSeconds);
 
   // Send the stanza to the debug log.
   console.log('Enqueueing log entry:');
