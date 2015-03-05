@@ -19,7 +19,7 @@ bool RegexMatchesOneSnapshotPath(NSString* regexString) {
   NSRegularExpression* regex =
       [NSRegularExpression regularExpressionWithPattern:regexString
                                                 options:0
-                                                  error:NULL];
+                                                  error:nullptr];
   std::vector<base::FilePath> snapshotsPaths;
   GetSnapshotsPaths(&snapshotsPaths);
   int numberOfMatches = 0;

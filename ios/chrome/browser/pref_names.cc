@@ -17,3 +17,20 @@ const char kAcceptLanguages[] = "intl.accept_languages";
 
 }  // namespace prefs
 }  // namespace ios
+
+namespace prefs {
+
+// *************** CHROME BROWSER STATE PREFS ***************
+// These are attached to the user Chrome browser state.
+
+// Preference that keep information about where to create a new bookmark.
+const char kIosBookmarkFolderDefault[] = "ios.bookmark.default_folder";
+
+// Preference that hold a boolean indicating if the user has already dismissed
+// the bookmark promo dialog.
+const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
+
+// The preferred SSO user for wallet payments.
+const char kPaymentsPreferredUserId[] = "ios.payments.preferred_user_id";
+
+}  // namespace prefs

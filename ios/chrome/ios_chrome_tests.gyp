@@ -27,6 +27,7 @@
         'browser/snapshots/snapshot_cache_unittest.mm',
         'browser/snapshots/snapshots_util_unittest.mm',
         'browser/translate/translate_service_ios_unittest.cc',
+        'browser/ui/commands/set_up_for_testing_command_unittest.mm',
         'browser/ui/ui_util_unittest.mm',
         'browser/ui/uikit_ui_util_unittest.mm',
       ],

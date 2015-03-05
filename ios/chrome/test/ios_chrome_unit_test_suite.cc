@@ -28,7 +28,7 @@ class IOSChromeUnitTestSuiteInitializer
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
     web_client_.reset();
-    web::SetWebClient(NULL);
+    web::SetWebClient(nullptr);
     test_ios_chrome_provider_initializer_.reset();
   }
 

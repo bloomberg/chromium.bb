@@ -15,4 +15,12 @@ extern const char kAcceptLanguages[];
 }  // namespace prefs
 }  // namespace ios
 
+namespace prefs {
+
+extern const char kIosBookmarkFolderDefault[];
+extern const char kIosBookmarkPromoAlreadySeen[];
+extern const char kPaymentsPreferredUserId[];
+
+}  // namespace prefs
+
 #endif  // IOS_CHROME_BROWSER_PREF_NAMES_H_

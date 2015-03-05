@@ -18,6 +18,7 @@ include_rules = [
   "+ios/public/provider/chrome",
   "+ios/web/public",
   "+net",
+  "+third_party/google_toolbox_for_mac",
   "+ui",
 
   # For tests.
