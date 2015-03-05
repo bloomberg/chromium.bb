@@ -20,7 +20,7 @@ function NaclBridge(nmf, readyCallback) {
 
 /**
  * Method to send generic byte data to the whispernet wrapper.
- * @param {string} data Raw data to send to the whispernet wrapper.
+ * @param {Object} data Raw data to send to the whispernet wrapper.
  */
 NaclBridge.prototype.send = function(data) {
   if (this.isEnabled_) {
