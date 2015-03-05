@@ -30,7 +30,6 @@ class RenderFrameHostImpl;
 // are frame-specific (as opposed to page-specific).
 class CONTENT_EXPORT FrameTreeNode {
  public:
-
   FrameTreeNode(FrameTree* frame_tree,
                 Navigator* navigator,
                 RenderFrameHostDelegate* render_frame_delegate,
@@ -105,18 +104,17 @@ class CONTENT_EXPORT FrameTreeNode {
     return replication_state_;
   }
 
-  void set_is_loading(bool is_loading) {
-    is_loading_ = is_loading;
-  }
-  bool is_loading() const {
-    return is_loading_;
-  }
-
   RenderFrameHostImpl* current_frame_host() const {
     return render_manager_.current_frame_host();
   }
 
   bool IsDescendantOf(FrameTreeNode* other) const;
+
+  // Returns true if this frame is in a loading state.
+  bool IsLoading() const;
+
+  // Returns the loading progress of this frame.
+  double GetLoadingProgress() const;
 
  private:
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
@@ -133,7 +131,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Manages creation and swapping of RenderFrameHosts for this frame.  This
   // must be declared before |children_| so that it gets deleted after them.
-  //  That's currently necessary so that RenderFrameHostImpl's destructor can
+  // That's currently necessary so that RenderFrameHostImpl's destructor can
   // call GetProcess.
   RenderFrameHostManager render_manager_;
 
@@ -157,15 +155,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // Track information that needs to be replicated to processes that have
   // proxies for this frame.
   FrameReplicationState replication_state_;
-
-  // Boolean value indicating whether the frame is in the process of loading
-  // a document or not. In cross-process transfer navigation the DidStartLoading
-  // message is received from both existing RenderFrame and from the pending
-  // RenderFrame. However, there will be only one DidStopLoading message sent by
-  // the pending-which-becomes-current RenderFrame. Since both renderers belong
-  // to the FrameTreeNode, it is better to ask it about the loading status than
-  // RenderFrameHost or using a counter to balance the events out.
-  bool is_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };
