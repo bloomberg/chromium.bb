@@ -174,10 +174,11 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
     if [[ $(gcc -dumpversion) < "4.7.0" ]]; then
       # We need a newer GCC version.
       if [[ ! -e "${LLVM_BUILD_TOOLS_DIR}/gcc482" ]]; then
-        echo "Downloading pre-built GCC 4.8.2"
+        echo "Downloading pre-built GCC 4.8.2..."
         mkdir -p "${LLVM_BUILD_TOOLS_DIR}"
         curl --fail -L "${CDS_URL}/tools/gcc482.tgz" | \
-          tar vzxf - -C "${LLVM_BUILD_TOOLS_DIR}"
+          tar zxf - -C "${LLVM_BUILD_TOOLS_DIR}"
+        echo Done
       fi
       gcc_toolchain="${LLVM_BUILD_TOOLS_DIR}/gcc482"
     else
@@ -191,10 +192,11 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
     if [[ $(cmake --version | grep -Eo '[0-9.]+') < "3.0" ]]; then
       # We need a newer CMake version.
       if [[ ! -e "${LLVM_BUILD_TOOLS_DIR}/cmake310" ]]; then
-        echo "Downloading pre-built CMake 3.10"
+        echo "Downloading pre-built CMake 3.10..."
         mkdir -p "${LLVM_BUILD_TOOLS_DIR}"
         curl --fail -L "${CDS_URL}/tools/cmake310.tgz" | \
-          tar vzxf - -C "${LLVM_BUILD_TOOLS_DIR}"
+          tar zxf - -C "${LLVM_BUILD_TOOLS_DIR}"
+        echo Done
       fi
       export PATH="${LLVM_BUILD_TOOLS_DIR}/cmake310/bin:${PATH}"
     fi
