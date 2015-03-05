@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -134,6 +135,27 @@ TEST_F(NativeViewHostMacTest, NativeViewHidden) {
   toplevel()->GetRootView()->AddChildView(host());
   EXPECT_FALSE([native_view_ isHidden]);  // And visible when added.
   EXPECT_TRUE([native_view_ superview]);
+
+  DestroyHost();
+}
+
+// Check that we can destroy cleanly even if the native view has already been
+// released.
+TEST_F(NativeViewHostMacTest, NativeViewReleased) {
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    CreateHost();
+    // In practice the native view is a WebContentsViewCocoa which is retained
+    // by its superview (a TabContentsContainerView) and by WebContentsViewMac.
+    // It's possible for both of them to be destroyed without calling
+    // NativeHostView::Detach().
+    [native_view_ removeFromSuperview];
+    native_view_.reset();
+  }
+
+  // During teardown, NativeViewDetaching() is called in RemovedFromWidget().
+  // Just trigger it with Detach().
+  host()->Detach();
 
   DestroyHost();
 }

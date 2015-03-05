@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_MAC_H_
 #define UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_MAC_H_
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "ui/views/controls/native/native_view_host_wrapper.h"
 #include "ui/views/views_export.h"
@@ -36,6 +37,9 @@ class VIEWS_EXPORT NativeViewHostMac : public NativeViewHostWrapper {
  private:
   // Our associated NativeViewHost. Owns this.
   NativeViewHost* host_;
+
+  // Retain the native view as it may be destroyed at an unpredictable time.
+  base::scoped_nsobject<NSView> native_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostMac);
 };

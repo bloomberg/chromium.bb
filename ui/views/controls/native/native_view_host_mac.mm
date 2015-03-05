@@ -55,16 +55,21 @@ NativeViewHostMac::~NativeViewHostMac() {
 
 void NativeViewHostMac::AttachNativeView() {
   DCHECK(host_->native_view());
+  DCHECK(!native_view_);
+  native_view_.reset([host_->native_view() retain]);
   ReparentNSView(host_->native_view(), host_->GetWidget());
 }
 
 void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   // |destroyed| is only true if this class calls host_->NativeViewDestroyed().
-  // TODO(tapted): See if that's needed on Mac, since views are hard to destroy
-  // by themselves.
+  // Aura does this after observing an aura OnWindowDestroying, but NSViews
+  // are reference counted so there isn't a reliable signal. Instead, a
+  // reference is retained until the NativeViewHost is detached.
   DCHECK(!destroyed);
+  DCHECK_EQ(native_view_, host_->native_view());
   [host_->native_view() setHidden:YES];
   ReparentNSView(host_->native_view(), NULL);
+  native_view_.reset();
 }
 
 void NativeViewHostMac::AddedToWidget() {
