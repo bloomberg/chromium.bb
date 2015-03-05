@@ -4,6 +4,7 @@
 
 #include "chrome/browser/background/background_contents.h"
 
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -193,6 +194,10 @@ void BackgroundContents::Observe(int type,
 }
 
 void BackgroundContents::CreateRenderViewNow() {
+  // TODO(robliao): Remove ScopedTracker below once crbug.com/464206 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "464206 BackgroundContents::CreateRenderViewNow"));
   web_contents()->GetController().LoadURL(initial_url_, content::Referrer(),
                                           ui::PAGE_TRANSITION_LINK,
                                           std::string());
