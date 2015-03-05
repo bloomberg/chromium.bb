@@ -829,6 +829,7 @@ RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewMac::Show() {
+  ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:NO];
   if (!render_widget_host_->is_hidden())
     return;
@@ -842,6 +843,7 @@ void RenderWidgetHostViewMac::Show() {
 }
 
 void RenderWidgetHostViewMac::Hide() {
+  ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:YES];
   WasOccluded();
   DestroySuspendedBrowserCompositorViewIfNeeded();
