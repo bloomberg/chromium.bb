@@ -272,7 +272,8 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
     }
 
     private void displayManageAccountLink() {
-        if (PasswordUIView.shouldDisplayManageAccountLink()
+        boolean shouldDisplayLink = PasswordUIView.shouldDisplayManageAccountLink();
+        if (shouldDisplayLink
                 && getPreferenceScreen().findPreference(PREF_MANAGE_ACCOUNT_LINK) == null) {
             if (mLinkPref == null) {
                 ForegroundColorSpan colorSpan = new ForegroundColorSpan(
@@ -287,10 +288,9 @@ public class ManageSavedPasswordsPreferences extends PreferenceFragment
                 mLinkPref.setOrder(ORDER_MANAGE_ACCOUNT_LINK);
             }
             getPreferenceScreen().addPreference(mLinkPref);
-        } else {
-            // Draw a divider only if the preference after mSavePasswordsSwitch is not selectable,
-            // in which case the ListView itself doesn't draw a divider.
-            mSavePasswordsSwitch.setDrawDivider(true);
         }
+        // Draw a divider only if the preference after mSavePasswordsSwitch is not selectable,
+        // in which case the ListView itself doesn't draw a divider.
+        mSavePasswordsSwitch.setDrawDivider(!shouldDisplayLink);
     }
 }
