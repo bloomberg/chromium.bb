@@ -266,6 +266,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -523,6 +524,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -705,6 +707,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -890,6 +893,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -1059,6 +1063,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -1180,6 +1185,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1208,6 +1214,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1238,6 +1245,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1286,6 +1294,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1341,6 +1350,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1393,6 +1403,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1612,6 +1623,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -1640,6 +1652,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1668,6 +1681,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1698,6 +1712,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1849,6 +1864,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -1904,6 +1920,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -1953,6 +1970,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -2005,6 +2023,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -2053,6 +2072,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -2106,6 +2126,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -2161,6 +2182,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -2213,6 +2235,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -2371,6 +2394,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -2514,6 +2538,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -2569,6 +2594,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -2618,6 +2644,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -2670,6 +2697,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -2718,6 +2746,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -2871,6 +2900,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -3014,6 +3044,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -3069,6 +3100,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -3118,6 +3150,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -3170,6 +3203,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -3218,6 +3252,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -3474,6 +3509,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -3617,6 +3653,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -3672,6 +3709,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -3721,6 +3759,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -3773,6 +3812,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -3821,6 +3861,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -4077,6 +4118,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -4213,6 +4255,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -4265,6 +4308,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -4314,6 +4358,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -4366,6 +4411,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -4414,6 +4460,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -4574,6 +4621,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -4769,6 +4817,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -4816,6 +4865,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -4866,6 +4916,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -4912,6 +4963,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -5159,6 +5211,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -5336,6 +5389,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5383,6 +5437,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5433,6 +5488,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -5479,6 +5535,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -5557,6 +5614,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5585,6 +5643,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5633,6 +5692,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5688,6 +5748,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5732,6 +5793,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5760,6 +5822,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5790,6 +5853,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5838,6 +5902,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5893,6 +5958,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -5945,6 +6011,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -6098,6 +6165,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -6234,6 +6302,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -6285,6 +6354,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -6334,6 +6404,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -6386,6 +6457,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -6434,6 +6506,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -6617,6 +6690,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -6742,6 +6816,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -6796,6 +6871,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -6845,6 +6921,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -6897,6 +6974,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -6945,6 +7023,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -7161,6 +7240,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -7307,6 +7387,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -7362,6 +7443,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -7411,6 +7493,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -7463,6 +7546,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -7511,6 +7595,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -7664,6 +7749,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -7807,6 +7893,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -7862,6 +7949,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -7911,6 +7999,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -7963,6 +8052,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8011,6 +8101,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8267,6 +8358,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8410,6 +8502,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8465,6 +8558,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -8514,6 +8608,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -8566,6 +8661,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8614,6 +8710,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8696,6 +8793,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8795,6 +8893,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8938,6 +9037,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -8993,6 +9093,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -9042,6 +9143,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -9094,6 +9196,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -9142,6 +9245,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -9398,6 +9502,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -9541,6 +9646,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -9596,6 +9702,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -9645,6 +9752,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -9697,6 +9805,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -9745,6 +9854,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -9905,6 +10015,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -10049,6 +10160,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -10103,6 +10215,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -10150,6 +10263,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -10200,6 +10314,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -10246,6 +10361,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -10399,6 +10515,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -10542,6 +10659,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -10597,6 +10715,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -10646,6 +10765,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -10698,6 +10818,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -10746,6 +10867,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -11002,6 +11124,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -11145,6 +11268,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -11200,6 +11324,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11249,6 +11374,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11301,6 +11427,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -11349,6 +11476,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -11543,6 +11671,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -11619,6 +11748,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11650,6 +11780,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11681,6 +11812,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11730,6 +11862,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11783,6 +11916,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11836,6 +11970,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11878,6 +12013,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -11909,6 +12045,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11940,6 +12077,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -11971,6 +12109,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -12145,6 +12284,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -12198,6 +12338,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -12245,6 +12386,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -12295,6 +12437,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -12341,6 +12484,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -12393,6 +12537,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -12446,6 +12591,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -12499,6 +12645,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -12697,6 +12844,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -12848,6 +12996,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -12901,6 +13050,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -12948,6 +13098,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -12998,6 +13149,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -13044,6 +13196,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -13329,6 +13482,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -13479,6 +13633,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -13532,6 +13687,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -13579,6 +13735,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -13629,6 +13786,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -13675,6 +13833,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -13750,6 +13909,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -13905,6 +14065,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -13958,6 +14119,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -14005,6 +14167,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -14055,6 +14218,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -14101,6 +14265,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -14379,6 +14544,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -14529,6 +14695,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -14582,6 +14749,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -14629,6 +14797,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -14679,6 +14848,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -14725,6 +14895,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -14800,6 +14971,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -14953,6 +15125,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -15006,6 +15179,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -15053,6 +15227,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -15103,6 +15278,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -15149,6 +15325,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -15311,6 +15488,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -15466,6 +15644,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -15519,6 +15698,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -15566,6 +15746,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -15616,6 +15797,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -15662,6 +15844,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -15918,6 +16101,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -16061,6 +16245,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -16116,6 +16301,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -16165,6 +16351,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -16217,6 +16404,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -16265,6 +16453,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -16521,6 +16710,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -16664,6 +16854,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -16719,6 +16910,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -16768,6 +16960,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -16820,6 +17013,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -16868,6 +17062,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -17121,6 +17316,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -17295,6 +17491,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -17350,6 +17547,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -17399,6 +17597,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -17451,6 +17650,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -17499,6 +17699,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -17652,6 +17853,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -17795,6 +17997,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -17850,6 +18053,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -17899,6 +18103,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -17951,6 +18156,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -17999,6 +18205,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -18152,6 +18359,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -18295,6 +18503,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -18350,6 +18559,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -18399,6 +18609,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -18451,6 +18662,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -18499,6 +18711,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -18624,6 +18837,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -18744,6 +18958,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -18975,6 +19190,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -19118,6 +19334,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -19173,6 +19390,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -19222,6 +19440,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -19274,6 +19493,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -19322,6 +19542,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -19578,6 +19799,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -19721,6 +19943,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -19776,6 +19999,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -19825,6 +20049,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -19877,6 +20102,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -19925,6 +20151,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -20078,6 +20305,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -20221,6 +20449,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -20276,6 +20505,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -20325,6 +20555,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -20377,6 +20608,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -20425,6 +20657,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -20508,6 +20741,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -20542,6 +20776,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -20573,6 +20808,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -20601,6 +20837,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -20630,6 +20867,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -20678,6 +20916,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -20733,6 +20972,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -20784,6 +21024,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21004,6 +21245,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -21032,6 +21274,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21060,6 +21303,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21090,6 +21334,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21120,6 +21365,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21269,6 +21515,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -21324,6 +21571,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21373,6 +21621,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21425,6 +21674,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -21473,6 +21723,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -21526,6 +21777,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21581,6 +21833,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21633,6 +21886,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -21685,6 +21939,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -22069,6 +22324,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -22116,6 +22372,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -22166,6 +22423,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -22212,6 +22470,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -22655,6 +22914,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -22798,6 +23058,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -22853,6 +23114,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -22902,6 +23164,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -22954,6 +23217,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -23002,6 +23266,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -23159,6 +23424,7 @@
         "git_sync": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -23318,6 +23584,7 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -23371,6 +23638,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -23420,6 +23688,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -23472,6 +23741,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -23520,6 +23790,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -23776,6 +24047,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -23921,6 +24193,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -23976,6 +24249,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -24025,6 +24299,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -24077,6 +24352,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -24125,6 +24401,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -24382,6 +24659,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -24531,6 +24809,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -24586,6 +24865,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -24635,6 +24915,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -24687,6 +24968,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -24735,6 +25017,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -24911,6 +25194,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -25054,6 +25338,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -25109,6 +25394,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -25158,6 +25444,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -25210,6 +25497,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -25258,6 +25546,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -25483,6 +25772,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -25685,6 +25975,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -25740,6 +26031,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -25789,6 +26081,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -25841,6 +26134,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -25889,6 +26183,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -26063,6 +26358,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -26206,6 +26502,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -26261,6 +26558,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -26310,6 +26608,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -26362,6 +26661,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -26410,6 +26710,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -26568,6 +26869,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -26685,6 +26987,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -26828,6 +27131,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -26883,6 +27187,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -26932,6 +27237,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -26984,6 +27290,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -27032,6 +27339,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -27162,6 +27470,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -27338,6 +27647,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -27514,6 +27824,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -27690,6 +28001,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -27866,6 +28178,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -28043,6 +28356,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -28166,6 +28480,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -28528,6 +28843,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -28673,6 +28989,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -28728,6 +29045,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -28777,6 +29095,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -28829,6 +29148,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -28877,6 +29197,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -29133,6 +29454,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -29276,6 +29598,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -29331,6 +29654,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -29380,6 +29704,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -29432,6 +29757,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -29480,6 +29806,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -29640,6 +29967,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -29701,6 +30029,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -29732,6 +30061,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -29763,6 +30093,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -29794,6 +30125,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -29950,6 +30282,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -30003,6 +30336,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -30050,6 +30384,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -30100,6 +30435,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -30146,6 +30482,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -30197,6 +30534,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -30250,6 +30588,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -30303,6 +30642,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -30356,6 +30696,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -30522,6 +30863,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -30672,6 +31014,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -30725,6 +31068,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -30772,6 +31116,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -30822,6 +31167,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -30868,6 +31214,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -31026,6 +31373,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -31176,6 +31524,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -31229,6 +31578,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -31276,6 +31626,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -31326,6 +31677,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -31372,6 +31724,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -31530,6 +31883,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -31682,6 +32036,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -31735,6 +32090,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -31782,6 +32138,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -31832,6 +32189,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -31878,6 +32236,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -32036,6 +32395,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -32186,6 +32546,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -32239,6 +32600,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -32286,6 +32648,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -32336,6 +32699,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -32382,6 +32746,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -32569,6 +32934,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -32714,6 +33080,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -32769,6 +33136,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -32818,6 +33186,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -32870,6 +33239,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -32918,6 +33288,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -33085,6 +33456,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -33135,6 +33507,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -33298,6 +33671,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -33350,6 +33724,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -33399,6 +33774,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -33451,6 +33827,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -33499,6 +33876,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -33652,6 +34030,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -33793,6 +34172,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test"
         ],
         "internal": true,
@@ -33844,6 +34224,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -33893,6 +34274,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -33945,6 +34327,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -33993,6 +34376,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -34205,6 +34589,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -34353,6 +34738,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -34408,6 +34794,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -34457,6 +34844,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -34509,6 +34897,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -34557,6 +34946,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -34710,6 +35100,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -34853,6 +35244,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -34908,6 +35300,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -34957,6 +35350,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -35009,6 +35403,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -35057,6 +35452,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -35210,6 +35606,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -35353,6 +35750,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -35408,6 +35806,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -35457,6 +35856,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -35509,6 +35909,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -35557,6 +35958,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -35813,6 +36215,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -35956,6 +36359,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -36011,6 +36415,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36060,6 +36465,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36112,6 +36518,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -36160,6 +36567,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -36240,6 +36648,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36271,6 +36680,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36320,6 +36730,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36373,6 +36784,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36417,6 +36829,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36448,6 +36861,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36497,6 +36911,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36550,6 +36965,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -36795,6 +37211,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -36945,6 +37362,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -36998,6 +37416,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -37045,6 +37464,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -37095,6 +37515,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -37141,6 +37562,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -37216,6 +37638,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -37366,6 +37789,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -37419,6 +37843,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -37466,6 +37891,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -37516,6 +37942,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -37562,6 +37989,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -37846,6 +38274,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -37996,6 +38425,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -38049,6 +38479,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -38096,6 +38527,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -38146,6 +38578,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -38192,6 +38625,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -38267,6 +38701,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -38422,6 +38857,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -38475,6 +38911,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -38522,6 +38959,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -38572,6 +39010,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -38618,6 +39057,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -38807,6 +39247,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -38955,6 +39396,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -39010,6 +39452,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39059,6 +39502,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39111,6 +39555,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -39159,6 +39604,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -39239,6 +39685,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39267,6 +39714,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39297,6 +39745,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39326,6 +39775,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39355,6 +39805,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39403,6 +39854,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39458,6 +39910,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39510,6 +39963,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39561,6 +40015,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39612,6 +40067,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39655,6 +40111,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39683,6 +40140,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39713,6 +40171,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39742,6 +40201,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39771,6 +40231,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39819,6 +40280,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39874,6 +40336,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39926,6 +40389,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -39970,6 +40434,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -40016,6 +40481,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -40386,6 +40852,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -40529,6 +40996,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -40583,6 +41051,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -40630,6 +41099,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -40680,6 +41150,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -40726,6 +41197,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -40982,6 +41454,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -41126,6 +41599,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -41182,6 +41656,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -41231,6 +41706,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -41283,6 +41759,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -41331,6 +41808,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -41484,6 +41962,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -41627,6 +42106,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -41682,6 +42162,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -41731,6 +42212,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -41783,6 +42265,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -41831,6 +42314,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -41911,6 +42395,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -41939,6 +42424,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -41969,6 +42455,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -41999,6 +42486,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42047,6 +42535,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42102,6 +42591,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42154,6 +42644,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42206,6 +42697,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42250,6 +42742,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42278,6 +42771,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42308,6 +42802,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42338,6 +42833,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42386,6 +42882,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42441,6 +42938,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42493,6 +42991,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42545,6 +43044,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42589,6 +43089,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42617,6 +43118,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42647,6 +43149,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42677,6 +43180,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42725,6 +43229,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42780,6 +43285,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42832,6 +43338,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -42884,6 +43391,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43004,6 +43512,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43032,6 +43541,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43062,6 +43572,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43092,6 +43603,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43140,6 +43652,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43195,6 +43708,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43247,6 +43761,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43299,6 +43814,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43442,6 +43958,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -43589,6 +44106,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -43644,6 +44162,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43693,6 +44212,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -43745,6 +44265,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -43793,6 +44314,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -44059,6 +44581,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -44202,6 +44725,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -44257,6 +44781,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -44306,6 +44831,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -44358,6 +44884,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -44406,6 +44933,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -44566,6 +45094,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -44693,6 +45222,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -44744,6 +45274,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -44791,6 +45322,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -44841,6 +45373,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -44887,6 +45420,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -45047,6 +45581,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -45193,6 +45728,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -45246,6 +45782,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -45293,6 +45830,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -45343,6 +45881,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -45389,6 +45928,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -45643,6 +46183,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -45789,6 +46330,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -45845,6 +46387,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -45894,6 +46437,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -45946,6 +46490,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -45994,6 +46539,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -46074,6 +46620,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46102,6 +46649,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46132,6 +46680,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46162,6 +46711,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46210,6 +46760,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46265,6 +46816,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46317,6 +46869,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46369,6 +46922,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46413,6 +46967,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46441,6 +46996,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46471,6 +47027,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46501,6 +47058,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46550,6 +47108,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46606,6 +47165,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46658,6 +47218,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46710,6 +47271,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46863,6 +47425,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -46891,6 +47454,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46919,6 +47483,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46949,6 +47514,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -46979,6 +47545,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47008,6 +47575,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47157,6 +47725,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -47212,6 +47781,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47261,6 +47831,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47313,6 +47884,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -47361,6 +47933,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -47414,6 +47987,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47469,6 +48043,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47521,6 +48096,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47573,6 +48149,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47624,6 +48201,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -47885,6 +48463,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -48028,6 +48607,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -48083,6 +48663,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -48132,6 +48713,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -48184,6 +48766,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -48232,6 +48815,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -48429,6 +49013,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -48575,6 +49160,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -48630,6 +49216,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -48677,6 +49264,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -48727,6 +49315,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -48773,6 +49362,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -48962,6 +49552,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -49110,6 +49701,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -49166,6 +49758,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -49215,6 +49808,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -49267,6 +49861,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -49315,6 +49910,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -49468,6 +50064,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -49611,6 +50208,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -49666,6 +50264,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -49715,6 +50314,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -49767,6 +50367,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -49815,6 +50416,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -50071,6 +50673,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -50099,6 +50702,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -50127,6 +50731,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -50276,6 +50881,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -50331,6 +50937,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -50380,6 +50987,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -50432,6 +51040,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -50480,6 +51089,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -50533,6 +51143,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -50588,6 +51199,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -50781,6 +51393,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -50929,6 +51542,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -50984,6 +51598,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -51033,6 +51648,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -51085,6 +51701,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -51133,6 +51750,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -51298,6 +51916,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -51441,6 +52060,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -51496,6 +52116,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -51545,6 +52166,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -51597,6 +52219,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -51645,6 +52268,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -51800,6 +52424,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -51945,6 +52570,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test"
         ],
         "important": true,
@@ -51997,6 +52623,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -52046,6 +52673,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -52098,6 +52726,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -52146,6 +52775,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -52398,6 +53028,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -52541,6 +53172,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -52596,6 +53228,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -52645,6 +53278,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -52697,6 +53331,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -52745,6 +53380,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53001,6 +53637,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53144,6 +53781,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53199,6 +53837,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -53248,6 +53887,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -53300,6 +53940,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53348,6 +53989,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53532,6 +54174,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53675,6 +54318,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53730,6 +54374,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -53779,6 +54424,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -53831,6 +54477,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53879,6 +54526,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53961,6 +54609,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -53988,6 +54637,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -54092,6 +54742,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -54236,6 +54887,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -54291,6 +54943,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54340,6 +54993,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54392,6 +55046,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -54440,6 +55095,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -54537,6 +55193,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54568,6 +55225,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54599,6 +55257,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54630,6 +55289,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54679,6 +55339,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54732,6 +55393,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54785,6 +55447,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54837,6 +55500,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54882,6 +55546,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54913,6 +55578,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54944,6 +55610,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -54993,6 +55660,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55046,6 +55714,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55099,6 +55768,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55143,6 +55813,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55174,6 +55845,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55205,6 +55877,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55236,6 +55909,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55285,6 +55959,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55338,6 +56013,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55391,6 +56067,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55444,6 +56121,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55569,6 +56247,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -55719,6 +56398,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -55772,6 +56452,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55819,6 +56500,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -55869,6 +56551,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -55915,6 +56598,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -56073,6 +56757,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -56223,6 +56908,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -56276,6 +56962,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -56323,6 +57010,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -56373,6 +57061,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -56419,6 +57108,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -56577,6 +57267,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -56727,6 +57418,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -56780,6 +57472,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -56827,6 +57520,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -56877,6 +57571,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -56923,6 +57618,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -57081,6 +57777,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -57231,6 +57928,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -57284,6 +57982,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -57331,6 +58030,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -57381,6 +58081,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -57427,6 +58128,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -57585,6 +58287,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -57735,6 +58438,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -57788,6 +58492,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -57835,6 +58540,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -57885,6 +58591,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -57931,6 +58638,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -58089,6 +58797,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -58239,6 +58948,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -58292,6 +59002,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -58339,6 +59050,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -58389,6 +59101,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -58435,6 +59148,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -58593,6 +59307,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -58743,6 +59458,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -58796,6 +59512,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -58843,6 +59560,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -58893,6 +59611,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -58939,6 +59658,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -59099,6 +59819,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -59251,6 +59972,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -59304,6 +60026,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -59351,6 +60074,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -59401,6 +60125,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -59447,6 +60172,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -59605,6 +60331,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -59754,6 +60481,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -59808,6 +60536,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -59855,6 +60584,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -59905,6 +60635,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -59951,6 +60682,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -60109,6 +60841,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -60259,6 +60992,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -60312,6 +61046,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -60359,6 +61094,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -60409,6 +61145,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -60455,6 +61192,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -60613,6 +61351,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -60763,6 +61502,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -60816,6 +61556,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -60863,6 +61604,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -60913,6 +61655,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -60959,6 +61702,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -61117,6 +61861,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -61264,6 +62009,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -61319,6 +62065,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -61366,6 +62113,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -61416,6 +62164,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -61462,6 +62211,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -61718,6 +62468,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -61861,6 +62612,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -61916,6 +62668,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -61965,6 +62718,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -62017,6 +62771,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -62065,6 +62820,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -62254,6 +63010,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -62402,6 +63159,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -62457,6 +63215,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -62506,6 +63265,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -62558,6 +63318,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -62606,6 +63367,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -62762,6 +63524,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -62980,6 +63743,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -63128,6 +63892,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -63183,6 +63948,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -63232,6 +63998,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -63284,6 +64051,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -63332,6 +64100,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -63384,6 +64153,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -63431,6 +64201,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -63591,6 +64362,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -63739,6 +64511,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -63794,6 +64567,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -63843,6 +64617,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -63895,6 +64670,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -63943,6 +64719,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -64172,6 +64949,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -64315,6 +65093,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -64370,6 +65149,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -64419,6 +65199,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -64471,6 +65252,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -64519,6 +65301,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -64596,6 +65379,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -64733,6 +65517,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -64787,6 +65572,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -64836,6 +65622,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -64888,6 +65675,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -64936,6 +65724,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -65102,6 +65891,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -65390,6 +66180,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -65464,6 +66255,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -65636,6 +66428,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -65691,6 +66484,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -65740,6 +66534,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -65792,6 +66587,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -65840,6 +66636,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -65993,6 +66790,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -66136,6 +66934,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -66191,6 +66990,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -66240,6 +67040,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -66292,6 +67093,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -66340,6 +67142,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -66509,6 +67312,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -66657,6 +67461,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -66712,6 +67517,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -66761,6 +67567,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -66813,6 +67620,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -66861,6 +67669,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -66913,6 +67722,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -66960,6 +67770,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -67118,6 +67929,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -67261,6 +68073,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -67316,6 +68129,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -67365,6 +68179,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -67417,6 +68232,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -67465,6 +68281,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -67694,6 +68511,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -67837,6 +68655,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -67892,6 +68711,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -67941,6 +68761,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -67993,6 +68814,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -68041,6 +68863,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -68118,6 +68941,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -68255,6 +69079,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -68309,6 +69134,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -68358,6 +69184,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -68410,6 +69237,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -68458,6 +69286,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -68714,6 +69543,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -68857,6 +69687,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -68912,6 +69743,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -68961,6 +69793,7 @@
                 "image_test": true,
                 "images": [
                     "base",
+                    "recovery",
                     "test",
                     "factory_install"
                 ],
@@ -69013,6 +69846,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],
@@ -69061,6 +69895,7 @@
         "image_test": true,
         "images": [
             "base",
+            "recovery",
             "test",
             "factory_install"
         ],

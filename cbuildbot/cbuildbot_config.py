@@ -448,7 +448,8 @@ _settings = dict(
 # pre_cq -- Test CLs to verify they're ready for the commit queue.
   pre_cq=False,
 
-# signer_tests -- Runs the tests that the signer would run.
+# signer_tests -- Runs the tests that the signer would run. This should only be
+#                 set if 'recovery' is in images.
   signer_tests=False,
 
 # unittests -- Runs unittests for packages.
@@ -688,7 +689,7 @@ _settings = dict(
   chrome_sdk_goma=False,
 
 # image_test -- Run image tests. This should only be set if 'base' is in
-# "images".
+#               our list of images.
   image_test=False,
 
 # =============================================================================
@@ -1181,7 +1182,7 @@ full = _config(
 
   build_type=constants.BUILD_FROM_SOURCE_TYPE,
   archive_build_debug=True,
-  images=['base', 'test', 'factory_install'],
+  images=['base', 'recovery', 'test', 'factory_install'],
   git_sync=True,
   trybot_list=True,
   description='Full Builds',
@@ -2486,7 +2487,7 @@ _release = full.derive(official, internal,
   afdo_use=True,
   manifest=constants.OFFICIAL_MANIFEST,
   manifest_version=True,
-  images=['base', 'test', 'factory_install'],
+  images=['base', 'recovery', 'test', 'factory_install'],
   push_image=True,
   upload_symbols=True,
   binhost_bucket='gs://chromeos-dev-installer',
@@ -2750,7 +2751,7 @@ _release.add_config('mipsel-o32-generic-release',
 
 _release.add_config('stumpy_moblab-release',
   _base_configs['stumpy_moblab'],
-  images=['base', 'test'],
+  images=['base', 'recovery', 'test'],
   paygen_skip_delta_payloads=True,
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
   paygen_skip_testing=True,
@@ -2767,7 +2768,7 @@ _release.add_config('stumpy_moblab-release',
 
 _release.add_config('panther_moblab-release',
   _base_configs['panther_moblab'],
-  images=['base', 'test'],
+  images=['base', 'recovery', 'test'],
   paygen_skip_delta_payloads=True,
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
   paygen_skip_testing=True,
