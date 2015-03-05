@@ -601,6 +601,8 @@
       'browser/ui/cocoa/panels/panel_utils_cocoa.mm',
       'browser/ui/cocoa/panels/panel_window_controller_cocoa.h',
       'browser/ui/cocoa/panels/panel_window_controller_cocoa.mm',
+      'browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h',
+      'browser/ui/cocoa/passwords/account_avatar_fetcher_manager.mm',
       'browser/ui/cocoa/passwords/credential_item_view.h',
       'browser/ui/cocoa/passwords/credential_item_view.mm',
       'browser/ui/cocoa/passwords/manage_password_item_view_controller.h',
