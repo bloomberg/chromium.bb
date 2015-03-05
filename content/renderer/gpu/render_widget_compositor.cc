@@ -772,10 +772,6 @@ void RenderWidgetCompositor::setTopControlsHeight(float height, bool shrink) {
     layer_tree_host_->SetTopControlsHeight(height, shrink);
 }
 
-void RenderWidgetCompositor::setTopControlsContentOffset(float offset) {
-  setTopControlsShownRatio(offset);
-}
-
 void RenderWidgetCompositor::setTopControlsShownRatio(float ratio) {
   layer_tree_host_->SetTopControlsShownRatio(ratio);
 }

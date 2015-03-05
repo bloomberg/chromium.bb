@@ -89,7 +89,6 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
                                        float new_page_scale,
                                        double duration_sec);
   virtual void heuristicsForGpuRasterizationUpdated(bool matches_heuristic) {}
-  virtual void setTopControlsContentOffset(float offset) {}
   virtual void setNeedsAnimate();
   virtual bool commitRequested() const;
   virtual void didStopFlinging() {}
