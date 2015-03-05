@@ -447,11 +447,12 @@ void UserScriptLoader::OnScriptsLoaded(
   // If user scripts are coming from a <webview>, will only notify the
   // RenderProcessHost of that <webview>; otherwise will notify all of the
   // RenderProcessHosts.
-  if (user_scripts && !user_scripts->empty() &&
-      (*user_scripts)[0].consumer_instance_type() ==
+  if (user_scripts_ && !user_scripts_->empty() &&
+      (*user_scripts_)[0].consumer_instance_type() ==
           UserScript::ConsumerInstanceType::WEBVIEW) {
-    DCHECK_EQ(1u, user_scripts->size());
-    int render_process_id = (*user_scripts)[0].routing_info().render_process_id;
+    DCHECK_EQ(1u, user_scripts_->size());
+    int render_process_id =
+        (*user_scripts_)[0].routing_info().render_process_id;
     content::RenderProcessHost* host =
         content::RenderProcessHost::FromID(render_process_id);
     if (host)

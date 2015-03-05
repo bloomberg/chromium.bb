@@ -130,6 +130,9 @@ class UserScript {
   // on. Only user scripts from <webview>s have a custom routing info.
   struct RoutingInfo {
     RoutingInfo() : render_process_id(-1), render_view_id(-1) {}
+    RoutingInfo(int render_process_id, int render_view_id)
+        : render_process_id(render_process_id),
+          render_view_id(render_view_id) {}
     ~RoutingInfo() {}
 
     int render_process_id;

@@ -4,7 +4,8 @@
 
 #include "extensions/common/host_id.h"
 
-HostID::HostID() {
+HostID::HostID()
+    : type_(HostType::EXTENSIONS) {
 }
 
 HostID::HostID(HostType type, const std::string& id)
