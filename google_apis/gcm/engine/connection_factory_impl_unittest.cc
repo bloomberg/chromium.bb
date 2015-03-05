@@ -132,6 +132,9 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
   // Force a login handshake to be delayed.
   void SetDelayLogin(bool delay_login);
 
+  // Simulate a socket error.
+  void SetSocketError();
+
   base::SimpleTestTickClock* tick_clock() { return &tick_clock_; }
 
  private:
@@ -184,6 +187,7 @@ TestConnectionFactoryImpl::~TestConnectionFactoryImpl() {
 
 void TestConnectionFactoryImpl::ConnectImpl() {
   ASSERT_GT(num_expected_attempts_, 0);
+  ASSERT_FALSE(GetConnectionHandler()->CanSendMessage());
   scoped_ptr<mcs_proto::LoginRequest> request(BuildLoginRequest(0, 0, ""));
   GetConnectionHandler()->Init(*request, NULL);
   OnConnectDone(connect_result_);
@@ -253,6 +257,10 @@ void TestConnectionFactoryImpl::SetMultipleConnectResults(
 void TestConnectionFactoryImpl::SetDelayLogin(bool delay_login) {
   delay_login_ = delay_login;
   fake_handler_->set_fail_login(delay_login_);
+}
+
+void TestConnectionFactoryImpl::SetSocketError() {
+  fake_handler_->set_had_error(true);
 }
 
 }  // namespace
@@ -558,6 +566,28 @@ TEST_F(ConnectionFactoryImplTest, NetworkChangeBeforeFirstConnection) {
   factory()->SetConnectResult(net::OK);
   factory()->Connect();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
+  EXPECT_TRUE(factory()->IsEndpointReachable());
+}
+
+// Test that if the client attempts to reconnect while a connection is already
+// open, we don't crash.
+TEST_F(ConnectionFactoryImplTest, ConnectionResetRace) {
+  // Initial successful connection.
+  factory()->SetConnectResult(net::OK);
+  factory()->Connect();
+  WaitForConnections();
+  EXPECT_TRUE(factory()->IsEndpointReachable());
+
+  // Trigger a connection error under the hood.
+  factory()->SetSocketError();
+  EXPECT_FALSE(factory()->IsEndpointReachable());
+
+  // Now trigger force a re-connection.
+  factory()->SetConnectResult(net::OK);
+  factory()->Connect();
+  WaitForConnections();
+
+  // Re-connection should succeed.
   EXPECT_TRUE(factory()->IsEndpointReachable());
 }
 

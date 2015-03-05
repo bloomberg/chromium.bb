@@ -145,6 +145,10 @@ void ConnectionFactoryImpl::ConnectWithBackoff() {
 
   DVLOG(1) << "Attempting connection to MCS endpoint.";
   waiting_for_backoff_ = false;
+  // It's necessary to close the socket before attempting any new connection,
+  // otherwise it's possible to hit a use-after-free in the connection handler.
+  // crbug.com/462319
+  CloseSocket();
   ConnectImpl();
 }
 
@@ -212,7 +216,12 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     return;
   }
 
-  if (logging_in_) {
+  if (reason == NETWORK_CHANGE) {
+    // Canary attempts bypass backoff without resetting it. These will have no
+    // effect if we're already in the process of connecting.
+    ConnectImpl();
+    return;
+  } else if (logging_in_) {
     // Failures prior to login completion just reuse the existing backoff entry.
     logging_in_ = false;
     backoff_entry_->InformOfRequest(false);
@@ -222,9 +231,6 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     // the backoff entry that was saved off at login completion time.
     backoff_entry_.swap(previous_backoff_);
     backoff_entry_->InformOfRequest(false);
-  } else if (reason == NETWORK_CHANGE) {
-    ConnectImpl();  // Canary attempts bypass backoff without resetting it.
-    return;
   } else {
     // We shouldn't be in backoff in thise case.
     DCHECK_EQ(0, backoff_entry_->failure_count());
@@ -287,7 +293,8 @@ net::IPEndPoint ConnectionFactoryImpl::GetPeerIP() {
 
 void ConnectionFactoryImpl::ConnectImpl() {
   DCHECK(!IsEndpointReachable());
-  DCHECK(!socket_handle_.socket());
+  // TODO(zea): Make this a dcheck again. crbug.com/462319
+  CHECK(!socket_handle_.socket());
 
   // TODO(zea): if the network is offline, don't attempt to connect.
   // See crbug.com/396687

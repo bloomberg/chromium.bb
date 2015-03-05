@@ -51,6 +51,13 @@ class FakeConnectionHandler : public ConnectionHandler {
     fail_send_ = fail_send;
   }
 
+  // Whether a socket-level error was encountered or not.
+  void set_had_error(bool had_error) {
+    had_error_ = had_error;
+  }
+
+  bool initialized() const { return initialized_; }
+
  private:
   ConnectionHandler::ProtoReceivedCallback read_callback_;
   ConnectionHandler::ProtoSentCallback write_callback_;
@@ -65,6 +72,9 @@ class FakeConnectionHandler : public ConnectionHandler {
 
   // Whether a successful login has completed.
   bool initialized_;
+
+  // Whether an error was encountered after a successful login.
+  bool had_error_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionHandler);
 };
