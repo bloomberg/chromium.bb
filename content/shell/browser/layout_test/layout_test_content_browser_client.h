@@ -35,6 +35,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
       const GURL& requesting_frame,
       bool user_gesture,
       const base::Callback<void(PermissionStatus)>& callback) override;
+
   PlatformNotificationService* GetPlatformNotificationService() override;
   void GetAdditionalNavigatorConnectServices(
       const scoped_refptr<NavigatorConnectContext>& context) override;

@@ -30,8 +30,9 @@ LayoutTestNotificationManager::PersistentNotification::PersistentNotification()
 
 LayoutTestNotificationManager::~LayoutTestNotificationManager() {}
 
-bool LayoutTestNotificationManager::RequestPermission(const GURL& origin) {
-  return CheckPermission(origin) == blink::WebNotificationPermissionAllowed;
+PermissionStatus LayoutTestNotificationManager::RequestPermission(
+    const GURL& origin) {
+  return GetPermissionStatus(origin);
 }
 
 blink::WebNotificationPermission
@@ -138,6 +139,21 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title) {
           notification.persistent_id,
           notification.notification_data,
           base::Bind(&OnEventDispatchComplete));
+}
+
+PermissionStatus LayoutTestNotificationManager::GetPermissionStatus(
+    const GURL& origin) {
+  switch (CheckPermission(origin)) {
+    case blink::WebNotificationPermissionAllowed:
+      return PERMISSION_STATUS_GRANTED;
+    case blink::WebNotificationPermissionDenied:
+      return PERMISSION_STATUS_DENIED;
+    case blink::WebNotificationPermissionDefault:
+      return PERMISSION_STATUS_ASK;
+  }
+
+  NOTREACHED();
+  return PERMISSION_STATUS_DENIED;
 }
 
 blink::WebNotificationPermission

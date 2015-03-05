@@ -46,13 +46,19 @@ void NotificationPermissionDispatcher::OnPermissionRequestComplete(
       pending_requests_.Lookup(request_id);
   DCHECK(callback);
 
-  // TODO(mlamouri): we should have a switch to handle all cases but for now,
-  // the Notification code is assuming allowed/denied.
-  // See http://crbug.com/434547 and http://crbug.com/436414
   blink::WebNotificationPermission permission =
-      status == PERMISSION_STATUS_GRANTED
-          ? blink::WebNotificationPermissionAllowed
-          : blink::WebNotificationPermissionDenied;
+      blink::WebNotificationPermissionDefault;
+  switch (status) {
+    case PERMISSION_STATUS_GRANTED:
+      permission = blink::WebNotificationPermissionAllowed;
+      break;
+    case PERMISSION_STATUS_DENIED:
+      permission = blink::WebNotificationPermissionDenied;
+      break;
+    case PERMISSION_STATUS_ASK:
+      permission = blink::WebNotificationPermissionDefault;
+      break;
+  }
 
   callback->permissionRequestComplete(permission);
   pending_requests_.Remove(request_id);

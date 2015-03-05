@@ -27,15 +27,14 @@ void RequestDesktopNotificationPermissionOnIO(
     const base::Callback<void(PermissionStatus)>& callback) {
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
-  bool allowed = manager ? manager->RequestPermission(source_origin)
-                         : true;
+  PermissionStatus result = manager ? manager->RequestPermission(source_origin)
+                                    : PERMISSION_STATUS_GRANTED;
 
   // The callback came from the UI thread, we need to run it from there again.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(callback,
-                 allowed ? PERMISSION_STATUS_GRANTED : PERMISSION_STATUS_ASK));
+      base::Bind(callback, result));
 }
 
 }  // namespace

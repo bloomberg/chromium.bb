@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/platform_notification_service.h"
+#include "content/public/common/permission_status.mojom.h"
 #include "content/public/common/platform_notification_data.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 #include "url/gurl.h"
@@ -31,11 +32,14 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   // Requests permission for |origin| to display notifications in layout tests.
   // Must be called on the IO thread.
   // Returns whether the permission is granted.
-  bool RequestPermission(const GURL& origin);
+  PermissionStatus RequestPermission(const GURL& origin);
 
   // Checks if |origin| has permission to display notifications. May be called
   // on both the IO and the UI threads.
   blink::WebNotificationPermission CheckPermission(const GURL& origin);
+
+  // Similar to CheckPermission() above but returns a PermissionStatus object.
+  PermissionStatus GetPermissionStatus(const GURL& origin);
 
   // Sets the permission to display notifications for |origin| to |permission|.
   // Must be called on the IO thread.

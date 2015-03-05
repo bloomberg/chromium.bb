@@ -88,10 +88,6 @@ void PermissionServiceImpl::OnRequestPermissionResponse(
     PermissionStatus status) {
   pending_requests_.Remove(request_id);
 
-  // TODO(mlamouri): this is not yet returning a tri-state value because it will
-  // require some further changes that will be dealt with in
-  // https://crrev.com/794203004/
-  status = status == PERMISSION_STATUS_DENIED ? PERMISSION_STATUS_ASK : status;
   callback.Run(status);
 }
 
