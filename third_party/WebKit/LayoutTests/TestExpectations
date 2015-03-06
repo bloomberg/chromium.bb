@@ -906,6 +906,8 @@ crbug.com/439457 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-x
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
+crbug.com/464729 inspector/sources/debugger/show-function-definition.html [ Pass Failure Slow ]
+
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
