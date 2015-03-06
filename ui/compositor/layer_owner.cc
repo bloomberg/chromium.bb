@@ -66,12 +66,6 @@ scoped_ptr<Layer> LayerOwner::RecreateLayer() {
     new_layer->Add(child);
   }
 
-  // If old_layer was the layer tree root then we need to move the Compositor
-  // over to the new root.
-  const bool is_root = !old_layer->parent();
-  if (is_root && old_layer->GetCompositor())
-    old_layer->GetCompositor()->SetRootLayer(new_layer);
-
   // Install the delegate last so that the delegate isn't notified as we copy
   // state to the new layer.
   new_layer->set_delegate(old_delegate);
