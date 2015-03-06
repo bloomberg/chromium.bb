@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/options/autofill_options_handler.h"
@@ -357,6 +358,9 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new HandlerOptionsHandler());
 
   web_ui->AddMessageHandler(new MetricsHandler());
+
+  // Enable extension API calls in the WebUI.
+  extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
 
   // |localized_strings| ownership is taken over by this constructor.
   OptionsUIHTMLSource* html_source =

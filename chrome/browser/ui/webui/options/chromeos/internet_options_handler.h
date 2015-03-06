@@ -56,12 +56,9 @@ class InternetOptionsHandler
   void SimOperationCallback(const base::ListValue* args);
 
   // networkingPrvate callbacks
-  void DisableNetworkTypeCallback(const base::ListValue* args);
-  void EnableNetworkTypeCallback(const base::ListValue* args);
   void GetManagedPropertiesCallback(const base::ListValue* args);
-  void RequestNetworkScanCallback(const base::ListValue* args);
   void StartConnectCallback(const base::ListValue* args);
-  void StartDisconnectCallback(const base::ListValue* args);
+  void SetPropertiesCallback(const base::ListValue* args);
 
   // Refreshes the display of network information.
   void RefreshNetworkData();
@@ -89,9 +86,6 @@ class InternetOptionsHandler
 
   // Updates the logged in user type.
   void UpdateLoggedInUserType();
-
-  // Additional callbacks to set network state properties.
-  void SetPropertiesCallback(const base::ListValue* args);
 
   // Gets the native window for hosting dialogs, etc.
   gfx::NativeWindow GetNativeWindow() const;

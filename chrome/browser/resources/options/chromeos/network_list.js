@@ -9,6 +9,7 @@
  * servicePath properties. TODO(stevenjb): Use networkingPrivate.getNetworks.
  * @typedef {{
  *   ConnectionState: string,
+ *   GUID: string
  *   Type: string,
  *   policyManaged: boolean,
  *   servicePath: string
@@ -417,8 +418,7 @@ cr.define('options.network', function() {
         this.menu_.hidden = false;
       }
       if (rescan) {
-        // TODO(stevenjb): chrome.networkingPrivate.requestNetworkScan
-        chrome.send('requestNetworkScan');
+        chrome.networkingPrivate.requestNetworkScan();
       }
     }
   };
@@ -558,22 +558,21 @@ cr.define('options.network', function() {
       list = this.data.networkList;
       var empty = !list || list.length == 0;
       if (list) {
-        var connectedVpnServicePath = '';
+        var connectedVpnGuid = '';
         for (var i = 0; i < list.length; i++) {
           var data = list[i];
           this.createNetworkOptionsCallback_(networkGroup, data);
           // For VPN only, append a 'Disconnect' item to the dropdown menu.
-          if (!connectedVpnServicePath && data.Type == 'VPN' &&
+          if (!connectedVpnGuid && data.Type == 'VPN' &&
               (data.ConnectionState == 'Connected' ||
                data.ConnectionState == 'Connecting')) {
-            connectedVpnServicePath = data.servicePath;
+            connectedVpnGuid = data.GUID;
           }
         }
-        if (connectedVpnServicePath) {
+        if (connectedVpnGuid) {
           var disconnectCallback = function() {
             sendChromeMetricsAction('Options_NetworkDisconnectVPN');
-            // TODO(stevenjb): chrome.networkingPrivate.startDisconnect
-            chrome.send('startDisconnect', [connectedVpnServicePath]);
+            chrome.networkingPrivate.startDisconnect(connectedVpnGuid);
           };
           // Add separator
           addendum.push({});
@@ -590,24 +589,21 @@ cr.define('options.network', function() {
             label: loadTimeData.getString('turnOffWifi'),
             command: function() {
               sendChromeMetricsAction('Options_NetworkWifiToggle');
-              // TODO(stevenjb): chrome.networkingPrivate.disableNetworkType
-              chrome.send('disableNetworkType', ['WiFi']);
+              chrome.networkingPrivate.disableNetworkType('WiFi');
             },
             data: {}});
         } else if (this.data_.key == 'WiMAX') {
           addendum.push({
             label: loadTimeData.getString('turnOffWimax'),
             command: function() {
-              // TODO(stevenjb): chrome.networkingPrivate.disableNetworkType
-              chrome.send('disableNetworkType', ['WiMAX']);
+              chrome.networkingPrivate.disableNetworkType('WiMAX');
             },
             data: {}});
         } else if (this.data_.key == 'Cellular') {
           addendum.push({
             label: loadTimeData.getString('turnOffCellular'),
             command: function() {
-              // TODO(stevenjb): chrome.networkingPrivate.disableNetworkType
-              chrome.send('disableNetworkType', ['Cellular']);
+              chrome.networkingPrivate.disableNetworkType('Cellular');
             },
             data: {}});
         }
@@ -1104,8 +1100,7 @@ cr.define('options.network', function() {
           return;
         }
       }
-      // TODO(stevenjb): chrome.networkingPrivate.enableNetworkType
-      chrome.send('enableNetworkType', [type]);
+      chrome.networkingPrivate.enableNetworkType(type);
     };
     $('network-list').update({key: type,
                               subtitle: subtitle,

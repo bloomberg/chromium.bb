@@ -223,7 +223,9 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://network/*"
+      "chrome://network/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
     ]
   }],
   "power": {

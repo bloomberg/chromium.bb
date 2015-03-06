@@ -86,12 +86,8 @@ const char kSimOperationMessage[] = "simOperation";
 
 // TODO(stevenjb): Replace these with the matching networkingPrivate methods.
 // crbug.com/279351.
-const char kDisableNetworkTypeMessage[] = "disableNetworkType";
-const char kEnableNetworkTypeMessage[] = "enableNetworkType";
 const char kGetManagedPropertiesMessage[] = "getManagedProperties";
-const char kRequestNetworkScanMessage[] = "requestNetworkScan";
 const char kStartConnectMessage[] = "startConnect";
-const char kStartDisconnectMessage[] = "startDisconnect";
 const char kSetPropertiesMessage[] = "setProperties";
 
 // TODO(stevenjb): Add these to networkingPrivate.
@@ -268,23 +264,11 @@ void InternetOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 
   // networkingPrivate methods
-  web_ui()->RegisterMessageCallback(kDisableNetworkTypeMessage,
-      base::Bind(&InternetOptionsHandler::DisableNetworkTypeCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kEnableNetworkTypeMessage,
-      base::Bind(&InternetOptionsHandler::EnableNetworkTypeCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kGetManagedPropertiesMessage,
       base::Bind(&InternetOptionsHandler::GetManagedPropertiesCallback,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kRequestNetworkScanMessage,
-      base::Bind(&InternetOptionsHandler::RequestNetworkScanCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kStartConnectMessage,
       base::Bind(&InternetOptionsHandler::StartConnectCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kStartDisconnectMessage,
-      base::Bind(&InternetOptionsHandler::StartDisconnectCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetPropertiesMessage,
       base::Bind(&InternetOptionsHandler::SetPropertiesCallback,
@@ -378,30 +362,6 @@ void InternetOptionsHandler::SimOperationCallback(const base::ListValue* args) {
 // networkingPrivate API directly in the settings JS and deprecate these
 // methods. crbug.com/279351.
 
-void InternetOptionsHandler::DisableNetworkTypeCallback(
-    const base::ListValue* args) {
-  std::string type;
-  if (!args->GetString(0, &type)) {
-    NOTREACHED();
-    return;
-  }
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      chromeos::onc::NetworkTypePatternFromOncType(type), false,
-      base::Bind(&ShillError, "DisableNetworkType"));
-}
-
-void InternetOptionsHandler::EnableNetworkTypeCallback(
-    const base::ListValue* args) {
-  std::string type;
-  if (!args->GetString(0, &type)) {
-    NOTREACHED();
-    return;
-  }
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      chromeos::onc::NetworkTypePatternFromOncType(type), true,
-      base::Bind(&ShillError, "EnableNetworkType"));
-}
-
 void InternetOptionsHandler::GetManagedPropertiesCallback(
     const base::ListValue* args) {
   std::string service_path;
@@ -422,11 +382,6 @@ void InternetOptionsHandler::GetManagedPropertiesCallback(
           base::Bind(&ShillError, "GetManagedProperties"));
 }
 
-void InternetOptionsHandler::RequestNetworkScanCallback(
-    const base::ListValue* args) {
-  NetworkHandler::Get()->network_state_handler()->RequestScan();
-}
-
 void InternetOptionsHandler::StartConnectCallback(const base::ListValue* args) {
   std::string service_path;
   if (!args->GetString(0, &service_path)) {
@@ -434,19 +389,6 @@ void InternetOptionsHandler::StartConnectCallback(const base::ListValue* args) {
     return;
   }
   ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
-}
-
-void InternetOptionsHandler::StartDisconnectCallback(
-    const base::ListValue* args) {
-  std::string service_path;
-  if (!args->GetString(0, &service_path)) {
-    NOTREACHED();
-    return;
-  }
-  NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
-      service_path,
-      base::Bind(&base::DoNothing),
-      base::Bind(&ShillError, "StartDisconnectCallback"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

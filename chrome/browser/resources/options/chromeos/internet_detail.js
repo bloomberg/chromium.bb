@@ -1134,7 +1134,7 @@ cr.define('options.internet', function() {
       sendChromeMetricsAction('Options_NetworkConnectToWifi');
     else if (detailsPage.type_ == 'VPN')
       sendChromeMetricsAction('Options_NetworkConnectToVPN');
-    // TODO(stevenjb): chrome.networkingPrivate.disableNetworkType
+    // TODO(stevenjb): chrome.networkingPrivate.startConnect
     chrome.send('startConnect', [detailsPage.servicePath_]);
     PageManager.closeOverlay();
   };
@@ -1145,8 +1145,8 @@ cr.define('options.internet', function() {
       sendChromeMetricsAction('Options_NetworkDisconnectWifi');
     else if (detailsPage.type_ == 'VPN')
       sendChromeMetricsAction('Options_NetworkDisconnectVPN');
-    // TODO(stevenjb): chrome.networkingPrivate.startDisconnect
-    chrome.send('startDisconnect', [detailsPage.servicePath_]);
+    var guid = detailsPage.onc_.getActiveValue('GUID');
+    chrome.networkingPrivate.startDisconnect(guid);
     PageManager.closeOverlay();
   };
 
