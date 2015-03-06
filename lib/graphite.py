@@ -73,7 +73,7 @@ class StatsFactoryClass(factory.ObjectFactory):
               es=ESMetadataFactory.GetInstance(),
               host=constants.STATSD_HOST,
               port=constants.STATSD_PORT,
-              prefix=constants.STATSD_PREFIX)),
+              prefix=constants.STATSD_PROD_PREFIX)),
       CONNECTION_TYPE_DEBUG: factory.CachedFunctionCall(
           lambda: stats.Statsd(
               es=ESMetadataFactory.GetInstance(),

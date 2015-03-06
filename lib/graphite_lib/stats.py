@@ -9,6 +9,8 @@ from __future__ import print_function
 import logging
 
 
+# Autotest uses this library and can not guarantee existence of the statsd
+# module.
 try:
   import statsd
 except ImportError:

@@ -989,7 +989,7 @@ def _SetupConnections(options, build_config):
       cidb.CIDBConnectionFactory.SetupProdCidb()
       return
     else:
-      graphite.StatsFactory.SetupMock()
+      graphite.StatsFactory.SetupDebug()
       graphite.ESMetadataFactory.SetupReadOnly()
       cidb.CIDBConnectionFactory.SetupDebugCidb()
       return

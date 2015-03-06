@@ -101,7 +101,7 @@ class ESMetadataRO(object):
 
 
   def __init__(self, use_http, host, port, index, udp_port,
-               timeout=DEFAULT_TIMEOUT):
+               timeout=DEFAULT_TIMEOUT, forgiving=True):
     """Initialize ESMetadata object.
 
     Args:
@@ -111,6 +111,9 @@ class ESMetadataRO(object):
       index: What index the metadata is stored in.
       udp_port: What port to use for UDP data.
       timeout: How long to wait while connecting to es.
+      forgiving: If set to true, this object is API compatible with the RW
+                 version of ESMetadata, and silently ignores write requests.
+                 Otherwise, it errors out on write requests.
     """
     self.use_http = use_http
     self.host = host
@@ -118,6 +121,7 @@ class ESMetadataRO(object):
     self.index = index
     self.udp_port = udp_port
     self.timeout = timeout
+    self.forgiving = forgiving
     self._es = None
 
 
@@ -344,6 +348,15 @@ class ESMetadataRO(object):
     """The arguments to this function are the same as _compose_query."""
     query = self._compose_query(*args, **kwargs)
     return self.execute_query(query)
+
+  def post(self, *args, **kwargs):  # pylint: disable=unused-argument
+    """A default implementation of post.
+
+    This implementation is noop if the object is forgiving, errors out
+    otherwise.
+    """
+    if not self.forgiving:
+      raise AttributeError('%s can not post data.' % self.__class__.__name__)
 
 
 class ESMetadata(ESMetadataRO):
