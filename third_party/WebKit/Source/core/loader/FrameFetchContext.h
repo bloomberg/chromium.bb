@@ -60,6 +60,7 @@ public:
     Document* document() const override { return m_document; } // Can be null
     void setDocument(Document* document) { m_document = document; }
     DocumentLoader* documentLoader() const override { return m_documentLoader; }
+    void clearDocumentLoader() { m_documentLoader = nullptr; }
 
     virtual void reportLocalLoadFailed(const KURL&) override;
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType) override;

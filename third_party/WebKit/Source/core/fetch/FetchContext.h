@@ -57,6 +57,8 @@ enum FetchResourceType {
 class FetchContext : public NoBaseWillBeGarbageCollectedFinalized<FetchContext> {
     WTF_MAKE_NONCOPYABLE(FetchContext);
 public:
+    static FetchContext& nullInstance();
+
     FetchContext() { }
     virtual ~FetchContext() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
