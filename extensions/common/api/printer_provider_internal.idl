@@ -16,6 +16,21 @@ namespace printerProviderInternal {
   // Same as in printerProvider.PrintError enum API.
   enum PrintError { OK, FAILED, INVALID_TICKET, INVALID_DATA };
 
+  // Information needed by a renderer to create a blob instance.
+  dictionary BlobInfo {
+    // The blob UUID.
+    DOMString blobUuid;
+
+    // The blob content type.
+    DOMString type;
+
+    // The blob size.
+    long size;
+  };
+
+  // Callback carrying information needed by a renderer to create a blob.
+  callback BlobCallback = void(BlobInfo blobInfo);
+
   interface Functions {
     // Runs callback to printerProvider.onGetPrintersRequested event.
     // |requestId|: Parameter identifying the event instance for which the
@@ -35,6 +50,15 @@ namespace printerProviderInternal {
     //     callback is run.
     // |error|: The requested print job result.
     void reportPrintResult(long request_id, optional PrintError error);
+
+    // Gets information needed to create a print data blob for a print request.
+    // The blob will be dispatched to the extension via
+    // printerProvider.onPrintRequested event.
+    // |requestId|: The request id for the print request for which data is
+    //     needed.
+    // |callback|: Callback called with the information needed to create a blob
+    //     of print data.
+    void getPrintData(long requestId, BlobCallback callback);
   };
 };
 

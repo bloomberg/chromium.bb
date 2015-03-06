@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
@@ -67,6 +71,13 @@ void RecordDictAndRunCallback(std::string* result,
 // Tests for chrome.printerProvider API.
 class PrinterProviderApiTest : public extensions::ShellApiTest {
  public:
+  enum PrintRequestDataType {
+    PRINT_REQUEST_DATA_TYPE_NOT_SET,
+    PRINT_REQUEST_DATA_TYPE_FILE,
+    PRINT_REQUEST_DATA_TYPE_FILE_DELETED,
+    PRINT_REQUEST_DATA_TYPE_BYTES
+  };
+
   PrinterProviderApiTest() {}
   ~PrinterProviderApiTest() override {}
 
@@ -77,19 +88,55 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
         ->DispatchGetPrintersRequested(callback);
   }
 
-  void StartPrintRequest(const std::string& extension_id,
-                         const PrinterProviderAPI::PrintCallback& callback) {
+  void StartPrintRequestWithNoData(
+      const std::string& extension_id,
+      const PrinterProviderAPI::PrintCallback& callback) {
     extensions::PrinterProviderPrintJob job;
     job.printer_id = extension_id + ":printer_id";
     job.ticket_json = "{}";
-    job.content_type = "content_type";
-    const unsigned char kDocumentBytes[] = {'b', 'y', 't', 'e', 's', 0};
+    job.content_type = "application/pdf";
+
+    PrinterProviderAPIFactory::GetInstance()
+        ->GetForBrowserContext(browser_context())
+        ->DispatchPrintRequested(job, callback);
+  }
+
+  void StartPrintRequestUsingDocumentBytes(
+      const std::string& extension_id,
+      const PrinterProviderAPI::PrintCallback& callback) {
+    extensions::PrinterProviderPrintJob job;
+    job.printer_id = extension_id + ":printer_id";
+    job.ticket_json = "{}";
+    job.content_type = "application/pdf";
+    const unsigned char kDocumentBytes[] = {'b', 'y', 't', 'e', 's'};
     job.document_bytes =
         new base::RefCountedBytes(kDocumentBytes, arraysize(kDocumentBytes));
 
     PrinterProviderAPIFactory::GetInstance()
         ->GetForBrowserContext(browser_context())
         ->DispatchPrintRequested(job, callback);
+  }
+
+  bool StartPrintRequestUsingFileInfo(
+      const std::string& extension_id,
+      const PrinterProviderAPI::PrintCallback& callback) {
+    extensions::PrinterProviderPrintJob job;
+
+    const char kBytes[] = {'b', 'y', 't', 'e', 's'};
+    if (!CreateTempFileWithContents(kBytes, static_cast<int>(arraysize(kBytes)),
+                                    &job.document_path, &job.file_info)) {
+      ADD_FAILURE() << "Failed to create test file.";
+      return false;
+    }
+
+    job.printer_id = extension_id + ":printer_id";
+    job.ticket_json = "{}";
+    job.content_type = "image/pwg-raster";
+
+    PrinterProviderAPIFactory::GetInstance()
+        ->GetForBrowserContext(browser_context())
+        ->DispatchPrintRequested(job, callback);
+    return true;
   }
 
   void StartCapabilityRequest(
@@ -136,6 +183,7 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   // |test_param|: The test that should be run.
   // |expected_result|: The print result the app is expected to report.
   void RunPrintRequestTestApp(const std::string& test_param,
+                              PrintRequestDataType data_type,
                               const std::string& expected_result) {
     extensions::ResultCatcher catcher;
 
@@ -148,11 +196,28 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
     base::RunLoop run_loop;
     bool success;
     std::string print_status;
-    StartPrintRequest(extension_id,
-                      base::Bind(&RecordPrintResultAndRunCallback, &success,
-                                 &print_status, run_loop.QuitClosure()));
+    PrinterProviderAPI::PrintCallback callback =
+        base::Bind(&RecordPrintResultAndRunCallback, &success, &print_status,
+                   run_loop.QuitClosure());
 
-    ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+    switch (data_type) {
+      case PRINT_REQUEST_DATA_TYPE_NOT_SET:
+        StartPrintRequestWithNoData(extension_id, callback);
+        break;
+      case PRINT_REQUEST_DATA_TYPE_FILE:
+        ASSERT_TRUE(StartPrintRequestUsingFileInfo(extension_id, callback));
+        break;
+      case PRINT_REQUEST_DATA_TYPE_FILE_DELETED:
+        ASSERT_TRUE(StartPrintRequestUsingFileInfo(extension_id, callback));
+        ASSERT_TRUE(data_dir_.Delete());
+        break;
+      case PRINT_REQUEST_DATA_TYPE_BYTES:
+        StartPrintRequestUsingDocumentBytes(extension_id, callback);
+        break;
+    }
+
+    if (data_type != PRINT_REQUEST_DATA_TYPE_NOT_SET)
+      ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
     run_loop.Run();
     EXPECT_EQ(expected_result, print_status);
@@ -225,28 +290,66 @@ class PrinterProviderApiTest : public extensions::ShellApiTest {
   }
 
  private:
+  // Initializes |data_dir_| if needed and creates a file in it containing
+  // provided data.
+  bool CreateTempFileWithContents(const char* data,
+                                  int size,
+                                  base::FilePath* path,
+                                  base::File::Info* file_info) {
+    if (!data_dir_.IsValid() && !data_dir_.CreateUniqueTempDir())
+      return false;
+
+    *path = data_dir_.path().AppendASCII("data.pwg");
+    int written = base::WriteFile(*path, data, size);
+    if (written != size)
+      return false;
+    if (!base::GetFileInfo(*path, file_info))
+      return false;
+    return true;
+  }
+
+  base::ScopedTempDir data_dir_;
+
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobSuccess) {
-  RunPrintRequestTestApp("OK", "OK");
+  RunPrintRequestTestApp("OK", PRINT_REQUEST_DATA_TYPE_BYTES, "OK");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobWithFileSuccess) {
+  RunPrintRequestTestApp("OK", PRINT_REQUEST_DATA_TYPE_FILE, "OK");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
+                       PrintJobWithFile_FileDeletedBeforeDispatch) {
+  RunPrintRequestTestApp("OK", PRINT_REQUEST_DATA_TYPE_FILE_DELETED,
+                         "INVALID_DATA");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobAsyncSuccess) {
-  RunPrintRequestTestApp("ASYNC_RESPONSE", "OK");
+  RunPrintRequestTestApp("ASYNC_RESPONSE", PRINT_REQUEST_DATA_TYPE_BYTES, "OK");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobFailed) {
-  RunPrintRequestTestApp("INVALID_TICKET", "INVALID_TICKET");
+  RunPrintRequestTestApp("INVALID_TICKET", PRINT_REQUEST_DATA_TYPE_BYTES,
+                         "INVALID_TICKET");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, NoPrintEventListener) {
-  RunPrintRequestTestApp("NO_LISTENER", "FAILED");
+  RunPrintRequestTestApp("NO_LISTENER", PRINT_REQUEST_DATA_TYPE_BYTES,
+                         "FAILED");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
                        PrintRequestInvalidCallbackParam) {
-  RunPrintRequestTestApp("INVALID_VALUE", "FAILED");
+  RunPrintRequestTestApp("INVALID_VALUE", PRINT_REQUEST_DATA_TYPE_BYTES,
+                         "FAILED");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestDataNotSet) {
+  RunPrintRequestTestApp("IGNORE_CALLBACK", PRINT_REQUEST_DATA_TYPE_NOT_SET,
+                         "FAILED");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestAppUnloaded) {
@@ -260,8 +363,8 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintRequestAppUnloaded) {
   base::RunLoop run_loop;
   bool success = false;
   std::string status;
-  StartPrintRequest(extension_id,
-                    base::Bind(&RecordPrintResultAndRunCallback, &success,
+  StartPrintRequestUsingDocumentBytes(
+      extension_id, base::Bind(&RecordPrintResultAndRunCallback, &success,
                                &status, run_loop.QuitClosure()));
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();

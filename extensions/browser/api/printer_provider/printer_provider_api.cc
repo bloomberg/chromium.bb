@@ -157,7 +157,11 @@ class PendingPrintRequests {
 
   // Adds a new request to the set. Only information needed is the callback
   // associated with the request. Returns the id assigned to the request.
-  int Add(const PrinterProviderAPI::PrintCallback& callback);
+  int Add(const PrinterProviderPrintJob& job,
+          const PrinterProviderAPI::PrintCallback& callback);
+
+  // Gets print job associated with a request.
+  const PrinterProviderPrintJob* GetPrintJob(int request_id) const;
 
   // Completes the request with the provided request id. It runs the request
   // callback and removes the request from the set.
@@ -168,8 +172,13 @@ class PendingPrintRequests {
   void FailAll();
 
  private:
+  struct PrintRequest {
+    PrinterProviderAPI::PrintCallback callback;
+    PrinterProviderPrintJob job;
+  };
+
   int last_request_id_;
-  std::map<int, PrinterProviderAPI::PrintCallback> pending_requests_;
+  std::map<int, PrintRequest> pending_requests_;
 };
 
 // Implements chrome.printerProvider API events.
@@ -190,6 +199,8 @@ class PrinterProviderAPIImpl : public PrinterProviderAPI,
   void DispatchPrintRequested(
       const PrinterProviderPrintJob& job,
       const PrinterProviderAPI::PrintCallback& callback) override;
+  const PrinterProviderPrintJob* GetPrintJob(const Extension* extension,
+                                             int request_id) const override;
 
   // PrinterProviderInternalAPIObserver implementation:
   void OnGetPrintersResult(
@@ -350,8 +361,12 @@ PendingPrintRequests::~PendingPrintRequests() {
 }
 
 int PendingPrintRequests::Add(
+    const PrinterProviderPrintJob& job,
     const PrinterProviderAPI::PrintCallback& callback) {
-  pending_requests_[++last_request_id_] = callback;
+  PrintRequest request;
+  request.callback = callback;
+  request.job = job;
+  pending_requests_[++last_request_id_] = request;
   return last_request_id_;
 }
 
@@ -362,16 +377,26 @@ bool PendingPrintRequests::Complete(int request_id,
   if (it == pending_requests_.end())
     return false;
 
-  PrinterProviderAPI::PrintCallback callback = it->second;
+  PrinterProviderAPI::PrintCallback callback = it->second.callback;
   pending_requests_.erase(it);
 
   callback.Run(success, response);
   return true;
 }
 
+const PrinterProviderPrintJob* PendingPrintRequests::GetPrintJob(
+    int request_id) const {
+  auto it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end())
+    return nullptr;
+
+  return &it->second.job;
+}
+
 void PendingPrintRequests::FailAll() {
   for (auto& request : pending_requests_)
-    request.second.Run(false, PrinterProviderAPI::GetDefaultPrintError());
+    request.second.callback.Run(false,
+                                PrinterProviderAPI::GetDefaultPrintError());
   pending_requests_.clear();
 }
 
@@ -484,20 +509,8 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
     return;
   }
 
-  // TODO(tbarzic): Figure out how to support huge documents.
-  if (job.document_bytes->size() > PrinterProviderAPI::kMaxDocumentSize) {
-    callback.Run(false,
-                 core_api::printer_provider::ToString(
-                     core_api::printer_provider::PRINT_ERROR_INVALID_DATA));
-    return;
-  }
-
   print_job.content_type = job.content_type;
-  print_job.document = std::vector<char>(
-      job.document_bytes->front(),
-      job.document_bytes->front() + job.document_bytes->size());
-
-  int request_id = pending_print_requests_[extension_id].Add(callback);
+  int request_id = pending_print_requests_[extension_id].Add(job, callback);
 
   scoped_ptr<base::ListValue> internal_args(new base::ListValue);
   // Request id is not part of the public API and it will be massaged out in
@@ -507,8 +520,16 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   scoped_ptr<Event> event(
       new Event(core_api::printer_provider::OnPrintRequested::kEventName,
                 internal_args.Pass()));
-
   event_router->DispatchEventToExtension(extension_id, event.Pass());
+}
+
+const PrinterProviderPrintJob* PrinterProviderAPIImpl::GetPrintJob(
+    const Extension* extension,
+    int request_id) const {
+  auto it = pending_print_requests_.find(extension->id());
+  if (it == pending_print_requests_.end())
+    return nullptr;
+  return it->second.GetPrintJob(request_id);
 }
 
 void PrinterProviderAPIImpl::OnGetPrintersResult(

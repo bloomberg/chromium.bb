@@ -40,8 +40,8 @@ class PWGRasterConverter;
 // extension API.
 class ExtensionPrinterHandler : public PrinterHandler {
  public:
-  using RefCountedMemoryCallback =
-      base::Callback<void(const scoped_refptr<base::RefCountedMemory>&)>;
+  using PrintJobCallback =
+      base::Callback<void(scoped_ptr<extensions::PrinterProviderPrintJob>)>;
 
   ExtensionPrinterHandler(
       content::BrowserContext* browser_context,
@@ -78,13 +78,13 @@ class ExtensionPrinterHandler : public PrinterHandler {
       const cloud_devices::CloudDeviceDescription& printer_description,
       const cloud_devices::CloudDeviceDescription& ticket,
       const gfx::Size& page_size,
-      const RefCountedMemoryCallback& callback);
+      scoped_ptr<extensions::PrinterProviderPrintJob> job,
+      const PrintJobCallback& callback);
 
   // Sets print job document data and dispatches it using printerProvider API.
   void DispatchPrintJob(
       const PrinterHandler::PrintCallback& callback,
-      scoped_ptr<extensions::PrinterProviderPrintJob> print_job,
-      const scoped_refptr<base::RefCountedMemory>& data);
+      scoped_ptr<extensions::PrinterProviderPrintJob> print_job);
 
   // Methods used as wrappers to callbacks for extensions::PrinterProviderAPI
   // methods, primarily so the callbacks can be bound to this class' weak ptr.

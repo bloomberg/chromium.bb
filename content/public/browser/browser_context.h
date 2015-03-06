@@ -17,6 +17,7 @@ class GURL;
 
 namespace base {
 class FilePath;
+class Time;
 }
 
 namespace storage {
@@ -87,6 +88,14 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void CreateMemoryBackedBlob(BrowserContext* browser_context,
                                      const char* data, size_t length,
                                      const BlobCallback& callback);
+
+  // |callback| returns a nullptr scoped_ptr on failure.
+  static void CreateFileBackedBlob(BrowserContext* browser_context,
+                                   const base::FilePath& path,
+                                   int64_t offset,
+                                   int64_t size,
+                                   const base::Time& expected_modification_time,
+                                   const BlobCallback& callback);
 
   // Delivers a push message with |data| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|.

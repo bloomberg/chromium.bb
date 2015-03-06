@@ -10,6 +10,11 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class FilePath;
+class Time;
+}
+
 namespace storage {
 class BlobStorageContext;
 }
@@ -42,6 +47,13 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   // Returns a NULL scoped_ptr on failure.
   scoped_ptr<BlobHandle> CreateMemoryBackedBlob(const char* data,
                                                 size_t length);
+
+  // Returns a NULL scoped_ptr on failure.
+  scoped_ptr<BlobHandle> CreateFileBackedBlob(
+      const base::FilePath& path,
+      int64_t offset,
+      int64_t size,
+      const base::Time& expected_modification_time);
 
  protected:
   virtual ~ChromeBlobStorageContext();

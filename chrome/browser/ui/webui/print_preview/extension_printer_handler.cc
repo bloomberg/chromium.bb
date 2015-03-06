@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -34,41 +35,34 @@ const char kContentTypeAll[] = "*/*";
 const char kInvalidDataPrintError[] = "INVALID_DATA";
 const char kInvalidTicketPrintError[] = "INVALID_TICKET";
 
-// Reads raster data from file path |raster_path| and returns it as
-// RefCountedMemory. Returns NULL on error.
-scoped_refptr<base::RefCountedMemory> ReadConvertedPWGRasterFileOnWorkerThread(
-    const base::FilePath& raster_path) {
-  int64 file_size;
-  if (base::GetFileSize(raster_path, &file_size) &&
-      file_size <= extensions::PrinterProviderAPI::kMaxDocumentSize) {
-    std::string data;
-    data.reserve(file_size);
-
-    if (base::ReadFileToString(raster_path, &data)) {
-      return scoped_refptr<base::RefCountedMemory>(
-          base::RefCountedString::TakeString(&data));
-    }
-  } else {
-    LOG(ERROR) << "Invalid raster file size.";
-  }
-  return scoped_refptr<base::RefCountedMemory>();
+// Updates |job| with raster file path, size and last modification time.
+// Returns the updated print job.
+scoped_ptr<extensions::PrinterProviderPrintJob> UpdateJobFileInfoOnWorkerThread(
+    const base::FilePath& raster_path,
+    scoped_ptr<extensions::PrinterProviderPrintJob> job) {
+  if (base::GetFileInfo(raster_path, &job->file_info))
+    job->document_path = raster_path;
+  return job.Pass();
 }
 
-// Posts a task to read a file containing converted PWG raster data to the
-// worker pool.
-void ReadConvertedPWGRasterFile(
+// Callback to PWG raster conversion.
+// Posts a task to update print job with info about file containing converted
+// PWG raster data. The task is posted to |slow_task_runner|.
+void UpdateJobFileInfo(
+    scoped_ptr<extensions::PrinterProviderPrintJob> job,
     const scoped_refptr<base::TaskRunner>& slow_task_runner,
-    const ExtensionPrinterHandler::RefCountedMemoryCallback& callback,
+    const ExtensionPrinterHandler::PrintJobCallback& callback,
     bool success,
     const base::FilePath& pwg_file_path) {
   if (!success) {
-    callback.Run(scoped_refptr<base::RefCountedMemory>());
+    callback.Run(job.Pass());
     return;
   }
 
   base::PostTaskAndReplyWithResult(
       slow_task_runner.get(), FROM_HERE,
-      base::Bind(&ReadConvertedPWGRasterFileOnWorkerThread, pwg_file_path),
+      base::Bind(&UpdateJobFileInfoOnWorkerThread, pwg_file_path,
+                 base::Passed(&job)),
       callback);
 }
 
@@ -133,8 +127,11 @@ void ExtensionPrinterHandler::StartPrint(
                        content_types.Contains(kContentTypeAll);
 
   if (kUsePdf) {
+    // TODO(tbarzic): Consider writing larger PDF to disk and provide the data
+    // the same way as it's done with PWG raster.
     print_job->content_type = kContentTypePdf;
-    DispatchPrintJob(callback, print_job.Pass(), print_data);
+    print_job->document_bytes = print_data;
+    DispatchPrintJob(callback, print_job.Pass());
     return;
   }
 
@@ -146,9 +143,9 @@ void ExtensionPrinterHandler::StartPrint(
 
   print_job->content_type = kContentTypePWGRaster;
   ConvertToPWGRaster(print_data, printer_description, ticket, page_size,
+                     print_job.Pass(),
                      base::Bind(&ExtensionPrinterHandler::DispatchPrintJob,
-                                weak_ptr_factory_.GetWeakPtr(), callback,
-                                base::Passed(&print_job)));
+                                weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ExtensionPrinterHandler::SetPwgRasterConverterForTesting(
@@ -161,7 +158,8 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
     const cloud_devices::CloudDeviceDescription& printer_description,
     const cloud_devices::CloudDeviceDescription& ticket,
     const gfx::Size& page_size,
-    const ExtensionPrinterHandler::RefCountedMemoryCallback& callback) {
+    scoped_ptr<extensions::PrinterProviderPrintJob> job,
+    const ExtensionPrinterHandler::PrintJobCallback& callback) {
   if (!pwg_raster_converter_) {
     pwg_raster_converter_ = PWGRasterConverter::CreateDefault();
   }
@@ -169,19 +167,17 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
       data.get(),
       PWGRasterConverter::GetConversionSettings(printer_description, page_size),
       PWGRasterConverter::GetBitmapSettings(printer_description, ticket),
-      base::Bind(&ReadConvertedPWGRasterFile, slow_task_runner_, callback));
+      base::Bind(&UpdateJobFileInfo, base::Passed(&job), slow_task_runner_,
+                 callback));
 }
 
 void ExtensionPrinterHandler::DispatchPrintJob(
     const PrinterHandler::PrintCallback& callback,
-    scoped_ptr<extensions::PrinterProviderPrintJob> print_job,
-    const scoped_refptr<base::RefCountedMemory>& print_data) {
-  if (!print_data) {
+    scoped_ptr<extensions::PrinterProviderPrintJob> print_job) {
+  if (print_job->document_path.empty() && !print_job->document_bytes) {
     WrapPrintCallback(callback, false, kInvalidDataPrintError);
     return;
   }
-
-  print_job->document_bytes = print_data;
 
   extensions::PrinterProviderAPIFactory::GetInstance()
       ->GetForBrowserContext(browser_context_)

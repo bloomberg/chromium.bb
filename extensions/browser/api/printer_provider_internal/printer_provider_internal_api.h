@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_PRINTER_PROVIDER_INTERNAL_PRINTER_PROVIDER_INTERNAL_API_H_
 #define EXTENSIONS_BROWSER_API_PRINTER_PROVIDER_INTERNAL_PRINTER_PROVIDER_INTERNAL_API_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api_observer.h"
@@ -18,6 +20,7 @@ class ListValue;
 }
 
 namespace content {
+class BlobHandle;
 class BrowserContext;
 }
 
@@ -126,6 +129,26 @@ class PrinterProviderInternalReportPrintersFunction
                              PRINTERPROVIDERINTERNAL_REPORTPRINTERS)
 
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderInternalReportPrintersFunction);
+};
+
+class PrinterProviderInternalGetPrintDataFunction
+    : public UIThreadExtensionFunction {
+ public:
+  PrinterProviderInternalGetPrintDataFunction();
+
+ protected:
+  ~PrinterProviderInternalGetPrintDataFunction() override;
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  void OnBlob(const std::string& type,
+              int size,
+              const scoped_refptr<base::RefCountedMemory>& data,
+              scoped_ptr<content::BlobHandle> blob);
+  DECLARE_EXTENSION_FUNCTION("printerProviderInternal.getPrintData",
+                             PRINTERPROVIDERINTERNAL_GETPRINTDATA)
+
+  DISALLOW_COPY_AND_ASSIGN(PrinterProviderInternalGetPrintDataFunction);
 };
 
 }  // namespace extensions

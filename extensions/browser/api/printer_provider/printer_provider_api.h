@@ -20,6 +20,7 @@ class BrowserContext;
 }
 
 namespace extensions {
+class Extension;
 struct PrinterProviderPrintJob;
 }
 
@@ -39,11 +40,6 @@ class PrinterProviderAPI : public KeyedService {
 
   // Returns generic error string for print request.
   static std::string GetDefaultPrintError();
-
-  // The API currently cannot handle very large files, so the document size that
-  // may be sent to an extension is restricted.
-  // TODO(tbarzic): Fix the API to support huge documents.
-  static const int kMaxDocumentSize = 50 * 1000 * 1000;
 
   ~PrinterProviderAPI() override {}
 
@@ -69,6 +65,12 @@ class PrinterProviderAPI : public KeyedService {
   // must not be null.
   virtual void DispatchPrintRequested(const PrinterProviderPrintJob& job,
                                       const PrintCallback& callback) = 0;
+
+  // Returns print job associated with the print request with id |request_id|
+  // for extension |extension|.
+  // It should return NULL if the job for the request does not exist.
+  virtual const PrinterProviderPrintJob* GetPrintJob(const Extension* extension,
+                                                     int request_id) const = 0;
 };
 
 }  // namespace extensions

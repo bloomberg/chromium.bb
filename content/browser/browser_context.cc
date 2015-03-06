@@ -206,6 +206,7 @@ StoragePartition* BrowserContext::GetDefaultStoragePartition(
   return GetStoragePartition(browser_context, NULL);
 }
 
+// static
 void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
                                             const char* data, size_t length,
                                             const BlobCallback& callback) {
@@ -217,6 +218,26 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
                  make_scoped_refptr(blob_context), data, length),
+      callback);
+}
+
+// static
+void BrowserContext::CreateFileBackedBlob(
+    BrowserContext* browser_context,
+    const base::FilePath& path,
+    int64_t offset,
+    int64_t size,
+    const base::Time& expected_modification_time,
+    const BlobCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ChromeBlobStorageContext* blob_context =
+      ChromeBlobStorageContext::GetFor(browser_context);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ChromeBlobStorageContext::CreateFileBackedBlob,
+                 make_scoped_refptr(blob_context), path, offset, size,
+                 expected_modification_time),
       callback);
 }
 

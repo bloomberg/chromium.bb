@@ -115,9 +115,6 @@ const char kPrintTicketWithDuplex[] =
     "  }"
     "}";
 
-// Suffix appended to document data by fake PWGRasterConverter.
-const char kPWGConversionSuffix[] = "_converted";
-
 const char kContentTypePDF[] = "application/pdf";
 const char kContentTypePWG[] = "image/pwg-raster";
 
@@ -193,14 +190,18 @@ scoped_ptr<base::DictionaryValue> GetJSONAsDictionaryValue(
   return scoped_ptr<base::DictionaryValue>(dictionary->DeepCopy());
 }
 
+std::string RefCountedMemoryToString(
+    const scoped_refptr<base::RefCountedMemory>& memory) {
+  return std::string(memory->front_as<char>(), memory->size());
+}
+
 // Fake PWGRasterconverter used in the tests.
 class FakePWGRasterConverter : public PWGRasterConverter {
  public:
   FakePWGRasterConverter() : fail_conversion_(false), initialized_(false) {}
   ~FakePWGRasterConverter() override = default;
 
-  // PWGRasterConverter implementation.
-  // It writes |data| to a temp file, appending it |kPWGConversionSuffix|.
+  // PWGRasterConverter implementation. It writes |data| to a temp file.
   // Also, remembers conversion and bitmap settings passed into the method.
   void Start(base::RefCountedMemory* data,
              const printing::PdfRenderSettings& conversion_settings,
@@ -219,10 +220,9 @@ class FakePWGRasterConverter : public PWGRasterConverter {
 
     initialized_ = true;
 
+    path_ = temp_dir_.path().AppendASCII("output.pwg");
     std::string data_str(data->front_as<char>(), data->size());
-    data_str.append(kPWGConversionSuffix);
-    base::FilePath target_path = temp_dir_.path().AppendASCII("output.pwg");
-    int written = WriteFile(target_path, data_str.c_str(), data_str.size());
+    int written = WriteFile(path_, data_str.c_str(), data_str.size());
     if (written != static_cast<int>(data_str.size())) {
       ADD_FAILURE() << "Failed to write pwg raster file.";
       callback.Run(false, base::FilePath());
@@ -232,12 +232,13 @@ class FakePWGRasterConverter : public PWGRasterConverter {
     conversion_settings_ = conversion_settings;
     bitmap_settings_ = bitmap_settings;
 
-    callback.Run(true, target_path);
+    callback.Run(true, path_);
   }
 
   // Makes |Start| method always return an error.
   void FailConversion() { fail_conversion_ = true; }
 
+  const base::FilePath& path() { return path_; }
   const printing::PdfRenderSettings& conversion_settings() const {
     return conversion_settings_;
   }
@@ -249,6 +250,7 @@ class FakePWGRasterConverter : public PWGRasterConverter {
  private:
   base::ScopedTempDir temp_dir_;
 
+  base::FilePath path_;
   printing::PdfRenderSettings conversion_settings_;
   printing::PwgRasterSettings bitmap_settings_;
   bool fail_conversion_;
@@ -257,18 +259,10 @@ class FakePWGRasterConverter : public PWGRasterConverter {
   DISALLOW_COPY_AND_ASSIGN(FakePWGRasterConverter);
 };
 
-// Copy of data contained in print job passed to |DispatchPrintRequested|.
-struct PrintJobParams {
-  std::string printer_id;
-  std::string ticket;
-  std::string content_type;
-  std::string document;
-};
-
 // Information about received print requests.
 struct PrintRequestInfo {
   PrinterProviderAPI::PrintCallback callback;
-  PrintJobParams params;
+  PrinterProviderPrintJob job;
 };
 
 // Fake PrinterProviderAPI used in tests.
@@ -295,18 +289,20 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
       const PrinterProviderAPI::PrintCallback& callback) override {
     PrintRequestInfo request_info;
     request_info.callback = callback;
-
-    request_info.params.printer_id = job.printer_id;
-    request_info.params.ticket = job.ticket_json;
-    request_info.params.content_type = job.content_type;
-    request_info.params.document = std::string(
-        job.document_bytes->front_as<char>(), job.document_bytes->size());
+    request_info.job = job;
 
     pending_print_requests_.push_back(request_info);
   }
 
   size_t pending_get_printers_count() const {
     return pending_printers_callbacks_.size();
+  }
+
+  const PrinterProviderPrintJob* GetPrintJob(
+      const extensions::Extension* extension,
+      int request_id) const override {
+    ADD_FAILURE() << "Not reached";
+    return nullptr;
   }
 
   void TriggerNextGetPrintersCallback(const base::ListValue& printers,
@@ -329,11 +325,11 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
 
   size_t pending_print_count() const { return pending_print_requests_.size(); }
 
-  const PrintJobParams* GetNextPendingPrintJob() const {
+  const PrinterProviderPrintJob* GetNextPendingPrintJob() const {
     EXPECT_GT(pending_print_count(), 0u);
     if (pending_print_count() == 0)
       return NULL;
-    return &pending_print_requests_[0].params;
+    return &pending_print_requests_[0].job;
   }
 
   void TriggerNextPrintCallback(const std::string& result) {
@@ -527,13 +523,16 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   ASSERT_TRUE(fake_api);
   ASSERT_EQ(1u, fake_api->pending_print_count());
 
-  const PrintJobParams* print_job = fake_api->GetNextPendingPrintJob();
+  const PrinterProviderPrintJob* print_job = fake_api->GetNextPendingPrintJob();
   ASSERT_TRUE(print_job);
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket);
+  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
-  EXPECT_EQ(print_data->data(), print_job->document);
+  EXPECT_TRUE(print_job->document_path.empty());
+  ASSERT_TRUE(print_job->document_bytes);
+  EXPECT_EQ(print_data->data(),
+            RefCountedMemoryToString(print_job->document_bytes));
 
   fake_api->TriggerNextPrintCallback(kPrintRequestSuccess);
 
@@ -588,13 +587,16 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   ASSERT_TRUE(fake_api);
   ASSERT_EQ(1u, fake_api->pending_print_count());
 
-  const PrintJobParams* print_job = fake_api->GetNextPendingPrintJob();
+  const PrinterProviderPrintJob* print_job = fake_api->GetNextPendingPrintJob();
   ASSERT_TRUE(print_job);
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket);
+  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
-  EXPECT_EQ(print_data->data(), print_job->document);
+  EXPECT_TRUE(print_job->document_path.empty());
+  ASSERT_TRUE(print_job->document_bytes);
+  EXPECT_EQ(print_data->data(),
+            RefCountedMemoryToString(print_job->document_bytes));
 
   fake_api->TriggerNextPrintCallback(kPrintRequestSuccess);
 
@@ -636,13 +638,17 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   EXPECT_EQ("0,0 208x416",  // vertically_oriented_size  * dpi / points_per_inch
             pwg_raster_converter_->conversion_settings().area().ToString());
 
-  const PrintJobParams* print_job = fake_api->GetNextPendingPrintJob();
+  const PrinterProviderPrintJob* print_job = fake_api->GetNextPendingPrintJob();
   ASSERT_TRUE(print_job);
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket);
+  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
-  EXPECT_EQ(print_data->data() + kPWGConversionSuffix, print_job->document);
+  EXPECT_FALSE(print_job->document_bytes);
+  EXPECT_FALSE(print_job->document_path.empty());
+  EXPECT_EQ(pwg_raster_converter_->path(), print_job->document_path);
+  EXPECT_EQ(static_cast<int64_t>(print_data->size()),
+            print_job->file_info.size);
 
   fake_api->TriggerNextPrintCallback(kPrintRequestSuccess);
 
@@ -684,13 +690,17 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   EXPECT_EQ("0,0 138x277",  // vertically_oriented_size  * dpi / points_per_inch
             pwg_raster_converter_->conversion_settings().area().ToString());
 
-  const PrintJobParams* print_job = fake_api->GetNextPendingPrintJob();
+  const PrinterProviderPrintJob* print_job = fake_api->GetNextPendingPrintJob();
   ASSERT_TRUE(print_job);
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
-  EXPECT_EQ(kPrintTicketWithDuplex, print_job->ticket);
+  EXPECT_EQ(kPrintTicketWithDuplex, print_job->ticket_json);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
-  EXPECT_EQ(print_data->data() + kPWGConversionSuffix, print_job->document);
+  EXPECT_FALSE(print_job->document_bytes);
+  EXPECT_FALSE(print_job->document_path.empty());
+  EXPECT_EQ(pwg_raster_converter_->path(), print_job->document_path);
+  EXPECT_EQ(static_cast<int64_t>(print_data->size()),
+            print_job->file_info.size);
 
   fake_api->TriggerNextPrintCallback(kPrintRequestSuccess);
 

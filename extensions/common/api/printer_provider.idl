@@ -52,8 +52,9 @@ namespace printerProvider {
     // <code>"application/pdf"</code> and <code>"image/pwg-raster"</code>.
     DOMString contentType;
 
-    // Buffer containing the document to print. Format must match |contentType|.
-    ArrayBuffer document;
+    // Blob containing the document data to print. Format must match
+    // |contentType|.
+    [instanceOf=Blob] object document;
   };
 
   callback PrintersCallback = void(PrinterInfo[] printerInfo);
