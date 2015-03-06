@@ -31,56 +31,31 @@ var remoting = remoting || {};
  * @param {HTMLElement} root The root of the context menu DOM.
  */
 remoting.ContextMenuDom = function(root) {
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.root_ = root;
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.stub_ = /** @type {HTMLElement} */
       (this.root_.querySelector('.context-menu-stub'));
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.icon_ = /** @type {HTMLElement} */
       (this.root_.querySelector('.context-menu-icon'));
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.screen_ = /** @type {HTMLElement} */
       (this.root_.querySelector('.context-menu-screen'));
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.menu_ = /** @type {HTMLElement} */ (this.root_.querySelector('ul'));
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.bottom_ = 8;
-  /**
-   * @type {base.EventSourceImpl}
-   * @private
-   */
+  /** @private {base.EventSourceImpl} */
   this.eventSource_ = new base.EventSourceImpl();
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.eventName_ = '_click';
   /**
    * Since the same element is used to lock the icon open and to drag it, we
    * must keep track of drag events so that the corresponding click event can
    * be ignored.
    *
-   * @type {boolean}
-   * @private
+   * @private {boolean}
    */
   this.stubDragged_ = false;
 

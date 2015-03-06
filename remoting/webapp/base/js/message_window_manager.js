@@ -16,15 +16,13 @@ remoting.MessageWindowManager = {};
 /**
  * Mapping from window id to corresponding MessageWindow.
  *
- * @type {Object<number, remoting.MessageWindow>}
- * @private
+ * @private {Object<number, remoting.MessageWindow>}
  */
 remoting.MessageWindowManager.messageWindows_ = {};
 
 /**
  * The next window id to auto-assign.
- * @type {number}
- * @private
+ * @private {number}
  */
 remoting.MessageWindowManager.nextId_ = 1;
 

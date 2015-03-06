@@ -61,7 +61,7 @@ remoting.XmppLoginHandler = function(server,
   /** @private */
   this.jid_ = '';
 
-  /** @type {remoting.XmppStreamParser} @private */
+  /** @private {remoting.XmppStreamParser} */
   this.streamParser_ = null;
 }
 

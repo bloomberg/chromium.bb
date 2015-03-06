@@ -20,36 +20,23 @@ var remoting = remoting || {};
  */
 remoting.FallbackSignalStrategy = function(primary,
                                            secondary) {
-  /**
-   * @type {remoting.SignalStrategy}
-   * @private
-   */
+  /** @private {remoting.SignalStrategy} */
   this.primary_ = primary;
   this.primary_.setStateChangedCallback(this.onPrimaryStateChanged_.bind(this));
 
-  /**
-   * @type {remoting.SignalStrategy}
-   * @private
-   */
+  /** @private {remoting.SignalStrategy} */
   this.secondary_ = secondary;
   this.secondary_.setStateChangedCallback(
       this.onSecondaryStateChanged_.bind(this));
 
-  /**
-   * @type {?function(remoting.SignalStrategy.State)}
-   * @private
-   */
+  /** @private {?function(remoting.SignalStrategy.State)} */
   this.onStateChangedCallback_ = null;
 
-  /**
-   * @type {?function(Element):void}
-   * @private
-   */
+  /** @private {?function(Element):void} */
   this.onIncomingStanzaCallback_ = null;
 
   /**
-   * @type {number}
-   * @private
+   * @private {number}
    * @const
    */
   this.PRIMARY_CONNECT_TIMEOUT_MS_ = 10 * 1000;
@@ -68,46 +55,25 @@ remoting.FallbackSignalStrategy = function(primary,
     CLOSED: 'closed'
   };
 
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.state_ = this.State.NOT_CONNECTED;
 
-  /**
-   * @type {?remoting.SignalStrategy.State}
-   * @private
-   */
+  /** @private {?remoting.SignalStrategy.State} */
   this.externalState_ = null;
 
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.server_ = '';
 
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.username_ = '';
 
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.authToken_ = '';
 
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.primaryConnectTimerId_ = 0;
 
-  /**
-   * @type {remoting.LogToServer}
-   * @private
-   */
+  /** @private {remoting.LogToServer} */
   this.logToServer_ = null;
 
   /**

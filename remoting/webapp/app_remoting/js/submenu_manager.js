@@ -20,30 +20,15 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.SubmenuManager = function(adapter, title, checkable) {
-  /**
-   * @type {remoting.ContextMenuAdapter}
-   * @private
-   */
+  /** @private {remoting.ContextMenuAdapter} */
   this.adapter_ = adapter;
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.title_ = title;
-  /**
-   * @type {boolean}
-   * @private
-   */
+  /** @private {boolean} */
   this.checkable_ = checkable;
-  /**
-   * @type {!Object}
-   * @private
-   */
+  /** @private {!Object} */
   this.childIds_ = {};
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.parentId_ = '';
 };
 

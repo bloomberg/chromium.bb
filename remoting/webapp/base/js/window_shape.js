@@ -15,16 +15,11 @@ var remoting = remoting || {};
 
 /** @constructor */
 remoting.WindowShape = function() {
-  /**
-   * @type {Array<{left: number, top: number, width: number, height: number}>}
-   * @private
-   */
+  /** @private {Array<{left: number, top: number,
+                       width: number, height: number}>} */
   this.desktopRects_ = [];
 
-  /**
-   * @type {Array<remoting.WindowShape.ClientUI>}
-   * @private
-   */
+  /** @private {Array<remoting.WindowShape.ClientUI>} */
   this.clientUICallbacks_ = [];
 };
 

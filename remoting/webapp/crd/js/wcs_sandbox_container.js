@@ -22,17 +22,13 @@ var remoting = remoting || {};
 remoting.WcsSandboxContainer = function(sandbox) {
   /** @private */
   this.sandbox_ = sandbox;
-  /** @type {?function(string):void}
-    * @private */
+  /** @private {?function(string):void} */
   this.onConnected_ = null;
-  /** @type {function(remoting.Error):void}
-    * @private */
+  /** @private {function(remoting.Error):void} */
   this.onError_ = function(error) {};
-  /** @type {?function(string):void}
-    * @private */
+  /** @private {?function(string):void} */
   this.onIq_ = null;
-  /** @type {Object<number, XMLHttpRequest>}
-    * @private */
+  /** @private {Object<number, XMLHttpRequest>} */
   this.pendingXhrs_ = {};
   /** @private */
   this.localJid_ = '';

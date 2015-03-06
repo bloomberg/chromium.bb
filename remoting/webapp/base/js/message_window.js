@@ -11,8 +11,7 @@ function MessageWindowImpl() {
   /**
    * Used to prevent multiple responses due to the closeWindow handler.
    *
-   * @type {boolean}
-   * @private
+   * @private {boolean}
    */
   this.sentReply_ = false;
 

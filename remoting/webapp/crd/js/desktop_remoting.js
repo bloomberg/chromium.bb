@@ -24,8 +24,7 @@ remoting.DesktopRemoting = function(app) {
    * needed to get the current mode when reporting errors. So we should be
    * able to refactor and remove this reference cycle.
    *
-   * @type {remoting.Application}
-   * @private
+   * @private {remoting.Application}
    */
   this.app_ = app;
   app.setDelegate(this);
@@ -34,8 +33,7 @@ remoting.DesktopRemoting = function(app) {
    * Whether to refresh the JID and retry the connection if the current JID
    * is offline.
    *
-   * @type {boolean}
-   * @private
+   * @private {boolean}
    */
   this.refreshHostJidIfOffline_ = true;
 };

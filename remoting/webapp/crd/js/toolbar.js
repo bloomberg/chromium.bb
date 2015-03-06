@@ -17,44 +17,23 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.Toolbar = function(toolbar) {
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.toolbar_ = toolbar;
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.stub_ =
       /** @type {HTMLElement} */(toolbar.querySelector('.toolbar-stub'));
-  /**
-   * @type {number?} The id of the preview timer, if any.
-   * @private
-   */
+  /** @private {number?} The id of the preview timer, if any. */
   this.timerId_ = null;
-  /**
-   * @type {number} The left edge of the tool-bar stub, updated on resize.
-   * @private
-   */
+  /** @private {number} Left edge of the toolbar stub, updated on resize. */
   this.stubLeft_ = 0;
-  /**
-   * @type {number} The right edge of the tool-bar stub, updated on resize.
-   * @private
-   */
+  /** @private {number} Right edge of the toolbar stub, updated on resize. */
   this.stubRight_ = 0;
 
-  /**
-   * @type {remoting.MenuButton}
-   * @private
-   */
+  /** @private {remoting.MenuButton} */
   this.screenOptionsMenu_ = new remoting.MenuButton(
       document.getElementById('screen-options-menu'),
       this.onShowOptionsMenu_.bind(this));
-  /**
-   * @type {remoting.MenuButton}
-   * @private
-   */
+  /** @private {remoting.MenuButton} */
   this.sendKeysMenu_ = new remoting.MenuButton(
       document.getElementById('send-keys-menu')
   );

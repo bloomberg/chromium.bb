@@ -34,10 +34,7 @@ remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn,
   this.fullscreen_ = fullscreen;
   this.startStopRecording_ = startStopRecording;
 
-  /**
-   * @type {remoting.DesktopConnectedView}
-   * @private
-   */
+  /** @private {remoting.DesktopConnectedView} */
   this.desktopConnectedView_ = null;
 
   this.sendCtrlAltDel_.addEventListener(

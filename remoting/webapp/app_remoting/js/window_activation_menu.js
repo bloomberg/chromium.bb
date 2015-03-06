@@ -18,10 +18,7 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.WindowActivationMenu = function(adapter) {
-  /**
-   * @type {remoting.SubmenuManager}
-   * @private
-   */
+  /** @private {remoting.SubmenuManager} */
   this.submenuManager_ = new remoting.SubmenuManager(
       adapter,
       chrome.i18n.getMessage(/*i18n-content*/'WINDOWS_SUBMENU_TITLE'),

@@ -30,16 +30,10 @@ remoting.desktopConnectedView = null;
  * @constructor
  */
 remoting.Application = function(app_capabilities) {
-  /**
-   * @type {remoting.Application.Delegate}
-   * @private
-   */
+  /** @private {remoting.Application.Delegate} */
   this.delegate_ = null;
 
-  /**
-   * @type {Array<string>}
-   * @private
-   */
+  /** @private {Array<string>} */
   this.app_capabilities_ = [
     remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
     remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
@@ -48,10 +42,7 @@ remoting.Application = function(app_capabilities) {
   // Append the app-specific capabilities.
   this.app_capabilities_.push.apply(this.app_capabilities_, app_capabilities);
 
-  /**
-   * @type {remoting.SessionConnector}
-   * @private
-   */
+  /** @private {remoting.SessionConnector} */
   this.session_connector_ = null;
 
   /** @private {base.Disposable} */

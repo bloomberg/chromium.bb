@@ -30,7 +30,7 @@ remoting.LogToServer = function(signalStrategy, mode) {
   this.signalStrategy_ = signalStrategy;
   /** @private */
   this.mode_ = mode;
-  /** @type {string} @private */
+  /** @private {string} */
   this.connectionType_ = '';
 
   this.setSessionId_();

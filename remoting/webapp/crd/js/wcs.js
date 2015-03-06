@@ -25,29 +25,25 @@ remoting.wcs = null;
 remoting.Wcs = function(wcsIqClient, token, onReady) {
   /**
    * The WCS client.
-   * @type {remoting.WcsIqClient}
-   * @private
+   * @private {remoting.WcsIqClient}
    */
   this.wcsIqClient_ = wcsIqClient;
 
   /**
    * The OAuth2 access token.
-   * @type {string}
-   * @private
+   * @private {string}
    */
   this.token_ = token;
 
   /**
    * The function called when the WCS client has received a full JID.
-   * @type {?function(string): void}
-   * @private
+   * @private {?function(string): void}
    */
   this.onReady_ = onReady;
 
   /**
    * The full JID of the WCS client.
-   * @type {string}
-   * @private
+   * @private {string}
    */
   this.clientFullJid_ = '';
 

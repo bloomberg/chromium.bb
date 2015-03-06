@@ -40,10 +40,7 @@ remoting.It2MeHostFacade = function() {
   /** @private {base.Disposables} */
   this.eventHooks_ = null;
 
-  /**
-   * @type {?function():void}
- * @private
-   */
+  /** @private {?function():void} */
   this.onInitialized_ = function() {};
 
   /**
@@ -55,21 +52,14 @@ remoting.It2MeHostFacade = function() {
   /**
    * Called if the It2Me Native Messaging host sends a malformed message:
    * missing required attributes, attributes with incorrect types, etc.
-   * @type {?function(remoting.Error):void}
-   * @private
+   * @private {?function(remoting.Error):void}
    */
   this.onError_ = function(error) {};
 
-  /**
-   * @type {?function(remoting.HostSession.State):void}
-   * @private
-   */
+  /** @private {?function(remoting.HostSession.State):void} */
   this.onStateChanged_ = function() {};
 
-  /**
-   * @type {?function(boolean):void}
-   * @private
-   */
+  /** @private {?function(boolean):void} */
   this.onNatPolicyChanged_ = function() {};
 };
 

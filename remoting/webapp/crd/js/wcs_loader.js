@@ -31,8 +31,7 @@ remoting.WcsLoader = function() {
 
 /**
  * The id of the script node.
- * @type {string}
- * @private
+ * @private {string}
  */
 remoting.WcsLoader.prototype.SCRIPT_NODE_ID_ = 'wcs-script-node';
 

@@ -17,16 +17,10 @@ var remoting = remoting || {};
  * @implements {remoting.Fullscreen}
  */
 remoting.FullscreenAppsV1 = function() {
-  /**
-   * @type {string} Internal 'full-screen changed' event name
-   * @private
-   */
+  /** @private {string} Internal 'full-screen changed' event name */
   this.kEventName_ = '_fullscreenchanged';
 
-  /**
-   * @type {base.EventSourceImpl}
-   * @private
-   */
+  /** @private {base.EventSourceImpl} */
   this.eventSource_ = new base.EventSourceImpl();
   this.eventSource_.defineEvents([this.kEventName_]);
 

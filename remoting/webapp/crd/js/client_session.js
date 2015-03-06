@@ -66,8 +66,7 @@ remoting.ClientSession = function(host, signalStrategy, credentialsProvider,
 
   /** @private */
   this.sessionId_ = '';
-  /** @type {remoting.ClientPlugin}
-    * @private */
+  /** @private {remoting.ClientPlugin}  */
   this.plugin_ = null;
   /** @private */
   this.hasReceivedFrame_ = false;
@@ -89,10 +88,10 @@ remoting.ClientSession = function(host, signalStrategy, credentialsProvider,
    */
   this.logHostOfflineErrors_ = true;
 
-  /** @type {remoting.GnubbyAuthHandler} @private */
+  /** @private {remoting.GnubbyAuthHandler} */
   this.gnubbyAuthHandler_ = null;
 
-  /** @type {remoting.CastExtensionHandler} @private */
+  /** @private {remoting.CastExtensionHandler} */
   this.castExtensionHandler_ = null;
 
   this.defineEvents(Object.keys(remoting.ClientSession.Events));

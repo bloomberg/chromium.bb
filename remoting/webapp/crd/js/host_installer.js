@@ -32,16 +32,10 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.HostInstaller = function() {
-  /**
-   * @type {Promise}
-   * @private
-   */
+  /** @private {Promise} */
   this.downloadAndWaitForInstallPromise_ = null;
 
-  /**
-   * @type {?number}
-   * @private
-   */
+  /** @private {?number} */
   this.checkInstallIntervalId_ = null;
 };
 

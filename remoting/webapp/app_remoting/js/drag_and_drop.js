@@ -23,53 +23,31 @@ var remoting = remoting || {};
  */
 remoting.DragAndDrop = function(element, dragUpdate,
                                 opt_dragStart, opt_dragEnd) {
-  /**
-   * @private
-   */
+  /** @private */
   this.element_ = element;
 
-  /**
-   * @private
-   */
+  /** @private */
   this.dragUpdate_ = dragUpdate;
 
-  /**
-   * @private
-   */
+  /** @private */
   this.dragStart_ = opt_dragStart;
 
-  /**
-   * @private
-   */
+  /** @private */
   this.dragEnd_ = opt_dragEnd;
 
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.previousDeltaX_ = 0;
 
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.previousDeltaY_ = 0;
 
-  /**
-   * @type {boolean}
-   */
+  /** @type {boolean} */
   this.seenNonZeroDelta_ = false;
 
-  /**
-   * @type {function(Event):void}
-   * @private
-   */
+  /** @private {function(Event):void} */
   this.callOnMouseUp_ = this.onMouseUp_.bind(this);
 
-  /**
-   * @type {function(Event):void}
-   * @private
-   */
+  /** @private {function(Event):void} */
   this.callOnMouseMove_ = this.onMouseMove_.bind(this);
 
   element.addEventListener('mousedown', this.onMouseDown_.bind(this), false);

@@ -23,9 +23,9 @@ remoting.XmppConnection = function() {
   this.server_ = '';
   /** @private */
   this.port_ = 0;
-  /** @type {?function(remoting.SignalStrategy.State):void} @private */
+  /** @private {?function(remoting.SignalStrategy.State):void} */
   this.onStateChangedCallback_ = null;
-  /** @type {?function(Element):void} @private */
+  /** @private {?function(Element):void} */
   this.onIncomingStanzaCallback_ = null;
   /** @private */
   this.socketId_ = -1;
@@ -37,11 +37,11 @@ remoting.XmppConnection = function() {
   this.sendPending_ = false;
   /** @private */
   this.startTlsPending_ = false;
-  /** @type {Array<ArrayBuffer>} @private */
+  /** @private {Array<ArrayBuffer>} */
   this.sendQueue_ = [];
-  /** @type {remoting.XmppLoginHandler} @private*/
+  /** @private {remoting.XmppLoginHandler} */
   this.loginHandler_ = null;
-  /** @type {remoting.XmppStreamParser} @private*/
+  /** @private {remoting.XmppStreamParser} */
   this.streamParser_ = null;
   /** @private */
   this.jid_ = '';

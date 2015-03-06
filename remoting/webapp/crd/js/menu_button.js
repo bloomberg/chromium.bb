@@ -22,29 +22,17 @@ var remoting = remoting || {};
  *     menu is hidden.
  */
 remoting.MenuButton = function(container, opt_onShow, opt_onHide) {
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.button_ = /** @type {HTMLElement} */
       (container.querySelector('button,.menu-button-activator'));
 
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.menu_ = /** @type {HTMLElement} */ (container.querySelector('ul'));
 
-  /**
-   * @type {undefined|function():void}
-   * @private
-   */
+  /** @private {undefined|function():void} */
   this.onShow_ = opt_onShow;
 
-  /**
-   * @type {undefined|function():void}
-   * @private
-   */
+  /** @private {undefined|function():void} */
   this.onHide_ = opt_onHide;
 
   /**
@@ -54,8 +42,7 @@ remoting.MenuButton = function(container, opt_onShow, opt_onHide) {
    * because elements can prevent event propagation; specifically, the client
    * plugin element does this.
    *
-   * @type {HTMLElement}
-   * @private
+   * @private {HTMLElement}
    */
   this.clickTrap_ = /** @type {HTMLElement} */ (document.createElement('div'));
   this.clickTrap_.classList.add('menu-button-click-trap');

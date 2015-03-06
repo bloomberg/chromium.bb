@@ -21,28 +21,16 @@ var remoting = remoting || {};
 remoting.AppRemoting = function(app) {
   app.setDelegate(this);
 
-  /**
-   * @type {remoting.ApplicationContextMenu}
-   * @private
-   */
+  /** @private {remoting.ApplicationContextMenu} */
   this.contextMenu_ = null;
 
-  /**
-   * @type {remoting.KeyboardLayoutsMenu}
-   * @private
-   */
+  /** @private {remoting.KeyboardLayoutsMenu} */
   this.keyboardLayoutsMenu_ = null;
 
-  /**
-   * @type {remoting.WindowActivationMenu}
-   * @private
-   */
+  /** @private {remoting.WindowActivationMenu} */
   this.windowActivationMenu_ = null;
 
-   /**
-    * @type {number}
-    * @private
-    */
+   /** @private {number} */
    this.pingTimerId_ = 0;
 };
 

@@ -28,16 +28,11 @@ var remoting = remoting || {};
  * @extends {XMLHttpRequest}
  */
 remoting.XMLHttpRequestProxy = function() {
-  /**
-   * @type {{headers: Object}}
-   */
+  /** @type {{headers: Object}} */
   this.sandbox_ipc = {
     headers: {}
   };
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.xhr_id_ = -1;
 };
 

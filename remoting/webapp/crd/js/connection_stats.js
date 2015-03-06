@@ -18,15 +18,10 @@ var remoting = remoting || {};
  * @param {Element} statsElement The HTML div to which to update stats.
  */
 remoting.ConnectionStats = function(statsElement) {
-  /**
-   * @private
-   */
+  /** @private */
   this.statsElement_ = statsElement;
 
-  /**
-   * @type {remoting.ClientSession.PerfStats}
-   * @private
-   */
+  /** @private {remoting.ClientSession.PerfStats} */
   this.mostRecent_ = null
 
   remoting.windowShape.addCallback(this);

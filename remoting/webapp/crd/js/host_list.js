@@ -29,61 +29,33 @@ var remoting = remoting || {};
  */
 remoting.HostList = function(table, noHosts, errorMsg, errorButton,
                              loadingIndicator) {
-  /**
-   * @type {Element}
-   * @private
-   */
+  /** @private {Element} */
   this.table_ = table;
   /**
-   * @type {Element}
-   * @private
    * TODO(jamiewalch): This should be doable using CSS's sibling selector,
    * but it doesn't work right now (crbug.com/135050).
+   * @private {Element}
    */
   this.noHosts_ = noHosts;
-  /**
-   * @type {Element}
-   * @private
-   */
+  /** @private {Element} */
   this.errorMsg_ = errorMsg;
-  /**
-   * @type {Element}
-   * @private
-   */
+  /** @private {Element} */
   this.errorButton_ = errorButton;
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.loadingIndicator_ = loadingIndicator;
-  /**
-   * @type {Array<remoting.HostTableEntry>}
-   * @private
-   */
+  /** @private {Array<remoting.HostTableEntry>} */
   this.hostTableEntries_ = [];
-  /**
-   * @type {Array<remoting.Host>}
-   * @private
-   */
+  /** @private {Array<remoting.Host>} */
   this.hosts_ = [];
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.lastError_ = '';
-  /**
-   * @type {remoting.LocalHostSection}
-   * @private
-   */
+  /** @private {remoting.LocalHostSection} */
   this.localHostSection_ = new remoting.LocalHostSection(
       /** @type {HTMLElement} */ (document.querySelector('.daemon-control')),
       new remoting.LocalHostSection.Controller(
           this, new remoting.HostSetupDialog(remoting.hostController)));
 
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.webappMajorVersion_ = parseInt(chrome.runtime.getManifest().version, 10);
 
   this.errorButton_.addEventListener('click',

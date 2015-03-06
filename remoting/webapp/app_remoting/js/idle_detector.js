@@ -38,16 +38,12 @@ remoting.IdleDetector = function(idleWarning, callback) {
   this.callback_ = callback;
 
   /**
-   * @type {number?} The id of the running timer, or null if no timer is
+   * @private {number?} The id of the running timer, or null if no timer is
    *     running.
-   * @private
    */
   this.timerId_ = null;
 
-  /**
-   * @type {?function():void}
-   * @private
-   */
+  /** @private {?function():void} */
   this.resetTimeoutRef_ = null;
 
   var manifest = chrome.runtime.getManifest();

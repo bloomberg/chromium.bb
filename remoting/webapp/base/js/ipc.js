@@ -49,10 +49,7 @@ var base = base || {};
  */
 base.Ipc = function() {
   base.debug.assert(instance_ === null);
-  /**
-   * @type {!Object<Function>}
-   * @private
-   */
+  /** @private {!Object<Function>} */
   this.handlers_ = {};
   this.onMessageHandler_ = this.onMessage_.bind(this);
   chrome.runtime.onMessage.addListener(this.onMessageHandler_);

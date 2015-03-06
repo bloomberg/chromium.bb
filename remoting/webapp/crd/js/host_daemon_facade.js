@@ -16,39 +16,32 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.HostDaemonFacade = function() {
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.nextId_ = 0;
 
-  /**
-   * @type {Object<number, remoting.HostDaemonFacade.PendingReply>}
-   * @private
-   */
+  /** @private {Object<number, remoting.HostDaemonFacade.PendingReply>} */
   this.pendingReplies_ = {};
 
-  /** @type {?chrome.runtime.Port} @private */
+  /** @private {?chrome.runtime.Port} */
   this.port_ = null;
 
-  /** @type {string} @private */
+  /** @private {string} */
   this.version_ = '';
 
-  /** @type {Array<remoting.HostController.Feature>} @private */
+  /** @private {Array<remoting.HostController.Feature>} */
   this.supportedFeatures_ = [];
 
-  /** @type {Array<function(boolean):void>} @private */
+  /** @private {Array<function(boolean):void>} */
   this.afterInitializationTasks_ = [];
 
   /**
    * A promise that fulfills when the daemon finishes initializing.
    * It will be set to null when the promise fulfills.
-   * @type {Promise}
-   * @private
+   * @private {Promise}
    */
   this.initializingPromise_ = null;
 
-  /** @type {remoting.Error} @private */
+  /** @private {remoting.Error} */
   this.error_ = remoting.Error.NONE;
 
   /** @private */

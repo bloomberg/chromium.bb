@@ -29,7 +29,7 @@ remoting.DnsBlackholeChecker = function(signalStrategy) {
   this.signalStrategy_.setStateChangedCallback(
       this.onWrappedSignalStrategyStateChanged_.bind(this));
 
-  /** @type {?function(remoting.SignalStrategy.State):void} @private */
+  /** @private {?function(remoting.SignalStrategy.State):void} */
   this.onStateChangedCallback_ = null;
 
   /** @private */
@@ -38,7 +38,7 @@ remoting.DnsBlackholeChecker = function(signalStrategy) {
   /** @private */
   this.blackholeState_ = BlackholeState.PENDING;
 
-  /** @type {?XMLHttpRequest} @private */
+  /** @private {?XMLHttpRequest} */
   this.xhr_ = null;
 };
 

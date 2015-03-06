@@ -22,16 +22,14 @@ var remoting = remoting || {};
 remoting.StatsAccumulator = function() {
   /**
    * A map from names to lists of values.
-   * @private
-   * @type Object<string, Array<number>>
+   * @private {Object<string, Array<number>>}
    */
   this.valueLists_ = {};
 
   /**
    * The first time, after this object was most recently initialized or emptied,
    * at which a value was added to this object.
-   * @private
-   * @type {?number}
+   * @private {?number}
    */
   this.timeOfFirstValue_ = null;
 };

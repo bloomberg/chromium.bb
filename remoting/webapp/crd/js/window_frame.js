@@ -17,30 +17,18 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.WindowFrame = function(titleBar) {
-  /**
-   * @type {remoting.DesktopConnectedView}
-   * @private
-   */
+  /** @private {remoting.DesktopConnectedView} */
   this.desktopConnectedView_ = null;
 
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.titleBar_ = titleBar;
 
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.title_ = /** @type {HTMLElement} */
       (titleBar.querySelector('.window-title'));
   base.debug.assert(this.title_ != null);
 
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.maximizeRestoreControl_ = /** @type {HTMLElement} */
       (titleBar.querySelector('.window-maximize-restore'));
   base.debug.assert(this.maximizeRestoreControl_ != null);
@@ -52,10 +40,7 @@ remoting.WindowFrame = function(titleBar) {
       this.onShowOptionsMenu_.bind(this),
       this.onHideOptionsMenu_.bind(this));
 
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.optionsMenuList_ = /** @type {HTMLElement} */
       (optionsButton.querySelector('.window-options-menu'));
   base.debug.assert(this.optionsMenuList_ != null);

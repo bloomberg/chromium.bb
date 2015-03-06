@@ -16,20 +16,11 @@ var remoting = remoting || {};
 
 /** @constructor */
 remoting.WcsSandboxContent = function() {
-  /**
-   * @type {Window}
-   * @private
-   */
+  /** @private {Window} */
   this.parentWindow_ = null;
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.nextXhrId_ = 0;
-  /**
-   * @type {Object<number, XMLHttpRequest>}
-   * @private
-   */
+  /** @private {Object<number, XMLHttpRequest>} */
   this.pendingXhrs_ = {};
 
   window.addEventListener('message', this.onMessage_.bind(this), false);

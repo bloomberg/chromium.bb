@@ -34,75 +34,40 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
                                          onConnectionFailed,
                                          requiredCapabilities,
                                          defaultRemapKeys) {
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.clientContainer_ = clientContainer;
 
-  /**
-   * @type {function(remoting.ClientSession):void}
-   * @private
-   */
+  /** @private {function(remoting.ClientSession):void} */
   this.onConnected_ = onConnected;
 
-  /**
-   * @type {function(remoting.Error):void}
-   * @private
-   */
+  /** @private {function(remoting.Error):void} */
   this.onError_ = onError;
 
-  /**
-   * @type {function(string, string):boolean}
-   * @private
-   */
+  /** @private {function(string, string):boolean} */
   this.onExtensionMessage_ = onExtensionMessage;
 
-  /**
-   * @type {function(remoting.Error):void}
-   * @private
-   */
+  /** @private {function(remoting.Error):void} */
   this.onConnectionFailed_ = onConnectionFailed;
 
-  /**
-   * @type {Array<string>}
-   * @private
-   */
+  /** @private {Array<string>} */
   this.requiredCapabilities_ = requiredCapabilities;
 
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.defaultRemapKeys_ = defaultRemapKeys;
 
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.clientJid_ = '';
 
-  /**
-   * @type {remoting.DesktopConnectedView.Mode}
-   * @private
-   */
+  /** @private {remoting.DesktopConnectedView.Mode} */
   this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
 
-  /**
-   * @type {remoting.SignalStrategy}
-   * @private
-   */
+  /** @private {remoting.SignalStrategy} */
   this.signalStrategy_ = null;
 
-  /**
-   * @type {remoting.SmartReconnector}
-   * @private
-   */
+  /** @private {remoting.SmartReconnector} */
   this.reconnector_ = null;
 
-  /**
-   * @private
-   */
+  /** @private */
   this.bound_ = {
     onStateChange : this.onStateChange_.bind(this)
   };
@@ -116,34 +81,19 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
  * second connection. Note the none of the shared WCS state is reset.
  */
 remoting.SessionConnectorImpl.prototype.reset = function() {
-  /**
-   * @type {remoting.Host}
-   * @private
-   */
+  /** @private {remoting.Host} */
   this.host_ = null;
 
-  /**
-   * @type {boolean}
-   * @private
-   */
+  /** @private {boolean} */
   this.logHostOfflineErrors_ = false;
 
-  /**
-   * @type {remoting.ClientSession}
-   * @private
-   */
+  /** @private {remoting.ClientSession} */
   this.clientSession_ = null;
 
-  /**
-   * @type {XMLHttpRequest}
-   * @private
-   */
+  /** @private {XMLHttpRequest} */
   this.pendingXhr_ = null;
 
-  /**
-   * @type {remoting.CredentialsProvider}
-   * @private
-   */
+  /** @type {remoting.CredentialsProvider} */
   this.credentialsProvider_ = null;
 };
 

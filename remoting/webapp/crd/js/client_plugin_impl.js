@@ -42,10 +42,7 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
   container.appendChild(this.plugin_);
 
   this.onExtensionMessage_ = onExtensionMessage;
-  /**
-   * @type {Array<string>}
-   * @private
-   */
+  /** @private {Array<string>} */
   this.requiredCapabilities_ = requiredCapabilities;
 
   /**
@@ -102,45 +99,21 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
   /** @private {?function({rects:Array<Array<number>>}):void} */
   this.debugRegionHandler_ = null;
 
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.pluginApiVersion_ = -1;
-  /**
-   * @type {Array<string>}
-   * @private
-   */
+  /** @private {Array<string>} */
   this.pluginApiFeatures_ = [];
-  /**
-   * @type {number}
-   * @private
-   */
+  /** @private {number} */
   this.pluginApiMinVersion_ = -1;
-  /**
-   * @type {!Array<string>}
-   * @private
-   */
+  /** @private {!Array<string>} */
   this.capabilities_ = [];
-  /**
-   * @type {boolean}
-   * @private
-   */
+  /** @private {boolean} */
   this.helloReceived_ = false;
-  /**
-   * @type {function(boolean)|null}
-   * @private
-   */
+  /** @private {function(boolean)|null} */
   this.onInitializedCallback_ = null;
-  /**
-   * @type {function(string, string):void}
-   * @private
-   */
+  /** @private {function(string, string):void} */
   this.onPairingComplete_ = function(clientId, sharedSecret) {};
-  /**
-   * @type {remoting.ClientSession.PerfStats}
-   * @private
-   */
+  /** @private {remoting.ClientSession.PerfStats} */
   this.perfStats_ = new remoting.ClientSession.PerfStats();
 
   /** @type {remoting.ClientPluginImpl} */

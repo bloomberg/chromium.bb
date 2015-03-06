@@ -29,16 +29,16 @@ remoting.CastExtensionHandler = function(clientSession) {
   /** @private */
   this.clientSession_ = clientSession;
 
-  /** @type {chrome.cast.Session} @private */
+  /** @private {chrome.cast.Session} */
   this.session_ = null;
 
-  /** @type {string} @private */
+  /** @private {string} */
   this.kCastNamespace_ = 'urn:x-cast:com.chromoting.cast.all';
 
-  /** @type {string} @private */
+  /** @private {string} */
   this.kApplicationId_ = "8A1211E3";
 
-  /** @type {Array<Object>} @private */
+  /** @private {Array<Object>} */
   this.messageQueue_ = [];
 
   this.start_();

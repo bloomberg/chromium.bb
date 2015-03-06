@@ -15,9 +15,9 @@ var remoting = remoting || {};
  * @implements {remoting.SignalStrategy}
  */
 remoting.WcsAdapter = function() {
-  /** @type {?function(remoting.SignalStrategy.State):void} @private */
+  /** @private {?function(remoting.SignalStrategy.State):void} */
   this.onStateChangedCallback_ = null;
-  /** @type {?function(Element):void} @private */
+  /** @private {?function(Element):void} */
   this.onIncomingStanzaCallback_ = null;
   /** @private */
   this.state_ = remoting.SignalStrategy.State.NOT_CONNECTED;

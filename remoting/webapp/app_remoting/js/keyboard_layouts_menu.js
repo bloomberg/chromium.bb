@@ -19,23 +19,14 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.KeyboardLayoutsMenu = function(adapter) {
-  /**
-   * @type {remoting.ContextMenuAdapter}
-   * @private
-   */
+  /** @private {remoting.ContextMenuAdapter} */
   this.adapter_ = adapter;
-  /**
-   * @type {remoting.SubmenuManager}
-   * @private
-   */
+  /** @private {remoting.SubmenuManager} */
   this.submenuManager_ = new remoting.SubmenuManager(
       adapter,
       chrome.i18n.getMessage(/*i18n-content*/'KEYBOARD_LAYOUTS_SUBMENU_TITLE'),
       true);
-  /**
-   * @type {string}
-   * @private
-   */
+  /** @private {string} */
   this.currentLayout_ = '';
 
   adapter.addListener(this.onContextMenu_.bind(this));

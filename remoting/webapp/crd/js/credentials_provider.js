@@ -97,4 +97,3 @@ remoting.CredentialsProvider.prototype.getThirdPartyToken = function(
     that.fetchThirdPartyToken_(tokenUrl, hostPublicKey, scope, onTokenFetched);
   });
 };
-

@@ -39,10 +39,10 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
                                          defaultRemapKeys, onInitialized) {
   this.session_ = session;
 
-  /** @type {HTMLElement} @private */
+  /** @private {HTMLElement} */
   this.container_ = container;
 
-  /** @type {remoting.ClientPlugin} @private */
+  /** @private {remoting.ClientPlugin} */
   this.plugin_ = null;
 
   /** @private */
@@ -51,7 +51,7 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
   /** @private */
   this.mode_ = mode;
 
-  /** @type {string} @private */
+  /** @private {string} */
   this.defaultRemapKeys_ = defaultRemapKeys;
 
   /**
@@ -64,11 +64,11 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
   this.callPluginLostFocus_ = this.pluginLostFocus_.bind(this);
   /** @private */
   this.callPluginGotFocus_ = this.pluginGotFocus_.bind(this);
-  /** @type {Element} @private */
+  /** @private {Element} */
   this.debugRegionContainer_ =
       this.container_.querySelector('.debug-region-container');
 
-  /** @type {Element} @private */
+  /** @private {Element} */
   this.mouseCursorOverlay_ =
       this.container_.querySelector('.mouse-cursor-overlay');
 
@@ -77,13 +77,16 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
 
   /** @type {Element} */
   var img = this.mouseCursorOverlay_;
-  /** @param {Event} event @private */
+  /**
+   * @param {Event} event
+   * @private
+   */
   this.updateMouseCursorPosition_ = function(event) {
     img.style.top = event.offsetY + 'px';
     img.style.left = event.offsetX + 'px';
   };
 
-  /** @type {remoting.VideoFrameRecorder} @private */
+  /** @private {remoting.VideoFrameRecorder} */
   this.videoFrameRecorder_ = null;
 
   /** private {base.Disposable} */

@@ -20,10 +20,7 @@ var NEW_WINDOW_MENU_ID_ = 'new-window';
  * @constructor
  */
 remoting.ActivationHandler = function (ipc, appLauncher) {
-  /**
-   * @type {remoting.V2AppLauncher}
-   * @private
-   */
+  /** @private {remoting.V2AppLauncher} */
   this.appLauncher_ = appLauncher;
 
   chrome.contextMenus.create({

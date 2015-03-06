@@ -27,16 +27,16 @@ remoting.HostInstallDialog = function() {
   this.continueInstallButton_.disabled = false;
   this.cancelInstallButton_.disabled = false;
 
-  /** @private*/
+  /** @private */
   this.onDoneHandler_ = function() {};
 
-  /** @param {remoting.Error} error @private */
-  this.onErrorHandler_ = function(error) {};
-
   /**
-   * @type {remoting.HostInstaller}
+   * @param {remoting.Error} error
    * @private
    */
+  this.onErrorHandler_ = function(error) {};
+
+  /** @private {remoting.HostInstaller} */
   this.hostInstaller_ = new remoting.HostInstaller();
 };
 

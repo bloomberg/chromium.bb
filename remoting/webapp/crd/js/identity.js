@@ -24,9 +24,9 @@ remoting.identity = null;
 remoting.Identity = function(opt_consentDialog) {
   /** @private */
   this.consentDialog_ = opt_consentDialog;
-  /** @type {string} @private */
+  /** @private {string} */
   this.email_ = '';
-  /** @type {string} @private */
+  /** @private {string} */
   this.fullName_ = '';
   /** @type {base.Deferred<string>} */
   this.authTokenDeferred_ = null;

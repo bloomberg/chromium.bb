@@ -27,22 +27,13 @@ remoting.Clipboard.prototype.ItemTypes = {
   TEXT_UTF8_TYPE: 'text/plain; charset=UTF-8'
 };
 
-/**
- * @private
- * @type {string}
- */
+/** @private {string} */
 remoting.Clipboard.prototype.previousContent = "";
 
-/**
- * @private
- * @type {boolean}
- */
+/** @private {boolean} */
 remoting.Clipboard.prototype.itemFromHostTextPending = false;
 
-/**
- * @private
- * @type {boolean}
- */
+/** @private {boolean} */
 remoting.Clipboard.prototype.blockOneClipboardSend_ = false;
 
 /**

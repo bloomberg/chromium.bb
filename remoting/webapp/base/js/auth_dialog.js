@@ -19,28 +19,16 @@ var instance_ = null;
  * @private
  */
 remoting.AuthDialog = function(rootElement) {
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.rootElement_ = rootElement;
 
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.borderElement_ = rootElement.querySelector('#auth-dialog-border');
 
-  /**
-   * @type {HTMLElement}
-   * @private
-   */
+  /** @private {HTMLElement} */
   this.authButton_ = rootElement.querySelector('#auth-button');
 
-  /**
-   * @type {base.Deferred}
-   * @private
-   */
+  /** @private {base.Deferred} */
   this.onAuthButtonDeferred_ = null;
 
   this.authButton_.addEventListener('click', this.onClick_.bind(this), false);
