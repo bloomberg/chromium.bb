@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<title>Fullscreen UA style sheet does not apply to the :root element</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../trusted-event.js"></script>
+<style>
+:root {
+    /* The Fullscreen UA style sheet excludes :root from the size- and
+     * position-related rules. To verify that none of them in fact apply,
+     * override the properties which would otherwise (incidentally) match. */
+    margin: 10px;
+    min-width: 50%;
+    max-width: 50%;
+    min-height: 50%;
+    max-height: 50%;
+    transform: translate(0, 0);
+}
+</style>
+<div id="log"></div>
+<script>
+async_test(function()
+{
+    var root = document.documentElement;
+    assert_true(root.matches(":root"));
+
+    document.addEventListener("fullscreenchange", this.step_func_done(function()
+    {
+        var style = getComputedStyle(root);
+        // No properties should match the Fullscreen UA style sheet.
+        assert_not_equals(style.position, "fixed");
+        assert_not_equals(style.top, "0px");
+        assert_not_equals(style.right, "0px");
+        assert_not_equals(style.bottom, "0px");
+        assert_not_equals(style.left, "0px");
+        assert_not_equals(style.margin, "0px");
+        assert_not_equals(style.boxSizing, "border-box");
+        assert_not_equals(style.minWidth, "0px");
+        assert_not_equals(style.maxWidth, "none");
+        assert_not_equals(style.minHeight, "0px");
+        assert_not_equals(style.maxHeight, "none");
+        assert_equals(style.width, window.innerWidth / 2 + "px");
+        assert_equals(style.height, window.innerHeight / 2 + "px");
+        assert_not_equals(style.objectFit, "contain");
+        assert_not_equals(style.transform, "none");
+    }));
+
+    trusted_request(root, root);
+});
+</script>

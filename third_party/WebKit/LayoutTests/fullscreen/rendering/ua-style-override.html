@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<title>Fullscreen UA style sheet cannot be overriden by author style</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../trusted-event.js"></script>
+<style>
+#test {
+    /* Override everything which is !important in the Fullscreen UA style sheet. */
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    margin: 10px !important;
+    box-sizing: content-box !important;
+    min-width: 50% !important;
+    max-width: 50% !important;
+    min-height: 50% !important;
+    max-height: 50% !important;
+    width: 50% !important;
+    height: 50% !important;
+    object-fit: none !important;
+    transform: translate(0, 0) !important;
+}
+</style>
+<div id="log"></div>
+<div id="test"></div>
+<script>
+async_test(function()
+{
+    var div = document.getElementById("test");
+
+    // Sanity-check that the overriden style initially applies.
+    assert_equals(getComputedStyle(div).position, "relative");
+
+    document.addEventListener("fullscreenchange", this.step_func_done(function()
+    {
+        var style = getComputedStyle(div);
+        // All properties should now match the Fullscreen UA style sheet.
+        assert_equals(style.position, "fixed");
+        assert_equals(style.top, "0px");
+        assert_equals(style.right, "0px");
+        assert_equals(style.bottom, "0px");
+        assert_equals(style.left, "0px");
+        assert_equals(style.margin, "0px");
+        assert_equals(style.boxSizing, "border-box");
+        assert_equals(style.minWidth, "0px");
+        assert_equals(style.maxWidth, "none");
+        assert_equals(style.minHeight, "0px");
+        assert_equals(style.maxHeight, "none");
+        assert_equals(style.width, window.innerWidth + "px");
+        assert_equals(style.height, window.innerHeight + "px");
+        assert_equals(style.objectFit, "contain");
+        assert_equals(style.transform, "none");
+    }));
+
+    trusted_request(div);
+});
+</script>

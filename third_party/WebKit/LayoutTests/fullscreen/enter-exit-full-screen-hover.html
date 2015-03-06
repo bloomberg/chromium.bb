@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+<style>
+/* Offset body by 50px so that buttons clearly change position when they enter/exit fullscreen. */
+body {
+    position: relative;
+    left: 50px;
+}
+</style>
 <script src="../resources/js-test.js"></script>
 <script src="full-screen-test.js"></script>
 <script src="../fast/events/touch/resources/touch-hover-active-tests.js"></script>
@@ -43,7 +50,8 @@ function runTest() {
 
 
     // Move mouse over to the "Go fullscreen" button and click
-    eventSender.mouseMoveTo(enterButtonCenter.x, enterButtonCenter.y);
+    // We move by 50px in the x-direction to account for the relative position.
+    eventSender.mouseMoveTo(enterButtonCenter.x + 50, enterButtonCenter.y);
     eventSender.mouseDown();
     eventSender.mouseUp();
 }

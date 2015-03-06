@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<title>Fullscreen UA style sheet removes iframe border</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../trusted-event.js"></script>
+<div id="log"></div>
+<iframe></iframe>
+<script>
+async_test(function()
+{
+    var iframe = document.querySelector("iframe");
+
+    // The HTML UA style sheet gives iframe a border.
+    // https://html.spec.whatwg.org/#embedded-content-rendering-rules
+    assert_equals(getComputedStyle(iframe).borderStyle, "inset");
+
+    document.addEventListener("fullscreenchange", this.step_func_done(function()
+    {
+        // The Fullscreen UA style sheet removes the iframe border.
+        assert_equals(getComputedStyle(iframe).borderStyle, "none");
+    }));
+
+    trusted_request(iframe);
+});
+</script>

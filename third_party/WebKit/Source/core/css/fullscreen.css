@@ -1,10 +1,50 @@
+/*
+ * User-agent level style sheet defaults for the Fullscreen API
+ * https://fullscreen.spec.whatwg.org/#user-agent-level-style-sheet-defaults
+ *
+ * FIXME: Use the :fullscreen pseudo-class instead of :-webkit-full-screen.
+ * (see crbug.com/402378)
+ */
+
+:not(:root):-webkit-full-screen {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+}
+
+iframe:-webkit-full-screen {
+    border: none;
+}
+
+/* Anything below are extensions over what the Fullscreen API mandates. */
+
+/* The transform rule is needed to prevent transforms that make sense in the
+   context of the page from messing up the fullscreen rendering. It will likely
+   be added to the spec: https://www.w3.org/Bugs/Public/show_bug.cgi?id=27931 */
+:not(:root):-webkit-full-screen {
+    transform: none !important;
+}
+
+/* FIXME: Remove these rules when moving Fullscreen to top layer.
+   (see crbug.com/240576) */
 :-webkit-full-screen {
     background-color: white;
     z-index: 2147483647 !important;
 }
 
-:root:-webkit-full-screen-ancestor {
-    overflow: hidden !important;
+video:-webkit-full-screen, audio:-webkit-full-screen {
+    background-color: transparent !important;
 }
 
 :-webkit-full-screen-ancestor:not(iframe) {
@@ -21,40 +61,9 @@
     -webkit-transform-style: flat !important;
 }
 
-video:-webkit-full-screen, audio:-webkit-full-screen {
-    background-color: transparent !important;
-    position: relative !important;
-    left: 0 !important;
-    top: 0 ! important;
-    margin: 0 !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    flex: 1 !important;
-    display: block !important;
-    transform: none !important;
-}
-
-img:-webkit-full-screen {
-    width: auto;
-    height: 100%;
-    max-width: 100%;
-}
-
-iframe:-webkit-full-screen {
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    position: fixed !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    left: 0 !important;
-    top: 0 !important;
+/* This prevents video from overflowing the viewport in
+   virtual/android/fullscreen/video-scrolled-iframe.html
+   FIXME: We should remove this (see crbug.com/441890). */
+:-webkit-full-screen-ancestor {
+    overflow: hidden !important;
 }
