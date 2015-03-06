@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/AXObjectCache.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeLayoutStyle.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"

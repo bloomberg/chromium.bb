@@ -5,8 +5,7 @@
 #include "config.h"
 #include "core/layout/style/SVGLayoutStyle.h"
 
-#include "core/layout/ClipPathOperation.h"
-#include "core/layout/style/ShapeValue.h"
+#include "core/svg/SVGLength.h"
 
 #include <gtest/gtest.h>
 
@@ -14,13 +13,25 @@ using namespace blink;
 
 namespace {
 
-// Ensures RefPtr values are compared by their values, not by pointers.
-#define TEST_STYLE_REFPTR_VALUE_NO_DIFF(type, fieldName) \
+// Ensures RefPtrWillBePersistent values are compared by their values, not by pointers.
+#define TEST_STYLE_REFPTRWILLBEPERSISTENT_VALUE_NO_DIFF(type, fieldName) \
     { \
         RefPtr<SVGLayoutStyle> svg1 = SVGLayoutStyle::create(); \
         RefPtr<SVGLayoutStyle> svg2 = SVGLayoutStyle::create(); \
         RefPtrWillBePersistent<type> value1 = type::create(); \
         RefPtrWillBePersistent<type> value2 = value1->clone(); \
+        svg1->set##fieldName(value1); \
+        svg2->set##fieldName(value2); \
+        EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference()); \
+    }
+
+// Ensures RefPtr values are compared by their values, not by pointers.
+#define TEST_STYLE_REFPTR_VALUE_NO_DIFF(type, fieldName) \
+    { \
+        RefPtr<SVGLayoutStyle> svg1 = SVGLayoutStyle::create(); \
+        RefPtr<SVGLayoutStyle> svg2 = SVGLayoutStyle::create(); \
+        RefPtr<type> value1 = type::create(); \
+        RefPtr<type> value2 = value1->copy(); \
         svg1->set##fieldName(value1); \
         svg2->set##fieldName(value2); \
         EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference()); \
@@ -42,9 +53,9 @@ TEST(SVGLayoutStyleTest, StrokeStyleShouldCompareValue)
 {
     TEST_STYLE_VALUE_NO_DIFF(float, StrokeOpacity);
     TEST_STYLE_VALUE_NO_DIFF(float, StrokeMiterLimit);
-    TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGLength, StrokeWidth);
+    TEST_STYLE_REFPTRWILLBEPERSISTENT_VALUE_NO_DIFF(SVGLength, StrokeWidth);
     TEST_STYLE_VALUE_NO_DIFF(Length, StrokeDashOffset);
-    TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGLengthList, StrokeDashArray);
+    TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGDashArray, StrokeDashArray);
 
     {
         RefPtr<SVGLayoutStyle> svg1 = SVGLayoutStyle::create();

@@ -814,14 +814,14 @@ float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue*
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }
 
-PassRefPtrWillBeRawPtr<SVGLengthList> StyleBuilderConverter::convertStrokeDasharray(StyleResolverState&, CSSValue* value)
+PassRefPtr<SVGDashArray> StyleBuilderConverter::convertStrokeDasharray(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isValueList())
         return SVGLayoutStyle::initialStrokeDashArray();
 
     CSSValueList* dashes = toCSSValueList(value);
 
-    RefPtrWillBeRawPtr<SVGLengthList> array = SVGLengthList::create();
+    RefPtr<SVGDashArray> array = SVGDashArray::create();
     size_t length = dashes->length();
     for (size_t i = 0; i < length; ++i) {
         CSSValue* currValue = dashes->item(i);
@@ -829,7 +829,7 @@ PassRefPtrWillBeRawPtr<SVGLengthList> StyleBuilderConverter::convertStrokeDashar
             continue;
 
         CSSPrimitiveValue* dash = toCSSPrimitiveValue(dashes->item(i));
-        array->append(SVGLength::fromCSSPrimitiveValue(dash));
+        array->append(convertLength(state, dash));
     }
 
     return array.release();

@@ -348,6 +348,14 @@ bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(LayoutObject* object
     return pointInClippingArea(object, localPoint);
 }
 
+DashArray SVGLayoutSupport::resolveSVGDashArray(const SVGDashArray& svgDashArray, const LayoutStyle& style, const SVGLengthContext& lengthContext)
+{
+    DashArray dashArray;
+    for (const Length& dashLength : svgDashArray.vector())
+        dashArray.append(lengthContext.valueForLength(dashLength, style));
+    return dashArray;
+}
+
 void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const LayoutStyle& style, const LayoutObject& object)
 {
     ASSERT(object.node());
@@ -361,14 +369,7 @@ void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const
     context.setLineJoin(svgStyle.joinStyle());
     context.setMiterLimit(svgStyle.strokeMiterLimit());
 
-    RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
-    DashArray dashArray;
-    if (!dashes->isEmpty()) {
-        SVGLengthList::ConstIterator it = dashes->begin();
-        SVGLengthList::ConstIterator itEnd = dashes->end();
-        for (; it != itEnd; ++it)
-            dashArray.append(it->value(lengthContext));
-    }
+    DashArray dashArray = resolveSVGDashArray(*svgStyle.strokeDashArray(), style, lengthContext);
     context.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
 }
 
@@ -385,14 +386,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, cons
     strokeData.setLineJoin(svgStyle.joinStyle());
     strokeData.setMiterLimit(svgStyle.strokeMiterLimit());
 
-    RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
-    DashArray dashArray;
-    if (!dashes->isEmpty()) {
-        SVGLengthList::ConstIterator it = dashes->begin();
-        SVGLengthList::ConstIterator itEnd = dashes->end();
-        for (; it != itEnd; ++it)
-            dashArray.append(it->value(lengthContext));
-    }
+    DashArray dashArray = resolveSVGDashArray(*svgStyle.strokeDashArray(), style, lengthContext);
     strokeData.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
 }
 

@@ -29,14 +29,18 @@
 #define SVGLayoutStyleDefs_h
 
 #include "core/svg/SVGLength.h"
-#include "core/svg/SVGLengthList.h"
 #include "platform/Length.h"
+#include "platform/graphics/Color.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/RefVector.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
+
+typedef RefVector<Length> SVGDashArray;
 
 enum SVGPaintType {
     SVG_PAINTTYPE_RGBCOLOR,
@@ -162,7 +166,7 @@ public:
 
     RefPtrWillBePersistent<SVGLength> width;
     Length dashOffset;
-    RefPtrWillBePersistent<SVGLengthList> dashArray;
+    RefPtr<SVGDashArray> dashArray;
 
     SVGPaintType paintType;
     Color paintColor;

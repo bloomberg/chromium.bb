@@ -1120,18 +1120,14 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> glyphOrientationToCSSPrimitiveV
     }
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtrWillBeRawPtr<SVGLengthList> passDashes)
+static PassRefPtrWillBeRawPtr<CSSValue> strokeDashArrayToCSSValueList(const SVGDashArray& dashes, const LayoutStyle& style)
 {
-    RefPtrWillBeRawPtr<SVGLengthList> dashes = passDashes;
-
-    if (dashes->isEmpty())
+    if (dashes.isEmpty())
         return CSSPrimitiveValue::createIdentifier(CSSValueNone);
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    SVGLengthList::ConstIterator it = dashes->begin();
-    SVGLengthList::ConstIterator itEnd = dashes->end();
-    for (; it != itEnd; ++it)
-        list->append(SVGLength::toCSSPrimitiveValue(*it));
+    for (const Length& dashLength : dashes.vector())
+        list->append(zoomAdjustedPixelValueForLength(dashLength, style));
 
     return list.release();
 }
@@ -2522,7 +2518,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
     case CSSPropertyStroke:
         return adjustSVGPaintForCurrentColor(svgStyle.strokePaintType(), svgStyle.strokePaintUri(), svgStyle.strokePaintColor(), style.color());
     case CSSPropertyStrokeDasharray:
-        return strokeDashArrayToCSSValueList(svgStyle.strokeDashArray());
+        return strokeDashArrayToCSSValueList(*svgStyle.strokeDashArray(), style);
     case CSSPropertyStrokeDashoffset:
         return zoomAdjustedPixelValueForLength(svgStyle.strokeDashOffset(), style);
     case CSSPropertyStrokeWidth:

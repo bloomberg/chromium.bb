@@ -75,7 +75,7 @@ public:
     static SVGPaintType initialStrokePaintType() { return SVG_PAINTTYPE_NONE; }
     static Color initialStrokePaintColor() { return Color(); }
     static String initialStrokePaintUri() { return String(); }
-    static PassRefPtrWillBeRawPtr<SVGLengthList> initialStrokeDashArray() { return SVGLengthList::create(); }
+    static PassRefPtr<SVGDashArray> initialStrokeDashArray();
     static Length initialStrokeDashOffset() { return Length(Fixed); }
     static float initialStrokeMiterLimit() { return 4; }
     static float initialStopOpacity() { return 1; }
@@ -195,10 +195,10 @@ public:
         }
     }
 
-    void setStrokeDashArray(PassRefPtrWillBeRawPtr<SVGLengthList> obj)
+    void setStrokeDashArray(PassRefPtr<SVGDashArray> dashArray)
     {
-        if (*stroke->dashArray != *obj)
-            stroke.access()->dashArray = obj;
+        if (*stroke->dashArray != *dashArray)
+            stroke.access()->dashArray = dashArray;
     }
 
     void setStrokeMiterLimit(float obj)
@@ -319,7 +319,7 @@ public:
     const SVGPaintType& strokePaintType() const { return stroke->paintType; }
     const Color& strokePaintColor() const { return stroke->paintColor; }
     const String& strokePaintUri() const { return stroke->paintUri; }
-    SVGLengthList* strokeDashArray() const { return stroke->dashArray.get(); }
+    SVGDashArray* strokeDashArray() const { return stroke->dashArray.get(); }
     float strokeMiterLimit() const { return stroke->miterLimit; }
     SVGLength* strokeWidth() const { return stroke->width.get(); }
     const Length& strokeDashOffset() const { return stroke->dashOffset; }

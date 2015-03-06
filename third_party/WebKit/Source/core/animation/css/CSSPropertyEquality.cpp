@@ -221,7 +221,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
             && (aSVG.visitedLinkStrokePaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.visitedLinkStrokePaintColor() == bSVG.visitedLinkStrokePaintColor());
     }
     case CSSPropertyStrokeDasharray:
-        return dataEquivalent(a.strokeDashArray(), b.strokeDashArray());
+        return a.strokeDashArray() == b.strokeDashArray();
     case CSSPropertyStrokeDashoffset:
         return a.strokeDashOffset() == b.strokeDashOffset();
     case CSSPropertyStrokeMiterlimit:

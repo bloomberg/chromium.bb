@@ -88,10 +88,14 @@ void PrintTo(const AnimatableShapeValue& animValue, ::std::ostream* os)
 void PrintTo(const AnimatableStrokeDasharrayList& animValue, ::std::ostream* os)
 {
     *os << "AnimatableStrokeDasharrayList(";
-    RefPtrWillBeRawPtr<SVGLengthList> list = animValue.toSVGLengthList();
-    size_t length = list->length();
+    RefPtr<SVGDashArray> list = animValue.toSVGDashArray(1);
+    size_t length = list->size();
     for (size_t i = 0; i < length; ++i) {
-        *os << list->at(i)->valueAsString().utf8().data();
+        const Length& dashLength = list->at(i);
+        PixelsAndPercent pixelsAndPercent = dashLength.pixelsAndPercent();
+        *os << pixelsAndPercent.pixels << '+';
+        *os << pixelsAndPercent.percent << '%';
+
         if (i != length-1)
             *os << ", ";
     }

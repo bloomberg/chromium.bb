@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/events/MessageEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorInstrumentation.h"

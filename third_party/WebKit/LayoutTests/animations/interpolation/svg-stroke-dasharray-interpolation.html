@@ -2,6 +2,7 @@
 <meta charset="UTF-8">
 <style>
 .target {
+  font-size: 16px;
   stroke-width: 10px;
   stroke: black;
 }
@@ -201,14 +202,14 @@ assertInterpolation({
   from: '0em 20px 30px',
   to: '40em 0em 60em'
 }, [
-  {at: -0.2, is: '0em 20px 30px'},
+  {at: -0.2, is: '0em 24px 0px'},
   {at:  0,   is: '0em 20px 30px'},
-  {at:  0.2, is: '0em 20px 30px'},
-  {at:  0.4, is: '0em 20px 30px'},
-  {at:  0.6, is: '40em 0em 60em'},
-  {at:  0.8, is: '40em 0em 60em'},
+  {at:  0.2, is: '8em 16px 216px'},
+  {at:  0.4, is: '16em 12px 402px'},
+  {at:  0.6, is: '24em 8px 588px'},
+  {at:  0.8, is: '32em 4px 774px'},
   {at:  1,   is: '40em 0em 60em'},
-  {at:  1.2, is: '40em 0em 60em'},
+  {at:  1.2, is: '48em 0px 1146px'},
 ]);
 
 assertInterpolation({
@@ -216,14 +217,14 @@ assertInterpolation({
   from: '0px 20px',
   to: '40px 0px 60em'
 }, [
-  {at: -0.2, is: '0px 20px'},
-  {at:  0,   is: '0px 20px'},
-  {at:  0.2, is: '0px 20px'},
-  {at:  0.4, is: '0px 20px'},
-  {at:  0.6, is: '40px 0px 60em'},
-  {at:  0.8, is: '40px 0px 60em'},
-  {at:  1,   is: '40px 0px 60em'},
-  {at:  1.2, is: '40px 0px 60em'},
+  {at: -0.2, is: '0px 24px 0px 16px 0px 0px'},
+  {at:  0,   is: '0px 20px 0px 20px 0px 20px'},
+  {at:  0.2, is: '8px 16px 192px 24px 0px 208px'},
+  {at:  0.4, is: '16px 12px 384px 28px 0px 396px'},
+  {at:  0.6, is: '24px 8px 576px 32px 0px 584px'},
+  {at:  0.8, is: '32px 4px 768px 36px 0px 772px'},
+  {at:  1,   is: '40px 0px 60em 40px 0px 60em'},
+  {at:  1.2, is: '48px 0px 1152px 44px 0px 1148px'},
 ]);
 
 // Mixed units

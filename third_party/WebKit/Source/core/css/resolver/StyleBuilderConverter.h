@@ -82,7 +82,7 @@ public:
     static PassRefPtr<ShapeValue> convertShapeValue(StyleResolverState&, CSSValue*);
     static float convertSpacing(StyleResolverState&, CSSValue*);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);
-    static PassRefPtrWillBeRawPtr<SVGLengthList> convertStrokeDasharray(StyleResolverState&, CSSValue*);
+    static PassRefPtr<SVGDashArray> convertStrokeDasharray(StyleResolverState&, CSSValue*);
     static StyleColor convertStyleColor(StyleResolverState&, CSSValue*, bool forVisitedLink = false);
     static Color convertSVGColor(StyleResolverState&, CSSValue*);
     static PassRefPtrWillBeRawPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);

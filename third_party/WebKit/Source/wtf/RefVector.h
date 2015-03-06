@@ -26,6 +26,7 @@ public:
     bool operator!=(const RefVector& o) const { return m_vector != o.m_vector; }
 
     size_t size() const { return m_vector.size(); }
+    bool isEmpty() const { return !size(); }
     void append(const T& decoration) { m_vector.append(decoration); }
     const Vector<T>& vector() const { return m_vector; }
 

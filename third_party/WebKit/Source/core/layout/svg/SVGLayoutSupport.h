@@ -25,6 +25,7 @@
 #define SVGLayoutSupport_h
 
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
+#include "platform/graphics/DashArray.h"
 
 namespace blink {
 
@@ -41,6 +42,7 @@ class LayoutBoxModelObject;
 class LayoutObject;
 class LayoutStyle;
 class LayoutSVGRoot;
+class SVGLengthContext;
 class StrokeData;
 class TransformState;
 
@@ -80,6 +82,8 @@ public:
     // Shared between SVG renderers and resources.
     static void applyStrokeStyleToContext(GraphicsContext&, const LayoutStyle&, const LayoutObject&);
     static void applyStrokeStyleToStrokeData(StrokeData&, const LayoutStyle&, const LayoutObject&);
+
+    static DashArray resolveSVGDashArray(const SVGDashArray&, const LayoutStyle&, const SVGLengthContext&);
 
     // Update the GC state (on |paintInfo.context|) for painting |renderer|
     // using |style|. |resourceMode| is used to decide between fill/stroke.

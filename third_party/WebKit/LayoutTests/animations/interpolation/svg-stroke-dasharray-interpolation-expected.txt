@@ -26,7 +26,7 @@ PASS: stroke-dasharray from [none] to [5 10] was [ 4  8] at 0.8
 PASS: stroke-dasharray from [none] to [5 10] was [ 5 10] at 1
 PASS: stroke-dasharray from [none] to [5 10] was [ 6 12] at 1.2
 PASS: stroke-dasharray from [none] to [5em 10em] was [ 0em  0em] at -0.2
-FAIL: stroke-dasharray from [none] to [5em 10em] was [none] at 0, expected [0em, 0em]
+FAIL: stroke-dasharray from [none] to [5em 10em] was [none] at 0, expected [0em, 0em] (parsed as [0px, 0px])
 PASS: stroke-dasharray from [none] to [5em 10em] was [ 1em  2em] at 0.2
 PASS: stroke-dasharray from [none] to [5em 10em] was [ 2em  4em] at 0.4
 PASS: stroke-dasharray from [none] to [5em 10em] was [ 3em  6em] at 0.6
@@ -82,29 +82,29 @@ PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [17 22 27 29 34 19
 FAIL: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [20px, 25px, 30px, 35px, 40px] at 1, expected [20 25 30 35 40 20 25 30 35 40 20 25 30 35 40] (parsed as [20px, 25px, 30px, 35px, 40px, 20px, 25px, 30px, 35px, 40px, 20px, 25px, 30px, 35px, 40px])
 PASS: stroke-dasharray from [5 10 15] to [20 25 30 35 40] was [23 28 33 41 46 21 29 34 39 47 22 27 35 40 45] at 1.2
 PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [0px 24px 24px] at -0.2
-FAIL: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [0em, 20px, 30px] at 0, expected [0px 20px 30px] (parsed as [0px, 20px, 30px])
+PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [0px 20px 30px] at 0
 PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [8px 16px 36px] at 0.2
 PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [16px 12px 42px] at 0.4
 PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [24px 8px 48px] at 0.6
 PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [32px 4px 54px] at 0.8
-FAIL: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [40px, 0em, 60px] at 1, expected [40px 0px 60px] (parsed as [40px, 0px, 60px])
+PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [40px 0px 60px] at 1
 PASS: stroke-dasharray from [0em 20px 30px] to [40px 0em 60px] was [48px 0px 66px] at 1.2
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at -0.2
+PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 24px 0px] at -0.2
 PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at 0
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at 0.2
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at 0.4
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 0.6
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 0.8
+PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [8em 16px 216px] at 0.2
+PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [16em 12px 402px] at 0.4
+PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [24em 8px 588px] at 0.6
+PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [32em 4px 774px] at 0.8
 PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 1
-PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 1.2
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [0px 20px] at -0.2
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [0px 20px] at 0
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [0px 20px] at 0.2
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [0px 20px] at 0.4
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em] at 0.6
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em] at 0.8
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em] at 1
-PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em] at 1.2
+PASS: stroke-dasharray from [0em 20px 30px] to [40em 0em 60em] was [48em 0px 1146px] at 1.2
+PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [0px 24px 0px 16px 0px 0px] at -0.2
+FAIL: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [0px, 20px] at 0, expected [0px 20px 0px 20px 0px 20px] (parsed as [0px, 20px, 0px, 20px, 0px, 20px])
+PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [8px 16px 192px 24px 0px 208px] at 0.2
+PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [16px 12px 384px 28px 0px 396px] at 0.4
+PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [24px 8px 576px 32px 0px 584px] at 0.6
+PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [32px 4px 768px 36px 0px 772px] at 0.8
+FAIL: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [40px, 0px, 960px] at 1, expected [40px 0px 60em 40px 0px 60em] (parsed as [40px, 0px, 960px, 40px, 0px, 960px])
+PASS: stroke-dasharray from [0px 20px] to [40px 0px 60em] was [48px 0px 1152px 44px 0px 1148px] at 1.2
 PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [8em 28px] at -0.2
 PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [10em 30px] at 0
 PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [12em 32px] at 0.2
@@ -114,12 +114,12 @@ PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [18em 38px] at 0.8
 PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [20em 40px] at 1
 PASS: stroke-dasharray from [10em 30px] to [20em 40px] was [22em 42px] at 1.2
 PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [0em 0px 0em 0px 40em 32px 0em 0px 16em 8px 0em 0px] at -0.2
-FAIL: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [10em, 20px, 30em, 40px, 50em, 60px] at 0, expected [10em 20px 30em 40px 50em 60px 10em 20px 30em 40px 50em 60px] (parsed as [10em, 20px, 30em, 40px, 50em, 60px, 10em, 20px, 30em, 40px, 50em, 60px])
+FAIL: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [160px, 20px, 480px, 40px, 800px, 60px] at 0, expected [10em 20px 30em 40px 50em 60px 10em 20px 30em 40px 50em 60px] (parsed as [160px, 20px, 480px, 40px, 800px, 60px, 160px, 20px, 480px, 40px, 800px, 60px])
 PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [28em 56px 84em 112px 60em 88px 68em 96px 44em 72px 100em 128px] at 0.2
 PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [46em 92px 138em 184px 70em 116px 126em 172px 58em 104px 150em 196px] at 0.4
 PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [64em 128px 192em 256px 80em 144px 184em 248px 72em 136px 200em 264px] at 0.6
 PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [82em 164px 246em 328px 90em 172px 242em 324px 86em 168px 250em 332px] at 0.8
-FAIL: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [100em, 200px, 300em, 400px] at 1, expected [100em 200px 300em 400px 100em 200px 300em 400px 100em 200px 300em 400px] (parsed as [100em, 200px, 300em, 400px, 100em, 200px, 300em, 400px, 100em, 200px, 300em, 400px])
+FAIL: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [1600px, 200px, 4800px, 400px] at 1, expected [100em 200px 300em 400px 100em 200px 300em 400px 100em 200px 300em 400px] (parsed as [1600px, 200px, 4800px, 400px, 1600px, 200px, 4800px, 400px, 1600px, 200px, 4800px, 400px])
 PASS: stroke-dasharray from [10em 20px 30em 40px 50em 60px] to [100em 200px 300em 400px] was [118em 236px 354em 472px 110em 228px 358em 476px 114em 232px 350em 468px] at 1.2
 
 Web Animations API:
@@ -213,22 +213,22 @@ PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [24px 8px 48px
 PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [32px 4px 54px] at 0.8
 PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [40px 0px 60px] at 1
 PASS: strokeDasharray from [0em 20px 30px] to [40px 0em 60px] was [48px 0px 66px] at 1.2
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at -0.2
+PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 24px 0px] at -0.2
 PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at 0
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at 0.2
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [0em 20px 30px] at 0.4
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 0.6
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 0.8
+PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [8em 16px 216px] at 0.2
+PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [16em 12px 402px] at 0.4
+PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [24em 8px 588px] at 0.6
+PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [32em 4px 774px] at 0.8
 PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 1
-PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [40em 0em 60em] at 1.2
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [0px 20px] at -0.2
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [0px 20px] at 0
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [0px 20px] at 0.2
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [0px 20px] at 0.4
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em] at 0.6
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em] at 0.8
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em] at 1
-PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em] at 1.2
+PASS: strokeDasharray from [0em 20px 30px] to [40em 0em 60em] was [48em 0px 1146px] at 1.2
+PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [0px 24px 0px 16px 0px 0px] at -0.2
+PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [0px 20px 0px 20px 0px 20px] at 0
+PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [8px 16px 192px 24px 0px 208px] at 0.2
+PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [16px 12px 384px 28px 0px 396px] at 0.4
+PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [24px 8px 576px 32px 0px 584px] at 0.6
+PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [32px 4px 768px 36px 0px 772px] at 0.8
+PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [40px 0px 60em 40px 0px 60em] at 1
+PASS: strokeDasharray from [0px 20px] to [40px 0px 60em] was [48px 0px 1152px 44px 0px 1148px] at 1.2
 PASS: strokeDasharray from [10em 30px] to [20em 40px] was [8em 28px] at -0.2
 PASS: strokeDasharray from [10em 30px] to [20em 40px] was [10em 30px] at 0
 PASS: strokeDasharray from [10em 30px] to [20em 40px] was [12em 32px] at 0.2

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableStrokeDasharrayList.h"
 
-#include "core/svg/SVGLength.h"
+#include "core/layout/style/SVGLayoutStyleDefs.h"
 
 #include <gtest/gtest.h>
 
@@ -39,29 +39,28 @@ using namespace blink;
 
 namespace {
 
-PassRefPtrWillBeRawPtr<SVGLengthList> createSVGLengthList(size_t length)
+PassRefPtr<SVGDashArray> createSVGDashArray(size_t length)
 {
-    RefPtrWillBeRawPtr<SVGLengthList> list = SVGLengthList::create();
+    RefPtr<SVGDashArray> list = SVGDashArray::create();
     for (size_t i = 0; i < length; ++i)
-        list->append(SVGLength::create());
+        list->append(Length(Fixed));
     return list.release();
 }
 
 TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo)
 {
-    RefPtrWillBeRawPtr<SVGLengthList> svgListA = createSVGLengthList(4);
-    RefPtrWillBeRawPtr<SVGLengthList> svgListB = createSVGLengthList(4);
-    RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listA = AnimatableStrokeDasharrayList::create(svgListA);
-    RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(svgListB);
+    RefPtr<SVGDashArray> svgListA = createSVGDashArray(4);
+    RefPtr<SVGDashArray> svgListB = createSVGDashArray(4);
+    RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listA = AnimatableStrokeDasharrayList::create(svgListA, 1);
+    RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(svgListB, 1);
     EXPECT_TRUE(listA->equals(listB.get()));
 
-    TrackExceptionState exceptionState;
-    svgListB->at(3)->newValueSpecifiedUnits(LengthTypePX, 50);
-    listB = AnimatableStrokeDasharrayList::create(svgListB);
+    svgListB->at(3) = Length(50, Fixed);
+    listB = AnimatableStrokeDasharrayList::create(svgListB, 1);
     EXPECT_FALSE(listA->equals(listB.get()));
 
-    svgListB = createSVGLengthList(5);
-    listB = AnimatableStrokeDasharrayList::create(svgListB);
+    svgListB = createSVGDashArray(5);
+    listB = AnimatableStrokeDasharrayList::create(svgListB, 1);
     EXPECT_FALSE(listA->equals(listB.get()));
 }
 

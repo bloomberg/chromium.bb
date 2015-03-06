@@ -14,16 +14,16 @@ namespace blink {
 
 class AnimationSVGStrokeDasharrayStyleInterpolationTest : public ::testing::Test {
 protected:
-    static PassRefPtrWillBeRawPtr<CSSValueList> interpolableValueToStrokeDasharray(const InterpolableValue& value, const Vector<CSSPrimitiveValue::UnitType>& types)
+    static PassRefPtrWillBeRawPtr<CSSValueList> interpolableValueToStrokeDasharray(const InterpolableValue& value)
     {
-        return SVGStrokeDasharrayStyleInterpolation::interpolableValueToStrokeDasharray(value, types);
+        return SVGStrokeDasharrayStyleInterpolation::interpolableValueToStrokeDasharray(value);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValueList> roundTrip(const CSSValue& value, const Vector<CSSPrimitiveValue::UnitType>& types)
+    static PassRefPtrWillBeRawPtr<CSSValueList> roundTrip(const CSSValue& value)
     {
         RefPtrWillBeRawPtr<SVGStrokeDasharrayStyleInterpolation> interpolation = SVGStrokeDasharrayStyleInterpolation::maybeCreate(value, value, CSSPropertyStrokeDasharray);
         ASSERT(interpolation);
-        return SVGStrokeDasharrayStyleInterpolation::interpolableValueToStrokeDasharray(*interpolation->m_start, types);
+        return SVGStrokeDasharrayStyleInterpolation::interpolableValueToStrokeDasharray(*interpolation->m_start);
     }
 
     static void testPrimitiveValue(const CSSValue& cssValue, double value, CSSPrimitiveValue::UnitType unitType)
@@ -43,11 +43,7 @@ TEST_F(AnimationSVGStrokeDasharrayStyleInterpolationTest, Zero)
     start->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
     start->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
 
-    Vector<CSSPrimitiveValue::UnitType> types(3);
-    types[0] = CSSPrimitiveValue::CSS_PERCENTAGE;
-    types[1] = CSSPrimitiveValue::CSS_EMS;
-    types[2] = CSSPrimitiveValue::CSS_PX;
-    RefPtrWillBeRawPtr<CSSValueList> value = roundTrip(*start, types);
+    RefPtrWillBeRawPtr<CSSValueList> value = roundTrip(*start);
     EXPECT_EQ(value->length(), 3u);
     testPrimitiveValue(*value->item(0), 0, CSSPrimitiveValue::CSS_PERCENTAGE);
     testPrimitiveValue(*value->item(1), 0, CSSPrimitiveValue::CSS_EMS);
@@ -63,13 +59,7 @@ TEST_F(AnimationSVGStrokeDasharrayStyleInterpolationTest, SingleUnit)
     start->append(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PERCENTAGE));
     start->append(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_EMS));
 
-    Vector<CSSPrimitiveValue::UnitType> types(5);
-    types[0] = CSSPrimitiveValue::CSS_PX;
-    types[1] = CSSPrimitiveValue::CSS_EMS;
-    types[2] = CSSPrimitiveValue::CSS_EMS;
-    types[3] = CSSPrimitiveValue::CSS_PERCENTAGE;
-    types[4] = CSSPrimitiveValue::CSS_EMS;
-    RefPtrWillBeRawPtr<CSSValueList> value = roundTrip(*start, types);
+    RefPtrWillBeRawPtr<CSSValueList> value = roundTrip(*start);
     EXPECT_EQ(value->length(), 5u);
     testPrimitiveValue(*value->item(0), 0, CSSPrimitiveValue::CSS_PX);
     testPrimitiveValue(*value->item(1), 10, CSSPrimitiveValue::CSS_EMS);
@@ -82,9 +72,7 @@ TEST_F(AnimationSVGStrokeDasharrayStyleInterpolationTest, None)
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> start = CSSPrimitiveValue::createIdentifier(CSSValueNone);
 
-    Vector<CSSPrimitiveValue::UnitType> types(1);
-    types[0] = CSSPrimitiveValue::CSS_PX;
-    RefPtrWillBeRawPtr<CSSValueList> value = roundTrip(*start, types);
+    RefPtrWillBeRawPtr<CSSValueList> value = roundTrip(*start);
     EXPECT_EQ(value->length(), 1u);
     testPrimitiveValue(*value->item(0), 0, CSSPrimitiveValue::CSS_PX);
 }

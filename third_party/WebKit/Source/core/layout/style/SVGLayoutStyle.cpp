@@ -120,6 +120,12 @@ void SVGLayoutStyle::copyNonInheritedFromCached(const SVGLayoutStyle* other)
     resources = other->resources;
 }
 
+PassRefPtr<SVGDashArray> SVGLayoutStyle::initialStrokeDashArray()
+{
+    DEFINE_STATIC_REF(SVGDashArray, initialDashArray, SVGDashArray::create());
+    return initialDashArray;
+}
+
 StyleDifference SVGLayoutStyle::diff(const SVGLayoutStyle* other) const
 {
     StyleDifference styleDifference;

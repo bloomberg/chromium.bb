@@ -31,28 +31,22 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableStrokeDasharrayList.h"
 
-#include "core/animation/animatable/AnimatableSVGLength.h"
+#include "core/animation/animatable/AnimatableLength.h"
 
 namespace blink {
 
-AnimatableStrokeDasharrayList::AnimatableStrokeDasharrayList(PassRefPtrWillBeRawPtr<SVGLengthList> passLengths)
+AnimatableStrokeDasharrayList::AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray> passLengths, float zoom)
 {
-    RefPtrWillBeRawPtr<SVGLengthList> lengths = passLengths;
-    SVGLengthList::ConstIterator it = lengths->begin();
-    SVGLengthList::ConstIterator itEnd = lengths->end();
-    for (; it != itEnd; ++it)
-        m_values.append(AnimatableSVGLength::create(*it));
+    RefPtr<SVGDashArray> lengths = passLengths;
+    for (const Length& dashLength : lengths->vector())
+        m_values.append(AnimatableLength::create(dashLength, zoom));
 }
 
-PassRefPtrWillBeRawPtr<SVGLengthList> AnimatableStrokeDasharrayList::toSVGLengthList() const
+PassRefPtr<SVGDashArray> AnimatableStrokeDasharrayList::toSVGDashArray(float zoom) const
 {
-    RefPtrWillBeRawPtr<SVGLengthList> lengths = SVGLengthList::create();
-    for (size_t i = 0; i < m_values.size(); ++i) {
-        RefPtrWillBeRawPtr<SVGLength> length = toAnimatableSVGLength(m_values[i].get())->toSVGLength()->clone();
-        if (length->valueInSpecifiedUnits() < 0)
-            length->setValueInSpecifiedUnits(0);
-        lengths->append(length);
-    }
+    RefPtr<SVGDashArray> lengths = SVGDashArray::create();
+    for (const auto& dashLength : m_values)
+        lengths->append(toAnimatableLength(dashLength.get())->length(zoom, ValueRangeNonNegative));
     return lengths.release();
 }
 
@@ -79,7 +73,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpola
     if (from.isEmpty() && to.isEmpty())
         return takeConstRef(this);
     if (from.isEmpty() || to.isEmpty()) {
-        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(AnimatableSVGLength, zeroPixels, (AnimatableSVGLength::create(SVGLength::create())));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(AnimatableLength, zeroPixels, (AnimatableLength::create(Length(Fixed), 1)));
         if (from.isEmpty()) {
             from.append(zeroPixels);
             from.append(zeroPixels);

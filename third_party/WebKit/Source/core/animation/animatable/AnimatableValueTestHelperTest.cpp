@@ -32,6 +32,7 @@
 
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/layout/ClipPathOperation.h"
 #include "core/layout/style/BasicShapes.h"
 #include "core/svg/SVGLengthContext.h"
@@ -84,12 +85,12 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get(), ContentBox).get())),
         testing::StartsWith("AnimatableShapeValue@"));
 
-    RefPtrWillBeRawPtr<SVGLengthList> l2 = SVGLengthList::create();
-    l2->append(length1cm);
-    l2->append(length2cm);
+    RefPtr<SVGDashArray> l2 = SVGDashArray::create();
+    l2->append(Length(1, blink::Fixed));
+    l2->append(Length(2, blink::Percent));
     EXPECT_EQ(
-        ::std::string("AnimatableStrokeDasharrayList(1cm, 2cm)"),
-        PrintToString(AnimatableStrokeDasharrayList::create(l2)));
+        ::std::string("AnimatableStrokeDasharrayList(1+0%, 0+2%)"),
+        PrintToString(AnimatableStrokeDasharrayList::create(l2, 1)));
 
     TransformOperations operations1;
     operations1.operations().append(TranslateTransformOperation::create(Length(2, blink::Fixed), Length(0, blink::Fixed), TransformOperation::TranslateX));

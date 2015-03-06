@@ -486,7 +486,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setStopOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
     case CSSPropertyStrokeDasharray:
-        style->setStrokeDashArray(toAnimatableStrokeDasharrayList(value)->toSVGLengthList());
+        style->setStrokeDashArray(toAnimatableStrokeDasharrayList(value)->toSVGDashArray(style->effectiveZoom()));
         return;
     case CSSPropertyStrokeDashoffset:
         style->setStrokeDashOffset(animatableValueToLength(value, state));

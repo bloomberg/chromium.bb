@@ -24,15 +24,12 @@ public:
     }
 
 private:
-    SVGStrokeDasharrayStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, const Vector<CSSPrimitiveValue::UnitType>& types)
+    SVGStrokeDasharrayStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
         : StyleInterpolation(start, end, id)
-        , m_types(types)
     { }
 
     static bool canCreateFrom(const CSSValue&);
-    static PassRefPtrWillBeRawPtr<CSSValueList> interpolableValueToStrokeDasharray(const InterpolableValue&, const Vector<CSSPrimitiveValue::UnitType>&);
-
-    Vector<CSSPrimitiveValue::UnitType> m_types;
+    static PassRefPtrWillBeRawPtr<CSSValueList> interpolableValueToStrokeDasharray(const InterpolableValue&);
 
     friend class AnimationSVGStrokeDasharrayStyleInterpolationTest;
 };

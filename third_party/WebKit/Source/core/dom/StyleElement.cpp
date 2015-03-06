@@ -33,6 +33,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/svg/SVGStyleElement.h"
 #include "platform/TraceEvent.h"
 #include "wtf/text/StringBuilder.h"
 
