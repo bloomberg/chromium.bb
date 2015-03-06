@@ -98,6 +98,27 @@ class GoogleDocPage(TopPages):
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("kix-appview-editor").length')
 
+class GoogleMapsPage(TopPages):
+
+  """ Why: productivity, top google properties; Supports drag gesturee """
+
+  def __init__(self, page_set):
+    super(GoogleMapsPage, self).__init__(
+        url='https://www.google.co.uk/maps/@51.5043968,-0.1526806',
+        page_set=page_set,
+        name='Maps')
+
+  def RunNavigateSteps(self, action_runner):
+    super(GoogleMapsPage, self).RunNavigateSteps(action_runner)
+    action_runner.WaitForElement(selector='.widget-scene-canvas')
+    action_runner.WaitForElement(selector='.widget-zoom-in')
+    action_runner.WaitForElement(selector='.widget-zoom-out')
+
+  # Disabled on android since desktop record of maps doesn't load in android.
+  def CanRunOnBrowser(self, browser_info):
+    return (browser_info._browser._platform_backend.platform.GetOSName() !=
+        'android')
+
 
 class GooglePlusPage(TopPages):
 
