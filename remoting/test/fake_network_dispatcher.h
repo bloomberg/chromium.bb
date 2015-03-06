@@ -27,7 +27,7 @@ class FakeNetworkDispatcher
  public:
   class Node {
    public:
-    virtual ~Node() {};
+    virtual ~Node() {}
 
     // Return thread on which ReceivePacket() should be called.
     virtual const scoped_refptr<base::SingleThreadTaskRunner>& GetThread()

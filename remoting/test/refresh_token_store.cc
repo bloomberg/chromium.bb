@@ -44,7 +44,7 @@ namespace test {
 // read it back during subsequent tool runs.
 class RefreshTokenStoreOnDisk : public RefreshTokenStore {
  public:
-  RefreshTokenStoreOnDisk(const std::string user_name);
+  explicit RefreshTokenStoreOnDisk(const std::string user_name);
   ~RefreshTokenStoreOnDisk() override;
 
   // RefreshTokenStore interface.

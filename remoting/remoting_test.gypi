@@ -53,12 +53,15 @@
         'test/fake_network_manager.h',
         'test/fake_port_allocator.cc',
         'test/fake_port_allocator.h',
+        'test/fake_remote_host_info_fetcher.cc',
         'test/fake_socket_factory.cc',
         'test/fake_socket_factory.h',
         'test/leaky_bucket.cc',
         'test/leaky_bucket.h',
         'test/mock_access_token_fetcher.cc',
         'test/refresh_token_store.cc',
+        'test/remote_host_info.cc',
+        'test/remote_host_info_fetcher.cc',
       ],
       'conditions': [
         ['enable_remoting_host == 0', {
@@ -235,7 +238,8 @@
         'signaling/server_log_entry_unittest.cc',
         'signaling/server_log_entry_unittest.h',
         'test/access_token_fetcher_unittest.cc',
-        'test/app_remoting_test_driver_environment_unittest.cc'
+        'test/app_remoting_test_driver_environment_unittest.cc',
+        'test/remote_host_info_fetcher_unittest.cc',
       ],
       'conditions': [
         [ 'OS=="win"', {

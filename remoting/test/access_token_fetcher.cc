@@ -4,6 +4,9 @@
 
 #include "remoting/test/access_token_fetcher.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -38,8 +41,7 @@ const std::vector<std::string> MakeAppRemotingScopeVector() {
 
 const std::vector<std::string> kAppRemotingScopeVector =
     MakeAppRemotingScopeVector();
-
-}
+}  // namespace
 
 namespace remoting {
 namespace test {
@@ -51,8 +53,7 @@ AccessTokenFetcher::AccessTokenFetcher() {
       kOauthRedirectUrl};
 }
 
-AccessTokenFetcher::~AccessTokenFetcher() {
-}
+AccessTokenFetcher::~AccessTokenFetcher() {}
 
 void AccessTokenFetcher::GetAccessTokenFromAuthCode(
     const std::string& auth_code,

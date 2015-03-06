@@ -365,6 +365,7 @@ class ProtocolPerfTest
 
   scoped_ptr<VideoPacket> last_video_packet_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ProtocolPerfTest);
 };
 

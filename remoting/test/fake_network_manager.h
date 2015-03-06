@@ -15,7 +15,7 @@ namespace remoting {
 // specified in the constructor.
 class FakeNetworkManager : public rtc::NetworkManager {
  public:
-  FakeNetworkManager(const rtc::IPAddress& address);
+  explicit FakeNetworkManager(const rtc::IPAddress& address);
   ~FakeNetworkManager() override;
 
   // rtc::NetworkManager interface.

@@ -5,23 +5,27 @@
 #ifndef REMOTING_TEST_APP_REMOTING_TEST_DRIVER_ENVIRONMENT_H_
 #define REMOTING_TEST_APP_REMOTING_TEST_DRIVER_ENVIRONMENT_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
-#include "remoting/test/access_token_fetcher.h"
-#include "remoting/test/refresh_token_store.h"
+#include "remoting/test/remote_host_info_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 namespace test {
 
+class AccessTokenFetcher;
+class RefreshTokenStore;
+struct RemoteHostInfo;
+
 // Globally accessible to all test fixtures and cases and has its
 // lifetime managed by the GTest framework.  It is responsible for managing
-// access tokens and caching remote host connection information.
-// TODO(joedow) Add remote host connection functionality.
+// access tokens and retrieving remote host connection information.
 class AppRemotingTestDriverEnvironment : public testing::Environment {
  public:
   AppRemotingTestDriverEnvironment(
       const std::string& user_name,
-      const std::string& service_environment);
+      ServiceEnvironment service_environment);
   ~AppRemotingTestDriverEnvironment() override;
 
   // Returns false if a valid access token cannot be retrieved.
@@ -31,9 +35,17 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   // Returns true if a valid access token has been retrieved.
   bool RefreshAccessToken();
 
+  // Synchronously request remote host information for |application_id|.
+  // Returns true if the request was successful and |remote_host_info| is valid.
+  bool GetRemoteHostInfoForApplicationId(
+      const std::string& application_id,
+      RemoteHostInfo* remote_host_info);
+
   // Used to set fake/mock objects for AppRemotingTestDriverEnvironment tests.
   void SetAccessTokenFetcherForTest(AccessTokenFetcher* access_token_fetcher);
   void SetRefreshTokenStoreForTest(RefreshTokenStore* refresh_token_store);
+  void SetRemoteHostInfoFetcherForTest(
+      RemoteHostInfoFetcher* remote_host_info_fetcher);
 
   // Accessors for fields used by tests.
   const std::string& access_token() const { return access_token_; }
@@ -48,9 +60,16 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   // Called after the access token fetcher completes.
   // The tokens will be empty on failure.
   void OnAccessTokenRetrieved(
-    base::Closure done_closure,
-    const std::string& access_token,
-    const std::string& refresh_token);
+      base::Closure done_closure,
+      const std::string& access_token,
+      const std::string& refresh_token);
+
+  // Called after the remote host info fetcher completes.
+  // |remote_host_info| is not modified on failure.
+  void OnRemoteHostInfoRetrieved(
+      base::Closure done_closure,
+      RemoteHostInfo* remote_host_info,
+      const RemoteHostInfo& retrieved_remote_host_info);
 
   // Used for authenticating with the app remoting service API.
   std::string access_token_;
@@ -62,14 +81,16 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   std::string user_name_;
 
   // Service API to target when retrieving remote host connection information.
-  // TODO(joedow): Turn this into an enum when remote_host code is added.
-  std::string service_environment_;
+  ServiceEnvironment service_environment_;
 
   // Access token fetcher used by TestDriverEnvironment tests.
   remoting::test::AccessTokenFetcher* test_access_token_fetcher_;
 
   // RefreshTokenStore used by TestDriverEnvironment tests.
   remoting::test::RefreshTokenStore* test_refresh_token_store_;
+
+  // RemoteHostInfoFetcher used by TestDriverEnvironment tests.
+  remoting::test::RemoteHostInfoFetcher* test_remote_host_info_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRemotingTestDriverEnvironment);
 };

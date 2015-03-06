@@ -33,6 +33,8 @@
         'test/access_token_fetcher.cc',
         'test/app_remoting_test_driver_environment.cc',
         'test/refresh_token_store.cc',
+        'test/remote_host_info.cc',
+        'test/remote_host_info_fetcher.cc',
       ],
     },  # end of target 'ar_test_driver_common'
     {

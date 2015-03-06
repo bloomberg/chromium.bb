@@ -4,6 +4,8 @@
 
 #include "remoting/test/access_token_fetcher.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -12,25 +14,25 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-  const char kAuthCodeValue[] = "test_auth_code_value";
-  const char kAccessTokenValue[] = "test_access_token_value";
-  const char kRefreshTokenValue[] = "test_refresh_token_value";
-  const char kAuthCodeExchangeValidResponse[] =
+const char kAuthCodeValue[] = "test_auth_code_value";
+const char kAccessTokenValue[] = "test_access_token_value";
+const char kRefreshTokenValue[] = "test_refresh_token_value";
+const char kAuthCodeExchangeValidResponse[] =
     "{"
     "  \"refresh_token\": \"test_refresh_token_value\","
     "  \"access_token\": \"test_access_token_value\","
     "  \"expires_in\": 3600,"
     "  \"token_type\": \"Bearer\""
     "}";
-  const char kAuthCodeExchangeEmptyResponse[] = "{}";
-  const char kRefreshTokenExchangeValidResponse[] =
+const char kAuthCodeExchangeEmptyResponse[] = "{}";
+const char kRefreshTokenExchangeValidResponse[] =
     "{"
     "  \"access_token\": \"test_access_token_value\","
     "  \"expires_in\": 3600,"
     "  \"token_type\": \"Bearer\""
     "}";
-  const char kRefreshTokenExchangeEmptyResponse[] = "{}";
-  const char kValidTokenInfoResponse[] =
+const char kRefreshTokenExchangeEmptyResponse[] = "{}";
+const char kValidTokenInfoResponse[] =
     "{"
     "  \"audience\": \"blah.apps.googleusercontent.blah.com\","
     "  \"used_id\": \"1234567890\","
@@ -38,11 +40,11 @@ namespace {
     "  \"expires_in\": \"1800\","
     "  \"token_type\": \"Bearer\""
     "}";
-  const char kInvalidTokenInfoResponse[] =
+const char kInvalidTokenInfoResponse[] =
     "{"
     "  \"error\": \"invalid_token\""
     "}";
-}
+}  // namespace
 
 namespace remoting {
 namespace test {
@@ -122,8 +124,8 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken) {
 
   run_loop.Run();
 
-  EXPECT_STREQ(kAccessTokenValue, access_token_retrieved_.c_str());
-  EXPECT_STREQ(kRefreshTokenValue, refresh_token_retrieved_.c_str());
+  EXPECT_EQ(access_token_retrieved_.compare(kAccessTokenValue), 0);
+  EXPECT_EQ(refresh_token_retrieved_.compare(kRefreshTokenValue), 0);
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken) {
@@ -152,8 +154,8 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken) {
 
   run_loop.Run();
 
-  EXPECT_STREQ(kAccessTokenValue, access_token_retrieved_.c_str());
-  EXPECT_STREQ(kRefreshTokenValue, refresh_token_retrieved_.c_str());
+  EXPECT_EQ(access_token_retrieved_.compare(kAccessTokenValue), 0);
+  EXPECT_EQ(refresh_token_retrieved_.compare(kRefreshTokenValue), 0);
 }
 
 TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
@@ -183,8 +185,8 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
 
   run_loop->Run();
 
-  EXPECT_STREQ(kAccessTokenValue, access_token_retrieved_.c_str());
-  EXPECT_STREQ(kRefreshTokenValue, refresh_token_retrieved_.c_str());
+  EXPECT_EQ(access_token_retrieved_.compare(kAccessTokenValue), 0);
+  EXPECT_EQ(refresh_token_retrieved_.compare(kRefreshTokenValue), 0);
 
   // Reset our token data for the next iteration.
   access_token_retrieved_.clear();
@@ -209,10 +211,8 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
 
   run_loop->Run();
 
-  EXPECT_STREQ(kAccessTokenValue,
-               access_token_retrieved_.c_str());
-  EXPECT_STREQ(kRefreshTokenValue,
-               refresh_token_retrieved_.c_str());
+  EXPECT_EQ(access_token_retrieved_.compare(kAccessTokenValue), 0);
+  EXPECT_EQ(refresh_token_retrieved_.compare(kRefreshTokenValue), 0);
 
   run_loop.reset(new base::RunLoop());
   access_token_callback =
@@ -230,10 +230,8 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
 
   run_loop->Run();
 
-  EXPECT_STREQ(kAccessTokenValue,
-               access_token_retrieved_.c_str());
-  EXPECT_STREQ(kRefreshTokenValue,
-               refresh_token_retrieved_.c_str());
+  EXPECT_EQ(access_token_retrieved_.compare(kAccessTokenValue), 0);
+  EXPECT_EQ(refresh_token_retrieved_.compare(kRefreshTokenValue), 0);
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_Unauthorized_Error) {
@@ -256,8 +254,9 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_Unauthorized_Error) {
 
   run_loop.Run();
 
-  EXPECT_STREQ("", access_token_retrieved_.c_str());
-  EXPECT_STREQ("", refresh_token_retrieved_.c_str());
+  // Our callback should have been called with empty strings.
+  EXPECT_TRUE(access_token_retrieved_.empty());
+  EXPECT_TRUE(refresh_token_retrieved_.empty());
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_Unauthorized_Error) {
@@ -280,8 +279,9 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_Unauthorized_Error) {
 
   run_loop.Run();
 
-  EXPECT_STREQ("", access_token_retrieved_.c_str());
-  EXPECT_STREQ("", refresh_token_retrieved_.c_str());
+  // Our callback should have been called with empty strings.
+  EXPECT_TRUE(access_token_retrieved_.empty());
+  EXPECT_TRUE(refresh_token_retrieved_.empty());
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_NetworkError) {
@@ -304,8 +304,9 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_NetworkError) {
 
   run_loop.Run();
 
-  EXPECT_STREQ("", access_token_retrieved_.c_str());
-  EXPECT_STREQ("", refresh_token_retrieved_.c_str());
+  // Our callback should have been called with empty strings.
+  EXPECT_TRUE(access_token_retrieved_.empty());
+  EXPECT_TRUE(refresh_token_retrieved_.empty());
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_NetworkError) {
@@ -328,8 +329,9 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_NetworkError) {
 
   run_loop.Run();
 
-  EXPECT_STREQ("", access_token_retrieved_.c_str());
-  EXPECT_STREQ("", refresh_token_retrieved_.c_str());
+  // Our callback should have been called with empty strings.
+  EXPECT_TRUE(access_token_retrieved_.empty());
+  EXPECT_TRUE(refresh_token_retrieved_.empty());
 }
 
 TEST_F(AccessTokenFetcherTest, AuthCode_GetTokenInfoResponse_InvalidToken) {
@@ -359,8 +361,8 @@ TEST_F(AccessTokenFetcherTest, AuthCode_GetTokenInfoResponse_InvalidToken) {
   run_loop.Run();
 
   // Our callback should have been called with empty strings.
-  EXPECT_STREQ("", access_token_retrieved_.c_str());
-  EXPECT_STREQ("", refresh_token_retrieved_.c_str());
+  EXPECT_TRUE(access_token_retrieved_.empty());
+  EXPECT_TRUE(refresh_token_retrieved_.empty());
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken_EmptyToken) {
@@ -384,8 +386,8 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken_EmptyToken) {
   run_loop.Run();
 
   // Our callback should have been called with empty strings.
-  EXPECT_STREQ("", access_token_retrieved_.c_str());
-  EXPECT_STREQ("", refresh_token_retrieved_.c_str());
+  EXPECT_TRUE(access_token_retrieved_.empty());
+  EXPECT_TRUE(refresh_token_retrieved_.empty());
 }
 
 TEST_F(AccessTokenFetcherTest, RefreshToken_GetTokenInfoResponse_InvalidToken) {
@@ -415,8 +417,8 @@ TEST_F(AccessTokenFetcherTest, RefreshToken_GetTokenInfoResponse_InvalidToken) {
   run_loop.Run();
 
   // Our callback should have been called with empty strings.
-  EXPECT_STREQ("", access_token_retrieved_.c_str());
-  EXPECT_STREQ("", refresh_token_retrieved_.c_str());
+  EXPECT_TRUE(access_token_retrieved_.empty());
+  EXPECT_TRUE(refresh_token_retrieved_.empty());
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken_EmptyToken) {
@@ -440,8 +442,8 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken_EmptyToken) {
   run_loop.Run();
 
   // Our callback should have been called with empty strings.
-  EXPECT_STREQ("", access_token_retrieved_.c_str());
-  EXPECT_STREQ("", refresh_token_retrieved_.c_str());
+  EXPECT_TRUE(access_token_retrieved_.empty());
+  EXPECT_TRUE(refresh_token_retrieved_.empty());
 }
 
 }  // namespace test

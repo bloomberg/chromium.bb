@@ -5,9 +5,9 @@
 #ifndef REMOTING_TEST_FAKE_ACCESS_TOKEN_FETCHER_H_
 #define REMOTING_TEST_FAKE_ACCESS_TOKEN_FETCHER_H_
 
-#include "remoting/test/access_token_fetcher.h"
+#include <string>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "remoting/test/access_token_fetcher.h"
 
 namespace remoting {
 namespace test {

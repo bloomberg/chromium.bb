@@ -160,16 +160,19 @@ int main(int argc, char** argv) {
   // refreshing their credentials.
   auth_code = command_line->GetSwitchValueASCII(switches::kAuthCodeSwitchName);
 
-  std::string service_environment;
   // If the user passed in a service environment, use it, otherwise set a
   // default value.
-  service_environment = command_line->GetSwitchValueASCII(
+  remoting::test::ServiceEnvironment service_environment;
+  std::string service_environment_switch = command_line->GetSwitchValueASCII(
       switches::kServiceEnvironmentSwitchName);
-  if (service_environment.empty()) {
-    // Default to the development service environment.
-    service_environment = "dev";
-  } else if (service_environment != "test" && service_environment != "dev") {
-    // Only two values are allowed, so validate them before proceeding.
+  if (service_environment_switch.empty() ||
+      service_environment_switch == "dev") {
+    service_environment =
+        remoting::test::ServiceEnvironment::kDeveloperEnvironment;
+  } else if (service_environment_switch == "test") {
+    service_environment =
+        remoting::test::ServiceEnvironment::kTestingEnvironment;
+  } else {
     LOG(ERROR) << "Invalid " << switches::kServiceEnvironmentSwitchName
                << " argument passed in.";
     PrintUsage();

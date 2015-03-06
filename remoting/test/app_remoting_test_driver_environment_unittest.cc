@@ -5,6 +5,7 @@
 #include "remoting/test/app_remoting_test_driver_environment.h"
 
 #include "remoting/test/fake_access_token_fetcher.h"
+#include "remoting/test/fake_remote_host_info_fetcher.h"
 #include "remoting/test/mock_access_token_fetcher.h"
 #include "remoting/test/refresh_token_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,7 +14,7 @@ namespace {
 const char kAuthCodeValue[] = "4/892379827345jkefvkdfbv";
 const char kRefreshTokenValue[] = "1/lkjalseLKJlsiJgr45jbv";
 const char kUserNameValue[] = "remoting_user@gmail.com";
-const char kDevEnvironmentValue[] = "dev";
+const char kTestApplicationId[] = "sadlkjlsjgadjfgoajdfgagb";
 }
 
 namespace remoting {
@@ -25,12 +26,10 @@ using testing::_;
 // file system dependencies when testing the TestDriverEnvironment.
 class FakeRefreshTokenStore : public RefreshTokenStore {
  public:
-  FakeRefreshTokenStore() {
-    // Set some success defaults.
-    refresh_token_value = kRefreshTokenValue;
-    refresh_token_write_attempted = false;
-    refresh_token_write_succeeded = true;
-  }
+  FakeRefreshTokenStore() :
+      refresh_token_value(kRefreshTokenValue),
+      refresh_token_write_succeeded(true),
+      refresh_token_write_attempted(false) {}
   ~FakeRefreshTokenStore() override {}
 
   std::string FetchRefreshToken() override {
@@ -53,6 +52,7 @@ class FakeRefreshTokenStore : public RefreshTokenStore {
   bool refresh_token_write_attempted;
   std::string refresh_token_value_written;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FakeRefreshTokenStore);
 };
 
@@ -72,7 +72,7 @@ TEST(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithAuthCode) {
 
   AppRemotingTestDriverEnvironment environment_object(
       kUserNameValue,
-      kDevEnvironmentValue);
+      kDeveloperEnvironment);
 
   environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
 
@@ -82,11 +82,11 @@ TEST(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithAuthCode) {
 
   EXPECT_TRUE(init_result);
   EXPECT_TRUE(fake_token_store.refresh_token_write_attempted);
-  EXPECT_STREQ(kFakeAccessTokenFetcherRefreshTokenValue,
-               fake_token_store.refresh_token_value_written.c_str());
-  EXPECT_STREQ(kUserNameValue, environment_object.user_name().c_str());
-  EXPECT_STREQ(kFakeAccessTokenFetcherAccessTokenValue,
-               environment_object.access_token().c_str());
+  EXPECT_EQ(fake_token_store.refresh_token_value_written.compare(
+      kFakeAccessTokenFetcherRefreshTokenValue), 0);
+  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
+  EXPECT_EQ(environment_object.access_token().compare(
+      kFakeAccessTokenFetcherAccessTokenValue), 0);
 
   // Attempt to init again, we should not see any additional calls or errors.
   init_result = environment_object.Initialize(kAuthCodeValue);
@@ -114,7 +114,7 @@ TEST(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithAuthCodeFailed) {
 
   AppRemotingTestDriverEnvironment environment_object(
       kUserNameValue,
-      kDevEnvironmentValue);
+      kDeveloperEnvironment);
 
   environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
 
@@ -142,7 +142,7 @@ TEST(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithRefreshToken) {
 
   AppRemotingTestDriverEnvironment environment_object(
       kUserNameValue,
-      kDevEnvironmentValue);
+      kDeveloperEnvironment);
 
   environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
 
@@ -158,9 +158,9 @@ TEST(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithRefreshToken) {
   EXPECT_FALSE(fake_token_store.refresh_token_write_attempted);
 
   // Verify the object was initialized correctly.
-  EXPECT_STREQ(kUserNameValue, environment_object.user_name().c_str());
-  EXPECT_STREQ(kFakeAccessTokenFetcherAccessTokenValue,
-               environment_object.access_token().c_str());
+  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
+  EXPECT_EQ(environment_object.access_token().compare(
+      kFakeAccessTokenFetcherAccessTokenValue), 0);
 
   // Attempt to init again, we should not see any additional calls or errors.
   init_result = environment_object.Initialize(std::string());
@@ -189,7 +189,7 @@ TEST(AppRemotingTestDriverEnvironmentTest,
 
   AppRemotingTestDriverEnvironment environment_object(
       kUserNameValue,
-      kDevEnvironmentValue);
+      kDeveloperEnvironment);
 
   environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
 
@@ -220,7 +220,7 @@ TEST(AppRemotingTestDriverEnvironmentTest,
 
   AppRemotingTestDriverEnvironment environment_object(
       kUserNameValue,
-      kDevEnvironmentValue);
+      kDeveloperEnvironment);
 
   environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
 
@@ -254,7 +254,7 @@ TEST(AppRemotingTestDriverEnvironmentTest,
 
   AppRemotingTestDriverEnvironment environment_object(
       kUserNameValue,
-      kDevEnvironmentValue);
+      kDeveloperEnvironment);
 
   environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
 
@@ -290,7 +290,7 @@ TEST(AppRemotingTestDriverEnvironmentTest,
 
   AppRemotingTestDriverEnvironment environment_object(
       kUserNameValue,
-      kDevEnvironmentValue);
+      kDeveloperEnvironment);
 
   environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
 
@@ -300,11 +300,11 @@ TEST(AppRemotingTestDriverEnvironmentTest,
 
   EXPECT_TRUE(init_result);
   EXPECT_TRUE(fake_token_store.refresh_token_write_attempted);
-  EXPECT_STREQ(kFakeAccessTokenFetcherRefreshTokenValue,
-               fake_token_store.refresh_token_value_written.c_str());
-  EXPECT_STREQ(kUserNameValue, environment_object.user_name().c_str());
-  EXPECT_STREQ(kFakeAccessTokenFetcherAccessTokenValue,
-               environment_object.access_token().c_str());
+  EXPECT_EQ(fake_token_store.refresh_token_value_written.compare(
+      kFakeAccessTokenFetcherRefreshTokenValue), 0);
+  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
+  EXPECT_EQ(environment_object.access_token().compare(
+      kFakeAccessTokenFetcherAccessTokenValue), 0);
 
   // Attempt to init again, we should not see any additional calls or errors.
   bool refresh_result = environment_object.RefreshAccessToken();
@@ -337,7 +337,7 @@ TEST(AppRemotingTestDriverEnvironmentTest, RefreshAccessTokenFailure) {
 
   AppRemotingTestDriverEnvironment environment_object(
       kUserNameValue,
-      kDevEnvironmentValue);
+      kDeveloperEnvironment);
 
   environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
 
@@ -347,11 +347,11 @@ TEST(AppRemotingTestDriverEnvironmentTest, RefreshAccessTokenFailure) {
 
   EXPECT_TRUE(init_result);
   EXPECT_TRUE(fake_token_store.refresh_token_write_attempted);
-  EXPECT_STREQ(kFakeAccessTokenFetcherRefreshTokenValue,
-               fake_token_store.refresh_token_value_written.c_str());
-  EXPECT_STREQ(kUserNameValue, environment_object.user_name().c_str());
-  EXPECT_STREQ(kFakeAccessTokenFetcherAccessTokenValue,
-               environment_object.access_token().c_str());
+  EXPECT_EQ(fake_token_store.refresh_token_value_written.compare(
+      kFakeAccessTokenFetcherRefreshTokenValue), 0);
+  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
+  EXPECT_EQ(environment_object.access_token().compare(
+      kFakeAccessTokenFetcherAccessTokenValue), 0);
 
   fake_access_token_fetcher->set_fail_access_token_from_refresh_token(true);
 
@@ -360,8 +360,84 @@ TEST(AppRemotingTestDriverEnvironmentTest, RefreshAccessTokenFailure) {
   // We expect the refresh to have failed, the user name to remain valid,
   // and the access token to have been cleared.
   EXPECT_FALSE(refresh_result);
-  EXPECT_STREQ(kUserNameValue, environment_object.user_name().c_str());
-  EXPECT_STREQ("", environment_object.access_token().c_str());
+  EXPECT_TRUE(environment_object.access_token().empty());
+  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
+}
+
+TEST(AppRemotingTestDriverEnvironmentTest, GetRemoteHostInfoSuccess) {
+  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
+                                                      kDeveloperEnvironment);
+
+  FakeAccessTokenFetcher fake_access_token_fetcher;
+  environment_object.SetAccessTokenFetcherForTest(&fake_access_token_fetcher);
+
+  FakeRefreshTokenStore fake_token_store;
+  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
+
+  // Pass in an empty auth code since we are using a refresh token.
+  bool init_result = environment_object.Initialize(std::string());
+
+  EXPECT_TRUE(init_result);
+
+  FakeRemoteHostInfoFetcher fake_remote_host_info_fetcher;
+  environment_object.SetRemoteHostInfoFetcherForTest(
+      &fake_remote_host_info_fetcher);
+
+  RemoteHostInfo remote_host_info;
+  bool request_result = environment_object.GetRemoteHostInfoForApplicationId(
+      kTestApplicationId, &remote_host_info);
+
+  EXPECT_TRUE(request_result);
+  EXPECT_TRUE(remote_host_info.IsReadyForConnection());
+}
+
+TEST(AppRemotingTestDriverEnvironmentTest, GetRemoteHostInfoFailure) {
+  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
+                                                      kDeveloperEnvironment);
+
+  FakeAccessTokenFetcher fake_access_token_fetcher;
+  environment_object.SetAccessTokenFetcherForTest(&fake_access_token_fetcher);
+
+  FakeRefreshTokenStore fake_token_store;
+  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
+
+  // Pass in an empty auth code since we are using a refresh token.
+  bool init_result = environment_object.Initialize(std::string());
+
+  EXPECT_TRUE(init_result);
+
+  FakeRemoteHostInfoFetcher fake_remote_host_info_fetcher;
+  fake_remote_host_info_fetcher.set_fail_retrieve_remote_host_info(true);
+  environment_object.SetRemoteHostInfoFetcherForTest(
+      &fake_remote_host_info_fetcher);
+
+  RemoteHostInfo remote_host_info;
+  bool request_result = environment_object.GetRemoteHostInfoForApplicationId(
+      kTestApplicationId, &remote_host_info);
+
+  EXPECT_FALSE(request_result);
+}
+
+TEST(AppRemotingTestDriverEnvironmentTest,
+     GetRemoteHostInfoWithoutInitializing) {
+  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
+                                                      kDeveloperEnvironment);
+
+  FakeAccessTokenFetcher fake_access_token_fetcher;
+  environment_object.SetAccessTokenFetcherForTest(&fake_access_token_fetcher);
+
+  FakeRefreshTokenStore fake_token_store;
+  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
+
+  FakeRemoteHostInfoFetcher fake_remote_host_info_fetcher;
+  environment_object.SetRemoteHostInfoFetcherForTest(
+      &fake_remote_host_info_fetcher);
+
+  RemoteHostInfo remote_host_info;
+  bool request_result = environment_object.GetRemoteHostInfoForApplicationId(
+      kTestApplicationId, &remote_host_info);
+
+  EXPECT_FALSE(request_result);
 }
 
 }  // namespace test
