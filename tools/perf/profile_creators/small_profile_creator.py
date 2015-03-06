@@ -24,10 +24,20 @@ class SmallProfileCreator(profile_creator.ProfileCreator):
     def __init__(self):
       super(SmallProfileCreator.PageTest, self).__init__()
       self._page_set = page_sets.Typical25PageSet()
+      self._ValidatePageSet(self._page_set)
 
       # Open all links in the same tab save for the last _NUM_TABS links which
       # are each opened in a new tab.
       self._NUM_TABS = 5
+
+    @staticmethod
+    def _ValidatePageSet(page_set):
+      """Raise an exception if |page_set| uses more than one WPR archive."""
+      wpr_paths = set(page_set.WprFilePathForUserStory(p)
+                      for p in page_set if not p.is_local)
+      if len(wpr_paths) > 1:
+        raise Exception("Invalid page set: has multiple WPR archives: %s" %
+                        ','.join(sorted(wpr_paths)))
 
     def TabForPage(self, page, browser):
       """Superclass override."""

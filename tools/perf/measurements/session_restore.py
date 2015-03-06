@@ -46,20 +46,6 @@ class SessionRestore(startup.Startup):
     # Overridden so that no page navigation occurs.
     pass
 
-  def ValidatePageSet(self, page_set):
-    wpr_archive_names_to_page_urls = collections.defaultdict(list)
-    # Construct the map from pages' wpr archive names to pages' urls.
-    for page in page_set:
-      if page.is_local:
-        continue
-      wpr_archive_name = page_set.WprFilePathForUserStory(page)
-      wpr_archive_names_to_page_urls[wpr_archive_name].append(page.url)
-
-    # Reject any pageset that contains more than one WPR archive.
-    if len(wpr_archive_names_to_page_urls.keys()) > 1:
-      raise Exception("Invalid pageset: more than 1 WPR archive found.: " +
-          repr(wpr_archive_names_to_page_urls))
-
   def DidStartBrowser(self, browser):
     self._cpu_metric = cpu.CpuMetric(browser)
     self._cpu_metric.Start(None, None)
