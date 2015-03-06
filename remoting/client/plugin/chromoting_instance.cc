@@ -694,7 +694,6 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // Connect the input pipeline to the protocol stub & initialize components.
   mouse_input_filter_.set_input_stub(client_->input_stub());
-  touch_input_scaler_.set_input_stub(client_->input_stub());
   if (!plugin_view_.is_null()) {
     webrtc::DesktopSize size(plugin_view_.GetRect().width(),
                              plugin_view_.GetRect().height());
