@@ -458,7 +458,7 @@ static LayoutRect selectionRectForRenderer(const LayoutObject* object)
     if (!object->canUpdateSelectionOnRootLineBoxes())
         return LayoutRect();
 
-    return object->selectionRectForPaintInvalidation(object->containerForPaintInvalidation());
+    return object->selectionRectInViewCoordinates();
 }
 
 IntRect LayoutView::selectionBounds()

@@ -88,6 +88,8 @@ crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-sc
 crbug.com/428980 virtual/slimmingpaint/fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 virtual/slimmingpaint/fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]
 
+crbug.com/463074 paint/selection/selection-drag-image-in-iframe.html [ NeedsRebaseline ]
+
 # Failing due to r188554
 crbug.com/450605 [ Android ] compositing/contents-opaque/layer-transform.html [ Failure ]
 crbug.com/450605 [ Android ] compositing/filters/sw-nested-shadow-overlaps-hw-nested-shadow.html [ Failure ]

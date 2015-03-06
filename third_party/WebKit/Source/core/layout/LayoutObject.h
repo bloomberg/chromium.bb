@@ -923,6 +923,9 @@ public:
     // possible bounding box for the selection. The rect returned is in the coordinate space of the paint invalidation container's backing.
     virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /*paintInvalidationContainer*/) const { return LayoutRect(); }
 
+    // View coordinates means the coordinate space of |view()|.
+    LayoutRect selectionRectInViewCoordinates() const;
+
     virtual bool canBeSelectionLeaf() const { return false; }
     bool hasSelectedChildren() const { return selectionState() != SelectionNone; }
 

@@ -1219,6 +1219,11 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRe
     return value;
 }
 
+LayoutRect LayoutObject::selectionRectInViewCoordinates() const
+{
+    return selectionRectForPaintInvalidation(view());
+}
+
 LayoutRect LayoutObject::previousSelectionRectForPaintInvalidation() const
 {
     if (!selectionPaintInvalidationMap)
