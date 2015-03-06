@@ -29,16 +29,20 @@ class CustomFrameViewTest : public PlatformTest {
 
 //  Test to make sure our class modifications were successful.
 TEST_F(CustomFrameViewTest, SuccessfulClassModifications) {
+  // In Yosemite, the fullscreen button replaces the zoom button. We no longer
+  // need to swizzle out this AppKit private method.
+  if (!base::mac::IsOSMavericksOrEarlier())
+    return;
+
   unsigned int count;
-  BOOL foundDrawRectOriginal = NO;
+  BOOL foundSwizzledMethod = NO;
 
   Method* methods = class_copyMethodList([view_ class], &count);
   for (unsigned int i = 0; i < count; ++i) {
     SEL selector = method_getName(methods[i]);
-    if (selector == @selector(drawRectOriginal:)) {
-      foundDrawRectOriginal = YES;
-    }
+    if (selector == @selector(_fullScreenButtonOriginOriginal))
+      foundSwizzledMethod = YES;
   }
-  EXPECT_TRUE(foundDrawRectOriginal);
+  EXPECT_TRUE(foundSwizzledMethod);
   free(methods);
 }

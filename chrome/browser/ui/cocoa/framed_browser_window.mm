@@ -12,7 +12,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
-#import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
@@ -43,18 +42,6 @@ const CGFloat kWindowGradientHeight = 24.0;
               ofKind:(NSWindowButton)kind;
 
 @end
-
-// Undocumented APIs. They are really on NSGrayFrame rather than NSView. Take
-// care to only call them on the NSView passed into
-// -[NSWindow drawCustomRect:forView:].
-@interface NSView (UndocumentedAPI)
-
-- (float)roundedCornerRadius;
-- (CGRect)_titlebarTitleRect;
-- (void)_drawTitleStringIn:(struct CGRect)arg1 withColor:(id)color;
-
-@end
-
 
 @implementation FramedBrowserWindow
 
