@@ -34,8 +34,8 @@ shouldThrow("aNode.appendChild('knort')", '"TypeError: Failed to execute \'appen
 
 shouldThrow("aNode.appendChild(void 0)", '"TypeError: Failed to execute \'appendChild\' on \'Node\': parameter 1 is not of type \'Node\'."');
 
-shouldBeFalse("aNode.isSameNode(aDOMImplementation)");
-shouldBeFalse("aNode.isSameNode('foo')");
+shouldThrow("aNode.isSameNode(aDOMImplementation)");
+shouldThrow("aNode.isSameNode('foo')");
 shouldBeFalse("aNode.isSameNode(void 0)");
 shouldBe("aNode.lookupPrefix(aDOMImplementation)", "null");
 shouldBe("aNode.lookupPrefix(void 0)", "null");

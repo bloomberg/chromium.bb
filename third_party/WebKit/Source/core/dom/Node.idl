@@ -22,6 +22,7 @@
 
 [
     DependentLifetime,
+    TypeChecking=Interface,
 ] interface Node : EventTarget {
     const unsigned short ELEMENT_NODE = 1;
     // FIXME: Attr should not inherit from Node. crbug.com/305105
@@ -74,10 +75,10 @@
     DOMString? lookupNamespaceURI(DOMString? prefix);
     boolean isDefaultNamespace(DOMString? namespaceURI);
 
-    [CustomElementCallbacks, PerWorldBindings, RaisesException, TypeChecking=Interface] Node insertBefore(Node node, Node? child);
-    [CustomElementCallbacks, PerWorldBindings, RaisesException, TypeChecking=Interface] Node appendChild(Node node);
-    [CustomElementCallbacks, PerWorldBindings, RaisesException, TypeChecking=Interface] Node replaceChild(Node node, Node child);
-    [CustomElementCallbacks, RaisesException, TypeChecking=Interface] Node removeChild(Node child);
+    [CustomElementCallbacks, PerWorldBindings, RaisesException] Node insertBefore(Node node, Node? child);
+    [CustomElementCallbacks, PerWorldBindings, RaisesException] Node appendChild(Node node);
+    [CustomElementCallbacks, PerWorldBindings, RaisesException] Node replaceChild(Node node, Node child);
+    [CustomElementCallbacks, RaisesException] Node removeChild(Node child);
 
     // FIXME: namespaceURI and localName have been moved to Element and Attr.
     [MeasureAs=NodeNamespaceURI] readonly attribute DOMString? namespaceURI;
@@ -85,5 +86,5 @@
 
     // FIXME: isSameNode has been removed from the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27424
-    [MeasureAs=NodeIsSameNode] boolean isSameNode([Default=Undefined] optional Node other);
+    [MeasureAs=NodeIsSameNode] boolean isSameNode(Node? other);
 };

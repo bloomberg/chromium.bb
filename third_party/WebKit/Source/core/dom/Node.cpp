@@ -1431,10 +1431,6 @@ bool Node::offsetInCharacters() const
 
 unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesTreatment treatment) const
 {
-    // It is not clear what should be done if |otherNode| is nullptr.
-    if (!otherNode)
-        return DOCUMENT_POSITION_DISCONNECTED;
-
     if (otherNode == this)
         return DOCUMENT_POSITION_EQUIVALENT;
 
