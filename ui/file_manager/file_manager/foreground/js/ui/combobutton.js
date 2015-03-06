@@ -122,6 +122,7 @@ cr.define('cr.ui', function() {
     },
 
     handleButtonClick_: function() {
+      this.blur();
       this.dispatchSelectEvent(this.defaultItem_);
     },
 

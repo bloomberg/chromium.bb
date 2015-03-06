@@ -143,6 +143,7 @@ ToolbarController.prototype.onCancelSelectionButtonClicked_ = function() {
  * @private
  */
 ToolbarController.prototype.onDeleteButtonClicked_ = function() {
+  this.deleteButton_.blur();
   this.deleteCommand_.execute();
 }
 
