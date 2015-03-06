@@ -2166,8 +2166,19 @@
         'enable_service_discovery%': 1
       }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
+        'variables': {
+          'conditions': [
+            ['OS=="mac" or OS=="ios"', {
+              'clang_lib_path%': '<!(cd <(DEPTH) && pwd -P)/third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib',
+            }, { # OS != "mac" or OS != "ios"
+              'clang_lib_path%': '<!(cd <(DEPTH) && pwd -P)/third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so',
+            }],
+          ],
+        },
+        # If you change these, also change build/config/clang/BUILD.gn.
         'clang_chrome_plugins_flags%':
-          '<!(python <(DEPTH)/tools/clang/scripts/plugin_flags.py)',
+          '-Xclang -load -Xclang <(clang_lib_path)'
+          ' -Xclang -add-plugin -Xclang find-bad-constructs',
       }],
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,
