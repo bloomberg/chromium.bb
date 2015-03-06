@@ -191,6 +191,15 @@ class ChromeProxyMetricTest(unittest.TestCase):
     results.AssertHasPageSpecificScalarValue('resources_from_cache', 'count', 1)
     results.AssertHasPageSpecificScalarValue('resources_direct', 'count', 2)
 
+    # Passing in zero responses should cause a failure.
+    metric.SetEvents([])
+    no_responses_exception = False
+    try:
+      metric.AddResultsForDataSaving(None, results)
+    except metrics.ChromeProxyMetricException:
+      no_responses_exception = True
+    self.assertTrue(no_responses_exception)
+
   def testChromeProxyMetricForHeaderValidation(self):
     metric = metrics.ChromeProxyMetric()
     metric.SetEvents([
@@ -216,6 +225,15 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric.AddResultsForHeaderValidation(None, results)
     results.AssertHasPageSpecificScalarValue('checked_via_header', 'count', 2)
 
+    # Passing in zero responses should cause a failure.
+    metric.SetEvents([])
+    no_responses_exception = False
+    try:
+      metric.AddResultsForHeaderValidation(None, results)
+    except metrics.ChromeProxyMetricException:
+      no_responses_exception = True
+    self.assertTrue(no_responses_exception)
+
   def testChromeProxyMetricForBypass(self):
     metric = metrics.ChromeProxyMetric()
     metric.SetEvents([
@@ -238,6 +256,15 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric.AddResultsForBypass(None, results)
     results.AssertHasPageSpecificScalarValue('bypass', 'count', 1)
 
+    # Passing in zero responses should cause a failure.
+    metric.SetEvents([])
+    no_responses_exception = False
+    try:
+      metric.AddResultsForBypass(None, results)
+    except metrics.ChromeProxyMetricException:
+      no_responses_exception = True
+    self.assertTrue(no_responses_exception)
+
   def testChromeProxyMetricForCorsBypass(self):
     metric = metrics.ChromeProxyMetric()
     metric.SetEvents([EVENT_HTML_PROXY_VIA,
@@ -246,6 +273,15 @@ class ChromeProxyMetricTest(unittest.TestCase):
     results = test_page_test_results.TestPageTestResults(self)
     metric.AddResultsForCorsBypass(None, results)
     results.AssertHasPageSpecificScalarValue('cors_bypass', 'count', 1)
+
+    # Passing in zero responses should cause a failure.
+    metric.SetEvents([])
+    no_responses_exception = False
+    try:
+      metric.AddResultsForCorsBypass(None, results)
+    except metrics.ChromeProxyMetricException:
+      no_responses_exception = True
+    self.assertTrue(no_responses_exception)
 
   def testChromeProxyMetricForBlockOnce(self):
     metric = metrics.ChromeProxyMetric()
@@ -265,6 +301,15 @@ class ChromeProxyMetricTest(unittest.TestCase):
       exception_occurred = True
     # The second response was over direct, but was expected via proxy.
     self.assertTrue(exception_occurred)
+
+    # Passing in zero responses should cause a failure.
+    metric.SetEvents([])
+    no_responses_exception = False
+    try:
+      metric.AddResultsForBlockOnce(None, results)
+    except metrics.ChromeProxyMetricException:
+      no_responses_exception = True
+    self.assertTrue(no_responses_exception)
 
   def testChromeProxyMetricForSafebrowsingOn(self):
     metric = metrics.ChromeProxyMetric()
@@ -291,7 +336,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     results.AssertHasPageSpecificScalarValue('via_fallback', 'count', 2)
 
     metric.SetEvents([EVENT_HTML_PROXY_VIA,
-                       EVENT_IMAGE_PROXY_VIA])
+                      EVENT_IMAGE_PROXY_VIA])
     exception_occurred = False
     try:
       metric.AddResultsForHTTPFallback(None, results)
@@ -300,6 +345,15 @@ class ChromeProxyMetricTest(unittest.TestCase):
     # The responses came through the SPDY proxy, but were expected through the
     # HTTP fallback proxy.
     self.assertTrue(exception_occurred)
+
+    # Passing in zero responses should cause a failure.
+    metric.SetEvents([])
+    no_responses_exception = False
+    try:
+      metric.AddResultsForHTTPFallback(None, results)
+    except metrics.ChromeProxyMetricException:
+      no_responses_exception = True
+    self.assertTrue(no_responses_exception)
 
   def testChromeProxyMetricForHTTPToDirectFallback(self):
     metric = metrics.ChromeProxyMetric()
@@ -312,7 +366,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     results.AssertHasPageSpecificScalarValue('bypass', 'count', 2)
 
     metric.SetEvents([EVENT_HTML_PROXY_VIA,
-                       EVENT_HTML_DIRECT])
+                      EVENT_HTML_DIRECT])
     exception_occurred = False
     try:
       metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
@@ -322,8 +376,8 @@ class ChromeProxyMetricTest(unittest.TestCase):
     self.assertTrue(exception_occurred)
 
     metric.SetEvents([EVENT_HTML_PROXY_VIA_HTTP_FALLBACK,
-                       EVENT_HTML_PROXY_VIA_HTTP_FALLBACK,
-                       EVENT_IMAGE_PROXY_VIA_HTTP_FALLBACK])
+                      EVENT_HTML_PROXY_VIA_HTTP_FALLBACK,
+                      EVENT_IMAGE_PROXY_VIA_HTTP_FALLBACK])
     exception_occurred = False
     try:
       metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
@@ -333,8 +387,8 @@ class ChromeProxyMetricTest(unittest.TestCase):
     self.assertTrue(exception_occurred)
 
     metric.SetEvents([EVENT_HTML_DIRECT,
-                       EVENT_HTML_DIRECT,
-                       EVENT_IMAGE_DIRECT])
+                      EVENT_HTML_DIRECT,
+                      EVENT_IMAGE_DIRECT])
     exception_occurred = False
     try:
       metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
@@ -342,3 +396,12 @@ class ChromeProxyMetricTest(unittest.TestCase):
       exception_occurred = True
     # The first response was expected through the HTTP fallback proxy.
     self.assertTrue(exception_occurred)
+
+    # Passing in zero responses should cause a failure.
+    metric.SetEvents([])
+    no_responses_exception = False
+    try:
+      metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
+    except metrics.ChromeProxyMetricException:
+      no_responses_exception = True
+    self.assertTrue(no_responses_exception)
