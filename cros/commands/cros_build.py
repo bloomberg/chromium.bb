@@ -13,9 +13,12 @@ from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
 from chromite.lib import project
-from chromite.scripts import cros_list_modified_packages as workon
-from chromite.scripts import cros_setup_toolchains as toolchain
 from chromite import cros
+
+if cros_build_lib.IsInsideChroot():
+  # These import libraries outside chromite. See brbug.com/472.
+  from chromite.scripts import cros_setup_toolchains as toolchain
+  from chromite.scripts import cros_list_modified_packages as workon
 
 _HOST_PKGS = ('virtual/target-sdk', 'world',)
 
