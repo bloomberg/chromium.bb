@@ -24,7 +24,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   ServiceWorkerHandler();
   ~ServiceWorkerHandler() override;
 
-  void SetClient(scoped_ptr<DevToolsProtocolClient> client);
+  void SetClient(scoped_ptr<Client> client);
   void Detached();
 
   // Protocol 'service worker' domain implementation.
@@ -46,7 +46,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   void AgentHostClosed(DevToolsAgentHost* agent_host,
                        bool replaced_with_another_client) override;
 
-  scoped_ptr<DevToolsProtocolClient> client_;
+  scoped_ptr<Client> client_;
   using AttachedHosts = std::map<std::string,
                                  scoped_refptr<DevToolsAgentHost>>;
   AttachedHosts attached_hosts_;

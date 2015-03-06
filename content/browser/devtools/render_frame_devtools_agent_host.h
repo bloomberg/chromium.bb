@@ -39,6 +39,7 @@ namespace inspector { class InspectorHandler; }
 namespace network { class NetworkHandler; }
 namespace page { class PageHandler; }
 namespace power { class PowerHandler; }
+namespace service_worker { class ServiceWorkerHandler; }
 namespace tracing { class TracingHandler; }
 }
 
@@ -124,6 +125,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   scoped_ptr<devtools::network::NetworkHandler> network_handler_;
   scoped_ptr<devtools::page::PageHandler> page_handler_;
   scoped_ptr<devtools::power::PowerHandler> power_handler_;
+  scoped_ptr<devtools::service_worker::ServiceWorkerHandler>
+      service_worker_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
   scoped_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;

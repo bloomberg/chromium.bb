@@ -21,7 +21,7 @@ ServiceWorkerHandler::~ServiceWorkerHandler() {
 }
 
 void ServiceWorkerHandler::SetClient(
-    scoped_ptr<DevToolsProtocolClient> client) {
+    scoped_ptr<Client> client) {
   client_.swap(client);
 }
 
@@ -88,11 +88,10 @@ void ServiceWorkerHandler::DispatchProtocolMessage(
   if (it == attached_hosts_.end())
     return;  // Already disconnected.
 
-  // TODO(pfeldman): uncomment once generator is in place.
-  //   client_->DispatchMessage(
-  //       DispatchMessageParams::Create()->
-  //           set_worker_id(host->GetId())->
-  //           set_message(message));
+  client_->DispatchMessage(
+      DispatchMessageParams::Create()->
+          set_worker_id(host->GetId())->
+          set_message(message));
 }
 
 void ServiceWorkerHandler::AgentHostClosed(
@@ -103,10 +102,9 @@ void ServiceWorkerHandler::AgentHostClosed(
 
 void ServiceWorkerHandler::WorkerCreated(
     DevToolsAgentHost* host) {
-  // TODO(pfeldman): uncomment once generator is in place.
-  //   client_->WorkerCreated(WorkerCreatedParams::Create()->
-  //       set_worker_id(host->GetId())->
-  //       set_url(host->GetURL().spec()));
+  client_->WorkerCreated(WorkerCreatedParams::Create()->
+      set_worker_id(host->GetId())->
+      set_url(host->GetURL().spec()));
 }
 
 void ServiceWorkerHandler::WorkerDestroyed(
@@ -114,9 +112,8 @@ void ServiceWorkerHandler::WorkerDestroyed(
   auto it = attached_hosts_.find(host->GetId());
   if (it == attached_hosts_.end())
     return;
-  // TODO(pfeldman): uncomment once generator is in place.
-  //   client_->WorkerTerminated(WorkerTerminatedParams::Create()->
-  //       set_worker_id(host->GetId()));
+  client_->WorkerTerminated(WorkerTerminatedParams::Create()->
+      set_worker_id(host->GetId()));
   attached_hosts_.erase(it);
 }
 

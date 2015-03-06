@@ -18,6 +18,7 @@
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/power_handler.h"
+#include "content/browser/devtools/protocol/service_worker_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -131,6 +132,8 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
       network_handler_(new devtools::network::NetworkHandler()),
       page_handler_(new devtools::page::PageHandler()),
       power_handler_(new devtools::power::PowerHandler()),
+      service_worker_handler_(
+          new devtools::service_worker::ServiceWorkerHandler()),
       tracing_handler_(new devtools::tracing::TracingHandler(
           devtools::tracing::TracingHandler::Renderer)),
       protocol_handler_(new DevToolsProtocolHandler(
@@ -145,6 +148,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
   dispatcher->SetNetworkHandler(network_handler_.get());
   dispatcher->SetPageHandler(page_handler_.get());
   dispatcher->SetPowerHandler(power_handler_.get());
+  dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());
   SetRenderFrameHost(rfh);
   g_instances.Get().push_back(this);
@@ -230,6 +234,7 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #endif
   page_handler_->Detached();
   power_handler_->Detached();
+  service_worker_handler_->Detached();
   tracing_handler_->Detached();
   ClientDetachedFromRenderer();
 
