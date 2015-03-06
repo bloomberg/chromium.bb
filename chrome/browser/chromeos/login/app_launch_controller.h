@@ -66,6 +66,7 @@ class AppLaunchController
   // A class to watch app window creation.
   class AppWindowWatcher;
 
+  void ClearNetworkWaitTimer();
   void CleanUp();
   void OnNetworkWaitTimedout();
 

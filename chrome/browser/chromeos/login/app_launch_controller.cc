@@ -266,7 +266,13 @@ void AppLaunchController::OnProfileLoadFailed(
   OnLaunchFailed(error);
 }
 
+void AppLaunchController::ClearNetworkWaitTimer() {
+  waiting_for_network_ = false;
+  network_wait_timer_.Stop();
+}
+
 void AppLaunchController::CleanUp() {
+  ClearNetworkWaitTimer();
   kiosk_profile_loader_.reset();
   startup_app_launcher_.reset();
   splash_wait_timer_.Stop();
@@ -370,8 +376,7 @@ void AppLaunchController::OnInstallingApp() {
   app_launch_splash_screen_actor_->UpdateAppLaunchState(
       AppLaunchSplashScreenActor::APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
-  waiting_for_network_ = false;
-  network_wait_timer_.Stop();
+  ClearNetworkWaitTimer();
   app_launch_splash_screen_actor_->ToggleNetworkConfig(false);
 
   // We have connectivity at this point, so we can skip the network
@@ -394,6 +399,8 @@ void AppLaunchController::OnReadyToLaunch() {
 
   if (splash_wait_timer_.IsRunning())
     return;
+
+  ClearNetworkWaitTimer();
 
   const int64 time_taken_ms = (base::TimeTicks::Now() -
       base::TimeTicks::FromInternalValue(launch_splash_start_time_)).
