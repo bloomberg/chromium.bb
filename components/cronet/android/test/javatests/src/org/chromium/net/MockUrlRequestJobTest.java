@@ -23,24 +23,49 @@ public class MockUrlRequestJobTest extends CronetTestBase {
 
     private CronetTestActivity mActivity;
     private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
+    private TestHttpUrlRequestListener mListener;
+    private HttpUrlRequest mRequest;
 
     // Helper function to create a HttpUrlRequest with the specified url.
-    private TestHttpUrlRequestListener createRequestAndWaitForComplete(
+    private void createRequestAndWaitForComplete(
             String url, boolean disableRedirects) {
         HashMap<String, String> headers = new HashMap<String, String>();
-        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
-
-        HttpUrlRequest request = mActivity.mRequestFactory.createRequest(
+        mListener = new TestHttpUrlRequestListener();
+        mRequest = mActivity.mRequestFactory.createRequest(
                 url,
                 HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
                 headers,
-                listener);
+                mListener);
         if (disableRedirects) {
-            request.disableRedirects();
+            mRequest.disableRedirects();
         }
-        request.start();
-        listener.blockForComplete();
-        return listener;
+        mRequest.start();
+        mListener.blockForComplete();
+    }
+
+    /**
+     * Helper method to check that we are not calling methods on the native
+     * adapter after it has been destroyed.
+     */
+    private static void checkAfterAdapterDestroyed(HttpUrlRequest request) {
+        try {
+            request.getAllHeaders();
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals("Adapter has been destroyed", e.getMessage());
+        }
+        try {
+            request.getHeader("foo");
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals("Adapter has been destroyed", e.getMessage());
+        }
+        try {
+            request.getNegotiatedProtocol();
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals("Adapter has been destroyed", e.getMessage());
+        }
     }
 
     @Override
@@ -54,75 +79,109 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testSuccessURLRequest() throws Exception {
-        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+        createRequestAndWaitForComplete(
                 MockUrlRequestJobFactory.SUCCESS_URL, false);
-        assertEquals(MockUrlRequestJobFactory.SUCCESS_URL, listener.mUrl);
-        assertEquals(200, listener.mHttpStatusCode);
-        assertEquals("OK", listener.mHttpStatusText);
+        assertEquals(MockUrlRequestJobFactory.SUCCESS_URL, mListener.mUrl);
+        assertEquals(200, mListener.mHttpStatusCode);
+        assertEquals("OK", mListener.mHttpStatusText);
         assertEquals("this is a text file\n",
-                new String(listener.mResponseAsBytes));
+                new String(mListener.mResponseAsBytes));
+        // Test that ChromiumUrlRequest caches information which is available
+        // after the native request adapter has been destroyed.
+        assertEquals(200, mRequest.getHttpStatusCode());
+        assertEquals("OK", mRequest.getHttpStatusText());
+        assertNull(mRequest.getException());
+        checkAfterAdapterDestroyed(mRequest);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testRedirectURLRequest() throws Exception {
-        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+        createRequestAndWaitForComplete(
                 MockUrlRequestJobFactory.REDIRECT_URL, false);
-
-        // Currently Cronet does not expose the url after redirect.
-        assertEquals(MockUrlRequestJobFactory.REDIRECT_URL, listener.mUrl);
-        assertEquals(200, listener.mHttpStatusCode);
-        assertEquals("OK", listener.mHttpStatusText);
+        // ChromiumUrlRequest does not expose the url after redirect.
+        assertEquals(MockUrlRequestJobFactory.REDIRECT_URL, mListener.mUrl);
+        assertEquals(200, mListener.mHttpStatusCode);
+        assertEquals("OK", mListener.mHttpStatusText);
         // Expect that the request is redirected to success.txt.
         assertEquals("this is a text file\n",
-                new String(listener.mResponseAsBytes));
+                new String(mListener.mResponseAsBytes));
+        // Test that ChromiumUrlRequest caches information which is available
+        // after the native request adapter has been destroyed.
+        assertEquals(200, mRequest.getHttpStatusCode());
+        assertEquals("OK", mRequest.getHttpStatusText());
+        assertNull(mRequest.getException());
+        checkAfterAdapterDestroyed(mRequest);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testNotFoundURLRequest() throws Exception {
-        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+        createRequestAndWaitForComplete(
                 MockUrlRequestJobFactory.NOTFOUND_URL, false);
-        assertEquals(MockUrlRequestJobFactory.NOTFOUND_URL, listener.mUrl);
-        assertEquals(404, listener.mHttpStatusCode);
-        assertEquals("Not Found", listener.mHttpStatusText);
+        assertEquals(MockUrlRequestJobFactory.NOTFOUND_URL, mListener.mUrl);
+        assertEquals(404, mListener.mHttpStatusCode);
+        assertEquals("Not Found", mListener.mHttpStatusText);
         assertEquals(
                 "<!DOCTYPE html>\n<html>\n<head>\n<title>Not found</title>\n"
                 + "<p>Test page loaded.</p>\n</head>\n</html>\n",
-                new String(listener.mResponseAsBytes));
+                new String(mListener.mResponseAsBytes));
+        // Test that ChromiumUrlRequest caches information which is available
+        // after the native request adapter has been destroyed.
+        assertEquals(404, mRequest.getHttpStatusCode());
+        assertEquals("Not Found", mRequest.getHttpStatusText());
+        assertNull(mRequest.getException());
+        checkAfterAdapterDestroyed(mRequest);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testFailedURLRequest() throws Exception {
-        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+        createRequestAndWaitForComplete(
                 MockUrlRequestJobFactory.FAILED_URL, false);
-
-        assertEquals(MockUrlRequestJobFactory.FAILED_URL, listener.mUrl);
-        assertEquals(null, listener.mHttpStatusText);
-        assertEquals(0, listener.mHttpStatusCode);
+        assertEquals(MockUrlRequestJobFactory.FAILED_URL, mListener.mUrl);
+        assertEquals("", mListener.mHttpStatusText);
+        assertEquals(0, mListener.mHttpStatusCode);
+        // Test that ChromiumUrlRequest caches information which is available
+        // after the native request adapter has been destroyed.
+        assertEquals(0, mRequest.getHttpStatusCode());
+        assertEquals("", mRequest.getHttpStatusText());
+        assertEquals("System error: net::ERR_FAILED(-2)",
+                mRequest.getException().getMessage());
+        checkAfterAdapterDestroyed(mRequest);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     // Test that redirect can be disabled for a request.
     public void testDisableRedirects() throws Exception {
-        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
+        createRequestAndWaitForComplete(
                 MockUrlRequestJobFactory.REDIRECT_URL, true);
         // Currently Cronet does not expose the url after redirect.
-        assertEquals(MockUrlRequestJobFactory.REDIRECT_URL, listener.mUrl);
-        assertEquals(302, listener.mHttpStatusCode);
+        assertEquals(MockUrlRequestJobFactory.REDIRECT_URL, mListener.mUrl);
+        assertEquals(302, mListener.mHttpStatusCode);
+        // MockUrlRequestJob somehow does not populate status text as "Found".
+        assertEquals("", mListener.mHttpStatusText);
         // Expect that the request is not redirected to success.txt.
-        assertNotNull(listener.mResponseHeaders);
-        List<String> entry = listener.mResponseHeaders.get("redirect-header");
+        assertNotNull(mListener.mResponseHeaders);
+        List<String> entry = mListener.mResponseHeaders.get("redirect-header");
         assertEquals(1, entry.size());
         assertEquals("header-value", entry.get(0));
-        List<String> location = listener.mResponseHeaders.get("Location");
+        List<String> location = mListener.mResponseHeaders.get("Location");
         assertEquals(1, location.size());
         assertEquals("/success.txt", location.get(0));
         assertEquals("Request failed because there were too many redirects or "
                          + "redirects have been disabled",
-                     listener.mException.getMessage());
+                     mListener.mException.getMessage());
+        // Test that ChromiumUrlRequest caches information which is available
+        // after the native request adapter has been destroyed.
+        assertEquals(302, mRequest.getHttpStatusCode());
+        // MockUrlRequestJob somehow does not populate status text as "Found".
+        assertEquals("", mRequest.getHttpStatusText());
+        assertEquals("Request failed because there were too many redirects "
+                + "or redirects have been disabled",
+                mRequest.getException().getMessage());
+        checkAfterAdapterDestroyed(mRequest);
     }
 
     /**
@@ -161,8 +220,6 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @LargeTest
     @Feature({"Cronet"})
     public void testNoWriteAfterCancelOnAnotherThread() throws Exception {
-        CronetTestActivity activity = launchCronetTestApp();
-
         // This test verifies that WritableByteChannel.write is not called after
         // WritableByteChannel.close if request is canceled from another
         // thread.
@@ -174,7 +231,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
 
             // Create request.
             final HttpUrlRequest request =
-                    activity.mRequestFactory.createRequest(
+                    mActivity.mRequestFactory.createRequest(
                             MockUrlRequestJobFactory.SUCCESS_URL,
                             HttpUrlRequest.REQUEST_PRIORITY_LOW, headers,
                             channel, listener);
@@ -188,14 +245,16 @@ public class MockUrlRequestJobTest extends CronetTestBase {
             Executors.newCachedThreadPool().execute(cancelTask);
             listener.blockForComplete();
             assertFalse(channel.isOpen());
+            // Since getAllHeaders and other methods in
+            // checkAfterAdapterDestroyed() acquire mLock, so this will happen
+            // after the adapter is destroyed.
+            checkAfterAdapterDestroyed(request);
         }
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testNoWriteAfterSyncCancel() throws Exception {
-        CronetTestActivity activity = launchCronetTestApp();
-
         HashMap<String, String> headers = new HashMap<String, String>();
         TestByteChannel channel = new TestByteChannel();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
@@ -208,7 +267,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
 
         // Create request.
         final HttpUrlRequest request =
-                activity.mRequestFactory.createRequest(
+                mActivity.mRequestFactory.createRequest(
                         mockUrl,
                         HttpUrlRequest.REQUEST_PRIORITY_LOW, headers,
                         channel, listener);
@@ -219,6 +278,11 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         listener.blockForComplete();
         assertTrue(request.isCanceled());
         assertFalse(channel.isOpen());
+        // Test that ChromiumUrlRequest caches information which is available
+        // after the native request adapter has been destroyed.
+        assertEquals(-1, request.getHttpStatusCode());
+        assertEquals("", request.getHttpStatusText());
+        checkAfterAdapterDestroyed(request);
     }
 
     @SmallTest
@@ -229,13 +293,11 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         int repeatCount = 100000;
         String mockUrl = mMockUrlRequestJobFactory.getMockUrlForData(data,
                 repeatCount);
-        TestHttpUrlRequestListener listener = createRequestAndWaitForComplete(
-                mockUrl, false);
-        assertEquals(mockUrl, listener.mUrl);
-        String responseData = new String(listener.mResponseAsBytes);
+        createRequestAndWaitForComplete(mockUrl, false);
+        assertEquals(mockUrl, mListener.mUrl);
         for (int i = 0; i < repeatCount; ++i) {
-            assertEquals(data, responseData.substring(dataLength * i,
-                    dataLength * (i + 1)));
+            assertEquals(data, mListener.mResponseAsString.substring(
+                    dataLength * i, dataLength * (i + 1)));
         }
     }
 }

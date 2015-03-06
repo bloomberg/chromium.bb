@@ -39,27 +39,32 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
                 + request.getContentLength());
         Log.i(TAG, "*** Headers Are *** " + request.getAllHeaders());
         mHttpStatusCode = request.getHttpStatusCode();
-        mNegotiatedProtocol = request.getNegotiatedProtocol();
         mHttpStatusText = request.getHttpStatusText();
+        mNegotiatedProtocol = request.getNegotiatedProtocol();
+        mResponseHeaders = request.getAllHeaders();
         mStarted.open();
     }
 
     @Override
     public void onRequestComplete(HttpUrlRequest request) {
         mUrl = request.getUrl();
-        // mHttpStatusCode and mResponseHeaders are available in
-        // onResponseStarted. However when redirects are disabled,
-        // onResponseStarted is not invoked.
-        Exception exception = request.getException();
-        if (exception != null && exception.getMessage().equals("Request failed "
-                + "because there were too many redirects or redirects have "
-                + "been disabled")) {
-            mHttpStatusCode = request.getHttpStatusCode();
-            mResponseHeaders = request.getAllHeaders();
-        }
-        mResponseAsBytes = request.getResponseAsBytes();
-        mResponseAsString = new String(mResponseAsBytes);
         mException = request.getException();
+        if (mException != null) {
+            // When there is an exception, onResponseStarted is often not
+            // invoked (e.g. when request fails or redirects are disabled).
+            // Populate status code and text in this case.
+            mHttpStatusCode = request.getHttpStatusCode();
+            mHttpStatusText = request.getHttpStatusText();
+            if (mException.getMessage().equals("Request failed "
+                    + "because there were too many redirects or redirects have "
+                    + "been disabled")) {
+                mResponseHeaders = request.getAllHeaders();
+            }
+        } else {
+            // Read the response body if there is not an exception.
+            mResponseAsBytes = request.getResponseAsBytes();
+            mResponseAsString = new String(mResponseAsBytes);
+        }
         mComplete.open();
         Log.i(TAG, "****** Request Complete over " + mNegotiatedProtocol
                 + ", status code is " + mHttpStatusCode);

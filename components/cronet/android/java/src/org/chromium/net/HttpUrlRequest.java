@@ -144,7 +144,8 @@ public interface HttpUrlRequest {
 
     /**
      * Returns the HTTP status text of the status line. For example, if the
-     * request has a "HTTP/1.1 200 OK" response, this method returns "OK".
+     * request has a "HTTP/1.1 200 OK" response, this method returns "OK". It
+     * returns null if the request has not started.
      */
     String getHttpStatusText();
 

@@ -40,8 +40,6 @@ net::RequestPriority ConvertRequestPriority(jint request_priority) {
 void SetPostContentType(JNIEnv* env,
                         URLRequestAdapter* request_adapter,
                         jstring content_type) {
-  DCHECK(request_adapter);
-
   std::string method_post("POST");
   request_adapter->SetMethod(method_post);
 
@@ -164,6 +162,7 @@ static void SetUploadData(JNIEnv* env,
                           jbyteArray jcontent) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
   SetPostContentType(env, request_adapter, jcontent_type);
 
   if (jcontent != NULL) {
@@ -184,6 +183,7 @@ static void SetUploadChannel(JNIEnv* env,
                              jlong jcontent_length) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
   SetPostContentType(env, request_adapter, jcontent_type);
 
   request_adapter->SetUploadChannel(env, jcontent_length);
@@ -195,6 +195,7 @@ static void EnableChunkedUpload(JNIEnv* env,
                                 jstring jcontent_type) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
   SetPostContentType(env, request_adapter, jcontent_type);
 
   request_adapter->EnableChunkedUpload();
@@ -208,6 +209,7 @@ static void AppendChunk(JNIEnv* env,
                         jboolean jis_last_chunk) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
   DCHECK(jchunk_byte_buffer);
 
   void* chunk = env->GetDirectBufferAddress(jchunk_byte_buffer);
@@ -246,6 +248,7 @@ static jint GetErrorCode(JNIEnv* env,
                          jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
   int error_code = request_adapter->error_code();
   switch (error_code) {
     // TODO(mef): Investigate returning success on positive values, too, as
@@ -286,6 +289,7 @@ static jstring GetErrorString(JNIEnv* env,
                               jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
   int error_code = request_adapter->error_code();
   char buffer[200];
   std::string error_string = net::ErrorToString(error_code);
@@ -302,6 +306,7 @@ static jint GetHttpStatusCode(JNIEnv* env,
                               jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
   return request_adapter->http_status_code();
 }
 
@@ -310,6 +315,7 @@ static jstring GetHttpStatusText(JNIEnv* env,
                                  jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
   return ConvertUTF8ToJavaString(env, request_adapter->http_status_text())
       .Release();
 }
@@ -319,8 +325,7 @@ static jstring GetContentType(JNIEnv* env,
                               jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
-  if (request_adapter == NULL)
-    return NULL;
+  DCHECK(request_adapter);
   std::string type = request_adapter->content_type();
   if (!type.empty()) {
     return ConvertUTF8ToJavaString(env, type.c_str()).Release();
@@ -334,8 +339,7 @@ static jlong GetContentLength(JNIEnv* env,
                               jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
-  if (request_adapter == NULL)
-    return 0;
+  DCHECK(request_adapter);
   return request_adapter->content_length();
 }
 
@@ -345,15 +349,12 @@ static jstring GetHeader(JNIEnv* env,
                          jstring jheader_name) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
-  if (request_adapter == NULL)
-    return NULL;
+  DCHECK(request_adapter);
   std::string header_name = ConvertJavaStringToUTF8(env, jheader_name);
   std::string header_value = request_adapter->GetHeader(header_name);
-  if (!header_value.empty()) {
+  if (!header_value.empty())
     return ConvertUTF8ToJavaString(env, header_value.c_str()).Release();
-  } else {
-    return NULL;
-  }
+  return NULL;
 }
 
 static void GetAllHeaders(JNIEnv* env,
@@ -362,8 +363,7 @@ static void GetAllHeaders(JNIEnv* env,
                           jobject jheaders_map) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
-  if (request_adapter == NULL)
-    return;
+  DCHECK(request_adapter);
 
   net::HttpResponseHeaders* headers = request_adapter->GetResponseHeaders();
   if (headers == NULL)
@@ -394,8 +394,7 @@ static jstring GetNegotiatedProtocol(JNIEnv* env,
                                      jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
-  if (request_adapter == NULL)
-    return ConvertUTF8ToJavaString(env, "").Release();
+  DCHECK(request_adapter);
 
   std::string negotiated_protocol = request_adapter->GetNegotiatedProtocol();
   return ConvertUTF8ToJavaString(env, negotiated_protocol.c_str()).Release();
@@ -405,8 +404,8 @@ static void DisableRedirects(JNIEnv* env, jobject jcaller,
                              jlong jrequest_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jrequest_adapter);
-  if (request_adapter != NULL)
-    request_adapter->DisableRedirects();
+  DCHECK(request_adapter);
+  request_adapter->DisableRedirects();
 }
 
 }  // namespace cronet
