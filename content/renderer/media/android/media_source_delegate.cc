@@ -161,7 +161,8 @@ void MediaSourceDelegate::InitializeMediaSource(
   set_decryptor_ready_cb_ = media::BindToCurrentLoop(set_decryptor_ready_cb);
   update_network_state_cb_ = media::BindToCurrentLoop(update_network_state_cb);
   duration_change_cb_ = duration_change_cb;
-  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
+  waiting_for_decryption_key_cb_ =
+      media::BindToCurrentLoop(waiting_for_decryption_key_cb);
   access_unit_size_ = kAccessUnitSizeForMediaSource;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
