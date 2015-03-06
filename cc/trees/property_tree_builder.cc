@@ -33,6 +33,7 @@ struct DataForRecursion {
   float page_scale_factor;
   float device_scale_factor;
   bool in_subtree_of_page_scale_application_layer;
+  bool should_flatten;
   const gfx::Transform* device_transform;
 };
 
@@ -124,13 +125,9 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
 
   const bool has_surface = !!layer->render_surface();
 
-  const bool flattening_change = layer->parent() &&
-                                 layer->should_flatten_transform() &&
-                                 !layer->parent()->should_flatten_transform();
-
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_animated_transform || has_surface ||
-                       is_page_scale_application_layer || flattening_change;
+                       is_page_scale_application_layer;
 
   Layer* transform_parent = GetTransformParent(data_from_ancestor, layer);
 
@@ -172,6 +169,7 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   data_for_children->transform_tree_parent = layer;
 
   if (!requires_node) {
+    data_for_children->should_flatten |= layer->should_flatten_transform();
     gfx::Vector2dF local_offset = layer->position().OffsetFromOrigin() +
                                   layer->transform().To2dTranslation();
     layer->set_offset_to_transform_parent(parent_offset + local_offset);
@@ -189,7 +187,9 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   layer->set_transform_tree_index(node->id);
 
   node->data.scrolls = is_scrollable;
-  node->data.flattens = layer->should_flatten_transform();
+  node->data.flattens_inherited_transform = data_for_children->should_flatten;
+  node->data.flattens_local_transform = layer->should_flatten_transform();
+  data_for_children->should_flatten = false;
   node->data.target_id =
       data_from_ancestor.render_target->transform_tree_index();
   node->data.content_target_id =
@@ -316,6 +316,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   data_for_recursion.page_scale_factor = page_scale_factor;
   data_for_recursion.device_scale_factor = device_scale_factor;
   data_for_recursion.in_subtree_of_page_scale_application_layer = false;
+  data_for_recursion.should_flatten = false;
   data_for_recursion.device_transform = &device_transform;
 
   ClipNode root_clip;

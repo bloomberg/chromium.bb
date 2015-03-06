@@ -69,7 +69,13 @@ struct CC_EXPORT TransformNodeData {
   bool is_animated;
   bool to_screen_is_animated;
 
-  bool flattens;
+  // We don't necessarily create a transform node to apply flattening. If we've
+  // skipped flattening for an ancestor, we must flatten the transform we
+  // inherit, but we don't necessarily need to flatten our local transform. We
+  // must therefore use two values to describe the flattening required for the
+  // local and inherited transforms.
+  bool flattens_inherited_transform;
+  bool flattens_local_transform;
   bool scrolls;
 
   bool needs_sublayer_scale;

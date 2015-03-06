@@ -43,7 +43,8 @@ TransformNodeData::TransformNodeData()
       ancestors_are_invertible(true),
       is_animated(false),
       to_screen_is_animated(false),
-      flattens(false),
+      flattens_inherited_transform(false),
+      flattens_local_transform(false),
       scrolls(false),
       needs_sublayer_scale(false),
       layer_scale_factor(1.0f) {
@@ -190,7 +191,8 @@ void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
     node->data.to_screen = node->data.to_parent;
     node->data.ancestors_are_invertible = true;
     node->data.to_screen_is_animated = false;
-  } else if (parent_node->data.flattens) {
+  } else if (parent_node->data.flattens_local_transform ||
+             node->data.flattens_inherited_transform) {
     // Flattening is tricky. Once a layer is drawn into its render target, it
     // cannot escape, so we only need to consider transforms between the layer
     // and its target when flattening (i.e., its draw transform). To compute the
