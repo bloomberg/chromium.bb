@@ -9,12 +9,6 @@
 
 namespace storage_monitor {
 
-std::string GetUdevDevicePropertyValue(udev_device* udev_device,
-                                       const char* key) {
-  const char* value = device::udev_device_get_property_value(udev_device, key);
-  return value ? value : std::string();
-}
-
 bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
                                       const char* key,
                                       std::string* result) {
@@ -25,7 +19,7 @@ bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
       udev.get(), device_path.value().c_str()));
   if (!device.get())
     return false;
-  *result = GetUdevDevicePropertyValue(device.get(), key);
+  *result = device::UdevDeviceGetPropertyValue(device.get(), key);
   return true;
 }
 

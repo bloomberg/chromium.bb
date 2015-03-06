@@ -146,4 +146,10 @@ void udev_unref(udev* udev) {
   UdevLoader::Get()->udev_unref(udev);
 }
 
+std::string UdevDeviceGetPropertyValue(udev_device* udev_device,
+                                       const char* key) {
+  const char* value = device::udev_device_get_property_value(udev_device, key);
+  return value ? value : std::string();
+}
+
 }  // namespace device

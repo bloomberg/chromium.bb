@@ -51,7 +51,7 @@ const char kVendorID[] = "ID_VENDOR_ID";
 
 // Construct a device id using label or manufacturer (vendor and model) details.
 std::string MakeDeviceUniqueId(struct udev_device* device) {
-  std::string uuid = GetUdevDevicePropertyValue(device, kFsUUID);
+  std::string uuid = device::UdevDeviceGetPropertyValue(device, kFsUUID);
   // Keep track of device uuid, to see how often we receive empty uuid values.
   UMA_HISTOGRAM_BOOLEAN(
       "RemovableDeviceNotificationsLinux.device_file_system_uuid_available",
@@ -64,10 +64,10 @@ std::string MakeDeviceUniqueId(struct udev_device* device) {
   // in the string is empty.
   // Format: VendorModelSerial:VendorInfo:ModelInfo:SerialShortInfo
   // E.g.: VendorModelSerial:Kn:DataTravel_12.10:8000000000006CB02CDB
-  std::string vendor = GetUdevDevicePropertyValue(device, kVendorID);
-  std::string model = GetUdevDevicePropertyValue(device, kModelID);
-  std::string serial_short = GetUdevDevicePropertyValue(device,
-                                                        kSerialShort);
+  std::string vendor = device::UdevDeviceGetPropertyValue(device, kVendorID);
+  std::string model = device::UdevDeviceGetPropertyValue(device, kModelID);
+  std::string serial_short =
+      device::UdevDeviceGetPropertyValue(device, kSerialShort);
   if (vendor.empty() && model.empty() && serial_short.empty())
     return std::string();
 
@@ -147,12 +147,12 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   if (!device.get())
     return storage_info.Pass();
 
-  base::string16 volume_label =
-      base::UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kLabel));
-  base::string16 vendor_name =
-      base::UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kVendor));
-  base::string16 model_name =
-      base::UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kModel));
+  base::string16 volume_label = base::UTF8ToUTF16(
+      device::UdevDeviceGetPropertyValue(device.get(), kLabel));
+  base::string16 vendor_name = base::UTF8ToUTF16(
+      device::UdevDeviceGetPropertyValue(device.get(), kVendor));
+  base::string16 model_name = base::UTF8ToUTF16(
+      device::UdevDeviceGetPropertyValue(device.get(), kModel));
 
   std::string unique_id = MakeDeviceUniqueId(device.get());
 

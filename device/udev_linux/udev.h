@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <string>
+
 #if !defined(USE_UDEV)
 #error "USE_UDEV not defined"
 #endif
@@ -71,6 +73,11 @@ void udev_set_log_fn(
                    const char* fn, const char* format, va_list args));
 void udev_set_log_priority(struct udev* udev, int priority);
 void udev_unref(udev* udev);
+
+// Calls udev_device_get_property_value() and replaces missing values with
+// the empty string.
+std::string UdevDeviceGetPropertyValue(udev_device* udev_device,
+                                       const char* key);
 
 }  // namespace device
 

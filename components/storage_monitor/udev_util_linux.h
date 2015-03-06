@@ -17,11 +17,6 @@ class FilePath;
 
 namespace storage_monitor {
 
-// Wrapper function for udev_device_get_property_value() that also checks for
-// valid but empty values.
-std::string GetUdevDevicePropertyValue(udev_device* udev_device,
-                                       const char* key);
-
 // Helper for udev_device_new_from_syspath()/udev_device_get_property_value()
 // pair. |device_path| is the absolute path to the device, including /sys.
 bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
