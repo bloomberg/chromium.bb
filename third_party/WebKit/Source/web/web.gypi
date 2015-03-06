@@ -171,7 +171,6 @@
       'WebHistoryItem.cpp',
       'WebHitTestResult.cpp',
       'WebIDBKey.cpp',
-      'WebIDBKeyPath.cpp',
       'WebIDBKeyRange.cpp',
       'WebImageCache.cpp',
       'WebImageDecoder.cpp',

@@ -229,6 +229,41 @@ IDBKeyPath::IDBKeyPath(const StringOrStringSequence& keyPath)
     }
 }
 
+IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& keyPath)
+{
+    switch (keyPath.keyPathType()) {
+    case WebIDBKeyPathTypeNull:
+        m_type = NullType;
+        return;
+
+    case WebIDBKeyPathTypeString:
+        m_type = StringType;
+        m_string = keyPath.string();
+        return;
+
+    case WebIDBKeyPathTypeArray:
+        m_type = ArrayType;
+        for (size_t i = 0, size = keyPath.array().size(); i < size; ++i)
+            m_array.append(keyPath.array()[i]);
+        return;
+    }
+    ASSERT_NOT_REACHED();
+}
+
+IDBKeyPath::operator WebIDBKeyPath() const
+{
+    switch (m_type) {
+    case NullType:
+        return WebIDBKeyPath();
+    case StringType:
+        return WebIDBKeyPath(WebString(m_string));
+    case ArrayType:
+        return WebIDBKeyPath(m_array);
+    }
+    ASSERT_NOT_REACHED();
+    return WebIDBKeyPath();
+}
+
 bool IDBKeyPath::isValid() const
 {
     switch (m_type) {
