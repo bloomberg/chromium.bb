@@ -245,7 +245,6 @@ void BrowserProcessImpl::StartTearDown() {
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
 #endif
-  promo_resource_service_.reset();
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   plugins_resource_service_.reset();
 #endif
@@ -269,6 +268,10 @@ void BrowserProcessImpl::StartTearDown() {
       UserManager::Hide();
     profile_manager_.reset();
   }
+
+  // PromoResourceService must be destroyed after the keyed services and before
+  // the IO thread.
+  promo_resource_service_.reset();
 
 #if !defined(OS_ANDROID)
   // Debugger must be cleaned up before IO thread and NotificationService.

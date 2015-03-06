@@ -124,7 +124,7 @@ const char* UpdateQueryParams::GetNaclArch() {
 
 // static
 void UpdateQueryParams::SetDelegate(UpdateQueryParamsDelegate* delegate) {
-  DCHECK(!g_delegate || !delegate);
+  DCHECK(!g_delegate || !delegate || (delegate == g_delegate));
   g_delegate = delegate;
 }
 

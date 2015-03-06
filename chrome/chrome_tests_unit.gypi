@@ -39,6 +39,7 @@
       'browser/bitmap_fetcher/bitmap_fetcher_service_unittest.cc',
       'browser/bookmarks/chrome_bookmark_client_unittest.cc',
       'browser/browser_about_handler_unittest.cc',
+      'browser/browser_process_impl_unittest.cc',
       'browser/browsing_data/browsing_data_appcache_helper_unittest.cc',
       'browser/browsing_data/browsing_data_channel_id_helper_unittest.cc',
       'browser/browsing_data/browsing_data_cookie_helper_unittest.cc',
