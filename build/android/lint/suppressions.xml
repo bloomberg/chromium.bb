@@ -95,9 +95,6 @@ Still reading?
     <ignore path="org/chromium/media/VideoCaptureCamera2.class"/>
     <ignore path="org/chromium/media/VideoCaptureCamera2$*.class"/>
     <ignore path="org/chromium/media/WebAudioMediaCodecBridge.class"/>
-    <ignore path="org/chromium/printing/PrintDocumentAdapterWrapper.class"/>
-    <ignore path="org/chromium/printing/PrintManagerDelegateImpl.class"/>
-    <ignore path="org/chromium/printing/PrintingControllerImpl.class"/>
     <ignore path="org/chromium/ui/base/Clipboard.class"/>
     <ignore path="org/chromium/ui/ColorPickerAdvancedComponent.class"/>
     <ignore path="org/chromium/ui/gfx/DeviceDisplayInfo.class"/>
