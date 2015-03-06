@@ -11181,22 +11181,22 @@ Chrome ran out of memory.
       </if>
 
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE" desc="Title for the credit card unmasking dialog.">
-        Verify your card <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+        Verify your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE" desc="Title for the credit card unmasking dialog when the credit card is expired.">
-        Update and verify your card <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+        Update and verify your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
-        Enter the three digit verification code from the back of your credit card
+        Enter the 3-digit CVC from the back of your card
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the card unmasking dialog for amex cards.">
-        Enter the four digit verification code from the front of your credit card
+        Enter the 4-digit CVC from the front of your card
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED" desc="Text explaining what the user should do in the card unmasking dialog to update an expired card.">
-        Enter the expiration date and three digit verification code from the back of your credit card
+        Enter the expiration date and 3-digit CVC from the back of your card
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX" desc="Text explaining what the user should do in the card unmasking dialog to update an expired amex card.">
-        Enter the expiration date and four digit verification code from the front of your credit card
+        Enter the expiration date and 4-digit CVC from the front of your card
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX" desc="Text for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device. If checked, the dialog won't show up again for the given credit card.">
         Don't ask again for this card

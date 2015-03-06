@@ -10,7 +10,8 @@
     <color name="light_normal_color">#5A5A5A</color>
     <color name="light_active_color">#4285F4</color>
     <color name="input_underline_color">#e5e5e5</color>
-    <color name="input_underline_error_color">#f00</color>
+    <color name="input_underline_error_color">#db4437</color>
+    <color name="explanation_text_color">#909090</color>
 
     <!-- Infobar colors -->
     <color name="infobar_background">#fff</color>
@@ -50,7 +51,6 @@
 
     <!-- Password generation popup colors -->
     <color name="password_generation_divider_color">#e5e5e5</color>
-    <color name="password_generation_explanation_text_color">#909090</color>
     <color name="password_generation_link_text_color">#5595e3</color>
 
     <!-- Preferences Colors -->

@@ -114,7 +114,10 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     public void show() {
         mDialog.show();
 
-        if (mShouldRequestExpirationDate) mExpirationContainer.setVisibility(View.VISIBLE);
+        if (mShouldRequestExpirationDate) {
+            mExpirationContainer.setVisibility(View.VISIBLE);
+            mCardUnmaskInput.setEms(3);
+        }
 
         // Override the View.OnClickListener so that pressing the positive button doesn't dismiss
         // the dialog.
