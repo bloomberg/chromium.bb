@@ -94,7 +94,7 @@ enum HitTestAction {
 
 enum MarkingBehavior {
     MarkOnlyThis,
-    MarkContainingBlockChain,
+    MarkContainerChain,
 };
 
 enum MapCoordinatesMode {
@@ -651,13 +651,13 @@ public:
 
     Element* offsetParent() const;
 
-    void markContainingBlocksForLayout(bool scheduleRelayout = true, LayoutObject* newRoot = 0, SubtreeLayoutScope* = 0);
-    void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
-    void setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
+    void markContainerChainForLayout(bool scheduleRelayout = true, LayoutObject* newRoot = 0, SubtreeLayoutScope* = 0);
+    void setNeedsLayout(MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
+    void setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
     void clearNeedsLayout();
-    void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
+    void setChildNeedsLayout(MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
     void setNeedsPositionedMovementLayout();
-    void setPreferredLogicalWidthsDirty(MarkingBehavior = MarkContainingBlockChain);
+    void setPreferredLogicalWidthsDirty(MarkingBehavior = MarkContainerChain);
     void clearPreferredLogicalWidthsDirty();
     void invalidateContainerPreferredLogicalWidths();
 
@@ -1048,7 +1048,7 @@ public:
             return;
 
         m_bitfields.setShouldInvalidateSelection(true);
-        markContainingBlockChainForPaintInvalidation();
+        markContainerChainForPaintInvalidation();
     }
     void clearShouldInvalidateSelection() { m_bitfields.setShouldInvalidateSelection(false); }
 
@@ -1068,6 +1068,8 @@ public:
     virtual bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
 
     void setNeedsOverflowRecalcAfterStyleChange();
+    // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make RenderBox
+    // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
     void markContainingBlocksForOverflowRecalc();
 
     virtual LayoutRect viewRect() const;
@@ -1216,7 +1218,7 @@ private:
 
         // Make sure our parent is marked as needing invalidation.
         // This would be unneeded if we allowed sub-tree invalidation (akin to sub-tree layouts).
-        markContainingBlockChainForPaintInvalidation();
+        markContainerChainForPaintInvalidation();
     }
     void clearLayoutDidGetCalledSinceLastFrame() { m_bitfields.setLayoutDidGetCalledSinceLastFrame(false); }
 
@@ -1242,7 +1244,7 @@ private:
     void checkBlockPositionedObjectsNeedLayout();
 #endif
 
-    void markContainingBlockChainForPaintInvalidation();
+    void markContainerChainForPaintInvalidation();
 
     bool isTextOrSVGChild() const { return isText() || (isSVG() && !isSVGRoot()); }
 
@@ -1494,8 +1496,8 @@ inline void LayoutObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
     bool alreadyNeededLayout = m_bitfields.selfNeedsLayout();
     setSelfNeedsLayout(true);
     if (!alreadyNeededLayout) {
-        if (markParents == MarkContainingBlockChain && (!layouter || layouter->root() != this))
-            markContainingBlocksForLayout(true, 0, layouter);
+        if (markParents == MarkContainerChain && (!layouter || layouter->root() != this))
+            markContainerChainForLayout(true, 0, layouter);
     }
 }
 
@@ -1527,8 +1529,8 @@ inline void LayoutObject::setChildNeedsLayout(MarkingBehavior markParents, Subtr
     bool alreadyNeededLayout = normalChildNeedsLayout();
     setNormalChildNeedsLayout(true);
     // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and remove the MarkingBehavior argument entirely.
-    if (!alreadyNeededLayout && markParents == MarkContainingBlockChain && (!layouter || layouter->root() != this))
-        markContainingBlocksForLayout(true, 0, layouter);
+    if (!alreadyNeededLayout && markParents == MarkContainerChain && (!layouter || layouter->root() != this))
+        markContainerChainForLayout(true, 0, layouter);
 }
 
 inline void LayoutObject::setNeedsPositionedMovementLayout()
@@ -1537,7 +1539,7 @@ inline void LayoutObject::setNeedsPositionedMovementLayout()
     setNeedsPositionedMovementLayout(true);
     ASSERT(!isSetNeedsLayoutForbidden());
     if (!alreadyNeededLayout)
-        markContainingBlocksForLayout();
+        markContainerChainForLayout();
 }
 
 inline bool LayoutObject::preservesNewline() const

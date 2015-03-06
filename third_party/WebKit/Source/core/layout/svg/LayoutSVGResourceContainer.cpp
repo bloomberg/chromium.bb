@@ -195,7 +195,7 @@ void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(SubtreeLayoutSc
     if (selfNeedsLayout())
         return;
 
-    setNeedsLayoutAndFullPaintInvalidation(MarkContainingBlockChain, layoutScope);
+    setNeedsLayoutAndFullPaintInvalidation(MarkContainerChain, layoutScope);
 
     if (everHadLayout())
         removeAllClientsFromCache();

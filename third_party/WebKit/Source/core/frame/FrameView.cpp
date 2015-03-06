@@ -1792,7 +1792,7 @@ void FrameView::clearLayoutSubtreeRoot(const LayoutObject& root)
 void FrameView::clearLayoutSubtreeRootsAndMarkContainingBlocks()
 {
     for (auto& iter : m_layoutSubtreeRoots)
-        iter->markContainingBlocksForLayout(false);
+        iter->markContainerChainForLayout(false);
     m_layoutSubtreeRoots.clear();
 }
 
@@ -1829,7 +1829,7 @@ void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
     LayoutView* layoutView = this->layoutView();
     if (layoutView && layoutView->needsLayout()) {
         if (relayoutRoot)
-            relayoutRoot->markContainingBlocksForLayout(false);
+            relayoutRoot->markContainerChainForLayout(false);
         return;
     }
 

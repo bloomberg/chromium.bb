@@ -423,7 +423,7 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
         if (renderer->isSVGResourceContainer())
             toLayoutSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
         else
-            renderer->setNeedsLayoutAndFullPaintInvalidation(MarkContainingBlockChain, layoutScope);
+            renderer->setNeedsLayoutAndFullPaintInvalidation(MarkContainerChain, layoutScope);
     }
 
     for (SVGElement* element : m_elementsWithRelativeLengths) {

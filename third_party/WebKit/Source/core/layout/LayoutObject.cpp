@@ -658,7 +658,7 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     return true;
 }
 
-void LayoutObject::markContainingBlocksForLayout(bool scheduleRelayout, LayoutObject* newRoot, SubtreeLayoutScope* layouter)
+void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, LayoutObject* newRoot, SubtreeLayoutScope* layouter)
 {
     ASSERT(!scheduleRelayout || !newRoot);
     ASSERT(!isSetNeedsLayoutForbidden());
@@ -734,7 +734,7 @@ void LayoutObject::checkBlockPositionedObjectsNeedLayout()
 void LayoutObject::setPreferredLogicalWidthsDirty(MarkingBehavior markParents)
 {
     m_bitfields.setPreferredLogicalWidthsDirty(true);
-    if (markParents == MarkContainingBlockChain && (isText() || !style()->hasOutOfFlowPosition()))
+    if (markParents == MarkContainerChain && (isText() || !style()->hasOutOfFlowPosition()))
         invalidateContainerPreferredLogicalWidths();
 }
 
@@ -1837,7 +1837,7 @@ void LayoutObject::styleDidChange(StyleDifference diff, const LayoutStyle* oldSt
         // directly affect the containing block of this object is a change to
         // the position style.
         if (needsLayout() && oldStyle->position() != m_style->position())
-            markContainingBlocksForLayout();
+            markContainerChainForLayout();
 
         // Ditto.
         if (needsOverflowRecalcAfterStyleChange() && oldStyle->position() != m_style->position())
@@ -3104,7 +3104,7 @@ void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
 
     ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
     frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
-    markContainingBlockChainForPaintInvalidation();
+    markContainerChainForPaintInvalidation();
 }
 
 void LayoutObject::setMayNeedPaintInvalidation()
@@ -3113,7 +3113,7 @@ void LayoutObject::setMayNeedPaintInvalidation()
         return;
     m_bitfields.setMayNeedPaintInvalidation(true);
     // Make sure our parent is marked as needing invalidation.
-    markContainingBlockChainForPaintInvalidation();
+    markContainerChainForPaintInvalidation();
     frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
 }
 
@@ -3127,7 +3127,7 @@ void LayoutObject::setSelfMayNeedPaintInvalidation()
     m_bitfields.setMayNeedPaintInvalidation(true);
 }
 
-void LayoutObject::markContainingBlockChainForPaintInvalidation()
+void LayoutObject::markContainerChainForPaintInvalidation()
 {
     for (LayoutObject* container = this->container(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->container())
         container->setSelfMayNeedPaintInvalidation();

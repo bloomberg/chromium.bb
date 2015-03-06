@@ -55,13 +55,13 @@ SubtreeLayoutScope::~SubtreeLayoutScope()
 void SubtreeLayoutScope::setNeedsLayout(LayoutObject* descendant)
 {
     ASSERT(descendant->isDescendantOf(&m_root));
-    descendant->setNeedsLayout(MarkContainingBlockChain, this);
+    descendant->setNeedsLayout(MarkContainerChain, this);
 }
 
 void SubtreeLayoutScope::setChildNeedsLayout(LayoutObject* descendant)
 {
     ASSERT(descendant->isDescendantOf(&m_root));
-    descendant->setChildNeedsLayout(MarkContainingBlockChain, this);
+    descendant->setChildNeedsLayout(MarkContainerChain, this);
 }
 
 void SubtreeLayoutScope::addRendererToLayout(LayoutObject* renderer)

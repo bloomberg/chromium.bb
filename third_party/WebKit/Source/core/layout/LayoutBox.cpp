@@ -187,7 +187,7 @@ void LayoutBox::styleWillChange(StyleDifference diff, const LayoutStyle& newStyl
         // When a layout hint happens and an object's position style changes, we have to do a layout
         // to dirty the render tree using the old position value now.
         if (diff.needsFullLayout() && parent() && oldStyle->position() != newStyle.position()) {
-            markContainingBlocksForLayout();
+            markContainerChainForLayout();
             if (oldStyle->position() == StaticPosition)
                 setShouldDoFullPaintInvalidation();
             else if (newStyle.hasOutOfFlowPosition())

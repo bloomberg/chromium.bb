@@ -1820,7 +1820,7 @@ void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRe
         return;
     m_descendantsWithFloatsMarkedForLayout |= !floatToRemove;
 
-    MarkingBehavior markParents = inLayout ? MarkOnlyThis : MarkContainingBlockChain;
+    MarkingBehavior markParents = inLayout ? MarkOnlyThis : MarkContainerChain;
     setChildNeedsLayout(markParents);
 
     if (floatToRemove)
