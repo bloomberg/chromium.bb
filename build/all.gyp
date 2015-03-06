@@ -789,6 +789,7 @@
             '../content/content_shell_and_tests.gyp:content_shell_test_apk',
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../gpu/gpu.gyp:gl_tests',
+            '../gpu/gpu.gyp:gpu_perftests_apk',
             '../gpu/gpu.gyp:gpu_unittests',
             '../ipc/ipc.gyp:ipc_tests',
             '../media/media.gyp:media_perftests_apk',
