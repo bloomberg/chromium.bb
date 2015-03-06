@@ -1384,6 +1384,12 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-ste
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-with-async-callstack.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
 
+# Tiny changes due to optimizations added/fixed in SkImageFilters
+crbug.com/464741 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline  ]
+crbug.com/464741 css3/filters/effect-combined-hw.html [ NeedsManualRebaseline  ]
+crbug.com/464741 virtual/slimmingpaint/css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline  ]
+crbug.com/464741 virtual/slimmingpaint/css3/filters/effect-combined-hw.html [ NeedsManualRebaseline  ]
+
 # Ahem font is sometimes not loaded on Windows.
 crbug.com/392046 [ Win ] fast/text/whitespace/002.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/003.html [ Pass Failure ]
