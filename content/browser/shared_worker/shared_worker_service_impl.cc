@@ -401,6 +401,8 @@ void SharedWorkerServiceImpl::AllowDatabase(
     SharedWorkerMessageFilter* filter) {
   if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
     host->AllowDatabase(url, name, display_name, estimated_size, result);
+  else
+    *result = false;
 }
 
 void SharedWorkerServiceImpl::AllowFileSystem(
@@ -424,6 +426,8 @@ void SharedWorkerServiceImpl::AllowIndexedDB(
     SharedWorkerMessageFilter* filter) {
   if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
     host->AllowIndexedDB(url, name, result);
+  else
+    *result = false;
 }
 
 void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
