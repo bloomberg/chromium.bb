@@ -588,8 +588,11 @@ int Element::clientWidth()
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (FrameView* view = document().view()) {
-            if (LayoutView* layoutView = document().layoutView())
+            if (LayoutView* layoutView = document().layoutView()) {
+                if (document().page()->settings().forceZeroLayoutHeight())
+                    return adjustLayoutUnitForAbsoluteZoom(view->unscaledVisibleContentSize().width(), *layoutView);
                 return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().width(), *layoutView);
+            }
         }
     }
 
@@ -609,8 +612,11 @@ int Element::clientHeight()
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (FrameView* view = document().view()) {
-            if (LayoutView* layoutView = document().layoutView())
+            if (LayoutView* layoutView = document().layoutView()) {
+                if (document().page()->settings().forceZeroLayoutHeight())
+                    return adjustLayoutUnitForAbsoluteZoom(view->unscaledVisibleContentSize().height(), *layoutView);
                 return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().height(), *layoutView);
+            }
         }
     }
 

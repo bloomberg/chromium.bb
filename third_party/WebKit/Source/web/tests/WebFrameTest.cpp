@@ -1282,8 +1282,29 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
     EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-// This fails on multiple android bots crbug.com/456065.
-TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentsMode)
+TEST_F(WebFrameTest, DocumentElementClientHeightWorksWithWrapContentMode)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("0-by-0.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+
+    webViewHelper.initializeAndLoad(m_baseURL + "0-by-0.html", true, 0, &client, configurePinchVirtualViewport);
+    webViewHelper.webView()->settings()->setForceZeroLayoutHeight(true);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+    LocalFrame* frame = webViewHelper.webViewImpl()->mainFrameImpl()->frame();
+    Document* document = frame->document();
+    EXPECT_EQ(viewportHeight, document->documentElement()->clientHeight());
+    EXPECT_EQ(viewportWidth, document->documentElement()->clientWidth());
+}
+
+TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("0-by-0.html");
