@@ -160,6 +160,8 @@ bool ContentAutofillDriver::HandleMessage(const IPC::Message& message) {
   IPC_MESSAGE_FORWARD(AutofillHostMsg_FormsSeen,
                       autofill_manager_.get(),
                       AutofillManager::OnFormsSeen)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_WillSubmitForm, autofill_manager_.get(),
+                      AutofillManager::OnWillSubmitForm)
   IPC_MESSAGE_FORWARD(AutofillHostMsg_FormSubmitted,
                       autofill_manager_.get(),
                       AutofillManager::OnFormSubmitted)

@@ -119,6 +119,15 @@ void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
   }
 }
 
+// Extract FormData from the form element and return whether the operation was
+// successful.
+bool ExtractFormDataOnSave(const WebFormElement& form_element, FormData* data) {
+  return WebFormElementToFormData(
+      form_element, WebFormControlElement(), REQUIRE_NONE,
+      static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTION_TEXT), data,
+      NULL);
+}
+
 }  // namespace
 
 AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
@@ -155,6 +164,19 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
 
 AutofillAgent::~AutofillAgent() {}
 
+bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
+                                                const FormData& rhs) const {
+  if (lhs.name != rhs.name)
+    return lhs.name < rhs.name;
+  if (lhs.origin != rhs.origin)
+    return lhs.origin < rhs.origin;
+  if (lhs.action != rhs.action)
+    return lhs.action < rhs.action;
+  if (lhs.is_form_tag != rhs.is_form_tag)
+    return lhs.is_form_tag < rhs.is_form_tag;
+  return lhs.fields < rhs.fields;
+}
+
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillAgent, message)
@@ -186,24 +208,42 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
 void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
                                              bool is_same_page_navigation) {
   form_cache_.Reset();
+  submitted_forms_.clear();
 }
 
 void AutofillAgent::DidFinishDocumentLoad() {
   ProcessForms();
 }
 
+void AutofillAgent::WillSendSubmitEvent(const WebFormElement& form) {
+  FormData form_data;
+  if (!ExtractFormDataOnSave(form, &form_data))
+    return;
+
+  // The WillSendSubmitEvent function is called when there is a submit handler
+  // on the form, such as in the case of (but not restricted to)
+  // JavaScript-submitted forms. Sends a WillSubmitForm message to the browser
+  // and remembers for which form it did that in the current frame load, so that
+  // no additional message is sent if AutofillAgent::WillSubmitForm() is called
+  // (which is itself not guaranteed if the submit event is prevented by
+  // JavaScript).
+  Send(new AutofillHostMsg_WillSubmitForm(routing_id(), form_data,
+                                          base::TimeTicks::Now()));
+  submitted_forms_.insert(form_data);
+}
+
 void AutofillAgent::WillSubmitForm(const WebFormElement& form) {
   FormData form_data;
-  if (WebFormElementToFormData(form,
-                               WebFormControlElement(),
-                               REQUIRE_NONE,
-                               static_cast<ExtractMask>(
-                                   EXTRACT_VALUE | EXTRACT_OPTION_TEXT),
-                               &form_data,
-                               NULL)) {
-    Send(new AutofillHostMsg_FormSubmitted(routing_id(), form_data,
-                                           base::TimeTicks::Now()));
+  if (!ExtractFormDataOnSave(form, &form_data))
+    return;
+
+  // If WillSubmitForm message had not been sent for this form, send it.
+  if (!submitted_forms_.count(form_data)) {
+    Send(new AutofillHostMsg_WillSubmitForm(routing_id(), form_data,
+                                            base::TimeTicks::Now()));
   }
+
+  Send(new AutofillHostMsg_FormSubmitted(routing_id(), form_data));
 }
 
 void AutofillAgent::DidChangeScrollOffset() {

@@ -242,10 +242,14 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_InPageNavigation,
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_RecordSavePasswordProgress,
                     std::string /* log */)
 
-// Notification that a form has been submitted.  The user hit the button.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormSubmitted,
+// Notification that a form is about to be submitted. The user hit the button.
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_WillSubmitForm,
                     autofill::FormData /* form */,
                     base::TimeTicks /* timestamp */)
+
+// Notification that a form has been submitted.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_FormSubmitted,
+                    autofill::FormData /* form */)
 
 // Notification that a form field's value has changed.
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_TextFieldDidChange,

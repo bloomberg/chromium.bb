@@ -228,12 +228,12 @@ class TestAutofillManager : public AutofillManager {
     form_structures()->push_back(form_structure);
   }
 
-  void FormSubmitted(const FormData& form, const TimeTicks& timestamp) {
+  void WillSubmitForm(const FormData& form, const TimeTicks& timestamp) {
     run_loop_.reset(new base::RunLoop());
-    if (!OnFormSubmitted(form, timestamp))
+    if (!OnWillSubmitForm(form, timestamp))
       return;
 
-    // Wait for the asynchronous FormSubmitted() call to complete.
+    // Wait for the asynchronous OnWillSubmitForm() call to complete.
     run_loop_->Run();
   }
 
@@ -376,7 +376,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
 
   // Simulate form submission.
   base::HistogramTester histogram_tester;
-  autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+  autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
 
   // Heuristic predictions.
   // Unknown:
@@ -497,7 +497,7 @@ TEST_F(AutofillMetricsTest, PredictedMetricsWithAutocomplete) {
     // match what is in the test profile.
     form.fields[1].value = base::ASCIIToUTF16("79401");
     form.fields[2].value = base::ASCIIToUTF16("2345678901");
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
 
     // First verify that country was not predicted by client or server.
     histogram_tester.ExpectBucketCount(
@@ -610,7 +610,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
 
   // Simulate form submission.
   base::HistogramTester histogram_tester;
-  autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+  autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
 
   // Heuristic predictions.
   // Unknown:
@@ -720,7 +720,7 @@ TEST_F(AutofillMetricsTest, StoredProfileCountAutofillableFormSubmission) {
   // Simulate form submission.
   base::HistogramTester histogram_tester;
   autofill_manager_->OnFormsSeen(forms, TimeTicks());
-  autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+  autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
 
   // An autofillable form was submitted, and the number of stored profiles is
   // logged.
@@ -750,7 +750,7 @@ TEST_F(AutofillMetricsTest, StoredProfileCountNonAutofillableFormSubmission) {
   // Simulate form submission.
   base::HistogramTester histogram_tester;
   autofill_manager_->OnFormsSeen(forms, TimeTicks());
-  autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+  autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
 
   // A non-autofillable form was submitted, and number of stored profiles is NOT
   // logged.
@@ -1296,7 +1296,7 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect(),
                                                 false);
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, 1);
@@ -1317,7 +1317,7 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         AutofillDriver::FORM_DATA_ACTION_FILL,
         0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE, 1);
@@ -1338,7 +1338,7 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         AutofillDriver::FORM_DATA_ACTION_FILL,
         0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(guid, SuggestionBackendID()));
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, 1);
@@ -1384,8 +1384,8 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect(),
                                                 false);
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, 1);
@@ -1409,7 +1409,7 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
   {
     // Simulating submission without previous interaction.
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
         AutofillMetrics::FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, 0);
@@ -1677,7 +1677,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect(),
                                                 false);
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, 1);
@@ -1698,7 +1698,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
         AutofillDriver::FORM_DATA_ACTION_FILL,
         0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(SuggestionBackendID(), guid));
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE, 1);
@@ -1719,7 +1719,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
         AutofillDriver::FORM_DATA_ACTION_FILL,
         0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(SuggestionBackendID(), guid));
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, 1);
@@ -1734,7 +1734,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect(),
                                                 false);
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, 1);
@@ -1753,7 +1753,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
   {
     // Simulating submission without previous interaction.
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, 0);
@@ -2014,7 +2014,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   // Expect no notifications when the form is submitted.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness", 0);
   }
 
@@ -2036,7 +2036,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   // Expect a notification when the form is submitted.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness", AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM,
         1);
@@ -2050,7 +2050,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   // Expect a notification when the form is submitted.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness", AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM,
         1);
@@ -2063,7 +2063,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   // Expect notifications when the form is submitted.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness",
         AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE, 1);
@@ -2077,7 +2077,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   // Expect notifications when the form is submitted.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness",
         AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME, 1);
@@ -2091,7 +2091,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   // Expect notifications when the form is submitted.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness",
         AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_ALL, 1);
@@ -2104,7 +2104,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   // Expect notifications when the form is submitted.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->FormSubmitted(form, TimeTicks::Now());
+    autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness", AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM,
         1);
@@ -2260,7 +2260,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
-    autofill_manager_->FormSubmitted(form, TimeTicks::FromInternalValue(17));
+    autofill_manager_->WillSubmitForm(form, TimeTicks::FromInternalValue(17));
 
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromLoad.WithAutofill", 0);
@@ -2280,7 +2280,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                             TimeTicks::FromInternalValue(3));
-    autofill_manager_->FormSubmitted(form, TimeTicks::FromInternalValue(17));
+    autofill_manager_->WillSubmitForm(form, TimeTicks::FromInternalValue(17));
 
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromLoad.WithAutofill", 0);
@@ -2301,7 +2301,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
     autofill_manager_->OnDidFillAutofillFormData(
         TimeTicks::FromInternalValue(5));
-    autofill_manager_->FormSubmitted(form, TimeTicks::FromInternalValue(17));
+    autofill_manager_->WillSubmitForm(form, TimeTicks::FromInternalValue(17));
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -2326,7 +2326,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
         TimeTicks::FromInternalValue(5));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                             TimeTicks::FromInternalValue(3));
-    autofill_manager_->FormSubmitted(form, TimeTicks::FromInternalValue(17));
+    autofill_manager_->WillSubmitForm(form, TimeTicks::FromInternalValue(17));
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -2351,7 +2351,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
         TimeTicks::FromInternalValue(5));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                             TimeTicks::FromInternalValue(3));
-    autofill_manager_->FormSubmitted(form, TimeTicks::FromInternalValue(17));
+    autofill_manager_->WillSubmitForm(form, TimeTicks::FromInternalValue(17));
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -2372,8 +2372,8 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
     autofill_manager_->OnFormsSeen(second_forms,
                                    TimeTicks::FromInternalValue(5));
-    autofill_manager_->FormSubmitted(second_form,
-                                     TimeTicks::FromInternalValue(17));
+    autofill_manager_->WillSubmitForm(second_form,
+                                      TimeTicks::FromInternalValue(17));
 
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromLoad.WithAutofill", 0);

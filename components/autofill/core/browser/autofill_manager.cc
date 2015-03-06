@@ -329,33 +329,14 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                  base::ASCIIToUTF16("0123456789"));
 }
 
-bool AutofillManager::OnFormSubmitted(const FormData& form,
-                                      const TimeTicks& timestamp) {
+bool AutofillManager::OnWillSubmitForm(const FormData& form,
+                                       const TimeTicks& timestamp) {
   if (!IsValidFormData(form))
     return false;
 
-  // Let Autocomplete know as well.
-  autocomplete_history_manager_->OnFormSubmitted(form);
-
-  // Grab a copy of the form data.
-  scoped_ptr<FormStructure> submitted_form(new FormStructure(form));
-
-  if (!ShouldUploadForm(*submitted_form))
+  scoped_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
+  if (!submitted_form)
     return false;
-
-  // Don't save data that was submitted through JavaScript.
-  if (!form.user_submitted)
-    return false;
-
-  // Ignore forms not present in our cache.  These are typically forms with
-  // wonky JavaScript that also makes them not auto-fillable.
-  FormStructure* cached_submitted_form;
-  if (!FindCachedForm(form, &cached_submitted_form))
-    return false;
-
-  submitted_form->UpdateFromCache(*cached_submitted_form);
-  if (submitted_form->IsAutofillable())
-    ImportFormData(*submitted_form);
 
   address_form_event_logger_->OnDidSubmitForm();
   credit_card_form_event_logger_->OnDidSubmitForm();
@@ -403,6 +384,24 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
                    initial_interaction_timestamp_,
                    timestamp));
   }
+
+  return true;
+}
+
+bool AutofillManager::OnFormSubmitted(const FormData& form) {
+  if (!IsValidFormData(form))
+    return false;
+
+  // Let Autocomplete know as well.
+  autocomplete_history_manager_->OnFormSubmitted(form);
+
+  scoped_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
+  if (!submitted_form)
+    return false;
+
+  // Update Personal Data with the form's submitted data.
+  if (submitted_form->IsAutofillable())
+    ImportFormData(*submitted_form);
 
   return true;
 }
@@ -1176,6 +1175,22 @@ void AutofillManager::FillOrPreviewDataModelForm(
     personal_data_->RecordUseOf(data_model);
 
   driver_->SendFormDataToRenderer(query_id, action, result);
+}
+
+scoped_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
+    const FormData& form) {
+  scoped_ptr<FormStructure> submitted_form(new FormStructure(form));
+  if (!ShouldUploadForm(*submitted_form))
+    return scoped_ptr<FormStructure>();
+
+  // Ignore forms not present in our cache.  These are typically forms with
+  // wonky JavaScript that also makes them not auto-fillable.
+  FormStructure* cached_submitted_form;
+  if (!FindCachedForm(form, &cached_submitted_form))
+    return scoped_ptr<FormStructure>();
+
+  submitted_form->UpdateFromCache(*cached_submitted_form);
+  return submitted_form.Pass();
 }
 
 bool AutofillManager::FindCachedForm(const FormData& form,

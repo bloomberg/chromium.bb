@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -52,6 +53,12 @@ using base::UTF16ToASCII;
 using base::WideToUTF16;
 
 namespace autofill {
+
+// Default JavaScript code used to submit the forms.
+const char kDocumentClickHandlerSubmitJS[] =
+    "document.onclick = function() {"
+    "  document.getElementById('testform').submit();"
+    "};";
 
 // TODO(bondd): PdmChangeWaiter in autofill_uitest_util.cc is a replacement for
 // this class. Remove this class and use helper functions in that file instead.
@@ -162,32 +169,55 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
   typedef std::map<std::string, std::string> FormMap;
+
+  // Helper function to obtain the Javascript required to update a form.
+  std::string GetJSToFillForm(const FormMap& data) {
+    std::string js;
+    for (const auto& entry : data) {
+      js += "document.getElementById('" + entry.first + "').value = '" +
+            entry.second + "';";
+    }
+    return js;
+  }
+
   // Navigate to the form, input values into the fields, and submit the form.
   // The function returns after the PersonalDataManager is updated.
   void FillFormAndSubmit(const std::string& filename, const FormMap& data) {
+    FillFormAndSubmitWithHandler(filename, data, kDocumentClickHandlerSubmitJS,
+                                 true, true);
+  }
+
+  // Helper where the actual submit JS code can be specified, as well as whether
+  // the test should |simulate_click| on the document.
+  void FillFormAndSubmitWithHandler(const std::string& filename,
+                                    const FormMap& data,
+                                    const std::string& submit_js,
+                                    bool simulate_click,
+                                    bool expect_personal_data_change) {
     GURL url = test_server()->GetURL("files/autofill/" + filename);
     chrome::NavigateParams params(browser(), url,
                                   ui::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
 
-    std::string js;
-    for (FormMap::const_iterator i = data.begin(); i != data.end(); ++i) {
-      js += "document.getElementById('" + i->first + "').value = '" +
-            i->second + "';";
-    }
-    js += "document.onclick = function() {"
-          "  document.getElementById('testform').submit();"
-          "};";
+    scoped_ptr<WindowedPersonalDataManagerObserver> observer;
+    if (expect_personal_data_change)
+      observer.reset(new WindowedPersonalDataManagerObserver(browser()));
 
-    WindowedPersonalDataManagerObserver observer(browser());
+    std::string js = GetJSToFillForm(data) + submit_js;
     ASSERT_TRUE(content::ExecuteScript(render_view_host(), js));
-    // Simulate a mouse click to submit the form because form submissions not
-    // triggered by user gestures are ignored.
-    content::SimulateMouseClick(
-        browser()->tab_strip_model()->GetActiveWebContents(), 0,
-        blink::WebMouseEvent::ButtonLeft);
-    observer.Wait();
+    if (simulate_click) {
+      // Simulate a mouse click to submit the form because form submissions not
+      // triggered by user gestures are ignored.
+      content::SimulateMouseClick(
+          browser()->tab_strip_model()->GetActiveWebContents(), 0,
+          blink::WebMouseEvent::ButtonLeft);
+    }
+    // We may not always be expecting changes in Personal data.
+    if (observer.get())
+      observer->Wait();
+    else
+      base::RunLoop().RunUntilIdle();
   }
 
   void SubmitCreditCard(const char* name,
@@ -543,6 +573,69 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfile) {
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
   ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
+}
+
+// Different Javascript to submit the form.
+IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfileDifferentJS) {
+  ASSERT_TRUE(test_server()->Start());
+  FormMap data;
+  data["NAME_FIRST"] = "Bob";
+  data["NAME_LAST"] = "Smith";
+  data["ADDRESS_HOME_LINE1"] = "1234 H St.";
+  data["ADDRESS_HOME_CITY"] = "Mountain View";
+  data["ADDRESS_HOME_STATE"] = "CA";
+  data["ADDRESS_HOME_ZIP"] = "94043";
+
+  std::string submit("document.forms[0].submit();");
+  FillFormAndSubmitWithHandler("duplicate_profiles_test.html", data, submit,
+                               false, true);
+
+  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
+}
+
+// Form submitted via JavaScript, with an event handler on the submit event
+// which prevents submission of the form. Will not update the user's personal
+// data.
+IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithSubmitHandler) {
+  ASSERT_TRUE(test_server()->Start());
+  FormMap data;
+  data["NAME_FIRST"] = "Bob";
+  data["NAME_LAST"] = "Smith";
+  data["ADDRESS_HOME_LINE1"] = "1234 H St.";
+  data["ADDRESS_HOME_CITY"] = "Mountain View";
+  data["ADDRESS_HOME_STATE"] = "CA";
+  data["ADDRESS_HOME_ZIP"] = "94043";
+
+  std::string submit(
+      "var preventFunction = function(event) { event.preventDefault(); };"
+      "document.forms[0].addEventListener('submit', preventFunction);"
+      "document.querySelector('input[type=submit]').click();");
+  FillFormAndSubmitWithHandler("duplicate_profiles_test.html", data, submit,
+                               false, false);
+
+  // The AutofillManager will NOT update the user's profile.
+  EXPECT_EQ(0u, personal_data_manager()->GetProfiles().size());
+
+  // We remove the submit handler and resubmit the form. This time the profile
+  // will be updated. This is to guard against the underlying mechanics changing
+  // and to try to avoid flakiness if this happens. We submit slightly different
+  // data to make sure the expected data is saved.
+  data["NAME_FIRST"] = "John";
+  data["NAME_LAST"] = "Doe";
+  std::string change_and_resubmit =
+      GetJSToFillForm(data) +
+      "document.forms[0].removeEventListener('submit', preventFunction);"
+      "document.querySelector('input[type=submit]').click();";
+  WindowedPersonalDataManagerObserver observer(browser());
+  ASSERT_TRUE(content::ExecuteScript(render_view_host(), change_and_resubmit));
+  observer.Wait();
+
+  // The AutofillManager will update the user's profile this time.
+  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
+  EXPECT_EQ(ASCIIToUTF16("John"),
+            personal_data_manager()->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("Doe"),
+            personal_data_manager()->GetProfiles()[0]->GetRawInfo(NAME_LAST));
 }
 
 // Test Autofill does not aggregate profiles with no address info.

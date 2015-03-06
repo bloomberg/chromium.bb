@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "components/autofill/core/browser/field_types.h"
 
 class PrefService;
 
@@ -38,8 +39,11 @@ void CreateTestFormField(const char* label,
 
 // Populates |form| with data corresponding to a simple address form.
 // Note that this actually appends fields to the form data, which can be useful
-// for building up more complex test forms.
+// for building up more complex test forms. Another version of the function is
+// provided in case the caller wants the vector of expected field |types|.
 void CreateTestAddressFormData(FormData* form);
+void CreateTestAddressFormData(FormData* form,
+                               std::vector<ServerFieldTypeSet>* types);
 
 // Returns a profile full of dummy info.
 AutofillProfile GetFullProfile();

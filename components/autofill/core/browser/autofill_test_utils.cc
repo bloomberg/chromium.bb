@@ -60,34 +60,75 @@ void CreateTestFormField(const char* label,
 }
 
 void CreateTestAddressFormData(FormData* form) {
+  std::vector<ServerFieldTypeSet> types;
+  CreateTestAddressFormData(form, &types);
+}
+
+void CreateTestAddressFormData(FormData* form,
+                               std::vector<ServerFieldTypeSet>* types) {
   form->name = ASCIIToUTF16("MyForm");
   form->origin = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
   form->user_submitted = true;
+  types->clear();
 
   FormFieldData field;
+  ServerFieldTypeSet type_set;
   test::CreateTestFormField("First Name", "firstname", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(NAME_FIRST);
+  types->push_back(type_set);
   test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(NAME_MIDDLE);
+  types->push_back(type_set);
   test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(NAME_LAST);
+  types->push_back(type_set);
   test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(ADDRESS_HOME_LINE1);
+  types->push_back(type_set);
   test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(ADDRESS_HOME_LINE2);
+  types->push_back(type_set);
   test::CreateTestFormField("City", "city", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(ADDRESS_HOME_CITY);
+  types->push_back(type_set);
   test::CreateTestFormField("State", "state", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(ADDRESS_HOME_STATE);
+  types->push_back(type_set);
   test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(ADDRESS_HOME_ZIP);
+  types->push_back(type_set);
   test::CreateTestFormField("Country", "country", "", "text", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(ADDRESS_HOME_COUNTRY);
+  types->push_back(type_set);
   test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(PHONE_HOME_WHOLE_NUMBER);
+  types->push_back(type_set);
   test::CreateTestFormField("Email", "email", "", "email", &field);
   form->fields.push_back(field);
+  type_set.clear();
+  type_set.insert(EMAIL_ADDRESS);
+  types->push_back(type_set);
 }
 
 inline void check_and_set(

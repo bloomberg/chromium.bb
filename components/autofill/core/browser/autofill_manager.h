@@ -150,11 +150,14 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnFormsSeen(const std::vector<FormData>& forms,
                    const base::TimeTicks& timestamp);
 
-  // Processes the submitted |form|, saving any new Autofill data and uploading
-  // the possible field types for the submitted fields to the crowdsourcing
-  // server.  Returns false if this form is not relevant for Autofill.
-  bool OnFormSubmitted(const FormData& form,
-                       const base::TimeTicks& timestamp);
+  // Processes the about-to-be-submitted |form|, uploading the possible field
+  // types for the submitted fields to the crowdsourcing server. Returns false
+  // if this form is not relevant for Autofill.
+  bool OnWillSubmitForm(const FormData& form, const base::TimeTicks& timestamp);
+
+  // Processes the submitted |form|, saving any new Autofill data to the user's
+  // personal profile. Returns false if this form is not relevant for Autofill.
+  bool OnFormSubmitted(const FormData& form);
 
   void OnTextFieldDidChange(const FormData& form,
                             const FormFieldData& field,
@@ -285,6 +288,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                                   const AutofillDataModel& data_model,
                                   size_t variant,
                                   bool is_credit_card);
+
+  // Creates a FormStructure using the FormData received from the renderer. Will
+  // return an empty scoped_ptr if the data should not be processed for upload
+  // or personal data.
+  scoped_ptr<FormStructure> ValidateSubmittedForm(const FormData& form);
 
   // Fills |form_structure| cached element corresponding to |form|.
   // Returns false if the cached element was not found.

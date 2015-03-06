@@ -53,7 +53,9 @@ const int kDefaultPageID = 137;
 
 class TestPersonalDataManager : public PersonalDataManager {
  public:
-  TestPersonalDataManager() : PersonalDataManager("en-US") {
+  TestPersonalDataManager()
+      : PersonalDataManager("en-US"),
+        num_times_save_imported_profile_called_(0) {
     CreateTestAutofillProfiles(&web_profiles_);
     CreateTestCreditCards(&local_credit_cards_);
   }
@@ -61,7 +63,16 @@ class TestPersonalDataManager : public PersonalDataManager {
   using PersonalDataManager::set_database;
   using PersonalDataManager::SetPrefService;
 
-  MOCK_METHOD1(SaveImportedProfile, std::string(const AutofillProfile&));
+  int num_times_save_imported_profile_called() {
+    return num_times_save_imported_profile_called_;
+  }
+
+  std::string SaveImportedProfile(const AutofillProfile& profile) override {
+    num_times_save_imported_profile_called_++;
+    AutofillProfile* imported_profile = new AutofillProfile(profile);
+    AddProfile(imported_profile);
+    return profile.guid();
+  }
 
   AutofillProfile* GetProfileWithGUID(const char* guid) {
     for (AutofillProfile* profile : GetProfiles()) {
@@ -114,7 +125,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   // Do nothing (auxiliary profiles will be created in
   // CreateTestAuxiliaryProfile).
-  virtual void LoadAuxiliaryProfiles(bool record_metrics) const override {}
+  void LoadAuxiliaryProfiles(bool record_metrics) const override {}
 
   void ClearAutofillProfiles() {
     web_profiles_.clear();
@@ -182,6 +193,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     credit_card->set_guid("00000000-0000-0000-0000-000000000006");
     credit_cards->push_back(credit_card);
   }
+
+  size_t num_times_save_imported_profile_called_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
@@ -255,7 +268,8 @@ void ExpectFilledForm(int page_id,
                       const char* expiration_year,
                       bool has_address_fields,
                       bool has_credit_card_fields,
-                      bool use_month_type) {
+                      bool use_month_type,
+                      bool is_user_submitted) {
   // The number of fields in the address and credit card forms created above.
   const size_t kAddressFormSize = 11;
   const size_t kCreditCardFormSize = use_month_type ? 3 : 4;
@@ -269,7 +283,7 @@ void ExpectFilledForm(int page_id,
     EXPECT_EQ(GURL("http://myform.com/form.html"), filled_form.origin);
     EXPECT_EQ(GURL("http://myform.com/submit.html"), filled_form.action);
   }
-  EXPECT_TRUE(filled_form.user_submitted);
+  EXPECT_EQ(is_user_submitted, filled_form.user_submitted);
 
   size_t form_size = 0;
   if (has_address_fields)
@@ -330,22 +344,22 @@ void ExpectFilledForm(int page_id,
 void ExpectFilledAddressFormElvis(int page_id,
                                   const FormData& filled_form,
                                   int expected_page_id,
-                                  bool has_credit_card_fields) {
+                                  bool has_credit_card_fields,
+                                  bool is_user_submitted) {
   ExpectFilledForm(page_id, filled_form, expected_page_id, "Elvis", "Aaron",
                    "Presley", "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
                    "Tennessee", "38116", "United States", "12345678901",
                    "theking@gmail.com", "", "", "", "", true,
-                   has_credit_card_fields, false);
+                   has_credit_card_fields, false, is_user_submitted);
 }
 
 void ExpectFilledCreditCardFormElvis(int page_id,
                                      const FormData& filled_form,
                                      int expected_page_id,
                                      bool has_address_fields) {
-  ExpectFilledForm(page_id, filled_form, expected_page_id,
-                   "", "", "", "", "", "", "", "", "", "", "",
-                   "Elvis Presley", "4234567890123456", "04", "2012",
-                   has_address_fields, true, false);
+  ExpectFilledForm(page_id, filled_form, expected_page_id, "", "", "", "", "",
+                   "", "", "", "", "", "", "Elvis Presley", "4234567890123456",
+                   "04", "2012", has_address_fields, true, false, true);
 }
 
 void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
@@ -354,10 +368,9 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
                                                   bool has_address_fields,
                                                   const char* year,
                                                   const char* month) {
-  ExpectFilledForm(page_id, filled_form, expected_page_id,
-                   "", "", "", "", "", "", "", "", "", "", "",
-                   "Miku Hatsune", "4234567890654321", month, year,
-                   has_address_fields, true, true);
+  ExpectFilledForm(page_id, filled_form, expected_page_id, "", "", "", "", "",
+                   "", "", "", "", "", "", "Miku Hatsune", "4234567890654321",
+                   month, year, has_address_fields, true, true, true);
 }
 
 class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
@@ -397,7 +410,8 @@ class TestAutofillManager : public AutofillManager {
                       TestPersonalDataManager* personal_data)
       : AutofillManager(driver, client, personal_data),
         personal_data_(personal_data),
-        autofill_enabled_(true) {}
+        autofill_enabled_(true),
+        expect_all_unknown_possible_types_(false) {}
   ~TestAutofillManager() override {}
 
   bool IsAutofillEnabled() const override { return autofill_enabled_; }
@@ -450,8 +464,8 @@ class TestAutofillManager : public AutofillManager {
   // submission to complete.
   void ResetRunLoop() { run_loop_.reset(new base::RunLoop()); }
 
-  // Wait for the asynchronous OnFormSubmitted() call to complete.
-  void WaitForAsyncFormSubmit() { run_loop_->Run(); }
+  // Wait for the asynchronous OnWillSubmitForm() call to complete.
+  void WaitForAsyncOnWillSubmitForm() { run_loop_->Run(); }
 
   void UploadFormData(const FormStructure& submitted_form) override {
     submitted_form_signature_ = submitted_form.FormSignature();
@@ -498,6 +512,7 @@ class TestAutofillManager : public AutofillManager {
   TestPersonalDataManager* personal_data_;
 
   bool autofill_enabled_;
+  bool expect_all_unknown_possible_types_;
 
   scoped_ptr<base::RunLoop> run_loop_;
 
@@ -660,8 +675,9 @@ class AutofillManagerTest : public testing::Test {
 
   void FormSubmitted(const FormData& form) {
     autofill_manager_->ResetRunLoop();
-    if (autofill_manager_->OnFormSubmitted(form, base::TimeTicks::Now()))
-      autofill_manager_->WaitForAsyncFormSubmit();
+    if (autofill_manager_->OnWillSubmitForm(form, base::TimeTicks::Now()))
+      autofill_manager_->WaitForAsyncOnWillSubmitForm();
+    autofill_manager_->OnFormSubmitted(form);
   }
 
   void FillAutofillFormData(int query_id,
@@ -1429,8 +1445,8 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
                                      MakeFrontendID(card_id, profile_id),
                                      &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(
-      response_page_id, response_data, kDefaultPageID, false);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
 
   EXPECT_EQ(1U, profile->use_count());
   EXPECT_NE(base::Time(), profile->use_date());
@@ -1461,8 +1477,8 @@ TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
       MakeFrontendID(empty, guid), &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(
-      response_page_id, response_data, kDefaultPageID, false);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
 }
 
 // Test that we correctly fill a credit card form.
@@ -1591,8 +1607,8 @@ TEST_F(AutofillManagerTest, FillAddressAndCreditCardForm) {
     SCOPED_TRACE("Address");
     FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
         MakeFrontendID(empty, guid), &response_page_id, &response_data);
-    ExpectFilledAddressFormElvis(
-        response_page_id, response_data, kDefaultPageID, true);
+    ExpectFilledAddressFormElvis(response_page_id, response_data,
+                                 kDefaultPageID, true, true);
   }
 
   // Now fill the credit card data.
@@ -1699,8 +1715,8 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
 
     // The first address section should be filled with Elvis's data.
     response_data.fields.resize(kAddressFormSize);
-    ExpectFilledAddressFormElvis(
-        response_page_id, response_data, kDefaultPageID, false);
+    ExpectFilledAddressFormElvis(response_page_id, response_data,
+                                 kDefaultPageID, false, true);
   }
 
   // Fill the second section, with the initiating field somewhere in the middle
@@ -1732,8 +1748,8 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
       base::string16 original_name = name.substr(0, name.size() - 1);
       secondSection.fields[i].name = original_name;
     }
-    ExpectFilledAddressFormElvis(
-        response_page_id, secondSection, kPageID2, false);
+    ExpectFilledAddressFormElvis(response_page_id, secondSection, kPageID2,
+                                 false, true);
   }
 }
 
@@ -1919,8 +1935,8 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleEmails) {
 
   // The remainder of the form should be filled as usual.
   response_data.fields.pop_back();
-  ExpectFilledAddressFormElvis(
-      response_page_id, response_data, kDefaultPageID, false);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
 }
 
 // Test that we correctly fill a previously auto-filled form.
@@ -1943,9 +1959,9 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
       MakeFrontendID(empty, guid), &response_page_id, &response_data);
   {
     SCOPED_TRACE("Address");
-    ExpectFilledForm(response_page_id, response_data, kDefaultPageID,
-                     "Elvis", "", "", "", "", "", "", "", "", "", "", "", "",
-                     "", "", true, true, false);
+    ExpectFilledForm(response_page_id, response_data, kDefaultPageID, "Elvis",
+                     "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+                     true, true, false, true);
   }
 
   // Now fill the credit card data.
@@ -1974,9 +1990,9 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
       MakeFrontendID(guid2, empty), &response_page_id, &response_data);
   {
     SCOPED_TRACE("Credit card 2");
-    ExpectFilledForm(response_page_id, response_data, kPageID3,
-                     "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-                     "2012", true, true, false);
+    ExpectFilledForm(response_page_id, response_data, kPageID3, "", "", "", "",
+                     "", "", "", "", "", "", "", "", "", "", "2012", true, true,
+                     false, true);
   }
 }
 
@@ -2016,8 +2032,8 @@ TEST_F(AutofillManagerTest, FillAddressFormWithVariantType) {
       MakeFrontendID(empty, guid), &response_page_id, &response_data1);
   {
     SCOPED_TRACE("Valid variant");
-    ExpectFilledAddressFormElvis(
-        response_page_id, response_data1, kDefaultPageID, false);
+    ExpectFilledAddressFormElvis(response_page_id, response_data1,
+                                 kDefaultPageID, false, true);
   }
 
   // Try filling with a variant that doesn't exist.  The fields to which this
@@ -2033,7 +2049,8 @@ TEST_F(AutofillManagerTest, FillAddressFormWithVariantType) {
     ExpectFilledForm(response_page_id, response_data2, kPageID2, "", "", "",
                      "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
                      "Tennessee", "38116", "United States", "12345678901",
-                     "theking@gmail.com", "", "", "", "", true, false, false);
+                     "theking@gmail.com", "", "", "", "", true, false, false,
+                     true);
   }
 }
 
@@ -2202,8 +2219,8 @@ TEST_F(AutofillManagerTest, FormChangesRemoveField) {
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
       MakeFrontendID(empty, guid), &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(
-      response_page_id, response_data, kDefaultPageID, false);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
 }
 
 // Test that we can still fill a form when a field has been added to it.
@@ -2233,8 +2250,8 @@ TEST_F(AutofillManagerTest, FormChangesAddField) {
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
       MakeFrontendID(empty, guid), &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(
-      response_page_id, response_data, kDefaultPageID, false);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
 }
 
 // Test that we are able to save form data when forms are submitted.
@@ -2252,13 +2269,69 @@ TEST_F(AutofillManagerTest, FormSubmitted) {
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
       MakeFrontendID(empty, guid), &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(
-      response_page_id, response_data, kDefaultPageID, false);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
 
   // Simulate form submission. We should call into the PDM to try to save the
   // filled data.
-  EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(1);
   FormSubmitted(response_data);
+  EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
+}
+
+// Test that we are able to save form data when forms are not user submitted.
+TEST_F(AutofillManagerTest, FormSubmittedNotUserSubmitted) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  // Mark the form as not user submitted.
+  form.user_submitted = false;
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the form.
+  SuggestionBackendID guid("00000000-0000-0000-0000-000000000001", 0);
+  SuggestionBackendID empty(std::string(), 0);
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
+                                     MakeFrontendID(empty, guid),
+                                     &response_page_id, &response_data);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, false);
+
+  // Simulate form submission. We should call into the PDM to try to save the
+  // filled data.
+  FormSubmitted(response_data);
+  EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
+}
+
+// Test that we are not saving form data when only the WillSubmitForm event is
+// sent.
+TEST_F(AutofillManagerTest, FormWillSubmitDoesNotSaveData) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the form.
+  SuggestionBackendID guid("00000000-0000-0000-0000-000000000001", 0);
+  SuggestionBackendID empty(std::string(), 0);
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
+                                     MakeFrontendID(empty, guid),
+                                     &response_page_id, &response_data);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
+
+  // Simulate OnWillSubmitForm(). We should *not* be calling into the PDM at
+  // this point (since the form was not submitted). Does not call
+  // OnFormSubmitted.
+  autofill_manager_->ResetRunLoop();
+  autofill_manager_->OnWillSubmitForm(response_data, base::TimeTicks::Now());
+  autofill_manager_->WaitForAsyncOnWillSubmitForm();
+  EXPECT_EQ(0, personal_data_.num_times_save_imported_profile_called());
 }
 
 // Test that when Autocomplete is enabled and Autofill is disabled,
@@ -2404,13 +2477,52 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
       MakeFrontendID(empty, guid), &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(
-      response_page_id, response_data, kDefaultPageID, false);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
 
   // Simulate form submission. We should call into the PDM to try to save the
   // filled data.
-  EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(1);
   FormSubmitted(response_data);
+  EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
+}
+
+// Test that we are able to save form data after the possible types have been
+// determined. We do two submissions and verify that only at the second
+// submission are the possible types able to be inferred.
+TEST_F(AutofillManagerTest, FormSubmittedPossibleTypesTwoSubmissions) {
+  // Set up our form data.
+  FormData form;
+  std::vector<ServerFieldTypeSet> expected_types;
+  test::CreateTestAddressFormData(&form, &expected_types);
+
+  // Fill the form.
+  SuggestionBackendID guid("00000000-0000-0000-0000-000000000001", 0);
+  SuggestionBackendID empty(std::string(), 0);
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
+                                     MakeFrontendID(empty, guid),
+                                     &response_page_id, &response_data);
+  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
+                               false, true);
+
+  personal_data_.ClearAutofillProfiles();
+  ASSERT_EQ(0u, personal_data_.GetProfiles().size());
+
+  // Simulate form submission. The first submission should not count the data
+  // towards possible types. Therefore we expect all UNKNOWN_TYPE entries.
+  ServerFieldTypeSet type_set;
+  type_set.insert(UNKNOWN_TYPE);
+  std::vector<ServerFieldTypeSet> unknown_types(expected_types.size(),
+                                                type_set);
+  autofill_manager_->set_expected_submitted_field_types(unknown_types);
+  FormSubmitted(response_data);
+  ASSERT_EQ(1u, personal_data_.GetProfiles().size());
+
+  // The second submission should now have data by which to infer types.
+  autofill_manager_->set_expected_submitted_field_types(expected_types);
+  FormSubmitted(response_data);
+  ASSERT_EQ(2u, personal_data_.GetProfiles().size());
 }
 
 // Test that the form signature for an uploaded form always matches the form
@@ -2465,16 +2577,16 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 
   // Simulate form submission.  We should call into the PDM to try to save the
   // filled data.
-  EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(1);
   FormSubmitted(response_data);
+  EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
 
   // Set the address field's value back to the default value.
   response_data.fields[3].value = ASCIIToUTF16("Enter your address");
 
   // Simulate form submission.  We should not call into the PDM to try to save
   // the filled data, since the filled form is effectively missing an address.
-  EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(0);
   FormSubmitted(response_data);
+  EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
 }
 
 // Checks that resetting the auxiliary profile enabled preference does the right
@@ -2509,178 +2621,202 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   form.user_submitted = true;
 
   std::vector<ServerFieldTypeSet> expected_types;
+  std::vector<base::string16> expected_values;
 
   // These fields should all match.
   FormFieldData field;
   ServerFieldTypeSet types;
-  test::CreateTestFormField("", "1", "Elvis", "text", &field);
+  test::CreateTestFormField("", "1", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Elvis"));
   types.clear();
   types.insert(NAME_FIRST);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "2", "Aaron", "text", &field);
+  test::CreateTestFormField("", "2", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Aaron"));
   types.clear();
   types.insert(NAME_MIDDLE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "3", "A", "text", &field);
+  test::CreateTestFormField("", "3", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("A"));
   types.clear();
   types.insert(NAME_MIDDLE_INITIAL);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "4", "Presley", "text", &field);
+  test::CreateTestFormField("", "4", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Presley"));
   types.clear();
   types.insert(NAME_LAST);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "5", "Elvis Presley", "text", &field);
+  test::CreateTestFormField("", "5", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Elvis Presley"));
   types.clear();
   types.insert(CREDIT_CARD_NAME);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "6", "Elvis Aaron Presley", "text",
-                                     &field);
+  test::CreateTestFormField("", "6", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Elvis Aaron Presley"));
   types.clear();
   types.insert(NAME_FULL);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "7", "theking@gmail.com", "email",
-                                     &field);
+  test::CreateTestFormField("", "7", "", "email", &field);
+  expected_values.push_back(ASCIIToUTF16("theking@gmail.com"));
   types.clear();
   types.insert(EMAIL_ADDRESS);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "8", "RCA", "text", &field);
+  test::CreateTestFormField("", "8", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("RCA"));
   types.clear();
   types.insert(COMPANY_NAME);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "9", "3734 Elvis Presley Blvd.",
-                                     "text", &field);
+  test::CreateTestFormField("", "9", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("3734 Elvis Presley Blvd."));
   types.clear();
   types.insert(ADDRESS_HOME_LINE1);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "10", "Apt. 10", "text", &field);
+  test::CreateTestFormField("", "10", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Apt. 10"));
   types.clear();
   types.insert(ADDRESS_HOME_LINE2);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "11", "Memphis", "text", &field);
+  test::CreateTestFormField("", "11", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Memphis"));
   types.clear();
   types.insert(ADDRESS_HOME_CITY);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "12", "Tennessee", "text", &field);
+  test::CreateTestFormField("", "12", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Tennessee"));
   types.clear();
   types.insert(ADDRESS_HOME_STATE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "13", "38116", "text", &field);
+  test::CreateTestFormField("", "13", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("38116"));
   types.clear();
   types.insert(ADDRESS_HOME_ZIP);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "14", "USA", "text", &field);
+  test::CreateTestFormField("", "14", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("USA"));
   types.clear();
   types.insert(ADDRESS_HOME_COUNTRY);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "15", "United States", "text", &field);
+  test::CreateTestFormField("", "15", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("United States"));
   types.clear();
   types.insert(ADDRESS_HOME_COUNTRY);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "16", "+1 (234) 567-8901", "text",
-                                     &field);
+  test::CreateTestFormField("", "16", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("+1 (234) 567-8901"));
   types.clear();
   types.insert(PHONE_HOME_WHOLE_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "17", "2345678901", "text", &field);
+  test::CreateTestFormField("", "17", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("2345678901"));
   types.clear();
   types.insert(PHONE_HOME_CITY_AND_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "18", "1", "text", &field);
+  test::CreateTestFormField("", "18", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("1"));
   types.clear();
   types.insert(PHONE_HOME_COUNTRY_CODE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "19", "234", "text", &field);
+  test::CreateTestFormField("", "19", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("234"));
   types.clear();
   types.insert(PHONE_HOME_CITY_CODE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "20", "5678901", "text", &field);
+  test::CreateTestFormField("", "20", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("5678901"));
   types.clear();
   types.insert(PHONE_HOME_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "21", "567", "text", &field);
+  test::CreateTestFormField("", "21", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("567"));
   types.clear();
   types.insert(PHONE_HOME_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "22", "8901", "text", &field);
+  test::CreateTestFormField("", "22", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("8901"));
   types.clear();
   types.insert(PHONE_HOME_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "23", "4234-5678-9012-3456", "text",
-                                     &field);
+  test::CreateTestFormField("", "23", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("4234-5678-9012-3456"));
   types.clear();
   types.insert(CREDIT_CARD_NUMBER);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "24", "04", "text", &field);
+  test::CreateTestFormField("", "24", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("04"));
   types.clear();
   types.insert(CREDIT_CARD_EXP_MONTH);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "25", "April", "text", &field);
+  test::CreateTestFormField("", "25", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("April"));
   types.clear();
   types.insert(CREDIT_CARD_EXP_MONTH);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "26", "2012", "text", &field);
+  test::CreateTestFormField("", "26", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("2012"));
   types.clear();
   types.insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "27", "12", "text", &field);
+  test::CreateTestFormField("", "27", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("12"));
   types.clear();
   types.insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "28", "04/2012", "text", &field);
+  test::CreateTestFormField("", "28", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("04/2012"));
   types.clear();
   types.insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
   form.fields.push_back(field);
@@ -2688,98 +2824,115 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
 
   // Make sure that we trim whitespace properly.
   test::CreateTestFormField("", "29", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16(""));
   types.clear();
   types.insert(EMPTY_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
   test::CreateTestFormField("", "30", " ", "text", &field);
+  expected_values.push_back(ASCIIToUTF16(" "));
   types.clear();
   types.insert(EMPTY_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "31", " Elvis", "text", &field);
+  test::CreateTestFormField("", "31", " ", "text", &field);
+  expected_values.push_back(ASCIIToUTF16(" Elvis"));
   types.clear();
   types.insert(NAME_FIRST);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "32", "Elvis ", "text", &field);
+  test::CreateTestFormField("", "32", " ", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Elvis "));
   types.clear();
   types.insert(NAME_FIRST);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
   // These fields should not match, as they differ by case.
-  test::CreateTestFormField("", "33", "elvis", "text", &field);
+  test::CreateTestFormField("", "33", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("elvis"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "34", "3734 Elvis Presley BLVD",
-                                     "text", &field);
+  test::CreateTestFormField("", "34", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("3734 Elvis Presley BLVD"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
   // These fields should not match, as they are unsupported variants.
-  test::CreateTestFormField("", "35", "Elvis Aaron", "text", &field);
+  test::CreateTestFormField("", "35", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Elvis Aaron"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "36", "Mr. Presley", "text", &field);
+  test::CreateTestFormField("", "36", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("Mr. Presley"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "37", "3734 Elvis Presley", "text",
-                                     &field);
+  test::CreateTestFormField("", "37", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("3734 Elvis Presley"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "38", "TN", "text", &field);
+  test::CreateTestFormField("", "38", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("TN"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "39", "38116-1023", "text", &field);
+  test::CreateTestFormField("", "39", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("38116-1023"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "20", "5", "text", &field);
+  test::CreateTestFormField("", "20", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("5"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "20", "56", "text", &field);
+  test::CreateTestFormField("", "20", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("56"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "20", "901", "text", &field);
+  test::CreateTestFormField("", "20", "", "text", &field);
+  expected_values.push_back(ASCIIToUTF16("901"));
   types.clear();
   types.insert(UNKNOWN_TYPE);
   form.fields.push_back(field);
   expected_types.push_back(types);
 
-  test::CreateTestFormField("", "40", "mypassword", "password", &field);
-  types.clear();
-  types.insert(PASSWORD);
-  form.fields.push_back(field);
-  expected_types.push_back(types);
+  // Make sure the form is in the cache so that it is processed for Autofill
+  // upload.
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Once the form is cached, fill the values.
+  EXPECT_EQ(form.fields.size(), expected_values.size());
+  for (size_t i = 0; i < expected_values.size(); i++) {
+    form.fields[i].value = expected_values[i];
+  }
 
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   FormSubmitted(form);
