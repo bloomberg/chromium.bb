@@ -65,9 +65,14 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
   command.AppendArg("--long");
   commands.push_back(std::make_pair("xinput", command));
 
+#if defined(USE_X11)
   command = base::CommandLine(base::FilePath("/usr/bin/xrandr"));
   command.AppendArg("--verbose");
   commands.push_back(std::make_pair("xrandr", command));
+#elif defined(USE_OZONE)
+  command = base::CommandLine(base::FilePath("/usr/bin/modetest"));
+  commands.push_back(std::make_pair("modetest", command));
+#endif
 
   // Get a list of file sizes for the logged in user (excluding the names of
   // the files in the Downloads directory for privay reasons).
