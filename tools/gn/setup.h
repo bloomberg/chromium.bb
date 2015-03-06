@@ -29,14 +29,44 @@ class CommandLine;
 
 extern const char kDotfile_Help[];
 
-// Base class for code shared between Setup and DependentSetup.
-class CommonSetup {
+// Helper class to setup the build settings and environment for the various
+// commands to run.
+class Setup {
  public:
-  virtual ~CommonSetup();
+  Setup();
+  ~Setup();
 
-  // Returns the scheduler. This is virtual since only the main setup has a
-  // scheduler and the derived ones just store pointers.
-  virtual Scheduler* GetScheduler() = 0;
+  // Configures the build for the current command line. On success returns
+  // true. On failure, prints the error and returns false.
+  //
+  // The parameter is the string the user specified for the build directory. We
+  // will try to interpret this as a SourceDir if possible, and will fail if is
+  // is malformed.
+  //
+  // With force_create = false, setup will fail if the build directory doesn't
+  // alreay exist with an args file in it. With force_create set to true, the
+  // directory will be created if necessary. Commands explicitly doing
+  // generation should set this to true to create it, but querying commands
+  // should set it to false to prevent creating oddly-named directories in case
+  // the user omits the build directory argument (which is easy to do).
+  bool DoSetup(const std::string& build_dir, bool force_create);
+
+  // Runs the load, returning true on success. On failure, prints the error
+  // and returns false. This includes both RunPreMessageLoop() and
+  // RunPostMessageLoop().
+  bool Run();
+
+  Scheduler& scheduler() { return scheduler_; }
+
+  // Returns the file used to store the build arguments. Note that the path
+  // might not exist.
+  SourceFile GetBuildArgFile() const;
+
+  // Sets whether the build arguments should be filled during setup from the
+  // command line/build argument file. This will be true by default. The use
+  // case for setting it to false is when editing build arguments, we don't
+  // want to rely on them being valid.
+  void set_fill_arguments(bool fa) { fill_arguments_ = fa; }
 
   // When true (the default), Run() will check for unresolved dependencies and
   // cycles upon completion. When false, such errors will be ignored.
@@ -69,74 +99,12 @@ class CommonSetup {
   // arguements.
   static const char kBuildArgFileName[];
 
- protected:
-  CommonSetup();
-  CommonSetup(const CommonSetup& other);
-
+ private:
   // Performs the two sets of operations to run the generation before and after
   // the message loop is run.
   void RunPreMessageLoop();
   bool RunPostMessageLoop();
 
-  BuildSettings build_settings_;
-  scoped_refptr<LoaderImpl> loader_;
-  scoped_refptr<Builder> builder_;
-
-  SourceFile root_build_file_;
-
-  bool check_for_bad_items_;
-  bool check_for_unused_overrides_;
-  bool check_public_headers_;
-
-  // See getter for info.
-  scoped_ptr<std::vector<LabelPattern> > check_patterns_;
-
- private:
-  CommonSetup& operator=(const CommonSetup& other);  // Disallow.
-};
-
-// Helper class to setup the build settings and environment for the various
-// commands to run.
-class Setup : public CommonSetup {
- public:
-  Setup();
-  ~Setup() override;
-
-  // Configures the build for the current command line. On success returns
-  // true. On failure, prints the error and returns false.
-  //
-  // The parameter is the string the user specified for the build directory. We
-  // will try to interpret this as a SourceDir if possible, and will fail if is
-  // is malformed.
-  //
-  // With force_create = false, setup will fail if the build directory doesn't
-  // alreay exist with an args file in it. With force_create set to true, the
-  // directory will be created if necessary. Commands explicitly doing
-  // generation should set this to true to create it, but querying commands
-  // should set it to false to prevent creating oddly-named directories in case
-  // the user omits the build directory argument (which is easy to do).
-  bool DoSetup(const std::string& build_dir, bool force_create);
-
-  // Runs the load, returning true on success. On failure, prints the error
-  // and returns false. This includes both RunPreMessageLoop() and
-  // RunPostMessageLoop().
-  bool Run();
-
-  Scheduler& scheduler() { return scheduler_; }
-
-  Scheduler* GetScheduler() override;
-
-  // Returns the file used to store the build arguments. Note that the path
-  // might not exist.
-  SourceFile GetBuildArgFile() const;
-
-  // Sets whether the build arguments should be filled during setup from the
-  // command line/build argument file. This will be true by default. The use
-  // case for setting it to false is when editing build arguments, we don't
-  // want to rely on them being valid.
-  void set_fill_arguments(bool fa) { fill_arguments_ = fa; }
-
- private:
   // Fills build arguments. Returns true on success.
   bool FillArguments(const base::CommandLine& cmdline);
 
@@ -168,6 +136,19 @@ class Setup : public CommonSetup {
 
   bool FillOtherConfig(const base::CommandLine& cmdline);
 
+  BuildSettings build_settings_;
+  scoped_refptr<LoaderImpl> loader_;
+  scoped_refptr<Builder> builder_;
+
+  SourceFile root_build_file_;
+
+  bool check_for_bad_items_;
+  bool check_for_unused_overrides_;
+  bool check_public_headers_;
+
+  // See getter for info.
+  scoped_ptr<std::vector<LabelPattern>> check_patterns_;
+
   Scheduler scheduler_;
 
   // These empty settings and toolchain are used to interpret the command line
@@ -194,35 +175,6 @@ class Setup : public CommonSetup {
   scoped_ptr<ParseNode> args_root_;
 
   DISALLOW_COPY_AND_ASSIGN(Setup);
-};
-
-// A dependent setup allows one to do more than one build at a time. You would
-// make a dependent setup which clones the state of the main one, make any
-// necessary changes, and then run it.
-//
-// The way to run both at the same time is:
-//   dependent_setup.RunPreMessageLoop();
-//   main_setup.Run();
-//   dependent_setup.RunPostMessageLoop();
-// so that the main setup executes the message loop, but both are run.
-class DependentSetup : public CommonSetup {
- public:
-  // Note: this could be one function that takes a CommonSetup*, but then
-  // the compiler can get confused what to call, since it also matches the
-  // default copy constructor.
-  explicit DependentSetup(Setup* derive_from);
-  explicit DependentSetup(DependentSetup* derive_from);
-  ~DependentSetup() override;
-
-  // These are the two parts of Run() in the regular setup, not including the
-  // call to actually run the message loop.
-  void RunPreMessageLoop();
-  bool RunPostMessageLoop();
-
-  Scheduler* GetScheduler() override;
-
- private:
-  Scheduler* scheduler_;
 };
 
 #endif  // TOOLS_GN_SETUP_H_

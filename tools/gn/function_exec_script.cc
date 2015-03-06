@@ -22,6 +22,43 @@
 
 namespace functions {
 
+namespace {
+
+bool CheckExecScriptPermissions(const BuildSettings* build_settings,
+                                const FunctionCallNode* function,
+                                Err* err) {
+  const std::set<SourceFile>* whitelist =
+      build_settings->exec_script_whitelist();
+  if (!whitelist)
+    return true;  // No whitelist specified, don't check.
+
+  LocationRange function_range = function->GetRange();
+  if (!function_range.begin().file())
+    return true;  // No file, might be some internal thing, implicitly pass.
+
+  if (whitelist->find(function_range.begin().file()->name()) !=
+      whitelist->end())
+    return true;  // Whitelisted, this is OK.
+
+  // Disallowed case.
+  *err = Err(function, "Disallowed exec_script call.",
+      "The use of exec_script use is restricted in this build. exec_script\n"
+      "is discouraged because it can slow down the GN run and is easily\n"
+      "abused.\n"
+      "\n"
+      "Generally nontrivial work should be done as build steps rather than\n"
+      "when GN is run. For example, if you need to compute a nontrivial\n"
+      "preprocessor define, it will be better to have an action target\n"
+      "generate a header containing the define rather than blocking the GN\n"
+      "run to compute the value.\n"
+      "\n"
+      "The allowed callers of exec_script is maintained in the \"//.gn\" file\n"
+      "if you need to modify the whitelist.");
+  return false;
+}
+
+}  // namespace
+
 const char kExecScript[] = "exec_script";
 const char kExecScript_HelpShort[] =
     "exec_script: Synchronously run a script and return the output.";
@@ -91,6 +128,9 @@ Value RunExecScript(Scope* scope,
   const Settings* settings = scope->settings();
   const BuildSettings* build_settings = settings->build_settings();
   const SourceDir& cur_dir = scope->GetSourceDir();
+
+  if (!CheckExecScriptPermissions(build_settings, function, err))
+    return Value();
 
   // Find the python script to run.
   if (!args[0].VerifyTypeIs(Value::STRING, err))

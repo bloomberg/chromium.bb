@@ -68,6 +68,26 @@ extern const char kDotfile_Help[] =
     "      The format of this list is identical to that of \"visibility\"\n"
     "      so see \"gn help visibility\" for examples.\n"
     "\n"
+    "  exec_script_whitelist [optional]\n"
+    "      A list of .gn/.gni files (not labels) that have permission to call\n"
+    "      the exec_script function. If this list is defined, calls to\n"
+    "      exec_script will be checked against this list and GN will fail if\n"
+    "      the current file isn't in the list.\n"
+    "\n"
+    "      This is to allow the use of exec_script to be restricted since\n"
+    "      is easy to use inappropriately. Wildcards are not supported.\n"
+    "      Files in the secondary_source tree (if defined) should be\n"
+    "      referenced by ignoring the secondary tree and naming them as if\n"
+    "      they are in the main tree.\n"
+    "\n"
+    "      If unspecified, the ability to call exec_script is unrestricted.\n"
+    "\n"
+    "      Example:\n"
+    "        exec_script_whitelist = [\n"
+    "          \"//base/BUILD.gn\",\n"
+    "          \"//build/my_config.gni\",\n"
+    "        ]\n"
+    "\n"
     "  root [optional]\n"
     "      Label of the root build target. The GN build will start by loading\n"
     "      the build file containing this target name. This defaults to\n"
@@ -130,91 +150,16 @@ void DecrementWorkCount() {
 
 }  // namespace
 
-// CommonSetup -----------------------------------------------------------------
+const char Setup::kBuildArgFileName[] = "args.gn";
 
-const char CommonSetup::kBuildArgFileName[] = "args.gn";
-
-CommonSetup::CommonSetup()
+Setup::Setup()
     : build_settings_(),
       loader_(new LoaderImpl(&build_settings_)),
       builder_(new Builder(loader_.get())),
       root_build_file_("//BUILD.gn"),
       check_for_bad_items_(true),
       check_for_unused_overrides_(true),
-      check_public_headers_(false) {
-  loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
-}
-
-CommonSetup::CommonSetup(const CommonSetup& other)
-    : build_settings_(other.build_settings_),
-      loader_(new LoaderImpl(&build_settings_)),
-      builder_(new Builder(loader_.get())),
-      root_build_file_(other.root_build_file_),
-      check_for_bad_items_(other.check_for_bad_items_),
-      check_for_unused_overrides_(other.check_for_unused_overrides_),
-      check_public_headers_(other.check_public_headers_) {
-  loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
-}
-
-CommonSetup::~CommonSetup() {
-}
-
-void CommonSetup::RunPreMessageLoop() {
-  // Load the root build file.
-  loader_->Load(root_build_file_, LocationRange(), Label());
-
-  // Will be decremented with the loader is drained.
-  g_scheduler->IncrementWorkCount();
-}
-
-bool CommonSetup::RunPostMessageLoop() {
-  Err err;
-  if (check_for_bad_items_) {
-    if (!builder_->CheckForBadItems(&err)) {
-      err.PrintToStdout();
-      return false;
-    }
-  }
-
-  if (check_for_unused_overrides_) {
-    if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
-      // TODO(brettw) implement a system of warnings. Until we have a better
-      // system, print the error but don't return failure.
-      err.PrintToStdout();
-      return true;
-    }
-  }
-
-  if (check_public_headers_) {
-    std::vector<const Target*> all_targets = builder_->GetAllResolvedTargets();
-    std::vector<const Target*> to_check;
-    if (check_patterns()) {
-      commands::FilterTargetsByPatterns(all_targets, *check_patterns(),
-                                        &to_check);
-    } else {
-      to_check = all_targets;
-    }
-
-    if (!commands::CheckPublicHeaders(&build_settings_, all_targets,
-                                      to_check, false)) {
-      return false;
-    }
-  }
-
-  // Write out tracing and timing if requested.
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kTime))
-    PrintLongHelp(SummarizeTraces());
-  if (cmdline->HasSwitch(switches::kTracelog))
-    SaveTraces(cmdline->GetSwitchValuePath(switches::kTracelog));
-
-  return true;
-}
-
-// Setup -----------------------------------------------------------------------
-
-Setup::Setup()
-    : CommonSetup(),
+      check_public_headers_(false),
       empty_settings_(&empty_build_settings_, std::string()),
       dotfile_scope_(&empty_settings_),
       fill_arguments_(true) {
@@ -222,6 +167,7 @@ Setup::Setup()
   build_settings_.set_item_defined_callback(
       base::Bind(&ItemDefinedCallback, scheduler_.main_loop(), builder_));
 
+  loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
   // The scheduler's main loop wasn't created when the Loader was created, so
   // we need to set it now.
   loader_->set_main_loop(scheduler_.main_loop());
@@ -274,12 +220,60 @@ bool Setup::Run() {
   return RunPostMessageLoop();
 }
 
-Scheduler* Setup::GetScheduler() {
-  return &scheduler_;
-}
-
 SourceFile Setup::GetBuildArgFile() const {
   return SourceFile(build_settings_.build_dir().value() + kBuildArgFileName);
+}
+
+void Setup::RunPreMessageLoop() {
+  // Load the root build file.
+  loader_->Load(root_build_file_, LocationRange(), Label());
+
+  // Will be decremented with the loader is drained.
+  g_scheduler->IncrementWorkCount();
+}
+
+bool Setup::RunPostMessageLoop() {
+  Err err;
+  if (check_for_bad_items_) {
+    if (!builder_->CheckForBadItems(&err)) {
+      err.PrintToStdout();
+      return false;
+    }
+  }
+
+  if (check_for_unused_overrides_) {
+    if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
+      // TODO(brettw) implement a system of warnings. Until we have a better
+      // system, print the error but don't return failure.
+      err.PrintToStdout();
+      return true;
+    }
+  }
+
+  if (check_public_headers_) {
+    std::vector<const Target*> all_targets = builder_->GetAllResolvedTargets();
+    std::vector<const Target*> to_check;
+    if (check_patterns()) {
+      commands::FilterTargetsByPatterns(all_targets, *check_patterns(),
+                                        &to_check);
+    } else {
+      to_check = all_targets;
+    }
+
+    if (!commands::CheckPublicHeaders(&build_settings_, all_targets,
+                                      to_check, false)) {
+      return false;
+    }
+  }
+
+  // Write out tracing and timing if requested.
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kTime))
+    PrintLongHelp(SummarizeTraces());
+  if (cmdline->HasSwitch(switches::kTracelog))
+    SaveTraces(cmdline->GetSwitchValuePath(switches::kTracelog));
+
+  return true;
 }
 
 bool Setup::FillArguments(const base::CommandLine& cmdline) {
@@ -544,6 +538,7 @@ bool Setup::RunConfigFile() {
 
 bool Setup::FillOtherConfig(const base::CommandLine& cmdline) {
   Err err;
+  SourceDir current_dir("//");
 
   // Secondary source path, read from the config file if present.
   // Read from the config file if present.
@@ -567,7 +562,7 @@ bool Setup::FillOtherConfig(const base::CommandLine& cmdline) {
     }
 
     Label root_target_label =
-        Label::Resolve(SourceDir("//"), Label(), *root_value, &err);
+        Label::Resolve(current_dir, Label(), *root_value, &err);
     if (err.has_error()) {
       err.PrintToStdout();
       return false;
@@ -595,14 +590,13 @@ bool Setup::FillOtherConfig(const base::CommandLine& cmdline) {
   const Value* check_targets_value =
       dotfile_scope_.GetValue("check_targets", true);
   if (check_targets_value) {
-    check_patterns_.reset(new std::vector<LabelPattern>);
-
     // Fill the list of targets to check.
     if (!check_targets_value->VerifyTypeIs(Value::LIST, &err)) {
       err.PrintToStdout();
       return false;
     }
-    SourceDir current_dir("//");
+
+    check_patterns_.reset(new std::vector<LabelPattern>);
     for (const auto& item : check_targets_value->list_value()) {
       check_patterns_->push_back(
           LabelPattern::GetPattern(current_dir, item, &err));
@@ -613,37 +607,25 @@ bool Setup::FillOtherConfig(const base::CommandLine& cmdline) {
     }
   }
 
+  // Fill exec_script_whitelist.
+  const Value* exec_script_whitelist_value =
+      dotfile_scope_.GetValue("exec_script_whitelist", true);
+  if (exec_script_whitelist_value) {
+    // Fill the list of targets to check.
+    if (!exec_script_whitelist_value->VerifyTypeIs(Value::LIST, &err)) {
+      err.PrintToStdout();
+      return false;
+    }
+    scoped_ptr<std::set<SourceFile>> whitelist(new std::set<SourceFile>);
+    for (const auto& item : exec_script_whitelist_value->list_value()) {
+      if (!item.VerifyTypeIs(Value::STRING, &err)) {
+        err.PrintToStdout();
+        return false;
+      }
+      whitelist->insert(current_dir.ResolveRelativeFile(item.string_value()));
+    }
+    build_settings_.set_exec_script_whitelist(whitelist.Pass());
+  }
+
   return true;
 }
-
-// DependentSetup --------------------------------------------------------------
-
-DependentSetup::DependentSetup(Setup* derive_from)
-    : CommonSetup(*derive_from),
-      scheduler_(derive_from->GetScheduler()) {
-  build_settings_.set_item_defined_callback(
-      base::Bind(&ItemDefinedCallback, scheduler_->main_loop(), builder_));
-}
-
-DependentSetup::DependentSetup(DependentSetup* derive_from)
-    : CommonSetup(*derive_from),
-      scheduler_(derive_from->GetScheduler()) {
-  build_settings_.set_item_defined_callback(
-      base::Bind(&ItemDefinedCallback, scheduler_->main_loop(), builder_));
-}
-
-DependentSetup::~DependentSetup() {
-}
-
-Scheduler* DependentSetup::GetScheduler() {
-  return scheduler_;
-}
-
-void DependentSetup::RunPreMessageLoop() {
-  CommonSetup::RunPreMessageLoop();
-}
-
-bool DependentSetup::RunPostMessageLoop() {
-  return CommonSetup::RunPostMessageLoop();
-}
-

@@ -6,6 +6,7 @@
 #define TOOLS_GN_BUILD_SETTINGS_H_
 
 #include <map>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -85,6 +86,15 @@ class BuildSettings {
   const PrintCallback& print_callback() const { return print_callback_; }
   void set_print_callback(const PrintCallback& cb) { print_callback_ = cb; }
 
+  // A list of files that can call exec_script(). If the returned pointer is
+  // null, exec_script may be called from anywhere.
+  const std::set<SourceFile>* exec_script_whitelist() const {
+    return exec_script_whitelist_.get();
+  }
+  void set_exec_script_whitelist(scoped_ptr<std::set<SourceFile>> list) {
+    exec_script_whitelist_ = list.Pass();
+  }
+
  private:
   base::FilePath root_path_;
   std::string root_path_utf8_;
@@ -97,6 +107,8 @@ class BuildSettings {
 
   ItemDefinedCallback item_defined_callback_;
   PrintCallback print_callback_;
+
+  scoped_ptr<std::set<SourceFile>> exec_script_whitelist_;
 
   BuildSettings& operator=(const BuildSettings& other);  // Disallow.
 };
