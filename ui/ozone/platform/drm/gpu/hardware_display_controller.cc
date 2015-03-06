@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 #include <drm.h>
-#include <errno.h>
 #include <string.h>
 #include <xf86drm.h>
 

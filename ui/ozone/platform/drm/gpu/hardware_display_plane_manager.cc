@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 
 #include <drm.h>
-#include <errno.h>
 #include <xf86drm.h>
 
 #include <set>

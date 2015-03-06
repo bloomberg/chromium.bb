@@ -65,7 +65,7 @@ bool DrmBuffer::Initialize(const SkImageInfo& info,
       !drm_->AddFramebuffer(
           info.width(), info.height(), GetColorDepth(info.colorType()),
           info.bytesPerPixel() << 3, stride_, handle_, &framebuffer_)) {
-    VLOG(2) << "Failed to register framebuffer: " << strerror(errno);
+    VPLOG(2) << "Failed to register framebuffer";
     return false;
   }
 

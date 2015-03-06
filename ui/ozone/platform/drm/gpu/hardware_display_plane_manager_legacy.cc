@@ -36,9 +36,8 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
     for (const auto& plane : flip.planes) {
       if (!drm_->PageFlipOverlay(flip.crtc_id, plane.framebuffer, plane.bounds,
                                  plane.src_rect, plane.plane)) {
-        LOG(ERROR) << "Cannot display plane on overlay: error="
-                   << strerror(errno) << "crtc=" << flip.crtc
-                   << " plane=" << plane.plane;
+        PLOG(ERROR) << "Cannot display plane on overlay: crtc=" << flip.crtc
+                    << " plane=" << plane.plane;
         ret = false;
         flip.crtc->PageFlipFailed();
         break;
@@ -48,11 +47,9 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
                         base::Bind(&CrtcController::OnPageFlipEvent,
                                    flip.crtc->AsWeakPtr()))) {
       if (errno != EACCES) {
-        LOG(ERROR) << "Cannot page flip: error='" << strerror(errno) << "'"
-                   << " crtc=" << flip.crtc_id
-                   << " framebuffer=" << flip.framebuffer
-                   << " is_sync=" << is_sync;
-        LOG(ERROR) << "Failed to commit planes";
+        PLOG(ERROR) << "Cannot page flip: crtc=" << flip.crtc_id
+                    << " framebuffer=" << flip.framebuffer
+                    << " is_sync=" << is_sync;
         ret = false;
       }
       flip.crtc->PageFlipFailed();
@@ -65,9 +62,8 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
       // This plane is being released, so we need to zero it.
       if (!drm_->PageFlipOverlay(plane->owning_crtc(), 0, gfx::Rect(),
                                  gfx::Rect(), plane->plane_id())) {
-        LOG(ERROR) << "Cannot free overlay: error=" << strerror(errno)
-                   << "crtc=" << plane->owning_crtc()
-                   << " plane=" << plane->plane_id();
+        PLOG(ERROR) << "Cannot free overlay: crtc=" << plane->owning_crtc()
+                    << " plane=" << plane->plane_id();
         ret = false;
         break;
       }

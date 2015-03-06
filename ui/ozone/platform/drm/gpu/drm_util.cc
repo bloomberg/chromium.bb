@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
 
-#include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -114,15 +113,14 @@ bool MapDumbBuffer(int fd, uint32_t handle, uint32_t size, void** pixels) {
   memset(&map_request, 0, sizeof(map_request));
   map_request.handle = handle;
   if (drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
-    VLOG(2) << "Cannot prepare dumb buffer for mapping (" << errno << ") "
-            << strerror(errno);
+    VPLOG(2) << "Cannot prepare dumb buffer for mapping";
     return false;
   }
 
   *pixels =
       mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, map_request.offset);
   if (*pixels == MAP_FAILED) {
-    VLOG(2) << "Cannot mmap dumb buffer (" << errno << ") " << strerror(errno);
+    VPLOG(2) << "Cannot mmap dumb buffer";
     return false;
   }
 

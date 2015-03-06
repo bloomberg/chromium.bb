@@ -28,30 +28,34 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
                        ScanoutBuffer* buffer) {
   DrmConsoleBuffer modeset_buffer(drm, buffer->GetFramebufferId());
   if (!modeset_buffer.Initialize()) {
-    LOG(ERROR) << "Failed to grab framebuffer " << buffer->GetFramebufferId();
+    VLOG(2) << "Failed to grab framebuffer " << buffer->GetFramebufferId();
     return;
   }
 
   auto crtcs = controller->crtc_controllers();
   DCHECK(!crtcs.empty());
 
-  if (!crtcs[0]->saved_crtc() || !crtcs[0]->saved_crtc()->buffer_id)
+  if (!crtcs[0]->saved_crtc() || !crtcs[0]->saved_crtc()->buffer_id) {
+    VLOG(2) << "Crtc has no saved state or wasn't modeset";
     return;
+  }
 
   // If the display controller is in mirror mode, the CRTCs should be sharing
   // the same framebuffer.
   DrmConsoleBuffer saved_buffer(drm, crtcs[0]->saved_crtc()->buffer_id);
   if (!saved_buffer.Initialize()) {
-    LOG(ERROR) << "Failed to grab saved framebuffer "
-               << crtcs[0]->saved_crtc()->buffer_id;
+    VLOG(2) << "Failed to grab saved framebuffer "
+            << crtcs[0]->saved_crtc()->buffer_id;
     return;
   }
 
   // Don't copy anything if the sizes mismatch. This can happen when the user
   // changes modes.
   if (saved_buffer.canvas()->getBaseLayerSize() !=
-      modeset_buffer.canvas()->getBaseLayerSize())
+      modeset_buffer.canvas()->getBaseLayerSize()) {
+    VLOG(2) << "Previous buffer has a different size than modeset buffer";
     return;
+  }
 
   skia::RefPtr<SkImage> image = saved_buffer.image();
   SkPaint paint;

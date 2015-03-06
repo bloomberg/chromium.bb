@@ -34,11 +34,11 @@ CrtcController::~CrtcController() {
 bool CrtcController::Modeset(const OverlayPlane& plane, drmModeModeInfo mode) {
   if (!drm_->SetCrtc(crtc_, plane.buffer->GetFramebufferId(),
                      std::vector<uint32_t>(1, connector_), &mode)) {
-    LOG(ERROR) << "Failed to modeset: error='" << strerror(errno)
-               << "' crtc=" << crtc_ << " connector=" << connector_
-               << " framebuffer_id=" << plane.buffer->GetFramebufferId()
-               << " mode=" << mode.hdisplay << "x" << mode.vdisplay << "@"
-               << mode.vrefresh;
+    PLOG(ERROR) << "Failed to modeset: crtc=" << crtc_
+                << " connector=" << connector_
+                << " framebuffer_id=" << plane.buffer->GetFramebufferId()
+                << " mode=" << mode.hdisplay << "x" << mode.vdisplay << "@"
+                << mode.vrefresh;
     return false;
   }
 
@@ -78,17 +78,17 @@ bool CrtcController::SchedulePageFlip(HardwareDisplayPlaneList* plane_list,
   DCHECK(primary->buffer.get());
 
   if (primary->buffer->GetSize() != gfx::Size(mode_.hdisplay, mode_.vdisplay)) {
-    LOG(WARNING) << "Trying to pageflip a buffer with the wrong size. Expected "
-                 << mode_.hdisplay << "x" << mode_.vdisplay << " got "
-                 << primary->buffer->GetSize().ToString() << " for"
-                 << " crtc=" << crtc_ << " connector=" << connector_;
+    VLOG(2) << "Trying to pageflip a buffer with the wrong size. Expected "
+            << mode_.hdisplay << "x" << mode_.vdisplay << " got "
+            << primary->buffer->GetSize().ToString() << " for"
+            << " crtc=" << crtc_ << " connector=" << connector_;
     FOR_EACH_OBSERVER(PageFlipObserver, observers_, OnPageFlipEvent());
     return true;
   }
 
   if (!drm_->plane_manager()->AssignOverlayPlanes(plane_list, overlays, crtc_,
                                                   this)) {
-    LOG(ERROR) << "Failed to assign overlay planes for crtc " << crtc_;
+    PLOG(ERROR) << "Failed to assign overlay planes for crtc " << crtc_;
     return false;
   }
 

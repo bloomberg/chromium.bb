@@ -48,8 +48,7 @@ bool DrmCreateDumbBuffer(int fd,
   request.flags = 0;
 
   if (drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &request) < 0) {
-    VLOG(2) << "Cannot create dumb buffer (" << errno << ") "
-            << strerror(errno);
+    VPLOG(2) << "Cannot create dumb buffer";
     return false;
   }
 
