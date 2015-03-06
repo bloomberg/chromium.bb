@@ -29,6 +29,7 @@ import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwDataReductionProxyManager;
@@ -388,7 +389,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
                     @Override
                     public Uri[] parseFileChooserResult(int resultCode, Intent intent) {
-                        return FileChooserParamsAdapter.parseFileChooserResult(resultCode, intent);
+                        return AwContentsClient.parseFileChooserResult(resultCode, intent);
                     }
                 };
             }

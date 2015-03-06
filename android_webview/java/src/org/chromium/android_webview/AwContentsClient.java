@@ -4,9 +4,12 @@
 
 package org.chromium.android_webview;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
+import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Looper;
 import android.os.Message;
@@ -18,7 +21,6 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.permission.AwPermissionRequest;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -75,18 +77,6 @@ public abstract class AwContentsClient {
     //--------------------------------------------------------------------------------------------
 
     /**
-     * Parameters for the {@link AwContentsClient#showFileChooser} method.
-     */
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public static class FileChooserParams {
-        public int mode;
-        public String acceptTypes;
-        public String title;
-        public String defaultFilename;
-        public boolean capture;
-    }
-
-    /**
      * Parameters for the {@link AwContentsClient#shouldInterceptRequest} method.
      */
     public static class AwWebResourceRequest {
@@ -139,9 +129,90 @@ public abstract class AwContentsClient {
     public abstract void onDownloadStart(String url, String userAgent, String contentDisposition,
             String mimeType, long contentLength);
 
+    public static Uri[] parseFileChooserResult(int resultCode, Intent intent) {
+        if (resultCode == Activity.RESULT_CANCELED) {
+            return null;
+        }
+        Uri result =
+                intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
+
+        Uri[] uris = null;
+        if (result != null) {
+            uris = new Uri[1];
+            uris[0] = result;
+        }
+        return uris;
+    }
+
+    /**
+     * Type adaptation class for FileChooserParams.
+     */
+    public static class FileChooserParamsImpl extends WebChromeClient.FileChooserParams {
+        private int mMode;
+        private String mAcceptTypes;
+        private String mTitle;
+        private String mDefaultFilename;
+        private boolean mCapture;
+
+        public FileChooserParamsImpl(int mode, String acceptTypes, String title,
+                String defaultFilename, boolean capture) {
+            mMode = mode;
+            mAcceptTypes = acceptTypes;
+            mTitle = title;
+            mDefaultFilename = defaultFilename;
+            mCapture = capture;
+        }
+
+        public String getAcceptTypesString() {
+            return mAcceptTypes;
+        }
+
+        @Override
+        public int getMode() {
+            return mMode;
+        }
+
+        @Override
+        public String[] getAcceptTypes() {
+            if (mAcceptTypes == null) {
+                return new String[0];
+            }
+            return mAcceptTypes.split(";");
+        }
+
+        @Override
+        public boolean isCaptureEnabled() {
+            return mCapture;
+        }
+
+        @Override
+        public CharSequence getTitle() {
+            return mTitle;
+        }
+
+        @Override
+        public String getFilenameHint() {
+            return mDefaultFilename;
+        }
+
+        @Override
+        public Intent createIntent() {
+            // TODO: Move this code to Aw. Once code is moved
+            // and merged to M37 get rid of this.
+            String mimeType = "*/*";
+            if (mAcceptTypes != null && !mAcceptTypes.trim().isEmpty())
+                mimeType = mAcceptTypes.split(";")[0];
+
+            Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+            i.addCategory(Intent.CATEGORY_OPENABLE);
+            i.setType(mimeType);
+            return i;
+        }
+    }
+
     // TODO(joth): Make abstract once this has rolled in downstream.
     public /*abstract*/ void showFileChooser(ValueCallback<String[]> uploadFilePathsCallback,
-            FileChooserParams fileChooserParams) { }
+            FileChooserParamsImpl fileChooserParams) { }
 
     public abstract void onGeolocationPermissionsShowPrompt(String origin,
             GeolocationPermissions.Callback callback);

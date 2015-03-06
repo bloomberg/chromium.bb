@@ -177,12 +177,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     @Override
     public void runFileChooser(final int processId, final int renderId, final int modeFlags,
             String acceptTypes, String title, String defaultFilename, boolean capture) {
-        AwContentsClient.FileChooserParams params = new AwContentsClient.FileChooserParams();
-        params.mode = modeFlags;
-        params.acceptTypes = acceptTypes;
-        params.title = title;
-        params.defaultFilename = defaultFilename;
-        params.capture = capture;
+        AwContentsClient.FileChooserParamsImpl params = new AwContentsClient.FileChooserParamsImpl(
+                modeFlags, acceptTypes, title, defaultFilename, capture);
 
         mContentsClient.showFileChooser(new ValueCallback<String[]>() {
             boolean mCompleted = false;

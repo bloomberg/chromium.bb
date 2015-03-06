@@ -1003,15 +1003,13 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
 
     @Override
     public void showFileChooser(final ValueCallback<String[]> uploadFileCallback,
-            final AwContentsClient.FileChooserParams fileChooserParams) {
+            final AwContentsClient.FileChooserParamsImpl fileChooserParams) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.showFileChooser");
             if (mWebChromeClient == null) {
                 uploadFileCallback.onReceiveValue(null);
                 return;
             }
-            FileChooserParamsAdapter adapter =
-                    new FileChooserParamsAdapter(fileChooserParams, mContext);
             if (TRACE) Log.d(TAG, "showFileChooser");
             ValueCallback<Uri[]> callbackAdapter = new ValueCallback<Uri[]>() {
                 private boolean mCompleted;
@@ -1035,7 +1033,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
 
             // Invoke the new callback introduced in Lollipop. If the app handles
             // it, we're done here.
-            if (mWebChromeClient.onShowFileChooser(mWebView, callbackAdapter, adapter)) {
+            if (mWebChromeClient.onShowFileChooser(mWebView, callbackAdapter, fileChooserParams)) {
                 return;
             }
 
@@ -1064,8 +1062,8 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             if (TRACE) Log.d(TAG, "openFileChooser");
             mWebChromeClient.openFileChooser(
                     innerCallback,
-                    fileChooserParams.acceptTypes,
-                    fileChooserParams.capture ? "*" : "");
+                    fileChooserParams.getAcceptTypesString(),
+                    fileChooserParams.isCaptureEnabled() ? "*" : "");
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.showFileChooser");
         }
