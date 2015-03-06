@@ -1892,3 +1892,5 @@ crbug.com/463358 [ Mac Linux ] svg/hixie/perf/005.xml [ NeedsRebaseline ]
 crbug.com/463358 [ Mac Linux ] svg/hixie/perf/006.xml [ NeedsRebaseline ]
 crbug.com/463358 [ Mac Linux ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
 crbug.com/463358 [ Mac Linux ] transforms/2d/hindi-rotated.html [ NeedsRebaseline ]
+
+crbug.com/463892 inspector/agents-enable-disable.html [ Skip ]
