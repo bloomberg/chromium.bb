@@ -923,7 +923,7 @@
       'renderer/resources/uncaught_exception_handler.js',
       'renderer/resources/unload_event.js',
       'renderer/resources/utils.js',
-      'renderer/resources/guest_view/extension_view.js',
+      'renderer/resources/guest_view/extension_view/extension_view.js',
       'renderer/resources/guest_view/surface_view.js',
       'renderer/resources/guest_view/web_view.js',
       'renderer/resources/guest_view/web_view_events.js',

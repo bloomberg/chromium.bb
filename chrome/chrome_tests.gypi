@@ -64,7 +64,7 @@
       'browser/apps/ephemeral_app_service_browsertest.cc',
       'browser/apps/event_page_browsertest.cc',
       'browser/apps/guest_view/app_view_browsertest.cc',
-      'browser/apps/guest_view/extension_view_browsertest.cc',
+      'browser/apps/guest_view/extension_view/extension_view_browsertest.cc',
       'browser/apps/guest_view/web_view_browsertest.cc',
       'browser/apps/speech_recognition_browsertest.cc',
       'browser/apps/window_controls_browsertest.cc',
