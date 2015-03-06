@@ -12,7 +12,8 @@
 
 namespace extensions {
 
-ScriptsRunInfo::ScriptsRunInfo() : num_css(0u), num_js(0u) {
+ScriptsRunInfo::ScriptsRunInfo()
+    : num_css(0u), num_js(0u), num_blocking_js(0u) {
 }
 
 ScriptsRunInfo::~ScriptsRunInfo() {
