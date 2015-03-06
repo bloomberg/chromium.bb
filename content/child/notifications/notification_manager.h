@@ -47,6 +47,10 @@ class NotificationManager : public blink::WebNotificationManager,
       blink::WebNotificationShowCallbacks* callbacks);
   virtual void close(blink::WebNotificationDelegate* delegate);
   virtual void closePersistent(
+      const blink::WebSerializedOrigin& origin,
+      const blink::WebString& persistent_notification_id);
+  // TODO(peter): Remove this method when Blink has been updated.
+  virtual void closePersistent(
       const blink::WebString& persistent_notification_id);
   virtual void notifyDelegateDestroyed(
       blink::WebNotificationDelegate* delegate);

@@ -129,12 +129,16 @@ void NotificationMessageFilter::OnClosePlatformNotification(
 }
 
 void NotificationMessageFilter::OnClosePersistentNotification(
+    const GURL& origin,
     const std::string& persistent_notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
   DCHECK(service);
+
+  // TODO(peter): Use |service_worker_registration_id| and |origin| when feeding
+  // the close event through the notification database.
 
   service->ClosePersistentNotification(browser_context_,
                                        persistent_notification_id);

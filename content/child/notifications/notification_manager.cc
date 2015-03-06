@@ -134,9 +134,16 @@ void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
 }
 
 void NotificationManager::closePersistent(
+    const blink::WebSerializedOrigin& origin,
     const blink::WebString& persistent_notification_id) {
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_ClosePersistent(
+      GURL(origin.string()),
       base::UTF16ToUTF8(persistent_notification_id)));
+}
+
+void NotificationManager::closePersistent(
+    const blink::WebString& persistent_notification_id) {
+  closePersistent(blink::WebSerializedOrigin(), persistent_notification_id);
 }
 
 void NotificationManager::notifyDelegateDestroyed(

@@ -55,6 +55,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const PlatformNotificationData& notification_data);
   void OnClosePlatformNotification(int notification_id);
   void OnClosePersistentNotification(
+      const GURL& origin,
       const std::string& persistent_notification_id);
 
   // Verifies that Web Notification permission has been granted for |origin| in

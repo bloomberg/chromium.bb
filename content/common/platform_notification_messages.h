@@ -60,7 +60,8 @@ IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_ShowPersistent,
 IPC_MESSAGE_CONTROL1(PlatformNotificationHostMsg_Close,
                      int /* notification_id */)
 
-IPC_MESSAGE_CONTROL1(PlatformNotificationHostMsg_ClosePersistent,
+IPC_MESSAGE_CONTROL2(PlatformNotificationHostMsg_ClosePersistent,
+                     GURL /* origin */,
                      std::string /* persistent_notification_id */)
 
 IPC_SYNC_MESSAGE_CONTROL1_1(PlatformNotificationHostMsg_CheckPermission,
