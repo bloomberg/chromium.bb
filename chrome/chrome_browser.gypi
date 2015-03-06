@@ -172,6 +172,8 @@
       'browser/android/voice_search_tab_helper.h',
       'browser/android/webapps/single_tab_mode_tab_helper.cc',
       'browser/android/webapps/single_tab_mode_tab_helper.h',
+      'browser/android/webapps/webapp_metrics.cc',
+      'browser/android/webapps/webapp_metrics.h',
       'browser/app_controller_mac.h',
       'browser/app_controller_mac.mm',
       'browser/app_icon_win.cc',
@@ -1672,7 +1674,8 @@
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
       'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java',
-      'android/java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java'
+      'android/java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java',
+      'android/java/src/org/chromium/chrome/browser/webapps/WebappMetrics.java',
     ],
     'chrome_browser_mdns_sources': [
       'browser/local_discovery/privet_traffic_detector.cc',

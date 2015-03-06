@@ -210,6 +210,15 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="webapps.LaunchURL" type="ETLD_PLUS_ONE">
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that was launched from the Android Home screen into a
+    WebappActivity.  This explicitly does not count relaunches via the Android
+    Recents menu.
+  </summary>
+</rappor-metric>
+
 </rappor-metrics>
 
 </rappor-configuration>
