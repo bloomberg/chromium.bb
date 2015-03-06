@@ -47,6 +47,7 @@
         # no possibility to use gyp variable expansion to it, so we don't use
         # <(CLOSURE_DIR) in the "externs" line.
         'externs': [
+	  '../../../../third_party/closure_compiler/externs/chrome_extensions.js',
 	  '../../../../third_party/closure_compiler/externs/chrome_send_externs.js',
           '../../../../ui/webui/resources/cr_elements/cr_network_icon/cr_network_icon_externs.js',
           '../../../../ui/webui/resources/cr_elements/cr_onc/cr_onc_data_externs.js',

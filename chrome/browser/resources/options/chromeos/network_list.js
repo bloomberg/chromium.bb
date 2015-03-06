@@ -9,7 +9,7 @@
  * servicePath properties. TODO(stevenjb): Use networkingPrivate.getNetworks.
  * @typedef {{
  *   ConnectionState: string,
- *   GUID: string
+ *   GUID: string,
  *   Type: string,
  *   policyManaged: boolean,
  *   servicePath: string
