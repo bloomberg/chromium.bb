@@ -280,6 +280,7 @@ input[type=checkbox] {
     float: none;
     font-size: .825em;
     font-weight: 400;
+    margin: 0;
     text-transform: uppercase;
     width: 100%;
   }
@@ -294,6 +295,7 @@ input[type=checkbox] {
 
   #details-button {
     display: block;
+    margin-top: 20px;
     text-align: center;
     width: 100%;
   }
@@ -320,7 +322,7 @@ input[type=checkbox] {
 @media (max-width: 420px) and (orientation: portrait) {
   #details-button {
     border: 0;
-    margin: 20px 0 0;
+    margin: 8px 0 0;
   }
 
   .secondary-button {
@@ -330,8 +332,8 @@ input[type=checkbox] {
 }
 
 /* Fixed nav. */
-@media (min-width: 300px) and (max-width: 420px) and
-       (min-height: 400px) and (orientation:portrait),
+@media (min-width: 240px) and (max-width: 420px) and
+       (min-height: 401px) and (orientation:portrait),
        (min-width: 421px) and (max-width: 736px) and (min-height: 240px) and
        (max-height: 420px) and (orientation:landscape) {
 
@@ -339,12 +341,18 @@ input[type=checkbox] {
     background: #f7f7f7;
     bottom: 0;
     left: 0;
+    margin: 0;
+    max-width: 736px;
     position: fixed;
     z-index: 1;
   }
 
   body.safe-browsing .nav-wrapper {
     background: rgb(206, 52, 38);
+  }
+
+  .interstitial-wrapper {
+    max-width: 736px;
   }
 }
 
@@ -360,6 +368,7 @@ input[type=checkbox] {
     font-family: Roboto-Regular,Helvetica;
     font-size: .933em;
     font-weight: 600;
+    margin: 6px 0;
     text-transform: uppercase;
   }
 
@@ -390,7 +399,8 @@ input[type=checkbox] {
   }
 
   #details-button {
-    height: 48px;
+    padding-bottom: 16px;
+    padding-top: 16px;
   }
 
   h1 {
@@ -404,9 +414,7 @@ input[type=checkbox] {
 
   .interstitial-wrapper {
     box-sizing: border-box;
-    margin: 24px 0 12px;
-    max-width: initial;
-    overflow: auto;
+    margin: 24px auto 12px;
     padding: 0 24px;
     position: relative;
   }
@@ -480,7 +488,8 @@ input[type=checkbox] {
   [dir='rtl'] button,
   .small-link {
     font-size: 1em;
-    height: 40px;
+    padding-bottom: 12px;
+    padding-top: 12px;
   }
 
   body:not(.offline) .icon {
@@ -552,11 +561,6 @@ input[type=checkbox] {
   #malware-opt-in {
     margin-top: 0;
   }
-
-  #reload-button,
-  #primary-button {
-    margin: 6px 0;
-  }
 }
 
 /* Phablet landscape */
@@ -566,18 +570,7 @@ input[type=checkbox] {
   }
 
   .nav-wrapper {
-    margin: 0 auto;
-  }
-}
-
-@media (max-height: 404px) {
-  button {
-    margin-top: 0;
-  }
-
-  #details-button {
-    height: 32px;
-    margin: 8px 0;
+    margin: 16px auto 0;
   }
 }
 
@@ -596,7 +589,7 @@ input[type=checkbox] {
 
 /* Small mobile screens. No fixed nav. */
 @media (max-height: 400px) and (orientation: portrait),
-       (max-height: 240px) and (orientation: landscape),
+       (max-height: 239px) and (orientation: landscape),
        (max-width: 419px) and (max-height: 360px) {
   .interstitial-wrapper {
     display: flex;
@@ -616,17 +609,18 @@ input[type=checkbox] {
 
   .nav-wrapper {
     flex: 0 1 auto;
-    margin-top: 0;
+    margin-top: 8px;
     order: 1;
     padding-left: 0;
     padding-right: 0;
     position: relative;
+    width: 100%;
   }
 }
 
 /* Malware opt-in. No fixed nav. */
 @media (max-height: 600px) and (orientation: portrait),
-       (max-height: 360px) and (orientation: landscape) {
+       (max-height: 360px) and (max-width: 680px) and (orientation: landscape) {
   .safe-browsing-has-checkbox .interstitial-wrapper {
     display: flex;
     flex-direction: column;
@@ -654,5 +648,6 @@ input[type=checkbox] {
     padding-left: 0;
     padding-right: 0;
     position: relative;
+    width: 100%;
   }
 }

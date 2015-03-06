@@ -346,9 +346,16 @@ html[subframe] body {
   }
 }
 
+@media (min-width: 600px) and (max-width: 736px) and (orientation: landscape) {
+  .offline .interstitial-wrapper {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
 @media (min-height: 240px) and (orientation: landscape) {
   .offline .interstitial-wrapper {
-    margin-bottom: 20px;
+    margin-bottom: 90px;
   }
 
   .icon-offline {
@@ -363,5 +370,23 @@ html[subframe] body {
 
   .offline .runner-container {
     top: 10px;
+  }
+}
+
+@media (max-width: 240px) {
+  button {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .interstitial-wrapper {
+    overflow: inherit;
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 120px) {
+  button {
+    width: auto;
   }
 }
