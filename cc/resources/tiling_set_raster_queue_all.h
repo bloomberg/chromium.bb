@@ -26,12 +26,90 @@ class CC_EXPORT TilingSetRasterQueueAll {
   bool IsEmpty() const;
 
  private:
+  // Helper base class for individual region iterators.
+  class OnePriorityRectIterator {
+   public:
+    OnePriorityRectIterator();
+    OnePriorityRectIterator(PictureLayerTiling* tiling,
+                            TilingData* tiling_data);
+
+    bool done() const { return !tile_; }
+    Tile* operator*() const { return tile_; }
+
+   protected:
+    ~OnePriorityRectIterator() = default;
+    bool TileNeedsRaster(Tile* tile) const {
+      return tile->NeedsRaster() && !tiling_->IsTileOccluded(tile);
+    }
+
+    template <typename TilingIteratorType>
+    void AdvanceToNextTile(TilingIteratorType* iterator);
+    template <typename TilingIteratorType>
+    bool GetFirstTileAndCheckIfValid(TilingIteratorType* iterator);
+
+    Tile* tile_;
+    PictureLayerTiling* tiling_;
+    TilingData* tiling_data_;
+  };
+
+  // Iterates over visible rect only, left to right top to bottom order.
+  class VisibleTilingIterator : public OnePriorityRectIterator {
+   public:
+    VisibleTilingIterator() = default;
+    VisibleTilingIterator(PictureLayerTiling* tiling, TilingData* tiling_data);
+
+    VisibleTilingIterator& operator++();
+
+   private:
+    TilingData::Iterator iterator_;
+  };
+
+  // Iterates over skewport only, spiral around the visible rect.
+  class SkewportTilingIterator : public OnePriorityRectIterator {
+   public:
+    SkewportTilingIterator() = default;
+    SkewportTilingIterator(PictureLayerTiling* tiling, TilingData* tiling_data);
+
+    SkewportTilingIterator& operator++();
+
+   private:
+    TilingData::SpiralDifferenceIterator iterator_;
+  };
+
+  // Iterates over soon border only, spiral around the visible rect.
+  class SoonBorderTilingIterator : public OnePriorityRectIterator {
+   public:
+    SoonBorderTilingIterator() = default;
+    SoonBorderTilingIterator(PictureLayerTiling* tiling,
+                             TilingData* tiling_data);
+
+    SoonBorderTilingIterator& operator++();
+
+   private:
+    TilingData::SpiralDifferenceIterator iterator_;
+  };
+
+  // Iterates over eventually rect only, spiral around the soon rect.
+  class EventuallyTilingIterator : public OnePriorityRectIterator {
+   public:
+    EventuallyTilingIterator() = default;
+    EventuallyTilingIterator(PictureLayerTiling* tiling,
+                             TilingData* tiling_data);
+
+    EventuallyTilingIterator& operator++();
+
+   private:
+    TilingData::SpiralDifferenceIterator iterator_;
+  };
+
+  // Iterates over all of the above phases in the following order: visible,
+  // skewport, soon border, eventually.
   class TilingIterator {
    public:
     TilingIterator();
     explicit TilingIterator(PictureLayerTiling* tiling,
                             TilingData* tiling_data);
-    ~TilingIterator();
+    ~TilingIterator() = default;
 
     bool done() const { return current_tile_ == nullptr; }
     const Tile* operator*() const { return current_tile_; }
@@ -61,9 +139,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
     };
 
     void AdvancePhase();
-    bool TileNeedsRaster(Tile* tile) const {
-      return tile->NeedsRaster() && !tiling_->IsTileOccluded(tile);
-    }
 
     PictureLayerTiling* tiling_;
     TilingData* tiling_data_;
@@ -71,8 +146,10 @@ class CC_EXPORT TilingSetRasterQueueAll {
     Phase phase_;
 
     Tile* current_tile_;
-    TilingData::Iterator visible_iterator_;
-    TilingData::SpiralDifferenceIterator spiral_iterator_;
+    VisibleTilingIterator visible_iterator_;
+    SkewportTilingIterator skewport_iterator_;
+    SoonBorderTilingIterator soon_border_iterator_;
+    EventuallyTilingIterator eventually_iterator_;
   };
 
   enum IteratorType { LOW_RES, HIGH_RES, NUM_ITERATORS };

@@ -112,6 +112,137 @@ void TilingSetRasterQueueAll::AdvanceToNextStage() {
   }
 }
 
+// OnePriorityRectIterator
+TilingSetRasterQueueAll::OnePriorityRectIterator::OnePriorityRectIterator()
+    : tile_(nullptr), tiling_(nullptr), tiling_data_(nullptr) {
+}
+
+TilingSetRasterQueueAll::OnePriorityRectIterator::OnePriorityRectIterator(
+    PictureLayerTiling* tiling,
+    TilingData* tiling_data)
+    : tile_(nullptr), tiling_(tiling), tiling_data_(tiling_data) {
+}
+
+template <typename TilingIteratorType>
+void TilingSetRasterQueueAll::OnePriorityRectIterator::AdvanceToNextTile(
+    TilingIteratorType* iterator) {
+  tile_ = nullptr;
+  while (!tile_ || !TileNeedsRaster(tile_)) {
+    ++(*iterator);
+    if (!(*iterator)) {
+      tile_ = nullptr;
+      return;
+    }
+    tile_ = tiling_->TileAt(iterator->index_x(), iterator->index_y());
+  }
+  tiling_->UpdateTileAndTwinPriority(tile_);
+}
+
+template <typename TilingIteratorType>
+bool TilingSetRasterQueueAll::OnePriorityRectIterator::
+    GetFirstTileAndCheckIfValid(TilingIteratorType* iterator) {
+  tile_ = tiling_->TileAt(iterator->index_x(), iterator->index_y());
+  if (!tile_ || !TileNeedsRaster(tile_)) {
+    tile_ = nullptr;
+    return false;
+  }
+  tiling_->UpdateTileAndTwinPriority(tile_);
+  return true;
+}
+
+// VisibleTilingIterator.
+TilingSetRasterQueueAll::VisibleTilingIterator::VisibleTilingIterator(
+    PictureLayerTiling* tiling,
+    TilingData* tiling_data)
+    : OnePriorityRectIterator(tiling, tiling_data) {
+  if (!tiling_->has_visible_rect_tiles())
+    return;
+  iterator_ =
+      TilingData::Iterator(tiling_data_, tiling_->current_visible_rect(),
+                           false /* include_borders */);
+  if (!iterator_)
+    return;
+  if (!GetFirstTileAndCheckIfValid(&iterator_))
+    ++(*this);
+}
+
+TilingSetRasterQueueAll::VisibleTilingIterator&
+    TilingSetRasterQueueAll::VisibleTilingIterator::
+    operator++() {
+  AdvanceToNextTile(&iterator_);
+  return *this;
+}
+
+// SkewportTilingIterator.
+TilingSetRasterQueueAll::SkewportTilingIterator::SkewportTilingIterator(
+    PictureLayerTiling* tiling,
+    TilingData* tiling_data)
+    : OnePriorityRectIterator(tiling, tiling_data) {
+  if (!tiling_->has_skewport_rect_tiles())
+    return;
+  iterator_ = TilingData::SpiralDifferenceIterator(
+      tiling_data_, tiling_->current_skewport_rect(),
+      tiling_->current_visible_rect(), tiling_->current_visible_rect());
+  if (!iterator_)
+    return;
+  if (!GetFirstTileAndCheckIfValid(&iterator_))
+    ++(*this);
+}
+
+TilingSetRasterQueueAll::SkewportTilingIterator&
+    TilingSetRasterQueueAll::SkewportTilingIterator::
+    operator++() {
+  AdvanceToNextTile(&iterator_);
+  return *this;
+}
+
+// SoonBorderTilingIterator.
+TilingSetRasterQueueAll::SoonBorderTilingIterator::SoonBorderTilingIterator(
+    PictureLayerTiling* tiling,
+    TilingData* tiling_data)
+    : OnePriorityRectIterator(tiling, tiling_data) {
+  if (!tiling_->has_soon_border_rect_tiles())
+    return;
+  iterator_ = TilingData::SpiralDifferenceIterator(
+      tiling_data_, tiling_->current_soon_border_rect(),
+      tiling_->current_skewport_rect(), tiling_->current_visible_rect());
+  if (!iterator_)
+    return;
+  if (!GetFirstTileAndCheckIfValid(&iterator_))
+    ++(*this);
+}
+
+TilingSetRasterQueueAll::SoonBorderTilingIterator&
+    TilingSetRasterQueueAll::SoonBorderTilingIterator::
+    operator++() {
+  AdvanceToNextTile(&iterator_);
+  return *this;
+}
+
+// EventuallyTilingIterator.
+TilingSetRasterQueueAll::EventuallyTilingIterator::EventuallyTilingIterator(
+    PictureLayerTiling* tiling,
+    TilingData* tiling_data)
+    : OnePriorityRectIterator(tiling, tiling_data) {
+  if (!tiling_->has_eventually_rect_tiles())
+    return;
+  iterator_ = TilingData::SpiralDifferenceIterator(
+      tiling_data_, tiling_->current_eventually_rect(),
+      tiling_->current_skewport_rect(), tiling_->current_soon_border_rect());
+  if (!iterator_)
+    return;
+  if (!GetFirstTileAndCheckIfValid(&iterator_))
+    ++(*this);
+}
+
+TilingSetRasterQueueAll::EventuallyTilingIterator&
+    TilingSetRasterQueueAll::EventuallyTilingIterator::
+    operator++() {
+  AdvanceToNextTile(&iterator_);
+  return *this;
+}
+
+// TilingIterator
 TilingSetRasterQueueAll::TilingIterator::TilingIterator()
     : tiling_(NULL), current_tile_(NULL) {
 }
@@ -123,125 +254,80 @@ TilingSetRasterQueueAll::TilingIterator::TilingIterator(
       tiling_data_(tiling_data),
       phase_(VISIBLE_RECT),
       current_tile_(NULL) {
-  if (!tiling_->has_visible_rect_tiles()) {
+  visible_iterator_ = VisibleTilingIterator(tiling_, tiling_data_);
+  if (visible_iterator_.done()) {
     AdvancePhase();
     return;
   }
-
-  visible_iterator_ =
-      TilingData::Iterator(tiling_data_, tiling_->current_visible_rect(),
-                           false /* include_borders */);
-  if (!visible_iterator_) {
-    AdvancePhase();
-    return;
-  }
-
-  current_tile_ =
-      tiling_->TileAt(visible_iterator_.index_x(), visible_iterator_.index_y());
-  if (!current_tile_ || !TileNeedsRaster(current_tile_)) {
-    ++(*this);
-    return;
-  }
-  tiling_->UpdateTileAndTwinPriority(current_tile_);
-}
-
-TilingSetRasterQueueAll::TilingIterator::~TilingIterator() {
+  current_tile_ = *visible_iterator_;
 }
 
 void TilingSetRasterQueueAll::TilingIterator::AdvancePhase() {
   DCHECK_LT(phase_, EVENTUALLY_RECT);
 
-  do {
+  current_tile_ = nullptr;
+  while (!current_tile_ && phase_ < EVENTUALLY_RECT) {
     phase_ = static_cast<Phase>(phase_ + 1);
     switch (phase_) {
       case VISIBLE_RECT:
         NOTREACHED();
         return;
       case SKEWPORT_RECT:
-        if (!tiling_->has_skewport_rect_tiles())
-          continue;
-
-        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-            tiling_data_, tiling_->current_skewport_rect(),
-            tiling_->current_visible_rect(), tiling_->current_visible_rect());
+        skewport_iterator_ = SkewportTilingIterator(tiling_, tiling_data_);
+        if (!skewport_iterator_.done())
+          current_tile_ = *skewport_iterator_;
         break;
       case SOON_BORDER_RECT:
-        if (!tiling_->has_soon_border_rect_tiles())
-          continue;
-
-        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-            tiling_data_, tiling_->current_soon_border_rect(),
-            tiling_->current_skewport_rect(), tiling_->current_visible_rect());
+        soon_border_iterator_ = SoonBorderTilingIterator(tiling_, tiling_data_);
+        if (!soon_border_iterator_.done())
+          current_tile_ = *soon_border_iterator_;
         break;
       case EVENTUALLY_RECT:
-        if (!tiling_->has_eventually_rect_tiles()) {
-          current_tile_ = NULL;
-          return;
-        }
-
-        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-            tiling_data_, tiling_->current_eventually_rect(),
-            tiling_->current_skewport_rect(),
-            tiling_->current_soon_border_rect());
+        eventually_iterator_ = EventuallyTilingIterator(tiling_, tiling_data_);
+        if (!eventually_iterator_.done())
+          current_tile_ = *eventually_iterator_;
         break;
     }
-
-    while (spiral_iterator_) {
-      current_tile_ = tiling_->TileAt(spiral_iterator_.index_x(),
-                                      spiral_iterator_.index_y());
-      if (current_tile_ && TileNeedsRaster(current_tile_))
-        break;
-      ++spiral_iterator_;
-    }
-
-    if (!spiral_iterator_ && phase_ == EVENTUALLY_RECT) {
-      current_tile_ = NULL;
-      break;
-    }
-  } while (!spiral_iterator_);
-
-  if (current_tile_)
-    tiling_->UpdateTileAndTwinPriority(current_tile_);
+  }
 }
 
 TilingSetRasterQueueAll::TilingIterator&
     TilingSetRasterQueueAll::TilingIterator::
     operator++() {
-  current_tile_ = NULL;
-  while (!current_tile_ || !TileNeedsRaster(current_tile_)) {
-    std::pair<int, int> next_index;
-    switch (phase_) {
-      case VISIBLE_RECT:
-        ++visible_iterator_;
-        if (!visible_iterator_) {
-          AdvancePhase();
-          return *this;
-        }
-        next_index = visible_iterator_.index();
-        break;
-      case SKEWPORT_RECT:
-      case SOON_BORDER_RECT:
-        ++spiral_iterator_;
-        if (!spiral_iterator_) {
-          AdvancePhase();
-          return *this;
-        }
-        next_index = spiral_iterator_.index();
-        break;
-      case EVENTUALLY_RECT:
-        ++spiral_iterator_;
-        if (!spiral_iterator_) {
-          current_tile_ = NULL;
-          return *this;
-        }
-        next_index = spiral_iterator_.index();
-        break;
-    }
-    current_tile_ = tiling_->TileAt(next_index.first, next_index.second);
+  switch (phase_) {
+    case VISIBLE_RECT:
+      ++visible_iterator_;
+      if (visible_iterator_.done()) {
+        AdvancePhase();
+        return *this;
+      }
+      current_tile_ = *visible_iterator_;
+      break;
+    case SKEWPORT_RECT:
+      ++skewport_iterator_;
+      if (skewport_iterator_.done()) {
+        AdvancePhase();
+        return *this;
+      }
+      current_tile_ = *skewport_iterator_;
+      break;
+    case SOON_BORDER_RECT:
+      ++soon_border_iterator_;
+      if (soon_border_iterator_.done()) {
+        AdvancePhase();
+        return *this;
+      }
+      current_tile_ = *soon_border_iterator_;
+      break;
+    case EVENTUALLY_RECT:
+      ++eventually_iterator_;
+      if (eventually_iterator_.done()) {
+        current_tile_ = nullptr;
+        return *this;
+      }
+      current_tile_ = *eventually_iterator_;
+      break;
   }
-
-  if (current_tile_)
-    tiling_->UpdateTileAndTwinPriority(current_tile_);
   return *this;
 }
 
