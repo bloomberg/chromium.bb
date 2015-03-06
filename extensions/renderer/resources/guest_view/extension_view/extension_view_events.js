@@ -4,43 +4,24 @@
 
 // Event management for ExtensionView.
 
-var EventBindings = require('event_bindings');
+var CreateEvent = require('guestViewEvents').CreateEvent;
+var GuestViewEvents = require('guestViewEvents').GuestViewEvents;
 
-var CreateEvent = function(name) {
-  var eventOpts = {supportsListeners: true, supportsFilters: true};
-  return new EventBindings.Event(name, undefined, eventOpts);
-};
-
-var EXTENSION_VIEW_EVENTS = {
-  'loadcommit': {
-    handler: function(event) {
-      ExtensionViewEvents.prototype.handleLoadCommitEvent.call(this, event);
-    },
-    evt: CreateEvent('extensionViewInternal.onLoadCommit'),
-  }
-};
-
-// Constructor.
-function ExtensionViewEvents(extensionViewImpl, viewInstanceId) {
-  this.extensionViewImpl = extensionViewImpl;
-  this.viewInstanceId = viewInstanceId;
-
-  // Set up the events.
-  var events = this.getEvents();
-  for (var eventName in events) {
-    this.setupEvent(eventName, events[eventName]);
-  }
+function ExtensionViewEvents(extensionViewImpl) {
+  GuestViewEvents.call(this, extensionViewImpl);
 }
 
-ExtensionViewEvents.prototype.getEvents = function() {
-  return EXTENSION_VIEW_EVENTS;
+ExtensionViewEvents.prototype.__proto__ = GuestViewEvents.prototype;
+
+ExtensionViewEvents.EVENTS = {
+  'loadcommit': {
+    evt: CreateEvent('extensionViewInternal.onLoadCommit'),
+    handler: 'handleLoadCommitEvent'
+  }
 };
 
-ExtensionViewEvents.prototype.setupEvent = function(name, info) {
-  info.evt.addListener(function(e) {
-    if (info.handler)
-      info.handler.call(this, e);
-  }.bind(this), {instanceId: this.viewInstanceId});
+ExtensionViewEvents.prototype.getEvents = function() {
+  return ExtensionViewEvents.EVENTS;
 };
 
 ExtensionViewEvents.prototype.handleLoadCommitEvent = function(event) {
