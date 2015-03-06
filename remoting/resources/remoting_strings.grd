@@ -730,7 +730,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Menu option for toggle full-screen mode." name="IDS_FULL_SCREEN" formatter_data="android_java">
         Full screen
       </message>
-      <message desc="Icon to leave full-screen mode." name="IDS_EXIT_FULL_SCREEN">
+      <message desc="Icon to leave full-screen mode." name="IDS_EXIT_FULL_SCREEN" formatter_data="android_java">
         Exit full screen
       </message>
       <message desc="Tool-tip for the window's close icon." name="IDS_CLOSE_WINDOW">

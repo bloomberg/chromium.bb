@@ -12,6 +12,7 @@
     </style>
     <style name="BaseTheme.NavigationDrawer" parent="@style/BaseTheme">
         <item name="windowActionBar">false</item>
+        <!--suppress NewApi -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
     <style name="BaseTheme.Desktop" parent="@style/BaseTheme">

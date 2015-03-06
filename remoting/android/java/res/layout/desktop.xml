@@ -5,18 +5,16 @@
      found in the LICENSE file.
 -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:orientation="vertical">
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
     <org.chromium.chromoting.DesktopView android:id="@+id/desktop_view"
             android:layout_height="match_parent"
             android:layout_width="match_parent"/>
     <ImageButton android:id="@+id/desktop_overlay_button"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/exit_full_screen"
             android:layout_gravity="top|end"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:onClick="onOverlayButtonPressed"
             android:src="@android:drawable/ic_menu_more"/>
-</FrameLayout>
+</merge>
