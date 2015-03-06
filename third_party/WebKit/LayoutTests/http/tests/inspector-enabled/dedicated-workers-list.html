@@ -33,13 +33,13 @@ function test()
 
     function didDisableWorkerInspection()
     {
-        WebInspector.targetManager.mainTarget().workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerAdded, workerAdded, this);
+        InspectorTest.addSniffer(WebInspector.WorkerManager.prototype, "_workerCreated", workerCreated, true);
         InspectorTest.WorkerAgent.enable();
         InspectorTest.addResult("Worker inspection enabled");
     }
 
     var workerCount = 0;
-    function workerAdded()
+    function workerCreated()
     {
         workerCount++;
         InspectorTest.addResult("Added worker: " + workerCount);
