@@ -28,7 +28,7 @@ class Notification : public message_center::Notification {
                const base::string16& body,
                const gfx::Image& icon,
                const base::string16& display_source,
-               const base::string16& replace_id,
+               const std::string& tag,
                NotificationDelegate* delegate);
 
   Notification(
@@ -39,7 +39,7 @@ class Notification : public message_center::Notification {
       const gfx::Image& icon,
       const message_center::NotifierId& notifier_id,
       const base::string16& display_source,
-      const base::string16& replace_id,
+      const std::string& tag,
       const message_center::RichNotificationData& rich_notification_data,
       NotificationDelegate* delegate);
 
@@ -53,7 +53,7 @@ class Notification : public message_center::Notification {
   const GURL& origin_url() const { return origin_url_; }
 
   // A unique identifier used to update (replace) or remove a notification.
-  const base::string16& replace_id() const { return replace_id_; }
+  const std::string& tag() const { return tag_; }
 
   // Id of the delegate embedded inside this instance.
   std::string delegate_id() const { return delegate()->id(); }
@@ -64,8 +64,8 @@ class Notification : public message_center::Notification {
   // The Origin of the page/worker which created this notification.
   GURL origin_url_;
 
-  // The user-supplied replace ID for the notification.
-  base::string16 replace_id_;
+  // The user-supplied tag for the notification.
+  std::string tag_;
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.

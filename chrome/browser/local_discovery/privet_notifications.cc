@@ -270,7 +270,7 @@ void PrivetNotificationService::PrivetNotify(bool has_multiple,
           IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
       message_center::NotifierId(GURL(kPrivetNotificationOriginUrl)),
       product_name,
-      base::UTF8ToUTF16(kPrivetNotificationID),
+      kPrivetNotificationID,
       rich_notification_data,
       new PrivetNotificationDelegate(profile_));
 

@@ -399,8 +399,7 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
         content::PlatformNotificationData::NotificationDirectionLeftToRight;
     notification_data.body =
         l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
-    notification_data.tag =
-        base::ASCIIToUTF16(kPushMessagingForcedNotificationTag);
+    notification_data.tag = kPushMessagingForcedNotificationTag;
     notification_data.icon = GURL();  // TODO(johnme): Better icon?
     PlatformNotificationServiceImpl* notification_service =
         PlatformNotificationServiceImpl::GetInstance();

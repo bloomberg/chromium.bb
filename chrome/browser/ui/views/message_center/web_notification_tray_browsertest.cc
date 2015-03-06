@@ -63,7 +63,7 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
         base::ASCIIToUTF16("Notification message body."),
         gfx::Image(),
         base::string16(),
-        base::ASCIIToUTF16(replace_id),
+        replace_id,
         new TestNotificationDelegate(delegate_id));
 
     g_browser_process->notification_ui_manager()->Add(notification,
@@ -86,7 +86,7 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
                                 base::ASCIIToUTF16("Updated message body."),
                                 gfx::Image(),
                                 base::string16(),
-                                base::ASCIIToUTF16(replace_id),
+                                replace_id,
                                 new TestNotificationDelegate(new_id));
 
     g_browser_process->notification_ui_manager()->Add(notification,

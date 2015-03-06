@@ -174,7 +174,7 @@ void NotificationImageReady(
                             message,
                             notification_icon,
                             base::string16(),
-                            base::UTF8ToUTF16(delegate->id()),
+                            delegate->id(),
                             delegate.get());
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);

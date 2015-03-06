@@ -65,7 +65,7 @@ class NotificationConversionHelperTest : public testing::Test {
         message_center::NotifierId(message_center::NotifierId::APPLICATION,
                                    "Notifier 1"),
         base::UTF8ToUTF16("Notifier's Name"),
-        base::UTF8ToUTF16("id1"),
+        "id1",
         optional_fields,
         delegate));
 

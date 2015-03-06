@@ -38,7 +38,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
             platform_data.direction);
   EXPECT_EQ(kNotificationLang, platform_data.lang);
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationBody), platform_data.body);
-  EXPECT_EQ(base::ASCIIToUTF16(kNotificationTag), platform_data.tag);
+  EXPECT_EQ(kNotificationTag, platform_data.tag);
   EXPECT_EQ(kNotificationIconUrl, platform_data.icon.spec());
   EXPECT_TRUE(platform_data.silent);
 }
@@ -66,7 +66,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
       PlatformNotificationData::NotificationDirectionLeftToRight;
   platform_data.lang = kNotificationLang;
   platform_data.body = base::ASCIIToUTF16(kNotificationBody);
-  platform_data.tag = base::ASCIIToUTF16(kNotificationTag);
+  platform_data.tag = kNotificationTag;
   platform_data.icon = GURL(kNotificationIconUrl);
   platform_data.silent = true;
 

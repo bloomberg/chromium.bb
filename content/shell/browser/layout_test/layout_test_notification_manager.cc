@@ -188,8 +188,8 @@ void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
   if (!notification_data.tag.length())
     return;
 
-  std::string replace_id = base::UTF16ToUTF8(notification_data.tag);
-  const auto& replace_iter = replacements_.find(replace_id);
+  std::string tag = notification_data.tag;
+  const auto& replace_iter = replacements_.find(tag);
   if (replace_iter != replacements_.end()) {
     const std::string& previous_title = replace_iter->second;
 
@@ -211,7 +211,7 @@ void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
       persistent_notifications_.erase(persistent_notification_iter);
   }
 
-  replacements_[replace_id] = base::UTF16ToUTF8(notification_data.title);
+  replacements_[tag] = base::UTF16ToUTF8(notification_data.title);
 }
 
 }  // namespace content

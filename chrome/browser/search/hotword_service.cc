@@ -450,7 +450,7 @@ void HotwordService::ShowHotwordNotification() {
           message_center::NotifierId::SYSTEM_COMPONENT,
           hotword_internal::kHotwordNotifierId),
       base::string16(),
-      base::string16(),
+      std::string(),
       data,
       new HotwordNotificationDelegate(profile_));
 

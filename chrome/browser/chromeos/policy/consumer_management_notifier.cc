@@ -165,8 +165,7 @@ void ConsumerManagementNotifier::ShowDesktopNotification(
       l10n_util::GetStringUTF16(button_label_message_id)));
 
   Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      GURL(notification_url),
+      message_center::NOTIFICATION_TYPE_SIMPLE, GURL(notification_url),
       l10n_util::GetStringUTF16(title_message_id),
       l10n_util::GetStringUTF16(body_message_id),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -174,8 +173,7 @@ void ConsumerManagementNotifier::ShowDesktopNotification(
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  notification_id),
       base::string16(),  // display_source
-      base::UTF8ToUTF16(notification_id),
-      optional_field,
+      notification_id, optional_field,
       new DesktopNotificationDelegate(notification_id, button_click_callback));
 
   notification.SetSystemPriority();

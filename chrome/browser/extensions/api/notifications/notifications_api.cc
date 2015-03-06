@@ -291,7 +291,7 @@ bool NotificationsApiFunction::CreateNotification(
                                 message_center::NotifierId::APPLICATION,
                                 extension_->id()),
                             base::UTF8ToUTF16(extension_->name()),
-                            base::UTF8ToUTF16(api_delegate->id()),
+                            api_delegate->id(),
                             optional_fields,
                             api_delegate);
 

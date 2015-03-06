@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
 class ProfileNotification;
@@ -55,11 +54,11 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
  private:
   // Holds all information required to show or close a platform notification.
   struct RegeneratedNotificationInfo {
-    RegeneratedNotificationInfo(const base::string16& tag,
+    RegeneratedNotificationInfo(const std::string& tag,
                                 int platform_id,
                                 const std::string& origin)
         : tag(tag), platform_id(platform_id), origin(origin) {}
-    base::string16 tag;
+    std::string tag;
     int platform_id;
     std::string origin;
   };

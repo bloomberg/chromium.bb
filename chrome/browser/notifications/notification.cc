@@ -9,7 +9,7 @@ Notification::Notification(const GURL& origin_url,
                            const base::string16& body,
                            const gfx::Image& icon,
                            const base::string16& display_source,
-                           const base::string16& replace_id,
+                           const std::string& tag,
                            NotificationDelegate* delegate)
     : message_center::Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                                    delegate->id(),
@@ -21,7 +21,7 @@ Notification::Notification(const GURL& origin_url,
                                    message_center::RichNotificationData(),
                                    delegate),
       origin_url_(origin_url),
-      replace_id_(replace_id),
+      tag_(tag),
       delegate_(delegate) {}
 
 Notification::Notification(
@@ -32,7 +32,7 @@ Notification::Notification(
     const gfx::Image& icon,
     const message_center::NotifierId& notifier_id,
     const base::string16& display_source,
-    const base::string16& replace_id,
+    const std::string& tag,
     const message_center::RichNotificationData& rich_notification_data,
     NotificationDelegate* delegate)
     : message_center::Notification(type,
@@ -45,21 +45,21 @@ Notification::Notification(
                                    rich_notification_data,
                                    delegate),
       origin_url_(origin_url),
-      replace_id_(replace_id),
+      tag_(tag),
       delegate_(delegate) {}
 
 Notification::Notification(const std::string& id,
                            const Notification& notification)
     : message_center::Notification(id, notification),
       origin_url_(notification.origin_url()),
-      replace_id_(notification.replace_id()),
+      tag_(notification.tag()),
       delegate_(notification.delegate()) {
 }
 
 Notification::Notification(const Notification& notification)
     : message_center::Notification(notification),
       origin_url_(notification.origin_url()),
-      replace_id_(notification.replace_id()),
+      tag_(notification.tag()),
       delegate_(notification.delegate()) {}
 
 Notification::~Notification() {}
@@ -67,7 +67,7 @@ Notification::~Notification() {}
 Notification& Notification::operator=(const Notification& notification) {
   message_center::Notification::operator=(notification);
   origin_url_ = notification.origin_url();
-  replace_id_ = notification.replace_id();
+  tag_ = notification.tag();
   delegate_ = notification.delegate();
   return *this;
 }

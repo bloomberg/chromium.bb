@@ -105,7 +105,7 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
         base::string16(),
         gfx::Image(),
         base::string16(),
-        base::UTF8ToUTF16(id),
+        id,
         new MockNotificationDelegate(id));
   }
 

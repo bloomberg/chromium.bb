@@ -403,7 +403,6 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
   // a fresh notification pop-up.
   g_browser_process->notification_ui_manager()->CancelById(
       notification_id, NotificationUIManager::GetProfileID(GetProfile()));
-  const base::string16 replace_id(base::UTF8ToUTF16(notification_id));
   bool success =
       (screenshot_result == ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS);
   message_center::RichNotificationData optional_field;
@@ -423,8 +422,9 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  ash::system_notifier::kNotifierScreenshot),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
-      replace_id, optional_field, new ScreenshotGrabberNotificationDelegate(
-                                      success, GetProfile(), screenshot_path));
+      notification_id, optional_field,
+      new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
+                                                screenshot_path));
 }
 #endif
 

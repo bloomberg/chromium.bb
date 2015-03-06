@@ -83,7 +83,7 @@ void DesktopNotificationBalloon::DisplayBalloon(
   NotificationDelegate* delegate =
       new DummyNotificationDelegate(base::IntToString(id_count_++), profile_);
   Notification notification(GURL(), title, contents, gfx::Image(icon),
-      base::string16(), base::string16(), delegate);
+      base::string16(), std::string(), delegate);
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 

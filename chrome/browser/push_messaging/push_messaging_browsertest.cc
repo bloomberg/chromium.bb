@@ -576,8 +576,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
   EXPECT_EQ(1u, notification_manager()->GetNotificationCount());
-  EXPECT_EQ(base::ASCIIToUTF16(kPushMessagingForcedNotificationTag),
-            notification_manager()->GetNotificationAt(0).replace_id());
+  EXPECT_EQ(kPushMessagingForcedNotificationTag,
+            notification_manager()->GetNotificationAt(0).tag());
 
   // Currently, this notification will stick around until the user or webapp
   // explicitly dismisses it (though we may change this later).
@@ -598,8 +598,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
     ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
     EXPECT_EQ("shownotification", script_result);
     EXPECT_EQ(1u, notification_manager()->GetNotificationCount());
-    EXPECT_EQ(base::ASCIIToUTF16("push_test_tag"),
-              notification_manager()->GetNotificationAt(0).replace_id());
+    EXPECT_EQ("push_test_tag",
+              notification_manager()->GetNotificationAt(0).tag());
     notification_manager()->CancelAll();
   }
 
@@ -649,8 +649,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   callback.WaitUntilSatisfied();
 
   ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
-  EXPECT_EQ(base::ASCIIToUTF16("push_test_tag"),
-            notification_manager()->GetNotificationAt(0).replace_id());
+  EXPECT_EQ("push_test_tag",
+            notification_manager()->GetNotificationAt(0).tag());
 
   // Verify that the renderer process hasn't crashed.
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));

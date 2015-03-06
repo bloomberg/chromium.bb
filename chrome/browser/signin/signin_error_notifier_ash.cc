@@ -186,7 +186,7 @@ void SigninErrorNotifier::OnErrorChanged() {
           IDR_NOTIFICATION_ALERT),
       notifier_id,
       base::string16(),  // display_source
-      base::ASCIIToUTF16(notification_id_),
+      notification_id_,
       data,
       delegate);
 

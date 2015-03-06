@@ -52,9 +52,9 @@ QuitWithAppsController::QuitWithAppsController()
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kHostedAppQuitNotification);
 
-  // There is only ever one notification to replace, so use the same replace_id
+  // There is only ever one notification to replace, so use the same tag
   // each time.
-  base::string16 replace_id = base::UTF8ToUTF16(id());
+  std::string tag = id();
 
   message_center::ButtonInfo quit_apps_button_info(
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_QUIT_LABEL));
@@ -76,7 +76,7 @@ QuitWithAppsController::QuitWithAppsController()
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kQuitWithAppsNotificationID),
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_NOTIFICATION_DISPLAY_SOURCE),
-      replace_id,
+      tag,
       rich_notification_data,
       this));
 }

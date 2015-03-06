@@ -57,7 +57,7 @@ scoped_ptr<Pickle> SerializePersistentNotification(
   pickle->WriteInt(static_cast<int>(notification_data.direction));
   pickle->WriteString(notification_data.lang);
   pickle->WriteString16(notification_data.body);
-  pickle->WriteString16(notification_data.tag);
+  pickle->WriteString(notification_data.tag);
   pickle->WriteString(notification_data.icon.spec());
   pickle->WriteBool(notification_data.silent);
 
@@ -89,7 +89,7 @@ bool UnserializePersistentNotification(
       !iterator.ReadInt(&direction_value) ||
       !iterator.ReadString(&notification_data->lang) ||
       !iterator.ReadString16(&notification_data->body) ||
-      !iterator.ReadString16(&notification_data->tag) ||
+      !iterator.ReadString(&notification_data->tag) ||
       !iterator.ReadString(&icon_url) ||
       !iterator.ReadBool(&notification_data->silent)) {
     return false;
@@ -239,7 +239,7 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> tag =
-      ConvertUTF16ToJavaString(env, notification.replace_id());
+      ConvertUTF8ToJavaString(env, notification.tag());
   ScopedJavaLocalRef<jstring> id = ConvertUTF8ToJavaString(
       env, profile_notification->notification().id());
   ScopedJavaLocalRef<jstring> title = ConvertUTF16ToJavaString(
@@ -288,7 +288,7 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
       notification_data.obj());
 
   RegeneratedNotificationInfo notification_info(
-      notification.replace_id(), platform_id,
+      notification.tag(), platform_id,
       notification.origin_url().GetOrigin().spec());
   regenerated_notification_infos_.insert(std::make_pair(
       profile_notification->notification().id(), notification_info));
@@ -298,8 +298,8 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
 
 bool NotificationUIManagerAndroid::Update(const Notification& notification,
                                           Profile* profile) {
-  const base::string16& replace_id = notification.replace_id();
-  if (replace_id.empty())
+  const std::string& tag = notification.tag();
+  if (tag.empty())
     return false;
 
   const GURL origin_url = notification.origin_url();
@@ -307,7 +307,7 @@ bool NotificationUIManagerAndroid::Update(const Notification& notification,
 
   for (const auto& iterator : profile_notifications_) {
     ProfileNotification* profile_notification = iterator.second;
-    if (profile_notification->notification().replace_id() != replace_id ||
+    if (profile_notification->notification().tag() != tag ||
         profile_notification->notification().origin_url() != origin_url ||
         profile_notification->profile() != profile)
       continue;
@@ -435,7 +435,7 @@ void NotificationUIManagerAndroid::PlatformCloseNotification(
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> tag =
-      ConvertUTF16ToJavaString(env, notification_info.tag);
+      ConvertUTF8ToJavaString(env, notification_info.tag);
   ScopedJavaLocalRef<jstring> origin =
       ConvertUTF8ToJavaString(env, notification_info.origin);
 

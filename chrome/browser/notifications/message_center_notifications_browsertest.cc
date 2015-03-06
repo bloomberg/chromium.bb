@@ -107,7 +107,7 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
                         base::ASCIIToUTF16("message"),
                         gfx::Image(),
                         base::UTF8ToUTF16("chrome-test://testing/"),
-                        base::UTF8ToUTF16("REPLACE-ME"),
+                        "REPLACE-ME",
                         new_delegate);
   }
 
@@ -130,7 +130,7 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
                             message_center::NotifierId::APPLICATION,
                             "extension_id"),
                         base::UTF8ToUTF16("chrome-test://testing/"),
-                        base::UTF8ToUTF16("REPLACE-ME"),
+                        "REPLACE-ME",
                         data,
                         new_delegate);
   }

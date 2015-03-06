@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   const Notification& notification = ui_manager()->GetNotificationAt(0);
   EXPECT_EQ("Title", base::UTF16ToUTF8(notification.title()));
   EXPECT_EQ("Contents", base::UTF16ToUTF8(notification.message()));
-  EXPECT_EQ("replace-id", base::UTF16ToUTF8(notification.replace_id()));
+  EXPECT_EQ("replace-id", notification.tag());
   EXPECT_FALSE(notification.icon().IsEmpty());
   EXPECT_TRUE(notification.silent());
 }
