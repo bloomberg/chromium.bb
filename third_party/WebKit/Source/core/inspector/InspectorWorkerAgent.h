@@ -90,7 +90,6 @@ private:
     typedef HashMap<WorkerInspectorProxy*, WorkerInfo> WorkerInfos;
     WorkerInfos m_workerInfos;
     String m_tracingSessionId;
-    int m_nextId;
     PageConsoleAgent* m_consoleAgent;
 };
 

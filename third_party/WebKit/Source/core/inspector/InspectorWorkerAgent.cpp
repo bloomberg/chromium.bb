@@ -33,6 +33,7 @@
 #include "core/inspector/InspectorWorkerAgent.h"
 
 #include "core/InspectorFrontend.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageConsoleAgent.h"
@@ -112,7 +113,6 @@ PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(PageCo
 InspectorWorkerAgent::InspectorWorkerAgent(PageConsoleAgent* consoleAgent)
     : InspectorBaseAgent<InspectorWorkerAgent>("Worker")
     , m_frontend(0)
-    , m_nextId(1)
     , m_consoleAgent(consoleAgent)
 {
 }
@@ -216,7 +216,7 @@ bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
 
 void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorProxy, const KURL& url)
 {
-    String id = "dedicated:" + String::number(m_nextId++);
+    String id = "dedicated:" + IdentifiersFactory::createIdentifier();
     m_workerInfos.set(workerInspectorProxy, WorkerInfo(url.string(), id));
     if (m_frontend && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
         createWorkerAgentClient(workerInspectorProxy, url.string(), id);

@@ -12,7 +12,7 @@ function test()
     var mockTargetId = 1;
     var MockTarget = function(name, connection, callback)
     {
-        WebInspector.Target.call(this, name, connection, callback);
+        WebInspector.Target.call(this, name, WebInspector.Target.Type.Page, connection, null, callback);
     }
     MockTarget.prototype = {
         _loadedWithCapabilities: function(callback)
