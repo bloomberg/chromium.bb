@@ -533,8 +533,6 @@
       'browser/devtools/protocol/tethering_handler.h',
       'browser/devtools/protocol/tracing_handler.cc',
       'browser/devtools/protocol/tracing_handler.h',
-      'browser/devtools/protocol/worker_handler.cc',
-      'browser/devtools/protocol/worker_handler.h',
       'browser/devtools/render_frame_devtools_agent_host.cc',
       'browser/devtools/render_frame_devtools_agent_host.h',
       'browser/devtools/service_worker_devtools_agent_host.cc',
