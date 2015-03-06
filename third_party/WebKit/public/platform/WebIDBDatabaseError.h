@@ -30,39 +30,41 @@
 #define WebIDBDatabaseError_h
 
 #include "WebCommon.h"
-#include "WebPrivatePtr.h"
 #include "WebString.h"
 
 namespace blink {
 
-class DOMError;
-
-// See comment in WebIDBFactory for a high level overview these classes.
 class WebIDBDatabaseError {
 public:
-    ~WebIDBDatabaseError() { reset(); }
+    explicit WebIDBDatabaseError(unsigned short code)
+        : m_code(code)
+    { }
 
-    WebIDBDatabaseError(unsigned short code) { assign(code); }
-    WebIDBDatabaseError(unsigned short code, const WebString& message) { assign(code, message); }
-    WebIDBDatabaseError(const WebIDBDatabaseError& error) { assign(error); }
+    WebIDBDatabaseError(unsigned short code, const WebString& message)
+        : m_code(code)
+        , m_message(message)
+    { }
+
+    WebIDBDatabaseError(const WebIDBDatabaseError& error)
+        : m_code(error.m_code)
+        , m_message(error.m_message)
+    { }
+
+    ~WebIDBDatabaseError() { }
+
     WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error)
     {
-        assign(error);
+        m_code = error.m_code;
+        m_message = error.m_message;
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebIDBDatabaseError&);
-    BLINK_EXPORT void reset();
-
-#if BLINK_IMPLEMENTATION
-    operator DOMError*() const;
-#endif
+    unsigned short code() const { return m_code; }
+    const WebString& message() const { return m_message; }
 
 private:
-    BLINK_EXPORT void assign(unsigned short code);
-    BLINK_EXPORT void assign(unsigned short code, const WebString& message);
-
-    WebPrivatePtr<DOMError> m_private;
+    unsigned short m_code;
+    WebString m_message;
 };
 
 } // namespace blink

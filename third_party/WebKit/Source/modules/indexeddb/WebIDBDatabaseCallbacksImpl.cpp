@@ -57,7 +57,7 @@ void WebIDBDatabaseCallbacksImpl::onVersionChange(long long oldVersion, long lon
 
 void WebIDBDatabaseCallbacksImpl::onAbort(long long transactionId, const WebIDBDatabaseError& error)
 {
-    m_callbacks->onAbort(transactionId, error);
+    m_callbacks->onAbort(transactionId, DOMError::create(error.code(), error.message()));
 }
 
 void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId)

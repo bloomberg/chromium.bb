@@ -81,7 +81,7 @@ static PassOwnPtr<Vector<WebBlobInfo>> ConvertBlobInfo(const WebVector<WebBlobIn
 void WebIDBCallbacksImpl::onError(const WebIDBDatabaseError& error)
 {
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
-    m_request->onError(error);
+    m_request->onError(DOMError::create(error.code(), error.message()));
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 

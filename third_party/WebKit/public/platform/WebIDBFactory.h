@@ -40,9 +40,6 @@ namespace blink {
 class WebIDBDatabase;
 class WebIDBDatabaseCallbacks;
 
-// The entry point into the IndexedDatabase API.  These classes match their Foo and
-// FooSync counterparts in the spec, but operate only in an async manner.
-// http://dev.w3.org/2006/webapi/WebSimpleDB/
 class WebIDBFactory {
 public:
     virtual ~WebIDBFactory() { }

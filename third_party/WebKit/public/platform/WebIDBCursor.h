@@ -34,7 +34,6 @@
 
 namespace blink {
 
-// See comment in WebIDBFactory for a high level overview these classes.
 class WebIDBCursor {
 public:
     virtual ~WebIDBCursor() { }

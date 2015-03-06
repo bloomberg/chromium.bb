@@ -170,7 +170,6 @@
       'WebHelperPluginImpl.h',
       'WebHistoryItem.cpp',
       'WebHitTestResult.cpp',
-      'WebIDBDatabaseError.cpp',
       'WebIDBKey.cpp',
       'WebIDBKeyPath.cpp',
       'WebIDBKeyRange.cpp',

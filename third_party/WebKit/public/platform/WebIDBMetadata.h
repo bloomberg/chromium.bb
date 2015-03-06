@@ -33,8 +33,6 @@
 
 namespace blink {
 
-struct IDBDatabaseMetadata;
-
 struct WebIDBMetadata {
     enum {
         NoIntVersion = -1

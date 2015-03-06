@@ -41,7 +41,6 @@ class WebIDBKey;
 class WebIDBKeyPath;
 class WebIDBKeyRange;
 
-// See comment in WebIDBFactory for a high level overview of these classes.
 class WebIDBDatabase {
 public:
     virtual ~WebIDBDatabase() { }
