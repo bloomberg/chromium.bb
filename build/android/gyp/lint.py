@@ -20,7 +20,8 @@ _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 
 def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
-             result_path, product_dir, sources, jar_path, resource_dir=None):
+             result_path, product_dir, sources, jar_path, resource_dir=None,
+             can_fail_build=False):
 
   def _RelativizePath(path):
     """Returns relative path to top-level src dir.
@@ -147,8 +148,7 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
                                              'lint', 'suppress.py')),
                 _RelativizePath(result_path)))
         print >> sys.stderr, msg
-        # Lint errors do not fail the build.
-        return 0
+        return 1 if can_fail_build else 0
 
   return 0
 
@@ -167,6 +167,9 @@ def main():
   parser.add_option('--java-files', help='Paths to java files.')
   parser.add_option('--jar-path', help='Jar file containing class files.')
   parser.add_option('--resource-dir', help='Path to resource dir.')
+  parser.add_option('--can-fail-build', action='store_true',
+                    help='If set, script will exit with nonzero exit status'
+                    ' if lint errors are present')
   parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--enable', action='store_true',
                     help='Run lint instead of just touching stamp.')
@@ -195,7 +198,7 @@ def main():
                   options.processed_config_path,
                   options.manifest_path, options.result_path,
                   options.product_dir, sources, options.jar_path,
-                  options.resource_dir)
+                  options.resource_dir, options.can_fail_build)
 
   if options.depfile:
     build_utils.WriteDepfile(
