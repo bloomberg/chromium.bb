@@ -61709,6 +61709,28 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ContentLength_Image_WEBP"
       label="for each carrier, number of WebP image responses whose
              Content-Length header has been tampered with"/>
+  <suffix name="CompressionRatio_Image"
+      label="the histogram of compression ratio of images"/>
+  <suffix name="CompressionRatio_Image_GIF"
+      label="the histogram of compression ratio of GIF images"/>
+  <suffix name="CompressionRatio_Image_JPG"
+      label="the histogram of compression ratio of JPG images"/>
+  <suffix name="CompressionRatio_Image_PNG"
+      label="the histogram of compression ratio of PNG images"/>
+  <suffix name="CompressionRatio_Image_WEBP"
+      label="the histogram of compression ratio of WEBP images"/>
+  <suffix name="CompressionRatio_Image_0_10KB"
+      label="the histogram of compression ratio of images whose sizes are in
+             the range of 0-10KB"/>
+  <suffix name="CompressionRatio_Image_10_100KB"
+      label="the histogram of compression ratio of images whose sizes are in
+             the range of 10-100KB"/>
+  <suffix name="CompressionRatio_Image_100_500KB"
+      label="the histogram of compression ratio of images whose sizes are in
+             the range of 100-500KB"/>
+  <suffix name="CompressionRatio_Image_500KB"
+      label="the histogram of compression ratio of images whose sizes are
+             larger than 500KB"/>
   <suffix name="ContentLength_JS"
       label="for each carrier, number of JavaScript responses whose
              Content-Length header has been tampered with"/>
