@@ -376,6 +376,9 @@ bool SQLiteDatabase::turnOnIncrementalAutoVacuum()
     int autoVacuumMode = statement.getColumnInt(0);
     int error = lastError();
 
+    // Finalize statement to not block potential VACUUM.
+    statement.finalize();
+
     // Check if we got an error while trying to get the value of the auto_vacuum flag.
     // If we got a SQLITE_BUSY error, then there's probably another transaction in
     // progress on this database. In this case, keep the current value of the
