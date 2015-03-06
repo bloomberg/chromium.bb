@@ -165,7 +165,7 @@ interface Document : Node {
     [MeasureAs=DocumentExitPointerLock] void exitPointerLock();
 
     // Touch Events
-    // http://www.w3.org/TR/touch-events/#extensions-to-the-document-interface
+    // http://rawgit.com/w3c/touch-events/v1-errata/touchevents.html#extensions-to-the-document-interface
     // FIXME: The arguments should not be optional.
     // FIXME: The webkit-prefixed arguments are not in the spec.
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,
