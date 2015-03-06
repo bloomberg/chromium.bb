@@ -12,5 +12,5 @@ Has popover after click: true
 
 Running: testColorSwatchInComputedRules
 Initial color value: rgb(255, 0, 0)
-After click color value: hsl(0, 100%, 50%)
+After shift-click color value: hsl(0, 100%, 50%)
 

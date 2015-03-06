@@ -18,10 +18,10 @@ function test() {
         function testColorSwatchInMatchRules(next)
         {
             var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
-            InspectorTest.addResult("Initial color value: " + treeItem.valueElement.textContent);
-            var swatch = treeItem.valueElement.querySelector(".swatch");
+            InspectorTest.addResult("Initial color value: " + treeItem.valueElement.deepTextContent());
+            var swatch = treeItem.valueElement.querySelector("* /deep/ .color-swatch-inner");
             swatch.dispatchEvent(createShiftClick());
-            InspectorTest.addResult("After shift-click: " + treeItem.valueElement.textContent);
+            InspectorTest.addResult("After shift-click: " + treeItem.valueElement.deepTextContent());
             InspectorTest.addResult("Has popover before click: " + !!document.querySelector("body > .popover-container"));
 
             swatch.click();
@@ -33,10 +33,10 @@ function test() {
         {
             var computedSection = InspectorTest.computedStyleSection();
             var treeItem = InspectorTest.getFirstPropertyTreeItemForSection(computedSection, "color");
-            InspectorTest.addResult("Initial color value: " + treeItem.valueElement.textContent);
-            var swatch = treeItem.valueElement.querySelector(".swatch");
-            swatch.click();
-            InspectorTest.addResult("After click color value: " + treeItem.valueElement.textContent);
+            InspectorTest.addResult("Initial color value: " + treeItem.valueElement.deepTextContent());
+            var swatch = treeItem.valueElement.querySelector("* /deep/ .color-swatch-inner");
+            swatch.dispatchEvent(createShiftClick());
+            InspectorTest.addResult("After shift-click color value: " + treeItem.valueElement.deepTextContent());
             next();
         }
     ]);
