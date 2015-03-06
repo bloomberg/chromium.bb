@@ -876,22 +876,4 @@ InspectorTest.dumpInspectorHighlightJSON = function(idValue, callback)
     }
 }
 
-InspectorTest.waitForAnimationAdded = function(callback)
-{
-    InspectorTest.addSniffer(WebInspector.AnimationTimeline.prototype, "addAnimation", callback);
-}
-
-InspectorTest.dumpAnimationTimeline = function()
-{
-    var timeline = WebInspector.panels.elements.sidebarPanes.animations._timeline;
-    // Dump timeline
-    for (var nodeUI of timeline._nodesMap.values()) {
-        for (nodeRow of nodeUI._rows) {
-            for (var ui of nodeRow.animations) {
-                InspectorTest.addResult(ui._svg.innerHTML);
-            }
-        }
-    }
-}
-
 };

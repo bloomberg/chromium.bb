@@ -95,7 +95,6 @@ static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation
 
     RefPtr<TypeBuilder::Animation::AnimationNode> animationObject = TypeBuilder::Animation::AnimationNode::create()
         .setDelay(delay)
-        .setEndDelay(computedTiming.endDelay())
         .setPlaybackRate(computedTiming.playbackRate())
         .setIterationStart(computedTiming.iterationStart())
         .setIterations(computedTiming.iterations())
