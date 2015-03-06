@@ -60,9 +60,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Win / D3D9 failures
     # TODO(jmadill): only fail on D3D9 with ANGLE bug ID 896
-    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
+    self.Skip('conformance/extensions/oes-texture-float-with-canvas.html',
         ['win'], bug=454906)
-    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
+    self.Skip('conformance/extensions/oes-texture-half-float-with-canvas.html',
         ['win'], bug=454906)
 
     # Mac / Intel failures
