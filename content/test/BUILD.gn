@@ -552,8 +552,9 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
     }
 
     if (is_linux) {
-      deps += [ "//dbus:test_support" ]
-      if (!use_dbus) {
+      if (use_dbus) {
+        deps += [ "//dbus:test_support" ]
+      } else {
         sources -=
             [ "../browser/geolocation/wifi_data_provider_linux_unittest.cc" ]
       }

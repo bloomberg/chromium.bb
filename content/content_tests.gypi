@@ -1069,7 +1069,7 @@
         ['enable_web_speech==1', {
           'sources': [ '<@(content_unittests_speech_sources)' ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" and use_dbus==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../dbus/dbus.gyp:dbus_test_support',
