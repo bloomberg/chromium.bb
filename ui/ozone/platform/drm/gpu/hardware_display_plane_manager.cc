@@ -8,6 +8,8 @@
 #include <errno.h>
 #include <xf86drm.h>
 
+#include <set>
+
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
@@ -38,9 +40,8 @@ HardwareDisplayPlaneList::~HardwareDisplayPlaneList() {
 
 HardwareDisplayPlaneList::PageFlipInfo::PageFlipInfo(uint32_t crtc_id,
                                                      uint32_t framebuffer,
-                                                     int plane,
                                                      CrtcController* crtc)
-    : crtc_id(crtc_id), framebuffer(framebuffer), plane(plane), crtc(crtc) {
+    : crtc_id(crtc_id), framebuffer(framebuffer), crtc(crtc) {
 }
 
 HardwareDisplayPlaneList::PageFlipInfo::~PageFlipInfo() {
@@ -85,6 +86,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   }
 
   uint32_t num_planes = plane_resources->count_planes;
+  std::set<uint32_t> plane_ids;
   for (uint32_t i = 0; i < num_planes; ++i) {
     ScopedDrmPlanePtr drm_plane(
         drmModeGetPlane(drm->get_fd(), plane_resources->planes[i]));
@@ -92,31 +94,25 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
       LOG(ERROR) << "Failed to get plane " << i << ".";
       return false;
     }
+    plane_ids.insert(drm_plane->plane_id);
     scoped_ptr<HardwareDisplayPlane> plane(
         new HardwareDisplayPlane(drm_plane.Pass()));
     if (plane->Initialize(drm))
       planes_.push_back(plane.release());
   }
 
-  // Temporary hack to find hidden planes for now.
+  // crbug.com/464085: if driver reports no primary planes for a crtc, create a
+  // dummy plane for which we can assign exactly one overlay.
+  // TODO(dnicoara): refactor this to simplify AssignOverlayPlanes and move
+  // this workaround into HardwareDisplayPlaneLegacy.
   for (int i = 0; i < resources->count_crtcs; ++i) {
-    uint32_t id = resources->crtcs[i] - 1;
-    bool found = false;
-    // Check that this plane doesn't already exist.
-    for (auto* plane : planes_) {
-      if (plane->plane_id() == id)
-        found = true;
+    if (plane_ids.find(resources->crtcs[i] - 1) == plane_ids.end()) {
+      scoped_ptr<HardwareDisplayPlane> dummy_plane(
+          new HardwareDisplayPlane(0, (1 << i)));
+      dummy_plane->set_is_dummy(true);
+      if (dummy_plane->Initialize(drm))
+        planes_.push_back(dummy_plane.release());
     }
-    if (found)
-      continue;
-
-    ScopedDrmPlanePtr drm_plane(drmModeGetPlane(drm->get_fd(), id));
-    if (!drm_plane)
-      continue;
-    scoped_ptr<HardwareDisplayPlane> plane(
-        new HardwareDisplayPlane(drm_plane.Pass()));
-    if (plane->Initialize(drm))
-      planes_.push_back(plane.release());
   }
 
   std::sort(planes_.begin(), planes_.end(),
@@ -173,17 +169,23 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
       LOG(ERROR) << "Failed to find a free plane for crtc " << crtc_id;
       return false;
     }
-    const gfx::Size& size = plane.buffer->GetSize();
-    gfx::RectF crop_rect = plane.crop_rect;
-    crop_rect.Scale(size.width(), size.height());
 
-    // This returns a number in 16.16 fixed point, required by the DRM overlay
-    // APIs.
-    auto to_fixed_point =
-        [](double v) -> uint32_t { return v * kFixedPointScaleValue; };
-    gfx::Rect fixed_point_rect = gfx::Rect(
-        to_fixed_point(crop_rect.x()), to_fixed_point(crop_rect.y()),
-        to_fixed_point(crop_rect.width()), to_fixed_point(crop_rect.height()));
+    gfx::Rect fixed_point_rect;
+    if (!hw_plane->is_dummy()) {
+      const gfx::Size& size = plane.buffer->GetSize();
+      gfx::RectF crop_rect = plane.crop_rect;
+      crop_rect.Scale(size.width(), size.height());
+
+      // This returns a number in 16.16 fixed point, required by the DRM overlay
+      // APIs.
+      auto to_fixed_point =
+          [](double v) -> uint32_t { return v * kFixedPointScaleValue; };
+      fixed_point_rect = gfx::Rect(to_fixed_point(crop_rect.x()),
+                                   to_fixed_point(crop_rect.y()),
+                                   to_fixed_point(crop_rect.width()),
+                                   to_fixed_point(crop_rect.height()));
+    }
+
     plane_list->plane_list.push_back(hw_plane);
     hw_plane->set_owning_crtc(crtc_id);
     if (SetPlaneData(plane_list, hw_plane, plane, crtc_id, fixed_point_rect,

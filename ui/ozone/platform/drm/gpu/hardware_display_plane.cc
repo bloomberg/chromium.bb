@@ -18,12 +18,16 @@ HardwareDisplayPlane::HardwareDisplayPlane(ScopedDrmPlanePtr plane)
     : plane_id_(plane->plane_id),
       possible_crtcs_(plane->possible_crtcs),
       owning_crtc_(0),
-      in_use_(false) {
+      in_use_(false),
+      is_dummy_(false) {
 }
 
 HardwareDisplayPlane::HardwareDisplayPlane(uint32_t plane_id,
                                            uint32_t possible_crtcs)
-    : plane_id_(plane_id), possible_crtcs_(possible_crtcs), in_use_(false) {
+    : plane_id_(plane_id),
+      possible_crtcs_(possible_crtcs),
+      in_use_(false),
+      is_dummy_(false) {
 }
 
 HardwareDisplayPlane::~HardwareDisplayPlane() {

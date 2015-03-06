@@ -34,6 +34,9 @@ class OZONE_EXPORT HardwareDisplayPlane {
   bool in_use() const { return in_use_; }
   void set_in_use(bool in_use) { in_use_ = in_use; }
 
+  bool is_dummy() const { return is_dummy_; }
+  void set_is_dummy(bool is_dummy) { is_dummy_ = is_dummy; }
+
   uint32_t plane_id() const { return plane_id_; }
 
   void set_owning_crtc(uint32_t crtc) { owning_crtc_ = crtc; }
@@ -44,6 +47,7 @@ class OZONE_EXPORT HardwareDisplayPlane {
   uint32_t possible_crtcs_;
   uint32_t owning_crtc_;
   bool in_use_;
+  bool is_dummy_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlane);
 };
