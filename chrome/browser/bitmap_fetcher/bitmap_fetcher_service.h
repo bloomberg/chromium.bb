@@ -37,6 +37,7 @@ class BitmapFetcherService : public KeyedService,
 
     // Called whenever the image changes. Called with an empty image if the
     // fetch failed or the request ended for any reason.
+    // TODO(dschuyler) The comment differs from what the code does, follow-up.
     virtual void OnImageChanged(RequestId request_id,
                                 const SkBitmap& answers_image) = 0;
   };

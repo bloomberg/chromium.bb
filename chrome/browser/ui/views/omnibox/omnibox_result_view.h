@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -74,6 +75,9 @@ class OmniboxResultView : public views::View,
 
   // Returns the display width required for the match contents.
   int GetMatchContentsWidth() const;
+
+  // Stores the image in a local data member and schedules a repaint.
+  void SetAnswerImage(const gfx::ImageSkia& image);
 
  protected:
   // Paints the given |match| using the RenderText instances |contents| and
@@ -163,6 +167,8 @@ class OmniboxResultView : public views::View,
   size_t model_index_;
 
   LocationBarView* location_bar_view_;
+  // Note: image_service_ may be null in some unit tests.
+  BitmapFetcherService* image_service_;
 
   const gfx::FontList font_list_;
   int font_height_;
@@ -181,6 +187,11 @@ class OmniboxResultView : public views::View,
 
   scoped_ptr<gfx::SlideAnimation> animation_;
 
+  // If the answer has an icon, these control the fetching and updating
+  // of the icon.
+  BitmapFetcherService::RequestId request_id_;
+  gfx::ImageSkia answer_image_;
+
   // We preserve these RenderTexts so that we won't recreate them on every call
   // to GetMatchContentsWidth() or OnPaint().
   mutable scoped_ptr<gfx::RenderText> contents_rendertext_;
@@ -190,6 +201,8 @@ class OmniboxResultView : public views::View,
   mutable scoped_ptr<gfx::RenderText> keyword_description_rendertext_;
 
   mutable int separator_width_;
+
+  base::WeakPtrFactory<OmniboxResultView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };
