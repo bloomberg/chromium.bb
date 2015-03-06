@@ -650,7 +650,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_OK" desc="Used for OK on buttons">
         OK
       </message>
-      <message name="IDS_CANCEL" desc="Used for Cancel on buttons" formatter_data="android_java">
+      <message name="IDS_CANCEL" desc="Used for Cancel on buttons">
         Cancel
       </message>
       <message name="IDS_ADD" desc="Used for Add on buttons">
