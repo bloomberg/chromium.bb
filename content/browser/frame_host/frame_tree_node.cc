@@ -35,7 +35,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(NULL),
       replication_state_(name),
-      effective_sandbox_flags_(SandboxFlags::NONE) {
+      effective_sandbox_flags_(SandboxFlags::NONE),
+      is_loading_(false) {
 }
 
 FrameTreeNode::~FrameTreeNode() {
@@ -113,28 +114,6 @@ bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {
   }
 
   return false;
-}
-
-bool FrameTreeNode::IsLoading() const {
-  RenderFrameHostImpl* current_frame_host =
-      render_manager_.current_frame_host();
-  RenderFrameHostImpl* pending_frame_host =
-      render_manager_.pending_frame_host();
-
-  DCHECK(current_frame_host);
-  // TODO(fdegans): Change the implementation logic for PlzNavigate once
-  // DidStartLoading and DidStopLoading are properly called.
-  if (pending_frame_host && pending_frame_host->is_loading())
-    return true;
-  return current_frame_host->is_loading();
-}
-
-double FrameTreeNode::GetLoadingProgress() const {
-  RenderFrameHostImpl* current_frame_host =
-      render_manager_.current_frame_host();
-
-  DCHECK(current_frame_host);
-  return current_frame_host->loading_progress();
 }
 
 bool FrameTreeNode::CommitPendingSandboxFlags() {

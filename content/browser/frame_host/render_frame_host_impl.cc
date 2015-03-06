@@ -105,10 +105,6 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
 
 }  // namespace
 
-const double RenderFrameHostImpl::kLoadingProgressNotStarted = 0.0;
-const double RenderFrameHostImpl::kLoadingProgressMinimum = 0.1;
-const double RenderFrameHostImpl::kLoadingProgressDone = 1.0;
-
 // static
 bool RenderFrameHostImpl::IsRFHStateActive(RenderFrameHostImplState rfh_state) {
   return rfh_state == STATE_DEFAULT;
@@ -154,8 +150,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       override_sudden_termination_status_(false),
       is_waiting_for_beforeunload_ack_(false),
       unload_ack_is_for_navigation_(false),
-      is_loading_(false),
-      loading_progress_(kLoadingProgressNotStarted),
       accessibility_reset_token_(0),
       accessibility_reset_count_(0),
       no_create_browser_accessibility_manager_for_testing_(false),

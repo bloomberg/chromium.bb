@@ -121,6 +121,11 @@ namespace content {
 namespace {
 
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
+
+// This matches what Blink's ProgressTracker has traditionally used for a
+// minimum progress value.
+const double kMinimumLoadingProgress = 0.1;
+
 const char kDotGoogleDotCom[] = ".google.com";
 
 #if defined(OS_ANDROID)
@@ -158,40 +163,6 @@ bool CollectSites(BrowserContext* context,
                   std::set<GURL>* sites,
                   FrameTreeNode* node) {
   sites->insert(SiteInstance::GetSiteForURL(context, node->current_url()));
-  return true;
-}
-
-// Helper function used with FrameTree::ForEach() for retrieving the total
-// loading progress and number of frames in a frame tree.
-bool CollectLoadProgress(double* progress,
-                         int* frame_count,
-                         FrameTreeNode* node) {
-  // Ignore the current frame if it has not started loading.
-  double frame_progress = node->GetLoadingProgress();
-  if (frame_progress == RenderFrameHostImpl::kLoadingProgressNotStarted)
-    return true;
-
-  // Collect progress.
-  *progress += node->GetLoadingProgress();
-  (*frame_count)++;
-  return true;
-}
-
-// Helper function used with FrameTree::ForEach() to check if at least one of
-// the nodes is loading.
-bool IsNodeLoading(bool* is_loading, FrameTreeNode* node) {
-  if (node->IsLoading()) {
-    // There is at least one node loading, so abort traversal.
-    *is_loading = true;
-    return false;
-  }
-  return true;
-}
-
-// Helper function used with FrameTree::ForEach() to reset the load progress.
-bool ResetLoadProgress(FrameTreeNode* node) {
-  node->current_frame_host()->set_loading_progress(
-      RenderFrameHostImpl::kLoadingProgressNotStarted);
   return true;
 }
 
@@ -254,13 +225,6 @@ bool SuddenTerminationAllowed(bool* sudden_termination_allowed,
     return true;
   *sudden_termination_allowed = false;
   return false;
-}
-
-// Returns true if at least one of the nodes in the |frame_tree| is loading.
-bool IsFrameTreeLoading(FrameTree& frame_tree) {
-  bool is_loading = false;
-  frame_tree.ForEach(base::Bind(&IsNodeLoading, &is_loading));
-  return is_loading;
 }
 
 }  // namespace
@@ -372,6 +336,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       waiting_for_response_(false),
       load_state_(net::LOAD_STATE_IDLE, base::string16()),
       loading_total_progress_(0.0),
+      loading_frames_in_progress_(0),
       upload_size_(0),
       upload_position_(0),
       displayed_insecure_content_(false),
@@ -2911,26 +2876,42 @@ void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+  int64 render_frame_id = rfh->frame_tree_node()->frame_tree_node_id();
 
   // Any main frame load to a new document should reset the load progress, since
   // it will replace the current page and any frames.
   if (to_different_document && !rfh->GetParent()) {
     ResetLoadProgressState();
-    rfh->set_is_loading(false);
+    loading_frames_in_progress_ = 0;
+    rfh->frame_tree_node()->set_is_loading(false);
   }
 
-  // This method should never be called when the frame is loading.
-  DCHECK(!rfh->is_loading());
+  // It is possible to get multiple calls to OnDidStartLoading that don't have
+  // corresponding calls to OnDidStopLoading:
+  // - With "swappedout://" URLs, this happens when a RenderView gets swapped
+  //   out for a cross-process navigation, and it turns into a placeholder for
+  //   one being rendered in a different process.
+  // - Also, there might be more than one RenderFrameHost sharing the same
+  //   FrameTreeNode (and thus sharing its ID) each sending a start.
+  // - But in the future, once clamy@ moves navigation network requests to the
+  //   browser process, there's a good chance that callbacks about starting and
+  //   stopping will all be handled by the browser. When that happens, there
+  //   should no longer be a start/stop call imbalance. TODO(avi): When this
+  //   future arrives, update this code to not allow this case.
+  if (rfh->frame_tree_node()->is_loading())
+    return;
 
-  if (!IsFrameTreeLoading(frame_tree_))
+  DCHECK_GE(loading_frames_in_progress_, 0);
+  if (loading_frames_in_progress_ == 0)
     DidStartLoading(rfh, to_different_document);
 
-  rfh->set_is_loading(true);
-  rfh->set_loading_progress(RenderFrameHostImpl::kLoadingProgressMinimum);
+  ++loading_frames_in_progress_;
+  rfh->frame_tree_node()->set_is_loading(true);
 
   // Notify the RenderFrameHostManager of the event.
   rfh->frame_tree_node()->render_manager()->OnDidStartLoading();
 
+  loading_progresses_[render_frame_id] = kMinimumLoadingProgress;
   SendLoadProgressChanged();
 }
 
@@ -2940,23 +2921,28 @@ void WebContentsImpl::OnDidStopLoading() {
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+  int64 render_frame_id = rfh->frame_tree_node()->frame_tree_node_id();
+  rfh->frame_tree_node()->set_is_loading(false);
 
-  // This method should never be called when the frame is not loading.
-  DCHECK(rfh->is_loading());
-  rfh->set_is_loading(false);
-  rfh->set_loading_progress(RenderFrameHostImpl::kLoadingProgressDone);
-
-  // Update progress based on this frame's completion.
-  SendLoadProgressChanged();
-
-  // Then clean-up the states.
-  if (loading_total_progress_ == 1.0)
-    ResetLoadProgressState();
+  if (loading_progresses_.find(render_frame_id) != loading_progresses_.end()) {
+    // Load stopped while we were still tracking load.  Make sure we update
+    // progress based on this frame's completion.
+    loading_progresses_[render_frame_id] = 1.0;
+    SendLoadProgressChanged();
+    // Then we clean-up our states.
+    if (loading_total_progress_ == 1.0)
+      ResetLoadProgressState();
+  }
 
   // Notify the RenderFrameHostManager of the event.
   rfh->frame_tree_node()->render_manager()->OnDidStopLoading();
 
-  if (!IsFrameTreeLoading(frame_tree_))
+  // TODO(japhet): This should be a DCHECK, but the pdf plugin sometimes
+  // calls DidStopLoading() without a matching DidStartLoading().
+  if (loading_frames_in_progress_ == 0)
+    return;
+  --loading_frames_in_progress_;
+  if (loading_frames_in_progress_ == 0)
     DidStopLoading(rfh);
 }
 
@@ -2966,8 +2952,9 @@ void WebContentsImpl::OnDidChangeLoadProgress(double load_progress) {
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+  int64 render_frame_id = rfh->frame_tree_node()->frame_tree_node_id();
 
-  rfh->set_loading_progress(load_progress);
+  loading_progresses_[render_frame_id] = load_progress;
 
   // We notify progress change immediately for the first and last updates.
   // Also, since the message loop may be pretty busy when a page is loaded, it
@@ -3452,11 +3439,16 @@ void WebContentsImpl::SendLoadProgressChanged() {
   double progress = 0.0;
   int frame_count = 0;
 
-  frame_tree_.ForEach(
-      base::Bind(&CollectLoadProgress, &progress, &frame_count));
-  if (frame_count != 0)
-    progress /= frame_count;
-  DCHECK_LE(progress, 1.0);
+  for (LoadingProgressMap::iterator it = loading_progresses_.begin();
+       it != loading_progresses_.end();
+       ++it) {
+    progress += it->second;
+    ++frame_count;
+  }
+  if (frame_count == 0)
+    return;
+  progress /= frame_count;
+  DCHECK(progress <= 1.0);
 
   if (progress <= loading_total_progress_)
     return;
@@ -3467,7 +3459,7 @@ void WebContentsImpl::SendLoadProgressChanged() {
 }
 
 void WebContentsImpl::ResetLoadProgressState() {
-  frame_tree_.ForEach(base::Bind(&ResetLoadProgress));
+  loading_progresses_.clear();
   loading_total_progress_ = 0.0;
   loading_weak_factory_.InvalidateWeakPtrs();
   loading_last_progress_update_ = base::TimeTicks();
@@ -3772,6 +3764,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   // webpage? Once this function is called at a more granular frame level, we
   // probably will need to more granularly reset the state here.
   ResetLoadProgressState();
+  loading_frames_in_progress_ = 0;
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
