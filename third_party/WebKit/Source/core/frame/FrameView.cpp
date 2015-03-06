@@ -125,7 +125,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
     , m_topControlsViewportAdjustment(0)
     , m_needsUpdateWidgetPositions(false)
-#if ENABLE(OILPAN) && ENABLE(ASSERT)
+#if ENABLE(ASSERT)
     , m_hasBeenDisposed(false)
 #endif
     , m_horizontalScrollbarMode(ScrollbarAuto)
@@ -164,13 +164,13 @@ PassRefPtrWillBeRawPtr<FrameView> FrameView::create(LocalFrame* frame, const Int
 
 FrameView::~FrameView()
 {
-#if ENABLE(OILPAN)
+#if ENABLE(ASSERT)
     ASSERT(m_hasBeenDisposed);
-#else
+#endif
+#if !ENABLE(OILPAN)
     // Verify that the LocalFrame has a different FrameView or
     // that it is being detached and destructed.
     ASSERT(frame().view() != this || !layoutView());
-    dispose();
 #endif
 }
 
@@ -202,7 +202,7 @@ void FrameView::dispose()
     if (ownerElement && ownerElement->ownedWidget() == this)
         ownerElement->setWidget(nullptr);
 
-#if ENABLE(OILPAN) && ENABLE(ASSERT)
+#if ENABLE(ASSERT)
     m_hasBeenDisposed = true;
 #endif
 }
@@ -291,12 +291,8 @@ void FrameView::prepareForDetach()
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         scrollingCoordinator->willDestroyScrollableArea(this);
 
-#if ENABLE(OILPAN)
-    // FIXME: once/if dust settles, do this always (non-Oilpan)?
-    //
     // FIXME: Oilpan: is this safe to dispose() if there are FrameView protections on the stack?
     dispose();
-#endif
 }
 
 void FrameView::detachCustomScrollbars()

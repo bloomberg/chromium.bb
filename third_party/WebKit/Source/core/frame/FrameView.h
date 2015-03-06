@@ -806,7 +806,7 @@ private:
 
     bool m_needsUpdateWidgetPositions;
 
-#if ENABLE(OILPAN) && ENABLE(ASSERT)
+#if ENABLE(ASSERT)
     // Verified when finalizing.
     bool m_hasBeenDisposed;
 #endif
