@@ -36,6 +36,7 @@
 #include "core/css/CSSShadowValue.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace blink {
