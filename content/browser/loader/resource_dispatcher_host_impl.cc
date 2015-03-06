@@ -2149,60 +2149,22 @@ ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
   // thread where they can be passed along to the respective RVHs.
   scoped_ptr<LoadInfoMap> info_map(new LoadInfoMap());
 
-  tracked_objects::ScopedTracker tracking_profile0(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes0"));
-
   for (const auto& loader : pending_loaders_) {
     // Also poll for upload progress on this timer and send upload progress ipc
     // messages to the plugin process.
-    {
-      // TODO(pkasting): Remove ScopedTracker below once crbug.com/455952 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile1(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes1"));
-      loader.second->ReportUploadProgress();
-    }
+    loader.second->ReportUploadProgress();
 
     net::URLRequest* request = loader.second->request();
-    net::UploadProgress upload_progress;
-    {
-      // TODO(pkasting): Remove ScopedTracker below once crbug.com/455952 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile2(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes2"));
-      upload_progress = request->GetUploadProgress();
-    }
-
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes4"));
+    net::UploadProgress upload_progress = request->GetUploadProgress();
 
     LoadInfo load_info;
     load_info.url = request->url();
-    {
-      // TODO(pkasting): Remove ScopedTracker below once crbug.com/455952 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile3(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes3"));
-      load_info.load_state = request->GetLoadState();
-    }
+    load_info.load_state = request->GetLoadState();
     load_info.upload_size = upload_progress.size();
     load_info.upload_position = upload_progress.position();
 
-    tracked_objects::ScopedTracker tracking_profile5(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes5"));
-
     GlobalRoutingID id(loader.second->GetRequestInfo()->GetGlobalRoutingID());
     LoadInfoMap::iterator existing = info_map->find(id);
-
-    tracked_objects::ScopedTracker tracking_profile6(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455952 ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes6"));
 
     if (existing == info_map->end() ||
         LoadInfoIsMoreInteresting(load_info, existing->second)) {
