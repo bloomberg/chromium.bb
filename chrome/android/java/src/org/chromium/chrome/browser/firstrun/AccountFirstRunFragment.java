@@ -37,8 +37,7 @@ public class AccountFirstRunFragment extends FirstRunPage {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        AccountFirstRunView firstRunView = (AccountFirstRunView) view;
-        firstRunView.setListener(new AccountFirstRunView.Listener() {
+        mView.setListener(new AccountFirstRunView.Listener() {
             @Override
             public void onAccountSelectionConfirmed(String accountName) {
                 mView.switchToSignedMode();
@@ -76,26 +75,25 @@ public class AccountFirstRunFragment extends FirstRunPage {
             }
         });
 
-        firstRunView.init(getPageDelegate().getProfileDataCache());
+        mView.init(getPageDelegate().getProfileDataCache());
 
         if (getProperties().getBoolean(FORCE_SIGNIN_AND_DISABLE_NO_THANKS)) {
-            firstRunView.setCanCancel(false);
+            mView.setCanCancel(false);
         }
-        firstRunView.setIsChildAccount(getProperties().getBoolean(IS_CHILD_ACCOUNT));
+        mView.setIsChildAccount(getProperties().getBoolean(IS_CHILD_ACCOUNT));
 
         String forcedAccountName =
                 getProperties().getString(FORCE_SIGNIN_ACCOUNT_TO);
         if (!TextUtils.isEmpty(forcedAccountName)) {
-            firstRunView.switchToForcedAccountMode(forcedAccountName);
+            mView.switchToForcedAccountMode(forcedAccountName);
         }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        ((AccountFirstRunView) getView()).setButtonsEnabled(true);
-        ((AccountFirstRunView) getView()).setProfileDataCache(
-                getPageDelegate().getProfileDataCache());
+        mView.setButtonsEnabled(true);
+        mView.setProfileDataCache(getPageDelegate().getProfileDataCache());
         getPageDelegate().onSigninDialogShown();
     }
 

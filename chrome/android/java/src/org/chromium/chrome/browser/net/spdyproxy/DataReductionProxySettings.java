@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -76,6 +77,7 @@ public class DataReductionProxySettings {
      *
      * @param context The application context.
      */
+    @SuppressFBWarnings("LI_LAZY_INIT")
     public static void initialize(Context context) {
         ThreadUtils.assertOnUiThread();
         if (sSettings == null) {
