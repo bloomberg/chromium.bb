@@ -4,10 +4,7 @@
 
 #include "base/win/metro.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
-#include "base/win/scoped_comptr.h"
-#include "base/win/windows_version.h"
 
 namespace base {
 namespace win {
@@ -71,38 +68,6 @@ wchar_t* LocalAllocAndCopyString(const string16& src) {
   wchar_t* dest = reinterpret_cast<wchar_t*>(LocalAlloc(LPTR, dest_size));
   base::wcslcpy(dest, src.c_str(), dest_size);
   return dest;
-}
-
-bool IsParentalControlActivityLoggingOn() {
-  // Query this info on Windows 7 and above.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
-
-  static bool parental_control_logging_required = false;
-  static bool parental_control_status_determined = false;
-
-  if (parental_control_status_determined)
-    return parental_control_logging_required;
-
-  parental_control_status_determined = true;
-
-  ScopedComPtr<IWindowsParentalControlsCore> parent_controls;
-  HRESULT hr = parent_controls.CreateInstance(
-      __uuidof(WindowsParentalControls));
-  if (FAILED(hr))
-    return false;
-
-  ScopedComPtr<IWPCSettings> settings;
-  hr = parent_controls->GetUserSettings(NULL, settings.Receive());
-  if (FAILED(hr))
-    return false;
-
-  unsigned long restrictions = 0;
-  settings->GetRestrictions(&restrictions);
-
-  parental_control_logging_required =
-      (restrictions & WPCFLAG_LOGGING_REQUIRED) == WPCFLAG_LOGGING_REQUIRED;
-  return parental_control_logging_required;
 }
 
 // Metro driver exports for getting the launch type, initial url, initial

@@ -6,7 +6,6 @@
 #define BASE_WIN_METRO_H_
 
 #include <windows.h>
-#include <wpcapi.h>
 
 #include "base/base_export.h"
 #include "base/callback.h"
@@ -79,11 +78,6 @@ BASE_EXPORT bool IsProcessImmersive(HANDLE process);
 // Allocates and returns the destination string via the LocalAlloc API after
 // copying the src to it.
 BASE_EXPORT wchar_t* LocalAllocAndCopyString(const string16& src);
-
-// Returns true if Windows Parental control activity logging is enabled. This
-// feature is available on Windows Vista and beyond.
-// This function should ideally be called on the UI thread.
-BASE_EXPORT bool IsParentalControlActivityLoggingOn();
 
 // Returns the type of launch and the activation params. For example if the
 // the launch is for METRO_PROTOCOL then the params is a url.

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREFS_INCOGNITO_MODE_PREFS_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 
 class PrefService;
 class Profile;
@@ -64,21 +65,12 @@ class IncognitoModePrefs {
   static bool CanOpenBrowser(Profile* profile);
 
   // Returns whether parental controls have been enabled on the platform. This
-  // method simply returns a cached value and thus the result may be stale. May
-  // be called on any thread.
-  static bool ArePlatformParentalControlsEnabledCached();
-
-#if defined(OS_WIN)
-  // Initializes the parental control settings. Must be called on UI thread and
-  // before |ArePlatformParentalControlsEnabled|.
-  static void InitializePlatformParentalControls();
-#endif // OS_WIN
+  // method evaluates and caches if the platform controls have been enabled on
+  // the first call, which must be on the UI thread when IO and blocking are
+  // allowed. Subsequent calls may be from any thread.
+  static bool ArePlatformParentalControlsEnabled() WARN_UNUSED_RESULT;
 
  private:
-  // Returns whether parental controls have been enabled on the platform, which
-  // if enabled will overrule the Availability as configured in prefs.
-  static bool ArePlatformParentalControlsEnabled();
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(IncognitoModePrefs);
 };
 

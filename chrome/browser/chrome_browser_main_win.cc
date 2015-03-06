@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -211,7 +212,8 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
     InitializeWindowProcExceptions();
   }
 
-  IncognitoModePrefs::InitializePlatformParentalControls();
+  // Prime the parental controls cache on Windows.
+  ignore_result(IncognitoModePrefs::ArePlatformParentalControlsEnabled());
 }
 
 int ChromeBrowserMainPartsWin::PreCreateThreads() {
