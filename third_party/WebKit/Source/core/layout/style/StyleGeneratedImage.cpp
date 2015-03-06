@@ -42,10 +42,10 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::cssValue() const
     return m_imageGeneratorValue.get();
 }
 
-LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* renderer, float multiplier) const
+LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* layoutObject, float multiplier) const
 {
     if (m_fixedSize) {
-        LayoutSize fixedSize(m_imageGeneratorValue->fixedSize(renderer));
+        LayoutSize fixedSize(m_imageGeneratorValue->fixedSize(layoutObject));
         if (multiplier == 1.0f)
             return fixedSize;
 
@@ -65,33 +65,33 @@ LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* renderer, float mu
     return LayoutSize(m_containerSize);
 }
 
-void StyleGeneratedImage::computeIntrinsicDimensions(const LayoutObject* renderer, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void StyleGeneratedImage::computeIntrinsicDimensions(const LayoutObject* layoutObject, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
 {
     // At a zoom level of 1 the image is guaranteed to have an integer size.
-    IntSize size = flooredIntSize(imageSize(renderer, 1));
+    IntSize size = flooredIntSize(imageSize(layoutObject, 1));
     intrinsicWidth = Length(size.width(), Fixed);
     intrinsicHeight = Length(size.height(), Fixed);
     intrinsicRatio = size;
 }
 
-void StyleGeneratedImage::addClient(LayoutObject* renderer)
+void StyleGeneratedImage::addClient(LayoutObject* layoutObject)
 {
-    m_imageGeneratorValue->addClient(renderer, IntSize());
+    m_imageGeneratorValue->addClient(layoutObject, IntSize());
 }
 
-void StyleGeneratedImage::removeClient(LayoutObject* renderer)
+void StyleGeneratedImage::removeClient(LayoutObject* layoutObject)
 {
-    m_imageGeneratorValue->removeClient(renderer);
+    m_imageGeneratorValue->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleGeneratedImage::image(LayoutObject* renderer, const IntSize& size) const
+PassRefPtr<Image> StyleGeneratedImage::image(LayoutObject* layoutObject, const IntSize& size) const
 {
-    return m_imageGeneratorValue->image(renderer, size);
+    return m_imageGeneratorValue->image(layoutObject, size);
 }
 
-bool StyleGeneratedImage::knownToBeOpaque(const LayoutObject* renderer) const
+bool StyleGeneratedImage::knownToBeOpaque(const LayoutObject* layoutObject) const
 {
-    return m_imageGeneratorValue->knownToBeOpaque(renderer);
+    return m_imageGeneratorValue->knownToBeOpaque(layoutObject);
 }
 
 }

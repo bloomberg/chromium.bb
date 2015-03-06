@@ -36,7 +36,7 @@
 namespace blink {
 
 // This class wraps the <track-breadth> which can be either a <percentage>, <length>, min-content, max-content
-// or <flex>. This class avoids spreading the knowledge of <flex> throughout the rendering directory by adding
+// or <flex>. This class avoids spreading the knowledge of <flex> throughout the layout directory by adding
 // an new unit to Length.h.
 class GridLength {
 public:

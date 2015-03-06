@@ -52,9 +52,9 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImageSet::cssValue() const
     return m_imageSetValue;
 }
 
-bool StyleFetchedImageSet::canRender(const LayoutObject& renderer, float multiplier) const
+bool StyleFetchedImageSet::canRender(const LayoutObject& layoutObject, float multiplier) const
 {
-    return m_bestFitImage->canRender(renderer, multiplier);
+    return m_bestFitImage->canRender(layoutObject, multiplier);
 }
 
 bool StyleFetchedImageSet::isLoaded() const
@@ -67,9 +67,9 @@ bool StyleFetchedImageSet::errorOccurred() const
     return m_bestFitImage->errorOccurred();
 }
 
-LayoutSize StyleFetchedImageSet::imageSize(const LayoutObject* renderer, float multiplier) const
+LayoutSize StyleFetchedImageSet::imageSize(const LayoutObject* layoutObject, float multiplier) const
 {
-    LayoutSize scaledImageSize = m_bestFitImage->imageSizeForRenderer(renderer, multiplier);
+    LayoutSize scaledImageSize = m_bestFitImage->imageSizeForRenderer(layoutObject, multiplier);
     scaledImageSize.scale(1 / m_imageScaleFactor);
     return scaledImageSize;
 }
@@ -94,29 +94,29 @@ bool StyleFetchedImageSet::usesImageContainerSize() const
     return m_bestFitImage->usesImageContainerSize();
 }
 
-void StyleFetchedImageSet::setContainerSizeForRenderer(const LayoutObject* renderer, const IntSize& imageContainerSize, float imageContainerZoomFactor)
+void StyleFetchedImageSet::setContainerSizeForRenderer(const LayoutObject* layoutObject, const IntSize& imageContainerSize, float imageContainerZoomFactor)
 {
-    m_bestFitImage->setContainerSizeForRenderer(renderer, imageContainerSize, imageContainerZoomFactor);
+    m_bestFitImage->setContainerSizeForRenderer(layoutObject, imageContainerSize, imageContainerZoomFactor);
 }
 
-void StyleFetchedImageSet::addClient(LayoutObject* renderer)
+void StyleFetchedImageSet::addClient(LayoutObject* layoutObject)
 {
-    m_bestFitImage->addClient(renderer);
+    m_bestFitImage->addClient(layoutObject);
 }
 
-void StyleFetchedImageSet::removeClient(LayoutObject* renderer)
+void StyleFetchedImageSet::removeClient(LayoutObject* layoutObject)
 {
-    m_bestFitImage->removeClient(renderer);
+    m_bestFitImage->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleFetchedImageSet::image(LayoutObject* renderer, const IntSize&) const
+PassRefPtr<Image> StyleFetchedImageSet::image(LayoutObject* layoutObject, const IntSize&) const
 {
-    return m_bestFitImage->imageForRenderer(renderer);
+    return m_bestFitImage->imageForRenderer(layoutObject);
 }
 
-bool StyleFetchedImageSet::knownToBeOpaque(const LayoutObject* renderer) const
+bool StyleFetchedImageSet::knownToBeOpaque(const LayoutObject* layoutObject) const
 {
-    return m_bestFitImage->currentFrameKnownToBeOpaque(renderer);
+    return m_bestFitImage->currentFrameKnownToBeOpaque(layoutObject);
 }
 
 } // namespace blink

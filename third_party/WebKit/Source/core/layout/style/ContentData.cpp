@@ -79,23 +79,23 @@ LayoutObject* ImageContentData::createRenderer(Document& doc, LayoutStyle& pseud
 
 LayoutObject* TextContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
 {
-    LayoutObject* renderer = new LayoutTextFragment(&doc, m_text.impl());
-    renderer->setPseudoStyle(&pseudoStyle);
-    return renderer;
+    LayoutObject* layoutObject = new LayoutTextFragment(&doc, m_text.impl());
+    layoutObject->setPseudoStyle(&pseudoStyle);
+    return layoutObject;
 }
 
 LayoutObject* CounterContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
 {
-    LayoutObject* renderer = new LayoutCounter(&doc, *m_counter);
-    renderer->setPseudoStyle(&pseudoStyle);
-    return renderer;
+    LayoutObject* layoutObject = new LayoutCounter(&doc, *m_counter);
+    layoutObject->setPseudoStyle(&pseudoStyle);
+    return layoutObject;
 }
 
 LayoutObject* QuoteContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
 {
-    LayoutObject* renderer = new LayoutQuote(&doc, m_quote);
-    renderer->setPseudoStyle(&pseudoStyle);
-    return renderer;
+    LayoutObject* layoutObject = new LayoutQuote(&doc, m_quote);
+    layoutObject->setPseudoStyle(&pseudoStyle);
+    return layoutObject;
 }
 
 } // namespace blink

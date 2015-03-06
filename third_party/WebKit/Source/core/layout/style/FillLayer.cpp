@@ -356,7 +356,7 @@ bool FillLayer::imagesAreLoaded() const
     return true;
 }
 
-bool FillLayer::hasOpaqueImage(const LayoutObject* renderer) const
+bool FillLayer::hasOpaqueImage(const LayoutObject* layoutObject) const
 {
     if (!m_image)
         return false;
@@ -368,7 +368,7 @@ bool FillLayer::hasOpaqueImage(const LayoutObject* renderer) const
         return false;
 
     if (m_composite == CompositeSourceOver)
-        return m_image->knownToBeOpaque(renderer);
+        return m_image->knownToBeOpaque(layoutObject);
 
     return false;
 }

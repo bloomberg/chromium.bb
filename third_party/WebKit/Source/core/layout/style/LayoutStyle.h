@@ -342,8 +342,8 @@ public:
     // Computes how the style change should be propagated down the tree.
     static StyleRecalcChange stylePropagationDiff(const LayoutStyle* oldStyle, const LayoutStyle* newStyle);
 
-    static ItemPosition resolveAlignment(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForRenderer);
-    static ItemPosition resolveJustification(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForRenderer);
+    static ItemPosition resolveAlignment(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject);
+    static ItemPosition resolveJustification(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject);
 
     StyleDifference visualInvalidationDiff(const LayoutStyle&) const;
 
@@ -777,7 +777,7 @@ public:
     bool reflectionDataEquivalent(const LayoutStyle* otherStyle) const { return rareNonInheritedData->reflectionDataEquivalent(*otherStyle->rareNonInheritedData); }
 
     // FIXME: reflections should belong to this helper function but they are currently handled
-    // through their self-painting layers. So the rendering code doesn't account for them.
+    // through their self-painting layers. So the layout code doesn't account for them.
     bool hasVisualOverflowingEffect() const { return boxShadow() || hasBorderImageOutsets() || hasOutline(); }
 
     EBoxSizing boxSizing() const { return m_box->boxSizing(); }

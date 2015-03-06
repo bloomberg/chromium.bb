@@ -1653,7 +1653,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
         reattach(reattachContext);
         if (rendererWillChange || renderer())
             return Reattach;
-        return ReattachNoRenderer;
+        return ReattachNoLayoutObject;
     }
 
     ASSERT(oldStyle);

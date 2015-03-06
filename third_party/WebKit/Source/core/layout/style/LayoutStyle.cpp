@@ -200,18 +200,18 @@ StyleRecalcChange LayoutStyle::stylePropagationDiff(const LayoutStyle* oldStyle,
     return NoInherit;
 }
 
-ItemPosition LayoutStyle::resolveAlignment(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForRenderer)
+ItemPosition LayoutStyle::resolveAlignment(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
 {
     // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
     if (childStyle.alignSelf() == ItemPositionAuto)
-        return (parentStyle.alignItems() == ItemPositionAuto) ? resolvedAutoPositionForRenderer : parentStyle.alignItems();
+        return (parentStyle.alignItems() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.alignItems();
     return childStyle.alignSelf();
 }
 
-ItemPosition LayoutStyle::resolveJustification(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForRenderer)
+ItemPosition LayoutStyle::resolveJustification(const LayoutStyle& parentStyle, const LayoutStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
 {
     if (childStyle.justifySelf() == ItemPositionAuto)
-        return (parentStyle.justifyItems() == ItemPositionAuto) ? resolvedAutoPositionForRenderer : parentStyle.justifyItems();
+        return (parentStyle.justifyItems() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.justifyItems();
     return childStyle.justifySelf();
 }
 
@@ -441,7 +441,7 @@ StyleDifference LayoutStyle::visualInvalidationDiff(const LayoutStyle& other) co
     // Cursors are not checked, since they will be set appropriately in response to mouse events,
     // so they don't need to cause any paint invalidation or layout.
 
-    // Animations don't need to be checked either. We always set the new style on the LayoutObject, so we will get a chance to fire off
+    // Animations don't need to be checked either. We always set the new style on the layoutObject, so we will get a chance to fire off
     // the resulting transition properly.
 
     return diff;
@@ -452,7 +452,7 @@ bool LayoutStyle::diffNeedsFullLayoutAndPaintInvalidation(const LayoutStyle& oth
     // FIXME: Not all cases in this method need both full layout and paint invalidation.
     // Should move cases into diffNeedsFullLayout() if
     // - don't need paint invalidation at all;
-    // - or the renderer knows how to exactly invalidate paints caused by the layout change
+    // - or the layoutObject knows how to exactly invalidate paints caused by the layout change
     //   instead of forced full paint invalidation.
 
     if (surround.get() != other.surround.get()) {
