@@ -229,12 +229,13 @@ public class NotificationUIManager {
      * @param icon Icon to be displayed in the notification. When this isn't a valid Bitmap, a
      *             default icon will be generated instead.
      * @param origin Full text of the origin, including the protocol, owning this notification.
+     * @param silent Whether the default sound, vibration and lights should be suppressed.
      * @param notificationData Serialized data associated with the notification.
      * @return The id using which the notification can be identified.
      */
     @CalledByNative
     private int displayNotification(String tag, String notificationId, String title, String body,
-            Bitmap icon, String origin, byte[] notificationData) {
+            Bitmap icon, String origin, boolean silent, byte[] notificationData) {
         if (icon == null || icon.getWidth() == 0) {
             icon = getIconGenerator().generateIconForUrl(origin, true);
         }
@@ -255,7 +256,6 @@ public class NotificationUIManager {
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
                 .setLargeIcon(icon)
                 .setSmallIcon(R.drawable.notification_badge)
-                .setDefaults(Notification.DEFAULT_ALL)
                 .setContentIntent(getPendingIntent(
                         NotificationConstants.ACTION_CLICK_NOTIFICATION,
                         notificationId, mLastNotificationId, notificationData))
@@ -266,6 +266,10 @@ public class NotificationUIManager {
                            res.getString(R.string.page_info_site_settings_button),
                            pendingSettingsIntent)
                 .setSubText(origin);
+
+        // Use the system's default ringtone, vibration and indicator lights unless the notification
+        // has been marked as being silent, for example because it's low priority.
+        if (!silent) notificationBuilder.setDefaults(Notification.DEFAULT_ALL);
 
         String platformTag = makePlatformTag(tag, mLastNotificationId, origin);
         mNotificationManager.notify(platformTag, mLastNotificationId, notificationBuilder.build());

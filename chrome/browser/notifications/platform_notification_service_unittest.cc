@@ -153,6 +153,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
   content::PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16("My notification's title");
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
+  notification_data.silent = true;
 
   MockDesktopNotificationDelegate* delegate
       = new MockDesktopNotificationDelegate();
@@ -171,6 +172,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
       base::UTF16ToUTF8(notification.title()));
   EXPECT_EQ("Hello, world!",
       base::UTF16ToUTF8(notification.message()));
+  EXPECT_TRUE(notification.silent());
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayNameForOrigin) {

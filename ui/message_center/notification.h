@@ -50,6 +50,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   std::vector<ButtonInfo> buttons;
   bool should_make_spoken_feedback_for_popup_updates;
   bool clickable;
+  bool silent;
 };
 
 class MESSAGE_CENTER_EXPORT Notification {
@@ -102,6 +103,10 @@ class MESSAGE_CENTER_EXPORT Notification {
   // Begin unpacked values from optional_fields.
   int priority() const { return optional_fields_.priority; }
   void set_priority(int priority) { optional_fields_.priority = priority; }
+
+  // This property currently has no effect on non-Android platforms.
+  bool silent() const { return optional_fields_.silent; }
+  void set_silent(bool silent) { optional_fields_.silent = silent; }
 
   base::Time timestamp() const { return optional_fields_.timestamp; }
   void set_timestamp(const base::Time& timestamp) {

@@ -224,6 +224,31 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       WebNotificationOptionsReflection) {
+  std::string script_result;
+
+  // TODO(peter): It doesn't add much value if we use the InfoBarResponder for
+  // each test. Rather, we should just toggle the content setting.
+  InfoBarResponder accepting_responder(browser(), true);
+  ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
+  EXPECT_EQ("granted", script_result);
+
+  ASSERT_TRUE(RunScript("DisplayPersistentAllOptionsNotification()",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  // We don't use or check the notification's direction and language.
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  EXPECT_EQ("Title", base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ("Contents", base::UTF16ToUTF8(notification.message()));
+  EXPECT_EQ("replace-id", base::UTF16ToUTF8(notification.replace_id()));
+  EXPECT_FALSE(notification.icon().IsEmpty());
+  EXPECT_TRUE(notification.silent());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        CloseDisplayedPersistentNotification) {
   std::string script_result;
 

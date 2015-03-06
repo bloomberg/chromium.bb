@@ -59,6 +59,7 @@ scoped_ptr<Pickle> SerializePersistentNotification(
   pickle->WriteString16(notification_data.body);
   pickle->WriteString16(notification_data.tag);
   pickle->WriteString(notification_data.icon.spec());
+  pickle->WriteBool(notification_data.silent);
 
   // The origin which is displaying the notification.
   pickle->WriteString(origin.spec());
@@ -89,7 +90,8 @@ bool UnserializePersistentNotification(
       !iterator.ReadString(&notification_data->lang) ||
       !iterator.ReadString16(&notification_data->body) ||
       !iterator.ReadString16(&notification_data->tag) ||
-      !iterator.ReadString(&icon_url)) {
+      !iterator.ReadString(&icon_url) ||
+      !iterator.ReadBool(&notification_data->silent)) {
     return false;
   }
 
@@ -274,8 +276,16 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   }
 
   int platform_id = Java_NotificationUIManager_displayNotification(
-      env, java_object_.obj(), tag.obj(), id.obj(), title.obj(), body.obj(),
-      icon.obj(), origin.obj(), notification_data.obj());
+      env,
+      java_object_.obj(),
+      tag.obj(),
+      id.obj(),
+      title.obj(),
+      body.obj(),
+      icon.obj(),
+      origin.obj(),
+      notification.silent(),
+      notification_data.obj());
 
   RegeneratedNotificationInfo notification_info(
       notification.replace_id(), platform_id,

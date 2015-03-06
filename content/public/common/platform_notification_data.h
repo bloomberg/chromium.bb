@@ -45,6 +45,10 @@ struct CONTENT_EXPORT PlatformNotificationData {
 
   // URL of the icon which is to be displayed with the notification.
   GURL icon;
+
+  // Whether default notification indicators (sound, vibration, light) should
+  // be suppressed.
+  bool silent;
 };
 
 }  // namespace content

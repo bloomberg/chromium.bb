@@ -166,6 +166,21 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
     }
 
     /**
+     * Verifies that notifications created with the "silent" flag do not inherit system defaults
+     * in regards to their sound, vibration and light indicators.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testNotificationSilentProperty() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        Notification notification = showAndGetNotification("MyNotification", "{ silent: true }");
+
+        // Zero indicates that no defaults should be inherited from the system.
+        assertEquals(0, notification.defaults);
+    }
+
+    /**
      * Verifies that notifications which specify an icon will have that icon fetched, converted into
      * a Bitmap and included as the large icon in the notification.
      */

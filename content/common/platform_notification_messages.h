@@ -26,6 +26,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::PlatformNotificationData)
   IPC_STRUCT_TRAITS_MEMBER(body)
   IPC_STRUCT_TRAITS_MEMBER(tag)
   IPC_STRUCT_TRAITS_MEMBER(icon)
+  IPC_STRUCT_TRAITS_MEMBER(silent)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.

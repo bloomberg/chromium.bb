@@ -24,6 +24,7 @@ PlatformNotificationData ToPlatformNotificationData(
   platform_data.body = web_data.body;
   platform_data.tag = web_data.tag;
   platform_data.icon = GURL(web_data.icon.string());
+  platform_data.silent = web_data.silent;
 
   return platform_data;
 }
@@ -41,6 +42,7 @@ WebNotificationData ToWebNotificationData(
   web_data.body = platform_data.body;
   web_data.tag = platform_data.tag;
   web_data.icon = blink::WebURL(platform_data.icon);
+  web_data.silent = platform_data.silent;
 
   return web_data;
 }

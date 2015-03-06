@@ -23,14 +23,14 @@
 
       // Renews the registered Service Worker registration for this page, then
       // displays a notification on the activated ServiceWorkerRegistration.
-      function DisplayPersistentNotification(title) {
+      function DisplayPersistentNotification(title, options) {
+        options = options || { body: 'Hello, world!', 
+                               icon: 'icon.png' };
+
         GetActivatedServiceWorker('platform_notification_service.js',
                                   location.pathname)
             .then(function (registration) {
-              return registration.showNotification(title, {
-                  body: 'Hello, world!',
-                  icon: 'icon.png'
-              });
+              return registration.showNotification(title, options);
             }).then(function () {
               messagePort.addEventListener('message', function (event) {
                 if (expectingMessage)
@@ -43,6 +43,19 @@
             }).catch(function (error) {
               domAutomationController.send('' + error);
             });
+      }
+
+      // Displays a persistent notification having every field in its options
+      // bag filled out with non-default values.
+      function DisplayPersistentAllOptionsNotification() {
+        DisplayPersistentNotification('Title', {
+          dir: 'rtl',
+          lang: 'nl-NL',
+          body: 'Contents',
+          tag: 'replace-id',
+          icon: 'icon.png',
+          silent: true
+        });
       }
 
       // Returns the latest received message from the worker. If no message has
