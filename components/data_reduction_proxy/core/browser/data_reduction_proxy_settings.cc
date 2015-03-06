@@ -85,7 +85,6 @@ void DataReductionProxySettings::UpdateConfigValues() {
   allowed_ = config_->allowed();
   alternative_allowed_ = config_->alternative_allowed();
   promo_allowed_ = config_->promo_allowed();
-  primary_origin_ = config_->Origin().ToURI();
 }
 
 void DataReductionProxySettings::InitDataReductionProxySettings(

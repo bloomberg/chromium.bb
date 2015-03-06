@@ -8,7 +8,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/base64.h"
-#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
@@ -31,8 +30,6 @@
 using testing::_;
 using testing::AnyNumber;
 using testing::Return;
-
-const char kDataReductionProxyDev[] = "foo-dev.com:80";
 
 using data_reduction_proxy::DataReductionProxySettings;
 
@@ -125,31 +122,6 @@ class DataReductionProxySettingsAndroidTest
   JNIEnv* env_;
 };
 
-TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
-  // SetUp() adds the origin to the command line, which should be returned here.
-  ScopedJavaLocalRef<jstring> result =
-      SettingsAndroid()->GetDataReductionProxyOrigin(env_, NULL);
-  ASSERT_TRUE(result.obj());
-  const base::android::JavaRef<jstring>& str_ref = result;
-  EXPECT_EQ(test_context_->config()->test_params()->DefaultOrigin(),
-            ConvertJavaStringToUTF8(str_ref));
-}
-
-TEST_F(DataReductionProxySettingsAndroidTest,
-       TestGetDataReductionProxyDevOrigin) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      data_reduction_proxy::switches::kDataReductionProxyDev,
-      kDataReductionProxyDev);
-  ResetSettings(true, true, false, true, false);
-  ResetSettingsAndroid();
-  ScopedJavaLocalRef<jstring> result =
-      SettingsAndroid()->GetDataReductionProxyOrigin(env_, NULL);
-  ASSERT_TRUE(result.obj());
-  const base::android::JavaRef<jstring>& str_ref = result;
-  EXPECT_EQ(kDataReductionProxyDev,
-            ConvertJavaStringToUTF8(str_ref));
-}
-
 TEST_F(DataReductionProxySettingsAndroidTest, TestGetDailyContentLengths) {
   ScopedJavaLocalRef<jlongArray> result =
       SettingsAndroid()->GetDailyContentLengths(
@@ -168,4 +140,3 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDailyContentLengths) {
             (data_reduction_proxy::kNumDaysInHistory - 1 - i) * 2), value);
   }
 }
-

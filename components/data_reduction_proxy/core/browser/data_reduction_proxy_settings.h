@@ -160,11 +160,6 @@ class DataReductionProxySettings {
     return promo_allowed_;
   }
 
-  // The data reduction proxy primary origin
-  const std::string PrimaryOrigin() const {
-    return primary_origin_;
-  }
-
   DataReductionProxyService* data_reduction_proxy_service() {
     return data_reduction_proxy_service_.get();
   }
@@ -234,7 +229,6 @@ class DataReductionProxySettings {
   bool allowed_;
   bool alternative_allowed_;
   bool promo_allowed_;
-  std::string primary_origin_;
 
   BooleanPrefMember spdy_proxy_auth_enabled_;
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;

@@ -44,12 +44,6 @@ jboolean DataReductionProxySettingsAndroid::IsIncludedInAltFieldTrial(
   return DataReductionProxyParams::IsIncludedInAlternativeFieldTrial();
 }
 
-ScopedJavaLocalRef<jstring>
-DataReductionProxySettingsAndroid::GetDataReductionProxyOrigin(
-    JNIEnv* env, jobject obj) {
-  return ConvertUTF8ToJavaString(env, Settings()->PrimaryOrigin());
-}
-
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(
     JNIEnv* env, jobject obj) {
   return Settings()->IsDataReductionProxyEnabled();

@@ -122,13 +122,6 @@ public class DataReductionProxySettings {
     }
 
     /**
-     * Returns the current data reduction proxy origin.
-     */
-    public String getDataReductionProxyOrigin() {
-        return nativeGetDataReductionProxyOrigin(mNativeDataReductionProxySettings);
-    }
-
-    /**
      * Sets the preference on whether to enable/disable the SPDY proxy. This will zero out the
      * data reduction statistics if this is the first time the SPDY proxy has been enabled.
      */
@@ -210,8 +203,6 @@ public class DataReductionProxySettings {
     private native boolean nativeIsDataReductionProxyPromoAllowed(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsIncludedInAltFieldTrial(
-            long nativeDataReductionProxySettingsAndroid);
-    private native String nativeGetDataReductionProxyOrigin(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyEnabled(
             long nativeDataReductionProxySettingsAndroid);
