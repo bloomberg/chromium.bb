@@ -38,7 +38,7 @@ class SdkCommand(cros.CrosCommand):
     osutils.SafeMakedirs(sdk_dir)
 
     # Figure out what manifest to sync into repo.
-    if version == 'TOT':
+    if version.lower() == 'tot':
       manifest_url = constants.MANIFEST_URL
       manifest_path = constants.PROJECT_MANIFEST
     else:
