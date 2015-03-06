@@ -12,7 +12,9 @@ namespace cc {
 
 class FakeImplProxy : public FakeProxy {
  public:
-  FakeImplProxy() : set_impl_thread_(this) {}
+  FakeImplProxy()
+      : FakeProxy(base::MessageLoopProxy::current(), nullptr),
+        set_impl_thread_(this) {}
 
   explicit FakeImplProxy(
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)

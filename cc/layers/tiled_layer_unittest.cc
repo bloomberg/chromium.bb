@@ -87,6 +87,7 @@ class TiledLayerTest : public testing::Test {
     settings_.max_partial_texture_updates = std::numeric_limits<size_t>::max();
     settings_.layer_transforms_should_scale_layer_contents = true;
     settings_.verify_property_trees = true;
+    settings_.impl_side_painting = false;
   }
 
   void SetUp() override {

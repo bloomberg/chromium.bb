@@ -2062,6 +2062,11 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     }
   }
 
+  // Synchronous single-threaded mode depends on tiles being ready to
+  // draw when raster is complete.  Therefore, it must use one of zero
+  // copy, software raster, or GPU raster (in the branches above).
+  DCHECK(!IsSynchronousSingleThreaded());
+
   *resource_pool = ResourcePool::Create(
       resource_provider_.get(), GL_TEXTURE_2D);
 
