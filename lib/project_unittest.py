@@ -119,13 +119,13 @@ class ProjectTest(cros_test_lib.TempDirTestCase):
     second = os.path.join(self.tempdir, 'bar')
     project.Project(second, initial_config={'name': 'bar'})
 
-    hello_private = os.path.join(self.tempdir, 'hello-private')
-    project.Project(hello_private, initial_config={'name': 'hello-private'})
+    hello_private = os.path.join(self.tempdir, 'hellopr-private')
+    project.Project(hello_private, initial_config={'name': 'hellopr-private'})
 
     with mock.patch('chromite.lib.portage_util.FindOverlays',
                     return_value=[first, second, hello_private]):
       self.assertEquals(hello_private,
-                        project.FindProjectByName('hello').project_dir)
+                        project.FindProjectByName('hellopr').project_dir)
 
   def testProjectCreation(self):
     """Test that project initialization throws the right errors."""

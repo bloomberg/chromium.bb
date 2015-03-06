@@ -215,7 +215,7 @@ def _FindProjectInOverlays(name, base=None):
         proj_name = proj.config.get('name')
         if proj_name == name:
           return proj
-        if proj_name.rstrip('-private') == name:
+        if proj_name == name + '-private':
           private_proj = proj
       except ProjectNotFound:
         pass
