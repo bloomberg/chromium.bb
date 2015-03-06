@@ -34,19 +34,19 @@ inline SVGTSpanElement::SVGTSpanElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGTSpanElement)
 
-LayoutObject* SVGTSpanElement::createRenderer(const LayoutStyle&)
+LayoutObject* SVGTSpanElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSVGTSpan(this);
 }
 
-bool SVGTSpanElement::rendererIsNeeded(const LayoutStyle& style)
+bool SVGTSpanElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     if (parentNode()
         && (isSVGAElement(*parentNode())
             || isSVGTextElement(*parentNode())
             || isSVGTextPathElement(*parentNode())
             || isSVGTSpanElement(*parentNode())))
-        return Element::rendererIsNeeded(style);
+        return Element::layoutObjectIsNeeded(style);
 
     return false;
 }

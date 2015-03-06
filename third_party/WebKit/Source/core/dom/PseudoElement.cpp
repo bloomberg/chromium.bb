@@ -128,7 +128,7 @@ void PseudoElement::attach(const AttachContext& context)
     ASSERT(style.contentData());
 
     for (const ContentData* content = style.contentData(); content; content = content->next()) {
-        LayoutObject* child = content->createRenderer(document(), style);
+        LayoutObject* child = content->createLayoutObject(document(), style);
         if (renderer->isChildAllowed(child, style)) {
             renderer->addChild(child);
             if (child->isQuote())
@@ -138,7 +138,7 @@ void PseudoElement::attach(const AttachContext& context)
     }
 }
 
-bool PseudoElement::rendererIsNeeded(const LayoutStyle& style)
+bool PseudoElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     return pseudoElementRendererIsNeeded(&style);
 }

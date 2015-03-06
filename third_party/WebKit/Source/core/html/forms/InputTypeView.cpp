@@ -97,7 +97,7 @@ PassRefPtrWillBeRawPtr<HTMLFormElement> InputTypeView::formForSubmission() const
     return element().form();
 }
 
-LayoutObject* InputTypeView::createRenderer(const LayoutStyle& style) const
+LayoutObject* InputTypeView::createLayoutObject(const LayoutStyle& style) const
 {
     return LayoutObject::createObject(&element(), style);
 }

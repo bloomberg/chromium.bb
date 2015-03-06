@@ -41,7 +41,7 @@ private:
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual bool rendererIsNeeded(const LayoutStyle&) override;
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
 
     virtual bool isURLAttribute(const Attribute&) const override;
     virtual const QualifiedName& subResourceAttributeName() const override;

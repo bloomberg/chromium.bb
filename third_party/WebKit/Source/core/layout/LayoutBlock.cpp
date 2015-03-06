@@ -588,7 +588,7 @@ LayoutBlock* LayoutBlock::clone() const
         cloneBlock = createAnonymousBlock();
         cloneBlock->setChildrenInline(childrenInline());
     } else {
-        LayoutObject* cloneRenderer = toElement(node())->createRenderer(styleRef());
+        LayoutObject* cloneRenderer = toElement(node())->createLayoutObject(styleRef());
         cloneBlock = toLayoutBlock(cloneRenderer);
         cloneBlock->setStyle(style());
 

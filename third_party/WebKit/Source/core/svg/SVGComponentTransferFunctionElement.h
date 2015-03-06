@@ -54,7 +54,7 @@ protected:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override final;
     virtual void svgAttributeChanged(const QualifiedName&) override final;
 
-    virtual bool rendererIsNeeded(const LayoutStyle&) override final { return false; }
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override final { return false; }
 
 private:
     RefPtrWillBeMember<SVGAnimatedNumberList> m_tableValues;

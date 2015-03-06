@@ -305,12 +305,12 @@ void HTMLObjectElement::updateWidgetInternal()
     }
 }
 
-bool HTMLObjectElement::rendererIsNeeded(const LayoutStyle& style)
+bool HTMLObjectElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     // FIXME: This check should not be needed, detached documents never render!
     if (!document().frame())
         return false;
-    return HTMLPlugInElement::rendererIsNeeded(style);
+    return HTMLPlugInElement::layoutObjectIsNeeded(style);
 }
 
 Node::InsertionNotificationRequest HTMLObjectElement::insertedInto(ContainerNode* insertionPoint)

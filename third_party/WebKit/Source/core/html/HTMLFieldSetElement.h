@@ -49,7 +49,7 @@ private:
 
     virtual bool isEnumeratable() const override { return true; }
     virtual bool supportsFocus() const override;
-    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
     virtual const AtomicString& formControlType() const override;
     virtual bool recalcWillValidate() const override { return false; }
     virtual bool matchesValidityPseudoClasses() const override final;

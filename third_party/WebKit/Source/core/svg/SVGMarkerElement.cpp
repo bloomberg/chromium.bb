@@ -149,7 +149,7 @@ void SVGMarkerElement::setOrientToAngle(PassRefPtrWillBeRawPtr<SVGAngleTearOff> 
     svgAttributeChanged(SVGNames::orientAttr);
 }
 
-LayoutObject* SVGMarkerElement::createRenderer(const LayoutStyle&)
+LayoutObject* SVGMarkerElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSVGResourceMarker(this);
 }

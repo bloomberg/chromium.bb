@@ -38,7 +38,7 @@ public:
 
     virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
     virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual bool rendererIsNeeded(const LayoutStyle&) override;
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
 
     virtual bool canStartSelection() const override { return false; }
     virtual bool canContainRangeEndPoint() const override { return false; }

@@ -619,7 +619,7 @@ PassRefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> MediaControlTextTr
     return element.release();
 }
 
-LayoutObject* MediaControlTextTrackContainerElement::createRenderer(const LayoutStyle&)
+LayoutObject* MediaControlTextTrackContainerElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutTextTrackContainerElement(this);
 }

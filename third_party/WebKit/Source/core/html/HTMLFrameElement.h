@@ -42,8 +42,8 @@ private:
 
     virtual void attach(const AttachContext& = AttachContext()) override;
 
-    virtual bool rendererIsNeeded(const LayoutStyle&) override;
-    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 

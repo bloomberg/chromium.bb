@@ -120,14 +120,14 @@ bool HTMLFormElement::isValidElement()
     return !checkInvalidControlsAndCollectUnhandled(0, CheckValidityDispatchNoEvent);
 }
 
-bool HTMLFormElement::rendererIsNeeded(const LayoutStyle& style)
+bool HTMLFormElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     if (!m_wasDemoted)
-        return HTMLElement::rendererIsNeeded(style);
+        return HTMLElement::layoutObjectIsNeeded(style);
 
     ContainerNode* node = parentNode();
     if (!node || !node->renderer())
-        return HTMLElement::rendererIsNeeded(style);
+        return HTMLElement::layoutObjectIsNeeded(style);
     LayoutObject* parentRenderer = node->renderer();
     // FIXME: Shouldn't we also check for table caption (see |formIsTablePart| below).
     // FIXME: This check is not correct for Shadow DOM.

@@ -146,7 +146,7 @@ public:
 
     // Miscellaneous functions
 
-    virtual bool rendererIsNeeded();
+    virtual bool layoutObjectIsNeeded();
     virtual void countUsage();
     virtual void sanitizeValueInResponseToMinOrMaxAttributeChange();
     virtual bool shouldRespectAlignAttribute();

@@ -33,7 +33,7 @@ public:
 private:
     explicit SVGDescElement(Document&);
 
-    virtual bool rendererIsNeeded(const LayoutStyle&) override { return false; }
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override { return false; }
 };
 
 } // namespace blink

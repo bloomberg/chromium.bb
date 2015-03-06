@@ -61,7 +61,7 @@ void HTMLBRElement::collectStyleForPresentationAttribute(const QualifiedName& na
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-LayoutObject* HTMLBRElement::createRenderer(const LayoutStyle& style)
+LayoutObject* HTMLBRElement::createLayoutObject(const LayoutStyle& style)
 {
     if (style.hasContent())
         return LayoutObject::createObject(this, style);

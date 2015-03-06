@@ -138,12 +138,12 @@ void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLElement::parseAttribute(name, value);
 }
 
-LayoutObject* HTMLCanvasElement::createRenderer(const LayoutStyle& style)
+LayoutObject* HTMLCanvasElement::createLayoutObject(const LayoutStyle& style)
 {
     LocalFrame* frame = document().frame();
     if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return new LayoutHTMLCanvas(this);
-    return HTMLElement::createRenderer(style);
+    return HTMLElement::createLayoutObject(style);
 }
 
 void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)

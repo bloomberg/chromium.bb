@@ -182,7 +182,7 @@ bool isRichlyEditablePosition(const Position& p, EditableType editableType)
     if (isRenderedHTMLTableElement(node))
         node = node->parentNode();
 
-    return node->rendererIsRichlyEditable(editableType);
+    return node->layoutObjectIsRichlyEditable(editableType);
 }
 
 Element* editableRootForPosition(const Position& p, EditableType editableType)

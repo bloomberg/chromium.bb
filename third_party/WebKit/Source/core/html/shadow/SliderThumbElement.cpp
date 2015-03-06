@@ -81,7 +81,7 @@ void SliderThumbElement::setPositionFromValue()
         renderer()->setNeedsLayoutAndFullPaintInvalidation();
 }
 
-LayoutObject* SliderThumbElement::createRenderer(const LayoutStyle&)
+LayoutObject* SliderThumbElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSliderThumb(this);
 }
@@ -306,7 +306,7 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
 
 DEFINE_NODE_FACTORY(SliderContainerElement)
 
-LayoutObject* SliderContainerElement::createRenderer(const LayoutStyle&)
+LayoutObject* SliderContainerElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSliderContainer(this);
 }

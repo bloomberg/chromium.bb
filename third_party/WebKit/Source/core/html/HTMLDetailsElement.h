@@ -42,7 +42,7 @@ public:
 private:
     explicit HTMLDetailsElement(Document&);
 
-    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void didAddClosedShadowRoot(ShadowRoot&) override;
     virtual bool isInteractiveContent() const override;

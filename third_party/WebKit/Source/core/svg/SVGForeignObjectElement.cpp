@@ -127,12 +127,12 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 }
 
-LayoutObject* SVGForeignObjectElement::createRenderer(const LayoutStyle&)
+LayoutObject* SVGForeignObjectElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSVGForeignObject(this);
 }
 
-bool SVGForeignObjectElement::rendererIsNeeded(const LayoutStyle& style)
+bool SVGForeignObjectElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     // Suppress foreignObject renderers in SVG hidden containers.
     // (https://bugs.webkit.org/show_bug.cgi?id=87297)
@@ -147,7 +147,7 @@ bool SVGForeignObjectElement::rendererIsNeeded(const LayoutStyle& style)
         ancestor = ancestor->parentElement();
     }
 
-    return SVGGraphicsElement::rendererIsNeeded(style);
+    return SVGGraphicsElement::layoutObjectIsNeeded(style);
 }
 
 bool SVGForeignObjectElement::selfHasRelativeLengths() const

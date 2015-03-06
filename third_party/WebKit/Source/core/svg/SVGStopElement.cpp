@@ -58,12 +58,12 @@ void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElement::svgAttributeChanged(attrName);
 }
 
-LayoutObject* SVGStopElement::createRenderer(const LayoutStyle&)
+LayoutObject* SVGStopElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSVGGradientStop(this);
 }
 
-bool SVGStopElement::rendererIsNeeded(const LayoutStyle&)
+bool SVGStopElement::layoutObjectIsNeeded(const LayoutStyle&)
 {
     return true;
 }

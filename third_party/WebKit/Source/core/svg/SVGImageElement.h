@@ -64,7 +64,7 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
 
     virtual const AtomicString imageSourceURL() const override;
 

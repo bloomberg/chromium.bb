@@ -309,8 +309,8 @@ public:
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual void detach(const AttachContext& = AttachContext()) override;
 
-    virtual LayoutObject* createRenderer(const LayoutStyle&);
-    virtual bool rendererIsNeeded(const LayoutStyle&);
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&);
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&);
     void recalcStyle(StyleRecalcChange, Text* nextTextSibling = nullptr);
     void pseudoStateChanged(CSSSelector::PseudoType);
     void setAnimationStyleChange(bool);
@@ -367,7 +367,7 @@ public:
     virtual void blur();
     // Whether this element can receive focus at all. Most elements are not
     // focusable but some elements, such as form controls and links, are. Unlike
-    // rendererIsFocusable(), this method may be called when layout is not up to
+    // layoutObjectIsFocusable(), this method may be called when layout is not up to
     // date, so it must not use the renderer to determine focusability.
     virtual bool supportsFocus() const;
     // Whether the node can actually be focused.
@@ -531,7 +531,7 @@ protected:
     // may use the renderer to reason about focusability. This method cannot be
     // moved to LayoutObject because some focusable nodes don't have renderers,
     // e.g., HTMLOptionElement.
-    virtual bool rendererIsFocusable() const;
+    virtual bool layoutObjectIsFocusable() const;
 
     // classAttributeChanged() exists to share code between
     // parseAttribute (called via setAttribute()) and

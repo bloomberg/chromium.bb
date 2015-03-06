@@ -529,7 +529,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
     return transform.multiply(viewBoxTransform);
 }
 
-bool SVGSVGElement::rendererIsNeeded(const LayoutStyle& style)
+bool SVGSVGElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     // FIXME: We should respect display: none on the documentElement svg element
     // but many things in FrameView and SVGImage depend on the LayoutSVGRoot when
@@ -537,10 +537,10 @@ bool SVGSVGElement::rendererIsNeeded(const LayoutStyle& style)
     // https://bugs.webkit.org/show_bug.cgi?id=103493
     if (document().documentElement() == this)
         return true;
-    return Element::rendererIsNeeded(style);
+    return Element::layoutObjectIsNeeded(style);
 }
 
-LayoutObject* SVGSVGElement::createRenderer(const LayoutStyle&)
+LayoutObject* SVGSVGElement::createLayoutObject(const LayoutStyle&)
 {
     if (isOutermostSVGSVGElement())
         return new LayoutSVGRoot(this);

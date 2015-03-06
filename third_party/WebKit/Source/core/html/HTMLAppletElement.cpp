@@ -83,14 +83,14 @@ bool HTMLAppletElement::hasLegalLinkAttribute(const QualifiedName& name) const
     return name == codebaseAttr || HTMLPlugInElement::hasLegalLinkAttribute(name);
 }
 
-bool HTMLAppletElement::rendererIsNeeded(const LayoutStyle& style)
+bool HTMLAppletElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     if (!fastHasAttribute(codeAttr) && !hasOpenShadowRoot())
         return false;
-    return HTMLPlugInElement::rendererIsNeeded(style);
+    return HTMLPlugInElement::layoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLAppletElement::createRenderer(const LayoutStyle& style)
+LayoutObject* HTMLAppletElement::createLayoutObject(const LayoutStyle& style)
 {
     if (!canEmbedJava() || hasOpenShadowRoot())
         return LayoutObject::createObject(this, style);

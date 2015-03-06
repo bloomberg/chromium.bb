@@ -66,7 +66,7 @@ PassOwnPtr<ContentData> ContentData::clone() const
     return result.release();
 }
 
-LayoutObject* ImageContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
+LayoutObject* ImageContentData::createLayoutObject(Document& doc, LayoutStyle& pseudoStyle) const
 {
     LayoutImage* image = LayoutImage::createAnonymous(&doc);
     image->setPseudoStyle(&pseudoStyle);
@@ -77,21 +77,21 @@ LayoutObject* ImageContentData::createRenderer(Document& doc, LayoutStyle& pseud
     return image;
 }
 
-LayoutObject* TextContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
+LayoutObject* TextContentData::createLayoutObject(Document& doc, LayoutStyle& pseudoStyle) const
 {
     LayoutObject* layoutObject = new LayoutTextFragment(&doc, m_text.impl());
     layoutObject->setPseudoStyle(&pseudoStyle);
     return layoutObject;
 }
 
-LayoutObject* CounterContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
+LayoutObject* CounterContentData::createLayoutObject(Document& doc, LayoutStyle& pseudoStyle) const
 {
     LayoutObject* layoutObject = new LayoutCounter(&doc, *m_counter);
     layoutObject->setPseudoStyle(&pseudoStyle);
     return layoutObject;
 }
 
-LayoutObject* QuoteContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
+LayoutObject* QuoteContentData::createLayoutObject(Document& doc, LayoutStyle& pseudoStyle) const
 {
     LayoutObject* layoutObject = new LayoutQuote(&doc, m_quote);
     layoutObject->setPseudoStyle(&pseudoStyle);

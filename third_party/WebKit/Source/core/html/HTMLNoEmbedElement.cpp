@@ -47,11 +47,11 @@ inline HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLNoEmbedElement)
 
-bool HTMLNoEmbedElement::rendererIsNeeded(const LayoutStyle& style)
+bool HTMLNoEmbedElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     if (document().frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return false;
-    return Element::rendererIsNeeded(style);
+    return Element::layoutObjectIsNeeded(style);
 }
 
 }

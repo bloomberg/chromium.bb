@@ -53,7 +53,7 @@ private:
     explicit HTMLLabelElement(Document&, HTMLFormElement*);
     bool isInInteractiveContent(Node*) const;
 
-    virtual bool rendererIsFocusable() const override;
+    virtual bool layoutObjectIsFocusable() const override;
     virtual bool isInteractiveContent() const override;
     virtual void accessKeyAction(bool sendMouseEvents) override;
 

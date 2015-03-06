@@ -56,7 +56,7 @@ void HTMLButtonElement::setType(const AtomicString& type)
     setAttribute(typeAttr, type);
 }
 
-LayoutObject* HTMLButtonElement::createRenderer(const LayoutStyle&)
+LayoutObject* HTMLButtonElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutButton(this);
 }

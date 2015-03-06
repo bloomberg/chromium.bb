@@ -71,7 +71,7 @@ public:
 
 protected:
     InsertionPoint(const QualifiedName&, Document&);
-    virtual bool rendererIsNeeded(const LayoutStyle&) override;
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     virtual void removedFrom(ContainerNode*) override;

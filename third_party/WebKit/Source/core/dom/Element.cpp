@@ -229,7 +229,7 @@ short Element::tabIndex() const
     return hasRareData() ? elementRareData()->tabIndex() : 0;
 }
 
-bool Element::rendererIsFocusable() const
+bool Element::layoutObjectIsFocusable() const
 {
     // Elements in canvas fallback content are not rendered, but they are allowed to be
     // focusable as long as their canvas is displayed and visible.
@@ -1323,12 +1323,12 @@ const AtomicString Element::imageSourceURL() const
     return getAttribute(srcAttr);
 }
 
-bool Element::rendererIsNeeded(const LayoutStyle& style)
+bool Element::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     return style.display() != NONE;
 }
 
-LayoutObject* Element::createRenderer(const LayoutStyle& style)
+LayoutObject* Element::createLayoutObject(const LayoutStyle& style)
 {
     return LayoutObject::createObject(this, style);
 }
@@ -1431,7 +1431,7 @@ void Element::attach(const AttachContext& context)
         data->clearComputedStyle();
     }
 
-    LayoutTreeBuilderForElement(*this, context.resolvedStyle).createRendererIfNeeded();
+    LayoutTreeBuilderForElement(*this, context.resolvedStyle).createLayoutObjectIfNeeded();
 
     addCallbackSelectors();
 
@@ -2202,7 +2202,7 @@ void Element::blur()
 bool Element::supportsFocus() const
 {
     // FIXME: supportsFocus() can be called when layout is not up to date.
-    // Logic that deals with the renderer should be moved to rendererIsFocusable().
+    // Logic that deals with the renderer should be moved to layoutObjectIsFocusable().
     // But supportsFocus must return true when the element is editable, or else
     // it won't be focusable. Furthermore, supportsFocus cannot just return true
     // always or else tabIndex() will change for all HTML elements.
@@ -2234,7 +2234,7 @@ bool Element::supportsSpatialNavigationFocus() const
 
 bool Element::isFocusable() const
 {
-    return inDocument() && supportsFocus() && !isInert() && rendererIsFocusable();
+    return inDocument() && supportsFocus() && !isInert() && layoutObjectIsFocusable();
 }
 
 bool Element::isKeyboardFocusable() const

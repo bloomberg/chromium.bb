@@ -263,7 +263,7 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     HTMLFrameOwnerElement::detach(context);
 }
 
-LayoutObject* HTMLPlugInElement::createRenderer(const LayoutStyle& style)
+LayoutObject* HTMLPlugInElement::createLayoutObject(const LayoutStyle& style)
 {
     // Fallback content breaks the DOM->Renderer class relationship of this
     // class and all superclasses because createObject won't necessarily return
@@ -423,9 +423,9 @@ bool HTMLPlugInElement::isPluginElement() const
     return true;
 }
 
-bool HTMLPlugInElement::rendererIsFocusable() const
+bool HTMLPlugInElement::layoutObjectIsFocusable() const
 {
-    if (HTMLFrameOwnerElement::supportsFocus() && HTMLFrameOwnerElement::rendererIsFocusable())
+    if (HTMLFrameOwnerElement::supportsFocus() && HTMLFrameOwnerElement::layoutObjectIsFocusable())
         return true;
 
     if (useFallbackContent() || !renderer() || !renderer()->isEmbeddedObject())

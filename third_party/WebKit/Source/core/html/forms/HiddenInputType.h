@@ -45,9 +45,9 @@ private:
     FormControlState saveFormControlState() const override;
     void restoreFormControlState(const FormControlState&) override;
     bool supportsValidation() const override;
-    LayoutObject* createRenderer(const LayoutStyle&) const override;
+    LayoutObject* createLayoutObject(const LayoutStyle&) const override;
     void accessKeyAction(bool sendMouseEvents) override;
-    bool rendererIsNeeded() override;
+    bool layoutObjectIsNeeded() override;
     bool storesValueSeparateFromAttribute() override;
     bool isInteractiveContent() const override { return false; }
     bool shouldRespectHeightAndWidthAttributes() override;

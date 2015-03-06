@@ -57,7 +57,7 @@ private:
     virtual bool shouldAppearIndeterminate() const override;
     virtual bool supportLabels() const override { return true; }
 
-    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
     LayoutProgress* layoutProgress() const;
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;

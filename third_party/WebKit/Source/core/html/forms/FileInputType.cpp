@@ -166,7 +166,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
     event->setDefaultHandled();
 }
 
-LayoutObject* FileInputType::createRenderer(const LayoutStyle&) const
+LayoutObject* FileInputType::createLayoutObject(const LayoutStyle&) const
 {
     return new LayoutFileUploadControl(&element());
 }

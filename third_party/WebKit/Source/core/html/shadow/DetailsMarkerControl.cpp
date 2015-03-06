@@ -44,14 +44,14 @@ DetailsMarkerControl::DetailsMarkerControl(Document& document)
 {
 }
 
-LayoutObject* DetailsMarkerControl::createRenderer(const LayoutStyle&)
+LayoutObject* DetailsMarkerControl::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutDetailsMarker(this);
 }
 
-bool DetailsMarkerControl::rendererIsNeeded(const LayoutStyle& style)
+bool DetailsMarkerControl::layoutObjectIsNeeded(const LayoutStyle& style)
 {
-    return summaryElement()->isMainSummary() && HTMLDivElement::rendererIsNeeded(style);
+    return summaryElement()->isMainSummary() && HTMLDivElement::layoutObjectIsNeeded(style);
 }
 
 HTMLSummaryElement* DetailsMarkerControl::summaryElement()

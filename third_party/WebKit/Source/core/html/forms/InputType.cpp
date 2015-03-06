@@ -508,7 +508,7 @@ bool InputType::canBeSuccessfulSubmitButton()
     return false;
 }
 
-bool InputType::rendererIsNeeded()
+bool InputType::layoutObjectIsNeeded()
 {
     return true;
 }

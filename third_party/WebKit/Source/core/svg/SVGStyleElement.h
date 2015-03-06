@@ -62,7 +62,7 @@ private:
     virtual void childrenChanged(const ChildrenChange&) override;
 
     virtual void finishParsingChildren() override;
-    virtual bool rendererIsNeeded(const LayoutStyle&) override { return false; }
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override { return false; }
 
     virtual bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
     virtual void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }

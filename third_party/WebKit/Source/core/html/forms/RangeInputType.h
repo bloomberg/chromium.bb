@@ -56,7 +56,7 @@ private:
     void handleTouchEvent(TouchEvent*) override;
     bool hasTouchEventHandler() const override;
     void handleKeydownEvent(KeyboardEvent*) override;
-    LayoutObject* createRenderer(const LayoutStyle&) const override;
+    LayoutObject* createLayoutObject(const LayoutStyle&) const override;
     void createShadowSubtree() override;
     Decimal parseToNumber(const String&, const Decimal&) const override;
     String serialize(const Decimal&) const override;

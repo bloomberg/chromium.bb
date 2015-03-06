@@ -366,7 +366,7 @@ void Text::attach(const AttachContext& context)
     if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this)) {
         if (LayoutObject* parentRenderer = renderingParent->renderer()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
-                LayoutTreeBuilderForText(*this, parentRenderer).createRenderer();
+                LayoutTreeBuilderForText(*this, parentRenderer).createLayoutObject();
         }
     }
     CharacterData::attach(context);
@@ -374,16 +374,16 @@ void Text::attach(const AttachContext& context)
 
 void Text::reattachIfNeeded(const AttachContext& context)
 {
-    bool rendererIsNeeded = false;
+    bool layoutObjectIsNeeded = false;
     ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this);
     if (renderingParent) {
         if (LayoutObject* parentRenderer = renderingParent->renderer()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
-                rendererIsNeeded = true;
+                layoutObjectIsNeeded = true;
         }
     }
 
-    if (rendererIsNeeded == !!renderer())
+    if (layoutObjectIsNeeded == !!renderer())
         return;
 
     // The following is almost the same as Node::reattach() except that we create renderer only if needed.
@@ -393,8 +393,8 @@ void Text::reattachIfNeeded(const AttachContext& context)
 
     if (styleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
-    if (rendererIsNeeded)
-        LayoutTreeBuilderForText(*this, renderingParent->renderer()).createRenderer();
+    if (layoutObjectIsNeeded)
+        LayoutTreeBuilderForText(*this, renderingParent->renderer()).createLayoutObject();
     CharacterData::attach(reattachContext);
 }
 

@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<TextControlInnerContainer> TextControlInnerContainer::cre
     return element.release();
 }
 
-LayoutObject* TextControlInnerContainer::createRenderer(const LayoutStyle&)
+LayoutObject* TextControlInnerContainer::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutTextControlInnerContainer(this);
 }
@@ -130,7 +130,7 @@ void TextControlInnerEditorElement::defaultEventHandler(Event* event)
         HTMLDivElement::defaultEventHandler(event);
 }
 
-LayoutObject* TextControlInnerEditorElement::createRenderer(const LayoutStyle&)
+LayoutObject* TextControlInnerEditorElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutTextControlInnerBlock(this);
 }

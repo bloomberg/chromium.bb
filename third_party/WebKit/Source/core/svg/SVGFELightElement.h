@@ -72,7 +72,7 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) override final;
     virtual void childrenChanged(const ChildrenChange&) override final;
 
-    virtual bool rendererIsNeeded(const LayoutStyle&) override { return false; }
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override { return false; }
 
     RefPtrWillBeMember<SVGAnimatedNumber> m_azimuth;
     RefPtrWillBeMember<SVGAnimatedNumber> m_elevation;

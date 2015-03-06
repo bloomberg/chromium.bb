@@ -815,14 +815,14 @@ void HTMLInputElement::finishParsingChildren()
     }
 }
 
-bool HTMLInputElement::rendererIsNeeded(const LayoutStyle& style)
+bool HTMLInputElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
-    return m_inputType->rendererIsNeeded() && HTMLTextFormControlElement::rendererIsNeeded(style);
+    return m_inputType->layoutObjectIsNeeded() && HTMLTextFormControlElement::layoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLInputElement::createRenderer(const LayoutStyle& style)
+LayoutObject* HTMLInputElement::createLayoutObject(const LayoutStyle& style)
 {
-    return m_inputTypeView->createRenderer(style);
+    return m_inputTypeView->createLayoutObject(style);
 }
 
 void HTMLInputElement::attach(const AttachContext& context)

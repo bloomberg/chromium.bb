@@ -48,7 +48,7 @@ HTMLSummaryElement::HTMLSummaryElement(Document& document)
 {
 }
 
-LayoutObject* HTMLSummaryElement::createRenderer(const LayoutStyle&)
+LayoutObject* HTMLSummaryElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutBlockFlow(this);
 }

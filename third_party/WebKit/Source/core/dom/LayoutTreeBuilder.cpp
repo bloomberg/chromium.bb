@@ -88,7 +88,7 @@ bool LayoutTreeBuilderForElement::shouldCreateRenderer() const
     if (!m_renderingParent)
         return false;
 
-    // FIXME: Should the following be in SVGElement::rendererIsNeeded()?
+    // FIXME: Should the following be in SVGElement::layoutObjectIsNeeded()?
     if (m_node->isSVGElement()) {
         // SVG elements only render when inside <svg>, or if the element is an <svg> itself.
         if (!isSVGSVGElement(*m_node) && (!m_renderingParent->node() || !m_renderingParent->node()->isSVGElement()))
@@ -103,7 +103,7 @@ bool LayoutTreeBuilderForElement::shouldCreateRenderer() const
     if (!parentRenderer->canHaveChildren())
         return false;
 
-    return m_node->rendererIsNeeded(style());
+    return m_node->layoutObjectIsNeeded(style());
 }
 
 LayoutStyle& LayoutTreeBuilderForElement::style() const
@@ -113,11 +113,11 @@ LayoutStyle& LayoutTreeBuilderForElement::style() const
     return *m_style;
 }
 
-void LayoutTreeBuilderForElement::createRenderer()
+void LayoutTreeBuilderForElement::createLayoutObject()
 {
     LayoutStyle& style = this->style();
 
-    LayoutObject* newLayoutObject = m_node->createRenderer(style);
+    LayoutObject* newLayoutObject = m_node->createLayoutObject(style);
     if (!newLayoutObject)
         return;
 
@@ -146,7 +146,7 @@ void LayoutTreeBuilderForElement::createRenderer()
     parentRenderer->addChild(newLayoutObject, nextRenderer);
 }
 
-void LayoutTreeBuilderForText::createRenderer()
+void LayoutTreeBuilderForText::createLayoutObject()
 {
     LayoutObject* parentRenderer = this->parentRenderer();
     LayoutStyle* style = parentRenderer->style();

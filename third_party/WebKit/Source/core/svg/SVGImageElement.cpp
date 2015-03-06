@@ -181,7 +181,7 @@ bool SVGImageElement::selfHasRelativeLengths() const
         || m_height->currentValue()->isRelative();
 }
 
-LayoutObject* SVGImageElement::createRenderer(const LayoutStyle&)
+LayoutObject* SVGImageElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSVGImage(this);
 }

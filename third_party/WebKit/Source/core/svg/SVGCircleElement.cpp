@@ -99,7 +99,7 @@ bool SVGCircleElement::selfHasRelativeLengths() const
         || m_r->currentValue()->isRelative();
 }
 
-LayoutObject* SVGCircleElement::createRenderer(const LayoutStyle&)
+LayoutObject* SVGCircleElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSVGEllipse(this);
 }

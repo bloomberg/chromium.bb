@@ -116,15 +116,15 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
         markForLayoutAndParentResourceInvalidation(object);
 }
 
-LayoutObject* SVGTextPathElement::createRenderer(const LayoutStyle&)
+LayoutObject* SVGTextPathElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutSVGTextPath(this);
 }
 
-bool SVGTextPathElement::rendererIsNeeded(const LayoutStyle& style)
+bool SVGTextPathElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     if (parentNode() && (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode())))
-        return Element::rendererIsNeeded(style);
+        return Element::layoutObjectIsNeeded(style);
 
     return false;
 }

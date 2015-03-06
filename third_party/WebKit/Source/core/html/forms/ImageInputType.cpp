@@ -121,7 +121,7 @@ void ImageInputType::handleDOMActivateEvent(Event* event)
     event->setDefaultHandled();
 }
 
-LayoutObject* ImageInputType::createRenderer(const LayoutStyle& style) const
+LayoutObject* ImageInputType::createLayoutObject(const LayoutStyle& style) const
 {
     if (m_useFallbackContent)
         return new LayoutBlockFlow(&element());

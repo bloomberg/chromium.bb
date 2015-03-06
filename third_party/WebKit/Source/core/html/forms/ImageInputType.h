@@ -50,7 +50,7 @@ private:
     bool appendFormData(FormDataList&, bool) const override;
     String resultForDialogSubmit() const override;
     bool supportsValidation() const override;
-    LayoutObject* createRenderer(const LayoutStyle&) const override;
+    LayoutObject* createLayoutObject(const LayoutStyle&) const override;
     void handleDOMActivateEvent(Event*) override;
     void altAttributeChanged() override;
     void srcAttributeChanged() override;

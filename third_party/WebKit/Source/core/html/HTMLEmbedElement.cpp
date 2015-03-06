@@ -149,10 +149,10 @@ void HTMLEmbedElement::updateWidgetInternal()
     requestObject(m_url, m_serviceType, paramNames, paramValues);
 }
 
-bool HTMLEmbedElement::rendererIsNeeded(const LayoutStyle& style)
+bool HTMLEmbedElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
     if (isImageType())
-        return HTMLPlugInElement::rendererIsNeeded(style);
+        return HTMLPlugInElement::layoutObjectIsNeeded(style);
 
     LocalFrame* frame = document().frame();
     if (!frame)
@@ -168,7 +168,7 @@ bool HTMLEmbedElement::rendererIsNeeded(const LayoutStyle& style)
             return false;
         }
     }
-    return HTMLPlugInElement::rendererIsNeeded(style);
+    return HTMLPlugInElement::layoutObjectIsNeeded(style);
 }
 
 bool HTMLEmbedElement::isURLAttribute(const Attribute& attribute) const

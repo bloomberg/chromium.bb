@@ -45,7 +45,7 @@ inline HTMLWBRElement::HTMLWBRElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLWBRElement)
 
-LayoutObject* HTMLWBRElement::createRenderer(const LayoutStyle& style)
+LayoutObject* HTMLWBRElement::createLayoutObject(const LayoutStyle& style)
 {
     return new LayoutWordBreak(this);
 }

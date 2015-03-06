@@ -333,7 +333,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
     return ImageCandidate();
 }
 
-LayoutObject* HTMLImageElement::createRenderer(const LayoutStyle& style)
+LayoutObject* HTMLImageElement::createLayoutObject(const LayoutStyle& style)
 {
     if (style.hasContent())
         return LayoutObject::createObject(this, style);

@@ -10,7 +10,7 @@
 namespace blink {
 
 // <rt> is an HTMLElement in script, but we use a separate interface here
-// so HTMLElement's createRenderer doesn't need to know about it.
+// so HTMLElement's createLayoutObject doesn't need to know about it.
 class HTMLRTElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLRTElement);
@@ -18,7 +18,7 @@ public:
 private:
     explicit HTMLRTElement(Document&);
 
-    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
 };
 
 } // namespace

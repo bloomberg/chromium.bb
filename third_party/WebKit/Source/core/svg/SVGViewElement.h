@@ -53,7 +53,7 @@ private:
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual bool rendererIsNeeded(const LayoutStyle&) override { return false; }
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override { return false; }
 
     RefPtrWillBeMember<SVGStaticStringList> m_viewTarget;
 };

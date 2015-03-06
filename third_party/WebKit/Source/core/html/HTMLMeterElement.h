@@ -74,7 +74,7 @@ private:
 
     virtual bool supportLabels() const override { return true; }
 
-    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     void didElementStateChange();

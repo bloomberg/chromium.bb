@@ -189,7 +189,7 @@ bool HTMLAreaElement::isMouseFocusable() const
     return isFocusable();
 }
 
-bool HTMLAreaElement::rendererIsFocusable() const
+bool HTMLAreaElement::layoutObjectIsFocusable() const
 {
     HTMLImageElement* image = imageElement();
     if (!image || !image->renderer() || image->renderer()->style()->visibility() != VISIBLE)

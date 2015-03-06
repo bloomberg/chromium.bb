@@ -39,7 +39,7 @@ namespace blink {
 // - Unknown Elements in SVG namespace
 // - Registered custom tag elements in SVG namespace (http://www.w3.org/TR/2013/WD-custom-elements-20130514/#registering-custom-elements)
 //
-// The main purpose of this class at the moment is to override rendererIsNeeded() to return
+// The main purpose of this class at the moment is to override layoutObjectIsNeeded() to return
 // false to make sure we don't attempt to render such elements.
 class SVGUnknownElement final : public SVGElement {
 public:
@@ -48,7 +48,7 @@ public:
 private:
     SVGUnknownElement(const QualifiedName&, Document&);
 
-    virtual bool rendererIsNeeded(const LayoutStyle&) override { return false; }
+    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override { return false; }
 };
 
 } // namespace blink

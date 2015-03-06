@@ -51,7 +51,7 @@ PassRefPtrWillBeRawPtr<HTMLLabelElement> HTMLLabelElement::create(Document& docu
     return labelElement.release();
 }
 
-bool HTMLLabelElement::rendererIsFocusable() const
+bool HTMLLabelElement::layoutObjectIsFocusable() const
 {
     HTMLLabelElement* that = const_cast<HTMLLabelElement*>(this);
     return that->isContentEditable();

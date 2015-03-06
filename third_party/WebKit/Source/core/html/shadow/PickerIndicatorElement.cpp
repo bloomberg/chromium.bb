@@ -69,7 +69,7 @@ PickerIndicatorElement::~PickerIndicatorElement()
     ASSERT(!m_chooser);
 }
 
-LayoutObject* PickerIndicatorElement::createRenderer(const LayoutStyle&)
+LayoutObject* PickerIndicatorElement::createLayoutObject(const LayoutStyle&)
 {
     return new LayoutDetailsMarker(this);
 }

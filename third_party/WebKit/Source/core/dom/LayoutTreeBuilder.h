@@ -79,10 +79,10 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
 public:
     LayoutTreeBuilderForElement(Element&, LayoutStyle*);
 
-    void createRendererIfNeeded()
+    void createLayoutObjectIfNeeded()
     {
         if (shouldCreateRenderer())
-            createRenderer();
+            createLayoutObject();
     }
 
 private:
@@ -90,7 +90,7 @@ private:
     LayoutObject* nextRenderer() const;
     bool shouldCreateRenderer() const;
     LayoutStyle& style() const;
-    void createRenderer();
+    void createLayoutObject();
 
     mutable RefPtr<LayoutStyle> m_style;
 };
@@ -100,7 +100,7 @@ public:
     LayoutTreeBuilderForText(Text& text, LayoutObject* renderingParent)
         : LayoutTreeBuilder(text, renderingParent) { }
 
-    void createRenderer();
+    void createLayoutObject();
 };
 
 } // namespace blink

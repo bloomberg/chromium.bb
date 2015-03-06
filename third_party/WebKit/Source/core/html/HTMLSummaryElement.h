@@ -38,7 +38,7 @@ public:
 private:
     explicit HTMLSummaryElement(Document&);
 
-    virtual LayoutObject* createRenderer(const LayoutStyle&) override;
+    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
     virtual void defaultEventHandler(Event*) override;
     virtual void didAddClosedShadowRoot(ShadowRoot&) override;
     HTMLDetailsElement* detailsElement() const;

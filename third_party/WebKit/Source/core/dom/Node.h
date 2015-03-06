@@ -427,7 +427,7 @@ public:
         return false;
     }
 
-    bool rendererIsRichlyEditable(EditableType editableType = ContentIsEditable) const
+    bool layoutObjectIsRichlyEditable(EditableType editableType = ContentIsEditable) const
     {
         switch (editableType) {
         case ContentIsEditable:

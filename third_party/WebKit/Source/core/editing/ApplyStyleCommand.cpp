@@ -788,7 +788,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
         if (!node->renderer() || !node->hasEditableStyle())
             continue;
 
-        if (!node->rendererIsRichlyEditable() && node->isHTMLElement()) {
+        if (!node->layoutObjectIsRichlyEditable() && node->isHTMLElement()) {
             HTMLElement* element = toHTMLElement(node);
             // This is a plaintext-only region. Only proceed if it's fully selected.
             // pastEndNode is the node after the last fully selected node, so if it's inside node then
