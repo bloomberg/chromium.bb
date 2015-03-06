@@ -25,7 +25,8 @@ class CONTENT_EXPORT ServiceWorkerCacheScheduler {
   // operation and starts the next.
   void CompleteOperationAndRunNext();
 
-  bool Empty() const;
+  // Returns true if there are any running or pending operations.
+  bool ScheduledOperations() const;
 
  private:
   void RunOperationIfIdle();

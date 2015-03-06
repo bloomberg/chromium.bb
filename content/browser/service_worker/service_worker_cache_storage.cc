@@ -544,7 +544,7 @@ void ServiceWorkerCacheStorage::LazyInit() {
   if (initializing_)
     return;
 
-  DCHECK(scheduler_->Empty());
+  DCHECK(!scheduler_->ScheduledOperations());
 
   initializing_ = true;
   scheduler_->ScheduleOperation(base::Bind(

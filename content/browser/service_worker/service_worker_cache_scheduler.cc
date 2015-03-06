@@ -24,23 +24,22 @@ void ServiceWorkerCacheScheduler::ScheduleOperation(
 }
 
 void ServiceWorkerCacheScheduler::CompleteOperationAndRunNext() {
-  DCHECK(!pending_operations_.empty());
+  DCHECK(operation_running_);
   operation_running_ = false;
-  pending_operations_.pop_front();
   RunOperationIfIdle();
 }
 
-bool ServiceWorkerCacheScheduler::Empty() const {
-  return pending_operations_.empty();
+bool ServiceWorkerCacheScheduler::ScheduledOperations() const {
+  return operation_running_ || !pending_operations_.empty();
 }
 
 void ServiceWorkerCacheScheduler::RunOperationIfIdle() {
-  DCHECK(!operation_running_ || !pending_operations_.empty());
-
   if (!operation_running_ && !pending_operations_.empty()) {
     operation_running_ = true;
     // TODO(jkarlin): Run multiple operations in parallel where allowed.
-    pending_operations_.front().Run();
+    base::Closure closure = pending_operations_.front();
+    pending_operations_.pop_front();
+    closure.Run();
   }
 }
 
