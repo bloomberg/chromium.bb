@@ -62046,9 +62046,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ES_Critical"/>
   <suffix name="ES_Logoff"/>
   <suffix name="ES_Other"/>
+  <suffix name="HungBrowserTerminated"/>
   <suffix name="KillProcess"/>
   <suffix name="LastWindowClose"/>
   <suffix name="ProcessSingletonIsShuttingDown"/>
+  <suffix name="RendezvousToHungBrowser"/>
   <suffix name="SessionEnding"/>
   <suffix name="TraybarEndSession"/>
   <suffix name="TraybarExit"/>

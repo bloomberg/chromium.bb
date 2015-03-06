@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/wmi.h"
+#include "components/browser_watcher/exit_funnel_win.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -257,7 +258,9 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
       remote_window_ = NULL;
       return PROCESS_NONE;
     case chrome::NOTIFY_WINDOW_HUNG:
-      remote_window_ = NULL;
+      // Record a hung rendezvous event in this process' exit funnel.
+      browser_watcher::ExitFunnel::RecordSingleEvent(
+          chrome::kBrowserExitCodesRegistryPath, L"RendezvousToHungBrowser");
       break;
   }
 
@@ -285,6 +288,11 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     // The user denied. Quit silently.
     return PROCESS_NOTIFIED;
   }
+
+  // Record the termination event in the hung process' exit funnel.
+  browser_watcher::ExitFunnel funnel;
+  if (funnel.Init(chrome::kBrowserExitCodesRegistryPath, process.Handle()))
+    funnel.RecordEvent(L"HungBrowserTerminated");
 
   // Time to take action. Kill the browser process.
   base::KillProcess(process.Handle(), content::RESULT_CODE_HUNG, true);
