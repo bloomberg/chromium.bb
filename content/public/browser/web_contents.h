@@ -224,6 +224,10 @@ class WebContents : public PageNavigator,
   // nullptr.
   virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const = 0;
 
+  // Returns the theme color for the underlying content as set by the
+  // theme-color meta tag.
+  virtual SkColor GetThemeColor() const = 0;
+
   // Create a WebUI page for the given url. In most cases, this doesn't need to
   // be called by embedders since content will create its own WebUI objects as
   // necessary. However if the embedder wants to create its own WebUI object and

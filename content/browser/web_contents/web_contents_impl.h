@@ -224,6 +224,7 @@ class CONTENT_EXPORT WebContentsImpl
   int GetRoutingID() const override;
   RenderWidgetHostView* GetRenderWidgetHostView() const override;
   RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const override;
+  SkColor GetThemeColor() const override;
   WebUI* CreateWebUI(const GURL& url) override;
   WebUI* GetWebUI() const override;
   WebUI* GetCommittedWebUI() const override;
@@ -1094,6 +1095,13 @@ class CONTENT_EXPORT WebContentsImpl
   // unsafe to show the pending URL. Usually false unless another window tries
   // to modify the blank page.  Always false after the first commit.
   bool has_accessed_initial_document_;
+
+  // The theme color for the underlying document as specified
+  // by theme-color meta tag.
+  SkColor theme_color_;
+
+  // The last published theme color.
+  SkColor last_sent_theme_color_;
 
   // Data for misc internal state ----------------------------------------------
 

@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser.webcontents;
 
+import android.graphics.Color;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -321,6 +323,14 @@ import org.chromium.content_public.browser.WebContentsObserver;
     }
 
     @Override
+    public int getThemeColor(int defaultColor) {
+        int color = nativeGetThemeColor(mNativeWebContentsAndroid);
+        if (color == Color.TRANSPARENT) return defaultColor;
+
+        return (color | 0xFF000000);
+    }
+
+    @Override
     public void addObserver(WebContentsObserver observer) {
         assert mNativeWebContentsAndroid != 0;
         if (mObserverProxy == null) mObserverProxy = new WebContentsObserverProxy(this);
@@ -381,4 +391,5 @@ import org.chromium.content_public.browser.WebContentsObserver;
             long nativeWebContentsAndroid, int level, String message);
     private native boolean nativeHasAccessedInitialDocument(
             long nativeWebContentsAndroid);
+    private native int nativeGetThemeColor(long nativeWebContentsAndroid);
 }

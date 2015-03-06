@@ -376,6 +376,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       upload_position_(0),
       displayed_insecure_content_(false),
       has_accessed_initial_document_(false),
+      theme_color_(SK_ColorTRANSPARENT),
+      last_sent_theme_color_(SK_ColorTRANSPARENT),
       capturer_count_(0),
       should_normally_be_visible_(true),
       is_being_destroyed_(false),
@@ -753,6 +755,10 @@ RenderWidgetHostView* WebContentsImpl::GetFullscreenRenderWidgetHostView()
 
 WebContentsView* WebContentsImpl::GetView() const {
   return view_.get();
+}
+
+SkColor WebContentsImpl::GetThemeColor() const {
+  return theme_color_;
 }
 
 void WebContentsImpl::SetAccessibilityMode(AccessibilityMode mode) {
@@ -2754,6 +2760,9 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
         static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
     if (rwhvb)
       rwhvb->OnDidNavigateMainFrameToNewPage();
+
+    // Reset theme color on navigation to new page.
+    theme_color_ = SK_ColorTRANSPARENT;
   }
 
   if (!details.is_in_page) {
@@ -2806,8 +2815,9 @@ bool WebContentsImpl::CanOverscrollContent() const {
 }
 
 void WebContentsImpl::OnThemeColorChanged(SkColor theme_color) {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidChangeThemeColor(theme_color));
+  // Update the theme color. This is to be published to observers on visually
+  // non empty paint.
+  theme_color_ = theme_color;
 }
 
 void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
@@ -3279,6 +3289,13 @@ void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFirstVisuallyNonEmptyPaint());
+
+  if (theme_color_ != last_sent_theme_color_) {
+    // Theme color should have updated by now if there was one.
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      DidChangeThemeColor(theme_color_));
+    last_sent_theme_color_ = theme_color_;
+  }
 }
 
 void WebContentsImpl::DidChangeVisibleSSLState() {

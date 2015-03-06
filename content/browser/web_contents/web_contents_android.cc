@@ -495,4 +495,8 @@ jboolean WebContentsAndroid::HasAccessedInitialDocument(
       HasAccessedInitialDocument();
 }
 
+jint WebContentsAndroid::GetThemeColor(JNIEnv* env, jobject obj) {
+  return web_contents_->GetThemeColor();
+}
+
 }  // namespace content

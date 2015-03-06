@@ -113,6 +113,8 @@ class CONTENT_EXPORT WebContentsAndroid
 
   jboolean HasAccessedInitialDocument(JNIEnv* env, jobject jobj);
 
+  jint GetThemeColor(JNIEnv* env, jobject obj);
+
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
