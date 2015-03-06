@@ -103,7 +103,7 @@ OverflowChangedEvent
 OverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
-PathOpsSVGClipping status=experimental
+PathOpsSVGClipping
 PeerConnection status=stable
 Permissions status=experimental
 Picture status=stable
