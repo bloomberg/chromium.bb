@@ -61,7 +61,7 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source)
         return;
 
     if (loadStatus() == FontFace::Loading) {
-        if (source->ensureFontData()) {
+        if (source->isValid()) {
             setLoadStatus(FontFace::Loaded);
         } else {
             m_sources.removeFirst();

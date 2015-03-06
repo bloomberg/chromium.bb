@@ -69,6 +69,10 @@ void RemoteFontFaceSource::fontLoaded(FontResource*)
 {
     m_histograms.recordRemoteFont(m_font.get());
 
+    m_font->ensureCustomFontData();
+    if (m_font->status() == Resource::DecodeError)
+        m_fontLoader->didFailToDecode(m_font.get());
+
     pruneTable();
     if (m_face) {
         m_fontLoader->fontFaceInvalidated();
@@ -124,11 +128,6 @@ void RemoteFontFaceSource::beginLoadIfNeeded()
 
     if (m_face)
         m_face->didBeginLoad();
-}
-
-bool RemoteFontFaceSource::ensureFontData()
-{
-    return m_font->ensureCustomFontData();
 }
 
 DEFINE_TRACE(RemoteFontFaceSource)

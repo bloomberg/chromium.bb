@@ -9,6 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/fetch/FontResource.h"
+#include "core/inspector/ConsoleMessage.h"
 
 namespace blink {
 
@@ -89,6 +90,14 @@ void FontLoader::fontFaceInvalidated()
 {
     if (m_fontSelector)
         m_fontSelector->fontFaceInvalidated();
+}
+
+void FontLoader::didFailToDecode(FontResource* fontResource)
+{
+    // FIXME: Provide more useful message such as OTS rejection reason.
+    // See crbug.com/97467
+    if (m_fontSelector && m_fontSelector->document())
+        m_fontSelector->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, "Failed to decode downloaded font: " + fontResource->url().elidedString()));
 }
 
 #if !ENABLE(OILPAN)

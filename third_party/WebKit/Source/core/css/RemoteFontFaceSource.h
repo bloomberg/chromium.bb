@@ -24,7 +24,6 @@ public:
     virtual bool isValid() const override;
 
     void beginLoadIfNeeded() override;
-    virtual bool ensureFontData();
 
     virtual void didStartFontLoad(FontResource*) override;
     virtual void fontLoaded(FontResource*) override;

@@ -28,6 +28,7 @@ public:
     void addFontToBeginLoading(FontResource*);
     void loadPendingFonts();
     void fontFaceInvalidated();
+    void didFailToDecode(FontResource*);
 
 #if !ENABLE(OILPAN)
     void clearDocumentAndFontSelector();
