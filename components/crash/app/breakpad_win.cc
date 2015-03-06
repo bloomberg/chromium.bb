@@ -281,6 +281,20 @@ long WINAPI ServiceExceptionFilter(EXCEPTION_POINTERS* info) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
+// Installed via base::debug::SetCrashKeyReportingFunctions.
+void SetCrashKeyValueForBaseDebug(const base::StringPiece& key,
+                                  const base::StringPiece& value) {
+  DCHECK(CrashKeysWin::keeper());
+  CrashKeysWin::keeper()->SetCrashKeyValue(base::UTF8ToUTF16(key),
+                                           base::UTF8ToUTF16(value));
+}
+
+// Installed via base::debug::SetCrashKeyReportingFunctions.
+void ClearCrashKeyForBaseDebug(const base::StringPiece& key) {
+  DCHECK(CrashKeysWin::keeper());
+  CrashKeysWin::keeper()->ClearCrashKeyValue(base::UTF8ToUTF16(key));
+}
+
 }  // namespace
 
 // NOTE: This function is used by SyzyASAN to annotate crash reports. If you
@@ -526,6 +540,9 @@ void InitCrashReporter(const std::string& process_type_switch) {
       keeper->GetCustomInfo(exe_path, process_type, GetProfileType(),
                             base::CommandLine::ForCurrentProcess(),
                             GetCrashReporterClient());
+
+  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueForBaseDebug,
+                                             &ClearCrashKeyForBaseDebug);
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
   LPTOP_LEVEL_EXCEPTION_FILTER default_filter = NULL;
