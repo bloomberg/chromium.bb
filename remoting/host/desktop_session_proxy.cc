@@ -386,6 +386,19 @@ void DesktopSessionProxy::InjectMouseEvent(const protocol::MouseEvent& event) {
       new ChromotingNetworkDesktopMsg_InjectMouseEvent(serialized_event));
 }
 
+void DesktopSessionProxy::InjectTouchEvent(const protocol::TouchEvent& event) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  std::string serialized_event;
+  if (!event.SerializeToString(&serialized_event)) {
+    LOG(ERROR) << "Failed to serialize protocol::TouchEvent.";
+    return;
+  }
+
+  SendToDesktop(
+      new ChromotingNetworkDesktopMsg_InjectTouchEvent(serialized_event));
+}
+
 void DesktopSessionProxy::StartInputInjector(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());

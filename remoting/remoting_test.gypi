@@ -39,6 +39,7 @@
         'protocol/fake_stream_socket.h',
         'protocol/protocol_mock_objects.cc',
         'protocol/protocol_mock_objects.h',
+        'protocol/test_event_matchers.h',
         'signaling/fake_signal_strategy.cc',
         'signaling/fake_signal_strategy.h',
         'signaling/mock_signal_strategy.cc',

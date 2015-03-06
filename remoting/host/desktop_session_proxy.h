@@ -125,6 +125,7 @@ class DesktopSessionProxy
   void InjectKeyEvent(const protocol::KeyEvent& event);
   void InjectTextEvent(const protocol::TextEvent& event);
   void InjectMouseEvent(const protocol::MouseEvent& event);
+  void InjectTouchEvent(const protocol::TouchEvent& event);
   void StartInputInjector(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
   // API used to implement the SessionController interface.

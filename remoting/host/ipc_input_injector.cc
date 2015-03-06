@@ -34,7 +34,7 @@ void IpcInputInjector::InjectMouseEvent(const protocol::MouseEvent& event) {
 }
 
 void IpcInputInjector::InjectTouchEvent(const protocol::TouchEvent& event) {
-  NOTIMPLEMENTED();
+  desktop_session_proxy_->InjectTouchEvent(event);
 }
 
 void IpcInputInjector::Start(

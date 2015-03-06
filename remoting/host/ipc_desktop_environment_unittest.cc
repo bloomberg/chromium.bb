@@ -29,6 +29,7 @@
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/ipc_desktop_environment.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -41,6 +42,7 @@ using testing::AtLeast;
 using testing::AtMost;
 using testing::DeleteArg;
 using testing::DoAll;
+using testing::InSequence;
 using testing::Return;
 using testing::ReturnRef;
 
@@ -633,6 +635,51 @@ TEST_F(IpcDesktopEnvironmentTest, InjectMouseEvent) {
   event.set_x(0);
   event.set_y(0);
   input_injector_->InjectMouseEvent(event);
+
+  task_runner_ = nullptr;
+  io_task_runner_ = nullptr;
+  main_run_loop_.Run();
+}
+
+// Tests injection of touch events.
+TEST_F(IpcDesktopEnvironmentTest, InjectTouchEvent) {
+  scoped_ptr<protocol::MockClipboardStub> clipboard_stub(
+      new protocol::MockClipboardStub());
+  EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
+      .Times(0);
+
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.Pass());
+  video_capturer_->Start(&desktop_capturer_callback_);
+
+  // Run the message loop until the desktop is attached.
+  setup_run_loop_->Run();
+
+  protocol::TouchEvent event;
+  event.set_event_type(protocol::TouchEvent::TOUCH_POINT_START);
+  protocol::TouchEventPoint* point = event.add_touch_points();
+  point->set_id(0u);
+  point->set_x(0.0f);
+  point->set_y(0.0f);
+  point->set_radius_x(0.0f);
+  point->set_radius_y(0.0f);
+  point->set_angle(0.0f);
+  point->set_pressure(0.0f);
+
+  ON_CALL(*remote_input_injector_, InjectTouchEvent(_))
+      .WillByDefault(InvokeWithoutArgs(
+          this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
+
+  InSequence s;
+  // Expect that the event gets propagated to remote_input_injector_.
+  // And one more call for ReleaseAll().
+  EXPECT_CALL(*remote_input_injector_,
+              InjectTouchEvent(protocol::TouchEventEqual(event)));
+  EXPECT_CALL(*remote_input_injector_,
+              InjectTouchEvent(protocol::IsTouchCancelEvent()));
+
+  // Send the touch event.
+  input_injector_->InjectTouchEvent(event);
 
   task_runner_ = nullptr;
   io_task_runner_ = nullptr;

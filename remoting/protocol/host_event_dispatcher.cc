@@ -50,6 +50,8 @@ void HostEventDispatcher::OnMessageReceived(scoped_ptr<EventMessage> message,
     }
   } else if (message->has_mouse_event()) {
     input_stub_->InjectMouseEvent(message->mouse_event());
+  } else if (message->has_touch_event()) {
+    input_stub_->InjectTouchEvent(message->touch_event());
   } else {
     LOG(WARNING) << "Unknown event message received.";
   }

@@ -220,6 +220,11 @@ IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectTextEvent,
 IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectMouseEvent,
                      std::string /* serialized_event */ )
 
+// Carries a touch event from the client to the desktop session agent.
+// |serialized_event| is a serialized protocol::TouchEvent.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectTouchEvent,
+                     std::string /* serialized_event */ )
+
 // Changes the screen resolution in the desktop session.
 IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_SetScreenResolution,
                      remoting::ScreenResolution /* resolution */)

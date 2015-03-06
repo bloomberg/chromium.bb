@@ -128,6 +128,7 @@ class DesktopSessionAgent
   void OnInjectKeyEvent(const std::string& serialized_event);
   void OnInjectTextEvent(const std::string& serialized_event);
   void OnInjectMouseEvent(const std::string& serialized_event);
+  void OnInjectTouchEvent(const std::string& serialized_event);
 
   // Handles ChromotingNetworkDesktopMsg_SetScreenResolution request from
   // the client.
