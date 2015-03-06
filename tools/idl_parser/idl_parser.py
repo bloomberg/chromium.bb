@@ -264,6 +264,11 @@ class IDLParser(object):
       p[2].AddChildren(p[1])
       p[0] = ListFromConcat(p[2], p[3])
 
+  # [9.1] Error recovery for InterfaceMembers
+  def p_InterfaceMembersError(self, p):
+    """InterfaceMembers : error"""
+    p[0] = self.BuildError(p, 'InterfaceMembers')
+
   # [10] Removed unsupported: Serializer
   def p_InterfaceMember(self, p):
     """InterfaceMember : Const

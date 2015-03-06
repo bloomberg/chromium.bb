@@ -72,6 +72,23 @@ interface MyIFaceMissingAttribute {
 };
 
 /* TREE
+ *Interface(MyIFaceContainsUnresolvedConflictDiff)
+ *  Operation(foo)
+ *    Arguments()
+ *    Type()
+ *      PrimitiveType(DOMString)
+ *  Error(Unexpected "<" after ";".)
+ */
+interface MyIFaceContainsUnresolvedConflictDiff {
+    DOMString foo();
+<<<<<< ours
+    DOMString bar();
+    iterable<long>;
+======
+>>>>>> theirs
+};
+
+/* TREE
  *Interface(MyIFaceBig)
  *  Const(setString)
  *    PrimitiveType(DOMString)
