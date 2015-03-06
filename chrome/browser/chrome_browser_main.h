@@ -13,7 +13,6 @@
 #include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
-#include "chrome/browser/task_profiler/auto_tracking.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
@@ -133,11 +132,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Please keep |shutdown_watcher| as the first object constructed, and hence
   // it is destroyed last.
   scoped_ptr<ShutdownWatcherHelper> shutdown_watcher_;
-
-  // Creating this object starts tracking the creation and deletion of Task
-  // instance. This MUST be done before main_message_loop, so that it is
-  // destroyed after the main_message_loop.
-  task_profiler::AutoTracking tracking_objects_;
 
   // Statistical testing infrastructure for the entire browser. NULL until
   // SetupMetricsAndFieldTrials is called.

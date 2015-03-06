@@ -669,8 +669,6 @@
       'browser/tab_contents/retargeting_details.h',
       'browser/tab_contents/tab_util.cc',
       'browser/tab_contents/tab_util.h',
-      'browser/task_profiler/auto_tracking.cc',
-      'browser/task_profiler/auto_tracking.h',
       'browser/task_profiler/task_profiler_data_serializer.cc',
       'browser/task_profiler/task_profiler_data_serializer.h',
       'browser/thumbnails/content_analysis.cc',

@@ -937,10 +937,6 @@ const char kProfilingAtStart[]              = "profiling-at-start";
 // The default is chrome-profile-{pid}.
 const char kProfilingFile[]                 = "profiling-file";
 
-// Specifies a path for the output of task-level profiling which can be loaded
-// and viewed in about:profiler.
-const char kProfilingOutputFile[]           = "profiling-output-file";
-
 // Controls whether profile data is periodically flushed to a file. Normally
 // the data gets written on exit but cases exist where chrome doesn't exit
 // cleanly (especially when using single-process). A time in seconds can be

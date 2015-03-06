@@ -29,8 +29,6 @@ class TaskProfilerDataSerializer {
                       int process_type,
                       base::DictionaryValue* dictionary);
 
-  bool WriteToFile(const base::FilePath& path);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskProfilerDataSerializer);
 };

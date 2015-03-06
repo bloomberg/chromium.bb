@@ -843,12 +843,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     tracked_objects::ThreadData::InitializeAndSetTrackingStatus(status);
   }
 
-  if (parsed_command_line().HasSwitch(switches::kProfilingOutputFile)) {
-    tracking_objects_.set_output_file_path(
-        parsed_command_line().GetSwitchValuePath(
-            switches::kProfilingOutputFile));
-  }
-
   local_state_ = InitializeLocalState(
       local_state_task_runner.get(), parsed_command_line());
 

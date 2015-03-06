@@ -109,44 +109,4 @@ void TaskProfilerDataSerializer::ToValue(
   dictionary->Set("descendants", descendants_list.release());
 }
 
-
-bool TaskProfilerDataSerializer::WriteToFile(const base::FilePath& path) {
-  std::string output;
-  JSONStringValueSerializer serializer(&output);
-  serializer.set_pretty_print(true);
-
-  scoped_ptr<base::DictionaryValue> root(new base::DictionaryValue());
-
-  base::ListValue* snapshot_list = new base::ListValue();
-  base::DictionaryValue* shutdown_snapshot = new base::DictionaryValue();
-  base::ListValue* per_process_data = new base::ListValue();
-
-  root->SetInteger("version", 1);
-  root->SetString("userAgent", GetUserAgent());
-
-  // TODO(ramant): Collect data from other processes, then add that data to the
-  // 'per_process_data' array here. Should leverage the TrackingSynchronizer
-  // class to implement this.
-  ProcessDataSnapshot this_process_data;
-  tracked_objects::ThreadData::Snapshot(&this_process_data);
-  scoped_ptr<base::DictionaryValue> this_process_data_json(
-      new base::DictionaryValue);
-  TaskProfilerDataSerializer::ToValue(this_process_data,
-                                      content::PROCESS_TYPE_BROWSER,
-                                      this_process_data_json.get());
-  per_process_data->Append(this_process_data_json.release());
-
-  shutdown_snapshot->SetInteger(
-      "timestamp",
-      (base::Time::Now() - base::Time::UnixEpoch()).InSeconds());
-  shutdown_snapshot->Set("data", per_process_data);
-  snapshot_list->Append(shutdown_snapshot);
-  root->Set("snapshots", snapshot_list);
-
-  serializer.Serialize(*root);
-  int data_size = static_cast<int>(output.size());
-
-  return data_size == base::WriteFile(path, output.data(), data_size);
-}
-
 }  // namespace task_profiler
