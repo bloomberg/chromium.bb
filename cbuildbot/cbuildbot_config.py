@@ -1512,6 +1512,11 @@ _x86_external_boards = frozenset([
 
 _mips_internal_release_boards = frozenset([
   'urara',
+  'buranku',
+  'derwent',
+  'jaguar',
+  'kennet',
+  'space',
 ])
 
 _mips_external_boards = frozenset([
@@ -1586,12 +1591,17 @@ _internal_boards = _all_release_boards
 
 # Board can appear in 1 or more of the following sets.
 _brillo_boards = frozenset([
+  'buranku',
   'cosmos',
+  'derwent',
   'gizmo',
+  'jaguar',
   'kayle',
+  'kennet',
   'lemmings',
   'panther_embedded',
   'purin',
+  'space',
   'storm',
   'urara',
   'whirlwind',
@@ -3015,6 +3025,16 @@ _AddGroupConfig('jecht', 'jecht', (
     'guado',
     'tidus',
     'rikku',
+    ),
+    important=False,
+)
+
+_AddGroupConfig('urara', 'urara', (
+    'buranku',
+    'derwent',
+    'jaguar',
+    'kennet',
+    'space',
     ),
     important=False,
 )
