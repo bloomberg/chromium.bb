@@ -84,8 +84,7 @@ bool DocumentAnimations::needsOutdatedAnimationPlayerUpdate(const Document& docu
     return document.timeline().hasOutdatedAnimationPlayer();
 }
 
-// FIXME: Rename to updateCompositorAnimations
-void DocumentAnimations::startPendingAnimations(Document& document)
+void DocumentAnimations::updateCompositorAnimations(Document& document)
 {
     ASSERT(document.lifecycle().state() == DocumentLifecycle::CompositingClean);
     if (document.compositorPendingAnimations().update()) {

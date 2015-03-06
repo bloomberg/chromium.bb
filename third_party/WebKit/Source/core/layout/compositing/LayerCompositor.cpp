@@ -207,7 +207,7 @@ void LayerCompositor::updateIfNeededRecursive()
     updateIfNeeded();
     lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
-    DocumentAnimations::startPendingAnimations(m_layoutView.document());
+    DocumentAnimations::updateCompositorAnimations(m_layoutView.document());
 
     m_layoutView.frameView()->updateCompositorScrollAnimations();
     if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = m_layoutView.frameView()->animatingScrollableAreas()) {
