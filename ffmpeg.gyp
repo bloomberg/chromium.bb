@@ -227,6 +227,8 @@
             # ffmpeg uses its own deprecated functions.
             '-Wno-deprecated-declarations',
           ],
+          # Silence a warning in libc++ builds (C code doesn't need this flag).
+          'ldflags!': [ '-stdlib=libc++', ],
           'conditions': [
             ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
               'dependencies': [
