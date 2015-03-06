@@ -59,8 +59,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   std::string extensions() const;
 
   // Implementation of WebSocketEventInterface.
-  ChannelState OnAddChannelResponse(bool fail,
-                                    const std::string& selected_subprotocol,
+  ChannelState OnAddChannelResponse(const std::string& selected_subprotocol,
                                     const std::string& extensions) override;
 
   ChannelState OnDataFrame(bool fin,
@@ -102,7 +101,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   DISALLOW_COPY_AND_ASSIGN(ConnectTestingEventInterface);
 };
 
-ConnectTestingEventInterface::ConnectTestingEventInterface() : failed_(true) {
+ConnectTestingEventInterface::ConnectTestingEventInterface() : failed_(false) {
 }
 
 void ConnectTestingEventInterface::WaitForResponse() {
@@ -125,14 +124,12 @@ std::string ConnectTestingEventInterface::extensions() const {
 typedef ConnectTestingEventInterface::ChannelState ChannelState;
 
 ChannelState ConnectTestingEventInterface::OnAddChannelResponse(
-    bool fail,
     const std::string& selected_subprotocol,
     const std::string& extensions) {
-  failed_ = fail;
   selected_subprotocol_ = selected_subprotocol;
   extensions_ = extensions;
   QuitNestedEventLoop();
-  return fail ? CHANNEL_DELETED : CHANNEL_ALIVE;
+  return CHANNEL_ALIVE;
 }
 
 ChannelState ConnectTestingEventInterface::OnDataFrame(

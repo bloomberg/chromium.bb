@@ -549,7 +549,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
   if (!socket_url.SchemeIsWSOrWSS()) {
     // TODO(ricea): Kill the renderer (this error should have been caught by
     // Javascript).
-    ignore_result(event_interface_->OnAddChannelResponse(true, "", ""));
+    ignore_result(event_interface_->OnFailChannel("Invalid scheme"));
     // |this| is deleted here.
     return;
   }
@@ -573,8 +573,8 @@ void WebSocketChannel::OnConnectSuccess(scoped_ptr<WebSocketStream> stream) {
 
   SetState(CONNECTED);
 
-  if (event_interface_->OnAddChannelResponse(
-          false, stream_->GetSubProtocol(), stream_->GetExtensions()) ==
+  if (event_interface_->OnAddChannelResponse(stream_->GetSubProtocol(),
+                                             stream_->GetExtensions()) ==
       CHANNEL_DELETED)
     return;
 

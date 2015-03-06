@@ -52,8 +52,7 @@ class WebSocketBridge : public blink::WebSocketHandle {
  private:
   virtual ~WebSocketBridge();
 
-  void DidConnect(bool fail,
-                  const std::string& selected_protocol,
+  void DidConnect(const std::string& selected_protocol,
                   const std::string& extensions);
   void DidStartOpeningHandshake(const WebSocketHandshakeRequest& request);
   void DidFinishOpeningHandshake(const WebSocketHandshakeResponse& response);

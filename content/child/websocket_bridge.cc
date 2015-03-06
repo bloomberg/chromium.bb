@@ -80,22 +80,18 @@ bool WebSocketBridge::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void WebSocketBridge::DidConnect(bool fail,
-                                 const std::string& selected_protocol,
+void WebSocketBridge::DidConnect(const std::string& selected_protocol,
                                  const std::string& extensions) {
   WebSocketHandleClient* client = client_;
   DVLOG(1) << "WebSocketBridge::DidConnect("
-           << fail << ", "
            << selected_protocol << ", "
            << extensions << ")";
-  if (fail)
-    Disconnect();
   if (!client)
     return;
 
   WebString protocol_to_pass = WebString::fromUTF8(selected_protocol);
   WebString extensions_to_pass = WebString::fromUTF8(extensions);
-  client->didConnect(this, fail, protocol_to_pass, extensions_to_pass);
+  client->didConnect(this, protocol_to_pass, extensions_to_pass);
   // |this| can be deleted here.
 }
 

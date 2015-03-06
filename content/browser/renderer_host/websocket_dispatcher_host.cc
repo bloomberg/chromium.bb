@@ -110,18 +110,10 @@ WebSocketHostState WebSocketDispatcherHost::SendOrDrop(IPC::Message* message) {
 
 WebSocketHostState WebSocketDispatcherHost::SendAddChannelResponse(
     int routing_id,
-    bool fail,
     const std::string& selected_protocol,
     const std::string& extensions) {
-  if (SendOrDrop(new WebSocketMsg_AddChannelResponse(
-          routing_id, fail, selected_protocol, extensions)) ==
-      WEBSOCKET_HOST_DELETED)
-    return WEBSOCKET_HOST_DELETED;
-  if (fail) {
-    DeleteWebSocketHost(routing_id);
-    return WEBSOCKET_HOST_DELETED;
-  }
-  return WEBSOCKET_HOST_ALIVE;
+  return SendOrDrop(new WebSocketMsg_AddChannelResponse(
+      routing_id, selected_protocol, extensions));
 }
 
 WebSocketHostState WebSocketDispatcherHost::SendFrame(

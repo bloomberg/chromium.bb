@@ -81,18 +81,14 @@ class WebSocketClientImpl : public mojo::InterfaceImpl<mojo::WebSocketClient> {
 
  private:
   // WebSocketClient methods:
-  void DidConnect(bool fail,
-                  const String& selected_subprotocol,
+  void DidConnect(const String& selected_subprotocol,
                   const String& extensions,
                   mojo::ScopedDataPipeConsumerHandle receive_stream) override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
     receive_stream_ = receive_stream.Pass();
     read_queue_.reset(new WebSocketReadQueue(receive_stream_.get()));
-    if (fail)
-      handle->Disconnect();  // deletes |this|
     client->didConnect(handle,
-                       fail,
                        selected_subprotocol.To<WebString>(),
                        extensions.To<WebString>());
     // |handle| can be deleted here.

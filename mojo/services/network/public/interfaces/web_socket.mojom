@@ -34,11 +34,10 @@ interface WebSocket {
 };
 
 interface WebSocketClient {
-  // Called in response to a WebSocket.Connect call to indicate success or
-  // failure. |receive_stream| is a data pipe which where incoming data from
+  // Called in response to a WebSocket.Connect call to indicate success
+  // |receive_stream| is a data pipe which where incoming data from
   // the server is written.
-  DidConnect(bool fail,
-             string selected_subprotocol,
+  DidConnect(string selected_subprotocol,
              string extensions,
              handle<data_pipe_consumer> receive_stream);
 

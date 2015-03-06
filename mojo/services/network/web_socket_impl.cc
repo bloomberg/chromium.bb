@@ -69,8 +69,7 @@ struct WebSocketEventHandler : public net::WebSocketEventInterface {
 
  private:
   // net::WebSocketEventInterface methods:
-  ChannelState OnAddChannelResponse(bool fail,
-                                    const std::string& selected_subprotocol,
+  ChannelState OnAddChannelResponse(const std::string& selected_subprotocol,
                                     const std::string& extensions) override;
   ChannelState OnDataFrame(bool fin,
                            WebSocketMessageType type,
@@ -104,16 +103,13 @@ struct WebSocketEventHandler : public net::WebSocketEventInterface {
 };
 
 ChannelState WebSocketEventHandler::OnAddChannelResponse(
-    bool fail,
     const std::string& selected_protocol,
     const std::string& extensions) {
   DataPipe data_pipe;
   receive_stream_ = data_pipe.producer_handle.Pass();
   write_queue_.reset(new WebSocketWriteQueue(receive_stream_.get()));
   client_->DidConnect(
-      fail, selected_protocol, extensions, data_pipe.consumer_handle.Pass());
-  if (fail)
-    return WebSocketEventInterface::CHANNEL_DELETED;
+      selected_protocol, extensions, data_pipe.consumer_handle.Pass());
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 

@@ -92,8 +92,7 @@ class WebSocketEventHandler : public net::WebSocketEventInterface {
 
   // net::WebSocketEventInterface implementation
 
-  ChannelState OnAddChannelResponse(bool fail,
-                                    const std::string& selected_subprotocol,
+  ChannelState OnAddChannelResponse(const std::string& selected_subprotocol,
                                     const std::string& extensions) override;
   ChannelState OnDataFrame(bool fin,
                            WebSocketMessageType type,
@@ -156,16 +155,15 @@ WebSocketEventHandler::~WebSocketEventHandler() {
 }
 
 ChannelState WebSocketEventHandler::OnAddChannelResponse(
-    bool fail,
     const std::string& selected_protocol,
     const std::string& extensions) {
   DVLOG(3) << "WebSocketEventHandler::OnAddChannelResponse"
-           << " routing_id=" << routing_id_ << " fail=" << fail
+           << " routing_id=" << routing_id_
            << " selected_protocol=\"" << selected_protocol << "\""
            << " extensions=\"" << extensions << "\"";
 
   return StateCast(dispatcher_->SendAddChannelResponse(
-      routing_id_, fail, selected_protocol, extensions));
+      routing_id_, selected_protocol, extensions));
 }
 
 ChannelState WebSocketEventHandler::OnDataFrame(

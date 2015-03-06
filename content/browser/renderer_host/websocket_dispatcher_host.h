@@ -63,11 +63,9 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   // return WEBSOCKET_HOST_DELETED and delete the WebSocketHost on failure,
   // leading to the WebSocketChannel and EventInterface also being deleted.
 
-  // Sends a WebSocketMsg_AddChannelResponse IPC, and then deletes and
-  // unregisters the WebSocketHost if |fail| is true.
+  // Sends a WebSocketMsg_AddChannelResponse IPC.
   WebSocketHostState SendAddChannelResponse(
       int routing_id,
-      bool fail,
       const std::string& selected_protocol,
       const std::string& extensions) WARN_UNUSED_RESULT;
 

@@ -36,12 +36,9 @@ class NET_EXPORT WebSocketEventInterface {
 
   virtual ~WebSocketEventInterface() {}
 
-  // Called in response to an AddChannelRequest. This generally means that a
-  // response has been received from the remote server, but the response might
-  // have been generated internally. If |fail| is true, the channel cannot be
-  // used and should be deleted, returning CHANNEL_DELETED.
+  // Called in response to an AddChannelRequest. This means that a response has
+  // been received from the remote server.
   virtual ChannelState OnAddChannelResponse(
-      bool fail,
       const std::string& selected_subprotocol,
       const std::string& extensions) WARN_UNUSED_RESULT = 0;
 
