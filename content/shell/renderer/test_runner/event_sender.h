@@ -152,6 +152,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void ContinuousMouseScrollBy(gin::Arguments* args);
   void MouseMoveTo(gin::Arguments* args);
+  void MouseLeave();
   void TrackpadScrollBegin();
   void TrackpadScroll(gin::Arguments* args);
   void TrackpadScrollEnd();

@@ -417,6 +417,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureTwoFingerTap(gin::Arguments* args);
   void ContinuousMouseScrollBy(gin::Arguments* args);
   void MouseMoveTo(gin::Arguments* args);
+  void MouseLeave();
   void TrackpadScrollBegin();
   void TrackpadScroll(gin::Arguments* args);
   void TrackpadScrollEnd();
@@ -554,6 +555,7 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("keyDown", &EventSenderBindings::KeyDown)
       .SetMethod("mouseDown", &EventSenderBindings::MouseDown)
       .SetMethod("mouseMoveTo", &EventSenderBindings::MouseMoveTo)
+      .SetMethod("mouseLeave", &EventSenderBindings::MouseLeave)
       .SetMethod("trackpadScrollBegin",
                  &EventSenderBindings::TrackpadScrollBegin)
       .SetMethod("trackpadScroll", &EventSenderBindings::TrackpadScroll)
@@ -859,6 +861,11 @@ void EventSenderBindings::ContinuousMouseScrollBy(gin::Arguments* args) {
 void EventSenderBindings::MouseMoveTo(gin::Arguments* args) {
   if (sender_)
     sender_->MouseMoveTo(args);
+}
+
+void EventSenderBindings::MouseLeave() {
+  if (sender_)
+    sender_->MouseLeave();
 }
 
 void EventSenderBindings::TrackpadScrollBegin() {
@@ -1912,6 +1919,22 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
     DoMouseMove(event);
   }
 }
+
+void EventSender::MouseLeave() {
+  if (force_layout_on_events_)
+    view_->layout();
+
+  WebMouseEvent event;
+  InitMouseEvent(WebInputEvent::MouseLeave,
+                 WebMouseEvent::ButtonNone,
+                 last_mouse_pos_,
+                 GetCurrentEventTimeSec(),
+                 click_count_,
+                 0,
+                 &event);
+   view_->handleInputEvent(event);
+}
+
 
 void EventSender::TrackpadScrollBegin() {
   WebMouseWheelEvent event;
