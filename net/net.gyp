@@ -1300,8 +1300,8 @@
           ],
           'dependencies': [
             'mojo_type_converters',
-            'net',
             'net_interfaces',
+            'net_with_v8',
             '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
           ],
