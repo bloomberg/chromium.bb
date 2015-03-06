@@ -886,16 +886,17 @@ void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "return=secure-representation");
 
     if (document()->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
-        // We always upgrade subresource requests and nested frames, we always upgrade form
-        // submissions, and we always upgrade requests whose host matches the host of the
-        // containing document's security origin.
-        //
-        // FIXME: We need to check the document that set the policy, not the current document.
         const ResourceRequest& request = fetchRequest.resourceRequest();
+
+        // We always upgrade requests that meet any of the following criteria:
+        //
+        // 1. Are for subresources (including nested frames).
+        // 2. Are form submissions.
+        // 3. Whose hosts are contained in the document's InsecureNavigationSet.
         if (request.frameType() == WebURLRequest::FrameTypeNone
             || request.frameType() == WebURLRequest::FrameTypeNested
             || request.requestContext() == WebURLRequest::RequestContextForm
-            || url.host() == document()->securityOrigin()->host())
+            || document()->insecureNavigationsToUpgrade()->contains(url.host().impl()->hash()))
         {
             url.setProtocol("https");
             if (url.port() == 80)

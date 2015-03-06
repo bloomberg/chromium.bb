@@ -154,8 +154,7 @@ TEST_F(ResourceFetcherUpgradeTest, UpgradeInsecureResourceRequests)
     document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
 
     for (auto test : tests) {
-        // secureOrigin's host is 'secureorigin.test', not 'example.test'
-        document->setSecurityOrigin(secureOrigin);
+        document->insecureNavigationsToUpgrade()->clear();
 
         // We always upgrade for FrameTypeNone and FrameTypeNested.
         expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeNone, test.upgraded);
@@ -169,8 +168,8 @@ TEST_F(ResourceFetcherUpgradeTest, UpgradeInsecureResourceRequests)
         expectUpgrade(test.original, WebURLRequest::RequestContextForm, WebURLRequest::FrameTypeTopLevel, test.upgraded);
         expectUpgrade(test.original, WebURLRequest::RequestContextForm, WebURLRequest::FrameTypeAuxiliary, test.upgraded);
 
-        // Or unless the host of the document matches the host of the resource:
-        document->setSecurityOrigin(exampleOrigin);
+        // Or unless the host of the resource is in the document's InsecureNavigationsSet:
+        document->addInsecureNavigationUpgrade(exampleOrigin->host());
         expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeTopLevel, test.upgraded);
         expectUpgrade(test.original, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeAuxiliary, test.upgraded);
     }

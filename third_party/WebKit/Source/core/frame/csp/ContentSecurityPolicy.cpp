@@ -176,8 +176,10 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
             document->enforceStrictMixedContentChecking();
         if (didSetReferrerPolicy())
             document->setReferrerPolicy(m_referrerPolicy);
-        if (m_insecureRequestsPolicy > document->insecureRequestsPolicy())
+        if (m_insecureRequestsPolicy > document->insecureRequestsPolicy()) {
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);
+            document->addInsecureNavigationUpgrade(securityOrigin()->host().impl()->hash());
+        }
 
         for (const auto& consoleMessage : m_consoleMessages)
             m_executionContext->addConsoleMessage(consoleMessage);

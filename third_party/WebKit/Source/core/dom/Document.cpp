@@ -4662,6 +4662,10 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     if (initializer.shouldEnforceStrictMixedContentChecking())
         enforceStrictMixedContentChecking();
     setInsecureRequestsPolicy(initializer.insecureRequestsPolicy());
+    if (initializer.insecureNavigationsToUpgrade()) {
+        for (auto toUpgrade : *initializer.insecureNavigationsToUpgrade())
+            addInsecureNavigationUpgrade(toUpgrade);
+    }
     setSecurityOrigin(isSandboxed(SandboxOrigin) ? SecurityOrigin::createUnique() : SecurityOrigin::create(m_url));
 
     if (importsController()) {
