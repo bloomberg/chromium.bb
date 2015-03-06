@@ -18,4 +18,16 @@ class InlineCtorsArentOKInHeader {
   std::vector<std::string> two_;
 };
 
+class DeletedMembersInHeaderAreOKThough {
+ public:
+  DeletedMembersInHeaderAreOKThough() = delete;
+  ~DeletedMembersInHeaderAreOKThough() = delete;
+  DeletedMembersInHeaderAreOKThough(const DeletedMembersInHeaderAreOKThough&) =
+      delete;
+
+ private:
+  std::vector<int> one_;
+  std::vector<std::string> two_;
+};
+
 #endif  // INLINE_CTOR_H_
