@@ -1205,8 +1205,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "inc2"));
   EXPECT_FALSE(FindMatchingValue("cat", "inc"));
-  EXPECT_FALSE(FindMatchingValue("cat", "inc2,inc"));
-  EXPECT_FALSE(FindMatchingValue("cat", "inc,inc2"));
+  EXPECT_TRUE(FindMatchingValue("cat", "inc2,inc"));
+  EXPECT_TRUE(FindMatchingValue("cat", "inc,inc2"));
 
   // Exclude existent wildcard -> all categories not matching wildcard
   Clear();
@@ -2624,18 +2624,18 @@ TEST_F(TraceEventTestFixture, CategoryFilter) {
   EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("not-excluded-category"));
   EXPECT_FALSE(
       default_cf.IsCategoryGroupEnabled("disabled-by-default-category"));
-  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
-  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
-  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
+  EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
+  EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
+  EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
 
   // Make sure that upon an empty string, we fall back to the default filter.
   default_cf = CategoryFilter();
   category_filter_str = default_cf.ToString();
   EXPECT_STREQ("-*Debug,-*Test", category_filter_str.c_str());
   EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("not-excluded-category"));
-  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
-  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
-  EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
+  EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
+  EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
+  EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
 
   // Using an arbitrary non-empty filter.
   CategoryFilter cf("included,-excluded,inc_pattern*,-exc_pattern*");

@@ -2490,18 +2490,35 @@ bool CategoryFilter::IsCategoryGroupEnabled(
   // Do a second pass to check for explicitly disabled categories
   // (those explicitly enabled have priority due to first pass).
   category_group_tokens.Reset();
+  bool category_group_disabled = false;
   while (category_group_tokens.GetNext()) {
     std::string category_group_token = category_group_tokens.token();
     for (StringList::const_iterator ci = excluded_.begin();
          ci != excluded_.end(); ++ci) {
-      if (MatchPattern(category_group_token.c_str(), ci->c_str()))
-        return false;
+      if (MatchPattern(category_group_token.c_str(), ci->c_str())) {
+        // Current token of category_group_name is present in excluded_list.
+        // Flag the exclusion and proceed further to check if any of the
+        // remaining categories of category_group_name is not present in the
+        // excluded_ list.
+        category_group_disabled = true;
+        break;
+      }
+      // One of the category of category_group_name is not present in
+      // excluded_ list. So, it has to be included_ list. Enable the
+      // category_group_name for recording.
+      category_group_disabled = false;
     }
+    // One of the categories present in category_group_name is not present in
+    // excluded_ list. Implies this category_group_name group can be enabled
+    // for recording, since one of its groups is enabled for recording.
+    if (!category_group_disabled)
+      break;
   }
   // If the category group is not excluded, and there are no included patterns
   // we consider this category group enabled, as long as it had categories
   // other than disabled-by-default.
-  return included_.empty() && had_enabled_by_default;
+  return !category_group_disabled &&
+         included_.empty() && had_enabled_by_default;
 }
 
 bool CategoryFilter::IsCategoryEnabled(const char* category_name) const {
