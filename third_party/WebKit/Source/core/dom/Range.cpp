@@ -176,7 +176,8 @@ static inline bool checkForDifferentRootContainer(const RangeBoundaryPoint& star
 void Range::setStart(PassRefPtrWillBeRawPtr<Node> refNode, int offset, ExceptionState& exceptionState)
 {
     if (!refNode) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided was null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return;
     }
 
@@ -199,7 +200,8 @@ void Range::setStart(PassRefPtrWillBeRawPtr<Node> refNode, int offset, Exception
 void Range::setEnd(PassRefPtrWillBeRawPtr<Node> refNode, int offset, ExceptionState& exceptionState)
 {
     if (!refNode) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided was null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return;
     }
 
@@ -242,7 +244,8 @@ void Range::collapse(bool toStart)
 bool Range::isPointInRange(Node* refNode, int offset, ExceptionState& exceptionState)
 {
     if (!refNode) {
-        exceptionState.throwDOMException(HierarchyRequestError, "The node provided was null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return false;
     }
 
@@ -300,7 +303,8 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionState& exceptio
     // before and after(surrounds), or inside the range, respectively
 
     if (!refNode) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided was null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return NODE_BEFORE;
     }
 
@@ -492,7 +496,8 @@ void Range::deleteContents(ExceptionState& exceptionState)
 static bool nodeValidForIntersects(Node* refNode, Document* expectedDocument, ExceptionState& exceptionState)
 {
     if (!refNode) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return false;
     }
 
@@ -879,7 +884,8 @@ void Range::insertNode(PassRefPtrWillBeRawPtr<Node> prpNewNode, ExceptionState& 
     RefPtrWillBeRawPtr<Node> newNode = prpNewNode;
 
     if (!newNode) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return;
     }
 
@@ -1098,7 +1104,8 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
 void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
 {
     if (!n) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return;
     }
 
@@ -1181,7 +1188,8 @@ void Range::setEndAfter(Node* refNode, ExceptionState& exceptionState)
 void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
 {
     if (!refNode) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return;
     }
 
@@ -1235,7 +1243,8 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
 void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
 {
     if (!refNode) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return;
     }
 
@@ -1300,7 +1309,8 @@ void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, Excepti
 {
     RefPtrWillBeRawPtr<Node> newParent = passNewParent;
     if (!newParent) {
-        exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
+        // FIXME: Generated bindings code never calls with null, and neither should other callers!
+        exceptionState.throwTypeError("The node provided is null.");
         return;
     }
 
