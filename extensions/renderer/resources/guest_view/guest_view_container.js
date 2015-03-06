@@ -14,9 +14,11 @@ function GuestViewContainer(element, viewType) {
   privates(element).internal = this;
   this.element = element;
   this.elementAttached = false;
-  this.guest = new GuestView(viewType);
   this.viewInstanceId = IdGenerator.GetNextId();
   this.viewType = viewType;
+
+  this.setupGuestProperty();
+  this.guest = new GuestView(viewType);
 
   privates(this).browserPluginElement = this.createBrowserPluginElement();
   this.setupFocusPropagation();
@@ -53,6 +55,32 @@ GuestViewContainer.registerElement =
     registerGuestViewElement(guestViewContainerType);
     window.removeEventListener(event.type, listener, useCapture);
   }, useCapture);
+    };
+
+// Create the 'guest' property to track new GuestViews and always listen for
+// their resizes.
+GuestViewContainer.prototype.setupGuestProperty = function() {
+  Object.defineProperty(this, 'guest', {
+    get: function() {
+      return privates(this).guest;
+    }.bind(this),
+    set: function(value) {
+      privates(this).guest = value;
+      if (!value) {
+        return;
+      }
+      privates(this).guest.onresize = function(e) {
+        // Dispatch the 'contentresize' event.
+        var contentResizeEvent = new Event('contentresize', { bubbles: true });
+        contentResizeEvent.oldWidth = e.oldWidth;
+        contentResizeEvent.oldHeight = e.oldHeight;
+        contentResizeEvent.newWidth = e.newWidth;
+        contentResizeEvent.newHeight = e.newHeight;
+        this.dispatchEvent(contentResizeEvent);
+      }.bind(this);
+    }.bind(this),
+    enumerable: true
+  });
 };
 
 GuestViewContainer.prototype.createBrowserPluginElement = function() {
@@ -114,10 +142,17 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
 
 GuestViewContainer.prototype.onElementResize = function(oldWidth, oldHeight,
                                                         newWidth, newHeight) {
+  // Dispatch the 'resize' event.
+  var resizeEvent = new Event('resize', { bubbles: true });
+  resizeEvent.oldWidth = oldWidth;
+  resizeEvent.oldHeight = oldHeight;
+  resizeEvent.newWidth = newWidth;
+  resizeEvent.newHeight = newHeight;
+  this.dispatchEvent(resizeEvent);
+
   if (!this.guest.getId())
     return;
-  this.guest.setSize(
-      {normal: {width: newWidth, height: newHeight}});
+  this.guest.setSize({normal: {width: newWidth, height: newHeight}});
 };
 
 GuestViewContainer.prototype.buildParams = function() {

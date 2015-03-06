@@ -15,6 +15,11 @@ function GuestViewEvents(view) {
   this.view = view;
   this.on = {};
 
+  // |setupEventProperty| is normally called automatically, but these events are
+  // are registered here because they are dispatched from GuestViewContainer
+  // instead of in response to extension events.
+  this.setupEventProperty('contentresize');
+  this.setupEventProperty('resize');
   this.setupEvents();
 }
 

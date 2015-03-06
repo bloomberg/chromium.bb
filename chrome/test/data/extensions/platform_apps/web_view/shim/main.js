@@ -2032,6 +2032,49 @@ function testLoadDataAPI() {
   document.body.appendChild(webview);
 };
 
+// Test that the resize events fire with the correct values, and in the
+// correct order, when resizing occurs.
+function testResizeEvents() {
+  var webview = new WebView();
+  webview.src = 'about:blank';
+  webview.style.width = '600px';
+  webview.style.height = '400px';
+
+  var checkSizes = function(e) {
+    embedder.test.assertEq(e.oldWidth, 600)
+    embedder.test.assertEq(e.oldHeight, 400)
+    embedder.test.assertEq(e.newWidth, 500)
+    embedder.test.assertEq(e.newHeight, 400)
+  }
+
+  var resizeListener = function(e) {
+    webview.onresize = null;
+    webview.oncontentresize = contentResizeListener;
+
+    console.log('onresize');
+    checkSizes(e);
+  };
+
+  var contentResizeListener = function(e) {
+    webview.oncontentresize = null;
+
+    console.log('oncontentresize');
+    checkSizes(e);
+    embedder.test.succeed();
+  };
+
+  var loadstopListener = function(e) {
+    webview.removeEventListener('loadstop', loadstopListener);
+    webview.onresize = resizeListener;
+
+    console.log('Resizing <webview> width from 600px to 500px.');
+    webview.style.width = '500px';
+  }
+
+  webview.addEventListener('loadstop', loadstopListener);
+  document.body.appendChild(webview);
+};
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -2108,7 +2151,8 @@ embedder.test.testList = {
   'testZoomAPI' : testZoomAPI,
   'testFindAPI': testFindAPI,
   'testFindAPI_findupdate': testFindAPI,
-  'testLoadDataAPI': testLoadDataAPI
+  'testLoadDataAPI': testLoadDataAPI,
+  'testResizeEvents': testResizeEvents
 };
 
 onload = function() {

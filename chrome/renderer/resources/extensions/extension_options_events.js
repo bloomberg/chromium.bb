@@ -8,8 +8,8 @@ var GuestViewEvents = require('guestViewEvents').GuestViewEvents;
 function ExtensionOptionsEvents(extensionOptionsImpl) {
   GuestViewEvents.call(this, extensionOptionsImpl);
 
-  // setupEventProperty is normally called automatically, but the 'createfailed'
-  // event is registered here because the event is fired from
+  // |setupEventProperty| is normally called automatically, but the
+  // 'createfailed' event is registered here because the event is fired from
   // ExtensionOptionsImpl instead of in response to an extension event.
   this.setupEventProperty('createfailed');
 }

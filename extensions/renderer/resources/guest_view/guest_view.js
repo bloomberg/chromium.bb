@@ -5,16 +5,13 @@
 // This module implements a wrapper for a guestview that manages its
 // creation, attaching, and destruction.
 
+var CreateEvent = require('guestViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 
 // Events.
-var CreateEvent = function(name) {
-  var eventOpts = {supportsListeners: true, supportsFilters: true};
-  return new EventBindings.Event(name, undefined, eventOpts);
-};
 var ResizeEvent = CreateEvent('guestViewInternal.onResize');
 
 // Possible states.
@@ -30,7 +27,7 @@ var ERROR_MSG_NOT_ATTACHED = 'The guest is not attached.';
 var ERROR_MSG_NOT_CREATED = 'The guest has not been created.';
 
 // Properties.
-var PROPERTY_ON_RESIZE = 'onResize';
+var PROPERTY_ON_RESIZE = 'onresize';
 
 // Contains and hides the internal implementation details of |GuestView|,
 // including maintaining its state and enforcing the proper usage of its API
@@ -55,7 +52,7 @@ function GuestViewImpl(guestView, viewType, guestInstanceId) {
 
 // Sets up the onResize property on the GuestView.
 GuestViewImpl.prototype.setupOnResize = function() {
-  Object.defineProperty(this.guestView, PROPERTY_ON_RESIZE, {
+  $Object.defineProperty(this.guestView, PROPERTY_ON_RESIZE, {
     get: function() {
       return this[PROPERTY_ON_RESIZE];
     }.bind(this),
@@ -69,7 +66,7 @@ GuestViewImpl.prototype.setupOnResize = function() {
     if (!this[PROPERTY_ON_RESIZE]) {
       return;
     }
-    this[PROPERTY_ON_RESIZE](e.oldWidth, e.oldHeight, e.newWidth, e.newHeight);
+    this[PROPERTY_ON_RESIZE](e);
   }.bind(this);
 };
 
