@@ -1,6 +1,5 @@
 en_CA Hunspell Dictionary
-Version 2014.08.11
-Mon Aug 11 18:23:56 2014 +0200 [be45e88]
+Thu Feb 26 16:06:27 2015 -0500 [9c3f26a]
 http://wordlist.sourceforge.net
 
 README file for English Hunspell dictionaries derived from SCOWL.
@@ -17,7 +16,7 @@ The following dictionaries are available:
 
   en_US-large
   en_CA-large
-  en_GB-large (with both "ize" and "ise" spelling)
+  en_GB-large (with both "ise" and "ize" spelling)
 
 The normal (non-large) dictionaries correspond to SCOWL size 60 and,
 to encourage consistent spelling, generally only include one spelling
@@ -74,10 +73,10 @@ released as part of Geoff Kuenning's Ispell and as such is covered by
 his BSD license.  Part of SCOWL is also based on Ispell thus the
 Ispell copyright is included with the SCOWL copyright.
 
-The collective work is Copyright 2000-2014 by Kevin Atkinson as well
+The collective work is Copyright 2000-2015 by Kevin Atkinson as well
 as any of the copyrights mentioned below:
 
-  Copyright 2000-2014 by Kevin Atkinson
+  Copyright 2000-2015 by Kevin Atkinson
 
   Permission to use, copy, modify, distribute and sell these word
   lists, the associated scripts, the output created from the scripts,
@@ -305,5 +304,5 @@ from the Ispell distribution they are under the Ispell copyright:
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.
 
-Build Date: Mon Aug 11 18:27:22 CEST 2014
+Build Date: Thu Feb 26 15:58:07 PST 2015
 Wordlist Command: mk-list en_CA 60 | deaccent

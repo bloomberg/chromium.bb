@@ -190,3 +190,10 @@ version to denote a new batch of dictionaries.
 On Oct 28, 2014, we updated the en dictionaries to the latest upstream version.
 We also added a bunch of words from bugs that were being flagged as incorrect.
 Given that the aff & dic files changed, we used version 4-0.
+
+On Feb 26, 2015, we updated the en-US and en-CA dictionaries to the latest
+upstream version from SCOWL, but made sure that "alot -> a lot" correction does
+not disappear, as it is not in SCOWL yet. The updated dictionaries support
+typographical apostrophes. Because both aff and dic files changed, we
+incremented major version to 6-0. That's 1 higher than the highest major version
+of any dictionary.
