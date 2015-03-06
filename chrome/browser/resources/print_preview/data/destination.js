@@ -55,6 +55,7 @@ cr.define('print_preview', function() {
    *          isTosAccepted: (boolean|undefined),
    *          cloudID: (string|undefined),
    *          extensionId: (string|undefined),
+   *          extensionName: (string|undefined),
    *          description: (string|undefined)}=} opt_params Optional parameters
    *     for the destination.
    * @constructor
@@ -160,6 +161,12 @@ cr.define('print_preview', function() {
      * @private {string}
      */
     this.extensionId_ = (opt_params && opt_params.extensionId) || '';
+
+    /**
+     * Extension name for extension managed printers.
+     * @private {string}
+     */
+    this.extensionName_ = (opt_params && opt_params.extensionName) || '';
   };
 
   /**
@@ -343,7 +350,7 @@ cr.define('print_preview', function() {
           this.id_ == Destination.GooglePromotedId.FEDEX) {
         return this.account_;
       }
-      return this.location || this.description;
+      return this.location || this.extensionName || this.description;
     },
 
     /** @return {!Array<string>} Tags associated with the destination. */
@@ -362,6 +369,14 @@ cr.define('print_preview', function() {
      */
     get extensionId() {
       return this.extensionId_;
+    },
+
+    /**
+     * @return {string} Extension name associated with the destination.
+     *     Non-empty only for extension managed printers.
+     */
+    get extensionName() {
+      return this.extensionName_;
     },
 
     /** @return {?print_preview.Cdd} Print capabilities of the destination. */
@@ -435,10 +450,6 @@ cr.define('print_preview', function() {
         return Destination.IconUrl_.FEDEX;
       } else if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
         return Destination.IconUrl_.PDF;
-      } else if (this.isExtension) {
-        // TODO(tbarzic): Update the way extension printers are displayed in the
-        // destination list when the desired UX is defined.
-        return 'chrome://extension-icon/' + this.extensionId + '/48/1';
       } else if (this.isLocal) {
         return Destination.IconUrl_.LOCAL;
       } else if (this.type_ == Destination.Type.MOBILE && this.isOwned_) {
@@ -486,6 +497,7 @@ cr.define('print_preview', function() {
      */
     matches: function(query) {
       return !!this.displayName_.match(query) ||
+          !!this.extensionName_.match(query) ||
           this.extraPropertiesToMatch.some(function(property) {
             return property.match(query);
           });

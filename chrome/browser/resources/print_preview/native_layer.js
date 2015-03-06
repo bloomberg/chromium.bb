@@ -767,9 +767,10 @@ cr.define('print_preview', function() {
 
     /**
      * @param {Array<!{extensionId: string,
-     *                  id: string,
-     *                  name: string,
-     *                  description: (string|undefined)}>} printers The list
+     *                 extensionName: string,
+     *                 id: string,
+     *                 name: string,
+     *                 description: (string|undefined)}>} printers The list
      *     containing information about printers added by an extension.
      * @param {boolean} done Whether this is the final list of extension
      *     managed printers.

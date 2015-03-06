@@ -43,6 +43,17 @@ class PrinterProviderAPI : public KeyedService {
 
   ~PrinterProviderAPI() override {}
 
+  // Requests list of supported printers from extensions implementing
+  // chrome.printerProvider API. It dispatches
+  // chrome.printerProvider.onGetPrintersRequested event. The callback is
+  // called once for every extension handling the event with a list of its
+  // supported printers. The printer values reported by an extension are
+  // added "extensionId" property that is set to the ID of the extension
+  // returning the list and "extensionName" property set to the extension's
+  // name.
+  // Note that the "id" property of printer values reported by an extension are
+  // rewriten as "<extension_id>:<id>" to ensure they are unique across
+  // different extensions.
   virtual void DispatchGetPrintersRequested(
       const GetPrintersCallback& callback) = 0;
 

@@ -442,6 +442,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
       "{"
       "\"description\":\"Test printer\","
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
@@ -449,6 +450,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
@@ -480,6 +482,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
       "{"
       "\"description\":\"Test printer\","
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
@@ -518,6 +521,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
       "{"
       "\"description\":\"Test printer\","
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
@@ -525,6 +529,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
@@ -533,6 +538,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
       "{"
       "\"description\":\"Test printer\","
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
@@ -540,6 +546,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
@@ -611,6 +618,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
       "{"
       "\"description\":\"Test printer\","
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
@@ -618,6 +626,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",
@@ -657,6 +666,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
       "{"
       "\"description\":\"Test printer\","
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printer1\","
       "\"name\":\"Printer 1\""
       "}",
@@ -664,6 +674,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
   expected_printers.push_back(base::StringPrintf(
       "{"
       "\"extensionId\":\"%s\","
+      "\"extensionName\": \"Test printer provider\","
       "\"id\":\"%s:printerNoDesc\","
       "\"name\":\"Printer 2\""
       "}",

@@ -380,6 +380,7 @@ cr.define('print_preview', function() {
           this.selectedDestination_ =
               print_preview.ExtensionDestinationParser.parse({
                 extensionId: this.appState_.selectedDestinationExtensionId,
+                extensionName: this.appState_.selectedDestinationExtensionName,
                 id: this.appState_.selectedDestinationId,
                 name: this.appState_.selectedDestinationName || ''
               });

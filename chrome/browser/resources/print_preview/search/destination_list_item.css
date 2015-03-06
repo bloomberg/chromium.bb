@@ -72,3 +72,29 @@
 .destination-list-item-query-highlight {
   background-color: rgba(255, 240, 120, 0.9);
 }
+
+.extension-controlled-indicator {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 150px;
+}
+
+.extension-name {
+  -webkit-margin-start: 1em;
+  color: #999;
+  line-height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.extension-icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  flex: 0 0 auto;
+  height: 24px;
+  margin: 0 3px;
+  width: 24px;
+}

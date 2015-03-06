@@ -324,6 +324,9 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("registerPromoButtonText",
                              IDS_PRINT_PREVIEW_REGISTER_PROMO_BUTTON_TEXT);
   source->AddLocalizedString(
+      "extensionDestinationIconTooltip",
+      IDS_PRINT_PREVIEW_EXTENSION_DESTINATION_ICON_TOOLTIP);
+  source->AddLocalizedString(
       "advancedSettingsSearchBoxPlaceholder",
       IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_SEARCH_BOX_PLACEHOLDER);
   source->AddLocalizedString("advancedSettingsDialogTitle",

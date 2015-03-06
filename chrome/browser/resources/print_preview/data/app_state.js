@@ -40,6 +40,7 @@ cr.define('print_preview', function() {
     SELECTED_DESTINATION_CAPABILITIES: 'selectedDestinationCapabilities',
     SELECTED_DESTINATION_NAME: 'selectedDestinationName',
     SELECTED_DESTINATION_EXTENSION_ID: 'selectedDestinationExtensionId',
+    SELECTED_DESTINATION_EXTENSION_NAME: 'selectedDestinationExtensionName',
     IS_GCP_PROMO_DISMISSED: 'isGcpPromoDismissed',
     DPI: 'dpi',
     MEDIA_SIZE: 'mediaSize',
@@ -105,6 +106,14 @@ cr.define('print_preview', function() {
      */
     get selectedDestinationExtensionId() {
       return this.state_[AppState.Field.SELECTED_DESTINATION_EXTENSION_ID];
+    },
+
+    /**
+     * @return {?string} Extension name associated with the selected
+     *     destination.
+     */
+    get selectedDestinationExtensionName() {
+      return this.state_[AppState.Field.SELECTED_DESTINATION_EXTENSION_NAME];
     },
 
     /** @return {boolean} Whether the GCP promotion has been dismissed. */
@@ -203,6 +212,8 @@ cr.define('print_preview', function() {
       this.state_[AppState.Field.SELECTED_DESTINATION_NAME] = dest.displayName;
       this.state_[AppState.Field.SELECTED_DESTINATION_EXTENSION_ID] =
           dest.extensionId;
+      this.state_[AppState.Field.SELECTED_DESTINATION_EXTENSION_NAME] =
+          dest.extensionName;
       this.persist_();
     },
 

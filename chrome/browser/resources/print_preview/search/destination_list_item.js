@@ -132,6 +132,34 @@ cr.define('print_preview', function() {
       }
       nameEl.title = textContent;
 
+      if (this.destination_.isExtension) {
+        var extensionNameEl = this.getChildElement('.extension-name');
+        var extensionName = this.destination_.extensionName;
+        extensionNameEl.title = this.destination_.extensionName;
+        if (this.query_) {
+          extensionNameEl.textContent = '';
+          this.addTextWithHighlight_(extensionNameEl, extensionName);
+        } else {
+          extensionNameEl.textContent = this.destination_.extensionName;
+        }
+
+        var extensionIconEl = this.getChildElement('.extension-icon');
+        extensionIconEl.style.backgroundImage = '-webkit-image-set(' +
+             'url(chrome://extension-icon/' +
+                  this.destination_.extensionId + '/24/1) 1x,' +
+             'url(chrome://extension-icon/' +
+                  this.destination_.extensionId + '/48/1) 2x)';
+        extensionIconEl.title = loadTimeData.getStringF(
+            'extensionDestinationIconTooltip',
+            this.destination_.extensionName);
+        extensionIconEl.onclick = this.onExtensionIconClicked_.bind(this);
+        extensionIconEl.onkeydown = this.onExtensionIconKeyDown_.bind(this);
+      }
+
+      var extensionIndicatorEl =
+          this.getChildElement('.extension-controlled-indicator');
+      setIsVisible(extensionIndicatorEl, this.destination_.isExtension);
+
       // Initialize the element which renders the destination's offline status.
       this.getElement().classList.toggle('stale', this.destination_.isOffline);
       var offlineStatusEl = this.getChildElement('.offline-status');
@@ -232,6 +260,32 @@ cr.define('print_preview', function() {
           DestinationListItem.EventType.REGISTER_PROMO_CLICKED);
       promoClickedEvent.destination = this.destination_;
       this.eventTarget_.dispatchEvent(promoClickedEvent);
+    },
+
+    /**
+     * Handles click and 'Enter' key down events for the extension icon element.
+     * It opens extensions page with the extension associated with the
+     * destination highlighted.
+     * @param {MouseEvent|KeyboardEvent} e The event to handle.
+     * @private
+     */
+    onExtensionIconClicked_: function(e) {
+      e.stopPropagation();
+      window.open('chrome://extensions?id=' + this.destination_.extensionId);
+    },
+
+    /**
+     * Handles key down event for the extensin icon element. Keys different than
+     * 'Enter' are ignored.
+     * @param {KeyboardEvent} e The event to handle.
+     * @private
+     */
+    onExtensionIconKeyDown_: function(e) {
+      if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey)
+        return;
+      if (e.keyCode != 13 /* Enter */)
+        return;
+      this.onExtensionIconClicked_(event);
     }
   };
 

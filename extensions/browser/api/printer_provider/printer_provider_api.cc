@@ -547,6 +547,7 @@ void PrinterProviderAPIImpl::OnGetPrintersResult(
     printer->SetString("id",
                        GeneratePrinterId(extension->id(), internal_printer_id));
     printer->SetString("extensionId", extension->id());
+    printer->SetString("extensionName", extension->name());
 
     base::string16 printer_name;
     if (printer->GetString("name", &printer_name) &&

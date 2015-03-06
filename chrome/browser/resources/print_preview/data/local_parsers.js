@@ -82,8 +82,8 @@ cr.define('print_preview', function() {
         destinationInfo.name,
         false /* isRecent */,
         print_preview.Destination.ConnectionStatus.ONLINE,
-        {description: destinationInfo.description || '',
-         extensionId: destinationInfo.extensionId});
+        {extensionId: destinationInfo.extensionId,
+         extensionName: destinationInfo.extensionName || ''});
   };
 
   // Export
