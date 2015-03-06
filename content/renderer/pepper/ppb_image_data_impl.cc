@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/pepper_file_util.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
@@ -189,12 +190,8 @@ void ImageDataPlatformBackend::Unmap() {
 int32_t ImageDataPlatformBackend::GetSharedMemory(int* handle,
                                                   uint32_t* byte_count) {
   *byte_count = dib_->size();
-#if defined(OS_WIN)
-  *handle = reinterpret_cast<intptr_t>(dib_->handle());
-#else
-  *handle = static_cast<intptr_t>(dib_->handle().fd);
-#endif
-
+  *handle = reinterpret_cast<int>(PlatformFileFromSharedMemoryHandle(
+      dib_->handle()));
   return PP_OK;
 }
 
@@ -255,13 +252,8 @@ void ImageDataSimpleBackend::Unmap() {
 int32_t ImageDataSimpleBackend::GetSharedMemory(int* handle,
                                                 uint32_t* byte_count) {
   *byte_count = skia_bitmap_.getSize();
-#if defined(OS_POSIX)
-  *handle = shared_memory_->handle().fd;
-#elif defined(OS_WIN)
-  *handle = reinterpret_cast<int>(shared_memory_->handle());
-#else
-#error "Platform not supported."
-#endif
+  *handle = reinterpret_cast<int>(PlatformFileFromSharedMemoryHandle(
+      shared_memory_->handle()));
   return PP_OK;
 }
 

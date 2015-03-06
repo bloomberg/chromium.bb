@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/pepper_file_util.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -195,13 +196,8 @@ int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
     shm_buffers_[shm_id] = shm.release();
   }
 
-#if defined(OS_WIN)
-  base::PlatformFile platform_file = shm_handle;
-#elif defined(OS_POSIX)
-  base::PlatformFile platform_file = shm_handle.fd;
-#else
-#error Not implemented.
-#endif
+  base::PlatformFile platform_file =
+      PlatformFileFromSharedMemoryHandle(shm_handle);
   SerializedHandle handle(
       renderer_ppapi_host_->ShareHandleWithRemote(platform_file, false),
       shm_size);

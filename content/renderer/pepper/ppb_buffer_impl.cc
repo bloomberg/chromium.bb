@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/pepper_file_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/pp_bool.h"
@@ -78,13 +79,8 @@ void PPB_Buffer_Impl::Unmap() {
 }
 
 int32_t PPB_Buffer_Impl::GetSharedMemory(int* shm_handle) {
-#if defined(OS_POSIX)
-  *shm_handle = shared_memory_->handle().fd;
-#elif defined(OS_WIN)
-  *shm_handle = reinterpret_cast<int>(shared_memory_->handle());
-#else
-#error "Platform not supported."
-#endif
+  *shm_handle = reinterpret_cast<int>(PlatformFileFromSharedMemoryHandle(
+      shared_memory_->handle()));
   return PP_OK;
 }
 

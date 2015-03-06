@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
+#include "content/common/pepper_file_util.h"
 #include "content/common/sandbox_util.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -80,13 +81,7 @@ bool HostArrayBufferVar::CopyToNewShmem(
   }
 
   base::PlatformFile platform_file =
-#if defined(OS_WIN)
-      shm->handle();
-#elif defined(OS_POSIX)
-      shm->handle().fd;
-#else
-#error Not implemented.
-#endif
+      PlatformFileFromSharedMemoryHandle(shm->handle());
 
   *plugin_shm_handle = BrokerGetFileHandleForProcess(platform_file, p, false);
   *host_shm_handle_id = -1;

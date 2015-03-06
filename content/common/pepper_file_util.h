@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_PEPPER_FILE_UTIL_H_
 #define CONTENT_COMMON_PEPPER_FILE_UTIL_H_
 
+#include "base/files/file.h"
+#include "base/memory/shared_memory.h"
+#include "base/sync_socket.h"
 #include "ppapi/c/pp_file_info.h"
 #include "storage/common/fileapi/file_system_types.h"
 
@@ -16,6 +19,12 @@ namespace content {
 
 storage::FileSystemType PepperFileSystemTypeToFileSystemType(
     PP_FileSystemType type);
+
+base::PlatformFile PlatformFileFromSharedMemoryHandle(
+    const base::SharedMemoryHandle& shm_handle);
+
+int IntegerFromSyncSocketHandle(
+    const base::SyncSocket::Handle& socket_handle);
 
 }  // namespace content
 

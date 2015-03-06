@@ -20,4 +20,26 @@ storage::FileSystemType PepperFileSystemTypeToFileSystemType(
   }
 }
 
+base::PlatformFile PlatformFileFromSharedMemoryHandle(
+    const base::SharedMemoryHandle& shm_handle) {
+#if defined(OS_WIN)
+  return shm_handle;
+#elif defined(OS_POSIX)
+  return shm_handle.fd;
+#else
+#error Platform not supported.
+#endif
+}
+
+int IntegerFromSyncSocketHandle(
+    const base::SyncSocket::Handle& socket_handle) {
+#if defined(OS_WIN)
+  return reinterpret_cast<int>(socket_handle);
+#elif defined(OS_POSIX)
+  return socket_handle;
+#else
+#error Platform not supported.
+#endif
+}
+
 }  // namespace content

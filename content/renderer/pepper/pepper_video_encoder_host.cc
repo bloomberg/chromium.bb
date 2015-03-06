@@ -7,6 +7,7 @@
 #include "base/numerics/safe_math.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
+#include "content/common/pepper_file_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -31,17 +32,6 @@ namespace content {
 namespace {
 
 const uint32_t kDefaultNumberOfBitstreamBuffers = 4;
-
-base::PlatformFile ConvertSharedMemoryHandle(
-    const base::SharedMemory& shared_memory) {
-#if defined(OS_POSIX)
-  return shared_memory.handle().fd;
-#elif defined(OS_WIN)
-  return shared_memory.handle();
-#else
-#error "Platform not supported."
-#endif
-}
 
 int32_t PP_FromMediaEncodeAcceleratorError(
     media::VideoEncodeAccelerator::Error error) {
@@ -391,7 +381,8 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
     encoder_->UseOutputBitstreamBuffer(shm_buffers_[i]->ToBitstreamBuffer());
     handles.push_back(SerializedHandle(
         renderer_ppapi_host_->ShareHandleWithRemote(
-            ConvertSharedMemoryHandle(*shm_buffers_[i]->shm), false),
+            PlatformFileFromSharedMemoryHandle(shm_buffers_[i]->shm->handle()),
+            false),
         output_buffer_size));
   }
 
@@ -592,7 +583,8 @@ void PepperVideoEncoderHost::AllocateVideoFrames() {
   DCHECK(get_video_frames_reply_context_.is_valid());
   get_video_frames_reply_context_.params.AppendHandle(SerializedHandle(
       renderer_ppapi_host_->ShareHandleWithRemote(
-          ConvertSharedMemoryHandle(*buffer_manager_.shm()), false),
+          PlatformFileFromSharedMemoryHandle(buffer_manager_.shm()->handle()),
+          false),
       total_size));
 
   host()->SendReply(get_video_frames_reply_context_,
