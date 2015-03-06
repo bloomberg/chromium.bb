@@ -13,7 +13,7 @@ Running: testInvalidParam
 error: Protocol Error: Invalid type of argument 'latitude' for method 'Page.setGeolocationOverride' call. It must be 'number' but it is 'boolean'.
 
 Running: testInvalidGeolocation
-error: Request with id = 25 failed. {"code":-32603,"message":"Invalid geolocation"}
+error: Request with id = 26 failed. {"code":-32603,"message":"Invalid geolocation"}
 
 Running: testTimestampOfOverridenPosition
 

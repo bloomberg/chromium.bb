@@ -29,7 +29,7 @@ public:
     // Inspector Controller API.
     virtual void clearFrontend() override;
     virtual void restore() override;
-    virtual void didCommitLoadForMainFrame() override;
+    virtual void didCommitLoadForLocalFrame(LocalFrame*) override;
 
 private:
     explicit DeviceOrientationInspectorAgent(Page&);

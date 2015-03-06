@@ -89,6 +89,7 @@
 #include "web/PluginPlaceholderImpl.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/WebDataSourceImpl.h"
+#include "web/WebDevToolsAgentImpl.h"
 #include "web/WebDevToolsFrontendImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
@@ -419,6 +420,10 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryComm
     m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
     if (m_webFrame->client())
         m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, WebHistoryItem(item), static_cast<WebHistoryCommitType>(commitType));
+    // FIXME(dgozman): update this for out-of-process.
+    WebDevToolsAgent* devToolsAgent = m_webFrame->top()->isWebLocalFrame() ? toWebLocalFrameImpl(m_webFrame->top())->viewImpl()->devToolsAgent() : nullptr;
+    if (devToolsAgent)
+        static_cast<WebDevToolsAgentImpl*>(devToolsAgent)->didCommitLoadForLocalFrame(m_webFrame->frame());
 }
 
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(

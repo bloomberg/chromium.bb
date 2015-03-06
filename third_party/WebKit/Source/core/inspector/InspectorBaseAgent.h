@@ -44,6 +44,7 @@ class InspectorFrontend;
 class InspectorCompositeState;
 class InspectorState;
 class InstrumentingAgents;
+class LocalFrame;
 
 class InspectorAgent : public NoBaseWillBeGarbageCollectedFinalized<InspectorAgent> {
 public:
@@ -57,7 +58,7 @@ public:
     virtual void restore() { }
     virtual void registerInDispatcher(InspectorBackendDispatcher*) = 0;
     virtual void discardAgent() { }
-    virtual void didCommitLoadForMainFrame() { }
+    virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
     virtual void flushPendingProtocolNotifications() { }
 
     String name() { return m_name; }
@@ -83,7 +84,7 @@ public:
     void registerInDispatcher(InspectorBackendDispatcher*);
     void discardAgents();
     void flushPendingProtocolNotifications();
-    void didCommitLoadForMainFrame();
+    void didCommitLoadForLocalFrame(LocalFrame*);
 
     DECLARE_TRACE();
 

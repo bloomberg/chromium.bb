@@ -494,9 +494,6 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         if (TextAutosizer* textAutosizer = deprecatedLocalMainFrame()->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
         break;
-    case SettingsDelegate::ScriptEnableChange:
-        m_inspectorController->scriptsEnabled(settings().scriptEnabled());
-        break;
     case SettingsDelegate::FontFamilyChange:
         for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
@@ -537,7 +534,6 @@ void Page::didCommitLoad(LocalFrame* frame)
     if (m_mainFrame == frame) {
         frame->console().clearMessages();
         useCounter().didCommitLoad();
-        m_inspectorController->didCommitLoadForMainFrame();
         UserGestureIndicator::clearProcessedUserGestureSinceLoad();
     }
 }

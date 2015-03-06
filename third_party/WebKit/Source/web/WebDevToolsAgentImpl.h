@@ -70,6 +70,7 @@ public:
     WebDevToolsAgentClient* client() { return m_client; }
 
     bool handleInputEvent(Page*, const WebInputEvent&);
+    void didCommitLoadForLocalFrame(LocalFrame*);
 
     // WebDevToolsAgent implementation.
     virtual void attach(const WebString& hostId) override;

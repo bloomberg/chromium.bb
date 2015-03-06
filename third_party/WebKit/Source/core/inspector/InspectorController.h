@@ -79,6 +79,7 @@ public:
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
     void setPreferCompositingToLCDTextEnabled(bool);
+    void setScriptEnabled(bool);
 
     void willBeDestroyed();
     void registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
@@ -110,9 +111,7 @@ public:
     void didProcessTask();
     void flushPendingProtocolNotifications();
 
-    void didCommitLoadForMainFrame();
-
-    void scriptsEnabled(bool);
+    void didCommitLoadForLocalFrame(LocalFrame*);
 
     void willAddPageOverlay(const GraphicsLayer*);
     void didRemovePageOverlay(const GraphicsLayer*);

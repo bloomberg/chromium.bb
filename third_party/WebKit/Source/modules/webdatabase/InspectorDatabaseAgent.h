@@ -58,7 +58,7 @@ public:
     virtual void clearFrontend() override;
     virtual void restore() override;
 
-    virtual void didCommitLoadForMainFrame() override;
+    virtual void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     // Called from the front-end.
     virtual void enable(ErrorString*) override;
@@ -73,6 +73,7 @@ private:
     Database* databaseForId(const String& databaseId);
     InspectorDatabaseResource* findByFileName(const String& fileName);
 
+    Page* m_page;
     InspectorFrontend::Database* m_frontend;
     typedef PersistentHeapHashMapWillBeHeapHashMap<String, Member<InspectorDatabaseResource>> DatabaseResourcesHeapMap;
     DatabaseResourcesHeapMap m_resources;

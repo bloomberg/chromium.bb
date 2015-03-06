@@ -264,7 +264,7 @@ layerSquashingEnabled initial=false
 # Clients that execute script should call ScriptController::canExecuteScripts()
 # instead of this function. ScriptController::canExecuteScripts() checks the
 # HTML sandbox, plug-in sandboxing, and other important details.
-scriptEnabled initial=false, invalidate=ScriptEnable
+scriptEnabled initial=false
 
 # Compensates for poor text legibility on mobile devices. This value is
 # multiplied by the font scale factor when performing text autosizing of

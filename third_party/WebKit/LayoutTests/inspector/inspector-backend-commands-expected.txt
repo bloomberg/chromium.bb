@@ -1,6 +1,6 @@
 Tests correctness of promisified protocol commands.
 
-error: Request with id = 21 failed. {"message":"this is the error message"}
+error: Request with id = 22 failed. {"message":"this is the error message"}
 error: this is the error message
 commandError: then result: null
 commandArgs0: then result: undefined

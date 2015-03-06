@@ -188,7 +188,7 @@ void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)
 
 void WebSettingsImpl::setJavaScriptEnabled(bool enabled)
 {
-    m_settings->setScriptEnabled(enabled);
+    m_inspectorController->setScriptEnabled(enabled);
 }
 
 void WebSettingsImpl::setWebSecurityEnabled(bool enabled)

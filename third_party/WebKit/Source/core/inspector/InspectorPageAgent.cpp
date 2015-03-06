@@ -430,7 +430,6 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
-    , m_ignoreScriptsEnabledNotification(false)
     , m_deviceMetricsOverridden(false)
     , m_emulateMobileEnabled(false)
     , m_touchEmulationEnabled(false)
@@ -441,6 +440,7 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_embedderTextAutosizingEnabled(m_page->settings().textAutosizingEnabled())
     , m_embedderFontScaleFactor(m_page->settings().deviceScaleAdjustment())
     , m_embedderPreferCompositingToLCDTextEnabled(m_page->settings().preferCompositingToLCDTextEnabled())
+    , m_embedderScriptEnabled(m_page->settings().scriptEnabled())
     , m_reloading(false)
 {
 }
@@ -467,6 +467,13 @@ void InspectorPageAgent::setPreferCompositingToLCDTextEnabled(bool enabled)
     bool emulateMobileEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateMobileEnabled;
     if (!emulateMobileEnabled)
         m_page->settings().setPreferCompositingToLCDTextEnabled(enabled);
+}
+
+void InspectorPageAgent::setScriptEnabled(bool enabled)
+{
+    m_embedderScriptEnabled = enabled;
+    if (!m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled))
+        m_page->settings().setScriptEnabled(enabled);
 }
 
 void InspectorPageAgent::setFrontend(InspectorFrontend* frontend)
@@ -545,6 +552,7 @@ void InspectorPageAgent::disable(ErrorString*)
         setContinuousPaintingEnabled(0, false);
     setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
+    setScriptExecutionDisabled(nullptr, false);
     stopScreencast(0);
 
     if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled)) {
@@ -969,38 +977,17 @@ void InspectorPageAgent::setShowScrollBottleneckRects(ErrorString* errorString, 
     m_client->setShowScrollBottleneckRects(show);
 }
 
-void InspectorPageAgent::getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum* status)
-{
-    bool disabledByScriptController = false;
-    bool disabledInSettings = false;
-    LocalFrame* frame = inspectedFrame();
-    if (frame) {
-        disabledByScriptController = !frame->script().canExecuteScripts(NotAboutToExecuteScript);
-        if (frame->settings())
-            disabledInSettings = !frame->settings()->scriptEnabled();
-    }
-
-    // Order is important.
-    if (disabledInSettings)
-        *status = PageCommandHandler::Result::Disabled;
-    else if (disabledByScriptController)
-        *status = PageCommandHandler::Result::Forbidden;
-    else
-        *status = PageCommandHandler::Result::Allowed;
-}
-
 void InspectorPageAgent::setScriptExecutionDisabled(ErrorString*, bool value)
 {
+    if (m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled) == value)
+        return;
     m_state->setBoolean(PageAgentState::pageAgentScriptExecutionDisabled, value);
     if (!inspectedFrame())
         return;
 
     Settings* settings = inspectedFrame()->settings();
-    if (settings) {
-        m_ignoreScriptsEnabledNotification = true;
-        settings->setScriptEnabled(!value);
-        m_ignoreScriptsEnabledNotification = false;
-    }
+    if (settings)
+        settings->setScriptEnabled(value ? false : m_embedderScriptEnabled);
 }
 
 void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
@@ -1278,14 +1265,6 @@ void InspectorPageAgent::pageScaleFactorChanged()
     if (m_enabled)
         m_overlay->update();
     viewportChanged();
-}
-
-void InspectorPageAgent::scriptsEnabled(bool isEnabled)
-{
-    if (m_ignoreScriptsEnabledNotification)
-        return;
-
-    m_frontend->scriptsEnabled(isEnabled);
 }
 
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)

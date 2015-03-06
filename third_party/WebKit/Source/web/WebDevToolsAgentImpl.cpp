@@ -328,6 +328,12 @@ bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inp
     return false;
 }
 
+void WebDevToolsAgentImpl::didCommitLoadForLocalFrame(LocalFrame* frame)
+{
+    if (InspectorController* ic = inspectorController())
+        ic->didCommitLoadForLocalFrame(frame);
+}
+
 void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
 {
     if (!m_deviceMetricsEnabled) {

@@ -164,6 +164,11 @@ void InspectorController::setPreferCompositingToLCDTextEnabled(bool enabled)
     m_pageAgent->setPreferCompositingToLCDTextEnabled(enabled);
 }
 
+void InspectorController::setScriptEnabled(bool enabled)
+{
+    m_pageAgent->setScriptEnabled(enabled);
+}
+
 void InspectorController::initializeDeferredAgents()
 {
     if (m_deferredAgentsInitialized)
@@ -397,15 +402,9 @@ void InspectorController::flushPendingProtocolNotifications()
     m_agents.flushPendingProtocolNotifications();
 }
 
-void InspectorController::didCommitLoadForMainFrame()
+void InspectorController::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    m_agents.didCommitLoadForMainFrame();
-}
-
-void InspectorController::scriptsEnabled(bool  enabled)
-{
-    if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
-        pageAgent->scriptsEnabled(enabled);
+    m_agents.didCommitLoadForLocalFrame(frame);
 }
 
 void InspectorController::willAddPageOverlay(const GraphicsLayer* layer)

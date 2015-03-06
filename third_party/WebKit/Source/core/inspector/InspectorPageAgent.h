@@ -104,6 +104,7 @@ public:
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
     void setPreferCompositingToLCDTextEnabled(bool);
+    void setScriptEnabled(bool);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
@@ -138,7 +139,6 @@ public:
     void setShowFPSCounter(ErrorString*, bool show) override;
     void setContinuousPaintingEnabled(ErrorString*, bool enabled) override;
     void setShowScrollBottleneckRects(ErrorString*, bool show) override;
-    void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*) override;
     void setScriptExecutionDisabled(ErrorString*, bool) override;
     void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;
     void setEmulatedMedia(ErrorString*, const String&) override;
@@ -168,7 +168,6 @@ public:
     void didScroll();
     void didResizeMainFrame();
     void didRecalculateStyle(int);
-    void scriptsEnabled(bool isEnabled);
 
     // Inspector Controller API
     void setFrontend(InspectorFrontend*) override;
@@ -228,7 +227,6 @@ private:
     HashMap<String, LocalFrame*> m_identifierToFrame;
     HashMap<DocumentLoader*, String> m_loaderToIdentifier;
     bool m_enabled;
-    bool m_ignoreScriptsEnabledNotification;
     bool m_deviceMetricsOverridden;
     bool m_emulateMobileEnabled;
 
@@ -241,6 +239,7 @@ private:
     bool m_embedderTextAutosizingEnabled;
     double m_embedderFontScaleFactor;
     bool m_embedderPreferCompositingToLCDTextEnabled;
+    bool m_embedderScriptEnabled;
     bool m_reloading;
 
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;

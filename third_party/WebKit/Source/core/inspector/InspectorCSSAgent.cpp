@@ -538,10 +538,12 @@ void InspectorCSSAgent::disable(ErrorString*)
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
 }
 
-void InspectorCSSAgent::didCommitLoadForMainFrame()
+void InspectorCSSAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    reset();
-    m_editedStyleSheets.clear();
+    if (frame == m_pageAgent->inspectedFrame()) {
+        reset();
+        m_editedStyleSheets.clear();
+    }
 }
 
 void InspectorCSSAgent::mediaQueryResultChanged()

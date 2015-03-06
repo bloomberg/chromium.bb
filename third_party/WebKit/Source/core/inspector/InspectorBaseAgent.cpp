@@ -118,10 +118,10 @@ DEFINE_TRACE(InspectorAgentRegistry)
 #endif
 }
 
-void InspectorAgentRegistry::didCommitLoadForMainFrame()
+void InspectorAgentRegistry::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
     for (size_t i = 0; i < m_agents.size(); i++)
-        m_agents[i]->didCommitLoadForMainFrame();
+        m_agents[i]->didCommitLoadForLocalFrame(frame);
 }
 
 } // namespace blink

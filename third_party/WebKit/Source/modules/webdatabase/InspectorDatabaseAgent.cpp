@@ -230,13 +230,18 @@ void InspectorDatabaseAgent::didOpenDatabase(Database* database, const String& d
         resource->bind(m_frontend);
 }
 
-void InspectorDatabaseAgent::didCommitLoadForMainFrame()
+void InspectorDatabaseAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
+    // FIXME(dgozman): adapt this for out-of-process iframes.
+    if (frame != m_page->mainFrame())
+        return;
+
     m_resources.clear();
 }
 
 InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
     : InspectorBaseAgent<InspectorDatabaseAgent>("Database")
+    , m_page(page)
     , m_frontend(0)
     , m_enabled(false)
 {

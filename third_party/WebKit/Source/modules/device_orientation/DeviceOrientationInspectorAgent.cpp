@@ -75,8 +75,12 @@ void DeviceOrientationInspectorAgent::restore()
     }
 }
 
-void DeviceOrientationInspectorAgent::didCommitLoadForMainFrame()
+void DeviceOrientationInspectorAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
+    // FIXME(dgozman): adapt this for out-of-process iframes.
+    if (frame != m_page.mainFrame())
+        return;
+
     // New document in main frame - apply override there.
     // No need to cleanup previous one, as it's already gone.
     restore();

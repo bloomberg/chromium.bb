@@ -108,7 +108,7 @@ public:
     virtual void setFrontend(InspectorFrontend*) override;
     virtual void clearFrontend() override;
     virtual void discardAgent() override;
-    virtual void didCommitLoadForMainFrame() override;
+    virtual void didCommitLoadForLocalFrame(LocalFrame*) override;
     virtual void restore() override;
     virtual void flushPendingProtocolNotifications() override;
     virtual void enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallback>) override;

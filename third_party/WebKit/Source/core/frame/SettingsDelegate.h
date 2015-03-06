@@ -55,7 +55,6 @@ public:
         MultisamplingChange,
         ImageLoadingChange,
         TextAutosizingChange,
-        ScriptEnableChange,
         FontFamilyChange,
         AcceleratedCompositingChange,
         MediaQueryChange,
