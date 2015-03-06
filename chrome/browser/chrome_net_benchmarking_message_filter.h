@@ -31,9 +31,9 @@ class ChromeNetBenchmarkingMessageFilter
   // Message handlers.
   void OnCloseCurrentConnections();
   void OnClearCache(IPC::Message* reply_msg);
-  void OnClearHostResolverCache(int* result);
+  void OnClearHostResolverCache();
   void OnSetCacheMode(bool enabled);
-  void OnClearPredictorCache(int* result);
+  void OnClearPredictorCache();
 
   // Returns true if benchmarking is enabled for chrome.
   bool CheckBenchmarkingEnabled() const;

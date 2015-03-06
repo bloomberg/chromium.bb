@@ -70,16 +70,14 @@ class NetBenchmarkingWrapper : public v8::Extension {
 
   static void ClearHostResolverCache(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    int rv;
     content::RenderThread::Get()->Send(
-        new ChromeViewHostMsg_ClearHostResolverCache(&rv));
+        new ChromeViewHostMsg_ClearHostResolverCache());
   }
 
   static void ClearPredictorCache(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    int rv;
     content::RenderThread::Get()->Send(
-        new ChromeViewHostMsg_ClearPredictorCache(&rv));
+        new ChromeViewHostMsg_ClearPredictorCache());
   }
 
   static void CloseConnections(

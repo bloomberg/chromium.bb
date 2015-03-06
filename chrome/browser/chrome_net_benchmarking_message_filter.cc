@@ -83,19 +83,17 @@ void ChromeNetBenchmarkingMessageFilter::OnClearCache(IPC::Message* reply_msg) {
   Send(reply_msg);
 }
 
-void ChromeNetBenchmarkingMessageFilter::OnClearHostResolverCache(int* result) {
+void ChromeNetBenchmarkingMessageFilter::OnClearHostResolverCache() {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled()) {
     NOTREACHED() << "Received unexpected benchmarking IPC";
     return;
   }
-  *result = -1;
   net::HostCache* cache =
       request_context_->GetURLRequestContext()->host_resolver()->GetHostCache();
   if (cache) {
     cache->clear();
-    *result = 0;
   }
 }
 
@@ -124,7 +122,7 @@ void ChromeNetBenchmarkingMessageFilter::OnSetCacheMode(bool enabled) {
   http_cache->set_mode(mode);
 }
 
-void ChromeNetBenchmarkingMessageFilter::OnClearPredictorCache(int* result) {
+void ChromeNetBenchmarkingMessageFilter::OnClearPredictorCache() {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled()) {
@@ -134,7 +132,6 @@ void ChromeNetBenchmarkingMessageFilter::OnClearPredictorCache(int* result) {
   chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
   if (predictor)
     predictor->DiscardAllResults();
-  *result = 0;
 }
 
 bool ChromeNetBenchmarkingMessageFilter::CheckBenchmarkingEnabled() const {

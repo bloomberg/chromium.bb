@@ -34,12 +34,8 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_ClearCache,
 
 // Message sent from the renderer to the browser to request that the browser
 // clear the host cache.  Used for debugging/testing.
-// |result| is the returned status from the operation.
-IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_ClearHostResolverCache,
-                            int /* result */)
+IPC_SYNC_MESSAGE_CONTROL0_0(ChromeViewHostMsg_ClearHostResolverCache)
 
 // Message sent from the renderer to the browser to request that the browser
 // clear the predictor cache.  Used for debugging/testing.
-// |result| is the returned status from the operation.
-IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_ClearPredictorCache,
-                            int /* result */)
+IPC_SYNC_MESSAGE_CONTROL0_0(ChromeViewHostMsg_ClearPredictorCache)
