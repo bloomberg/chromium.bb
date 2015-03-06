@@ -264,11 +264,18 @@ public class VideoCaptureCamera2 extends VideoCapture {
             } else {
                 // Copy pixels one by one respecting pixelStride and rowStride.
                 byte[] rowData = new byte[rowStride];
-                for (int row = 0; row < planeHeight; ++row) {
+                for (int row = 0; row < planeHeight - 1; ++row) {
                     buffer.get(rowData, 0, rowStride);
                     for (int col = 0; col < planeWidth; ++col) {
                         data[offset++] = rowData[col * pixelStride];
                     }
+                }
+
+                // Last row is special in some devices and may not contain the full
+                // |rowStride| bytes of data. See http://crbug.com/458701.
+                buffer.get(rowData, 0, Math.min(rowStride, buffer.remaining()));
+                for (int col = 0; col < planeWidth; ++col) {
+                    data[offset++] = rowData[col * pixelStride];
                 }
             }
         }
