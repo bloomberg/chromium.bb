@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
@@ -524,6 +526,19 @@ void PrinterProviderAPIImpl::OnGetPrintersResult(
     printer->SetString("id",
                        GeneratePrinterId(extension->id(), internal_printer_id));
     printer->SetString("extensionId", extension->id());
+
+    base::string16 printer_name;
+    if (printer->GetString("name", &printer_name) &&
+        base::i18n::AdjustStringForLocaleDirection(&printer_name)) {
+      printer->SetString("name", printer_name);
+    }
+
+    base::string16 printer_description;
+    if (printer->GetString("description", &printer_description) &&
+        base::i18n::AdjustStringForLocaleDirection(&printer_description)) {
+      printer->SetString("description", printer_description);
+    }
+
     printer_list.Append(printer.release());
   }
 
