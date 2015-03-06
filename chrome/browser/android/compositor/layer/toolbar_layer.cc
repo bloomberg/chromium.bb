@@ -25,10 +25,12 @@ scoped_refptr<cc::Layer> ToolbarLayer::layer() {
   return layer_;
 }
 
-void ToolbarLayer::PushResource(ui::ResourceManager::Resource* resource,
-                                bool anonymize,
-                                bool anonymize_component_is_incognito,
-                                bool show_debug) {
+void ToolbarLayer::PushResource(
+    ui::ResourceManager::Resource* resource,
+    ui::ResourceManager::Resource* progress_resource,
+    bool anonymize,
+    bool anonymize_component_is_incognito,
+    bool show_debug) {
   DCHECK(resource);
 
   // This layer effectively draws over the space it takes for shadows.  Set the
@@ -47,6 +49,13 @@ void ToolbarLayer::PushResource(ui::ResourceManager::Resource* resource,
                                              : kNormalAnonymizeContentColor);
   }
 
+  progress_layer_->SetHideLayerAndSubtree(!progress_resource);
+  if (progress_resource) {
+    progress_layer_->SetUIResourceId(progress_resource->ui_resource->id());
+    progress_layer_->SetBounds(progress_resource->size);
+    progress_layer_->SetPosition(progress_resource->padding.origin());
+  }
+
   debug_layer_->SetBounds(resource->size);
   if (show_debug && !debug_layer_->parent())
     layer_->AddChild(debug_layer_);
@@ -54,13 +63,29 @@ void ToolbarLayer::PushResource(ui::ResourceManager::Resource* resource,
     debug_layer_->RemoveFromParent();
 }
 
+void ToolbarLayer::PushResource(ui::ResourceManager::Resource* resource,
+                                bool anonymize,
+                                bool anonymize_component_is_incognito,
+                                bool show_debug) {
+  PushResource(resource,
+               nullptr,
+               anonymize,
+               anonymize_component_is_incognito,
+               show_debug);
+}
+
 ToolbarLayer::ToolbarLayer()
     : layer_(cc::Layer::Create()),
       bitmap_layer_(cc::UIResourceLayer::Create()),
+      progress_layer_(cc::UIResourceLayer::Create()),
       anonymize_layer_(cc::SolidColorLayer::Create()),
       debug_layer_(cc::SolidColorLayer::Create()) {
   bitmap_layer_->SetIsDrawable(true);
   layer_->AddChild(bitmap_layer_);
+
+  progress_layer_->SetIsDrawable(true);
+  progress_layer_->SetHideLayerAndSubtree(true);
+  layer_->AddChild(progress_layer_);
 
   anonymize_layer_->SetHideLayerAndSubtree(true);
   anonymize_layer_->SetIsDrawable(true);

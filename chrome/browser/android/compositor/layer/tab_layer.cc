@@ -184,7 +184,10 @@ void TabLayer::SetProperties(int id,
   //----------------------------------------------------------------------------
   // Update Resource Ids For Layers That Impact Layout
   //----------------------------------------------------------------------------
-  toolbar_layer_->PushResource(toolbar_resource, anonymize_toolbar, incognito_,
+  toolbar_layer_->PushResource(toolbar_resource,
+                               nullptr,
+                               anonymize_toolbar,
+                               incognito_,
                                false);
 
   //----------------------------------------------------------------------------

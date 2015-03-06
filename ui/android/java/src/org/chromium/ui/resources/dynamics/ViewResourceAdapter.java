@@ -54,7 +54,7 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
             onCaptureStart(canvas, mDirtyRect.isEmpty() ? null : mDirtyRect);
 
             if (!mDirtyRect.isEmpty()) canvas.clipRect(mDirtyRect);
-            mView.draw(canvas);
+            capture(canvas);
 
             onCaptureEnd();
         } else {
@@ -118,7 +118,7 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
     }
 
     /**
-     * Called before {@link View#draw(Canvas)} is called.
+     * Called before {@link #capture(Canvas)} is called.
      * @param canvas    The {@link Canvas} that will be drawn to.
      * @param dirtyRect The dirty {@link Rect} or {@code null} if the entire area is being redrawn.
      */
@@ -126,7 +126,15 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
     }
 
     /**
-     * Called after {@link View#draw(Canvas)}.
+     * Called to draw the {@link View}'s contents into the passed in {@link Canvas}.
+     * @param canvas The {@link Canvas} that will be drawn to.
+     */
+    protected void capture(Canvas canvas) {
+        mView.draw(canvas);
+    }
+
+    /**
+     * Called after {@link #capture(Canvas)}.
      */
     protected void onCaptureEnd() {
     }

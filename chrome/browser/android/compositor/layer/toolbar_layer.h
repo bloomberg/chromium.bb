@@ -28,6 +28,14 @@ class ToolbarLayer : public Layer {
   scoped_refptr<cc::Layer> layer() override;
 
   void PushResource(ui::ResourceManager::Resource* resource,
+                    ui::ResourceManager::Resource* progress_resource,
+                    bool anonymize,
+                    bool anonymize_component_is_incognito,
+                    bool show_debug);
+
+  // TODO(tedchoc): Remove after migrating downstream to signature that takes
+  //                the progress_resource.
+  void PushResource(ui::ResourceManager::Resource* resource,
                     bool anonymize,
                     bool anonymize_component_is_incognito,
                     bool show_debug);
@@ -39,6 +47,7 @@ class ToolbarLayer : public Layer {
  private:
   scoped_refptr<cc::Layer> layer_;
   scoped_refptr<cc::UIResourceLayer> bitmap_layer_;
+  scoped_refptr<cc::UIResourceLayer> progress_layer_;
   scoped_refptr<cc::SolidColorLayer> anonymize_layer_;
   scoped_refptr<cc::SolidColorLayer> debug_layer_;
 
