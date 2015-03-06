@@ -1655,14 +1655,12 @@ drm_intel_gem_bo_wait_rendering(drm_intel_bo *bo)
  *
  * @bo: buffer object to wait for
  * @timeout_ns: amount of time to wait in nanoseconds.
- *   If value is less than or equal to 0, return immediately.
+ *   If value is less than 0, an infinite wait will occur.
  *
- * Returns 0 if the wait was successful ie. the last batch referencing
- * the object has completed within the allotted time. Otherwise some
- * negative return value describes the error. Of particular interest
- * is -ETIME when the wait has failed to yield the desired result.
- * Use a timeout of INT64_MAX to wait indefinitely (well, at least 292
- * years).
+ * Returns 0 if the wait was successful ie. the last batch referencing the
+ * object has completed within the allotted time. Otherwise some negative return
+ * value describes the error. Of particular interest is -ETIME when the wait has
+ * failed to yield the desired result.
  *
  * Similar to drm_intel_gem_bo_wait_rendering except a timeout parameter allows
  * the operation to give up after a certain amount of time. Another subtle
@@ -1675,6 +1673,9 @@ drm_intel_gem_bo_wait_rendering(drm_intel_bo *bo)
  * not guarantee that the buffer is re-issued via another thread, or an flinked
  * handle. Userspace must make sure this race does not occur if such precision
  * is important.
+ *
+ * Note that some kernels have broken the inifite wait for negative values
+ * promise, upgrade to latest stable kernels if this is the case.
  */
 drm_public int
 drm_intel_gem_bo_wait(drm_intel_bo *bo, int64_t timeout_ns)
