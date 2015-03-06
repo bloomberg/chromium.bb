@@ -66,6 +66,9 @@ CmaRenderer::~CmaRenderer() {
     base::ResetAndReturn(&init_cb_).Run(::media::PIPELINE_ERROR_ABORT);
   else if (!flush_cb_.is_null())
     base::ResetAndReturn(&flush_cb_).Run();
+
+  if (has_audio_ || has_video_)
+    media_pipeline_->Stop();
 }
 
 void CmaRenderer::Initialize(

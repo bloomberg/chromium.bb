@@ -29,6 +29,7 @@ VideoPipelineImpl::VideoPipelineImpl(VideoPipelineDevice* video_device)
 }
 
 VideoPipelineImpl::~VideoPipelineImpl() {
+  av_pipeline_impl_->Finalize();
 }
 
 void VideoPipelineImpl::SetCodedFrameProvider(

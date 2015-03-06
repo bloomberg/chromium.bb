@@ -29,6 +29,7 @@ AudioPipelineImpl::AudioPipelineImpl(AudioPipelineDevice* audio_device)
 }
 
 AudioPipelineImpl::~AudioPipelineImpl() {
+  av_pipeline_impl_->Finalize();
 }
 
 void AudioPipelineImpl::SetCodedFrameProvider(

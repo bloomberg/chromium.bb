@@ -59,6 +59,10 @@ class AvPipelineImpl : public base::RefCountedThreadSafe<AvPipelineImpl> {
   // Initialize the pipeline.
   bool Initialize();
 
+  // Destroy the pipeline. No other calls into AvPipelineImpl must be made
+  // after this.
+  void Finalize();
+
   // Setup the pipeline and ensure samples are available for the given media
   // time, then start rendering samples.
   bool StartPlayingFrom(base::TimeDelta time,

@@ -51,16 +51,6 @@ AvPipelineImpl::AvPipelineImpl(
 }
 
 AvPipelineImpl::~AvPipelineImpl() {
-  // If there are weak pointers in the wild, they must be invalidated
-  // on the right thread.
-  DCHECK(thread_checker_.CalledOnValidThread());
-  media_component_device_->SetClient(MediaComponentDevice::Client());
-
-  {
-    base::AutoLock lock(media_keys_lock_);
-    if (media_keys_ && media_keys_callback_id_ != kNoCallbackId)
-      media_keys_->UnregisterPlayer(media_keys_callback_id_);
-  }
 }
 
 void AvPipelineImpl::TransitionToState(State state) {
@@ -101,6 +91,20 @@ bool AvPipelineImpl::Initialize() {
     return false;
 
   return true;
+}
+
+void AvPipelineImpl::Finalize() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  media_component_device_->SetClient(MediaComponentDevice::Client());
+
+  enable_feeding_ = false;
+  media_component_device_ = NULL;
+
+  {
+    base::AutoLock lock(media_keys_lock_);
+    if (media_keys_ && media_keys_callback_id_ != kNoCallbackId)
+      media_keys_->UnregisterPlayer(media_keys_callback_id_);
+  }
 }
 
 bool AvPipelineImpl::StartPlayingFrom(
