@@ -42,8 +42,8 @@ void SwitchingMediaRenderer::Initialize(
   ::media::DemuxerStream* video_stream =
       demuxer_stream_provider_->GetStream(::media::DemuxerStream::VIDEO);
   if (audio_stream && !video_stream &&
-      audio_stream->audio_decoder_config().codec() != ::media::kCodecAAC &&
-      audio_stream->audio_decoder_config().codec() != ::media::kCodecVorbis) {
+      (audio_stream->audio_decoder_config().codec() == ::media::kCodecFLAC ||
+       audio_stream->audio_decoder_config().codec() == ::media::kCodecOpus)) {
     // We'll use the default Chrome media renderer with software audio decoding
     cma_renderer_.reset();
   } else {
