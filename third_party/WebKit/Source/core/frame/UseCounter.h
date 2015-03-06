@@ -626,7 +626,13 @@ public:
         CSSZoomNotEqualToOne = 691,
         SVGGraphicsElementGetTransformToElement = 692,
         ServiceWorkerClientsGetAll = 693,
+        // The above items are available in M42 branch.
+
         ClientRectListItem = 694,
+        WindowClientInformation = 695,
+        WindowFind = 696,
+        WindowScreenLeft = 697,
+        WindowScreenTop = 698,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

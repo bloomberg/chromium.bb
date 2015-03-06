@@ -34,11 +34,13 @@
     PrimaryGlobal,
 ] interface Window : EventTarget {
     // the current browsing context
-    [DoNotCheckSecurity, Unforgeable] readonly attribute Window window;
+    // FIXME: The spec uses the WindowProxy type for this and many other attributes.
+    [Unforgeable, DoNotCheckSecurity] readonly attribute Window window;
     [Replaceable, DoNotCheckSecurity] readonly attribute Window self;
+    // FIXME: document should be [Unforgeable].
     readonly attribute Document document;
     attribute DOMString name;
-    [DoNotCheckSecurity, PutForwards=href, Unforgeable] readonly attribute Location location;
+    [PutForwards=href, Unforgeable, DoNotCheckSecurity] readonly attribute Location location;
     readonly attribute History history;
     [Replaceable, MeasureAs=BarPropLocationbar] readonly attribute BarProp locationbar;
     [Replaceable, MeasureAs=BarPropMenubar] readonly attribute BarProp menubar;
@@ -56,15 +58,16 @@
     // other browsing contexts
     [Replaceable, DoNotCheckSecurity] readonly attribute Window frames;
     [Replaceable, DoNotCheckSecurity] readonly attribute unsigned long length;
-    [DoNotCheckSecurity, Unforgeable] readonly attribute Window top;
+    [Unforgeable, DoNotCheckSecurity] readonly attribute Window top;
+    // FIXME: opener should be of type any.
     [DoNotCheckSecurity, Custom=Setter] attribute Window opener;
     [Replaceable, DoNotCheckSecurity] readonly attribute Window parent;
-    [CheckSecurity=Node, Custom=Getter] readonly attribute Element frameElement;
-    [Custom] Window open(DOMString url,
-                            DOMString name,
-                            optional DOMString options);
+    [CheckSecurity=Node, Custom=Getter] readonly attribute Element? frameElement;
+    // FIXME: open() should have 4 optional arguments with defaults.
+    [Custom] Window open(DOMString url, DOMString target, optional DOMString features);
+    // FIXME: These getters should not have [NotEnumerable].
     [NotEnumerable, DoNotCheckSecurity] getter Window (unsigned long index);
-    [Custom, NotEnumerable, DoNotCheckSecurity] getter Window (DOMString name);
+    [Custom, NotEnumerable, DoNotCheckSecurity] getter object (DOMString name);
 
     // the user agent
     [LogActivity=GetterOnly] readonly attribute Navigator navigator;
@@ -74,14 +77,15 @@
     void alert();
     void alert(DOMString message);
     boolean confirm(optional DOMString message = "");
-    DOMString? prompt(optional DOMString message = "",
-                      optional DOMString defaultValue = "");
+    DOMString? prompt(optional DOMString message = "", optional DOMString defaultValue = "");
     void print();
 
+    // FIXME: requestAnimationFrame should take a FrameRequestCallback:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28152
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(RequestAnimationFrameCallback callback);
-    void cancelAnimationFrame(long id);
+    void cancelAnimationFrame(long handle);
 
-    [DoNotCheckSecurity, Custom, RaisesException] void postMessage(SerializedScriptValue message, DOMString targetOrigin, optional sequence<Transferable> transfer);
+    [DoNotCheckSecurity, Custom, RaisesException] void postMessage(any message, DOMString targetOrigin, optional sequence<Transferable> transfer);
 
     // HTML obsolete features
     // https://html.spec.whatwg.org/#Window-partial
@@ -90,8 +94,11 @@
 
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#extensions-to-the-window-interface
-    [TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element element, optional DOMString? pseudoElt = null);
+    // FIXME: The optional pseudoElt argument should have no default.
+    [TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt = null);
     // http://dev.w3.org/csswg/cssom/#utility-apis
+    // FIXME: CSS should be an interface with static members, in which
+    // case this getter would not be needed.
     [Replaceable] readonly attribute CSS CSS;
 
     // CSSOM View Module
@@ -100,12 +107,14 @@
     readonly attribute Screen screen;
 
     // browsing context
-    void moveTo(optional long x, optional long y); // FIXME: Arguments should not be optional, or should have defaults.
+    // FIXME: The x and y arguments should not be optional. crbug.com/453421
+    void moveTo(optional long x, optional long y);
     void moveBy(optional long x, optional long y);
-    void resizeTo(optional long width, optional long height); // FIXME: Arguments should not be optional, or should have defaults.
+    void resizeTo(optional long x, optional long y);
     void resizeBy(optional long x, optional long y);
 
     // viewport
+    // FIXME: None of the CCSOM View Module attributes should be [Replaceable].
     [Replaceable] readonly attribute long innerWidth;
     [Replaceable] readonly attribute long innerHeight;
 
@@ -114,11 +123,11 @@
     readonly attribute double pageXOffset;
     [Replaceable] readonly attribute double scrollY;
     readonly attribute double pageYOffset;
-    [RuntimeEnabled=CSSOMSmoothScroll] void scroll([Default=Undefined] optional ScrollToOptions scrollOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scroll(optional ScrollToOptions options);
     void scroll(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo([Default=Undefined] optional ScrollToOptions scrollToOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions options);
     void scrollTo(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy([Default=Undefined] optional ScrollToOptions scrollToOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions options);
     void scrollBy(unrestricted double x, unrestricted double y);
 
     // client
@@ -130,38 +139,39 @@
 
     // Selection API
     // http://w3c.github.io/selection-api/#extensions-to-window-interface
-    Selection getSelection();
+    Selection? getSelection();
 
     // Console API (non-standard but widely implemented in some form)
     // https://developer.chrome.com/devtools/docs/console-api
     [Replaceable] readonly attribute Console console;
 
     // Non-standard APIs
-    [Replaceable] readonly attribute Navigator clientInformation;
-    [Custom, MeasureAs=WindowEvent, NotEnumerable] attribute Event event;
-    boolean find([Default=Undefined] optional DOMString string,
-                 [Default=Undefined] optional boolean caseSensitive,
-                 [Default=Undefined] optional boolean backwards,
-                 [Default=Undefined] optional boolean wrap,
-                 [Default=Undefined] optional boolean wholeWord,
-                 [Default=Undefined] optional boolean searchInFrames,
-                 [Default=Undefined] optional boolean showDialog);
-    [Replaceable, MeasureAs=WindowOffscreenBuffering, NotEnumerable] readonly attribute boolean offscreenBuffering;
-    [Replaceable] readonly attribute long screenLeft;
-    [Replaceable] readonly attribute long screenTop;
+    [MeasureAs=WindowClientInformation, Replaceable] readonly attribute Navigator clientInformation;
+    [MeasureAs=WindowEvent, Custom, NotEnumerable] attribute Event event;
+    [MeasureAs=WindowFind] boolean find([Default=Undefined] optional DOMString string,
+                                        [Default=Undefined] optional boolean caseSensitive,
+                                        [Default=Undefined] optional boolean backwards,
+                                        [Default=Undefined] optional boolean wrap,
+                                        [Default=Undefined] optional boolean wholeWord,
+                                        [Default=Undefined] optional boolean searchInFrames,
+                                        [Default=Undefined] optional boolean showDialog);
+    [MeasureAs=WindowOffscreenBuffering, Replaceable, NotEnumerable] readonly attribute boolean offscreenBuffering;
+    [MeasureAs=WindowScreenLeft, Replaceable] readonly attribute long screenLeft;
+    [MeasureAs=WindowScreenTop, Replaceable] readonly attribute long screenTop;
     [MeasureAs=WindowDefaultStatus] attribute DOMString defaultStatus;
-    [ImplementedAs=defaultStatus, MeasureAs=WindowDefaultstatus] attribute DOMString defaultstatus;
+    [MeasureAs=WindowDefaultstatus, ImplementedAs=defaultStatus] attribute DOMString defaultstatus;
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
     [DeprecateAs=GetMatchedCSSRules] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
                                                                     [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.
-    [RuntimeEnabled=OrientationEvent, MeasureAs=WindowOrientation] readonly attribute long orientation;
+    [MeasureAs=WindowOrientation, RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
     [DeprecateAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(RequestAnimationFrameCallback callback);
     [DeprecateAs=PrefixedCancelAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
     [DeprecateAs=PrefixedCancelRequestAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelRequestAnimationFrame(long id);
     [MeasureAs=PrefixedTransitionEventConstructor] attribute TransitionEventConstructor WebKitTransitionEvent;
+    // FIXME: Reverse this to make WebKitAnimationEvent an alias of AnimationEvent instead.
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute WebKitAnimationEventConstructor AnimationEvent;
     [DeprecateAs=PrefixedWindowURL] attribute URLConstructor webkitURL;
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
