@@ -49,6 +49,7 @@ void LocalStateUIHandler::RegisterMessages() {
 }
 
 void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
+#if !defined(OS_CHROMEOS)
   scoped_ptr<base::DictionaryValue> local_state_values(
       g_browser_process->local_state()->GetPreferenceValuesOmitDefaults());
 
@@ -61,6 +62,7 @@ void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
 
   web_ui()->CallJavascriptFunction("localState.setLocalState",
                                    base::StringValue(json));
+#endif  // !defined(OS_CHROMEOS)
 }
 
 }  // namespace
