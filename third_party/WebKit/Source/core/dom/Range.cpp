@@ -101,6 +101,25 @@ PassRefPtrWillBeRawPtr<Range> Range::create(Document& ownerDocument, const Posit
     return adoptRefWillBeNoop(new Range(ownerDocument, start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode()));
 }
 
+PassRefPtrWillBeRawPtr<Range> Range::createAdjustedToTreeScope(const TreeScope& treeScope, const Position& position)
+{
+    RefPtrWillBeRawPtr<Range> range = create(treeScope.document(), position, position);
+
+    // Make sure the range is in this scope.
+    Node* firstNode = range->firstNode();
+    ASSERT(firstNode);
+    Node* shadowHostInThisScopeOrFirstNode = treeScope.ancestorInThisScope(firstNode);
+    ASSERT(shadowHostInThisScopeOrFirstNode);
+    if (shadowHostInThisScopeOrFirstNode == firstNode)
+        return range.release();
+
+    // If not, create a range for the shadow host in this scope.
+    ContainerNode* container = shadowHostInThisScopeOrFirstNode->parentNode();
+    ASSERT(container);
+    unsigned offset = shadowHostInThisScopeOrFirstNode->nodeIndex();
+    return Range::create(treeScope.document(), container, offset, container, offset);
+}
+
 #if !ENABLE(OILPAN) || !defined(NDEBUG)
 Range::~Range()
 {

@@ -1256,25 +1256,14 @@ PassRefPtrWillBeRawPtr<Range> Document::caretRangeFromPoint(int x, int y)
 {
     if (!layoutView())
         return nullptr;
+
     HitTestResult result = hitTestInDocument(this, x, y);
-    LayoutObject* renderer = result.renderer();
-    if (!renderer)
-        return nullptr;
-
-    Node* node = renderer->node();
-    Node* shadowAncestorNode = ancestorInThisScope(node);
-    if (shadowAncestorNode != node) {
-        unsigned offset = shadowAncestorNode->nodeIndex();
-        ContainerNode* container = shadowAncestorNode->parentNode();
-        return Range::create(*this, container, offset, container, offset);
-    }
-
     PositionWithAffinity positionWithAffinity = result.position();
     if (positionWithAffinity.position().isNull())
         return nullptr;
 
     Position rangeCompliantPosition = positionWithAffinity.position().parentAnchoredEquivalent();
-    return Range::create(*this, rangeCompliantPosition, rangeCompliantPosition);
+    return Range::createAdjustedToTreeScope(*this, rangeCompliantPosition);
 }
 
 /*

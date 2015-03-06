@@ -59,6 +59,7 @@ public:
     static PassRefPtrWillBeRawPtr<Range> create(Document&);
     static PassRefPtrWillBeRawPtr<Range> create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
     static PassRefPtrWillBeRawPtr<Range> create(Document&, const Position&, const Position&);
+    static PassRefPtrWillBeRawPtr<Range> createAdjustedToTreeScope(const TreeScope&, const Position&);
 #if !ENABLE(OILPAN) || !defined(NDEBUG)
     ~Range();
 #endif
