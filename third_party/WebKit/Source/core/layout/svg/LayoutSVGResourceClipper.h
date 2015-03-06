@@ -29,12 +29,6 @@ namespace blink {
 
 class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
 public:
-    enum ClipperState {
-        ClipperNotApplied,
-        ClipperAppliedPath,
-        ClipperAppliedMask
-    };
-
     explicit LayoutSVGResourceClipper(SVGClipPathElement*);
     virtual ~LayoutSVGResourceClipper();
 
@@ -42,17 +36,6 @@ public:
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
-
-    // FIXME: Filters are also stateful resources that could benefit from having their state managed
-    //        on the caller stack instead of the current hashmap. We should look at refactoring these
-    //        into a general interface that can be shared.
-    bool applyStatefulResource(LayoutObject*, GraphicsContext*&, ClipperState&);
-    void postApplyStatefulResource(LayoutObject*, GraphicsContext*&, ClipperState&);
-
-    // clipPath can be clipped too, but don't have a boundingBox or paintInvalidationRect. So we can't call
-    // applyResource directly and use the rects from the object, since they are empty for LayoutSVGResources
-    // FIXME: We made applyClippingToContext public because we cannot call applyResource on HTML elements (it asserts on LayoutObject::objectBoundingBox)
-    bool applyClippingToContext(LayoutObject*, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
 
     FloatRect resourceBoundingBox(const LayoutObject*);
 
@@ -63,10 +46,13 @@ public:
 
     SVGUnitTypes::SVGUnitType clipPathUnits() const { return toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue(); }
 
-private:
     bool tryPathOnlyClipping(DisplayItemClient, GraphicsContext*, const AffineTransform&, const FloatRect&);
-    void drawClipMaskContent(GraphicsContext*, DisplayItemClient, const FloatRect& targetBoundingBox);
-    PassRefPtr<const SkPicture> createPicture();
+    PassRefPtr<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&);
+
+    bool hasCycle() { return m_inClipExpansion; }
+    void beginClipExpansion() { ASSERT(!m_inClipExpansion); m_inClipExpansion = true; }
+    void endClipExpansion() { ASSERT(m_inClipExpansion); m_inClipExpansion = false; }
+private:
     void calculateClipContentPaintInvalidationRect();
 
     RefPtr<const SkPicture> m_clipContentPicture;

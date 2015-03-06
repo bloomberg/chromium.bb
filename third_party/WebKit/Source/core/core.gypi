@@ -1884,6 +1884,8 @@
             'paint/RootInlineBoxPainter.h',
             'paint/RoundedInnerRectClipper.cpp',
             'paint/RoundedInnerRectClipper.h',
+            'paint/SVGClipPainter.cpp',
+            'paint/SVGClipPainter.h',
             'paint/SVGContainerPainter.cpp',
             'paint/SVGContainerPainter.h',
             'paint/SVGForeignObjectPainter.cpp',

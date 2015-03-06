@@ -17,6 +17,7 @@
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
+#include "core/paint/SVGClipPainter.h"
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
@@ -116,7 +117,7 @@ public:
         if (!renderLayer.renderer()->hasClipPath() || (renderLayer.needsCompositedScrolling() && !(paintFlags & PaintLayerPaintingChildClippingMaskPhase)))
             return;
 
-        m_clipperState = LayoutSVGResourceClipper::ClipperNotApplied;
+        m_clipperState = SVGClipPainter::ClipperNotApplied;
 
         ASSERT(style.clipPath());
         if (style.clipPath()->type() == ClipPathOperation::SHAPE) {
@@ -141,7 +142,7 @@ public:
                 }
 
                 m_resourceClipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->renderer()));
-                if (!m_resourceClipper->applyClippingToContext(renderLayer.renderer(), rootRelativeBounds,
+                if (!SVGClipPainter(*m_resourceClipper).applyClippingToContext(renderLayer.renderer(), rootRelativeBounds,
                     paintingInfo.paintDirtyRect, context, m_clipperState)) {
                     // No need to post-apply the clipper if this failed.
                     m_resourceClipper = 0;
@@ -153,12 +154,12 @@ public:
     ~ClipPathHelper()
     {
         if (m_resourceClipper)
-            m_resourceClipper->postApplyStatefulResource(m_renderLayer.renderer(), m_context, m_clipperState);
+            SVGClipPainter(*m_resourceClipper).postApplyStatefulResource(m_renderLayer.renderer(), m_context, m_clipperState);
     }
 private:
     LayoutSVGResourceClipper* m_resourceClipper;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
-    LayoutSVGResourceClipper::ClipperState m_clipperState;
+    SVGClipPainter::ClipperState m_clipperState;
     const Layer& m_renderLayer;
     GraphicsContext* m_context;
 };

@@ -39,7 +39,6 @@
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "wtf/TemporaryChange.h"
 
 namespace blink {
 
@@ -64,16 +63,6 @@ void LayoutSVGResourceClipper::removeClientFromCache(LayoutObject* client, bool 
 {
     ASSERT(client);
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
-}
-
-bool LayoutSVGResourceClipper::applyStatefulResource(LayoutObject* object, GraphicsContext*& context, ClipperState& clipperState)
-{
-    ASSERT(object);
-    ASSERT(context);
-
-    clearInvalidationMask();
-
-    return applyClippingToContext(object, object->objectBoundingBox(), object->paintInvalidationRectInLocalCoordinates(), context, clipperState);
 }
 
 bool LayoutSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, GraphicsContext* context,
@@ -146,117 +135,19 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, Gra
     return true;
 }
 
-bool LayoutSVGResourceClipper::applyClippingToContext(LayoutObject* target, const FloatRect& targetBoundingBox,
-    const FloatRect& paintInvalidationRect, GraphicsContext* context, ClipperState& clipperState)
+PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(AffineTransform& contentTransformation, const FloatRect& targetBoundingBox)
 {
-    ASSERT(target);
-    ASSERT(context);
-    ASSERT(clipperState == ClipperNotApplied);
-    ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
+    ASSERT(frame());
 
-    if (paintInvalidationRect.isEmpty() || m_inClipExpansion)
-        return false;
-    TemporaryChange<bool> inClipExpansionChange(m_inClipExpansion, true);
-
-    AffineTransform animatedLocalTransform = toSVGClipPathElement(element())->calculateAnimatedLocalTransform();
-    // When drawing a clip for non-SVG elements, the CTM does not include the zoom factor.
-    // In this case, we need to apply the zoom scale explicitly - but only for clips with
-    // userSpaceOnUse units (the zoom is accounted for objectBoundingBox-resolved lengths).
-    if (!target->isSVG() && clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
-        ASSERT(style());
-        animatedLocalTransform.scale(style()->effectiveZoom());
-    }
-
-    // First, try to apply the clip as a clipPath.
-    if (tryPathOnlyClipping(target->displayItemClient(), context, animatedLocalTransform, targetBoundingBox)) {
-        clipperState = ClipperAppliedPath;
-        return true;
-    }
-
-    // Fall back to masking.
-    clipperState = ClipperAppliedMask;
-
-    // Begin compositing the clip mask.
-    CompositingRecorder::beginCompositing(context, target->displayItemClient(), SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
-    {
-        TransformRecorder recorder(*context, target->displayItemClient(), animatedLocalTransform);
-
-        // clipPath can also be clipped by another clipPath.
-        SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this);
-        LayoutSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : 0;
-        ClipperState clipPathClipperState = ClipperNotApplied;
-        if (clipPathClipper && !clipPathClipper->applyClippingToContext(this, targetBoundingBox, paintInvalidationRect, context, clipPathClipperState)) {
-            // End the clip mask's compositor.
-            CompositingRecorder::endCompositing(context, target->displayItemClient());
-            return false;
-        }
-
-        drawClipMaskContent(context, target->displayItemClient(), targetBoundingBox);
-
-        if (clipPathClipper)
-            clipPathClipper->postApplyStatefulResource(this, context, clipPathClipperState);
-    }
-
-    // Masked content layer start.
-    CompositingRecorder::beginCompositing(context, target->displayItemClient(), SkXfermode::kSrcIn_Mode, 1, &paintInvalidationRect);
-
-    return true;
-}
-
-void LayoutSVGResourceClipper::postApplyStatefulResource(LayoutObject* target, GraphicsContext*& context, ClipperState& clipperState)
-{
-    switch (clipperState) {
-    case ClipperAppliedPath:
-        // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
-        {
-            if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-                context->displayItemList()->add(EndClipPathDisplayItem::create(target->displayItemClient()));
-            } else {
-                EndClipPathDisplayItem endClipPathDisplayItem(target->displayItemClient());
-                endClipPathDisplayItem.replay(context);
-            }
-        }
-        break;
-    case ClipperAppliedMask:
-        // Transfer content -> clip mask (SrcIn)
-        CompositingRecorder::endCompositing(context, target->displayItemClient());
-
-        // Transfer clip mask -> bg (SrcOver)
-        CompositingRecorder::endCompositing(context, target->displayItemClient());
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-}
-
-void LayoutSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, DisplayItemClient client, const FloatRect& targetBoundingBox)
-{
-    ASSERT(context);
-
-    AffineTransform contentTransformation;
     if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
         contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
     }
 
-    if (!m_clipContentPicture) {
-        SubtreeContentTransformScope contentTransformScope(contentTransformation);
-        m_clipContentPicture = createPicture();
-    }
+    if (m_clipContentPicture)
+        return m_clipContentPicture;
 
-    TransformRecorder recorder(*context, client, contentTransformation);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(context->displayItemList());
-        context->displayItemList()->add(DrawingDisplayItem::create(client, DisplayItem::SVGClip, m_clipContentPicture));
-    } else {
-        DrawingDisplayItem clipPicture(client, DisplayItem::SVGClip, m_clipContentPicture);
-        clipPicture.replay(context);
-    }
-}
-
-PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createPicture()
-{
-    ASSERT(frame());
+    SubtreeContentTransformScope contentTransformScope(contentTransformation);
 
     // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
@@ -309,7 +200,8 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createPicture()
 
     if (displayItemList)
         displayItemList->replay(&context);
-    return context.endRecording();
+    m_clipContentPicture = context.endRecording();
+    return m_clipContentPicture;
 }
 
 void LayoutSVGResourceClipper::calculateClipContentPaintInvalidationRect()

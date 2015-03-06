@@ -65,7 +65,7 @@ SVGPaintContext::~SVGPaintContext()
     if (m_clipper) {
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->clipper() == m_clipper);
-        m_clipper->postApplyStatefulResource(m_object, m_paintInfo.context, m_clipperState);
+        SVGClipPainter(*m_clipper).postApplyStatefulResource(m_object, m_paintInfo.context, m_clipperState);
     }
 }
 
@@ -128,7 +128,7 @@ bool SVGPaintContext::applyClipIfNecessary(SVGResources* resources)
     // m_object->style()->clipPath() corresponds to '-webkit-clip-path'.
     // FIXME: We should unify the clip-path and -webkit-clip-path codepaths.
     if (LayoutSVGResourceClipper* clipper = resources ? resources->clipper() : nullptr) {
-        if (!clipper->applyStatefulResource(m_object, m_paintInfo.context, m_clipperState))
+        if (!SVGClipPainter(*clipper).applyStatefulResource(m_object, m_paintInfo.context, m_clipperState))
             return false;
         m_clipper = clipper;
     } else {
@@ -182,7 +182,7 @@ bool SVGPaintContext::isIsolationInstalled() const
         return true;
     if (m_masker || m_filter)
         return true;
-    if (m_clipper && m_clipperState == LayoutSVGResourceClipper::ClipperAppliedMask)
+    if (m_clipper && m_clipperState == SVGClipPainter::ClipperAppliedMask)
         return true;
     return false;
 }
