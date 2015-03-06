@@ -110,6 +110,7 @@ public:
     AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 
     void setupInitialView(const String& fragmentIdentifier, Element* anchorNode);
+    bool zoomAndPanEnabled() const;
 
     bool hasIntrinsicWidth() const;
     bool hasIntrinsicHeight() const;

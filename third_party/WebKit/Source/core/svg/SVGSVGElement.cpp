@@ -209,6 +209,14 @@ void SVGSVGElement::updateCurrentTranslate()
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
+bool SVGSVGElement::zoomAndPanEnabled() const
+{
+    const SVGZoomAndPan* currentViewSpec = this;
+    if (m_useCurrentView)
+        currentViewSpec = m_viewSpec.get();
+    return currentViewSpec && currentViewSpec->zoomAndPan() == SVGZoomAndPanMagnify;
+}
+
 void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (!nearestViewportElement()) {
