@@ -331,7 +331,6 @@
           "chinese",
           "csgb2312",
           "csiso58gb231280",
-          "gb18030",
           "gb2312",
           "gb_2312",
           "gb_2312-80",
@@ -339,13 +338,13 @@
           "iso-ir-58",
           "x-gbk"
         ],
-        "name": "gb18030"
+        "name": "gbk"
       },
       {
         "labels": [
-          "hz-gb-2312"
+          "gb18030"
         ],
-        "name": "hz-gb-2312"
+        "name": "gb18030"
       }
     ],
     "heading": "Legacy multi-byte Chinese (simplified) encodings"
@@ -422,6 +421,7 @@
       {
         "labels": [
           "csiso2022kr",
+          "hz-gb-2312",
           "iso-2022-cn",
           "iso-2022-cn-ext",
           "iso-2022-kr"
