@@ -365,7 +365,6 @@
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:network_hints_browser',
             '../components/components.gyp:policy_templates',
-            '../components/components.gyp:session_manager_component',
             '../components/components_tests.gyp:components_browsertests',
             '../components/components_tests.gyp:components_perftests',
             '../content/content.gyp:content_app_browser',
@@ -380,7 +379,6 @@
             '../gin/gin.gyp:gin_shell',
             '../google_apis/gcm/gcm.gyp:mcs_probe',
             '../gpu/gpu.gyp:gl_tests',
-            '../gpu/tools/tools.gyp:compositor_model_bench',
             '../gpu/gles2_conform_support/gles2_conform_support.gyp:gles2_conform_support',
             '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
             '../gpu/khronos_glcts_support/khronos_glcts_test.gyp:khronos_glcts_test',
@@ -388,7 +386,6 @@
             '../media/cast/cast.gyp:generate_barcode_video',
             '../media/cast/cast.gyp:generate_timecode_audio',
             '../media/cast/cast.gyp:tap_proxy',
-            '../media/media.gyp:player_x11',
             '../mojo/mojo_base.gyp:mojo_application_chromium',
             '../net/net.gyp:hpack_example_generator',
             '../net/net.gyp:hpack_fuzz_mutator',
@@ -397,14 +394,6 @@
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
             '../ppapi/tools/ppapi_tools.gyp:pepper_hash_for_uma',
             '../remoting/app_remoting_webapp.gyp:ar_sample_app',
-            '../remoting/remoting.gyp:remoting_host',
-            '../remoting/remoting.gyp:remoting_it2me_native_messaging_host',
-            '../remoting/remoting.gyp:remoting_me2me_host',
-            '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
-            '../remoting/remoting.gyp:remoting_native_messaging_manifests',
-            '../remoting/remoting.gyp:remoting_perftests',
-            '../remoting/remoting.gyp:remoting_start_host',
-            '../remoting/remoting.gyp:remoting_unittests',
             '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests',
             '../skia/skia.gyp:filter_fuzz_stub',
             '../skia/skia.gyp:image_operations_bench',
@@ -421,7 +410,6 @@
             '../tools/gn/gn.gyp:generate_test_gn_data',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:clear_system_cache',
             #'../tools/telemetry/telemetry.gyp:bitmaptools', TODO(GYP) should this be #host ?
-            '../ui/app_list/app_list.gyp:app_list_demo',
             '../ui/compositor/compositor.gyp:compositor_unittests',
             '../ui/message_center/message_center.gyp:message_center_unittests',
             '../ui/views/examples/examples.gyp:views_examples_with_content_exe',
@@ -439,9 +427,36 @@
                 '../remoting/remoting.gyp:remoting_key_tester',
               ]
             }],
+            ['chromeos== 1 or use_ash==1', {
+              'dependencies': [
+                '../components/components.gyp:session_manager_component',
+              ],
+            }],
+            ['use_x11==1', {
+              'dependencies': [
+                '../gpu/tools/tools.gyp:compositor_model_bench',
+                '../media/media.gyp:player_x11',
+              ],
+            }],
+            ['remoting==1', {
+              'dependencies': [
+                '../remoting/remoting.gyp:remoting_host',
+                '../remoting/remoting.gyp:remoting_it2me_native_messaging_host',
+                '../remoting/remoting.gyp:remoting_me2me_host',
+                '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
+                '../remoting/remoting.gyp:remoting_native_messaging_manifests',
+                '../remoting/remoting.gyp:remoting_perftests',
+                '../remoting/remoting.gyp:remoting_start_host',
+                '../remoting/remoting.gyp:remoting_unittests',
+              ],
+            }],
+            ['toolkit_views==1', {
+              'dependencies': [
+                '../ui/app_list/app_list.gyp:app_list_demo',
+              ],
+            }],
             ['test_isolation_mode!="noop"', {
               'dependencies': [
-                '../ash/ash.gyp:ash_unittests_run',
                 '../base/base.gyp:base_unittests_run',
                 '../cc/cc_tests.gyp:cc_unittests_run',
                 '../chrome/chrome.gyp:browser_tests_run',
@@ -467,6 +482,13 @@
                 '../ui/events/events.gyp:events_unittests_run',
                 '../ui/message_center/message_center.gyp:message_center_unittests_run',
                 '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
+              ],
+              'conditions': [
+                ['use_ash==1', {
+                  'dependencies': [
+                    '../ash/ash.gyp:ash_unittests_run',
+                  ],
+                }],
               ],
             }],
           ],
