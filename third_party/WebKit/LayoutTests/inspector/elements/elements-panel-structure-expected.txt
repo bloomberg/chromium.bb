@@ -1,14 +1,14 @@
 Tests that elements panel shows DOM tree structure.
 
 "Quoted Text". Special characters: ><"'     ​‌‍‎‏ ‪‫‬‭‮­
-
+﻿
   <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 - <html>
     - <head>
           <script src="../../http/tests/inspector/inspector-test.js"></script>
           <script src="../../http/tests/inspector/elements-test.js"></script>
         - <script>
-              \nfunction test()\n{\n    // Warm up highlighter module.\n    runtime.loadModulePromise("source_frame").then(function() {\n        InspectorTest.expandElementsTree(step1)\n    });\n\n    function step1()\n    {\n        InspectorTest.dumpElementsTree();\n        InspectorTest.completeTest();\n    }\n}\n\nfunction prepareTest()\n{\n    document.querySelector("#control-character").textContent = "\u0093";\n    runTest();\n}\n\n
+              \nfunction test()\n{\n    // Warm up highlighter module.\n    runtime.loadModulePromise("source_frame").then(function() {\n        InspectorTest.expandElementsTree(step1)\n    });\n\n    function step1()\n    {\n        InspectorTest.dumpElementsTree();\n        InspectorTest.completeTest();\n    }\n}\n\nfunction prepareTest()\n{\n    document.querySelector("#control-character").textContent = "\ufeff\u0093";\n    runTest();\n}\n\n
           </script>
       </head>
     - <body onload="prepareTest()">
@@ -19,7 +19,7 @@ Tests that elements panel shows DOM tree structure.
                   <div id="level3"></div>
               </div>
           </div>
-          <div id="control-character">&#147;</div>
+          <div id="control-character">&#65279;&#147;</div>
       </body>
   </html>
 
