@@ -54,6 +54,7 @@
       ],
       'ar_generated_html_files': [
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/main.html',
+        '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/message_window.html',
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/feedback_consent.html',
       ],
@@ -181,10 +182,24 @@
           'python', '<(DEPTH)/remoting/webapp/build-html.py',
           '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
           '<(remoting_webapp_template_wcs_sandbox)',
-          '--template-dir',
-          '<(DEPTH)/remoting',
           '--js',
-          '<@(remoting_webapp_wcs_sandbox_html_js_files)',
+          '<@(remoting_webapp_wcs_sandbox_html_all_js_files)',
+        ],
+      },
+      {
+        'action_name': 'Build ">(ar_app_name)" message_window.html',
+        'inputs': [
+          '<(DEPTH)/remoting/webapp/build-html.py',
+          '<(remoting_webapp_template_message_window)',
+        ],
+        'outputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/message_window.html',
+        ],
+        'action': [
+          'python', '<(DEPTH)/remoting/webapp/build-html.py',
+          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/message_window.html',
+          '<(remoting_webapp_template_message_window)',
+          '--js', '<@(remoting_webapp_message_window_html_all_js_files)',
         ],
       },
       {
@@ -192,7 +207,6 @@
         'inputs': [
           '<(DEPTH)/remoting/webapp/build-html.py',
           '<(ar_feedback_consent_template)',
-          '<@(ar_feedback_consent_template_files)',
         ],
         'outputs': [
           '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/feedback_consent.html',
@@ -203,10 +217,8 @@
           '<(ar_feedback_consent_template)',
           '--template-dir',
           '<(DEPTH)/remoting',
-          '--templates',
-          '<@(ar_feedback_consent_template_files)',
           '--js',
-          '<@(ar_feedback_consent_js_files)',
+          '<@(ar_feedback_consent_html_all_js_files)',
         ],
       },
     ],  # actions

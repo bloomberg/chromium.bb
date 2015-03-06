@@ -9,9 +9,10 @@
   'variables': {
     'extra_files%': [],
     'generated_html_files': [
-      '<(SHARED_INTERMEDIATE_DIR)/main.html',
-      '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
       '<(SHARED_INTERMEDIATE_DIR)/background.html',
+      '<(SHARED_INTERMEDIATE_DIR)/main.html',
+      '<(SHARED_INTERMEDIATE_DIR)/message_window.html',
+      '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
     ],
     'dr_webapp_locales_listfile': '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)_locales.txt',
   },

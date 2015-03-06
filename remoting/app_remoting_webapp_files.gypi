@@ -16,9 +16,14 @@
     # Variables for feedback_consent.html.
     'ar_feedback_consent_template':
       '<(DEPTH)/remoting/webapp/app_remoting/html/template_feedback_consent.html',
-    'ar_feedback_consent_template_files': [
+    # These JS files are specific to the feedback consent page and are not part
+    # of the main JS files.
+    'ar_feedback_consent_html_js_files': [
+      'webapp/app_remoting/js/feedback_consent.js',
     ],
-    'ar_feedback_consent_js_files': [
+
+    # All the JavaScript files required by feedback_consent.html.
+    'ar_feedback_consent_html_all_js_files': [
       'webapp/app_remoting/js/feedback_consent.js',
       'webapp/base/js/base.js',
       'webapp/crd/js/error.js',
@@ -76,14 +81,11 @@
 
     'ar_all_js_files': [
       '<@(ar_main_js_files)',
-      # Referenced from wcs_sandbox.html.
-      '<@(remoting_webapp_js_wcs_sandbox_files)',
+      '<@(ar_feedback_consent_html_js_files)',
+      '<@(remoting_webapp_message_window_html_js_files)',
+      '<@(remoting_webapp_wcs_sandbox_html_js_files)',
       # Referenced from the manifest.
       '<@(ar_background_js_files)',
-      # Referenced from feedback_consent.html.
-      'webapp/app_remoting/js/feedback_consent.js',
-      # Referenced from message_window.html.
-      'webapp/base/js/message_window.js',
     ],
 
     # Files that contain localizable strings.
@@ -91,6 +93,8 @@
       '<(ar_main_template)',
       '<@(ar_main_template_files)',
       '<(ar_feedback_consent_template)',
+      '<(remoting_webapp_template_message_window)',
+      '<(remoting_webapp_template_wcs_sandbox)',
       '<@(ar_all_js_files)',
     ],
 

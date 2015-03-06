@@ -68,7 +68,7 @@
               'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_feedback_consent_jscompile.stamp',
             },
             'inputs': [
-              '<@(ar_feedback_consent_js_files)',
+              '<@(ar_feedback_consent_html_all_js_files)',
               '<@(remoting_webapp_js_proto_files)',
               # Include zip as input so that this action is run after the build.
               '<(zip_path)',
@@ -81,7 +81,7 @@
               '--strict',
               '--no-single-file',
               '--success-stamp', '<(success_stamp)',
-              '<@(ar_feedback_consent_js_files)',
+              '<@(ar_feedback_consent_html_all_js_files)',
               '<@(remoting_webapp_js_proto_files)',
             ],
           },

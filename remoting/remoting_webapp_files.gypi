@@ -4,11 +4,6 @@
 
 {
   'variables': {
-    'remoting_webapp_info_files': [
-      'resources/chromoting16.webp',
-      'resources/chromoting48.webp',
-      'resources/chromoting128.webp',
-    ],
 
     # Jscompile proto files.
     # These provide type information for jscompile.
@@ -237,13 +232,13 @@
       'webapp/crd/js/toolbar.js',
       'webapp/crd/js/window_frame.js',
     ],
-    # Remoting WCS sandbox JavaScript files.
-    'remoting_webapp_js_wcs_sandbox_files': [
-      'webapp/crd/js/wcs.js',
-      'webapp/crd/js/wcs_loader.js',
-      'webapp/crd/js/wcs_sandbox_content.js',
-      'webapp/crd/js/xhr_proxy.js',
-    ],
+
+    #
+    # DesktopRemoting main.html generation files.
+    #
+
+    'remoting_webapp_template_main':
+      '<(DEPTH)/remoting/webapp/crd/html/template_main.html',
 
     # The shared JavaScript files required by main.html.
     'remoting_webapp_shared_main_html_js_files': [
@@ -267,116 +262,15 @@
     ],
 
     # The CRD-specific JavaScript files required by main.html.
-    'remoting_webapp_crd_main_html_js_files': [
+    'remoting_webapp_crd_main_html_all_js_files': [
+      '<@(remoting_webapp_shared_main_html_js_files)',
       'webapp/crd/js/crd_connect.js',
       'webapp/crd/js/crd_event_handlers.js',
       'webapp/crd/js/crd_main.js',
       'webapp/crd/js/desktop_remoting.js',
     ],
 
-    # The JavaScript files that are used in the background page.
-    'remoting_webapp_background_js_files': [
-      'webapp/base/js/base.js',
-      'webapp/base/js/ipc.js',
-      'webapp/base/js/message_window_helper.js',
-      'webapp/base/js/message_window_manager.js',
-      'webapp/crd/js/activation_handler.js',
-      'webapp/crd/js/app_launcher.js',
-      'webapp/crd/js/background.js',
-      'webapp/crd/js/client_session.js',
-      'webapp/crd/js/error.js',
-      'webapp/crd/js/host_installer.js',
-      'webapp/crd/js/host_session.js',
-      'webapp/crd/js/identity.js',
-      'webapp/crd/js/it2me_host_facade.js',
-      'webapp/crd/js/l10n.js',
-      'webapp/crd/js/oauth2.js',
-      'webapp/crd/js/oauth2_api.js',
-      'webapp/crd/js/oauth2_api_impl.js',
-      'webapp/crd/js/plugin_settings.js',
-      'webapp/crd/js/typecheck.js',
-      'webapp/crd/js/xhr.js',
-    ],
-
-    # The JavaScript files required by wcs_sandbox.html.
-    'remoting_webapp_wcs_sandbox_html_js_files': [
-      '<@(remoting_webapp_js_wcs_sandbox_files)',
-      'webapp/crd/js/error.js',
-      'webapp/crd/js/plugin_settings.js',
-    ],
-
-    # All the JavaScript files that are shared by webapps.
-    'remoting_webapp_shared_js_files': [
-      # JS files for main.html.
-      '<@(remoting_webapp_shared_main_html_js_files)',
-      '<@(remoting_webapp_background_js_files)',
-      # JS files for message_window.html
-      'webapp/base/js/message_window.js',
-      # JS files for wcs_sandbox.html.
-      # Use r_w_js_wcs_sandbox_files instead of r_w_wcs_sandbox_html_js_files
-      # so that we don't double include error.js and plugin_settings.js.
-      '<@(remoting_webapp_js_wcs_sandbox_files)',
-      # JS files referenced in mainfest.json.
-      '<@(remoting_webapp_js_auth_v1_files)',
-    ],
-
-    # All the JavaScript files required by CRD.
-    'remoting_webapp_crd_js_files': [
-      '<@(remoting_webapp_shared_js_files)',
-      '<@(remoting_webapp_crd_main_html_js_files)',
-    ],
-
-    'remoting_webapp_resource_files': [
-      'resources/disclosure_arrow_down.webp',
-      'resources/disclosure_arrow_right.webp',
-      'resources/drag.webp',
-      'resources/host_setup_instructions.webp',
-      'resources/icon_close.webp',
-      'resources/icon_cross.webp',
-      'resources/icon_disconnect.webp',
-      'resources/icon_fullscreen.webp',
-      'resources/icon_help.webp',
-      'resources/icon_host.webp',
-      'resources/icon_maximize_restore.webp',
-      'resources/icon_minimize.webp',
-      'resources/icon_options.webp',
-      'resources/icon_pencil.webp',
-      'resources/icon_warning.webp',
-      'resources/infographic_my_computers.webp',
-      'resources/infographic_remote_assistance.webp',
-      'resources/plus.webp',
-      'resources/reload.webp',
-      'resources/tick.webp',
-      'webapp/base/html/connection_stats.css',
-      'webapp/base/html/main.css',
-      'webapp/base/html/message_window.html',
-      'webapp/base/html/message_window.css',
-      'webapp/base/resources/open_sans.css',
-      'webapp/base/resources/open_sans.woff',
-      'webapp/base/resources/spinner.gif',
-      'webapp/crd/html/butter_bar.css',
-      'webapp/crd/html/toolbar.css',
-      'webapp/crd/html/menu_button.css',
-      'webapp/crd/html/window_frame.css',
-      'webapp/crd/resources/scale-to-fit.webp',
-    ],
-
-    'remoting_webapp_crd_files': [
-      '<@(remoting_webapp_info_files)',
-      '<@(remoting_webapp_crd_js_files)',
-      '<@(remoting_webapp_resource_files)',
-    ],
-
-    # These template files are used to construct the webapp html files.
-    'remoting_webapp_template_main':
-      '<(DEPTH)/remoting/webapp/crd/html/template_main.html',
-
-    'remoting_webapp_template_wcs_sandbox':
-      '<(DEPTH)/remoting/webapp/base/html/template_wcs_sandbox.html',
-
-    'remoting_webapp_template_background':
-      '<(DEPTH)/remoting/webapp/crd/html/template_background.html',
-
+    # These template files are used to construct main.html.
     'remoting_webapp_template_files': [
       'webapp/base/html/client_plugin.html',
       'webapp/base/html/dialog_auth.html',
@@ -402,12 +296,159 @@
       'webapp/crd/html/window_frame.html',
     ],
 
+    #
+    # Webapp background.html generation files.
+    #
+
+    'remoting_webapp_template_background':
+      '<(DEPTH)/remoting/webapp/crd/html/template_background.html',
+
+    # These JS files are specific to the background page and are not part of
+    # the main JS files.
+    'remoting_webapp_background_html_js_files': [
+      'webapp/base/js/message_window_helper.js',
+      'webapp/base/js/message_window_manager.js',
+      'webapp/crd/js/activation_handler.js',
+      'webapp/crd/js/app_launcher.js',
+      'webapp/crd/js/background.js',
+    ],
+
+    # All the JavaScript files required by background.html.
+    'remoting_webapp_background_html_all_js_files': [
+      '<@(remoting_webapp_background_html_js_files)',
+      'webapp/base/js/base.js',
+      'webapp/base/js/ipc.js',
+      'webapp/crd/js/client_session.js',
+      'webapp/crd/js/error.js',
+      'webapp/crd/js/host_installer.js',
+      'webapp/crd/js/host_session.js',
+      'webapp/crd/js/identity.js',
+      'webapp/crd/js/it2me_host_facade.js',
+      'webapp/crd/js/l10n.js',
+      'webapp/crd/js/oauth2.js',
+      'webapp/crd/js/oauth2_api.js',
+      'webapp/crd/js/oauth2_api_impl.js',
+      'webapp/crd/js/plugin_settings.js',
+      'webapp/crd/js/typecheck.js',
+      'webapp/crd/js/xhr.js',
+    ],
+
+    #
+    # Webapp wcs_sandbox.html generation files.
+    #
+
+    'remoting_webapp_template_wcs_sandbox':
+      '<(DEPTH)/remoting/webapp/base/html/template_wcs_sandbox.html',
+
+    # These JS files are specific to the WCS sandbox page and are not part of
+    # the main JS files.
+    'remoting_webapp_wcs_sandbox_html_js_files': [
+      'webapp/crd/js/wcs.js',
+      'webapp/crd/js/wcs_loader.js',
+      'webapp/crd/js/wcs_sandbox_content.js',
+      'webapp/crd/js/xhr_proxy.js',
+    ],
+
+    # All the JavaScript files required by wcs_sandbox.html.
+    'remoting_webapp_wcs_sandbox_html_all_js_files': [
+      '<@(remoting_webapp_wcs_sandbox_html_js_files)',
+      'webapp/crd/js/error.js',
+      'webapp/crd/js/plugin_settings.js',
+    ],
+
+    #
+    # Webapp message_window.html generation files.
+    #
+
+    'remoting_webapp_template_message_window':
+      '<(DEPTH)/remoting/webapp/base/html/template_message_window.html',
+
+    # These JS files are specific to the message window page and are not part of
+    # the main JS files.
+    'remoting_webapp_message_window_html_js_files': [
+      'webapp/base/js/message_window.js',
+    ],
+
+    # All the JavaScript files required by message_window.html.
+    'remoting_webapp_message_window_html_all_js_files': [
+      '<@(remoting_webapp_message_window_html_js_files)',
+      'webapp/base/js/base.js',
+    ],
+
+    #
+    # Complete webapp JS and resource files.
+    #
+
+    # All the JavaScript files that are shared by webapps.
+    'remoting_webapp_shared_js_files': [
+      '<@(remoting_webapp_shared_main_html_js_files)',
+      '<@(remoting_webapp_background_html_js_files)',
+      '<@(remoting_webapp_message_window_html_js_files)',
+      '<@(remoting_webapp_wcs_sandbox_html_js_files)',
+      # JS files referenced in manifest.json.
+      '<@(remoting_webapp_js_auth_v1_files)',
+    ],
+
+    # All the JavaScript files required by DesktopRemoting.
+    'remoting_webapp_crd_js_files': [
+      '<@(remoting_webapp_shared_js_files)',
+      '<@(remoting_webapp_crd_main_html_all_js_files)',
+    ],
+
+    'remoting_webapp_info_files': [
+      'resources/chromoting16.webp',
+      'resources/chromoting48.webp',
+      'resources/chromoting128.webp',
+    ],
+
+    # All the resource files required by DesktopRemoting.
+    'remoting_webapp_resource_files': [
+      'resources/disclosure_arrow_down.webp',
+      'resources/disclosure_arrow_right.webp',
+      'resources/drag.webp',
+      'resources/host_setup_instructions.webp',
+      'resources/icon_close.webp',
+      'resources/icon_cross.webp',
+      'resources/icon_disconnect.webp',
+      'resources/icon_fullscreen.webp',
+      'resources/icon_help.webp',
+      'resources/icon_host.webp',
+      'resources/icon_maximize_restore.webp',
+      'resources/icon_minimize.webp',
+      'resources/icon_options.webp',
+      'resources/icon_pencil.webp',
+      'resources/icon_warning.webp',
+      'resources/infographic_my_computers.webp',
+      'resources/infographic_remote_assistance.webp',
+      'resources/plus.webp',
+      'resources/reload.webp',
+      'resources/tick.webp',
+      'webapp/base/html/connection_stats.css',
+      'webapp/base/html/main.css',
+      'webapp/base/html/message_window.css',
+      'webapp/base/resources/open_sans.css',
+      'webapp/base/resources/open_sans.woff',
+      'webapp/base/resources/spinner.gif',
+      'webapp/crd/html/butter_bar.css',
+      'webapp/crd/html/toolbar.css',
+      'webapp/crd/html/menu_button.css',
+      'webapp/crd/html/window_frame.css',
+      'webapp/crd/resources/scale-to-fit.webp',
+    ],
+
+    'remoting_webapp_crd_files': [
+      '<@(remoting_webapp_info_files)',
+      '<@(remoting_webapp_crd_js_files)',
+      '<@(remoting_webapp_resource_files)',
+    ],
+
     # Files that contain localizable strings.
     'desktop_remoting_webapp_localizable_files': [
       'webapp/crd/manifest.json.jinja2',
-      '<(remoting_webapp_template_main)',
-      '<(remoting_webapp_template_wcs_sandbox)',
       '<(remoting_webapp_template_background)',
+      '<(remoting_webapp_template_main)',
+      '<(remoting_webapp_template_message_window)',
+      '<(remoting_webapp_template_wcs_sandbox)',
       '<@(remoting_webapp_template_files)',
       '<@(remoting_webapp_crd_js_files)',
     ],

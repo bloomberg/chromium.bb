@@ -322,8 +322,8 @@
         'output_dir': '<(PRODUCT_DIR)/remoting/unittests',
         'webapp_js_files': [
           '<@(remoting_webapp_shared_main_html_js_files)',
-          '<@(remoting_webapp_js_wcs_sandbox_files)',
-          '<@(remoting_webapp_background_js_files)',
+          '<@(remoting_webapp_wcs_sandbox_html_js_files)',
+          '<@(remoting_webapp_background_html_js_files)',
         ]
       },
       'copies': [

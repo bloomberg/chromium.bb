@@ -70,8 +70,7 @@
             '--template-dir', '<(DEPTH)/remoting',
             '--templates', '<@(remoting_webapp_template_files)',
             '--js',
-            '<@(remoting_webapp_shared_main_html_js_files)',
-            '<@(remoting_webapp_crd_main_html_js_files)',
+            '<@(remoting_webapp_crd_main_html_all_js_files)',
           ],
         },
         {
@@ -87,7 +86,7 @@
             'python', 'webapp/build-html.py',
             '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
             '<(remoting_webapp_template_wcs_sandbox)',
-            '--js', '<@(remoting_webapp_wcs_sandbox_html_js_files)',
+            '--js', '<@(remoting_webapp_wcs_sandbox_html_all_js_files)',
           ],
         },
         {
@@ -103,10 +102,26 @@
             'python', 'webapp/build-html.py',
             '<(SHARED_INTERMEDIATE_DIR)/background.html',
             '<(remoting_webapp_template_background)',
-            '--js', '<@(remoting_webapp_background_js_files)',
+            '--js', '<@(remoting_webapp_background_html_all_js_files)',
           ],
         },
-      ],
+        {
+          'action_name': 'Build Remoting Webapp message_window.html',
+          'inputs': [
+            'webapp/build-html.py',
+            '<(remoting_webapp_template_message_window)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/message_window.html',
+          ],
+          'action': [
+            'python', 'webapp/build-html.py',
+            '<(SHARED_INTERMEDIATE_DIR)/message_window.html',
+            '<(remoting_webapp_template_message_window)',
+            '--js', '<@(remoting_webapp_message_window_html_all_js_files)',
+          ],
+        },
+      ],  # end of actions
     },  # end of target 'remoting_webapp_html'
 
     {
