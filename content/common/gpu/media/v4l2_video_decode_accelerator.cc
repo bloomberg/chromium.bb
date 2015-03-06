@@ -735,9 +735,10 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(
   if (!GetFormatInfo(&format, &visible_size, &again))
     return false;
 
+  *endpos = size;
+
   if (again) {
     // Need more stream to decode format, return true and schedule next buffer.
-    *endpos = size;
     return true;
   }
 
@@ -747,14 +748,6 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(
     // Success! Setup our parameters.
     if (!CreateBuffersForFormat(format, visible_size))
       return false;
-
-    // We expect to process the initial buffer once during stream init to
-    // configure stream parameters, but will not consume the steam data on that
-    // iteration.  Subsequent iterations (including after reset) do not require
-    // the stream init step.
-    *endpos = 0;
-  } else {
-    *endpos = size;
   }
 
   decoder_state_ = kDecoding;
