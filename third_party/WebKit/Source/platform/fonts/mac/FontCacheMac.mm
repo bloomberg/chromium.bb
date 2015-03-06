@@ -38,6 +38,9 @@
 #import "platform/fonts/FontPlatformData.h"
 #import "platform/fonts/SimpleFontData.h"
 #import "platform/fonts/mac/FontFamilyMatcherMac.h"
+#import "public/platform/Platform.h"
+#import "public/platform/WebTraceLocation.h"
+#import <wtf/Functional.h>
 #import <wtf/MainThread.h>
 #import <wtf/StdLibExtras.h>
 
@@ -50,11 +53,10 @@
 
 namespace blink {
 
-// The "void*" parameter makes the function match the prototype for callbacks from callOnMainThread.
-static void invalidateFontCache(void*)
+static void invalidateFontCache()
 {
     if (!isMainThread()) {
-        callOnMainThread(&invalidateFontCache, 0);
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&invalidateFontCache));
         return;
     }
     FontCache::fontCache()->invalidate();
@@ -64,7 +66,7 @@ static void fontCacheRegisteredFontsChangedNotificationCallback(CFNotificationCe
 {
     ASSERT_UNUSED(observer, observer == FontCache::fontCache());
     ASSERT_UNUSED(name, CFEqual(name, kCTFontManagerRegisteredFontsChangedNotification));
-    invalidateFontCache(0);
+    invalidateFontCache();
 }
 
 static bool useHinting()

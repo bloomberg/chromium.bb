@@ -32,6 +32,8 @@
 #include "core/inspector/TraceEventDispatcher.h"
 
 #include "core/inspector/InspectorClient.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
@@ -68,7 +70,7 @@ void TraceEventDispatcher::enqueueEvent(double timestamp, char phase, const char
             return;
     }
     m_processEventsTaskInFlight = true;
-    callOnMainThread(bind(&TraceEventDispatcher::processBackgroundEventsTask, this));
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&TraceEventDispatcher::processBackgroundEventsTask, this));
 }
 
 void TraceEventDispatcher::processBackgroundEventsTask()

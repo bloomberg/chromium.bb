@@ -314,7 +314,7 @@ void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& m
 
 void WebSharedWorkerImpl::workerGlobalScopeClosed()
 {
-    callOnMainThread(bind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, this));
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, this));
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
@@ -331,7 +331,7 @@ void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerGlobalScope*)
 
 void WebSharedWorkerImpl::workerThreadTerminated()
 {
-    callOnMainThread(bind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, this));
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, this));
 }
 
 void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()

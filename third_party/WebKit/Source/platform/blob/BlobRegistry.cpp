@@ -39,6 +39,7 @@
 #include "public/platform/WebBlobData.h"
 #include "public/platform/WebBlobRegistry.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/MainThread.h"
@@ -154,9 +155,8 @@ void BlobRegistry::revokePublicBlobURL(const KURL& url)
     blobRegistry()->revokePublicBlobURL(url);
 }
 
-static void registerStreamURLTask(void* context)
+static void registerStreamURLTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry())
         registry->registerStreamURL(blobRegistryContext->url, blobRegistryContext->type);
 }
@@ -168,13 +168,12 @@ void BlobRegistry::registerStreamURL(const KURL& url, const String& type)
             registry->registerStreamURL(url, type);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, type));
-        callOnMainThread(&registerStreamURLTask, context.leakPtr());
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&registerStreamURLTask, context.release()));
     }
 }
 
-static void registerStreamURLFromTask(void* context)
+static void registerStreamURLFromTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry())
         registry->registerStreamURL(blobRegistryContext->url, blobRegistryContext->srcURL);
 }
@@ -188,13 +187,12 @@ void BlobRegistry::registerStreamURL(SecurityOrigin* origin, const KURL& url, co
             registry->registerStreamURL(url, srcURL);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, srcURL));
-        callOnMainThread(&registerStreamURLFromTask, context.leakPtr());
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&registerStreamURLFromTask, context.release()));
     }
 }
 
-static void addDataToStreamTask(void* context)
+static void addDataToStreamTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry()) {
         RefPtr<RawData> data(blobRegistryContext->streamData);
         registry->addDataToStream(blobRegistryContext->url, data->data(), data->length());
@@ -208,13 +206,12 @@ void BlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData> streamDa
             registry->addDataToStream(url, streamData->data(), streamData->length());
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, streamData));
-        callOnMainThread(&addDataToStreamTask, context.leakPtr());
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&addDataToStreamTask, context.release()));
     }
 }
 
-static void flushStreamTask(void* context)
+static void flushStreamTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry())
         registry->flushStream(blobRegistryContext->url);
 }
@@ -226,13 +223,12 @@ void BlobRegistry::flushStream(const KURL& url)
             registry->flushStream(url);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        callOnMainThread(&flushStreamTask, context.leakPtr());
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&flushStreamTask, context.release()));
     }
 }
 
-static void finalizeStreamTask(void* context)
+static void finalizeStreamTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry())
         registry->finalizeStream(blobRegistryContext->url);
 }
@@ -244,13 +240,12 @@ void BlobRegistry::finalizeStream(const KURL& url)
             registry->finalizeStream(url);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        callOnMainThread(&finalizeStreamTask, context.leakPtr());
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&finalizeStreamTask, context.release()));
     }
 }
 
-static void abortStreamTask(void* context)
+static void abortStreamTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry())
         registry->abortStream(blobRegistryContext->url);
 }
@@ -262,13 +257,12 @@ void BlobRegistry::abortStream(const KURL& url)
             registry->abortStream(url);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        callOnMainThread(&abortStreamTask, context.leakPtr());
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&abortStreamTask, context.release()));
     }
 }
 
-static void unregisterStreamURLTask(void* context)
+static void unregisterStreamURLTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry())
         registry->unregisterStreamURL(blobRegistryContext->url);
 }
@@ -282,7 +276,7 @@ void BlobRegistry::unregisterStreamURL(const KURL& url)
             registry->unregisterStreamURL(url);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        callOnMainThread(&unregisterStreamURLTask, context.leakPtr());
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&unregisterStreamURLTask, context.release()));
     }
 }
 

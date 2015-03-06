@@ -250,7 +250,7 @@ void AudioContext::stop()
     // of dealing with all of its ActiveDOMObjects at this point. uninitialize() can de-reference other
     // ActiveDOMObjects so let's schedule uninitialize() to be called later.
     // FIXME: see if there's a more direct way to handle this issue.
-    callOnMainThread(bind(&AudioContext::uninitialize, this));
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&AudioContext::uninitialize, this));
 }
 
 bool AudioContext::hasPendingActivity() const
@@ -1158,7 +1158,7 @@ void AudioContext::resolvePromisesForResume()
     // promises in the main thread.
     if (!m_isResolvingResumePromises && m_resumeResolvers.size() > 0) {
         m_isResolvingResumePromises = true;
-        callOnMainThread(bind(&AudioContext::resolvePromisesForResumeOnMainThread, this));
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&AudioContext::resolvePromisesForResumeOnMainThread, this));
     }
 }
 
@@ -1191,7 +1191,7 @@ void AudioContext::resolvePromisesForSuspend()
 
     // Resolve any pending promises created by suspend()
     if (m_suspendResolvers.size() > 0)
-        callOnMainThread(bind(&AudioContext::resolvePromisesForSuspendOnMainThread, this));
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&AudioContext::resolvePromisesForSuspendOnMainThread, this));
 }
 
 void AudioContext::rejectPendingResolvers()

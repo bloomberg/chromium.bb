@@ -59,7 +59,7 @@ void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData, float sampleRate,
     RefPtr<DOMArrayBuffer> audioDataRef(audioData);
 
     // The leak references to successCallback and errorCallback are picked up on notifyComplete.
-    m_thread->postTask(FROM_HERE, new Task(WTF::bind(&AsyncAudioDecoder::decode, audioDataRef.release().leakRef(), sampleRate, successCallback, errorCallback)));
+    m_thread->postTask(FROM_HERE, new Task(bind(&AsyncAudioDecoder::decode, audioDataRef.release().leakRef(), sampleRate, successCallback, errorCallback)));
 }
 
 void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
@@ -68,7 +68,7 @@ void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, Audi
 
     // Decoding is finished, but we need to do the callbacks on the main thread.
     // The leaked reference to audioBuffer is picked up in notifyComplete.
-    callOnMainThread(WTF::bind(&AsyncAudioDecoder::notifyComplete, audioData, successCallback, errorCallback, bus.release().leakRef()));
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&AsyncAudioDecoder::notifyComplete, audioData, successCallback, errorCallback, bus.release().leakRef()));
 }
 
 void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus)

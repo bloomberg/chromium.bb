@@ -92,7 +92,7 @@ static void deallocate(void* pointer, void*)
         fastFree(header);
     } else {
         if (!isMainThread()) {
-            callOnMainThread(deallocateOnMainThread, header);
+            internal::callOnMainThread(&deallocateOnMainThread, header);
         } else {
             underlyingString->deref(); // Balanced by call to ref in allocate above.
             fastFree(header);

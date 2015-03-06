@@ -33,8 +33,9 @@
 #undef SHARED_BUFFER_STATS
 
 #ifdef SHARED_BUFFER_STATS
+#include "public/platform/Platform.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/DataLog.h"
-#include "wtf/MainThread.h"
 #endif
 
 namespace blink {
@@ -106,7 +107,7 @@ static CString snippetForBuffer(SharedBuffer* sharedBuffer)
     return result;
 }
 
-static void printStats(void*)
+static void printStats()
 {
     MutexLocker locker(statsMutex());
     Vector<SharedBuffer*> buffers;
@@ -126,7 +127,7 @@ static void didCreateSharedBuffer(SharedBuffer* buffer)
     MutexLocker locker(statsMutex());
     liveBuffers().add(buffer);
 
-    callOnMainThread(printStats, 0);
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&printStats));
 }
 
 static void willDestroySharedBuffer(SharedBuffer* buffer)

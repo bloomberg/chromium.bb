@@ -261,7 +261,7 @@ void ScriptStreamer::streamingCompleteOnBackgroundThread()
 
     // notifyFinished might already be called, or it might be called in the
     // future (if the parsing finishes earlier because of a parse error).
-    callOnMainThread(WTF::bind(&ScriptStreamer::streamingComplete, this));
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&ScriptStreamer::streamingComplete, this));
 }
 
 void ScriptStreamer::cancel()

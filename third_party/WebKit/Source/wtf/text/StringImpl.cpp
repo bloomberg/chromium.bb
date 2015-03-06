@@ -255,7 +255,7 @@ void StringStats::printStats()
     double overheadPercent = (double)totalOverhead / (double)totalDataBytes * 100;
     dataLogF("         StringImpl overheader: %8u (%5.2f%%)\n", totalOverhead, overheadPercent);
 
-    callOnMainThread(printLiveStringStats, 0);
+    internal::callOnMainThread(&printLiveStringStats, nullptr);
 }
 #endif
 
