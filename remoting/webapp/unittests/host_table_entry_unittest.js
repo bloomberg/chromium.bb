@@ -125,20 +125,6 @@ test('Clicking on the rename button shows the input field.', function() {
   QUnit.equal(document.activeElement, inputField);
 });
 
-test('Host renaming is canceled when input field losses focus.', function() {
-  // Invoke.
-  hostTableEntry_.element().querySelector('.rename-button').click();
-
-  // Verify.
-  var inputField =
-      hostTableEntry_.element().querySelector('.host-rename-input');
-
-  verifyVisible(inputField, true, 'inputField');
-  QUnit.equal(document.activeElement, inputField);
-  inputField.blur();
-  verifyVisible(inputField, false, 'inputField');
-});
-
 test('Host renaming is canceled on ESCAPE key.', function() {
   // Invoke.
   var inputField =
