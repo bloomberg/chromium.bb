@@ -202,4 +202,4 @@ crbug.com/448670 http/tests/serviceworker/chromium/register-different-script-man
 # Most crypto/subtle tests are slow some or most of the time.
 crbug.com/459009 crypto/subtle/ [ Slow ]
 
-
+crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-self-and-other-referencing.html [ Slow ]
