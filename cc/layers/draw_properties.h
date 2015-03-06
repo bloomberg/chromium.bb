@@ -32,6 +32,7 @@ struct CC_EXPORT DrawProperties {
         num_unclipped_descendants(0),
         layer_or_descendant_has_copy_request(false),
         layer_or_descendant_has_input_handler(false),
+        layer_or_descendant_is_drawn(false),
         has_child_with_a_scroll_parent(false),
         sorted_for_recursion(false),
         visited(false),
@@ -113,6 +114,9 @@ struct CC_EXPORT DrawProperties {
 
   // If true, the layer or one of its descendants has a wheel or touch handler.
   bool layer_or_descendant_has_input_handler;
+
+  // If true, the layer or one of its descendants is drawn
+  bool layer_or_descendant_is_drawn;
 
   // This is true if the layer has any direct child that has a scroll parent.
   // This layer will not be the scroll parent in this case. This information

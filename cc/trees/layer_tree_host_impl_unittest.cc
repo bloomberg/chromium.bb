@@ -7145,7 +7145,7 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownScrollAncestorMismatch) {
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL));
 }
 
-TEST_F(LayerTreeHostImplTest, ScrollInvisibleScroller) {
+TEST_F(LayerTreeHostImplTest, NotScrollInvisibleScroller) {
   gfx::Size content_size(100, 100);
   SetupScrollAndContentsLayers(content_size);
 
@@ -7169,11 +7169,48 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScroller) {
   // any layer that is a drawn RSLL member, then we can ignore the hit.
   //
   // Why SCROLL_STARTED? In this case, it's because we've bubbled out and
-  // started overscrolling the inner viewport.
+  // started scrolling the inner viewport.
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL));
 
   EXPECT_EQ(2, host_impl_->CurrentlyScrollingLayer()->id());
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleDescendent) {
+  gfx::Size content_size(100, 100);
+  SetupScrollAndContentsLayers(content_size);
+
+  LayerImpl* root = host_impl_->active_tree()->LayerById(1);
+  LayerImpl* root_scroll_layer = host_impl_->active_tree()->LayerById(2);
+
+  scoped_ptr<LayerImpl> invisible_scroll_layer =
+      CreateScrollableLayer(7, content_size, root);
+  invisible_scroll_layer->SetDrawsContent(false);
+
+  scoped_ptr<LayerImpl> child_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 8);
+  child_layer->SetDrawsContent(false);
+
+  scoped_ptr<LayerImpl> grand_child_layer =
+      LayerImpl::Create(host_impl_->active_tree(), 9);
+  grand_child_layer->SetDrawsContent(true);
+  grand_child_layer->SetBounds(content_size);
+  grand_child_layer->SetContentBounds(content_size);
+  // Move the grand child so it's not hit by our test point.
+  grand_child_layer->SetPosition(gfx::PointF(10.f, 10.f));
+
+  child_layer->AddChild(grand_child_layer.Pass());
+  invisible_scroll_layer->AddChild(child_layer.Pass());
+  root_scroll_layer->AddChild(invisible_scroll_layer.Pass());
+
+  DrawFrame();
+
+  // We should have scrolled |invisible_scroll_layer| as it was hit and it has
+  // a descendant which is a drawn RSLL member.
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL));
+
+  EXPECT_EQ(7, host_impl_->CurrentlyScrollingLayer()->id());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
@@ -7221,12 +7258,9 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
 
   DrawFrame();
 
-  // We should not have scrolled |child_scroll| even though we technically "hit"
-  // it. The reason for this is that if the scrolling the scroll would not move
-  // any layer that is a drawn RSLL member, then we can ignore the hit.
-  //
-  // Why SCROLL_STARTED? In this case, it's because we've bubbled out and
-  // started overscrolling the inner viewport.
+  // We should have scrolled |child_scroll| even though it is invisible.
+  // The reason for this is that if the scrolling the scroll would move a layer
+  // that is a drawn RSLL member, then we should accept this hit.
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL));
 

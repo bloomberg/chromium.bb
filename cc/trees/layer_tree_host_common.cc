@@ -1128,6 +1128,8 @@ static inline void MarkLayerWithRenderSurfaceLayerListId(
     int current_render_surface_layer_list_id) {
   layer->draw_properties().last_drawn_render_surface_layer_list_id =
       current_render_surface_layer_list_id;
+  layer->draw_properties().layer_or_descendant_is_drawn =
+      !!current_render_surface_layer_list_id;
 }
 
 template <typename LayerTypePtr>
@@ -1200,8 +1202,7 @@ struct PreCalculateMetaInformationRecursiveData {
         data.layer_or_descendant_has_copy_request;
     layer_or_descendant_has_input_handler |=
         data.layer_or_descendant_has_input_handler;
-    num_unclipped_descendants +=
-        data.num_unclipped_descendants;
+    num_unclipped_descendants += data.num_unclipped_descendants;
   }
 };
 
@@ -1233,6 +1234,7 @@ static void PreCalculateMetaInformation(
 
   layer->draw_properties().sorted_for_recursion = false;
   layer->draw_properties().has_child_with_a_scroll_parent = false;
+  layer->draw_properties().layer_or_descendant_is_drawn = false;
   layer->draw_properties().visited = false;
 
   if (!HasInvertibleOrAnimatedTransform(layer)) {
@@ -2212,6 +2214,8 @@ static void CalculateDrawPropertiesInternal(
         render_surface_layer_list->size() -
         child->draw_properties()
             .index_of_first_render_surface_layer_list_addition;
+    layer_draw_properties.layer_or_descendant_is_drawn |=
+        child->draw_properties().layer_or_descendant_is_drawn;
   }
 
   // Add the unsorted layer list contributions, if necessary.

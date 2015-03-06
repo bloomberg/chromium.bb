@@ -1430,15 +1430,16 @@ static void FindClosestMatchingLayer(
 static bool ScrollsAnyDrawnRenderSurfaceLayerListMember(LayerImpl* layer) {
   if (!layer->scrollable())
     return false;
-  if (layer->IsDrawnRenderSurfaceLayerListMember())
+  if (layer->draw_properties().layer_or_descendant_is_drawn)
     return true;
+
   if (!layer->scroll_children())
     return false;
   for (std::set<LayerImpl*>::const_iterator it =
            layer->scroll_children()->begin();
        it != layer->scroll_children()->end();
        ++it) {
-    if ((*it)->IsDrawnRenderSurfaceLayerListMember())
+    if ((*it)->draw_properties().layer_or_descendant_is_drawn)
       return true;
   }
   return false;
