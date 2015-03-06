@@ -650,6 +650,7 @@
       'browser/chromeos/input_method/mode_indicator_browsertest.cc',
       'browser/chromeos/login/crash_restore_browsertest.cc',
       'browser/chromeos/login/demo_mode/demo_app_launcher_browsertest.cc',
+      'browser/chromeos/login/easy_unlock/bootstrap_browsertest.cc',
       'browser/chromeos/login/enable_debugging_browsertest.cc',
       'browser/chromeos/login/enrollment/enrollment_screen_browsertest.cc',
       'browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.cc',

@@ -170,15 +170,21 @@ class FakeGaia {
                        net::test_server::BasicHttpResponse* http_response);
   void HandleGetUserInfo(const net::test_server::HttpRequest& request,
                          net::test_server::BasicHttpResponse* http_response);
+  void HandleOAuthUserInfo(const net::test_server::HttpRequest& request,
+                           net::test_server::BasicHttpResponse* http_response);
 
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first
   // token satisfying the other criteria is returned. Returns NULL if no token
   // matches.
-  const AccessTokenInfo* FindAccessTokenInfo(const std::string& auth_token,
-                                             const std::string& client_id,
-                                             const std::string& scope_string)
-      const;
+  const AccessTokenInfo* FindAccessTokenInfo(
+      const std::string& auth_token,
+      const std::string& client_id,
+      const std::string& scope_string) const;
+
+  // Returns the access token identified by |access_token| or NULL if not found.
+  const AccessTokenInfo* GetAccessTokenInfo(
+      const std::string& access_token) const;
 
   MergeSessionParams merge_session_params_;
   EmailToGaiaIdMap email_to_gaia_id_map_;

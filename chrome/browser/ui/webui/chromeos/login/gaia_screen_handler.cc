@@ -171,6 +171,7 @@ GaiaScreenHandler::GaiaScreenHandler(
       is_enrolling_consumer_management_(false),
       test_expects_complete_login_(false),
       embedded_signin_enabled_by_shortcut_(false),
+      use_easy_bootstrap_(false),
       signin_screen_handler_(NULL),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
@@ -273,6 +274,22 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     params.SetInteger("constrained", 1);
   }
 
+  if (use_easy_bootstrap_) {
+    params.SetBoolean("useEafe", true);
+    // Easy login overrides.
+    std::string eafe_url = "https://easylogin.corp.google.com/";
+    if (command_line->HasSwitch(switches::kEafeUrl))
+      eafe_url = command_line->GetSwitchValueASCII(switches::kEafeUrl);
+    std::string eafe_path = "planters/cbaudioChrome";
+    if (command_line->HasSwitch(switches::kEafePath))
+      eafe_path = command_line->GetSwitchValueASCII(switches::kEafePath);
+
+    params.SetString("gaiaUrl", eafe_url);
+    params.SetString("gaiaPath", eafe_path);
+    params.SetString("clientId",
+                     GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  }
+
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("loadAuthExtension", params);
 }
@@ -356,6 +373,8 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("completeLogin", &GaiaScreenHandler::HandleCompleteLogin);
   AddCallback("completeAuthentication",
               &GaiaScreenHandler::HandleCompleteAuthentication);
+  AddCallback("completeAuthenticationAuthCodeOnly",
+              &GaiaScreenHandler::HandleCompleteAuthenticationAuthCodeOnly);
   AddCallback("usingSAMLAPI", &GaiaScreenHandler::HandleUsingSAMLAPI);
   AddCallback("scrapedPasswordCount",
               &GaiaScreenHandler::HandleScrapedPasswordCount);
@@ -365,6 +384,8 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("switchToFullTab", &GaiaScreenHandler::HandleSwitchToFullTab);
   AddCallback("toggleWebviewSignin",
               &GaiaScreenHandler::HandleToggleWebviewSignin);
+  AddCallback("toggleEasyBootstrap",
+              &GaiaScreenHandler::HandleToggleEasyBootstrap);
 }
 
 void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
@@ -405,6 +426,17 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   UserContext user_context(sanitized_email);
   user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
+  user_context.SetAuthCode(auth_code);
+  Delegate()->CompleteLogin(user_context);
+}
+
+void GaiaScreenHandler::HandleCompleteAuthenticationAuthCodeOnly(
+    const std::string& auth_code) {
+  if (!Delegate())
+    return;
+
+  UserContext user_context;
+  user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_BOOTSTRAP);
   user_context.SetAuthCode(auth_code);
   Delegate()->CompleteLogin(user_context);
 }
@@ -466,6 +498,14 @@ void GaiaScreenHandler::HandleToggleWebviewSignin() {
         !StartupUtils::IsWebviewSigninEnabled())) {
     chrome::AttemptRestart();
   }
+}
+
+void GaiaScreenHandler::HandleToggleEasyBootstrap() {
+  use_easy_bootstrap_ = !use_easy_bootstrap_;
+  const bool kForceReload = true;
+  const bool kSilentLoad = true;
+  const bool kNoOfflineUI = false;
+  LoadAuthExtension(kForceReload, kSilentLoad, kNoOfflineUI);
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {
@@ -806,4 +846,5 @@ SigninScreenHandlerDelegate* GaiaScreenHandler::Delegate() {
 void GaiaScreenHandler::SetSigninScreenHandler(SigninScreenHandler* handler) {
   signin_screen_handler_ = handler;
 }
+
 }  // namespace chromeos

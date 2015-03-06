@@ -329,9 +329,10 @@ void UserManagerBase::RemoveUserFromList(const std::string& user_id) {
     DeleteUser(RemoveRegularOrSupervisedUserFromList(user_id));
   } else if (user_loading_stage_ == STAGE_LOADING) {
     DCHECK(gaia::ExtractDomainName(user_id) ==
-           chromeos::login::kSupervisedUserDomain);
-    // Special case, removing partially-constructed supervised user during user
-    // list loading.
+               chromeos::login::kSupervisedUserDomain ||
+           HasPendingBootstrap(user_id));
+    // Special case, removing partially-constructed supervised user or
+    // boostrapping user during user list loading.
     ListPrefUpdate users_update(GetLocalState(), kRegularUsers);
     users_update->Remove(base::StringValue(user_id), NULL);
   } else {
@@ -714,6 +715,10 @@ void UserManagerBase::SetEphemeralUsersEnabled(bool enabled) {
 
 void UserManagerBase::SetIsCurrentUserNew(bool is_new) {
   is_current_user_new_ = is_new;
+}
+
+bool UserManagerBase::HasPendingBootstrap(const std::string& user_id) const {
+  return false;
 }
 
 void UserManagerBase::SetOwnerEmail(std::string owner_user_id) {

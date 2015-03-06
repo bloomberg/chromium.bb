@@ -18,6 +18,7 @@ UserContext::UserContext(const UserContext& other)
       gaia_id_(other.gaia_id_),
       key_(other.key_),
       auth_code_(other.auth_code_),
+      refresh_token_(other.refresh_token_),
       user_id_hash_(other.user_id_hash_),
       is_using_oauth_(other.is_using_oauth_),
       auth_flow_(other.auth_flow_),
@@ -84,6 +85,10 @@ const std::string& UserContext::GetAuthCode() const {
   return auth_code_;
 }
 
+const std::string& UserContext::GetRefreshToken() const {
+  return refresh_token_;
+}
+
 const std::string& UserContext::GetUserIDHash() const {
   return user_id_hash_;
 }
@@ -129,6 +134,10 @@ void UserContext::SetAuthCode(const std::string& auth_code) {
   auth_code_ = auth_code;
 }
 
+void UserContext::SetRefreshToken(const std::string& refresh_token) {
+  refresh_token_ = refresh_token;
+}
+
 void UserContext::SetUserIDHash(const std::string& user_id_hash) {
   user_id_hash_ = user_id_hash;
 }
@@ -156,6 +165,7 @@ void UserContext::SetPublicSessionInputMethod(const std::string& input_method) {
 void UserContext::ClearSecrets() {
   key_.ClearSecret();
   auth_code_.clear();
+  refresh_token_.clear();
 }
 
 }  // namespace chromeos

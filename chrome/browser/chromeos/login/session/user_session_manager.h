@@ -223,6 +223,8 @@ class UserSessionManager
   // Removes a profile from the per-user input methods states map.
   void RemoveProfileForTesting(Profile* profile);
 
+  bool has_auth_cookies() const { return has_auth_cookies_; }
+
  private:
   friend class test::UserSessionManagerTestApi;
   friend struct DefaultSingletonTraits<UserSessionManager>;
@@ -388,9 +390,6 @@ class UserSessionManager
 
   // Sesion restore strategy.
   OAuth2LoginManager::SessionRestoreStrategy session_restore_strategy_;
-
-  // OAuth2 refresh token for session restore.
-  std::string oauth2_refresh_token_;
 
   // Set of user_id for those users that we should restore authentication
   // session when notified about online state change.

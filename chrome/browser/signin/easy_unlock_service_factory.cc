@@ -5,7 +5,6 @@
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -96,9 +95,12 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
     manifest_id = IDR_EASY_UNLOCK_MANIFEST;
   }
 
-  service->Initialize(
-      EasyUnlockAppManager::Create(extensions::ExtensionSystem::Get(context),
-                                   manifest_id, GetEasyUnlockAppPath()));
+  const base::FilePath app_path = app_path_for_testing_.empty()
+                                      ? GetEasyUnlockAppPath()
+                                      : app_path_for_testing_;
+
+  service->Initialize(EasyUnlockAppManager::Create(
+      extensions::ExtensionSystem::Get(context), manifest_id, app_path));
   return service;
 }
 

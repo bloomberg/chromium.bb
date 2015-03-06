@@ -19,6 +19,7 @@ class FakeSupervisedUserManager;
 
 FakeChromeUserManager::FakeChromeUserManager()
     : supervised_user_manager_(new FakeSupervisedUserManager),
+      bootstrap_manager_(NULL),
       multi_profile_user_controller_(NULL) {
 }
 
@@ -63,6 +64,10 @@ void FakeChromeUserManager::AddKioskAppUser(
 void FakeChromeUserManager::LoginUser(const std::string& email) {
   UserLoggedIn(email, ProfileHelper::GetUserIdHashByUserIdForTesting(email),
                false /* browser_restart */);
+}
+
+BootstrapManager* FakeChromeUserManager::GetBootstrapManager() {
+  return bootstrap_manager_;
 }
 
 MultiProfileUserController*

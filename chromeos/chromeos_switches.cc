@@ -98,6 +98,10 @@ const char kDisableWakeOnWifi[] = "disable-wake-on-wifi";
 const char kDisableNetworkPortalNotification[] =
     "disable-network-portal-notification";
 
+// EAFE url and path to use for Easy bootstrapping.
+const char kEafeUrl[] = "eafe-url";
+const char kEafePath[] = "eafe-path";
+
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[] = "enable-carrier-switching";
 

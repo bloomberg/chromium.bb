@@ -113,6 +113,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
                                     const std::string& email,
                                     const std::string& password,
                                     const std::string& auth_code);
+  void HandleCompleteAuthenticationAuthCodeOnly(const std::string& auth_code);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,
                            const std::string& password,
@@ -125,6 +126,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
   void HandleGaiaUIReady();
 
   void HandleSwitchToFullTab();
+  void HandleToggleEasyBootstrap();
 
   void HandleToggleWebviewSignin();
 
@@ -251,6 +253,9 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // True if user pressed shortcut to enable embedded signin.
   bool embedded_signin_enabled_by_shortcut_;
+
+  // True if Easy bootstrap is enabled.
+  bool use_easy_bootstrap_;
 
   // Non-owning ptr to SigninScreenHandler instance. Should not be used
   // in dtor.

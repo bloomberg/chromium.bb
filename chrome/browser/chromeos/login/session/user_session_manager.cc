@@ -1122,8 +1122,8 @@ void UserSessionManager::InitSessionRestoreStrategy() {
   // Are we in kiosk app mode?
   if (in_app_mode) {
     if (command_line->HasSwitch(::switches::kAppModeOAuth2Token)) {
-      oauth2_refresh_token_ = command_line->GetSwitchValueASCII(
-          ::switches::kAppModeOAuth2Token);
+      user_context_.SetRefreshToken(command_line->GetSwitchValueASCII(
+          ::switches::kAppModeOAuth2Token));
     }
 
     if (command_line->HasSwitch(::switches::kAppModeAuthCode)) {
@@ -1132,22 +1132,15 @@ void UserSessionManager::InitSessionRestoreStrategy() {
     }
 
     DCHECK(!has_auth_cookies_);
-    if (!user_context_.GetAuthCode().empty()) {
-      session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;
-    } else if (!oauth2_refresh_token_.empty()) {
-      session_restore_strategy_ =
-          OAuth2LoginManager::RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN;
-    } else {
-      session_restore_strategy_ =
-          OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
-    }
-    return;
   }
 
   if (has_auth_cookies_) {
     session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR;
   } else if (!user_context_.GetAuthCode().empty()) {
     session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;
+  } else if (!user_context_.GetRefreshToken().empty()) {
+    session_restore_strategy_ =
+        OAuth2LoginManager::RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN;
   } else {
     session_restore_strategy_ =
         OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
@@ -1193,7 +1186,7 @@ void UserSessionManager::RestoreAuthSessionImpl(
   }
 
   login_manager->RestoreSession(auth_request_context, session_restore_strategy_,
-                                oauth2_refresh_token_,
+                                user_context_.GetRefreshToken(),
                                 user_context_.GetAuthCode());
 }
 

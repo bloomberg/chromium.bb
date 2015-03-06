@@ -572,11 +572,17 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
                     [credentials.email,
                      credentials.password]);
       } else if (credentials.authCode) {
-        chrome.send('completeAuthentication',
-                    [credentials.gaiaId,
-                     credentials.email,
-                     credentials.password,
-                     credentials.authCode]);
+        if (credentials.hasOwnProperty('authCodeOnly') &&
+            credentials.authCodeOnly) {
+          chrome.send('completeAuthenticationAuthCodeOnly',
+                      [credentials.authCode]);
+        } else {
+          chrome.send('completeAuthentication',
+                      [credentials.gaiaId,
+                       credentials.email,
+                       credentials.password,
+                       credentials.authCode]);
+        }
       } else {
         chrome.send('completeLogin',
                     [credentials.gaiaId,

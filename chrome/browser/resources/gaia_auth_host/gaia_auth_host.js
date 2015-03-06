@@ -54,6 +54,8 @@ cr.define('cr.login', function() {
     'service',       // Name of Gaia service;
     'continueUrl',   // Continue url to use;
     'frameUrl',      // Initial frame URL to use. If empty defaults to gaiaUrl.
+    'useEafe',       // Whether to use EAFE.
+    'clientId',      // Chrome's client id.
     'constrained'    // Whether the extension is loaded in a constrained window;
   ];
 
@@ -359,6 +361,18 @@ cr.define('cr.login', function() {
                              chooseWhatToSync: msg.chooseWhatToSync,
                              skipForNow: msg.skipForNow || false,
                              sessionIndex: msg.sessionIndex || ''});
+        return;
+      }
+
+      if (msg.method == 'completeAuthenticationAuthCodeOnly') {
+        if (!msg.authCode) {
+          console.error(
+              'GaiaAuthHost: completeAuthentication without auth code.');
+          var msg = {method: 'redirectToSignin'};
+          this.frame_.contentWindow.postMessage(msg, AUTH_URL_BASE);
+          return;
+        }
+        this.onAuthSuccess_({authCodeOnly: true, authCode: msg.authCode});
         return;
       }
 

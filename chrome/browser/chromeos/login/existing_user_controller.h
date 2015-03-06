@@ -35,6 +35,7 @@ class ListValue;
 
 namespace chromeos {
 
+class BootstrapUserContextInitializer;
 class CrosSettings;
 class LoginDisplayHost;
 
@@ -233,6 +234,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void DoLogin(const UserContext& user_context,
                const SigninSpecifics& specifics);
 
+  // Callback invoked when |bootstrap_user_context_initializer_| has finished.
+  void OnBootstrapUserContextInitialized(bool success,
+                                         const UserContext& user_context);
+
   // Public session auto-login timer.
   scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;
 
@@ -316,6 +321,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
       local_account_auto_login_id_subscription_;
   scoped_ptr<CrosSettings::ObserverSubscription>
       local_account_auto_login_delay_subscription_;
+
+  scoped_ptr<BootstrapUserContextInitializer>
+      bootstrap_user_context_initializer_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 

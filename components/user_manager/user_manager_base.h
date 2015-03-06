@@ -106,6 +106,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   virtual void SetIsCurrentUserNew(bool is_new);
 
+  // TODO(xiyuan): Figure out a better way to expose this info.
+  virtual bool HasPendingBootstrap(const std::string& user_id) const;
+
   // Helper function that copies users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are
   // skipped.

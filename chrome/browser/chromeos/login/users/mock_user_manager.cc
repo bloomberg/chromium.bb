@@ -72,6 +72,10 @@ const user_manager::User* MockUserManager::GetPrimaryUser() const {
   return GetLoggedInUser();
 }
 
+BootstrapManager* MockUserManager::GetBootstrapManager() {
+  return NULL;
+}
+
 MultiProfileUserController* MockUserManager::GetMultiProfileUserController() {
   return NULL;
 }
