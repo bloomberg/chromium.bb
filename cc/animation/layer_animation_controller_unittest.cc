@@ -171,40 +171,43 @@ TEST(LayerAnimationControllerTest, Activation) {
 
   controller->SetAnimationRegistrar(registrar.get());
   controller_impl->SetAnimationRegistrar(registrar_impl.get());
-  EXPECT_EQ(1u, registrar->all_animation_controllers().size());
-  EXPECT_EQ(1u, registrar_impl->all_animation_controllers().size());
+  EXPECT_EQ(1u, registrar->all_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, registrar_impl->all_animation_controllers_for_testing().size());
 
   // Initially, both controllers should be inactive.
-  EXPECT_EQ(0u, registrar->active_animation_controllers().size());
-  EXPECT_EQ(0u, registrar_impl->active_animation_controllers().size());
+  EXPECT_EQ(0u, registrar->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(0u,
+            registrar_impl->active_animation_controllers_for_testing().size());
 
   AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
   // The main thread controller should now be active.
-  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
+  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
   // Both controllers should now be active.
-  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
-  EXPECT_EQ(1u, registrar_impl->active_animation_controllers().size());
+  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u,
+            registrar_impl->active_animation_controllers_for_testing().size());
 
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(1u, events->size());
   controller->NotifyAnimationStarted((*events)[0]);
 
-  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
-  EXPECT_EQ(1u, registrar_impl->active_animation_controllers().size());
+  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u,
+            registrar_impl->active_animation_controllers_for_testing().size());
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   controller->UpdateState(true, nullptr);
-  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
+  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   controller->UpdateState(true, nullptr);
   EXPECT_EQ(Animation::FINISHED,
             controller->GetAnimation(Animation::OPACITY)->run_state());
-  EXPECT_EQ(1u, registrar->active_animation_controllers().size());
+  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
 
   events.reset(new AnimationEventsVector);
   controller_impl->Animate(kInitialTickTime +
@@ -214,7 +217,8 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(Animation::WAITING_FOR_DELETION,
             controller_impl->GetAnimation(Animation::OPACITY)->run_state());
   // The impl thread controller should have de-activated.
-  EXPECT_EQ(0u, registrar_impl->active_animation_controllers().size());
+  EXPECT_EQ(0u,
+            registrar_impl->active_animation_controllers_for_testing().size());
 
   EXPECT_EQ(1u, events->size());
   controller->NotifyAnimationFinished((*events)[0]);
@@ -224,14 +228,15 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(Animation::WAITING_FOR_DELETION,
             controller->GetAnimation(Animation::OPACITY)->run_state());
   // The main thread controller should have de-activated.
-  EXPECT_EQ(0u, registrar->active_animation_controllers().size());
+  EXPECT_EQ(0u, registrar->active_animation_controllers_for_testing().size());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
   EXPECT_FALSE(controller->has_any_animation());
   EXPECT_FALSE(controller_impl->has_any_animation());
-  EXPECT_EQ(0u, registrar->active_animation_controllers().size());
-  EXPECT_EQ(0u, registrar_impl->active_animation_controllers().size());
+  EXPECT_EQ(0u, registrar->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(0u,
+            registrar_impl->active_animation_controllers_for_testing().size());
 
   controller->SetAnimationRegistrar(nullptr);
   controller_impl->SetAnimationRegistrar(nullptr);

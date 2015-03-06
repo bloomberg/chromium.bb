@@ -547,34 +547,7 @@ void LayerTreeHost::SetNextCommitForcesRedraw() {
 void LayerTreeHost::SetAnimationEvents(
     scoped_ptr<AnimationEventsVector> events) {
   DCHECK(proxy_->IsMainThread());
-  for (size_t event_index = 0; event_index < events->size(); ++event_index) {
-    int event_layer_id = (*events)[event_index].layer_id;
-
-    // Use the map of all controllers, not just active ones, since non-active
-    // controllers may still receive events for impl-only animations.
-    const AnimationRegistrar::AnimationControllerMap& animation_controllers =
-        animation_registrar_->all_animation_controllers();
-    auto iter = animation_controllers.find(event_layer_id);
-    if (iter != animation_controllers.end()) {
-      switch ((*events)[event_index].type) {
-        case AnimationEvent::STARTED:
-          (*iter).second->NotifyAnimationStarted((*events)[event_index]);
-          break;
-
-        case AnimationEvent::FINISHED:
-          (*iter).second->NotifyAnimationFinished((*events)[event_index]);
-          break;
-
-        case AnimationEvent::ABORTED:
-          (*iter).second->NotifyAnimationAborted((*events)[event_index]);
-          break;
-
-        case AnimationEvent::PROPERTY_UPDATE:
-          (*iter).second->NotifyAnimationPropertyUpdate((*events)[event_index]);
-          break;
-      }
-    }
-  }
+  animation_registrar_->SetAnimationEvents(events.Pass());
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
@@ -1178,19 +1151,11 @@ void LayerTreeHost::AsValueInto(base::trace_event::TracedValue* state) const {
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
-  if (!settings_.accelerated_animation_enabled ||
-      animation_registrar_->active_animation_controllers().empty())
+  if (!settings_.accelerated_animation_enabled)
     return;
 
-  TRACE_EVENT0("cc", "LayerTreeHost::AnimateLayers");
-
-  AnimationRegistrar::AnimationControllerMap active_controllers_copy =
-      animation_registrar_->active_animation_controllers();
-  for (auto& it : active_controllers_copy) {
-    it.second->Animate(monotonic_time);
-    bool start_ready_animations = true;
-    it.second->UpdateState(start_ready_animations, NULL);
-  }
+  if (animation_registrar_->AnimateLayers(monotonic_time))
+    animation_registrar_->UpdateAnimationState(true, NULL);
 }
 
 UIResourceId LayerTreeHost::CreateUIResource(UIResourceClient* client) {

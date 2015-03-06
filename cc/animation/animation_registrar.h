@@ -8,6 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -43,11 +44,12 @@ class CC_EXPORT AnimationRegistrar {
   // Unregisters the given controller as alive.
   void UnregisterAnimationController(LayerAnimationController* controller);
 
-  const AnimationControllerMap& active_animation_controllers() const {
+  const AnimationControllerMap& active_animation_controllers_for_testing()
+      const {
     return active_animation_controllers_;
   }
 
-  const AnimationControllerMap& all_animation_controllers() const {
+  const AnimationControllerMap& all_animation_controllers_for_testing() const {
     return all_animation_controllers_;
   }
 
@@ -56,6 +58,21 @@ class CC_EXPORT AnimationRegistrar {
   }
 
   bool supports_scroll_animations() { return supports_scroll_animations_; }
+
+  bool needs_animate_layers() const {
+    return !active_animation_controllers_.empty();
+  }
+
+  bool ActivateAnimations();
+  bool AnimateLayers(base::TimeTicks monotonic_time);
+  bool UpdateAnimationState(bool start_ready_animations,
+                            AnimationEventsVector* events);
+
+  scoped_ptr<AnimationEventsVector> CreateEvents() {
+    return make_scoped_ptr(new AnimationEventsVector());
+  }
+
+  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events);
 
  private:
   AnimationRegistrar();

@@ -1533,7 +1533,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     bool disable_picture_quad_image_filtering =
-        IsActivelyScrolling() || needs_animate_layers();
+        IsActivelyScrolling() || animation_registrar_->needs_animate_layers();
 
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_.renderer_settings,
@@ -3124,52 +3124,35 @@ void LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks monotonic_time) {
 }
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
-  if (!settings_.accelerated_animation_enabled ||
-      !needs_animate_layers() ||
-      !active_tree_->root_layer())
+  if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
     return;
 
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::AnimateLayers");
-  AnimationRegistrar::AnimationControllerMap controllers_copy =
-      animation_registrar_->active_animation_controllers();
-  for (auto& it : controllers_copy)
-    it.second->Animate(monotonic_time);
-
-  SetNeedsAnimate();
+  if (animation_registrar_->AnimateLayers(monotonic_time))
+    SetNeedsAnimate();
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
-  if (!settings_.accelerated_animation_enabled || !needs_animate_layers() ||
-      !active_tree_->root_layer())
+  if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
     return;
 
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::UpdateAnimationState");
   scoped_ptr<AnimationEventsVector> events =
-      make_scoped_ptr(new AnimationEventsVector);
-  AnimationRegistrar::AnimationControllerMap active_controllers_copy =
-      animation_registrar_->active_animation_controllers();
-  for (auto& it : active_controllers_copy)
-    it.second->UpdateState(start_ready_animations, events.get());
+      animation_registrar_->CreateEvents();
+  const bool has_active_animations = animation_registrar_->UpdateAnimationState(
+      start_ready_animations, events.get());
 
-  if (!events->empty()) {
+  if (!events->empty())
     client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass());
-  }
 
-  SetNeedsAnimate();
+  if (has_active_animations)
+    SetNeedsAnimate();
 }
 
 void LayerTreeHostImpl::ActivateAnimations() {
-  if (!settings_.accelerated_animation_enabled || !needs_animate_layers() ||
-      !active_tree_->root_layer())
+  if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
     return;
 
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::ActivateAnimations");
-  AnimationRegistrar::AnimationControllerMap active_controllers_copy =
-      animation_registrar_->active_animation_controllers();
-  for (auto& it : active_controllers_copy)
-    it.second->ActivateAnimations();
-
-  SetNeedsAnimate();
+  if (animation_registrar_->ActivateAnimations())
+    SetNeedsAnimate();
 }
 
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {

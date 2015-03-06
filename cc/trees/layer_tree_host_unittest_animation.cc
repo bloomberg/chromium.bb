@@ -196,7 +196,7 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
   void AnimateLayers(LayerTreeHostImpl* host_impl,
                      base::TimeTicks monotonic_time) override {
     bool have_animations = !host_impl->animation_registrar()
-                                ->active_animation_controllers()
+                                ->active_animation_controllers_for_testing()
                                 .empty();
     if (!started_animating_ && have_animations) {
       started_animating_ = true;
@@ -1243,7 +1243,8 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     // start times.
     num_swap_buffers_++;
     AnimationRegistrar::AnimationControllerMap controllers_copy =
-        host_impl->animation_registrar()->active_animation_controllers();
+        host_impl->animation_registrar()
+            ->active_animation_controllers_for_testing();
     if (controllers_copy.size() == 2u) {
       EndTest();
       EXPECT_GE(num_swap_buffers_, 3);

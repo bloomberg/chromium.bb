@@ -350,7 +350,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
     for (const auto& it :
-         animation_registrar()->active_animation_controllers()) {
+         animation_registrar()->active_animation_controllers_for_testing()) {
       if (it.second->HasActiveAnimation()) {
         has_unfinished_animation = true;
         break;

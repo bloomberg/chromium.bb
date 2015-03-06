@@ -380,10 +380,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   scoped_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
 
-  bool needs_animate_layers() const {
-    return !animation_registrar_->active_animation_controllers().empty();
-  }
-
   void set_max_memory_needed_bytes(size_t bytes) {
     max_memory_needed_bytes_ = bytes;
   }
