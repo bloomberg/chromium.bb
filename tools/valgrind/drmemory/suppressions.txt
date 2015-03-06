@@ -743,14 +743,6 @@ drmemorylib.dll!replace_operator_delete
 *!content::ContentMain
 *!content::LaunchTests
 
-UNINITIALIZED READ
-name=http://crbug.com/463204
-skia.dll!_ltod3
-skia.dll!SkPaint::measure_text
-skia.dll!SkPaint::measureText
-content.dll!content::DoPreSandboxWarmupForTypeface
-content.dll!content::`anonymous namespace'::WarmupDirectWrite
-
 UNADDRESSABLE ACCESS
 name=http://crbug.com/463261
 ...
