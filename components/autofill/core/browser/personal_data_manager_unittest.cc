@@ -25,6 +25,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -124,6 +125,7 @@ class PersonalDataManagerTest : public testing::Test {
 
   void EnableWalletCardImport() {
     prefs_->SetBoolean(prefs::kAutofillWalletSyncExperimentEnabled, true);
+    prefs_->SetString(::prefs::kGoogleServicesUsername, "syncuser@example.com");
   }
 
   // The temporary directory should be deleted at the end to ensure that

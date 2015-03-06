@@ -1,6 +1,7 @@
 include_rules = [
   "+components/infobars/core",
   "+components/keyed_service/core",
+  "+components/signin/core/common",
   "+components/webdata/common",
   "+components/webdata_services",
   "+crypto/random.h",

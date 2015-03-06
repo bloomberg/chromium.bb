@@ -101,6 +101,7 @@
         'keyed_service_core',
         'os_crypt',
         'pref_registry',
+        'signin_core_common',
         'webdata_common',
       ],
       'sources': [

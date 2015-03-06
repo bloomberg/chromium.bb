@@ -24,6 +24,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "components/webdata/common/web_data_results.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -270,6 +271,8 @@ class AutofillMetricsTest : public testing::Test {
   void TearDown() override;
 
  protected:
+  void EnableWalletSync();
+
   base::MessageLoop message_loop_;
   TestAutofillClient autofill_client_;
   scoped_ptr<TestAutofillDriver> autofill_driver_;
@@ -309,6 +312,13 @@ void AutofillMetricsTest::TearDown() {
   autofill_manager_.reset();
   autofill_driver_.reset();
   personal_data_.reset();
+}
+
+void AutofillMetricsTest::EnableWalletSync() {
+  autofill_client_.GetPrefs()->SetBoolean(
+      prefs::kAutofillWalletSyncExperimentEnabled, true);
+  autofill_client_.GetPrefs()->SetString(
+      ::prefs::kGoogleServicesUsername, "syncuser@example.com");
 }
 
 // Test that we log quality metrics appropriately.
@@ -1049,8 +1059,7 @@ TEST_F(AutofillMetricsTest, CreditCardShownFormEvents) {
 
 // Test that we log selected form event for credit cards.
 TEST_F(AutofillMetricsTest, CreditCardSelectedFormEvents) {
-  autofill_client_.GetPrefs()->SetBoolean(
-      prefs::kAutofillWalletSyncExperimentEnabled, true);
+  EnableWalletSync();
   // Creating all kinds of cards.
   personal_data_->RecreateCreditCards(
       true /* include_local_credit_card */,
@@ -1253,8 +1262,7 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
 
 // Test that we log submitted form events for credit cards.
 TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
-  autofill_client_.GetPrefs()->SetBoolean(
-      prefs::kAutofillWalletSyncExperimentEnabled, true);
+  EnableWalletSync();
   // Creating all kinds of cards.
   personal_data_->RecreateCreditCards(
       true /* include_local_credit_card */,
@@ -1468,6 +1476,7 @@ TEST_F(AutofillMetricsTest, AddressInteractedFormEvents) {
 
 // Test that we log suggestion shown form events for address.
 TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
+  EnableWalletSync();
   // Creating all kinds of profiles.
   personal_data_->RecreateProfiles(true /* include_local_profile */,
                                    true /* include_server_profile */);
@@ -1543,8 +1552,7 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
 
 // Test that we log filled form events for address.
 TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
-  autofill_client_.GetPrefs()->SetBoolean(
-      prefs::kAutofillWalletSyncExperimentEnabled, true);
+  EnableWalletSync();
   // Creating all kinds of profiles.
   personal_data_->RecreateProfiles(true /* include_local_profile */,
                                    true /* include_server_profile */);
@@ -1637,8 +1645,7 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
 
 // Test that we log submitted form events for address.
 TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
-  autofill_client_.GetPrefs()->SetBoolean(
-      prefs::kAutofillWalletSyncExperimentEnabled, true);
+  EnableWalletSync();
   // Creating all kinds of profiles.
   personal_data_->RecreateProfiles(true /* include_local_profile */,
                                    true /* include_server_profile */);
@@ -1761,8 +1768,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
 
 // Test that we log interacted form event for credit cards only once.
 TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
-  autofill_client_.GetPrefs()->SetBoolean(
-      prefs::kAutofillWalletSyncExperimentEnabled, true);
+  EnableWalletSync();
 
   // Set up our form data.
   FormData form;
@@ -1876,8 +1882,7 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
 
 // Test that we log interacted form event for address only once.
 TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
-  autofill_client_.GetPrefs()->SetBoolean(
-      prefs::kAutofillWalletSyncExperimentEnabled, true);
+  EnableWalletSync();
 
   // Set up our form data.
   FormData form;

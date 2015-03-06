@@ -18,6 +18,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/common/signin_pref_names.h"
 
 using base::ASCIIToUTF16;
 
@@ -34,6 +35,12 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable());
   AutofillManager::RegisterProfilePrefs(registry.get());
+
+  // PDM depends on this pref, which is normally registered in
+  // SigninManagerFactory.
+  registry->RegisterStringPref(
+      ::prefs::kGoogleServicesUsername, std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   base::PrefServiceFactory factory;
   factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));
   return factory.Create(registry.get());

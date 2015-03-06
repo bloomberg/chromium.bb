@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 
@@ -193,8 +194,8 @@ bool MatchesInput(const base::string16& profile_value,
 // |*dest|. The pending handle is the address of the pending handle
 // corresponding to this request type. This function is used to save both
 // server and local profiles and credit cards.
-template<typename ValueType>
-void ReceiveLoadedDBvalues(WebDataServiceBase::Handle h,
+template <typename ValueType>
+void ReceiveLoadedDbValues(WebDataServiceBase::Handle h,
                            const WDTypedResult* result,
                            WebDataServiceBase::Handle* pending_handle,
                            ScopedVector<ValueType>* dest) {
@@ -289,20 +290,28 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   switch (result->GetType()) {
     case AUTOFILL_PROFILES_RESULT:
       if (h == pending_profiles_query_) {
-        ReceiveLoadedDBvalues(h, result, &pending_profiles_query_,
+        ReceiveLoadedDbValues(h, result, &pending_profiles_query_,
                               &web_profiles_);
         LogProfileCount();  // This only logs local profiles.
       } else {
-        ReceiveLoadedDBvalues(h, result, &pending_server_profiles_query_,
+        ReceiveLoadedDbValues(h, result, &pending_server_profiles_query_,
                               &server_profiles_);
+
+        if (!server_profiles_.empty()) {
+          base::string16 email = base::UTF8ToUTF16(
+              pref_service_->GetString(::prefs::kGoogleServicesUsername));
+          DCHECK(!email.empty());
+          for (AutofillProfile* profile : server_profiles_)
+            profile->SetRawInfo(EMAIL_ADDRESS, email);
+        }
       }
       break;
     case AUTOFILL_CREDITCARDS_RESULT:
       if (h == pending_creditcards_query_) {
-        ReceiveLoadedDBvalues(h, result, &pending_creditcards_query_,
+        ReceiveLoadedDbValues(h, result, &pending_creditcards_query_,
                               &local_credit_cards_);
       } else {
-        ReceiveLoadedDBvalues(h, result, &pending_server_creditcards_query_,
+        ReceiveLoadedDbValues(h, result, &pending_server_creditcards_query_,
                               &server_credit_cards_);
       }
       break;

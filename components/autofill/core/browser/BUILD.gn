@@ -158,6 +158,7 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/resources",
+    "//components/signin/core/common",
     "//components/strings",
     "//components/webdata/common",
     "//google_apis",
