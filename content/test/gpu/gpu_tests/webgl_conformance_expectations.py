@@ -54,14 +54,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia'], bug=459265)
 
     # Win / AMD failures
+    # TODO(jmadill): only fail on D3D9 with ANGLE bug ID 839
     self.Fail('conformance/textures/texparameter-test.html',
-        ['win', 'amd', 'd3d9'], bug=839) # angle bug ID
+        ['win', 'amd'], bug=454906)
 
     # Win / D3D9 failures
+    # TODO(jmadill): only fail on D3D9 with ANGLE bug ID 896
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
-        ['win', 'd3d9'], bug=896) # angle bug ID
+        ['win'], bug=454906)
     self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
-        ['win', 'd3d9'], bug=896) # angle bug ID
+        ['win'], bug=454906)
 
     # Mac / Intel failures
     # Radar 13499466
