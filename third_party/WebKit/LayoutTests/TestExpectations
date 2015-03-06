@@ -129,7 +129,7 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 
 crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
-crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-self-and-other-referencing.html [ Crash ImageOnlyFailure ]
+crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-self-and-other-referencing.html [ Crash ImageOnlyFailure Timeout ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure Crash ]
 
 # Disable fast/preloader tests until https://codereview.chromium.org/673603002/ lands
