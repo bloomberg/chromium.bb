@@ -894,6 +894,12 @@ const char kEnableWebRtcHWH264Encoding[]    = "enable-webrtc-hw-h264-encoding";
 // Override the maximum framerate as can be specified in calls to getUserMedia.
 // This flag expects a value.  Example: --max-gum-fps=17.5
 const char kWebRtcMaxCaptureFramerate[]     = "max-gum-fps";
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+// Enables Video Capture Device captured data uploaded to Texture for zero-copy
+// capture pipeline.
+const char kEnableWebRtcCaptureToTexture[] = "enable-webrtc-capture-to-texture";
+#endif
 #endif
 
 #if defined(OS_ANDROID)

@@ -269,6 +269,7 @@ void VideoCaptureHost::OnStartCapture(int device_id,
 void VideoCaptureHost::OnControllerAdded(
     int device_id,
     const base::WeakPtr<VideoCaptureController>& controller) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,

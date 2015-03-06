@@ -19,13 +19,6 @@
 //     it possible for the Manager to delete the Controller and its Device when
 //     there are no clients left.
 //
-// A helper class, VCC::VideoCaptureDeviceClient, is responsible for:
-//
-//   * Conveying events from the device thread (where VideoCaptureDevices live)
-//     the IO thread (where the VideoCaptureController lives).
-//   * Performing some image transformations on the output of the Device;
-//     specifically, colorspace conversion and rotation.
-//
 // Interactions between VideoCaptureController and other classes:
 //
 //   * VideoCaptureController indirectly observes a VideoCaptureDevice
@@ -54,7 +47,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
@@ -74,11 +66,14 @@ class CONTENT_EXPORT VideoCaptureController {
   explicit VideoCaptureController(int max_buffers);
   virtual ~VideoCaptureController();
 
-  base::WeakPtr<VideoCaptureController> GetWeakPtr();
+  base::WeakPtr<VideoCaptureController> GetWeakPtrForIOThread();
 
   // Return a new VideoCaptureDeviceClient to forward capture events to this
-  // instance.
-  scoped_ptr<media::VideoCaptureDevice::Client> NewDeviceClient();
+  // instance. Some device clients need to allocate resources for the given
+  // capture |format| and/or work on Capture Thread (|capture_task_runner|).
+  scoped_ptr<media::VideoCaptureDevice::Client> NewDeviceClient(
+      const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner,
+      const media::VideoCaptureFormat& format);
 
   // Start video capturing and try to use the resolution specified in |params|.
   // Buffers will be shared to the client as necessary. The client will continue
@@ -124,20 +119,18 @@ class CONTENT_EXPORT VideoCaptureController {
 
   bool has_received_frames() const { return has_received_frames_; }
 
- private:
-  class VideoCaptureDeviceClient;
-
-  struct ControllerClient;
-  typedef std::list<ControllerClient*> ControllerClients;
-
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
   void DoIncomingCapturedVideoFrameOnIOThread(
       const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp);
   void DoErrorOnIOThread();
-  void DoDeviceStoppedOnIOThread();
+  void DoLogOnIOThread(const std::string& message);
   void DoBufferDestroyedOnIOThread(int buffer_id_to_drop);
+
+ private:
+  struct ControllerClient;
+  typedef std::list<ControllerClient*> ControllerClients;
 
   // Find a client of |id| and |handler| in |clients|.
   ControllerClient* FindClient(const VideoCaptureControllerID& id,

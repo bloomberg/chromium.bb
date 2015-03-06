@@ -119,7 +119,9 @@ class VideoCaptureControllerTest : public testing::Test {
 
   void SetUp() override {
     controller_.reset(new VideoCaptureController(kPoolSize));
-    device_ = controller_->NewDeviceClient().Pass();
+    device_ = controller_->NewDeviceClient(
+        base::MessageLoopProxy::current(),
+        controller_->GetVideoCaptureFormat());
     client_a_.reset(new MockVideoCaptureControllerEventHandler(
         controller_.get()));
     client_b_.reset(new MockVideoCaptureControllerEventHandler(

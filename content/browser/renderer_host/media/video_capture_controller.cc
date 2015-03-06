@@ -8,26 +8,30 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
+#include "content/browser/renderer_host/media/video_capture_device_client.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_util.h"
-#include "media/base/yuv_convert.h"
-#include "third_party/libyuv/include/libyuv.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/compositor/image_transport_factory.h"
 #endif
 
+#if defined(ENABLE_WEBRTC) && (defined(OS_LINUX) || defined(OS_MACOSX))
+#include "content/browser/renderer_host/media/video_capture_texture_wrapper.h"
+#endif
+
 using media::VideoCaptureFormat;
+using media::VideoFrame;
 
 namespace content {
 
@@ -40,34 +44,7 @@ static const int kInfiniteRatio = 99999;
         name, \
         (height) ? ((width) * 100) / (height) : kInfiniteRatio);
 
-// Class combining a Client::Buffer interface implementation and a pool buffer
-// implementation to guarantee proper cleanup on destruction on our side.
-class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
- public:
-  AutoReleaseBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
-                    int buffer_id,
-                    void* data,
-                    size_t size)
-      : pool_(pool),
-        id_(buffer_id),
-        data_(data),
-        size_(size) {
-    DCHECK(pool_.get());
-  }
-  int id() const override { return id_; }
-  void* data() const override { return data_; }
-  size_t size() const override { return size_; }
-
- private:
-  ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
-
-  const scoped_refptr<VideoCaptureBufferPool> pool_;
-  const int id_;
-  void* const data_;
-  const size_t size_;
-};
-
-class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
+class SyncPointClientImpl : public VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(GLHelper* gl_helper) : gl_helper_(gl_helper) {}
   ~SyncPointClientImpl() override {}
@@ -80,7 +57,7 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
   GLHelper* gl_helper_;
 };
 
-void ReturnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+void ReturnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
                       uint32 sync_point) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_ANDROID)
@@ -129,7 +106,7 @@ struct VideoCaptureController::ControllerClient {
 
   // Buffers currently held by this client, and syncpoint callback to call when
   // they are returned from the client.
-  typedef std::map<int, scoped_refptr<media::VideoFrame> > ActiveBufferMap;
+  typedef std::map<int, scoped_refptr<VideoFrame>> ActiveBufferMap;
   ActiveBufferMap active_buffers;
 
   // State of capture session, controlled by VideoCaptureManager directly. This
@@ -149,73 +126,36 @@ struct VideoCaptureController::ControllerClient {
   bool paused;
 };
 
-// Receives events from the VideoCaptureDevice and posts them to a
-// VideoCaptureController on the IO thread. An instance of this class may safely
-// outlive its target VideoCaptureController.
-//
-// Methods of this class may be called from any thread, and in practice will
-// often be called on some auxiliary thread depending on the platform and the
-// device type; including, for example, the DirectShow thread on Windows, the
-// v4l2_thread on Linux, and the UI thread for tab capture.
-class VideoCaptureController::VideoCaptureDeviceClient
-    : public media::VideoCaptureDevice::Client {
- public:
-  explicit VideoCaptureDeviceClient(
-      const base::WeakPtr<VideoCaptureController>& controller,
-      const scoped_refptr<VideoCaptureBufferPool>& buffer_pool);
-  ~VideoCaptureDeviceClient() override;
-
-  // VideoCaptureDevice::Client implementation.
-  void OnIncomingCapturedData(const uint8* data,
-                              int length,
-                              const VideoCaptureFormat& frame_format,
-                              int rotation,
-                              const base::TimeTicks& timestamp) override;
-  scoped_refptr<Buffer> ReserveOutputBuffer(media::VideoFrame::Format format,
-                                            const gfx::Size& size) override;
-  void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<Buffer>& buffer,
-      const scoped_refptr<media::VideoFrame>& frame,
-      const base::TimeTicks& timestamp) override;
-  void OnError(const std::string& reason) override;
-  void OnLog(const std::string& message) override;
-
- private:
-  // The controller to which we post events.
-  const base::WeakPtr<VideoCaptureController> controller_;
-
-  // The pool of shared-memory buffers used for capturing.
-  const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
-
-  media::VideoPixelFormat last_captured_pixel_format_;
-};
-
 VideoCaptureController::VideoCaptureController(int max_buffers)
     : buffer_pool_(new VideoCaptureBufferPool(max_buffers)),
       state_(VIDEO_CAPTURE_STATE_STARTED),
       has_received_frames_(false),
       weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-VideoCaptureController::VideoCaptureDeviceClient::VideoCaptureDeviceClient(
-    const base::WeakPtr<VideoCaptureController>& controller,
-    const scoped_refptr<VideoCaptureBufferPool>& buffer_pool)
-    : controller_(controller),
-      buffer_pool_(buffer_pool),
-      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {
-}
-
-VideoCaptureController::VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {}
-
-base::WeakPtr<VideoCaptureController> VideoCaptureController::GetWeakPtr() {
+base::WeakPtr<VideoCaptureController>
+VideoCaptureController::GetWeakPtrForIOThread() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
 scoped_ptr<media::VideoCaptureDevice::Client>
-VideoCaptureController::NewDeviceClient() {
-  scoped_ptr<media::VideoCaptureDevice::Client> result(
-      new VideoCaptureDeviceClient(this->GetWeakPtr(), buffer_pool_));
-  return result.Pass();
+VideoCaptureController::NewDeviceClient(
+    const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner,
+    const media::VideoCaptureFormat& format) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+#if defined(ENABLE_WEBRTC) && (defined(OS_LINUX) || defined(OS_MACOSX))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcCaptureToTexture)) {
+    return make_scoped_ptr(new VideoCaptureTextureWrapper(
+        this->GetWeakPtrForIOThread(), buffer_pool_, capture_task_runner,
+        format));
+    DVLOG(1) << "TextureWrapper, format " << format.ToString();
+  }
+#endif
+  return make_scoped_ptr(
+      new VideoCaptureDeviceClient(this->GetWeakPtrForIOThread(),
+                                   buffer_pool_));
 }
 
 void VideoCaptureController::AddClient(
@@ -326,7 +266,7 @@ void VideoCaptureController::ReturnBuffer(
     NOTREACHED();
     return;
   }
-  scoped_refptr<media::VideoFrame> frame = iter->second;
+  scoped_refptr<VideoFrame> frame = iter->second;
   client->active_buffers.erase(iter);
   buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
 
@@ -345,256 +285,6 @@ VideoCaptureController::GetVideoCaptureFormat() const {
   return video_capture_format_;
 }
 
-scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
-VideoCaptureController::VideoCaptureDeviceClient::ReserveOutputBuffer(
-    media::VideoFrame::Format format,
-    const gfx::Size& dimensions) {
-  size_t frame_bytes = 0;
-  if (format == media::VideoFrame::NATIVE_TEXTURE) {
-    DCHECK_EQ(dimensions.width(), 0);
-    DCHECK_EQ(dimensions.height(), 0);
-  } else {
-    // The capture pipeline expects I420 for now.
-    DCHECK_EQ(format, media::VideoFrame::I420)
-        << " Non-I420 output buffer format " << format << " requested";
-    frame_bytes = media::VideoFrame::AllocationSize(format, dimensions);
-  }
-
-  int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
-  int buffer_id =
-      buffer_pool_->ReserveForProducer(frame_bytes, &buffer_id_to_drop);
-  if (buffer_id == VideoCaptureBufferPool::kInvalidId)
-    return NULL;
-  void* data;
-  size_t size;
-  buffer_pool_->GetBufferInfo(buffer_id, &data, &size);
-
-  scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
-      new AutoReleaseBuffer(buffer_pool_, buffer_id, data, size));
-
-  if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId) {
-    BrowserThread::PostTask(BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&VideoCaptureController::DoBufferDestroyedOnIOThread,
-                   controller_, buffer_id_to_drop));
-  }
-
-  return output_buffer;
-}
-
-void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
-    const uint8* data,
-    int length,
-    const VideoCaptureFormat& frame_format,
-    int rotation,
-    const base::TimeTicks& timestamp) {
-  TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedData");
-
-  if (last_captured_pixel_format_ != frame_format.pixel_format) {
-    OnLog("Pixel format: " + media::VideoCaptureFormat::PixelFormatToString(
-                                 frame_format.pixel_format));
-    last_captured_pixel_format_ = frame_format.pixel_format;
-  }
-
-  if (!frame_format.IsValid())
-    return;
-
-  // Chopped pixels in width/height in case video capture device has odd
-  // numbers for width/height.
-  int chopped_width = 0;
-  int chopped_height = 0;
-  int new_unrotated_width = frame_format.frame_size.width();
-  int new_unrotated_height = frame_format.frame_size.height();
-
-  if (new_unrotated_width & 1) {
-    --new_unrotated_width;
-    chopped_width = 1;
-  }
-  if (new_unrotated_height & 1) {
-    --new_unrotated_height;
-    chopped_height = 1;
-  }
-
-  int destination_width = new_unrotated_width;
-  int destination_height = new_unrotated_height;
-  if (rotation == 90 || rotation == 270) {
-    destination_width = new_unrotated_height;
-    destination_height = new_unrotated_width;
-  }
-  const gfx::Size dimensions(destination_width, destination_height);
-  if (!media::VideoFrame::IsValidConfig(media::VideoFrame::I420,
-                                        dimensions,
-                                        gfx::Rect(dimensions),
-                                        dimensions)) {
-    return;
-  }
-
-  scoped_refptr<Buffer> buffer = ReserveOutputBuffer(media::VideoFrame::I420,
-                                                     dimensions);
-  if (!buffer.get())
-    return;
-  uint8* yplane = NULL;
-  bool flip = false;
-  yplane = reinterpret_cast<uint8*>(buffer->data());
-  uint8* uplane =
-      yplane +
-      media::VideoFrame::PlaneAllocationSize(
-          media::VideoFrame::I420, media::VideoFrame::kYPlane, dimensions);
-  uint8* vplane =
-      uplane +
-      media::VideoFrame::PlaneAllocationSize(
-          media::VideoFrame::I420, media::VideoFrame::kUPlane, dimensions);
-  int yplane_stride = dimensions.width();
-  int uv_plane_stride = yplane_stride / 2;
-  int crop_x = 0;
-  int crop_y = 0;
-  libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
-
-  libyuv::RotationMode rotation_mode = libyuv::kRotate0;
-  if (rotation == 90)
-    rotation_mode = libyuv::kRotate90;
-  else if (rotation == 180)
-    rotation_mode = libyuv::kRotate180;
-  else if (rotation == 270)
-    rotation_mode = libyuv::kRotate270;
-
-  switch (frame_format.pixel_format) {
-    case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
-      break;
-    case media::PIXEL_FORMAT_I420:
-      DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_I420;
-      break;
-    case media::PIXEL_FORMAT_YV12:
-      DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_YV12;
-      break;
-    case media::PIXEL_FORMAT_NV12:
-      DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_NV12;
-      break;
-    case media::PIXEL_FORMAT_NV21:
-      DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_NV21;
-      break;
-    case media::PIXEL_FORMAT_YUY2:
-      DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_YUY2;
-      break;
-    case media::PIXEL_FORMAT_UYVY:
-      DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_UYVY;
-      break;
-    case media::PIXEL_FORMAT_RGB24:
-      origin_colorspace = libyuv::FOURCC_24BG;
-#if defined(OS_WIN)
-      // TODO(wjia): Currently, for RGB24 on WIN, capture device always
-      // passes in positive src_width and src_height. Remove this hardcoded
-      // value when nagative src_height is supported. The negative src_height
-      // indicates that vertical flipping is needed.
-      flip = true;
-#endif
-      break;
-    case media::PIXEL_FORMAT_ARGB:
-      origin_colorspace = libyuv::FOURCC_ARGB;
-      break;
-    case media::PIXEL_FORMAT_MJPEG:
-      origin_colorspace = libyuv::FOURCC_MJPG;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  // The input |length| can be greater than the required buffer size because of
-  // paddings and/or alignments, but it cannot be less.
-  DCHECK_GE(static_cast<size_t>(length), frame_format.ImageAllocationSize());
-
-  if (libyuv::ConvertToI420(data,
-                            length,
-                            yplane,
-                            yplane_stride,
-                            uplane,
-                            uv_plane_stride,
-                            vplane,
-                            uv_plane_stride,
-                            crop_x,
-                            crop_y,
-                            frame_format.frame_size.width(),
-                            (flip ? -frame_format.frame_size.height() :
-                                frame_format.frame_size.height()),
-                            new_unrotated_width,
-                            new_unrotated_height,
-                            rotation_mode,
-                            origin_colorspace) != 0) {
-    DLOG(WARNING) << "Failed to convert buffer from"
-                  << media::VideoCaptureFormat::PixelFormatToString(
-                         frame_format.pixel_format)
-                  << "to I420.";
-    return;
-  }
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalPackedMemory(
-          media::VideoFrame::I420,
-          dimensions,
-          gfx::Rect(dimensions),
-          dimensions,
-          yplane,
-          media::VideoFrame::AllocationSize(media::VideoFrame::I420,
-                                            dimensions),
-          base::SharedMemory::NULLHandle(),
-          0,
-          base::TimeDelta(),
-          base::Closure());
-  DCHECK(frame.get());
-  frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                               frame_format.frame_rate);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_,
-          buffer,
-          frame,
-          timestamp));
-}
-
-void
-VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
-    const scoped_refptr<Buffer>& buffer,
-    const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& timestamp) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_,
-          buffer,
-          frame,
-          timestamp));
-}
-
-void VideoCaptureController::VideoCaptureDeviceClient::OnError(
-    const std::string& reason) {
-  const std::string log_message = base::StringPrintf(
-      "Error on video capture: %s, OS message: %s",
-      reason.c_str(),
-      logging::SystemErrorCodeToString(
-          logging::GetLastSystemErrorCode()).c_str());
-  DLOG(ERROR) << log_message;
-  MediaStreamManager::SendMessageToNativeLog(log_message);
-  BrowserThread::PostTask(BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&VideoCaptureController::DoErrorOnIOThread, controller_));
-}
-
-void VideoCaptureController::VideoCaptureDeviceClient::OnLog(
-    const std::string& message) {
-  MediaStreamManager::SendMessageToNativeLog("Video capture: " + message);
-}
-
 VideoCaptureController::~VideoCaptureController() {
   STLDeleteContainerPointers(controller_clients_.begin(),
                              controller_clients_.end());
@@ -602,7 +292,7 @@ VideoCaptureController::~VideoCaptureController() {
 
 void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
-    const scoped_refptr<media::VideoFrame>& frame,
+    const scoped_refptr<VideoFrame>& frame,
     const base::TimeTicks& timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(buffer->id(), VideoCaptureBufferPool::kInvalidId);
@@ -626,7 +316,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       else
         copy_of_metadata.reset(metadata->DeepCopy());
 
-      if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
+      if (frame->format() == VideoFrame::NATIVE_TEXTURE) {
         DCHECK(frame->coded_size() == frame->visible_rect().size())
             << "Textures are always supposed to be tightly packed.";
         client->event_handler->OnMailboxBufferReady(client->controller_id,
@@ -694,6 +384,11 @@ void VideoCaptureController::DoErrorOnIOThread() {
 
     client->event_handler->OnError(client->controller_id);
   }
+}
+
+void VideoCaptureController::DoLogOnIOThread(const std::string& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  MediaStreamManager::SendMessageToNativeLog("Video capture: " + message);
 }
 
 void VideoCaptureController::DoBufferDestroyedOnIOThread(

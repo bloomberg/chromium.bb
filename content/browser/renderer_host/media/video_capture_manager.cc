@@ -21,7 +21,6 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/video/capture/video_capture_device.h"
@@ -72,7 +71,7 @@ void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
   }
 }
 
-// The maximum number of buffers in the capture pipeline.  See
+// The maximum number of buffers in the capture pipeline. See
 // VideoCaptureController ctor comments for more details.
 const int kMaxNumberOfBuffers = 3;
 const int kMaxNumberOfBuffersForTabCapture = 5;
@@ -333,7 +332,8 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
           entry->id,
           entry->stream_type,
           request->params(),
-          base::Passed(entry->video_capture_controller()->NewDeviceClient())),
+          base::Passed(entry->video_capture_controller()->NewDeviceClient(
+              device_task_runner_, request->params().requested_format))),
       base::Bind(&VideoCaptureManager::OnDeviceStarted, this,
                  request->serial_id()));
 }
@@ -394,7 +394,7 @@ VideoCaptureManager::DoStartDeviceOnDeviceThread(
       // We look up the device id from the renderer in our local enumeration
       // since the renderer does not have all the information that might be
       // held in the browser-side VideoCaptureDevice::Name structure.
-      media::VideoCaptureDeviceInfo* found =
+      const media::VideoCaptureDeviceInfo* found =
           FindDeviceInfoById(id, devices_info_cache_);
       if (found) {
         video_capture_device =
@@ -467,7 +467,7 @@ void VideoCaptureManager::StartCaptureForClient(
     QueueStartDevice(session_id, entry, params);
   }
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
-  done_cb.Run(entry->video_capture_controller()->GetWeakPtr());
+  done_cb.Run(entry->video_capture_controller()->GetWeakPtrForIOThread());
   entry->video_capture_controller()->AddClient(
       client_id, client_handler, client_render_process, session_id, params);
 }

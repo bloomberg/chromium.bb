@@ -1153,6 +1153,8 @@
       'browser/renderer_host/media/video_capture_controller.h',
       'browser/renderer_host/media/video_capture_controller_event_handler.cc',
       'browser/renderer_host/media/video_capture_controller_event_handler.h',
+      'browser/renderer_host/media/video_capture_device_client.cc',
+      'browser/renderer_host/media/video_capture_device_client.h',
       'browser/renderer_host/media/video_capture_host.cc',
       'browser/renderer_host/media/video_capture_host.h',
       'browser/renderer_host/media/video_capture_manager.cc',
@@ -1765,6 +1767,12 @@
       ],
       'defines': [
         'ENABLE_SCREEN_CAPTURE=1',
+      ],
+    }],
+    ['enable_webrtc==1 and (OS=="linux" or OS=="mac")', {
+      'sources': [
+        'browser/renderer_host/media/video_capture_texture_wrapper.cc',
+        'browser/renderer_host/media/video_capture_texture_wrapper.h',
       ],
     }],
     ['OS=="win"', {

@@ -186,6 +186,12 @@ source_set("browser") {
       defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
       deps += [ "//third_party/webrtc/modules/desktop_capture" ]
     }
+    if (is_linux || is_mac) {
+      sources += [
+        "renderer_host/media/video_capture_texture_wrapper.cc",
+        "renderer_host/media/video_capture_texture_wrapper.h",
+      ]
+    }
   }
 
   if (is_win) {
