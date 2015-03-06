@@ -393,19 +393,21 @@ class CONTENT_EXPORT ServiceWorkerVersion
                         scoped_refptr<GetClientDocumentsCallback> callback,
                         const ServiceWorkerClientInfo& info);
 
+  // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
+  // if it is excessively idle or unresponsive to ping.
+  void StartTimeoutTimer();
+  void StopTimeoutTimer();
+  void OnTimeoutTimer();
+
   // The ping protocol is for terminating workers that are taking excessively
   // long executing JavaScript (e.g., stuck in while(true) {}). Periodically a
   // ping IPC is sent to the worker context and if we timeout waiting for a
   // pong, the worker is terminated.
   void PingWorker();
-  void StartPingWorker();
-  void SchedulePingWorker();
   void OnPingTimeout();
 
-  // ScheduleStopWorker is for terminating idle workers. It schedules an attempt
-  // to stop: if the worker has no inflight requests when the attempt runs, the
-  // worker is terminated, otherwise the attempt is rescheduled.
-  void ScheduleStopWorker();
+  // Stops the worker if it is idle (has no in-flight requests) or timed out
+  // ping.
   void StopWorkerIfIdle();
   bool HasInflightRequests() const;
 
@@ -454,12 +456,22 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ObserverList<Listener> listeners_;
   ServiceWorkerScriptCacheMap script_cache_map_;
-  base::OneShotTimer<ServiceWorkerVersion> stop_worker_timer_;
   base::OneShotTimer<ServiceWorkerVersion> update_timer_;
-  base::OneShotTimer<ServiceWorkerVersion> ping_worker_timer_;
+
+  // Starts running when the script is loaded (which means it is about to begin
+  // evaluation) and continues until the worker is stopped or a stop request is
+  // ignored because DevTools is attached.
+  base::RepeatingTimer<ServiceWorkerVersion> timeout_timer_;
+  // Holds the time the worker last started being considered idle.
+  base::TimeTicks idle_time_;
+  // Holds the time that an outstanding ping was sent to the worker.
+  base::TimeTicks ping_time_;
+  // True if the worker was stopped because it did not respond to ping in time.
+  bool ping_timed_out_;
+
   base::OneShotTimer<ServiceWorkerVersion> start_worker_timeout_timer_;
   base::TimeTicks start_timing_;
-  bool ping_timed_out_;
+
   bool is_doomed_;
   std::vector<int> pending_skip_waiting_requests_;
   bool skip_waiting_;

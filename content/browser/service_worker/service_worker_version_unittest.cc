@@ -368,14 +368,14 @@ TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
 TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
   // Verify the timer is not running when version initializes its status.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  EXPECT_FALSE(version_->stop_worker_timer_.IsRunning());
+  EXPECT_FALSE(version_->timeout_timer_.IsRunning());
 
   // Verify the timer is running after the worker is started.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(version_->stop_worker_timer_.IsRunning());
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
 
   // The timer should be running if the worker is restarted without controllee.
   status = SERVICE_WORKER_ERROR_FAILED;
@@ -386,7 +386,7 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
   version_->StartWorker(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(version_->stop_worker_timer_.IsRunning());
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
 
   // Adding controllee doesn't stop the stop-worker-timer.
   scoped_ptr<ServiceWorkerProviderHost> host(
@@ -397,7 +397,7 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
                                     helper_->context()->AsWeakPtr(),
                                     NULL));
   version_->AddControllee(host.get());
-  EXPECT_TRUE(version_->stop_worker_timer_.IsRunning());
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
 }
 
 TEST_F(ServiceWorkerVersionTest, ListenerAvailability) {
