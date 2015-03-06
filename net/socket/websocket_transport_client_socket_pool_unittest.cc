@@ -775,9 +775,9 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.socket());
 
-  base::Time start(base::Time::NowFromSystemTime());
+  base::TimeTicks start(base::TimeTicks::Now());
   EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_LT(base::Time::NowFromSystemTime() - start,
+  EXPECT_LT(base::TimeTicks::Now() - start,
             base::TimeDelta::FromMilliseconds(
                 TransportConnectJobHelper::kIPv6FallbackTimerInMs));
   ASSERT_TRUE(handle.socket());
@@ -859,14 +859,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  base::Time start(base::Time::NowFromSystemTime());
+  base::TimeTicks start(base::TimeTicks::Now());
   int rv =
       handle.Init("a", params_, LOW, callback.callback(), &pool, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(ERR_CONNECTION_FAILED, callback.WaitForResult());
 
-  EXPECT_GE(base::Time::NowFromSystemTime() - start, delay * 5);
+  EXPECT_GE(base::TimeTicks::Now() - start, delay * 5);
 }
 
 // Global timeout for all connects applies. This test is disabled by default
