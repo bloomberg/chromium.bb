@@ -6,13 +6,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "extensions/common/extension.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -36,7 +37,7 @@ class ExtensionUninstallDialogViews
  public:
   ExtensionUninstallDialogViews(
       Profile* profile,
-      aura::Window* parent,
+      gfx::NativeWindow parent,
       extensions::ExtensionUninstallDialog::Delegate* delegate);
   ~ExtensionUninstallDialogViews() override;
 
@@ -54,10 +55,10 @@ class ExtensionUninstallDialogViews
   ExtensionUninstallDialogDelegateView* view_;
 
   // The dialog's parent window.
-  aura::Window* parent_;
+  gfx::NativeWindow parent_;
 
   // Tracks whether |parent_| got destroyed.
-  aura::WindowTracker parent_window_tracker_;
+  scoped_ptr<NativeWindowTracker> parent_window_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogViews);
 };
@@ -107,13 +108,13 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 
 ExtensionUninstallDialogViews::ExtensionUninstallDialogViews(
     Profile* profile,
-    aura::Window* parent,
+    gfx::NativeWindow parent,
     extensions::ExtensionUninstallDialog::Delegate* delegate)
     : extensions::ExtensionUninstallDialog(profile, delegate),
       view_(NULL),
       parent_(parent) {
   if (parent_)
-    parent_window_tracker_.Add(parent_);
+    parent_window_tracker_ = NativeWindowTracker::Create(parent_);
 }
 
 ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
@@ -125,7 +126,7 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 }
 
 void ExtensionUninstallDialogViews::Show() {
-  if (parent_ && !parent_window_tracker_.Contains(parent_)) {
+  if (parent_ && parent_window_tracker_->WasNativeWindowClosed()) {
     delegate_->ExtensionUninstallCanceled();
     return;
   }
