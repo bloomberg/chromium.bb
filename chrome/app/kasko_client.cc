@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(SYZYASAN)
+#if defined(KASKO)
 
 #include "chrome/app/kasko_client.h"
 
@@ -103,4 +103,4 @@ extern "C" void __declspec(dllexport) ReportCrashWithProtobuf(
   }
 }
 
-#endif  // defined(SYZYASAN)
+#endif  // defined(KASKO)

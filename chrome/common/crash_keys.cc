@@ -114,7 +114,7 @@ const char kZombieTrace[] = "zombie_dealloc_bt";
 }  // namespace mac
 #endif
 
-#if defined(SYZYASAN)
+#if defined(KASKO)
 const char kKaskoGuid[] = "kasko-guid";
 const char kKaskoEquivalentGuid[] = "kasko-equivalent-guid";
 #endif
@@ -172,7 +172,7 @@ size_t RegisterChromeCrashKeys() {
     // media/:
     { "VideoCaptureDeviceQTKit", kSmallSize },
 #endif
-#if defined(SYZYASAN)
+#if defined(KASKO)
     { kKaskoGuid, kSmallSize },
     { kKaskoEquivalentGuid, kSmallSize },
 #endif

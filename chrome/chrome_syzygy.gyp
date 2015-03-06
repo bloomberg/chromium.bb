@@ -9,18 +9,14 @@
     ['syzyasan==1', {
       'variables': {
         'syzygy_exe_dir': '<(DEPTH)/third_party/syzygy/binaries/exe',
-        'kasko_exe_dir': '<(DEPTH)/third_party/kasko',
       },
       # Copy the SyzyASan runtime and logger to the syzygy directory.
-      # TODO(erikwright): Decouple Kasko from SyzyASAN.
       'targets': [
         {
           'target_name': 'copy_syzyasan_binaries',
           'type': 'none',
           'outputs': [
             '<(dest_dir)/agent_logger.exe',
-            '<(dest_dir)/kasko.dll',
-            '<(dest_dir)/kasko.dll.pdb',
             '<(dest_dir)/syzyasan_rtl.dll',
             '<(dest_dir)/syzyasan_rtl.dll.pdb',
           ],
@@ -28,8 +24,6 @@
             {
               'destination': '<(dest_dir)',
               'files': [
-                '<(kasko_exe_dir)/kasko.dll',
-                '<(kasko_exe_dir)/kasko.dll.pdb',
                 '<(syzygy_exe_dir)/agent_logger.exe',
                 '<(syzygy_exe_dir)/syzyasan_rtl.dll',
                 '<(syzygy_exe_dir)/syzyasan_rtl.dll.pdb',

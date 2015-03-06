@@ -142,7 +142,7 @@ extern const char kZombieTrace[];
 }  // namespace mac
 #endif
 
-#if defined(SYZYASAN)
+#if defined(KASKO)
 // Used to correlate a report sent via Kasko with one sent via Breakpad.
 extern const char kKaskoGuid[];
 extern const char kKaskoEquivalentGuid[];

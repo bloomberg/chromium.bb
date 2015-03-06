@@ -5,7 +5,7 @@
 #ifndef CHROME_APP_KASKO_CLIENT_H_
 #define CHROME_APP_KASKO_CLIENT_H_
 
-#if defined(SYZYASAN)
+#if defined(KASKO)
 
 #include "base/macros.h"
 
@@ -25,6 +25,6 @@ class KaskoClient {
   DISALLOW_COPY_AND_ASSIGN(KaskoClient);
 };
 
-#endif  // SYZYASAN
+#endif  // KASKO
 
 #endif  // CHROME_APP_KASKO_CLIENT_H_

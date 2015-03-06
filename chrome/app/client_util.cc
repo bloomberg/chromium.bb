@@ -273,9 +273,9 @@ class ChromeDllLoader : public MainDllLoader {
 
  private:
   scoped_ptr<ChromeWatcherClient> chrome_watcher_client_;
-#if defined(SYZYASAN)
+#if defined(KASKO)
   scoped_ptr<KaskoClient> kasko_client_;
-#endif
+#endif  // KASKO
 };
 
 void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
@@ -290,9 +290,9 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
         chrome_watcher_client_.reset(new ChromeWatcherClient(
             base::Bind(&GenerateChromeWatcherCommandLine, exe_path)));
         if (chrome_watcher_client_->LaunchWatcher()) {
-#if defined(SYZYASAN)
+#if defined(KASKO)
           kasko_client_.reset(new KaskoClient(chrome_watcher_client_.get()));
-#endif
+#endif  // KASKO
         }
       }
     }
@@ -308,9 +308,9 @@ int ChromeDllLoader::OnBeforeExit(int return_code,
     ClearDidRun(dll_path);
   }
 
-#if defined(SYZYASAN)
+#if defined(KASKO)
   kasko_client_.reset();
-#endif
+#endif  // KASKO
   chrome_watcher_client_.reset();
 
   return return_code;

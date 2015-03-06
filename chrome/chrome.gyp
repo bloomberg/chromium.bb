@@ -783,7 +783,7 @@
         },
       ],
     }],
-    ['syzyasan==1', {
+    ['kasko==1', {
       'variables': {
         'kasko_exe_dir': '<(DEPTH)/third_party/kasko',
       },

@@ -416,6 +416,9 @@
       # See https://code.google.com/p/sawbuck/wiki/SyzyASanHowTo
       'syzyasan%': 0,
 
+      # Enable crash reporting via Kasko.
+      'kasko%': 0,
+
       # Enable building with LSan (Clang's -fsanitize=leak option).
       # -fsanitize=leak only works with clang, but lsan=1 implies clang=1
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/leaksanitizer
@@ -1140,6 +1143,7 @@
     'asan_field_padding%': '<(asan_field_padding)',
     'use_sanitizer_options%': '<(use_sanitizer_options)',
     'syzyasan%': '<(syzyasan)',
+    'kasko': '<(kasko)',
     'syzygy_optimize%': '<(syzygy_optimize)',
     'lsan%': '<(lsan)',
     'msan%': '<(msan)',
@@ -2795,6 +2799,11 @@
             'SYZYASAN',
             'MEMORY_TOOL_REPLACES_ALLOCATOR',
             'MEMORY_SANITIZER_INITIAL_SIZE',
+        ],
+      }],
+      ['kasko==1', {
+        'defines': [
+            'KASKO',
         ],
         'include_dirs': [
           '<(DEPTH)/third_party/kasko/include',

@@ -27,7 +27,7 @@
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/exit_funnel_win.h"
 
-#ifdef SYZYASAN
+#ifdef KASKO
 #include "syzygy/kasko/api/reporter.h"
 #endif
 
@@ -219,7 +219,7 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   // chrome.exe in order to report its exit status.
   ::SetProcessShutdownParameters(0x100, SHUTDOWN_NORETRY);
 
-#ifdef SYZYASAN
+#ifdef KASKO
   bool launched_kasko = kasko::api::InitializeReporter(
       GetKaskoEndpoint(process.Pid()).c_str(),
       L"https://clients2.google.com/cr/report",
@@ -231,7 +231,7 @@ extern "C" int WatcherMain(const base::char16* registry_path,
           .Append(kPermanentlyFailedReportsSubdir)
           .value()
           .c_str());
-#endif  // SYZYASAN
+#endif  // KASKO
 
   // Run a UI message loop on the main thread.
   base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
@@ -246,10 +246,10 @@ extern "C" int WatcherMain(const base::char16* registry_path,
 
   run_loop.Run();
 
-#ifdef SYZYASAN
+#ifdef KASKO
   if (launched_kasko)
     kasko::api::ShutdownReporter();
-#endif  // SYZYASAN
+#endif  // KASKO
 
   // Wind logging down.
   logging::LogEventProvider::Uninitialize();

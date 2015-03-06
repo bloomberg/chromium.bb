@@ -111,7 +111,7 @@
             '../components/components.gyp:browser_watcher_client',
           ],
           'conditions': [
-            ['syzyasan==1', {
+            ['kasko==1', {
               'dependencies': [
                 'kasko_dll',
               ],

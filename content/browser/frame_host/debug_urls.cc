@@ -38,7 +38,9 @@ const char kAsanUseAfterFree[] = "/browser-use-after-free";
 #if defined(SYZYASAN)
 const char kAsanCorruptHeapBlock[] = "/browser-corrupt-heap-block";
 const char kAsanCorruptHeap[] = "/browser-corrupt-heap";
+#endif
 
+#if defined(KASKO)
 // Define the Kasko debug URLs.
 const char kKaskoCrashDomain[] = "kasko";
 const char kKaskoSendReport[] = "/send-report";
@@ -62,7 +64,7 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
 }
 
 bool IsKaskoDebugURL(const GURL& url) {
-#if defined(SYZYASAN)
+#if defined(KASKO)
   return (url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
           url.DomainIs(kKaskoCrashDomain, sizeof(kKaskoCrashDomain) - 1) &&
           url.path() == kKaskoSendReport);
@@ -72,7 +74,7 @@ bool IsKaskoDebugURL(const GURL& url) {
 }
 
 void HandleKaskoDebugURL() {
-#if defined(SYZYASAN)
+#if defined(KASKO)
   // Signature of an enhanced crash reporting function.
   typedef void(__cdecl * ReportCrashWithProtobufPtr)(EXCEPTION_POINTERS*,
                                                      const char*);
