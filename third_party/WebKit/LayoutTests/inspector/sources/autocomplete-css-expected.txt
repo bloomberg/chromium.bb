@@ -51,5 +51,5 @@ Running: verifySuggestionsOnColumnTypedIn
 .green {
    display|
 Suggestions displayed on ':' symbol typed in:
-[-webkit-box, -webkit-inline-box, block, compact, flex, grid, inherit, initial, inline, inline-block, inline-flex, inline-grid, inline-table, list-item, none, run-in, table, table-caption, table-cell, table-column, table-column-group, table-footer-group, table-header-group, table-row, table-row-group]
+[-webkit-box, -webkit-inline-box, block, flex, grid, inherit, initial, inline, inline-block, inline-flex, inline-grid, inline-table, list-item, none, run-in, table, table-caption, table-cell, table-column, table-column-group, table-footer-group, table-header-group, table-row, table-row-group]
 
