@@ -282,7 +282,7 @@ struct LoadCommittedCapturer : public WebContentsObserver {
 // for subframe navigations. TODO(avi): It's rather bogus that the same info is
 // in two different enums; http://crbug.com/453555.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       ManualAndAutoSubframeNavigationClassification) {
+                       NavigationTypeClassification_NewAndAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_iframe.html"));
   NavigateToURL(shell(), main_url);
@@ -358,6 +358,32 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     GURL frame_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_2.html"));
     std::string script = "location.replace('" + frame_url.spec() + "')";
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                                       script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  {
+    // Use history.pushState(); expect a manual subframe transition.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    std::string script =
+        "history.pushState({}, 'page 1', 'simple_page_1.html')";
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                                       script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_MANUAL_SUBFRAME,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.details().type);
+  }
+
+  {
+    // Use history.replaceState(); expect an auto subframe transition.
+    // (Replacements aren't "navigation" so we only see the frame load
+    // committing.)
+    LoadCommittedCapturer capturer(root->child_at(0));
+    std::string script =
+        "history.replaceState({}, 'page 2', 'simple_page_2.html')";
     EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
                                        script));
     capturer.Wait();
