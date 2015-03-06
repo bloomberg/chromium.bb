@@ -428,6 +428,12 @@ bool CSPDirectiveList::allowStyleHash(const CSPHashValue& hashValue) const
     return checkHash(operativeDirective(m_styleSrc.get()), hashValue);
 }
 
+const String& CSPDirectiveList::pluginTypesText() const
+{
+    ASSERT(hasPluginTypes());
+    return m_pluginTypes->text();
+}
+
 // policy            = directive-list
 // directive-list    = [ directive *( ";" [ directive ] ) ]
 //

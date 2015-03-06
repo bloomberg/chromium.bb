@@ -78,4 +78,38 @@ TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
     EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
 }
 
+TEST_F(ContentSecurityPolicyTest, CopyStateFrom)
+{
+    csp->didReceiveHeader("script-src 'none'; plugin-types application/x-type-1", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    csp->didReceiveHeader("img-src http://example.com", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+
+    KURL exampleUrl(KURL(), "http://example.com");
+    KURL notExampleUrl(KURL(), "http://not-example.com");
+
+    RefPtr<ContentSecurityPolicy> csp2 = ContentSecurityPolicy::create();
+    csp2->copyStateFrom(csp.get());
+    EXPECT_FALSE(csp2->allowScriptFromSource(exampleUrl, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowPluginType("application/x-type-1", "application/x-type-1", exampleUrl, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowImageFromSource(exampleUrl, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp2->allowImageFromSource(notExampleUrl, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp2->allowPluginType("application/x-type-2", "application/x-type-2", exampleUrl, ContentSecurityPolicy::SuppressReport));
+}
+
+TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom)
+{
+    csp->didReceiveHeader("script-src 'none'; plugin-types application/x-type-1", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    csp->didReceiveHeader("img-src http://example.com", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+
+    KURL exampleUrl(KURL(), "http://example.com");
+    KURL notExampleUrl(KURL(), "http://not-example.com");
+
+    RefPtr<ContentSecurityPolicy> csp2 = ContentSecurityPolicy::create();
+    csp2->copyPluginTypesFrom(csp.get());
+    EXPECT_TRUE(csp2->allowScriptFromSource(exampleUrl, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowPluginType("application/x-type-1", "application/x-type-1", exampleUrl, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowImageFromSource(exampleUrl, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowImageFromSource(notExampleUrl, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp2->allowPluginType("application/x-type-2", "application/x-type-2", exampleUrl, ContentSecurityPolicy::SuppressReport));
+}
+
 } // namespace

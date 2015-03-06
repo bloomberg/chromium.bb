@@ -64,6 +64,11 @@ public:
     bool isReportOnly() const { return m_reportOnly; }
     const Vector<String>& reportEndpoints() const { return m_reportEndpoints; }
 
+    // Used to copy plugin-types into a plugin document in a nested
+    // browsing context.
+    bool hasPluginTypes() const { return !!m_pluginTypes; };
+    const String& pluginTypesText() const;
+
 private:
     CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 

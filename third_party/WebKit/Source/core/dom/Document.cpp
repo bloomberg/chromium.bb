@@ -4738,8 +4738,16 @@ void Document::initSecurityContext(const DocumentInit& initializer)
 void Document::initContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy> csp)
 {
     setContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::create());
-    if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame() && shouldInheritSecurityOriginFromOwner(m_url))
-        contentSecurityPolicy()->copyStateFrom(toLocalFrame(m_frame->tree().parent())->document()->contentSecurityPolicy());
+    if (m_frame && m_frame->tree().parent() && m_frame->tree().parent()->isLocalFrame()) {
+        ContentSecurityPolicy* parentCSP = toLocalFrame(m_frame->tree().parent())->document()->contentSecurityPolicy();
+        if (shouldInheritSecurityOriginFromOwner(m_url)) {
+            contentSecurityPolicy()->copyStateFrom(parentCSP);
+        } else if (isPluginDocument()) {
+            // Per CSP2, plugin-types for plugin documents in nested browsing
+            // contexts gets inherited from the parent.
+            contentSecurityPolicy()->copyPluginTypesFrom(parentCSP);
+        }
+    }
     contentSecurityPolicy()->bindToExecutionContext(this);
 }
 

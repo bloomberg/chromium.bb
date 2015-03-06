@@ -210,6 +210,15 @@ void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
         addPolicyFromHeaderValue(policy->header(), policy->headerType(), policy->headerSource());
 }
 
+void ContentSecurityPolicy::copyPluginTypesFrom(const ContentSecurityPolicy* other)
+{
+    for (const auto& policy : other->m_policies) {
+        if (policy->hasPluginTypes()) {
+            addPolicyFromHeaderValue(policy->pluginTypesText(), policy->headerType(), policy->headerSource());
+        }
+    }
+}
+
 void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyResponseHeaders& headers)
 {
     if (!headers.contentSecurityPolicy().isEmpty())

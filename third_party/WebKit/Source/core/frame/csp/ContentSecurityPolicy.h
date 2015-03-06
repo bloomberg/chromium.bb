@@ -109,6 +109,7 @@ public:
 
     void bindToExecutionContext(ExecutionContext*);
     void copyStateFrom(const ContentSecurityPolicy*);
+    void copyPluginTypesFrom(const ContentSecurityPolicy*);
 
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
     void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
