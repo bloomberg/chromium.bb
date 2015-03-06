@@ -443,6 +443,10 @@ draw_view_source_clipped(struct weston_view *view,
 
 	pixman_region32_init_rect(&surf_region, 0, 0,
 				  surface->width, surface->height);
+	if (view->geometry.scissor_enabled)
+		pixman_region32_intersect(&surf_region, &surf_region,
+					  &view->geometry.scissor);
+
 	pixman_region32_init(&buffer_region);
 	weston_surface_to_buffer_region(surface, &surf_region, &buffer_region);
 
@@ -489,6 +493,8 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 		 * etc. are convertible to global coordinate space.
 		 * There is no need to use a source clip region.
 		 * It is possible to paint opaque region as PIXMAN_OP_SRC.
+		 * Also the boundingbox is accurate rather than an
+		 * approximation.
 		 */
 		draw_view_translated(ev, output, &repaint);
 	} else {
@@ -838,6 +844,7 @@ pixman_renderer_init(struct weston_compositor *ec)
 	ec->renderer = &renderer->base;
 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
 	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
+	ec->capabilities |= WESTON_CAP_VIEW_CLIP_MASK;
 
 	renderer->debug_binding =
 		weston_compositor_add_debug_binding(ec, KEY_R,
