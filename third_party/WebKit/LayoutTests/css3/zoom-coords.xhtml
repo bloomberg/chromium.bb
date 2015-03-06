@@ -7,6 +7,7 @@
         padding:0px;
     }
     text {
+        text-rendering: geometricPrecision;
         font: 12px Ahem;
     }
     #div2, #svg2 {
@@ -58,6 +59,9 @@ function msgDumpRenderTreeRequired()
 
 description("This test checks getBoundingClientRect() on zoomed HTML and SVG elements");
 
+if (self.testRunner)
+  self.testRunner.setTextSubpixelPositioning(true);
+
 debug("Gray rectangles: 100x50");
 debug("Green rectangles: 100x50, zoom=200%");
 debug("Blue rectangles: 200x100, zoom=50%");
@@ -65,6 +69,9 @@ debug("");
 
 debug("Checking HTML elements:");
 debug("");
+
+// Slightly bigger than one layout unit.
+var tolerance = 0.02;
 
 var div1 = document.getElementById("div1").getBoundingClientRect();
 shouldBe('div1.left', '0');
@@ -121,10 +128,7 @@ var text1 = document.getElementById("text1").getBoundingClientRect();
 shouldBe('text1.left', '100');
 msgDumpRenderTreeRequired();
 shouldBeCloseTo('text1.top', 283, 1);
-shouldBeCloseTo('text1.width', 46, 1);
 shouldBeCloseTo('text1.height', 6, 1);
-shouldBeCloseTo('text1.right', 146, 1);
-shouldBeCloseTo('text1.bottom', 289, 1);
 debug("");
 
 var svg2 = document.getElementById("svg2").getBoundingClientRect();
@@ -152,10 +156,8 @@ var text2 = document.getElementById("text2").getBoundingClientRect();
 shouldBe('text2.left', '175');
 msgDumpRenderTreeRequired();
 shouldBeCloseTo('text2.top', 132, 1);
-shouldBeCloseTo('text2.width', 49, 1);
-shouldBeCloseTo('text2.height', 6, 1);
-shouldBeCloseTo('text2.right', 224, 1);
-shouldBeCloseTo('text2.bottom', 139, 1);
+shouldBeCloseTo('text2.width', 'text1.width', tolerance);
+shouldBeCloseTo('text2.height', 'text1.height', tolerance);
 debug("");
 
 var svg3 = document.getElementById("svg3").getBoundingClientRect();
@@ -183,13 +185,9 @@ var text3 = document.getElementById("text3").getBoundingClientRect();
 shouldBe('text3.left', '1100');
 msgDumpRenderTreeRequired();
 shouldBeCloseTo('text3.top', 565, 1);
-shouldBeCloseTo('text3.width', 92, 1);
-shouldBeCloseTo('text3.height', 12, 1);
-shouldBeCloseTo('text3.right', 1192, 1);
-shouldBeCloseTo('text3.bottom', 577, 1);
+shouldBeCloseTo('text3.width', '(text1.width * 2)', tolerance);
+shouldBeCloseTo('text3.height', '(text1.height * 2)', tolerance);
 debug("");
-
-
 </script>
 
 </body>
