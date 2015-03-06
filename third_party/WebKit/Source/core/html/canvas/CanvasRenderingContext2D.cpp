@@ -2108,10 +2108,9 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
     canvas()->document().updateRenderTreeIfNeeded();
     const Font& font = accessFont();
 
-    bool hasStrongDirectionality;
     TextDirection direction;
     if (state().m_direction == DirectionInherit)
-        direction = determineDirectionality(text, hasStrongDirectionality);
+        direction = determineDirectionality(text);
     else
         direction = toTextDirection(state().m_direction);
     const TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, direction, false, true);

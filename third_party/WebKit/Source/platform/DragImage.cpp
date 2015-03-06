@@ -206,7 +206,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
             label = StringTruncator::rightTruncate(label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont);
 
         bool hasStrongDirectionality;
-        TextRun textRun = textRunWithDirectionality(label, hasStrongDirectionality);
+        TextRun textRun = textRunWithDirectionality(label, &hasStrongDirectionality);
         IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.fontDescription().computedPixelSize());
         if (hasStrongDirectionality && textRun.direction() == RTL) {
             float textWidth = labelFont.width(textRun);

@@ -452,9 +452,8 @@ void HTMLFormControlElement::setNeedsWillValidateCheck()
 
 void HTMLFormControlElement::findCustomValidationMessageTextDirection(const String& message, TextDirection &messageDir, String& subMessage, TextDirection &subMessageDir)
 {
-    bool hasStrongDirection;
     subMessage = fastGetAttribute(titleAttr);
-    messageDir = determineDirectionality(message, hasStrongDirection);
+    messageDir = determineDirectionality(message);
     if (!subMessage.isEmpty())
         subMessageDir = renderer()->style()->direction();
 }

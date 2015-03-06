@@ -723,7 +723,7 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
     if (isHTMLInputElement(*this)) {
         HTMLInputElement* inputElement = toHTMLInputElement(const_cast<HTMLElement*>(this));
         bool hasStrongDirectionality;
-        TextDirection textDirection = determineDirectionality(inputElement->value(), hasStrongDirectionality);
+        TextDirection textDirection = determineDirectionality(inputElement->value(), &hasStrongDirectionality);
         if (strongDirectionalityTextNode)
             *strongDirectionalityTextNode = hasStrongDirectionality ? inputElement : 0;
         return textDirection;
@@ -749,7 +749,7 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
 
         if (node->isTextNode()) {
             bool hasStrongDirectionality;
-            TextDirection textDirection = determineDirectionality(node->textContent(true), hasStrongDirectionality);
+            TextDirection textDirection = determineDirectionality(node->textContent(true), &hasStrongDirectionality);
             if (hasStrongDirectionality) {
                 if (strongDirectionalityTextNode)
                     *strongDirectionalityTextNode = node;

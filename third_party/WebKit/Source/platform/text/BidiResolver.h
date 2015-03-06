@@ -671,6 +671,14 @@ TextDirection BidiResolver<Iterator, Run>::determineParagraphDirectionality(bool
     return LTR;
 }
 
+inline TextDirection directionForCharacter(UChar32 character)
+{
+    WTF::Unicode::Direction charDirection = WTF::Unicode::direction(character);
+    if (charDirection == WTF::Unicode::RightToLeft || charDirection == WTF::Unicode::RightToLeftArabic)
+        return RTL;
+    return LTR;
+}
+
 template <class Iterator, class Run>
 void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, VisualDirectionOverride override, bool hardLineBreak, bool reorderRuns)
 {
