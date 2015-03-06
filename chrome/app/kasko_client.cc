@@ -10,10 +10,10 @@
 
 #include <string>
 
-#include "base/debug/crash_logging.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 #include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "chrome/app/chrome_watcher_client_win.h"
@@ -61,33 +61,45 @@ extern "C" void __declspec(dllexport) ReportCrashWithProtobuf(
           sizeof(reinterpret_cast<google_breakpad::CustomInfoEntry*>(0)->value),
       "CrashKey and CustomInfoEntry structs are not compatible.");
 
+  breakpad::CrashKeysWin* keeper = breakpad::CrashKeysWin::keeper();
+  if (!keeper)
+    return;
+
   // Assign a GUID that can be used to correlate the Kasko report to the
   // Breakpad report, to verify data consistency.
   std::string guid = base::GenerateGUID();
   {
+    keeper->SetCrashKeyValue(base::ASCIIToUTF16(crash_keys::kKaskoGuid).c_str(),
+                             base::ASCIIToUTF16(guid).c_str());
+
     base::debug::ScopedCrashKey kasko_guid(crash_keys::kKaskoGuid, guid);
-    size_t crash_key_count =
-        breakpad::CrashKeysWin::keeper()->custom_info_entries().size();
+    size_t crash_key_count = keeper->custom_info_entries().size();
     const kasko::api::CrashKey* crash_keys =
         reinterpret_cast<const kasko::api::CrashKey*>(
-            breakpad::CrashKeysWin::keeper()->custom_info_entries().data());
+            keeper->custom_info_entries().data());
 
     if (g_chrome_watcher_client &&
         g_chrome_watcher_client->EnsureInitialized()) {
       kasko::api::SendReport(info, protobuf, protobuf_length, crash_keys,
                              crash_key_count);
     }
+
+    keeper->ClearCrashKeyValue(
+        base::ASCIIToUTF16(crash_keys::kKaskoGuid).c_str());
   }
 
   {
-    base::debug::ScopedCrashKey kasko_equivalent_guid(
-        crash_keys::kKaskoEquivalentGuid, guid);
+    keeper->SetCrashKeyValue(
+        base::ASCIIToUTF16(crash_keys::kKaskoEquivalentGuid).c_str(),
+        base::ASCIIToUTF16(guid).c_str());
     // While Kasko remains experimental, also report via Breakpad.
     base::win::WinProcExceptionFilter crash_for_exception =
         reinterpret_cast<base::win::WinProcExceptionFilter>(::GetProcAddress(
             ::GetModuleHandle(chrome::kBrowserProcessExecutableName),
             "CrashForException"));
     crash_for_exception(info);
+    keeper->ClearCrashKeyValue(
+        base::ASCIIToUTF16(crash_keys::kKaskoEquivalentGuid).c_str());
   }
 }
 
