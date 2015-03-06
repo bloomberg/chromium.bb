@@ -17,6 +17,8 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
@@ -36,6 +38,7 @@ import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegat
 import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -242,6 +245,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * it completes.
      */
     private boolean mNeedsReload;
+
+    /**
+     * True while a page load is in progress.
+     */
+    private boolean mIsLoading;
+
+    /**
+     * True while a restore page load is in progress.
+     */
+    private boolean mIsBeingRestored;
 
     /**
      * Whether or not the Tab is currently visible to the user.
@@ -489,6 +502,45 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private class TabWebContentsObserver extends WebContentsObserver {
         public TabWebContentsObserver(WebContents webContents) {
             super(webContents);
+        }
+
+        @Override
+        public void renderProcessGone(boolean processWasOomProtected) {
+            Log.i(TAG, "renderProcessGone() for tab id: " + getId()
+                    + ", oom protected: " + Boolean.toString(processWasOomProtected)
+                    + ", already needs reload: " + Boolean.toString(needsReload()));
+            // Do nothing for subsequent calls that happen while the tab remains crashed. This
+            // can occur when the tab is in the background and it shares the renderer with other
+            // tabs. After the renderer crashes, the WebContents of its tabs are still around
+            // and they still share the RenderProcessHost. When one of the tabs reloads spawning
+            // a new renderer for the shared RenderProcessHost and the new renderer crashes
+            // again, all tabs sharing this renderer will be notified about the crash (including
+            // potential background tabs that did not reload yet).
+            if (needsReload() || isShowingSadTab()) return;
+
+            int activityState = ApplicationStatus.getStateForActivity(
+                    mWindowAndroid.getActivity().get());
+            if (!processWasOomProtected
+                    || activityState == ActivityState.PAUSED
+                    || activityState == ActivityState.STOPPED
+                    || activityState == ActivityState.DESTROYED) {
+                // The tab crashed in background or was killed by the OS out-of-memory killer.
+                //setNeedsReload(true);
+                mNeedsReload = true;
+            } else {
+                showSadTab();
+                UmaSessionStats.logRendererCrash(mWindowAndroid.getActivity().get());
+            }
+
+            mIsLoading = false;
+            mIsBeingRestored = false;
+            handleTabCrash();
+
+            boolean sadTabShown = isShowingSadTab();
+            RewindableIterator<TabObserver> observers = getTabObservers();
+            while (observers.hasNext()) {
+                observers.next().onCrash(Tab.this, sadTabShown);
+            }
         }
 
         @Override
@@ -1339,6 +1391,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         mIsShowingErrorPage = showingErrorPage;
+        mIsLoading = true;
 
         updateTitle();
         removeSadTabIfPresent();
@@ -1356,6 +1409,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Called when a page has finished loading.
      */
     protected void didFinishPageLoad() {
+        mIsLoading = false;
+        mIsBeingRestored = false;
         mIsTabStateDirty = true;
         updateTitle();
         updateFullscreenEnabledState();
@@ -1372,6 +1427,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param errorCode The error code causing the page to fail loading.
      */
     protected void didFailPageLoad(int errorCode) {
+        mIsLoading = false;
+        mIsBeingRestored = false;
         for (TabObserver observer : mObservers) observer.onPageLoadFailed(this, errorCode);
     }
 
@@ -1740,6 +1797,20 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Performs any subclass-specific tasks when the Tab is restored.
      */
     protected void restoreIfNeededInternal() {
+        mIsBeingRestored = true;
+    }
+
+    /**
+     * Issues a fake notification about the renderer being killed.
+     *
+     * @param wasOomProtected True if the renderer was protected from the OS out-of-memory killer
+     *                        (e.g. renderer for the currently selected tab)
+     */
+    @VisibleForTesting
+    public void simulateRendererKilledForTesting(boolean wasOomProtected) {
+        if (mWebContentsObserver != null) {
+            mWebContentsObserver.renderProcessGone(wasOomProtected);
+        }
     }
 
     /**
@@ -1811,6 +1882,20 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     protected void setNeedsReload(boolean needsReload) {
         mNeedsReload = needsReload;
+    }
+
+    /**
+     * @return true iff the tab is loading and an interstitial page is not showing.
+     */
+    public boolean isLoading() {
+        return mIsLoading && !isShowingInterstitialPage();
+    }
+
+    /**
+     * @return true iff the tab is performing a restore page load.
+     */
+    public boolean isBeingRestored() {
+        return mIsBeingRestored;
     }
 
     /**
@@ -2264,6 +2349,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         enableHidingTopControls &=
                 !AccessibilityUtil.isAccessibilityEnabled(getApplicationContext());
         return enableHidingTopControls;
+    }
+
+    /**
+     * Performs any subclass-specific tasks when the Tab crashes.
+     */
+    protected void handleTabCrash() {
     }
 
     /**
