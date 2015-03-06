@@ -53,6 +53,11 @@ var WEB_VIEW_API_METHODS = [
   // overridden.
   'isUserAgentOverridden',
 
+  // Loads a data URL with a specified base URL used for relative links.
+  // Optionally, a virtual URL can be provided to be shown to the user instead
+  // of the data URL.
+  'loadDataWithBaseUrl',
+
   // Prints the contents of the webview.
   'print',
 
@@ -115,6 +120,22 @@ WebViewImpl.prototype.insertCSS = function(var_args) {
 WebViewImpl.prototype.isUserAgentOverridden = function() {
   return !!this.userAgentOverride &&
       this.userAgentOverride != navigator.userAgent;
+};
+
+WebViewImpl.prototype.loadDataWithBaseUrl = function(
+    dataUrl, baseUrl, virtualUrl) {
+  if (!this.guest.getId()) {
+    return;
+  }
+  WebViewInternal.loadDataWithBaseUrl(
+      this.guest.getId(), dataUrl, baseUrl, virtualUrl, function() {
+        // Report any errors.
+        if (chrome.runtime.lastError != undefined) {
+          window.console.error(
+              'Error while running webview.loadDataWithBaseUrl: ' +
+                  chrome.runtime.lastError.message);
+        }
+      });
 };
 
 WebViewImpl.prototype.print = function() {
