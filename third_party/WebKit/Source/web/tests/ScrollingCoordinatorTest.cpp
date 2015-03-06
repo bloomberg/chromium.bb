@@ -581,4 +581,25 @@ TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
     ASSERT_EQ(platformLayer->opaque(), contentsLayer->opaque());
 }
 
+TEST_F(ScrollingCoordinatorTest, FixedPositionLosingBackingShouldTriggerMainThreadScroll)
+{
+    webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(false);
+    registerMockedHttpURLLoad("fixed-position-losing-backing.html");
+    navigateTo(m_baseURL + "fixed-position-losing-backing.html");
+    forceFullCompositingUpdate();
+
+    WebLayer* scrollLayer = frame()->page()->deprecatedLocalMainFrame()->view()->layerForScrolling()->platformLayer();
+    Document* document = frame()->document();
+    Element* fixedPos = document->getElementById("fixed");
+
+    EXPECT_TRUE(static_cast<LayoutBoxModelObject*>(fixedPos->renderer())->layer()->hasCompositedLayerMapping());
+    EXPECT_FALSE(scrollLayer->shouldScrollOnMainThread());
+
+    fixedPos->setInlineStyleProperty(CSSPropertyTransform, CSSValueNone);
+    forceFullCompositingUpdate();
+
+    EXPECT_FALSE(static_cast<LayoutBoxModelObject*>(fixedPos->renderer())->layer()->hasCompositedLayerMapping());
+    EXPECT_TRUE(scrollLayer->shouldScrollOnMainThread());
+}
+
 } // namespace

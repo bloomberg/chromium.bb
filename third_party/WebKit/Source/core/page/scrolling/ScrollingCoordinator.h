@@ -131,7 +131,7 @@ protected:
     bool m_shouldScrollOnMainThreadDirty;
 
 private:
-    bool shouldUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty || frameViewIsDirty(); }
+    bool shouldUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty || m_shouldScrollOnMainThreadDirty || frameViewIsDirty(); }
 
     void setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons);
 

@@ -28,7 +28,10 @@
 #include "core/layout/compositing/CompositingLayerAssigner.h"
 
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/page/Page.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -229,6 +232,15 @@ void CompositingLayerAssigner::assignLayersToBackingsForReflectionLayer(Layer* r
         reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration();
 }
 
+static ScrollingCoordinator* scrollingCoordinatorFromLayer(Layer& layer)
+{
+    Page* page = layer.renderer()->frame()->page();
+    if (!page)
+        return 0;
+
+    return page->scrollingCoordinator();
+}
+
 void CompositingLayerAssigner::assignLayersToBackingsInternal(Layer* layer, SquashingState& squashingState, Vector<Layer*>& layersNeedingPaintInvalidation)
 {
     if (requiresSquashing(layer->compositingReasons())) {
@@ -243,6 +255,10 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(Layer* layer, Squa
         TRACE_LAYER_INVALIDATION(layer, InspectorLayerInvalidationTrackingEvent::NewCompositedLayer);
         layersNeedingPaintInvalidation.append(layer);
         m_layersChanged = true;
+        if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(*layer)) {
+            if (layer->renderer()->style()->hasViewportConstrainedPosition())
+                scrollingCoordinator->frameViewFixedObjectsDidChange(layer->renderer()->view()->frameView());
+        }
     }
 
     // FIXME: special-casing reflection layers here is not right.
