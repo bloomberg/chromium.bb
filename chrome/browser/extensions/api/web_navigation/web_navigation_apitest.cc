@@ -216,11 +216,9 @@ class DelayLoadStartAndExecuteJavascript
 class TestResourceDispatcherHostDelegate
     : public ChromeResourceDispatcherHostDelegate {
  public:
-  TestResourceDispatcherHostDelegate(
-      prerender::PrerenderTracker* prerender_tracker,
+  explicit TestResourceDispatcherHostDelegate(
       TestNavigationListener* test_navigation_listener)
-      : ChromeResourceDispatcherHostDelegate(prerender_tracker),
-        test_navigation_listener_(test_navigation_listener) {
+      : test_navigation_listener_(test_navigation_listener) {
   }
   ~TestResourceDispatcherHostDelegate() override {}
 
@@ -272,7 +270,6 @@ class WebNavigationApiTest : public ExtensionApiTest {
     test_navigation_listener_ = new TestNavigationListener();
     resource_dispatcher_host_delegate_.reset(
         new TestResourceDispatcherHostDelegate(
-            g_browser_process->prerender_tracker(),
             test_navigation_listener_.get()));
     content::ResourceDispatcherHost::Get()->SetDelegate(
         resource_dispatcher_host_delegate_.get());

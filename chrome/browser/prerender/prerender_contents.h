@@ -39,10 +39,6 @@ namespace history {
 struct HistoryAddPageArgs;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace prerender {
 
 class PrerenderHandle;
@@ -50,8 +46,7 @@ class PrerenderManager;
 class PrerenderResourceThrottle;
 
 class PrerenderContents : public content::NotificationObserver,
-                          public content::WebContentsObserver,
-                          public base::SupportsWeakPtr<PrerenderContents> {
+                          public content::WebContentsObserver {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
@@ -60,8 +55,8 @@ class PrerenderContents : public content::NotificationObserver,
     Factory() {}
     virtual ~Factory() {}
 
-    // Ownership is not transfered through this interface as prerender_manager,
-    // prerender_tracker, and profile are stored as weak pointers.
+    // Ownership is not transfered through this interface as prerender_manager
+    // and profile are stored as weak pointers.
     virtual PrerenderContents* CreatePrerenderContents(
         PrerenderManager* prerender_manager,
         Profile* profile,
@@ -152,8 +147,7 @@ class PrerenderContents : public content::NotificationObserver,
   // page should be part of.
   virtual void StartPrerendering(
       const gfx::Size& size,
-      content::SessionStorageNamespace* session_storage_namespace,
-      net::URLRequestContextGetter* request_context);
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Verifies that the prerendering is not using too many resources, and kills
   // it if not.
@@ -396,8 +390,6 @@ class PrerenderContents : public content::NotificationObserver,
   // True when the main frame has finished loading.
   bool has_finished_loading_;
 
-  // This must be the same value as the PrerenderTracker has recorded for
-  // |this|, when |this| has a RenderView.
   FinalStatus final_status_;
 
   // The MatchComplete status of the prerender, indicating how it relates

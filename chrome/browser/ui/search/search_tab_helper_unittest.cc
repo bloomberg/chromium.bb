@@ -389,8 +389,6 @@ class SearchTabHelperPrerenderTest : public InstantUnitTestBase {
     InstantUnitTestBase::SetUp();
 
     AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
-    prerender::PrerenderManagerFactory::GetForProfile(browser()->profile())->
-        OnCookieStoreLoaded();
     SearchTabHelper::FromWebContents(web_contents())->set_omnibox_has_focus_fn(
         omnibox_has_focus);
     SearchTabHelperPrerenderTest::omnibox_has_focus_ = true;

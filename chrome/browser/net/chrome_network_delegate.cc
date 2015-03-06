@@ -31,7 +31,6 @@
 #include "chrome/browser/net/chrome_extensions_network_delegate.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/safe_search_util.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
@@ -52,7 +51,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/io_thread.h"
@@ -297,8 +295,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       experimental_web_platform_features_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableExperimentalWebPlatformFeatures)),
-      first_request_(true),
-      prerender_tracker_(NULL) {
+      first_request_(true) {
   DCHECK(enable_referrers);
   extensions_delegate_.reset(
       ChromeExtensionsNetworkDelegate::Create(event_router));
@@ -617,13 +614,6 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                    render_process_id, render_frame_id,
                    request.url(), request.first_party_for_cookies(),
                    cookie_line, *options, !allow));
-  }
-
-  if (prerender_tracker_) {
-    prerender_tracker_->OnCookieChangedForURL(
-        render_process_id,
-        request.context()->cookie_store()->GetCookieMonster(),
-        request.url());
   }
 
   return allow;

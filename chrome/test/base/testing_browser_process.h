@@ -43,10 +43,6 @@ class BrowserPolicyConnector;
 class PolicyService;
 }
 
-namespace prerender {
-class PrerenderTracker;
-}
-
 class TestingBrowserProcess : public BrowserProcess {
  public:
   // Initializes |g_browser_process| with a new TestingBrowserProcess.
@@ -109,7 +105,6 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
 
   ChromeNetLog* net_log() override;
-  prerender::PrerenderTracker* prerender_tracker() override;
   component_updater::ComponentUpdateService* component_updater() override;
   CRLSetFetcher* crl_set_fetcher() override;
   component_updater::PnaclComponentInstaller* pnacl_component_installer()
@@ -165,7 +160,6 @@ class TestingBrowserProcess : public BrowserProcess {
       print_preview_dialog_controller_;
 #endif
 
-  scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
   scoped_refptr<SafeBrowsingService> sb_service_;
 #endif  // !defined(OS_IOS)
 

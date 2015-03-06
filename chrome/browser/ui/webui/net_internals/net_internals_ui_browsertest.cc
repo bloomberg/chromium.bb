@@ -337,12 +337,6 @@ void NetInternalsTest::SetUpOnMainThread() {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
-  if (!prerender_manager->cookie_store_loaded()) {
-    base::RunLoop loop;
-    prerender_manager->set_on_cookie_store_loaded_cb_for_testing(
-        loop.QuitClosure());
-    loop.Run();
-  }
 }
 
 content::WebUIMessageHandler* NetInternalsTest::GetMockMessageHandler() {

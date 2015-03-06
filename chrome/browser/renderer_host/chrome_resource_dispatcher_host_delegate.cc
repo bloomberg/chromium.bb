@@ -21,7 +21,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -301,14 +300,13 @@ void AppendComponentUpdaterThrottles(
 
 }  // namespace
 
-ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
-    prerender::PrerenderTracker* prerender_tracker)
+ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate()
     : download_request_limiter_(g_browser_process->download_request_limiter()),
-      safe_browsing_(g_browser_process->safe_browsing_service()),
+      safe_browsing_(g_browser_process->safe_browsing_service())
 #if defined(ENABLE_EXTENSIONS)
-      user_script_listener_(new extensions::UserScriptListener()),
+      , user_script_listener_(new extensions::UserScriptListener())
 #endif
-      prerender_tracker_(prerender_tracker) {
+      {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,

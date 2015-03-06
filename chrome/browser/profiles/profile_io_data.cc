@@ -448,7 +448,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #endif
 
   params->profile = profile;
-  params->prerender_tracker = g_browser_process->prerender_tracker();
   profile_params_.reset(params.release());
 
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
@@ -1058,7 +1057,6 @@ void ProfileIOData::Init(
   network_delegate->set_force_safe_search(&force_safesearch_);
   network_delegate->set_force_google_safe_search(&force_google_safesearch_);
   network_delegate->set_force_youtube_safety_mode(&force_youtube_safety_mode_);
-  network_delegate->set_prerender_tracker(profile_params_->prerender_tracker);
   fraudulent_certificate_reporter_.reset(
       new chrome_browser_net::ChromeFraudulentCertificateReporter(
           main_request_context_.get()));

@@ -21,20 +21,12 @@ namespace extensions {
 class UserScriptListener;
 }
 
-namespace prerender {
-class PrerenderTracker;
-}
-
 // Implements ResourceDispatcherHostDelegate. Currently used by the Prerender
 // system to abort requests and add to the load flags when a request begins.
 class ChromeResourceDispatcherHostDelegate
     : public content::ResourceDispatcherHostDelegate {
  public:
-  // This class does not take ownership of the tracker but merely holds a
-  // reference to it to avoid accessing g_browser_process.
-  // |prerender_tracker| must outlive |this|.
-  explicit ChromeResourceDispatcherHostDelegate(
-      prerender::PrerenderTracker* prerender_tracker);
+  ChromeResourceDispatcherHostDelegate();
   ~ChromeResourceDispatcherHostDelegate() override;
 
   // ResourceDispatcherHostDelegate implementation.
@@ -114,7 +106,6 @@ class ChromeResourceDispatcherHostDelegate
   scoped_refptr<extensions::UserScriptListener> user_script_listener_;
   std::map<net::URLRequest*, StreamTargetInfo> stream_target_info_;
 #endif
-  prerender::PrerenderTracker* prerender_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegate);
 };

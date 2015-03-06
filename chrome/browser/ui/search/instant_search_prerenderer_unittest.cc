@@ -16,7 +16,6 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_unittest_base.h"
@@ -59,8 +58,7 @@ class DummyPrerenderContents : public PrerenderContents {
 
   void StartPrerendering(
       const gfx::Size& size,
-      content::SessionStorageNamespace* session_storage_namespace,
-      net::URLRequestContextGetter* request_context) override;
+      content::SessionStorageNamespace* session_storage_namespace) override;
   bool GetChildId(int* child_id) const override;
   bool GetRouteId(int* route_id) const override;
 
@@ -108,8 +106,7 @@ DummyPrerenderContents::DummyPrerenderContents(
 
 void DummyPrerenderContents::StartPrerendering(
     const gfx::Size& size,
-    content::SessionStorageNamespace* session_storage_namespace,
-    net::URLRequestContextGetter* request_context) {
+    content::SessionStorageNamespace* session_storage_namespace) {
   content::SessionStorageNamespaceMap session_storage_namespace_map;
   session_storage_namespace_map[std::string()] = session_storage_namespace;
   prerender_contents_.reset(content::WebContents::CreateWithSessionStorage(
@@ -170,8 +167,6 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
     PrerenderManagerFactory::GetForProfile(browser()->profile())->
         SetPrerenderContentsFactory(
             new DummyPrerenderContentsFactory(call_did_finish_load));
-    PrerenderManagerFactory::GetForProfile(browser()->profile())->
-        OnCookieStoreLoaded();
     if (prerender_search_results_base_page) {
       content::SessionStorageNamespace* session_storage_namespace =
           GetActiveWebContents()->GetController().

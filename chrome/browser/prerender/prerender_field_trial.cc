@@ -80,7 +80,6 @@ const int kDefaultPrefetchListTimeoutSeconds = 300;
 const char kSkipPrerenderLocalCanadidates[] = "SkipPrerenderLocalCandidates";
 const char kSkipPrerenderServiceCanadidates[] =
     "SkipPrerenderServiceCandidates";
-const char kPrerenderCookieStore[] = "PrerenderCookieStore";
 
 void SetupPrerenderFieldTrial() {
   const FieldTrial::Probability divisor = 1000;
@@ -476,11 +475,6 @@ bool SkipLocalPredictorLocalCandidates() {
 bool SkipLocalPredictorServiceCandidates() {
   return GetLocalPredictorSpecValue(kSkipPrerenderServiceCanadidates) ==
       kEnabledGroup;
-}
-
-bool IsPrerenderCookieStoreEnabled() {
-  return GetLocalPredictorSpecValue(kPrerenderCookieStore) != kDisabledGroup &&
-      FieldTrialList::FindFullName(kPrerenderCookieStore) != kDisabledGroup;
 }
 
 }  // namespace prerender

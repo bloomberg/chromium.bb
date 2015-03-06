@@ -76,10 +76,6 @@ class PolicyHeaderIOHelper;
 class URLBlacklistManager;
 }  // namespace policy
 
-namespace prerender {
-class PrerenderTracker;
-}
-
 // Conceptually speaking, the ProfileIOData represents data that lives on the IO
 // thread that is owned by a Profile, such as, but not limited to, network
 // objects like CookieMonster, HttpTransactionFactory, etc.  Profile owns
@@ -344,8 +340,6 @@ class ProfileIOData {
     // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
     void* profile;
-
-    prerender::PrerenderTracker* prerender_tracker;
   };
 
   explicit ProfileIOData(Profile::ProfileType profile_type);

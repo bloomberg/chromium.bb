@@ -18,7 +18,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_helpers.h"
@@ -38,7 +37,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -293,8 +291,7 @@ PrerenderContents* PrerenderContents::FromWebContents(
 
 void PrerenderContents::StartPrerendering(
     const gfx::Size& size,
-    SessionStorageNamespace* session_storage_namespace,
-    net::URLRequestContextGetter* request_context) {
+    SessionStorageNamespace* session_storage_namespace) {
   DCHECK(profile_ != NULL);
   DCHECK(!size.IsEmpty());
   DCHECK(!prerendering_has_started_);
@@ -331,30 +328,15 @@ void PrerenderContents::StartPrerendering(
   // Set the size of the prerender WebContents.
   ResizeWebContents(prerender_contents_.get(), size_);
 
+  // TODO(davidben): This logic assumes each prerender has at most one
+  // route. https://crbug.com/440544
   child_id_ = GetRenderViewHost()->GetProcess()->GetID();
   route_id_ = GetRenderViewHost()->GetRoutingID();
 
-  // Add the RenderProcessHost to the Prerender Manager.
+  // TODO(davidben): This logic assumes each prerender has at most one
+  // process. https://crbug.com/440544
   prerender_manager()->AddPrerenderProcessHost(
       GetRenderViewHost()->GetProcess());
-
-  // In the prerender tracker, create a Prerender Cookie Store to keep track of
-  // cookie changes performed by the prerender. Once the prerender is shown,
-  // the cookie changes will be committed to the actual cookie store,
-  // otherwise, they will be discarded.
-  // If |request_context| is NULL, the feature must be disabled, so the
-  // operation will not be performed.
-  if (request_context) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&PrerenderTracker::AddPrerenderCookieStoreOnIOThread,
-                   base::Unretained(prerender_manager()->prerender_tracker()),
-                   GetRenderViewHost()->GetProcess()->GetID(),
-                   make_scoped_refptr(request_context),
-                   base::Bind(&PrerenderContents::Destroy,
-                              AsWeakPtr(),
-                              FINAL_STATUS_COOKIE_CONFLICT)));
-  }
 
   NotifyPrerenderStart();
 

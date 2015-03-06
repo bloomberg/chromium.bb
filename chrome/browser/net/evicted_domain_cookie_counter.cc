@@ -110,11 +110,6 @@ void EvictedDomainCookieCounter::OnCookieChanged(
     next_cookie_monster_delegate_->OnCookieChanged(cookie, removed, cause);
 }
 
-void EvictedDomainCookieCounter::OnLoaded() {
-  if (next_cookie_monster_delegate_.get())
-    next_cookie_monster_delegate_->OnLoaded();
-}
-
 // static
 EvictedDomainCookieCounter::EvictedCookieKey
     EvictedDomainCookieCounter::GetKey(const net::CanonicalCookie& cookie) {

@@ -46,7 +46,6 @@ namespace {
 class DummyPrerenderContents : public PrerenderContents {
  public:
   DummyPrerenderContents(UnitTestPrerenderManager* test_prerender_manager,
-                         PrerenderTracker* prerender_tracker,
                          const GURL& url,
                          Origin origin,
                          FinalStatus expected_final_status);
@@ -55,8 +54,7 @@ class DummyPrerenderContents : public PrerenderContents {
 
   void StartPrerendering(
       const gfx::Size& size,
-      content::SessionStorageNamespace* session_storage_namespace,
-      net::URLRequestContextGetter* request_context) override;
+      content::SessionStorageNamespace* session_storage_namespace) override;
 
   bool GetChildId(int* child_id) const override {
     // Having a default child_id of -1 forces pending prerenders not to fail
@@ -97,14 +95,11 @@ class UnitTestPrerenderManager : public PrerenderManager {
   using PrerenderManager::kMinTimeBetweenPrerendersMs;
   using PrerenderManager::kNavigationRecordWindowMs;
 
-  explicit UnitTestPrerenderManager(Profile* profile,
-                                    PrerenderTracker* prerender_tracker)
-      : PrerenderManager(profile, prerender_tracker),
+  explicit UnitTestPrerenderManager(Profile* profile)
+      : PrerenderManager(profile),
         time_(Time::Now()),
-        time_ticks_(TimeTicks::Now()),
-        prerender_tracker_(prerender_tracker) {
+        time_ticks_(TimeTicks::Now()) {
     set_rate_limit_enabled(false);
-    OnCookieStoreLoaded();
   }
 
   ~UnitTestPrerenderManager() override {}
@@ -158,7 +153,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       const GURL& url,
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
-        new DummyPrerenderContents(this, prerender_tracker_, url,
+        new DummyPrerenderContents(this, url,
                                    ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
                                    expected_final_status);
     SetNextPrerenderContents(prerender_contents);
@@ -170,8 +165,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       Origin origin,
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
-        new DummyPrerenderContents(this, prerender_tracker_, url,
-                                   origin, expected_final_status);
+        new DummyPrerenderContents(this, url, origin, expected_final_status);
     SetNextPrerenderContents(prerender_contents);
     return prerender_contents;
   }
@@ -181,7 +175,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       const std::vector<GURL>& alias_urls,
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
-        new DummyPrerenderContents(this, prerender_tracker_, url,
+        new DummyPrerenderContents(this, url,
                                    ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
                                    expected_final_status);
     for (std::vector<GURL>::const_iterator it = alias_urls.begin();
@@ -228,9 +222,6 @@ class UnitTestPrerenderManager : public PrerenderManager {
     prerender_contents_map_.erase(std::make_pair(child_id, route_id));
   }
 
- protected:
-  net::URLRequestContextGetter* GetURLRequestContext() override { return NULL; }
-
  private:
   void SetNextPrerenderContents(DummyPrerenderContents* prerender_contents) {
     CHECK(!next_prerender_contents_.get());
@@ -260,8 +251,6 @@ class UnitTestPrerenderManager : public PrerenderManager {
   // PrerenderContents with an |expected_final_status| of FINAL_STATUS_USED,
   // tracked so they will be automatically deleted.
   ScopedVector<PrerenderContents> used_prerender_contents_;
-
-  PrerenderTracker* prerender_tracker_;
 };
 
 class RestorePrerenderMode {
@@ -276,7 +265,6 @@ class RestorePrerenderMode {
 
 DummyPrerenderContents::DummyPrerenderContents(
     UnitTestPrerenderManager* test_prerender_manager,
-    PrerenderTracker* prerender_tracker,
     const GURL& url,
     Origin origin,
     FinalStatus expected_final_status)
@@ -295,8 +283,7 @@ DummyPrerenderContents::~DummyPrerenderContents() {
 
 void DummyPrerenderContents::StartPrerendering(
     const gfx::Size& size,
-    content::SessionStorageNamespace* session_storage_namespace,
-    net::URLRequestContextGetter* request_context) {
+    content::SessionStorageNamespace* session_storage_namespace) {
   // In the base PrerenderContents implementation, StartPrerendering will
   // be called even when the PrerenderManager is part of the control group,
   // but it will early exit before actually creating a new RenderView if
@@ -315,8 +302,7 @@ class PrerenderTest : public testing::Test {
   static const int kDefaultRenderViewRouteId = -1;
 
   PrerenderTest() : ui_thread_(BrowserThread::UI, &message_loop_),
-                    prerender_manager_(new UnitTestPrerenderManager(
-                        &profile_, prerender_tracker())),
+                    prerender_manager_(new UnitTestPrerenderManager(&profile_)),
                     prerender_link_manager_(
                         new PrerenderLinkManager(prerender_manager_.get())),
                     last_prerender_id_(0),
@@ -392,10 +378,6 @@ class PrerenderTest : public testing::Test {
   }
 
  private:
-  PrerenderTracker* prerender_tracker() {
-    return g_browser_process->prerender_tracker();
-  }
-
   // Needed to pass PrerenderManager's DCHECKs.
   TestingProfile profile_;
   base::MessageLoop message_loop_;

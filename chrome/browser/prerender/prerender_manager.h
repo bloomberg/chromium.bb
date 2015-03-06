@@ -6,9 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_
 
 #include <list>
-#include <map>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -55,16 +53,11 @@ namespace gfx {
 class Size;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace prerender {
 
 class PrerenderHandle;
 class PrerenderHistory;
 class PrerenderLocalPredictor;
-class PrerenderTracker;
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of web pages. All methods must be called on the UI thread unless
@@ -104,7 +97,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static const uint8 kNoExperiment = 0;
 
   // Owned by a Profile object for the lifetime of the profile.
-  PrerenderManager(Profile* profile, PrerenderTracker* prerender_tracker);
+  explicit PrerenderManager(Profile* profile);
 
   ~PrerenderManager() override;
 
@@ -287,10 +280,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }
 
-  PrerenderTracker* prerender_tracker() { return prerender_tracker_; }
-
-  bool cookie_store_loaded() { return cookie_store_loaded_; }
-
   // Records that some visible tab navigated (or was redirected) to the
   // provided URL.
   void RecordNavigation(const GURL& url);
@@ -362,15 +351,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // content::RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
-
-  // To be called once the cookie store for this profile has been loaded.
-  void OnCookieStoreLoaded();
-
-  // For testing purposes. Issues a callback once the cookie store has been
-  // loaded.
-  void set_on_cookie_store_loaded_cb_for_testing(base::Closure cb) {
-    on_cookie_store_loaded_cb_for_testing_ = cb;
-  }
 
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
@@ -444,11 +424,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // might have committed an omnibox navigation. This is used to possibly
   // shorten the TTL of the prerendered page.
   void SourceNavigatedAway(PrerenderData* prerender_data);
-
-  // Gets the request context for the profile.
-  // For unit tests, this will be overriden to return NULL, since it is not
-  // needed.
-  virtual net::URLRequestContextGetter* GetURLRequestContext();
 
  private:
   friend class ::InstantSearchPrerendererTest;
@@ -583,8 +558,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // The profile that owns this PrerenderManager.
   Profile* profile_;
 
-  PrerenderTracker* prerender_tracker_;
-
   // All running prerenders. Sorted by expiry time, in ascending order.
   ScopedVector<PrerenderData> active_prerenders_;
 
@@ -644,11 +617,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Set of process hosts being prerendered.
   typedef std::set<content::RenderProcessHost*> PrerenderProcessSet;
   PrerenderProcessSet prerender_process_hosts_;
-
-  // Indicates whether the cookie store for this profile has fully loaded yet.
-  bool cookie_store_loaded_;
-
-  base::Closure on_cookie_store_loaded_cb_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

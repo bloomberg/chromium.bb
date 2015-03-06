@@ -21,7 +21,6 @@
 
 #if !defined(OS_IOS)
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
@@ -329,17 +328,6 @@ DownloadRequestLimiter* TestingBrowserProcess::download_request_limiter() {
 
 ChromeNetLog* TestingBrowserProcess::net_log() {
   return nullptr;
-}
-
-prerender::PrerenderTracker* TestingBrowserProcess::prerender_tracker() {
-#if defined(OS_IOS)
-  NOTIMPLEMENTED();
-  return nullptr;
-#else
-  if (!prerender_tracker_.get())
-    prerender_tracker_.reset(new prerender::PrerenderTracker());
-  return prerender_tracker_.get();
-#endif
 }
 
 component_updater::ComponentUpdateService*

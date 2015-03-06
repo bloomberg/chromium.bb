@@ -13,8 +13,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.Callable;
@@ -23,14 +21,11 @@ import java.util.concurrent.Callable;
  * Tests for adding and removing prerenders using the {@link ExternalPrerenderHandler}
  */
 public class ExternalPrerenderRequestTest extends ChromeShellTestBase {
-    private static final String HOMEPAGE_URL =
-            TestHttpServerClient.getUrl("chrome/test/data/android/prerender/homepage.html");
     private static final String GOOGLE_URL =
             TestHttpServerClient.getUrl("chrome/test/data/android/prerender/google.html");
     private static final String YOUTUBE_URL =
             TestHttpServerClient.getUrl("chrome/test/data/android/prerender/youtube.html");
     private static final int PRERENDER_DELAY_MS = 500;
-    private static final int CHECK_COOKIE_STORE_FREQUENCY_MS = 200;
 
     private ExternalPrerenderHandler mHandler;
     private Profile mProfile;
@@ -39,8 +34,7 @@ public class ExternalPrerenderRequestTest extends ChromeShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
         clearAppData();
-        // Launch with a non-blank homepage, to trigger cookie store loading.
-        launchChromeShellWithUrl(HOMEPAGE_URL);
+        launchChromeShellWithBlankPage();
         assertTrue(waitForActiveShellToBeDoneLoading());
         mHandler = new ExternalPrerenderHandler();
         final Callable<Profile> profileCallable = new Callable<Profile>() {
@@ -50,18 +44,6 @@ public class ExternalPrerenderRequestTest extends ChromeShellTestBase {
             }
         };
         mProfile = ThreadUtils.runOnUiThreadBlocking(profileCallable);
-        final Callable<Boolean> cookieStoreCallable = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return ExternalPrerenderHandler.checkCookieStoreLoadedForTesting(mProfile);
-            }
-        };
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(cookieStoreCallable);
-            }
-        }, CHECK_COOKIE_STORE_FREQUENCY_MS, 5000));
     }
 
     @MediumTest

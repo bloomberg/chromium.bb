@@ -196,7 +196,7 @@
       'browser/prefs/tracked/segregated_pref_store_unittest.cc',
       'browser/prefs/tracked/tracked_preferences_migration_unittest.cc',
       'browser/prerender/prerender_history_unittest.cc',
-      'browser/prerender/prerender_tracker_unittest.cc',
+      'browser/prerender/prerender_resource_throttle_unittest.cc',
       'browser/prerender/prerender_unittest.cc',
       'browser/prerender/prerender_util_unittest.cc',
       'browser/process_info_snapshot_mac_unittest.cc',

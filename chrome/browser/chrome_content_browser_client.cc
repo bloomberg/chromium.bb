@@ -53,7 +53,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_message_filter.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
@@ -694,7 +693,7 @@ void OnRequestPermission(
 namespace chrome {
 
 ChromeContentBrowserClient::ChromeContentBrowserClient()
-    : prerender_tracker_(NULL),
+    :
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
       v8_natives_fd_(-1),
       v8_snapshot_fd_(-1),
@@ -1153,8 +1152,7 @@ bool ChromeContentBrowserClient::MayReuseHost(
     content::RenderProcessHost* process_host) {
   // If there is currently a prerender in progress for the host provided,
   // it may not be shared. We require prerenders to be by themselves in a
-  // separate process, so that we can monitor their resource usage, and so that
-  // we can track the cookies that they change.
+  // separate process so that we can monitor their resource usage.
   Profile* profile = Profile::FromBrowserContext(
       process_host->GetBrowserContext());
   prerender::PrerenderManager* prerender_manager =
@@ -1623,13 +1621,6 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, first_party);
-
-  if (prerender_tracker_) {
-    prerender_tracker_->OnCookieChangedForURL(
-        render_process_id,
-        context->GetRequestContext()->cookie_store()->GetCookieMonster(),
-        url);
-  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -2127,7 +2118,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
 void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prerender_tracker_ = g_browser_process->prerender_tracker();
   return g_browser_process->ResourceDispatcherHostCreated();
 }
 
@@ -2614,16 +2604,6 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
 #else
   return false;
 #endif
-}
-
-net::CookieStore*
-ChromeContentBrowserClient::OverrideCookieStoreForRenderProcess(
-    int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!prerender_tracker_)
-    return NULL;
-  return prerender_tracker_->GetPrerenderCookieStoreForRenderProcess(
-                                 render_process_id).get();
 }
 
 void ChromeContentBrowserClient::OverridePageVisibilityState(

@@ -101,9 +101,6 @@ bool SkipLocalPredictorDefaultNoPrerender();
 bool SkipLocalPredictorLocalCandidates();
 bool SkipLocalPredictorServiceCandidates();
 
-// Indicates whether no prerender cookie stores should be used for prerendering.
-bool IsPrerenderCookieStoreEnabled();
-
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.prerender;
 
 import org.chromium.base.JNINamespace;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
@@ -62,25 +61,12 @@ public class ExternalPrerenderHandler {
         return nativeHasPrerenderedUrl(profile, url, webContents);
     }
 
-    /**
-     * Check whether the cookie store has been loaded. This is needed for prerender manager to allow
-     * to add prerenders and this call is to be used to wait until that happens in tests.
-     * @param profile The profile to be used.
-     * @return Whether the cookie store has been loaded.
-     */
-    @VisibleForTesting
-    public static boolean checkCookieStoreLoadedForTesting(Profile profile)  {
-        return nativeHasCookieStoreLoaded(profile);
-    }
-
     private static native long nativeInit();
     private static native boolean nativeAddPrerender(
             long nativeExternalPrerenderHandlerAndroid, Profile profile,
             WebContents webContents, String url, String referrer, int width, int height);
     private static native boolean nativeHasPrerenderedUrl(
             Profile profile, String url, WebContents webContents);
-    private static native boolean nativeHasCookieStoreLoaded(
-            Profile profile);
     private static native void nativeCancelCurrentPrerender(
             long nativeExternalPrerenderHandlerAndroid);
 }

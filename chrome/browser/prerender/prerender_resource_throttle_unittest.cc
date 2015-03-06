@@ -14,7 +14,6 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
@@ -82,8 +81,7 @@ class TestPrerenderContents : public PrerenderContents {
 
 class TestPrerenderManager : public PrerenderManager {
  public:
-  explicit TestPrerenderManager(PrerenderTracker* prerender_tracker) :
-      PrerenderManager(NULL, prerender_tracker) {
+  TestPrerenderManager() : PrerenderManager(nullptr) {
     mutable_config().rate_limit_enabled = false;
   }
 
@@ -162,30 +160,25 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
 
 }  // namespace
 
-class PrerenderTrackerTest : public testing::Test {
+class PrerenderResourceThrottleTest : public testing::Test {
  public:
   static const int kDefaultChildId = 0;
   static const int kDefaultRouteId = 100;
 
-  PrerenderTrackerTest() :
+  PrerenderResourceThrottleTest() :
       ui_thread_(BrowserThread::UI, &message_loop_),
       io_thread_(BrowserThread::IO, &message_loop_),
-      prerender_manager_(prerender_tracker()),
       test_contents_(&prerender_manager_, kDefaultChildId, kDefaultRouteId) {
     chrome_browser_net::SetUrlRequestMocksEnabled(true);
   }
 
-  ~PrerenderTrackerTest() override {
+  ~PrerenderResourceThrottleTest() override {
     chrome_browser_net::SetUrlRequestMocksEnabled(false);
 
     // Cleanup work so the file IO tasks from URLRequestMockHTTPJob
     // are gone.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     RunEvents();
-  }
-
-  PrerenderTracker* prerender_tracker() {
-    return g_browser_process->prerender_tracker();
   }
 
   TestPrerenderManager* prerender_manager() {
@@ -211,7 +204,7 @@ class PrerenderTrackerTest : public testing::Test {
 };
 
 // Checks that deferred redirects are throttled and resumed correctly.
-TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
+TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
   const base::FilePath::CharType kRedirectPath[] =
       FILE_PATH_LITERAL("prerender/image-deferred.png");
 
@@ -258,7 +251,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
 }
 
 // Checks that redirects in main frame loads are not deferred.
-TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
+TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
   const base::FilePath::CharType kRedirectPath[] =
       FILE_PATH_LITERAL("prerender/image-deferred.png");
 
@@ -303,7 +296,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
 
 // Checks that attempting to defer a synchronous request aborts the
 // prerender.
-TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
+TEST_F(PrerenderResourceThrottleTest, RedirectSyncXHR) {
   const base::FilePath::CharType kRedirectPath[] =
       FILE_PATH_LITERAL("prerender/image-deferred.png");
 

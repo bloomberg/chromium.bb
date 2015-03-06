@@ -121,8 +121,6 @@ class MockCookieMonsterDelegate : public CookieMonsterDelegate {
                        bool removed,
                        CookieMonsterDelegate::ChangeCause cause) override;
 
-  void OnLoaded() override;
-
  private:
   ~MockCookieMonsterDelegate() override;
 

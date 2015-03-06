@@ -247,8 +247,6 @@ TEST_F(ActivityLogTest, LogPrerender) {
       prerender::PrerenderManagerFactory::GetForProfile(
           Profile::FromBrowserContext(profile()));
 
-  prerender_manager->OnCookieStoreLoaded();
-
   const gfx::Size kSize(640, 480);
   scoped_ptr<prerender::PrerenderHandle> prerender_handle(
       prerender_manager->AddPrerenderFromLocalPredictor(

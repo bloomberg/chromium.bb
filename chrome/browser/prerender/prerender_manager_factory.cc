@@ -57,13 +57,10 @@ PrerenderManagerFactory::~PrerenderManagerFactory() {
 KeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  CHECK(g_browser_process->prerender_tracker());
   if (base::SysInfo::IsLowEndDevice())
     return NULL;
 
-  PrerenderManager* prerender_manager = new PrerenderManager(
-      profile, g_browser_process->prerender_tracker());
-  return prerender_manager;
+  return new PrerenderManager(profile);
 }
 
 content::BrowserContext* PrerenderManagerFactory::GetBrowserContextToUse(

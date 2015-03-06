@@ -51,7 +51,6 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -867,13 +866,6 @@ ChromeNetLog* BrowserProcessImpl::net_log() {
   return net_log_.get();
 }
 
-prerender::PrerenderTracker* BrowserProcessImpl::prerender_tracker() {
-  if (!prerender_tracker_.get())
-    prerender_tracker_.reset(new prerender::PrerenderTracker);
-
-  return prerender_tracker_.get();
-}
-
 component_updater::ComponentUpdateService*
 BrowserProcessImpl::component_updater() {
   if (!component_updater_.get()) {
@@ -923,7 +915,7 @@ BrowserProcessImpl::supervised_user_whitelist_installer() {
 
 void BrowserProcessImpl::ResourceDispatcherHostCreated() {
   resource_dispatcher_host_delegate_.reset(
-      new ChromeResourceDispatcherHostDelegate(prerender_tracker()));
+      new ChromeResourceDispatcherHostDelegate);
   ResourceDispatcherHost::Get()->SetDelegate(
       resource_dispatcher_host_delegate_.get());
 

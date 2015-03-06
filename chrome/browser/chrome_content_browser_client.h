@@ -31,10 +31,6 @@ namespace extensions {
 class BrowserPermissionsPolicyDelegate;
 }
 
-namespace prerender {
-class PrerenderTracker;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -260,8 +256,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsPluginAllowedToUseDevChannelAPIs(
       content::BrowserContext* browser_context,
       const GURL& url) override;
-  net::CookieStore* OverrideCookieStoreForRenderProcess(
-      int render_process_id) override;
   void OverridePageVisibilityState(
       content::RenderFrameHost* render_frame_host,
       blink::WebPageVisibilityState* visibility_state) override;
@@ -329,14 +323,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // versions of Chrome.
   std::set<std::string> allowed_dev_channel_origins_;
 #endif
-
-  // The prerender tracker used to determine whether a render process is used
-  // for prerendering and an override cookie store must be provided.
-  // This needs to be kept as a member rather than just looked up from
-  // the profile due to initialization ordering, as well as due to threading.
-  // It is initialized on the UI thread when the ResoureDispatcherHost is
-  // created. It is used only the IO thread.
-  prerender::PrerenderTracker* prerender_tracker_;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::ScopedFD v8_natives_fd_;

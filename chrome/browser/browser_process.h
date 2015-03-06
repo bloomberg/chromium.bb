@@ -81,10 +81,6 @@ class BrowserPolicyConnector;
 class PolicyService;
 }
 
-namespace prerender {
-class PrerenderTracker;
-}
-
 namespace printing {
 class BackgroundPrintingManager;
 class PrintJobManager;
@@ -220,8 +216,6 @@ class BrowserProcess {
 #endif
 
   virtual ChromeNetLog* net_log() = 0;
-
-  virtual prerender::PrerenderTracker* prerender_tracker() = 0;
 
   virtual component_updater::ComponentUpdateService* component_updater() = 0;
 

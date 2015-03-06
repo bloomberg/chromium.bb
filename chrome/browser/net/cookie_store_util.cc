@@ -12,8 +12,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/evicted_domain_cookie_counter.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -51,13 +49,6 @@ class ChromeCookieMonsterDelegate : public net::CookieMonsterDelegate {
                    this, cookie, removed, cause));
   }
 
-  void OnLoaded() override {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ChromeCookieMonsterDelegate::OnLoadedAsyncHelper,
-                   this));
-  }
-
  private:
   ~ChromeCookieMonsterDelegate() override {}
 
@@ -79,16 +70,6 @@ class ChromeCookieMonsterDelegate : public net::CookieMonsterDelegate {
           chrome::NOTIFICATION_COOKIE_CHANGED,
           content::Source<Profile>(profile),
           content::Details<ChromeCookieDetails>(&cookie_details));
-    }
-  }
-
-  void OnLoadedAsyncHelper() {
-    Profile* profile = profile_getter_.Run();
-    if (profile) {
-      prerender::PrerenderManager* prerender_manager =
-          prerender::PrerenderManagerFactory::GetForProfile(profile);
-      if (prerender_manager)
-        prerender_manager->OnCookieStoreLoaded();
     }
   }
 

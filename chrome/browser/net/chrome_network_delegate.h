@@ -50,10 +50,6 @@ namespace policy {
 class URLBlacklistManager;
 }
 
-namespace prerender {
-class PrerenderTracker;
-}
-
 // ChromeNetworkDelegate is the central point from within the chrome code to
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
@@ -118,10 +114,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   void set_domain_reliability_monitor(
       domain_reliability::DomainReliabilityMonitor* monitor) {
     domain_reliability_monitor_ = monitor;
-  }
-
-  void set_prerender_tracker(prerender::PrerenderTracker* prerender_tracker) {
-    prerender_tracker_ = prerender_tracker;
   }
 
   // Causes |OnCanThrottleRequest| to always return false, for all
@@ -229,8 +221,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   bool experimental_web_platform_features_enabled_;
 
   bool first_request_;
-
-  prerender::PrerenderTracker* prerender_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

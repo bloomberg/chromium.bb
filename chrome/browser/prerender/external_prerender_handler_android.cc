@@ -89,17 +89,6 @@ static jboolean HasPrerenderedUrl(JNIEnv* env,
   return prerender_manager->HasPrerenderedUrl(url, web_contents);
 }
 
-static jboolean HasCookieStoreLoaded(JNIEnv* env,
-                                     jclass clazz,
-                                     jobject jprofile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
-  if (!prerender_manager)
-    return false;
-  return prerender_manager->cookie_store_loaded();
-}
-
 ExternalPrerenderHandlerAndroid::ExternalPrerenderHandlerAndroid() {}
 
 ExternalPrerenderHandlerAndroid::~ExternalPrerenderHandlerAndroid() {}

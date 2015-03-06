@@ -90,7 +90,6 @@ class EvictedDomainCookieCounter : public net::CookieMonster::Delegate {
   void OnCookieChanged(const net::CanonicalCookie& cookie,
                        bool removed,
                        ChangeCause cause) override;
-  void OnLoaded() override;
 
  private:
   // Identifier of an evicted cookie.
