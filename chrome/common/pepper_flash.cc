@@ -117,10 +117,14 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
   if (os != kPepperFlashOperatingSystem)
     return false;
 
+// On Win64, PepperFlash manifests have "ia32" instead of "x64" so skip the
+// architecture check. TODO(wfh): remove this when crbug.com/458894 is fixed.
+#if !defined(OS_WIN) || !defined(ARCH_CPU_X86_64)
   std::string arch;
   manifest.GetStringASCII("x-ppapi-arch", &arch);
   if (arch != kPepperFlashArch)
     return false;
+#endif
 
   *version_out = version;
   return true;
