@@ -241,10 +241,12 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
 
-  top_controls_manager_ =
-      TopControlsManager::Create(this,
-                                 settings.top_controls_show_threshold,
-                                 settings.top_controls_hide_threshold);
+  if (settings.calculate_top_controls_position) {
+    top_controls_manager_ =
+        TopControlsManager::Create(this,
+                                   settings.top_controls_show_threshold,
+                                   settings.top_controls_hide_threshold);
+  }
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -914,7 +916,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 }
 
 void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
-  top_controls_manager_->MainThreadHasStoppedFlinging();
+  if (top_controls_manager_)
+    top_controls_manager_->MainThreadHasStoppedFlinging();
   if (input_handler_client_)
     input_handler_client_->MainThreadHasStoppedFlinging();
 }
@@ -1420,10 +1423,12 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   metadata.root_layer_size = active_tree_->ScrollableSize();
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
-  metadata.location_bar_offset =
-      gfx::Vector2dF(0.f, top_controls_manager_->ControlsTopOffset());
-  metadata.location_bar_content_translation =
-      gfx::Vector2dF(0.f, top_controls_manager_->ContentTopOffset());
+  if (top_controls_manager_) {
+    metadata.location_bar_offset =
+        gfx::Vector2dF(0.f, top_controls_manager_->ControlsTopOffset());
+    metadata.location_bar_content_translation =
+        gfx::Vector2dF(0.f, top_controls_manager_->ContentTopOffset());
+  }
 
   active_tree_->GetViewportSelection(&metadata.selection_start,
                                      &metadata.selection_end);
@@ -1653,7 +1658,7 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   LayerImpl* inner_container = active_tree_->InnerViewportContainerLayer();
   LayerImpl* outer_container = active_tree_->OuterViewportContainerLayer();
 
-  if (!inner_container)
+  if (!inner_container || !top_controls_manager_)
     return;
 
   ViewportAnchor anchor(InnerViewportScrollLayer(),
@@ -2351,7 +2356,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     InputHandler::ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
-  top_controls_manager_->ScrollBegin();
+  if (top_controls_manager_)
+    top_controls_manager_->ScrollBegin();
 
   DCHECK(!CurrentlyScrollingLayer());
   ClearCurrentlyScrollingLayer();
@@ -2561,6 +2567,9 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(
 bool LayerTreeHostImpl::ShouldTopControlsConsumeScroll(
     const gfx::Vector2dF& scroll_delta) const {
   DCHECK(CurrentlyScrollingLayer());
+
+  if (!top_controls_manager_)
+    return false;
 
   // Always consume if it's in the direction to show the top controls.
   if (scroll_delta.y() < 0)
@@ -2802,7 +2811,8 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {
 }
 
 void LayerTreeHostImpl::ScrollEnd() {
-  top_controls_manager_->ScrollEnd();
+  if (top_controls_manager_)
+    top_controls_manager_->ScrollEnd();
   ClearCurrentlyScrollingLayer();
 }
 
@@ -2923,7 +2933,8 @@ void LayerTreeHostImpl::PinchGestureBegin() {
     active_tree_->SetCurrentlyScrollingLayer(
         active_tree_->InnerViewportScrollLayer());
   }
-  top_controls_manager_->PinchBegin();
+  if (top_controls_manager_)
+    top_controls_manager_->PinchBegin();
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
@@ -2982,7 +2993,8 @@ void LayerTreeHostImpl::PinchGestureEnd() {
     pinch_gesture_end_should_clear_scrolling_layer_ = false;
     ClearCurrentlyScrollingLayer();
   }
-  top_controls_manager_->PinchEnd();
+  if (top_controls_manager_)
+    top_controls_manager_->PinchEnd();
   client_->SetNeedsCommitOnImplThread();
   // When a pinch ends, we may be displaying content cached at incorrect scales,
   // so updating draw properties and drawing will ensure we are using the right
@@ -3077,7 +3089,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
 }
 
 void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
-  if (!top_controls_manager_->animation())
+  if (!top_controls_manager_ || !top_controls_manager_->animation())
     return;
 
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);

@@ -24,6 +24,9 @@ const char kDisableMainFrameBeforeActivation[] =
 const char kEnableMainFrameBeforeActivation[] =
     "enable-main-frame-before-activation";
 
+const char kEnableTopControlsPositionCalculation[] =
+    "enable-top-controls-position-calculation";
+
 // Percentage of the top controls need to be hidden before they will auto hide.
 const char kTopControlsHideThreshold[] = "top-controls-hide-threshold";
 

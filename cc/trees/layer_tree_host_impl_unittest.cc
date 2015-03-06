@@ -2478,6 +2478,7 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
       : layer_size_(10, 10),
         clip_size_(layer_size_),
         top_controls_height_(50) {
+    settings_.calculate_top_controls_position = true;
     settings_.use_pinch_virtual_viewport = true;
 
     viewport_size_ = gfx::Size(clip_size_.width(),
@@ -2488,7 +2489,7 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
                       scoped_ptr<OutputSurface> output_surface) override {
     bool init =
         LayerTreeHostImplTest::CreateHostImpl(settings, output_surface.Pass());
-    if (init) {
+    if (init && settings.calculate_top_controls_position) {
       host_impl_->active_tree()->set_top_controls_height(top_controls_height_);
       host_impl_->active_tree()->SetCurrentTopControlsShownRatio(1.f);
     }
@@ -7452,6 +7453,7 @@ class LayerTreeHostImplWithTopControlsTest : public LayerTreeHostImplTest {
  public:
   void SetUp() override {
     LayerTreeSettings settings = DefaultSettings();
+    settings.calculate_top_controls_position = true;
     CreateHostImpl(settings, CreateOutputSurface());
     host_impl_->active_tree()->set_top_controls_height(top_controls_height_);
     host_impl_->sync_tree()->set_top_controls_height(top_controls_height_);

@@ -41,6 +41,10 @@ public abstract class ContentSwitches {
     // Sets the ISO country code that will be used for phone number detection.
     public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
 
+    // Whether to enable the auto-hiding top controls.
+    public static final String ENABLE_TOP_CONTROLS_POSITION_CALCULATION =
+            "enable-top-controls-position-calculation";
+
     // How much of the top controls need to be shown before they will auto show.
     public static final String TOP_CONTROLS_SHOW_THRESHOLD = "top-controls-show-threshold";
 

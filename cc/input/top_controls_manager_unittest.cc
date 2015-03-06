@@ -409,9 +409,8 @@ TEST(TopControlsManagerTest, HeightChangeMaintainsFullyVisibleControls) {
 TEST(TopControlsManagerTest, GrowingHeightKeepsTopControlsHidden) {
   MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
-  client.SetTopControlsHeight(1.f);
   manager->UpdateTopControlsState(HIDDEN, HIDDEN, false);
-  EXPECT_EQ(-1.f, manager->ControlsTopOffset());
+  EXPECT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_EQ(0.f, manager->ContentTopOffset());
 
   client.SetTopControlsHeight(50.f);
@@ -444,51 +443,6 @@ TEST(TopControlsManagerTest, ShrinkingHeightKeepsTopControlsHidden) {
   EXPECT_FALSE(manager->animation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
-}
-
-TEST(TopControlsManagerTest, ZeroTopControlsHeightScrolling) {
-  MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
-  client.SetCurrentTopControlsShownRatio(0.f);
-  TopControlsManager* manager = client.manager();
-  manager->UpdateTopControlsState(BOTH, BOTH, false);
-
-  manager->ScrollBegin();
-  EXPECT_FLOAT_EQ(-10.f, manager->ScrollBy(gfx::Vector2dF(0.f, -10.f)).y());
-  EXPECT_FLOAT_EQ(0.f, manager->TopControlsShownRatio());
-
-  client.SetTopControlsHeight(20.f);
-  EXPECT_FLOAT_EQ(0.f, manager->TopControlsShownRatio());
-
-  EXPECT_FLOAT_EQ(0.f, manager->ScrollBy(gfx::Vector2dF(0.f, -15.f)).y());
-  EXPECT_FLOAT_EQ(0.75f, manager->TopControlsShownRatio());
-  client.SetTopControlsHeight(0.f);
-  manager->ScrollEnd();
-
-  EXPECT_FALSE(manager->animation());
-  EXPECT_FLOAT_EQ(1.f, manager->TopControlsShownRatio());
-}
-
-TEST(TopControlsManagerTest, ZeroTopControlsHeightAnimating) {
-  MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
-  client.SetCurrentTopControlsShownRatio(0.f);
-  TopControlsManager* manager = client.manager();
-
-  manager->UpdateTopControlsState(BOTH, HIDDEN, false);
-  EXPECT_FLOAT_EQ(0.f, manager->TopControlsShownRatio());
-  manager->UpdateTopControlsState(BOTH, SHOWN, false);
-  EXPECT_FLOAT_EQ(1.f, manager->TopControlsShownRatio());
-
-  manager->UpdateTopControlsState(BOTH, HIDDEN, true);
-  EXPECT_FLOAT_EQ(0.f, manager->TopControlsShownRatio());
-  EXPECT_FALSE(manager->animation());
-  manager->UpdateTopControlsState(BOTH, SHOWN, true);
-  EXPECT_FLOAT_EQ(1.f, manager->TopControlsShownRatio());
-  EXPECT_FALSE(manager->animation());
-
-  client.SetCurrentTopControlsShownRatio(0.3f);
-  manager->MainThreadHasStoppedFlinging();
-  EXPECT_FALSE(manager->animation());
-  EXPECT_FLOAT_EQ(0.f, manager->TopControlsShownRatio());
 }
 
 }  // namespace

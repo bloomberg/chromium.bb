@@ -275,6 +275,8 @@ void RenderWidgetCompositor::Initialize() {
       compositor_deps_->IsElasticOverscrollEnabled();
   settings.use_image_texture_target = compositor_deps_->GetImageTextureTarget();
 
+  settings.calculate_top_controls_position =
+      cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);
   if (cmd->HasSwitch(cc::switches::kTopControlsShowThreshold)) {
       std::string top_threshold_str =
           cmd->GetSwitchValueASCII(cc::switches::kTopControlsShowThreshold);

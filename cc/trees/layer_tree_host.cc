@@ -448,8 +448,11 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
   host_impl->SetUseGpuRasterization(UseGpuRasterization());
   shared_bitmap_manager_ = NULL;
   gpu_memory_buffer_manager_ = NULL;
-  top_controls_manager_weak_ptr_ =
-      host_impl->top_controls_manager()->AsWeakPtr();
+  if (settings_.calculate_top_controls_position &&
+      host_impl->top_controls_manager()) {
+    top_controls_manager_weak_ptr_ =
+        host_impl->top_controls_manager()->AsWeakPtr();
+  }
   input_handler_weak_ptr_ = host_impl->AsWeakPtr();
   return host_impl.Pass();
 }
@@ -1155,6 +1158,9 @@ void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {
 void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                                            TopControlsState current,
                                            bool animate) {
+  if (!settings_.calculate_top_controls_position)
+    return;
+
   // Top controls are only used in threaded mode.
   proxy_->ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
