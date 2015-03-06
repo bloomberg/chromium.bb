@@ -207,9 +207,8 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     cros_settings->SetBoolean(kAttestationForContentProtectionEnabled, true);
 
     // Start with the first-time setting set since most tests want this.
-    fake_delegate_.pref_service().SetUserPref(prefs::kRAConsentFirstTime,
+    fake_delegate_.pref_service().SetUserPref(prefs::kRAConsentGranted,
                                               new base::FundamentalValue(true));
-
   }
 
   void TearDown() {
@@ -244,8 +243,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   }
 
   void SetUserConsent(const GURL& url, bool allow) {
-    verifier_->RecordDomainConsent(fake_delegate_.GetContentSettings(NULL),
-                                   url,
+    verifier_->RecordOriginConsent(fake_delegate_.GetContentSettings(NULL), url,
                                    allow);
   }
 
@@ -332,22 +330,9 @@ TEST_F(PlatformVerificationFlowTest, SuccessNoConsent) {
   EXPECT_EQ(0, fake_delegate_.num_consent_calls());
 }
 
-TEST_F(PlatformVerificationFlowTest, SuccessWithAttestationConsent) {
+TEST_F(PlatformVerificationFlowTest, SuccessWithConsent) {
   SetUserConsent(GURL(kTestURL), true);
-  fake_cryptohome_client_.set_attestation_enrolled(false);
-  ExpectAttestationFlow();
-  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(PlatformVerificationFlow::SUCCESS, result_);
-  EXPECT_EQ(kTestSignedData, challenge_salt_);
-  EXPECT_EQ(kTestSignature, challenge_signature_);
-  EXPECT_EQ(kTestCertificate, certificate_);
-  EXPECT_EQ(1, fake_delegate_.num_consent_calls());
-}
-
-TEST_F(PlatformVerificationFlowTest, SuccessWithFirstTimeConsent) {
-  SetUserConsent(GURL(kTestURL), true);
-  fake_delegate_.pref_service().SetUserPref(prefs::kRAConsentFirstTime,
+  fake_delegate_.pref_service().SetUserPref(prefs::kRAConsentGranted,
                                             new base::FundamentalValue(false));
   ExpectAttestationFlow();
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);

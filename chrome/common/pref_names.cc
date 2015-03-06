@@ -751,7 +751,7 @@ const char kOpenNetworkConfiguration[] = "onc";
 
 // A boolean pref that tracks whether the user has already given consent for
 // enabling remote attestation for content protection.
-const char kRAConsentFirstTime[] = "settings.privacy.ra_consent";
+const char kRAConsentGranted[] = "settings.privacy.ra_consent_granted";
 
 // A boolean pref recording whether user has dismissed the multiprofile
 // itroduction dialog show.

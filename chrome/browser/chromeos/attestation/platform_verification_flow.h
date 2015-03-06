@@ -257,18 +257,18 @@ class PlatformVerificationFlow
   bool UpdateSettings(content::WebContents* web_contents,
                       ConsentResponse consent_response);
 
-  // Finds the domain-specific consent pref in |content_settings| for |url|.  If
-  // a pref exists for the domain, returns true and sets |pref_value| if it is
+  // Finds the origin-specific consent pref in |content_settings| for |url|.  If
+  // a pref exists for the origin, returns true and sets |pref_value| if it is
   // not NULL.
-  bool GetDomainPref(HostContentSettingsMap* content_settings,
+  bool GetOriginPref(HostContentSettingsMap* content_settings,
                      const GURL& url,
                      bool* pref_value);
 
-  // Records the domain-specific consent pref in |content_settings| for |url|.
-  // The pref will be set to |allow_domain|.
-  void RecordDomainConsent(HostContentSettingsMap* content_settings,
+  // Records the origin-specific consent pref in |content_settings| for |url|.
+  // The pref will be set to |allow_origin|.
+  void RecordOriginConsent(HostContentSettingsMap* content_settings,
                            const GURL& url,
-                           bool allow_domain);
+                           bool allow_origin);
 
   // Returns true iff |certificate| is an expired X.509 certificate.
   bool IsExpired(const std::string& certificate);

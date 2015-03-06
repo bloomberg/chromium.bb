@@ -216,23 +216,33 @@ void PlatformVerificationFlow::CheckEnrollment(const ChallengeContext& context,
 }
 
 void PlatformVerificationFlow::CheckConsent(const ChallengeContext& context,
-                                            bool attestation_enrolled) {
-  PrefService* pref_service = delegate_->GetPrefs(context.web_contents);
+                                            bool /* attestation_enrolled */) {
+  content::WebContents* web_contents = context.web_contents;
+
+  bool enabled_for_origin = false;
+  bool found =
+      GetOriginPref(delegate_->GetContentSettings(web_contents),
+                    delegate_->GetURL(web_contents), &enabled_for_origin);
+  if (found && !enabled_for_origin) {
+    VLOG(1) << "Platform verification denied because the origin has been "
+            << "blocked by the user.";
+    ReportError(context.callback, USER_REJECTED);
+    return;
+  }
+
+  PrefService* pref_service = delegate_->GetPrefs(web_contents);
   if (!pref_service) {
     LOG(ERROR) << "Failed to get user prefs.";
     ReportError(context.callback, INTERNAL_ERROR);
     return;
   }
-  bool consent_required = (
-      // Consent required if attestation has never been enrolled on this device.
-      !attestation_enrolled ||
-      // Consent required if this is the first use of attestation for content
-      // protection on this device.
-      !pref_service->GetBoolean(prefs::kRAConsentFirstTime) ||
-      // Consent required if consent has never been given for this domain.
-      !GetDomainPref(delegate_->GetContentSettings(context.web_contents),
-                     delegate_->GetURL(context.web_contents),
-                     NULL));
+
+  // Consent required if user has never given consent for this origin, or if
+  // user has never given consent to attestation for content protection on this
+  // device.
+  bool consent_required =
+      !found || !pref_service->GetBoolean(prefs::kRAConsentGranted);
+
   Delegate::ConsentCallback consent_callback = base::Bind(
       &PlatformVerificationFlow::OnConsentResponse,
       this,
@@ -252,8 +262,8 @@ void PlatformVerificationFlow::CheckConsent(const ChallengeContext& context,
 
 void PlatformVerificationFlow::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kRAConsentFirstTime,
-                             false,
+  prefs->RegisterBooleanPref(prefs::kRAConsentGranted,
+                             false,  // Default value.
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -419,13 +429,13 @@ bool PlatformVerificationFlow::IsAttestationEnabled(
     return false;
   }
 
-  // Check the user preference for this domain.
-  bool enabled_for_domain = false;
-  bool found = GetDomainPref(delegate_->GetContentSettings(web_contents),
-                             delegate_->GetURL(web_contents),
-                             &enabled_for_domain);
-  if (found && !enabled_for_domain) {
-    VLOG(1) << "Platform verification denied because the domain has been "
+  // Check the user preference for this origin.
+  bool enabled_for_origin = false;
+  bool found =
+      GetOriginPref(delegate_->GetContentSettings(web_contents),
+                    delegate_->GetURL(web_contents), &enabled_for_origin);
+  if (found && !enabled_for_origin) {
+    VLOG(1) << "Platform verification denied because the origin has been "
             << "blocked by the user.";
     return false;
   }
@@ -440,14 +450,18 @@ bool PlatformVerificationFlow::UpdateSettings(
     LOG(ERROR) << "Failed to get user prefs.";
     return false;
   }
-  pref_service->SetBoolean(prefs::kRAConsentFirstTime, true);
-  RecordDomainConsent(delegate_->GetContentSettings(web_contents),
+
+  if (consent_response == CONSENT_RESPONSE_ALLOW) {
+    pref_service->SetBoolean(prefs::kRAConsentGranted, true);
+  }
+
+  RecordOriginConsent(delegate_->GetContentSettings(web_contents),
                       delegate_->GetURL(web_contents),
                       (consent_response == CONSENT_RESPONSE_ALLOW));
   return true;
 }
 
-bool PlatformVerificationFlow::GetDomainPref(
+bool PlatformVerificationFlow::GetOriginPref(
     HostContentSettingsMap* content_settings,
     const GURL& url,
     bool* pref_value) {
@@ -465,10 +479,10 @@ bool PlatformVerificationFlow::GetDomainPref(
   return true;
 }
 
-void PlatformVerificationFlow::RecordDomainConsent(
+void PlatformVerificationFlow::RecordOriginConsent(
     HostContentSettingsMap* content_settings,
     const GURL& url,
-    bool allow_domain) {
+    bool allow_origin) {
   CHECK(content_settings);
   CHECK(url.is_valid());
   // Build a pattern to represent scheme and host.
@@ -486,8 +500,8 @@ void PlatformVerificationFlow::RecordDomainConsent(
     builder->WithPortWildcard();
   ContentSettingsPattern pattern = builder->Build();
   if (pattern.IsValid()) {
-    ContentSetting setting = allow_domain ? CONTENT_SETTING_ALLOW
-                                          : CONTENT_SETTING_BLOCK;
+    ContentSetting setting =
+        allow_origin ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
     content_settings->SetContentSetting(
         pattern,
         pattern,

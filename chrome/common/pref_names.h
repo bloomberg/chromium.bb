@@ -256,7 +256,7 @@ extern const char kAttestationEnabled[];
 extern const char kAttestationExtensionWhitelist[];
 extern const char kTouchHudProjectionEnabled[];
 extern const char kOpenNetworkConfiguration[];
-extern const char kRAConsentFirstTime[];
+extern const char kRAConsentGranted[];
 extern const char kMultiProfileNeverShowIntro[];
 extern const char kMultiProfileWarningShowDismissed[];
 extern const char kMultiProfileUserBehavior[];
