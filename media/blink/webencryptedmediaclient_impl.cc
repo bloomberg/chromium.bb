@@ -145,16 +145,15 @@ static ConfigurationSupport GetSupportedConfiguration(
   // 1. Let accumulated configuration be empty. (Done by caller.)
   // 2. If candidate configuration's initDataTypes attribute is not empty, run
   //    the following steps:
-  blink::WebVector<blink::WebEncryptedMediaInitDataType> init_data_types =
-      candidate.getInitDataTypes();
-  if (!init_data_types.isEmpty()) {
+  if (!candidate.initDataTypes.isEmpty()) {
     // 2.1. Let supported types be empty.
     std::vector<blink::WebEncryptedMediaInitDataType> supported_types;
 
     // 2.2. For each value in candidate configuration's initDataTypes attribute:
-    for (size_t i = 0; i < init_data_types.size(); i++) {
+    for (size_t i = 0; i < candidate.initDataTypes.size(); i++) {
       // 2.2.1. Let initDataType be the value.
-      blink::WebEncryptedMediaInitDataType init_data_type = init_data_types[i];
+      blink::WebEncryptedMediaInitDataType init_data_type =
+          candidate.initDataTypes[i];
       // 2.2.2. If initDataType is the empty string, return null.
       if (init_data_type == blink::WebEncryptedMediaInitDataType::Unknown)
         continue;
@@ -189,7 +188,7 @@ static ConfigurationSupport GetSupportedConfiguration(
       return CONFIGURATION_NOT_SUPPORTED;
 
     // 2.4. Add supported types to accumulated configuration.
-    accumulated_configuration->setInitDataTypes(supported_types);
+    accumulated_configuration->initDataTypes = supported_types;
   }
 
   // 3. Follow the steps for the value of candidate configuration's
@@ -356,7 +355,7 @@ static ConfigurationSupport GetSupportedConfiguration(
           blink::WebEncryptedMediaSessionType::PersistentReleaseMessage);
     }
   }
-  accumulated_configuration->setSessionTypes(session_types);
+  accumulated_configuration->sessionTypes = session_types;
 
   return CONFIGURATION_SUPPORTED;
 }
