@@ -608,9 +608,6 @@
     'search': {
       'filepath': 'chrome/browser/ui/search/',
     },
-    'sessions': {
-      'filepath': 'chrome/browser/sessions/',
-    },
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
     },
@@ -1011,7 +1008,6 @@
     'safe_browsing': ['grt+watch@chromium.org'],
     'sandbox': ['rickyz+watch@chromium.org'],
     'scheduler': ['scheduler-bugs@chromium.org'],
-    'sessions': ['marja+watch@chromium.org'],
     'service_worker': ['tzik@chromium.org',
                        'kinuko+serviceworker@chromium.org',
                        'nhiroki@chromium.org',
