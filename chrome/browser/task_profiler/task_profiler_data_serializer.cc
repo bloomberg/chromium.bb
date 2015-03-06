@@ -128,7 +128,7 @@ bool TaskProfilerDataSerializer::WriteToFile(const base::FilePath& path) {
   // 'per_process_data' array here. Should leverage the TrackingSynchronizer
   // class to implement this.
   ProcessDataSnapshot this_process_data;
-  tracked_objects::ThreadData::Snapshot(false, &this_process_data);
+  tracked_objects::ThreadData::Snapshot(&this_process_data);
   scoped_ptr<base::DictionaryValue> this_process_data_json(
       new base::DictionaryValue);
   TaskProfilerDataSerializer::ToValue(this_process_data,

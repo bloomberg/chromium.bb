@@ -284,9 +284,6 @@ class BASE_EXPORT DeathData {
   int32 queue_duration_max() const;
   int32 queue_duration_sample() const;
 
-  // Reset the max values to zero.
-  void ResetMax();
-
   // Reset all tallies to zero. This is used as a hack on realtime data.
   void Clear();
 
@@ -386,9 +383,7 @@ class BASE_EXPORT ThreadData {
   static ThreadData* Get();
 
   // Fills |process_data| with all the recursive results in our process.
-  // During the scavenging, if |reset_max| is true, then the DeathData instances
-  // max-values are reset to zero during this scan.
-  static void Snapshot(bool reset_max, ProcessDataSnapshot* process_data);
+  static void Snapshot(ProcessDataSnapshot* process_data);
 
   // Finds (or creates) a place to count births from the given location in this
   // thread, and increment that tally.
@@ -530,11 +525,8 @@ class BASE_EXPORT ThreadData {
 
   // Snapshot (under a lock) the profiled data for the tasks in each ThreadData
   // instance.  Also updates the |birth_counts| tally for each task to keep
-  // track of the number of living instances of the task.  If |reset_max| is
-  // true, then the max values in each DeathData instance are reset during the
-  // scan.
-  static void SnapshotAllExecutedTasks(bool reset_max,
-                                       ProcessDataSnapshot* process_data,
+  // track of the number of living instances of the task.
+  static void SnapshotAllExecutedTasks(ProcessDataSnapshot* process_data,
                                        BirthCountMap* birth_counts);
 
   // Snapshots (under a lock) the profiled data for the tasks for this thread
@@ -542,20 +534,14 @@ class BASE_EXPORT ThreadData {
   // with with entries in the death_map_ -- into |process_data|.  Also updates
   // the |birth_counts| tally for each task to keep track of the number of
   // living instances of the task -- that is, each task maps to the number of
-  // births for the task that have not yet been balanced by a death.  If
-  // |reset_max| is true, then the max values in each DeathData instance are
-  // reset during the scan.
-  void SnapshotExecutedTasks(bool reset_max,
-                             ProcessDataSnapshot* process_data,
+  // births for the task that have not yet been balanced by a death.
+  void SnapshotExecutedTasks(ProcessDataSnapshot* process_data,
                              BirthCountMap* birth_counts);
 
   // Using our lock, make a copy of the specified maps.  This call may be made
   // on  non-local threads, which necessitate the use of the lock to prevent
-  // the map(s) from being reallocated while they are copied. If |reset_max| is
-  // true, then, just after we copy the DeathMap, we will set the max values to
-  // zero in the active DeathMap (not the snapshot).
-  void SnapshotMaps(bool reset_max,
-                    BirthMap* birth_map,
+  // the map(s) from being reallocated while they are copied.
+  void SnapshotMaps(BirthMap* birth_map,
                     DeathMap* death_map,
                     ParentChildSet* parent_child_set);
 

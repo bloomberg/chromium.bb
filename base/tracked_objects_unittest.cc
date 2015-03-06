@@ -138,7 +138,7 @@ TEST_F(TrackedObjectsTest, MinimalStartupShutdown) {
   ThreadData::BirthMap birth_map;
   ThreadData::DeathMap death_map;
   ThreadData::ParentChildSet parent_child_set;
-  data->SnapshotMaps(false, &birth_map, &death_map, &parent_child_set);
+  data->SnapshotMaps(&birth_map, &death_map, &parent_child_set);
   EXPECT_EQ(0u, birth_map.size());
   EXPECT_EQ(0u, death_map.size());
   EXPECT_EQ(0u, parent_child_set.size());
@@ -158,7 +158,7 @@ TEST_F(TrackedObjectsTest, MinimalStartupShutdown) {
   birth_map.clear();
   death_map.clear();
   parent_child_set.clear();
-  data->SnapshotMaps(false, &birth_map, &death_map, &parent_child_set);
+  data->SnapshotMaps(&birth_map, &death_map, &parent_child_set);
   EXPECT_EQ(0u, birth_map.size());
   EXPECT_EQ(0u, death_map.size());
   EXPECT_EQ(0u, parent_child_set.size());
@@ -182,7 +182,7 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
   ThreadData::BirthMap birth_map;
   ThreadData::DeathMap death_map;
   ThreadData::ParentChildSet parent_child_set;
-  data->SnapshotMaps(false, &birth_map, &death_map, &parent_child_set);
+  data->SnapshotMaps(&birth_map, &death_map, &parent_child_set);
   EXPECT_EQ(1u, birth_map.size());                         // 1 birth location.
   EXPECT_EQ(1, birth_map.begin()->second->birth_count());  // 1 birth.
   EXPECT_EQ(0u, death_map.size());                         // No deaths.
@@ -211,7 +211,7 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
   birth_map.clear();
   death_map.clear();
   parent_child_set.clear();
-  data->SnapshotMaps(false, &birth_map, &death_map, &parent_child_set);
+  data->SnapshotMaps(&birth_map, &death_map, &parent_child_set);
   EXPECT_EQ(1u, birth_map.size());                         // 1 birth location.
   EXPECT_EQ(2, birth_map.begin()->second->birth_count());  // 2 births.
   EXPECT_EQ(1u, death_map.size());                         // 1 location.
@@ -228,7 +228,7 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
   EXPECT_EQ(birth_map.begin()->second, death_map.begin()->first);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
 
   ASSERT_EQ(1u, process_data.tasks.size());
   EXPECT_EQ(kFile, process_data.tasks[0].birth.location.file_name);
@@ -317,7 +317,7 @@ TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotWorkerThread) {
   TallyABirth(location, std::string());
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   EXPECT_EQ(0u, process_data.tasks.size());
   EXPECT_EQ(0u, process_data.descendants.size());
   EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
@@ -334,7 +334,7 @@ TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotMainThread) {
   TallyABirth(location, kMainThreadName);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   EXPECT_EQ(0u, process_data.tasks.size());
   EXPECT_EQ(0u, process_data.descendants.size());
   EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
@@ -351,7 +351,7 @@ TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotWorkerThread) {
   TallyABirth(location, std::string());
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   ExpectSimpleProcessData(process_data, kFunction, kWorkerThreadName,
                           kStillAlive, 1, 0, 0);
 }
@@ -367,7 +367,7 @@ TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotMainThread) {
   TallyABirth(location, kMainThreadName);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   ExpectSimpleProcessData(process_data, kFunction, kMainThreadName, kStillAlive,
                           1, 0, 0);
 }
@@ -399,7 +399,7 @@ TEST_F(TrackedObjectsTest, LifeCycleToSnapshotMainThread) {
   ThreadData::TallyRunOnNamedThreadIfTracking(pending_task, stopwatch);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   ExpectSimpleProcessData(process_data, kFunction, kMainThreadName,
                           kMainThreadName, 1, 2, 4);
 }
@@ -439,7 +439,7 @@ TEST_F(TrackedObjectsTest, LifeCycleMidDeactivatedToSnapshotMainThread) {
   ThreadData::TallyRunOnNamedThreadIfTracking(pending_task, stopwatch);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   ExpectSimpleProcessData(process_data, kFunction, kMainThreadName,
                           kMainThreadName, 1, 2, 4);
 }
@@ -473,74 +473,10 @@ TEST_F(TrackedObjectsTest, LifeCyclePreDeactivatedToSnapshotMainThread) {
   ThreadData::TallyRunOnNamedThreadIfTracking(pending_task, stopwatch);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   EXPECT_EQ(0u, process_data.tasks.size());
   EXPECT_EQ(0u, process_data.descendants.size());
   EXPECT_EQ(base::GetCurrentProcId(), process_data.process_id);
-}
-
-TEST_F(TrackedObjectsTest, LifeCycleToSnapshotWorkerThread) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_CHILDREN_ACTIVE)) {
-    return;
-  }
-
-  const char kFunction[] = "LifeCycleToSnapshotWorkerThread";
-  Location location(kFunction, kFile, kLineNumber, NULL);
-  // Do not delete |birth|.  We don't own it.
-  Births* birth = ThreadData::TallyABirthIfActive(location);
-  EXPECT_NE(reinterpret_cast<Births*>(NULL), birth);
-
-  const unsigned int kTimePosted = 1;
-  const unsigned int kStartOfRun = 5;
-  const unsigned int kEndOfRun = 7;
-  SetTestTime(kStartOfRun);
-  TaskStopwatch stopwatch;
-  stopwatch.Start();
-  SetTestTime(kEndOfRun);
-  stopwatch.Stop();
-
-  ThreadData::TallyRunOnWorkerThreadIfTracking(
-  birth, TrackedTime() + Duration::FromMilliseconds(kTimePosted), stopwatch);
-
-  // Call for the ToSnapshot, but tell it to not reset the maxes after scanning.
-  ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
-  ExpectSimpleProcessData(process_data, kFunction, kWorkerThreadName,
-                          kWorkerThreadName, 1, 2, 4);
-
-  // Call for the ToSnapshot, but tell it to reset the maxes after scanning.
-  // We'll still get the same values, but the data will be reset (which we'll
-  // see in a moment).
-  ProcessDataSnapshot process_data_pre_reset;
-  ThreadData::Snapshot(true, &process_data_pre_reset);
-  ExpectSimpleProcessData(process_data, kFunction, kWorkerThreadName,
-                          kWorkerThreadName, 1, 2, 4);
-
-  // Call for the ToSnapshot, and now we'll see the result of the last
-  // translation, as the max will have been pushed back to zero.
-  ProcessDataSnapshot process_data_post_reset;
-  ThreadData::Snapshot(true, &process_data_post_reset);
-  ASSERT_EQ(1u, process_data_post_reset.tasks.size());
-  EXPECT_EQ(kFile, process_data_post_reset.tasks[0].birth.location.file_name);
-  EXPECT_EQ(kFunction,
-            process_data_post_reset.tasks[0].birth.location.function_name);
-  EXPECT_EQ(kLineNumber,
-            process_data_post_reset.tasks[0].birth.location.line_number);
-  EXPECT_EQ(kWorkerThreadName,
-            process_data_post_reset.tasks[0].birth.thread_name);
-  EXPECT_EQ(1, process_data_post_reset.tasks[0].death_data.count);
-  EXPECT_EQ(2, process_data_post_reset.tasks[0].death_data.run_duration_sum);
-  EXPECT_EQ(0, process_data_post_reset.tasks[0].death_data.run_duration_max);
-  EXPECT_EQ(2, process_data_post_reset.tasks[0].death_data.run_duration_sample);
-  EXPECT_EQ(4, process_data_post_reset.tasks[0].death_data.queue_duration_sum);
-  EXPECT_EQ(0, process_data_post_reset.tasks[0].death_data.queue_duration_max);
-  EXPECT_EQ(4,
-            process_data_post_reset.tasks[0].death_data.queue_duration_sample);
-  EXPECT_EQ(kWorkerThreadName,
-            process_data_post_reset.tasks[0].death_thread_name);
-  EXPECT_EQ(0u, process_data_post_reset.descendants.size());
-  EXPECT_EQ(base::GetCurrentProcId(), process_data_post_reset.process_id);
 }
 
 TEST_F(TrackedObjectsTest, TwoLives) {
@@ -581,7 +517,7 @@ TEST_F(TrackedObjectsTest, TwoLives) {
   ThreadData::TallyRunOnNamedThreadIfTracking(pending_task2, stopwatch2);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   ExpectSimpleProcessData(process_data, kFunction, kMainThreadName,
                           kMainThreadName, 2, 2, 4);
 }
@@ -621,7 +557,7 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
   pending_task2.time_posted = kTimePosted;  // Overwrite implied Now().
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   ASSERT_EQ(2u, process_data.tasks.size());
 
   EXPECT_EQ(kFile, process_data.tasks[0].birth.location.file_name);
@@ -685,7 +621,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusion) {
   ThreadData::TallyRunOnNamedThreadIfTracking(pending_task, task_stopwatch);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   ExpectSimpleProcessData(process_data, kFunction, kMainThreadName,
                           kMainThreadName, 1, 6, 4);
 }
@@ -728,7 +664,7 @@ TEST_F(TrackedObjectsTest, TaskWith2NestedExclusions) {
   ThreadData::TallyRunOnNamedThreadIfTracking(pending_task, task_stopwatch);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
   ExpectSimpleProcessData(process_data, kFunction, kMainThreadName,
                           kMainThreadName, 1, 13, 4);
 }
@@ -781,7 +717,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
   ThreadData::TallyRunOnNamedThreadIfTracking(pending_task, task_stopwatch);
 
   ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(false, &process_data);
+  ThreadData::Snapshot(&process_data);
 
   // The order in which the two task follow is platform-dependent.
   int t0 = (process_data.tasks[0].birth.location.line_number == kLineNumber) ?

@@ -255,7 +255,7 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
 
   // Send profiler_data from browser process.
   tracked_objects::ProcessDataSnapshot process_data;
-  tracked_objects::ThreadData::Snapshot(false, &process_data);
+  tracked_objects::ThreadData::Snapshot(&process_data);
   DecrementPendingProcessesAndSendData(sequence_number, process_data,
                                        content::PROCESS_TYPE_BROWSER);
 
