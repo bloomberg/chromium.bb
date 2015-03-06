@@ -6,32 +6,25 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupMenu;
-import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.widget.ButtonCompat;
 
 /**
  * An infobar offers the user the ability to choose credentials for
  * authentication. User is presented with username along with avatar and
  * full name in case they are available.
  */
-public class AccountChooserInfoBar extends InfoBar implements OnMenuItemClickListener {
+public class AccountChooserInfoBar extends InfoBar {
     private enum CredentialType {
         EMPTY(0),
         LOCAL(1),
@@ -74,16 +67,6 @@ public class AccountChooserInfoBar extends InfoBar implements OnMenuItemClickLis
         mUsernames = usernames.clone();
     }
 
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.settings) {
-            PreferencesLauncher.launchSettingsPage(getContext(), null);
-            return true;
-        }
-        // TODO(melandory): Learn more should open link to help center
-        // article which is not ready yet.
-        return false;
-    }
 
     @Override
     public void onCloseButtonClicked() {
@@ -155,16 +138,7 @@ public class AccountChooserInfoBar extends InfoBar implements OnMenuItemClickLis
      */
     private void createCustomButtonsView(InfoBarLayout layout) {
         layout.setButtons(getContext().getString(R.string.no_thanks), null);
-        Button moreButton = ButtonCompat.createBorderlessButton(getContext());
-        moreButton.setText(getContext().getString(R.string.more));
-        // TODO(melandory): Looks like spinner in mocks.
-        moreButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showMorePopup(view);
-            }
-        });
-        layout.setCustomViewInButtonRow(moreButton);
+        layout.setCustomViewInButtonRow(OverflowSelector.createOverflowSelector(getContext()));
     }
 
     private void passCredentialsToNative(int credentialIndex) {
@@ -174,13 +148,6 @@ public class AccountChooserInfoBar extends InfoBar implements OnMenuItemClickLis
                 mNativeInfoBarPtr, credentialIndex, CredentialType.LOCAL.getValue());
     }
 
-    /** Pops up menu with two items: Setting and Learn More when user clicks More button. */
-    private void showMorePopup(View v) {
-        PopupMenu popup = new PopupMenu(getContext(), v);
-        popup.setOnMenuItemClickListener(this);
-        popup.inflate(R.menu.account_chooser_infobar_more_menu_popup);
-        popup.show();
-    }
 
     private native void nativeOnCredentialClicked(
             long nativeAccountChooserInfoBar, int credentialId, int credentialType);
