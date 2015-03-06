@@ -6,7 +6,7 @@ layer at (0,0) size 800x88
       LayoutText {#text} at (0,0) size 78x19
         text run at (0,0) width 78: "This test has "
       LayoutInline {span} at (0,0) size 58x19
-        LayoutInline (generated) at (0,0) size 58x19 [bgcolor=#00FF00]
+        LayoutInline (anonymous) at (0,0) size 58x19 [bgcolor=#00FF00]
           LayoutText at (78,0) size 58x19
             text run at (78,0) width 58: "PASSED"
       LayoutText {#text} at (136,0) size 4x19

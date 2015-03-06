@@ -8,73 +8,73 @@ layer at (0,0) size 800x100
           text run at (0,0) width 272: "The following two lines should look the same:"
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 11x19
-          LayoutInline (generated) at (0,0) size 11x19
+          LayoutInline (anonymous) at (0,0) size 11x19
             LayoutCounter at (0,0) size 11x19
               text run at (0,0) width 11: "A"
         LayoutText {#text} at (11,0) size 4x19
           text run at (11,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 10x19
-          LayoutInline (generated) at (0,0) size 10x19
+          LayoutInline (anonymous) at (0,0) size 10x19
             LayoutCounter at (15,0) size 10x19
               text run at (15,0) width 10: "B"
         LayoutText {#text} at (25,0) size 4x19
           text run at (25,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 11x19
-          LayoutInline (generated) at (0,0) size 11x19
+          LayoutInline (anonymous) at (0,0) size 11x19
             LayoutCounter at (29,0) size 11x19
               text run at (29,0) width 11: "C"
         LayoutText {#text} at (40,0) size 4x19
           text run at (40,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 11x19
-          LayoutInline (generated) at (0,0) size 11x19
+          LayoutInline (anonymous) at (0,0) size 11x19
             LayoutCounter at (44,0) size 11x19
               text run at (44,0) width 11: "D"
         LayoutText {#text} at (55,0) size 4x19
           text run at (55,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (59,0) size 9x19
               text run at (59,0) width 9: "E"
         LayoutText {#text} at (68,0) size 4x19
           text run at (68,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (72,0) size 9x19
               text run at (72,0) width 9: "F"
         LayoutText {#text} at (81,0) size 4x19
           text run at (81,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 11x19
-          LayoutInline (generated) at (0,0) size 11x19
+          LayoutInline (anonymous) at (0,0) size 11x19
             LayoutCounter at (85,0) size 11x19
               text run at (85,0) width 11: "G"
         LayoutText {#text} at (96,0) size 4x19
           text run at (96,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 11x19
-          LayoutInline (generated) at (0,0) size 11x19
+          LayoutInline (anonymous) at (0,0) size 11x19
             LayoutCounter at (100,0) size 11x19
               text run at (100,0) width 11: "H"
         LayoutText {#text} at (111,0) size 4x19
           text run at (111,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 5x19
-          LayoutInline (generated) at (0,0) size 5x19
+          LayoutInline (anonymous) at (0,0) size 5x19
             LayoutCounter at (115,0) size 5x19
               text run at (115,0) width 5: "I"
         LayoutText {#text} at (120,0) size 4x19
           text run at (120,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 6x19
-          LayoutInline (generated) at (0,0) size 6x19
+          LayoutInline (anonymous) at (0,0) size 6x19
             LayoutCounter at (124,0) size 6x19
               text run at (124,0) width 6: "J"
         LayoutText {#text} at (130,0) size 4x19
           text run at (130,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 12x19
-          LayoutInline (generated) at (0,0) size 12x19
+          LayoutInline (anonymous) at (0,0) size 12x19
             LayoutCounter at (134,0) size 12x19
               text run at (134,0) width 12: "K"
         LayoutText {#text} at (146,0) size 4x19
           text run at (146,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (150,0) size 9x19
               text run at (150,0) width 9: "L"
         LayoutText {#text} at (0,0) size 0x0

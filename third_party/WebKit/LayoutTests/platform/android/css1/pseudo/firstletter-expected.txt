@@ -4,7 +4,7 @@ layer at (0,0) size 785x751
   LayoutBlockFlow {HTML} at (0,0) size 785x751
     LayoutBlockFlow {BODY} at (8,8) size 769x735 [bgcolor=#CCCCCC]
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutInline (generated) at (0,0) size 9x19 [color=#800000]
+        LayoutInline (anonymous) at (0,0) size 9x19 [color=#800000]
           LayoutText {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "T"
         LayoutText {#text} at (9,0) size 328x19
@@ -20,7 +20,7 @@ layer at (0,0) size 785x751
           text run at (0,48) width 0: " "
       LayoutBlockFlow {HR} at (0,113) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,131) size 769x60
-        LayoutInline (generated) at (0,0) size 9x19 [color=#800000]
+        LayoutInline (anonymous) at (0,0) size 9x19 [color=#800000]
           LayoutText {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "T"
         LayoutText {#text} at (9,0) size 758x59
@@ -30,7 +30,7 @@ layer at (0,0) size 785x751
           text run at (149,20) width 609: "Remember that in order to ensure a complete test, the paragraph must be displayed on more than one"
           text run at (0,40) width 24: "line."
       LayoutBlockFlow {P} at (0,207) size 769x77
-        LayoutInline (generated) at (0,0) size 19x36 [color=#800000]
+        LayoutInline (anonymous) at (0,0) size 19x36 [color=#800000]
           LayoutText {#text} at (0,0) size 19x36
             text run at (0,0) width 19: "T"
         LayoutText {#text} at (19,13) size 766x63
@@ -40,7 +40,7 @@ layer at (0,0) size 785x751
           text run at (327,37) width 439: "Remember that in order to ensure a complete test, the paragraph must be"
           text run at (0,57) width 194: "displayed on more than one line."
       LayoutBlockFlow {P} at (0,300) size 769x106
-        LayoutInline (generated) at (0,0) size 75x64 [color=#800000]
+        LayoutInline (anonymous) at (0,0) size 75x64 [color=#800000]
           LayoutText {#text} at (0,1) size 75x64
             text run at (0,1) width 75: "\"W"
         LayoutText {#text} at (75,36) size 768x69
@@ -62,7 +62,7 @@ layer at (0,0) size 785x751
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,28) size 755x283 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 747x60
-                LayoutInline (generated) at (0,0) size 9x19 [color=#800000]
+                LayoutInline (anonymous) at (0,0) size 9x19 [color=#800000]
                   LayoutText {#text} at (0,0) size 9x19
                     text run at (0,0) width 9: "T"
                 LayoutText {#text} at (9,0) size 732x59
@@ -72,7 +72,7 @@ layer at (0,0) size 785x751
                   text run at (178,20) width 554: "Remember that in order to ensure a complete test, the paragraph must be displayed on more"
                   text run at (0,40) width 79: "than one line."
               LayoutBlockFlow {P} at (4,80) size 747x77
-                LayoutInline (generated) at (0,0) size 19x36 [color=#800000]
+                LayoutInline (anonymous) at (0,0) size 19x36 [color=#800000]
                   LayoutText {#text} at (0,0) size 19x36
                     text run at (0,0) width 19: "T"
                 LayoutText {#text} at (19,13) size 727x63
@@ -82,7 +82,7 @@ layer at (0,0) size 785x751
                   text run at (404,37) width 323: "Remember that in order to ensure a complete test, the"
                   text run at (0,57) width 310: "paragraph must be displayed on more than one line."
               LayoutBlockFlow {P} at (4,173) size 747x106
-                LayoutInline (generated) at (0,0) size 75x64 [color=#800000]
+                LayoutInline (anonymous) at (0,0) size 75x64 [color=#800000]
                   LayoutText {#text} at (0,1) size 75x64
                     text run at (0,1) width 75: "\"W"
                 LayoutText {#text} at (75,36) size 733x69

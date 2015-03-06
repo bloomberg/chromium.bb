@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
         LayoutBlockFlow (anonymous) at (0,113) size 784x113
           LayoutInline {SPAN} at (0,0) size 147x109
             LayoutInline {B} at (0,0) size 0x0
-            LayoutInline (generated) at (0,0) size 147x109
+            LayoutInline (anonymous) at (0,0) size 147x109
               LayoutText at (0,2) size 147x109
                 text run at (0,2) width 147: "not "
           LayoutText {#text} at (147,2) size 152x109

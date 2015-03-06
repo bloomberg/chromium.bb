@@ -6,7 +6,7 @@ layer at (0,0) size 800x416
       LayoutBlockFlow (anonymous) at (0,0) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0 [color=#008000]
       LayoutBlockFlow (anonymous) at (0,0) size 784x200 [color=#008000]
-        LayoutBlockFlow (generated) at (0,0) size 784x200 [color=#0000FF]
+        LayoutBlockFlow (anonymous) at (0,0) size 784x200 [color=#0000FF]
           LayoutText at (0,0) size 200x200
             text run at (0,0) width 200: "A"
         LayoutBlockFlow {DIV} at (0,200) size 784x0

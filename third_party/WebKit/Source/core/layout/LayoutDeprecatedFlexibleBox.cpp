@@ -1026,7 +1026,7 @@ const char* LayoutDeprecatedFlexibleBox::name() const
     if (isOutOfFlowPositioned())
         return "LayoutDeprecatedFlexibleBox (positioned)";
     if (isAnonymous())
-        return "LayoutDeprecatedFlexibleBox (generated)";
+        return "LayoutDeprecatedFlexibleBox (anonymous)";
     if (isRelPositioned())
         return "LayoutDeprecatedFlexibleBox (relative positioned)";
     return "LayoutDeprecatedFlexibleBox";

@@ -8,13 +8,13 @@ layer at (0,0) size 800x116
           LayoutTableSection (anonymous) at (0,0) size 300x100
             LayoutTableRow {DIV} at (0,0) size 300x100
               LayoutTableCell (anonymous) at (0,0) size 100x100 [r=0 c=0 rs=1 cs=1]
-                LayoutInline (generated) at (0,0) size 100x100 [color=#0000FF]
+                LayoutInline (anonymous) at (0,0) size 100x100 [color=#0000FF]
                   LayoutText at (0,0) size 100x100
                     text run at (0,0) width 100: "A"
               LayoutTableCell {DIV} at (100,0) size 100x100 [color=#008000] [r=0 c=1 rs=1 cs=1]
                 LayoutText {#text} at (0,0) size 100x100
                   text run at (0,0) width 100: "B"
               LayoutTableCell (anonymous) at (200,0) size 100x100 [r=0 c=2 rs=1 cs=1]
-                LayoutInline (generated) at (0,0) size 100x100 [color=#FFA500]
+                LayoutInline (anonymous) at (0,0) size 100x100 [color=#FFA500]
                   LayoutText at (0,0) size 100x100
                     text run at (0,0) width 100: "C"

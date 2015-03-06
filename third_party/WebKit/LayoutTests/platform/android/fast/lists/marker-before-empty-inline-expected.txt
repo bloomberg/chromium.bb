@@ -62,7 +62,7 @@ layer at (0,0) size 800x600
           LayoutBlockFlow (anonymous) at (0,0) size 744x20
             LayoutListMarker at (-18,0) size 7x19: bullet
             LayoutInline {SPAN} at (0,0) size 39x19
-              LayoutInline (generated) at (0,0) size 39x19
+              LayoutInline (anonymous) at (0,0) size 39x19
                 LayoutText at (0,0) size 39x19
                   text run at (0,0) width 39: "before"
               LayoutText {#text} at (0,0) size 0x0

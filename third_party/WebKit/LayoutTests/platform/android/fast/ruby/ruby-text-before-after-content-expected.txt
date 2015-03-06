@@ -6,12 +6,12 @@ layer at (0,0) size 800x88
       LayoutRuby (inline) {RUBY} at (0,0) size 202x36
         LayoutRubyRun (anonymous) at (0,19) size 181x37
           LayoutRubyText {RT} at (0,-19) size 181x20
-            LayoutInline (generated) at (0,0) size 59x19
+            LayoutInline (anonymous) at (0,0) size 59x19
               LayoutText at (0,0) size 59x19
                 text run at (0,0) width 59: "BEFORE"
             LayoutText {#text} at (59,0) size 74x19
               text run at (59,0) width 74: "CONTENT"
-            LayoutInline (generated) at (0,0) size 48x19
+            LayoutInline (anonymous) at (0,0) size 48x19
               LayoutText at (133,0) size 48x19
                 text run at (133,0) width 48: "AFTER"
           LayoutRubyBase (anonymous) at (0,0) size 181x37

@@ -17,7 +17,7 @@ TEST_F(LayoutInlineTest, LayoutNameCalledWithNullStyle)
 {
     LayoutObject* obj = LayoutInline::createAnonymous(&document());
     EXPECT_FALSE(obj->style());
-    EXPECT_STREQ("LayoutInline (generated)", obj->decoratedName().ascii().data());
+    EXPECT_STREQ("LayoutInline (anonymous)", obj->decoratedName().ascii().data());
     obj->destroy();
 }
 

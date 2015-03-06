@@ -3155,7 +3155,7 @@ const char* LayoutBlockFlow::name() const
             return "LayoutBlockFlow (anonymous)";
     }
     if (isAnonymous())
-        return "LayoutBlockFlow (generated)";
+        return "LayoutBlockFlow (anonymous)";
     if (isRelPositioned())
         return "LayoutBlockFlow (relative positioned)";
     return "LayoutBlockFlow";

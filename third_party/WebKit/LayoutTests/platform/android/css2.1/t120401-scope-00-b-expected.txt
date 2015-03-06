@@ -8,51 +8,51 @@ layer at (0,0) size 800x100
           text run at (0,0) width 212: "The next 2 lines should be identical:"
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 40x19
-          LayoutInline (generated) at (0,0) size 8x19
+          LayoutInline (anonymous) at (0,0) size 8x19
             LayoutCounter at (0,0) size 8x19
               text run at (0,0) width 8: "1"
           LayoutInline {SPAN} at (0,0) size 16x19
-            LayoutInline (generated) at (0,0) size 8x19
+            LayoutInline (anonymous) at (0,0) size 8x19
               LayoutCounter at (8,0) size 8x19
                 text run at (8,0) width 8: "2"
             LayoutInline {SPAN} at (0,0) size 8x19
-              LayoutInline (generated) at (0,0) size 8x19
+              LayoutInline (anonymous) at (0,0) size 8x19
                 LayoutCounter at (16,0) size 8x19
                   text run at (16,0) width 8: "2"
           LayoutInline {SPAN} at (0,0) size 8x19
-            LayoutInline (generated) at (0,0) size 8x19
+            LayoutInline (anonymous) at (0,0) size 8x19
               LayoutCounter at (24,0) size 8x19
                 text run at (24,0) width 8: "1"
-          LayoutInline (generated) at (0,0) size 8x19
+          LayoutInline (anonymous) at (0,0) size 8x19
             LayoutCounter at (32,0) size 8x19
               text run at (32,0) width 8: "1"
         LayoutInline {SPAN} at (0,0) size 8x19
-          LayoutInline (generated) at (0,0) size 8x19
+          LayoutInline (anonymous) at (0,0) size 8x19
             LayoutCounter at (40,0) size 8x19
               text run at (40,0) width 8: "1"
         LayoutText {#text} at (48,0) size 4x19
           text run at (48,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 40x19
-          LayoutInline (generated) at (0,0) size 8x19
+          LayoutInline (anonymous) at (0,0) size 8x19
             LayoutCounter at (52,0) size 8x19
               text run at (52,0) width 8: "1"
           LayoutInline {SPAN} at (0,0) size 16x19
-            LayoutInline (generated) at (0,0) size 8x19
+            LayoutInline (anonymous) at (0,0) size 8x19
               LayoutCounter at (60,0) size 8x19
                 text run at (60,0) width 8: "3"
             LayoutInline {SPAN} at (0,0) size 8x19
-              LayoutInline (generated) at (0,0) size 8x19
+              LayoutInline (anonymous) at (0,0) size 8x19
                 LayoutCounter at (68,0) size 8x19
                   text run at (68,0) width 8: "3"
           LayoutInline {SPAN} at (0,0) size 8x19
-            LayoutInline (generated) at (0,0) size 8x19
+            LayoutInline (anonymous) at (0,0) size 8x19
               LayoutCounter at (76,0) size 8x19
                 text run at (76,0) width 8: "3"
-          LayoutInline (generated) at (0,0) size 8x19
+          LayoutInline (anonymous) at (0,0) size 8x19
             LayoutCounter at (84,0) size 8x19
               text run at (84,0) width 8: "3"
         LayoutInline {SPAN} at (0,0) size 8x19
-          LayoutInline (generated) at (0,0) size 8x19
+          LayoutInline (anonymous) at (0,0) size 8x19
             LayoutCounter at (92,0) size 8x19
               text run at (92,0) width 8: "1"
         LayoutText {#text} at (0,0) size 0x0

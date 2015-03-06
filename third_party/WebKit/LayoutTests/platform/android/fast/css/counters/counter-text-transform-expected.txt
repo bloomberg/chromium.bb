@@ -8,25 +8,25 @@ layer at (0,0) size 800x100
           text run at (0,0) width 272: "The following two lines should look the same:"
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 3x19
-          LayoutInline (generated) at (0,0) size 3x19
+          LayoutInline (anonymous) at (0,0) size 3x19
             LayoutCounter at (0,0) size 3x19
               text run at (0,0) width 3: "i"
         LayoutText {#text} at (3,0) size 4x19
           text run at (3,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 6x19
-          LayoutInline (generated) at (0,0) size 6x19
+          LayoutInline (anonymous) at (0,0) size 6x19
             LayoutCounter at (7,0) size 6x19
               text run at (7,0) width 6: "ii"
         LayoutText {#text} at (13,0) size 4x19
           text run at (13,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (17,0) size 9x19
               text run at (17,0) width 9: "iii"
         LayoutText {#text} at (26,0) size 4x19
           text run at (26,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 10x19
-          LayoutInline (generated) at (0,0) size 10x19
+          LayoutInline (anonymous) at (0,0) size 10x19
             LayoutCounter at (30,0) size 10x19
               text run at (30,0) width 10: "iv"
         LayoutText {#text} at (0,0) size 0x0

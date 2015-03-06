@@ -8,32 +8,32 @@ layer at (0,0) size 800x100
           text run at (0,0) width 256: "The following two lines should be identical:"
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 34x19
-          LayoutInline (generated) at (0,0) size 10x19
+          LayoutInline (anonymous) at (0,0) size 10x19
             LayoutText at (0,0) size 10x19
               text run at (0,0) width 10: "B"
           LayoutInline {SPAN} at (0,0) size 12x19
-            LayoutInline (generated) at (0,0) size 12x19
+            LayoutInline (anonymous) at (0,0) size 12x19
               LayoutCounter at (10,0) size 8x19
                 text run at (10,0) width 8: "1"
               LayoutText at (18,0) size 4x19
                 text run at (18,0) width 4: " "
           LayoutInline {SPAN} at (0,0) size 12x19
             LayoutInline {SPAN} at (0,0) size 12x19
-              LayoutInline (generated) at (0,0) size 12x19
+              LayoutInline (anonymous) at (0,0) size 12x19
                 LayoutCounter at (22,0) size 8x19
                   text run at (22,0) width 8: "0"
                 LayoutText at (30,0) size 4x19
                   text run at (30,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 32x19
           LayoutInline {SPAN} at (0,0) size 12x19
-            LayoutInline (generated) at (0,0) size 12x19
+            LayoutInline (anonymous) at (0,0) size 12x19
               LayoutCounter at (34,0) size 8x19
                 text run at (34,0) width 8: "1"
               LayoutText at (42,0) size 4x19
                 text run at (42,0) width 4: " "
           LayoutInline {SPAN} at (0,0) size 20x19
             LayoutInline {SPAN} at (0,0) size 20x19
-              LayoutInline (generated) at (0,0) size 20x19
+              LayoutInline (anonymous) at (0,0) size 20x19
                 LayoutCounter at (46,0) size 20x19
                   text run at (46,0) width 20: "1.0"
                 LayoutText at (0,0) size 0x0

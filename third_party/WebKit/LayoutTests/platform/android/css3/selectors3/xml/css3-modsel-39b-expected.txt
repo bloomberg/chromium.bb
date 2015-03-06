@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x269
   LayoutBlockFlow {test} at (0,0) size 800x269
     LayoutBlockFlow {p} at (0,16) size 800x237
-      LayoutInline (generated) at (0,0) size 19x36 [bgcolor=#00FF00]
+      LayoutInline (anonymous) at (0,0) size 19x36 [bgcolor=#00FF00]
         LayoutText {#text} at (0,0) size 19x36
           text run at (0,0) width 19: "T"
       LayoutText {#text} at (19,13) size 791x223

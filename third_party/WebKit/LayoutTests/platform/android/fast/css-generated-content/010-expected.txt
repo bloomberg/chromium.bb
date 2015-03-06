@@ -4,7 +4,7 @@ layer at (0,0) size 800x36
   LayoutBlockFlow {HTML} at (0,0) size 800x36
     LayoutBlockFlow {BODY} at (8,8) size 784x20
       LayoutInline {A} at (0,0) size 111x19 [color=#0000EE]
-        LayoutInline (generated) at (0,0) size 10x19
+        LayoutInline (anonymous) at (0,0) size 10x19
           LayoutImage at (0,5) size 10x10
         LayoutText {#text} at (10,0) size 101x19
           text run at (10,0) width 101: "What's going on."

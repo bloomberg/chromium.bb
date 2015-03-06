@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,72) size 784x56
         LayoutBlockFlow (anonymous) at (0,0) size 784x20
           LayoutInline {Q} at (0,0) size 149x19
-            LayoutInline (generated) at (0,0) size 5x19
+            LayoutInline (anonymous) at (0,0) size 5x19
               LayoutQuote at (0,0) size 5x19
                 LayoutText at (0,0) size 5x19
                   text run at (0,0) width 5: "\""
@@ -29,7 +29,7 @@ layer at (0,0) size 800x600
           LayoutInline {Q} at (0,0) size 55x19
             LayoutText {#text} at (0,0) size 50x19
               text run at (0,0) width 50: "this text."
-            LayoutInline (generated) at (0,0) size 5x19
+            LayoutInline (anonymous) at (0,0) size 5x19
               LayoutQuote at (0,0) size 5x19
                 LayoutText at (50,0) size 5x19
                   text run at (50,0) width 5: "\""

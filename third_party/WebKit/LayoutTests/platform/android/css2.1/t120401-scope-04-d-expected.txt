@@ -9,31 +9,31 @@ layer at (0,0) size 800x100
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 0x0
         LayoutInline {SPAN} at (0,0) size 12x19
-          LayoutInline (generated) at (0,0) size 12x19
+          LayoutInline (anonymous) at (0,0) size 12x19
             LayoutCounter at (0,0) size 8x19
               text run at (0,0) width 8: "1"
             LayoutText at (8,0) size 4x19
               text run at (8,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 0x19
         LayoutInline {SPAN} at (0,0) size 12x19
-          LayoutInline (generated) at (0,0) size 12x19
+          LayoutInline (anonymous) at (0,0) size 12x19
             LayoutCounter at (12,0) size 8x19
               text run at (12,0) width 8: "1"
             LayoutText at (20,0) size 4x19
               text run at (20,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 54x19
-          LayoutInline (generated) at (0,0) size 10x19
+          LayoutInline (anonymous) at (0,0) size 10x19
             LayoutText at (24,0) size 10x19
               text run at (24,0) width 10: "R"
           LayoutInline {SPAN} at (0,0) size 24x19
-            LayoutInline (generated) at (0,0) size 24x19
+            LayoutInline (anonymous) at (0,0) size 24x19
               LayoutCounter at (34,0) size 20x19
                 text run at (34,0) width 20: "1.1"
               LayoutText at (54,0) size 4x19
                 text run at (54,0) width 4: " "
           LayoutInline {SPAN} at (0,0) size 0x19
           LayoutInline {SPAN} at (0,0) size 20x19
-            LayoutInline (generated) at (0,0) size 20x19
+            LayoutInline (anonymous) at (0,0) size 20x19
               LayoutCounter at (58,0) size 20x19
                 text run at (58,0) width 20: "1.1"
               LayoutText at (0,0) size 0x0

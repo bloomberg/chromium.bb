@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 367x19
           text run at (0,0) width 367: "The next line of text should turn green when we hover over it."
       LayoutBlockFlow {DIV} at (0,72) size 784x40 [color=#008000]
-        LayoutInline (generated) at (0,0) size 9x19 [color=#0000FF]
+        LayoutInline (anonymous) at (0,0) size 9x19 [color=#0000FF]
           LayoutText {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "T"
         LayoutText {#text} at (9,0) size 760x39

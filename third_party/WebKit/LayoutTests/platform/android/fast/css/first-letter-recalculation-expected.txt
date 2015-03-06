@@ -5,7 +5,7 @@ layer at (0,0) size 800x88
     LayoutBlockFlow {BODY} at (8,16) size 784x56
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutInline {A} at (0,0) size 27x19 [color=#0000FF]
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutText {#text} at (0,0) size 9x19
               text run at (0,0) width 9: "F"
           LayoutText {#text} at (9,0) size 18x19
@@ -13,7 +13,7 @@ layer at (0,0) size 800x88
         LayoutText {#text} at (27,0) size 182x19
           text run at (27,0) width 182: " letter should be bold and blue"
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutInline (generated) at (0,0) size 12x19
+        LayoutInline (anonymous) at (0,0) size 12x19
           LayoutText {#text} at (0,0) size 12x19
             text run at (0,0) width 12: "H"
         LayoutText {#text} at (12,0) size 591x19

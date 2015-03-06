@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutInline (generated) at (0,0) size 8x19
+        LayoutInline (anonymous) at (0,0) size 8x19
           LayoutText at (0,0) size 8x19
             text run at (0,0) width 8: "*"
           LayoutQuote at (0,0) size 0x19
@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (8,0) size 405x19
           text run at (8,0) width 108: "This is some text. "
           text run at (116,0) width 297: "It should have a single asterisk before and after it."
-        LayoutInline (generated) at (0,0) size 8x19
+        LayoutInline (anonymous) at (0,0) size 8x19
           LayoutText at (413,0) size 8x19
             text run at (413,0) width 8: "*"
           LayoutQuote at (0,0) size 0x19

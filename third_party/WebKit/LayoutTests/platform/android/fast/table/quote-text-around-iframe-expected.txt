@@ -7,7 +7,7 @@ layer at (0,0) size 800x349
         LayoutTableSection (anonymous) at (0,0) size 693x317
           LayoutTableRow {Q} at (0,0) size 693x317
             LayoutTableCell (anonymous) at (0,0) size 693x317 [r=0 c=0 rs=1 cs=1]
-              LayoutInline (generated) at (0,0) size 13x36
+              LayoutInline (anonymous) at (0,0) size 13x36
                 LayoutQuote at (0,0) size 13x36
                   LayoutText at (0,280) size 13x36
                     text run at (0,280) width 13: "\""
@@ -15,7 +15,7 @@ layer at (0,0) size 800x349
                 text run at (13,280) width 30: " A"
               LayoutText {#text} at (651,280) size 29x36
                 text run at (651,280) width 29: "B "
-              LayoutInline (generated) at (0,0) size 13x36
+              LayoutInline (anonymous) at (0,0) size 13x36
                 LayoutQuote at (0,0) size 13x36
                   LayoutText at (680,280) size 13x36
                     text run at (680,280) width 13: "\""

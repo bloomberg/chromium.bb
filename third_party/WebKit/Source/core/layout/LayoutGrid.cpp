@@ -1761,7 +1761,7 @@ const char* LayoutGrid::name() const
     if (isOutOfFlowPositioned())
         return "LayoutGrid (positioned)";
     if (isAnonymous())
-        return "LayoutGrid (generated)";
+        return "LayoutGrid (anonymous)";
     if (isRelPositioned())
         return "LayoutGrid (relative positioned)";
     return "LayoutGrid";

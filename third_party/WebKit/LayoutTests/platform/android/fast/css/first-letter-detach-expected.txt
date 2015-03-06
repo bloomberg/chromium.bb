@@ -25,19 +25,19 @@ layer at (0,0) size 800x600
           text run at (226,0) width 197: "ASS\x{201D}, with nothing before the P."
       LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,110) size 784x20
-        LayoutInline (generated) at (0,0) size 9x19 [color=#0000FF]
+        LayoutInline (anonymous) at (0,0) size 9x19 [color=#0000FF]
           LayoutText {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "P"
         LayoutText {#text} at (9,0) size 29x19
           text run at (9,0) width 29: "ASS"
       LayoutBlockFlow {P} at (0,146) size 784x20
-        LayoutInline (generated) at (0,0) size 9x19 [color=#0000FF]
+        LayoutInline (anonymous) at (0,0) size 9x19 [color=#0000FF]
           LayoutText {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "P"
         LayoutText {#text} at (9,0) size 29x19
           text run at (9,0) width 29: "ASS"
       LayoutBlockFlow {P} at (0,182) size 784x20
-        LayoutInline (generated) at (0,0) size 9x19 [color=#0000FF]
+        LayoutInline (anonymous) at (0,0) size 9x19 [color=#0000FF]
           LayoutText {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "P"
         LayoutText {#text} at (9,0) size 29x19

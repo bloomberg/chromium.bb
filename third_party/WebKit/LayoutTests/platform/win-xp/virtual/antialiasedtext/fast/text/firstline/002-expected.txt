@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x47 [border: (2px solid #0000FF)]
-        LayoutInline (generated) at (0,0) size 32x41 [color=#800000]
+        LayoutInline (anonymous) at (0,0) size 32x41 [color=#800000]
           LayoutText {#text} at (2,3) size 32x41
             text run at (2,3) width 32: "M"
         LayoutText {#text} at (34,20) size 169x19

@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 388x19
           text run at (0,0) width 388: "The next line of text should become invisible, including first letter."
       LayoutBlockFlow {DIV} at (0,72) size 784x20
-        LayoutInline (generated) at (0,0) size 11x19 [color=#0000FF]
+        LayoutInline (anonymous) at (0,0) size 11x19 [color=#0000FF]
           LayoutText {#text} at (0,0) size 11x19
             text run at (0,0) width 11: "C"
         LayoutText {#text} at (11,0) size 66x19

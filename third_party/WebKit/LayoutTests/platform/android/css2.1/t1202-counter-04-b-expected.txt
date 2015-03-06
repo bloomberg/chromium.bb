@@ -13,73 +13,73 @@ layer at (0,0) size 800x100
           text run at (309,0) width 60: " the same:"
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (0,0) size 9x19
               text run at (0,0) width 9: "\x{25A0}"
         LayoutText {#text} at (9,0) size 4x19
           text run at (9,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (13,0) size 9x19
               text run at (13,0) width 9: "\x{25A0}"
         LayoutText {#text} at (22,0) size 4x19
           text run at (22,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (26,0) size 9x19
               text run at (26,0) width 9: "\x{25A0}"
         LayoutText {#text} at (35,0) size 4x19
           text run at (35,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (39,0) size 9x19
               text run at (39,0) width 9: "\x{25A0}"
         LayoutText {#text} at (48,0) size 4x19
           text run at (48,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (52,0) size 9x19
               text run at (52,0) width 9: "\x{25A0}"
         LayoutText {#text} at (61,0) size 4x19
           text run at (61,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (65,0) size 9x19
               text run at (65,0) width 9: "\x{25A0}"
         LayoutText {#text} at (74,0) size 4x19
           text run at (74,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (78,0) size 9x19
               text run at (78,0) width 9: "\x{25A0}"
         LayoutText {#text} at (87,0) size 4x19
           text run at (87,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (91,0) size 9x19
               text run at (91,0) width 9: "\x{25A0}"
         LayoutText {#text} at (100,0) size 4x19
           text run at (100,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (104,0) size 9x19
               text run at (104,0) width 9: "\x{25A0}"
         LayoutText {#text} at (113,0) size 4x19
           text run at (113,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (117,0) size 9x19
               text run at (117,0) width 9: "\x{25A0}"
         LayoutText {#text} at (126,0) size 4x19
           text run at (126,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (130,0) size 9x19
               text run at (130,0) width 9: "\x{25A0}"
         LayoutText {#text} at (139,0) size 4x19
           text run at (139,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 9x19
-          LayoutInline (generated) at (0,0) size 9x19
+          LayoutInline (anonymous) at (0,0) size 9x19
             LayoutCounter at (143,0) size 9x19
               text run at (143,0) width 9: "\x{25A0}"
         LayoutText {#text} at (0,0) size 0x0

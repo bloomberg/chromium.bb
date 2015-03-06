@@ -5,27 +5,27 @@ layer at (0,0) size 800x256
     LayoutBlockFlow {BODY} at (8,8) size 784x232
       LayoutBlockFlow {DIV} at (0,0) size 784x120
         LayoutBlockFlow {DIV} at (0,0) size 784x20
-          LayoutInline (generated) at (0,0) size 38x19
+          LayoutInline (anonymous) at (0,0) size 38x19
             LayoutText at (0,0) size 38x19
               text run at (0,0) width 38: "PASS"
         LayoutBlockFlow {DIV} at (0,20) size 784x20
-          LayoutInline (generated) at (0,0) size 38x19
+          LayoutInline (anonymous) at (0,0) size 38x19
             LayoutText at (0,0) size 38x19
               text run at (0,0) width 38: "PASS"
         LayoutBlockFlow {DIV} at (0,40) size 784x20
-          LayoutInline (generated) at (0,0) size 38x19
+          LayoutInline (anonymous) at (0,0) size 38x19
             LayoutText at (0,0) size 38x19
               text run at (0,0) width 38: "PASS"
         LayoutBlockFlow {DIV} at (0,60) size 784x20
-          LayoutInline (generated) at (0,0) size 38x19
+          LayoutInline (anonymous) at (0,0) size 38x19
             LayoutText at (0,0) size 38x19
               text run at (0,0) width 38: "PASS"
         LayoutBlockFlow {DIV} at (0,80) size 784x20
-          LayoutInline (generated) at (0,0) size 38x19
+          LayoutInline (anonymous) at (0,0) size 38x19
             LayoutText at (0,0) size 38x19
               text run at (0,0) width 38: "PASS"
         LayoutBlockFlow {DIV} at (0,100) size 784x20
-          LayoutInline (generated) at (0,0) size 38x19
+          LayoutInline (anonymous) at (0,0) size 38x19
             LayoutText at (0,0) size 38x19
               text run at (0,0) width 38: "PASS"
       LayoutBlockFlow {DIV} at (0,136) size 784x96

@@ -8,7 +8,7 @@ layer at (0,0) size 800x100
           text run at (0,0) width 260: "The following two lines should be the same:"
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 195x19
-          LayoutInline (generated) at (0,0) size 24x19
+          LayoutInline (anonymous) at (0,0) size 24x19
             LayoutText at (0,0) size 10x19
               text run at (0,0) width 10: "B"
             LayoutCounter at (10,0) size 8x19
@@ -16,7 +16,7 @@ layer at (0,0) size 800x100
             LayoutText at (18,0) size 6x19
               text run at (18,0) width 6: "-"
           LayoutInline {SPAN} at (0,0) size 146x19
-            LayoutInline (generated) at (0,0) size 36x19
+            LayoutInline (anonymous) at (0,0) size 36x19
               LayoutText at (24,0) size 10x19
                 text run at (24,0) width 10: "B"
               LayoutCounter at (34,0) size 20x19
@@ -24,28 +24,28 @@ layer at (0,0) size 800x100
               LayoutText at (54,0) size 6x19
                 text run at (54,0) width 6: "-"
             LayoutInline {SPAN} at (0,0) size 73x19
-              LayoutInline (generated) at (0,0) size 36x19
+              LayoutInline (anonymous) at (0,0) size 36x19
                 LayoutText at (60,0) size 10x19
                   text run at (60,0) width 10: "B"
                 LayoutCounter at (70,0) size 20x19
                   text run at (70,0) width 20: "1.2"
                 LayoutText at (90,0) size 6x19
                   text run at (90,0) width 6: "-"
-              LayoutInline (generated) at (0,0) size 37x19
+              LayoutInline (anonymous) at (0,0) size 37x19
                 LayoutText at (96,0) size 11x19
                   text run at (96,0) width 11: "A"
                 LayoutCounter at (107,0) size 20x19
                   text run at (107,0) width 20: "1.3"
                 LayoutText at (127,0) size 6x19
                   text run at (127,0) width 6: "-"
-            LayoutInline (generated) at (0,0) size 37x19
+            LayoutInline (anonymous) at (0,0) size 37x19
               LayoutText at (133,0) size 11x19
                 text run at (133,0) width 11: "A"
               LayoutCounter at (144,0) size 20x19
                 text run at (144,0) width 20: "1.4"
               LayoutText at (164,0) size 6x19
                 text run at (164,0) width 6: "-"
-          LayoutInline (generated) at (0,0) size 25x19
+          LayoutInline (anonymous) at (0,0) size 25x19
             LayoutText at (170,0) size 11x19
               text run at (170,0) width 11: "A"
             LayoutCounter at (181,0) size 8x19

@@ -16,6 +16,6 @@ layer at (0,0) size 800x600
                     text run at (0,0) width 305: "There should be a fourth dot bellow..."
               LayoutBlockFlow (anonymous) at (0,41.72) size 305x20
                 LayoutInline {FORM} at (0,0) size 0x0
-                LayoutInline (generated) at (0,0) size 4x19
+                LayoutInline (anonymous) at (0,0) size 4x19
                   LayoutText at (0,0) size 4x19
                     text run at (0,0) width 4: "."

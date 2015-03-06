@@ -4,7 +4,7 @@ layer at (0,0) size 800x479
   LayoutBlockFlow {HTML} at (0,0) size 800x479
     LayoutBlockFlow {BODY} at (8,16) size 784x455 [color=#0000FF]
       LayoutBlockFlow {P} at (0,0) size 784x250
-        LayoutInline (generated) at (0,0) size 88x164 [color=#00FFFF]
+        LayoutInline (anonymous) at (0,0) size 88x164 [color=#00FFFF]
           LayoutText {#text} at (0,3) size 88x164
             text run at (0,3) width 88: "T"
         LayoutText {#text} at (88,89) size 56x55
@@ -50,7 +50,7 @@ layer at (0,0) size 800x479
           text run at (707,210) width 51: "than one"
           text run at (0,230) width 82: "line. (TEST1)"
       LayoutBlockFlow {P} at (0,266) size 784x77
-        LayoutInline (generated) at (0,0) size 32x36 [color=#00FFFF]
+        LayoutInline (anonymous) at (0,0) size 32x36 [color=#00FFFF]
           LayoutText {#text} at (0,0) size 32x36
             text run at (0,0) width 32: "\"T"
         LayoutText {#text} at (32,13) size 94x19
@@ -87,7 +87,7 @@ layer at (0,0) size 800x479
           text run at (0,57) width 209: "in order to ensure a complete test, "
           text run at (209,57) width 390: "the paragraph must be displayed on more than one line. (TEST2)"
       LayoutBlockFlow {P} at (0,359) size 784x60
-        LayoutInline (generated) at (0,0) size 9x19 [color=#00FFFF]
+        LayoutInline (anonymous) at (0,0) size 9x19 [color=#00FFFF]
           LayoutText {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "T"
         LayoutText {#text} at (9,0) size 18x19

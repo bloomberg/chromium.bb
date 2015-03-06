@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 352x36
           text run at (0,0) width 352: "Radial Gradient Example"
       LayoutBlockFlow {DIV} at (0,58.44) size 784x174
-        LayoutBlockFlow (generated) at (0,0) size 154x154 [border: (2px solid #000000)]
+        LayoutBlockFlow (anonymous) at (0,0) size 154x154 [border: (2px solid #000000)]
           LayoutImage at (2,2) size 150x150
         LayoutBlockFlow (anonymous) at (0,154) size 784x20
           LayoutText {#text} at (0,0) size 258x19
@@ -19,5 +19,5 @@ layer at (0,0) size 800x600
         LayoutBlockFlow (anonymous) at (0,0) size 784x20
           LayoutText {#text} at (0,0) size 258x19
             text run at (0,0) width 258: "There's some generated content below me."
-        LayoutBlockFlow (generated) at (0,20) size 134x134 [border: (2px solid #000000)]
+        LayoutBlockFlow (anonymous) at (0,20) size 134x134 [border: (2px solid #000000)]
           LayoutImage at (2,2) size 130x130

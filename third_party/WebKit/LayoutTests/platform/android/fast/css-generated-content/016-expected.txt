@@ -14,27 +14,27 @@ layer at (0,0) size 800x250
         LayoutInline {A} at (0,0) size 58x19 [color=#0000EE]
           LayoutText {#text} at (0,0) size 8x19
             text run at (0,0) width 8: "1"
-          LayoutInline (generated) at (0,0) size 50x19
+          LayoutInline (anonymous) at (0,0) size 50x19
             LayoutText at (8,0) size 50x19
               text run at (8,0) width 50: "(href=1)"
       LayoutBlockFlow {P} at (0,126) size 784x20
         LayoutInline {A} at (0,0) size 58x19 [color=#0000EE]
           LayoutText {#text} at (0,0) size 8x19
             text run at (0,0) width 8: "2"
-          LayoutInline (generated) at (0,0) size 50x19
+          LayoutInline (anonymous) at (0,0) size 50x19
             LayoutText at (8,0) size 50x19
               text run at (8,0) width 50: "(href=2)"
       LayoutBlockFlow {P} at (0,162) size 784x20
         LayoutInline {A} at (0,0) size 58x19 [color=#0000EE]
           LayoutText {#text} at (0,0) size 8x19
             text run at (0,0) width 8: "3"
-          LayoutInline (generated) at (0,0) size 50x19
+          LayoutInline (anonymous) at (0,0) size 50x19
             LayoutText at (8,0) size 50x19
               text run at (8,0) width 50: "(href=3)"
       LayoutBlockFlow {P} at (0,198) size 784x20
         LayoutInline {A} at (0,0) size 58x19 [color=#0000EE]
           LayoutText {#text} at (0,0) size 8x19
             text run at (0,0) width 8: "4"
-          LayoutInline (generated) at (0,0) size 50x19
+          LayoutInline (anonymous) at (0,0) size 50x19
             LayoutText at (8,0) size 50x19
               text run at (8,0) width 50: "(href=4)"

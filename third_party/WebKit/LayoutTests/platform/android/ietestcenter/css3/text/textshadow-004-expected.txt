@@ -7,7 +7,7 @@ layer at (0,0) size 800x80
         LayoutText {#text} at (0,0) size 284x19
           text run at (0,0) width 284: "Test passes if there is green visible on the page."
       LayoutBlockFlow {DIV} at (0,36) size 784x20
-        LayoutInline (generated) at (0,0) size 9x19
+        LayoutInline (anonymous) at (0,0) size 9x19
           LayoutText {#text} at (0,0) size 9x19
             text run at (0,0) width 9: "F"
         LayoutText {#text} at (9,0) size 52x19

@@ -781,7 +781,7 @@ const char* LayoutInline::name() const
     if (isRelPositioned())
         return "LayoutInline (relative positioned)";
     if (isAnonymous())
-        return "LayoutInline (generated)";
+        return "LayoutInline (anonymous)";
     return "LayoutInline";
 }
 

@@ -5,14 +5,14 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x384
         LayoutRuby (inline) {RUBY} at (0,0) size 512x384 [color=#0000FF]
-          LayoutInline (generated) at (0,0) size 512x128 [color=#FFA500]
+          LayoutInline (anonymous) at (0,0) size 512x128 [color=#FFA500]
             LayoutText at (0,0) size 512x128
               text run at (0,0) width 512: "1234"
           LayoutRubyRun (anonymous) at (0,128) size 512x128
             LayoutRubyBase (anonymous) at (0,0) size 512x128
               LayoutText {#text} at (0,0) size 512x128
                 text run at (0,0) width 512: "ABCD"
-          LayoutInline (generated) at (0,0) size 512x128 [color=#FFFF00]
+          LayoutInline (anonymous) at (0,0) size 512x128 [color=#FFFF00]
             LayoutText at (0,256) size 512x128
               text run at (0,256) width 512: "4578"
         LayoutText {#text} at (0,0) size 0x0

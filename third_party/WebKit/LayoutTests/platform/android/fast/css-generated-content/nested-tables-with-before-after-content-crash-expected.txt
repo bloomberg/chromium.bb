@@ -7,18 +7,18 @@ layer at (0,0) size 800x600
         LayoutTableSection (anonymous) at (0,0) size 48x16
           LayoutTableRow (anonymous) at (0,0) size 48x16
             LayoutTableCell (anonymous) at (0,0) size 48x16 [r=0 c=0 rs=1 cs=1]
-              LayoutInline (generated) at (0,0) size 16x16 [color=#FF0000]
+              LayoutInline (anonymous) at (0,0) size 16x16 [color=#FF0000]
                 LayoutCounter at (0,0) size 16x16
                   text run at (0,0) width 16: "0"
               LayoutTable {Q} at (16,0) size 32x16
                 LayoutTableSection (anonymous) at (0,0) size 32x16
                   LayoutTableRow (anonymous) at (0,0) size 32x16
                     LayoutTableCell (anonymous) at (0,0) size 32x16 [r=0 c=0 rs=1 cs=1]
-                      LayoutInline (generated) at (0,0) size 16x16
+                      LayoutInline (anonymous) at (0,0) size 16x16
                         LayoutQuote at (0,0) size 16x16
                           LayoutText at (0,0) size 16x16
                             text run at (0,0) width 16: "\""
-                      LayoutInline (generated) at (0,0) size 16x16
+                      LayoutInline (anonymous) at (0,0) size 16x16
                         LayoutQuote at (0,0) size 16x16
                           LayoutText at (16,0) size 16x16
                             text run at (16,0) width 16: "\""

@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,1) size 770x55
           text run at (0,1) width 770: "Inheritance bug for floated first-letter"
       LayoutBlockFlow {P} at (0,89.16) size 784x200 [bgcolor=#EEEEEE] [border: (1px solid #000000)]
-        LayoutInline (generated) at (0,0) size 54x86 [color=#008000] [border: (1px dashed #008000)]
+        LayoutInline (anonymous) at (0,0) size 54x86 [color=#008000] [border: (1px dashed #008000)]
           LayoutText {#text} at (2,2) size 52x84
             text run at (2,2) width 52: "H"
         LayoutText {#text} at (55,48) size 763x150

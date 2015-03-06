@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
           LayoutTableSection (anonymous) at (0,0) size 100x100
             LayoutTableRow (anonymous) at (0,0) size 100x100
               LayoutTableCell (anonymous) at (0,0) size 100x100 [r=0 c=0 rs=1 cs=1]
-                LayoutInline (generated) at (0,0) size 100x100
+                LayoutInline (anonymous) at (0,0) size 100x100
                   LayoutText at (0,0) size 100x100
                     text run at (0,0) width 100: "A"
                 LayoutText at (0,0) size 0x0
