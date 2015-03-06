@@ -264,8 +264,12 @@ bool CanRendererHandleEvent(const ui::MouseEvent* event) {
   // buttons.
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED:
-      return event->IsAnyButton();
+    case ui::ET_MOUSE_RELEASED: {
+      const int kAllowedButtons = ui::EF_LEFT_MOUSE_BUTTON |
+                                  ui::EF_MIDDLE_MOUSE_BUTTON |
+                                  ui::EF_RIGHT_MOUSE_BUTTON;
+      return (event->flags() & kAllowedButtons) != 0;
+    }
     default:
       break;
   }

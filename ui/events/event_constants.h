@@ -77,21 +77,25 @@ enum EventType {
 
 // Event flags currently supported
 enum EventFlags {
-  EF_NONE                = 0,       // Used to denote no flags explicitly
-  EF_CAPS_LOCK_DOWN      = 1 << 0,
-  EF_SHIFT_DOWN          = 1 << 1,
-  EF_CONTROL_DOWN        = 1 << 2,
-  EF_ALT_DOWN            = 1 << 3,
-  EF_LEFT_MOUSE_BUTTON   = 1 << 4,
-  EF_MIDDLE_MOUSE_BUTTON = 1 << 5,
-  EF_RIGHT_MOUSE_BUTTON  = 1 << 6,
-  EF_COMMAND_DOWN        = 1 << 7,  // GUI Key (e.g. Command on OS X keyboards,
-                                    // Search on Chromebook keyboards,
-                                    // Windows on MS-oriented keyboards)
-  EF_EXTENDED            = 1 << 8,  // Windows extended key (see WM_KEYDOWN doc)
-  EF_IS_SYNTHESIZED      = 1 << 9,
-  EF_ALTGR_DOWN          = 1 << 10,
-  EF_MOD3_DOWN           = 1 << 11,
+  EF_NONE                 = 0,       // Used to denote no flags explicitly
+  EF_CAPS_LOCK_DOWN       = 1 << 0,
+  EF_SHIFT_DOWN           = 1 << 1,
+  EF_CONTROL_DOWN         = 1 << 2,
+  EF_ALT_DOWN             = 1 << 3,
+  EF_LEFT_MOUSE_BUTTON    = 1 << 4,
+  EF_MIDDLE_MOUSE_BUTTON  = 1 << 5,
+  EF_RIGHT_MOUSE_BUTTON   = 1 << 6,
+  EF_COMMAND_DOWN         = 1 << 7,  // GUI Key (e.g. Command on OS X
+                                     // keyboards, Search on Chromebook
+                                     // keyboards, Windows on MS-oriented
+                                     // keyboards)
+  EF_EXTENDED             = 1 << 8,  // Windows extended key (see WM_KEYDOWN
+                                     // doc)
+  EF_IS_SYNTHESIZED       = 1 << 9,
+  EF_ALTGR_DOWN           = 1 << 10,
+  EF_MOD3_DOWN            = 1 << 11,
+  EF_BACK_MOUSE_BUTTON    = 1 << 12,
+  EF_FORWARD_MOUSE_BUTTON = 1 << 13,
 };
 
 // Flags specific to key events

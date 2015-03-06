@@ -361,8 +361,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
 
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {
-    return (flags() & EF_LEFT_MOUSE_BUTTON) &&
-      !(flags() & (EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON));
+    return button_flags() == EF_LEFT_MOUSE_BUTTON;
   }
 
   bool IsLeftMouseButton() const {
@@ -370,8 +369,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   }
 
   bool IsOnlyMiddleMouseButton() const {
-    return (flags() & EF_MIDDLE_MOUSE_BUTTON) &&
-      !(flags() & (EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON));
+    return button_flags() == EF_MIDDLE_MOUSE_BUTTON;
   }
 
   bool IsMiddleMouseButton() const {
@@ -379,8 +377,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   }
 
   bool IsOnlyRightMouseButton() const {
-    return (flags() & EF_RIGHT_MOUSE_BUTTON) &&
-      !(flags() & (EF_LEFT_MOUSE_BUTTON | EF_MIDDLE_MOUSE_BUTTON));
+    return button_flags() == EF_RIGHT_MOUSE_BUTTON;
   }
 
   bool IsRightMouseButton() const {
@@ -388,8 +385,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   }
 
   bool IsAnyButton() const {
-    return (flags() & (EF_LEFT_MOUSE_BUTTON | EF_MIDDLE_MOUSE_BUTTON |
-                       EF_RIGHT_MOUSE_BUTTON)) != 0;
+    return button_flags() != 0;
   }
 
   // Compares two mouse down events and returns true if the second one should
@@ -417,6 +413,13 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
  private:
   FRIEND_TEST_ALL_PREFIXES(EventTest, DoubleClickRequiresRelease);
   FRIEND_TEST_ALL_PREFIXES(EventTest, SingleClickRightLeft);
+
+  // Returns the flags for the mouse buttons.
+  int button_flags() const {
+    return flags() & (EF_LEFT_MOUSE_BUTTON | EF_MIDDLE_MOUSE_BUTTON |
+                      EF_RIGHT_MOUSE_BUTTON | EF_BACK_MOUSE_BUTTON |
+                      EF_FORWARD_MOUSE_BUTTON);
+  }
 
   // Returns the repeat count based on the previous mouse click, if it is
   // recent enough and within a small enough distance.

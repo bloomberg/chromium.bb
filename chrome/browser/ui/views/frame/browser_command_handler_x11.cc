@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_command_handler_x11.h"
 
-#include <X11/Xlib.h>
-
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -13,7 +11,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
-#include "ui/events/event_utils.h"
 
 BrowserCommandHandlerX11::BrowserCommandHandlerX11(BrowserView* browser_view)
     : browser_view_(browser_view) {
@@ -30,28 +27,26 @@ BrowserCommandHandlerX11::~BrowserCommandHandlerX11() {
 }
 
 void BrowserCommandHandlerX11::OnMouseEvent(ui::MouseEvent* event) {
+  // Handle standard Linux mouse buttons for going back and forward.
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return;
-  XEvent* xevent = event->native_event();
-  if (!xevent)
-    return;
-  int button = xevent->type == GenericEvent ? ui::EventButtonFromNative(xevent)
-                                            : xevent->xbutton.button;
 
-  // Standard Linux mouse buttons for going back and forward.
-  const int kBackMouseButton = 8;
-  const int kForwardMouseButton = 9;
-  if (button == kBackMouseButton || button == kForwardMouseButton) {
-    content::WebContents* contents =
-        browser_view_->browser()->tab_strip_model()->GetActiveWebContents();
-    if (!contents)
-      return;
-    content::NavigationController& controller = contents->GetController();
-    if (button == kBackMouseButton && controller.CanGoBack())
-      controller.GoBack();
-    else if (button == kForwardMouseButton && controller.CanGoForward())
-      controller.GoForward();
-    // Always consume the event, whether a navigation was successful or not.
-    event->SetHandled();
-  }
+  bool back_button_pressed =
+      (event->changed_button_flags() == ui::EF_BACK_MOUSE_BUTTON);
+  bool forward_button_pressed =
+      (event->changed_button_flags() == ui::EF_FORWARD_MOUSE_BUTTON);
+  if (!back_button_pressed && !forward_button_pressed)
+    return;
+
+  content::WebContents* contents =
+      browser_view_->browser()->tab_strip_model()->GetActiveWebContents();
+  if (!contents)
+    return;
+  content::NavigationController& controller = contents->GetController();
+  if (back_button_pressed && controller.CanGoBack())
+    controller.GoBack();
+  else if (forward_button_pressed && controller.CanGoForward())
+    controller.GoForward();
+  // Always consume the event, whether a navigation was successful or not.
+  event->SetHandled();
 }

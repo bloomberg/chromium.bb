@@ -778,7 +778,9 @@ void WindowEventDispatcher::PreDispatchMouseEvent(Window* target,
 
   const int kMouseButtonFlagMask = ui::EF_LEFT_MOUSE_BUTTON |
                                    ui::EF_MIDDLE_MOUSE_BUTTON |
-                                   ui::EF_RIGHT_MOUSE_BUTTON;
+                                   ui::EF_RIGHT_MOUSE_BUTTON |
+                                   ui::EF_BACK_MOUSE_BUTTON |
+                                   ui::EF_FORWARD_MOUSE_BUTTON;
   switch (event->type()) {
     case ui::ET_MOUSE_EXITED:
       if (!target || target == window()) {
