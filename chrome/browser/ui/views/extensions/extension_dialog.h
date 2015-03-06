@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -38,7 +37,7 @@ class ExtensionDialog : public views::DialogDelegate,
   // |web_contents| is the tab that spawned the dialog.
   // |width| and |height| are the size of the dialog in pixels.
   static ExtensionDialog* Show(const GURL& url,
-                               aura::Window* parent_window,
+                               gfx::NativeWindow parent_window,
                                Profile* profile,
                                content::WebContents* web_contents,
                                int width,
@@ -91,7 +90,7 @@ class ExtensionDialog : public views::DialogDelegate,
   ExtensionDialog(extensions::ExtensionViewHost* host,
                   ExtensionDialogObserver* observer);
 
-  void InitWindow(aura::Window* parent_window, int width, int height);
+  void InitWindow(gfx::NativeWindow parent_window, int width, int height);
 
   // Window Title
   base::string16 window_title_;

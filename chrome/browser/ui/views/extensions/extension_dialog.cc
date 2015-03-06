@@ -58,7 +58,7 @@ ExtensionDialog::~ExtensionDialog() {
 // static
 ExtensionDialog* ExtensionDialog::Show(
     const GURL& url,
-    aura::Window* parent_window,
+    gfx::NativeWindow parent_window,
     Profile* profile,
     WebContents* web_contents,
     int width,
@@ -94,20 +94,23 @@ ExtensionDialog* ExtensionDialog::Show(
   return dialog;
 }
 
-void ExtensionDialog::InitWindow(aura::Window* parent,
+void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
                                  int width,
                                  int height) {
   views::Widget* window =
       constrained_window::CreateBrowserModalDialogViews(this, parent);
 
   // Center the window over the browser.
-  gfx::Point center = parent->GetBoundsInScreen().CenterPoint();
+  views::Widget* parent_widget =
+      views::Widget::GetWidgetForNativeWindow(parent);
+  gfx::Point center = parent_widget->GetWindowBoundsInScreen().CenterPoint();
   int x = center.x() - width / 2;
   int y = center.y() - height / 2;
   // Ensure the top left and top right of the window are on screen, with
   // priority given to the top left.
-  gfx::Rect screen_rect = gfx::Screen::GetScreenFor(parent)->
-      GetDisplayNearestPoint(center).bounds();
+  gfx::Rect screen_rect =
+      gfx::Screen::GetScreenFor(parent_widget->GetNativeView())
+          ->GetDisplayNearestPoint(center).bounds();
   gfx::Rect bounds_rect = gfx::Rect(x, y, width, height);
   bounds_rect.AdjustToFit(screen_rect);
   window->SetBounds(bounds_rect);
