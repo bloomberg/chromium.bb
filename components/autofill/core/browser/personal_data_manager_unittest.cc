@@ -430,7 +430,7 @@ TEST_F(PersonalDataManagerTest, ReturnsServerCreditCards) {
                           "2109" /* Mastercard */, "12", "2012");
   server_cards.back().SetTypeForMaskedCard(kMasterCard);
 
-  autofill_table_->SetServerCreditCards(server_cards);
+  test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -459,7 +459,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "2015");
 
-  autofill_table_->SetServerCreditCards(server_cards);
+  test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1694,7 +1694,7 @@ TEST_F(PersonalDataManagerTest, AggregateCardsThatDuplicateServerCards) {
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "2015");
-  autofill_table_->SetServerCreditCards(server_cards);
+  test::SetServerCreditCards(autofill_table_, server_cards);
 
   FormData form1;
 
@@ -2885,7 +2885,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "2015");
 
-  autofill_table_->SetServerCreditCards(server_cards);
+  test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
@@ -2894,22 +2894,22 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   suggestions = personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME), base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
-  EXPECT_EQ(suggestions[0].backend_id.guid, credit_card2.guid());
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[1].value);
-  EXPECT_NE(suggestions[1].backend_id.guid, credit_card1.guid());
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
-  EXPECT_NE(suggestions[2].backend_id.guid, credit_card2.guid());
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[3].value);
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[0].value);
   EXPECT_NE(suggestions[0].backend_id.guid, credit_card0.guid());
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[1].value);
+  EXPECT_EQ(suggestions[1].backend_id.guid, credit_card2.guid());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[2].value);
+  EXPECT_NE(suggestions[2].backend_id.guid, credit_card1.guid());
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
+  EXPECT_NE(suggestions[3].backend_id.guid, credit_card2.guid());
 
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NUMBER), base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("Visa - 9012"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("Visa - 2109"), suggestions[2].value);
-  EXPECT_EQ(ASCIIToUTF16("Amex - 8555"), suggestions[3].value);
+  EXPECT_EQ(ASCIIToUTF16("Amex - 8555"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("Visa - 9012"), suggestions[2].value);
+  EXPECT_EQ(ASCIIToUTF16("Visa - 2109"), suggestions[3].value);
 
   // Make sure a server card can be a dupe of more than one local card.
   CreditCard credit_card3("4141084B-72D7-4B73-90CF-3D6AC154673B",
@@ -2924,10 +2924,10 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   suggestions = personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME), base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[3].value);
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[2].value);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -3050,7 +3050,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "2015");
 
-  autofill_table_->SetServerCreditCards(server_cards);
+  test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -3083,8 +3083,10 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   EXPECT_EQ(0U, personal_data_->GetCreditCards()[1]->use_count());
   EXPECT_EQ(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
 
-  EXPECT_EQ(0U, personal_data_->GetCreditCards()[2]->use_count());
-  EXPECT_EQ(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
+  // Having unmasked this card, usage stats should be 1 and Now().
+  EXPECT_EQ(1U, personal_data_->GetCreditCards()[2]->use_count());
+  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
+  base::Time initial_use_date = personal_data_->GetCreditCards()[2]->use_date();
 
   server_cards.back().set_guid(personal_data_->GetCreditCards()[2]->guid());
   personal_data_->RecordUseOf(server_cards.back());
@@ -3098,8 +3100,9 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   EXPECT_EQ(0U, personal_data_->GetCreditCards()[1]->use_count());
   EXPECT_EQ(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
 
-  EXPECT_EQ(1U, personal_data_->GetCreditCards()[2]->use_count());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards()[2]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
+  EXPECT_NE(initial_use_date, personal_data_->GetCreditCards()[2]->use_date());
 }
 
 }  // namespace autofill

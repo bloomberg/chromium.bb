@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TEST_UTILS_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TEST_UTILS_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 
 class PrefService;
@@ -12,6 +14,7 @@ class PrefService;
 namespace autofill {
 
 class AutofillProfile;
+class AutofillTable;
 class CreditCard;
 struct FormData;
 struct FormFieldData;
@@ -90,6 +93,11 @@ void SetCreditCardInfo(CreditCard* credit_card,
 // on a per-test basis: http://crbug.com/57221
 // Disables or mocks out code that would otherwise reach out to system services.
 void DisableSystemServices(PrefService* prefs);
+
+// Sets |cards| for |table|. |cards| may contain full, unmasked server cards,
+// whereas AutofillTable::SetServerCreditCards can only contain masked cards.
+void SetServerCreditCards(AutofillTable* table,
+                          const std::vector<CreditCard>& cards);
 
 }  // namespace test
 }  // namespace autofill

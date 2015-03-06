@@ -1234,13 +1234,8 @@ void AutofillTable::SetServerCreditCards(
       "exp_month,"     // 4
       "exp_year) "     // 5
       "VALUES (?,?,?,?,?,?,?)"));
-  sql::Statement unmasked_insert(db_->GetUniqueStatement(
-      "INSERT INTO unmasked_credit_cards("
-      "id,"                     // 0
-      "card_number_encrypted)"  // 1
-      "VALUES (?,?)"));
   for (const CreditCard& card : credit_cards) {
-    DCHECK(card.record_type() != CreditCard::LOCAL_CARD);
+    DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
 
     masked_insert.BindString(0, card.server_id());
     masked_insert.BindString(1, card.type());
@@ -1254,17 +1249,6 @@ void AutofillTable::SetServerCreditCards(
 
     masked_insert.Run();
     masked_insert.Reset(true);
-
-    if (card.record_type() == CreditCard::FULL_SERVER_CARD) {
-      // Unmasked cards also get an entry in the unmasked table. Note that the
-      // input card could be MASKED but if we have an UNMASKED entry for that
-      // card already, it will be preserved.
-      unmasked_insert.BindString(0, card.server_id());
-      BindEncryptedCardToColumn(&unmasked_insert, 1,
-                                card.GetRawInfo(CREDIT_CARD_NUMBER));
-      unmasked_insert.Run();
-      unmasked_insert.Reset(true);
-    }
   }
 }
 

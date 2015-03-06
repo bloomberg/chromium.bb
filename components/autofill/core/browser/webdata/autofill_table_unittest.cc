@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -1623,7 +1624,7 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[1].SetTypeForMaskedCard(kVisaCard);
   inputs[1].SetServerStatus(CreditCard::EXPIRED);
 
-  table_->SetServerCreditCards(inputs);
+  test::SetServerCreditCards(table_.get(), inputs);
 
   std::vector<CreditCard*> outputs;
   ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
@@ -1659,7 +1660,7 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, masked_number);
   inputs[0].SetTypeForMaskedCard(kVisaCard);
-  table_->SetServerCreditCards(inputs);
+  test::SetServerCreditCards(table_.get(), inputs);
 
   // Unmask the number. The full number should be available.
   base::string16 full_number(ASCIIToUTF16("4111111111111111"));
@@ -1699,13 +1700,11 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
 
   std::vector<CreditCard> inputs;
   inputs.push_back(masked_card);
-  table_->SetServerCreditCards(inputs);
+  test::SetServerCreditCards(table_.get(), inputs);
 
-  // Now call Set with the full number.
+  // Now unmask it.
   base::string16 full_number = ASCIIToUTF16("4111111111111111");
-  inputs[0].set_record_type(CreditCard::FULL_SERVER_CARD);
-  inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, full_number);
-  table_->SetServerCreditCards(inputs);
+  table_->UnmaskServerCreditCard(masked_card.server_id(), full_number);
 
   // The card should now be unmasked.
   std::vector<CreditCard*> outputs;
@@ -1719,7 +1718,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
 
   // Call set again with the masked number.
   inputs[0] = masked_card;
-  table_->SetServerCreditCards(inputs);
+  test::SetServerCreditCards(table_.get(), inputs);
 
   // The card should stay unmasked.
   table_->GetServerCreditCards(&outputs);
@@ -1738,7 +1737,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   random_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("2222"));
   random_card.SetTypeForMaskedCard(kVisaCard);
   inputs[0] = random_card;
-  table_->SetServerCreditCards(inputs);
+  test::SetServerCreditCards(table_.get(), inputs);
 
   // We should have only the new card, the other one should have been deleted.
   table_->GetServerCreditCards(&outputs);
@@ -1753,7 +1752,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   // Putting back the original card masked should make it masked (this tests
   // that the unmasked data was really deleted).
   inputs[0] = masked_card;
-  table_->SetServerCreditCards(inputs);
+  test::SetServerCreditCards(table_.get(), inputs);
   table_->GetServerCreditCards(&outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_TRUE(outputs[0]->record_type() == CreditCard::MASKED_SERVER_CARD);

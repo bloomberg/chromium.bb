@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -224,6 +225,25 @@ void DisableSystemServices(PrefService* prefs) {
   if (prefs)
     prefs->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, false);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+}
+
+void SetServerCreditCards(AutofillTable* table,
+                          const std::vector<CreditCard>& cards) {
+  std::vector<CreditCard> as_masked_cards = cards;
+  for (CreditCard& card : as_masked_cards) {
+    card.set_record_type(CreditCard::MASKED_SERVER_CARD);
+    std::string type = card.type();
+    card.SetNumber(card.LastFourDigits());
+    card.SetTypeForMaskedCard(type.c_str());
+  }
+  table->SetServerCreditCards(as_masked_cards);
+
+  for (const CreditCard& card : cards) {
+    if (card.record_type() != CreditCard::FULL_SERVER_CARD)
+      continue;
+
+    table->UnmaskServerCreditCard(card.server_id(), card.number());
+  }
 }
 
 }  // namespace test
