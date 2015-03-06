@@ -50,5 +50,6 @@
 
 # We fixed a blending bug.
 crbug.com/459579 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
+crbug.com/464776 virtual/gpu/fast/canvas/canvas-drawImage-video.html [ ImageOnlyFailure Pass ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
