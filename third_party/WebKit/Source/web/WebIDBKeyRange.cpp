@@ -74,20 +74,4 @@ bool WebIDBKeyRange::upperOpen() const
     return m_private.get() && m_private->upperOpen();
 }
 
-WebIDBKeyRange::WebIDBKeyRange(IDBKeyRange* value)
-    : m_private(value)
-{
-}
-
-WebIDBKeyRange& WebIDBKeyRange::operator=(IDBKeyRange* value)
-{
-    m_private = value;
-    return *this;
-}
-
-WebIDBKeyRange::operator IDBKeyRange*() const
-{
-    return m_private.get();
-}
-
 } // namespace blink

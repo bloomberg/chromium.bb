@@ -66,7 +66,14 @@ public:
     BLINK_EXPORT void assignNumber(double);
     BLINK_EXPORT void assignInvalid();
     BLINK_EXPORT void assignNull();
+#if !BLINK_WEB_IMPLEMENTATION && LINK_CORE_MODULES_SEPARATELY
+    void reset()
+    {
+        m_private.reset();
+    }
+#else
     BLINK_EXPORT void reset();
+#endif
 
     BLINK_EXPORT WebIDBKeyType keyType() const;
     BLINK_EXPORT bool isValid() const;
@@ -77,9 +84,18 @@ public:
     BLINK_EXPORT double number() const; // Only valid for NumberType.
 
 #if BLINK_IMPLEMENTATION
-    WebIDBKey(IDBKey*);
-    WebIDBKey& operator=(IDBKey*);
-    operator IDBKey*() const;
+    WebIDBKey(IDBKey* value)
+        : m_private(value)
+    { }
+    WebIDBKey& operator=(IDBKey* value)
+    {
+        m_private = value;
+        return *this;
+    }
+    operator IDBKey*() const
+    {
+        return m_private.get();
+    }
 #endif
 
 private:

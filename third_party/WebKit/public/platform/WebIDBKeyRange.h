@@ -48,12 +48,30 @@ public:
 
     BLINK_EXPORT void assign(const WebIDBKeyRange&);
     BLINK_EXPORT void assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen);
+// FIXME: when compiling core or modules, use inline for reset.
+// when compiling WebIDBKeyRange.cpp, don't use inline to avoid redefinition.
+#if !BLINK_WEB_IMPLEMENTATION && LINK_CORE_MODULES_SEPARATELY
+    BLINK_EXPORT void reset()
+    {
+        m_private.reset();
+    }
+#else
     BLINK_EXPORT void reset();
+#endif
 
 #if BLINK_IMPLEMENTATION
-    WebIDBKeyRange(IDBKeyRange*);
-    WebIDBKeyRange& operator=(IDBKeyRange*);
-    operator IDBKeyRange*() const;
+    WebIDBKeyRange(IDBKeyRange* value)
+        : m_private(value)
+    { }
+    WebIDBKeyRange& operator=(IDBKeyRange* value)
+    {
+        m_private = value;
+        return *this;
+    }
+    operator IDBKeyRange*() const
+    {
+        return m_private.get();
+    }
 #endif
 
 private:

@@ -81,6 +81,11 @@ WebIDBKey WebIDBKey::createNull()
     return key;
 }
 
+void WebIDBKey::reset()
+{
+    m_private.reset();
+}
+
 void WebIDBKey::assign(const WebIDBKey& value)
 {
     m_private = value.m_private;
@@ -188,11 +193,6 @@ void WebIDBKey::assignNull()
     m_private.reset();
 }
 
-void WebIDBKey::reset()
-{
-    m_private.reset();
-}
-
 WebIDBKeyType WebIDBKey::keyType() const
 {
     if (!m_private.get())
@@ -232,22 +232,6 @@ double WebIDBKey::date() const
 double WebIDBKey::number() const
 {
     return m_private->number();
-}
-
-WebIDBKey::WebIDBKey(IDBKey* value)
-    : m_private(value)
-{
-}
-
-WebIDBKey& WebIDBKey::operator=(IDBKey* value)
-{
-    m_private = value;
-    return *this;
-}
-
-WebIDBKey::operator IDBKey*() const
-{
-    return m_private.get();
 }
 
 } // namespace blink
