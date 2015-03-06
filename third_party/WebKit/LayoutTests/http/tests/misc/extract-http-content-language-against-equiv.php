@@ -15,9 +15,9 @@ Extract HTTP Content-Language header.</p>
 <div id="y" lang="ar"></div>
 <script>
   debug('==> Value extracted from meta "http-equiv" and overriding HTTP "Content-Language"...');
-  shouldBe('window.getComputedStyle(document.getElementById("x")).webkitLocale', '"en-GB"')
+  shouldBe('window.getComputedStyle(document.getElementById("x")).webkitLocale', '"\'en-GB\'"')
   debug('==> Value set by div "lang" tag...');
-  shouldBe('window.getComputedStyle(document.getElementById("y")).webkitLocale', '"ar"')
+  shouldBe('window.getComputedStyle(document.getElementById("y")).webkitLocale', '"\'ar\'"')
   debug('==> All done...');
 </script>
 </body>

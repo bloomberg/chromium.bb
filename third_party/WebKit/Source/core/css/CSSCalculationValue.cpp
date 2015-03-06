@@ -118,6 +118,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::CSS_FR:
         return true;
     case CSSPrimitiveValue::CSS_UNKNOWN:
+    case CSSPrimitiveValue::CSS_CUSTOM_IDENT:
     case CSSPrimitiveValue::CSS_STRING:
     case CSSPrimitiveValue::CSS_URI:
     case CSSPrimitiveValue::CSS_IDENT:

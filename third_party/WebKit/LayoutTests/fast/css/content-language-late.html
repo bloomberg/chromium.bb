@@ -20,8 +20,8 @@ function languageOfNode(id) {
     var element = document.getElementById(id);
     return window.getComputedStyle(element).webkitLocale;
 }
-shouldBeEqualToString("languageOfNode('x')", "ja-JP");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('x')", "'ja-JP'");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 </script>
 <meta http-equiv="content-language" content="ja-JP">
 </body>

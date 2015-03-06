@@ -98,6 +98,7 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     case CSSPrimitiveValue::CSS_QUAD:
     case CSSPrimitiveValue::CSS_RGBCOLOR:
     case CSSPrimitiveValue::CSS_SHAPE:
+    case CSSPrimitiveValue::CSS_CUSTOM_IDENT:
     case CSSPrimitiveValue::CSS_STRING:
     case CSSPrimitiveValue::CSS_UNICODE_RANGE:
     case CSSPrimitiveValue::CSS_UNKNOWN:
@@ -451,6 +452,7 @@ CSSPrimitiveValue::~CSSPrimitiveValue()
 void CSSPrimitiveValue::cleanup()
 {
     switch (static_cast<UnitType>(m_primitiveUnitType)) {
+    case CSS_CUSTOM_IDENT:
     case CSS_STRING:
     case CSS_URI:
     case CSS_ATTR:
@@ -928,16 +930,17 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::lengthUnitTypeToUnitType(LengthUn
 String CSSPrimitiveValue::getStringValue() const
 {
     switch (m_primitiveUnitType) {
-        case CSS_STRING:
-        case CSS_ATTR:
-        case CSS_URI:
-            return m_value.string;
-        case CSS_VALUE_ID:
-            return valueName(m_value.valueID);
-        case CSS_PROPERTY_ID:
-            return propertyName(m_value.propertyID);
-        default:
-            break;
+    case CSS_CUSTOM_IDENT:
+    case CSS_STRING:
+    case CSS_ATTR:
+    case CSS_URI:
+        return m_value.string;
+    case CSS_VALUE_ID:
+        return valueName(m_value.valueID);
+    case CSS_PROPERTY_ID:
+        return propertyName(m_value.propertyID);
+    default:
+        break;
     }
 
     return String();
@@ -1022,6 +1025,7 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case CSS_VMAX:
         return "vmax";
     case CSS_UNKNOWN:
+    case CSS_CUSTOM_IDENT:
     case CSS_STRING:
     case CSS_URI:
     case CSS_VALUE_ID:
@@ -1045,7 +1049,7 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     return "";
 }
 
-String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) const
+String CSSPrimitiveValue::customCSSText() const
 {
     if (m_hasCachedCSSText) {
         ASSERT(cssTextCache().contains(this));
@@ -1087,8 +1091,11 @@ String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) c
         case CSS_VMAX:
             text = formatNumber(m_value.num, unitTypeToString((UnitType)m_primitiveUnitType));
             break;
+        case CSS_CUSTOM_IDENT:
+            text = quoteCSSStringIfNeeded(m_value.string);
+            break;
         case CSS_STRING:
-            text = formattingFlag == AlwaysQuoteCSSString ? quoteCSSString(m_value.string) : quoteCSSStringIfNeeded(m_value.string);
+            text = quoteCSSString(m_value.string);
             break;
         case CSS_URI:
             text = "url(" + quoteCSSURLIfNeeded(m_value.string) + ")";
@@ -1202,6 +1209,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return propertyName(m_value.propertyID) == propertyName(other.m_value.propertyID);
     case CSS_VALUE_ID:
         return valueName(m_value.valueID) == valueName(other.m_value.valueID);
+    case CSS_CUSTOM_IDENT:
     case CSS_STRING:
     case CSS_URI:
     case CSS_ATTR:

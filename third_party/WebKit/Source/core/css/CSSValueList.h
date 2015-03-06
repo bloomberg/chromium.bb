@@ -54,7 +54,7 @@ public:
     bool hasValue(CSSValue*) const;
     PassRefPtrWillBeRawPtr<CSSValueList> copy();
 
-    String customCSSText(CSSTextFormattingFlags = QuoteCSSStringIfNeeded) const;
+    String customCSSText() const;
     bool equals(const CSSValueList&) const;
     bool equals(const CSSValue&) const;
 

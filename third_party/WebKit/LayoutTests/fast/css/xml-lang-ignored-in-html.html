@@ -15,9 +15,9 @@ function languageOfNode(id) {
     return window.getComputedStyle(element).webkitLocale;
 }
 shouldBeEqualToString("languageOfNode('m1')", "auto");
-shouldBeEqualToString("languageOfNode('n1')", "ko");
-shouldBeEqualToString("languageOfNode('o1')", "ar");
-shouldBeEqualToString("languageOfNode('o2')", "ar");
+shouldBeEqualToString("languageOfNode('n1')", "'ko'");
+shouldBeEqualToString("languageOfNode('o1')", "'ar'");
+shouldBeEqualToString("languageOfNode('o2')", "'ar'");
 
 var successfullyParsed = true;
 </script>

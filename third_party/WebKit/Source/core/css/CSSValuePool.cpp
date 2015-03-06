@@ -130,7 +130,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createFontFamilyValue(co
 {
     RefPtrWillBeMember<CSSPrimitiveValue>& value = m_fontFamilyValueCache.add(familyName, nullptr).storedValue->value;
     if (!value)
-        value = CSSPrimitiveValue::create(familyName, CSSPrimitiveValue::CSS_STRING);
+        value = CSSPrimitiveValue::create(familyName, CSSPrimitiveValue::CSS_CUSTOM_IDENT);
     return value;
 }
 

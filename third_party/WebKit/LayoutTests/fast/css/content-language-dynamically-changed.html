@@ -23,21 +23,21 @@ function languageOfNode(id) {
     var element = document.getElementById(id);
     return window.getComputedStyle(element).webkitLocale;
 }
-shouldBeEqualToString("languageOfNode('x')", "zh");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('x')", "'zh'");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 
 var meta = document.getElementById("target");                                                                   
 meta.content = "ja";                                                                                            
-shouldBeEqualToString("languageOfNode('x')", "zh");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('x')", "'zh'");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 
 meta.httpEquiv = "foobar";
-shouldBeEqualToString("languageOfNode('x')", "zh");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('x')", "'zh'");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 
 meta.httpEquiv = "content-language";
-shouldBeEqualToString("languageOfNode('x')", "zh");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('x')", "'zh'");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 </script>
 </body>
 </html>

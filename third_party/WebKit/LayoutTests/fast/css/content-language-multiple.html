@@ -22,8 +22,8 @@ function languageOfNode(id) {
     var element = document.getElementById(id);
     return window.getComputedStyle(element).webkitLocale;
 }
-shouldBeEqualToString("languageOfNode('x')", "zh_CN");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('x')", "'zh_CN'");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 </script>
 </body>
 </html>

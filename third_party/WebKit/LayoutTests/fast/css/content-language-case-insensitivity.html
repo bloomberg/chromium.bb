@@ -17,7 +17,7 @@ function languageOfNode(id) {
     var element = document.getElementById(id);
     return window.getComputedStyle(element).webkitLocale;
 }
-shouldBeEqualToString("languageOfNode('x')", "ja-JP");
+shouldBeEqualToString("languageOfNode('x')", "'ja-JP'");
 </script>
 </body>
 </html>

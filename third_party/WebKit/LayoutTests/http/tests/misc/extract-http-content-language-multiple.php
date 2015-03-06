@@ -14,9 +14,9 @@ Extract HTTP Content-Language header.</p>
 <div id="y" lang="ar"></div>
 <script>
   debug('==> Value extracted singly from HTTP "Content-Language" header...');
-  shouldBe('window.getComputedStyle(document.getElementById("x")).webkitLocale', '"fr"')
+  shouldBe('window.getComputedStyle(document.getElementById("x")).webkitLocale', '"\'fr\'"')
   debug('==> Value set by div "lang" tag...');
-  shouldBe('window.getComputedStyle(document.getElementById("y")).webkitLocale', '"ar"')
+  shouldBe('window.getComputedStyle(document.getElementById("y")).webkitLocale', '"\'ar\'"')
   debug('==> All done...');
 </script>
 </body>

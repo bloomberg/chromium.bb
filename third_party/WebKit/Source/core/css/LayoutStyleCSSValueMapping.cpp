@@ -492,7 +492,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFamily(const AtomicStri
 {
     if (CSSValueID familyIdentifier = identifierForFamily(family))
         return cssValuePool().createIdentifierValue(familyIdentifier);
-    return cssValuePool().createValue(family.string(), CSSPrimitiveValue::CSS_STRING);
+    return cssValuePool().createValue(family.string(), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValueList> valueForFontFamily(const LayoutStyle& style)
@@ -563,7 +563,7 @@ static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& order
 
     RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
     for (size_t j = 0; j < namedGridLines.size(); ++j)
-        lineNames->append(cssValuePool().createValue(namedGridLines[j], CSSPrimitiveValue::CSS_STRING));
+        lineNames->append(cssValuePool().createValue(namedGridLines[j], CSSPrimitiveValue::CSS_CUSTOM_IDENT));
     list.append(lineNames.release());
 }
 
@@ -615,7 +615,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridPosition(const GridPosition&
         return cssValuePool().createIdentifierValue(CSSValueAuto);
 
     if (position.isNamedGridArea())
-        return cssValuePool().createValue(position.namedGridLine(), CSSPrimitiveValue::CSS_STRING);
+        return cssValuePool().createValue(position.namedGridLine(), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (position.isSpan()) {
@@ -626,7 +626,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridPosition(const GridPosition&
     }
 
     if (!position.namedGridLine().isNull())
-        list->append(cssValuePool().createValue(position.namedGridLine(), CSSPrimitiveValue::CSS_STRING));
+        list->append(cssValuePool().createValue(position.namedGridLine(), CSSPrimitiveValue::CSS_CUSTOM_IDENT));
     return list;
 }
 
@@ -946,9 +946,9 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTransitionPropertyValue(const CSST
     if (property.propertyType == CSSTransitionData::TransitionAll)
         return cssValuePool().createIdentifierValue(CSSValueAll);
     if (property.propertyType == CSSTransitionData::TransitionUnknown)
-        return cssValuePool().createValue(property.propertyString, CSSPrimitiveValue::CSS_STRING);
+        return cssValuePool().createValue(property.propertyString, CSSPrimitiveValue::CSS_CUSTOM_IDENT);
     ASSERT(property.propertyType == CSSTransitionData::TransitionSingleProperty);
-    return cssValuePool().createValue(getPropertyNameString(property.propertyId), CSSPrimitiveValue::CSS_STRING);
+    return cssValuePool().createValue(getPropertyNameString(property.propertyId), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> valueForTransitionProperty(const CSSTransitionData* transitionData)
@@ -1001,7 +1001,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForCounterDirectives(const LayoutSt
         if (!isValidCounterValue)
             continue;
 
-        list->append(cssValuePool().createValue(item.key, CSSPrimitiveValue::CSS_STRING));
+        list->append(cssValuePool().createValue(item.key, CSSPrimitiveValue::CSS_CUSTOM_IDENT));
         short number = propertyID == CSSPropertyCounterIncrement ? item.value.incrementValue() : item.value.resetValue();
         list->append(cssValuePool().createValue((double)number, CSSPrimitiveValue::CSS_NUMBER));
     }
@@ -1220,7 +1220,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::valueForFilter(cons
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE:
             filterValue = CSSFunctionValue::create(CSSValueUrl);
-            filterValue->append(cssValuePool().createValue(toReferenceFilterOperation(filterOperation)->url(), CSSPrimitiveValue::CSS_STRING));
+            filterValue->append(cssValuePool().createValue(toReferenceFilterOperation(filterOperation)->url(), CSSPrimitiveValue::CSS_CUSTOM_IDENT));
             break;
         case FilterOperation::GRAYSCALE:
             filterValue = CSSFunctionValue::create(CSSValueGrayscale);
@@ -2059,7 +2059,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         const CSSAnimationData* animationData = style.animations();
         if (animationData) {
             for (size_t i = 0; i < animationData->nameList().size(); ++i)
-                list->append(cssValuePool().createValue(animationData->nameList()[i], CSSPrimitiveValue::CSS_STRING));
+                list->append(cssValuePool().createValue(animationData->nameList()[i], CSSPrimitiveValue::CSS_CUSTOM_IDENT));
         } else {
             list->append(cssValuePool().createIdentifierValue(CSSValueNone));
         }
@@ -2089,7 +2089,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
             RefPtrWillBeRawPtr<CSSValueList> animationsList = CSSValueList::createCommaSeparated();
             for (size_t i = 0; i < animationData->nameList().size(); ++i) {
                 RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-                list->append(cssValuePool().createValue(animationData->nameList()[i], CSSPrimitiveValue::CSS_STRING));
+                list->append(cssValuePool().createValue(animationData->nameList()[i], CSSPrimitiveValue::CSS_CUSTOM_IDENT));
                 list->append(cssValuePool().createValue(CSSTimingData::getRepeated(animationData->durationList(), i), CSSPrimitiveValue::CSS_S));
                 list->append(createTimingFunctionValue(CSSTimingData::getRepeated(animationData->timingFunctionList(), i).get()));
                 list->append(cssValuePool().createValue(CSSTimingData::getRepeated(animationData->delayList(), i), CSSPrimitiveValue::CSS_S));

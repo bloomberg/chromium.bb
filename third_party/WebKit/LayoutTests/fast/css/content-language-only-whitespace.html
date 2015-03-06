@@ -20,7 +20,7 @@ function languageOfNode(id) {
     return window.getComputedStyle(element).webkitLocale;
 }
 shouldBeEqualToString("languageOfNode('x')", "auto");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 </script>
 </body>
 </html>

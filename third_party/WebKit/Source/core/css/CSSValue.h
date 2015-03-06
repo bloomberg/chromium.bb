@@ -30,8 +30,6 @@
 
 namespace blink {
 
-enum CSSTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
-
 class CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
 public:
     // Override RefCounted's deref() to ensure operator delete is called on

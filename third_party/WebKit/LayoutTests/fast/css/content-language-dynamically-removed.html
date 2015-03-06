@@ -23,14 +23,14 @@ function languageOfNode(id) {
     var element = document.getElementById(id);
     return window.getComputedStyle(element).webkitLocale;
 }
-shouldBeEqualToString("languageOfNode('x')", "zh");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('x')", "'zh'");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 
 var meta = document.getElementById("target");
 var parent = meta.parentNode;
 meta.parentNode.removeChild(meta);
-shouldBeEqualToString("languageOfNode('x')", "zh");
-shouldBeEqualToString("languageOfNode('y')", "ar");
+shouldBeEqualToString("languageOfNode('x')", "'zh'");
+shouldBeEqualToString("languageOfNode('y')", "'ar'");
 </script>
 </body>
 </html>

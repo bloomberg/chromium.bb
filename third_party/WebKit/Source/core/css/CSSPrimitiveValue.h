@@ -89,7 +89,7 @@ public:
         CSS_S = 15,
         CSS_HZ = 16,
         CSS_KHZ = 17,
-        CSS_STRING = 19,
+        CSS_CUSTOM_IDENT = 19,
         CSS_URI = 20,
         CSS_IDENT = 21,
         CSS_ATTR = 22,
@@ -125,6 +125,8 @@ public:
         CSS_CALC = 113,
         CSS_CALC_PERCENTAGE_WITH_NUMBER = 114,
         CSS_CALC_PERCENTAGE_WITH_LENGTH = 115,
+
+        CSS_STRING = 116,
 
         CSS_PROPERTY_ID = 117,
         CSS_VALUE_ID = 118
@@ -199,7 +201,7 @@ public:
     bool isRect() const { return m_primitiveUnitType == CSS_RECT; }
     bool isRGBColor() const { return m_primitiveUnitType == CSS_RGBCOLOR; }
     bool isShape() const { return m_primitiveUnitType == CSS_SHAPE; }
-    bool isString() const { return m_primitiveUnitType == CSS_STRING; }
+    bool isString() const { return m_primitiveUnitType == CSS_CUSTOM_IDENT || m_primitiveUnitType == CSS_STRING; }
     bool isTime() const { return m_primitiveUnitType == CSS_S || m_primitiveUnitType == CSS_MS; }
     bool isURI() const { return m_primitiveUnitType == CSS_URI; }
     bool isCalculated() const { return m_primitiveUnitType == CSS_CALC; }
@@ -314,7 +316,7 @@ public:
     template<typename T> inline operator T() const; // Defined in CSSPrimitiveValueMappings.h
 
     static const char* unitTypeToString(UnitType);
-    String customCSSText(CSSTextFormattingFlags = QuoteCSSStringIfNeeded) const;
+    String customCSSText() const;
 
     bool isQuirkValue() { return m_isQuirkValue; }
 

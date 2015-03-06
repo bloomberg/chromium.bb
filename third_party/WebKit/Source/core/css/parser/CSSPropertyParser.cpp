@@ -326,6 +326,12 @@ inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimit
     return cssValuePool().createValue(value->string, CSSPrimitiveValue::CSS_STRING);
 }
 
+inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveCustomIdentValue(CSSParserValue* value)
+{
+    ASSERT(value->unit == CSSPrimitiveValue::CSS_STRING || value->unit == CSSPrimitiveValue::CSS_IDENT);
+    return cssValuePool().createValue(value->string, CSSPrimitiveValue::CSS_CUSTOM_IDENT);
+}
+
 inline PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::createCSSImageValueWithReferrer(const String& rawValue, const KURL& url)
 {
     RefPtrWillBeRawPtr<CSSValue> imageValue = CSSImageValue::create(rawValue, url);
@@ -386,7 +392,7 @@ inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPr
     if (identifier)
         return cssValuePool().createIdentifierValue(identifier);
     if (value->unit == CSSPrimitiveValue::CSS_STRING)
-        return createPrimitiveStringValue(value);
+        return createPrimitiveCustomIdentValue(value);
     if (value->unit >= CSSPrimitiveValue::CSS_NUMBER && value->unit <= CSSPrimitiveValue::CSS_KHZ)
         return createPrimitiveNumericValue(value);
     if (value->unit >= CSSPrimitiveValue::CSS_TURN && value->unit <= CSSPrimitiveValue::CSS_CHS)
@@ -1333,18 +1339,30 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         break;
 
     case CSSPropertyWebkitHighlight:
-        if (id == CSSValueNone || value->unit == CSSPrimitiveValue::CSS_STRING)
+        if (id == CSSValueNone) {
             validPrimitive = true;
+        } else if (value->unit == CSSPrimitiveValue::CSS_STRING) {
+            parsedValue = createPrimitiveStringValue(value);
+            m_valueList->next();
+        }
         break;
 
     case CSSPropertyWebkitHyphenateCharacter:
-        if (id == CSSValueAuto || value->unit == CSSPrimitiveValue::CSS_STRING)
+        if (id == CSSValueAuto) {
             validPrimitive = true;
+        } else if (value->unit == CSSPrimitiveValue::CSS_STRING) {
+            parsedValue = createPrimitiveStringValue(value);
+            m_valueList->next();
+        }
         break;
 
     case CSSPropertyWebkitLocale:
-        if (id == CSSValueAuto || value->unit == CSSPrimitiveValue::CSS_STRING)
+        if (id == CSSValueAuto) {
             validPrimitive = true;
+        } else if (value->unit == CSSPrimitiveValue::CSS_STRING) {
+            parsedValue = createPrimitiveStringValue(value);
+            m_valueList->next();
+        }
         break;
 
     // End Apple-specific properties
@@ -2074,7 +2092,7 @@ bool CSSPropertyParser::parsePage(CSSPropertyID propId, bool important)
         addProperty(propId, cssValuePool().createIdentifierValue(value->id), important);
         return true;
     } else if (value->id == 0 && value->unit == CSSPrimitiveValue::CSS_IDENT) {
-        addProperty(propId, createPrimitiveStringValue(value), important);
+        addProperty(propId, createPrimitiveCustomIdentValue(value), important);
         return true;
     }
     return false;
@@ -2965,7 +2983,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationName(bool allo
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
     if (value->unit == CSSPrimitiveValue::CSS_IDENT)
-        return createPrimitiveStringValue(value);
+        return createPrimitiveCustomIdentValue(value);
 
     if (allowQuotedName && value->unit == CSSPrimitiveValue::CSS_STRING) {
         // Legacy support for strings in prefixed animations
@@ -2973,7 +2991,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationName(bool allo
             m_context.useCounter()->count(UseCounter::QuotedAnimationName);
         if (equalIgnoringCase(value->string, "none"))
             return cssValuePool().createIdentifierValue(CSSValueNone);
-        return createPrimitiveStringValue(value);
+        return createPrimitiveCustomIdentValue(value);
     }
 
     return nullptr;
@@ -3006,7 +3024,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
         return cssValuePool().createIdentifierValue(CSSValueNone);
     if (value->id == CSSValueInitial || value->id == CSSValueInherit)
         return nullptr;
-    return createPrimitiveStringValue(value);
+    return createPrimitiveCustomIdentValue(value);
 }
 
 bool CSSPropertyParser::parseCubicBezierTimingFunctionValue(CSSParserValueList*& args, double& result)
@@ -3201,14 +3219,14 @@ bool CSSPropertyParser::parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRa
         numericValue = createPrimitiveNumericValue(value);
         value = m_valueList->next();
         if (value && isValidCustomIdentForGridPositions(*value)) {
-            gridLineName = createPrimitiveStringValue(m_valueList->current());
+            gridLineName = createPrimitiveCustomIdentValue(m_valueList->current());
             m_valueList->next();
         }
         return true;
     }
 
     if (isValidCustomIdentForGridPositions(*value)) {
-        gridLineName = createPrimitiveStringValue(m_valueList->current());
+        gridLineName = createPrimitiveCustomIdentValue(m_valueList->current());
         value = m_valueList->next();
         if (value && validUnit(value, FInteger) && value->fValue) {
             numericValue = createPrimitiveNumericValue(value);
@@ -3263,7 +3281,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridPosition()
 
     // For the <custom-ident> case.
     if (gridLineName && !numericValue && !hasSeenSpanKeyword)
-        return cssValuePool().createValue(gridLineName->getStringValue(), CSSPrimitiveValue::CSS_STRING);
+        return cssValuePool().createValue(gridLineName->getStringValue(), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
 
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     if (hasSeenSpanKeyword)
@@ -3563,7 +3581,7 @@ void CSSPropertyParser::maybeParseGridLineNames(CSSParserValueList& inputList, C
             ASSERT(RuntimeEnabledFeatures::newCSSParserEnabled());
             return;
         }
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> lineName = createPrimitiveStringValue(identValue);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> lineName = createPrimitiveCustomIdentValue(identValue);
         lineNames->append(lineName.release());
         identList->next();
     }
@@ -3847,11 +3865,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
     CSSParserValue* i = args->current();
     if (i->unit != CSSPrimitiveValue::CSS_IDENT)
         return nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> identifier = createPrimitiveStringValue(i);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> identifier = createPrimitiveCustomIdentValue(i);
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> separator = nullptr;
     if (!counters)
-        separator = cssValuePool().createValue(String(), CSSPrimitiveValue::CSS_STRING);
+        separator = cssValuePool().createValue(String(), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
     else {
         args->next();
         if (!consumeComma(args))
@@ -3861,7 +3879,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
         if (i->unit != CSSPrimitiveValue::CSS_STRING)
             return nullptr;
 
-        separator = createPrimitiveStringValue(i);
+        separator = createPrimitiveCustomIdentValue(i);
     }
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle = nullptr;
@@ -6255,7 +6273,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounter(int defaultValu
         CSSParserValue* val = m_valueList->current();
         if (val->unit != CSSPrimitiveValue::CSS_IDENT)
             return nullptr;
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> counterName = createPrimitiveStringValue(val);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> counterName = createPrimitiveCustomIdentValue(val);
         m_valueList->next();
 
         val = m_valueList->current();
