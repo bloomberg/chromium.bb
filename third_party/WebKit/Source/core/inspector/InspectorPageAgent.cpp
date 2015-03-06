@@ -62,7 +62,6 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
@@ -330,7 +329,7 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page, InjectedScriptManager* injectedScriptManager, InspectorClient* client, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page, InjectedScriptManager* injectedScriptManager, Client* client, InspectorOverlay* overlay)
 {
     return adoptPtrWillBeNoop(new InspectorPageAgent(page, injectedScriptManager, client, overlay));
 }
@@ -420,7 +419,7 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
 
-InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* injectedScriptManager, InspectorClient* client, InspectorOverlay* overlay)
+InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* injectedScriptManager, Client* client, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorPageAgent>("Page")
     , m_page(page)
     , m_injectedScriptManager(injectedScriptManager)

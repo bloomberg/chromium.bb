@@ -95,8 +95,6 @@ public:
     virtual void clearDeviceMetricsOverride() override;
     virtual void setTouchEventEmulationEnabled(bool) override;
 
-    virtual void setTraceEventCallback(const WTF::String& categoryFilter, TraceEventCallback) override;
-    virtual void resetTraceEventCallback() override;
     virtual void enableTracing(const WTF::String& categoryFilter) override;
     virtual void disableTracing() override;
 

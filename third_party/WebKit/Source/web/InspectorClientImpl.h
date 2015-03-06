@@ -74,8 +74,6 @@ public:
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) override;
 
-    virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) override;
-    virtual void resetTraceEventCallback() override;
     virtual void enableTracing(const String& categoryFilter) override;
     virtual void disableTracing() override;
 

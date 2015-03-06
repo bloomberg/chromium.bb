@@ -75,7 +75,15 @@ public:
 class InspectorOverlay final : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlay> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorOverlay> create(Page* page, InspectorClient* client)
+    class Client {
+    public:
+        virtual ~Client() { }
+
+        virtual void highlight() = 0;
+        virtual void hideHighlight() = 0;
+    };
+
+    static PassOwnPtrWillBeRawPtr<InspectorOverlay> create(Page* page, Client* client)
     {
         return adoptPtrWillBeNoop(new InspectorOverlay(page, client));
     }
@@ -114,7 +122,7 @@ public:
     // Methods supporting underlying overlay page.
     void invalidate();
 private:
-    InspectorOverlay(Page*, InspectorClient*);
+    InspectorOverlay(Page*, Client*);
 
     bool isEmpty();
 
@@ -130,7 +138,7 @@ private:
     void onTimer(Timer<InspectorOverlay>*);
 
     RawPtrWillBeMember<Page> m_page;
-    InspectorClient* m_client;
+    Client* m_client;
     String m_pausedInDebuggerMessage;
     bool m_inspectModeEnabled;
     RefPtrWillBeMember<Node> m_highlightNode;

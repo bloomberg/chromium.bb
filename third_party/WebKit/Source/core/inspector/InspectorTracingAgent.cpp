@@ -9,7 +9,6 @@
 #include "core/inspector/InspectorTracingAgent.h"
 
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -26,7 +25,7 @@ namespace {
 const char devtoolsMetadataEventCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 }
 
-InspectorTracingAgent::InspectorTracingAgent(InspectorClient* client, InspectorWorkerAgent* workerAgent, InspectorPageAgent* pageAgent)
+InspectorTracingAgent::InspectorTracingAgent(Client* client, InspectorWorkerAgent* workerAgent, InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorTracingAgent>("Tracing")
     , m_layerTreeId(0)
     , m_client(client)

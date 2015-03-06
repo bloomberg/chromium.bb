@@ -37,15 +37,24 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class InspectorClient;
 class InspectorPageAgent;
+class PlatformKeyboardEvent;
+class PlatformMouseEvent;
 
 typedef String ErrorString;
 
 class InspectorInputAgent final : public InspectorBaseAgent<InspectorInputAgent>, public InspectorBackendDispatcher::InputCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorInputAgent> create(InspectorPageAgent* pageAgent, InspectorClient* client)
+    class Client {
+    public:
+        virtual ~Client() { }
+
+        virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) { }
+        virtual void dispatchMouseEvent(const PlatformMouseEvent&) { }
+    };
+
+    static PassOwnPtrWillBeRawPtr<InspectorInputAgent> create(InspectorPageAgent* pageAgent, Client* client)
     {
         return adoptPtrWillBeNoop(new InspectorInputAgent(pageAgent, client));
     }
@@ -58,10 +67,10 @@ public:
     virtual void dispatchMouseEvent(ErrorString*, const String& type, int x, int y, const int* modifiers, const double* timestamp, const String* button, const int* clickCount) override;
     virtual void dispatchTouchEvent(ErrorString*, const String& type, const RefPtr<JSONArray>& touchPoints, const int* modifiers, const double* timestamp) override;
 private:
-    InspectorInputAgent(InspectorPageAgent*, InspectorClient*);
+    InspectorInputAgent(InspectorPageAgent*, Client*);
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    InspectorClient* m_client;
+    Client* m_client;
 };
 
 

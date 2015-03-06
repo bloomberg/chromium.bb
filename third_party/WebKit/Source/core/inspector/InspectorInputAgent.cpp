@@ -33,7 +33,6 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
@@ -90,7 +89,7 @@ void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& poin
 
 namespace blink {
 
-InspectorInputAgent::InspectorInputAgent(InspectorPageAgent* pageAgent, InspectorClient* client)
+InspectorInputAgent::InspectorInputAgent(InspectorPageAgent* pageAgent, Client* client)
     : InspectorBaseAgent<InspectorInputAgent>("Input")
     , m_pageAgent(pageAgent), m_client(client)
 {

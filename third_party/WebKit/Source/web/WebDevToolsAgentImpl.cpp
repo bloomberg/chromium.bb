@@ -399,16 +399,6 @@ void WebDevToolsAgentImpl::disableMobileEmulation()
         m_originalDefaultMaximumPageScaleFactor);
 }
 
-void WebDevToolsAgentImpl::setTraceEventCallback(const String& categoryFilter, TraceEventCallback callback)
-{
-    m_client->setTraceEventCallback(categoryFilter, callback);
-}
-
-void WebDevToolsAgentImpl::resetTraceEventCallback()
-{
-    m_client->resetTraceEventCallback();
-}
-
 void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)
 {
     m_client->enableTracing(categoryFilter);

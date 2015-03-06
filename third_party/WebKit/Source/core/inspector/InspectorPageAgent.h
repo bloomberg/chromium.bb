@@ -47,7 +47,6 @@ class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
 class InjectedScriptManager;
-class InspectorClient;
 class InspectorCSSAgent;
 class InspectorDebuggerAgent;
 class InspectorOverlay;
@@ -66,6 +65,25 @@ typedef String ErrorString;
 class InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent>, public InspectorBackendDispatcher::PageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
 public:
+    class Client {
+    public:
+        virtual ~Client() { }
+
+        virtual void resetScrollAndPageScaleFactor() { }
+        virtual float minimumPageScaleFactor() { return 1; }
+        virtual float maximumPageScaleFactor() { return 1; }
+        virtual void setPageScaleFactor(float) { }
+        virtual void setShowPaintRects(bool) { }
+        virtual void setShowDebugBorders(bool) { }
+        virtual void setShowFPSCounter(bool) { }
+        virtual void setContinuousPaintingEnabled(bool) { }
+        virtual void setShowScrollBottleneckRects(bool) { }
+        virtual bool overridesShowPaintRects() { return false; }
+        virtual void setDeviceMetricsOverride(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*mobile*/, bool /*fitWindow*/, float /* scale */, float /* offsetX */, float /* offsetY */) { }
+        virtual void clearDeviceMetricsOverride() { }
+        virtual void setTouchEventEmulationEnabled(bool) { }
+    };
+
     enum ResourceType {
         DocumentResource,
         StylesheetResource,
@@ -79,7 +97,7 @@ public:
         OtherResource
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, Client*, InspectorOverlay*);
     void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
 
     // Settings overrides.
@@ -180,7 +198,7 @@ public:
 private:
     class GetResourceContentLoadListener;
 
-    InspectorPageAgent(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
+    InspectorPageAgent(Page*, InjectedScriptManager*, Client*, InspectorOverlay*);
     bool deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY);
     void updateViewMetricsFromState();
     void updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY);
@@ -200,7 +218,7 @@ private:
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
-    InspectorClient* m_client;
+    Client* m_client;
     InspectorFrontend::Page* m_frontend;
     InspectorOverlay* m_overlay;
     long m_lastScriptIdentifier;

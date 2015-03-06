@@ -27,54 +27,26 @@
 #ifndef InspectorClient_h
 #define InspectorClient_h
 
+#include "core/inspector/InspectorInputAgent.h"
+#include "core/inspector/InspectorOverlay.h"
+#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorStateClient.h"
+#include "core/inspector/InspectorTracingAgent.h"
+#include "core/inspector/PageRuntimeAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class PlatformKeyboardEvent;
-class PlatformMouseEvent;
-
-class InspectorClient : public InspectorStateClient {
-public:
-    virtual void highlight() = 0;
-    virtual void hideHighlight() = 0;
-
-    virtual void clearBrowserCache() { }
-    virtual void clearBrowserCookies() { }
-
-    typedef void (*TraceEventCallback)(char phase, const unsigned char*, const char* name, unsigned long long id,
-        int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
-        unsigned char flags, double timestamp);
-    virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) { }
-    virtual void resetTraceEventCallback() { }
-    virtual void enableTracing(const String& categoryFilter) { }
-    virtual void disableTracing() { }
-
-    virtual void setDeviceMetricsOverride(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*mobile*/, bool /*fitWindow*/, float /* scale */, float /* offsetX */, float /* offsetY */) { }
-    virtual void clearDeviceMetricsOverride() { }
-    virtual void setTouchEventEmulationEnabled(bool) { }
-
-    virtual bool overridesShowPaintRects() { return false; }
-    virtual void setShowPaintRects(bool) { }
-    virtual void setShowDebugBorders(bool) { }
-    virtual void setShowFPSCounter(bool) { }
-    virtual void setContinuousPaintingEnabled(bool) { }
-    virtual void setShowScrollBottleneckRects(bool) { }
-
-    virtual void resetScrollAndPageScaleFactor() { }
-    virtual float minimumPageScaleFactor() { return 1; }
-    virtual float maximumPageScaleFactor() { return 1; }
-    virtual void setPageScaleFactor(float) { }
-
-    virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) { }
-    virtual void dispatchMouseEvent(const PlatformMouseEvent&) { }
-
-    virtual void resumeStartup() { }
-
+class InspectorClient
+    : public InspectorStateClient
+    , public InspectorInputAgent::Client
+    , public InspectorOverlay::Client
+    , public InspectorPageAgent::Client
+    , public InspectorTracingAgent::Client
+    , public PageRuntimeAgent::Client {
 protected:
-    virtual ~InspectorClient() { }
+    ~InspectorClient() override { }
 };
 
 } // namespace blink

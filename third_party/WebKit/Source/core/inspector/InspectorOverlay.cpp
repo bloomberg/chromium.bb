@@ -39,7 +39,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutInline.h"
@@ -334,7 +333,7 @@ static void buildNodeHighlight(Node& node, const HighlightConfig& highlightConfi
 
 } // anonymous namespace
 
-InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
+InspectorOverlay::InspectorOverlay(Page* page, Client* client)
     : m_page(page)
     , m_client(client)
     , m_inspectModeEnabled(false)

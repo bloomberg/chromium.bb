@@ -14,7 +14,6 @@
 
 namespace blink {
 
-class InspectorClient;
 class InspectorPageAgent;
 class InspectorWorkerAgent;
 
@@ -23,7 +22,15 @@ class InspectorTracingAgent final
     , public InspectorBackendDispatcher::TracingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorTracingAgent> create(InspectorClient* client, InspectorWorkerAgent* workerAgent, InspectorPageAgent* pageAgent)
+    class Client {
+    public:
+        virtual ~Client() { }
+
+        virtual void enableTracing(const String& categoryFilter) { }
+        virtual void disableTracing() { }
+    };
+
+    static PassOwnPtrWillBeRawPtr<InspectorTracingAgent> create(Client* client, InspectorWorkerAgent* workerAgent, InspectorPageAgent* pageAgent)
     {
         return adoptPtrWillBeNoop(new InspectorTracingAgent(client, workerAgent, pageAgent));
     }
@@ -43,14 +50,14 @@ public:
     void setLayerTreeId(int);
 
 private:
-    InspectorTracingAgent(InspectorClient*, InspectorWorkerAgent*, InspectorPageAgent*);
+    InspectorTracingAgent(Client*, InspectorWorkerAgent*, InspectorPageAgent*);
 
     void emitMetadataEvents();
     void resetSessionId();
     String sessionId();
 
     int m_layerTreeId;
-    InspectorClient* m_client;
+    Client* m_client;
     InspectorFrontend::Tracing* m_frontend;
     RawPtrWillBeMember<InspectorWorkerAgent> m_workerAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;

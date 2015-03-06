@@ -173,12 +173,6 @@ void InspectorClientImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
         agent->dispatchMouseEvent(event);
 }
 
-void InspectorClientImpl::setTraceEventCallback(const String& categoryFilter, TraceEventCallback callback)
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->setTraceEventCallback(categoryFilter, callback);
-}
-
 void InspectorClientImpl::enableTracing(const String& categoryFilter)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
@@ -189,12 +183,6 @@ void InspectorClientImpl::disableTracing()
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
         agent->disableTracing();
-}
-
-void InspectorClientImpl::resetTraceEventCallback()
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->resetTraceEventCallback();
 }
 
 void InspectorClientImpl::resumeStartup()
