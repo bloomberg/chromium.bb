@@ -43,69 +43,45 @@ from chromite.lib import parallel
 from chromite.lib import portage_util
 
 
-class WorkonProjectsMonitor(object):
-  """Class for monitoring the last modification time of workon projects.
+class ModificationTimeMonitor(object):
+  """Base class for monitoring last modification time of paths.
+
+  This takes a list of (keys, path) pairs and finds the latest mtime of an
+  object within each of the path's subtrees, populating a map from keys to
+  mtimes. Note that a key may be associated with multiple paths, in which case
+  the latest mtime among them will be returned.
 
   Members:
-    _tasks: A list of the (project, path) pairs to check.
-    _result_queue: A queue. When GetProjectModificationTimes is called,
-      (project, mtime) tuples are pushed onto the end of this queue.
+    _tasks: A list of (key, path) pairs to check.
+    _result_queue: A queue populated with corresponding (key, mtime) pairs.
   """
 
-  def __init__(self, projects):
-    """Create a new object for checking what projects were modified and when.
-
-    Args:
-      projects: A list of the project names we are interested in monitoring.
-    """
-    manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
-    self._tasks = []
-    for project in set(projects).intersection(manifest.checkouts_by_name):
-      for checkout in manifest.FindCheckouts(project):
-        self._tasks.append((project, checkout.GetPath(absolute=True)))
+  def __init__(self, key_path_pairs):
+    self._tasks = list(key_path_pairs)
     self._result_queue = multiprocessing.Queue(len(self._tasks))
 
-  def _EnqueueProjectModificationTime(self, project, path):
-    """Calculate the last time that this project was modified, and enqueue it.
-
-    Args:
-      project: The project to look at.
-      path: The path associated with the specified project.
-    """
+  def _EnqueueModificationTime(self, key, path):
+    """Calculate the last modification time of |path| and enqueue it."""
     if os.path.isdir(path):
-      self._result_queue.put((project, self._LastModificationTime(path)))
+      self._result_queue.put((key, self._LastModificationTime(path)))
 
   def _LastModificationTime(self, path):
-    """Calculate the last time a directory subtree was modified.
-
-    Args:
-      path: Directory to look at.
-    """
+    """Returns the latest modification time for anything under |path|."""
     cmd = 'find . -name .git -prune -o -printf "%T@\n" | sort -nr | head -n1'
     ret = cros_build_lib.RunCommand(cmd, cwd=path, shell=True, print_cmd=False,
                                     capture_output=True)
     return float(ret.output) if ret.output else 0
 
-  def GetProjectModificationTimes(self):
-    """Get the last modification time of each specified project.
-
-    Returns:
-      A dictionary mapping project names to last modification times.
-    """
-    task = self._EnqueueProjectModificationTime
-    parallel.RunTasksInProcessPool(task, self._tasks)
-
-    # Create a dictionary mapping project names to last modification times.
-    # All of the workon projects are already stored in the queue, so we can
-    # retrieve them all without waiting any longer.
+  def GetModificationTimes(self):
+    """Get the latest modification time for each of the queued keys."""
+    parallel.RunTasksInProcessPool(self._EnqueueModificationTime, self._tasks)
     mtimes = {}
-    while True:
-      try:
-        project, mtime = self._result_queue.get_nowait()
-      except Queue.Empty:
-        break
-      mtimes[project] = mtime
-    return mtimes
+    try:
+      while True:
+        key, mtime = self._result_queue.get_nowait()
+        mtimes[key] = max((mtimes.get(key, 0), mtime))
+    except Queue.Empty:
+      return mtimes
 
 
 class WorkonPackageInfo(object):
@@ -191,6 +167,22 @@ def ListWorkonPackagesInfo(board, host):
   return results.values()
 
 
+def WorkonProjectsMonitor(projects):
+  """Returns a monitor for project modification times."""
+  # TODO(garnold) In order for the mtime monitor to be as accurate as
+  # possible, this only needs to enqueue the checkout(s) relevant for the
+  # task at hand, e.g. the specific ebuild we want to emerge. In general, the
+  # CROS_WORKON_LOCALNAME variable in workon ebuilds defines the source path
+  # uniquely and can be used for this purpose.
+  project_path_pairs = []
+  manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
+  for project in set(projects).intersection(manifest.checkouts_by_name):
+    for checkout in manifest.FindCheckouts(project):
+      project_path_pairs.append((project, checkout.GetPath(absolute=True)))
+
+  return ModificationTimeMonitor(project_path_pairs)
+
+
 def ListModifiedWorkonPackages(board, host):
   """List the workon packages that need to be rebuilt.
 
@@ -203,7 +195,7 @@ def ListModifiedWorkonPackages(board, host):
     projects = []
     for info in packages:
       projects.extend(info.projects)
-    mtimes = WorkonProjectsMonitor(projects).GetProjectModificationTimes()
+    mtimes = WorkonProjectsMonitor(projects).GetModificationTimes()
     for info in packages:
       mtime = int(max([mtimes.get(p, 0) for p in info.projects] +
                       [info.src_ebuild_mtime]))
