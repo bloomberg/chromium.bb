@@ -948,10 +948,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 
   DataReductionProxyChromeSettings* data_reduction_proxy_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
-  if (data_reduction_proxy_settings) {
-    host->AddFilter(new data_reduction_proxy::DataReductionProxyMessageFilter(
-        data_reduction_proxy_settings));
-  }
+  host->AddFilter(new data_reduction_proxy::DataReductionProxyMessageFilter(
+      data_reduction_proxy_settings));
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));

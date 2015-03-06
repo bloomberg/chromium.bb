@@ -21,6 +21,7 @@ class DataReductionProxySettings;
 class DataReductionProxyMessageFilter
     : public content::BrowserMessageFilter {
  public:
+  // |settings| may be null.
   DataReductionProxyMessageFilter(DataReductionProxySettings* settings);
 
   // Sets |response| to true if the |proxy_server| corresponds to a Data
@@ -36,7 +37,7 @@ class DataReductionProxyMessageFilter
   void OverrideThreadForMessage(const IPC::Message& message,
                                 content::BrowserThread::ID* thread) override;
 
-  // Must outlive |this|.
+  // Must outlive |this|. May be null.
   DataReductionProxyConfig* config_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyMessageFilter);

@@ -17,8 +17,8 @@ DataReductionProxyMessageFilter::DataReductionProxyMessageFilter(
     DataReductionProxySettings* settings)
     : BrowserMessageFilter(DataReductionProxyStart),
       config_(nullptr) {
-  DCHECK(settings);
-  config_ = settings->Config();
+  if (settings)
+    config_ = settings->Config();
 }
 
 DataReductionProxyMessageFilter::~DataReductionProxyMessageFilter() {
