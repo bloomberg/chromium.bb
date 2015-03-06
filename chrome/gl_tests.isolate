@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 {
   'includes': [
-    'angle.isolate',
+    '../base/base.isolate',
+    '../third_party/angle/angle.isolate',
   ],
   'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {

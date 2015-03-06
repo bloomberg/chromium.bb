@@ -125,7 +125,8 @@
     }],
   ],
   'includes': [
-    'angle.isolate',
+    '../base/base.isolate',
+    '../third_party/angle/angle.isolate',
     '../gin/v8.isolate',
   ],
 }
