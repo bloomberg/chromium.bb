@@ -13,11 +13,19 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
+#include "grit/settings_resources.h"
+#include "grit/settings_resources_map.h"
 
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdSettingsHost);
+
+  // Add all settings resources.
+  for (size_t i = 0; i < kSettingsResourcesSize; ++i) {
+    html_source->AddResourcePath(kSettingsResources[i].name,
+                                 kSettingsResources[i].value);
+  }
 
   html_source->AddResourcePath("md_settings.css", IDR_MD_SETTINGS_UI_CSS);
   html_source->SetDefaultResource(IDR_MD_SETTINGS_UI_HTML);

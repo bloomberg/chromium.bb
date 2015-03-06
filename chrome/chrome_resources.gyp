@@ -100,6 +100,14 @@
               },
               'includes': [ '../build/grit_action.gypi' ],
             },
+            {
+              # GN version: //chrome/browser/resources:settings_resources
+              'action_name': 'generate_settings_resources',
+              'variables': {
+                'grit_grd_file': 'browser/resources/settings/settings_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
+            },
           ],
           'copies': [
             {

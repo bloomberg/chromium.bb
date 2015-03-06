@@ -372,6 +372,7 @@ group("extra_resources") {
     deps += [
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/resources:options_resources",
+      "//chrome/browser/resources:settings_resources",
     ]
   }
 
@@ -466,6 +467,7 @@ repack("packed_extra_resources") {
       "$root_gen_dir/chrome/component_extension_resources.pak",
       "$root_gen_dir/chrome/options_resources.pak",
       "$root_gen_dir/chrome/quota_internals_resources.pak",
+      "$root_gen_dir/chrome/settings_resources.pak",
       "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
       "$root_gen_dir/chrome/webrtc_device_provider_resources.pak",
     ]
@@ -473,6 +475,7 @@ repack("packed_extra_resources") {
       "//chrome/browser/devtools:webrtc_device_provider_resources",
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/resources:options_resources",
+      "//chrome/browser/resources:settings_resources",
       "//chrome/browser/resources:quota_internals_resources",
       "//chrome/browser/resources:sync_file_system_internals_resources",
       "//content/browser/devtools:devtools_resources",

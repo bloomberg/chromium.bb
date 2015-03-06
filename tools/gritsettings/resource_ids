@@ -245,6 +245,9 @@
   "chrome/browser/devtools/device/webrtc/resources.grd": {
     "includes": [30800],
   },
+  "chrome/browser/resources/settings/settings_resources.grd": {
+    "structures": [30900],
+  },
 
   # These files don't need to reserve resource ids, but are listed here so that
   # translation scripts know of their existence.

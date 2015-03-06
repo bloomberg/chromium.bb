@@ -89,6 +89,17 @@ if (!is_ios) {
     output_dir = "$root_gen_dir/chrome"
   }
 
+  grit("settings_resources") {
+    source = "settings/settings_resources.grd"
+    outputs = [
+      "grit/settings_resources.h",
+      "grit/settings_resources_map.cc",
+      "grit/settings_resources_map.h",
+      "settings_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("options_resources") {
     source = "options_resources.grd"
     outputs = [
