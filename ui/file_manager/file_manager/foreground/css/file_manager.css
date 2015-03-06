@@ -286,6 +286,7 @@ body.check-select button:hover {
   background-size: 16px 16px;
   border: 0;
   border-radius: 16px;
+  flex: none;
   height: 32px;
   line-height: 16px;
   min-width: 32px;
@@ -497,7 +498,6 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button {
-  display: none;
   margin: 0 8px;
   text-transform: none;
 }
@@ -514,6 +514,7 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button-wrapper {
+  display: none;
   width: 240px;  /* initial value, same as .dialog-navigation-list's width. */
 }
 
@@ -521,8 +522,8 @@ body.check-select #files-selected-label {
   -webkit-margin-end: 6px;
 }
 
-body.check-select #cancel-selection-button {
-  display: inline-block;
+body.check-select #cancel-selection-button-wrapper {
+  display: block;
 }
 
 /* Search button */
@@ -809,12 +810,12 @@ body.check-select .breadcrumbs {
 
 /* The > arrow between breadcrumbs. */
 .breadcrumbs .separator {
-  background-image: -webkit-image-set(
+  background: -webkit-image-set(
       url(../images/files/ui/arrow_right_white.png) 1x,
-      url(../images/files/ui/2x/arrow_right_white.png) 2x);
+      url(../images/files/ui/2x/arrow_right_white.png) 2x) center no-repeat;
+  flex: none;
   height: 16px;
-  margin: 0 5px;
-  width: 16px;
+  width: 26px;
 }
 
 html[dir='rtl'] .breadcrumbs .separator {

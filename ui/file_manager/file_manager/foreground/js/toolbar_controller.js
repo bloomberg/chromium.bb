@@ -9,6 +9,8 @@
  * @param {!HTMLElement} toolbar Toolbar element which contains controls.
  * @param {!HTMLElement} navigationList Navigation list on the left pane. The
  *     position of silesSelectedLabel depends on the navitaion list's width.
+ * @param {!LocationLine} locationLine Location line shown on the left side of
+ *     the toolbar.
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!DirectoryModel} directoryModel
  * @constructor
@@ -16,6 +18,7 @@
  */
 function ToolbarController(toolbar,
                            navigationList,
+                           locationLine,
                            selectionHandler,
                            directoryModel) {
   /**
@@ -66,6 +69,12 @@ function ToolbarController(toolbar,
   this.navigationList_ = navigationList;
 
   /**
+   * @private {!LocationLine}
+   * @const
+   */
+  this.locationLine_ = locationLine;
+
+  /**
    * @private {!FileSelectionHandler}
    * @const
    */
@@ -89,6 +98,14 @@ function ToolbarController(toolbar,
 
   this.navigationList_.addEventListener(
       'relayout', this.onNavigationListRelayout_.bind(this));
+
+  // Watch visibility of toolbar buttons to update the width of location line.
+  var observer = new MutationObserver(this.onToolbarButtonsMutated_.bind(this));
+  var toolbarButtons =
+      this.toolbar_.querySelectorAll('.icon-button, .combobutton');
+  for (var i = 0; i < toolbarButtons.length; i++) {
+    observer.observe(toolbarButtons[i], {attributes: true});
+  }
 }
 
 /**
@@ -156,4 +173,13 @@ ToolbarController.prototype.onNavigationListRelayout_ = function() {
   var navWidth = parseFloat(
       window.getComputedStyle(this.navigationList_).width);
   this.cancelSelectionButtonWrapper_.style.width = navWidth + 'px';
+}
+
+/**
+ * Handles the mutation event occurd on attibutes of toolbar buttons.
+ * Toolbar buttons visibility can affect the available width for location line.
+ * @private
+ */
+ToolbarController.prototype.onToolbarButtonsMutated_ = function() {
+  this.locationLine_.truncate();
 }
