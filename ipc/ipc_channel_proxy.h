@@ -57,6 +57,15 @@ class SendCallbackHelper;
 //
 class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
  public:
+#if defined(ENABLE_IPC_FUZZER)
+  // Interface for a filter to be imposed on outgoing messages which can
+  // re-write the message. Used for testing.
+  class OutgoingMessageFilter {
+   public:
+    virtual Message* Rewrite(Message* message) = 0;
+  };
+#endif
+
   // Initializes a channel proxy.  The channel_handle and mode parameters are
   // passed directly to the underlying IPC::Channel.  The listener is called on
   // the thread that creates the ChannelProxy.  The filter's OnMessageReceived
@@ -111,6 +120,12 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // the IO thread.
   void AddFilter(MessageFilter* filter);
   void RemoveFilter(MessageFilter* filter);
+
+#if defined(ENABLE_IPC_FUZZER)
+  void set_outgoing_message_filter(OutgoingMessageFilter* filter) {
+    outgoing_message_filter_ = filter;
+  }
+#endif
 
   // Set the task runner on which dispatched messages are posted. Both the new
   // task runner and the existing task runner must run on the same thread, and
@@ -232,6 +247,12 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
   Context* context() { return context_.get(); }
 
+#if defined(ENABLE_IPC_FUZZER)
+  OutgoingMessageFilter* outgoing_message_filter() const {
+    return outgoing_message_filter_;
+  }
+#endif
+
  private:
   friend class IpcSecurityTestUtil;
 
@@ -242,6 +263,10 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
   // Whether the channel has been initialized.
   bool did_init_;
+
+#if defined(ENABLE_IPC_FUZZER)
+  OutgoingMessageFilter* outgoing_message_filter_;
+#endif
 };
 
 }  // namespace IPC

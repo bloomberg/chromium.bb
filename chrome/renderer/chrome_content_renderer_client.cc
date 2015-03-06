@@ -127,6 +127,10 @@
 #include "extensions/renderer/script_context.h"
 #endif
 
+#if defined(ENABLE_IPC_FUZZER)
+#include "chrome/common/external_ipc_dumper.h"
+#endif
+
 #if defined(ENABLE_PRINTING)
 #include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
 #include "components/printing/renderer/print_web_view_helper.h"
@@ -464,6 +468,16 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #if defined(OS_CHROMEOS)
   WebString external_file_scheme(ASCIIToUTF16(content::kExternalFileScheme));
   WebSecurityPolicy::registerURLSchemeAsLocal(external_file_scheme);
+#endif
+
+#if defined(ENABLE_IPC_FUZZER)
+  if (command_line->HasSwitch(switches::kIpcDumpDirectory)) {
+    base::FilePath dump_directory =
+        command_line->GetSwitchValuePath(switches::kIpcDumpDirectory);
+    IPC::ChannelProxy::OutgoingMessageFilter* filter =
+        LoadExternalIPCDumper(dump_directory);
+    thread->GetChannel()->set_outgoing_message_filter(filter);
+  }
 #endif
 
   // chrome: and chrome-search: pages should not be accessible by bookmarklets

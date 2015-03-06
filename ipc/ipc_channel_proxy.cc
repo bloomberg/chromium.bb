@@ -252,7 +252,7 @@ void ChannelProxy::Context::AddFilter(MessageFilter* filter) {
 
 // Called on the listener's thread
 void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if defined(IPC_MESSAGE_LOG_ENABLED)
   Logging* logger = Logging::GetInstance();
   std::string name;
   logger->GetMessageText(message.type(), &name, &message, NULL);
@@ -337,12 +337,18 @@ scoped_ptr<ChannelProxy> ChannelProxy::Create(
 ChannelProxy::ChannelProxy(Context* context)
     : context_(context),
       did_init_(false) {
+#if defined(ENABLE_IPC_FUZZER)
+  outgoing_message_filter_ = NULL;
+#endif
 }
 
 ChannelProxy::ChannelProxy(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
     : context_(new Context(listener, ipc_task_runner)), did_init_(false) {
+#if defined(ENABLE_IPC_FUZZER)
+  outgoing_message_filter_ = NULL;
+#endif
 }
 
 ChannelProxy::~ChannelProxy() {
@@ -410,6 +416,14 @@ bool ChannelProxy::Send(Message* message) {
 
   // TODO(alexeypa): add DCHECK(CalledOnValidThread()) here. Currently there are
   // tests that call Send() from a wrong thread. See http://crbug.com/163523.
+
+#ifdef ENABLE_IPC_FUZZER
+  // In IPC fuzzing builds, it is possible to define a filter to apply to
+  // outgoing messages. It will either rewrite the message and return a new
+  // one, freeing the original, or return the message unchanged.
+  if (outgoing_message_filter())
+    message = outgoing_message_filter()->Rewrite(message);
+#endif
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging::GetInstance()->OnSendMessage(message, context_->channel_id());

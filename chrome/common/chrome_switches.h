@@ -206,6 +206,7 @@ extern const char kInstallEphemeralAppFromWebstore[];
 extern const char kInstallSupervisedUserWhitelists[];
 extern const char kInstantProcess[];
 extern const char kInvalidationUseGCMChannel[];
+extern const char kIpcDumpDirectory[];
 extern const char kIpcFuzzerTestcase[];
 extern const char kJavaScriptHarmony[];
 extern const char kKeepAliveForTest[];

@@ -1327,7 +1327,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
 #if defined(ENABLE_IPC_FUZZER)
   static const char* const kIpcFuzzerSwitches[] = {
-    switches::kIpcFuzzerTestcase,
+      switches::kIpcDumpDirectory,
+      switches::kIpcFuzzerTestcase,
   };
   command_line->CopySwitchesFrom(browser_command_line, kIpcFuzzerSwitches,
                                  arraysize(kIpcFuzzerSwitches));

@@ -735,6 +735,10 @@ const char kDisableJavaScriptHarmonyShipping[] =
 // Enables experimental Harmony (ECMAScript 6) features.
 const char kJavaScriptHarmony[]             = "javascript-harmony";
 
+// Dumps IPC messages sent from renderer processes to the browser process to
+// the given directory. Used primarily to gather samples for IPC fuzzing.
+const char kIpcDumpDirectory[]              = "ipc-dump-directory";
+
 // Specifies the testcase used by the IPC fuzzer.
 const char kIpcFuzzerTestcase[]             = "ipc-fuzzer-testcase";
 

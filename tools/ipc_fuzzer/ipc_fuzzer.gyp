@@ -11,6 +11,7 @@
       'target_name': 'ipc_fuzzer',
       'type': 'none',
       'dependencies': [
+        'dump/dump.gyp:ipc_message_dump',
         'ipclist/ipclist.gyp:ipclist',
         'mutate/mutate.gyp:ipc_fuzzer_mutate',
         'mutate/mutate.gyp:ipc_fuzzer_generate',
