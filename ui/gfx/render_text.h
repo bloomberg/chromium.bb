@@ -109,15 +109,17 @@ class GFX_EXPORT SkiaTextRenderer {
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };
 
-// Internal helper class used by derived classes to iterate colors and styles.
+// Internal helper class used to iterate colors, baselines, and styles.
 class StyleIterator {
  public:
   StyleIterator(const BreakList<SkColor>& colors,
-                const std::vector<BreakList<bool> >& styles);
+                const BreakList<BaselineStyle>& baselines,
+                const std::vector<BreakList<bool>>& styles);
   ~StyleIterator();
 
   // Get the colors and styles at the current iterator position.
   SkColor color() const { return color_->second; }
+  BaselineStyle baseline() const { return baseline_->second; }
   bool style(TextStyle s) const { return style_[s]->second; }
 
   // Get the intersecting range of the current iterator set.
@@ -128,9 +130,11 @@ class StyleIterator {
 
  private:
   BreakList<SkColor> colors_;
+  BreakList<BaselineStyle> baselines_;
   std::vector<BreakList<bool> > styles_;
 
   BreakList<SkColor>::const_iterator color_;
+  BreakList<BaselineStyle>::const_iterator baseline_;
   std::vector<BreakList<bool>::const_iterator> style_;
 
   DISALLOW_COPY_AND_ASSIGN(StyleIterator);
@@ -332,6 +336,11 @@ class GFX_EXPORT RenderText {
   void SetColor(SkColor value);
   void ApplyColor(SkColor value, const Range& range);
 
+  // Set the baseline style over the entire text or a logical character range.
+  // The |range| should be valid, non-reversed, and within [0, text().length()].
+  void SetBaselineStyle(BaselineStyle value);
+  void ApplyBaselineStyle(BaselineStyle value, const Range& range);
+
   // Set various text styles over the entire text or a logical character range.
   // The respective |style| is applied if |value| is true, or removed if false.
   // The |range| should be valid, non-reversed, and within [0, text().length()].
@@ -456,6 +465,7 @@ class GFX_EXPORT RenderText {
   bool text_elided() const { return text_elided_; }
 
   const BreakList<SkColor>& colors() const { return colors_; }
+  const BreakList<BaselineStyle>& baselines() const { return baselines_; }
   const std::vector<BreakList<bool> >& styles() const { return styles_; }
 
   const std::vector<internal::Line>& lines() const { return lines_; }
@@ -692,10 +702,11 @@ class GFX_EXPORT RenderText {
   // Composition text range.
   Range composition_range_;
 
-  // Color and style breaks, used to color and stylize ranges of text.
+  // Color, baseline, and style breaks, used to modify ranges of text.
   // BreakList positions are stored with text indices, not display indices.
   // TODO(msw): Expand to support cursor, selection, background, etc. colors.
   BreakList<SkColor> colors_;
+  BreakList<BaselineStyle> baselines_;
   std::vector<BreakList<bool> > styles_;
 
   // Breaks saved without temporary composition and selection styling.
