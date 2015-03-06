@@ -939,6 +939,8 @@
       'renderer/script_context.h',
       'renderer/script_context_set.cc',
       'renderer/script_context_set.h',
+      'renderer/script_injection_callback.cc',
+      'renderer/script_injection_callback.h',
       'renderer/script_injection.cc',
       'renderer/script_injection.h',
       'renderer/script_injection_manager.cc',

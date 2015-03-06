@@ -8975,6 +8975,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.InjectEnd_BlockingScriptCount">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Number of blocking scripts injected at document end by extensions.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.InjectEnd_ScriptCount">
   <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
@@ -8986,6 +8994,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to inject all scripts at document end by extensions.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InjectIdle_BlockingScriptCount">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Number of blocking scripts injected at document idle by extensions.
   </summary>
 </histogram>
 
@@ -9007,6 +9023,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Time taken to inject all scripts by extensions.</summary>
+</histogram>
+
+<histogram name="Extensions.InjectStart_BlockingScriptCount">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Number of blocking scripts injected at document start by extensions.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.InjectStart_CssCount">

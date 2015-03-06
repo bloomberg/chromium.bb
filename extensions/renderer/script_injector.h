@@ -76,11 +76,15 @@ class ScriptInjector {
   virtual std::vector<std::string> GetCssSources(
       UserScript::RunLocation run_location) const = 0;
 
+  // Fill scriptrs run info based on information about injection.
+  virtual void GetRunInfo(
+      ScriptsRunInfo* scripts_run_info,
+      UserScript::RunLocation run_location) const = 0;
+
   // Notifies the script that injection has completed, with a possibly-populated
   // list of results (depending on whether or not ExpectsResults() was true).
   virtual void OnInjectionComplete(
       scoped_ptr<base::ListValue> execution_results,
-      ScriptsRunInfo* scripts_run_info,
       UserScript::RunLocation run_location) = 0;
 
   // Notifies the script that injection will never occur.

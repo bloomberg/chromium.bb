@@ -228,7 +228,6 @@ ScriptInjectionManager::ScriptInjectionManager(
     const ExtensionSet* extensions,
     UserScriptSetManager* user_script_set_manager)
     : extensions_(extensions),
-      injecting_scripts_(false),
       user_script_set_manager_(user_script_set_manager),
       user_script_set_manager_observer_(this) {
   user_script_set_manager_observer_.Add(user_script_set_manager_);
@@ -253,10 +252,16 @@ void ScriptInjectionManager::OnExtensionUnloaded(
       ++iter;
     }
   }
-  // If we are currently injection scripts, we need to make a note that this
-  // extension is "dirty" (invalidated).
-  if (injecting_scripts_)
-    invalidated_while_injecting_.insert(extension_id);
+}
+
+void ScriptInjectionManager::OnInjectionFinished(
+    ScriptInjection* injection) {
+  ScopedVector<ScriptInjection>::iterator iter =
+      std::find(running_injections_.begin(),
+                running_injections_.end(),
+                injection);
+  if (iter != running_injections_.end())
+    running_injections_.erase(iter);
 }
 
 void ScriptInjectionManager::OnUserScriptsUpdated(
@@ -269,13 +274,6 @@ void ScriptInjectionManager::OnUserScriptsUpdated(
       iter = pending_injections_.erase(iter);
     else
       ++iter;
-  }
-
-  // If we are currently injecting scripts, we need to make a note that these
-  // extensions were updated.
-  if (injecting_scripts_) {
-    invalidated_while_injecting_.insert(changed_extensions.begin(),
-                                        changed_extensions.end());
   }
 }
 
@@ -301,10 +299,6 @@ void ScriptInjectionManager::InvalidateForFrame(blink::WebFrame* frame) {
   }
 
   frame_statuses_.erase(frame);
-}
-
-bool ScriptInjectionManager::IsFrameValid(blink::WebFrame* frame) const {
-  return frame_statuses_.find(frame) != frame_statuses_.end();
 }
 
 void ScriptInjectionManager::StartInjectScripts(
@@ -337,38 +331,14 @@ void ScriptInjectionManager::StartInjectScripts(
 
   // Otherwise, all is right in the world, and we can get on with the
   // injections!
-
   frame_statuses_[frame] = run_location;
-
-  // If a content script injects blocking code (such as a javascript alert()),
-  // then there is a chance that we are running in a nested message loop, and
-  // shouldn't inject scripts right now (to avoid conflicts).
-  if (!injecting_scripts_) {
-    InjectScripts(frame, run_location);
-    // As above, we might have been blocked, but that means that, in the mean
-    // time, it's possible the frame advanced. Inject any scripts for run
-    // locations that were registered, but never ran.
-    while ((iter = frame_statuses_.find(frame)) != frame_statuses_.end() &&
-           iter->second > run_location) {
-      run_location = NextRunLocation(run_location);
-      DCHECK_LE(run_location, UserScript::DOCUMENT_IDLE);
-      InjectScripts(frame, run_location);
-    }
-  }
+  InjectScripts(frame, run_location);
 }
 
 void ScriptInjectionManager::InjectScripts(
     blink::WebFrame* frame,
     UserScript::RunLocation run_location) {
-  DCHECK(!injecting_scripts_);
-  DCHECK(invalidated_while_injecting_.empty());
-  base::AutoReset<bool>(&injecting_scripts_, true);
-
   // Find any injections that want to run on the given frame.
-  // We create a separate vector for these because there is a chance that
-  // injected scripts can block, which can create a nested message loop. When
-  // this happens, other signals (like IPCs) can cause |pending_injections_| to
-  // be changed, so we don't want to risk that.
   ScopedVector<ScriptInjection> frame_injections;
   for (ScopedVector<ScriptInjection>::iterator iter =
            pending_injections_.begin();
@@ -388,31 +358,34 @@ void ScriptInjectionManager::InjectScripts(
       &frame_injections, frame, tab_id, run_location);
 
   ScriptsRunInfo scripts_run_info;
-  for (ScopedVector<ScriptInjection>::iterator iter = frame_injections.begin();
-       iter != frame_injections.end();) {
-    // If a blocking script was injected, there is potentially a possibility
-    // that the frame has been invalidated in the time since. Check.
-    if (!IsFrameValid(frame))
+  std::vector<ScriptInjection*> released_injections;
+  frame_injections.release(&released_injections);
+  for (ScriptInjection* injection : released_injections)
+    TryToInject(make_scoped_ptr(injection), run_location, &scripts_run_info);
+
+  scripts_run_info.LogRun(frame, run_location);
+}
+
+void ScriptInjectionManager::TryToInject(
+    scoped_ptr<ScriptInjection> injection,
+    UserScript::RunLocation run_location,
+    ScriptsRunInfo* scripts_run_info) {
+  // Try to inject the script. If the injection is waiting (i.e., for
+  // permission), add it to the list of pending injections. If the injection
+  // has blocked, add it to the list of running injections.
+  switch (injection->TryToInject(
+      run_location,
+      scripts_run_info,
+      this)) {
+    case ScriptInjection::INJECTION_WAITING:
+      pending_injections_.push_back(injection.release());
       break;
-
-    // Try to inject the script if the injection host is not "dirty"
-    // (invalidated by an update). If the injection does not finish
-    // (i.e., it is waiting for permission), add it to the list of pending
-    // injections.
-    if (invalidated_while_injecting_.count((*iter)->host_id().id()) == 0 &&
-        !(*iter)->TryToInject(run_location,
-                              &scripts_run_info)) {
-      pending_injections_.insert(pending_injections_.begin(), *iter);
-      iter = frame_injections.weak_erase(iter);
-    } else {
-      ++iter;
-    }
+    case ScriptInjection::INJECTION_BLOCKED:
+      running_injections_.push_back(injection.release());
+      break;
+    case ScriptInjection::INJECTION_FINISHED:
+      break;
   }
-
-  if (IsFrameValid(frame))
-    scripts_run_info.LogRun(frame, run_location);
-
-  invalidated_while_injecting_.clear();
 }
 
 void ScriptInjectionManager::HandleExecuteCode(
@@ -450,11 +423,10 @@ void ScriptInjectionManager::HandleExecuteCode(
   ScriptsRunInfo scripts_run_info;
   FrameStatusMap::const_iterator iter = frame_statuses_.find(main_frame);
 
-  if (!injection->TryToInject(
-          iter == frame_statuses_.end() ? UserScript::UNDEFINED : iter->second,
-          &scripts_run_info)) {
-    pending_injections_.push_back(injection.release());
-  }
+  TryToInject(
+      injection.Pass(),
+      iter == frame_statuses_.end() ? UserScript::UNDEFINED : iter->second,
+      &scripts_run_info);
 }
 
 void ScriptInjectionManager::HandleExecuteDeclarativeScript(
@@ -472,11 +444,13 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
           tab_id,
           url,
           extension_id);
-  if (injection) {
+  if (injection.get()) {
     ScriptsRunInfo scripts_run_info;
     // TODO(markdittmer): Use return value of TryToInject for error handling.
-    injection->TryToInject(UserScript::BROWSER_DRIVEN,
-                           &scripts_run_info);
+    TryToInject(injection.Pass(),
+                UserScript::BROWSER_DRIVEN,
+                &scripts_run_info);
+
     scripts_run_info.LogRun(web_frame, UserScript::BROWSER_DRIVEN);
   }
 }
@@ -502,9 +476,11 @@ void ScriptInjectionManager::HandlePermitScriptInjection(int64 request_id) {
   pending_injections_.weak_erase(iter);
 
   ScriptsRunInfo scripts_run_info;
-  if (injection->OnPermissionGranted(&scripts_run_info)) {
-    scripts_run_info.LogRun(injection->web_frame(), UserScript::RUN_DEFERRED);
-  }
+  ScriptInjection::InjectionResult res = injection->OnPermissionGranted(
+      &scripts_run_info);
+  if (res == ScriptInjection::INJECTION_BLOCKED)
+    running_injections_.push_back(injection.Pass());
+  scripts_run_info.LogRun(injection->web_frame(), UserScript::RUN_DEFERRED);
 }
 
 }  // namespace extensions

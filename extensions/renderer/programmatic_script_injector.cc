@@ -106,9 +106,13 @@ std::vector<std::string> ProgrammaticScriptInjector::GetCssSources(
   return std::vector<std::string>(1, params_->code);
 }
 
+void ProgrammaticScriptInjector::GetRunInfo(
+    ScriptsRunInfo* scripts_run_info,
+    UserScript::RunLocation run_location) const {
+}
+
 void ProgrammaticScriptInjector::OnInjectionComplete(
     scoped_ptr<base::ListValue> execution_results,
-    ScriptsRunInfo* scripts_run_info,
     UserScript::RunLocation run_location) {
   results_ = execution_results.Pass();
   Finish(std::string());

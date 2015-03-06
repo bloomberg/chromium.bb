@@ -47,8 +47,9 @@ class ProgrammaticScriptInjector : public ScriptInjector {
       UserScript::RunLocation run_location) const override;
   std::vector<std::string> GetCssSources(
       UserScript::RunLocation run_location) const override;
+  void GetRunInfo(ScriptsRunInfo* scripts_run_info,
+                  UserScript::RunLocation run_location) const override;
   void OnInjectionComplete(scoped_ptr<base::ListValue> execution_results,
-                           ScriptsRunInfo* scripts_run_info,
                            UserScript::RunLocation run_location) override;
   void OnWillNotInject(InjectFailureReason reason) override;
 

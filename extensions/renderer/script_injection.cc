@@ -19,6 +19,9 @@
 #include "extensions/renderer/extension_groups.h"
 #include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/extensions_renderer_client.h"
+#include "extensions/renderer/script_injection_callback.h"
+#include "extensions/renderer/script_injection_manager.h"
+#include "extensions/renderer/scripts_run_info.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -117,7 +120,11 @@ ScriptInjection::ScriptInjection(
       run_location_(run_location),
       tab_id_(tab_id),
       request_id_(kInvalidRequestId),
-      complete_(false) {
+      complete_(false),
+      running_frames_(0),
+      execution_results_(new base::ListValue()),
+      all_injections_started_(false),
+      script_injection_manager_(nullptr) {
   CHECK(injection_host_.get());
 }
 
@@ -126,17 +133,21 @@ ScriptInjection::~ScriptInjection() {
     injector_->OnWillNotInject(ScriptInjector::WONT_INJECT);
 }
 
-bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
-                                  ScriptsRunInfo* scripts_run_info) {
+ScriptInjection::InjectionResult ScriptInjection::TryToInject(
+    UserScript::RunLocation current_location,
+    ScriptsRunInfo* scripts_run_info,
+    ScriptInjectionManager* manager) {
   if (current_location < run_location_)
-    return false;  // Wait for the right location.
+    return INJECTION_WAITING;  // Wait for the right location.
 
-  if (request_id_ != kInvalidRequestId)
-    return false;  // We're waiting for permission right now, try again later.
+  if (request_id_ != kInvalidRequestId) {
+    // We're waiting for permission right now, try again later.
+    return INJECTION_WAITING;
+  }
 
   if (!injection_host_) {
     NotifyWillNotInject(ScriptInjector::EXTENSION_REMOVED);
-    return true;  // We're done.
+    return INJECTION_FINISHED;  // We're done.
   }
 
   switch (injector_->CanExecuteOnFrame(
@@ -144,27 +155,31 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
       web_frame_->top()->document().url())) {
     case PermissionsData::ACCESS_DENIED:
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
-      return true;  // We're done.
+      return INJECTION_FINISHED;  // We're done.
     case PermissionsData::ACCESS_WITHHELD:
       SendInjectionMessage(true /* request permission */);
-      return false;  // Wait around for permission.
+      return INJECTION_WAITING;  // Wait around for permission.
     case PermissionsData::ACCESS_ALLOWED:
-      Inject(scripts_run_info);
-      return true;  // We're done!
+      InjectionResult result = Inject(scripts_run_info);
+      // If the injection is blocked, we need to set the manager so we can
+      // notify it upon completion.
+      if (result == INJECTION_BLOCKED)
+        script_injection_manager_ = manager;
+      return result;
   }
 
   NOTREACHED();
-  return false;
+  return INJECTION_FINISHED;
 }
 
-bool ScriptInjection::OnPermissionGranted(ScriptsRunInfo* scripts_run_info) {
+ScriptInjection::InjectionResult ScriptInjection::OnPermissionGranted(
+    ScriptsRunInfo* scripts_run_info) {
   if (!injection_host_) {
     NotifyWillNotInject(ScriptInjector::EXTENSION_REMOVED);
-    return false;
+    return INJECTION_FINISHED;
   }
 
-  Inject(scripts_run_info);
-  return true;
+  return Inject(scripts_run_info);
 }
 
 void ScriptInjection::OnHostRemoved() {
@@ -191,7 +206,8 @@ void ScriptInjection::NotifyWillNotInject(
   injector_->OnWillNotInject(reason);
 }
 
-void ScriptInjection::Inject(ScriptsRunInfo* scripts_run_info) {
+ScriptInjection::InjectionResult ScriptInjection::Inject(
+    ScriptsRunInfo* scripts_run_info) {
   DCHECK(injection_host_);
   DCHECK(scripts_run_info);
   DCHECK(!complete_);
@@ -204,15 +220,10 @@ void ScriptInjection::Inject(ScriptsRunInfo* scripts_run_info) {
   if (injector_->ShouldExecuteInChildFrames())
     AppendAllChildFrames(web_frame_, &frame_vector);
 
-  scoped_ptr<blink::WebScopedUserGesture> gesture;
-  if (injector_->IsUserGesture())
-    gesture.reset(new blink::WebScopedUserGesture());
-
   bool inject_js = injector_->ShouldInjectJs(run_location_);
   bool inject_css = injector_->ShouldInjectCss(run_location_);
   DCHECK(inject_js || inject_css);
 
-  scoped_ptr<base::ListValue> execution_results(new base::ListValue());
   GURL top_url = web_frame_->top()->document().url();
   for (std::vector<blink::WebFrame*>::iterator iter = frame_vector.begin();
        iter != frame_vector.end();
@@ -236,21 +247,20 @@ void ScriptInjection::Inject(ScriptsRunInfo* scripts_run_info) {
       continue;
     }
     if (inject_js)
-      InjectJs(frame, execution_results.get());
+      InjectJs(frame);
     if (inject_css)
       InjectCss(frame);
   }
 
-  complete_ = true;
-
-  // TODO(hanxi): don't log these metrics for webUIs' injections.
-  injector_->OnInjectionComplete(execution_results.Pass(),
-                                 scripts_run_info,
-                                 run_location_);
+  all_injections_started_ = true;
+  injector_->GetRunInfo(scripts_run_info, run_location_);
+  scripts_run_info->num_blocking_js = running_frames_;
+  TryToFinish();
+  return complete_ ? INJECTION_FINISHED : INJECTION_BLOCKED;
 }
 
-void ScriptInjection::InjectJs(blink::WebLocalFrame* frame,
-                               base::ListValue* execution_results) {
+void ScriptInjection::InjectJs(blink::WebLocalFrame* frame) {
+  ++running_frames_;
   std::vector<blink::WebScriptSource> sources =
       injector_->GetJsSources(run_location_);
   bool in_main_world = injector_->ShouldExecuteInMainWorld();
@@ -258,39 +268,45 @@ void ScriptInjection::InjectJs(blink::WebLocalFrame* frame,
                      ? DOMActivityLogger::kMainWorldId
                      : GetIsolatedWorldIdForInstance(injection_host_.get(),
                                                      frame);
-  bool expects_results = injector_->ExpectsResults();
+  bool is_user_gesture = injector_->IsUserGesture();
+
+  scoped_ptr<blink::WebScriptExecutionCallback> callback(
+      new ScriptInjectionCallback(this, frame));
 
   base::ElapsedTimer exec_timer;
   if (injection_host_->id().type() == HostID::EXTENSIONS)
     DOMActivityLogger::AttachToWorld(world_id, injection_host_->id().id());
-  v8::HandleScope scope(v8::Isolate::GetCurrent());
-  v8::Local<v8::Value> script_value;
   if (in_main_world) {
     // We only inject in the main world for javascript: urls.
     DCHECK_EQ(1u, sources.size());
 
-    const blink::WebScriptSource& source = sources.front();
-    if (expects_results)
-      script_value = frame->executeScriptAndReturnValue(source);
-    else
-      frame->executeScript(source);
-  } else {  // in isolated world
-    scoped_ptr<blink::WebVector<v8::Local<v8::Value> > > results;
-    if (expects_results)
-      results.reset(new blink::WebVector<v8::Local<v8::Value> >());
-    frame->executeScriptInIsolatedWorld(world_id,
-                                        &sources.front(),
-                                        sources.size(),
-                                        EXTENSION_GROUP_CONTENT_SCRIPTS,
-                                        results.get());
-    if (expects_results && !results->isEmpty())
-      script_value = (*results)[0];
+    frame->requestExecuteScriptAndReturnValue(sources.front(),
+                                              is_user_gesture,
+                                              callback.release());
+  } else {
+    frame->requestExecuteScriptInIsolatedWorld(world_id,
+                                               &sources.front(),
+                                               sources.size(),
+                                               EXTENSION_GROUP_CONTENT_SCRIPTS,
+                                               is_user_gesture,
+                                               callback.release());
   }
 
   if (injection_host_->id().type() == HostID::EXTENSIONS)
     UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
+}
 
+void ScriptInjection::OnJsInjectionCompleted(
+    blink::WebLocalFrame* frame,
+    const blink::WebVector<v8::Local<v8::Value> >& results) {
+  DCHECK(running_frames_ > 0);
+  --running_frames_;
+
+  bool expects_results = injector_->ExpectsResults();
   if (expects_results) {
+    v8::Local<v8::Value> script_value;
+    if (!results.isEmpty())
+      script_value = results[0];
     // Right now, we only support returning single results (per frame).
     scoped_ptr<content::V8ValueConverter> v8_converter(
         content::V8ValueConverter::create());
@@ -301,10 +317,26 @@ void ScriptInjection::InjectJs(blink::WebLocalFrame* frame,
     v8::Local<v8::Context> context = frame->mainWorldScriptContext();
     scoped_ptr<base::Value> result(
         v8_converter->FromV8Value(script_value, context));
-    // Always append an execution result (i.e. no result == null result)
-    // so that |execution_results| lines up with the frames.
-    execution_results->Append(result.get() ? result.release()
-                                           : base::Value::CreateNullValue());
+    if (!result.get())
+      result.reset(base::Value::CreateNullValue());
+    // We guarantee that the main frame's result is at the first index, but
+    // any sub frames results do not have guaranteed order.
+    execution_results_->Insert(
+        frame == web_frame_ ? 0 : execution_results_->GetSize(),
+        result.release());
+  }
+  TryToFinish();
+}
+
+void ScriptInjection::TryToFinish() {
+  if (all_injections_started_ && running_frames_ == 0) {
+    complete_ = true;
+    injector_->OnInjectionComplete(execution_results_.Pass(),
+                                   run_location_);
+
+    // This object can be destroyed after next line.
+    if (script_injection_manager_)
+      script_injection_manager_->OnInjectionFinished(this);
   }
 }
 

@@ -193,10 +193,9 @@ std::vector<std::string> UserScriptInjector::GetCssSources(
   return sources;
 }
 
-void UserScriptInjector::OnInjectionComplete(
-    scoped_ptr<base::ListValue> execution_results,
+void UserScriptInjector::GetRunInfo(
     ScriptsRunInfo* scripts_run_info,
-    UserScript::RunLocation run_location) {
+    UserScript::RunLocation run_location) const {
   if (ShouldInjectJs(run_location)) {
     const UserScript::FileList& js_scripts = script_->js_scripts();
     scripts_run_info->num_js += js_scripts.size();
@@ -210,6 +209,11 @@ void UserScriptInjector::OnInjectionComplete(
 
   if (ShouldInjectCss(run_location))
     scripts_run_info->num_css += script_->css_scripts().size();
+}
+
+void UserScriptInjector::OnInjectionComplete(
+    scoped_ptr<base::ListValue> execution_results,
+    UserScript::RunLocation run_location) {
 }
 
 void UserScriptInjector::OnWillNotInject(InjectFailureReason reason) {

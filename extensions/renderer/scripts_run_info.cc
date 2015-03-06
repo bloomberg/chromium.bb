@@ -34,18 +34,30 @@ void ScriptsRunInfo::LogRun(blink::WebFrame* frame,
     case UserScript::DOCUMENT_START:
       UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_CssCount", num_css);
       UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_ScriptCount", num_js);
-      if (num_css || num_js)
+      if (num_blocking_js) {
+        UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_BlockingScriptCount",
+                                 num_blocking_js);
+      } else if (num_css || num_js) {
         UMA_HISTOGRAM_TIMES("Extensions.InjectStart_Time", timer.Elapsed());
+      }
       break;
     case UserScript::DOCUMENT_END:
       UMA_HISTOGRAM_COUNTS_100("Extensions.InjectEnd_ScriptCount", num_js);
-      if (num_js)
+      if (num_blocking_js) {
+        UMA_HISTOGRAM_COUNTS_100("Extensions.InjectEnd_BlockingScriptCount",
+                                 num_blocking_js);
+      } else if (num_js) {
         UMA_HISTOGRAM_TIMES("Extensions.InjectEnd_Time", timer.Elapsed());
+      }
       break;
     case UserScript::DOCUMENT_IDLE:
       UMA_HISTOGRAM_COUNTS_100("Extensions.InjectIdle_ScriptCount", num_js);
-      if (num_js)
+      if (num_blocking_js) {
+        UMA_HISTOGRAM_COUNTS_100("Extensions.InjectIdle_BlockingScriptCount",
+                                 num_blocking_js);
+      } else if (num_js) {
         UMA_HISTOGRAM_TIMES("Extensions.InjectIdle_Time", timer.Elapsed());
+      }
       break;
     case UserScript::RUN_DEFERRED:
     case UserScript::BROWSER_DRIVEN:

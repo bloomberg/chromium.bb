@@ -32,6 +32,8 @@ struct ScriptsRunInfo {
   size_t num_css;
   // The number of JS scripts injected.
   size_t num_js;
+  // The number of blocked JS scripts injected.
+  size_t num_blocking_js;
   // A map of extension ids to executing script paths.
   ExecutingScriptsMap executing_scripts;
   // The elapsed time since the ScriptsRunInfo was constructed.
