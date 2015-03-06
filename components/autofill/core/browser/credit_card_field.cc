@@ -37,23 +37,26 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     if (ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), NULL))
       break;
 
-    // Sometimes the cardholder field is just labeled "name". Unfortunately this
-    // is a dangerously generic word to search for, since it will often match a
-    // name (not cardholder name) field before or after credit card fields. So
-    // we search for "name" only when we've already parsed at least one other
-    // credit card field and haven't yet parsed the expiration date (which
-    // usually appears at the end).
     if (!credit_card_field->cardholder_) {
-      base::string16 name_pattern;
-      if (fields == 0 || credit_card_field->expiration_month_) {
-        // at beginning or end
-        name_pattern = base::UTF8ToUTF16(kNameOnCardRe);
-      } else {
-        name_pattern = base::UTF8ToUTF16(kNameOnCardContextualRe);
+      if (ParseField(scanner,
+                     base::UTF8ToUTF16(kNameOnCardRe),
+                     &credit_card_field->cardholder_)) {
+        continue;
       }
 
-      if (ParseField(scanner, name_pattern, &credit_card_field->cardholder_))
+      // Sometimes the cardholder field is just labeled "name". Unfortunately
+      // this is a dangerously generic word to search for, since it will often
+      // match a name (not cardholder name) field before or after credit card
+      // fields. So we search for "name" only when we've already parsed at
+      // least one other credit card field and haven't yet parsed the
+      // expiration date (which usually appears at the end).
+      if (fields > 0 &&
+          !credit_card_field->expiration_month_ &&
+          ParseField(scanner,
+                     base::UTF8ToUTF16(kNameOnCardContextualRe),
+                     &credit_card_field->cardholder_)) {
         continue;
+      }
     }
 
     // Check for a credit card type (Visa, MasterCard, etc.) field.
