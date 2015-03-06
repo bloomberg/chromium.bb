@@ -27,6 +27,7 @@ autocompleteerror
 availablechange
 beforecopy
 beforecut
+beforeinstallprompt
 beforepaste
 beforeunload
 beginEvent

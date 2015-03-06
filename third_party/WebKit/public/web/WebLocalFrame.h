@@ -9,6 +9,7 @@
 
 namespace blink {
 
+enum class WebAppBannerPromptReply;
 enum class WebSandboxFlags;
 class WebAutofillClient;
 class WebContentSettingsClient;
@@ -112,6 +113,13 @@ public:
     // Content Settings -------------------------------------------------------
 
     virtual void setContentSettingsClient(WebContentSettingsClient*) = 0;
+
+    // App banner -------------------------------------------------------------
+
+    // Request to show an application install banner for the given |platform|.
+    // The implementation can request the embedder to cancel the call by setting
+    // |cancel| to true.
+    virtual void willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply*) = 0;
 };
 
 } // namespace blink

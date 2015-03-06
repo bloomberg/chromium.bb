@@ -149,6 +149,7 @@
 #include "core/page/PrintContext.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
+#include "modules/app_banner/AppBannerController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/notifications/NotificationPermissionClient.h"
 #include "modules/presentation/PresentationController.h"
@@ -1944,6 +1945,14 @@ void WebLocalFrameImpl::sendOrientationChangeEvent()
     // Legacy window.orientation API
     if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())
         frame()->localDOMWindow()->sendOrientationChangeEvent();
+}
+
+void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply* reply)
+{
+    if (!RuntimeEnabledFeatures::appBannerEnabled() || !frame())
+        return;
+
+    AppBannerController::willShowInstallBannerPrompt(frame(), platform, reply);
 }
 
 void WebLocalFrameImpl::willDetachParent()

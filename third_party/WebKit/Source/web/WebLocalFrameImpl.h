@@ -235,6 +235,7 @@ public:
     virtual void addStyleSheetByURL(const WebString& url) override;
     virtual void navigateToSandboxedMarkup(const WebData& markup) override;
     virtual void sendOrientationChangeEvent() override;
+    virtual void willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply*) override;
 
     void willDetachParent();
 

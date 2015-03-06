@@ -14,6 +14,7 @@
     # Files for which bindings (.cpp and .h files) will be generated
     'modules_idl_files': [
       '<@(extra_blink_module_idl_files)',
+      'app_banner/BeforeInstallPromptEvent.idl',
       'battery/BatteryManager.idl',
       'bluetooth/Bluetooth.idl',
       'bluetooth/BluetoothDevice.idl',
@@ -276,6 +277,7 @@
     ],
     # interfaces that inherit from Event
     'modules_event_idl_files': [
+      'app_banner/BeforeInstallPromptEvent.idl',
       'device_light/DeviceLightEvent.idl',
       'device_orientation/DeviceMotionEvent.idl',
       'device_orientation/DeviceOrientationEvent.idl',
@@ -306,6 +308,7 @@
       'websockets/CloseEvent.idl',
     ],
     'modules_dictionary_idl_files': [
+      'app_banner/BeforeInstallPromptEventInit.idl',
       'device_light/DeviceLightEventInit.idl',
       'encoding/TextDecodeOptions.idl',
       'encoding/TextDecoderOptions.idl',
@@ -352,6 +355,8 @@
       '<(blink_modules_output_dir)/IndexedDBNames.h',
     ],
     'generated_modules_dictionary_files': [
+      '<(blink_modules_output_dir)/app_banner/BeforeInstallPromptEventInit.cpp',
+      '<(blink_modules_output_dir)/app_banner/BeforeInstallPromptEventInit.h',
       '<(blink_modules_output_dir)/device_light/DeviceLightEventInit.cpp',
       '<(blink_modules_output_dir)/device_light/DeviceLightEventInit.h',
       '<(blink_modules_output_dir)/encoding/TextDecodeOptions.cpp',
@@ -483,6 +488,10 @@
       'accessibility/AXTableRow.h',
       'accessibility/InspectorAccessibilityAgent.cpp',
       'accessibility/InspectorAccessibilityAgent.h',
+      'app_banner/AppBannerController.cpp',
+      'app_banner/AppBannerController.h',
+      'app_banner/BeforeInstallPromptEvent.cpp',
+      'app_banner/BeforeInstallPromptEvent.h',
       'battery/BatteryDispatcher.cpp',
       'battery/BatteryDispatcher.h',
       'battery/BatteryManager.cpp',

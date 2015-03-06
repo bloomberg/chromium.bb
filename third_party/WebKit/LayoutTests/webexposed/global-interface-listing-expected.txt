@@ -148,6 +148,8 @@ interface BarProp
     method constructor
 interface BatteryManager
     method constructor
+interface BeforeInstallPromptEvent
+    method constructor
 interface BeforeUnloadEvent
     method constructor
 interface BiquadFilterNode
