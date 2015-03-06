@@ -8,14 +8,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/base_prefs_switches.h"
 #include "base/prefs/pref_filter.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -400,10 +398,10 @@ bool JsonPrefStore::SerializeData(std::string* output) {
     pref_filter_->FilterSerializeData(prefs_.get());
 
   JSONStringValueSerializer serializer(output);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPrettyPrintPrefs)) {
-    serializer.set_pretty_print(true);
-  }
+  // Not pretty-printing prefs shrinks pref file size by ~30%. To obtain
+  // readable prefs for debugging purposes, you can dump your prefs into any
+  // command-line or online JSON pretty printing tool.
+  serializer.set_pretty_print(false);
   return serializer.Serialize(*prefs_);
 }
 
