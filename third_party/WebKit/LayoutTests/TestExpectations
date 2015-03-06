@@ -23,6 +23,8 @@ crbug.com/435662 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu
 
 crbug.com/461283 [ Mac ] fast/workers/worker-multi-startup.html [ Pass Crash ]
 
+crbug.com/441840 [ Mac ] cssom/ahem-ex-units.html [ Failure ]
+
 # This needs a manual rebaseline for Mac after crbug.com/452967
 crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure NeedsManualRebaseline ]
 
