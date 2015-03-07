@@ -221,22 +221,6 @@ crbug.com/330083 imported/web-platform-tests/shadow-dom/styles/test-003.html [ F
 crbug.com/330083 imported/web-platform-tests/shadow-dom/styles/test-010.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
 
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-background-image-fixed-centered-composited.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-background-image-fixed-centered.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-background-image-generated.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-background-image-non-fixed.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-media-query.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-no-layout-change1.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-no-layout-change2.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-percent-html.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-percent-width-height.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-positioned-bottom.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-positioned-percent-top.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-vertical-writing-mode.html [ NeedsRebaseline ]
-crbug.com/451235 virtual/slimmingpaint/fast/repaint/window-resize-viewport-percent.html [ NeedsRebaseline ]
-
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-id-manual.html [ Skip ]
@@ -1426,7 +1410,6 @@ crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
 crbug.com/133097 [ Mac ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
 crbug.com/133097 [ Mac ] fast/repaint/scale-page-shrink.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] virtual/slimmingpaint/fast/repaint/scale-page-shrink.html [ NeedsRebaseline ]
 
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]

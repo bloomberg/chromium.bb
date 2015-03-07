@@ -1,0 +1,55 @@
+{
+  "bounds": [2008, 2016],
+  "children": [
+    {
+      "bounds": [2008, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 200, 200, 100]
+      ]
+    }
+  ]
+}
+{
+  "bounds": [2008, 2016],
+  "children": [
+    {
+      "bounds": [2008, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 0, 2008, 2016],
+        [0, 0, 300, 300]
+      ]
+    }
+  ]
+}
+{
+  "bounds": [2008, 2016],
+  "children": [
+    {
+      "bounds": [2008, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 250, 300, 50]
+      ]
+    }
+  ]
+}
+{
+  "bounds": [2008, 2016],
+  "children": [
+    {
+      "bounds": [2008, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 0, 2008, 2016],
+        [0, 0, 250, 250]
+      ]
+    }
+  ]
+}
+
