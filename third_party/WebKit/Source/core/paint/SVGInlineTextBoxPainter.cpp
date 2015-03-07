@@ -186,7 +186,7 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
             paintInfo.context->concatCTM(fragmentTransform);
 
         paintInfo.context->setFillColor(backgroundColor);
-        paintInfo.context->fillRect(m_svgInlineTextBox.selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style).toFloatRect(), backgroundColor);
+        paintInfo.context->fillRect(m_svgInlineTextBox.selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style), backgroundColor);
     }
 }
 
@@ -422,7 +422,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, con
             if (!textBox->mapStartEndPositionsIntoFragmentCoordinates(fragment, fragmentStartPosition, fragmentEndPosition))
                 continue;
 
-            FloatRect fragmentRect = textBox->selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style).toFloatRect();
+            FloatRect fragmentRect = textBox->selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
             fragment.buildFragmentTransform(fragmentTransform);
 
             // Draw the marker highlight.

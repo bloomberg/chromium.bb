@@ -57,7 +57,7 @@ public:
     void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }
 
     int offsetForPositionInFragment(const SVGTextFragment&, FloatWillBeLayoutUnit position, bool includePartialGlyphs) const;
-    FloatRectWillBeLayoutRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, const LayoutStyle&);
+    FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, const LayoutStyle&);
     TextRun constructTextRun(const LayoutStyle&, const SVGTextFragment&) const;
 
 private:

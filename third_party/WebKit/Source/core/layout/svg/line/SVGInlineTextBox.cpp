@@ -104,7 +104,7 @@ FloatWillBeLayoutUnit SVGInlineTextBox::positionForOffset(int) const
     return 0;
 }
 
-FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& fragment, int startPosition, int endPosition, const LayoutStyle& style)
+FloatRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& fragment, int startPosition, int endPosition, const LayoutStyle& style)
 {
     ASSERT(startPosition < endPosition);
 
@@ -115,13 +115,13 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const S
 
     const Font& scaledFont = textRenderer.scaledFont();
     const FontMetrics& scaledFontMetrics = scaledFont.fontMetrics();
-    FloatPointWillBeLayoutPoint textOrigin(fragment.x, fragment.y);
+    FloatPoint textOrigin(fragment.x, fragment.y);
     if (scalingFactor != 1)
         textOrigin.scale(scalingFactor, scalingFactor);
 
     textOrigin.move(0, -scaledFontMetrics.floatAscent());
 
-    FloatRectWillBeLayoutRect selectionRect = scaledFont.selectionRectForText(constructTextRun(style, fragment), textOrigin.toFloatPoint(), fragment.height * scalingFactor, startPosition, endPosition);
+    FloatRect selectionRect = scaledFont.selectionRectForText(constructTextRun(style, fragment), textOrigin, fragment.height * scalingFactor, startPosition, endPosition);
     if (scalingFactor == 1)
         return selectionRect;
 
@@ -140,7 +140,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
     const LayoutStyle& style = layoutObject().styleRef();
 
     AffineTransform fragmentTransform;
-    FloatRectWillBeLayoutRect selectionRect;
+    FloatRect selectionRect;
     int fragmentStartPosition = 0;
     int fragmentEndPosition = 0;
 
@@ -153,16 +153,14 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
         if (!mapStartEndPositionsIntoFragmentCoordinates(fragment, fragmentStartPosition, fragmentEndPosition))
             continue;
 
-        FloatRectWillBeLayoutRect fragmentRect = selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
+        FloatRect fragmentRect = selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
         fragment.buildFragmentTransform(fragmentTransform);
-        fragmentRect = fragmentTransform.mapRect(fragmentRect.toFloatRect());
+        fragmentRect = fragmentTransform.mapRect(fragmentRect);
 
         selectionRect.unite(fragmentRect);
     }
 
-    // FIXME: the call to rawValue() below is temporary and should be removed once the transition
-    // to LayoutUnit-based types is complete (crbug.com/321237)
-    return LayoutRect(enclosingIntRect(selectionRect.rawValue()));
+    return LayoutRect(enclosingIntRect(selectionRect));
 }
 
 void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
