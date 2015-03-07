@@ -65,7 +65,7 @@ public:
     bool compileScript(V8CacheOptions cacheOptions)
     {
         return !V8ScriptRunner::compileScript(
-            v8String(isolate(), code()), filename(), WTF::TextPosition(),
+            v8String(isolate(), code()), filename(), String(), WTF::TextPosition(),
             isolate(), m_resource.get(), nullptr, m_resource.get() ? m_resource->cacheHandler(): nullptr, NotSharableCrossOrigin, cacheOptions)
             .IsEmpty();
     }

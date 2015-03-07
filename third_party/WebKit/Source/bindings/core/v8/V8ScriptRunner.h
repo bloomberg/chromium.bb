@@ -51,7 +51,7 @@ public:
     // normal scripe resources, CachedMetadataHandler is from ScriptResource.
     // For worker script, ScriptResource is null but CachedMetadataHandler may be
     // set. When ScriptStreamer is set, ScriptResource must be set.
-    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const TextPosition&, v8::Isolate*, ScriptResource* = nullptr, ScriptStreamer* = nullptr, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault, bool isInternalScript = false);
+    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const String& sourceMapUrl, const TextPosition&, v8::Isolate*, ScriptResource* = nullptr, ScriptStreamer* = nullptr, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault, bool isInternalScript = false);
     static v8::Local<v8::Value> runCompiledScript(v8::Isolate*, v8::Handle<v8::Script>, ExecutionContext*);
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
     static v8::Local<v8::Value> runCompiledInternalScript(v8::Isolate*, v8::Handle<v8::Script>);

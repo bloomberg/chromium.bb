@@ -60,6 +60,19 @@ const KURL& ScriptSourceCode::url() const
     return m_url;
 }
 
+String ScriptSourceCode::sourceMapUrl() const
+{
+    if (!m_resource)
+        return String();
+    const ResourceResponse& response = m_resource->response();
+    String sourceMapUrl = response.httpHeaderField("SourceMap");
+    if (sourceMapUrl.isEmpty()) {
+        // Try to get deprecated header.
+        sourceMapUrl = response.httpHeaderField("X-SourceMap");
+    }
+    return sourceMapUrl;
+}
+
 void ScriptSourceCode::treatNullSourceAsEmpty()
 {
     // ScriptSourceCode allows for the representation of the null/not-there-really ScriptSourceCode value.

@@ -59,7 +59,7 @@ static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, St
             privateScriptControllerObject->Set(v8String(isolate, "import"), v8::FunctionTemplate::New(isolate, importFunction)->GetFunction());
     }
 
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(v8String(isolate, sourceString), fileName, TextPosition::minimumPosition(), isolate, nullptr, nullptr, nullptr, NotSharableCrossOrigin);
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(v8String(isolate, sourceString), fileName, String(), TextPosition::minimumPosition(), isolate, nullptr, nullptr, nullptr, NotSharableCrossOrigin);
     if (block.HasCaught()) {
         fprintf(stderr, "Private script error: Compile failed. (Class name = %s)\n", scriptClassName.utf8().data());
         dumpV8Message(block.Message());

@@ -42,7 +42,6 @@
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/JavaScriptCallFrame.h"
@@ -1429,22 +1428,9 @@ PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyn
 String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script, CompileResult compileResult)
 {
     bool hasSyntaxError = compileResult != CompileSuccess;
-    if (hasSyntaxError) {
-        String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source(), ContentSearchUtils::JavaScriptMagicComment);
-        if (!sourceMapURL.isEmpty())
-            return sourceMapURL;
-    }
-
-    if (!script.sourceMappingURL().isEmpty())
+    if (!hasSyntaxError)
         return script.sourceMappingURL();
-
-    if (script.url().isEmpty())
-        return String();
-
-    InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent();
-    if (!pageAgent)
-        return String();
-    return pageAgent->resourceSourceMapURL(script.url());
+    return ContentSearchUtils::findSourceMapURL(script.source(), ContentSearchUtils::JavaScriptMagicComment);
 }
 
 // ScriptDebugListener functions

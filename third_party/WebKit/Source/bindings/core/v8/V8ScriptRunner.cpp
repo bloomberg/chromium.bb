@@ -359,10 +359,10 @@ PassOwnPtr<CompileFn> selectCompileFunction(ScriptResource* resource, ScriptStre
 
 v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
 {
-    return compileScript(v8String(isolate, source.source()), source.url(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, corsStatus, cacheOptions);
+    return compileScript(v8String(isolate, source.source()), source.url(), source.sourceMapUrl(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, corsStatus, cacheOptions);
 }
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::Isolate* isolate, ScriptResource* resource, ScriptStreamer* streamer, CachedMetadataHandler* cacheHandler, AccessControlStatus corsStatus, V8CacheOptions cacheOptions, bool isInternalScript)
+v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const String& sourceMapUrl, const TextPosition& scriptStartPosition, v8::Isolate* isolate, ScriptResource* resource, ScriptStreamer* streamer, CachedMetadataHandler* cacheHandler, AccessControlStatus corsStatus, V8CacheOptions cacheOptions, bool isInternalScript)
 {
     TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
@@ -378,7 +378,8 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
         v8::Integer::New(isolate, scriptStartPosition.m_column.zeroBasedInt()),
         v8Boolean(corsStatus == SharableCrossOrigin, isolate),
         v8::Handle<v8::Integer>(),
-        v8Boolean(isInternalScript, isolate));
+        v8Boolean(isInternalScript, isolate),
+        v8String(isolate, sourceMapUrl));
 
     OwnPtr<CompileFn> compileFn = streamer
         ? selectCompileFunction(resource, streamer)
@@ -417,7 +418,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate, v8:
 
 v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
 {
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, isolate, nullptr, nullptr, nullptr, SharableCrossOrigin, V8CacheOptionsDefault, true);
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, String(), scriptStartPosition, isolate, nullptr, nullptr, nullptr, SharableCrossOrigin, V8CacheOptionsDefault, true);
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
 
