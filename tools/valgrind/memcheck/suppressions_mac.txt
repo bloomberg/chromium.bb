@@ -271,3 +271,12 @@
    fun:_ZN4base3mac30PathForFrameworkBundleResourceEPK10__CFString
    fun:_ZN3gin13IsolateHolder14LoadV8SnapshotEv
 }
+{
+   bug_464850
+   Memcheck:Uninitialized
+   fun:_ZN2v88internal9ExitFrame23GetStateForFramePointerEPhPNS0_10StackFrame5StateE
+   fun:_ZN2v88internal18StackFrameIterator5ResetEPNS0_14ThreadLocalTopE
+   fun:_ZN2v88internal18StackFrameIteratorC2EPNS0_7IsolateE
+   fun:_ZN2v88internal18StackFrameIteratorC1EPNS0_7IsolateE
+   fun:_ZN2v88internal7Isolate11FindHandlerEv
+}
