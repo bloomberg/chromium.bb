@@ -6,6 +6,8 @@
 
 from __future__ import print_function
 
+import os
+
 from chromite.cros.commands import cros_build
 from chromite.cros.commands import init_unittest
 from chromite.lib import brick_lib
@@ -31,7 +33,8 @@ class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
   """Test class for our BuildCommand class."""
 
   def setUp(self):
-    p = brick_lib.Brick(self.tempdir, initial_config={'name': 'foo'})
+    p = brick_lib.Brick(os.path.join(self.tempdir, 'foo'),
+                        initial_config={'name': 'foo'})
     self.PatchObject(brick_lib, 'FindBrickByName', return_value=p)
 
   def testSuccess(self):

@@ -9,9 +9,10 @@ from __future__ import print_function
 import json
 import os
 
-from chromite.lib import cros_build_lib
+from chromite.cbuildbot import constants
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.lib import workspace_lib
 
 _DEFAULT_LAYOUT_CONF = {'profile-formats': 'portage-2',
                         'thin-manifests': 'true',
@@ -20,8 +21,12 @@ _DEFAULT_LAYOUT_CONF = {'profile-formats': 'portage-2',
 _CONFIG_JSON = 'config.json'
 
 
-class BrickAlreadyExists(Exception):
-  """The brick already exists."""
+_BOARD_PREFIX = 'board:'
+_WORKSPACE_PREFIX = '//'
+
+
+class BrickCreationFailed(Exception):
+  """The brick creation failed."""
 
 
 class BrickNotFound(Exception):
@@ -35,34 +40,60 @@ class BrickFeatureNotSupported(Exception):
 class Brick(object):
   """Encapsulates the interaction with a brick."""
 
-  def __init__(self, brick_dir, initial_config=None, allow_legacy=True):
+  def __init__(self, brick_loc, initial_config=None, allow_legacy=True):
     """Instantiates a brick object.
 
     Args:
-      brick_dir: The root directory of the brick.
+      brick_loc: brick locator. This can be a relative path to CWD, an absolute
+        path, a public board name prefix with 'board:' or a relative path to the
+        root of the workspace, prefixed with '//').
       initial_config: The initial configuration as a python dictionary.
         If not None, creates a brick with this configuration.
       allow_legacy: Allow board overlays, simulating a basic read-only config.
         Ignored if |initial_config| is not None.
 
     Raises:
-      BrickNotFound: when |brick_dir| is not a brick and no initial
+      BrickNotFound: when |brick_loc| is not a brick and no initial
         configuration was provided.
-      BrickAlreadyExists: when trying to create a brick but |brick_dir|
-        already contains one.
+      BrickCreationFailed: when the brick could not be created successfully.
     """
-    self.brick_dir = brick_dir
+    if IsLocator(brick_loc):
+      self.brick_dir = _LocatorToPath(brick_loc)
+      self.brick_locator = brick_loc
+    else:
+      self.brick_dir = brick_loc
+      self.brick_locator = _PathToLocator(brick_loc)
+
     self.config = None
     self.legacy = False
-    config_json = os.path.join(brick_dir, _CONFIG_JSON)
+    config_json = os.path.join(self.brick_dir, _CONFIG_JSON)
 
     if not os.path.exists(config_json):
       if initial_config:
-        self.UpdateConfig(initial_config)
+        if os.path.exists(self.brick_dir):
+          raise BrickCreationFailed('directory %s already exists.'
+                                    % self.brick_dir)
+        success = False
+        try:
+          self.UpdateConfig(initial_config)
+          success = True
+        except BrickNotFound as e:
+          # If BrickNotFound was raised, the dependencies contain a missing
+          # brick.
+          raise BrickCreationFailed('dependency not found %s' % e)
+        finally:
+          if not success:
+            # If the brick creation failed for any reason, cleanup the partially
+            # created brick.
+            osutils.RmDir(self.brick_dir, ignore_missing=True)
+
       elif allow_legacy:
         self.legacy = True
         try:
-          self.config = {'name': self._ReadLayoutConf()['repo-name']}
+          masters = self._ReadLayoutConf().get('masters')
+          masters_list = masters.split() if masters else []
+          self.config = {'name': self._ReadLayoutConf()['repo-name'],
+                         'dependencies': ['board:' + d for d in masters_list]}
         except (IOError, KeyError):
           pass
 
@@ -71,7 +102,7 @@ class Brick(object):
     elif initial_config is None:
       self.config = json.loads(osutils.ReadFile(config_json))
     else:
-      raise BrickAlreadyExists(self.brick_dir)
+      raise BrickCreationFailed('brick %s already exists.' % self.brick_dir)
 
   def _LayoutConfPath(self):
     """Returns the path to the layout.conf file."""
@@ -131,6 +162,11 @@ class Brick(object):
           'Cannot update configuration of legacy brick %s' % self.brick_dir)
 
     self.config = config
+    # All objects must be unambiguously referenced. Normalize all the
+    # dependencies according to the workspace.
+    self.config['dependencies'] = [d if IsLocator(d) else _PathToLocator(d)
+                                   for d in self.config.get('dependencies', [])]
+
     formatted_config = json.dumps(config, sort_keys=True, indent=4,
                                   separators=(',', ': '))
     osutils.WriteFile(os.path.join(self.brick_dir, _CONFIG_JSON),
@@ -145,15 +181,17 @@ class Brick(object):
     if self.legacy:
       return
 
-    deps = [d.get('name', None) for d in self.config.get('dependencies', [])]
-    if None in deps:
-      cros_build_lib.Die('Invalid dependency name')
+    deps = [b.config['name'] for b in self.Dependencies()]
 
     self._WriteLayoutConf(
         {'masters': ' '.join(['portage-stable', 'chromiumos'] + deps),
          'repo-name': self.config['name']})
 
     self._WriteParents([m + ':base' for m in deps])
+
+  def Dependencies(self):
+    """Returns the dependent bricks."""
+    return [Brick(d) for d in self.config.get('dependencies', [])]
 
   def Inherits(self, brick_name):
     """Checks whether this brick contains |brick_name|.
@@ -189,6 +227,65 @@ class Brick(object):
   def SourceDir(self):
     """Returns the project's source directory."""
     return os.path.join(self.brick_dir, 'src')
+
+
+def IsLocator(name):
+  """Returns True if name is a specific locator."""
+  return name.startswith(_WORKSPACE_PREFIX) or name.startswith(_BOARD_PREFIX)
+
+
+def _LocatorToPath(locator):
+  """Returns the absolute path for this locator.
+
+  Args:
+    locator: a brick/overlay locator.
+
+  Returns:
+    The absolute path to the brick.
+
+  Raises:
+    ValueError if the locator is invalid.
+  """
+  if locator.startswith(_WORKSPACE_PREFIX):
+    return os.path.join(workspace_lib.WorkspacePath(),
+                        locator[len(_WORKSPACE_PREFIX):])
+  if locator.startswith(_BOARD_PREFIX):
+    return os.path.join(constants.SOURCE_ROOT, 'src', 'overlays',
+                        'overlay-%s' % locator[len(_BOARD_PREFIX):])
+  raise ValueError('Invalid brick locator %s' % locator)
+
+
+def _PathToLocator(path):
+  """Converts a path to a brick locator.
+
+  This does not raise error if the path does not map to a locator. Some valid
+  (legacy) brick path do not map to any locator: chromiumos-overlay,
+  private board overlays, etc...
+
+  Args:
+    path: absolute or relative to CWD path to a brick or overlay.
+
+  Returns:
+    The locator for this brick if it exists, None otherwise.
+  """
+  workspace_path = workspace_lib.WorkspacePath()
+  path = os.path.abspath(path)
+
+  # If path is in the current workspace, return the relative path prefixed with
+  # //.
+  if os.path.commonprefix([path, workspace_path]) == workspace_path:
+    return _WORKSPACE_PREFIX + os.path.relpath(path, workspace_path)
+
+  # If path is in the src directory of the checkout, this is a board overlay.
+  # Return board:board_name
+  src_path = os.path.join(constants.SOURCE_ROOT, 'src')
+  if os.path.commonprefix([path, src_path]) == src_path:
+    parts = os.path.split(os.path.relpath(path, src_path))
+    if parts[0] == 'overlays':
+      board_name = '-'.join(parts[1].split('-')[1:])
+      return _BOARD_PREFIX + board_name
+
+  return None
 
 
 def _FindBrickInOverlays(name, base=None):

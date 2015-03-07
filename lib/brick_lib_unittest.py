@@ -9,12 +9,14 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import workspace_lib
 
 
-class LibBrickTest(cros_test_lib.TempDirTestCase):
+class BrickLibTest(cros_test_lib.MockTempDirTestCase):
   """Unittest for brick.py"""
 
   # pylint: disable=protected-access
@@ -38,6 +40,9 @@ class LibBrickTest(cros_test_lib.TempDirTestCase):
     layout_conf = 'repo-name = %s\n' % brick_name
     osutils.WriteFile(os.path.join(brick_dir, 'metadata', 'layout.conf'),
                       layout_conf, makedirs=True)
+
+  def SetupFakeWorkspace(self):
+    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.tempdir)
 
   def testLayoutFormat(self):
     """Test that layout.conf is correctly formatted."""
@@ -84,19 +89,21 @@ class LibBrickTest(cros_test_lib.TempDirTestCase):
     self.CreateNewBrick()
     os.remove(os.path.join(self.brick_path, 'config.json'))
     brick_dir = os.path.join(self.tempdir, 'foo', 'bar', 'project')
-    content = {'name': 'hello'}
+    expected_name = 'hello'
     brick_lib.Brick(brick_dir, initial_config={'name': 'hello'})
 
     with osutils.ChdirContext(self.tempdir):
       self.assertEqual(None, brick_lib.FindBrickInPath())
 
     with osutils.ChdirContext(brick_dir):
-      self.assertEqual(content, brick_lib.FindBrickInPath().config)
+      self.assertEqual(expected_name,
+                       brick_lib.FindBrickInPath().config['name'])
 
     subdir = os.path.join(brick_dir, 'sub', 'directory')
     osutils.SafeMakedirs(subdir)
     with osutils.ChdirContext(subdir):
-      self.assertEqual(content, brick_lib.FindBrickInPath().config)
+      self.assertEqual(expected_name,
+                       brick_lib.FindBrickInPath().config['name'])
 
   def testBrickByNameExact(self):
     """Test that we can get the brick for a given name."""
@@ -140,7 +147,7 @@ class LibBrickTest(cros_test_lib.TempDirTestCase):
   def testBrickCreation(self):
     """Test that brick initialization throws the right errors."""
     self.CreateNewBrick()
-    with self.assertRaises(brick_lib.BrickAlreadyExists):
+    with self.assertRaises(brick_lib.BrickCreationFailed):
       brick_lib.Brick(self.brick_path, initial_config={})
 
     nonexistingbrick = os.path.join(self.tempdir, 'foo')
@@ -190,3 +197,78 @@ class LibBrickTest(cros_test_lib.TempDirTestCase):
     """Tests that overlay directory is returned correctly."""
     self.CreateNewBrick()
     self.assertExists(os.path.join(self.brick.OverlayDir(), 'profiles'))
+
+  def testOpenUsingLocator(self):
+    """Tests that we can open a brick given a locator."""
+    self.SetupFakeWorkspace()
+    brick_lib.Brick(os.path.join(self.tempdir, 'foo'),
+                    initial_config={'name': 'foo'})
+
+    brick_lib.Brick('//foo')
+
+    with self.assertRaises(brick_lib.BrickNotFound):
+      brick_lib.Brick('//doesnotexist')
+
+  def testCreateUsingLocator(self):
+    """Tests that we can create a brick using a locator."""
+    self.SetupFakeWorkspace()
+    brick_lib.Brick('//foobar', initial_config={'name': 'foobar'})
+    brick_lib.Brick('//bricks/some/path', initial_config={'name': 'path'})
+
+    brick_lib.Brick('//foobar')
+    brick_lib.Brick('//bricks/some/path')
+
+    brick_lib.Brick(os.path.join(self.tempdir, 'foobar'))
+    brick_lib.Brick(os.path.join(self.tempdir, 'bricks', 'some', 'path'))
+
+  def testPathToLocator(self):
+    """Tests the path to locator conversion."""
+    self.SetupFakeWorkspace()
+    ws = self.tempdir
+    self.assertEqual('//foo', brick_lib._PathToLocator(os.path.join(ws, 'foo')))
+
+    self.assertEqual(
+        '//bar/foo/baz',
+        brick_lib._PathToLocator(os.path.join(ws, 'bar', 'foo', 'baz')))
+    self.assertEqual(
+        'board:daisy',
+        brick_lib._PathToLocator(os.path.join(constants.SOURCE_ROOT, 'src',
+                                              'overlays', 'overlay-daisy')))
+    self.assertEqual(
+        None,
+        brick_lib._PathToLocator(os.path.join(constants.SOURCE_ROOT,
+                                              'srcs', 'bar')))
+
+    self.assertEqual(
+        '//foo', brick_lib._PathToLocator(brick_lib._LocatorToPath('//foo')))
+    self.assertEqual(
+        '//foo/bar/baz',
+        brick_lib._PathToLocator(brick_lib._LocatorToPath('//foo/bar/baz')))
+    self.assertEqual(
+        'board:gizmo',
+        brick_lib._PathToLocator(brick_lib._LocatorToPath('board:gizmo')))
+
+  def testMissingDependency(self):
+    """Tests that the brick creation fails when a dependency is missing."""
+    self.SetupFakeWorkspace()
+
+    with self.assertRaises(brick_lib.BrickCreationFailed):
+      brick_lib.Brick('//bar',
+                      initial_config={'name':'bar',
+                                      'dependencies':['//dont/exist']})
+
+    # If the creation failed, the directory is removed cleanly.
+    self.assertFalse(os.path.exists(brick_lib._LocatorToPath('//bar')))
+
+  def testNormalizedDependencies(self):
+    """Tests that dependencies are normalized during brick creation."""
+    self.SetupFakeWorkspace()
+
+    brick_lib.Brick('//foo/bar', initial_config={'name': 'bar'})
+    with osutils.ChdirContext(os.path.join(self.tempdir, 'foo')):
+      brick_lib.Brick('//baz', initial_config={'name': 'baz',
+                                               'dependencies': ['bar']})
+
+    deps = brick_lib.Brick('//baz').config['dependencies']
+    self.assertEqual(1, len(deps))
+    self.assertEqual('//foo/bar', deps[0])

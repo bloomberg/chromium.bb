@@ -7,13 +7,10 @@
 from __future__ import print_function
 
 import os
-import shutil
 
 from chromite import cros
-from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
-from chromite.lib import osutils
 
 
 @cros.CommandDecorator('brick')
@@ -21,13 +18,29 @@ class BrickCommand(cros.CrosCommand):
   """Create and manage bricks."""
 
   EPILOG = """
-To create a brick that depends on gizmo:
-  cros brick create testbrick --dependency gizmo
+To create a brick in foo/bar:
+  cros brick create foo/bar
+
+All bricks can be referred to using a locator. This locator is either:
+  * a relative path to the brick from the current working directory.
+  * the relative path to the brick in the current workspace, prefixed with '//'.
+  * board:<board name> for legacy, public board overlays.
+
+To create a brick in ${workspace}/foo that depends on ${workspace}/bar:
+  cros brick create //foo --dependency //bar
+
+To create a brick that depend on the gizmo overlay:
+  cros brick create //foo -d board:gizmo
+
+Multiple dependencies can be specified by repeating -d/--dependency. The order
+matters here. Dependencies should be ordered from the lowest priority to the
+highest:
+  cros brick create //foo -d //bar -d //baz
 """
 
   def __init__(self, options):
     cros.CrosCommand.__init__(self, options)
-    self.brick_name = options.brick_name
+    self.brick = options.brick
     self.dependencies = options.dependencies
 
   @classmethod
@@ -35,11 +48,11 @@ To create a brick that depends on gizmo:
     super(cls, BrickCommand).AddParser(parser)
     subparser = parser.add_subparsers()
     create_parser = subparser.add_parser('create')
-    # TODO(bsimonnet): brick_name should allow unambiguous name (//brick/foo).
-    create_parser.add_argument('brick_name', help='Name of the brick')
+    create_parser.add_argument('brick', help='The current brick locator.')
     create_parser.add_argument('-d', '--dependency', action='append',
                                dest='dependencies',
-                               help='Add a dependency to this brick.')
+                               help='Add a dependency to this brick. This must '
+                               'be a brick locator.')
     create_parser.set_defaults(handler_func='Create', dependencies=[])
 
   def Create(self):
@@ -48,18 +61,15 @@ To create a brick that depends on gizmo:
     This will create config.json and generate portage's configuration based on
     it.
     """
-    brick_dir = os.path.join(constants.SOURCE_ROOT, 'projects', self.brick_name)
-    if os.path.exists(brick_dir):
-      cros_build_lib.Die('Directory %s already exists.' % brick_dir)
+    try:
+      # TODO(bsimonnet): remove the name attribute once we do the stacking
+      # without relying on it.
+      conf = {'name': os.path.basename(self.brick),
+              'dependencies': self.dependencies}
+      brick_lib.Brick(self.brick, initial_config=conf)
 
-    with osutils.TempDir() as tempdir:
-      temp_brick_dir = os.path.join(tempdir, 'directory')
-
-      conf = {'name': self.brick_name,
-              'dependencies': [{'name': d} for d in self.dependencies]}
-
-      brick_lib.Brick(temp_brick_dir, initial_config=conf)
-      shutil.move(temp_brick_dir, brick_dir)
+    except brick_lib.BrickCreationFailed as e:
+      cros_build_lib.Die('Brick creation failed: %s' % e)
 
   def Run(self):
     """Dispatch the call to the right handler."""
