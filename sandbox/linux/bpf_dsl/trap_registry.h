@@ -49,6 +49,11 @@ class SANDBOX_EXPORT TrapRegistry {
 
   // EnableUnsafeTraps tries to enable unsafe traps and returns
   // whether it was successful. This is a one-way operation.
+  //
+  // CAUTION: Enabling unsafe traps effectively defeats the security
+  // guarantees provided by the sandbox policy. TrapRegistry
+  // implementations should ensure unsafe traps are only enabled
+  // during testing.
   virtual bool EnableUnsafeTraps() = 0;
 
  protected:
