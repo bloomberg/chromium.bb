@@ -472,6 +472,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 63:
       *update_compatible_version = false;
       return MigrateToVersion63AddServerRecipientName();
+    case 64:
+      *update_compatible_version = false;
+      return MigrateToVersion64AddUnmaskDate();
   }
   return true;
 }
@@ -1194,6 +1197,10 @@ bool AutofillTable::GetServerCreditCards(
 
 void AutofillTable::SetServerCreditCards(
     const std::vector<CreditCard>& credit_cards) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return;
+
   // Delete all old values.
   sql::Statement masked_delete(db_->GetUniqueStatement(
       "DELETE FROM masked_credit_cards"));
@@ -1250,6 +1257,8 @@ void AutofillTable::SetServerCreditCards(
     masked_insert.Run();
     masked_insert.Reset(true);
   }
+
+  transaction.Commit();
 }
 
 bool AutofillTable::UnmaskServerCreditCard(const std::string& id,
@@ -1257,9 +1266,13 @@ bool AutofillTable::UnmaskServerCreditCard(const std::string& id,
   // Make sure there aren't duplicates for this card.
   MaskServerCreditCard(id);
   sql::Statement s(db_->GetUniqueStatement(
-      "INSERT INTO unmasked_credit_cards(id, card_number_encrypted,"
-      "            use_count, use_date) "
-      "VALUES (?,?,?,?)"));
+      "INSERT INTO unmasked_credit_cards("
+          "id,"
+          "card_number_encrypted,"
+          "use_count,"
+          "use_date,"
+          "unmask_date)"
+      "VALUES (?,?,?,?,?)"));
   s.BindString(0, id);
 
   std::string encrypted_data;
@@ -1268,8 +1281,11 @@ bool AutofillTable::UnmaskServerCreditCard(const std::string& id,
              static_cast<int>(encrypted_data.length()));
 
   // Unmasking counts as a usage, so set the stats accordingly.
-  s.BindInt64(2, 1);
-  s.BindInt64(3, base::Time::Now().ToInternalValue());
+  base::Time now = base::Time::Now();
+  s.BindInt64(2, 1);                      // use_count
+  s.BindInt64(3, now.ToInternalValue());  // use_date
+
+  s.BindInt64(4, now.ToInternalValue());  // unmask_date
 
   s.Run();
   return db_->GetLastChangeCount() > 0;
@@ -1311,8 +1327,8 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
   sql::Statement s(db_->GetUniqueStatement(
       "UPDATE credit_cards "
       "SET guid=?, name_on_card=?, expiration_month=?,"
-      "    expiration_year=?, card_number_encrypted=?, use_count=?, use_date=?,"
-      "    date_modified=?, origin=?"
+          "expiration_year=?, card_number_encrypted=?, use_count=?, use_date=?,"
+          "date_modified=?, origin=?"
       "WHERE guid=?"));
   BindCreditCardToStatement(
       credit_card,
@@ -1391,8 +1407,16 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
       "WHERE date_modified >= ? AND date_modified < ?"));
   s_credit_cards.BindInt64(0, delete_begin_t);
   s_credit_cards.BindInt64(1, delete_end_t);
+  if (!s_credit_cards.Run())
+    return false;
 
-  return s_credit_cards.Run();
+  // Remove unmasked credit cards in the time range.
+  sql::Statement s_unmasked_cards(db_->GetUniqueStatement(
+      "DELETE FROM unmasked_credit_cards "
+      "WHERE unmask_date >= ? AND unmask_date < ?"));
+  s_unmasked_cards.BindInt64(0, delete_begin.ToInternalValue());
+  s_unmasked_cards.BindInt64(1, delete_end.ToInternalValue());
+  return s_unmasked_cards.Run();
 }
 
 bool AutofillTable::RemoveOriginURLsModifiedBetween(
@@ -1656,7 +1680,8 @@ bool AutofillTable::InitUnmaskedCreditCardsTable() {
                       "id VARCHAR,"
                       "card_number_encrypted VARCHAR, "
                       "use_count INTEGER NOT NULL DEFAULT 0, "
-                      "use_date INTEGER NOT NULL DEFAULT 0)")) {
+                      "use_date INTEGER NOT NULL DEFAULT 0, "
+                      "unmask_date INTEGER NOT NULL DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -1680,7 +1705,8 @@ bool AutofillTable::InitServerAddressesTable() {
                       "sorting_code VARCHAR,"
                       "country_code VARCHAR,"
                       "language_code VARCHAR, "  // Space required.
-                      "recipient_name VARCHAR)")) {
+                      "recipient_name VARCHAR, "  // Ditto.
+                      "phone_number VARCHAR)")) {
       NOTREACHED();
       return false;
     }
@@ -1971,6 +1997,25 @@ bool AutofillTable::MigrateToVersion63AddServerRecipientName() {
     return false;
   }
   return true;
+}
+
+bool AutofillTable::MigrateToVersion64AddUnmaskDate() {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
+
+  if (!db_->DoesColumnExist("unmasked_credit_cards", "unmask_date") &&
+      !db_->Execute("ALTER TABLE unmasked_credit_cards ADD COLUMN "
+                    "unmask_date INTEGER NOT NULL DEFAULT 0")) {
+    return false;
+  }
+  if (!db_->DoesColumnExist("server_addresses", "phone_number") &&
+      !db_->Execute("ALTER TABLE server_addresses ADD COLUMN "
+                    "phone_number VARCHAR")) {
+    return false;
+  }
+
+  return transaction.Commit();
 }
 
 }  // namespace autofill

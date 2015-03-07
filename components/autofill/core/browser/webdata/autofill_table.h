@@ -167,6 +167,8 @@ struct FormFieldData;
 //                      a form. Added in version 62.
 //   use_date           The date this card was last used to fill a form, in
 //                      internal time format (NOT time_t). Added in version 62.
+//   unmask_date        The date this card was unmasked in units of
+//                      Time::ToInternalValue. Added in version 64.
 //
 // server_addresses     This table contains Autofill address data synced from
 //                      the wallet server. It's basically the same as the
@@ -194,7 +196,8 @@ struct FormFieldData;
 //                      display. For example, a JP address with "ja" language
 //                      code starts with the postal code, but a JP address with
 //                      "ja-latn" language code starts with the recipient name.
-//
+//   phone_number       Phone number. This is a string and has no formatting
+//                      constraints. Added in version 64.
 class AutofillTable : public WebDatabaseTable {
  public:
   explicit AutofillTable(const std::string& app_locale);
@@ -366,6 +369,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion61AddUsageStats();
   bool MigrateToVersion62AddUsageStatsForUnmaskedCards();
   bool MigrateToVersion63AddServerRecipientName();
+  bool MigrateToVersion64AddUnmaskDate();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;
