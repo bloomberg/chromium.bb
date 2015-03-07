@@ -154,9 +154,6 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_task_manager_sources,
                            ".",
                            "//chrome")
-    if (!toolkit_views || is_mac) {
-      sources -= [ "views/task_manager_view.cc" ]
-    }
   }
   if (enable_nacl) {
     sources +=
@@ -232,29 +229,37 @@ static_library("ui") {
                 gypi_values.chrome_browser_ui_views_mac_experimental_sources,
                 ".",
                 "//chrome")
+        sources +=
+            rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
+                        ".",
+                        "//chrome")
         sources -= [
           "cocoa/apps/chrome_app_window_client_cocoa.mm",
+          "cocoa/autofill/card_unmask_prompt_view_bridge.mm",
+          "cocoa/autofill/generated_credit_card_bubble_cocoa.mm",
+          "cocoa/autofill/new_credit_card_bubble_cocoa.mm",
           "cocoa/bookmarks/bookmark_drag_drop_cocoa.mm",
           "cocoa/browser_window_factory_cocoa.mm",
+          "cocoa/constrained_web_dialog_delegate_mac.mm",
+          "cocoa/extensions/browser_action_test_util_mac.mm",
+          "cocoa/extensions/extension_action_platform_delegate_cocoa.mm",
+          "cocoa/extensions/extension_install_dialog_controller.mm",
+          "cocoa/extensions/extension_installed_bubble_bridge.mm",
+          "cocoa/extensions/extension_uninstall_dialog_cocoa.mm",
+          "cocoa/extensions/media_galleries_dialog_cocoa.mm",
+          "cocoa/infobars/alternate_nav_infobar_controller.mm",
+          "cocoa/infobars/confirm_infobar_controller.mm",
+          "cocoa/login_prompt_cocoa.mm",
+          "cocoa/panels/panel_stack_window_cocoa.mm",
+          "cocoa/simple_message_box_mac.mm",
+          "cocoa/single_web_contents_dialog_manager_cocoa.cc",
+          "cocoa/ssl_client_certificate_selector_cocoa.mm",
           "cocoa/tab_dialogs_cocoa.mm",
+          "cocoa/tab_modal_confirm_dialog_mac.mm",
+          "cocoa/task_manager_mac.mm",
+          "cocoa/web_dialog_window_controller.mm",
         ]
         deps += [ "//extensions/components/native_app_window" ]
-      } else {
-        sources -= [
-          "views/apps/chrome_native_app_window_views.cc",
-          "views/apps/chrome_native_app_window_views.h",
-          "views/apps/desktop_keyboard_capture.cc",
-          "views/apps/desktop_keyboard_capture.h",
-          "views/apps/keyboard_hook_handler.cc",
-          "views/apps/keyboard_hook_handler.h",
-          "views/bookmarks/bookmark_drag_drop_views.cc",
-          "views/extensions/extension_keybinding_registry_views.cc",
-          "views/extensions/extension_keybinding_registry_views.h",
-          "views/frame/browser_window_factory.cc",
-          "views/frame/taskbar_decorator.cc",
-          "views/frame/taskbar_decorator.h",
-          "views/tab_dialogs_views.cc",
-        ]
       }
     } else {
       sources +=
