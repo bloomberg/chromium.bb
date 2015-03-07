@@ -939,6 +939,11 @@ ProxyResolverV8Tracing::ProxyResolverV8Tracing(
       error_observer_(error_observer),
       net_log_(net_log),
       num_outstanding_callbacks_(0) {
+  // TODO(eroman): Remove once crbug.com/454983 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "454983 ProxyResolverV8Tracing::ProxyResolverV8Tracing"));
+
   DCHECK(host_resolver);
   // Start up the thread.
   thread_.reset(new base::Thread("Proxy resolver"));

@@ -122,8 +122,18 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     }
   }
 
+  // TODO(eroman): Remove once crbug.com/454983 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "454983 ProxyServiceFactory::CreateProxyService_2"));
+
   net::ProxyService* proxy_service = NULL;
   if (use_v8) {
+    // TODO(eroman): Remove once crbug.com/454983 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "454983 ProxyServiceFactory::CreateProxyService_3"));
+
 #if defined(OS_IOS)
     NOTREACHED();
 #else
@@ -136,6 +146,11 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     dhcp_proxy_script_fetcher = dhcp_factory.Create(context);
 #endif
 
+    // TODO(eroman): Remove once crbug.com/454983 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "454983 ProxyServiceFactory::CreateProxyService_4"));
+
     proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
         proxy_config_service,
         new net::ProxyScriptFetcherImpl(context),
@@ -145,6 +160,11 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
         network_delegate);
 #endif  // defined(OS_IOS)
   } else {
+    // TODO(eroman): Remove once crbug.com/454983 is fixed.
+    tracked_objects::ScopedTracker tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "454983 ProxyServiceFactory::CreateProxyService_5"));
+
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
         proxy_config_service,
         num_pac_threads,

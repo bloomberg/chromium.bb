@@ -1392,6 +1392,10 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
 void ProxyService::SetProxyScriptFetchers(
     ProxyScriptFetcher* proxy_script_fetcher,
     DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher) {
+  // TODO(eroman): Remove once crbug.com/454983 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "454983 ProxyService::SetProxyScriptFetchers"));
   DCHECK(CalledOnValidThread());
   State previous_state = ResetProxyConfig(false);
   proxy_script_fetcher_.reset(proxy_script_fetcher);
