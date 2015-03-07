@@ -49,7 +49,11 @@ BRILLO_DEBUG_LINK_SERVICE_NAME = '_brdebug._tcp.local'
 BRILLO_DEVICE_PROPERTY_ALIAS = 'alias'
 
 
-class SSHConnectionError(Exception):
+class RemoteAccessException(Exception):
+  """Base exception for this module."""
+
+
+class SSHConnectionError(RemoteAccessException):
   """Raised when SSH connection has failed."""
 
   def IsKnownHostsMismatch(self):
@@ -66,8 +70,12 @@ class SSHConnectionError(Exception):
     return 'REMOTE HOST IDENTIFICATION HAS CHANGED' in str(self)
 
 
-class DeviceNotPingable(Exception):
+class DeviceNotPingableError(RemoteAccessException):
   """Raised when device is not pingable."""
+
+
+class CannotResolveHostnameError(RemoteAccessException):
+  """Raised when hostname is not resolvable."""
 
 
 def NormalizePort(port, str_ok=True):
@@ -567,7 +575,7 @@ class RemoteDevice(object):
     self.cleanup_cmds = []
 
     if ping and not self.Pingable():
-      raise DeviceNotPingable('Device %s is not pingable.' % self.hostname)
+      raise DeviceNotPingableError('Device %s is not pingable.' % self.hostname)
 
     if connect:
       self.Connect()
@@ -784,9 +792,16 @@ class ChromiumOSDevice(RemoteDevice):
   MOUNT_ROOTFS_RW_CMD = ['mount', '-o', 'remount,rw', '/']
   LIST_MOUNTS_CMD = ['cat', '/proc/mounts']
 
-  def __init__(self, *args, **kwargs):
-    self._alias = kwargs.pop('alias')
-    super(ChromiumOSDevice, self).__init__(*args, **kwargs)
+  def __init__(self, hostname, alias=None, **kwargs):
+    """Initializes this object.
+
+    Args:
+      hostname: A network hostname or a user-friendly USB device name (alias).
+      alias: A user-friendly USB device name.
+    """
+    self._alias = alias
+    hostname = self._ResolveHostname(hostname)
+    super(ChromiumOSDevice, self).__init__(hostname, **kwargs)
     self._path = None
     self._lsb_release = {}
 
@@ -842,6 +857,31 @@ class ChromiumOSDevice(RemoteDevice):
       self._alias = 'test_alias'
 
     return self._alias
+
+  def _ResolveHostname(self, hostname):
+    """Resolve |hostname| into a network hostname.
+
+    If |hostname| is an alias, |self._alias| is updated to be |hostname|.
+
+    Args:
+      hostname: Can either be a network hostname or user-friendly USB device
+        name (aka alias).
+
+    Returns:
+      Network hostname as as string.
+    """
+    # If |hostname| is resolvable via DNS, then it's a valid hostname.
+    # If |hostname| is resolvable via Debug Link mDNS, then it's an alias.
+    try:
+      socket.getaddrinfo(hostname, 0)
+      return hostname
+    except socket.gaierror as e:
+      ip = GetUSBDeviceIP(hostname)
+      if ip:
+        self._alias = hostname
+        return ip
+      raise CannotResolveHostnameError(
+          'Cannot resolve hostname %s: %s' % (hostname, str(e)))
 
   def SetAlias(self, alias_name):
     """Assign to the device a user-friendly alias name."""
@@ -931,3 +971,28 @@ def GetUSBConnectedDevices():
   return [ChromiumOSDevice(service.ip,
                            alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
                            connect=False) for service in services]
+
+
+def GetUSBDeviceIP(alias):
+  """Gets the USB-connected device IP address using its |alias|.
+
+  Args:
+    alias: User-friendly name of USB-connected device.
+
+  Returns:
+    USB-connected device IP address or None if |alias| is not found.  If there
+    are duplicate aliases on the network, the first IP address is returned.
+  """
+  # Lazy import mdns so that we don't break the chromite requirement that
+  # bootstrapping should not depend on third_party packages. mdns pulls in
+  # dpkt which is a third_party package.
+  from chromite.lib import mdns
+  source_ip = debug_link.InitializeDebugLink()
+  should_add = lambda x: x.text.get(BRILLO_DEVICE_PROPERTY_ALIAS) == alias
+  should_continue = lambda x: x.text.get(BRILLO_DEVICE_PROPERTY_ALIAS) != alias
+  services = mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME,
+                               should_add_func=should_add,
+                               should_continue_func=should_continue)
+  if not services:
+    return None
+  return services[0].ip

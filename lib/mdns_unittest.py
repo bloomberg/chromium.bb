@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import dpkt
-import mock
 import select
 import socket
 
@@ -19,9 +18,19 @@ class BadService(object):
   """A bad service used to signal the test to generate bad mDNS response."""
 
 
-class mDNSTest(cros_test_lib.TestCase):
-  """Tests for FindServices()"""
-  def _BuildmDNSResponse(self, service):
+class mDnsTestCase(cros_test_lib.MockTestCase):
+  """Base test case that mocks the network API to return mDNS services."""
+
+  def setUp(self):
+    self.socket_class_mock = self.PatchObject(socket, 'socket')
+    self.select_mock = self.PatchObject(select, 'select')
+
+  def _BuildmDnsResponse(self, service):
+    """Return valid mDNS response for specified service.
+
+    Args:
+      service: Namedtuple that contains the service settings.
+    """
     answers = []
     if service.ip:
       answers.append(
@@ -40,10 +49,37 @@ class mDNSTest(cros_test_lib.TestCase):
                         rcode=dpkt.dns.DNS_RCODE_NOERR,
                         q=[], an=answers, ns=[])
 
-  def _BuildBadmDNSResponse(self):
+  def _BuildBadmDnsResponse(self):
+    """Return invalid mDNS response."""
     return 'junk'
 
-  def _TestmDNSResults(self, services, expected_results, should_add_func=None,
+  def _MockNetworkResponse(self, services):
+    """Mock the network response to include the specified mDNS services.
+
+    Args:
+      services: List of mDNS services that form the network response.  Use
+        |mdns.Service| to indicate a valid mDNS response.  Use |BadService| to
+        indicate an invalid mDNS response.
+    """
+    socket_mock = self.socket_class_mock.return_value
+    select_side_effects = []
+    recvfrom_side_effects = []
+    for service in services:
+      select_side_effects.append(([1], [], []))
+      if type(service) is mdns.Service:
+        mdns_response = self._BuildmDnsResponse(service)
+      else:
+        mdns_response = self._BuildBadmDnsResponse()
+      recvfrom_side_effects.append((str(mdns_response), ''))
+    select_side_effects.append(([], [], []))
+    self.select_mock.side_effect = select_side_effects
+    socket_mock.recvfrom.side_effect = recvfrom_side_effects
+
+
+class mDnsFindServicesTest(mDnsTestCase):
+  """Tests for FindServices()."""
+
+  def _TestmDnsResults(self, services, expected_results, should_add_func=None,
                        should_continue_func=None):
     """Mock out network responses and call FindServices().
 
@@ -54,28 +90,13 @@ class mDNSTest(cros_test_lib.TestCase):
       should_continue_func: See |should_continue_func| argument in
         FindServices().
     """
-    with mock.patch('socket.socket') as mock_socket_class:
-      select.select = mock.MagicMock()
-      mock_socket = mock_socket_class.return_value
+    self._MockNetworkResponse(services)
 
-      select_side_effects = []
-      recvfrom_side_effects = []
-      for service in services:
-        select_side_effects.append(([1], [], []))
-        if type(service) is mdns.Service:
-          mdns_response = self._BuildmDNSResponse(service)
-        else:
-          mdns_response = self._BuildBadmDNSResponse()
-        recvfrom_side_effects.append((str(mdns_response), ''))
-      select_side_effects.append(([], [], []))
-      select.select.side_effect = select_side_effects
-      mock_socket.recvfrom.side_effect = recvfrom_side_effects
-
-      results = mdns.FindServices('127.0.0.1',
-                                  'a.local',
-                                  should_add_func=should_add_func,
-                                  should_continue_func=should_continue_func)
-      self.assertEqual(results, expected_results)
+    results = mdns.FindServices('127.0.0.1',
+                                'a.local',
+                                should_add_func=should_add_func,
+                                should_continue_func=should_continue_func)
+    self.assertEqual(results, expected_results)
 
   def testFindServices(self):
     """Test finding all mDNS services."""
@@ -83,7 +104,7 @@ class mDNSTest(cros_test_lib.TestCase):
                              {'name': 'test'}),
                 mdns.Service('test2.local', '10.0.0.2', 1234, 'test2.a.local',
                              {'name': 'test2'})]
-    self._TestmDNSResults(services, services)
+    self._TestmDnsResults(services, services)
 
   def testFindServicesIncompleteResponse(self):
     """Test finding all mDNS services but ignoring incomplete services."""
@@ -93,7 +114,7 @@ class mDNSTest(cros_test_lib.TestCase):
                 mdns.Service('test3.local', '10.0.0.3', 1234, 'test3.a.local',
                              {'name': 'test3'})]
     expected_results = [services[0], services[2]]
-    self._TestmDNSResults(services, expected_results)
+    self._TestmDnsResults(services, expected_results)
 
   def testFindOneService(self):
     """Test finding a specific service."""
@@ -105,7 +126,7 @@ class mDNSTest(cros_test_lib.TestCase):
 
     should_add_func = lambda x: x.hostname == services[1].hostname
     should_continue_func = lambda x: x.hostname != services[1].hostname
-    self._TestmDNSResults(services, expected_results,
+    self._TestmDnsResults(services, expected_results,
                           should_add_func=should_add_func,
                           should_continue_func=should_continue_func)
 
@@ -126,7 +147,7 @@ class mDNSTest(cros_test_lib.TestCase):
 
     should_add_func = lambda x: True
     should_continue_func = lambda x: x.hostname != services[1].hostname
-    self._TestmDNSResults(services, expected_results,
+    self._TestmDnsResults(services, expected_results,
                           should_add_func=should_add_func,
                           should_continue_func=should_continue_func)
 
@@ -138,4 +159,4 @@ class mDNSTest(cros_test_lib.TestCase):
                 mdns.Service('test3.local', '10.0.0.3', 1234, 'test3.a.local',
                              {'name': 'test3'})]
     expected_results = [services[0], services[2]]
-    self._TestmDNSResults(services, expected_results)
+    self._TestmDnsResults(services, expected_results)

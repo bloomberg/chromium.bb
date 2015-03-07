@@ -8,12 +8,14 @@ from __future__ import print_function
 
 import os
 import re
+import socket
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import debug_link
 from chromite.lib import mdns
+from chromite.lib import mdns_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
@@ -231,28 +233,101 @@ class CheckIfRebootedTest(RemoteAccessTest):
     self.assertRaises(Exception, self.host._CheckIfRebooted)
 
 
-class TestGetUSBConnectedDevices(cros_test_lib.MockTestCase):
-  """Tests of the GetUSBConnectedDevices() function."""
+class USBDeviceTestCase(mdns_unittest.mDnsTestCase):
+  """Base class for USB device related tests."""
 
   def setUp(self):
     self.StartPatcher(RemoteDeviceMock())
     self.initializedebuglink_mock = self.PatchObject(debug_link,
                                                      'InitializeDebugLink')
-    self.findservices_mock = self.PatchObject(mdns, 'FindServices')
+
+
+class TestGetUSBConnectedDevices(USBDeviceTestCase):
+  """Tests of the GetUSBConnectedDevices() function."""
 
   def testDebugLinkInitialization(self):
     """Test case to make sure the Debug Link is initialized."""
-    self.initializedebuglink_mock.assert_called_once()
+    self.PatchObject(mdns, 'FindServices')
     remote_access.GetUSBConnectedDevices()
+    self.initializedebuglink_mock.assert_called_once()
 
   def testEnumeration(self):
     """Test case to check correct enumeration results."""
     services = [
-        mdns.Service('dut1.local', '1.1.1.1', 0, '', {'alias': 'dut1'}),
-        mdns.Service('dut2.local', '2.2.2.2', 0, '', {'alias': 'dut2'})]
-    self.findservices_mock.return_value = services
+        mdns.Service('d1.local', '1.1.1.1', 0, 'd1.a.local', {'alias': 'd1'}),
+        mdns.Service('d2.local', '2.2.2.2', 0, 'd2.a.local', {'alias': 'd2'})]
+    self._MockNetworkResponse(services)
     devices = remote_access.GetUSBConnectedDevices()
     self.assertEqual(len(devices), len(services))
     for index in range(len(devices)):
       self.assertEqual(devices[index].hostname, services[index].ip)
       self.assertEqual(devices[index].alias, services[index].text['alias'])
+
+
+class TestUSBDeviceIP(USBDeviceTestCase):
+  """Tests of the GetUSBDeviceIP() function."""
+
+  def testDebugLinkInitialization(self):
+    """Test case to make sure the Debug Link is initialized."""
+    self.PatchObject(mdns, 'FindServices')
+    remote_access.GetUSBDeviceIP('dut')
+    self.initializedebuglink_mock.assert_called_once()
+
+  def testSuccessfulResolution(self):
+    """Test successful resolution of alias to IP."""
+    services = [
+        mdns.Service('d1.local', '1.1.1.1', 0, 'd1.a.local', {'alias': 'd1'}),
+        mdns.Service('d2.local', '2.2.2.2', 0, 'd2.a.local', {'alias': 'd2'}),
+        mdns.Service('d3.local', '3.3.3.3', 0, 'd3.a.local', {'alias': 'd3'})]
+    self._MockNetworkResponse(services)
+    ip = remote_access.GetUSBDeviceIP('d2')
+    self.assertEqual(ip, '2.2.2.2')
+
+  def testDuplicateAlias(self):
+    """Test resolution of alias to IP when duplicate aliases exist."""
+    services = [
+        mdns.Service('d1.local', '1.1.1.1', 0, 'd1.a.local', {'alias': 'd1'}),
+        mdns.Service('d2.local', '2.2.2.2', 0, 'd2.a.local', {'alias': 'd2'}),
+        mdns.Service('d2.local', '3.3.3.3', 0, 'd2.a.local', {'alias': 'd2'})]
+    self._MockNetworkResponse(services)
+    ip = remote_access.GetUSBDeviceIP('d2')
+    # Make sure the IP belongs to the first response that matches the alias.
+    self.assertEqual(ip, '2.2.2.2')
+
+  def testFailedResolution(self):
+    """Test failed resolution of alias to IP."""
+    services = [
+        mdns.Service('d1.local', '1.1.1.1', 0, 'd1.a.local', {'alias': 'd1'}),
+        mdns.Service('d2.local', '2.2.2.2', 0, 'd2.a.local', {'alias': 'd2'})]
+    self._MockNetworkResponse(services)
+    ip = remote_access.GetUSBDeviceIP('d3')
+    self.assertEqual(ip, None)
+
+
+class TestChromiumOSDeviceHostnameResolution(USBDeviceTestCase):
+  """Tests hostname resolution in ChromiumOSDevice."""
+
+  def testHostnameAsNetworkName(self):
+    """Test resolving a valid network name."""
+    self.PatchObject(socket, 'getaddrinfo')
+    hostname = 'good-hostname'
+    device = remote_access.ChromiumOSDevice(hostname, connect=False)
+    self.assertEqual(device.hostname, hostname)
+
+  def testHostnameAsAlias(self):
+    """Test resolving when hostname is used as an alias."""
+    hostname = 'good-alias'
+    ip = '1.1.1.1'
+    self.PatchObject(socket, 'getaddrinfo', side_effect=socket.gaierror)
+    self.PatchObject(remote_access, 'GetUSBDeviceIP', return_value=ip)
+    device = remote_access.ChromiumOSDevice(hostname, connect=False)
+    self.assertEqual(device.hostname, ip)
+    self.assertEqual(device._alias, hostname)
+
+  def testInvalidHostname(self):
+    """Test resolving a bad network name and bad alias."""
+    hostname = 'bad'
+    self.PatchObject(socket, 'getaddrinfo', side_effect=socket.gaierror)
+    self.PatchObject(remote_access, 'GetUSBDeviceIP', return_value=None)
+    self.assertRaises(remote_access.CannotResolveHostnameError,
+                      remote_access.ChromiumOSDevice, hostname, connect=False)
