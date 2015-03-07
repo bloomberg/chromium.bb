@@ -97,14 +97,9 @@ class CONTENT_EXPORT EchoInformation {
   void UpdateAecDelayStats(webrtc::EchoCancellation* echo_cancellation);
 
  private:
-  // Updates UMA histograms with an interval of 5 seconds.
-  void LogAecDelayStats();
-
-  // Counters to be able to aquire a 5 second aggregated metric out of 1 second
-  // aggregated webrtc::EchoCancellation::GetEchoDelayMetrics() queries.
+  // Counter to track 5 seconds of processed 10 ms chunks in order to query a
+  // new metric from webrtc::EchoCancellation::GetEchoDelayMetrics().
   int num_chunks_;
-  int num_queries_;
-  float echo_fraction_poor_delays_;
 
   DISALLOW_COPY_AND_ASSIGN(EchoInformation);
 };
