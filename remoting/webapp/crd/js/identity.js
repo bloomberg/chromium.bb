@@ -6,16 +6,19 @@
  * @fileoverview
  * Wrapper class for Chrome's identity API.
  */
-
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+(function(){
+
+'use strict';
 
 /**
  * @type {remoting.Identity}
  */
 remoting.identity = null;
+
+var USER_CANCELLED = 'The user did not approve access.';
 
 /**
  * @param {remoting.Identity.ConsentDialog=} opt_consentDialog
@@ -30,6 +33,8 @@ remoting.Identity = function(opt_consentDialog) {
   this.fullName_ = '';
   /** @type {base.Deferred<string>} */
   this.authTokenDeferred_ = null;
+  /** @private {boolean} */
+  this.interactive_ = false;
 };
 
 /**
@@ -60,8 +65,8 @@ remoting.Identity.prototype.getToken = function() {
   if (this.authTokenDeferred_ == null) {
     this.authTokenDeferred_ = new base.Deferred();
     chrome.identity.getAuthToken(
-        { 'interactive': false },
-        that.onAuthComplete_.bind(that, false));
+        { 'interactive': this.interactive_ },
+        this.onAuthComplete_.bind(this));
   }
   return this.authTokenDeferred_.promise();
 };
@@ -162,12 +167,10 @@ remoting.Identity.prototype.getEmail = function() {
 /**
  * Callback for the getAuthToken API.
  *
- * @param {boolean} interactive The value of the "interactive" parameter to
- *     getAuthToken.
  * @param {?string} token The auth token, or null if the request failed.
  * @private
  */
-remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
+remoting.Identity.prototype.onAuthComplete_ = function(token) {
   var authTokenDeferred = this.authTokenDeferred_;
 
   // Pass the token to the callback(s) if it was retrieved successfully.
@@ -179,12 +182,14 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
 
   // If not, pass an error back to the callback(s) if we've already prompted the
   // user for permission.
-  if (interactive) {
+  if (this.interactive_) {
     var error_message =
         chrome.runtime.lastError ? chrome.runtime.lastError.message
                                  : 'Unknown error.';
     console.error(error_message);
-    authTokenDeferred.reject(remoting.Error.NOT_AUTHENTICATED);
+    var error = (error_message == USER_CANCELLED) ?
+        remoting.Error.CANCELLED : remoting.Error.NOT_AUTHENTICATED;
+    authTokenDeferred.reject(error);
     this.authTokenDeferred_ = null;
     return;
   }
@@ -195,8 +200,9 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
   var showConsentDialog =
       (this.consentDialog_) ? this.consentDialog_.show() : Promise.resolve();
   showConsentDialog.then(function() {
-    chrome.identity.getAuthToken(
-        {'interactive': true}, that.onAuthComplete_.bind(that, true));
+    that.interactive_ = true;
+    chrome.identity.getAuthToken({'interactive': that.interactive_},
+                                 that.onAuthComplete_.bind(that));
   });
 };
 
@@ -208,3 +214,5 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
 remoting.Identity.prototype.isAuthenticated = function() {
   return remoting.identity.email_ !== '';
 };
+
+})();

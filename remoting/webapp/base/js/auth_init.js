@@ -8,24 +8,14 @@
 var remoting = remoting || {};
 
 /**
- * Get the user's email address and full name.
+ * Initialize the identity and authentication components.
  *
- * @param {function(string,string):void} onUserInfoAvailable Callback invoked
- *     when the user's email address and full name are available.
  * @return {void} Nothing.
  */
-remoting.initIdentity = function(onUserInfoAvailable) {
-
-  /** @param {remoting.Error} error */
-  function onGetIdentityInfoError(error) {
-    // No need to show the error message for NOT_AUTHENTICATED
-    // because we will show "auth-dialog".
-    if (error != remoting.Error.NOT_AUTHENTICATED) {
-      remoting.showErrorMessage(error);
-    }
-  }
-
+remoting.initIdentity = function() {
   if (base.isAppsV2()) {
+    // TODO(jamiewalch): Add a getAuthDialog method to Application.Delegate
+    // to allow this behaviour to be customized.
     remoting.identity =
         new remoting.Identity(remoting.AuthDialog.getInstance());
   } else {
@@ -41,15 +31,6 @@ remoting.initIdentity = function(onUserInfoAvailable) {
       });
     }
   }
-
-  remoting.identity.getUserInfo().then(
-      /** @param {{email:string, name:string}} userInfo */
-      function(userInfo) {
-        onUserInfoAvailable(userInfo.email, userInfo.name);
-      }).catch(function(error) {
-        onGetIdentityInfoError(
-            /** @type {remoting.Error} */ (error));
-      });
 };
 
 /**

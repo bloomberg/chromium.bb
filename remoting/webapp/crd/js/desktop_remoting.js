@@ -39,30 +39,12 @@ remoting.DesktopRemoting = function(app) {
 };
 
 /**
- * Display the user's email address and allow access to the rest of the app,
- * including parsing URL parameters.
- *
- * @param {string} email The user's email address.
- * @param {string} fullName The user's full name. This is always null since
- *     CRD doesn't request userinfo.profile permission.
- * @return {void} Nothing.
- */
-remoting.onUserInfoAvailable = function(email, fullName) {
-  document.getElementById('current-email').innerText = email;
-  document.getElementById('get-started-it2me').disabled = false;
-  document.getElementById('get-started-me2me').disabled = false;
-};
-
-/**
  * Initialize the application and register all event handlers. After this
  * is called, the app is running and waiting for user events.
  *
  * @return {void} Nothing.
  */
 remoting.DesktopRemoting.prototype.init = function() {
-  remoting.initGlobalObjects();
-  remoting.initIdentity(remoting.onUserInfoAvailable);
-
   remoting.initElementEventHandlers();
 
   if (base.isAppsV2()) {
@@ -132,6 +114,38 @@ remoting.DesktopRemoting.prototype.init = function() {
 
   remoting.ClientPlugin.factory.preloadPlugin();
 }
+
+/**
+ * Start the application. Once start() is called, the delegate can assume that
+ * the user has consented to all permissions specified in the manifest.
+ *
+ * @param {remoting.SessionConnector} connector
+ * @param {string} token An OAuth access token. The delegate should not cache
+ *     this token, but can assume that it will remain valid during application
+ *     start-up.
+ */
+remoting.DesktopRemoting.prototype.start = function(connector, token) {
+  remoting.identity.getEmail().then(
+      function(/** string */ email) {
+        document.getElementById('current-email').innerText = email;
+        document.getElementById('get-started-it2me').disabled = false;
+        document.getElementById('get-started-me2me').disabled = false;
+      });
+};
+
+/**
+ * Report an authentication error to the user. This is called in lieu of start()
+ * if the user cannot be authenticated or if they decline the app permissions.
+ *
+ * @param {remoting.Error} error The failure reason.
+ */
+remoting.DesktopRemoting.prototype.signInFailed = function(error) {
+  if (error == remoting.Error.CANCELLED) {
+    chrome.app.window.current().close();
+  } else {
+    remoting.showErrorMessage(error);
+  }
+};
 
 /**
  * @return {string} Application product name to be used in UI.

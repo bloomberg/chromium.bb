@@ -97,7 +97,13 @@ remoting.Application.prototype.start = function() {
   // global 'remoting' namespace.
   remoting.settings = new remoting.Settings();
 
-  this.delegate_.init(this.getSessionConnector());
+  remoting.initGlobalObjects();
+  remoting.initIdentity();
+
+  this.delegate_.init();
+  remoting.identity.getToken().then(
+      this.delegate_.start.bind(this.delegate_, this.getSessionConnector()),
+      remoting.Error.handler(this.delegate_.signInFailed.bind(this.delegate_)));
 };
 
 /** Disconnect the remoting client. */
@@ -257,13 +263,30 @@ remoting.Application.prototype.updateStatistics_ = function() {
 remoting.Application.Delegate = function() {};
 
 /**
- * Initialize the application and register all event handlers. After this
- * is called, the app is running and waiting for user events.
+ * Initialize the application. This is called before an OAuth token is requested
+ * and should be used for tasks such as initializing the DOM, registering event
+ * handlers, etc.
+ */
+remoting.Application.Delegate.prototype.init = function() {};
+
+/**
+ * Start the application. Once start() is called, the delegate can assume that
+ * the user has consented to all permissions specified in the manifest.
  *
  * @param {remoting.SessionConnector} connector
- * @return {void} Nothing.
+ * @param {string} token An OAuth access token. The delegate should not cache
+ *     this token, but can assume that it will remain valid during application
+ *     start-up.
  */
-remoting.Application.Delegate.prototype.init = function(connector) {};
+remoting.Application.Delegate.prototype.start = function(connector, token) {};
+
+/**
+ * Report an authentication error to the user. This is called in lieu of start()
+ * if the user cannot be authenticated or if they decline the app permissions.
+ *
+ * @param {remoting.Error} error The failure reason.
+ */
+remoting.Application.Delegate.prototype.signInFailed = function(error) {};
 
 /**
  * @return {string} Application product name to be used in UI.
@@ -298,8 +321,8 @@ remoting.Application.Delegate.prototype.handleDisconnected = function() {};
  * @param {remoting.Error} error
  * @return {void} Nothing.
  */
-remoting.Application.Delegate.prototype.handleConnectionFailed = function(
-    connector, error) {};
+remoting.Application.Delegate.prototype.handleConnectionFailed =
+    function(connector, error) {};
 
 /**
  * Called when the current session has reached the point where the host has
@@ -307,8 +330,8 @@ remoting.Application.Delegate.prototype.handleConnectionFailed = function(
  *
  * @return {void} Nothing.
  */
-remoting.Application.Delegate.prototype.handleVideoStreamingStarted = function(
-    ) {};
+remoting.Application.Delegate.prototype.handleVideoStreamingStarted =
+    function() {};
 
 /**
  * Called when an extension message needs to be handled.
@@ -317,8 +340,8 @@ remoting.Application.Delegate.prototype.handleVideoStreamingStarted = function(
  * @param {Object} message The parsed extension message data.
  * @return {boolean} Return true if the extension message was recognized.
  */
-remoting.Application.Delegate.prototype.handleExtensionMessage = function(
-    type, message) {};
+remoting.Application.Delegate.prototype.handleExtensionMessage =
+    function(type, message) {};
 
 /**
  * Called when an error needs to be displayed to the user.

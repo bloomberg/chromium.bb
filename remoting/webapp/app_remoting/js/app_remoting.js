@@ -59,27 +59,11 @@ remoting.AppRemoting.AppHostResponse = function() {
 };
 
 /**
- * Callback for when the userinfo (email and user name) is available from
- * the identity API.
- *
- * @param {string} email The user's email address.
- * @param {string} fullName The user's full name.
- * @return {void} Nothing.
+ * Initialize the application. This is called before an OAuth token is requested
+ * and should be used for tasks such as initializing the DOM, registering event
+ * handlers, etc.
  */
-remoting.onUserInfoAvailable = function(email, fullName) {
-};
-
-/**
- * Initialize the application and register all event handlers. After this
- * is called, the app is running and waiting for user events.
- *
- * @param {remoting.SessionConnector} connector
- * @return {void} Nothing.
- */
-remoting.AppRemoting.prototype.init = function(connector) {
-  remoting.initGlobalObjects();
-  remoting.initIdentity(remoting.onUserInfoAvailable);
-
+remoting.AppRemoting.prototype.init = function() {
   // TODO(jamiewalch): Remove ClientSession's dependency on remoting.fullscreen
   // so that this is no longer required.
   remoting.fullscreen = new remoting.FullscreenAppsV2();
@@ -104,6 +88,19 @@ remoting.AppRemoting.prototype.init = function(connector) {
   this.keyboardLayoutsMenu_ = new remoting.KeyboardLayoutsMenu(adapter);
   this.windowActivationMenu_ = new remoting.WindowActivationMenu(adapter);
 
+  remoting.LoadingWindow.show();
+};
+
+/**
+ * Start the application. Once start() is called, the delegate can assume that
+ * the user has consented to all permissions specified in the manifest.
+ *
+ * @param {remoting.SessionConnector} connector
+ * @param {string} token An OAuth access token. The delegate should not cache
+ *     this token, but can assume that it will remain valid during application
+ *     start-up.
+ */
+remoting.AppRemoting.prototype.start = function(connector, token) {
   /** @type {remoting.AppRemoting} */
   var that = this;
 
@@ -172,26 +169,28 @@ remoting.AppRemoting.prototype.init = function(connector) {
     }
   };
 
-  /** @param {string} token */
-  var getAppHost = function(token) {
-    remoting.xhr.start({
-      method: 'POST',
-      url: that.runApplicationUrl(),
-      onDone: parseAppHostResponse,
-      oauthToken: token
-    });
-  };
+  remoting.xhr.start({
+    method: 'POST',
+    url: that.runApplicationUrl(),
+    onDone: parseAppHostResponse,
+    oauthToken: token
+  });
+};
 
-  /** @param {remoting.Error} error */
-  var onError = function(error) {
-    that.handleError(error);
-  };
-
-  remoting.LoadingWindow.show();
-
-  remoting.identity.getToken().then(getAppHost).
-      catch(remoting.Error.handler(onError));
-}
+/**
+ * Report an authentication error to the user. This is called in lieu of start()
+ * if the user cannot be authenticated or if they decline the app permissions.
+ *
+ * @param {remoting.Error} error The failure reason.
+ */
+remoting.AppRemoting.prototype.signInFailed = function(error) {
+  if (error == remoting.Error.CANCELLED) {
+    chrome.app.window.current().close();
+    remoting.LoadingWindow.close();
+  } else {
+    this.handleError(error);
+  }
+};
 
 /**
  * @return {string} Application product name to be used in UI.
