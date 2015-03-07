@@ -1834,8 +1834,6 @@ crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
 
 crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash Timeout Pass ]
 
-Bug(hartmanng) [ Mac ] compositing/squashing/do-not-squash-non-self-painting-layer.html [ NeedsRebaseline ]
-
 # Minor failure only on Mac 10.6 Debug.
 crbug.com/459305 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
