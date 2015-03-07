@@ -351,6 +351,7 @@ extern const char kExtensionInvalidRequestURL[];
 extern const char kExtensionResourceInvalidRequestURL[];
 
 extern const char kSyncGoogleDashboardURL[];
+extern const char kSyncChromeDashboardURL[];
 
 extern const char kPasswordManagerLearnMoreURL[];
 extern const char kPasswordManagerAccountDashboardURL[];

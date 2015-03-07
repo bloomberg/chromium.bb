@@ -6,6 +6,7 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,6 +43,12 @@ typedef GoogleServiceAuthError AuthError;
 namespace sync_ui_util {
 
 namespace {
+
+bool IsChromeDashboardEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("ChromeDashboard");
+  return group_name == "Enabled";
+}
 
 // Returns the message that should be displayed when the user is authenticated
 // and can connect to the sync server. If the user hasn't yet authenticated, an
@@ -88,6 +95,12 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
           IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
           user_name);
     case WITH_HTML:
+      if (IsChromeDashboardEnabled()) {
+        return l10n_util::GetStringFUTF16(
+            IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK_NEW,
+            user_name,
+            base::ASCIIToUTF16(chrome::kSyncChromeDashboardURL));
+      }
       return l10n_util::GetStringFUTF16(
           IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK,
           user_name,
