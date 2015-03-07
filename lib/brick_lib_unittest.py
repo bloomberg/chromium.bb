@@ -272,3 +272,23 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
     deps = brick_lib.Brick('//baz').config['dependencies']
     self.assertEqual(1, len(deps))
     self.assertEqual('//foo/bar', deps[0])
+
+  def testBrickStack(self):
+    """Tests that the brick stacking is correct."""
+    self.SetupFakeWorkspace()
+
+    def brick_dep(name, deps):
+      config = {'name': os.path.basename(name),
+                'dependencies': deps}
+      return brick_lib.Brick(name, initial_config=config)
+
+    brick_dep('//first', [])
+    brick_dep('//second', ['//first'])
+    third = brick_dep('//third', ['//first', '//second'])
+    fourth = brick_dep('//fourth', ['//second', '//first'])
+
+    self.assertEqual(['//first', '//second', '//third'],
+                     [b.brick_locator for b in third.BrickStack()])
+
+    self.assertEqual(['//first', '//second', '//fourth'],
+                     [b.brick_locator for b in fourth.BrickStack()])

@@ -228,6 +228,25 @@ class Brick(object):
     """Returns the project's source directory."""
     return os.path.join(self.brick_dir, 'src')
 
+  def BrickStack(self):
+    """Returns the brick stack for this brick.
+
+    Returns:
+      A list of bricks, respecting the partial ordering of bricks as defined by
+      dependencies, ordered from the lowest priority to the highest priority.
+    """
+    seen = set()
+    def _stack(brick):
+      seen.add(brick.brick_dir)
+      l = []
+      for dep in brick.Dependencies():
+        if dep.brick_dir not in seen:
+          l.extend(_stack(dep))
+      l.append(brick)
+      return l
+
+    return _stack(self)
+
 
 def IsLocator(name):
   """Returns True if name is a specific locator."""
