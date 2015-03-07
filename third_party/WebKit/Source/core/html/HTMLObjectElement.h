@@ -82,7 +82,6 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     virtual void removedFrom(ContainerNode*) override;
 
-    virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
     virtual void didMoveToNewDocument(Document& oldDocument) override;
 
     virtual void childrenChanged(const ChildrenChange&) override;

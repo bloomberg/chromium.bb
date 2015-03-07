@@ -154,10 +154,6 @@ bool HTMLEmbedElement::layoutObjectIsNeeded(const LayoutStyle& style)
     if (isImageType())
         return HTMLPlugInElement::layoutObjectIsNeeded(style);
 
-    LocalFrame* frame = document().frame();
-    if (!frame)
-        return false;
-
     // If my parent is an <object> and is not set to use fallback content, I
     // should be ignored and not get a renderer.
     ContainerNode* p = parentNode();
