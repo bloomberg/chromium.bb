@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -114,11 +115,7 @@ class ScreenshotGrabberNotificationDelegate : public NotificationDelegate {
   void Click() override {
     if (!success_)
       return;
-#if defined(OS_CHROMEOS)
-    file_manager::util::ShowItemInFolder(profile_, screenshot_path_);
-#else
-// TODO(sschmitz): perhaps add similar action for Windows.
-#endif
+    platform_util::ShowItemInFolder(profile_, screenshot_path_);
   }
   void ButtonClick(int button_index) override {
     DCHECK(success_ && button_index == 0);

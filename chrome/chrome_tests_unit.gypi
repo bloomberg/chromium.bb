@@ -1434,6 +1434,7 @@
       'browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc',
       'browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc',
       'browser/net/firefox_proxy_settings_unittest.cc',
+      'browser/platform_util_unittest.cc',
       'browser/power/process_power_collector_unittest.cc',
       'browser/process_singleton_posix_unittest.cc',
       'browser/profile_resetter/profile_resetter_unittest.cc',

@@ -19,8 +19,10 @@ ShellHandler::~ShellHandler() {}
 bool ShellHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ShellHandler, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_OpenItemViaShell,
-                        OnOpenItemViaShell)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_OpenFileViaShell,
+                        OnOpenFileViaShell)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_OpenFolderViaShell,
+                        OnOpenFolderViaShell)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetOpenFileName,
                         OnGetOpenFileName)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetSaveFileName,
@@ -30,8 +32,12 @@ bool ShellHandler::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ShellHandler::OnOpenItemViaShell(const base::FilePath& full_path) {
-  ui::win::OpenItemViaShell(full_path);
+void ShellHandler::OnOpenFileViaShell(const base::FilePath& full_path) {
+  ui::win::OpenFileViaShell(full_path);
+}
+
+void ShellHandler::OnOpenFolderViaShell(const base::FilePath& full_path) {
+  ui::win::OpenFolderViaShell(full_path);
 }
 
 void ShellHandler::OnGetOpenFileName(

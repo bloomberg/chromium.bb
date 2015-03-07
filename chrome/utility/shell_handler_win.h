@@ -36,7 +36,8 @@ class ShellHandler : public UtilityMessageHandler {
   virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  void OnOpenItemViaShell(const base::FilePath& full_path);
+  void OnOpenFileViaShell(const base::FilePath& full_path);
+  void OnOpenFolderViaShell(const base::FilePath& full_path);
 
   void OnGetOpenFileName(
     HWND owner,

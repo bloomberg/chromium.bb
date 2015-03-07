@@ -15,18 +15,12 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/extensions/api/file_handlers/mime_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using storage::FileSystemURL;
@@ -35,25 +29,14 @@ namespace file_manager {
 namespace util {
 namespace {
 
-// Shows a warning message box saying that the file could not be opened.
-void ShowWarningMessageBox(Profile* profile,
-                           const base::FilePath& file_path,
-                           int message_id) {
-  Browser* browser = chrome::FindTabbedBrowser(
-      profile, false, chrome::HOST_DESKTOP_TYPE_ASH);
-  chrome::ShowMessageBox(
-      browser ? browser->window()->GetNativeWindow() : NULL,
-      l10n_util::GetStringFUTF16(
-          IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
-          base::UTF8ToUTF16(file_path.BaseName().AsUTF8Unsafe())),
-      l10n_util::GetStringUTF16(message_id),
-      chrome::MESSAGE_BOX_TYPE_WARNING);
-}
+bool shell_operations_allowed = true;
 
 // Executes the |task| for the file specified by |url|.
 void ExecuteFileTaskForUrl(Profile* profile,
                            const file_tasks::TaskDescriptor& task,
                            const GURL& url) {
+  if (!shell_operations_allowed)
+    return;
   storage::FileSystemContext* file_system_context =
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
 
@@ -75,6 +58,8 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
                                          const GURL& url,
                                          const std::string& action_id) {
   DCHECK(action_id == "open" || action_id == "select");
+  if (!shell_operations_allowed)
+    return;
   content::RecordAction(base::UserMetricsAction("ShowFileBrowserFullTab"));
 
   file_tasks::TaskDescriptor task(kFileManagerAppId,
@@ -87,7 +72,7 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
 void OpenFileWithMimeType(Profile* profile,
                           const base::FilePath& path,
                           const GURL& url,
-                          const base::Callback<void(bool)>& callback,
+                          const platform_util::OpenOperationCallback& callback,
                           const std::string& mime_type) {
   extensions::app_file_handler_util::PathAndMimeTypeSet path_mime_set;
   path_mime_set.insert(std::make_pair(path, mime_type));
@@ -115,100 +100,96 @@ void OpenFileWithMimeType(Profile* profile,
   }
 
   if (chosen_task != nullptr) {
-    ExecuteFileTaskForUrl(profile, chosen_task->task_descriptor(), url);
-    callback.Run(true);
+    if (shell_operations_allowed)
+      ExecuteFileTaskForUrl(profile, chosen_task->task_descriptor(), url);
+    callback.Run(platform_util::OPEN_SUCCEEDED);
   } else {
-    callback.Run(false);
+    callback.Run(platform_util::OPEN_FAILED_NO_HANLDER_FOR_FILE_TYPE);
   }
 }
 
 // Opens the file specified by |url| by finding and executing a file task for
-// the file. In case of success, calls |callback| with true. Otherwise the
-// returned value is false.
+// the file. Calls |callback| with the result.
 void OpenFile(Profile* profile,
               const base::FilePath& path,
               const GURL& url,
-              const base::Callback<void(bool)>& callback) {
+              const platform_util::OpenOperationCallback& callback) {
   extensions::app_file_handler_util::GetMimeTypeForLocalPath(
-      profile,
-      path,
+      profile, path,
       base::Bind(&OpenFileWithMimeType, profile, path, url, callback));
 }
 
-// Called when execution of ContinueOpenItem() is completed.
-void OnContinueOpenItemCompleted(Profile* profile,
-                                 const base::FilePath& file_path,
-                                 bool result) {
-  if (!result) {
-    int message;
-    if (file_path.Extension() == FILE_PATH_LITERAL(".dmg"))
-      message = IDS_FILE_BROWSER_ERROR_VIEWING_FILE_FOR_DMG;
-    else if (file_path.Extension() == FILE_PATH_LITERAL(".exe") ||
-             file_path.Extension() == FILE_PATH_LITERAL(".msi"))
-      message = IDS_FILE_BROWSER_ERROR_VIEWING_FILE_FOR_EXECUTABLE;
-    else
-      message = IDS_FILE_BROWSER_ERROR_VIEWING_FILE;
-    ShowWarningMessageBox(profile, file_path, message);
-  }
-}
-
-// Used to implement OpenItem().
-void ContinueOpenItem(Profile* profile,
-                      const base::FilePath& file_path,
-                      const GURL& url,
-                      base::File::Error error) {
+void OpenItemWithMetadata(Profile* profile,
+                          const base::FilePath& file_path,
+                          const GURL& url,
+                          platform_util::OpenItemType expected_type,
+                          const platform_util::OpenOperationCallback& callback,
+                          base::File::Error error,
+                          const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (error != base::File::FILE_OK) {
+    callback.Run(error == base::File::FILE_ERROR_NOT_FOUND
+                     ? platform_util::OPEN_FAILED_PATH_NOT_FOUND
+                     : platform_util::OPEN_FAILED_FILE_ERROR);
+    return;
+  }
 
-  if (error == base::File::FILE_OK) {
-    // A directory exists at |url|. Open it with the file manager.
+  // Note that there exists a TOCTOU race between the time the metadata for
+  // |file_path| was determined and when it is opened based on the metadata.
+  if (expected_type == platform_util::OPEN_FOLDER && file_info.is_directory) {
     OpenFileManagerWithInternalActionId(profile, url, "open");
-  } else {
-    // |url| should be a file. Open it.
-    OpenFile(profile,
-             file_path,
-             url,
-             base::Bind(&OnContinueOpenItemCompleted, profile, file_path));
+    callback.Run(platform_util::OPEN_SUCCEEDED);
+    return;
   }
-}
 
-// Converts the |path| passed from external callers to the filesystem URL
-// that the file manager can correctly handle.
-//
-// When conversion fails, it shows a warning dialog UI and returns false.
-bool ConvertPath(Profile* profile, const base::FilePath& path, GURL* url) {
-  if (!ConvertAbsoluteFilePathToFileSystemUrl(
-          profile, path, kFileManagerAppId, url)) {
-    ShowWarningMessageBox(profile, path,
-                          IDS_FILE_BROWSER_ERROR_UNRESOLVABLE_FILE);
-    return false;
+  if (expected_type == platform_util::OPEN_FILE && !file_info.is_directory) {
+    OpenFile(profile, file_path, url, callback);
+    return;
   }
-  return true;
+
+  callback.Run(platform_util::OPEN_FAILED_INVALID_TYPE);
 }
 
 }  // namespace
 
-void OpenItem(Profile* profile, const base::FilePath& file_path) {
+void OpenItem(Profile* profile,
+              const base::FilePath& file_path,
+              platform_util::OpenItemType expected_type,
+              const platform_util::OpenOperationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL url;
-  if (!ConvertPath(profile, file_path, &url))
+  if (!ConvertAbsoluteFilePathToFileSystemUrl(profile, file_path,
+                                              kFileManagerAppId, &url)) {
+    callback.Run(platform_util::OPEN_FAILED_PATH_NOT_FOUND);
     return;
+  }
 
-  CheckIfDirectoryExists(
-      GetFileSystemContextForExtensionId(profile, kFileManagerAppId),
-      url,
-      base::Bind(&ContinueOpenItem, profile, file_path, url));
+  GetMetadataForPath(
+      GetFileSystemContextForExtensionId(profile, kFileManagerAppId), url,
+      base::Bind(&OpenItemWithMetadata, profile, file_path, url, expected_type,
+                 callback));
 }
 
-void ShowItemInFolder(Profile* profile, const base::FilePath& file_path) {
+void ShowItemInFolder(Profile* profile,
+                      const base::FilePath& file_path,
+                      const platform_util::OpenOperationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL url;
-  if (!ConvertPath(profile, file_path, &url))
+  if (!ConvertAbsoluteFilePathToFileSystemUrl(profile, file_path,
+                                              kFileManagerAppId, &url)) {
+    callback.Run(platform_util::OPEN_FAILED_PATH_NOT_FOUND);
     return;
+  }
 
   // This action changes the selection so we do not reuse existing tabs.
   OpenFileManagerWithInternalActionId(profile, url, "select");
+  callback.Run(platform_util::OPEN_SUCCEEDED);
+}
+
+void DisableShellOperationsForTesting() {
+  shell_operations_allowed = false;
 }
 
 }  // namespace util

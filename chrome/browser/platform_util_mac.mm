@@ -8,6 +8,8 @@
 #import <Cocoa/Cocoa.h>
 #include <CoreServices/CoreServices.h>
 
+#include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
@@ -15,6 +17,8 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/platform_util_internal.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 namespace platform_util {
@@ -27,7 +31,7 @@ void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
     LOG(WARNING) << "NSWorkspace failed to select file " << full_path.value();
 }
 
-void OpenItem(Profile* profile, const base::FilePath& full_path) {
+void OpenFileOnMainThread(const base::FilePath& full_path) {
   DCHECK([NSThread isMainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   if (!path_string)
@@ -64,7 +68,7 @@ void OpenItem(Profile* profile, const base::FilePath& full_path) {
                               sizeof(finderCreatorCode),  // dataSize
                               address.OutPointer());  // result
   if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status) << "Could not create OpenItem() AE target";
+    OSSTATUS_LOG(WARNING, status) << "Could not create OpenFile() AE target";
     return;
   }
 
@@ -77,7 +81,7 @@ void OpenItem(Profile* profile, const base::FilePath& full_path) {
                               kAnyTransactionID,  // transactionID
                               theEvent.OutPointer());  // result
   if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status) << "Could not create OpenItem() AE event";
+    OSSTATUS_LOG(WARNING, status) << "Could not create OpenFile() AE event";
     return;
   }
 
@@ -88,7 +92,7 @@ void OpenItem(Profile* profile, const base::FilePath& full_path) {
                         false,  // isRecord
                         fileList.OutPointer());  // resultList
   if (status != noErr) {
-    OSSTATUS_LOG(WARNING, status) << "Could not create OpenItem() AE file list";
+    OSSTATUS_LOG(WARNING, status) << "Could not create OpenFile() AE file list";
     return;
   }
 
@@ -104,11 +108,11 @@ void OpenItem(Profile* profile, const base::FilePath& full_path) {
                       sizeof(pathRef));  // dataSize
     if (status != noErr) {
       OSSTATUS_LOG(WARNING, status)
-          << "Could not add file path to AE list in OpenItem()";
+          << "Could not add file path to AE list in OpenFile()";
       return;
     }
   } else {
-    LOG(WARNING) << "Could not get FSRef for path URL in OpenItem()";
+    LOG(WARNING) << "Could not get FSRef for path URL in OpenFile()";
     return;
   }
 
@@ -118,7 +122,7 @@ void OpenItem(Profile* profile, const base::FilePath& full_path) {
                           fileList);  // theAEDesc
   if (status != noErr) {
     OSSTATUS_LOG(WARNING, status)
-        << "Could not put the AE file list the path in OpenItem()";
+        << "Could not put the AE file list the path in OpenFile()";
     return;
   }
 
@@ -133,9 +137,31 @@ void OpenItem(Profile* profile, const base::FilePath& full_path) {
                   NULL);  // filterProc
   if (status != noErr) {
     OSSTATUS_LOG(WARNING, status)
-        << "Could not send AE to Finder in OpenItem()";
+        << "Could not send AE to Finder in OpenFile()";
   }
 }
+
+namespace internal {
+
+void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
+  switch (type) {
+    case OPEN_FILE:
+      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                       base::Bind(&OpenFileOnMainThread, path));
+      return;
+    case OPEN_FOLDER:
+      NSString* path_string = base::SysUTF8ToNSString(path.value());
+      if (!path_string)
+        return;
+      // Note that there exists a TOCTOU race between the time that |path| was
+      // verified as being a directory and when NSWorkspace invokes Finder (or
+      // alternative) to open |path_string|.
+      [[NSWorkspace sharedWorkspace] openFile:path_string];
+      return;
+  }
+}
+
+}  // namespace internal
 
 void OpenExternal(Profile* profile, const GURL& url) {
   DCHECK([NSThread isMainThread]);

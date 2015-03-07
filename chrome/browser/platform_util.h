@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -19,15 +20,49 @@ class FilePath;
 
 namespace platform_util {
 
-// Show the given file in a file manager. If possible, select the file.
-// The |profile| is used to determine the running profile of file manager app
-// in Chrome OS only. Not used in other platforms.
-// Must be called from the UI thread.
-void ShowItemInFolder(Profile* profile, const base::FilePath& full_path);
+// Result of calling OpenFile() or OpenFolder() passed into OpenOperationResult.
+enum OpenOperationResult {
+  OPEN_SUCCEEDED,
+  OPEN_FAILED_PATH_NOT_FOUND,  // Specified path does not exist.
+  OPEN_FAILED_INVALID_TYPE,  // Type of object found at path did not match what
+                             // was expected. I.e. OpenFile was called on a
+                             // folder or OpenFolder called on a file.
+  OPEN_FAILED_NO_HANLDER_FOR_FILE_TYPE,  // There was no file handler capable of
+                                         // opening file. Only returned on
+                                         // ChromeOS.
+  OPEN_FAILED_FILE_ERROR,  // Open operation failed due to some other file
+                           // error.
+};
 
-// Open the given file in the desktop's default manner.
-// Must be called from the UI thread.
-void OpenItem(Profile* profile, const base::FilePath& full_path);
+// Type of item that is the target of the OpenItem() call.
+enum OpenItemType { OPEN_FILE, OPEN_FOLDER };
+
+// Callback used with OpenFile and OpenFolder.
+typedef base::Callback<void(OpenOperationResult)> OpenOperationCallback;
+
+// Opens the item specified by |full_path|, which is expected to be the type
+// indicated by |item_type| in the desktop's default manner.
+// |callback| will be invoked on the UI thread with the result of the open
+// operation.
+//
+// It is an error if the object at |full_path| does not match the intended type
+// specified in |item_type|. This error will be reported to |callback|.
+//
+// Note: On all platforms, the user may be shown additional UI if there is no
+// suitable handler for |full_path|. On Chrome OS, all errors will result in
+// visible error messages iff |callback| is not specified.
+// Must be called on the UI thread.
+void OpenItem(Profile* profile,
+              const base::FilePath& full_path,
+              OpenItemType item_type,
+              const OpenOperationCallback& callback);
+
+// Opens the folder containing the item specified by |full_path| in the
+// desktop's default manner. If possible, the item will be selected. The
+// |profile| is used to determine the running profile of file manager app in
+// Chrome OS only. |profile| is not used in platforms other than Chrome OS. Must
+// be called on the UI thread.
+void ShowItemInFolder(Profile* profile, const base::FilePath& full_path);
 
 // Open the given external protocol URL in the desktop's default manner.
 // (For example, mailto: URLs in the default mail user agent.)

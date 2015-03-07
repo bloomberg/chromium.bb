@@ -521,6 +521,7 @@
       'browser/platform_util.h',
       'browser/platform_util_android.cc',
       'browser/platform_util_chromeos.cc',
+      'browser/platform_util_internal.h',
       'browser/platform_util_mac.mm',
       'browser/platform_util_win.cc',
       'browser/precache/most_visited_urls_provider.cc',
@@ -777,6 +778,7 @@
     ],
     # Everything but Android, iOS, and CrOS.
     'chrome_browser_desktop_sources': [
+      'browser/platform_util.cc',
       'browser/profiles/avatar_menu_actions_desktop.cc',
       'browser/profiles/avatar_menu_actions_desktop.h',
       'browser/profiles/avatar_menu_desktop.cc',

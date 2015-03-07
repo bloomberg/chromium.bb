@@ -9,19 +9,25 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
 
+namespace platform_util {
+
 namespace {
 
-void XDGUtil(const std::string& util, const std::string& arg) {
+void XDGUtil(const std::string& util,
+             const base::FilePath& working_directory,
+             const std::string& arg) {
   std::vector<std::string> argv;
   argv.push_back(util);
   argv.push_back(arg);
 
   base::LaunchOptions options;
+  options.current_directory = working_directory;
   options.allow_new_privs = true;
   // xdg-open can fall back on mailcap which eventually might plumb through
   // to a command that needs a terminal.  Set the environment variable telling
@@ -42,39 +48,43 @@ void XDGUtil(const std::string& util, const std::string& arg) {
     base::EnsureProcessGetsReaped(process.Pid());
 }
 
-void XDGOpen(const std::string& path) {
-  XDGUtil("xdg-open", path);
+void XDGOpen(const base::FilePath& working_directory, const std::string& path) {
+  XDGUtil("xdg-open", working_directory, path);
 }
 
 void XDGEmail(const std::string& email) {
-  XDGUtil("xdg-email", email);
-}
-
-// TODO(estade): It would be nice to be able to select the file in the file
-// manager, but that probably requires extending xdg-open. For now just
-// show the folder.
-void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
-  base::FilePath dir = full_path.DirName();
-  if (!base::DirectoryExists(dir))
-    return;
-
-  XDGOpen(dir.value());
+  XDGUtil("xdg-email", base::FilePath(), email);
 }
 
 }  // namespace
 
-namespace platform_util {
+namespace internal {
+
+void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
+  switch (type) {
+    case OPEN_FILE:
+      XDGOpen(path.DirName(), path.value());
+      break;
+    case OPEN_FOLDER:
+      // The utility process checks the working directory prior to the
+      // invocation of xdg-open by changing the current directory into it. This
+      // operation only succeeds if |path| is a directory. Opening "." from
+      // there ensures that the target of the operation is a directory.  Note
+      // that there remains a TOCTOU race where the directory could be unlinked
+      // between the time the utility process changes into the directory and the
+      // time the application invoked by xdg-open inspects the path by name.
+      XDGOpen(path, ".");
+      break;
+  }
+}
+}  // namespace internal
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ShowItemInFolderOnFileThread, full_path));
-}
-
-void OpenItem(Profile* profile, const base::FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&XDGOpen, full_path.value()));
+  // TODO(estade): It would be nice to be able to select the file in the file
+  // manager, but that probably requires extending xdg-open. For now just show
+  // the folder.
+  OpenItem(profile, full_path.DirName(), OPEN_FOLDER, OpenOperationCallback());
 }
 
 void OpenExternal(Profile* profile, const GURL& url) {
@@ -82,7 +92,7 @@ void OpenExternal(Profile* profile, const GURL& url) {
   if (url.SchemeIs("mailto"))
     XDGEmail(url.spec());
   else
-    XDGOpen(url.spec());
+    XDGOpen(base::FilePath(), url.spec());
 }
 
 }  // namespace platform_util

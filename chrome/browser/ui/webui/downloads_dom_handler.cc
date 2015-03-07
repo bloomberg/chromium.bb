@@ -522,7 +522,8 @@ void DownloadsDOMHandler::HandleOpenDownloadsFolder(
   if (manager) {
     platform_util::OpenItem(
         Profile::FromBrowserContext(manager->GetBrowserContext()),
-        DownloadPrefs::FromDownloadManager(manager)->DownloadPath());
+        DownloadPrefs::FromDownloadManager(manager)->DownloadPath(),
+        platform_util::OPEN_FOLDER, platform_util::OpenOperationCallback());
   }
 }
 

@@ -229,6 +229,18 @@ void CheckIfDirectoryExistsOnIOThread(
       file_system_url, callback);
 }
 
+// Used by GetMetadataForPath
+void GetMetadataOnIOThread(
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const GURL& url,
+    const storage::FileSystemOperationRunner::GetMetadataCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  const storage::FileSystemURL file_system_url =
+      file_system_context->CrackURL(url);
+  file_system_context->operation_runner()->GetMetadata(file_system_url,
+                                                       callback);
+}
+
 // Checks if the |file_path| points non-native location or not.
 bool IsUnderNonNativeLocalPath(const storage::FileSystemContext& context,
                                const base::FilePath& file_path) {
@@ -557,9 +569,24 @@ void CheckIfDirectoryExists(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CheckIfDirectoryExistsOnIOThread,
-                 file_system_context,
-                 url,
+      base::Bind(&CheckIfDirectoryExistsOnIOThread, file_system_context, url,
+                 google_apis::CreateRelayCallback(callback)));
+}
+
+void GetMetadataForPath(
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const GURL& url,
+    const storage::FileSystemOperationRunner::GetMetadataCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  storage::ExternalFileSystemBackend* const backend =
+      file_system_context->external_backend();
+  DCHECK(backend);
+  backend->GrantFullAccessToExtension(kFileManagerAppId);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetMetadataOnIOThread, file_system_context, url,
                  google_apis::CreateRelayCallback(callback)));
 }
 

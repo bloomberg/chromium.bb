@@ -17,16 +17,29 @@ class FilePath;
 namespace ui {
 namespace win {
 
-// Open or run a file via the Windows shell. In the event that there is no
-// default application registered for the file specified by 'full_path',
-// ask the user, via the Windows "Open With" dialog.
-// Returns 'true' on successful open, 'false' otherwise.
-UI_BASE_EXPORT bool OpenItemViaShell(const base::FilePath& full_path);
+// Open the folder at |full_path| via the Windows shell. Does nothing if
+// |full_path| is not a folder.
+//
+// Note: Must be called on a thread that allows blocking.
+UI_BASE_EXPORT bool OpenFolderViaShell(const base::FilePath& full_path);
+
+// Invokes the default verb on the file specified by |full_path| via the Windows
+// shell. Usually, the default verb is "open" unless specified otherwise for the
+// file type.
+//
+// In the event that there is no default application registered for the
+// specified file, asks the user via the Windows "Open With" dialog.  Returns
+// |true| on success.
+//
+// Note: Must be called on a thread that allows blocking.
+UI_BASE_EXPORT bool OpenFileViaShell(const base::FilePath& full_path);
 
 // Lower level function that allows opening of non-files like urls or GUIDs
 // don't use it if one of the above will do. |mask| is a valid combination
-// of SEE_MASK_FLAG_XXX as stated in msdn. If there is no default application
-// registered for the item, it behaves the same as OpenItemViaShell.
+// of SEE_MASK_XXX as stated in MSDN. If there is no default application
+// registered for the item, it behaves the same as OpenFileViaShell.
+//
+// Note: Must be called on a thread that allows blocking.
 UI_BASE_EXPORT bool OpenAnyViaShell(const base::string16& full_path,
                                     const base::string16& directory,
                                     const base::string16& args,

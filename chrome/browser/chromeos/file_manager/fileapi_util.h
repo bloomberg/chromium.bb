@@ -151,6 +151,12 @@ void CheckIfDirectoryExists(
     const GURL& url,
     const storage::FileSystemOperationRunner::StatusCallback& callback);
 
+// Get metadata for object at |url|.
+void GetMetadataForPath(
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const GURL& url,
+    const storage::FileSystemOperationRunner::GetMetadataCallback& callback);
+
 // Obtains isolated file system URL from |virtual_path| pointing a file in the
 // external file system.
 storage::FileSystemURL CreateIsolatedURLFromVirtualPath(

@@ -433,7 +433,8 @@ void ChromeDownloadManagerDelegate::OpenDownloadUsingPlatformHandler(
   base::FilePath platform_path(
       GetPlatformDownloadPath(profile_, download, PLATFORM_TARGET_PATH));
   DCHECK(!platform_path.empty());
-  platform_util::OpenItem(profile_, platform_path);
+  platform_util::OpenItem(profile_, platform_path, platform_util::OPEN_FILE,
+                          platform_util::OpenOperationCallback());
 }
 
 void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
