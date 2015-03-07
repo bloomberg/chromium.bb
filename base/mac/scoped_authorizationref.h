@@ -49,9 +49,7 @@ class ScopedAuthorizationRef {
     return authorization_;
   }
 
-  AuthorizationRef* operator&() {
-    return &authorization_;
-  }
+  AuthorizationRef* get_pointer() { return &authorization_; }
 
   AuthorizationRef get() const {
     return authorization_;
