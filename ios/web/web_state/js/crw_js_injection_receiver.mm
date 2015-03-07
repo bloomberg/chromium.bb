@@ -51,6 +51,10 @@
   [_evaluator injectScript:script forClass:jsInjectionManagerClass];
 }
 
+- (web::WebViewType)webViewType {
+  return [_evaluator webViewType];
+}
+
 - (CRWJSInjectionManager*)instanceOfClass:(Class)jsInjectionManagerClass {
   DCHECK(_managers);
   CRWJSInjectionManager* manager =

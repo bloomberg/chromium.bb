@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_OBSERVER_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_OBSERVER_H_
 
+#include <string>
+
 #include "base/macros.h"
 
 namespace web {
@@ -19,6 +21,10 @@ enum class PageLoadCompletionStatus : bool { SUCCESS = 0, FAILURE = 1 };
 // load events from WebState.
 class WebStateObserver {
  public:
+  // Key code associated to form events for which the key code is missing or
+  // irrelevant.
+  static int kInvalidFormKeyCode;
+
   // Returns the web state associated with this observer.
   WebState* web_state() const { return web_state_; }
 
@@ -32,11 +38,29 @@ class WebStateObserver {
   // Called when the current page is loaded.
   virtual void PageLoaded(PageLoadCompletionStatus load_completion_status) {}
 
+  // Called when the interstitial is dismissed by the user.
+  virtual void InsterstitialDismissed() {}
+
   // Called on URL hash change events.
   virtual void URLHashChanged() {}
 
   // Called on history state change events.
   virtual void HistoryStateChanged() {}
+
+  // Called on form submission. |user_interaction| is true if the user
+  // interacted with the page.
+  virtual void DocumentSubmitted(const std::string& form_name,
+                                 bool user_interaction) {}
+
+  // Called when the user is typing on a form field, with |error| indicating if
+  // there is any error when parsing the form field information.
+  // |key_code| may be kInvalidFormKeyCode if there is no key code.
+  virtual void FormActivityRegistered(const std::string& form_name,
+                                      const std::string& field_name,
+                                      const std::string& type,
+                                      const std::string& value,
+                                      int key_code,
+                                      bool error) {}
 
   // Invoked when the WebState is being destroyed. Gives subclasses a chance
   // to cleanup.

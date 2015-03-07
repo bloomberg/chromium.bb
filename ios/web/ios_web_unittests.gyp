@@ -21,8 +21,11 @@
       'sources': [
         'browser_state_unittest.cc',
         'navigation/navigation_item_impl_unittest.mm',
+        'net/cert_policy_unittest.cc',
+        'public/referrer_util_unittest.cc',
         'string_util_unittest.cc',
         'url_scheme_util_unittest.mm',
+        'url_util_unittest.cc',
       ],
     },
   ],

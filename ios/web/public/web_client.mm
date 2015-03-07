@@ -4,6 +4,8 @@
 
 #include "ios/web/public/web_client.h"
 
+#include <Foundation/Foundation.h>
+
 namespace web {
 
 static WebClient* g_client;
@@ -32,6 +34,10 @@ WebViewFactory* WebClient::GetWebViewFactory() const {
 
 std::string WebClient::GetAcceptLangs(BrowserState* state) const {
   return std::string();
+}
+
+std::string WebClient::GetApplicationLocale() const {
+  return "en-US";
 }
 
 bool WebClient::IsAppSpecificURL(const GURL& url) const {
@@ -63,6 +69,10 @@ base::StringPiece WebClient::GetDataResource(
 base::RefCountedStaticMemory* WebClient::GetDataResourceBytes(
     int resource_id) const {
   return nullptr;
+}
+
+NSString* WebClient::GetEarlyPageScript(WebViewType web_view_type) const {
+  return @"";
 }
 
 }  // namespace web

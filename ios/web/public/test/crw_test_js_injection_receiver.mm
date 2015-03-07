@@ -49,6 +49,10 @@
   [_webView stringByEvaluatingJavaScriptFromString:script];
 }
 
+- (web::WebViewType)webViewType {
+  return web::UI_WEB_VIEW_TYPE;
+}
+
 @end
 
 @interface CRWTestJSInjectionReceiver () {
