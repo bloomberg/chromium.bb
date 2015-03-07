@@ -40,6 +40,8 @@
 #include <string.h>
 #include <strings.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <stddef.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
@@ -519,6 +521,20 @@ static int drmGetMinorType(int minor)
         return type;
     default:
         return -1;
+    }
+}
+
+static const char *drmGetMinorName(int type)
+{
+    switch (type) {
+    case DRM_NODE_PRIMARY:
+        return "card";
+    case DRM_NODE_CONTROL:
+        return "controlD";
+    case DRM_NODE_RENDER:
+        return "renderD";
+    default:
+        return NULL;
     }
 }
 
@@ -2736,3 +2752,71 @@ int drmPrimeFDToHandle(int fd, int prime_fd, uint32_t *handle)
 	return 0;
 }
 
+static char *drmGetMinorNameForFD(int fd, int type)
+{
+#ifdef __linux__
+	DIR *sysdir;
+	struct dirent *pent, *ent;
+	struct stat sbuf;
+	const char *name = drmGetMinorName(type);
+	int len;
+	char dev_name[64], buf[64];
+	long name_max;
+	int maj, min;
+
+	if (!name)
+		return NULL;
+
+	len = strlen(name);
+
+	if (fstat(fd, &sbuf))
+		return NULL;
+
+	maj = major(sbuf.st_rdev);
+	min = minor(sbuf.st_rdev);
+
+	if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
+		return NULL;
+
+	snprintf(buf, sizeof(buf), "/sys/dev/char/%d:%d/device/drm", maj, min);
+
+	sysdir = opendir(buf);
+	if (!sysdir)
+		return NULL;
+
+	name_max = fpathconf(dirfd(sysdir), _PC_NAME_MAX);
+	if (name_max == -1)
+		goto out_close_dir;
+
+	pent = malloc(offsetof(struct dirent, d_name) + name_max + 1);
+	if (pent == NULL)
+		 goto out_close_dir;
+
+	while (readdir_r(sysdir, pent, &ent) == 0 && ent != NULL) {
+		if (strncmp(ent->d_name, name, len) == 0) {
+			free(pent);
+			closedir(sysdir);
+
+			snprintf(dev_name, sizeof(dev_name), DRM_DIR_NAME "/%s",
+				 ent->d_name);
+			return strdup(dev_name);
+		}
+	}
+
+	free(pent);
+
+out_close_dir:
+	closedir(sysdir);
+#endif
+	return NULL;
+}
+
+char *drmGetPrimaryDeviceNameFromFd(int fd)
+{
+	return drmGetMinorNameForFD(fd, DRM_NODE_PRIMARY);
+}
+
+char *drmGetRenderDeviceNameFromFd(int fd)
+{
+	return drmGetMinorNameForFD(fd, DRM_NODE_RENDER);
+}
