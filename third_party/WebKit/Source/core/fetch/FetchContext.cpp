@@ -34,12 +34,6 @@
 
 namespace blink {
 
-FetchContext& FetchContext::nullInstance()
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FetchContext>, instance, (adoptPtrWillBeNoop(new FetchContext())));
-    return *instance;
-}
-
 void FetchContext::dispatchDidChangeResourcePriority(unsigned long, ResourceLoadPriority, int)
 {
 }

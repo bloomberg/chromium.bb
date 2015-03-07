@@ -574,11 +574,7 @@ Document::~Document()
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
 
-    // It's possible for multiple Documents to end up referencing the same ResourceFetcher (e.g., SVGImages
-    // load the initial empty document and the SVGDocument with the same DocumentLoader).
-    FrameFetchContext& context = static_cast<FrameFetchContext&>(m_fetcher->context());
-    if (context.document() == this)
-        context.setDocument(nullptr);
+    m_fetcher->clearContext();
     m_fetcher.clear();
 
     // We must call clearRareData() here since a Document class inherits TreeScope

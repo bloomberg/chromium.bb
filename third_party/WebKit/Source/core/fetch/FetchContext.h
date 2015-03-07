@@ -57,9 +57,11 @@ enum FetchResourceType {
 class FetchContext : public NoBaseWillBeGarbageCollectedFinalized<FetchContext> {
     WTF_MAKE_NONCOPYABLE(FetchContext);
 public:
-    static FetchContext& nullInstance();
+    static PassOwnPtrWillBeRawPtr<FetchContext> create()
+    {
+        return adoptPtrWillBeNoop(new FetchContext);
+    }
 
-    FetchContext() { }
     virtual ~FetchContext() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -82,6 +84,9 @@ public:
     virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier, double finishTime, int64_t encodedDataLength);
     virtual void dispatchDidFail(DocumentLoader*, unsigned long identifier, const ResourceError&, bool isInternalRequest);
     virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, int dataLength);
+
+protected:
+    FetchContext() { }
 };
 
 }

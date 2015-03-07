@@ -75,9 +75,6 @@ void FrameFetchContext::reportLocalLoadFailed(const KURL& url)
 
 void FrameFetchContext::addAdditionalRequestHeaders(Document* document, ResourceRequest& request, FetchResourceType type)
 {
-    if (!frame())
-        return;
-
     bool isMainResource = type == FetchMainResource;
     if (!isMainResource) {
         String outgoingOrigin;
@@ -101,9 +98,6 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
 
 void FrameFetchContext::setFirstPartyForCookies(ResourceRequest& request)
 {
-    if (!frame())
-        return;
-
     if (frame()->tree().top()->isLocalFrame())
         request.setFirstPartyForCookies(toLocalFrame(frame()->tree().top())->document()->firstPartyForCookies());
 }
@@ -148,17 +142,11 @@ inline DocumentLoader* FrameFetchContext::ensureLoader(DocumentLoader* loader)
 
 void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
-    if (!frame())
-        return;
-
     frame()->loader().client()->dispatchDidChangeResourcePriority(identifier, loadPriority, intraPriorityValue);
 }
 
 void FrameFetchContext::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
-    if (!frame())
-        return;
-
     frame()->loader().applyUserAgent(request);
     frame()->loader().client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceSendRequest", "data", InspectorSendRequestEvent::data(identifier, frame(), request));
@@ -167,17 +155,11 @@ void FrameFetchContext::dispatchWillSendRequest(DocumentLoader* loader, unsigned
 
 void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
 {
-    if (!frame())
-        return;
-
     frame()->loader().client()->dispatchDidLoadResourceFromMemoryCache(request, response);
 }
 
 void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
 {
-    if (!frame())
-        return;
-
     frame()->loader().progress().incrementProgress(identifier, r);
     frame()->loader().client()->dispatchDidReceiveResponse(loader, identifier, r);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, frame(), r));
@@ -189,9 +171,6 @@ void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsig
 
 void FrameFetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
-    if (!frame())
-        return;
-
     frame()->loader().progress().incrementProgress(identifier, dataLength);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceivedData", "data", InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
     InspectorInstrumentation::didReceiveData(frame(), identifier, data, dataLength, encodedDataLength);
@@ -199,9 +178,6 @@ void FrameFetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long id
 
 void FrameFetchContext::dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength)
 {
-    if (!frame())
-        return;
-
     frame()->loader().progress().incrementProgress(identifier, dataLength);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceivedData", "data", InspectorReceiveDataEvent::data(identifier, frame(), encodedDataLength));
     InspectorInstrumentation::didReceiveData(frame(), identifier, 0, dataLength, encodedDataLength);
@@ -209,9 +185,6 @@ void FrameFetchContext::dispatchDidDownloadData(DocumentLoader*, unsigned long i
 
 void FrameFetchContext::dispatchDidFinishLoading(DocumentLoader* loader, unsigned long identifier, double finishTime, int64_t encodedDataLength)
 {
-    if (!frame())
-        return;
-
     frame()->loader().progress().completeProgress(identifier);
     frame()->loader().client()->dispatchDidFinishLoading(loader, identifier);
 
@@ -221,9 +194,6 @@ void FrameFetchContext::dispatchDidFinishLoading(DocumentLoader* loader, unsigne
 
 void FrameFetchContext::dispatchDidFail(DocumentLoader* loader, unsigned long identifier, const ResourceError& error, bool isInternalRequest)
 {
-    if (!frame())
-        return;
-
     frame()->loader().progress().completeProgress(identifier);
     frame()->loader().client()->dispatchDidFinishLoading(loader, identifier);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(identifier, 0, true));

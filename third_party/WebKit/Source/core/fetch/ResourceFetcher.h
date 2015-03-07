@@ -115,6 +115,7 @@ public:
     bool shouldDeferImageLoad(const KURL&) const;
 
     FetchContext& context() const { return *m_context.get(); }
+    void clearContext() { m_context = FetchContext::create(); }
 
     // DEPRECATED: ResourceFetcher should proxy all usage of major core/ objects through FetchContext.
     LocalFrame* frame() const { return context().frame(); }
