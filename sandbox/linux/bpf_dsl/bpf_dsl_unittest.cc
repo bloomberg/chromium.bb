@@ -16,51 +16,95 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
+#include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
-#include "sandbox/linux/seccomp-bpf/bpf_tests.h"
+#include "sandbox/linux/bpf_dsl/policy_compiler.h"
+#include "sandbox/linux/bpf_dsl/seccomp_macros.h"
+#include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/syscall.h"
+#include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define CASES SANDBOX_BPF_DSL_CASES
-
-// Helper macro to assert that invoking system call |sys| directly via
-// Syscall::Call with arguments |...| returns |res|.
-// Errors can be asserted by specifying a value like "-EINVAL".
-#define ASSERT_SYSCALL_RESULT(res, sys, ...) \
-  BPF_ASSERT_EQ(res, Stubs::sys(__VA_ARGS__))
 
 namespace sandbox {
 namespace bpf_dsl {
 namespace {
 
-// Type safe stubs for tested system calls.
-class Stubs {
+// Helper function to construct fake arch_seccomp_data objects.
+struct arch_seccomp_data FakeSyscall(int nr,
+                                     uint64_t p0 = 0,
+                                     uint64_t p1 = 0,
+                                     uint64_t p2 = 0,
+                                     uint64_t p3 = 0,
+                                     uint64_t p4 = 0,
+                                     uint64_t p5 = 0) {
+  // Made up program counter for syscall address.
+  const uint64_t kFakePC = 0x543210;
+
+  struct arch_seccomp_data data = {
+      nr,
+      SECCOMP_ARCH,
+      kFakePC,
+      {
+       p0, p1, p2, p3, p4, p5,
+      },
+  };
+
+  return data;
+}
+
+class FakeTrapRegistry : public TrapRegistry {
  public:
-  static int getpgid(pid_t pid) { return Syscall::Call(__NR_getpgid, pid); }
-  static int setuid(uid_t uid) { return Syscall::Call(__NR_setuid, uid); }
-  static int setgid(gid_t gid) { return Syscall::Call(__NR_setgid, gid); }
-  static int setpgid(pid_t pid, pid_t pgid) {
-    return Syscall::Call(__NR_setpgid, pid, pgid);
+  FakeTrapRegistry() : next_id_(1) {}
+  virtual ~FakeTrapRegistry() {}
+
+  uint16_t Add(TrapFnc fnc, const void* aux, bool safe) override {
+    EXPECT_NE(0U, next_id_);
+    return next_id_++;
   }
 
-  static int fcntl(int fd, int cmd, unsigned long arg = 0) {
-    return Syscall::Call(__NR_fcntl, fd, cmd, arg);
+  bool EnableUnsafeTraps() override {
+    ADD_FAILURE() << "Unimplemented";
+    return false;
   }
 
-  static int uname(struct utsname* buf) {
-    return Syscall::Call(__NR_uname, buf);
+ private:
+  uint16_t next_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeTrapRegistry);
+};
+
+class PolicyEmulator {
+ public:
+  explicit PolicyEmulator(const Policy* policy) : program_(), traps_() {
+    program_ = *PolicyCompiler(policy, &traps_).Compile();
+  }
+  ~PolicyEmulator() {}
+
+  uint32_t Emulate(const struct arch_seccomp_data& data) const {
+    const char* err = nullptr;
+    uint32_t res = Verifier::EvaluateBPF(program_, data, &err);
+    if (err) {
+      ADD_FAILURE() << err;
+      return 0;
+    }
+    return res;
   }
 
-  static int setresuid(uid_t ruid, uid_t euid, uid_t suid) {
-    return Syscall::Call(__NR_setresuid, ruid, euid, suid);
+  void ExpectAllow(const struct arch_seccomp_data& data) const {
+    EXPECT_EQ(SECCOMP_RET_ALLOW, Emulate(data));
   }
 
-#if !defined(ARCH_CPU_X86)
-  static int socketpair(int domain, int type, int protocol, int sv[2]) {
-    return Syscall::Call(__NR_socketpair, domain, type, protocol, sv);
+  void ExpectErrno(uint16_t err, const struct arch_seccomp_data& data) const {
+    EXPECT_EQ(SECCOMP_RET_ERRNO | err, Emulate(data));
   }
-#endif
+
+ private:
+  CodeGen::Program program_;
+  FakeTrapRegistry traps_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyEmulator);
 };
 
 class BasicPolicy : public Policy {
@@ -83,12 +127,15 @@ class BasicPolicy : public Policy {
   DISALLOW_COPY_AND_ASSIGN(BasicPolicy);
 };
 
-BPF_TEST_C(BPFDSL, Basic, BasicPolicy) {
-  ASSERT_SYSCALL_RESULT(-EPERM, getpgid, 0);
-  ASSERT_SYSCALL_RESULT(-EINVAL, getpgid, 1);
+TEST(BPFDSL, Basic) {
+  BasicPolicy policy;
+  PolicyEmulator emulator(&policy);
 
-  ASSERT_SYSCALL_RESULT(-ENOMEM, setuid, 42);
-  ASSERT_SYSCALL_RESULT(-ESRCH, setuid, 43);
+  emulator.ExpectErrno(EPERM, FakeSyscall(__NR_getpgid, 0));
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_getpgid, 1));
+
+  emulator.ExpectErrno(ENOMEM, FakeSyscall(__NR_setuid, 42));
+  emulator.ExpectErrno(ESRCH, FakeSyscall(__NR_setuid, 43));
 }
 
 /* On IA-32, socketpair() is implemented via socketcall(). :-( */
@@ -112,22 +159,30 @@ class BooleanLogicPolicy : public Policy {
   DISALLOW_COPY_AND_ASSIGN(BooleanLogicPolicy);
 };
 
-BPF_TEST_C(BPFDSL, BooleanLogic, BooleanLogicPolicy) {
-  int sv[2];
+TEST(BPFDSL, BooleanLogic) {
+  BooleanLogicPolicy policy;
+  PolicyEmulator emulator(&policy);
+
+  const intptr_t kFakeSV = 0x12345;
 
   // Acceptable combinations that should return EPERM.
-  ASSERT_SYSCALL_RESULT(-EPERM, socketpair, AF_UNIX, SOCK_STREAM, 0, sv);
-  ASSERT_SYSCALL_RESULT(-EPERM, socketpair, AF_UNIX, SOCK_DGRAM, 0, sv);
+  emulator.ExpectErrno(
+      EPERM, FakeSyscall(__NR_socketpair, AF_UNIX, SOCK_STREAM, 0, kFakeSV));
+  emulator.ExpectErrno(
+      EPERM, FakeSyscall(__NR_socketpair, AF_UNIX, SOCK_DGRAM, 0, kFakeSV));
 
   // Combinations that are invalid for only one reason; should return EINVAL.
-  ASSERT_SYSCALL_RESULT(-EINVAL, socketpair, AF_INET, SOCK_STREAM, 0, sv);
-  ASSERT_SYSCALL_RESULT(-EINVAL, socketpair, AF_UNIX, SOCK_SEQPACKET, 0, sv);
-  ASSERT_SYSCALL_RESULT(
-      -EINVAL, socketpair, AF_UNIX, SOCK_STREAM, IPPROTO_TCP, sv);
+  emulator.ExpectErrno(
+      EINVAL, FakeSyscall(__NR_socketpair, AF_INET, SOCK_STREAM, 0, kFakeSV));
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_socketpair, AF_UNIX,
+                                           SOCK_SEQPACKET, 0, kFakeSV));
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_socketpair, AF_UNIX,
+                                           SOCK_STREAM, IPPROTO_TCP, kFakeSV));
 
   // Completely unacceptable combination; should also return EINVAL.
-  ASSERT_SYSCALL_RESULT(
-      -EINVAL, socketpair, AF_INET, SOCK_SEQPACKET, IPPROTO_UDP, sv);
+  emulator.ExpectErrno(
+      EINVAL, FakeSyscall(__NR_socketpair, AF_INET, SOCK_SEQPACKET, IPPROTO_UDP,
+                          kFakeSV));
 }
 #endif  // !ARCH_CPU_X86
 
@@ -149,20 +204,23 @@ class MoreBooleanLogicPolicy : public Policy {
   DISALLOW_COPY_AND_ASSIGN(MoreBooleanLogicPolicy);
 };
 
-BPF_TEST_C(BPFDSL, MoreBooleanLogic, MoreBooleanLogicPolicy) {
+TEST(BPFDSL, MoreBooleanLogic) {
+  MoreBooleanLogicPolicy policy;
+  PolicyEmulator emulator(&policy);
+
   // Expect EPERM if any set to 0.
-  ASSERT_SYSCALL_RESULT(-EPERM, setresuid, 0, 5, 5);
-  ASSERT_SYSCALL_RESULT(-EPERM, setresuid, 5, 0, 5);
-  ASSERT_SYSCALL_RESULT(-EPERM, setresuid, 5, 5, 0);
+  emulator.ExpectErrno(EPERM, FakeSyscall(__NR_setresuid, 0, 5, 5));
+  emulator.ExpectErrno(EPERM, FakeSyscall(__NR_setresuid, 5, 0, 5));
+  emulator.ExpectErrno(EPERM, FakeSyscall(__NR_setresuid, 5, 5, 0));
 
   // Expect EAGAIN if all set to 1.
-  ASSERT_SYSCALL_RESULT(-EAGAIN, setresuid, 1, 1, 1);
+  emulator.ExpectErrno(EAGAIN, FakeSyscall(__NR_setresuid, 1, 1, 1));
 
   // Expect EINVAL for anything else.
-  ASSERT_SYSCALL_RESULT(-EINVAL, setresuid, 5, 1, 1);
-  ASSERT_SYSCALL_RESULT(-EINVAL, setresuid, 1, 5, 1);
-  ASSERT_SYSCALL_RESULT(-EINVAL, setresuid, 1, 1, 5);
-  ASSERT_SYSCALL_RESULT(-EINVAL, setresuid, 3, 4, 5);
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_setresuid, 5, 1, 1));
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_setresuid, 1, 5, 1));
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_setresuid, 1, 1, 5));
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_setresuid, 3, 4, 5));
 }
 
 static const uintptr_t kDeadBeefAddr =
@@ -184,12 +242,16 @@ class ArgSizePolicy : public Policy {
   DISALLOW_COPY_AND_ASSIGN(ArgSizePolicy);
 };
 
-BPF_TEST_C(BPFDSL, ArgSizeTest, ArgSizePolicy) {
-  struct utsname buf;
-  ASSERT_SYSCALL_RESULT(0, uname, &buf);
-  ASSERT_SYSCALL_RESULT(
-      -EPERM, uname, reinterpret_cast<struct utsname*>(kDeadBeefAddr));
+TEST(BPFDSL, ArgSizeTest) {
+  ArgSizePolicy policy;
+  PolicyEmulator emulator(&policy);
+
+  emulator.ExpectAllow(FakeSyscall(__NR_uname, 0));
+  emulator.ExpectErrno(EPERM, FakeSyscall(__NR_uname, kDeadBeefAddr));
 }
+
+#if 0
+// TODO(mdempsky): This is really an integration test.
 
 class TrappingPolicy : public Policy {
  public:
@@ -220,6 +282,7 @@ BPF_TEST_C(BPFDSL, TrapTest, TrappingPolicy) {
   ASSERT_SYSCALL_RESULT(2, uname, NULL);
   ASSERT_SYSCALL_RESULT(3, uname, NULL);
 }
+#endif
 
 class MaskingPolicy : public Policy {
  public:
@@ -245,20 +308,23 @@ class MaskingPolicy : public Policy {
   DISALLOW_COPY_AND_ASSIGN(MaskingPolicy);
 };
 
-BPF_TEST_C(BPFDSL, MaskTest, MaskingPolicy) {
+TEST(BPFDSL, MaskTest) {
+  MaskingPolicy policy;
+  PolicyEmulator emulator(&policy);
+
   for (uid_t uid = 0; uid < 0x100; ++uid) {
     const int expect_errno = (uid & 0xf) == 0 ? EINVAL : EACCES;
-    ASSERT_SYSCALL_RESULT(-expect_errno, setuid, uid);
+    emulator.ExpectErrno(expect_errno, FakeSyscall(__NR_setuid, uid));
   }
 
   for (gid_t gid = 0; gid < 0x100; ++gid) {
     const int expect_errno = (gid & 0xf0) == 0xf0 ? EINVAL : EACCES;
-    ASSERT_SYSCALL_RESULT(-expect_errno, setgid, gid);
+    emulator.ExpectErrno(expect_errno, FakeSyscall(__NR_setgid, gid));
   }
 
   for (pid_t pid = 0; pid < 0x100; ++pid) {
     const int expect_errno = (pid & 0xa5) == 0xa0 ? EINVAL : EACCES;
-    ASSERT_SYSCALL_RESULT(-expect_errno, setpgid, pid, 0);
+    emulator.ExpectErrno(expect_errno, FakeSyscall(__NR_setpgid, pid, 0));
   }
 }
 
@@ -281,17 +347,20 @@ class ElseIfPolicy : public Policy {
   DISALLOW_COPY_AND_ASSIGN(ElseIfPolicy);
 };
 
-BPF_TEST_C(BPFDSL, ElseIfTest, ElseIfPolicy) {
-  ASSERT_SYSCALL_RESULT(0, setuid, 0);
+TEST(BPFDSL, ElseIfTest) {
+  ElseIfPolicy policy;
+  PolicyEmulator emulator(&policy);
 
-  ASSERT_SYSCALL_RESULT(-EINVAL, setuid, 0x0001);
-  ASSERT_SYSCALL_RESULT(-EINVAL, setuid, 0x0002);
+  emulator.ExpectErrno(0, FakeSyscall(__NR_setuid, 0));
 
-  ASSERT_SYSCALL_RESULT(-EEXIST, setuid, 0x0011);
-  ASSERT_SYSCALL_RESULT(-EEXIST, setuid, 0x0022);
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_setuid, 0x0001));
+  emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_setuid, 0x0002));
 
-  ASSERT_SYSCALL_RESULT(-EACCES, setuid, 0x0111);
-  ASSERT_SYSCALL_RESULT(-EACCES, setuid, 0x0222);
+  emulator.ExpectErrno(EEXIST, FakeSyscall(__NR_setuid, 0x0011));
+  emulator.ExpectErrno(EEXIST, FakeSyscall(__NR_setuid, 0x0022));
+
+  emulator.ExpectErrno(EACCES, FakeSyscall(__NR_setuid, 0x0111));
+  emulator.ExpectErrno(EACCES, FakeSyscall(__NR_setuid, 0x0222));
 }
 
 class SwitchPolicy : public Policy {
@@ -315,19 +384,25 @@ class SwitchPolicy : public Policy {
   DISALLOW_COPY_AND_ASSIGN(SwitchPolicy);
 };
 
-BPF_TEST_C(BPFDSL, SwitchTest, SwitchPolicy) {
-  base::ScopedFD sock_fd(socket(AF_UNIX, SOCK_STREAM, 0));
-  BPF_ASSERT(sock_fd.is_valid());
+TEST(BPFDSL, SwitchTest) {
+  SwitchPolicy policy;
+  PolicyEmulator emulator(&policy);
 
-  ASSERT_SYSCALL_RESULT(-ENOENT, fcntl, sock_fd.get(), F_GETFD);
-  ASSERT_SYSCALL_RESULT(-ENOENT, fcntl, sock_fd.get(), F_GETFL);
+  const int kFakeSockFD = 42;
 
-  ASSERT_SYSCALL_RESULT(0, fcntl, sock_fd.get(), F_SETFD, O_CLOEXEC);
-  ASSERT_SYSCALL_RESULT(-EINVAL, fcntl, sock_fd.get(), F_SETFD, 0);
+  emulator.ExpectErrno(ENOENT, FakeSyscall(__NR_fcntl, kFakeSockFD, F_GETFD));
+  emulator.ExpectErrno(ENOENT, FakeSyscall(__NR_fcntl, kFakeSockFD, F_GETFL));
 
-  ASSERT_SYSCALL_RESULT(-EPERM, fcntl, sock_fd.get(), F_SETFL, O_RDONLY);
+  emulator.ExpectAllow(
+      FakeSyscall(__NR_fcntl, kFakeSockFD, F_SETFD, O_CLOEXEC));
+  emulator.ExpectErrno(EINVAL,
+                       FakeSyscall(__NR_fcntl, kFakeSockFD, F_SETFD, 0));
 
-  ASSERT_SYSCALL_RESULT(-EACCES, fcntl, sock_fd.get(), F_DUPFD, 0);
+  emulator.ExpectErrno(EPERM,
+                       FakeSyscall(__NR_fcntl, kFakeSockFD, F_SETFL, O_RDONLY));
+
+  emulator.ExpectErrno(EACCES,
+                       FakeSyscall(__NR_fcntl, kFakeSockFD, F_DUPFD, 0));
 }
 
 static intptr_t DummyTrap(const struct arch_seccomp_data& data, void* aux) {
