@@ -90,7 +90,6 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
   bool should_sample;
   switch (event) {
     case kCompositorUpdate:
-    case kSoftwarePaint:
       smoothing_sampler_.ConsiderPresentationEvent(event_time);
       content_sampler_.ConsiderPresentationEvent(damage_rect, event_time);
       if (content_sampler_.HasProposal()) {

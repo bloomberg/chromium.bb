@@ -175,7 +175,6 @@ class CONTENT_EXPORT VideoCaptureOracle {
   enum Event {
     kTimerPoll,
     kCompositorUpdate,
-    kSoftwarePaint,
     kNumEvents,
   };
 

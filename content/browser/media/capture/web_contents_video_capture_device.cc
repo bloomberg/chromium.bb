@@ -69,10 +69,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
@@ -160,16 +156,14 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // knows how to do the capture and prepare the result for delivery.
 //
 // In practice, this means (a) installing a RenderWidgetHostFrameSubscriber in
-// the RenderWidgetHostView, to process updates that occur via accelerated
-// compositing, (b) installing itself as an observer of updates to the
-// RenderWidgetHost's backing store, to hook updates that occur via software
-// rendering, and (c) running a timer to possibly initiate non-event-driven
-// captures that the subscriber might request.
+// the RenderWidgetHostView, to process compositor updates, and (b) running a
+// timer to possibly initiate forced, non-event-driven captures needed by
+// downstream consumers that require frame repeats of unchanged content.
 //
 // All of this happens on the UI thread, although the
 // RenderWidgetHostViewFrameSubscriber we install may be dispatching updates
 // autonomously on some other thread.
-class ContentCaptureSubscription : public content::NotificationObserver {
+class ContentCaptureSubscription {
  public:
   typedef base::Callback<
       void(const base::TimeTicks&,
@@ -184,12 +178,7 @@ class ContentCaptureSubscription : public content::NotificationObserver {
       const RenderWidgetHost& source,
       const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
       const CaptureCallback& capture_callback);
-  ~ContentCaptureSubscription() override;
-
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  ~ContentCaptureSubscription();
 
  private:
   void OnTimer();
@@ -201,9 +190,7 @@ class ContentCaptureSubscription : public content::NotificationObserver {
   const int render_widget_id_;
 
   VideoFrameDeliveryLog delivery_log_;
-  FrameSubscriber paint_subscriber_;
   FrameSubscriber timer_subscriber_;
-  content::NotificationRegistrar registrar_;
   CaptureCallback capture_callback_;
   base::Timer timer_;
 
@@ -328,8 +315,6 @@ ContentCaptureSubscription::ContentCaptureSubscription(
     : render_process_id_(source.GetProcess()->GetID()),
       render_widget_id_(source.GetRoutingID()),
       delivery_log_(),
-      paint_subscriber_(VideoCaptureOracle::kSoftwarePaint, oracle_proxy,
-                        &delivery_log_),
       timer_subscriber_(VideoCaptureOracle::kTimerPoll, oracle_proxy,
                         &delivery_log_),
       capture_callback_(capture_callback),
@@ -338,7 +323,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
 
   RenderWidgetHostView* const view = source.GetView();
 
-  // Subscribe to accelerated presents. These will be serviced directly by the
+  // Subscribe to compositor updates. These will be serviced directly by the
   // oracle.
   if (view) {
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
@@ -346,13 +331,6 @@ ContentCaptureSubscription::ContentCaptureSubscription(
             oracle_proxy, &delivery_log_));
     view->BeginFrameSubscription(subscriber.Pass());
   }
-
-  // Subscribe to software paint events. This instance will service these by
-  // reflecting them back to the WebContentsCaptureMachine via
-  // |capture_callback|.
-  registrar_.Add(
-      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-      Source<RenderWidgetHost>(&source));
 
   // Subscribe to timer events. This instance will service these as well.
   timer_.Start(FROM_HERE, oracle_proxy->min_capture_period(),
@@ -373,48 +351,6 @@ ContentCaptureSubscription::~ContentCaptureSubscription() {
   RenderWidgetHostView* const view = source ? source->GetView() : NULL;
   if (view)
     view->EndFrameSubscription();
-}
-
-void ContentCaptureSubscription::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE, type);
-
-  RenderWidgetHostImpl* rwh =
-      RenderWidgetHostImpl::From(Source<RenderWidgetHost>(source).ptr());
-
-  // This message occurs on window resizes and visibility changes even when
-  // accelerated compositing is active, so we need to filter out these cases.
-  if (!rwh || !rwh->GetView())
-    return;
-  // Mac sends DID_UPDATE_BACKING_STORE messages to inform the capture system
-  // of new software compositor frames, so always treat these messages as
-  // signals of a new frame on Mac.
-  // http://crbug.com/333986
-#if !defined(OS_MACOSX)
-  if (rwh->GetView()->IsSurfaceAvailableForCopy())
-    return;
-#endif
-
-  TRACE_EVENT1("mirroring", "ContentCaptureSubscription::Observe",
-               "instance", this);
-
-  base::Closure copy_done_callback;
-  scoped_refptr<media::VideoFrame> frame;
-  RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
-  const base::TimeTicks start_time = base::TimeTicks::Now();
-  if (paint_subscriber_.ShouldCaptureFrame(gfx::Rect(),
-                                           start_time,
-                                           &frame,
-                                           &deliver_frame_cb)) {
-    // This message happens just before paint. If we post a task to do the copy,
-    // it should run soon after the paint.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(capture_callback_, start_time, frame, deliver_frame_cb));
-  }
 }
 
 void ContentCaptureSubscription::OnTimer() {

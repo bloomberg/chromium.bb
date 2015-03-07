@@ -83,9 +83,6 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       client_->ReserveOutputBuffer(video_frame_format, coded_size);
   const bool should_capture =
       oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
-  const bool content_is_dirty =
-      (event == VideoCaptureOracle::kCompositorUpdate ||
-       event == VideoCaptureOracle::kSoftwarePaint);
   const char* event_name =
       (event == VideoCaptureOracle::kTimerPoll ? "poll" :
        (event == VideoCaptureOracle::kCompositorUpdate ? "gpu" :
@@ -100,7 +97,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                          event_name);
     return false;
   } else if (!should_capture && output_buffer.get()) {
-    if (content_is_dirty) {
+    if (event == VideoCaptureOracle::kCompositorUpdate) {
       // This is a normal and acceptable way to drop a frame. We've hit our
       // capture rate limit: for example, the content is animating at 60fps but
       // we're capturing at 30fps.
