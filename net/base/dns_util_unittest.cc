@@ -44,14 +44,12 @@ TEST_F(DNSUtilTest, DNSDomainFromDot) {
   // 254 characters in the name: invalid
   EXPECT_FALSE(DNSDomainFromDot("123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.1234", &out));
 
-  // Zero length labels should be dropped.
+  // Zero length labels should fail, except that one trailing dot is allowed
+  // (to disable suffix search):
+  EXPECT_FALSE(DNSDomainFromDot(".google.com", &out));
+  EXPECT_FALSE(DNSDomainFromDot("www..google.com", &out));
+
   EXPECT_TRUE(DNSDomainFromDot("www.google.com.", &out));
-  EXPECT_EQ(out, IncludeNUL("\003www\006google\003com"));
-
-  EXPECT_TRUE(DNSDomainFromDot(".google.com", &out));
-  EXPECT_EQ(out, IncludeNUL("\006google\003com"));
-
-  EXPECT_TRUE(DNSDomainFromDot("www..google.com", &out));
   EXPECT_EQ(out, IncludeNUL("\003www\006google\003com"));
 }
 

@@ -24,14 +24,15 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
     ch = *buf++;
     --n;
     if (ch == '.') {
-      if (labellen) {
-        if (namelen + labellen + 1 > sizeof name)
-          return false;
-        name[namelen++] = static_cast<char>(labellen);
-        memcpy(name + namelen, label, labellen);
-        namelen += labellen;
-        labellen = 0;
-      }
+      // Don't allow empty labels per http://crbug.com/456391.
+      if (!labellen)
+        return false;
+      if (namelen + labellen + 1 > sizeof name)
+        return false;
+      name[namelen++] = static_cast<char>(labellen);
+      memcpy(name + namelen, label, labellen);
+      namelen += labellen;
+      labellen = 0;
       continue;
     }
     if (labellen >= sizeof label)
@@ -39,6 +40,7 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
     label[labellen++] = ch;
   }
 
+  // Allow empty label at end of name to disable suffix search.
   if (labellen) {
     if (namelen + labellen + 1 > sizeof name)
       return false;

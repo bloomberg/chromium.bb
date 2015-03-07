@@ -10,6 +10,7 @@
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
 #include "net/base/dns_reloader.h"
+#include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_addrinfo.h"
 
@@ -124,6 +125,13 @@ int SystemHostResolverCall(const std::string& host,
                            HostResolverFlags host_resolver_flags,
                            AddressList* addrlist,
                            int* os_error) {
+  // Make sure |host| is properly formed.
+  {
+    std::string out_ignored;
+    if (!DNSDomainFromDot(host, &out_ignored))
+      return ERR_NAME_NOT_RESOLVED;
+  }
+
   if (os_error)
     *os_error = 0;
 
