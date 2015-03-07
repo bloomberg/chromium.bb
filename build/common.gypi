@@ -646,6 +646,10 @@
       # Libxkbcommon usage.
       'use_xkbcommon%': 0,
 
+      # Control Flow Integrity for virtual calls.
+      # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
+      'cfi_vptr%': 0,
+
       'conditions': [
         # A flag for POSIX platforms
         ['OS=="win"', {
@@ -1220,6 +1224,7 @@
     'video_hole%': '<(video_hole)',
     'support_pre_M6_history_database%': '<(support_pre_M6_history_database)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
+    'cfi_vptr%': '<(cfi_vptr)',
 
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
@@ -2390,6 +2395,10 @@
          'use_seccomp_bpf%': 1,
       }, {
          'use_seccomp_bpf%': 0,
+      }],
+
+      ['cfi_vptr==1', {
+        'use_lto%': 1,
       }],
     ],
 
@@ -5942,6 +5951,20 @@
           ['_toolset=="target"', {
             'ldflags': [
               '-flto',
+            ],
+          }],
+        ],
+      },
+    }],
+    ['cfi_vptr==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags': [
+              '-fsanitize=cfi-vptr',
+            ],
+            'ldflags': [
+              '-fsanitize=cfi-vptr',
             ],
           }],
         ],
