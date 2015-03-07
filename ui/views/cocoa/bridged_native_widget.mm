@@ -134,6 +134,15 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
     // would appear there, which might be unexpected.
     DCHECK(params.bounds.origin().IsOrigin())
         << "Zero-sized windows not supported on Mac.";
+
+    // Otherwise, bounds is all zeroes. Cocoa will currently have the window at
+    // the bottom left of the screen. To support a client calling SetSize() only
+    // (and for consistency across platforms) put it at the top-left instead.
+    // Read back the current frame: it will be a 1x1 context rect but the frame
+    // size also depends on the window style.
+    NSRect frame_rect = [window_ frame];
+    SetBounds(gfx::Rect(gfx::Point(),
+                        gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect))));
   }
 
   // Widgets for UI controls (usually layered above web contents) start visible.

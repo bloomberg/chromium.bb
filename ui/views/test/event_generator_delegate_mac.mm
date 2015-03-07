@@ -280,7 +280,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   ~EventGeneratorDelegateMac() override;
 
   ui::test::EventGenerator* owner_;
-  NSWindow* window_;
+  base::scoped_nsobject<NSWindow> window_;
   scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_pressed_;
   scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_current_event_;
   base::scoped_nsobject<NSMenu> fake_menu_;
@@ -288,9 +288,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
 };
 
-EventGeneratorDelegateMac::EventGeneratorDelegateMac()
-    : owner_(NULL),
-      window_(NULL) {
+EventGeneratorDelegateMac::EventGeneratorDelegateMac() : owner_(NULL) {
   DCHECK(!ui::test::EventGenerator::default_delegate);
   ui::test::EventGenerator::default_delegate = this;
   // Install a fake "edit" menu. This is normally provided by Chrome's
@@ -362,7 +360,11 @@ void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
   swizzle_pressed_.reset();
   swizzle_current_event_.reset();
   owner_ = owner;
-  window_ = window;
+
+  // Retain the NSWindow (note it can be nil). This matches Cocoa's tendency to
+  // have autoreleased objects, or objects still in the event queue, that
+  // reference the NSWindow.
+  window_.reset([window retain]);
 
   // Normally, edit menu items have a `nil` target. This results in -[NSMenu
   // performKeyEquivalent:] relying on -[NSApplication targetForAction:to:from:]
