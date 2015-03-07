@@ -273,6 +273,7 @@ class PrefMember : public subtle::PrefMemberBase {
     // tree.
     mutable ValueType value_;
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(Internal);
   };
 

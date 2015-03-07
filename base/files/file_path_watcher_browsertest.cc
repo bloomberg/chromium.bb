@@ -192,6 +192,7 @@ class FilePathWatcherTest : public testing::Test {
   ScopedTempDir temp_dir_;
   scoped_refptr<NotificationCollector> collector_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcherTest);
 };
 

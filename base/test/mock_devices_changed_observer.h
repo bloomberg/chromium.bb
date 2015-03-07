@@ -21,6 +21,7 @@ class MockDevicesChangedObserver
   MOCK_METHOD1(OnDevicesChanged,
                void(base::SystemMonitor::DeviceType device_type));
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockDevicesChangedObserver);
 };
 

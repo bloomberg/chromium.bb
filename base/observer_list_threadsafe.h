@@ -199,6 +199,7 @@ class ObserverListThreadSafe
     scoped_refptr<base::MessageLoopProxy> loop;
     ObserverList<ObserverType> list;
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(ObserverListContext);
   };
 
