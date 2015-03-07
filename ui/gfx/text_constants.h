@@ -42,25 +42,6 @@ enum TextStyle {
   NUM_TEXT_STYLES,
 };
 
-// Text baseline offset types.
-// Figure of font metrics:
-//   +--------+--------+------------------------+-------------+
-//   |        |        | internal leading       | SUPERSCRIPT |
-//   |        |        +------------+-----------|             |
-//   |        | ascent |            | SUPERIOR  |-------------+
-//   | height |        | cap height |-----------|
-//   |        |        |            | INFERIOR  |-------------+
-//   |        |--------+------------+-----------|             |
-//   |        | descent                         | SUBSCRIPT   |
-//   +--------+---------------------------------+-------------+
-enum BaselineStyle {
-  NORMAL_BASELINE = 0,
-  SUPERSCRIPT,  // e.g. a mathematical exponent would be superscript.
-  SUPERIOR,     // e.g. 8th, the "th" would be superior script.
-  INFERIOR,     // e.g. 1/2, the "2" would be inferior ("1" is superior).
-  SUBSCRIPT,    // e.g. H2O, the "2" would be subscript.
-};
-
 // Elision behaviors of text that exceeds constrained dimensions.
 enum ElideBehavior {
   NO_ELIDE = 0, // Do not modify the text, it may overflow its available bounds.

@@ -230,7 +230,7 @@ void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
   attributes_.reset(CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks));
 
   // https://developer.apple.com/library/mac/#documentation/Carbon/Reference/CoreText_StringAttributes_Ref/Reference/reference.html
-  internal::StyleIterator style(colors(), baselines(), styles());
+  internal::StyleIterator style(colors(), styles());
   const size_t layout_text_length = GetDisplayText().length();
   for (size_t i = 0, end = 0; i < layout_text_length; i = end) {
     end = TextIndexToDisplayIndex(style.GetRange().end());

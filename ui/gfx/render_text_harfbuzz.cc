@@ -19,7 +19,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_render_params.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/harfbuzz_font_skia.h"
 #include "ui/gfx/range/range_f.h"
 #include "ui/gfx/utf16_indexing.h"
@@ -422,7 +421,6 @@ class HarfBuzzLineBreaker {
     paint.getFontMetrics(&metrics);
 
     line->size.set_width(line->size.width() + width);
-    // TODO(dschuyler): Account for stylized baselines in string sizing.
     max_descent_ = std::max(max_descent_, metrics.fDescent);
     // fAscent is always negative.
     max_ascent_ = std::max(max_ascent_, -metrics.fAscent);
@@ -483,13 +481,10 @@ TextRunHarfBuzz::TextRunHarfBuzz()
       script(USCRIPT_INVALID_CODE),
       glyph_count(static_cast<size_t>(-1)),
       font_size(0),
-      baseline_offset(0),
-      baseline_type(0),
       font_style(0),
       strike(false),
       diagonal_strike(false),
-      underline(false) {
-}
+      underline(false) {}
 
 TextRunHarfBuzz::~TextRunHarfBuzz() {}
 
@@ -1035,7 +1030,7 @@ void RenderTextHarfBuzz::DrawVisualTextInternal(
                                      (glyphs_range.start() - j) :
                                      (glyphs_range.start() + j)];
         positions[j].offset(SkIntToScalar(origin.x()) + offset_x,
-                            SkIntToScalar(origin.y() + run.baseline_offset));
+                            SkIntToScalar(origin.y()));
       }
       for (BreakList<SkColor>::const_iterator it =
                colors().GetBreak(segment.char_range.start());
@@ -1144,18 +1139,17 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // Temporarily apply composition underlines and selection colors.
   ApplyCompositionAndSelectionStyles();
 
-  // Build the run list from the script items and ranged styles and baselines.
-  // Use an empty color BreakList to avoid breaking runs at color boundaries.
+  // Build the list of runs from the script items and ranged styles. Use an
+  // empty color BreakList to avoid breaking runs at color boundaries.
   BreakList<SkColor> empty_colors;
   empty_colors.SetMax(text.length());
-  internal::StyleIterator style(empty_colors, baselines(), styles());
+  internal::StyleIterator style(empty_colors, styles());
 
   for (size_t run_break = 0; run_break < text.length();) {
     internal::TextRunHarfBuzz* run = new internal::TextRunHarfBuzz;
     run->range.set_start(run_break);
     run->font_style = (style.style(BOLD) ? Font::BOLD : 0) |
                       (style.style(ITALIC) ? Font::ITALIC : 0);
-    run->baseline_type = style.baseline();
     run->strike = style.style(STRIKE);
     run->diagonal_strike = style.style(DIAGONAL_STRIKE);
     run->underline = style.style(UNDERLINE);
@@ -1224,31 +1218,6 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   const Font& primary_font = font_list().GetPrimaryFont();
   const std::string primary_family = primary_font.GetFontName();
   run->font_size = primary_font.GetFontSize();
-  run->baseline_offset = 0;
-  if (run->baseline_type != NORMAL_BASELINE) {
-    // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
-    // Proportions from 5/9 to 5/7 all look pretty good.
-    const float ratio = 5.0f / 9.0f;
-    run->font_size = gfx::ToRoundedInt(primary_font.GetFontSize() * ratio);
-    switch (run->baseline_type) {
-      case SUPERSCRIPT:
-        run->baseline_offset =
-            primary_font.GetCapHeight() - primary_font.GetHeight();
-        break;
-      case SUPERIOR:
-        run->baseline_offset =
-            gfx::ToRoundedInt(primary_font.GetCapHeight() * ratio) -
-            primary_font.GetCapHeight();
-        break;
-      case SUBSCRIPT:
-        run->baseline_offset =
-            primary_font.GetHeight() - primary_font.GetBaseline();
-        break;
-      case INFERIOR:  // Fall through.
-      default:
-        break;
-    }
-  }
 
   std::string best_family;
   FontRenderParams best_render_params;
