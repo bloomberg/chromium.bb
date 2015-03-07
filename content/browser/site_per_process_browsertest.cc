@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
 
 // Disabled for flaky crashing: crbug.com/446575
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_NavigateRemoteFrame) {
+                       NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
@@ -335,6 +335,68 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             child->current_frame_host()->GetSiteInstance());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateRemoteFrameToBlankAndDataURLs) {
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+
+  // Load same-site page into iframe.
+  FrameTreeNode* child = root->child_at(0);
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateFrameToURL(child, http_url);
+  EXPECT_EQ(http_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  // Load cross-site page into iframe.
+  GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(0), url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url, observer.last_navigation_url());
+  ASSERT_EQ(2U, root->child_count());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+
+  // Navigate iframe to a data URL. The navigation happens from a script in the
+  // parent frame, so the data URL should be committed in the same SiteInstance
+  // as the parent frame.
+  GURL data_url("data:text/html,dataurl");
+  NavigateIframeToURL(shell()->web_contents(), "test", data_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(data_url, observer.last_navigation_url());
+
+  // Ensure that we have navigated using the top level process.
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+
+  // Load cross-site page into iframe.
+  url = embedded_test_server()->GetURL("bar.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(0), url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url, observer.last_navigation_url());
+  ASSERT_EQ(2U, root->child_count());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+
+  // Navigate iframe to about:blank. The navigation happens from a script in the
+  // parent frame, so it should be committed in the same SiteInstance as the
+  // parent frame.
+  GURL about_blank_url("about:blank");
+  NavigateIframeToURL(shell()->web_contents(), "test", about_blank_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(about_blank_url, observer.last_navigation_url());
+
+  // Ensure that we have navigated using the top level process.
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
 }
 
 // This test checks that killing a renderer process of a remote frame
@@ -1423,105 +1485,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, WindowNameReplication) {
       root->child_at(0)->current_frame_host(),
       "window.domAutomationController.send(window.name);", &result));
   EXPECT_EQ("3-1-name", result);
-}
-
-// TODO(lfg): Merge the test below with NavigateRemoteFrame test.
-// TODO(lfg): Disabled because this triggers http://crbug.com/433012, and since
-// the renderer process crashes, it causes the title watcher to never return.
-// Alternatively, this could also be fixed if we could use NavigateIframeToURL
-// and classified the navigation as MANUAL_SUBFRAME (http://crbug.com/441863) or
-// if we waited for DidStopLoading (currently broken -- see comment in
-// NavigateIframeToURL).
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_NavigateRemoteToDataURL) {
-  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
-  NavigateToURL(shell(), main_url);
-
-  // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-
-  TestNavigationObserver observer(shell()->web_contents());
-
-  // Load cross-site page into iframe.
-  GURL url = embedded_test_server()->GetURL("foo.com", "/title1.html");
-  NavigateFrameToURL(root->child_at(0), url);
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ(url, observer.last_navigation_url());
-
-  // Ensure that we have created a new process for the subframe.
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            root->child_at(0)->current_frame_host()->GetSiteInstance());
-
-  // Navigate iframe to a data URL. The navigation happens from a script in the
-  // parent frame, so the data URL should be committed in the same SiteInstance
-  // as the parent frame.
-  GURL data_url("data:text/html,dataurl");
-  std::string script = base::StringPrintf(
-      "setTimeout(function() {"
-      "var iframe = document.getElementById('test');"
-      "iframe.onload = function() { document.title = 'LOADED'; };"
-      "iframe.src=\"%s\";"
-      "},0);",
-      data_url.spec().c_str());
-  base::string16 passed_string(base::UTF8ToUTF16("LOADED"));
-  TitleWatcher title_watcher(shell()->web_contents(), passed_string);
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
-  EXPECT_EQ(title_watcher.WaitAndGetTitle(), passed_string);
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ(data_url, observer.last_navigation_url());
-
-  // Ensure that we have navigated using the top level process.
-  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
-            root->child_at(0)->current_frame_host()->GetSiteInstance());
-}
-
-// TODO(lfg): Merge the test below with NavigateRemoteFrame test.
-// Disabled due to the same reason as NavigateRemoteToDataURL.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_NavigateRemoteToBlankURL) {
-  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
-  NavigateToURL(shell(), main_url);
-
-  // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-
-  TestNavigationObserver observer(shell()->web_contents());
-
-  // Load cross-site page into iframe.
-  GURL url = embedded_test_server()->GetURL("foo.com", "/title1.html");
-  NavigateFrameToURL(root->child_at(0), url);
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ(url, observer.last_navigation_url());
-
-  // Ensure that we have created a new process for the subframe.
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            root->child_at(0)->current_frame_host()->GetSiteInstance());
-
-  // Navigate iframe to about:blank. The navigation happens from a script in the
-  // parent frame, so it should be committed in the same SiteInstance as the
-  // parent frame.
-  GURL about_blank_url("about:blank");
-  std::string script = base::StringPrintf(
-      "setTimeout(function() {"
-      "var iframe = document.getElementById('test');"
-      "iframe.onload = function() { document.title = 'LOADED'; };"
-      "iframe.src=\"%s\";"
-      "},0);",
-      about_blank_url.spec().c_str());
-  base::string16 passed_string(base::UTF8ToUTF16("LOADED"));
-  TitleWatcher title_watcher(shell()->web_contents(), passed_string);
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
-  EXPECT_EQ(title_watcher.WaitAndGetTitle(), passed_string);
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ(about_blank_url, observer.last_navigation_url());
-
-  // Ensure that we have navigated using the top level process.
-  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
-            root->child_at(0)->current_frame_host()->GetSiteInstance());
 }
 
 // Ensure that navigating subframes in --site-per-process mode properly fires

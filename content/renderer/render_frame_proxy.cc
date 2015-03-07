@@ -232,6 +232,13 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
 }
 
 void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
+  // If this WebFrame has already been detached, its parent will be null. This
+  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
+  // message may arrive after the frame was removed from the frame tree, but
+  // before the frame has been destroyed. http://crbug.com/446575.
+  if (!web_frame()->parent())
+    return;
+
   FrameMsg_CompositorFrameSwapped::Param param;
   if (!FrameMsg_CompositorFrameSwapped::Read(&message, &param))
     return;
