@@ -30,4 +30,4 @@ class NullTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(NullTaskRunner);
 };
 
-}  // namespace
+}  // namespace base

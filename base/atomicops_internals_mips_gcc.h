@@ -274,7 +274,7 @@ inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
 }
 #endif
 
-} // namespace base::subtle
-} // namespace base
+}  // namespace subtle
+}  // namespace base
 
 #endif  // BASE_ATOMICOPS_INTERNALS_MIPS_GCC_H_

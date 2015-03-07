@@ -99,7 +99,7 @@ inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
   return *ptr;
 }
 
-}  // namespace base::subtle
+}  // namespace subtle
 }  // namespace base
 
 #endif  // BASE_ATOMICOPS_INTERNALS_GCC_H_

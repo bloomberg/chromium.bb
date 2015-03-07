@@ -301,7 +301,7 @@ inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
   return *ptr;
 }
 
-}  // namespace base::subtle
+}  // namespace subtle
 }  // namespace base
 
 #endif  // BASE_ATOMICOPS_INTERNALS_ARM64_GCC_H_

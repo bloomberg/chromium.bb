@@ -43,7 +43,7 @@ class NestedMessagePumpAndroid;
 class RenderWidgetResizeHelper;
 class ScopedAllowWaitForAndroidLayoutTests;
 class TextInputClientMac;
-}
+}  // namespace content
 namespace dbus {
 class Bus;
 }

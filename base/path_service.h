@@ -15,7 +15,7 @@
 namespace base {
 class FilePath;
 class ScopedPathOverride;
-}  // namespace
+}  // namespace base
 
 // The path service is a global table mapping keys to file system paths.  It is
 // OK to use this service from multiple threads.

@@ -37,7 +37,8 @@ const char* DumpPointTypeToString(const DumpPointType& dump_point_type) {
   NOTREACHED();
   return "UNKNOWN";
 }
-}
+
+}  // namespace
 
 // TODO(primiano): this should be smarter and should do something similar to
 // trace event synthetic delays.

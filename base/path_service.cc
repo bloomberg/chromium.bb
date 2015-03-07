@@ -33,7 +33,7 @@ namespace base {
   // Mac and Android.
   bool PathProviderPosix(int key, FilePath* result);
 #endif
-}
+}  // namespace base
 
 namespace {
 

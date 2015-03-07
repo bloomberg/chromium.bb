@@ -28,7 +28,7 @@ class ComparableValue {
   int value_;
 };
 
-}
+}  // namespace
 
 namespace base {
 namespace {

@@ -28,4 +28,4 @@ bool NullTaskRunner::RunsTasksOnCurrentThread() const {
   return true;
 }
 
-}  // namespace
+}  // namespace base

@@ -35,4 +35,4 @@ std::string GenerateGUID() {
   return WideToUTF8(guid_string.substr(1, guid_string.length() - 2));
 }
 
-}  // namespace guid
+}  // namespace base

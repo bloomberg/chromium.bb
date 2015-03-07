@@ -293,4 +293,4 @@ TEST(UTFOffsetStringConversionsTest, MergeSequentialAdjustments) {
   EXPECT_EQ(2u, adjustments_on_adjusted_string[5].output_length);
 }
 
-}  // namaspace base
+}  // namespace base

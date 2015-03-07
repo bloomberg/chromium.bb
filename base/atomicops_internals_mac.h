@@ -191,7 +191,7 @@ inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
 
 #endif  // defined(__LP64__)
 
-}   // namespace base::subtle
-}   // namespace base
+}  // namespace subtle
+}  // namespace base
 
 #endif  // BASE_ATOMICOPS_INTERNALS_MAC_H_

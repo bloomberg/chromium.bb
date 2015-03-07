@@ -18,7 +18,7 @@ jstring ConvertUTF16ToJavaStringImpl(JNIEnv* env,
   return result;
 }
 
-}
+}  // namespace
 
 namespace base {
 namespace android {

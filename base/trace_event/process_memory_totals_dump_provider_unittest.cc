@@ -39,5 +39,5 @@ TEST(ProcessMemoryTotalsDumpProviderTest, DumpRSS) {
   EXPECT_EQ(rss_after - rss_before, kAllocSize);
 }
 
-}  // namespace trace_Event
+}  // namespace trace_event
 }  // namespace base

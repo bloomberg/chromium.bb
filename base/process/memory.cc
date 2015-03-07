@@ -27,4 +27,4 @@ bool UncheckedCalloc(size_t num_items, size_t size, void** result) {
 
 #endif
 
-}
+}  // namespace base

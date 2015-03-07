@@ -324,4 +324,4 @@ int Process::GetPriority() const {
   return getpriority(PRIO_PROCESS, process_);
 }
 
-}  // namspace base
+}  // namespace base

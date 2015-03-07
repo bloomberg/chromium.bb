@@ -36,6 +36,6 @@ class AutoReset {
   DISALLOW_COPY_AND_ASSIGN(AutoReset);
 };
 
-}
+}  // namespace base
 
 #endif  // BASE_AUTO_RESET_H_

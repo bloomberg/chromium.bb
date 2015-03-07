@@ -39,4 +39,4 @@ std::string RandomDataToGUIDString(const uint64 bytes[2]) {
                       bytes[1] & 0x0000ffffffffffffULL);
 }
 
-}  // namespace guid
+}  // namespace base

@@ -24,6 +24,6 @@ BASE_EXPORT bool GetValueAsFilePath(const Value& value, FilePath* file_path);
 BASE_EXPORT StringValue* CreateTimeDeltaValue(const TimeDelta& time);
 BASE_EXPORT bool GetValueAsTimeDelta(const Value& value, TimeDelta* time);
 
-}  // namespace
+}  // namespace base
 
 #endif  // BASE_VALUE_CONVERSIONS_H_

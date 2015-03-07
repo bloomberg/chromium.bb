@@ -148,5 +148,5 @@ TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
   DisableTracing();
 }
 
-}  // namespace trace_Event
+}  // namespace trace_event
 }  // namespace base

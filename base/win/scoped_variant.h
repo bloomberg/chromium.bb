@@ -161,6 +161,6 @@ class BASE_EXPORT ScopedVariant {
 };
 
 }  // namespace win
-}  // namesoace base
+}  // namespace base
 
 #endif  // BASE_WIN_SCOPED_VARIANT_H_
