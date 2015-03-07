@@ -2517,7 +2517,6 @@
       'browser/sessions/session_service_utils.h',
       'browser/sessions/tab_loader_delegate.cc',
       'browser/sessions/tab_loader_delegate.h',
-      'browser/sessions/tab_loader_delegate_chromeos.cc',
     ],
     'chrome_browser_signin_sources': [
       'browser/signin/about_signin_internals_factory.cc',
