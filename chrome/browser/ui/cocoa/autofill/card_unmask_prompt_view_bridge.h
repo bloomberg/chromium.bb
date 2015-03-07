@@ -33,11 +33,12 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
   // ConstrainedWindowMacDelegate implementation:
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
+  CardUnmaskPromptController* GetController();
   void PerformClose();
 
  private:
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
-  base::scoped_nsobject<CardUnmaskPromptViewCocoa> sheet_controller_;
+  base::scoped_nsobject<CardUnmaskPromptViewCocoa> view_controller_;
 
   // The controller |this| queries for logic and state.
   CardUnmaskPromptController* controller_;
@@ -45,7 +46,7 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
 
 }  // autofill
 
-@interface CardUnmaskPromptViewCocoa : NSWindowController<NSWindowDelegate> {
+@interface CardUnmaskPromptViewCocoa : NSViewController<NSWindowDelegate> {
  @private
   content::WebContents* webContents_;
 
