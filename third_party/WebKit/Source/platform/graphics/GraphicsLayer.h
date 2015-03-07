@@ -199,7 +199,7 @@ public:
 
     void setContentsNeedsDisplay();
 
-    void invalidateDisplayItemClient(DisplayItemClient);
+    void invalidateDisplayItemClient(const DisplayItemClientData&);
 
     // Set that the position/size of the contents (image or video).
     void setContentsRect(const IntRect&);
@@ -229,8 +229,10 @@ public:
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
 
+    bool isTrackingPaintInvalidations() const { return m_client->isTrackingPaintInvalidations(); }
     void resetTrackedPaintInvalidations();
-    void addRepaintRect(const FloatRect&);
+    void trackPaintInvalidationRect(const FloatRect&);
+    void trackPaintInvalidationObject(const String&);
 
     void addLinkHighlight(LinkHighlightClient*);
     void removeLinkHighlight(LinkHighlightClient*);

@@ -64,10 +64,15 @@
 
 namespace blink {
 
-typedef HashMap<const GraphicsLayer*, Vector<FloatRect>> RepaintMap;
-static RepaintMap& repaintRectMap()
+struct PaintInvalidationTrackingInfo {
+    Vector<FloatRect> invalidationRects;
+    Vector<String> invalidationObjects;
+};
+
+typedef HashMap<const GraphicsLayer*, PaintInvalidationTrackingInfo> PaintInvalidationTrackingMap;
+static PaintInvalidationTrackingMap& paintInvalidationTrackingMap()
 {
-    DEFINE_STATIC_LOCAL(RepaintMap, map, ());
+    DEFINE_STATIC_LOCAL(PaintInvalidationTrackingMap, map, ());
     return map;
 }
 
@@ -447,22 +452,34 @@ WebLayer* GraphicsLayer::contentsLayerIfRegistered()
 
 void GraphicsLayer::resetTrackedPaintInvalidations()
 {
-    repaintRectMap().remove(this);
+    paintInvalidationTrackingMap().remove(this);
 }
 
-void GraphicsLayer::addRepaintRect(const FloatRect& repaintRect)
+void GraphicsLayer::trackPaintInvalidationRect(const FloatRect& rect)
 {
-    if (m_client->isTrackingPaintInvalidations()) {
-        RepaintMap::iterator repaintIt = repaintRectMap().find(this);
-        if (repaintIt == repaintRectMap().end()) {
-            Vector<FloatRect> repaintRects;
-            repaintRects.append(repaintRect);
-            repaintRectMap().set(this, repaintRects);
-        } else {
-            Vector<FloatRect>& repaintRects = repaintIt->value;
-            repaintRects.append(repaintRect);
-        }
-    }
+    if (rect.isEmpty())
+        return;
+
+    // The caller must check isTrackingPaintInvalidations() before calling this method
+    // to avoid constructing the rect unnecessarily.
+    ASSERT(isTrackingPaintInvalidations());
+
+    paintInvalidationTrackingMap().add(this, PaintInvalidationTrackingInfo()).storedValue->value.invalidationRects.append(rect);
+}
+
+void GraphicsLayer::trackPaintInvalidationObject(const String& objectDebugString)
+{
+    if (objectDebugString.isEmpty())
+        return;
+
+    // The caller must check isTrackingPaintInvalidations() before calling this method
+    // because constructing the debug string will be costly.
+    ASSERT(isTrackingPaintInvalidations());
+
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return;
+
+    paintInvalidationTrackingMap().add(this, PaintInvalidationTrackingInfo()).storedValue->value.invalidationObjects.append(objectDebugString);
 }
 
 static bool compareFloatRects(const FloatRect& a, const FloatRect& b)
@@ -634,16 +651,31 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
     if (m_replicatedLayer)
         json->setString("replicatedLayer", flags & LayerTreeIncludesDebugInfo ? pointerAsString(m_replicatedLayer) : "");
 
-    if ((flags & LayerTreeIncludesPaintInvalidationRects) && repaintRectMap().contains(this) && !repaintRectMap().get(this).isEmpty()) {
-        Vector<FloatRect> repaintRectsCopy = repaintRectMap().get(this);
-        std::sort(repaintRectsCopy.begin(), repaintRectsCopy.end(), &compareFloatRects);
-        RefPtr<JSONArray> repaintRectsJSON = adoptRef(new JSONArray);
-        for (size_t i = 0; i < repaintRectsCopy.size(); ++i) {
-            if (repaintRectsCopy[i].isEmpty())
-                continue;
-            repaintRectsJSON->pushArray(rectAsJSONArray(repaintRectsCopy[i]));
+    PaintInvalidationTrackingMap::iterator it = paintInvalidationTrackingMap().find(this);
+    if (it != paintInvalidationTrackingMap().end()) {
+        if (flags & LayerTreeIncludesPaintInvalidationRects) {
+            Vector<FloatRect>& rects = it->value.invalidationRects;
+            if (!rects.isEmpty()) {
+                std::sort(rects.begin(), rects.end(), &compareFloatRects);
+                RefPtr<JSONArray> rectsJSON = adoptRef(new JSONArray);
+                for (auto& rect : rects) {
+                    if (rect.isEmpty())
+                        continue;
+                    rectsJSON->pushArray(rectAsJSONArray(rect));
+                }
+                json->setArray("repaintRects", rectsJSON);
+            }
         }
-        json->setArray("repaintRects", repaintRectsJSON);
+
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() && (flags & LayerTreeIncludesPaintInvalidationObjects)) {
+            Vector<String>& clients = it->value.invalidationObjects;
+            if (!clients.isEmpty()) {
+                RefPtr<JSONArray> clientsJSON = adoptRef(new JSONArray);
+                for (auto& clientString : clients)
+                    clientsJSON->pushString(clientString);
+                json->setArray("paintInvalidationClients", clientsJSON);
+            }
+        }
     }
 
     if ((flags & LayerTreeIncludesPaintingPhases) && m_paintingPhase) {
@@ -922,7 +954,8 @@ void GraphicsLayer::setContentsNeedsDisplay()
 {
     if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
         contentsLayer->invalidate();
-        addRepaintRect(m_contentsRect);
+        if (isTrackingPaintInvalidations())
+            trackPaintInvalidationRect(m_contentsRect);
     }
 }
 
@@ -930,12 +963,16 @@ void GraphicsLayer::setNeedsDisplay()
 {
     if (drawsContent()) {
         m_layer->layer()->invalidate();
-        addRepaintRect(FloatRect(FloatPoint(), m_size));
+        if (isTrackingPaintInvalidations())
+            trackPaintInvalidationRect(FloatRect(FloatPoint(), m_size));
         for (size_t i = 0; i < m_linkHighlights.size(); ++i)
             m_linkHighlights[i]->invalidate();
 
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
             displayItemList()->invalidateAll();
+            if (isTrackingPaintInvalidations())
+                trackPaintInvalidationObject("##ALL##");
+        }
     }
 }
 
@@ -945,16 +982,19 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
         m_layer->layer()->invalidateRect(rect);
         if (firstPaintInvalidationTrackingEnabled())
             m_debugInfo.appendAnnotatedInvalidateRect(rect, invalidationReason);
-        addRepaintRect(rect);
+        if (isTrackingPaintInvalidations())
+            trackPaintInvalidationRect(rect);
         for (size_t i = 0; i < m_linkHighlights.size(); ++i)
             m_linkHighlights[i]->invalidate();
     }
 }
 
-void GraphicsLayer::invalidateDisplayItemClient(DisplayItemClient displayItemClient)
+void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientData& displayItemClientData)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-    displayItemList()->invalidate(displayItemClient);
+    displayItemList()->invalidate(displayItemClientData.displayItemClient());
+    if (isTrackingPaintInvalidations())
+        trackPaintInvalidationObject(displayItemClientData.debugName());
 }
 
 void GraphicsLayer::setContentsRect(const IntRect& rect)

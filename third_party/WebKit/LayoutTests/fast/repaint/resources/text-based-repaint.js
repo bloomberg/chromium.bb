@@ -77,7 +77,7 @@ function finishRepaintTest()
     // Force a style recalc.
     forceStyleRecalc();
 
-    var repaintRects = window.internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+    var repaintRects = window.internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_REPAINT_RECTS | window.internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATION_OBJECTS);
 
     internals.stopTrackingRepaints(document);
 

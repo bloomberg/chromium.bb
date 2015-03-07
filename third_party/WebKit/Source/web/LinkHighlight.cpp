@@ -348,8 +348,8 @@ void LinkHighlight::updateGeometry()
         // we can just re-position the layer without needing to repaint.
         m_contentLayer->layer()->invalidate();
 
-        if (m_currentGraphicsLayer)
-            m_currentGraphicsLayer->addRepaintRect(FloatRect(layer()->position().x, layer()->position().y, layer()->bounds().width, layer()->bounds().height));
+        if (m_currentGraphicsLayer && m_currentGraphicsLayer->isTrackingPaintInvalidations())
+            m_currentGraphicsLayer->trackPaintInvalidationRect(FloatRect(layer()->position().x, layer()->position().y, layer()->bounds().width, layer()->bounds().height));
     } else if (!hasRenderer) {
         clearGraphicsLayerLinkHighlightPointer();
         releaseResources();

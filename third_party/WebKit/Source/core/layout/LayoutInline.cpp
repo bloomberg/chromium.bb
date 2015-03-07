@@ -1458,7 +1458,7 @@ void LayoutInline::invalidateDisplayItemClients(const LayoutBoxModelObject& pain
 {
     LayoutBoxModelObject::invalidateDisplayItemClients(paintInvalidationContainer);
     for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(box->displayItemClient());
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(DisplayItemClientData(*box, DisplayItemClientData::NoDebugName));
 }
 
 } // namespace blink

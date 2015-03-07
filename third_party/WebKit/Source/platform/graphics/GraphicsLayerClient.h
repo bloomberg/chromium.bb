@@ -54,6 +54,7 @@ enum {
     LayerTreeIncludesRootLayer = 1 << 3,
     LayerTreeIncludesClipAndScrollParents = 1 << 4,
     LayerTreeIncludesScrollBlocksOn = 1 << 5,
+    LayerTreeIncludesPaintInvalidationObjects = 1 << 6,
 };
 typedef unsigned LayerTreeFlags;
 

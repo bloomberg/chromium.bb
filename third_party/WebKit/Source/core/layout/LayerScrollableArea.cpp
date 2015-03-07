@@ -211,7 +211,7 @@ void LayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const In
     if (scrollRect.isEmpty())
         return;
 
-    box().invalidateDisplayItemClient(scrollbar->displayItemClient());
+    box().invalidateDisplayItemClient(DisplayItemClientData(*scrollbar));
 
     LayoutRect paintInvalidationRect = LayoutRect(scrollRect);
     box().flipForWritingMode(paintInvalidationRect);

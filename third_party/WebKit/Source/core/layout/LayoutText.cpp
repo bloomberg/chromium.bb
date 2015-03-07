@@ -1896,7 +1896,7 @@ void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintI
 {
     LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer);
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(box->displayItemClient());
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(DisplayItemClientData(*box, DisplayItemClientData::NoDebugName));
 }
 
 } // namespace blink
