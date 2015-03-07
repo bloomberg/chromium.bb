@@ -933,13 +933,13 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
     bool breakAll = (styleToUse.wordBreak() == BreakAllWordBreak || styleToUse.wordBreak() == BreakWordBreak) && styleToUse.autoWrap();
 
-    TextRun textRun(text());
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
     BidiCharacterRun* run;
     TextDirection textDirection = styleToUse.direction();
-    if (isOverride(styleToUse.unicodeBidi())) {
+    if (is8Bit() || isOverride(styleToUse.unicodeBidi())) {
         run = 0;
     } else {
+        TextRun textRun(text());
         BidiStatus status(textDirection, false);
         bidiResolver.setStatus(status);
         bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
