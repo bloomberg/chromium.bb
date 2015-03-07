@@ -63,7 +63,7 @@ class HpackEncoderPeer {
   static void CookieToCrumbs(StringPiece cookie,
                              std::vector<StringPiece>* out) {
     Representations tmp;
-    HpackEncoder::CookieToCrumbs(make_pair("", cookie), &tmp);
+    HpackEncoder::CookieToCrumbs(std::make_pair("", cookie), &tmp);
 
     out->clear();
     for (size_t i = 0; i != tmp.size(); ++i) {
@@ -73,7 +73,8 @@ class HpackEncoderPeer {
   static void DecomposeRepresentation(StringPiece value,
                                       std::vector<StringPiece>* out) {
     Representations tmp;
-    HpackEncoder::DecomposeRepresentation(make_pair("foobar", value), &tmp);
+    HpackEncoder::DecomposeRepresentation(std::make_pair("foobar", value),
+                                          &tmp);
 
     out->clear();
     for (size_t i = 0; i != tmp.size(); ++i) {

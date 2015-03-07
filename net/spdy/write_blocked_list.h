@@ -87,8 +87,7 @@ class WriteBlockedList {
     // would be too costly, so instead we check here to eliminate duplicates.
     bool found = false;
     iterator it = std::find(write_blocked_lists_[priority].begin(),
-                            write_blocked_lists_[priority].end(),
-                            stream_id);
+                            write_blocked_lists_[priority].end(), stream_id);
     while (it != write_blocked_lists_[priority].end()) {
       found = true;
       iterator next_it = write_blocked_lists_[priority].erase(it);
