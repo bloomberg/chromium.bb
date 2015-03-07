@@ -54,7 +54,7 @@ HTMLMeterElement* MeterShadowElement::meterElement() const
 
 bool MeterShadowElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
-    LayoutObject* renderer = meterElement()->renderer();
+    LayoutObject* renderer = meterElement()->layoutObject();
     return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::layoutObjectIsNeeded(style);
 }
 
@@ -75,7 +75,7 @@ bool MeterInnerElement::layoutObjectIsNeeded(const LayoutStyle& style)
     if (meterElement()->hasOpenShadowRoot())
         return HTMLDivElement::layoutObjectIsNeeded(style);
 
-    LayoutObject* renderer = meterElement()->renderer();
+    LayoutObject* renderer = meterElement()->layoutObject();
     return renderer && !LayoutTheme::theme().supportsMeter(renderer->style()->appearance()) && HTMLDivElement::layoutObjectIsNeeded(style);
 }
 

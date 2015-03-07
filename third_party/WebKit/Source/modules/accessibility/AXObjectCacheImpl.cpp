@@ -206,13 +206,13 @@ AXObject* AXObjectCacheImpl::get(Node* node)
     if (!node)
         return 0;
 
-    AXID layoutID = node->renderer() ? m_layoutObjectMapping.get(node->renderer()) : 0;
+    AXID layoutID = node->layoutObject() ? m_layoutObjectMapping.get(node->layoutObject()) : 0;
     ASSERT(!HashTraits<AXID>::isDeletedValue(layoutID));
 
     AXID nodeID = m_nodeObjectMapping.get(node);
     ASSERT(!HashTraits<AXID>::isDeletedValue(nodeID));
 
-    if (node->renderer() && nodeID && !layoutID) {
+    if (node->layoutObject() && nodeID && !layoutID) {
         // This can happen if an AXNodeObject is created for a node that's not
         // laid out, but later something changes and it gets a layoutObject (like if it's
         // reparented).
@@ -356,8 +356,8 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     if (AXObject* obj = get(node))
         return obj;
 
-    if (node->renderer())
-        return getOrCreate(node->renderer());
+    if (node->layoutObject())
+        return getOrCreate(node->layoutObject());
 
     if (!node->parentElement())
         return 0;
@@ -365,7 +365,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     // It's only allowed to create an AXObject from a Node if it's in a canvas subtree.
     // Or if it's a hidden element, but we still want to expose it because of other ARIA attributes.
     bool inCanvasSubtree = node->parentElement()->isInCanvasSubtree();
-    bool isHidden = !node->renderer() && isNodeAriaVisible(node);
+    bool isHidden = !node->layoutObject() && isNodeAriaVisible(node);
     if (!inCanvasSubtree && !isHidden)
         return 0;
 
@@ -524,8 +524,8 @@ void AXObjectCacheImpl::remove(Node* node)
     remove(axID);
     m_nodeObjectMapping.remove(node);
 
-    if (node->renderer()) {
-        remove(node->renderer());
+    if (node->layoutObject()) {
+        remove(node->layoutObject());
         return;
     }
 }
@@ -697,7 +697,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
         // Notifications should only be sent after the layoutObject has finished
         if (obj->isAXLayoutObject()) {
             AXLayoutObject* layoutObj = toAXLayoutObject(obj);
-            LayoutObject* layoutObject = layoutObj->renderer();
+            LayoutObject* layoutObject = layoutObj->layoutObject();
             if (layoutObject && layoutObject->view())
                 ASSERT(!layoutObject->view()->layoutState());
         }
@@ -936,17 +936,17 @@ AXObject* AXObjectCacheImpl::firstAccessibleObjectFromNode(const Node* node)
     if (!node)
         return 0;
 
-    AXObject* accessibleObject = getOrCreate(node->renderer());
+    AXObject* accessibleObject = getOrCreate(node->layoutObject());
     while (accessibleObject && accessibleObject->accessibilityIsIgnored()) {
         node = NodeTraversal::next(*node);
 
-        while (node && !node->renderer())
+        while (node && !node->layoutObject())
             node = NodeTraversal::nextSkippingChildren(*node);
 
         if (!node)
             return 0;
 
-        accessibleObject = getOrCreate(node->renderer());
+        accessibleObject = getOrCreate(node->layoutObject());
     }
 
     return accessibleObject;

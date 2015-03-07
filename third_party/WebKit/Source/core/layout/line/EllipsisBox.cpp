@@ -40,10 +40,10 @@ void EllipsisBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
 
 InlineBox* EllipsisBox::markupBox() const
 {
-    if (!m_shouldPaintMarkupBox || !renderer().isLayoutBlock())
+    if (!m_shouldPaintMarkupBox || !layoutObject().isLayoutBlock())
         return 0;
 
-    LayoutBlock& block = toLayoutBlock(renderer());
+    LayoutBlock& block = toLayoutBlock(layoutObject());
     RootInlineBox* lastLine = block.lineAtIndex(block.lineCount() - 1);
     if (!lastLine)
         return 0;
@@ -51,7 +51,7 @@ InlineBox* EllipsisBox::markupBox() const
     // If the last line-box on the last line of a block is a link, -webkit-line-clamp paints that box after the ellipsis.
     // It does not actually move the link.
     InlineBox* anchorBox = lastLine->lastChild();
-    if (!anchorBox || !anchorBox->renderer().style()->isLink())
+    if (!anchorBox || !anchorBox->layoutObject().style()->isLink())
         return 0;
 
     return anchorBox;
@@ -59,9 +59,9 @@ InlineBox* EllipsisBox::markupBox() const
 
 IntRect EllipsisBox::selectionRect()
 {
-    const LayoutStyle& style = renderer().styleRef(isFirstLineStyle());
+    const LayoutStyle& style = layoutObject().styleRef(isFirstLineStyle());
     const Font& font = style.font();
-    return enclosingIntRect(font.selectionRectForText(constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
+    return enclosingIntRect(font.selectionRectForText(constructTextRun(&layoutObject(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
 }
 
 bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
@@ -72,11 +72,11 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
     // Hit test the markup box.
     if (InlineBox* markupBox = this->markupBox()) {
-        const LayoutStyle& style = renderer().styleRef(isFirstLineStyle());
+        const LayoutStyle& style = layoutObject().styleRef(isFirstLineStyle());
         LayoutUnit mtx = adjustedLocation.x() + m_logicalWidth - markupBox->x();
-        LayoutUnit mty = adjustedLocation.y() + style.fontMetrics().ascent() - (markupBox->y() + markupBox->renderer().style(isFirstLineStyle())->fontMetrics().ascent());
+        LayoutUnit mty = adjustedLocation.y() + style.fontMetrics().ascent() - (markupBox->y() + markupBox->layoutObject().style(isFirstLineStyle())->fontMetrics().ascent());
         if (markupBox->nodeAtPoint(request, result, locationInContainer, LayoutPoint(mtx, mty), lineTop, lineBottom)) {
-            renderer().updateHitTestResult(result, locationInContainer.point() - LayoutSize(mtx, mty));
+            layoutObject().updateHitTestResult(result, locationInContainer.point() - LayoutSize(mtx, mty));
             return true;
         }
     }
@@ -85,10 +85,10 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     boxOrigin.moveBy(accumulatedOffset);
     FloatRectWillBeLayoutRect boundsRect(boxOrigin, size());
     if (visibleToHitTestRequest(request) && boundsRect.intersects(FloatRectWillBeLayoutRect(HitTestLocation::rectForPoint(locationInContainer.point(), 0, 0, 0, 0)))) {
-        renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
+        layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237)
-        if (!result.addNodeToListBasedTestResult(renderer().node(), request, locationInContainer, boundsRect.rawValue()))
+        if (!result.addNodeToListBasedTestResult(layoutObject().node(), request, locationInContainer, boundsRect.rawValue()))
             return true;
     }
 

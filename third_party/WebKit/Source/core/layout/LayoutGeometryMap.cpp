@@ -216,14 +216,14 @@ static bool canMapBetweenRenderers(const LayoutObject* renderer, const LayoutObj
 
 void LayoutGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* ancestorLayer)
 {
-    const LayoutObject* renderer = layer->renderer();
+    const LayoutObject* renderer = layer->layoutObject();
 
-    bool crossDocument = ancestorLayer && layer->renderer()->frame() != ancestorLayer->renderer()->frame();
+    bool crossDocument = ancestorLayer && layer->layoutObject()->frame() != ancestorLayer->layoutObject()->frame();
     ASSERT(!crossDocument || m_mapCoordinatesFlags & TraverseDocumentBoundaries);
 
     // We have to visit all the renderers to detect flipped blocks. This might defeat the gains
     // from mapping via layers.
-    bool canConvertInLayerTree = (ancestorLayer && !crossDocument) ? canMapBetweenRenderers(layer->renderer(), ancestorLayer->renderer()) : false;
+    bool canConvertInLayerTree = (ancestorLayer && !crossDocument) ? canMapBetweenRenderers(layer->layoutObject(), ancestorLayer->layoutObject()) : false;
 
 //    fprintf(stderr, "LayoutGeometryMap::pushMappingsToAncestor from layer %p to layer %p, canConvertInLayerTree=%d\n", layer, ancestorLayer, canConvertInLayerTree);
 
@@ -233,16 +233,16 @@ void LayoutGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* 
 
         // The LayoutView must be pushed first.
         if (!m_mapping.size()) {
-            ASSERT(ancestorLayer->renderer()->isLayoutView());
-            pushMappingsToAncestor(ancestorLayer->renderer(), 0);
+            ASSERT(ancestorLayer->layoutObject()->isLayoutView());
+            pushMappingsToAncestor(ancestorLayer->layoutObject(), 0);
         }
 
         TemporaryChange<size_t> positionChange(m_insertionPosition, m_mapping.size());
-        bool accumulatingTransform = layer->renderer()->style()->preserves3D() || ancestorLayer->renderer()->style()->preserves3D();
+        bool accumulatingTransform = layer->layoutObject()->style()->preserves3D() || ancestorLayer->layoutObject()->style()->preserves3D();
         push(renderer, toLayoutSize(layerOffset), accumulatingTransform, /*isNonUniform*/ false, /*isFixedPosition*/ false, /*hasTransform*/ false);
         return;
     }
-    const LayoutBoxModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->renderer() : 0;
+    const LayoutBoxModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->layoutObject() : 0;
     pushMappingsToAncestor(renderer, ancestorRenderer);
 }
 
@@ -294,7 +294,7 @@ void LayoutGeometryMap::popMappingsToAncestor(const LayoutBoxModelObject* ancest
 
 void LayoutGeometryMap::popMappingsToAncestor(const Layer* ancestorLayer)
 {
-    const LayoutBoxModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->renderer() : 0;
+    const LayoutBoxModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->layoutObject() : 0;
     popMappingsToAncestor(ancestorRenderer);
 }
 

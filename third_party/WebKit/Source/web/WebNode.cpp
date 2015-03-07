@@ -236,7 +236,7 @@ WebPluginContainer* WebNode::pluginContainer() const
         return 0;
     const Node& coreNode = *constUnwrap<Node>();
     if (isHTMLObjectElement(coreNode) || isHTMLEmbedElement(coreNode)) {
-        LayoutObject* object = coreNode.renderer();
+        LayoutObject* object = coreNode.layoutObject();
         if (object && object->isLayoutPart()) {
             Widget* widget = toLayoutPart(object)->widget();
             if (widget && widget->isPluginContainer())

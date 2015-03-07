@@ -85,9 +85,9 @@ void SVGTextChunkBuilder::addTextChunk(Vector<SVGInlineTextBox*>& lineLayoutBoxe
     SVGInlineTextBox* textBox = lineLayoutBoxes[boxStart];
     ASSERT(textBox);
 
-    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(textBox->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(textBox->layoutObject());
 
-    const LayoutStyle& style = toLayoutSVGInlineText(textBox->renderer()).styleRef();
+    const LayoutStyle& style = toLayoutSVGInlineText(textBox->layoutObject()).styleRef();
 
     const SVGLayoutStyle& svgStyle = style.svgStyle();
 

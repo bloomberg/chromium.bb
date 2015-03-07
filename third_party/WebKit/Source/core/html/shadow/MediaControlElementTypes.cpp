@@ -95,7 +95,7 @@ void MediaControlElement::setDisplayType(MediaControlElementType displayType)
         return;
 
     m_displayType = displayType;
-    if (LayoutObject* object = m_element->renderer())
+    if (LayoutObject* object = m_element->layoutObject())
         object->setShouldDoFullPaintInvalidation();
 }
 

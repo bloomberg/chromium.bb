@@ -539,7 +539,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     Node* styledNode = this->styledNode();
     if (!styledNode)
         return nullptr;
-    LayoutObject* renderer = styledNode->renderer();
+    LayoutObject* renderer = styledNode->layoutObject();
     RefPtr<LayoutStyle> style;
 
     Document& document = styledNode->document();
@@ -552,7 +552,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     // The style recalc could have caused the styled node to be discarded or replaced
     // if it was a PseudoElement so we need to update it.
     styledNode = this->styledNode();
-    renderer = styledNode->renderer();
+    renderer = styledNode->layoutObject();
 
     style = computeLayoutStyle();
 
@@ -564,7 +564,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         document.updateLayoutIgnorePendingStylesheets();
         styledNode = this->styledNode();
         style = computeLayoutStyle();
-        renderer = styledNode->renderer();
+        renderer = styledNode->layoutObject();
     }
 
     if (!style)

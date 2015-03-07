@@ -220,14 +220,14 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
         if (!box)
             continue;
 
-        if (!rootHasSelectedChildren && box->renderer().selectionState() != LayoutObject::SelectionNone)
+        if (!rootHasSelectedChildren && box->layoutObject().selectionState() != LayoutObject::SelectionNone)
             rootHasSelectedChildren = true;
 
         // If we have no parent box yet, or if the run is not simply a sibling,
         // then we need to construct inline boxes as necessary to properly enclose the
         // run's inline box. Segments can only be siblings at the root level, as
         // they are positioned separately.
-        if (!parentBox || parentBox->renderer() != r->m_object->parent()) {
+        if (!parentBox || parentBox->layoutObject() != r->m_object->parent()) {
             // Create new inline boxes all the way back to the appropriate insertion point.
             parentBox = createLineBoxes(r->m_object->parent(), lineInfo, box);
         } else {
@@ -490,7 +490,7 @@ static inline void computeExpansionForJustifiedText(BidiRun* firstRun, BidiRun* 
 void LayoutBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign, const RootInlineBox* rootInlineBox, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, unsigned expansionOpportunityCount)
 {
     TextDirection direction;
-    if (rootInlineBox && rootInlineBox->renderer().style()->unicodeBidi() == Plaintext)
+    if (rootInlineBox && rootInlineBox->layoutObject().style()->unicodeBidi() == Plaintext)
         direction = rootInlineBox->direction();
     else
         direction = style()->direction();
@@ -674,7 +674,7 @@ void LayoutBlockFlow::appendFloatingObjectToLastLine(FloatingObject* floatingObj
 {
     ASSERT(!floatingObject->originatingLine());
     floatingObject->setOriginatingLine(lastRootBox());
-    lastRootBox()->appendFloat(floatingObject->renderer());
+    lastRootBox()->appendFloat(floatingObject->layoutObject());
 }
 
 // This function constructs line boxes for all of the text runs in the resolver and computes their position.
@@ -760,9 +760,9 @@ void LayoutBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
         // adjust the height accordingly.
         // A line break can be either the first or the last object on a line, depending on its direction.
         if (InlineBox* lastLeafChild = lastRootBox()->lastLeafChild()) {
-            LayoutObject* lastObject = &lastLeafChild->renderer();
+            LayoutObject* lastObject = &lastLeafChild->layoutObject();
             if (!lastObject->isBR())
-                lastObject = &lastRootBox()->firstLeafChild()->renderer();
+                lastObject = &lastRootBox()->firstLeafChild()->layoutObject();
             if (lastObject->isBR()) {
                 EClear clear = lastObject->style()->clear();
                 if (clear != CNONE)
@@ -915,7 +915,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                 for (; it != end; ++it) {
                     FloatingObject* f = it->get();
                     appendFloatingObjectToLastLine(f);
-                    ASSERT(f->renderer() == layoutState.floats()[layoutState.floatIndex()].object);
+                    ASSERT(f->layoutObject() == layoutState.floats()[layoutState.floatIndex()].object);
                     // If a float's geometry has changed, give up on syncing with clean lines.
                     if (layoutState.floats()[layoutState.floatIndex()].rect != f->frameRect())
                         checkForEndLineMatch = false;
@@ -2020,7 +2020,7 @@ bool LayoutBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingO
             break;
         if (logicalTopForFloat(floatingObject) == logicalHeight() + lineInfo.floatPaginationStrut()) {
             floatingObject->setPaginationStrut(paginationStrut + floatingObject->paginationStrut());
-            LayoutBox* floatBox = floatingObject->renderer();
+            LayoutBox* floatBox = floatingObject->layoutObject();
             setLogicalTopForChild(*floatBox, logicalTopForChild(*floatBox) + marginBeforeForChild(*floatBox) + paginationStrut);
             if (floatBox->isLayoutBlock())
                 floatBox->forceChildLayout();

@@ -81,7 +81,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
     context.setColorFilter(maskContentFilter);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->renderer();
+        LayoutObject* renderer = childElement->layoutObject();
         if (!renderer)
             continue;
         const LayoutStyle* style = renderer->style();
@@ -100,7 +100,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
 void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
 {
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->renderer();
+        LayoutObject* renderer = childElement->layoutObject();
         if (!renderer)
             continue;
         const LayoutStyle* style = renderer->style();

@@ -90,7 +90,7 @@ public:
     void setLocalPoint(const LayoutPoint& p) { m_localPoint = p; }
 
     PositionWithAffinity position() const;
-    LayoutObject* renderer() const;
+    LayoutObject* layoutObject() const;
 
     void setToShadowHostIfInClosedShadowRoot();
 

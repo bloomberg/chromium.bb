@@ -67,10 +67,10 @@ LayoutObject* HTMLProgressElement::createLayoutObject(const LayoutStyle& style)
 
 LayoutProgress* HTMLProgressElement::layoutProgress() const
 {
-    if (renderer() && renderer()->isProgress())
-        return toLayoutProgress(renderer());
+    if (layoutObject() && layoutObject()->isProgress())
+        return toLayoutProgress(layoutObject());
 
-    LayoutObject* layoutObject = closedShadowRoot()->firstChild()->renderer();
+    LayoutObject* layoutObject = closedShadowRoot()->firstChild()->layoutObject();
     ASSERT_WITH_SECURITY_IMPLICATION(!layoutObject || layoutObject->isProgress());
     return toLayoutProgress(layoutObject);
 }

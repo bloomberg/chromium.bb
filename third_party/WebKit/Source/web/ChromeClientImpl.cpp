@@ -541,7 +541,7 @@ void ChromeClientImpl::mouseDidMoveOverElement(const HitTestResult& result)
     } else if (result.innerNonSharedNode()
         && (isHTMLObjectElement(*result.innerNonSharedNode())
             || isHTMLEmbedElement(*result.innerNonSharedNode()))) {
-        LayoutObject* object = result.innerNonSharedNode()->renderer();
+        LayoutObject* object = result.innerNonSharedNode()->layoutObject();
         if (object && object->isLayoutPart()) {
             Widget* widget = toLayoutPart(object)->widget();
             if (widget && widget->isPluginContainer()) {

@@ -56,7 +56,7 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection)
     EXPECT_EQ(RTL, messageDir);
     EXPECT_EQ(LTR, subMessageDir);
 
-    input->renderer()->style()->setDirection(RTL);
+    input->layoutObject()->style()->setDirection(RTL);
     input->findCustomValidationMessageTextDirection(message, messageDir, subMessage, subMessageDir);
     EXPECT_EQ(RTL, messageDir);
     EXPECT_EQ(RTL, subMessageDir);

@@ -72,7 +72,7 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& render
 
     LayoutView* view = renderer.view();
     ASSERT(view);
-    if (clipRects.fixed() && context.rootLayer->renderer() == view)
+    if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
         offset -= view->frameView()->scrollOffsetForViewportConstrainedObjects();
 
     if (renderer.hasOverflowClip()) {
@@ -185,7 +185,7 @@ LayoutRect LayerClipper::childrenClipRect() const
     // Need to use uncached clip rects, because the value of 'dontClipToOverflow' may be different from the painting path (<rdar://problem/11844909>).
     ClipRectsContext context(clippingRootLayer, UncachedClipRects);
     calculateRects(context, LayoutRect(m_renderer.view()->unscaledDocumentRect()), layerBounds, backgroundRect, foregroundRect, outlineRect);
-    return LayoutRect(clippingRootLayer->renderer()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox());
+    return LayoutRect(clippingRootLayer->layoutObject()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox());
 }
 
 LayoutRect LayerClipper::localClipRect() const
@@ -304,7 +304,7 @@ void LayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects
         // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
         // some transformed layer boundary, for example, in the LayerCompositor overlapMap, where
         // clipRects are needed in view space.
-        applyClipRects(context, m_renderer, roundedLayoutPoint(m_renderer.localToContainerPoint(FloatPoint(), context.rootLayer->renderer())), clipRects);
+        applyClipRects(context, m_renderer, roundedLayoutPoint(m_renderer.localToContainerPoint(FloatPoint(), context.rootLayer->layoutObject())), clipRects);
     }
 }
 
@@ -333,7 +333,7 @@ ClipRect LayerClipper::backgroundClipRect(const ClipRectsContext& context) const
     ClipRect result = backgroundClipRectForPosition(*parentClipRects, m_renderer.style()->position());
 
     // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
-    if (parentClipRects->fixed() && context.rootLayer->renderer() == m_renderer.view() && result != LayoutRect(LayoutRect::infiniteIntRect()))
+    if (parentClipRects->fixed() && context.rootLayer->layoutObject() == m_renderer.view() && result != LayoutRect(LayoutRect::infiniteIntRect()))
         result.move(m_renderer.view()->frameView()->scrollOffsetForViewportConstrainedObjects());
 
     return result;

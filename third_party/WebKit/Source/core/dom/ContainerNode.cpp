@@ -867,11 +867,11 @@ void ContainerNode::cloneChildNodes(ContainerNode *clone)
 
 bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
 {
-    if (!renderer())
+    if (!layoutObject())
         return false;
 
     // FIXME: What is this code really trying to do?
-    LayoutObject* o = renderer();
+    LayoutObject* o = layoutObject();
     if (!o->isInline() || o->isReplaced()) {
         point = o->localToAbsolute(FloatPoint(), UseTransforms);
         return true;
@@ -947,10 +947,10 @@ static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
 
 bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
 {
-    if (!renderer())
+    if (!layoutObject())
         return false;
 
-    LayoutObject* o = renderer();
+    LayoutObject* o = layoutObject();
     if (!o->isInline() || o->isReplaced()) {
         LayoutBox* box = toLayoutBox(o);
         point = o->localToAbsolute(FloatPoint(box->size()), UseTransforms);
@@ -962,7 +962,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
     while (o) {
         if (LayoutObject* oLastChild = o->slowLastChild()) {
             o = oLastChild;
-        } else if (o != renderer() && o->previousSibling()) {
+        } else if (o != layoutObject() && o->previousSibling()) {
             o = o->previousSibling();
         } else {
             LayoutObject* prev = nullptr;
@@ -980,7 +980,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
                     }
                 }
                 // Prevent to overrun out of own render tree
-                if (o == renderer()) {
+                if (o == layoutObject()) {
                     return false;
                 }
                 o = o->parent();
@@ -1038,7 +1038,7 @@ void ContainerNode::focusStateChanged()
 {
     // If we're just changing the window's active state and the focused node has no
     // renderer we can just ignore the state change.
-    if (!renderer())
+    if (!layoutObject())
         return;
 
     if (styleChangeType() < SubtreeStyleChange) {
@@ -1050,8 +1050,8 @@ void ContainerNode::focusStateChanged()
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
     }
 
-    if (renderer() && renderer()->style()->hasAppearance())
-        LayoutTheme::theme().stateChanged(renderer(), FocusControlState);
+    if (layoutObject() && layoutObject()->style()->hasAppearance())
+        LayoutTheme::theme().stateChanged(layoutObject(), FocusControlState);
 }
 
 void ContainerNode::setFocus(bool received)
@@ -1063,7 +1063,7 @@ void ContainerNode::setFocus(bool received)
 
     focusStateChanged();
 
-    if (renderer() || received)
+    if (layoutObject() || received)
         return;
 
     // If :focus sets display: none, we lose focus but still need to recalc our style.
@@ -1081,7 +1081,7 @@ void ContainerNode::setActive(bool down)
     Node::setActive(down);
 
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
-    if (renderer()) {
+    if (layoutObject()) {
         if (styleChangeType() < SubtreeStyleChange) {
             if (layoutStyle()->affectedByActive() && layoutStyle()->hasPseudoStyle(FIRST_LETTER))
                 setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
@@ -1092,7 +1092,7 @@ void ContainerNode::setActive(bool down)
         }
 
         if (layoutStyle()->hasAppearance())
-            LayoutTheme::theme().stateChanged(renderer(), PressedControlState);
+            LayoutTheme::theme().stateChanged(layoutObject(), PressedControlState);
     }
 }
 
@@ -1104,7 +1104,7 @@ void ContainerNode::setHovered(bool over)
     Node::setHovered(over);
 
     // If :hover sets display: none we lose our hover but still need to recalc our style.
-    if (!renderer()) {
+    if (!layoutObject()) {
         if (over)
             return;
         if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover() && styleChangeType() < SubtreeStyleChange)
@@ -1123,8 +1123,8 @@ void ContainerNode::setHovered(bool over)
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
     }
 
-    if (renderer()->style()->hasAppearance())
-        LayoutTheme::theme().stateChanged(renderer(), HoverControlState);
+    if (layoutObject()->style()->hasAppearance())
+        LayoutTheme::theme().stateChanged(layoutObject(), HoverControlState);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::children()
@@ -1271,7 +1271,7 @@ void ContainerNode::recalcChildStyle(StyleRecalcChange change)
                 element->recalcStyle(change, lastTextNode);
             else if (element->supportsStyleSharing())
                 styleResolver.addToStyleSharingList(*element);
-            if (element->renderer())
+            if (element->layoutObject())
                 lastTextNode = nullptr;
         }
     }

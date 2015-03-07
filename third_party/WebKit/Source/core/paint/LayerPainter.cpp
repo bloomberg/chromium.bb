@@ -35,7 +35,7 @@ static inline bool shouldSuppressPaintingLayer(Layer* layer)
     // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, updateStyleSelector on the Document
     // will do a full paintInvalidationForWholeRenderer().
-    if (layer->renderer()->document().didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->renderer()->isDocumentElement())
+    if (layer->layoutObject()->document().didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->layoutObject()->isDocumentElement())
         return true;
 
     return false;
@@ -66,7 +66,7 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
         }
     }
 
-    // Non self-painting leaf layers don't need to be painted as their renderer() should properly paint itself.
+    // Non self-painting leaf layers don't need to be painted as their layoutObject() should properly paint itself.
     if (!m_renderLayer.isSelfPaintingLayer() && !m_renderLayer.hasSelfPaintingLayerDescendant())
         return;
 
@@ -74,7 +74,7 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
         return;
 
     // If this layer is totally invisible then there is nothing to paint.
-    if (!m_renderLayer.renderer()->opacity())
+    if (!m_renderLayer.layoutObject()->opacity())
         return;
 
     if (m_renderLayer.paintsWithTransparency(paintingInfo.paintBehavior))
@@ -109,12 +109,12 @@ public:
         const LayoutPoint& offsetFromRoot, PaintLayerFlags paintFlags)
         : m_resourceClipper(0), m_renderLayer(renderLayer), m_context(context)
     {
-        const LayoutStyle& style = renderLayer.renderer()->styleRef();
+        const LayoutStyle& style = renderLayer.layoutObject()->styleRef();
 
         // Clip-path, like border radius, must not be applied to the contents of a composited-scrolling container.
         // It must, however, still be applied to the mask layer, so that the compositor can properly mask the
         // scrolling contents and scrollbars.
-        if (!renderLayer.renderer()->hasClipPath() || (renderLayer.needsCompositedScrolling() && !(paintFlags & PaintLayerPaintingChildClippingMaskPhase)))
+        if (!renderLayer.layoutObject()->hasClipPath() || (renderLayer.needsCompositedScrolling() && !(paintFlags & PaintLayerPaintingChildClippingMaskPhase)))
             return;
 
         m_clipperState = SVGClipPainter::ClipperNotApplied;
@@ -127,22 +127,22 @@ public:
                     rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
-                m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*context, renderLayer.renderer()->displayItemClient(),
+                m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*context, renderLayer.layoutObject()->displayItemClient(),
                     clipPath->path(rootRelativeBounds), clipPath->windRule()));
             }
         } else if (style.clipPath()->type() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style.clipPath());
-            Document& document = renderLayer.renderer()->document();
+            Document& document = renderLayer.layoutObject()->document();
             // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
             Element* element = document.getElementById(referenceClipPathOperation->fragment());
-            if (isSVGClipPathElement(element) && element->renderer()) {
+            if (isSVGClipPathElement(element) && element->layoutObject()) {
                 if (!rootRelativeBoundsComputed) {
                     rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
 
-                m_resourceClipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->renderer()));
-                if (!SVGClipPainter(*m_resourceClipper).applyClippingToContext(renderLayer.renderer(), rootRelativeBounds,
+                m_resourceClipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
+                if (!SVGClipPainter(*m_resourceClipper).applyClippingToContext(renderLayer.layoutObject(), rootRelativeBounds,
                     paintingInfo.paintDirtyRect, context, m_clipperState)) {
                     // No need to post-apply the clipper if this failed.
                     m_resourceClipper = 0;
@@ -154,7 +154,7 @@ public:
     ~ClipPathHelper()
     {
         if (m_resourceClipper)
-            SVGClipPainter(*m_resourceClipper).postApplyStatefulResource(m_renderLayer.renderer(), m_context, m_clipperState);
+            SVGClipPainter(*m_resourceClipper).postApplyStatefulResource(m_renderLayer.layoutObject(), m_context, m_clipperState);
     }
 private:
     LayoutSVGResourceClipper* m_resourceClipper;
@@ -186,7 +186,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         || (!isPaintingScrollingContent && isPaintingCompositedForeground));
     bool shouldPaintContent = m_renderLayer.hasVisibleContent() && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
-    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_renderLayer.renderer()->isLayoutView() && !m_renderLayer.renderer()->isDocumentElement())
+    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_renderLayer.layoutObject()->isLayoutView() && !m_renderLayer.layoutObject()->isDocumentElement())
         return;
 
     // Ensure our lists are up-to-date.
@@ -210,15 +210,15 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to composite if we're painting the root.
     // FIXME: this should be unified further into Layer::paintsWithTransparency().
-    bool shouldCompositeForBlendMode = (!m_renderLayer.renderer()->isDocumentElement() || m_renderLayer.renderer()->isSVGRoot()) && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
+    bool shouldCompositeForBlendMode = (!m_renderLayer.layoutObject()->isDocumentElement() || m_renderLayer.layoutObject()->isSVGRoot()) && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
     if (shouldCompositeForBlendMode || m_renderLayer.paintsWithTransparency(paintingInfo.paintBehavior)) {
-        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::TransparencyClip,
+        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.layoutObject(), context, DisplayItem::TransparencyClip,
             m_renderLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior),
             &paintingInfo, LayoutPoint(), paintFlags));
 
-        compositingRecorder = adoptPtr(new CompositingRecorder(context, m_renderLayer.renderer()->displayItemClient(),
-            WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), m_renderLayer.renderer()->style()->blendMode()),
-            m_renderLayer.renderer()->opacity()));
+        compositingRecorder = adoptPtr(new CompositingRecorder(context, m_renderLayer.layoutObject()->displayItemClient(),
+            WebCoreCompositeToSkiaComposite(context->compositeOperationDeprecated(), m_renderLayer.layoutObject()->style()->blendMode()),
+            m_renderLayer.layoutObject()->opacity()));
     }
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
@@ -227,7 +227,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     if (shouldPaintContent || shouldPaintOutline || isPaintingOverlayScrollbars) {
         // Collect the fragments. This will compute the clip rectangles and paint offsets for each layer fragment.
         ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects;
-        ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer());
+        ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_renderLayer.layoutObject());
         if (fragmentPolicy == ForceSingleFragment)
             m_renderLayer.appendSingleFragmentIgnoringPagination(layerFragments, localPaintingInfo.rootLayer, localPaintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
         else
@@ -242,7 +242,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     // Else, our renderer tree may or may not contain the painting root, so we pass that root along
     // so it will be tested against as we descend through the renderers.
     LayoutObject* paintingRootForRenderer = 0;
-    if (localPaintingInfo.paintingRoot && !m_renderLayer.renderer()->isDescendantOf(localPaintingInfo.paintingRoot))
+    if (localPaintingInfo.paintingRoot && !m_renderLayer.layoutObject()->isDescendantOf(localPaintingInfo.paintingRoot))
         paintingRootForRenderer = localPaintingInfo.paintingRoot;
 
     { // Begin block for the lifetime of any filter.
@@ -286,7 +286,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
             paintOverflowControlsForFragments(layerFragments, context, localPaintingInfo, paintFlags);
     } // FilterPainter block
 
-    bool shouldPaintMask = (paintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && m_renderLayer.renderer()->hasMask() && !selectionOnly;
+    bool shouldPaintMask = (paintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && m_renderLayer.layoutObject()->hasMask() && !selectionOnly;
     bool shouldPaintClippingMask = (paintFlags & PaintLayerPaintingChildClippingMaskPhase) && shouldPaintContent && !selectionOnly;
 
     if (shouldPaintMask)
@@ -338,7 +338,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
     if (parentLayer) {
         // Calculate the clip rectangle that the ancestors establish.
         ClipRectsContext clipRectsContext(paintingInfo.rootLayer, (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize);
-        if (shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer()) == IgnoreOverflowClip)
+        if (shouldRespectOverflowClip(paintFlags, m_renderLayer.layoutObject()) == IgnoreOverflowClip)
             clipRectsContext.setIgnoreOverflowClip();
         ancestorBackgroundClipRect = m_renderLayer.clipper().backgroundClipRect(clipRectsContext);
     }
@@ -350,7 +350,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
         // issues in it & refactor to make it obvious from code structure what it does and that it's
         // correct.
         ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects;
-        ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer());
+        ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_renderLayer.layoutObject());
         // Calculate the transformed bounding box in the current coordinate space, to figure out
         // which fragmentainers (e.g. columns) we need to visit.
         LayoutRect transformedExtent = Layer::transparencyClipBox(&m_renderLayer, paginationLayer, Layer::PaintingTransparencyClipBox, Layer::RootOfTransparencyClipBox, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
@@ -367,7 +367,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
     }
 
     for (const auto& fragment: fragments) {
-        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.layoutObject());
         OwnPtr<LayerClipRecorder> clipRecorder;
         if (parentLayer) {
             ClipRect clipRectForFragment(ancestorBackgroundClipRect);
@@ -376,7 +376,7 @@ void LayerPainter::paintLayerWithTransform(GraphicsContext* context, const Layer
             if (clipRectForFragment.isEmpty())
                 continue;
             if (needsToClip(paintingInfo, clipRectForFragment))
-                clipRecorder = adoptPtr(new LayerClipRecorder(parentLayer->renderer(), context, DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags));
+                clipRecorder = adoptPtr(new LayerClipRecorder(parentLayer->layoutObject(), context, DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags));
         }
 
         paintFragmentByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset);
@@ -395,7 +395,7 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
     transform.translateRight(roundedDelta.x(), roundedDelta.y());
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
 
-    Transform3DRecorder transform3DRecorder(*context, m_renderLayer.renderer()->displayItemClient(), transform);
+    Transform3DRecorder transform3DRecorder(*context, m_renderLayer.layoutObject()->displayItemClient(), transform);
 
     // Now do a paint with the root layer shifted to be us.
     LayerPaintingInfo transformedPaintingInfo(&m_renderLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.paintBehavior,
@@ -430,7 +430,7 @@ void LayerPainter::paintChildren(unsigned childrenToVisit, GraphicsContext* cont
 // FIXME: inline this.
 static bool paintForFixedRootBackground(const Layer* layer, PaintLayerFlags paintFlags)
 {
-    return layer->renderer()->isDocumentElement() && (paintFlags & PaintLayerPaintingRootBackgroundOnly);
+    return layer->layoutObject()->isDocumentElement() && (paintFlags & PaintLayerPaintingRootBackgroundOnly);
 }
 
 bool LayerPainter::shouldPaintLayerInSoftwareMode(const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
@@ -457,11 +457,11 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
     for (size_t i = 0; i < layerFragments.size(); ++i) {
         const LayerFragment& fragment = layerFragments.at(i);
 
-        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.layoutObject());
         OwnPtr<LayerClipRecorder> clipRecorder;
 
         if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
-            clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
+            clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.layoutObject(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
         }
         if (LayerScrollableArea* scrollableArea = m_renderLayer.scrollableArea())
             ScrollableAreaPainter(*scrollableArea).paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.layoutBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState()))), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
@@ -496,7 +496,7 @@ void LayerPainter::paintPaginatedChildLayer(GraphicsContext* context, const Laye
     Vector<Layer*> columnLayers;
     LayerStackingNode* ancestorNode = m_renderLayer.stackingNode()->isNormalFlowOnly() ? m_renderLayer.parent()->stackingNode() : m_renderLayer.stackingNode()->ancestorStackingContextNode();
     for (Layer* curr = m_renderLayer.parent(); curr; curr = curr->parent()) {
-        if (curr->renderer()->hasColumns() && checkContainingBlockChainForPagination(m_renderLayer.renderer(), curr->layoutBox()))
+        if (curr->layoutObject()->hasColumns() && checkContainingBlockChainForPagination(m_renderLayer.layoutObject(), curr->layoutBox()))
             columnLayers.append(curr);
         if (curr->stackingNode() == ancestorNode)
             break;
@@ -515,7 +515,7 @@ void LayerPainter::paintPaginatedChildLayer(GraphicsContext* context, const Laye
 void LayerPainter::paintChildLayerIntoColumns(GraphicsContext* context, const LayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags, const Vector<Layer*>& columnLayers, size_t colIndex)
 {
-    LayoutBlock* columnBlock = toLayoutBlock(columnLayers[colIndex]->renderer());
+    LayoutBlock* columnBlock = toLayoutBlock(columnLayers[colIndex]->layoutObject());
 
     ASSERT(columnBlock && columnBlock->hasColumns());
     if (!columnBlock || !columnBlock->hasColumns())
@@ -557,7 +557,7 @@ void LayerPainter::paintChildLayerIntoColumns(GraphicsContext* context, const La
         if (!localDirtyRect.isEmpty()) {
             // Each strip pushes a clip, since column boxes are specified as being
             // like overflow:hidden.
-            ClipRecorder clipRecorder(m_renderLayer.renderer()->displayItemClient(), context, DisplayItem::ClipLayerColumnBounds, LayoutRect(enclosingIntRect(colRect)));
+            ClipRecorder clipRecorder(m_renderLayer.layoutObject()->displayItemClient(), context, DisplayItem::ClipLayerColumnBounds, LayoutRect(enclosingIntRect(colRect)));
 
             if (!colIndex) {
                 // Apply a translation transform to change where the layer paints.
@@ -586,7 +586,7 @@ void LayerPainter::paintChildLayerIntoColumns(GraphicsContext* context, const La
                 TransformationMatrix transform;
                 transform.translateRight(roundToInt(childOffset.x() + offset.width()), roundToInt(childOffset.y() + offset.height()));
 
-                Transform3DRecorder transform3DRecorder(*context, m_renderLayer.renderer()->displayItemClient(), transform);
+                Transform3DRecorder transform3DRecorder(*context, m_renderLayer.layoutObject()->displayItemClient(), transform);
 
                 // Now do a paint with the root layer shifted to be the next multicol block.
                 LayerPaintingInfo columnPaintingInfo(paintingInfo);
@@ -622,11 +622,11 @@ void LayerPainter::paintFragmentWithPhase(PaintPhase phase, const LayerFragment&
             break;
         }
 
-        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule));
+        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.layoutObject(), context, clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule));
     }
 
-    PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForRenderer, 0, paintingInfo.rootLayer->renderer());
-    m_renderLayer.renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.layoutBoxLocation() + subPixelAccumulationIfNeeded(paintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
+    PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForRenderer, 0, paintingInfo.rootLayer->layoutObject());
+    m_renderLayer.layoutObject()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.layoutBoxLocation() + subPixelAccumulationIfNeeded(paintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
 }
 
 void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragments, GraphicsContext* context,
@@ -634,7 +634,7 @@ void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragme
     LayoutObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
     for (const auto& fragment: layerFragments) {
-        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.layoutObject());
         paintFragmentWithPhase(PaintPhaseBlockBackground, fragment, context, fragment.backgroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }
@@ -648,7 +648,7 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
     ClipState clipState = HasNotClipped;
     OwnPtr<LayerClipRecorder> clipRecorder;
     if (shouldClip && needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
-        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect, &localPaintingInfo, layerFragments[0].paginationOffset, paintFlags));
+        clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.layoutObject(), context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect, &localPaintingInfo, layerFragments[0].paginationOffset, paintFlags));
         clipState = HasClipped;
     }
 
@@ -669,7 +669,7 @@ void LayerPainter::paintForegroundForFragmentsWithPhase(PaintPhase phase, const 
 {
     for (const auto& fragment: layerFragments) {
         if (!fragment.foregroundRect.isEmpty()) {
-            ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
+            ScopeRecorder scopeRecorder(context, *m_renderLayer.layoutObject());
             paintFragmentWithPhase(phase, fragment, context, fragment.foregroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, clipState);
         }
     }
@@ -680,7 +680,7 @@ void LayerPainter::paintOutlineForFragments(const LayerFragments& layerFragments
 {
     for (const auto& fragment: layerFragments) {
         if (!fragment.outlineRect.isEmpty()) {
-            ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
+            ScopeRecorder scopeRecorder(context, *m_renderLayer.layoutObject());
             paintFragmentWithPhase(PaintPhaseSelfOutline, fragment, context, fragment.outlineRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
         }
     }
@@ -690,7 +690,7 @@ void LayerPainter::paintMaskForFragments(const LayerFragments& layerFragments, G
     LayoutObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
     for (const auto& fragment: layerFragments) {
-        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.layoutObject());
         paintFragmentWithPhase(PaintPhaseMask, fragment, context, fragment.backgroundRect, localPaintingInfo, PaintBehaviorNormal, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }
@@ -699,7 +699,7 @@ void LayerPainter::paintChildClippingMaskForFragments(const LayerFragments& laye
     LayoutObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
     for (const auto& fragment: layerFragments) {
-        ScopeRecorder scopeRecorder(context, *m_renderLayer.renderer());
+        ScopeRecorder scopeRecorder(context, *m_renderLayer.layoutObject());
         paintFragmentWithPhase(PaintPhaseClippingMask, fragment, context, fragment.foregroundRect, localPaintingInfo, PaintBehaviorNormal, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }

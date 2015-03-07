@@ -902,7 +902,7 @@ TEST_F(PinchViewportTest, TestWebViewResizeCausesViewportConstrainedLayout)
     registerMockedHttpURLLoad("pinch-viewport-fixed-pos.html");
     navigateTo(m_baseURL + "pinch-viewport-fixed-pos.html");
 
-    LayoutObject* navbar = frame()->document()->getElementById("navbar")->renderer();
+    LayoutObject* navbar = frame()->document()->getElementById("navbar")->layoutObject();
 
     EXPECT_FALSE(navbar->needsLayout());
 
@@ -1338,7 +1338,7 @@ TEST_F(PinchViewportTest, ElementBoundsInViewportSpaceAccountsForViewport)
     webViewImpl()->setInitialFocus(false);
     Element* inputElement = webViewImpl()->focusedElement();
 
-    IntRect bounds = inputElement->renderer()->absoluteBoundingBoxRect();
+    IntRect bounds = inputElement->layoutObject()->absoluteBoundingBoxRect();
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     IntPoint scrollDelta(250, 400);

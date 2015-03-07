@@ -315,12 +315,12 @@ Position lastEditablePositionBeforePositionInRoot(const Position& position, Node
 // Whether or not content before and after this node will collapse onto the same line as it.
 bool isBlock(const Node* node)
 {
-    return node && node->renderer() && !node->renderer()->isInline() && !node->renderer()->isRubyText();
+    return node && node->layoutObject() && !node->layoutObject()->isInline() && !node->layoutObject()->isRubyText();
 }
 
 bool isInline(const Node* node)
 {
-    return node && node->renderer() && node->renderer()->isInline();
+    return node && node->layoutObject() && node->layoutObject()->isInline();
 }
 
 // FIXME: Deploy this in all of the places where enclosingBlockFlow/enclosingBlockFlowOrTableElement are used.
@@ -355,7 +355,7 @@ TextDirection directionOfEnclosingBlock(const Position& position)
     Element* enclosingBlockElement = enclosingBlock(position.containerNode());
     if (!enclosingBlockElement)
         return LTR;
-    LayoutObject* renderer = enclosingBlockElement->renderer();
+    LayoutObject* renderer = enclosingBlockElement->layoutObject();
     return renderer ? renderer->style()->direction() : LTR;
 }
 
@@ -413,7 +413,7 @@ String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfP
 
 bool isTableStructureNode(const Node *node)
 {
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     return (renderer && (renderer->isTableCell() || renderer->isTableRow() || renderer->isTableSection() || renderer->isLayoutTableCol()));
 }
 
@@ -432,7 +432,7 @@ static bool isSpecialHTMLElement(const Node& n)
     if (n.isLink())
         return true;
 
-    LayoutObject* renderer = n.renderer();
+    LayoutObject* renderer = n.layoutObject();
     if (!renderer)
         return false;
 
@@ -550,7 +550,7 @@ bool isHTMLListElement(Node* n)
 
 bool isListItem(const Node* n)
 {
-    return n && n->renderer() && n->renderer()->isListItem();
+    return n && n->layoutObject() && n->layoutObject()->isListItem();
 }
 
 Element* enclosingElementWithTag(const Position& p, const QualifiedName& tagName)
@@ -617,7 +617,7 @@ static bool hasARenderedDescendant(Node* node, Node* excludedNode)
             n = NodeTraversal::nextSkippingChildren(*n, node);
             continue;
         }
-        if (n->renderer())
+        if (n->layoutObject())
             return true;
         n = NodeTraversal::next(*n, node);
     }
@@ -629,7 +629,7 @@ Node* highestNodeToRemoveInPruning(Node* node, Node* excludeNode)
     Node* previousNode = nullptr;
     Element* rootEditableElement = node ? node->rootEditableElement() : nullptr;
     for (; node; node = node->parentNode()) {
-        if (LayoutObject* renderer = node->renderer()) {
+        if (LayoutObject* renderer = node->layoutObject()) {
             if (!renderer->canHaveChildren() || hasARenderedDescendant(node, previousNode) || rootEditableElement == node || excludeNode == node)
                 return previousNode;
         }
@@ -744,7 +744,7 @@ bool canMergeLists(Element* firstList, Element* secondList)
 
 bool isRenderedHTMLTableElement(const Node* node)
 {
-    return isHTMLTableElement(*node) && node->renderer();
+    return isHTMLTableElement(*node) && node->layoutObject();
 }
 
 bool isRenderedTableElement(const Node* node)
@@ -752,14 +752,14 @@ bool isRenderedTableElement(const Node* node)
     if (!node || !node->isElementNode())
         return false;
 
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     return (renderer && renderer->isTable());
 }
 
 bool isTableCell(const Node* node)
 {
     ASSERT(node);
-    LayoutObject* r = node->renderer();
+    LayoutObject* r = node->layoutObject();
     return r ? r->isTableCell() : isHTMLTableCellElement(*node);
 }
 
@@ -771,14 +771,14 @@ bool isEmptyTableCell(const Node* node)
     //   .) the BR child of such a table cell
 
     // Find rendered node
-    while (node && !node->renderer())
+    while (node && !node->layoutObject())
         node = node->parentNode();
     if (!node)
         return false;
 
     // Make sure the rendered node is a table cell or <br>.
     // If it's a <br>, then the parent node has to be a table cell.
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (renderer->isBR()) {
         renderer = renderer->parent();
         if (!renderer)
@@ -882,7 +882,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> createBlockPlaceholderElement(Document& do
 
 bool isNodeRendered(const Node& node)
 {
-    LayoutObject* renderer = node.renderer();
+    LayoutObject* renderer = node.layoutObject();
     if (!renderer)
         return false;
 
@@ -1007,7 +1007,7 @@ bool isMailHTMLBlockquoteElement(const Node* node)
 
 int caretMinOffset(const Node* n)
 {
-    LayoutObject* r = n->renderer();
+    LayoutObject* r = n->layoutObject();
     ASSERT(!n->isCharacterDataNode() || !r || r->isText()); // FIXME: This was a runtime check that seemingly couldn't fail; changed it to an assertion for now.
     return r ? r->caretMinOffset() : 0;
 }
@@ -1017,8 +1017,8 @@ int caretMinOffset(const Node* n)
 int caretMaxOffset(const Node* n)
 {
     // For rendered text nodes, return the last position that a caret could occupy.
-    if (n->isTextNode() && n->renderer())
-        return n->renderer()->caretMaxOffset();
+    if (n->isTextNode() && n->layoutObject())
+        return n->layoutObject()->caretMaxOffset();
     // For containers return the number of children. For others do the same as above.
     return lastOffsetForEditing(n);
 }
@@ -1036,10 +1036,10 @@ bool lineBreakExistsAtPosition(const Position& position)
     if (isHTMLBRElement(*position.anchorNode()) && position.atFirstEditingPositionForNode())
         return true;
 
-    if (!position.anchorNode()->renderer())
+    if (!position.anchorNode()->layoutObject())
         return false;
 
-    if (!position.anchorNode()->isTextNode() || !position.anchorNode()->renderer()->style()->preserveNewline())
+    if (!position.anchorNode()->isTextNode() || !position.anchorNode()->layoutObject()->style()->preserveNewline())
         return false;
 
     Text* textNode = toText(position.anchorNode());
@@ -1135,7 +1135,7 @@ bool isRenderedAsNonInlineTableImageOrHR(const Node* node)
 {
     if (!node)
         return false;
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     return renderer && ((renderer->isTable() && !renderer->isInline()) || (renderer->isImage() && !renderer->isInline()) || renderer->isHR());
 }
 
@@ -1173,7 +1173,7 @@ bool isNonTableCellHTMLBlockElement(const Node* node)
 
 bool isBlockFlowElement(const Node& node)
 {
-    LayoutObject* renderer = node.renderer();
+    LayoutObject* renderer = node.layoutObject();
     return node.isElementNode() && renderer && renderer->isLayoutBlockFlow();
 }
 

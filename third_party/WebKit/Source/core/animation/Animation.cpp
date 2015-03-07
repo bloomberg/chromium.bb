@@ -272,7 +272,7 @@ bool Animation::cancelAnimationOnCompositor()
     DisableCompositingQueryAsserts disabler;
     if (!hasActiveAnimationsOnCompositor())
         return false;
-    if (!m_target || !m_target->renderer())
+    if (!m_target || !m_target->layoutObject())
         return false;
     for (const auto& compositorAnimationId : m_compositorAnimationIds)
         CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, compositorAnimationId);
@@ -295,7 +295,7 @@ void Animation::cancelIncompatibleAnimationsOnCompositor()
 void Animation::pauseAnimationForTestingOnCompositor(double pauseTime)
 {
     ASSERT(hasActiveAnimationsOnCompositor());
-    if (!m_target || !m_target->renderer())
+    if (!m_target || !m_target->layoutObject())
         return;
     for (const auto& compositorAnimationId : m_compositorAnimationIds)
         CompositorAnimations::instance()->pauseAnimationForTestingOnCompositor(*m_target, compositorAnimationId, pauseTime);

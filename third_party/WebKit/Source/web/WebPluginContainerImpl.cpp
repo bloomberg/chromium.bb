@@ -136,7 +136,7 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     if (!parent())
         return;
 
-    LayoutBox* renderer = toLayoutBox(m_element->renderer());
+    LayoutBox* renderer = toLayoutBox(m_element->layoutObject());
     if (!renderer)
         return;
 
@@ -399,7 +399,7 @@ void WebPluginContainerImpl::scrollRect(const WebRect& rect)
 void WebPluginContainerImpl::reportGeometry()
 {
     // We cannot compute geometry without a parent or renderer.
-    if (!parent() || !m_element->renderer())
+    if (!parent() || !m_element->layoutObject())
         return;
 
     IntRect windowRect, clipRect;
@@ -552,7 +552,7 @@ WebPoint WebPluginContainerImpl::windowToLocalPoint(const WebPoint& point)
     if (!view)
         return point;
     WebPoint windowPoint = view->windowToContents(point);
-    return roundedIntPoint(m_element->renderer()->absoluteToLocal(FloatPoint(windowPoint), UseTransforms));
+    return roundedIntPoint(m_element->layoutObject()->absoluteToLocal(FloatPoint(windowPoint), UseTransforms));
 }
 
 WebPoint WebPluginContainerImpl::localToWindowPoint(const WebPoint& point)
@@ -560,7 +560,7 @@ WebPoint WebPluginContainerImpl::localToWindowPoint(const WebPoint& point)
     FrameView* view = toFrameView(parent());
     if (!view)
         return point;
-    IntPoint absolutePoint = roundedIntPoint(m_element->renderer()->localToAbsolute(FloatPoint(point), UseTransforms));
+    IntPoint absolutePoint = roundedIntPoint(m_element->layoutObject()->localToAbsolute(FloatPoint(point), UseTransforms));
     return view->contentsToWindow(absolutePoint);
 }
 
@@ -771,7 +771,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
     // in the call to HandleEvent. See http://b/issue?id=1362948
     FrameView* parentView = toFrameView(parent());
 
-    WebMouseEventBuilder webEvent(this, m_element->renderer(), *event);
+    WebMouseEventBuilder webEvent(this, m_element->layoutObject(), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
 
@@ -831,7 +831,7 @@ void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)
 
 void WebPluginContainerImpl::handleWheelEvent(WheelEvent* event)
 {
-    WebMouseWheelEventBuilder webEvent(this, m_element->renderer(), *event);
+    WebMouseWheelEventBuilder webEvent(this, m_element->layoutObject(), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
 
@@ -889,7 +889,7 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event)
     case TouchEventRequestTypeNone:
         return;
     case TouchEventRequestTypeRaw: {
-        WebTouchEventBuilder webEvent(this, m_element->renderer(), *event);
+        WebTouchEventBuilder webEvent(this, m_element->layoutObject(), *event);
         if (webEvent.type == WebInputEvent::Undefined)
             return;
 
@@ -918,7 +918,7 @@ static inline bool gestureScrollHelper(ScrollbarGroup* scrollbarGroup, ScrollDir
 
 void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
 {
-    WebGestureEventBuilder webEvent(this, m_element->renderer(), *event);
+    WebGestureEventBuilder webEvent(this, m_element->layoutObject(), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
     if (event->type() == EventTypeNames::gesturetapdown)
@@ -942,7 +942,7 @@ void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
 
 void WebPluginContainerImpl::synthesizeMouseEventIfPossible(TouchEvent* event)
 {
-    WebMouseEventBuilder webEvent(this, m_element->renderer(), *event);
+    WebMouseEventBuilder webEvent(this, m_element->layoutObject(), *event);
     if (webEvent.type == WebInputEvent::Undefined)
         return;
 
@@ -986,7 +986,7 @@ IntRect WebPluginContainerImpl::windowClipRect() const
     // document().layoutView() can be 0 when we receive messages from the
     // plugins while we are destroying a frame.
     // FIXME: Can we just check m_element->document().isActive() ?
-    if (m_element->renderer()->document().layoutView()) {
+    if (m_element->layoutObject()->document().layoutView()) {
         // Take our element and get the clip rect from the enclosing layer and
         // frame view.
         clipRect.intersect(

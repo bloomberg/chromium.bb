@@ -77,7 +77,7 @@ public:
 
     ColumnInfo* columnInfo() const { return m_columnInfo; }
 
-    LayoutObject& renderer() const { return m_renderer; }
+    LayoutObject& layoutObject() const { return m_renderer; }
 
 private:
     friend class ForceHorriblySlowRectMapping;

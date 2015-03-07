@@ -50,11 +50,11 @@ CompositingReasons CompositingReasonFinder::directReasons(const Layer* layer) co
     if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
         return CompositingReasonNone;
 
-    ASSERT(potentialCompositingReasonsFromStyle(layer->renderer()) == layer->potentialCompositingReasonsFromStyle());
+    ASSERT(potentialCompositingReasonsFromStyle(layer->layoutObject()) == layer->potentialCompositingReasonsFromStyle());
     CompositingReasons styleDeterminedDirectCompositingReasons = layer->potentialCompositingReasonsFromStyle() & CompositingReasonComboAllDirectStyleDeterminedReasons;
 
     // Apply optimizations for scroll-blocks-on which require comparing style between objects.
-    if ((styleDeterminedDirectCompositingReasons & CompositingReasonScrollBlocksOn) && !requiresCompositingForScrollBlocksOn(layer->renderer()))
+    if ((styleDeterminedDirectCompositingReasons & CompositingReasonScrollBlocksOn) && !requiresCompositingForScrollBlocksOn(layer->layoutObject()))
         styleDeterminedDirectCompositingReasons &= ~CompositingReasonScrollBlocksOn;
 
     return styleDeterminedDirectCompositingReasons | nonStyleDeterminedDirectReasons(layer);
@@ -146,7 +146,7 @@ bool CompositingReasonFinder::requiresCompositingForTransform(LayoutObject* rend
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const Layer* layer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
-    LayoutObject* renderer = layer->renderer();
+    LayoutObject* renderer = layer->layoutObject();
 
     if (hasOverflowScrollTrigger()) {
         if (layer->clipParent())
@@ -203,8 +203,8 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutO
     // scroll-blocks-on style is propagated from the document element to the document.
     ASSERT(!renderer->isLayoutView()
         || !renderer->document().documentElement()
-        || !renderer->document().documentElement()->renderer()
-        || renderer->document().documentElement()->renderer()->style()->scrollBlocksOn() == style.scrollBlocksOn());
+        || !renderer->document().documentElement()->layoutObject()
+        || renderer->document().documentElement()->layoutObject()->style()->scrollBlocksOn() == style.scrollBlocksOn());
 
     // When a scroll occurs, it's the union of all bits set on the target element's containing block
     // chain that determines the behavior.  Thus we really only need a new layer if this object contains

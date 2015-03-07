@@ -50,7 +50,7 @@ static bool shouldAppendLayer(const Layer& layer)
 {
     if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
         return true;
-    Node* node = layer.renderer()->node();
+    Node* node = layer.layoutObject()->node();
     if (node && isHTMLVideoElement(*node)) {
         HTMLVideoElement* element = toHTMLVideoElement(node);
         // For WebRTC, video frame contains all the data and no hardware surface is used.
@@ -101,8 +101,8 @@ void GraphicsLayerTreeBuilder::rebuild(Layer& layer, AncestorInfo info)
 
     if (hasCompositedLayerMapping) {
         bool parented = false;
-        if (layer.renderer()->isLayoutPart())
-            parented = LayerCompositor::parentFrameContentLayers(toLayoutPart(layer.renderer()));
+        if (layer.layoutObject()->isLayoutPart())
+            parented = LayerCompositor::parentFrameContentLayers(toLayoutPart(layer.layoutObject()));
 
         if (!parented)
             currentCompositedLayerMapping->parentForSublayers()->setChildren(layerChildren);

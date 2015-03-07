@@ -303,7 +303,7 @@ static bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad
 
 static void buildNodeHighlight(Node& node, const HighlightConfig& highlightConfig, Highlight* highlight)
 {
-    LayoutObject* renderer = node.renderer();
+    LayoutObject* renderer = node.layoutObject();
     if (!renderer)
         return;
 
@@ -591,7 +591,7 @@ static RefPtr<TypeBuilder::Array<double> > buildArrayForQuad(const FloatQuad& qu
 
 static const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths* paths, FloatQuad* bounds)
 {
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (!renderer || !renderer->isBox() || !toLayoutBox(renderer)->shapeOutsideInfo())
         return nullptr;
 
@@ -622,9 +622,9 @@ static void appendPathsForShapeOutside(Highlight& highlight, const HighlightConf
         return;
     }
 
-    highlight.appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->renderer(), *shapeOutsideInfo, paths.shape), config.shape, Color::transparent);
+    highlight.appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.shape), config.shape, Color::transparent);
     if (paths.marginShape.length())
-        highlight.appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->renderer(), *shapeOutsideInfo, paths.marginShape), config.shapeMargin, Color::transparent);
+        highlight.appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.marginShape), config.shapeMargin, Color::transparent);
 }
 
 PassRefPtr<JSONObject> buildElementInfo(Element* element)
@@ -661,7 +661,7 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
     if (!classNames.isEmpty())
         elementInfo->setString("className", classNames.toString());
 
-    LayoutObject* renderer = element->renderer();
+    LayoutObject* renderer = element->layoutObject();
     FrameView* containingView = element->document().view();
     if (!renderer || !containingView)
         return elementInfo;
@@ -684,13 +684,13 @@ void InspectorOverlay::drawNodeHighlight()
     appendPathsForShapeOutside(highlight, m_nodeHighlightConfig, m_highlightNode.get());
     buildNodeHighlight(*m_highlightNode, m_nodeHighlightConfig, &highlight);
 
-    if (m_eventTargetNode && m_eventTargetNode->renderer()) {
+    if (m_eventTargetNode && m_eventTargetNode->layoutObject()) {
         FloatQuad border, unused;
-        if (buildNodeQuads(m_eventTargetNode->renderer(), &unused, &unused, &border, &unused))
+        if (buildNodeQuads(m_eventTargetNode->layoutObject(), &unused, &unused, &border, &unused))
             highlight.appendQuad(border, m_nodeHighlightConfig.eventTarget);
     }
 
-    if (m_highlightNode->isElementNode() && !m_omitTooltip && m_nodeHighlightConfig.showInfo && m_highlightNode->renderer() && m_highlightNode->document().frame())
+    if (m_highlightNode->isElementNode() && !m_omitTooltip && m_nodeHighlightConfig.showInfo && m_highlightNode->layoutObject() && m_highlightNode->document().frame())
         highlight.setElementInfo(buildElementInfo(toElement(m_highlightNode.get())));
 
     evaluateInOverlay("drawHighlight", highlight.asJSONObject());
@@ -819,13 +819,13 @@ void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
 
 bool InspectorOverlay::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxModel>& model)
 {
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     FrameView* view = node->document().view();
     if (!renderer || !view)
         return false;
 
     FloatQuad content, padding, border, margin;
-    if (!buildNodeQuads(node->renderer(), &content, &padding, &border, &margin))
+    if (!buildNodeQuads(node->layoutObject(), &content, &padding, &border, &margin))
         return false;
 
     IntRect boundingBox = view->contentsToRootFrame(renderer->absoluteBoundingBoxRect());

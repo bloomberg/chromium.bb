@@ -166,10 +166,10 @@ static void addQuadToPath(const FloatQuad& quad, Path& path)
 
 void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) const
 {
-    if (!node.renderer())
+    if (!node.layoutObject())
         return;
 
-    LayoutObject* renderer = node.renderer();
+    LayoutObject* renderer = node.layoutObject();
 
     // For inline elements, absoluteQuads will return a line box based on the line-height
     // and font metrics, which is technically incorrect as replaced elements like images
@@ -187,7 +187,7 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
 
 bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObject* paintInvalidationContainer)
 {
-    if (!m_node || !m_node->renderer() || !m_currentGraphicsLayer)
+    if (!m_node || !m_node->layoutObject() || !m_currentGraphicsLayer)
         return false;
     ASSERT(paintInvalidationContainer);
 
@@ -210,12 +210,12 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObj
 
         // FIXME: this hack should not be necessary. It's a consequence of the fact that composited layers for scrolling are represented
         // differently in Blink than other composited layers.
-        if (paintInvalidationContainer->layer()->needsCompositedScrolling() && m_node->renderer() != paintInvalidationContainer)
+        if (paintInvalidationContainer->layer()->needsCompositedScrolling() && m_node->layoutObject() != paintInvalidationContainer)
             absoluteQuad.move(-positionAdjustForCompositedScrolling.x(), -positionAdjustForCompositedScrolling.y());
 
         // Transform node quads in target absolute coords to local coordinates in the compositor layer.
         FloatQuad transformedQuad;
-        convertTargetSpaceQuadToCompositedLayer(absoluteQuad, m_node->renderer(), paintInvalidationContainer, transformedQuad);
+        convertTargetSpaceQuadToCompositedLayer(absoluteQuad, m_node->layoutObject(), paintInvalidationContainer, transformedQuad);
 
         // FIXME: for now, we'll only use rounded paths if we have a single node quad. The reason for this is that
         // we may sometimes get a chain of adjacent boxes (e.g. for text nodes) which end up looking like sausage
@@ -245,7 +245,7 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObj
 
 void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
-    if (!m_node || !m_node->renderer())
+    if (!m_node || !m_node->layoutObject())
         return;
 
     GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
@@ -266,7 +266,7 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
         DrawingRecorder drawingRecorder(graphicsContext.get(), displayItemClient(), DisplayItem::LinkHighlight, clipRect);
 
         graphicsContext->clip(clipRect);
-        graphicsContext->setFillColor(m_node->renderer()->style()->tapHighlightColor());
+        graphicsContext->setFillColor(m_node->layoutObject()->style()->tapHighlightColor());
         graphicsContext->fillPath(m_path);
     }
 
@@ -339,8 +339,8 @@ void LinkHighlight::updateGeometry()
 
     m_geometryNeedsUpdate = false;
 
-    bool hasRenderer = m_node && m_node->renderer();
-    const LayoutBoxModelObject* paintInvalidationContainer = hasRenderer ? m_node->renderer()->containerForPaintInvalidation() : 0;
+    bool hasRenderer = m_node && m_node->layoutObject();
+    const LayoutBoxModelObject* paintInvalidationContainer = hasRenderer ? m_node->layoutObject()->containerForPaintInvalidation() : 0;
     if (paintInvalidationContainer)
         attachLinkHighlightToCompositingLayer(paintInvalidationContainer);
     if (paintInvalidationContainer && computeHighlightLayerPathAndPosition(paintInvalidationContainer)) {

@@ -382,7 +382,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
             // Don't write out empty block containers that aren't fully selected.
             continue;
 
-        if (!n->renderer() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && m_shouldAnnotate != AnnotateForNavigationTransition) {
+        if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && m_shouldAnnotate != AnnotateForNavigationTransition) {
             next = NodeTraversal::nextSkippingChildren(*n);
             // Don't skip over pastEnd.
             if (pastEnd && pastEnd->isDescendantOf(n))
@@ -425,7 +425,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
                 Node* lastAncestorClosedOrSelf = n->isDescendantOf(lastClosed) ? lastClosed : n;
                 for (ContainerNode* parent = lastAncestorClosedOrSelf->parentNode(); parent && parent != nextParent; parent = parent->parentNode()) {
                     // All ancestors that aren't in the ancestorsToClose list should either be a) unrendered:
-                    if (!parent->renderer())
+                    if (!parent->layoutObject())
                         continue;
                     // or b) ancestors that we never encountered during a pre-order traversal starting at startNode:
                     ASSERT(startNode->isDescendantOf(parent));
@@ -537,7 +537,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const Range* range, EAnnotateFor
     }
 
     Node* checkAncestor = specialCommonAncestor ? specialCommonAncestor : commonAncestor;
-    if (checkAncestor->renderer()) {
+    if (checkAncestor->layoutObject()) {
         HTMLElement* newSpecialCommonAncestor = toHTMLElement(highestEnclosingNodeOfType(firstPositionInNode(checkAncestor), &isPresentationalHTMLElement, CanCrossEditingBoundary, constrainingAncestor));
         if (newSpecialCommonAncestor)
             specialCommonAncestor = newSpecialCommonAncestor;
@@ -819,12 +819,12 @@ bool isPlainTextMarkup(Node* node)
 static bool shouldPreserveNewline(const Range& range)
 {
     if (Node* node = range.firstNode()) {
-        if (LayoutObject* renderer = node->renderer())
+        if (LayoutObject* renderer = node->layoutObject())
             return renderer->style()->preserveNewline();
     }
 
     if (Node* node = range.startPosition().anchorNode()) {
-        if (LayoutObject* renderer = node->renderer())
+        if (LayoutObject* renderer = node->layoutObject())
             return renderer->style()->preserveNewline();
     }
 

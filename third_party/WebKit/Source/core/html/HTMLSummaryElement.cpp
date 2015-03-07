@@ -100,7 +100,7 @@ bool HTMLSummaryElement::supportsFocus() const
 
 void HTMLSummaryElement::defaultEventHandler(Event* event)
 {
-    if (isMainSummary() && renderer()) {
+    if (isMainSummary() && layoutObject()) {
         if (event->type() == EventTypeNames::DOMActivate && !isClickableControl(event->target()->toNode())) {
             if (HTMLDetailsElement* details = detailsElement())
                 details->toggleOpen();
@@ -140,7 +140,7 @@ void HTMLSummaryElement::defaultEventHandler(Event* event)
 
 bool HTMLSummaryElement::willRespondToMouseClickEvents()
 {
-    if (isMainSummary() && renderer())
+    if (isMainSummary() && layoutObject())
         return true;
 
     return HTMLElement::willRespondToMouseClickEvents();

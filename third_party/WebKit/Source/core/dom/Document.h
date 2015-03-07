@@ -497,7 +497,7 @@ public:
     void prepareForDestruction();
 
     // If you have a Document, use layoutView() instead which is faster.
-    void renderer() const = delete;
+    void layoutObject() const = delete;
 
     LayoutView* layoutView() const { return m_layoutView; }
 

@@ -142,7 +142,7 @@ bool PositionIterator::isCandidate() const
     if (!m_anchorNode)
         return false;
 
-    LayoutObject* renderer = m_anchorNode->renderer();
+    LayoutObject* renderer = m_anchorNode->layoutObject();
     if (!renderer)
         return false;
 

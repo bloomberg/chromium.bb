@@ -72,7 +72,7 @@ LayerStackingNode::LayerStackingNode(Layer* layer)
 LayerStackingNode::~LayerStackingNode()
 {
 #if ENABLE(ASSERT)
-    if (!renderer()->documentBeingDestroyed()) {
+    if (!layoutObject()->documentBeingDestroyed()) {
         ASSERT(!isInStackingParentZOrderLists());
         ASSERT(!isInStackingParentNormalFlowList());
 
@@ -90,8 +90,8 @@ static inline bool compareZIndex(LayerStackingNode* first, LayerStackingNode* se
 
 LayerCompositor* LayerStackingNode::compositor() const
 {
-    ASSERT(renderer()->view());
-    return renderer()->view()->compositor();
+    ASSERT(layoutObject()->view());
+    return layoutObject()->view()->compositor();
 }
 
 void LayerStackingNode::dirtyZOrderLists()
@@ -109,7 +109,7 @@ void LayerStackingNode::dirtyZOrderLists()
         m_negZOrderList->clear();
     m_zOrderListsDirty = true;
 
-    if (!renderer()->documentBeingDestroyed())
+    if (!layoutObject()->documentBeingDestroyed())
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
@@ -131,7 +131,7 @@ void LayerStackingNode::dirtyNormalFlowList()
         m_normalFlowList->clear();
     m_normalFlowListDirty = true;
 
-    if (!renderer()->documentBeingDestroyed())
+    if (!layoutObject()->documentBeingDestroyed())
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
@@ -155,7 +155,7 @@ void LayerStackingNode::rebuildZOrderLists()
     // Append layers for top layer elements after normal layer collection, to ensure they are on top regardless of z-indexes.
     // The renderers of top layer elements are children of the view, sorted in top layer stacking order.
     if (layer()->isRootLayer()) {
-        LayoutView* view = renderer()->view();
+        LayoutView* view = layoutObject()->view();
         for (LayoutObject* child = view->firstChild(); child; child = child->nextSibling()) {
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {
@@ -296,7 +296,7 @@ void LayerStackingNode::updateStackingNodesAfterStyleChange(const LayoutStyle* o
 // 2.1 defines the term "normal flow".
 bool LayerStackingNode::shouldBeNormalFlowOnly() const
 {
-    return !isStackingContext() && !renderer()->isPositioned();
+    return !isStackingContext() && !layoutObject()->isPositioned();
 }
 
 void LayerStackingNode::updateIsNormalFlowOnly()
@@ -321,9 +321,9 @@ LayerStackingNode* LayerStackingNode::ancestorStackingContextNode() const
     return 0;
 }
 
-LayoutBoxModelObject* LayerStackingNode::renderer() const
+LayoutBoxModelObject* LayerStackingNode::layoutObject() const
 {
-    return m_layer->renderer();
+    return m_layer->layoutObject();
 }
 
 } // namespace blink

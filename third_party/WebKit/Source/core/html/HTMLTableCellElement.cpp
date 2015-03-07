@@ -115,11 +115,11 @@ void HTMLTableCellElement::collectStyleForPresentationAttribute(const QualifiedN
 void HTMLTableCellElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == rowspanAttr) {
-        if (renderer() && renderer()->isTableCell())
-            toLayoutTableCell(renderer())->colSpanOrRowSpanChanged();
+        if (layoutObject() && layoutObject()->isTableCell())
+            toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
     } else if (name == colspanAttr) {
-        if (renderer() && renderer()->isTableCell())
-            toLayoutTableCell(renderer())->colSpanOrRowSpanChanged();
+        if (layoutObject() && layoutObject()->isTableCell())
+            toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
     } else
         HTMLTablePartElement::parseAttribute(name, value);
 }
@@ -178,7 +178,7 @@ const AtomicString& HTMLTableCellElement::scope() const
 
 HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
 {
-    LayoutObject* cellRenderer = renderer();
+    LayoutObject* cellRenderer = layoutObject();
     if (!cellRenderer)
         return nullptr;
     if (!cellRenderer->isTableCell())

@@ -224,7 +224,7 @@ AXObject* AXScrollView::computeParent() const
 
     // FIXME: Broken for OOPI.
     HTMLFrameOwnerElement* owner = m_scrollView->frame().deprecatedLocalOwner();
-    if (owner && owner->renderer())
+    if (owner && owner->layoutObject())
         return axObjectCache()->getOrCreate(owner);
 
     return axObjectCache()->getOrCreate(m_scrollView->frame().pagePopupOwner());
@@ -236,7 +236,7 @@ AXObject* AXScrollView::computeParentIfExists() const
         return 0;
 
     HTMLFrameOwnerElement* owner = m_scrollView->frame().deprecatedLocalOwner();
-    if (owner && owner->renderer())
+    if (owner && owner->layoutObject())
         return axObjectCache()->get(owner);
 
     return axObjectCache()->get(m_scrollView->frame().pagePopupOwner());

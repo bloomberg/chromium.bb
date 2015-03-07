@@ -128,12 +128,12 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     // video to share a backing with other layers.
     //
     // compositing/video/video-controls-layer-creation.html
-    if (layer->renderer()->isVideo() || squashingLayer.renderer()->isVideo())
+    if (layer->layoutObject()->isVideo() || squashingLayer.layoutObject()->isVideo())
         return CompositingReasonSquashingVideoIsDisallowed;
 
     // Don't squash iframes, frames or plugins.
     // FIXME: this is only necessary because there is frame code that assumes that composited frames are not squashed.
-    if (layer->renderer()->isLayoutPart() || squashingLayer.renderer()->isLayoutPart())
+    if (layer->layoutObject()->isLayoutPart() || squashingLayer.layoutObject()->isLayoutPart())
         return CompositingReasonSquashingLayoutPartIsDisallowed;
 
     if (layer->reflectionInfo())
@@ -142,7 +142,7 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     if (squashingWouldExceedSparsityTolerance(layer, squashingState))
         return CompositingReasonSquashingSparsityExceeded;
 
-    if (layer->renderer()->style()->hasBlendMode())
+    if (layer->layoutObject()->style()->hasBlendMode())
         return CompositingReasonSquashingBlendingIsDisallowed;
 
     // FIXME: this is not efficient, since it walks up the tree. We should store these values on the CompositingInputsCache.
@@ -234,7 +234,7 @@ void CompositingLayerAssigner::assignLayersToBackingsForReflectionLayer(Layer* r
 
 static ScrollingCoordinator* scrollingCoordinatorFromLayer(Layer& layer)
 {
-    Page* page = layer.renderer()->frame()->page();
+    Page* page = layer.layoutObject()->frame()->page();
     if (!page)
         return 0;
 
@@ -256,8 +256,8 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(Layer* layer, Squa
         layersNeedingPaintInvalidation.append(layer);
         m_layersChanged = true;
         if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(*layer)) {
-            if (layer->renderer()->style()->hasViewportConstrainedPosition())
-                scrollingCoordinator->frameViewFixedObjectsDidChange(layer->renderer()->view()->frameView());
+            if (layer->layoutObject()->style()->hasViewportConstrainedPosition())
+                scrollingCoordinator->frameViewFixedObjectsDidChange(layer->layoutObject()->view()->frameView());
         }
     }
 

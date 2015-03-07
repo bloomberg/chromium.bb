@@ -31,7 +31,7 @@ void CompositingInputsUpdater::update()
 
 static const Layer* findParentLayerOnClippingContainerChain(const Layer* layer)
 {
-    LayoutObject* current = layer->renderer();
+    LayoutObject* current = layer->layoutObject();
     while (current) {
         if (current->style()->position() == FixedPosition) {
             for (current = current->parent(); current && !current->canContainFixedPositionObjects(); current = current->parent()) {
@@ -76,9 +76,9 @@ static bool hasClippedStackingAncestor(const Layer* layer, const Layer* clipping
 {
     if (layer == clippingLayer)
         return false;
-    const LayoutObject* clippingRenderer = clippingLayer->renderer();
+    const LayoutObject* clippingRenderer = clippingLayer->layoutObject();
     for (const Layer* current = layer->compositingContainer(); current && current != clippingLayer; current = current->compositingContainer()) {
-        if (current->renderer()->hasClipOrOverflowClip() && !clippingRenderer->isDescendantOf(current->renderer()))
+        if (current->layoutObject()->hasClipOrOverflowClip() && !clippingRenderer->isDescendantOf(current->layoutObject()))
             return true;
 
         if (const LayoutObject* container = current->clippingContainer()) {
@@ -126,19 +126,19 @@ void CompositingInputsUpdater::updateRecursive(Layer* layer, UpdateType updateTy
 
             if (info.hasAncestorWithClipOrOverflowClip) {
                 const Layer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);
-                const bool parentHasClipOrOverflowClip = parentLayerOnClippingContainerChain->renderer()->hasClipOrOverflowClip();
-                properties.clippingContainer = parentHasClipOrOverflowClip ? parentLayerOnClippingContainerChain->renderer() : parentLayerOnClippingContainerChain->clippingContainer();
+                const bool parentHasClipOrOverflowClip = parentLayerOnClippingContainerChain->layoutObject()->hasClipOrOverflowClip();
+                properties.clippingContainer = parentHasClipOrOverflowClip ? parentLayerOnClippingContainerChain->layoutObject() : parentLayerOnClippingContainerChain->clippingContainer();
             }
 
             if (info.lastScrollingAncestor) {
-                const LayoutObject* containingBlock = layer->renderer()->containingBlock();
+                const LayoutObject* containingBlock = layer->layoutObject()->containingBlock();
                 const Layer* parentLayerOnContainingBlockChain = findParentLayerOnContainingBlockChain(containingBlock);
 
                 properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain->ancestorScrollingLayer();
                 if (parentLayerOnContainingBlockChain->scrollsOverflow())
                     properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain;
 
-                if (layer->renderer()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
+                if (layer->layoutObject()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
                     const Layer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootLayer();
                     if (hasClippedStackingAncestor(layer, clippingLayer))
                         properties.clipParent = clippingLayer;
@@ -146,7 +146,7 @@ void CompositingInputsUpdater::updateRecursive(Layer* layer, UpdateType updateTy
 
                 if (!layer->stackingNode()->isNormalFlowOnly()
                     && properties.ancestorScrollingLayer
-                    && !info.ancestorStackingContext->renderer()->isDescendantOf(properties.ancestorScrollingLayer->renderer()))
+                    && !info.ancestorStackingContext->layoutObject()->isDescendantOf(properties.ancestorScrollingLayer->layoutObject()))
                     properties.scrollParent = properties.ancestorScrollingLayer;
             }
         }
@@ -161,18 +161,18 @@ void CompositingInputsUpdater::updateRecursive(Layer* layer, UpdateType updateTy
     if (layer->scrollsOverflow())
         info.lastScrollingAncestor = layer;
 
-    if (layer->renderer()->hasClipOrOverflowClip())
+    if (layer->layoutObject()->hasClipOrOverflowClip())
         info.hasAncestorWithClipOrOverflowClip = true;
 
-    if (layer->renderer()->hasClipPath())
+    if (layer->layoutObject()->hasClipPath())
         info.hasAncestorWithClipPath = true;
 
     Layer::DescendantDependentCompositingInputs descendantProperties;
     for (Layer* child = layer->firstChild(); child; child = child->nextSibling()) {
         updateRecursive(child, updateType, info);
 
-        descendantProperties.hasDescendantWithClipPath |= child->hasDescendantWithClipPath() || child->renderer()->hasClipPath();
-        descendantProperties.hasNonIsolatedDescendantWithBlendMode |= (!child->stackingNode()->isStackingContext() && child->hasNonIsolatedDescendantWithBlendMode()) || child->renderer()->style()->hasBlendMode();
+        descendantProperties.hasDescendantWithClipPath |= child->hasDescendantWithClipPath() || child->layoutObject()->hasClipPath();
+        descendantProperties.hasNonIsolatedDescendantWithBlendMode |= (!child->stackingNode()->isStackingContext() && child->hasNonIsolatedDescendantWithBlendMode()) || child->layoutObject()->style()->hasBlendMode();
     }
 
     layer->updateDescendantDependentCompositingInputs(descendantProperties);

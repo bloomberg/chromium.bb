@@ -283,8 +283,8 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
         return;
     m_imageBufferIsClear = false;
     clearCopiedImage();
-    if (renderer())
-        renderer()->setMayNeedPaintInvalidation();
+    if (layoutObject())
+        layoutObject()->setMayNeedPaintInvalidation();
     m_dirtyRect.unite(rect);
     if (m_context && m_context->is2d() && hasImageBuffer())
         buffer()->didDraw(rect);
@@ -380,7 +380,7 @@ void HTMLCanvasElement::reset()
     if (m_context && m_context->is3d() && oldSize != size())
         toWebGLRenderingContextBase(m_context.get())->reshape(width(), height());
 
-    if (LayoutObject* renderer = this->renderer()) {
+    if (LayoutObject* renderer = this->layoutObject()) {
         if (renderer->isCanvas()) {
             if (oldSize != size()) {
                 toLayoutHTMLCanvas(renderer)->canvasSizeChanged();

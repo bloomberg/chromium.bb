@@ -623,7 +623,7 @@ bool LayoutThemeDefault::paintSearchFieldCancelButton(LayoutObject* cancelButton
     if (!cancelButtonObject->node())
         return false;
     Node* input = cancelButtonObject->node()->shadowHost();
-    LayoutObject* baseRenderer = input ? input->renderer() : cancelButtonObject;
+    LayoutObject* baseRenderer = input ? input->layoutObject() : cancelButtonObject;
     if (!baseRenderer->isBox())
         return false;
     LayoutBox* inputLayoutBox = toLayoutBox(baseRenderer);
@@ -668,7 +668,7 @@ bool LayoutThemeDefault::paintSearchFieldResultsDecoration(LayoutObject* magnifi
     if (!magnifierObject->node())
         return false;
     Node* input = magnifierObject->node()->shadowHost();
-    LayoutObject* baseRenderer = input ? input->renderer() : magnifierObject;
+    LayoutObject* baseRenderer = input ? input->layoutObject() : magnifierObject;
     if (!baseRenderer->isBox())
         return false;
     LayoutBox* inputLayoutBox = toLayoutBox(baseRenderer);

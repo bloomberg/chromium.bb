@@ -66,7 +66,7 @@ DEFINE_TRACE(NodeRareData)
 
 void NodeRareData::finalizeGarbageCollectedObject()
 {
-    RELEASE_ASSERT(!renderer());
+    RELEASE_ASSERT(!layoutObject());
     if (m_isElementRareData)
         static_cast<ElementRareData*>(this)->~ElementRareData();
     else

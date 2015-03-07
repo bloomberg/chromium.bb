@@ -56,7 +56,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         LayoutUnit textY = 0;
         // We want to match the button's baseline
         // FIXME: Make this work with transforms.
-        if (LayoutButton* buttonRenderer = toLayoutButton(button->renderer()))
+        if (LayoutButton* buttonRenderer = toLayoutButton(button->layoutObject()))
             textY = paintOffset.y() + m_renderFileUploadControl.borderTop() + m_renderFileUploadControl.paddingTop() + buttonRenderer->baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);
         else
             textY = m_renderFileUploadControl.baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);

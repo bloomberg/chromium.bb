@@ -70,10 +70,10 @@ PassRefPtr<AXObject> AccessibilityMediaControl::create(LayoutObject* layoutObjec
 
 MediaControlElementType AccessibilityMediaControl::controlType() const
 {
-    if (!renderer() || !renderer()->node())
+    if (!layoutObject() || !layoutObject()->node())
         return MediaTimelineContainer; // Timeline container is not accessible.
 
-    return mediaControlElementType(renderer()->node());
+    return mediaControlElementType(layoutObject()->node());
 }
 
 String AccessibilityMediaControl::title(TextUnderElementMode mode) const

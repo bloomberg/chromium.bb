@@ -1485,7 +1485,7 @@ bool LayoutThemeMac::paintSearchFieldCancelButton(LayoutObject* o, const PaintIn
     if (!input)
         input = toElement(o->node());
 
-    if (!input->renderer()->isBox())
+    if (!input->layoutObject()->isBox())
         return false;
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
@@ -1584,7 +1584,7 @@ bool LayoutThemeMac::paintSearchFieldResultsDecoration(LayoutObject* o, const Pa
     Node* input = o->node()->shadowHost();
     if (!input)
         input = o->node();
-    if (!input->renderer()->isBox())
+    if (!input->layoutObject()->isBox())
         return false;
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
@@ -1602,7 +1602,7 @@ bool LayoutThemeMac::paintSearchFieldResultsDecoration(LayoutObject* o, const Pa
     LocalCurrentGraphicsContext localContext(paintInfo.context, r);
 
     NSSearchFieldCell* search = this->search();
-    setSearchCellState(input->renderer(), r);
+    setSearchCellState(input->layoutObject(), r);
     [search setControlSize:searchFieldControlSizeForFont(o->styleRef())];
     if ([search searchMenuTemplate] != nil)
         [search setSearchMenuTemplate:nil];

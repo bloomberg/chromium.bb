@@ -227,8 +227,8 @@ void TextFieldInputType::forwardEvent(Event* event)
             return;
     }
 
-    if (element().renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
-        LayoutTextControlSingleLine* renderTextControl = toLayoutTextControlSingleLine(element().renderer());
+    if (element().layoutObject() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
+        LayoutTextControlSingleLine* renderTextControl = toLayoutTextControlSingleLine(element().layoutObject());
         if (event->type() == EventTypeNames::blur) {
             if (LayoutBox* innerEditorRenderer = element().innerEditorElement()->layoutBox()) {
                 // FIXME: This class has no need to know about Layer!
@@ -484,7 +484,7 @@ String TextFieldInputType::convertFromVisibleValue(const String& visibleValue) c
 
 void TextFieldInputType::subtreeHasChanged()
 {
-    ASSERT(element().renderer());
+    ASSERT(element().layoutObject());
 
     bool wasChanged = element().wasChangedSinceLastFormControlChangeEvent();
     element().setChangedSinceLastFormControlChangeEvent(true);

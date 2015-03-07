@@ -194,8 +194,8 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
         if (oldDisabled != m_disabled) {
             pseudoStateChanged(CSSSelector::PseudoDisabled);
             pseudoStateChanged(CSSSelector::PseudoEnabled);
-            if (renderer() && renderer()->style()->hasAppearance())
-                LayoutTheme::theme().stateChanged(renderer(), EnabledControlState);
+            if (layoutObject() && layoutObject()->style()->hasAppearance())
+                LayoutTheme::theme().stateChanged(layoutObject(), EnabledControlState);
         }
     } else if (name == selectedAttr) {
         if (bool willBeSelected = !value.isNull())
@@ -317,7 +317,7 @@ void HTMLOptionElement::didRecalcStyle(StyleRecalcChange change)
 
     // FIXME: We ask our owner select to repaint regardless of which property changed.
     if (HTMLSelectElement* select = ownerSelectElement()) {
-        if (LayoutObject* renderer = select->renderer())
+        if (LayoutObject* renderer = select->layoutObject())
             renderer->setShouldDoFullPaintInvalidation();
     }
 }

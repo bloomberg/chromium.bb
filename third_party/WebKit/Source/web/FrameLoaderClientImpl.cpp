@@ -759,7 +759,7 @@ PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createPlugin(
         return nullptr;
     }
 
-    if (policy != AllowDetachedPlugin && !element->renderer()) {
+    if (policy != AllowDetachedPlugin && !element->layoutObject()) {
 #if ENABLE(OILPAN)
         container->dispose();
 #endif

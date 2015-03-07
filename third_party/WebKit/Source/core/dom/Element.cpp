@@ -236,13 +236,13 @@ bool Element::layoutObjectIsFocusable() const
     if (isInCanvasSubtree()) {
         const HTMLCanvasElement* canvas = Traversal<HTMLCanvasElement>::firstAncestorOrSelf(*this);
         ASSERT(canvas);
-        return canvas->renderer() && canvas->renderer()->style()->visibility() == VISIBLE;
+        return canvas->layoutObject() && canvas->layoutObject()->style()->visibility() == VISIBLE;
     }
 
     // FIXME: These asserts should be in Node::isFocusable, but there are some
     // callsites like Document::setFocusedElement that would currently fail on
     // them. See crbug.com/251163
-    if (!renderer()) {
+    if (!layoutObject()) {
         // We can't just use needsStyleRecalc() because if the node is in a
         // display:none tree it might say it needs style recalc but the whole
         // document is actually up to date.
@@ -253,7 +253,7 @@ bool Element::layoutObjectIsFocusable() const
 
     // FIXME: Even if we are not visible, we might have a child that is visible.
     // Hyatt wants to fix that some day with a "has visible content" flag or the like.
-    if (!renderer() || renderer()->style()->visibility() != VISIBLE)
+    if (!layoutObject() || layoutObject()->style()->visibility() != VISIBLE)
         return false;
 
     return true;
@@ -456,29 +456,29 @@ void Element::scrollIntoView(bool alignToTop)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (!renderer())
+    if (!layoutObject())
         return;
 
     LayoutRect bounds = boundingBox();
     // Align to the top / bottom and to the closest edge.
     if (alignToTop)
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
+        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
     else
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignBottomAlways);
+        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignBottomAlways);
 }
 
 void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (!renderer())
+    if (!layoutObject())
         return;
 
     LayoutRect bounds = boundingBox();
     if (centerIfNeeded)
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
+        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
     else
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
+        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
 static float localZoomForRenderer(LayoutObject& renderer)
@@ -555,7 +555,7 @@ Element* Element::offsetParentForBindings()
 Element* Element::offsetParent()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (LayoutObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->layoutObject())
         return renderer->offsetParent();
     return nullptr;
 }
@@ -876,12 +876,12 @@ IntRect Element::boundsInViewportSpace()
         return IntRect();
 
     Vector<FloatQuad> quads;
-    if (isSVGElement() && renderer()) {
+    if (isSVGElement() && layoutObject()) {
         // Get the bounding rectangle from the SVG model.
         SVGElement* svgElement = toSVGElement(this);
         FloatRect localRect;
         if (svgElement->getBoundingBox(localRect))
-            quads.append(renderer()->localToAbsoluteQuad(localRect));
+            quads.append(layoutObject()->localToAbsoluteQuad(localRect));
     } else {
         // Get the bounding rectangle from the box model.
         if (layoutBoxModelObject())
@@ -908,7 +908,7 @@ PassRefPtrWillBeRawPtr<ClientRectList> Element::getClientRects()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    LayoutObject* elementRenderer = renderer();
+    LayoutObject* elementRenderer = layoutObject();
     if (!elementRenderer || (!elementRenderer->isBoxModelObject() && !elementRenderer->isBR()))
         return ClientRectList::create();
 
@@ -926,7 +926,7 @@ PassRefPtrWillBeRawPtr<ClientRect> Element::getBoundingClientRect()
     document().updateLayoutIgnorePendingStylesheets();
 
     Vector<FloatQuad> quads;
-    LayoutObject* elementRenderer = renderer();
+    LayoutObject* elementRenderer = layoutObject();
     if (elementRenderer) {
         if (isSVGElement() && !elementRenderer->isSVGRoot()) {
             // Get the bounding rectangle from the SVG model.
@@ -953,10 +953,10 @@ PassRefPtrWillBeRawPtr<ClientRect> Element::getBoundingClientRect()
 
 IntRect Element::screenRect() const
 {
-    if (!renderer())
+    if (!layoutObject())
         return IntRect();
     // FIXME: this should probably respect transforms
-    return document().view()->contentsToScreen(renderer()->absoluteBoundingBoxRectIgnoringTransforms());
+    return document().view()->contentsToScreen(layoutObject()->absoluteBoundingBoxRectIgnoringTransforms());
 }
 
 const AtomicString& Element::computedRole()
@@ -1453,7 +1453,7 @@ void Element::attach(const AttachContext& context)
     // from any of them.
     createPseudoElementIfNeeded(FIRST_LETTER);
 
-    if (hasRareData() && !renderer()) {
+    if (hasRareData() && !layoutObject()) {
         if (ElementAnimations* elementAnimations = elementRareData()->elementAnimations()) {
             elementAnimations->cssAnimations().cancel();
             elementAnimations->setAnimationStyleChange(false);
@@ -1503,7 +1503,7 @@ void Element::detach(const AttachContext& context)
 bool Element::pseudoStyleCacheIsInvalid(const LayoutStyle* currentStyle, LayoutStyle* newStyle)
 {
     ASSERT(currentStyle == layoutStyle());
-    ASSERT(renderer());
+    ASSERT(layoutObject());
 
     if (!currentStyle)
         return false;
@@ -1517,9 +1517,9 @@ bool Element::pseudoStyleCacheIsInvalid(const LayoutStyle* currentStyle, LayoutS
         RefPtr<LayoutStyle> newPseudoStyle;
         PseudoId pseudoId = pseudoStyleCache->at(i)->styleType();
         if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
-            newPseudoStyle = renderer()->uncachedFirstLineStyle(newStyle);
+            newPseudoStyle = layoutObject()->uncachedFirstLineStyle(newStyle);
         else
-            newPseudoStyle = renderer()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId), newStyle, newStyle);
+            newPseudoStyle = layoutObject()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId), newStyle, newStyle);
         if (!newPseudoStyle)
             return true;
         if (*newPseudoStyle != *pseudoStyleCache->at(i)) {
@@ -1530,7 +1530,7 @@ bool Element::pseudoStyleCacheIsInvalid(const LayoutStyle* currentStyle, LayoutS
                 // FIXME: We should do an actual diff to determine whether a repaint vs. layout
                 // is needed, but for now just assume a layout will be required. The diff code
                 // in LayoutObject::setStyle would need to be factored out so that it could be reused.
-                renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+                layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
             }
             return true;
         }
@@ -1649,9 +1649,9 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (localChange == Reattach) {
         AttachContext reattachContext;
         reattachContext.resolvedStyle = newStyle.get();
-        bool rendererWillChange = needsAttach() || renderer();
+        bool rendererWillChange = needsAttach() || layoutObject();
         reattach(reattachContext);
-        if (rendererWillChange || renderer())
+        if (rendererWillChange || layoutObject())
             return Reattach;
         return ReattachNoLayoutObject;
     }
@@ -1661,7 +1661,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (localChange != NoChange)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
-    if (LayoutObject* renderer = this->renderer()) {
+    if (LayoutObject* renderer = this->layoutObject()) {
         if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || svgFilterNeedsLayerUpdate()) {
             renderer->setStyle(newStyle.get());
         } else {
@@ -2183,8 +2183,9 @@ void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
         // and we don't want to change the focus to a new Element.
         frame->selection().setSelection(newSelection,  FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);
         frame->selection().revealSelection();
-    } else if (renderer() && !renderer()->isLayoutPart())
-        renderer()->scrollRectToVisible(boundingBox());
+    } else if (layoutObject() && !layoutObject()->isLayoutPart()) {
+        layoutObject()->scrollRectToVisible(boundingBox());
+    }
 }
 
 void Element::blur()
@@ -2412,7 +2413,7 @@ String Element::innerText()
     // We need to update layout, since plainText uses line boxes in the render tree.
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (!renderer())
+    if (!layoutObject())
         return textContent(true);
 
     return plainText(rangeOfContents(const_cast<Element*>(this)).get());
@@ -2607,7 +2608,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // Need to clear the cached style if the PseudoElement wants a recalc so it
         // computes a new style.
         if (element->needsStyleRecalc())
-            renderer()->style()->removeCachedPseudoStyle(pseudoId);
+            layoutObject()->style()->removeCachedPseudoStyle(pseudoId);
 
         // PseudoElement styles hang off their parent element's style so if we needed
         // a style recalc we should Force one on the pseudo.
@@ -2618,7 +2619,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // is false, otherwise we could continuously create and destroy PseudoElements
         // when LayoutObject::isChildAllowed on our parent returns false for the
         // PseudoElement's renderer for each style recalc.
-        if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
+        if (!layoutObject() || !pseudoElementRendererIsNeeded(layoutObject()->getCachedPseudoStyle(pseudoId)))
             elementRareData()->setPseudoElement(pseudoId, nullptr);
     } else if (pseudoId == FIRST_LETTER && element && change >= UpdatePseudoElements && !FirstLetterPseudoElement::firstLetterTextRenderer(*element)) {
         // This can happen if we change to a float, for example. We need to cleanup the
@@ -2679,7 +2680,7 @@ PseudoElement* Element::pseudoElement(PseudoId pseudoId) const
 LayoutObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
 {
     if (PseudoElement* element = pseudoElement(pseudoId))
-        return element->renderer();
+        return element->layoutObject();
     return nullptr;
 }
 

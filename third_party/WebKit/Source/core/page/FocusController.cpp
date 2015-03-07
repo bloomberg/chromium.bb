@@ -820,7 +820,7 @@ void FocusController::setActive(bool active)
 static void updateFocusCandidateIfNeeded(WebFocusType type, const FocusCandidate& current, FocusCandidate& candidate, FocusCandidate& closest)
 {
     ASSERT(candidate.visibleNode->isElementNode());
-    ASSERT(candidate.visibleNode->renderer());
+    ASSERT(candidate.visibleNode->layoutObject());
 
     // Ignore iframes that don't have a src attribute
     if (frameOwnerElement(candidate) && (!frameOwnerElement(candidate)->contentFrame() || candidate.rect.isEmpty()))

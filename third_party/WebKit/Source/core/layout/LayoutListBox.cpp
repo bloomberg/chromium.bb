@@ -113,7 +113,7 @@ LayoutUnit LayoutListBox::itemHeight() const
         baseItem = &toHTMLOptGroupElement(baseItem)->optGroupLabelElement();
     else if (!isHTMLOptionElement(baseItem))
         return defaultItemHeight();
-    LayoutObject* baseItemRenderer = baseItem->renderer();
+    LayoutObject* baseItemRenderer = baseItem->layoutObject();
     if (!baseItemRenderer)
         return defaultItemHeight();
     if (!baseItemRenderer || !baseItemRenderer->isBox())

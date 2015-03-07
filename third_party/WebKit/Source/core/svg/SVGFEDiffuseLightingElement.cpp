@@ -76,7 +76,7 @@ bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect,
     FEDiffuseLighting* diffuseLighting = static_cast<FEDiffuseLighting*>(effect);
 
     if (attrName == SVGNames::lighting_colorAttr) {
-        LayoutObject* renderer = this->renderer();
+        LayoutObject* renderer = this->layoutObject();
         ASSERT(renderer);
         ASSERT(renderer->style());
         return diffuseLighting->setLightingColor(renderer->style()->svgStyle().lightingColor());
@@ -159,7 +159,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilte
     if (!lightNode)
         return nullptr;
 
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (!renderer)
         return nullptr;
 

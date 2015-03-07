@@ -128,7 +128,7 @@ LayoutBlock* CaretBase::caretRenderer(Node* node)
     if (!node)
         return 0;
 
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (!renderer)
         return 0;
 
@@ -167,7 +167,7 @@ bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& 
     if (caretPosition.position().isNull())
         return false;
 
-    ASSERT(caretPosition.position().deprecatedNode()->renderer());
+    ASSERT(caretPosition.position().deprecatedNode()->layoutObject());
 
     // First compute a rect local to the renderer at the selection start.
     LayoutObject* renderer;
@@ -215,7 +215,7 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
     inflatedRect.inflate(1);
 
     // FIXME: We should use mapLocalToContainer() since we know we're not un-rooted.
-    mapCaretRectToCaretPainter(node->renderer(), caretPainter, inflatedRect);
+    mapCaretRectToCaretPainter(node->layoutObject(), caretPainter, inflatedRect);
 
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts disabler;
@@ -272,8 +272,8 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
     else
         element = node->parentElement();
 
-    if (element && element->renderer())
-        caretColor = element->renderer()->resolveColor(CSSPropertyColor);
+    if (element && element->layoutObject())
+        caretColor = element->layoutObject()->resolveColor(CSSPropertyColor);
 
     context->fillRect(caret, caretColor);
 }

@@ -2375,14 +2375,14 @@ Position LayoutBlock::positionForBox(InlineBox *box, bool start) const
     if (!box)
         return Position();
 
-    if (!box->renderer().nonPseudoNode())
+    if (!box->layoutObject().nonPseudoNode())
         return createLegacyEditingPosition(nonPseudoNode(), start ? caretMinOffset() : caretMaxOffset());
 
     if (!box->isInlineTextBox())
-        return createLegacyEditingPosition(box->renderer().nonPseudoNode(), start ? box->renderer().caretMinOffset() : box->renderer().caretMaxOffset());
+        return createLegacyEditingPosition(box->layoutObject().nonPseudoNode(), start ? box->layoutObject().caretMinOffset() : box->layoutObject().caretMaxOffset());
 
     InlineTextBox* textBox = toInlineTextBox(box);
-    return createLegacyEditingPosition(box->renderer().nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
+    return createLegacyEditingPosition(box->layoutObject().nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
 }
 
 static inline bool isEditingBoundary(LayoutObject* ancestor, LayoutObject* child)
@@ -2497,9 +2497,9 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
         LayoutPoint point(pointInLogicalContents.x(), closestBox->root().blockDirectionPointInLine());
         if (!isHorizontalWritingMode())
             point = point.transposedPoint();
-        if (closestBox->renderer().isReplaced())
-            return positionForPointRespectingEditingBoundaries(this, &toLayoutBox(closestBox->renderer()), point);
-        return closestBox->renderer().positionForPoint(point);
+        if (closestBox->layoutObject().isReplaced())
+            return positionForPointRespectingEditingBoundaries(this, &toLayoutBox(closestBox->layoutObject()), point);
+        return closestBox->layoutObject().positionForPoint(point);
     }
 
     if (lastRootBoxWithChildren) {
@@ -3545,7 +3545,7 @@ void LayoutBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
         // FIXME: This is wrong. The principal renderer may not be the continuation preceding this block.
         // FIXME: This is wrong for vertical writing-modes.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
-        bool prevInlineHasLineBox = toLayoutInline(inlineElementContinuation()->node()->renderer())->firstLineBox();
+        bool prevInlineHasLineBox = toLayoutInline(inlineElementContinuation()->node()->layoutObject())->firstLineBox();
         LayoutUnit topMargin = prevInlineHasLineBox ? collapsedMarginBefore() : LayoutUnit();
         LayoutUnit bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
         LayoutRect rect(additionalOffset, size());
@@ -3662,7 +3662,7 @@ LayoutUnit LayoutBlock::offsetFromLogicalTopOfFirstPage() const
         return LayoutUnit();
     // It would be possible to remove the requirement that this block be the one currently being
     // laid out, but nobody needs that at the moment.
-    ASSERT(layoutState->renderer() == this);
+    ASSERT(layoutState->layoutObject() == this);
     LayoutSize offsetDelta = layoutState->layoutOffset() - layoutState->pageOffset();
     return isHorizontalWritingMode() ? offsetDelta.height() : offsetDelta.width();
 }

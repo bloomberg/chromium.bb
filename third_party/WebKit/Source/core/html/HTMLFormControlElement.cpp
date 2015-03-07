@@ -159,8 +159,8 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
         if (wasReadOnly != m_isReadOnly) {
             setNeedsWillValidateCheck();
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
-            if (renderer() && renderer()->style()->hasAppearance())
-                LayoutTheme::theme().stateChanged(renderer(), ReadOnlyControlState);
+            if (layoutObject() && layoutObject()->style()->hasAppearance())
+                LayoutTheme::theme().stateChanged(layoutObject(), ReadOnlyControlState);
         }
     } else if (name == requiredAttr) {
         bool wasRequired = m_isRequired;
@@ -180,8 +180,8 @@ void HTMLFormControlElement::disabledAttributeChanged()
     setNeedsWillValidateCheck();
     pseudoStateChanged(CSSSelector::PseudoDisabled);
     pseudoStateChanged(CSSSelector::PseudoEnabled);
-    if (renderer() && renderer()->style()->hasAppearance())
-        LayoutTheme::theme().stateChanged(renderer(), EnabledControlState);
+    if (layoutObject() && layoutObject()->style()->hasAppearance())
+        LayoutTheme::theme().stateChanged(layoutObject(), EnabledControlState);
     if (isDisabledFormControl() && treeScope().adjustedFocusedElement() == this) {
         // We might want to call blur(), but it's dangerous to dispatch events
         // here.
@@ -232,13 +232,13 @@ void HTMLFormControlElement::attach(const AttachContext& context)
 {
     HTMLElement::attach(context);
 
-    if (!renderer())
+    if (!layoutObject())
         return;
 
     // The call to updateFromElement() needs to go after the call through
     // to the base class's attach() because that can sometimes do a close
     // on the renderer.
-    renderer()->updateFromElement();
+    layoutObject()->updateFromElement();
 
     // FIXME: Autofocus handling should be moved to insertedInto according to
     // the standard.
@@ -360,7 +360,7 @@ String HTMLFormControlElement::resultForDialogSubmit()
 
 void HTMLFormControlElement::didRecalcStyle(StyleRecalcChange)
 {
-    if (LayoutObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->layoutObject())
         renderer->updateFromElement();
 }
 
@@ -399,8 +399,8 @@ void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event)
     if (!event.isKeyboardEvent() || event.type() != EventTypeNames::keydown)
         return;
     m_wasFocusedByMouse = false;
-    if (renderer())
-        renderer()->setShouldDoFullPaintInvalidation();
+    if (layoutObject())
+        layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
 short HTMLFormControlElement::tabIndex() const
@@ -455,7 +455,7 @@ void HTMLFormControlElement::findCustomValidationMessageTextDirection(const Stri
     subMessage = fastGetAttribute(titleAttr);
     messageDir = determineDirectionality(message);
     if (!subMessage.isEmpty())
-        subMessageDir = renderer()->style()->direction();
+        subMessageDir = layoutObject()->style()->direction();
 }
 
 void HTMLFormControlElement::updateVisibleValidationMessage()
@@ -464,7 +464,7 @@ void HTMLFormControlElement::updateVisibleValidationMessage()
     if (!page)
         return;
     String message;
-    if (renderer() && willValidate())
+    if (layoutObject() && willValidate())
         message = validationMessage().stripWhiteSpace();
 
     m_hasValidationMessage = true;
@@ -541,7 +541,7 @@ bool HTMLFormControlElement::reportValidity()
     ASSERT(unhandledInvalidControls.size() == 1);
     ASSERT(unhandledInvalidControls[0].get() == this);
     // Update layout now before calling isFocusable(), which has
-    // !renderer()->needsLayout() assertion.
+    // !layoutObject()->needsLayout() assertion.
     document().updateLayoutIgnorePendingStylesheets();
     if (isFocusable()) {
         showValidationMessage();

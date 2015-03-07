@@ -171,9 +171,9 @@ void LayoutSVGResourceContainer::removeClient(LayoutObject* client)
 void LayoutSVGResourceContainer::addClientLayer(Node* node)
 {
     ASSERT(node);
-    if (!node->renderer() || !node->renderer()->hasLayer())
+    if (!node->layoutObject() || !node->layoutObject()->hasLayer())
         return;
-    m_clientLayers.add(toLayoutBoxModelObject(node->renderer())->layer());
+    m_clientLayers.add(toLayoutBoxModelObject(node->layoutObject())->layer());
     clearInvalidationMask();
 }
 
@@ -219,7 +219,7 @@ void LayoutSVGResourceContainer::registerResource()
     for (SVGDocumentExtensions::SVGPendingElements::const_iterator it = clients->begin(); it != end; ++it) {
         ASSERT((*it)->hasPendingResources());
         extensions.clearHasPendingResourcesIfPossible(*it);
-        LayoutObject* renderer = (*it)->renderer();
+        LayoutObject* renderer = (*it)->layoutObject();
         if (!renderer)
             continue;
 
@@ -259,7 +259,7 @@ static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object
 
     SVGElementSet::iterator end = dependencies->end();
     for (SVGElementSet::iterator it = dependencies->begin(); it != end; ++it) {
-        if (LayoutObject* renderer = (*it)->renderer()) {
+        if (LayoutObject* renderer = (*it)->layoutObject()) {
             if (UNLIKELY(!invalidatingDependencies->add(*it).isNewEntry)) {
                 // Reference cycle: we are in process of invalidating this dependant.
                 continue;

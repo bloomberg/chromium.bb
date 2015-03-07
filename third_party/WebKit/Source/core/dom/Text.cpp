@@ -158,8 +158,8 @@ PassRefPtrWillBeRawPtr<Text> Text::splitText(unsigned offset, ExceptionState& ex
     if (exceptionState.hadException())
         return nullptr;
 
-    if (renderer())
-        renderer()->setTextWithOffset(dataImpl(), 0, oldStr.length());
+    if (layoutObject())
+        layoutObject()->setTextWithOffset(dataImpl(), 0, oldStr.length());
 
     if (parentNode())
         document().didSplitTextNode(*this);
@@ -335,7 +335,7 @@ bool Text::textRendererIsNeeded(const LayoutStyle& style, const LayoutObject& pa
         LayoutObject* first = parent.slowFirstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
-        if (!first || first == renderer() || NodeRenderingTraversal::nextSiblingRenderer(*this) == first)
+        if (!first || first == layoutObject() || NodeRenderingTraversal::nextSiblingRenderer(*this) == first)
             // Whitespace at the start of a block just goes away.  Don't even
             // make a render object for this text.
             return false;
@@ -364,7 +364,7 @@ LayoutText* Text::createTextRenderer(LayoutStyle* style)
 void Text::attach(const AttachContext& context)
 {
     if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this)) {
-        if (LayoutObject* parentRenderer = renderingParent->renderer()) {
+        if (LayoutObject* parentRenderer = renderingParent->layoutObject()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
                 LayoutTreeBuilderForText(*this, parentRenderer).createLayoutObject();
         }
@@ -377,13 +377,13 @@ void Text::reattachIfNeeded(const AttachContext& context)
     bool layoutObjectIsNeeded = false;
     ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this);
     if (renderingParent) {
-        if (LayoutObject* parentRenderer = renderingParent->renderer()) {
+        if (LayoutObject* parentRenderer = renderingParent->layoutObject()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
                 layoutObjectIsNeeded = true;
         }
     }
 
-    if (layoutObjectIsNeeded == !!renderer())
+    if (layoutObjectIsNeeded == !!layoutObject())
         return;
 
     // The following is almost the same as Node::reattach() except that we create renderer only if needed.
@@ -394,13 +394,13 @@ void Text::reattachIfNeeded(const AttachContext& context)
     if (styleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
     if (layoutObjectIsNeeded)
-        LayoutTreeBuilderForText(*this, renderingParent->renderer()).createLayoutObject();
+        LayoutTreeBuilderForText(*this, renderingParent->layoutObject()).createLayoutObject();
     CharacterData::attach(reattachContext);
 }
 
 void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
-    if (LayoutText* renderer = this->renderer()) {
+    if (LayoutText* renderer = this->layoutObject()) {
         if (change != NoChange || needsStyleRecalc())
             renderer->setStyle(document().ensureStyleResolver().styleForText(this));
         if (needsStyleRecalc())
@@ -408,7 +408,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
         clearNeedsStyleRecalc();
     } else if (needsStyleRecalc() || needsWhitespaceRenderer()) {
         reattach();
-        if (this->renderer())
+        if (this->layoutObject())
             reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
     }
 }
@@ -417,7 +417,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 // need to create one if the parent style now has white-space: pre.
 bool Text::needsWhitespaceRenderer()
 {
-    ASSERT(!renderer());
+    ASSERT(!layoutObject());
     if (LayoutStyle* style = parentLayoutStyle())
         return style->preserveNewline();
     return false;
@@ -427,7 +427,7 @@ void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfRe
 {
     if (!inActiveDocument())
         return;
-    LayoutText* textRenderer = renderer();
+    LayoutText* textRenderer = layoutObject();
     if (!textRenderer || !textRendererIsNeeded(*textRenderer->style(), *textRenderer->parent())) {
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.

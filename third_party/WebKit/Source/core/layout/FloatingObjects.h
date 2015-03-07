@@ -56,7 +56,7 @@ public:
     PassOwnPtr<FloatingObject> unsafeClone() const;
 
     Type type() const { return static_cast<Type>(m_type); }
-    LayoutBox* renderer() const { return m_renderer; }
+    LayoutBox* layoutObject() const { return m_renderer; }
 
     bool isPlaced() const { return m_isPlaced; }
     void setIsPlaced(bool placed = true) { m_isPlaced = placed; }
@@ -111,10 +111,10 @@ private:
 };
 
 struct FloatingObjectHashFunctions {
-    static unsigned hash(FloatingObject* key) { return DefaultHash<LayoutBox*>::Hash::hash(key->renderer()); }
+    static unsigned hash(FloatingObject* key) { return DefaultHash<LayoutBox*>::Hash::hash(key->layoutObject()); }
     static unsigned hash(const OwnPtr<FloatingObject>& key) { return hash(key.get()); }
     static unsigned hash(const PassOwnPtr<FloatingObject>& key) { return hash(key.get()); }
-    static bool equal(OwnPtr<FloatingObject>& a, FloatingObject* b) { return a->renderer() == b->renderer(); }
+    static bool equal(OwnPtr<FloatingObject>& a, FloatingObject* b) { return a->layoutObject() == b->layoutObject(); }
     static bool equal(OwnPtr<FloatingObject>& a, const OwnPtr<FloatingObject>& b) { return equal(a, b.get()); }
     static bool equal(OwnPtr<FloatingObject>& a, const PassOwnPtr<FloatingObject>& b) { return equal(a, b.get()); }
 
@@ -122,8 +122,8 @@ struct FloatingObjectHashFunctions {
 };
 struct FloatingObjectHashTranslator {
     static unsigned hash(LayoutBox* key) { return DefaultHash<LayoutBox*>::Hash::hash(key); }
-    static bool equal(FloatingObject* a, LayoutBox* b) { return a->renderer() == b; }
-    static bool equal(const OwnPtr<FloatingObject>& a, LayoutBox* b) { return a->renderer() == b; }
+    static bool equal(FloatingObject* a, LayoutBox* b) { return a->layoutObject() == b; }
+    static bool equal(const OwnPtr<FloatingObject>& a, LayoutBox* b) { return a->layoutObject() == b; }
 };
 typedef ListHashSet<OwnPtr<FloatingObject>, 4, FloatingObjectHashFunctions> FloatingObjectSet;
 typedef FloatingObjectSet::const_iterator FloatingObjectSetIterator;

@@ -54,7 +54,7 @@ public:
     virtual ~AXLayoutObject();
 
     // Public, overridden from AXObject.
-    virtual LayoutObject* renderer() const override final { return m_layoutObject; }
+    virtual LayoutObject* layoutObject() const override final { return m_layoutObject; }
     virtual LayoutRect elementRect() const override;
 
     void setLayoutObject(LayoutObject*);

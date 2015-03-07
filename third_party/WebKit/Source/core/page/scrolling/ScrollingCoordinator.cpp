@@ -214,8 +214,8 @@ static WebLayerPositionConstraint computePositionConstraint(const Layer* layer)
 {
     ASSERT(layer->hasCompositedLayerMapping());
     do {
-        if (layer->renderer()->style()->position() == FixedPosition) {
-            const LayoutObject* fixedPositionObject = layer->renderer();
+        if (layer->layoutObject()->style()->position() == FixedPosition) {
+            const LayoutObject* fixedPositionObject = layer->layoutObject();
             bool fixedToRight = !fixedPositionObject->style()->right().isAuto();
             bool fixedToBottom = !fixedPositionObject->style()->bottom().isAuto();
             return WebLayerPositionConstraint::fixedPosition(fixedToRight, fixedToBottom);
@@ -486,15 +486,15 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
         for (size_t i = 0; i < layerIter->value.size(); ++i) {
             LayoutRect rect = layerIter->value[i];
             if (compositedLayer != curLayer) {
-                FloatQuad compositorQuad = geometryMap.mapToContainer(rect, compositedLayer->renderer());
+                FloatQuad compositorQuad = geometryMap.mapToContainer(rect, compositedLayer->layoutObject());
                 rect = LayoutRect(compositorQuad.boundingBox());
                 // If the enclosing composited layer itself is scrolled, we have to undo the subtraction
                 // of its scroll offset since we want the offset relative to the scrolling content, not
                 // the element itself.
-                if (compositedLayer->renderer()->hasOverflowClip())
+                if (compositedLayer->layoutObject()->hasOverflowClip())
                     rect.move(compositedLayer->layoutBox()->scrolledContentOffset());
             }
-            Layer::mapRectToPaintBackingCoordinates(compositedLayer->renderer(), rect);
+            Layer::mapRectToPaintBackingCoordinates(compositedLayer->layoutObject(), rect);
             glRects->append(rect);
         }
     }
@@ -543,7 +543,7 @@ static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerH
 
             if (layer->parent()) {
                 layer = layer->parent();
-            } else if (LayoutObject* parentDocLayoutObject = layer->renderer()->frame()->ownerLayoutObject()) {
+            } else if (LayoutObject* parentDocLayoutObject = layer->layoutObject()->frame()->ownerLayoutObject()) {
                 layer = parentDocLayoutObject->enclosingLayer();
                 touchHandlerInChildFrame = true;
             }
@@ -834,7 +834,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
 
         if (node->isDocumentNode() && node != document) {
             accumulateDocumentTouchEventTargetRects(rects, toDocument(node));
-        } else if (LayoutObject* renderer = node->renderer()) {
+        } else if (LayoutObject* renderer = node->layoutObject()) {
             // If the set also contains one of our ancestor nodes then processing
             // this node would be redundant.
             bool hasTouchEventTargetAncestor = false;

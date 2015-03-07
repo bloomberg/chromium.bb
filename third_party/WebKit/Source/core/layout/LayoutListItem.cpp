@@ -129,7 +129,7 @@ static LayoutListItem* nextListItem(const Node* listNode, const LayoutListItem* 
             continue;
         }
 
-        LayoutObject* renderer = current->renderer();
+        LayoutObject* renderer = current->layoutObject();
         if (renderer && renderer->isListItem())
             return toLayoutListItem(renderer);
 
@@ -147,7 +147,7 @@ static LayoutListItem* previousListItem(const Node* listNode, const LayoutListIt
     ASSERT(current);
     ASSERT(!current->document().childNeedsDistributionRecalc());
     for (current = NodeRenderingTraversal::previous(*current, listNode); current && current != listNode; current = NodeRenderingTraversal::previous(*current, listNode)) {
-        LayoutObject* renderer = current->renderer();
+        LayoutObject* renderer = current->layoutObject();
         if (!renderer || (renderer && !renderer->isListItem()))
             continue;
         Node* otherList = enclosingList(toLayoutListItem(renderer));

@@ -292,7 +292,7 @@ Node::~Node()
     if (hasRareData())
         clearRareData();
 
-    RELEASE_ASSERT(!renderer());
+    RELEASE_ASSERT(!layoutObject());
 
     if (!isContainerNode())
         willBeDeletedFromDocument();
@@ -314,7 +314,7 @@ Node::~Node()
 #else
     // With Oilpan, the rare data finalizer also asserts for
     // this condition (we cannot directly access it here.)
-    RELEASE_ASSERT(hasRareData() || !renderer());
+    RELEASE_ASSERT(hasRareData() || !layoutObject());
 #endif
 
     InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
@@ -370,7 +370,7 @@ void Node::clearRareData()
     ASSERT(hasRareData());
     ASSERT(!transientMutationObserverRegistry() || transientMutationObserverRegistry()->isEmpty());
 
-    LayoutObject* renderer = m_data.m_rareData->renderer();
+    LayoutObject* renderer = m_data.m_rareData->layoutObject();
     if (isElementNode())
         delete static_cast<ElementRareData*>(m_data.m_rareData);
     else
@@ -561,12 +561,12 @@ bool Node::hasEditableStyle(EditableLevel editableLevel, UserSelectAllTreatment 
     // would fire in the middle of Document::setFocusedNode().
 
     for (const Node* node = this; node; node = node->parentNode()) {
-        if ((node->isHTMLElement() || node->isDocumentNode()) && node->renderer()) {
+        if ((node->isHTMLElement() || node->isDocumentNode()) && node->layoutObject()) {
             // Elements with user-select: all style are considered atomic
             // therefore non editable.
             if (Position::nodeIsUserSelectAll(node) && treatment == UserSelectAllIsAlwaysNonEditable)
                 return false;
-            switch (node->renderer()->style()->userModify()) {
+            switch (node->layoutObject()->style()->userModify()) {
             case READ_ONLY:
                 return false;
             case READ_WRITE:
@@ -602,20 +602,20 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
 
 LayoutBox* Node::layoutBox() const
 {
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     return renderer && renderer->isBox() ? toLayoutBox(renderer) : nullptr;
 }
 
 LayoutBoxModelObject* Node::layoutBoxModelObject() const
 {
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     return renderer && renderer->isBoxModelObject() ? toLayoutBoxModelObject(renderer) : nullptr;
 }
 
 LayoutRect Node::boundingBox() const
 {
-    if (renderer())
-        return LayoutRect(renderer()->absoluteBoundingBoxRect());
+    if (layoutObject())
+        return LayoutRect(layoutObject()->absoluteBoundingBoxRect());
     return LayoutRect();
 }
 
@@ -630,8 +630,8 @@ bool Node::hasNonEmptyBoundingBox() const
         return true;
 
     Vector<IntRect> rects;
-    FloatPoint absPos = renderer()->localToAbsolute();
-    renderer()->absoluteRects(rects, flooredLayoutPoint(absPos));
+    FloatPoint absPos = layoutObject()->localToAbsolute();
+    layoutObject()->absoluteRects(rects, flooredLayoutPoint(absPos));
     size_t n = rects.size();
     for (size_t i = 0; i < n; ++i)
         if (!rects[i].isEmpty())
@@ -921,7 +921,7 @@ void Node::attach(const AttachContext&)
 {
     ASSERT(document().inStyleRecalc() || isDocumentNode());
     ASSERT(needsAttach());
-    ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isLayoutView())));
+    ASSERT(!layoutObject() || (layoutObject()->style() && (layoutObject()->parent() || layoutObject()->isLayoutView())));
 
     clearNeedsStyleRecalc();
 
@@ -952,8 +952,8 @@ void Node::detach(const AttachContext& context)
     detachingNode = this;
 #endif
 
-    if (renderer())
-        renderer()->destroyAndCleanupAnonymousWrappers();
+    if (layoutObject())
+        layoutObject()->destroyAndCleanupAnonymousWrappers();
     setLayoutObject(nullptr);
 
     // Do not remove the element's hovered and active status
@@ -987,7 +987,7 @@ void Node::reattachWhitespaceSiblingsIfNeeded(Text* start)
     for (Node* sibling = start; sibling; sibling = sibling->nextSibling()) {
         if (sibling->isTextNode() && toText(sibling)->containsOnlyWhitespace()) {
             toText(sibling)->reattachIfNeeded();
-        } else if (sibling->renderer()) {
+        } else if (sibling->layoutObject()) {
             return;
         }
     }
@@ -1064,8 +1064,8 @@ bool Node::canStartSelection() const
     if (hasEditableStyle())
         return true;
 
-    if (renderer()) {
-        LayoutStyle* style = renderer()->style();
+    if (layoutObject()) {
+        LayoutStyle* style = layoutObject()->style();
         // We allow selections to begin within an element that has -webkit-user-select: none set,
         // but if the element is draggable then dragging should take priority over selection.
         if (style->userDrag() == DRAG_ELEMENT && style->userSelect() == SELECT_NONE)
@@ -2167,7 +2167,7 @@ void Node::defaultEventHandler(Event* event)
             // remove this synchronous layout if we avoid synchronous layout in
             // LayoutTextControlSingleLine::scrollHeight
             document().updateLayoutIgnorePendingStylesheets();
-            LayoutObject* renderer = this->renderer();
+            LayoutObject* renderer = this->layoutObject();
             while (renderer && (!renderer->isBox() || !toLayoutBox(renderer)->canBeScrolledAndHasScrollableArea()))
                 renderer = renderer->parent();
 
@@ -2183,10 +2183,10 @@ void Node::defaultEventHandler(Event* event)
         // If we don't have a renderer, send the wheel event to the first node we find with a renderer.
         // This is needed for <option> and <optgroup> elements so that <select>s get a wheel scroll.
         Node* startNode = this;
-        while (startNode && !startNode->renderer())
+        while (startNode && !startNode->layoutObject())
             startNode = startNode->parentOrShadowHostNode();
 
-        if (startNode && startNode->renderer()) {
+        if (startNode && startNode->layoutObject()) {
             if (LocalFrame* frame = document().frame())
                 frame->eventHandler().defaultWheelEventHandler(startNode, wheelEvent);
         }

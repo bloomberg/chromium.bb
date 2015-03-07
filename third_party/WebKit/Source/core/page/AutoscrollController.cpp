@@ -122,7 +122,7 @@ void AutoscrollController::updateAutoscrollRenderer()
     HitTestResult hitTest = renderer->frame()->eventHandler().hitTestResultAtPoint(m_panScrollStartPos, HitTestRequest::ReadOnly | HitTestRequest::Active);
 
     if (Node* nodeAtPoint = hitTest.innerNode())
-        renderer = nodeAtPoint->renderer();
+        renderer = nodeAtPoint->layoutObject();
 #endif
 
     while (renderer && !(renderer->isBox() && toLayoutBox(renderer)->canAutoscroll()))
@@ -132,15 +132,15 @@ void AutoscrollController::updateAutoscrollRenderer()
 
 void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoint& eventPosition, double eventTime)
 {
-    if (!dropTargetNode || !dropTargetNode->renderer()) {
+    if (!dropTargetNode || !dropTargetNode->layoutObject()) {
         stopAutoscroll();
         return;
     }
 
-    if (m_autoscrollRenderer && m_autoscrollRenderer->frame() != dropTargetNode->renderer()->frame())
+    if (m_autoscrollRenderer && m_autoscrollRenderer->frame() != dropTargetNode->layoutObject()->frame())
         return;
 
-    LayoutBox* scrollable = LayoutBox::findAutoscrollable(dropTargetNode->renderer());
+    LayoutBox* scrollable = LayoutBox::findAutoscrollable(dropTargetNode->layoutObject());
     if (!scrollable) {
         stopAutoscroll();
         return;

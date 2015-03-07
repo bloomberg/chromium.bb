@@ -52,7 +52,7 @@ HTMLProgressElement* ProgressShadowElement::progressElement() const
 
 bool ProgressShadowElement::layoutObjectIsNeeded(const LayoutStyle& style)
 {
-    LayoutObject* progressRenderer = progressElement()->renderer();
+    LayoutObject* progressRenderer = progressElement()->layoutObject();
     return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::layoutObjectIsNeeded(style);
 }
 
@@ -73,7 +73,7 @@ bool ProgressInnerElement::layoutObjectIsNeeded(const LayoutStyle& style)
     if (progressElement()->hasOpenShadowRoot())
         return HTMLDivElement::layoutObjectIsNeeded(style);
 
-    LayoutObject* progressRenderer = progressElement()->renderer();
+    LayoutObject* progressRenderer = progressElement()->layoutObject();
     return progressRenderer && !progressRenderer->style()->hasAppearance() && HTMLDivElement::layoutObjectIsNeeded(style);
 }
 

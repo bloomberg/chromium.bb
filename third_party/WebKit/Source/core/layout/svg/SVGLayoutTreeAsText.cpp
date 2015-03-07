@@ -399,10 +399,10 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
     if (fragments.isEmpty())
         return;
 
-    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(textBox->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(textBox->layoutObject());
 
     const SVGLayoutStyle& svgStyle = textRenderer.style()->svgStyle();
-    String text = textBox->renderer().text();
+    String text = textBox->layoutObject().text();
 
     unsigned fragmentsSize = fragments.size();
     for (unsigned i = 0; i < fragmentsSize; ++i) {

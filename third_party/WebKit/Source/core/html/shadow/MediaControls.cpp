@@ -333,8 +333,8 @@ void MediaControls::updateCurrentTimeDisplay()
 void MediaControls::updateVolume()
 {
     m_muteButton->updateDisplayType();
-    if (m_muteButton->renderer())
-        m_muteButton->renderer()->setShouldDoFullPaintInvalidation();
+    if (m_muteButton->layoutObject())
+        m_muteButton->layoutObject()->setShouldDoFullPaintInvalidation();
 
     if (mediaElement().muted())
         m_volumeSlider->setVolume(0);

@@ -140,7 +140,7 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents()
 {
     if (isDisabledFormControl())
         return false;
-    LayoutObject* r = renderer();
+    LayoutObject* r = layoutObject();
     return r && (r->isEmbeddedObject() || r->isLayoutPart());
 }
 
@@ -164,7 +164,7 @@ void HTMLPlugInElement::attach(const AttachContext& context)
 {
     HTMLFrameOwnerElement::attach(context);
 
-    if (!renderer() || useFallbackContent())
+    if (!layoutObject() || useFallbackContent())
         return;
 
     if (isImageType()) {
@@ -201,7 +201,7 @@ void HTMLPlugInElement::requestPluginCreationWithoutRendererIfPossible()
         || !document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType))
         return;
 
-    if (renderer() && renderer()->isLayoutPart())
+    if (layoutObject() && layoutObject()->isLayoutPart())
         return;
 
     createPluginWithoutRenderer();
@@ -233,7 +233,7 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 {
     // Update the widget the next time we attach (detaching destroys the plugin).
     // FIXME: None of this "needsWidgetUpdate" related code looks right.
-    if (renderer() && !useFallbackContent())
+    if (layoutObject() && !useFallbackContent())
         setNeedsWidgetUpdate(true);
     if (m_isDelayingLoadEvent) {
         m_isDelayingLoadEvent = false;
@@ -374,7 +374,7 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     // FIXME: Mouse down and scroll events are passed down to plug-in via custom
     // code in EventHandler; these code paths should be united.
 
-    LayoutObject* r = renderer();
+    LayoutObject* r = layoutObject();
     if (!r || !r->isLayoutPart())
         return;
     if (r->isEmbeddedObject()) {
@@ -428,9 +428,9 @@ bool HTMLPlugInElement::layoutObjectIsFocusable() const
     if (HTMLFrameOwnerElement::supportsFocus() && HTMLFrameOwnerElement::layoutObjectIsFocusable())
         return true;
 
-    if (useFallbackContent() || !renderer() || !renderer()->isEmbeddedObject())
+    if (useFallbackContent() || !layoutObject() || !layoutObject()->isEmbeddedObject())
         return false;
-    return !toLayoutEmbeddedObject(renderer())->showsUnavailablePluginIndicator();
+    return !toLayoutEmbeddedObject(layoutObject())->showsUnavailablePluginIndicator();
 }
 
 NPObject* HTMLPlugInElement::getNPObject()
@@ -466,9 +466,9 @@ LayoutEmbeddedObject* HTMLPlugInElement::layoutEmbeddedObject() const
 {
     // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
     // when using fallback content.
-    if (!renderer() || !renderer()->isEmbeddedObject())
+    if (!layoutObject() || !layoutObject()->isEmbeddedObject())
         return nullptr;
-    return toLayoutEmbeddedObject(renderer());
+    return toLayoutEmbeddedObject(layoutObject());
 }
 
 // We don't use m_url, as it may not be the final URL that the object loads,
@@ -667,7 +667,7 @@ bool HTMLPlugInElement::useFallbackContent() const
 
 void HTMLPlugInElement::lazyReattachIfNeeded()
 {
-    if (!useFallbackContent() && !usePlaceholderContent() && needsWidgetUpdate() && renderer() && !isImageType())
+    if (!useFallbackContent() && !usePlaceholderContent() && needsWidgetUpdate() && layoutObject() && !isImageType())
         lazyReattachIfAttached();
 }
 

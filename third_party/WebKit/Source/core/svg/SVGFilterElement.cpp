@@ -122,7 +122,7 @@ void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::heightAttr)
         updateRelativeLengthsInformation();
 
-    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->renderer());
+    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
     if (renderer)
         renderer->invalidateCacheAndMarkForLayout();
 }
@@ -134,7 +134,7 @@ void SVGFilterElement::childrenChanged(const ChildrenChange& change)
     if (change.byParser)
         return;
 
-    if (LayoutObject* object = renderer())
+    if (LayoutObject* object = layoutObject())
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 

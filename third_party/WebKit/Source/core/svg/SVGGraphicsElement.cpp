@@ -132,7 +132,7 @@ PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJav
 
 bool SVGGraphicsElement::hasAnimatedLocalTransform() const
 {
-    LayoutStyle* style = renderer() ? renderer()->style() : 0;
+    LayoutStyle* style = layoutObject() ? layoutObject()->style() : 0;
 
     // Each of these is used in SVGGraphicsElement::calculateAnimatedLocalTransform to create an animated local transform.
     return (style && style->hasTransform()) || !m_transform->currentValue()->isEmpty() || hasSVGRareData();
@@ -141,7 +141,7 @@ bool SVGGraphicsElement::hasAnimatedLocalTransform() const
 AffineTransform SVGGraphicsElement::calculateAnimatedLocalTransform() const
 {
     AffineTransform matrix;
-    LayoutStyle* style = renderer() ? renderer()->style() : 0;
+    LayoutStyle* style = layoutObject() ? layoutObject()->style() : 0;
 
     // If CSS property was set, use that, otherwise fallback to attribute (if set).
     if (style && style->hasTransform()) {
@@ -162,13 +162,13 @@ AffineTransform SVGGraphicsElement::calculateAnimatedLocalTransform() const
             // Note: objectBoundingBox is an emptyRect for elements like pattern or clipPath.
             // See the "Object bounding box units" section of http://dev.w3.org/csswg/css3-transforms/
             if (zoom != 1) {
-                FloatRect scaledBBox = renderer()->objectBoundingBox();
+                FloatRect scaledBBox = layoutObject()->objectBoundingBox();
                 scaledBBox.scale(zoom);
                 transform.scale(1 / zoom);
                 style->applyTransform(transform, scaledBBox);
                 transform.scale(zoom);
             } else {
-                style->applyTransform(transform, renderer()->objectBoundingBox());
+                style->applyTransform(transform, layoutObject()->objectBoundingBox());
             }
         }
 
@@ -218,7 +218,7 @@ void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    LayoutObject* object = renderer();
+    LayoutObject* object = layoutObject();
     if (!object)
         return;
 
@@ -256,10 +256,10 @@ FloatRect SVGGraphicsElement::getBBox()
     document().updateLayoutIgnorePendingStylesheets();
 
     // FIXME: Eventually we should support getBBox for detached elements.
-    if (!renderer())
+    if (!layoutObject())
         return FloatRect();
 
-    return renderer()->objectBoundingBox();
+    return layoutObject()->objectBoundingBox();
 }
 
 PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript()

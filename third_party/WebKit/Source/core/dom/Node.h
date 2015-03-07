@@ -99,7 +99,7 @@ enum StyleChangeType {
 
 class NodeRareDataBase {
 public:
-    LayoutObject* renderer() const { return m_layoutObject; }
+    LayoutObject* layoutObject() const { return m_layoutObject; }
     void setLayoutObject(LayoutObject* layoutObject) { m_layoutObject = layoutObject; }
 
 protected:
@@ -498,9 +498,9 @@ public:
     // -----------------------------------------------------------------------------
     // Integration with rendering tree
 
-    // As renderer() includes a branch you should avoid calling it repeatedly in hot code paths.
+    // As layoutObject() includes a branch you should avoid calling it repeatedly in hot code paths.
     // Note that if a Node has a renderer, it's parentNode is guaranteed to have one as well.
-    LayoutObject* renderer() const { return hasRareData() ? m_data.m_rareData->renderer() : m_data.m_layoutObject; };
+    LayoutObject* layoutObject() const { return hasRareData() ? m_data.m_rareData->layoutObject() : m_data.m_layoutObject; };
     void setLayoutObject(LayoutObject* layoutObject)
     {
         if (hasRareData())

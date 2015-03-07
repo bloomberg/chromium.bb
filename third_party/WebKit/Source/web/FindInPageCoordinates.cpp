@@ -131,7 +131,7 @@ FloatRect findInPageRectFromRange(Range* range)
     if (!range || !range->firstNode())
         return FloatRect();
 
-    return findInPageRectFromAbsoluteRect(LayoutObject::absoluteBoundingBoxRectForRange(range), range->firstNode()->renderer());
+    return findInPageRectFromAbsoluteRect(LayoutObject::absoluteBoundingBoxRectForRange(range), range->firstNode()->layoutObject());
 }
 
 } // namespace blink

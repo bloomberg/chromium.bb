@@ -179,7 +179,7 @@ public:
     InlineBox* nextLeafChildIgnoringLineBreak() const;
     InlineBox* prevLeafChildIgnoringLineBreak() const;
 
-    LayoutObject& renderer() const { return m_renderer; }
+    LayoutObject& layoutObject() const { return m_renderer; }
 
     InlineFlowBox* parent() const
     {
@@ -276,15 +276,15 @@ public:
 
     int expansion() const { return m_bitfields.expansion(); }
 
-    bool visibleToHitTestRequest(const HitTestRequest& request) const { return renderer().visibleToHitTestRequest(request); }
+    bool visibleToHitTestRequest(const HitTestRequest& request) const { return layoutObject().visibleToHitTestRequest(request); }
 
-    EVerticalAlign verticalAlign() const { return renderer().style(m_bitfields.firstLine())->verticalAlign(); }
+    EVerticalAlign verticalAlign() const { return layoutObject().style(m_bitfields.firstLine())->verticalAlign(); }
 
     // Use with caution! The type is not checked!
     LayoutBoxModelObject* boxModelObject() const
     {
-        if (!renderer().isText())
-            return toLayoutBoxModelObject(&renderer());
+        if (!layoutObject().isText())
+            return toLayoutBoxModelObject(&layoutObject());
         return 0;
     }
 

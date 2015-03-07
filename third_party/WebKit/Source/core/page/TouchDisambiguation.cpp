@@ -104,7 +104,7 @@ void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector
     WillBeHeapHashSet<RawPtrWillBeMember<Node>> blackList;
     for (const auto& hitResult : hitResults) {
         // Ignore any Nodes that can't be clicked on.
-        LayoutObject* renderer = hitResult.get()->renderer();
+        LayoutObject* renderer = hitResult.get()->layoutObject();
         if (!renderer || !hitResult.get()->willRespondToMouseClickEvents())
             continue;
 

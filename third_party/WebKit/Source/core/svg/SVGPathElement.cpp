@@ -218,7 +218,7 @@ void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->renderer());
+    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
 
     if (attrName == SVGNames::dAttr) {
         if (renderer)
@@ -262,7 +262,7 @@ void SVGPathElement::pathSegListChanged(ListModification listModification)
 
     invalidateSVGAttributes();
 
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->renderer());
+    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
     if (!renderer)
         return;
 
@@ -278,10 +278,10 @@ FloatRect SVGPathElement::getBBox()
     document().updateLayoutIgnorePendingStylesheets();
 
     // FIXME: Eventually we should support getBBox for detached elements.
-    if (!renderer())
+    if (!layoutObject())
         return FloatRect();
 
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->renderer());
+    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
     return renderer->path().boundingRect();
 }
 

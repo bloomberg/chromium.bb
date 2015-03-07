@@ -212,28 +212,28 @@ public:
     LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
         if (isHorizontalWritingMode())
-            return child->x() + child->renderer()->marginLeft();
+            return child->x() + child->layoutObject()->marginLeft();
 
-        return child->x() + marginBeforeForChild(*(child->renderer()));
+        return child->x() + marginBeforeForChild(*(child->layoutObject()));
     }
 
     LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
         if (isHorizontalWritingMode())
-            return child->y() + marginBeforeForChild(*(child->renderer()));
+            return child->y() + marginBeforeForChild(*(child->layoutObject()));
 
-        return child->y() + child->renderer()->marginTop();
+        return child->y() + child->layoutObject()->marginTop();
     }
 
     LayoutSize positionForFloatIncludingMargin(const FloatingObject* child) const
     {
         if (isHorizontalWritingMode()) {
-            return LayoutSize(child->x() + child->renderer()->marginLeft(),
-                child->y() + marginBeforeForChild(*(child->renderer())));
+            return LayoutSize(child->x() + child->layoutObject()->marginLeft(),
+                child->y() + marginBeforeForChild(*(child->layoutObject())));
         }
 
-        return LayoutSize(child->x() + marginBeforeForChild(*(child->renderer())),
-            child->y() + child->renderer()->marginTop());
+        return LayoutSize(child->x() + marginBeforeForChild(*(child->layoutObject())),
+            child->y() + child->layoutObject()->marginTop());
     }
 
     LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&) const;

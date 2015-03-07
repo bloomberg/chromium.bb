@@ -70,7 +70,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
     }
 
     if (event->type() == EventTypeNames::click) {
-        if (renderer() && renderer()->visibleToHitTesting()) {
+        if (layoutObject() && layoutObject()->visibleToHitTesting()) {
             m_clearButtonOwner->focusAndSelectClearButtonOwner();
             m_clearButtonOwner->clearValue();
             event->setDefaultHandled();

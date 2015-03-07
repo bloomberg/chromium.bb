@@ -685,7 +685,7 @@ PassRefPtrWillBeRawPtr<ClientRect> Internals::boundingBox(Element* element)
     ASSERT(element);
 
     element->document().updateLayoutIgnorePendingStylesheets();
-    LayoutObject* renderer = element->renderer();
+    LayoutObject* renderer = element->layoutObject();
     if (!renderer)
         return ClientRect::create();
     return ClientRect::create(renderer->absoluteBoundingBoxRectIgnoringTransforms());
@@ -1170,7 +1170,7 @@ static Layer* findLayerForGraphicsLayer(Layer* searchRoot, GraphicsLayer* graphi
     *layerOffset = IntSize();
     if (searchRoot->hasCompositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer()) {
         LayoutRect rect;
-        Layer::mapRectToPaintBackingCoordinates(searchRoot->renderer(), rect);
+        Layer::mapRectToPaintBackingCoordinates(searchRoot->layoutObject(), rect);
         *layerOffset = IntSize(rect.x(), rect.y());
         return searchRoot;
     }
@@ -1186,7 +1186,7 @@ static Layer* findLayerForGraphicsLayer(Layer* searchRoot, GraphicsLayer* graphi
         if (graphicsLayer == squashingLayer) {
             *layerType ="squashing";
             LayoutRect rect;
-            Layer::mapRectToPaintBackingCoordinates(searchRoot->renderer(), rect);
+            Layer::mapRectToPaintBackingCoordinates(searchRoot->layoutObject(), rect);
             *layerOffset = IntSize(rect.x(), rect.y());
             return searchRoot;
         }
@@ -1274,7 +1274,7 @@ static void accumulateLayerRectList(LayerCompositor* compositor, GraphicsLayer* 
         String layerType;
         IntSize layerOffset;
         Layer* renderLayer = findLayerForGraphicsLayer(compositor->rootLayer(), graphicsLayer, &layerOffset, &layerType);
-        Node* node = renderLayer ? renderLayer->renderer()->node() : 0;
+        Node* node = renderLayer ? renderLayer->layoutObject()->node() : 0;
         for (size_t i = 0; i < layerRects.size(); ++i) {
             if (!layerRects[i].isEmpty()) {
                 rects->append(node, layerType, layerOffset.width(), layerOffset.height(), ClientRect::create(layerRects[i]));
@@ -1508,8 +1508,8 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
     ASSERT(element1 && element2);
     element1->document().view()->updateLayoutAndStyleForPainting();
 
-    LayoutObject* renderer1 = element1->renderer();
-    LayoutObject* renderer2 = element2->renderer();
+    LayoutObject* renderer1 = element1->layoutObject();
+    LayoutObject* renderer2 = element2->layoutObject();
     if (!renderer1 || !renderer1->isBox()) {
         exceptionState.throwDOMException(InvalidAccessError, renderer1 ? "The first provided element's renderer is not a box." : "The first provided element has no renderer.");
         return false;
@@ -1547,7 +1547,7 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
     ASSERT(element);
     element->document().updateLayout();
 
-    LayoutObject* renderer = element->renderer();
+    LayoutObject* renderer = element->layoutObject();
     if (!renderer || !renderer->isBox()) {
         exceptionState.throwDOMException(InvalidAccessError, renderer ? "The provided element's renderer is not a box." : "The provided element has no renderer.");
         return String();
@@ -1996,7 +1996,7 @@ bool Internals::isSelectPopupVisible(Node* node)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    LayoutObject* renderer = select.renderer();
+    LayoutObject* renderer = select.layoutObject();
     if (!renderer || !renderer->isMenuList())
         return false;
 
@@ -2011,7 +2011,7 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int itemIndex)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    LayoutObject* renderer = select.renderer();
+    LayoutObject* renderer = select.layoutObject();
     if (!renderer || !renderer->isMenuList())
         return false;
 
@@ -2027,7 +2027,7 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    LayoutObject* renderer = select.renderer();
+    LayoutObject* renderer = select.layoutObject();
     if (!renderer || !renderer->isMenuList())
         return false;
 
@@ -2174,7 +2174,7 @@ String Internals::textSurroundingNode(Node* node, int x, int y, unsigned long ma
     if (!node)
         return String();
     blink::WebPoint point(x, y);
-    SurroundingText surroundingText(VisiblePosition(node->renderer()->positionForPoint(static_cast<IntPoint>(point))).deepEquivalent().parentAnchoredEquivalent(), maxLength);
+    SurroundingText surroundingText(VisiblePosition(node->layoutObject()->positionForPoint(static_cast<IntPoint>(point))).deepEquivalent().parentAnchoredEquivalent(), maxLength);
     return surroundingText.content();
 }
 

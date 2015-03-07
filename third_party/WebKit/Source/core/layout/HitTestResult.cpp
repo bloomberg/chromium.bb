@@ -125,7 +125,7 @@ PositionWithAffinity HitTestResult::position() const
 {
     if (!m_innerPossiblyPseudoNode)
         return PositionWithAffinity();
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (!renderer)
         return PositionWithAffinity();
     if (m_innerPossiblyPseudoNode->isPseudoElement() && m_innerPossiblyPseudoNode->pseudoId() == BEFORE)
@@ -133,9 +133,9 @@ PositionWithAffinity HitTestResult::position() const
     return renderer->positionForPoint(localPoint());
 }
 
-LayoutObject* HitTestResult::renderer() const
+LayoutObject* HitTestResult::layoutObject() const
 {
-    return m_innerNode ? m_innerNode->renderer() : 0;
+    return m_innerNode ? m_innerNode->layoutObject() : 0;
 }
 
 void HitTestResult::setToShadowHostIfInClosedShadowRoot()
@@ -211,7 +211,7 @@ String HitTestResult::spellingToolTip(TextDirection& dir) const
     if (!marker)
         return String();
 
-    if (LayoutObject* renderer = m_innerNonSharedNode->renderer())
+    if (LayoutObject* renderer = m_innerNonSharedNode->layoutObject())
         dir = renderer->style()->direction();
     return marker->description();
 }
@@ -225,7 +225,7 @@ String HitTestResult::title(TextDirection& dir) const
         if (titleNode->isElementNode()) {
             String title = toElement(titleNode)->title();
             if (!title.isNull()) {
-                if (LayoutObject* renderer = titleNode->renderer())
+                if (LayoutObject* renderer = titleNode->layoutObject())
                     dir = renderer->style()->direction();
                 return title;
             }
@@ -257,7 +257,7 @@ Image* HitTestResult::image() const
     if (!m_innerNonSharedNode)
         return 0;
 
-    LayoutObject* renderer = m_innerNonSharedNode->renderer();
+    LayoutObject* renderer = m_innerNonSharedNode->layoutObject();
     if (renderer && renderer->isImage()) {
         LayoutImage* image = toLayoutImage(renderer);
         if (image->cachedImage() && !image->cachedImage()->errorOccurred())
@@ -279,7 +279,7 @@ KURL HitTestResult::absoluteImageURL() const
     if (!m_innerNonSharedNode)
         return KURL();
 
-    LayoutObject* renderer = m_innerNonSharedNode->renderer();
+    LayoutObject* renderer = m_innerNonSharedNode->layoutObject();
     if (!(renderer && renderer->isImage()))
         return KURL();
 
@@ -309,7 +309,7 @@ HTMLMediaElement* HitTestResult::mediaElement() const
     if (!m_innerNonSharedNode)
         return 0;
 
-    if (!(m_innerNonSharedNode->renderer() && m_innerNonSharedNode->renderer()->isMedia()))
+    if (!(m_innerNonSharedNode->layoutObject() && m_innerNonSharedNode->layoutObject()->isMedia()))
         return 0;
 
     if (isHTMLMediaElement(*m_innerNonSharedNode))
@@ -331,9 +331,9 @@ bool HitTestResult::isLiveLink() const
 
 bool HitTestResult::isMisspelled() const
 {
-    if (!innerNode() || !innerNode()->renderer())
+    if (!innerNode() || !innerNode()->layoutObject())
         return false;
-    VisiblePosition pos(innerNode()->renderer()->positionForPoint(localPoint()));
+    VisiblePosition pos(innerNode()->layoutObject()->positionForPoint(localPoint()));
     if (pos.isNull())
         return false;
     return m_innerNonSharedNode->document().markers().markersInRange(
@@ -467,7 +467,7 @@ void HitTestResult::resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPo
     // Update the HitTestResult as if the supplied node had been hit in normal point-based hit-test.
     // Note that we don't know the local point after a rect-based hit-test, but we never use
     // it so shouldn't bother with the cost of computing it.
-    resolvedInnerNode->renderer()->updateHitTestResult(*this, LayoutPoint());
+    resolvedInnerNode->layoutObject()->updateHitTestResult(*this, LayoutPoint());
     ASSERT(!isRectBasedTest());
 }
 

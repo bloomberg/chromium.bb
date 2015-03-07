@@ -103,7 +103,7 @@ void LayerFilterInfo::setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer> r
 
 void LayerFilterInfo::notifyFinished(Resource*)
 {
-    LayoutObject* renderer = m_layer->renderer();
+    LayoutObject* renderer = m_layer->layoutObject();
     // FIXME: This caller of scheduleSVGFilterLayerUpdateHack() is not correct. It's using the layer update
     // system to trigger a Layer to go through the filter updating logic, but that might not
     // even happen if this element is style sharing and LayoutObject::setStyle() returns early.
@@ -130,13 +130,13 @@ void LayerFilterInfo::updateReferenceFilterClients(const FilterOperations& opera
         } else {
             // Reference is internal; add layer as a client so we can trigger
             // filter paint invalidation on SVG attribute change.
-            Element* filter = m_layer->renderer()->node()->document().getElementById(referenceFilterOperation->fragment());
+            Element* filter = m_layer->layoutObject()->node()->document().getElementById(referenceFilterOperation->fragment());
             if (!isSVGFilterElement(filter))
                 continue;
-            if (filter->renderer())
-                toLayoutSVGResourceContainer(filter->renderer())->addClientLayer(m_layer);
+            if (filter->layoutObject())
+                toLayoutSVGResourceContainer(filter->layoutObject())->addClientLayer(m_layer);
             else
-                toSVGFilterElement(filter)->addClient(m_layer->renderer()->node());
+                toSVGFilterElement(filter)->addClient(m_layer->layoutObject()->node());
             m_internalSVGReferences.append(filter);
         }
     }
@@ -149,10 +149,10 @@ void LayerFilterInfo::removeReferenceFilterClients()
     m_externalSVGReferences.clear();
     for (size_t i = 0; i < m_internalSVGReferences.size(); ++i) {
         Element* filter = m_internalSVGReferences.at(i).get();
-        if (filter->renderer())
-            toLayoutSVGResourceContainer(filter->renderer())->removeClientLayer(m_layer);
+        if (filter->layoutObject())
+            toLayoutSVGResourceContainer(filter->layoutObject())->removeClientLayer(m_layer);
         else
-            toSVGFilterElement(filter)->removeClient(m_layer->renderer()->node());
+            toSVGFilterElement(filter)->removeClient(m_layer->layoutObject()->node());
     }
     m_internalSVGReferences.clear();
 }

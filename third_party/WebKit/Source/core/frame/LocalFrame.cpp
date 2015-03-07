@@ -87,15 +87,15 @@ struct ScopedFramePaintingState {
         , node(node)
         , paintBehavior(frame->view()->paintBehavior())
     {
-        ASSERT(!node || node->renderer());
+        ASSERT(!node || node->layoutObject());
         if (node)
-            node->renderer()->updateDragState(true);
+            node->layoutObject()->updateDragState(true);
     }
 
     ~ScopedFramePaintingState()
     {
-        if (node && node->renderer())
-            node->renderer()->updateDragState(false);
+        if (node && node->layoutObject())
+            node->layoutObject()->updateDragState(false);
         frame->view()->setPaintBehavior(paintBehavior);
         frame->view()->setNodeToDraw(0);
     }
@@ -639,7 +639,7 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
 
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
-    if (!node.renderer())
+    if (!node.layoutObject())
         return nullptr;
 
     const ScopedFramePaintingState state(this, &node);
@@ -651,7 +651,7 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     m_view->setNodeToDraw(&node); // Enable special sub-tree drawing mode.
 
     // Document::updateLayout may have blown away the original LayoutObject.
-    LayoutObject* renderer = node.renderer();
+    LayoutObject* renderer = node.layoutObject();
     if (!renderer)
         return nullptr;
 
@@ -690,7 +690,7 @@ VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint)
     Node* node = result.innerNonSharedNode();
     if (!node)
         return VisiblePosition();
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (!renderer)
         return VisiblePosition();
     VisiblePosition visiblePos = VisiblePosition(renderer->positionForPoint(result.localPoint()));

@@ -512,7 +512,7 @@ const char InspectorLayerInvalidationTrackingEvent::NewCompositedLayer[] = "Assi
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrackingEvent::data(const Layer* layer, const char* reason)
 {
-    const LayoutObject* paintInvalidationContainer = layer->renderer()->containerForPaintInvalidation();
+    const LayoutObject* paintInvalidationContainer = layer->layoutObject()->containerForPaintInvalidation();
 
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(paintInvalidationContainer->frame()));

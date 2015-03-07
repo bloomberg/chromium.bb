@@ -48,10 +48,10 @@ AXSpinButton::~AXSpinButton()
 
 LayoutRect AXSpinButton::elementRect() const
 {
-    if (!m_spinButtonElement || !m_spinButtonElement->renderer())
+    if (!m_spinButtonElement || !m_spinButtonElement->layoutObject())
         return LayoutRect();
 
-    return LayoutRect(m_spinButtonElement->renderer()->absoluteFocusRingBoundingBoxRect());
+    return LayoutRect(m_spinButtonElement->layoutObject()->absoluteFocusRingBoundingBoxRect());
 }
 
 void AXSpinButton::detach()

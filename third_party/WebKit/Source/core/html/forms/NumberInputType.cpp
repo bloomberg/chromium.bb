@@ -265,16 +265,16 @@ void NumberInputType::minOrMaxAttributeChanged()
 {
     InputType::minOrMaxAttributeChanged();
 
-    if (element().renderer())
-        element().renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    if (element().layoutObject())
+        element().layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 void NumberInputType::stepAttributeChanged()
 {
     InputType::stepAttributeChanged();
 
-    if (element().renderer())
-        element().renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    if (element().layoutObject())
+        element().layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
 
 bool NumberInputType::supportsSelectionAPI() const

@@ -535,7 +535,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
         result.setToShadowHostIfInClosedShadowRoot();
         Node* hitNode = result.innerNonSharedNode();
 
-        if (!result.scrollbar() && hitNode && hitNode->renderer() && hitNode->renderer()->isEmbeddedObject()) {
+        if (!result.scrollbar() && hitNode && hitNode->layoutObject() && hitNode->layoutObject()->isEmbeddedObject()) {
             m_mouseCaptureNode = hitNode;
             TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
         }
@@ -1055,7 +1055,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
             // Suppress the next keypress event unless the focused node is a plug-in node.
             // (Flash needs these keypress events to handle non-US keyboards.)
             Element* element = focusedElement();
-            if (!element || !element->renderer() || !element->renderer()->isEmbeddedObject())
+            if (!element || !element->layoutObject() || !element->layoutObject()->isEmbeddedObject())
                 m_suppressNextKeypressEvent = true;
         }
         return true;
@@ -1143,7 +1143,7 @@ WebRect WebViewImpl::computeBlockBound(const WebPoint& webPoint, bool ignoreClip
 
     // Find the block type node based on the hit node.
     // FIXME: This wants to walk composed tree with NodeRenderingTraversal::parent().
-    while (node && (!node->renderer() || node->renderer()->isInline()))
+    while (node && (!node->layoutObject() || node->layoutObject()->isInline()))
         node = NodeRenderingTraversal::parent(*node);
 
     // Return the bounding box in the window coordinate system.
@@ -1262,8 +1262,8 @@ static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame)
 {
     // Go up the tree to find the node that defines a mouse cursor style
     while (node) {
-        if (node->renderer()) {
-            ECursor cursor = node->renderer()->style()->cursor();
+        if (node->layoutObject()) {
+            ECursor cursor = node->layoutObject()->style()->cursor();
             if (cursor != CURSOR_AUTO || frame->eventHandler().useHandCursor(node, node->isLink()))
                 break;
         }
@@ -1275,10 +1275,10 @@ static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame)
 
 static bool showsHandCursor(Node* node, LocalFrame* frame)
 {
-    if (!node || !node->renderer())
+    if (!node || !node->layoutObject())
         return false;
 
-    ECursor cursor = node->renderer()->style()->cursor();
+    ECursor cursor = node->layoutObject()->style()->cursor();
     return cursor == CURSOR_POINTER
         || (cursor == CURSOR_AUTO && frame->eventHandler().useHandCursor(node, node->isLink()));
 }
@@ -1296,7 +1296,7 @@ Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTap
 
     // We might hit something like an image map that has no renderer on it
     // Walk up the tree until we have a node with an attached renderer
-    while (!bestTouchNode->renderer()) {
+    while (!bestTouchNode->layoutObject()) {
         bestTouchNode = NodeRenderingTraversal::parent(*bestTouchNode);
         if (!bestTouchNode)
             return nullptr;
@@ -1351,10 +1351,10 @@ void WebViewImpl::enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node>>
     for (size_t i = 0; i < highlightNodes.size(); ++i) {
         Node* node = highlightNodes[i];
 
-        if (!node || !node->renderer())
+        if (!node || !node->layoutObject())
             continue;
 
-        Color highlightColor = node->renderer()->style()->tapHighlightColor();
+        Color highlightColor = node->layoutObject()->style()->tapHighlightColor();
         // Safari documentation for -webkit-tap-highlight-color says if the specified color has 0 alpha,
         // then tap highlighting is disabled.
         // http://developer.apple.com/library/safari/#documentation/appleapplications/reference/safaricssref/articles/standardcssproperties.html
@@ -3567,7 +3567,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
     if (!isHTMLObjectElement(*node) && !isHTMLEmbedElement(*node))
         return;
 
-    LayoutObject* object = node->renderer();
+    LayoutObject* object = node->layoutObject();
     if (object && object->isLayoutPart()) {
         Widget* widget = toLayoutPart(object)->widget();
         if (widget && widget->isPluginContainer()) {

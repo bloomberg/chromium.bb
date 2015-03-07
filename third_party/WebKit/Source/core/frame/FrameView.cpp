@@ -484,14 +484,14 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
 
     // Try the <body> element first as a scrollbar source.
     Element* body = doc ? doc->body() : 0;
-    if (body && body->renderer() && body->renderer()->style()->hasPseudoStyle(SCROLLBAR)) {
+    if (body && body->layoutObject() && body->layoutObject()->style()->hasPseudoStyle(SCROLLBAR)) {
         customScrollbarElement = body;
         return true;
     }
 
     // If the <body> didn't have a custom style, then the root element might.
     Element* docElement = doc ? doc->documentElement() : 0;
-    if (docElement && docElement->renderer() && docElement->renderer()->style()->hasPseudoStyle(SCROLLBAR)) {
+    if (docElement && docElement->layoutObject() && docElement->layoutObject()->style()->hasPseudoStyle(SCROLLBAR)) {
         customScrollbarElement = docElement;
         return true;
     }
@@ -646,11 +646,11 @@ void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(Scrollbar
     if (!isSubtreeLayout()) {
         Document* document = m_frame->document();
         Node* body = document->body();
-        if (isHTMLFrameSetElement(body) && body->renderer()) {
+        if (isHTMLFrameSetElement(body) && body->layoutObject()) {
             vMode = ScrollbarAlwaysOff;
             hMode = ScrollbarAlwaysOff;
         } else if (Element* viewportElement = document->viewportDefiningElement()) {
-            if (LayoutObject* viewportRenderer = viewportElement->renderer()) {
+            if (LayoutObject* viewportRenderer = viewportElement->layoutObject()) {
                 if (viewportRenderer->style())
                     applyOverflowToViewportAndSetRenderer(viewportRenderer, hMode, vMode);
             }
@@ -993,12 +993,12 @@ void FrameView::layout()
         if (!inSubtreeLayout) {
             clearLayoutSubtreeRootsAndMarkContainingBlocks();
             Node* body = document->body();
-            if (body && body->renderer()) {
+            if (body && body->layoutObject()) {
                 if (isHTMLFrameSetElement(*body)) {
-                    body->renderer()->setChildNeedsLayout();
+                    body->layoutObject()->setChildNeedsLayout();
                 } else if (isHTMLBodyElement(*body)) {
-                    if (!m_firstLayout && m_size.height() != layoutSize().height() && body->renderer()->enclosingBox()->stretchesToViewport())
-                        body->renderer()->setChildNeedsLayout();
+                    if (!m_firstLayout && m_size.height() != layoutSize().height() && body->layoutObject()->enclosingBox()->stretchesToViewport())
+                        body->layoutObject()->setChildNeedsLayout();
                 }
             }
         }
@@ -1355,7 +1355,7 @@ void FrameView::scrollContentsIfNeededRecursive()
 // FIXME: If we had a flag to force invalidations in a whole subtree, we could get rid of this function (crbug.com/410097).
 static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(const Layer* layer)
 {
-    layer->renderer()->setShouldDoFullPaintInvalidation();
+    layer->layoutObject()->setShouldDoFullPaintInvalidation();
 
     for (Layer* child = layer->firstChild(); child; child = child->nextSibling()) {
         // Don't include paint invalidation rects for composited child layers; they will paint themselves and have a different origin.
@@ -1546,7 +1546,7 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior
 
     if (scrollBehavior == ScrollBehaviorAuto) {
         Element* scrollElement = RuntimeEnabledFeatures::scrollTopLeftInteropEnabled() ? m_frame->document()->documentElement() : m_frame->document()->body();
-        LayoutObject* renderer = scrollElement ? scrollElement->renderer() : nullptr;
+        LayoutObject* renderer = scrollElement ? scrollElement->layoutObject() : nullptr;
         if (renderer && renderer->style()->scrollBehavior() == ScrollBehaviorSmooth)
             scrollBehavior = ScrollBehaviorSmooth;
         else
@@ -1931,7 +1931,7 @@ void FrameView::scrollToAnchor()
     if (!anchorNode)
         return;
 
-    if (!anchorNode->renderer())
+    if (!anchorNode->layoutObject())
         return;
 
     LayoutRect rect;
@@ -1946,7 +1946,7 @@ void FrameView::scrollToAnchor()
 
     // Scroll nested layers and frames to reveal the anchor.
     // Align to the top and to the closest side (this matches other browsers).
-    anchorNode->renderer()->scrollRectToVisible(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
+    anchorNode->layoutObject()->scrollRectToVisible(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
 
     if (boundaryFrame && boundaryFrame->isLocalFrame())
         toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);
@@ -2174,11 +2174,11 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
 {
     // The renderer can sometimes be null when style="display:none" interacts
     // with external content and plugins.
-    if (!ownerElement->renderer())
+    if (!ownerElement->layoutObject())
         return windowClipRect();
 
     // If we have no layer, just return our window clip rect.
-    const Layer* enclosingLayer = ownerElement->renderer()->enclosingLayer();
+    const Layer* enclosingLayer = ownerElement->layoutObject()->enclosingLayer();
     if (!enclosingLayer)
         return windowClipRect();
 
@@ -2324,7 +2324,7 @@ FrameView::ScrollingReasons FrameView::scrollingReasons()
     // Covers #2.
     // FIXME: Do we need to fix this for OOPI?
     HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner();
-    if (owner && (!owner->renderer() || !owner->renderer()->visibleToHitTesting()))
+    if (owner && (!owner->layoutObject() || !owner->layoutObject()->visibleToHitTesting()))
         return NotScrollableNotVisible;
 
     // Cover #3 and #4.
@@ -2415,14 +2415,14 @@ void FrameView::updateScrollCorner()
     if (doc && !cornerRect.isEmpty()) {
         // Try the <body> element first as a scroll corner source.
         if (Element* body = doc->body()) {
-            if (LayoutObject* renderer = body->renderer())
+            if (LayoutObject* renderer = body->layoutObject())
                 cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
         }
 
         if (!cornerStyle) {
             // If the <body> didn't have a custom style, then the root element might.
             if (Element* docElement = doc->documentElement()) {
-                if (LayoutObject* renderer = docElement->renderer())
+                if (LayoutObject* renderer = docElement->layoutObject())
                     cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
             }
         }
@@ -2465,10 +2465,10 @@ Color FrameView::documentBackgroundColor() const
     // technically part of the document background, but it
     // otherwise poses problems when the aggregate is not
     // fully opaque.
-    if (htmlElement && htmlElement->renderer())
-        result = result.blend(htmlElement->renderer()->resolveColor(CSSPropertyBackgroundColor));
-    if (bodyElement && bodyElement->renderer())
-        result = result.blend(bodyElement->renderer()->resolveColor(CSSPropertyBackgroundColor));
+    if (htmlElement && htmlElement->layoutObject())
+        result = result.blend(htmlElement->layoutObject()->resolveColor(CSSPropertyBackgroundColor));
+    if (bodyElement && bodyElement->layoutObject())
+        result = result.blend(bodyElement->layoutObject()->resolveColor(CSSPropertyBackgroundColor));
 
     return result;
 }
@@ -2652,7 +2652,7 @@ void FrameView::disableAutoSizeMode()
 
 void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor)
 {
-    // Dumping externalRepresentation(m_frame->renderer()).ascii() is a good trick to see
+    // Dumping externalRepresentation(m_frame->layoutObject()).ascii() is a good trick to see
     // the state of things before and after the layout
     if (LayoutView* layoutView = this->layoutView()) {
         float pageLogicalWidth = layoutView->style()->isHorizontalWritingMode() ? pageSize.width() : pageSize.height();

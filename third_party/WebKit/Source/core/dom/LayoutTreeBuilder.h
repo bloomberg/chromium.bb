@@ -43,11 +43,11 @@ template <typename NodeType>
 class LayoutTreeBuilder {
     STACK_ALLOCATED();
 protected:
-    LayoutTreeBuilder(NodeType& node, LayoutObject* renderingParent)
+    LayoutTreeBuilder(NodeType& node, LayoutObject* layoutObjectParent)
         : m_node(node)
-        , m_renderingParent(renderingParent)
+        , m_layoutObjectParent(layoutObjectParent)
     {
-        ASSERT(!node.renderer());
+        ASSERT(!node.layoutObject());
         ASSERT(node.needsAttach());
         ASSERT(node.document().inStyleRecalc());
 
@@ -58,21 +58,21 @@ protected:
         // which does an updateLayoutIgnorePendingStylesheets.
     }
 
-    LayoutObject* parentRenderer() const { return m_renderingParent; }
+    LayoutObject* parentRenderer() const { return m_layoutObjectParent; }
 
     LayoutObject* nextRenderer() const
     {
-        ASSERT(m_renderingParent);
+        ASSERT(m_layoutObjectParent);
 
         // Avoid an O(N^2) walk over the children when reattaching all children of a node.
-        if (m_renderingParent->node() && m_renderingParent->node()->needsAttach())
+        if (m_layoutObjectParent->node() && m_layoutObjectParent->node()->needsAttach())
             return 0;
 
         return NodeRenderingTraversal::nextSiblingRenderer(*m_node);
     }
 
     RawPtrWillBeMember<NodeType> m_node;
-    RawPtrWillBeMember<LayoutObject> m_renderingParent;
+    RawPtrWillBeMember<LayoutObject> m_layoutObjectParent;
 };
 
 class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {

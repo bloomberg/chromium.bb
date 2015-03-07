@@ -982,7 +982,7 @@ IntRect LayoutObject::absoluteBoundingBoxRectIgnoringTransforms() const
 IntRect LayoutObject::absoluteFocusRingBoundingBoxRect() const
 {
     Vector<LayoutRect> rects;
-    const LayoutBoxModelObject* container = enclosingLayer()->renderer();
+    const LayoutBoxModelObject* container = enclosingLayer()->layoutObject();
     addFocusRingRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
     return container->localToAbsoluteQuad(FloatQuad(unionRect(rects))).enclosingBoundingBox();
 }
@@ -1037,7 +1037,7 @@ const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const
     DisableCompositingQueryAsserts disabler;
 
     if (Layer* compositingLayer = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-        container = compositingLayer->renderer();
+        container = compositingLayer->layoutObject();
     return container;
 }
 
@@ -1779,7 +1779,7 @@ void LayoutObject::styleWillChange(StyleDifference diff, const LayoutStyle& newS
         bool newStyleSlowScroll = !shouldBlitOnFixedBackgroundImage && newStyle.hasFixedBackgroundImage();
         bool oldStyleSlowScroll = m_style && !shouldBlitOnFixedBackgroundImage && m_style->hasFixedBackgroundImage();
 
-        bool drawsRootBackground = isDocumentElement() || (isBody() && !rendererHasBackground(document().documentElement()->renderer()));
+        bool drawsRootBackground = isDocumentElement() || (isBody() && !rendererHasBackground(document().documentElement()->layoutObject()));
         if (drawsRootBackground && !shouldBlitOnFixedBackgroundImage) {
             if (view()->compositor()->supportsFixedRootBackgroundCompositing()) {
                 if (newStyleSlowScroll && newStyle.hasEntirelyFixedBackground())
@@ -2139,12 +2139,12 @@ void LayoutObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
     if (!hasLayer()) {
         LayoutObject* container = this->container();
         currentLayer = container->enclosingLayer();
-        if (container && currentLayer->renderer() != container) {
-            layerOffset.move(container->offsetFromAncestorContainer(currentLayer->renderer()));
+        if (container && currentLayer->layoutObject() != container) {
+            layerOffset.move(container->offsetFromAncestorContainer(currentLayer->layoutObject()));
             // If the layer itself is scrolled, we have to undo the subtraction of its scroll
             // offset since we want the offset relative to the scrolling content, not the
             // element itself.
-            if (currentLayer->renderer()->hasOverflowClip())
+            if (currentLayer->layoutObject()->hasOverflowClip())
                 layerOffset.move(currentLayer->layoutBox()->scrolledContentOffset());
         }
     }
@@ -2226,7 +2226,7 @@ LayoutObject* LayoutObject::rendererForRootBackground()
         // anonymous blocks created by inline <body> tags etc. We can locate the <body>
         // render object very easily via the DOM.
         HTMLElement* body = document().body();
-        LayoutObject* bodyObject = isHTMLBodyElement(body) ? body->renderer() : 0;
+        LayoutObject* bodyObject = isHTMLBodyElement(body) ? body->layoutObject() : 0;
         if (bodyObject)
             return bodyObject;
     }
@@ -2736,7 +2736,7 @@ PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadowHo
     if (ShadowRoot* root = node()->containingShadowRoot()) {
         if (root->type() == ShadowRoot::ClosedShadowRoot) {
             if (Element* shadowHost = node()->shadowHost()) {
-                return shadowHost->renderer()->getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
+                return shadowHost->layoutObject()->getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
             }
         }
     }

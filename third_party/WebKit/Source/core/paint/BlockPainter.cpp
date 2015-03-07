@@ -125,14 +125,14 @@ void BlockPainter::paintChildAsInlineBlock(LayoutBox& child, const PaintInfo& pa
 
 void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&inlineBox.renderer()) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
+    if (!paintInfo.shouldPaintWithinRoot(&inlineBox.layoutObject()) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
         return;
 
     LayoutPoint childPoint = paintOffset;
-    if (inlineBox.parent()->renderer().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
-        childPoint = inlineBox.renderer().containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.renderer()), childPoint);
+    if (inlineBox.parent()->layoutObject().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
+        childPoint = inlineBox.layoutObject().containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.layoutObject()), childPoint);
 
-    paintAsInlineBlock(inlineBox.renderer(), paintInfo, childPoint);
+    paintAsInlineBlock(inlineBox.layoutObject(), paintInfo, childPoint);
 }
 
 void BlockPainter::paintAsInlineBlock(LayoutObject& renderer, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
@@ -481,7 +481,7 @@ void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const Layout
 {
     LayoutInline* inlineCont = m_layoutBlock.inlineElementContinuation();
     if (inlineCont && inlineCont->style()->hasOutline() && inlineCont->style()->visibility() == VISIBLE) {
-        LayoutInline* inlineRenderer = toLayoutInline(inlineCont->node()->renderer());
+        LayoutInline* inlineRenderer = toLayoutInline(inlineCont->node()->layoutObject());
         LayoutBlock* cb = m_layoutBlock.containingBlock();
 
         bool inlineEnclosedInSelfPaintingLayer = false;

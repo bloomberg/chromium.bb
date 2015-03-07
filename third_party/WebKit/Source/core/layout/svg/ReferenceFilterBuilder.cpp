@@ -74,7 +74,7 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
     if (!svgElement)
         return false;
 
-    const LayoutObject* renderer = svgElement->renderer();
+    const LayoutObject* renderer = svgElement->layoutObject();
     const LayoutStyle* style = renderer ? renderer->style() : 0;
     const SVGLayoutStyle* svgStyle = style ? &style->svgStyle() : 0;
     EColorInterpolation eColorInterpolation = CI_AUTO;

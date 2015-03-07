@@ -54,7 +54,7 @@ using namespace HTMLNames;
 static Node* nextRenderedEditable(Node* node)
 {
     for (node = node->nextLeafNode(); node; node = node->nextLeafNode()) {
-        LayoutObject* renderer = node->renderer();
+        LayoutObject* renderer = node->layoutObject();
         if (!renderer)
             continue;
         if (!node->hasEditableStyle())
@@ -68,7 +68,7 @@ static Node* nextRenderedEditable(Node* node)
 static Node* previousRenderedEditable(Node* node)
 {
     for (node = node->previousLeafNode(); node; node = node->previousLeafNode()) {
-        LayoutObject* renderer = node->renderer();
+        LayoutObject* renderer = node->layoutObject();
         if (!renderer)
             continue;
         if (!node->hasEditableStyle())
@@ -364,17 +364,17 @@ Position Position::next(PositionMoveType moveType) const
 
 int Position::uncheckedPreviousOffset(const Node* n, int current)
 {
-    return n->renderer() ? n->renderer()->previousOffset(current) : current - 1;
+    return n->layoutObject() ? n->layoutObject()->previousOffset(current) : current - 1;
 }
 
 int Position::uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
 {
-    return n->renderer() ? n->renderer()->previousOffsetForBackwardDeletion(current) : current - 1;
+    return n->layoutObject() ? n->layoutObject()->previousOffsetForBackwardDeletion(current) : current - 1;
 }
 
 int Position::uncheckedNextOffset(const Node* n, int current)
 {
-    return n->renderer() ? n->renderer()->nextOffset(current) : current + 1;
+    return n->layoutObject() ? n->layoutObject()->nextOffset(current) : current + 1;
 }
 
 bool Position::atFirstEditingPositionForNode() const
@@ -463,11 +463,11 @@ int Position::renderedOffset() const
     if (!deprecatedNode()->isTextNode())
         return m_offset;
 
-    if (!deprecatedNode()->renderer())
+    if (!deprecatedNode()->layoutObject())
         return m_offset;
 
     int result = 0;
-    LayoutText* textRenderer = toLayoutText(deprecatedNode()->renderer());
+    LayoutText* textRenderer = toLayoutText(deprecatedNode()->layoutObject());
     for (InlineTextBox *box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
         int start = box->start();
         int end = box->start() + box->len();
@@ -488,10 +488,10 @@ int Position::renderedOffset() const
 // FIXME: Share code with isCandidate, if possible.
 static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
 {
-    if (!node || !node->renderer())
+    if (!node || !node->layoutObject())
         return false;
 
-    if (!node->renderer()->isInline())
+    if (!node->layoutObject()->isInline())
         return true;
 
     // Don't include inline tables.
@@ -504,7 +504,7 @@ static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
         return true;
 
     // There is a VisiblePosition inside an empty inline-block container.
-    return node->renderer()->isReplaced() && canHaveChildrenForEditing(node) && toLayoutBox(node->renderer())->size().height() != 0 && !node->hasChildren();
+    return node->layoutObject()->isReplaced() && canHaveChildrenForEditing(node) && toLayoutBox(node->layoutObject())->size().height() != 0 && !node->hasChildren();
 }
 
 static Node* enclosingVisualBoundary(Node* node)
@@ -570,7 +570,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
             return lastVisible;
 
         // skip position in unrendered or invisible node
-        LayoutObject* renderer = currentNode->renderer();
+        LayoutObject* renderer = currentNode->layoutObject();
         if (!renderer || renderer->style()->visibility() != VISIBLE)
             continue;
 
@@ -628,7 +628,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
                     otherBox = otherBox->nextLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (otherBox->renderer() == textRenderer && toInlineTextBox(otherBox)->start() > textOffset))
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textRenderer && toInlineTextBox(otherBox)->start() > textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -637,7 +637,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
                     otherBox = otherBox->prevLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (otherBox->renderer() == textRenderer && toInlineTextBox(otherBox)->start() > textOffset))
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textRenderer && toInlineTextBox(otherBox)->start() > textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -703,7 +703,7 @@ Position Position::downstream(EditingBoundaryCrossingRule rule) const
             return lastVisible;
 
         // skip position in unrendered or invisible node
-        LayoutObject* renderer = currentNode->renderer();
+        LayoutObject* renderer = currentNode->layoutObject();
         if (!renderer || renderer->style()->visibility() != VISIBLE)
             continue;
 
@@ -752,7 +752,7 @@ Position Position::downstream(EditingBoundaryCrossingRule rule) const
                     otherBox = otherBox->nextLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (otherBox->renderer() == textRenderer && toInlineTextBox(otherBox)->start() >= textOffset))
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textRenderer && toInlineTextBox(otherBox)->start() >= textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -761,7 +761,7 @@ Position Position::downstream(EditingBoundaryCrossingRule rule) const
                     otherBox = otherBox->prevLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (otherBox->renderer() == textRenderer && toInlineTextBox(otherBox)->start() >= textOffset))
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textRenderer && toInlineTextBox(otherBox)->start() >= textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -794,12 +794,12 @@ bool Position::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* render
 
 bool Position::nodeIsUserSelectNone(Node* node)
 {
-    return node && node->renderer() && !node->renderer()->isSelectable();
+    return node && node->layoutObject() && !node->layoutObject()->isSelectable();
 }
 
 bool Position::nodeIsUserSelectAll(const Node* node)
 {
-    return RuntimeEnabledFeatures::userSelectAllEnabled() && node && node->renderer() && node->renderer()->style()->userSelect() == SELECT_ALL;
+    return RuntimeEnabledFeatures::userSelectAllEnabled() && node && node->layoutObject() && node->layoutObject()->style()->userSelect() == SELECT_ALL;
 }
 
 Node* Position::rootUserSelectAllForNode(Node* node)
@@ -812,7 +812,7 @@ Node* Position::rootUserSelectAllForNode(Node* node)
 
     Node* candidateRoot = node;
     while (parent) {
-        if (!parent->renderer()) {
+        if (!parent->layoutObject()) {
             parent = parent->parentNode();
             continue;
         }
@@ -829,7 +829,7 @@ bool Position::isCandidate() const
     if (isNull())
         return false;
 
-    LayoutObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->layoutObject();
     if (!renderer)
         return false;
 
@@ -875,7 +875,7 @@ bool Position::inRenderedText() const
     if (isNull() || !deprecatedNode()->isTextNode())
         return false;
 
-    LayoutObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->layoutObject();
     if (!renderer)
         return false;
 
@@ -900,7 +900,7 @@ bool Position::isRenderedCharacter() const
     if (isNull() || !deprecatedNode()->isTextNode())
         return false;
 
-    LayoutObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->layoutObject();
     if (!renderer)
         return false;
 
@@ -924,11 +924,11 @@ bool Position::rendersInDifferentPosition(const Position &pos) const
     if (isNull() || pos.isNull())
         return false;
 
-    LayoutObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->layoutObject();
     if (!renderer)
         return false;
 
-    LayoutObject* posRenderer = pos.deprecatedNode()->renderer();
+    LayoutObject* posRenderer = pos.deprecatedNode()->layoutObject();
     if (!posRenderer)
         return false;
 
@@ -1069,7 +1069,7 @@ static Position upstreamIgnoringEditingBoundaries(Position position)
 void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection, InlineBox*& inlineBox, int& caretOffset) const
 {
     caretOffset = deprecatedEditingOffset();
-    LayoutObject* renderer = deprecatedNode()->renderer();
+    LayoutObject* renderer = deprecatedNode()->layoutObject();
 
     if (!renderer->isText()) {
         inlineBox = 0;
@@ -1225,7 +1225,7 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
 TextDirection Position::primaryDirection() const
 {
     TextDirection primaryDirection = LTR;
-    for (const LayoutObject* r = m_anchorNode->renderer(); r; r = r->parent()) {
+    for (const LayoutObject* r = m_anchorNode->layoutObject(); r; r = r->parent()) {
         if (r->isLayoutBlockFlow()) {
             primaryDirection = r->style()->direction();
             break;

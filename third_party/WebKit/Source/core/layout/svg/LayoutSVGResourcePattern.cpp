@@ -174,7 +174,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
 
     ASSERT(attributes().patternContentElement());
     LayoutSVGResourceContainer* patternRenderer =
-        toLayoutSVGResourceContainer(attributes().patternContentElement()->renderer());
+        toLayoutSVGResourceContainer(attributes().patternContentElement()->layoutObject());
     ASSERT(patternRenderer);
     ASSERT(!patternRenderer->needsLayout());
 

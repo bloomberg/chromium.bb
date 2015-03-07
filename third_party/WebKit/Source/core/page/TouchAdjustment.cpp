@@ -106,32 +106,32 @@ bool nodeIsZoomTarget(Node* node)
     if (node->isTextNode() || node->isShadowRoot())
         return false;
 
-    ASSERT(node->renderer());
-    return node->renderer()->isBox();
+    ASSERT(node->layoutObject());
+    return node->layoutObject()->isBox();
 }
 
 bool providesContextMenuItems(Node* node)
 {
     // This function tries to match the nodes that receive special context-menu items in
     // ContextMenuController::populate(), and should be kept uptodate with those.
-    ASSERT(node->renderer() || node->isShadowRoot());
-    if (!node->renderer())
+    ASSERT(node->layoutObject() || node->isShadowRoot());
+    if (!node->layoutObject())
         return false;
     if (node->isContentEditable())
         return true;
     if (node->isLink())
         return true;
-    if (node->renderer()->isImage())
+    if (node->layoutObject()->isImage())
         return true;
-    if (node->renderer()->isMedia())
+    if (node->layoutObject()->isMedia())
         return true;
-    if (node->renderer()->canBeSelectionLeaf()) {
+    if (node->layoutObject()->canBeSelectionLeaf()) {
         // If the context menu gesture will trigger a selection all selectable nodes are valid targets.
-        if (node->renderer()->frame()->editor().behavior().shouldSelectOnContextualMenuClick())
+        if (node->layoutObject()->frame()->editor().behavior().shouldSelectOnContextualMenuClick())
             return true;
         // Only the selected part of the renderer is a valid target, but this will be corrected in
         // appendContextSubtargetsForNode.
-        if (node->renderer()->selectionState() != LayoutObject::SelectionNone)
+        if (node->layoutObject()->selectionState() != LayoutObject::SelectionNone)
             return true;
     }
     return false;
@@ -148,10 +148,10 @@ static inline void appendQuadsToSubtargetList(Vector<FloatQuad>& quads, Node* no
 static inline void appendBasicSubtargetsForNode(Node* node, SubtargetGeometryList& subtargets)
 {
     // Node guaranteed to have renderer due to check in node filter.
-    ASSERT(node->renderer());
+    ASSERT(node->layoutObject());
 
     Vector<FloatQuad> quads;
-    node->renderer()->absoluteQuads(quads);
+    node->layoutObject()->absoluteQuads(quads);
 
     appendQuadsToSubtargetList(quads, node, subtargets);
 }
@@ -160,13 +160,13 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
 {
     // This is a variant of appendBasicSubtargetsForNode that adds special subtargets for
     // selected or auto-selectable parts of text nodes.
-    ASSERT(node->renderer());
+    ASSERT(node->layoutObject());
 
     if (!node->isTextNode())
         return appendBasicSubtargetsForNode(node, subtargets);
 
     Text* textNode = toText(node);
-    LayoutText* textRenderer = textNode->renderer();
+    LayoutText* textRenderer = textNode->layoutObject();
 
     if (textRenderer->frame()->editor().behavior().shouldSelectOnContextualMenuClick()) {
         // Make subtargets out of every word.
@@ -217,7 +217,7 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
 
 static inline void appendZoomableSubtargets(Node* node, SubtargetGeometryList& subtargets)
 {
-    LayoutBox* renderer = toLayoutBox(node->renderer());
+    LayoutBox* renderer = toLayoutBox(node->layoutObject());
     ASSERT(renderer);
 
     Vector<FloatQuad> quads;

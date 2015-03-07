@@ -69,7 +69,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
 
     bool shouldPaintBackground = true;
     Node* documentElement = m_layoutView.document().documentElement();
-    if (LayoutBox* rootBox = documentElement ? toLayoutBox(documentElement->renderer()) : 0)
+    if (LayoutBox* rootBox = documentElement ? toLayoutBox(documentElement->layoutObject()) : 0)
         shouldPaintBackground = !rootFillsViewportBackground(rootBox) || !rendererObscuresBackground(rootBox);
 
     // If painting will entirely fill the view, no need to fill the background.

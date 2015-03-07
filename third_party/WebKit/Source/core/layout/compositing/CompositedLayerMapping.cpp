@@ -158,7 +158,7 @@ static inline bool isAcceleratedContents(LayoutObject* renderer)
 // Get the scrolling coordinator in a way that works inside CompositedLayerMapping's destructor.
 static ScrollingCoordinator* scrollingCoordinatorFromLayer(Layer& layer)
 {
-    Page* page = layer.renderer()->frame()->page();
+    Page* page = layer.layoutObject()->frame()->page();
     if (!page)
         return 0;
 
@@ -173,7 +173,7 @@ CompositedLayerMapping::CompositedLayerMapping(Layer& layer)
     , m_backgroundLayerPaintsFixedRootBackground(false)
     , m_scrollingContentsAreEmpty(false)
 {
-    if (layer.isRootLayer() && renderer()->frame()->isMainFrame())
+    if (layer.isRootLayer() && layoutObject()->frame()->isMainFrame())
         m_isMainFrameLayoutViewLayer = true;
 
     createPrimaryGraphicsLayer();
@@ -208,13 +208,13 @@ CompositedLayerMapping::~CompositedLayerMapping()
 PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(CompositingReasons reasons)
 {
     GraphicsLayerFactory* graphicsLayerFactory = 0;
-    if (Page* page = renderer()->frame()->page())
+    if (Page* page = layoutObject()->frame()->page())
         graphicsLayerFactory = page->chrome().client().graphicsLayerFactory();
 
     OwnPtr<GraphicsLayer> graphicsLayer = GraphicsLayer::create(graphicsLayerFactory, this);
 
     graphicsLayer->setCompositingReasons(reasons);
-    if (Node* owningNode = m_owningLayer.renderer()->generatingNode())
+    if (Node* owningNode = m_owningLayer.layoutObject()->generatingNode())
         graphicsLayer->setOwnerNodeId(InspectorNodeIds::idForNode(owningNode));
 
     return graphicsLayer.release();
@@ -229,16 +229,16 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer()
         m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
 #endif
 
-    updateOpacity(renderer()->styleRef());
-    updateTransform(renderer()->styleRef());
-    updateFilters(renderer()->styleRef());
+    updateOpacity(layoutObject()->styleRef());
+    updateTransform(layoutObject()->styleRef());
+    updateFilters(layoutObject()->styleRef());
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
-        updateLayerBlendMode(renderer()->styleRef());
+        updateLayerBlendMode(layoutObject()->styleRef());
         updateIsRootForIsolatedGroup();
     }
 
-    updateScrollBlocksOn(renderer()->styleRef());
+    updateScrollBlocksOn(layoutObject()->styleRef());
 }
 
 void CompositedLayerMapping::destroyGraphicsLayers()
@@ -271,7 +271,7 @@ void CompositedLayerMapping::updateTransform(const LayoutStyle& style)
     // baked into it, and we don't want that.
     TransformationMatrix t;
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        style.applyTransform(t, LayoutSize(toLayoutBox(renderer())->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
+        style.applyTransform(t, LayoutSize(toLayoutBox(layoutObject())->pixelSnappedSize()), LayoutStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
 
@@ -313,9 +313,9 @@ void CompositedLayerMapping::updateScrollBlocksOn(const LayoutStyle& style)
 void CompositedLayerMapping::updateContentsOpaque()
 {
     ASSERT(m_isMainFrameLayoutViewLayer || !m_backgroundLayer);
-    if (isAcceleratedCanvas(renderer())) {
+    if (isAcceleratedCanvas(layoutObject())) {
         // Determine whether the rendering context's external texture layer is opaque.
-        CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
+        CanvasRenderingContext* context = toHTMLCanvasElement(layoutObject()->node())->renderingContext();
         if (!context->hasAlpha())
             m_graphicsLayer->setContentsOpaque(true);
         else if (WebLayer* layer = context->platformLayer())
@@ -341,8 +341,8 @@ void CompositedLayerMapping::updateCompositedBounds()
 
 void CompositedLayerMapping::updateAfterPartResize()
 {
-    if (renderer()->isLayoutPart()) {
-        if (LayerCompositor* innerCompositor = LayerCompositor::frameContentsCompositor(toLayoutPart(renderer()))) {
+    if (layoutObject()->isLayoutPart()) {
+        if (LayerCompositor* innerCompositor = LayerCompositor::frameContentsCompositor(toLayoutPart(layoutObject()))) {
             innerCompositor->frameViewDidChangeSize();
             // We can floor this point because our frameviews are always aligned to pixel boundaries.
             ASSERT(m_compositedBounds.location() == flooredIntPoint(m_compositedBounds.location()));
@@ -371,7 +371,7 @@ bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor
     if (!clippingContainer)
         return false;
 
-    if (compositingAncestor->renderer()->isDescendantOf(clippingContainer))
+    if (compositingAncestor->layoutObject()->isDescendantOf(clippingContainer))
         return false;
 
     // We ignore overflow clip here; we want composited overflow content to
@@ -402,7 +402,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     }
 
     LayerCompositor* compositor = this->compositor();
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
 
     bool layerConfigChanged = false;
     setBackgroundLayerPaintsFixedRootBackground(compositor->needsFixedRootBackgroundLayer(&m_owningLayer));
@@ -432,7 +432,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (scrollParent) {
         // If our containing block is our ancestor scrolling layer, then we'll already be clipped
         // to it via our scroll parent and we don't need an ancestor clipping layer.
-        if (m_owningLayer.renderer()->containingBlock()->enclosingLayer() == m_owningLayer.ancestorScrollingLayer())
+        if (m_owningLayer.layoutObject()->containingBlock()->enclosingLayer() == m_owningLayer.ancestorScrollingLayer())
             needsAncestorClip = false;
     }
 
@@ -636,7 +636,7 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         if (layers[i].offsetFromRendererSet && layers[i].offsetFromRenderer != newOffsetFromRenderer) {
             // It is ok to issue paint invalidation here, because all of the geometry needed to correctly invalidate paint is computed by this point.
             DisablePaintInvalidationStateAsserts disabler;
-            layers[i].renderLayer->renderer()->invalidatePaintIncludingNonCompositingDescendants();
+            layers[i].renderLayer->layoutObject()->invalidatePaintIncludingNonCompositingDescendants();
 
             TRACE_LAYER_INVALIDATION(layers[i].renderLayer, InspectorLayerInvalidationTrackingEvent::SquashingLayerGeometryWasUpdated);
             layersNeedingPaintInvalidation.append(layers[i].renderLayer);
@@ -663,15 +663,15 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
-    if (!renderer()->style()->isRunningTransformAnimationOnCompositor())
-        updateTransform(renderer()->styleRef());
+    if (!layoutObject()->style()->isRunningTransformAnimationOnCompositor())
+        updateTransform(layoutObject()->styleRef());
 
     // Set opacity, if it is not animating.
-    if (!renderer()->style()->isRunningOpacityAnimationOnCompositor())
-        updateOpacity(renderer()->styleRef());
+    if (!layoutObject()->style()->isRunningOpacityAnimationOnCompositor())
+        updateOpacity(layoutObject()->styleRef());
 
-    if (!renderer()->style()->isRunningFilterAnimationOnCompositor())
-        updateFilters(renderer()->styleRef());
+    if (!layoutObject()->style()->isRunningFilterAnimationOnCompositor())
+        updateFilters(layoutObject()->styleRef());
 
     // We compute everything relative to the enclosing compositing layer.
     IntRect ancestorCompositingBounds;
@@ -702,7 +702,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
     // If we have a layer that clips children, position it.
     IntRect clippingBox;
     if (m_childContainmentLayer)
-        clippingBox = clipBox(toLayoutBox(renderer()));
+        clippingBox = clipBox(toLayoutBox(layoutObject()));
 
     updateChildContainmentLayerGeometry(clippingBox, localCompositingBounds);
     updateChildTransformLayerGeometry();
@@ -719,7 +719,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
         m_owningLayer.scrollableArea()->positionOverflowControls();
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
-        updateLayerBlendMode(renderer()->styleRef());
+        updateLayerBlendMode(layoutObject()->styleRef());
         updateIsRootForIsolatedGroup();
     }
 
@@ -734,7 +734,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const Layer* compositin
     updateScrollParent(compositor()->preferCompositingToLCDTextEnabled() ? m_owningLayer.scrollParent() : 0);
     registerScrollingLayers();
 
-    updateScrollBlocksOn(renderer()->styleRef());
+    updateScrollBlocksOn(layoutObject()->styleRef());
 
     updateCompositingReasons();
 }
@@ -753,14 +753,14 @@ void CompositedLayerMapping::updateMainGraphicsLayerGeometry(const IntRect& rela
     // descendants. So, the visibility flag for m_graphicsLayer should be true if there are any
     // non-compositing visible layers.
     bool contentsVisible = m_owningLayer.hasVisibleContent() || hasVisibleNonCompositingDescendant(&m_owningLayer);
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && renderer()->isVideo()) {
-        HTMLVideoElement* videoElement = toHTMLVideoElement(renderer()->node());
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && layoutObject()->isVideo()) {
+        HTMLVideoElement* videoElement = toHTMLVideoElement(layoutObject()->node());
         if (videoElement->isFullscreen() && !HTMLMediaElement::isMediaStreamURL(videoElement->sourceURL().string()))
             contentsVisible = false;
     }
     m_graphicsLayer->setContentsVisible(contentsVisible);
 
-    m_graphicsLayer->setBackfaceVisibility(renderer()->style()->backfaceVisibility() == BackfaceVisibilityVisible);
+    m_graphicsLayer->setBackfaceVisibility(layoutObject()->style()->backfaceVisibility() == BackfaceVisibilityVisible);
 }
 
 void CompositedLayerMapping::computeGraphicsLayerParentLocation(const Layer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation)
@@ -768,7 +768,7 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(const Layer* com
     if (compositingContainer && compositingContainer->compositedLayerMapping()->hasClippingLayer()) {
         // If the compositing ancestor has a layer to clip children, we parent in that, and therefore
         // position relative to it.
-        IntRect clippingBox = clipBox(toLayoutBox(compositingContainer->renderer()));
+        IntRect clippingBox = clipBox(toLayoutBox(compositingContainer->layoutObject()));
         graphicsLayerParentLocation = clippingBox.location() + roundedIntSize(compositingContainer->subpixelAccumulation());
     } else if (compositingContainer && compositingContainer->compositedLayerMapping()->childTransformLayer()) {
         // Similarly, if the compositing ancestor has a child transform layer, we parent in that, and therefore
@@ -777,11 +777,11 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(const Layer* com
     } else if (compositingContainer) {
         graphicsLayerParentLocation = ancestorCompositingBounds.location();
     } else {
-        graphicsLayerParentLocation = renderer()->view()->documentRect().location();
+        graphicsLayerParentLocation = layoutObject()->view()->documentRect().location();
     }
 
     if (compositingContainer && compositingContainer->needsCompositedScrolling()) {
-        LayoutBox* layoutBox = toLayoutBox(compositingContainer->renderer());
+        LayoutBox* layoutBox = toLayoutBox(compositingContainer->layoutObject());
         IntSize scrollOffset = layoutBox->scrolledContentOffset();
         IntPoint scrollOrigin(layoutBox->borderLeft(), layoutBox->borderTop());
         graphicsLayerParentLocation = scrollOrigin - scrollOffset;
@@ -830,7 +830,7 @@ void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const Layer
         } else {
             // The controls are in the same 2D space as the compositing container, so we can map them into the space of the container.
             TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
-            m_owningLayer.renderer()->mapLocalToContainer(compositingStackingContext->renderer(), transformState, ApplyContainerFlip);
+            m_owningLayer.layoutObject()->mapLocalToContainer(compositingStackingContext->layoutObject(), transformState, ApplyContainerFlip);
             transformState.flatten();
             LayoutPoint offsetFromStackingContainer = LayoutPoint(transformState.lastPlanarPoint());
             if (LayerScrollableArea* scrollableArea = compositingStackingContext->scrollableArea())
@@ -850,7 +850,7 @@ void CompositedLayerMapping::updateChildContainmentLayerGeometry(const IntRect& 
     m_childContainmentLayer->setPosition(FloatPoint(clippingBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
     m_childContainmentLayer->setSize(clippingBox.size());
     m_childContainmentLayer->setOffsetFromRenderer(toIntSize(clippingBox.location()));
-    if (m_childClippingMaskLayer && !m_scrollingLayer && !renderer()->style()->clipPath()) {
+    if (m_childClippingMaskLayer && !m_scrollingLayer && !layoutObject()->style()->clipPath()) {
         m_childClippingMaskLayer->setPosition(m_childContainmentLayer->position());
         m_childClippingMaskLayer->setSize(m_childContainmentLayer->size());
         m_childClippingMaskLayer->setOffsetFromRenderer(m_childContainmentLayer->offsetFromRenderer());
@@ -861,7 +861,7 @@ void CompositedLayerMapping::updateChildTransformLayerGeometry()
 {
     if (!m_childTransformLayer)
         return;
-    const IntRect borderBox = toLayoutBox(m_owningLayer.renderer())->pixelSnappedBorderBoxRect();
+    const IntRect borderBox = toLayoutBox(m_owningLayer.layoutObject())->pixelSnappedBorderBoxRect();
     m_childTransformLayer->setSize(borderBox.size());
     m_childTransformLayer->setPosition(FloatPoint(contentOffsetInCompositingLayer()));
 }
@@ -882,7 +882,7 @@ void CompositedLayerMapping::updateMaskLayerGeometry()
 void CompositedLayerMapping::updateTransformGeometry(const IntPoint& snappedOffsetFromCompositedAncestor, const IntRect& relativeCompositingBounds)
 {
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        const LayoutRect borderBox = toLayoutBox(renderer())->borderBoxRect();
+        const LayoutRect borderBox = toLayoutBox(layoutObject())->borderBoxRect();
 
         // Get layout bounds in the coords of compositingContainer to match relativeCompositingBounds.
         IntRect layerBounds = pixelSnappedIntRect(toLayoutPoint(m_owningLayer.subpixelAccumulation()), borderBox.size());
@@ -922,7 +922,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
         return;
 
     ASSERT(m_scrollingContentsLayer);
-    LayoutBox* layoutBox = toLayoutBox(renderer());
+    LayoutBox* layoutBox = toLayoutBox(layoutObject());
     IntRect clientBox = enclosingIntRect(layoutBox->clientBoxRect());
     DoubleSize adjustedScrollOffset = m_owningLayer.scrollableArea()->adjustedScrollOffset();
     m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
@@ -931,7 +931,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
     IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromRenderer();
     m_scrollingLayer->setOffsetFromRenderer(-toIntSize(clientBox.location()));
 
-    if (m_childClippingMaskLayer && !renderer()->style()->clipPath()) {
+    if (m_childClippingMaskLayer && !layoutObject()->style()->clipPath()) {
         m_childClippingMaskLayer->setPosition(m_scrollingLayer->position());
         m_childClippingMaskLayer->setSize(m_scrollingLayer->size());
         m_childClippingMaskLayer->setOffsetFromRenderer(toIntSize(clientBox.location()));
@@ -967,9 +967,9 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
 
 void CompositedLayerMapping::updateChildClippingMaskLayerGeometry()
 {
-    if (!m_childClippingMaskLayer || !renderer()->style()->clipPath())
+    if (!m_childClippingMaskLayer || !layoutObject()->style()->clipPath())
         return;
-    LayoutBox* layoutBox = toLayoutBox(renderer());
+    LayoutBox* layoutBox = toLayoutBox(layoutObject());
     IntRect clientBox = enclosingIntRect(layoutBox->clientBoxRect());
 
     m_childClippingMaskLayer->setPosition(m_graphicsLayer->position());
@@ -1020,7 +1020,7 @@ void CompositedLayerMapping::updateBackgroundLayerGeometry(const FloatSize& rela
 
     FloatSize backgroundSize = relativeCompositingBoundsSize;
     if (backgroundLayerPaintsFixedRootBackground()) {
-        FrameView* frameView = toLayoutView(renderer())->frameView();
+        FrameView* frameView = toLayoutView(layoutObject())->frameView();
         backgroundSize = frameView->visibleContentRect().size();
     }
     m_backgroundLayer->setPosition(FloatPoint());
@@ -1199,17 +1199,17 @@ void CompositedLayerMapping::updateDrawsContent()
     if (m_scrollingLayer) {
         // m_scrollingLayer never has backing store.
         // m_scrollingContentsLayer only needs backing store if the scrolled contents need to paint.
-        m_scrollingContentsAreEmpty = !m_owningLayer.hasVisibleContent() || !(renderer()->hasBackground() || paintsChildren());
+        m_scrollingContentsAreEmpty = !m_owningLayer.hasVisibleContent() || !(layoutObject()->hasBackground() || paintsChildren());
         m_scrollingContentsLayer->setDrawsContent(!m_scrollingContentsAreEmpty);
         updateScrollingBlockSelection();
     }
 
-    if (hasPaintedContent && isAcceleratedCanvas(renderer())) {
-        CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
+    if (hasPaintedContent && isAcceleratedCanvas(layoutObject())) {
+        CanvasRenderingContext* context = toHTMLCanvasElement(layoutObject()->node())->renderingContext();
         // Content layer may be null if context is lost.
         if (WebLayer* contentLayer = context->platformLayer()) {
             Color bgColor(Color::transparent);
-            if (contentLayerSupportsDirectBackgroundComposition(renderer())) {
+            if (contentLayerSupportsDirectBackgroundComposition(layoutObject())) {
                 bgColor = rendererBackgroundColor();
                 hasPaintedContent = false;
             }
@@ -1453,7 +1453,7 @@ void CompositedLayerMapping::updateRenderingContext()
     // sake of 3d sorting. So instead we will ask the compositor to vend us an arbitrary, but
     // consistent id.
     if (Layer* root = m_owningLayer.renderingContextRoot()) {
-        if (Node* node = root->renderer()->node())
+        if (Node* node = root->layoutObject()->node())
             id = static_cast<int>(WTF::PtrHash<Node*>::hash(node));
     }
 
@@ -1480,7 +1480,7 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
     if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
         bool hasPerspective = false;
         // FIXME: Can |style| be really null here?
-        if (const LayoutStyle* style = m_owningLayer.renderer()->style())
+        if (const LayoutStyle* style = m_owningLayer.layoutObject()->style())
             hasPerspective = style->hasPerspective();
         if (hasPerspective)
             childTransformLayer->setShouldFlattenTransform(false);
@@ -1540,7 +1540,7 @@ bool CompositedLayerMapping::updateBackgroundLayer(bool needsBackgroundLayer)
         }
     }
 
-    if (layerChanged && !m_owningLayer.renderer()->documentBeingDestroyed())
+    if (layerChanged && !m_owningLayer.layoutObject()->documentBeingDestroyed())
         compositor()->rootFixedBackgroundsChanged();
 
     return layerChanged;
@@ -1750,7 +1750,7 @@ float CompositedLayerMapping::compositingOpacity(float rendererOpacity) const
         if (curr->compositingState() == PaintsIntoOwnBacking)
             break;
 
-        finalOpacity *= curr->renderer()->opacity();
+        finalOpacity *= curr->layoutObject()->opacity();
     }
 
     return finalOpacity;
@@ -1758,7 +1758,7 @@ float CompositedLayerMapping::compositingOpacity(float rendererOpacity) const
 
 Color CompositedLayerMapping::rendererBackgroundColor() const
 {
-    LayoutObject* backgroundRenderer = renderer();
+    LayoutObject* backgroundRenderer = layoutObject();
     if (backgroundRenderer->isDocumentElement())
         backgroundRenderer = backgroundRenderer->rendererForRootBackground();
 
@@ -1815,13 +1815,13 @@ bool CompositedLayerMapping::containsPaintedContent() const
     if (m_owningLayer.isReflection())
         return false;
 
-    if (renderer()->isImage() && isDirectlyCompositedImage())
+    if (layoutObject()->isImage() && isDirectlyCompositedImage())
         return false;
 
-    LayoutObject* layoutObject = renderer();
+    LayoutObject* layoutObject = this->layoutObject();
     // FIXME: we could optimize cases where the image, video or canvas is known to fill the border box entirely,
     // and set background color on the layer in that case, instead of allocating backing store and painting.
-    if (layoutObject->isVideo() && toLayoutVideo(renderer())->shouldDisplayVideo())
+    if (layoutObject->isVideo() && toLayoutVideo(layoutObject)->shouldDisplayVideo())
         return m_owningLayer.hasBoxDecorationsOrBackground();
 
     if (m_owningLayer.hasVisibleBoxDecorations())
@@ -1838,7 +1838,7 @@ bool CompositedLayerMapping::containsPaintedContent() const
 
     if (layoutObject->node() && layoutObject->node()->isDocumentNode()) {
         // Look to see if the root object has a non-simple background
-        LayoutObject* rootObject = layoutObject->document().documentElement() ? layoutObject->document().documentElement()->renderer() : 0;
+        LayoutObject* rootObject = layoutObject->document().documentElement() ? layoutObject->document().documentElement()->layoutObject() : 0;
         // Reject anything that has a border, a border-radius or outline,
         // or is not a simple background (no background, or solid color).
         if (rootObject && hasBoxDecorationsOrBackgroundImage(rootObject->styleRef()))
@@ -1846,7 +1846,7 @@ bool CompositedLayerMapping::containsPaintedContent() const
 
         // Now look at the body's renderer.
         HTMLElement* body = layoutObject->document().body();
-        LayoutObject* bodyObject = isHTMLBodyElement(body) ? body->renderer() : 0;
+        LayoutObject* bodyObject = isHTMLBodyElement(body) ? body->layoutObject() : 0;
         if (bodyObject && hasBoxDecorationsOrBackgroundImage(bodyObject->styleRef()))
             return true;
     }
@@ -1859,9 +1859,9 @@ bool CompositedLayerMapping::containsPaintedContent() const
 // that require painting. Direct compositing saves backing store.
 bool CompositedLayerMapping::isDirectlyCompositedImage() const
 {
-    ASSERT(renderer()->isImage());
+    ASSERT(layoutObject()->isImage());
 
-    LayoutObject* layoutObject = renderer();
+    LayoutObject* layoutObject = this->layoutObject();
     if (m_owningLayer.hasBoxDecorationsOrBackground() || layoutObject->hasClip() || layoutObject->hasClipPath())
         return false;
 
@@ -1879,12 +1879,12 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
 
 void CompositedLayerMapping::contentChanged(ContentChangeType changeType)
 {
-    if ((changeType == ImageChanged) && renderer()->isImage() && isDirectlyCompositedImage()) {
+    if ((changeType == ImageChanged) && layoutObject()->isImage() && isDirectlyCompositedImage()) {
         updateImageContents();
         return;
     }
 
-    if (changeType == CanvasChanged && isAcceleratedCanvas(renderer())) {
+    if (changeType == CanvasChanged && isAcceleratedCanvas(layoutObject())) {
         m_graphicsLayer->setContentsNeedsDisplay();
         return;
     }
@@ -1892,8 +1892,8 @@ void CompositedLayerMapping::contentChanged(ContentChangeType changeType)
 
 void CompositedLayerMapping::updateImageContents()
 {
-    ASSERT(renderer()->isImage());
-    LayoutImage* imageRenderer = toLayoutImage(renderer());
+    ASSERT(layoutObject()->isImage());
+    LayoutImage* imageRenderer = toLayoutImage(layoutObject());
 
     ImageResource* cachedImage = imageRenderer->cachedImage();
     if (!cachedImage)
@@ -1910,7 +1910,7 @@ void CompositedLayerMapping::updateImageContents()
     // This is a no-op if the layer doesn't have an inner layer for the image.
     m_graphicsLayer->setContentsToImage(image);
 
-    m_graphicsLayer->setFilterLevel(renderer()->style()->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
+    m_graphicsLayer->setFilterLevel(layoutObject()->style()->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
 
     // Prevent double-drawing: https://bugs.webkit.org/show_bug.cgi?id=58632
     updateDrawsContent();
@@ -1923,7 +1923,7 @@ void CompositedLayerMapping::updateImageContents()
 
 FloatPoint3D CompositedLayerMapping::computeTransformOrigin(const IntRect& borderBox) const
 {
-    const LayoutStyle& style = renderer()->styleRef();
+    const LayoutStyle& style = layoutObject()->styleRef();
 
     FloatPoint3D origin;
     origin.setX(floatValueForLength(style.transformOriginX(), borderBox.width()));
@@ -1943,7 +1943,7 @@ LayoutSize CompositedLayerMapping::contentOffsetInCompositingLayer() const
 
 LayoutRect CompositedLayerMapping::contentsBox() const
 {
-    LayoutRect contentsBox = LayoutRect(contentsRect(renderer()));
+    LayoutRect contentsBox = LayoutRect(contentsRect(layoutObject()));
     contentsBox.move(contentOffsetInCompositingLayer());
     return contentsBox;
 }
@@ -2078,7 +2078,7 @@ void CompositedLayerMapping::invalidateDisplayItemClient(DisplayItemClient displ
 const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const LayoutObject* layoutObject, const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex)
 {
     for (size_t i = 0; i < layers.size() && i < maxSquashedLayerIndex; ++i) {
-        if (layoutObject->isDescendantOf(layers[i].renderLayer->renderer()))
+        if (layoutObject->isDescendantOf(layers[i].renderLayer->layoutObject()))
             return &layers[i];
     }
     return 0;
@@ -2135,10 +2135,10 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
     }
 
 #if ENABLE(ASSERT)
-    paintInfo.renderLayer->renderer()->assertSubtreeIsLaidOut();
+    paintInfo.renderLayer->layoutObject()->assertSubtreeIsLaidOut();
 #endif
 
-    float deviceScaleFactor = blink::deviceScaleFactor(paintInfo.renderLayer->renderer()->frame());
+    float deviceScaleFactor = blink::deviceScaleFactor(paintInfo.renderLayer->layoutObject()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);
 
     if (paintInfo.renderLayer->compositingState() != PaintsIntoGroupedBacking) {
@@ -2198,10 +2198,10 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     DisableCompositingQueryAsserts disabler;
 #if ENABLE(ASSERT)
     // FIXME: once the state machine is ready, this can be removed and we can refer to that instead.
-    if (Page* page = renderer()->frame()->page())
+    if (Page* page = layoutObject()->frame()->page())
         page->setIsPainting(true);
 #endif
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(m_owningLayer.renderer(), LayoutRect(clip), graphicsLayer));
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(m_owningLayer.layoutObject(), LayoutRect(clip), graphicsLayer));
 
     PaintLayerFlags paintLayerFlags = 0;
     if (graphicsLayerPaintingPhase & GraphicsLayerPaintBackground)
@@ -2254,9 +2254,9 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, IntPoint(), transformedClip);
         context.restore();
     }
-    InspectorInstrumentation::didPaint(m_owningLayer.renderer(), graphicsLayer, &context, LayoutRect(clip));
+    InspectorInstrumentation::didPaint(m_owningLayer.layoutObject(), graphicsLayer, &context, LayoutRect(clip));
 #if ENABLE(ASSERT)
-    if (Page* page = renderer()->frame()->page())
+    if (Page* page = layoutObject()->frame()->page())
         page->setIsPainting(false);
 #endif
 }
@@ -2270,13 +2270,13 @@ bool CompositedLayerMapping::isTrackingPaintInvalidations() const
 #if ENABLE(ASSERT)
 void CompositedLayerMapping::verifyNotPainting()
 {
-    ASSERT(!renderer()->frame()->page() || !renderer()->frame()->page()->isPainting());
+    ASSERT(!layoutObject()->frame()->page() || !layoutObject()->frame()->page()->isPainting());
 }
 #endif
 
 void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group)
 {
-    renderer()->node()->document().compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime, group);
+    layoutObject()->node()->document().compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime, group);
 }
 
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const

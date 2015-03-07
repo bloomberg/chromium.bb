@@ -109,7 +109,7 @@ bool HTMLOptGroupElement::supportsFocus() const
 void HTMLOptGroupElement::updateNonLayoutStyle()
 {
     m_style = originalStyleForRenderer();
-    if (renderer()) {
+    if (layoutObject()) {
         if (HTMLSelectElement* select = ownerSelectElement())
             select->updateListOnRenderer();
     }

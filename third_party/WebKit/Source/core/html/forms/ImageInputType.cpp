@@ -142,7 +142,7 @@ void ImageInputType::altAttributeChanged()
 
 void ImageInputType::srcAttributeChanged()
 {
-    if (!element().renderer())
+    if (!element().layoutObject())
         return;
     element().ensureImageLoader().updateFromElement(ImageLoader::UpdateIgnorePreviousError);
 }
@@ -161,7 +161,7 @@ void ImageInputType::startResourceLoading()
     HTMLImageLoader& imageLoader = element().ensureImageLoader();
     imageLoader.updateFromElement();
 
-    LayoutObject* renderer = element().renderer();
+    LayoutObject* renderer = element().layoutObject();
     if (!renderer || !renderer->isLayoutImage())
         return;
 
@@ -198,7 +198,7 @@ unsigned ImageInputType::height() const
 {
     RefPtrWillBeRawPtr<HTMLInputElement> element(this->element());
 
-    if (!element->renderer()) {
+    if (!element->layoutObject()) {
         // Check the attribute first for an explicit pixel value.
         unsigned height;
         if (parseHTMLNonNegativeInteger(element->fastGetAttribute(heightAttr), height))
@@ -207,7 +207,7 @@ unsigned ImageInputType::height() const
         // If the image is available, use its height.
         HTMLImageLoader* imageLoader = element->imageLoader();
         if (imageLoader && imageLoader->image())
-            return imageLoader->image()->imageSizeForRenderer(element->renderer(), 1).height();
+            return imageLoader->image()->imageSizeForRenderer(element->layoutObject(), 1).height();
     }
 
     element->document().updateLayout();
@@ -220,7 +220,7 @@ unsigned ImageInputType::width() const
 {
     RefPtrWillBeRawPtr<HTMLInputElement> element(this->element());
 
-    if (!element->renderer()) {
+    if (!element->layoutObject()) {
         // Check the attribute first for an explicit pixel value.
         unsigned width;
         if (parseHTMLNonNegativeInteger(element->fastGetAttribute(widthAttr), width))
@@ -229,7 +229,7 @@ unsigned ImageInputType::width() const
         // If the image is available, use its width.
         HTMLImageLoader* imageLoader = element->imageLoader();
         if (imageLoader && imageLoader->image())
-            return imageLoader->image()->imageSizeForRenderer(element->renderer(), 1).width();
+            return imageLoader->image()->imageSizeForRenderer(element->layoutObject(), 1).width();
     }
 
     element->document().updateLayout();

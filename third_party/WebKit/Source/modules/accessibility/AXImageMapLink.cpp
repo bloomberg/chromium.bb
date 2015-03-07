@@ -64,10 +64,10 @@ AXObject* AXImageMapLink::computeParent() const
     if (m_parent)
         return m_parent;
 
-    if (!m_mapElement.get() || !m_mapElement->renderer())
+    if (!m_mapElement.get() || !m_mapElement->layoutObject())
         return 0;
 
-    return axObjectCache()->getOrCreate(m_mapElement->renderer());
+    return axObjectCache()->getOrCreate(m_mapElement->layoutObject());
 }
 
 AccessibilityRole AXImageMapLink::roleValue() const
@@ -131,9 +131,9 @@ LayoutRect AXImageMapLink::elementRect() const
 
     LayoutObject* layoutObject;
     if (m_parent && m_parent->isAXLayoutObject())
-        layoutObject = toAXLayoutObject(m_parent)->renderer();
+        layoutObject = toAXLayoutObject(m_parent)->layoutObject();
     else
-        layoutObject = m_mapElement->renderer();
+        layoutObject = m_mapElement->layoutObject();
 
     if (!layoutObject)
         return LayoutRect();

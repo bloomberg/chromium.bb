@@ -154,7 +154,7 @@ void IndentOutdentCommand::outdentParagraph()
     VisiblePosition positionInEnclosingBlock = VisiblePosition(firstPositionInNode(enclosingElement));
     // If the blockquote is inline, the start of the enclosing block coincides with
     // positionInEnclosingBlock.
-    VisiblePosition startOfEnclosingBlock = (enclosingElement->renderer() && enclosingElement->renderer()->isInline()) ? positionInEnclosingBlock : startOfBlock(positionInEnclosingBlock);
+    VisiblePosition startOfEnclosingBlock = (enclosingElement->layoutObject() && enclosingElement->layoutObject()->isInline()) ? positionInEnclosingBlock : startOfBlock(positionInEnclosingBlock);
     VisiblePosition lastPositionInEnclosingBlock = VisiblePosition(lastPositionInNode(enclosingElement));
     VisiblePosition endOfEnclosingBlock = endOfBlock(lastPositionInEnclosingBlock);
     if (visibleStartOfParagraph == startOfEnclosingBlock &&

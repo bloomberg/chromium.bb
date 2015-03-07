@@ -713,7 +713,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
     TriState state = FalseTriState;
     bool nodeIsStart = true;
     for (Node& node : NodeTraversal::startsAt(selection.start().deprecatedNode())) {
-        if (node.renderer() && node.hasEditableStyle()) {
+        if (node.layoutObject() && node.hasEditableStyle()) {
             RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> nodeStyle = CSSComputedStyleDeclaration::create(&node);
             if (nodeStyle) {
                 TriState nodeState = triStateOfStyle(nodeStyle.get(), node.isTextNode() ? EditingStyle::DoNotIgnoreTextOnlyProperties : EditingStyle::IgnoreTextOnlyProperties);
@@ -1234,7 +1234,7 @@ void EditingStyle::removePropertiesInElementDefaultStyle(Element* element)
 void EditingStyle::addAbsolutePositioningFromElement(const Element& element)
 {
     LayoutRect rect = element.boundingBox();
-    LayoutObject* renderer = element.renderer();
+    LayoutObject* renderer = element.layoutObject();
 
     LayoutUnit x = rect.x();
     LayoutUnit y = rect.y();

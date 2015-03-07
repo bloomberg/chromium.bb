@@ -63,13 +63,13 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType type)
     if (isHTMLAreaElement(*node)) {
         HTMLAreaElement& area = toHTMLAreaElement(*node);
         HTMLImageElement* image = area.imageElement();
-        if (!image || !image->renderer())
+        if (!image || !image->layoutObject())
             return;
 
         visibleNode = image;
         rect = virtualRectForAreaElementAndDirection(area, type);
     } else {
-        if (!node->renderer())
+        if (!node->layoutObject())
             return;
 
         visibleNode = node;
@@ -179,7 +179,7 @@ bool hasOffscreenRect(Node* node, WebFocusType type)
         break;
     }
 
-    LayoutObject* render = node->renderer();
+    LayoutObject* render = node->layoutObject();
     if (!render)
         return true;
 
@@ -282,7 +282,7 @@ bool isScrollableNode(const Node* node)
     if (!node)
         return false;
 
-    if (LayoutObject* renderer = node->renderer())
+    if (LayoutObject* renderer = node->layoutObject())
         return renderer->isBox() && toLayoutBox(renderer)->canBeScrolledAndHasScrollableArea() && node->hasChildren();
 
     return false;
@@ -314,13 +314,13 @@ bool canScrollInDirection(const Node* container, WebFocusType type)
 
     switch (type) {
     case WebFocusTypeLeft:
-        return (container->renderer()->style()->overflowX() != OHIDDEN && container->layoutBox()->scrollLeft() > 0);
+        return (container->layoutObject()->style()->overflowX() != OHIDDEN && container->layoutBox()->scrollLeft() > 0);
     case WebFocusTypeUp:
-        return (container->renderer()->style()->overflowY() != OHIDDEN && container->layoutBox()->scrollTop() > 0);
+        return (container->layoutObject()->style()->overflowY() != OHIDDEN && container->layoutBox()->scrollTop() > 0);
     case WebFocusTypeRight:
-        return (container->renderer()->style()->overflowX() != OHIDDEN && container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth() < container->layoutBox()->scrollWidth());
+        return (container->layoutObject()->style()->overflowX() != OHIDDEN && container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth() < container->layoutBox()->scrollWidth());
     case WebFocusTypeDown:
-        return (container->renderer()->style()->overflowY() != OHIDDEN && container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight() < container->layoutBox()->scrollHeight());
+        return (container->layoutObject()->style()->overflowY() != OHIDDEN && container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight() < container->layoutBox()->scrollHeight());
     default:
         ASSERT_NOT_REACHED();
         return false;
@@ -376,7 +376,7 @@ static LayoutRect rectToAbsoluteCoordinates(LocalFrame* initialFrame, const Layo
 
 LayoutRect nodeRectInAbsoluteCoordinates(Node* node, bool ignoreBorder)
 {
-    ASSERT(node && node->renderer() && !node->document().view()->needsLayout());
+    ASSERT(node && node->layoutObject() && !node->document().view()->needsLayout());
 
     if (node->isDocumentNode())
         return frameRectInAbsoluteCoordinates(toDocument(node)->frame());
@@ -385,9 +385,9 @@ LayoutRect nodeRectInAbsoluteCoordinates(Node* node, bool ignoreBorder)
     // For authors that use border instead of outline in their CSS, we compensate by ignoring the border when calculating
     // the rect of the focused element.
     if (ignoreBorder) {
-        rect.move(node->renderer()->style()->borderLeftWidth(), node->renderer()->style()->borderTopWidth());
-        rect.setWidth(rect.width() - node->renderer()->style()->borderLeftWidth() - node->renderer()->style()->borderRightWidth());
-        rect.setHeight(rect.height() - node->renderer()->style()->borderTopWidth() - node->renderer()->style()->borderBottomWidth());
+        rect.move(node->layoutObject()->style()->borderLeftWidth(), node->layoutObject()->style()->borderTopWidth());
+        rect.setWidth(rect.width() - node->layoutObject()->style()->borderLeftWidth() - node->layoutObject()->style()->borderRightWidth());
+        rect.setHeight(rect.height() - node->layoutObject()->style()->borderTopWidth() - node->layoutObject()->style()->borderBottomWidth());
     }
     return rect;
 }
@@ -485,7 +485,7 @@ bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCand
     if (firstCandidate.isNull() || secondCandidate.isNull())
         return false;
 
-    if (!firstCandidate.visibleNode->renderer() || !secondCandidate.visibleNode->renderer())
+    if (!firstCandidate.visibleNode->layoutObject() || !secondCandidate.visibleNode->layoutObject())
         return false;
 
     if (!firstCandidate.rect.intersects(secondCandidate.rect))
@@ -494,10 +494,10 @@ bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCand
     if (isHTMLAreaElement(*firstCandidate.focusableNode) || isHTMLAreaElement(*secondCandidate.focusableNode))
         return false;
 
-    if (!firstCandidate.visibleNode->renderer()->isLayoutInline() || !secondCandidate.visibleNode->renderer()->isLayoutInline())
+    if (!firstCandidate.visibleNode->layoutObject()->isLayoutInline() || !secondCandidate.visibleNode->layoutObject()->isLayoutInline())
         return false;
 
-    if (firstCandidate.visibleNode->renderer()->containingBlock() != secondCandidate.visibleNode->renderer()->containingBlock())
+    if (firstCandidate.visibleNode->layoutObject()->containingBlock() != secondCandidate.visibleNode->layoutObject()->containingBlock())
         return false;
 
     return true;
@@ -575,8 +575,8 @@ bool canBeScrolledIntoView(WebFocusType type, const FocusCandidate& candidate)
     for (Node* parentNode = candidate.visibleNode->parentNode(); parentNode; parentNode = parentNode->parentNode()) {
         LayoutRect parentRect = nodeRectInAbsoluteCoordinates(parentNode);
         if (!candidateRect.intersects(parentRect)) {
-            if (((type == WebFocusTypeLeft || type == WebFocusTypeRight) && parentNode->renderer()->style()->overflowX() == OHIDDEN)
-                || ((type == WebFocusTypeUp || type == WebFocusTypeDown) && parentNode->renderer()->style()->overflowY() == OHIDDEN))
+            if (((type == WebFocusTypeLeft || type == WebFocusTypeRight) && parentNode->layoutObject()->style()->overflowX() == OHIDDEN)
+                || ((type == WebFocusTypeUp || type == WebFocusTypeDown) && parentNode->layoutObject()->style()->overflowY() == OHIDDEN))
                 return false;
         }
         if (parentNode == candidate.enclosingScrollableBox)
@@ -619,7 +619,7 @@ LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement& area, WebFocus
     ASSERT(area.imageElement());
     // Area elements tend to overlap more than other focusable elements. We flatten the rect of the area elements
     // to minimize the effect of overlapping areas.
-    LayoutRect rect = virtualRectForDirection(type, rectToAbsoluteCoordinates(area.document().frame(), area.computeRect(area.imageElement()->renderer())), 1);
+    LayoutRect rect = virtualRectForDirection(type, rectToAbsoluteCoordinates(area.document().frame(), area.computeRect(area.imageElement()->layoutObject())), 1);
     return rect;
 }
 

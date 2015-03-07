@@ -69,7 +69,7 @@ void HTMLLIElement::collectStyleForPresentationAttribute(const QualifiedName& na
 void HTMLLIElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == valueAttr) {
-        if (renderer() && renderer()->isListItem())
+        if (layoutObject() && layoutObject()->isListItem())
             parseValue(value);
     } else
         HTMLElement::parseAttribute(name, value);
@@ -79,8 +79,8 @@ void HTMLLIElement::attach(const AttachContext& context)
 {
     HTMLElement::attach(context);
 
-    if (renderer() && renderer()->isListItem()) {
-        LayoutListItem* listItemLayoutObject = toLayoutListItem(renderer());
+    if (layoutObject() && layoutObject()->isListItem()) {
+        LayoutListItem* listItemLayoutObject = toLayoutListItem(layoutObject());
 
         ASSERT(!document().childNeedsDistributionRecalc());
 
@@ -106,14 +106,14 @@ void HTMLLIElement::attach(const AttachContext& context)
 
 inline void HTMLLIElement::parseValue(const AtomicString& value)
 {
-    ASSERT(renderer() && renderer()->isListItem());
+    ASSERT(layoutObject() && layoutObject()->isListItem());
 
     bool valueOK;
     int requestedValue = value.toInt(&valueOK);
     if (valueOK)
-        toLayoutListItem(renderer())->setExplicitValue(requestedValue);
+        toLayoutListItem(layoutObject())->setExplicitValue(requestedValue);
     else
-        toLayoutListItem(renderer())->clearExplicitValue();
+        toLayoutListItem(layoutObject())->clearExplicitValue();
 }
 
 }

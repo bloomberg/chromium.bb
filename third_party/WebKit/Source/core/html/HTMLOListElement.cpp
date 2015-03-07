@@ -96,7 +96,7 @@ void HTMLOListElement::setStart(int start)
 
 void HTMLOListElement::updateItemValues()
 {
-    if (!renderer())
+    if (!layoutObject())
         return;
     updateDistribution();
     LayoutListItem::updateItemValuesForOrderedList(this);

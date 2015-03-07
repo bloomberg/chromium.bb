@@ -516,8 +516,8 @@ static PositionWithAffinity createPositionWithAffinityForBox(const InlineBox* bo
         affinity = offset > box->caretMinOffset() ? VP_UPSTREAM_IF_POSSIBLE : DOWNSTREAM;
         break;
     }
-    int textStartOffset = box->renderer().isText() ? toLayoutText(box->renderer()).textStartOffset() : 0;
-    return box->renderer().createPositionWithAffinity(offset + textStartOffset, affinity);
+    int textStartOffset = box->layoutObject().isText() ? toLayoutText(box->layoutObject()).textStartOffset() : 0;
+    return box->layoutObject().createPositionWithAffinity(offset + textStartOffset, affinity);
 }
 
 static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(const InlineTextBox* box, int offset, ShouldAffinityBeDownstream shouldAffinityBeDownstream)
@@ -534,7 +534,7 @@ static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffset
 
         const InlineBox* prevBox = box->prevLeafChildIgnoringLineBreak();
         if ((prevBox && prevBox->bidiLevel() == box->bidiLevel())
-            || box->renderer().containingBlock()->style()->direction() == box->direction()) // FIXME: left on 12CBA
+            || box->layoutObject().containingBlock()->style()->direction() == box->direction()) // FIXME: left on 12CBA
             return createPositionWithAffinityForBox(box, box->caretLeftmostOffset(), shouldAffinityBeDownstream);
 
         if (prevBox && prevBox->bidiLevel() > box->bidiLevel()) {
@@ -564,7 +564,7 @@ static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffset
 
     const InlineBox* nextBox = box->nextLeafChildIgnoringLineBreak();
     if ((nextBox && nextBox->bidiLevel() == box->bidiLevel())
-        || box->renderer().containingBlock()->style()->direction() == box->direction())
+        || box->layoutObject().containingBlock()->style()->direction() == box->direction())
         return createPositionWithAffinityForBox(box, box->caretRightmostOffset(), shouldAffinityBeDownstream);
 
     // offset is on the right edge
@@ -1864,7 +1864,7 @@ void LayoutText::checkConsistency() const
 #ifdef CHECK_CONSISTENCY
     const InlineTextBox* prev = 0;
     for (const InlineTextBox* child = m_firstTextBox; child != 0; child = child->nextTextBox()) {
-        ASSERT(child->renderer() == this);
+        ASSERT(child->layoutObject() == this);
         ASSERT(child->prevTextBox() == prev);
         prev = child;
     }

@@ -240,7 +240,7 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
 {
     ASSERT(textBox);
 
-    LayoutSVGInlineText& text = toLayoutSVGInlineText(textBox->renderer());
+    LayoutSVGInlineText& text = toLayoutSVGInlineText(textBox->layoutObject());
     ASSERT(text.parent());
     ASSERT(text.parent()->node());
     ASSERT(text.parent()->node()->isSVGElement());

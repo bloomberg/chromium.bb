@@ -228,7 +228,7 @@ Node* next(const Node& node, const Node* stayWithin)
 LayoutObject* nextSiblingRenderer(const Node& node)
 {
     for (Node* sibling = NodeRenderingTraversal::nextSibling(node); sibling; sibling = NodeRenderingTraversal::nextSibling(*sibling)) {
-        LayoutObject* renderer = sibling->renderer();
+        LayoutObject* renderer = sibling->layoutObject();
         if (renderer && !isRendererReparented(renderer))
             return renderer;
     }
@@ -238,7 +238,7 @@ LayoutObject* nextSiblingRenderer(const Node& node)
 LayoutObject* previousSiblingRenderer(const Node& node)
 {
     for (Node* sibling = NodeRenderingTraversal::previousSibling(node); sibling; sibling = NodeRenderingTraversal::previousSibling(*sibling)) {
-        LayoutObject* renderer = sibling->renderer();
+        LayoutObject* renderer = sibling->layoutObject();
         if (renderer && !isRendererReparented(renderer))
             return renderer;
     }
@@ -253,7 +253,7 @@ LayoutObject* nextInTopLayer(const Element& element)
     size_t position = topLayerElements.find(&element);
     ASSERT(position != kNotFound);
     for (size_t i = position + 1; i < topLayerElements.size(); ++i) {
-        if (LayoutObject* renderer = topLayerElements[i]->renderer())
+        if (LayoutObject* renderer = topLayerElements[i]->layoutObject())
             return renderer;
     }
     return 0;

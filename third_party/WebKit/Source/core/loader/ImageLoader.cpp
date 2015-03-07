@@ -323,8 +323,8 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
 
         if (oldImage)
             oldImage->removeClient(this);
-    } else if (updateBehavior == UpdateSizeChanged && m_element->renderer() && m_element->renderer()->isImage()) {
-        toLayoutImage(m_element->renderer())->intrinsicSizeChanged();
+    } else if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() && m_element->layoutObject()->isImage()) {
+        toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
     }
 
     if (LayoutImageResource* imageResource = layoutImageResource())
@@ -438,7 +438,7 @@ void ImageLoader::notifyFinished(Resource* resource)
 
 LayoutImageResource* ImageLoader::layoutImageResource()
 {
-    LayoutObject* renderer = m_element->renderer();
+    LayoutObject* renderer = m_element->layoutObject();
 
     if (!renderer)
         return 0;

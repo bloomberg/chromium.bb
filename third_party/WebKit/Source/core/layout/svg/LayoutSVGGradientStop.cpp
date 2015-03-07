@@ -48,7 +48,7 @@ void LayoutSVGGradientStop::styleDidChange(StyleDifference diff, const LayoutSty
     if (!gradient)
         return;
 
-    LayoutObject* renderer = gradient->renderer();
+    LayoutObject* renderer = gradient->layoutObject();
     if (!renderer)
         return;
 

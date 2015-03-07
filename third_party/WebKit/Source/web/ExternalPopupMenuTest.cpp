@@ -196,7 +196,7 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForPinchViewportOffset)
     webView()->layout();
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
-    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT_TRUE(menuList);
 
     PinchViewport& pinchViewport = webView()->page()->frameHost().pinchViewport();
@@ -219,7 +219,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex)
     loadFrame("select.html");
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
-    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();
@@ -238,7 +238,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices)
     loadFrame("select.html");
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
-    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();
@@ -259,7 +259,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect)
     loadFrame("select.html");
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
-    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();

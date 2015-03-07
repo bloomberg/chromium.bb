@@ -163,7 +163,7 @@ TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv)
     scrollableElement->setScrollLeft(1.2);
     forceFullCompositingUpdate();
 
-    LayoutObject* renderer = scrollableElement->renderer();
+    LayoutObject* renderer = scrollableElement->layoutObject();
     ASSERT_TRUE(renderer->isBox());
     LayoutBox* box = toLayoutBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());
@@ -180,7 +180,7 @@ static WebLayer* webLayerFromElement(Element* element)
 {
     if (!element)
         return 0;
-    LayoutObject* renderer = element->renderer();
+    LayoutObject* renderer = element->layoutObject();
     if (!renderer || !renderer->isBoxModelObject())
         return 0;
     Layer* layer = toLayoutBoxModelObject(renderer)->layer();
@@ -353,7 +353,7 @@ TEST_F(ScrollingCoordinatorTest, overflowScrolling)
     Element* scrollableElement = frame()->document()->getElementById("scrollable");
     ASSERT(scrollableElement);
 
-    LayoutObject* renderer = scrollableElement->renderer();
+    LayoutObject* renderer = scrollableElement->layoutObject();
     ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
@@ -393,7 +393,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden)
     Element* overflowElement = frame()->document()->getElementById("unscrollable-y");
     ASSERT(overflowElement);
 
-    LayoutObject* renderer = overflowElement->renderer();
+    LayoutObject* renderer = overflowElement->layoutObject();
     ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
@@ -416,7 +416,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden)
     overflowElement = frame()->document()->getElementById("unscrollable-x");
     ASSERT(overflowElement);
 
-    renderer = overflowElement->renderer();
+    renderer = overflowElement->layoutObject();
     ASSERT_TRUE(renderer->isBox());
     ASSERT_TRUE(renderer->hasLayer());
 
@@ -449,7 +449,7 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling)
     Element* scrollableFrame = frame()->document()->getElementById("scrollable");
     ASSERT_TRUE(scrollableFrame);
 
-    LayoutObject* renderer = scrollableFrame->renderer();
+    LayoutObject* renderer = scrollableFrame->layoutObject();
     ASSERT_TRUE(renderer);
     ASSERT_TRUE(renderer->isLayoutPart());
 
@@ -493,7 +493,7 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe)
     Element* scrollableFrame = frame()->document()->getElementById("scrollable");
     ASSERT_TRUE(scrollableFrame);
 
-    LayoutObject* renderer = scrollableFrame->renderer();
+    LayoutObject* renderer = scrollableFrame->layoutObject();
     ASSERT_TRUE(renderer);
     ASSERT_TRUE(renderer->isLayoutPart());
 
@@ -541,7 +541,7 @@ TEST_F(ScrollingCoordinatorTest, scrollbarsForceMainThreadOrHaveWebScrollbarLaye
     Element* scrollableElement = document->getElementById("scroller");
     ASSERT(scrollableElement);
 
-    LayoutObject* renderer = scrollableElement->renderer();
+    LayoutObject* renderer = scrollableElement->layoutObject();
     ASSERT_TRUE(renderer->isBox());
     LayoutBox* box = toLayoutBox(renderer);
     ASSERT_TRUE(box->usesCompositedScrolling());
@@ -592,13 +592,13 @@ TEST_F(ScrollingCoordinatorTest, FixedPositionLosingBackingShouldTriggerMainThre
     Document* document = frame()->document();
     Element* fixedPos = document->getElementById("fixed");
 
-    EXPECT_TRUE(static_cast<LayoutBoxModelObject*>(fixedPos->renderer())->layer()->hasCompositedLayerMapping());
+    EXPECT_TRUE(static_cast<LayoutBoxModelObject*>(fixedPos->layoutObject())->layer()->hasCompositedLayerMapping());
     EXPECT_FALSE(scrollLayer->shouldScrollOnMainThread());
 
     fixedPos->setInlineStyleProperty(CSSPropertyTransform, CSSValueNone);
     forceFullCompositingUpdate();
 
-    EXPECT_FALSE(static_cast<LayoutBoxModelObject*>(fixedPos->renderer())->layer()->hasCompositedLayerMapping());
+    EXPECT_FALSE(static_cast<LayoutBoxModelObject*>(fixedPos->layoutObject())->layer()->hasCompositedLayerMapping());
     EXPECT_TRUE(scrollLayer->shouldScrollOnMainThread());
 }
 

@@ -163,7 +163,7 @@ static CompositingReasons subtreeReasonsForCompositing(Layer* layer, bool hasCom
 
         // FIXME: This should move into CompositingReasonFinder::potentialCompositingReasonsFromStyle, but
         // theres a poor interaction with LayoutTextControlSingleLine, which sets this hasOverflowClip directly.
-        if (layer->renderer()->hasClipOrOverflowClip())
+        if (layer->layoutObject()->hasClipOrOverflowClip())
             subtreeReasons |= CompositingReasonClipsCompositingDescendants;
     }
 
@@ -217,7 +217,7 @@ void CompositingRequirementsUpdater::updateRecursive(Layer* ancestorLayer, Layer
     // Layer children and whose children can't use its backing to render
     // into. These children (the controls) always need to be promoted into their
     // own layers to draw on top of the accelerated video.
-    if (currentRecursionData.m_compositingAncestor && currentRecursionData.m_compositingAncestor->renderer()->isVideo())
+    if (currentRecursionData.m_compositingAncestor && currentRecursionData.m_compositingAncestor->layoutObject()->isVideo())
         directReasons |= CompositingReasonVideoOverlay;
 
     if (compositor->canBeComposited(layer)) {
@@ -257,7 +257,7 @@ void CompositingRequirementsUpdater::updateRecursive(Layer* ancestorLayer, Layer
             // descendants, that element is no longer relevant to whether or not we
             // should opt in. Unfortunately we can't easily remove from the list
             // while we're iterating, so we have to store it for later removal.
-            if (unclippedDescendant->renderer()->containingBlock() == layer->renderer()) {
+            if (unclippedDescendant->layoutObject()->containingBlock() == layer->layoutObject()) {
                 unclippedDescendantsToRemove.append(i);
                 continue;
             }
@@ -417,7 +417,7 @@ void CompositingRequirementsUpdater::updateRecursive(Layer* ancestorLayer, Layer
             reflectionLayer->setCompositingReasons(reflectionCompositingReason, CompositingReasonReflectionOfCompositedParent);
         }
 
-        if (willBeCompositedOrSquashed && layer->renderer()->style()->hasBlendMode())
+        if (willBeCompositedOrSquashed && layer->layoutObject()->style()->hasBlendMode())
             currentRecursionData.m_hasUnisolatedCompositedBlendingDescendant = true;
 
         // Turn overlap testing off for later layers if it's already off, or if we have an animating transform.
@@ -425,7 +425,7 @@ void CompositingRequirementsUpdater::updateRecursive(Layer* ancestorLayer, Layer
         // we know for sure the animation is contained inside the clipping rectangle, which is already added to the overlap map.
         bool isCompositedClippingLayer = compositor->canBeComposited(layer) && (reasonsToComposite & CompositingReasonClipsCompositingDescendants);
         bool isCompositedWithInlineTransform = reasonsToComposite & CompositingReasonInlineTransform;
-        if ((!childRecursionData.m_testingOverlap && !isCompositedClippingLayer) || layer->renderer()->style()->hasCurrentTransformAnimation() || isCompositedWithInlineTransform)
+        if ((!childRecursionData.m_testingOverlap && !isCompositedClippingLayer) || layer->layoutObject()->style()->hasCurrentTransformAnimation() || isCompositedWithInlineTransform)
             currentRecursionData.m_testingOverlap = false;
 
         if (childRecursionData.m_compositingAncestor == layer)

@@ -98,7 +98,7 @@ void HTMLTextFormControlElement::dispatchBlurEvent(Element* newFocusedElement)
 
 void HTMLTextFormControlElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == EventTypeNames::webkitEditableContentChanged && renderer() && renderer()->isTextControl()) {
+    if (event->type() == EventTypeNames::webkitEditableContentChanged && layoutObject() && layoutObject()->isTextControl()) {
         m_lastChangeWasUserEdit = true;
         subtreeHasChanged();
         return;
@@ -149,7 +149,7 @@ bool HTMLTextFormControlElement::placeholderShouldBeVisible() const
         && isEmptySuggestedValue()
         && !isPlaceholderEmpty()
         && (document().focusedElement() != this || (LayoutTheme::theme().shouldShowPlaceholderWhenFocused()))
-        && (!renderer() || renderer()->style()->visibility() == VISIBLE);
+        && (!layoutObject() || layoutObject()->style()->visibility() == VISIBLE);
 }
 
 HTMLElement* HTMLTextFormControlElement::placeholderElement() const
@@ -236,7 +236,7 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
     setInnerEditorValue(text);
 
     // FIXME: What should happen to the value (as in value()) if there's no renderer?
-    if (!renderer())
+    if (!layoutObject())
         return;
 
     subtreeHasChanged();
@@ -509,7 +509,7 @@ static inline void setContainerAndOffsetForRange(Node* node, int offset, Node*& 
 
 PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
 {
-    if (!renderer() || !isTextFormControl())
+    if (!layoutObject() || !isTextFormControl())
         return nullptr;
 
     int start = m_cachedSelectionStart;
@@ -555,7 +555,7 @@ void HTMLTextFormControlElement::restoreCachedSelection()
 
 void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
 {
-    if (!renderer() || !isTextFormControl())
+    if (!layoutObject() || !isTextFormControl())
         return;
 
     // selectionStart() or selectionEnd() will return cached selection when this node doesn't have focus
@@ -598,7 +598,7 @@ void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
 
     bool textIsChanged = value != innerEditorValue();
     if (textIsChanged || !innerEditorElement()->hasChildren()) {
-        if (textIsChanged && renderer()) {
+        if (textIsChanged && layoutObject()) {
             if (AXObjectCache* cache = document().existingAXObjectCache())
                 cache->handleTextFormControlChanged(this);
         }
@@ -660,7 +660,7 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
     if (!innerText || !isTextFormControl())
         return value();
 
-    LayoutBlockFlow* renderer = toLayoutBlockFlow(innerText->renderer());
+    LayoutBlockFlow* renderer = toLayoutBlockFlow(innerText->layoutObject());
     if (!renderer)
         return value();
 

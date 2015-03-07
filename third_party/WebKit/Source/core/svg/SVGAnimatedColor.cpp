@@ -42,7 +42,7 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGColorProperty::cloneForAnimation(cons
 static inline Color fallbackColorForCurrentColor(SVGElement* targetElement)
 {
     ASSERT(targetElement);
-    if (LayoutObject* targetRenderer = targetElement->renderer())
+    if (LayoutObject* targetRenderer = targetElement->layoutObject())
         return targetRenderer->resolveColor(CSSPropertyColor);
     return Color::transparent;
 }

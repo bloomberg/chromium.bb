@@ -731,8 +731,8 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         int valueAsInteger;
         if (!value.isEmpty() && parseHTMLInteger(value, valueAsInteger) && valueAsInteger > 0)
             m_size = valueAsInteger;
-        if (m_size != oldSize && renderer())
-            renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        if (m_size != oldSize && layoutObject())
+            layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     } else if (name == altAttr)
         m_inputTypeView->altAttributeChanged();
     else if (name == srcAttr)
@@ -911,16 +911,16 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
 
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
         scope->updateCheckedState(this);
-    if (renderer() && renderer()->style()->hasAppearance())
-        LayoutTheme::theme().stateChanged(renderer(), CheckedControlState);
+    if (layoutObject() && layoutObject()->style()->hasAppearance())
+        LayoutTheme::theme().stateChanged(layoutObject(), CheckedControlState);
 
     setNeedsValidityCheck();
 
     // Ideally we'd do this from the render tree (matching
     // RenderTextView), but it's not possible to do it at the moment
     // because of the way the code is structured.
-    if (renderer()) {
-        if (AXObjectCache* cache = renderer()->document().existingAXObjectCache())
+    if (layoutObject()) {
+        if (AXObjectCache* cache = layoutObject()->document().existingAXObjectCache())
             cache->checkedStateChanged(this);
     }
 
@@ -948,8 +948,8 @@ void HTMLInputElement::setIndeterminate(bool newValue)
 
     pseudoStateChanged(CSSSelector::PseudoIndeterminate);
 
-    if (renderer() && renderer()->style()->hasAppearance())
-        LayoutTheme::theme().stateChanged(renderer(), CheckedControlState);
+    if (layoutObject() && layoutObject()->style()->hasAppearance())
+        LayoutTheme::theme().stateChanged(layoutObject(), CheckedControlState);
 }
 
 int HTMLInputElement::size() const
@@ -1027,7 +1027,7 @@ void HTMLInputElement::setSuggestedValue(const String& value)
 
 void HTMLInputElement::setEditingValue(const String& value)
 {
-    if (!renderer() || !isTextField())
+    if (!layoutObject() || !isTextField())
         return;
     setInnerEditorValue(value);
     subtreeHasChanged();
@@ -1431,8 +1431,8 @@ void HTMLInputElement::setCanReceiveDroppedFiles(bool canReceiveDroppedFiles)
     if (m_canReceiveDroppedFiles == canReceiveDroppedFiles)
         return;
     m_canReceiveDroppedFiles = canReceiveDroppedFiles;
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 }
 
 String HTMLInputElement::sanitizeValue(const String& proposedValue) const

@@ -92,13 +92,13 @@ DEFINE_TRACE(SVGTextContentElement)
 unsigned SVGTextContentElement::getNumberOfChars()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    return SVGTextQuery(renderer()).numberOfCharacters();
+    return SVGTextQuery(layoutObject()).numberOfCharacters();
 }
 
 float SVGTextContentElement::getComputedTextLength()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    return SVGTextQuery(renderer()).textLength();
+    return SVGTextQuery(layoutObject()).textLength();
 }
 
 float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState& exceptionState)
@@ -114,7 +114,7 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
     if (nchars > numberOfChars - charnum)
         nchars = numberOfChars - charnum;
 
-    return SVGTextQuery(renderer()).subStringLength(charnum, nchars);
+    return SVGTextQuery(layoutObject()).subStringLength(charnum, nchars);
 }
 
 PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
@@ -126,7 +126,7 @@ PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionO
         return nullptr;
     }
 
-    FloatPoint point = SVGTextQuery(renderer()).startPositionOfCharacter(charnum);
+    FloatPoint point = SVGTextQuery(layoutObject()).startPositionOfCharacter(charnum);
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
@@ -139,7 +139,7 @@ PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfC
         return nullptr;
     }
 
-    FloatPoint point = SVGTextQuery(renderer()).endPositionOfCharacter(charnum);
+    FloatPoint point = SVGTextQuery(layoutObject()).endPositionOfCharacter(charnum);
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
@@ -152,7 +152,7 @@ PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(un
         return nullptr;
     }
 
-    FloatRect rect = SVGTextQuery(renderer()).extentOfCharacter(charnum);
+    FloatRect rect = SVGTextQuery(layoutObject()).extentOfCharacter(charnum);
     return SVGRectTearOff::create(SVGRect::create(rect), 0, PropertyIsNotAnimVal);
 }
 
@@ -165,13 +165,13 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState&
         return 0.0f;
     }
 
-    return SVGTextQuery(renderer()).rotationOfCharacter(charnum);
+    return SVGTextQuery(layoutObject()).rotationOfCharacter(charnum);
 }
 
 int SVGTextContentElement::getCharNumAtPosition(PassRefPtrWillBeRawPtr<SVGPointTearOff> point, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
-    return SVGTextQuery(renderer()).characterNumberAtPosition(point->target()->value());
+    return SVGTextQuery(layoutObject()).characterNumberAtPosition(point->target()->value());
 }
 
 void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, ExceptionState& exceptionState)
@@ -252,7 +252,7 @@ void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    if (LayoutObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->layoutObject())
         markForLayoutAndParentResourceInvalidation(renderer);
 }
 

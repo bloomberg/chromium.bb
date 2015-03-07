@@ -71,7 +71,7 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
     if (!m_parent)
         return;
 
-    LayoutObject* layoutObject = m_parent->renderer();
+    LayoutObject* layoutObject = m_parent->layoutObject();
     if (!layoutObject)
         return;
 

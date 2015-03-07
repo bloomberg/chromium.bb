@@ -76,7 +76,7 @@ LayoutObject* PickerIndicatorElement::createLayoutObject(const LayoutStyle&)
 
 void PickerIndicatorElement::defaultEventHandler(Event* event)
 {
-    if (!renderer())
+    if (!layoutObject())
         return;
     if (!m_pickerIndicatorOwner || m_pickerIndicatorOwner->isPickerIndicatorOwnerDisabledOrReadOnly())
         return;
@@ -98,7 +98,7 @@ void PickerIndicatorElement::defaultEventHandler(Event* event)
 
 bool PickerIndicatorElement::willRespondToMouseClickEvents()
 {
-    if (renderer() && m_pickerIndicatorOwner && !m_pickerIndicatorOwner->isPickerIndicatorOwnerDisabledOrReadOnly())
+    if (layoutObject() && m_pickerIndicatorOwner && !m_pickerIndicatorOwner->isPickerIndicatorOwnerDisabledOrReadOnly())
         return true;
 
     return HTMLDivElement::willRespondToMouseClickEvents();

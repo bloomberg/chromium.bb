@@ -161,8 +161,8 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
             rows = defaultRows;
         if (m_rows != rows) {
             m_rows = rows;
-            if (renderer())
-                renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            if (layoutObject())
+                layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         }
     } else if (name == colsAttr) {
         int cols = 0;
@@ -170,8 +170,8 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
             cols = defaultCols;
         if (m_cols != cols) {
             m_cols = cols;
-            if (renderer())
-                renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            if (LayoutObject* layoutObject = this->layoutObject())
+                layoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         }
     } else if (name == wrapAttr) {
         // The virtual/physical values were a Netscape extension of HTML 3.0, now deprecated.
@@ -185,8 +185,8 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
             wrap = SoftWrap;
         if (wrap != m_wrap) {
             m_wrap = wrap;
-            if (renderer())
-                renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            if (LayoutObject* layoutObject = this->layoutObject())
+                layoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         }
     } else if (name == accesskeyAttr) {
         // ignore for the moment
@@ -253,9 +253,9 @@ void HTMLTextAreaElement::updateFocusAppearance(bool restorePreviousSelection)
 
 void HTMLTextAreaElement::defaultEventHandler(Event* event)
 {
-    if (renderer() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur))
+    if (layoutObject() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur))
         forwardEvent(event);
-    else if (renderer() && event->isBeforeTextInsertedEvent())
+    else if (layoutObject() && event->isBeforeTextInsertedEvent())
         handleBeforeTextInsertedEvent(static_cast<BeforeTextInsertedEvent*>(event));
 
     HTMLTextFormControlElement::defaultEventHandler(event);
@@ -287,7 +287,7 @@ void HTMLTextAreaElement::subtreeHasChanged()
 void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* event) const
 {
     ASSERT(event);
-    ASSERT(renderer());
+    ASSERT(layoutObject());
     int signedMaxLength = maxLength();
     if (signedMaxLength < 0)
         return;

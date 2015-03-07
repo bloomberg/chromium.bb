@@ -101,7 +101,7 @@ void LayoutFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogic
     const String label = toHTMLInputElement(node())->locale().queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
     float defaultLabelWidth = font.width(constructTextRun(renderer, font, label, styleRef(), TextRun::AllowTrailingExpansion));
     if (HTMLInputElement* button = uploadButton()) {
-        if (LayoutObject* buttonRenderer = button->renderer())
+        if (LayoutObject* buttonRenderer = button->layoutObject())
             defaultLabelWidth += buttonRenderer->maxPreferredLogicalWidth() + afterButtonSpacing;
     }
     maxLogicalWidth = static_cast<int>(ceilf(std::max(minDefaultLabelWidth, defaultLabelWidth)));

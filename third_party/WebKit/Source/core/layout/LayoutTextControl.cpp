@@ -68,7 +68,7 @@ void LayoutTextControl::styleDidChange(StyleDifference diff, const LayoutStyle* 
     Element* innerEditor = innerEditorElement();
     if (!innerEditor)
         return;
-    LayoutBlock* innerEditorRenderer = toLayoutBlock(innerEditor->renderer());
+    LayoutBlock* innerEditorRenderer = toLayoutBlock(innerEditor->layoutObject());
     if (innerEditorRenderer) {
         // We may have set the width and the height in the old style in layout().
         // Reset them now to avoid getting a spurious layout hint.
@@ -106,7 +106,7 @@ int LayoutTextControl::textBlockLogicalWidth() const
     ASSERT(innerEditor);
 
     LayoutUnit unitWidth = logicalWidth() - borderAndPaddingLogicalWidth();
-    if (innerEditor->renderer())
+    if (innerEditor->layoutObject())
         unitWidth -= innerEditor->layoutBox()->paddingStart() + innerEditor->layoutBox()->paddingEnd();
 
     return unitWidth;
@@ -115,8 +115,8 @@ int LayoutTextControl::textBlockLogicalWidth() const
 void LayoutTextControl::updateFromElement()
 {
     Element* innerEditor = innerEditorElement();
-    if (innerEditor && innerEditor->renderer())
-        updateUserModifyProperty(*textFormControlElement(), innerEditor->renderer()->mutableStyleRef());
+    if (innerEditor && innerEditor->layoutObject())
+        updateUserModifyProperty(*textFormControlElement(), innerEditor->layoutObject()->mutableStyleRef());
 }
 
 int LayoutTextControl::scrollbarThickness() const
@@ -134,8 +134,8 @@ void LayoutTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUni
         logicalHeight = computeControlLogicalHeight(innerEditorBox->lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes), nonContentHeight);
 
         // We are able to have a horizontal scrollbar if the overflow style is scroll, or if its auto and there's no word wrap.
-        if ((isHorizontalWritingMode() && (style()->overflowX() == OSCROLL ||  (style()->overflowX() == OAUTO && innerEditor->renderer()->style()->overflowWrap() == NormalOverflowWrap)))
-            || (!isHorizontalWritingMode() && (style()->overflowY() == OSCROLL ||  (style()->overflowY() == OAUTO && innerEditor->renderer()->style()->overflowWrap() == NormalOverflowWrap))))
+        if ((isHorizontalWritingMode() && (style()->overflowX() == OSCROLL ||  (style()->overflowX() == OAUTO && innerEditor->layoutObject()->style()->overflowWrap() == NormalOverflowWrap)))
+            || (!isHorizontalWritingMode() && (style()->overflowY() == OSCROLL ||  (style()->overflowY() == OAUTO && innerEditor->layoutObject()->style()->overflowWrap() == NormalOverflowWrap))))
             logicalHeight += scrollbarThickness();
 
         // FIXME: The logical height of the inner text box should have been added before calling computeLogicalHeight to
@@ -151,7 +151,7 @@ void LayoutTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUni
 void LayoutTextControl::hitInnerEditorElement(HitTestResult& result, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset)
 {
     HTMLElement* innerEditor = innerEditorElement();
-    if (!innerEditor->renderer())
+    if (!innerEditor->layoutObject())
         return;
 
     LayoutPoint adjustedLocation = accumulatedOffset + location();
@@ -292,7 +292,7 @@ void LayoutTextControl::addFocusRingRects(Vector<LayoutRect>& rects, const Layou
 LayoutObject* LayoutTextControl::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     HTMLElement* placeholder = toHTMLTextFormControlElement(node())->placeholderElement();
-    LayoutObject* placeholderRenderer = placeholder ? placeholder->renderer() : 0;
+    LayoutObject* placeholderRenderer = placeholder ? placeholder->layoutObject() : 0;
     if (!placeholderRenderer)
         return 0;
     if (relayoutChildren)

@@ -68,12 +68,12 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name, const Atomic
             newSpan = 1;
         }
         m_span = newSpan;
-        if (renderer() && renderer()->isLayoutTableCol())
-            renderer()->updateFromElement();
+        if (layoutObject() && layoutObject()->isLayoutTableCol())
+            layoutObject()->updateFromElement();
     } else if (name == widthAttr) {
         if (!value.isEmpty()) {
-            if (renderer() && renderer()->isLayoutTableCol()) {
-                LayoutTableCol* col = toLayoutTableCol(renderer());
+            if (layoutObject() && layoutObject()->isLayoutTableCol()) {
+                LayoutTableCol* col = toLayoutTableCol(layoutObject());
                 int newWidth = width().toInt();
                 if (newWidth != col->size().width())
                     col->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();

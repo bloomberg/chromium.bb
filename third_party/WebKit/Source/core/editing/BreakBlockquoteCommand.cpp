@@ -153,7 +153,7 @@ void BreakBlockquoteCommand::doApply()
             while (listChildNode && !isHTMLLIElement(*listChildNode))
                 listChildNode = listChildNode->nextSibling();
             if (isListItem(listChildNode))
-                setNodeAttribute(clonedChild, startAttr, AtomicString::number(toLayoutListItem(listChildNode->renderer())->value()));
+                setNodeAttribute(clonedChild, startAttr, AtomicString::number(toLayoutListItem(listChildNode->layoutObject())->value()));
         }
 
         appendNode(clonedChild.get(), clonedAncestor.get());

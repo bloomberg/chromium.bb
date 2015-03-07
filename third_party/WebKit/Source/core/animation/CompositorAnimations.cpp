@@ -257,7 +257,7 @@ void CompositorAnimations::cancelIncompatibleAnimationsOnCompositor(const Elemen
 
 bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
 {
-    return element.renderer() && element.renderer()->compositingState() == PaintsIntoOwnBacking;
+    return element.layoutObject() && element.layoutObject()->compositingState() == PaintsIntoOwnBacking;
 }
 
 bool CompositorAnimations::startAnimationOnCompositor(const Element& element, int group, double startTime, double timeOffset, const Timing& timing, const AnimationPlayer* player, const AnimationEffect& effect, Vector<int>& startedAnimationIds, double playerPlaybackRate)
@@ -268,7 +268,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, in
 
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
-    Layer* layer = toLayoutBoxModelObject(element.renderer())->layer();
+    Layer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
     ASSERT(layer);
 
     Vector<OwnPtr<WebCompositorAnimation>> animations;
@@ -299,7 +299,7 @@ void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, i
         // compositing update.
         return;
     }
-    toLayoutBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
+    toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
 }
 
 void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& element, int id, double pauseTime)
@@ -312,7 +312,7 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
         ASSERT_NOT_REACHED();
         return;
     }
-    toLayoutBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
+    toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
 }
 
 // -----------------------------------------------------------------------

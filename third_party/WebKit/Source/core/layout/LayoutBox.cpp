@@ -91,7 +91,7 @@ static bool skipBodyBackground(const LayoutBox* bodyElementRenderer)
     ASSERT(bodyElementRenderer->isBody());
     // The <body> only paints its background if the root element has defined a background independent of the body,
     // or if the <body>'s parent is not the document element's renderer (e.g. inside SVG foreignObject).
-    LayoutObject* documentElementRenderer = bodyElementRenderer->document().documentElement()->renderer();
+    LayoutObject* documentElementRenderer = bodyElementRenderer->document().documentElement()->layoutObject();
     return documentElementRenderer
         && !documentElementRenderer->hasBackground()
         && (documentElementRenderer == bodyElementRenderer->parent());
@@ -496,7 +496,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
         if (FrameView* frameView = this->frameView()) {
             HTMLFrameOwnerElement* ownerElement = document().ownerElement();
 
-            if (ownerElement && ownerElement->renderer()) {
+            if (ownerElement && ownerElement->layoutObject()) {
                 HTMLFrameElementBase* frameElementBase = isHTMLFrameElementBase(*ownerElement) ? toHTMLFrameElementBase(ownerElement) : 0;
                 if (frameElementAndViewPermitScroll(frameElementBase, frameView)) {
                     LayoutRect viewRect(frameView->visibleContentRect());
@@ -510,7 +510,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
 
                     frameView->setScrollPosition(DoublePoint(xOffset, yOffset));
                     if (frameView->safeToPropagateScrollToParent()) {
-                        parentBox = ownerElement->renderer()->enclosingBox();
+                        parentBox = ownerElement->layoutObject()->enclosingBox();
                         // FIXME: This doesn't correctly convert the rect to
                         // absolute coordinates in the parent.
                         newRect.setX(rect.x() - frameView->scrollX() + frameView->x());
@@ -827,7 +827,7 @@ LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* renderer)
 {
     while (renderer && !(renderer->isBox() && toLayoutBox(renderer)->canAutoscroll())) {
         if (!renderer->parent() && renderer->node() == renderer->document() && renderer->document().ownerElement())
-            renderer = renderer->document().ownerElement()->renderer();
+            renderer = renderer->document().ownerElement()->layoutObject();
         else
             renderer = renderer->parent();
     }
@@ -1381,8 +1381,8 @@ bool LayoutBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
     // A background of the body or document must extend to the total visible size of the document. This means the union of the
     // view and document bounds, since it can be the case that the view is larger than the document and vice-versa.
     // http://dev.w3.org/csswg/css-backgrounds/#the-background
-    if (drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->renderer()->hasBackground()))) {
-        layerRenderers.append(document().documentElement()->renderer());
+    if (drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->layoutObject()->hasBackground()))) {
+        layerRenderers.append(document().documentElement()->layoutObject());
         layerRenderers.append(view());
         if (view()->frameView())
             view()->frameView()->setNeedsFullPaintInvalidation();
@@ -2353,7 +2353,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
     // height since we don't set a height in LayoutView when we're printing. So without this quirk, the
     // height has nothing to be a percentage of, and it ends up being 0. That is bad.
     bool paginatedContentNeedsBaseHeight = document().printing() && h.isPercent()
-        && (isDocumentElement() || (isBody() && document().documentElement()->renderer()->style()->logicalHeight().isPercent())) && !isInline();
+        && (isDocumentElement() || (isBody() && document().documentElement()->layoutObject()->style()->logicalHeight().isPercent())) && !isInline();
     if (stretchesToViewport() || paginatedContentNeedsBaseHeight) {
         LayoutUnit margins = collapsedMarginBefore() + collapsedMarginAfter();
         LayoutUnit visibleHeight = view()->viewLogicalHeightForPercentages();

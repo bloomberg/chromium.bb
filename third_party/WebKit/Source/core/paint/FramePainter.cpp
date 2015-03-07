@@ -127,17 +127,17 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     m_frameView.setIsPainting(true);
 
     // m_frameView.nodeToDraw() is used to draw only one element (and its descendants)
-    LayoutObject* renderer = m_frameView.nodeToDraw() ? m_frameView.nodeToDraw()->renderer() : 0;
+    LayoutObject* renderer = m_frameView.nodeToDraw() ? m_frameView.nodeToDraw()->layoutObject() : 0;
     Layer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
     layoutView->assertSubtreeIsLaidOut();
-    LayoutObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->renderer());
+    LayoutObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->layoutObject());
 #endif
 
     LayerPainter layerPainter(*rootLayer);
 
-    float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->renderer()->frame());
+    float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);
 
     layerPainter.paint(context, LayoutRect(rect), m_frameView.paintBehavior(), renderer);

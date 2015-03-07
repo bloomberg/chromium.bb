@@ -396,7 +396,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
         }
     }
 
-    LayoutSlider* slider = toLayoutSlider(renderer());
+    LayoutSlider* slider = toLayoutSlider(layoutObject());
     if (slider && slider->inDragMode())
         mediaControls().updateCurrentTimeDisplay();
 }
@@ -698,9 +698,9 @@ void MediaControlTextTrackContainerElement::updateSizes()
 
     IntRect videoBox;
 
-    if (!mediaElement().renderer() || !mediaElement().renderer()->isVideo())
+    if (!mediaElement().layoutObject() || !mediaElement().layoutObject()->isVideo())
         return;
-    videoBox = toLayoutVideo(mediaElement().renderer())->videoBox();
+    videoBox = toLayoutVideo(mediaElement().layoutObject())->videoBox();
 
     if (m_videoDisplaySize == videoBox)
         return;

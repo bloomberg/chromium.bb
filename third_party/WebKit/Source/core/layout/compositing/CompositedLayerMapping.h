@@ -222,7 +222,7 @@ private:
     PassOwnPtr<GraphicsLayer> createGraphicsLayer(CompositingReasons);
     bool toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&, bool needsLayer, CompositingReasons);
 
-    LayoutBoxModelObject* renderer() const { return m_owningLayer.renderer(); }
+    LayoutBoxModelObject* layoutObject() const { return m_owningLayer.layoutObject(); }
     LayerCompositor* compositor() const { return m_owningLayer.compositor(); }
 
     void updateInternalHierarchy();

@@ -98,7 +98,7 @@ protected:
         Layer* compositingLayer = rb->enclosingLayer()->enclosingLayerForPaintInvalidation();
         if (!compositingLayer)
             return nullptr;
-        return compositingLayer->renderer();
+        return compositingLayer->layoutObject();
     }
 
     static const LayoutBoxModelObject* getFrameRenderContainer(const char* frameId, WebView* webView, const WTF::AtomicString &elementId)
@@ -109,7 +109,7 @@ protected:
         Layer* compositingLayer = rb->enclosingLayer()->enclosingLayerForPaintInvalidation();
         if (!compositingLayer)
             return nullptr;
-        return compositingLayer->renderer();
+        return compositingLayer->layoutObject();
     }
 
     static const FloatRect rectFromQuad(const FloatQuad& quad)

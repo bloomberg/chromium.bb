@@ -150,7 +150,7 @@ static const Element* topLayerAncestor(const Element* element)
 // they occur higher in the stacking order.
 void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& frameRect, Vector<IntRect>& occlusions)
 {
-    LayoutObject* pluginNode = element->renderer();
+    LayoutObject* pluginNode = element->layoutObject();
     ASSERT(pluginNode);
     if (!pluginNode->style())
         return;
@@ -175,10 +175,10 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
         // for this FrameView, if we can't just move on to the next object.
         // FIXME: Plugin occlusion by remote frames is probably broken.
         HTMLElement* element = frameView->frame().deprecatedLocalOwner();
-        if (!element || !element->renderer())
+        if (!element || !element->layoutObject())
             continue;
 
-        LayoutObject* iframeRenderer = element->renderer();
+        LayoutObject* iframeRenderer = element->layoutObject();
 
         if (isHTMLIFrameElement(*element) && intersectsRect(iframeRenderer, frameRect)) {
             getObjectStack(iframeRenderer, &iframeZstack);
@@ -197,7 +197,7 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
     const WillBeHeapVector<RefPtrWillBeMember<Element> >& elements = document->topLayerElements();
     size_t start = ancestor ? elements.find(ancestor) + 1 : 0;
     for (size_t i = start; i < elements.size(); ++i)
-        addTreeToOcclusions(elements[i]->renderer(), frameRect, occlusions);
+        addTreeToOcclusions(elements[i]->layoutObject(), frameRect, occlusions);
 }
 
 } // namespace blink

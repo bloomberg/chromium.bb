@@ -138,13 +138,13 @@ bool SVGFilterPrimitiveStandardAttributes::layoutObjectIsNeeded(const LayoutStyl
 
 void SVGFilterPrimitiveStandardAttributes::invalidate()
 {
-    if (LayoutObject* primitiveRenderer = renderer())
+    if (LayoutObject* primitiveRenderer = layoutObject())
         markForLayoutAndParentResourceInvalidation(primitiveRenderer);
 }
 
 void SVGFilterPrimitiveStandardAttributes::primitiveAttributeChanged(const QualifiedName& attribute)
 {
-    if (LayoutObject* primitiveRenderer = renderer())
+    if (LayoutObject* primitiveRenderer = layoutObject())
         static_cast<LayoutSVGResourceFilterPrimitive*>(primitiveRenderer)->primitiveAttributeChanged(attribute);
 }
 
@@ -158,7 +158,7 @@ void invalidateFilterPrimitiveParent(SVGElement* element)
     if (!parent)
         return;
 
-    LayoutObject* renderer = parent->renderer();
+    LayoutObject* renderer = parent->layoutObject();
     if (!renderer || !renderer->isSVGResourceFilterPrimitive())
         return;
 

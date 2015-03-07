@@ -1327,7 +1327,7 @@ String AXNodeObject::textUnderElement(TextUnderElementMode mode) const
         // so we should return "HelloWorld", but given <div>Hello</div><div>World</div> the
         // strings are in separate boxes so we should return "Hello World".
         if (previous && builder.length() && !isHTMLSpace(builder[builder.length() - 1])) {
-            if (!isSameLayoutBox(child->renderer(), previous->renderer()))
+            if (!isSameLayoutBox(child->layoutObject(), previous->layoutObject()))
                 builder.append(' ');
         }
 
@@ -1627,7 +1627,7 @@ void AXNodeObject::addChildren()
     m_haveChildren = true;
 
     // The only time we add children from the DOM tree to a node with a layoutObject is when it's a canvas.
-    if (renderer() && !isHTMLCanvasElement(*m_node))
+    if (layoutObject() && !isHTMLCanvasElement(*m_node))
         return;
 
     for (Node* child = m_node->firstChild(); child; child = child->nextSibling())
@@ -1746,7 +1746,7 @@ Element* AXNodeObject::anchorElement() const
     // search up the DOM tree for an anchor element
     // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
     for ( ; node; node = node->parentNode()) {
-        if (isHTMLAnchorElement(*node) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
+        if (isHTMLAnchorElement(*node) || (node->layoutObject() && cache->getOrCreate(node->layoutObject())->isAnchor()))
             return toElement(node);
     }
 
@@ -1777,7 +1777,7 @@ AXObject* AXNodeObject::correspondingControlForLabelElement() const
 
     // Make sure the corresponding control isn't a descendant of this label
     // that's in the middle of being destroyed.
-    if (correspondingControl->renderer() && !correspondingControl->renderer()->parent())
+    if (correspondingControl->layoutObject() && !correspondingControl->layoutObject()->parent())
         return 0;
 
     return axObjectCache()->getOrCreate(correspondingControl);
@@ -1839,7 +1839,7 @@ void AXNodeObject::decrement()
 void AXNodeObject::childrenChanged()
 {
     // This method is meant as a quick way of marking a portion of the accessibility tree dirty.
-    if (!node() && !renderer())
+    if (!node() && !layoutObject())
         return;
 
     axObjectCache()->postNotification(this, document(), AXObjectCacheImpl::AXChildrenChanged, true);

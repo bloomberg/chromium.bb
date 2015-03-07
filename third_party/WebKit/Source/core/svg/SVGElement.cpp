@@ -418,7 +418,7 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
     TemporaryChange<bool> inRelativeLengthClientsInvalidationChange(m_inRelativeLengthClientsInvalidation, true);
 #endif
 
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (renderer && selfHasRelativeLengths()) {
         if (renderer->isSVGResourceContainer())
             toLayoutSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
@@ -879,7 +879,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     if (isIdAttributeName(attrName)) {
-        LayoutObject* object = renderer();
+        LayoutObject* object = layoutObject();
         // Notify resources about id changes, this is important as we cache resources by id in SVGDocumentExtensions
         if (object && object->isSVGResourceContainer())
             toLayoutSVGResourceContainer(object)->idChanged();
@@ -918,7 +918,7 @@ PassRefPtr<LayoutStyle> SVGElement::customStyleForRenderer()
 
     LayoutStyle* style = 0;
     if (Element* parent = parentOrShadowHostElement()) {
-        if (LayoutObject* renderer = parent->renderer())
+        if (LayoutObject* renderer = parent->layoutObject())
             style = renderer->style();
     }
 
@@ -950,7 +950,7 @@ LayoutStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
 
     LayoutStyle* parentStyle = 0;
     if (Element* parent = parentOrShadowHostElement()) {
-        if (LayoutObject* renderer = parent->renderer())
+        if (LayoutObject* renderer = parent->layoutObject())
             parentStyle = renderer->style();
     }
 

@@ -143,7 +143,7 @@ void SVGImage::setContainerSize(const IntSize& size)
     FrameView* view = frameView();
     view->resize(this->containerSize());
 
-    LayoutSVGRoot* renderer = toLayoutSVGRoot(rootElement->renderer());
+    LayoutSVGRoot* renderer = toLayoutSVGRoot(rootElement->layoutObject());
     if (!renderer)
         return;
     renderer->setContainerSize(size);
@@ -155,7 +155,7 @@ IntSize SVGImage::containerSize() const
     if (!rootElement)
         return IntSize();
 
-    LayoutSVGRoot* renderer = toLayoutSVGRoot(rootElement->renderer());
+    LayoutSVGRoot* renderer = toLayoutSVGRoot(rootElement->layoutObject());
     if (!renderer)
         return IntSize();
 
@@ -331,7 +331,7 @@ LayoutBox* SVGImage::embeddedContentBox() const
     SVGSVGElement* rootElement = svgRootElement(m_page.get());
     if (!rootElement)
         return 0;
-    return toLayoutBox(rootElement->renderer());
+    return toLayoutBox(rootElement->layoutObject());
 }
 
 FrameView* SVGImage::frameView() const

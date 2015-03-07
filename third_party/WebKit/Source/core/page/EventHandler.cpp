@@ -335,7 +335,7 @@ static void setSelectionIfNeeded(FrameSelection& selection, const VisibleSelecti
 
 static inline bool dispatchSelectStart(Node* node)
 {
-    if (!node || !node->renderer())
+    if (!node || !node->layoutObject())
         return true;
 
     return node->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart));
@@ -379,8 +379,8 @@ void EventHandler::selectClosestWordFromHitTestResult(const HitTestResult& resul
     Node* innerNode = result.innerNode();
     VisibleSelection newSelection;
 
-    if (innerNode && innerNode->renderer()) {
-        VisiblePosition pos(innerNode->renderer()->positionForPoint(result.localPoint()));
+    if (innerNode && innerNode->layoutObject()) {
+        VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
         if (pos.isNotNull()) {
             newSelection = VisibleSelection(pos);
             newSelection.expandUsingGranularity(WordGranularity);
@@ -398,8 +398,8 @@ void EventHandler::selectClosestMisspellingFromHitTestResult(const HitTestResult
     Node* innerNode = result.innerNode();
     VisibleSelection newSelection;
 
-    if (innerNode && innerNode->renderer()) {
-        VisiblePosition pos(innerNode->renderer()->positionForPoint(result.localPoint()));
+    if (innerNode && innerNode->layoutObject()) {
+        VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
         Position start = pos.deepEquivalent();
         Position end = pos.deepEquivalent();
         if (pos.isNotNull()) {
@@ -441,10 +441,10 @@ void EventHandler::selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHit
 
     Node* innerNode = result.innerNode();
 
-    if (innerNode && innerNode->renderer() && m_mouseDownMayStartSelect) {
+    if (innerNode && innerNode->layoutObject() && m_mouseDownMayStartSelect) {
         VisibleSelection newSelection;
         Element* URLElement = result.hitTestResult().URLElement();
-        VisiblePosition pos(innerNode->renderer()->positionForPoint(result.localPoint()));
+        VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
         if (pos.isNotNull() && pos.deepEquivalent().deprecatedNode()->isDescendantOf(URLElement))
             newSelection = VisibleSelection::selectionFromContentsOfNode(URLElement);
 
@@ -480,11 +480,11 @@ bool EventHandler::handleMousePressEventTripleClick(const MouseEventWithHitTestR
         return false;
 
     Node* innerNode = event.innerNode();
-    if (!(innerNode && innerNode->renderer() && m_mouseDownMayStartSelect))
+    if (!(innerNode && innerNode->layoutObject() && m_mouseDownMayStartSelect))
         return false;
 
     VisibleSelection newSelection;
-    VisiblePosition pos(innerNode->renderer()->positionForPoint(event.localPoint()));
+    VisiblePosition pos(innerNode->layoutObject()->positionForPoint(event.localPoint()));
     if (pos.isNotNull()) {
         newSelection = VisibleSelection(pos);
         newSelection.expandUsingGranularity(ParagraphGranularity);
@@ -505,7 +505,7 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
     Node* innerNode = event.innerNode();
-    if (!(innerNode && innerNode->renderer() && m_mouseDownMayStartSelect))
+    if (!(innerNode && innerNode->layoutObject() && m_mouseDownMayStartSelect))
         return false;
 
     // Extend the selection if the Shift key is down, unless the click is in a link.
@@ -521,7 +521,7 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
         }
     }
 
-    VisiblePosition visiblePos(innerNode->renderer()->positionForPoint(event.localPoint()));
+    VisiblePosition visiblePos(innerNode->layoutObject()->positionForPoint(event.localPoint()));
     if (visiblePos.isNull())
         visiblePos = VisiblePosition(firstPositionInOrBeforeNode(innerNode), DOWNSTREAM);
     Position pos = visiblePos.deepEquivalent();
@@ -569,7 +569,7 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
 
 static inline bool canMouseDownStartSelect(Node* node)
 {
-    if (!node || !node->renderer())
+    if (!node || !node->layoutObject())
         return true;
 
     if (!node->canStartSelection())
@@ -672,13 +672,13 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
     if (!targetNode)
         return false;
 
-    LayoutObject* renderer = targetNode->renderer();
+    LayoutObject* renderer = targetNode->layoutObject();
     if (!renderer) {
         Node* parent = NodeRenderingTraversal::parent(*targetNode);
         if (!parent)
             return false;
 
-        renderer = parent->renderer();
+        renderer = parent->layoutObject();
         if (!renderer || !renderer->isListBox())
             return false;
     }
@@ -739,9 +739,9 @@ void EventHandler::updateSelectionForMouseDrag(const HitTestResult& hitTestResul
     // Special case to limit selection to the containing block for SVG text.
     // FIXME: Isn't there a better non-SVG-specific way to do this?
     if (Node* selectionBaseNode = newSelection.base().deprecatedNode())
-        if (LayoutObject* selectionBaseRenderer = selectionBaseNode->renderer())
+        if (LayoutObject* selectionBaseRenderer = selectionBaseNode->layoutObject())
             if (selectionBaseRenderer->isSVGText())
-                if (target->renderer()->containingBlock() != selectionBaseRenderer->containingBlock())
+                if (target->layoutObject()->containingBlock() != selectionBaseRenderer->containingBlock())
                     return;
 
     if (m_selectionInitiationState == HaveNotStartedSelection && !dispatchSelectStart(target))
@@ -760,13 +760,13 @@ void EventHandler::updateSelectionForMouseDrag(const HitTestResult& hitTestResul
             newSelection.setExtent(positionAfterNode(rootUserSelectAllForMousePressNode).downstream(CanCrossEditingBoundary));
         } else {
             // Reset base for user select all when base is inside user-select-all area and extent < base.
-            if (rootUserSelectAllForMousePressNode && comparePositions(target->renderer()->positionForPoint(hitTestResult.localPoint()), m_mousePressNode->renderer()->positionForPoint(m_dragStartPos)) < 0)
+            if (rootUserSelectAllForMousePressNode && comparePositions(target->layoutObject()->positionForPoint(hitTestResult.localPoint()), m_mousePressNode->layoutObject()->positionForPoint(m_dragStartPos)) < 0)
                 newSelection.setBase(positionAfterNode(rootUserSelectAllForMousePressNode).downstream(CanCrossEditingBoundary));
 
             Node* rootUserSelectAllForTarget = Position::rootUserSelectAllForNode(target);
-            if (rootUserSelectAllForTarget && m_mousePressNode->renderer() && comparePositions(target->renderer()->positionForPoint(hitTestResult.localPoint()), m_mousePressNode->renderer()->positionForPoint(m_dragStartPos)) < 0)
+            if (rootUserSelectAllForTarget && m_mousePressNode->layoutObject() && comparePositions(target->layoutObject()->positionForPoint(hitTestResult.localPoint()), m_mousePressNode->layoutObject()->positionForPoint(m_dragStartPos)) < 0)
                 newSelection.setExtent(positionBeforeNode(rootUserSelectAllForTarget).upstream(CanCrossEditingBoundary));
-            else if (rootUserSelectAllForTarget && m_mousePressNode->renderer())
+            else if (rootUserSelectAllForTarget && m_mousePressNode->layoutObject())
                 newSelection.setExtent(positionAfterNode(rootUserSelectAllForTarget).downstream(CanCrossEditingBoundary));
             else
                 newSelection.setExtent(targetPosition);
@@ -809,8 +809,8 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
         VisibleSelection newSelection;
         Node* node = event.innerNode();
         bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
-        if (node && node->renderer() && (caretBrowsing || node->hasEditableStyle())) {
-            VisiblePosition pos = VisiblePosition(node->renderer()->positionForPoint(event.localPoint()));
+        if (node && node->layoutObject() && (caretBrowsing || node->hasEditableStyle())) {
+            VisiblePosition pos = VisiblePosition(node->layoutObject()->positionForPoint(event.localPoint()));
             newSelection = VisibleSelection(pos);
         }
 
@@ -917,11 +917,11 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
     if (!node)
         node = m_mousePressNode.get();
 
-    if (!node || !node->renderer())
+    if (!node || !node->layoutObject())
         return false;
 
     bool rootLayerScrolls = m_frame->settings() && m_frame->settings()->rootLayerScrolls();
-    LayoutBox* curBox = node->renderer()->enclosingBox();
+    LayoutBox* curBox = node->layoutObject()->enclosingBox();
     while (curBox && (rootLayerScrolls || !curBox->isLayoutView())) {
         ScrollDirection physicalDirection = toPhysicalDirection(
             direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
@@ -972,7 +972,7 @@ static LocalFrame* subframeForTargetNode(Node* node)
     if (!node)
         return nullptr;
 
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (!renderer || !renderer->isLayoutPart())
         return nullptr;
 
@@ -1054,7 +1054,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
     if (!node)
         return selectAutoCursor(result, node, iBeamCursor());
 
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     LayoutStyle* style = renderer ? renderer->style() : nullptr;
 
     if (renderer) {
@@ -1188,7 +1188,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
         return handCursor();
 
     bool inResizer = false;
-    LayoutObject* renderer = node ? node->renderer() : nullptr;
+    LayoutObject* renderer = node ? node->layoutObject() : nullptr;
     if (renderer && m_frame->view()) {
         Layer* layer = renderer->enclosingLayer();
         inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
@@ -1285,7 +1285,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_clickNode = mev.innerNode()->isTextNode() ?  NodeRenderingTraversal::parent(*mev.innerNode()) : mev.innerNode();
 
     if (FrameView* view = m_frame->view()) {
-        Layer* layer = mev.innerNode()->renderer() ? mev.innerNode()->renderer()->enclosingLayer() : nullptr;
+        Layer* layer = mev.innerNode()->layoutObject() ? mev.innerNode()->layoutObject()->enclosingLayer() : nullptr;
         IntPoint p = view->windowToContents(mouseEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
             m_resizeScrollableArea = layer->scrollableArea();
@@ -1336,7 +1336,7 @@ static Layer* layerForNode(Node* node)
     if (!node)
         return nullptr;
 
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (!renderer)
         return nullptr;
 
@@ -2013,7 +2013,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 
     if (node) {
         // Figure out which view to send the event to.
-        LayoutObject* target = node->renderer();
+        LayoutObject* target = node->layoutObject();
 
         if (isOverWidget && target && target->isLayoutPart()) {
             Widget* widget = toLayoutPart(target)->widget();
@@ -2404,7 +2404,7 @@ bool EventHandler::handleGestureLongTap(const GestureEventWithHitTestResults& ta
 
 bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const PlatformGestureEvent& gestureEvent) {
     if (gestureEvent.type() == PlatformEvent::GestureScrollBegin) {
-        Layer* layer = eventTarget->renderer() ? eventTarget->renderer()->enclosingLayer() : nullptr;
+        Layer* layer = eventTarget->layoutObject() ? eventTarget->layoutObject()->enclosingLayer() : nullptr;
         IntPoint p = m_frame->view()->windowToContents(gestureEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
             m_resizeScrollableArea = layer->scrollableArea();
@@ -2451,7 +2451,7 @@ bool EventHandler::handleGestureScrollEnd(const PlatformGestureEvent& gestureEve
     clearGestureScrollNodes();
 
     if (node)
-        passScrollGestureEventToWidget(gestureEvent, node->renderer());
+        passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
 
     return false;
 }
@@ -2468,13 +2468,13 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
 
     // If there's no renderer on the node, send the event to the nearest ancestor with a renderer.
     // Needed for <option> and <optgroup> elements so we can touch scroll <select>s
-    while (m_scrollGestureHandlingNode && !m_scrollGestureHandlingNode->renderer())
+    while (m_scrollGestureHandlingNode && !m_scrollGestureHandlingNode->layoutObject())
         m_scrollGestureHandlingNode = m_scrollGestureHandlingNode->parentOrShadowHostNode();
 
     if (!m_scrollGestureHandlingNode)
         return false;
 
-    passScrollGestureEventToWidget(gestureEvent, m_scrollGestureHandlingNode->renderer());
+    passScrollGestureEventToWidget(gestureEvent, m_scrollGestureHandlingNode->layoutObject());
 
     if (m_frame->isMainFrame())
         m_frame->host()->topControls().scrollBegin();
@@ -2499,7 +2499,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     Node* node = m_scrollGestureHandlingNode.get();
     if (node) {
-        LayoutObject* renderer = node->renderer();
+        LayoutObject* renderer = node->layoutObject();
         if (!renderer)
             return false;
 
@@ -3317,7 +3317,7 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     // Check to see if this a DOM based drag, if it is get the DOM specified drag
     // image and offset
     if (dragState().m_dragType == DragSourceActionDHTML) {
-        if (LayoutObject* renderer = dragState().m_dragSrc->renderer()) {
+        if (LayoutObject* renderer = dragState().m_dragSrc->layoutObject()) {
             FloatPoint absPos = renderer->localToAbsolute(FloatPoint(), UseTransforms);
             IntSize delta = m_mouseDownPos - roundedIntPoint(absPos);
             dragState().m_dragDataTransfer->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
@@ -3484,7 +3484,7 @@ void EventHandler::defaultEscapeEventHandler(KeyboardEvent* event)
 void EventHandler::capsLockStateMayHaveChanged()
 {
     if (Element* element = m_frame->document()->focusedElement()) {
-        if (LayoutObject* r = element->renderer()) {
+        if (LayoutObject* r = element->layoutObject()) {
             if (r->isTextField())
                 toLayoutTextControlSingleLine(r)->capsLockStateMayHaveChanged();
         }
@@ -3824,7 +3824,7 @@ TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
     // and exclude any prohibited actions.
     TouchAction effectiveTouchAction = TouchActionAuto;
     for (const Node* curNode = &node; curNode; curNode = NodeRenderingTraversal::parent(*curNode)) {
-        if (LayoutObject* renderer = curNode->renderer()) {
+        if (LayoutObject* renderer = curNode->layoutObject()) {
             if (renderer->supportsTouchAction()) {
                 TouchAction action = renderer->style()->touchAction();
                 effectiveTouchAction = intersectTouchAction(action, effectiveTouchAction);
@@ -3856,7 +3856,7 @@ bool EventHandler::passMousePressEventToSubframe(MouseEventWithHitTestResults& m
     IntPoint p = m_frame->view()->windowToContents(mev.event().position());
     if (m_frame->selection().contains(p)) {
         VisiblePosition visiblePos(
-            mev.innerNode()->renderer()->positionForPoint(mev.localPoint()));
+            mev.innerNode()->layoutObject()->positionForPoint(mev.localPoint()));
         VisibleSelection newSelection(visiblePos);
         m_frame->selection().setSelection(newSelection);
     }

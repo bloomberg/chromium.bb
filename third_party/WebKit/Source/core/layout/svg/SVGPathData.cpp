@@ -51,10 +51,10 @@ static void updatePathFromCircleElement(SVGElement* element, Path& path)
 static void updatePathFromEllipseElement(SVGElement* element, Path& path)
 {
     SVGEllipseElement* ellipse = toSVGEllipseElement(element);
-    ASSERT(ellipse->renderer());
+    ASSERT(ellipse->layoutObject());
 
     SVGLengthContext lengthContext(element);
-    const LayoutStyle& style = ellipse->renderer()->styleRef();
+    const LayoutStyle& style = ellipse->layoutObject()->styleRef();
     float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, SVGLengthMode::Width);
     if (rx < 0)
         return;
@@ -106,7 +106,7 @@ static void updatePathFromPolygonElement(SVGElement* element, Path& path)
 static void updatePathFromRectElement(SVGElement* element, Path& path)
 {
     SVGRectElement* rect = toSVGRectElement(element);
-    ASSERT(rect->renderer());
+    ASSERT(rect->layoutObject());
 
     SVGLengthContext lengthContext(element);
     float width = rect->width()->currentValue()->value(lengthContext);
@@ -118,7 +118,7 @@ static void updatePathFromRectElement(SVGElement* element, Path& path)
     if (!width && !height)
         return;
 
-    const LayoutStyle& style = rect->renderer()->styleRef();
+    const LayoutStyle& style = rect->layoutObject()->styleRef();
     float x = lengthContext.valueForLength(style.svgStyle().x(), style, SVGLengthMode::Width);
     float y = lengthContext.valueForLength(style.svgStyle().y(), style, SVGLengthMode::Height);
     float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, SVGLengthMode::Width);

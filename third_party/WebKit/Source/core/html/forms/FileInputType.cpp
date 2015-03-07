@@ -303,8 +303,8 @@ void FileInputType::setFiles(FileList* files)
     input->notifyFormStateChanged();
     input->setNeedsValidityCheck();
 
-    if (input->renderer())
-        input->renderer()->setShouldDoFullPaintInvalidation();
+    if (input->layoutObject())
+        input->layoutObject()->setShouldDoFullPaintInvalidation();
 
     if (filesChanged) {
         // This call may cause destruction of this instance.

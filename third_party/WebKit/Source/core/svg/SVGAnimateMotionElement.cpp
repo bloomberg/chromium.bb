@@ -186,7 +186,7 @@ void SVGAnimateMotionElement::clearAnimatedType()
 
     transform->makeIdentity();
 
-    if (LayoutObject* targetRenderer = targetElement->renderer()) {
+    if (LayoutObject* targetRenderer = targetElement->layoutObject()) {
         targetRenderer->setNeedsTransformUpdate();
         markForLayoutAndParentResourceInvalidation(targetRenderer);
     }
@@ -228,7 +228,7 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned 
     if (!transform)
         return;
 
-    if (LayoutObject* targetRenderer = targetElement->renderer())
+    if (LayoutObject* targetRenderer = targetElement->layoutObject())
         targetRenderer->setNeedsTransformUpdate();
 
     if (!isAdditive())
@@ -281,7 +281,7 @@ void SVGAnimateMotionElement::applyResultsToTarget()
     if (!targetElement)
         return;
 
-    if (LayoutObject* renderer = targetElement->renderer())
+    if (LayoutObject* renderer = targetElement->layoutObject())
         markForLayoutAndParentResourceInvalidation(renderer);
 
     AffineTransform* t = targetElement->animateMotionTransform();
@@ -296,7 +296,7 @@ void SVGAnimateMotionElement::applyResultsToTarget()
         if (!transform)
             continue;
         transform->setMatrix(t->a(), t->b(), t->c(), t->d(), t->e(), t->f());
-        if (LayoutObject* renderer = shadowTreeElement->renderer()) {
+        if (LayoutObject* renderer = shadowTreeElement->layoutObject()) {
             renderer->setNeedsTransformUpdate();
             markForLayoutAndParentResourceInvalidation(renderer);
         }

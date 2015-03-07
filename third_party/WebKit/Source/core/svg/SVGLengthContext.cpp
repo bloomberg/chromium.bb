@@ -194,8 +194,8 @@ static inline LayoutStyle* layoutStyleForLengthResolving(const SVGElement* conte
 
     const ContainerNode* currentContext = context;
     do {
-        if (currentContext->renderer())
-            return currentContext->renderer()->style();
+        if (currentContext->layoutObject())
+            return currentContext->layoutObject()->style();
         currentContext = currentContext->parentNode();
     } while (currentContext);
 

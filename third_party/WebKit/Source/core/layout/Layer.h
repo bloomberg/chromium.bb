@@ -93,7 +93,7 @@ public:
 
     String debugName() const;
 
-    LayoutBoxModelObject* renderer() const { return m_renderer; }
+    LayoutBoxModelObject* layoutObject() const { return m_renderer; }
     LayoutBox* layoutBox() const { return m_renderer && m_renderer->isBox() ? toLayoutBox(m_renderer) : 0; }
     Layer* parent() const { return m_parent; }
     Layer* previousSibling() const { return m_previous; }
@@ -116,9 +116,9 @@ public:
 
     void setLayerType(LayerType layerType) { m_layerType = layerType; }
 
-    bool isTransparent() const { return renderer()->isTransparent() || renderer()->style()->hasBlendMode() || renderer()->hasMask(); }
+    bool isTransparent() const { return layoutObject()->isTransparent() || layoutObject()->style()->hasBlendMode() || layoutObject()->hasMask(); }
 
-    bool isReflection() const { return renderer()->isReplica(); }
+    bool isReflection() const { return layoutObject()->isReplica(); }
     LayerReflectionInfo* reflectionInfo() { return m_reflectionInfo.get(); }
     const LayerReflectionInfo* reflectionInfo() const { return m_reflectionInfo.get(); }
 
@@ -209,7 +209,7 @@ public:
     bool canUseConvertToLayerCoords() const
     {
         // These LayoutObjects have an impact on their layers without the renderers knowing about it.
-        return !renderer()->hasColumns() && !renderer()->hasTransformRelatedProperty() && !renderer()->isSVGRoot();
+        return !layoutObject()->hasColumns() && !layoutObject()->hasTransformRelatedProperty() && !layoutObject()->isSVGRoot();
     }
 
     void convertToLayerCoords(const Layer* ancestorLayer, LayoutPoint&) const;
@@ -238,7 +238,7 @@ public:
 
     // If true, this layer's children are included in its bounds for overlap testing.
     // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
-    bool overlapBoundsIncludeChildren() const { return hasFilter() && renderer()->style()->filter().hasFilterThatMovesPixels(); }
+    bool overlapBoundsIncludeChildren() const { return hasFilter() && layoutObject()->style()->filter().hasFilterThatMovesPixels(); }
 
     enum CalculateBoundsOptions {
         ApplyBoundsChickenEggHacks,
@@ -255,7 +255,7 @@ public:
     LayoutSize subpixelAccumulation() const;
     void setSubpixelAccumulation(const LayoutSize&);
 
-    bool hasTransformRelatedProperty() const { return renderer()->hasTransformRelatedProperty(); }
+    bool hasTransformRelatedProperty() const { return layoutObject()->hasTransformRelatedProperty(); }
     // Note that this transform has the transform-origin baked in.
     TransformationMatrix* transform() const { return m_transform.get(); }
     void setTransform(PassOwnPtr<TransformationMatrix> transform) { m_transform = transform; }
@@ -272,14 +272,14 @@ public:
     // Note that this transform has the perspective-origin baked in.
     TransformationMatrix perspectiveTransform() const;
     FloatPoint perspectiveOrigin() const;
-    bool preserves3D() const { return renderer()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
+    bool preserves3D() const { return layoutObject()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
     bool has3DTransform() const { return m_transform && !m_transform->isAffine(); }
 
     // FIXME: reflections should force transform-style to be flat in the style: https://bugs.webkit.org/show_bug.cgi?id=106959
-    bool shouldPreserve3D() const { return !renderer()->hasReflection() && renderer()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
+    bool shouldPreserve3D() const { return !layoutObject()->hasReflection() && layoutObject()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
 
     void filterNeedsPaintInvalidation();
-    bool hasFilter() const { return renderer()->hasFilter(); }
+    bool hasFilter() const { return layoutObject()->hasFilter(); }
 
     void* operator new(size_t);
     // Only safe to call from LayoutBoxModelObject::destroyLayer()
@@ -342,7 +342,7 @@ public:
     FilterEffectRenderer* filterRenderer() const
     {
         LayerFilterInfo* filterInfo = this->filterInfo();
-        return filterInfo ? filterInfo->renderer() : 0;
+        return filterInfo ? filterInfo->layoutObject() : 0;
     }
 
     LayerFilterInfo* filterInfo() const { return hasFilterInfo() ? LayerFilterInfo::filterInfoForLayer(this) : 0; }
@@ -380,7 +380,7 @@ public:
         // FIXME: This is not in sync with containingBlock.
         // LayoutObject::canContainFixedPositionedObject() should probably be used
         // instead.
-        LayoutBoxModelObject* layerRenderer = renderer();
+        LayoutBoxModelObject* layerRenderer = layoutObject();
         return isRootLayer() || layerRenderer->isPositioned() || hasTransformRelatedProperty();
     }
 
@@ -509,7 +509,7 @@ public:
         ShouldRespectOverflowClip = RespectOverflowClip, const LayoutPoint* offsetFromRoot = 0,
         const LayoutSize& subPixelAccumulation = LayoutSize(), const LayoutRect* layerBoundingBox = 0);
 
-    LayoutPoint layoutBoxLocation() const { return renderer()->isBox() ? toLayoutBox(renderer())->location() : LayoutPoint(); }
+    LayoutPoint layoutBoxLocation() const { return layoutObject()->isBox() ? toLayoutBox(layoutObject())->location() : LayoutPoint(); }
 
     enum TransparencyClipBoxBehavior {
         PaintingTransparencyClipBox,

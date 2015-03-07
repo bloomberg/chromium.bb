@@ -68,7 +68,7 @@ void SimplifyMarkupCommand::doApply()
             if (!currentNode)
                 break;
 
-            if (!currentNode->renderer() || !currentNode->renderer()->isLayoutInline() || toLayoutInline(currentNode->renderer())->alwaysCreateLineBoxes())
+            if (!currentNode->layoutObject() || !currentNode->layoutObject()->isLayoutInline() || toLayoutInline(currentNode->layoutObject())->alwaysCreateLineBoxes())
                 continue;
 
             if (currentNode->firstChild() != currentNode->lastChild()) {

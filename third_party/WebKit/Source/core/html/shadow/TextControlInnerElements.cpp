@@ -137,7 +137,7 @@ LayoutObject* TextControlInnerEditorElement::createLayoutObject(const LayoutStyl
 
 PassRefPtr<LayoutStyle> TextControlInnerEditorElement::customStyleForRenderer()
 {
-    LayoutObject* parentRenderer = shadowHost()->renderer();
+    LayoutObject* parentRenderer = shadowHost()->layoutObject();
     if (!parentRenderer || !parentRenderer->isTextControl())
         return originalStyleForRenderer();
     LayoutTextControl* textControlRenderer = toLayoutTextControl(parentRenderer);

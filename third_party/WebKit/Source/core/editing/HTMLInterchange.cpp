@@ -38,7 +38,7 @@ namespace blink {
 String convertHTMLTextToInterchangeFormat(const String& in, const Text& node)
 {
     // Assume all the text comes from node.
-    if (node.renderer() && node.renderer()->style()->preserveNewline())
+    if (node.layoutObject() && node.layoutObject()->style()->preserveNewline())
         return in;
 
     const char convertedSpaceString[] = "<span class=\"" AppleConvertedSpace "\">\xA0</span>";

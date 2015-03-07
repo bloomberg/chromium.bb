@@ -78,7 +78,7 @@ int SVGInlineTextBox::offsetForPosition(FloatWillBeLayoutUnit, bool) const
 
 int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragment, FloatWillBeLayoutUnit position, bool includePartialGlyphs) const
 {
-    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->layoutObject());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -108,7 +108,7 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::selectionRectForTextFragment(const S
 {
     ASSERT(startPosition < endPosition);
 
-    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->layoutObject());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -137,7 +137,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
     if (startPosition >= endPosition)
         return LayoutRect();
 
-    const LayoutStyle& style = renderer().styleRef();
+    const LayoutStyle& style = layoutObject().styleRef();
 
     AffineTransform fragmentTransform;
     FloatRectWillBeLayoutRect selectionRect;
@@ -172,7 +172,7 @@ void SVGInlineTextBox::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
 
 TextRun SVGInlineTextBox::constructTextRun(const LayoutStyle& style, const SVGTextFragment& fragment) const
 {
-    LayoutText* text = &renderer();
+    LayoutText* text = &layoutObject();
 
     // FIXME(crbug.com/264211): This should not be necessary but can occur if we
     //                          layout during layout. Remove this when 264211 is fixed.
@@ -243,7 +243,7 @@ FloatRectWillBeLayoutRect SVGInlineTextBox::calculateBoundaries() const
 {
     FloatRectWillBeLayoutRect textRect;
 
-    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->renderer());
+    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(this->layoutObject());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -269,20 +269,20 @@ bool SVGInlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult&
     // FIXME: integrate with InlineTextBox::nodeAtPoint better.
     ASSERT(!isLineBreak());
 
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, request, renderer().style()->pointerEvents());
-    bool isVisible = renderer().style()->visibility() == VISIBLE;
+    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, request, layoutObject().style()->pointerEvents());
+    bool isVisible = layoutObject().style()->visibility() == VISIBLE;
     if (isVisible || !hitRules.requireVisible) {
         if (hitRules.canHitBoundingBox
-            || (hitRules.canHitStroke && (renderer().style()->svgStyle().hasStroke() || !hitRules.requireStroke))
-            || (hitRules.canHitFill && (renderer().style()->svgStyle().hasFill() || !hitRules.requireFill))) {
+            || (hitRules.canHitStroke && (layoutObject().style()->svgStyle().hasStroke() || !hitRules.requireStroke))
+            || (hitRules.canHitFill && (layoutObject().style()->svgStyle().hasFill() || !hitRules.requireFill))) {
             FloatPointWillBeLayoutPoint boxOrigin(x(), y());
             boxOrigin.moveBy(accumulatedOffset);
             FloatRectWillBeLayoutRect rect(boxOrigin, size());
             // FIXME: both calls to rawValue() below is temporary and should be removed once the transition
             // to LayoutUnit-based types is complete (crbug.com/321237)
             if (locationInContainer.intersects(rect.rawValue())) {
-                renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
-                if (!result.addNodeToListBasedTestResult(renderer().node(), request, locationInContainer, rect.rawValue()))
+                layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
+                if (!result.addNodeToListBasedTestResult(layoutObject().node(), request, locationInContainer, rect.rawValue()))
                     return true;
             }
         }

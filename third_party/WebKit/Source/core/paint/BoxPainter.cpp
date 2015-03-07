@@ -123,7 +123,7 @@ static bool skipBodyBackground(const LayoutBox* bodyElementRenderer)
     ASSERT(bodyElementRenderer->isBody());
     // The <body> only paints its background if the root element has defined a background independent of the body,
     // or if the <body>'s parent is not the document element's renderer (e.g. inside SVG foreignObject).
-    LayoutObject* documentElementRenderer = bodyElementRenderer->document().documentElement()->renderer();
+    LayoutObject* documentElementRenderer = bodyElementRenderer->document().documentElement()->layoutObject();
     return documentElementRenderer
         && !documentElementRenderer->hasBackground()
         && (documentElementRenderer == bodyElementRenderer->parent());

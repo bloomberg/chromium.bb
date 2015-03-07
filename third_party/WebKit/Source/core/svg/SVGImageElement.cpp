@@ -65,7 +65,7 @@ DEFINE_TRACE(SVGImageElement)
 
 bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const
 {
-    if (LayoutSVGImage* renderSVGImage = toLayoutSVGImage(renderer())) {
+    if (LayoutSVGImage* renderSVGImage = toLayoutSVGImage(layoutObject())) {
         if (renderSVGImage->imageResource()->hasImage()) {
             if (Image* image = renderSVGImage->imageResource()->cachedImage()->image())
                 return image->currentFrameHasSingleSecurityOrigin();
@@ -155,7 +155,7 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (!renderer)
         return;
 
@@ -195,7 +195,7 @@ void SVGImageElement::attach(const AttachContext& context)
 {
     SVGGraphicsElement::attach(context);
 
-    if (LayoutSVGImage* imageObj = toLayoutSVGImage(renderer())) {
+    if (LayoutSVGImage* imageObj = toLayoutSVGImage(layoutObject())) {
         if (imageObj->imageResource()->hasImage())
             return;
 

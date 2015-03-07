@@ -147,7 +147,7 @@ Node* SmartClip::minNodeContainsNodes(Node* minNode, Node* newNode)
     // the documentElement.
     Node* node = minNode;
     while (node) {
-        if (node->renderer()) {
+        if (node->layoutObject()) {
             IntRect nodeRect = node->pixelSnappedBoundingBox();
             if (nodeRect.contains(newNodeRect)) {
                 return node;
@@ -177,7 +177,7 @@ Node* SmartClip::findBestOverlappingNode(Node* rootNode, const IntRect& cropRect
             continue;
         }
 
-        LayoutObject* renderer = node->renderer();
+        LayoutObject* renderer = node->layoutObject();
         if (renderer && !nodeRect.isEmpty()) {
             if (renderer->isText()
                 || renderer->isLayoutImage()
@@ -211,7 +211,7 @@ bool SmartClip::shouldSkipBackgroundImage(Node* node)
     // image out of a CSS background, you're probably going to specify a height
     // or a width. On the other hand, if we've got a legit background image,
     // it's very likely the height or the width will be set to auto.
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (renderer && (renderer->style()->logicalHeight().isAuto() || renderer->style()->logicalWidth().isAuto()))
         return true;
 
@@ -252,7 +252,7 @@ String SmartClip::extractTextFromNode(Node* node)
             result.append(extractTextFromNode(nodeFromFrame));
 
         IntRect nodeRect = currentNode.pixelSnappedBoundingBox();
-        if (currentNode.renderer() && !nodeRect.isEmpty()) {
+        if (currentNode.layoutObject() && !nodeRect.isEmpty()) {
             if (currentNode.isTextNode()) {
                 String nodeValue = currentNode.nodeValue();
 

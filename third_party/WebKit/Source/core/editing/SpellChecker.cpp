@@ -876,12 +876,12 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
 static Node* findFirstMarkable(Node* node)
 {
     while (node) {
-        if (!node->renderer())
+        if (!node->layoutObject())
             return 0;
-        if (node->renderer()->isText())
+        if (node->layoutObject()->isText())
             return node;
-        if (node->renderer()->isTextControl())
-            node = toLayoutTextControl(node->renderer())->textFormControlElement()->visiblePositionForIndex(1).deepEquivalent().deprecatedNode();
+        if (node->layoutObject()->isTextControl())
+            node = toLayoutTextControl(node->layoutObject())->textFormControlElement()->visiblePositionForIndex(1).deepEquivalent().deprecatedNode();
         else if (node->hasChildren())
             node = node->firstChild();
         else

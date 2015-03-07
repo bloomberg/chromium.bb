@@ -27,7 +27,7 @@ FilterPainter::FilterPainter(Layer& renderLayer, GraphicsContext* context, const
     LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed)
     : m_filterInProgress(false)
     , m_context(context)
-    , m_renderer(renderLayer.renderer())
+    , m_renderer(renderLayer.layoutObject())
 {
     if (!renderLayer.filterRenderer() || !renderLayer.paintsWithFilters())
         return;
@@ -55,7 +55,7 @@ FilterPainter::FilterPainter(Layer& renderLayer, GraphicsContext* context, const
     paintingInfo.clipToDirtyRect = false;
 
     if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
-        m_clipRecorder = adoptPtr(new LayerClipRecorder(renderLayer.renderer(), context, DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
+        m_clipRecorder = adoptPtr(new LayerClipRecorder(renderLayer.layoutObject(), context, DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
     }
 
     ASSERT(m_renderer);

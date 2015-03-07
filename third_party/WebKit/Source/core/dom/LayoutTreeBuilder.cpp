@@ -49,15 +49,15 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, Layou
 {
     if (element.isFirstLetterPseudoElement()) {
         if (LayoutObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(element))
-            m_renderingParent = nextRenderer->parent();
+            m_layoutObjectParent = nextRenderer->parent();
     } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(element)) {
-        m_renderingParent = containerNode->renderer();
+        m_layoutObjectParent = containerNode->layoutObject();
     }
 }
 
 LayoutObject* LayoutTreeBuilderForElement::nextRenderer() const
 {
-    ASSERT(m_renderingParent);
+    ASSERT(m_layoutObjectParent);
 
     if (m_node->isInTopLayer())
         return NodeRenderingTraversal::nextInTopLayer(*m_node);
@@ -85,13 +85,13 @@ LayoutObject* LayoutTreeBuilderForElement::parentRenderer() const
 
 bool LayoutTreeBuilderForElement::shouldCreateRenderer() const
 {
-    if (!m_renderingParent)
+    if (!m_layoutObjectParent)
         return false;
 
     // FIXME: Should the following be in SVGElement::layoutObjectIsNeeded()?
     if (m_node->isSVGElement()) {
         // SVG elements only render when inside <svg>, or if the element is an <svg> itself.
-        if (!isSVGSVGElement(*m_node) && (!m_renderingParent->node() || !m_renderingParent->node()->isSVGElement()))
+        if (!isSVGSVGElement(*m_node) && (!m_layoutObjectParent->node() || !m_layoutObjectParent->node()->isSVGElement()))
             return false;
         if (!toSVGElement(m_node)->isValid())
             return false;
@@ -134,7 +134,7 @@ void LayoutTreeBuilderForElement::createLayoutObject()
 
     LayoutObject* nextRenderer = this->nextRenderer();
     m_node->setLayoutObject(newLayoutObject);
-    newLayoutObject->setStyle(&style); // setStyle() can depend on renderer() already being set.
+    newLayoutObject->setStyle(&style); // setStyle() can depend on layoutObject() already being set.
 
     if (Fullscreen::isActiveFullScreenElement(*m_node)) {
         newLayoutObject = LayoutFullScreen::wrapRenderer(newLayoutObject, parentRenderer, &m_node->document());
@@ -142,7 +142,7 @@ void LayoutTreeBuilderForElement::createLayoutObject()
             return;
     }
 
-    // Note: Adding newLayoutObject instead of renderer(). renderer() may be a child of newLayoutObject.
+    // Note: Adding newLayoutObject instead of layoutObject(). layoutObject() may be a child of newLayoutObject.
     parentRenderer->addChild(newLayoutObject, nextRenderer);
 }
 

@@ -798,8 +798,8 @@ void LayoutView::commitPendingSelection()
     // because we don't yet notify the FrameSelection of text removal.
     if (startPos.isNull() || endPos.isNull() || selection.visibleStart() == selection.visibleEnd())
         return;
-    LayoutObject* startRenderer = startPos.anchorNode()->renderer();
-    LayoutObject* endRenderer = endPos.anchorNode()->renderer();
+    LayoutObject* startRenderer = startPos.anchorNode()->layoutObject();
+    LayoutObject* endRenderer = endPos.anchorNode()->layoutObject();
     if (!startRenderer || !endRenderer)
         return;
     ASSERT(startRenderer->view() == this && endRenderer->view() == this);
@@ -858,7 +858,7 @@ bool LayoutView::rootBackgroundIsEntirelyFixed() const
 LayoutObject* LayoutView::backgroundRenderer() const
 {
     if (Element* documentElement = document().documentElement()) {
-        if (LayoutObject* rootObject = documentElement->renderer())
+        if (LayoutObject* rootObject = documentElement->layoutObject())
             return rootObject->rendererForRootBackground();
     }
     return 0;

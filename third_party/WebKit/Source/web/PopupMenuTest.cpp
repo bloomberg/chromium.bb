@@ -627,7 +627,7 @@ TEST_F(SelectPopupMenuStyleTest, PopupListBoxRTLRowWidth)
     registerMockedURLLoad("select_rtl_width.html");
     loadFrame(mainFrame(), "select_rtl_width.html");
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->focusedElement());
-    LayoutMenuList* menuList = toLayoutMenuList(select->renderer());
+    LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT(menuList);
     menuList->showPopup();
     ASSERT(popupOpen());

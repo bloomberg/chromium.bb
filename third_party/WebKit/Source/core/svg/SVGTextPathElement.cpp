@@ -112,7 +112,7 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
     if (attrName == SVGNames::startOffsetAttr)
         updateRelativeLengthsInformation();
 
-    if (LayoutObject* object = renderer())
+    if (LayoutObject* object = layoutObject())
         markForLayoutAndParentResourceInvalidation(object);
 }
 

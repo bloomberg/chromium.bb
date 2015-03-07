@@ -30,7 +30,7 @@ private:
     {
         RenderingTest::SetUp();
         setBodyInnerHTML("Hello world");
-        m_renderText = toLayoutText(document().body()->firstChild()->renderer());
+        m_renderText = toLayoutText(document().body()->firstChild()->layoutObject());
         ASSERT_TRUE(m_renderText);
         ASSERT_EQ("Hello world", m_renderText->text());
     }

@@ -61,7 +61,7 @@ bool InsertLineBreakCommand::shouldUseBreakElement(const Position& insertionPos)
     // the input element, and in that case we need to check the input element's
     // parent's renderer.
     Position p(insertionPos.parentAnchoredEquivalent());
-    return p.deprecatedNode()->renderer() && !p.deprecatedNode()->renderer()->style()->preserveNewline();
+    return p.deprecatedNode()->layoutObject() && !p.deprecatedNode()->layoutObject()->style()->preserveNewline();
 }
 
 void InsertLineBreakCommand::doApply()
@@ -127,7 +127,7 @@ void InsertLineBreakCommand::doApply()
             Position positionBeforeTextNode(positionInParentBeforeNode(*textNode));
             // Clear out all whitespace and insert one non-breaking space
             deleteInsignificantTextDownstream(endingPosition);
-            ASSERT(!textNode->renderer() || textNode->renderer()->style()->collapseWhiteSpace());
+            ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
             // Deleting insignificant whitespace will remove textNode if it contains nothing but insignificant whitespace.
             if (textNode->inDocument())
                 insertTextIntoNode(textNode, 0, nonBreakingSpaceString());

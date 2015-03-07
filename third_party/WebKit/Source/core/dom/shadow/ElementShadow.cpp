@@ -119,7 +119,7 @@ inline void DistributionPool::detachNonDistributedNodes()
     for (size_t i = 0; i < m_nodes.size(); ++i) {
         if (m_distributed[i])
             continue;
-        if (m_nodes[i]->renderer())
+        if (m_nodes[i]->layoutObject())
             m_nodes[i]->lazyReattachIfAttached();
     }
 }

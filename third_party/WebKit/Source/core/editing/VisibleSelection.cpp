@@ -744,22 +744,22 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
 
 VisiblePosition VisibleSelection::visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
 {
-    if (!targetNode->renderer())
+    if (!targetNode->layoutObject())
         return VisiblePosition();
 
     LayoutPoint selectionEndPoint = localPoint;
     Element* editableElement = rootEditableElement();
 
     if (editableElement && !editableElement->contains(targetNode)) {
-        if (!editableElement->renderer())
+        if (!editableElement->layoutObject())
             return VisiblePosition();
 
-        FloatPoint absolutePoint = targetNode->renderer()->localToAbsolute(FloatPoint(selectionEndPoint));
-        selectionEndPoint = roundedLayoutPoint(editableElement->renderer()->absoluteToLocal(absolutePoint));
+        FloatPoint absolutePoint = targetNode->layoutObject()->localToAbsolute(FloatPoint(selectionEndPoint));
+        selectionEndPoint = roundedLayoutPoint(editableElement->layoutObject()->absoluteToLocal(absolutePoint));
         targetNode = editableElement;
     }
 
-    return VisiblePosition(targetNode->renderer()->positionForPoint(selectionEndPoint));
+    return VisiblePosition(targetNode->layoutObject()->positionForPoint(selectionEndPoint));
 }
 
 

@@ -473,7 +473,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     if (dragData->containsFiles() && fileInput) {
         // fileInput should be the element we hit tested for, unless it was made
         // display:none in a drop event handler.
-        ASSERT(fileInput == element || !fileInput->renderer());
+        ASSERT(fileInput == element || !fileInput->layoutObject());
         if (fileInput->isDisabledFormControl())
             return false;
 
@@ -634,7 +634,7 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
 
     Node* node = nullptr;
     DragSourceAction candidateDragType = DragSourceActionNone;
-    for (const LayoutObject* renderer = startNode->renderer(); renderer; renderer = renderer->parent()) {
+    for (const LayoutObject* renderer = startNode->layoutObject(); renderer; renderer = renderer->parent()) {
         node = renderer->nonPseudoNode();
         if (!node) {
             // Anonymous render blocks don't correspond to actual DOM nodes, so we skip over them
@@ -697,7 +697,7 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
 static ImageResource* getImageResource(Element* element)
 {
     ASSERT(element);
-    LayoutObject* renderer = element->renderer();
+    LayoutObject* renderer = element->layoutObject();
     if (!renderer || !renderer->isImage())
         return nullptr;
     LayoutImage* image = toLayoutImage(renderer);
@@ -811,7 +811,7 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, c
 
     InterpolationQuality interpolationQuality = element->computedStyle()->imageRendering() == ImageRenderingPixelated ? InterpolationNone : InterpolationHigh;
     if (image->size().height() * image->size().width() <= MaxOriginalImageArea
-        && (dragImage = DragImage::create(image, element->renderer() ? element->renderer()->shouldRespectImageOrientation() : DoNotRespectImageOrientation, 1 /* deviceScaleFactor */, interpolationQuality))) {
+        && (dragImage = DragImage::create(image, element->layoutObject() ? element->layoutObject()->shouldRespectImageOrientation() : DoNotRespectImageOrientation, 1 /* deviceScaleFactor */, interpolationQuality))) {
         IntSize originalSize = imageRect.size();
         origin = imageRect.location();
 

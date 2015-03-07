@@ -1277,7 +1277,7 @@ void CanvasRenderingContext2D::scrollPathIntoView(Path2D* path2d)
 
 void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
 {
-    LayoutObject* renderer = canvas()->renderer();
+    LayoutObject* renderer = canvas()->layoutObject();
     LayoutBox* layoutBox = canvas()->layoutBox();
     if (!renderer || !layoutBox || !state().m_invertibleCTM || path.isEmpty())
         return;
@@ -2416,7 +2416,7 @@ void CanvasRenderingContext2D::updateFocusRingElementAccessibility(const Path& p
 
     // Offset by the canvas rect, taking border and padding into account.
     LayoutBoxModelObject* rbmo = canvas()->layoutBoxModelObject();
-    IntRect canvasRect = canvas()->renderer()->absoluteBoundingBoxRect();
+    IntRect canvasRect = canvas()->layoutObject()->absoluteBoundingBoxRect();
     canvasRect.move(rbmo->borderLeft() + rbmo->paddingLeft(), rbmo->borderTop() + rbmo->paddingTop());
     LayoutRect elementRect = enclosingLayoutRect(transformedPath.boundingRect());
     elementRect.moveBy(canvasRect.location());

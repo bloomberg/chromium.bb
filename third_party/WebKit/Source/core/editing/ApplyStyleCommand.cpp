@@ -395,7 +395,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
             if (!elementFullySelected(toHTMLElement(*node), start, end))
                 continue;
             element = toHTMLElement(node);
-        } else if (node->isTextNode() && node->renderer() && node->parentNode() != lastStyledNode) {
+        } else if (node->isTextNode() && node->layoutObject() && node->parentNode() != lastStyledNode) {
             // Last styled node was not parent node of this text node, but we wish to style this
             // text node. To make this possible, add a style span to surround this text node.
             RefPtrWillBeRawPtr<HTMLSpanElement> span = createStyleSpanElement(document());
@@ -785,7 +785,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
     for (RefPtrWillBeRawPtr<Node> next; node && node != pastEndNode; node = next) {
         next = NodeTraversal::next(*node);
 
-        if (!node->renderer() || !node->hasEditableStyle())
+        if (!node->layoutObject() || !node->hasEditableStyle())
             continue;
 
         if (!node->layoutObjectIsRichlyEditable() && node->isHTMLElement()) {
@@ -1024,7 +1024,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
 
     node->document().updateRenderTreeIfNeeded();
 
-    if (!style || style->isEmpty() || !node->renderer() || isHTMLIFrameElement(*node))
+    if (!style || style->isEmpty() || !node->layoutObject() || isHTMLIFrameElement(*node))
         return;
 
     RefPtrWillBeRawPtr<EditingStyle> newInlineStyle = style;
@@ -1035,12 +1035,12 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
 
     // Since addInlineStyleIfNeeded can't add styles to block-flow render objects, add style attribute instead.
     // FIXME: applyInlineStyleToRange should be used here instead.
-    if ((node->renderer()->isLayoutBlockFlow() || node->hasChildren()) && node->isHTMLElement()) {
+    if ((node->layoutObject()->isLayoutBlockFlow() || node->hasChildren()) && node->isHTMLElement()) {
         setNodeAttribute(toHTMLElement(node), styleAttr, AtomicString(newInlineStyle->style()->asText()));
         return;
     }
 
-    if (node->renderer()->isText() && toLayoutText(node->renderer())->isAllCollapsibleWhitespace())
+    if (node->layoutObject()->isText() && toLayoutText(node->layoutObject())->isAllCollapsibleWhitespace())
         return;
 
     // We can't wrap node with the styled element here because new styled element will never be removed if we did.

@@ -170,7 +170,7 @@ bool SpellCheckRequester::canCheckAsynchronously(Range* range) const
 
 bool SpellCheckRequester::isCheckable(Range* range) const
 {
-    if (!range || !range->firstNode() || !range->firstNode()->renderer())
+    if (!range || !range->firstNode() || !range->firstNode()->layoutObject())
         return false;
     const Node* node = range->startContainer();
     if (node && node->isElementNode() && !toElement(node)->isSpellCheckingEnabled())

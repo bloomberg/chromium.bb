@@ -63,10 +63,10 @@ public:
     explicit LayerStackingNode(Layer*);
     ~LayerStackingNode();
 
-    int zIndex() const { return renderer()->style()->zIndex(); }
+    int zIndex() const { return layoutObject()->style()->zIndex(); }
 
     // A stacking context is a layer that has a non-auto z-index.
-    bool isStackingContext() const { return !renderer()->style()->hasAutoZIndex(); }
+    bool isStackingContext() const { return !layoutObject()->style()->hasAutoZIndex(); }
 
     // Update our normal and z-index lists.
     void updateLayerListsIfNeeded();
@@ -141,7 +141,7 @@ private:
 
     LayerCompositor* compositor() const;
     // We can't return a LayoutBox as LayoutInline can be a stacking context.
-    LayoutBoxModelObject* renderer() const;
+    LayoutBoxModelObject* layoutObject() const;
 
     Layer* m_layer;
 

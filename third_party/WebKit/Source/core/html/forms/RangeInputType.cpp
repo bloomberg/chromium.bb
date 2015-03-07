@@ -191,8 +191,8 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
     const Decimal bigStep = std::max((stepRange.maximum() - stepRange.minimum()) / 10, step);
 
     bool isVertical = false;
-    if (element().renderer()) {
-        ControlPart part = element().renderer()->style()->appearance();
+    if (element().layoutObject()) {
+        ControlPart part = element().layoutObject()->style()->appearance();
         isVertical = part == SliderVerticalPart;
     }
 
@@ -326,8 +326,8 @@ void RangeInputType::listAttributeTargetChanged()
 {
     m_tickMarkValuesDirty = true;
     Element* sliderTrackElement = this->sliderTrackElement();
-    if (sliderTrackElement->renderer())
-        sliderTrackElement->renderer()->setNeedsLayoutAndFullPaintInvalidation();
+    if (sliderTrackElement->layoutObject())
+        sliderTrackElement->layoutObject()->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 static bool decimalCompare(const Decimal& a, const Decimal& b)

@@ -24,24 +24,24 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
         FloatingObject* floatingObject = it->get();
         // Only paint the object if our m_shouldPaint flag is set.
-        if (floatingObject->shouldPaint() && !floatingObject->renderer()->hasSelfPaintingLayer()) {
+        if (floatingObject->shouldPaint() && !floatingObject->layoutObject()->hasSelfPaintingLayer()) {
             PaintInfo currentPaintInfo(paintInfo);
             currentPaintInfo.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
             // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make this much cleaner.
             LayoutPoint childPoint = m_layoutBlockFlow.flipFloatForWritingModeForChild(
                 floatingObject, LayoutPoint(paintOffset.x()
-                + m_layoutBlockFlow.xPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->location().x(), paintOffset.y()
-                + m_layoutBlockFlow.yPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->location().y()));
-            floatingObject->renderer()->paint(currentPaintInfo, childPoint);
+                + m_layoutBlockFlow.xPositionForFloatIncludingMargin(floatingObject) - floatingObject->layoutObject()->location().x(), paintOffset.y()
+                + m_layoutBlockFlow.yPositionForFloatIncludingMargin(floatingObject) - floatingObject->layoutObject()->location().y()));
+            floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
             if (!preservePhase) {
                 currentPaintInfo.phase = PaintPhaseChildBlockBackgrounds;
-                floatingObject->renderer()->paint(currentPaintInfo, childPoint);
+                floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
                 currentPaintInfo.phase = PaintPhaseFloat;
-                floatingObject->renderer()->paint(currentPaintInfo, childPoint);
+                floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
                 currentPaintInfo.phase = PaintPhaseForeground;
-                floatingObject->renderer()->paint(currentPaintInfo, childPoint);
+                floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
                 currentPaintInfo.phase = PaintPhaseOutline;
-                floatingObject->renderer()->paint(currentPaintInfo, childPoint);
+                floatingObject->layoutObject()->paint(currentPaintInfo, childPoint);
             }
         }
     }
@@ -70,8 +70,8 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
             if (!m_layoutBlockFlow.hasLayer()) {
                 LayoutRect localBounds(gapRectsBounds);
                 m_layoutBlockFlow.flipForWritingMode(localBounds);
-                gapRectsBounds = LayoutRect(m_layoutBlockFlow.localToContainerQuad(FloatRect(localBounds), layer->renderer()).enclosingBoundingBox());
-                if (layer->renderer()->hasOverflowClip())
+                gapRectsBounds = LayoutRect(m_layoutBlockFlow.localToContainerQuad(FloatRect(localBounds), layer->layoutObject()).enclosingBoundingBox());
+                if (layer->layoutObject()->hasOverflowClip())
                     gapRectsBounds.move(layer->layoutBox()->scrolledContentOffset());
             }
             layer->addBlockSelectionGapsBounds(gapRectsBounds);

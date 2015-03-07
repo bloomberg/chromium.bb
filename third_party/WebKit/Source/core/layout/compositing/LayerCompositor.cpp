@@ -177,7 +177,7 @@ static LayoutVideo* findFullscreenVideoRenderer(Document& document)
     fullscreenElement = Fullscreen::currentFullScreenElementFrom(*contentDocument);
     if (!isHTMLVideoElement(fullscreenElement))
         return 0;
-    LayoutObject* renderer = fullscreenElement->renderer();
+    LayoutObject* renderer = fullscreenElement->layoutObject();
     if (!renderer)
         return 0;
     return toLayoutVideo(renderer);
@@ -399,7 +399,7 @@ void LayerCompositor::updateIfNeeded()
     }
 
     for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++)
-        forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(layersNeedingPaintInvalidation[i]->renderer());
+        forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(layersNeedingPaintInvalidation[i]->layoutObject());
 
     // Inform the inspector that the layer tree has changed.
     if (m_layoutView.frame()->isMainFrame())
@@ -446,7 +446,7 @@ bool LayerCompositor::allocateOrClearCompositedLayerMapping(Layer* layer, const 
             // its replica GraphicsLayer. In practice this should never happen because reflectee and reflection
             // are both either composited, or not composited.
             if (layer->isReflection()) {
-                Layer* sourceLayer = toLayoutBoxModelObject(layer->renderer()->parent())->layer();
+                Layer* sourceLayer = toLayoutBoxModelObject(layer->layoutObject()->parent())->layer();
                 if (sourceLayer->hasCompositedLayerMapping()) {
                     ASSERT(sourceLayer->compositedLayerMapping()->mainGraphicsLayer()->replicaLayer() == layer->compositedLayerMapping()->mainGraphicsLayer());
                     sourceLayer->compositedLayerMapping()->mainGraphicsLayer()->setReplicatedByLayer(0);
@@ -464,8 +464,8 @@ bool LayerCompositor::allocateOrClearCompositedLayerMapping(Layer* layer, const 
         break;
     }
 
-    if (compositedLayerMappingChanged && layer->renderer()->isLayoutPart()) {
-        LayerCompositor* innerCompositor = frameContentsCompositor(toLayoutPart(layer->renderer()));
+    if (compositedLayerMappingChanged && layer->layoutObject()->isLayoutPart()) {
+        LayerCompositor* innerCompositor = frameContentsCompositor(toLayoutPart(layer->layoutObject()));
         if (innerCompositor && innerCompositor->staleInCompositingMode())
             innerCompositor->updateRootLayerAttachment();
     }
@@ -486,7 +486,7 @@ bool LayerCompositor::allocateOrClearCompositedLayerMapping(Layer* layer, const 
 void LayerCompositor::paintInvalidationOnCompositingChange(Layer* layer)
 {
     // If the renderer is not attached yet, no need to issue paint invalidations.
-    if (layer->renderer() != &m_layoutView && !layer->renderer()->parent())
+    if (layer->layoutObject() != &m_layoutView && !layer->layoutObject()->parent())
         return;
 
     // For querying Layer::compositingState()
@@ -496,7 +496,7 @@ void LayerCompositor::paintInvalidationOnCompositingChange(Layer* layer)
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertisabler;
 
-    layer->renderer()->invalidatePaintIncludingNonCompositingDescendants();
+    layer->layoutObject()->invalidatePaintIncludingNonCompositingDescendants();
 }
 
 void LayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)
@@ -744,7 +744,7 @@ void LayerCompositor::updateRootLayerPosition()
 
 void LayerCompositor::updatePotentialCompositingReasonsFromStyle(Layer* layer)
 {
-    layer->setPotentialCompositingReasonsFromStyle(m_compositingReasonFinder.potentialCompositingReasonsFromStyle(layer->renderer()));
+    layer->setPotentialCompositingReasonsFromStyle(m_compositingReasonFinder.potentialCompositingReasonsFromStyle(layer->layoutObject()));
 }
 
 void LayerCompositor::updateDirectCompositingReasons(Layer* layer)
@@ -770,7 +770,7 @@ bool LayerCompositor::canBeComposited(const Layer* layer) const
 // into the hierarchy between this layer and its children in the z-order hierarchy.
 bool LayerCompositor::clipsCompositingDescendants(const Layer* layer) const
 {
-    return layer->hasCompositingDescendant() && layer->renderer()->hasClipOrOverflowClip();
+    return layer->hasCompositingDescendant() && layer->layoutObject()->hasClipOrOverflowClip();
 }
 
 // If an element has composited negative z-index children, those children render in front of the

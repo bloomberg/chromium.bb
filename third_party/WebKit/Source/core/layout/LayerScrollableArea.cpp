@@ -397,7 +397,7 @@ void LayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();
 
-    FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->previousPaintInvalidationRect());
+    FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->layoutObject()->previousPaintInvalidationRect());
 
     quadForFakeMouseMoveEvent = paintInvalidationContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
     frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
@@ -903,7 +903,7 @@ static inline LayoutObject* rendererForScrollbar(LayoutObject& renderer)
     if (Node* node = renderer.node()) {
         if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
             if (shadowRoot->type() == ShadowRoot::ClosedShadowRoot)
-                return shadowRoot->host()->renderer();
+                return shadowRoot->host()->layoutObject();
         }
     }
 
@@ -1313,7 +1313,7 @@ void LayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
     // FIXME: Does this need to be fixed later for OOPI?
     bool isVisibleToHitTest = box().visibleToHitTesting();
     if (HTMLFrameOwnerElement* owner = frame->deprecatedLocalOwner())
-        isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
+        isVisibleToHitTest &= owner->layoutObject() && owner->layoutObject()->visibleToHitTesting();
 
     bool didScrollOverflow = m_scrollsOverflow;
 
@@ -1363,7 +1363,7 @@ static bool layerNeedsCompositedScrolling(LayerScrollableArea::LCDTextMode mode,
     return layer->scrollsOverflow()
         && !layer->hasDescendantWithClipPath()
         && !layer->hasAncestorWithClipPath()
-        && !layer->renderer()->style()->hasBorderRadius();
+        && !layer->layoutObject()->style()->hasBorderRadius();
 }
 
 void LayerScrollableArea::updateNeedsCompositedScrolling(LCDTextMode mode)

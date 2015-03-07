@@ -34,7 +34,7 @@ TEST(DragUpdateTest, AffectedByDragUpdate)
     document.view()->updateLayoutAndStyleIfNeededRecursive();
     unsigned startCount = document.styleEngine().resolverAccessCount();
 
-    document.documentElement()->renderer()->updateDragState(true);
+    document.documentElement()->layoutObject()->updateDragState(true);
     document.view()->updateLayoutAndStyleIfNeededRecursive();
 
     unsigned accessCount = document.styleEngine().resolverAccessCount() - startCount;
@@ -60,7 +60,7 @@ TEST(DragUpdateTest, ChildrenOrSiblingsAffectedByDragUpdate)
     document.updateLayout();
     unsigned startCount = document.styleEngine().resolverAccessCount();
 
-    document.documentElement()->renderer()->updateDragState(true);
+    document.documentElement()->layoutObject()->updateDragState(true);
     document.updateLayout();
 
     unsigned accessCount = document.styleEngine().resolverAccessCount() - startCount;

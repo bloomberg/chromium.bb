@@ -107,11 +107,11 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         // FIXME: What is the right thing to do here? Should we supress the
         // reload stuff when a persistable widget-type is specified?
         reloadPluginOnAttributeChange(name);
-        if (!renderer())
+        if (!layoutObject())
             requestPluginCreationWithoutRendererIfPossible();
     } else if (name == dataAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
-        if (renderer() && isImageType()) {
+        if (layoutObject() && isImageType()) {
             setNeedsWidgetUpdate(true);
             if (!m_imageLoader)
                 m_imageLoader = HTMLImageLoader::create(this);
@@ -294,7 +294,7 @@ void HTMLObjectElement::updateWidgetInternal()
     }
 
     // FIXME: Is it possible to get here without a renderer now that we don't have beforeload events?
-    if (!renderer())
+    if (!layoutObject())
         return;
 
     if (!hasValidClassId() || !requestObject(url, serviceType, paramNames, paramValues)) {

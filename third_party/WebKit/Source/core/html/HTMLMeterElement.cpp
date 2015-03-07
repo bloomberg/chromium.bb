@@ -188,10 +188,10 @@ void HTMLMeterElement::didElementStateChange()
 
 LayoutMeter* HTMLMeterElement::layoutMeter() const
 {
-    if (renderer() && renderer()->isMeter())
-        return toLayoutMeter(renderer());
+    if (layoutObject() && layoutObject()->isMeter())
+        return toLayoutMeter(layoutObject());
 
-    LayoutObject* layoutObject = closedShadowRoot()->firstChild()->renderer();
+    LayoutObject* layoutObject = closedShadowRoot()->firstChild()->layoutObject();
     return toLayoutMeter(layoutObject);
 }
 

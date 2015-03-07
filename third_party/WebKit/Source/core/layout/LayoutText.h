@@ -234,9 +234,9 @@ inline void LayoutText::checkConsistency() const
 }
 #endif
 
-inline LayoutText* Text::renderer() const
+inline LayoutText* Text::layoutObject() const
 {
-    return toLayoutText(CharacterData::renderer());
+    return toLayoutText(CharacterData::layoutObject());
 }
 
 void applyTextTransform(const LayoutStyle*, String&, UChar);

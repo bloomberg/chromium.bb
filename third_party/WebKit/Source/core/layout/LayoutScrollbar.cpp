@@ -93,7 +93,7 @@ LayoutBox* LayoutScrollbar::owningRenderer() const
 {
     if (m_owningFrame)
         return m_owningFrame->ownerLayoutObject();
-    return m_owner && m_owner->renderer() ? m_owner->renderer()->enclosingBox() : 0;
+    return m_owner && m_owner->layoutObject() ? m_owner->layoutObject()->enclosingBox() : 0;
 }
 
 void LayoutScrollbar::setParent(Widget* parent)

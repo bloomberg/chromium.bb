@@ -192,7 +192,7 @@ bool HTMLAreaElement::isMouseFocusable() const
 bool HTMLAreaElement::layoutObjectIsFocusable() const
 {
     HTMLImageElement* image = imageElement();
-    if (!image || !image->renderer() || image->renderer()->style()->visibility() != VISIBLE)
+    if (!image || !image->layoutObject() || image->layoutObject()->style()->visibility() != VISIBLE)
         return false;
 
     return supportsFocus() && Element::tabIndex() >= 0;
@@ -209,7 +209,7 @@ void HTMLAreaElement::setFocus(bool shouldBeFocused)
     if (!imageElement)
         return;
 
-    LayoutObject* renderer = imageElement->renderer();
+    LayoutObject* renderer = imageElement->layoutObject();
     if (!renderer || !renderer->isImage())
         return;
 

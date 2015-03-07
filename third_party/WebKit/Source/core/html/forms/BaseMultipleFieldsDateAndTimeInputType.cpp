@@ -351,7 +351,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     // DateTimeEditElement::customStyleForRenderer() is called in appendChild()
     // before the field wrapper element is created.
     // FIXME: This code should not depend on such craziness.
-    ASSERT(!element().renderer());
+    ASSERT(!element().layoutObject());
 
     Document& document = element().document();
     ContainerNode* container = element().closedShadowRoot();

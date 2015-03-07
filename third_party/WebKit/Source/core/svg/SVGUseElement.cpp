@@ -223,7 +223,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
             StyleChangeReasonForTracing::fromAttribute(attrName));
     }
 
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (attrName == SVGNames::xAttr
         || attrName == SVGNames::yAttr
         || attrName == SVGNames::widthAttr
@@ -487,7 +487,7 @@ LayoutObject* SVGUseElement::rendererClipChild() const
 {
     if (Node* n = closedShadowRoot()->firstChild()) {
         if (n->isSVGElement() && isDirectReference(toSVGElement(*n)))
-            return n->renderer();
+            return n->layoutObject();
     }
 
     return 0;

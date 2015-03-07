@@ -227,13 +227,13 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
             HTMLImageElement& imageElement = toHTMLImageElement(element);
             KURL url = document.completeURL(imageElement.getAttribute(HTMLNames::srcAttr));
             ImageResource* cachedImage = imageElement.cachedImage();
-            addImageToResources(cachedImage, imageElement.renderer(), url);
+            addImageToResources(cachedImage, imageElement.layoutObject(), url);
         } else if (isHTMLInputElement(element)) {
             HTMLInputElement& inputElement = toHTMLInputElement(element);
             if (inputElement.type() == InputTypeNames::image && inputElement.imageLoader()) {
                 KURL url = inputElement.src();
                 ImageResource* cachedImage = inputElement.imageLoader()->image();
-                addImageToResources(cachedImage, inputElement.renderer(), url);
+                addImageToResources(cachedImage, inputElement.layoutObject(), url);
             }
         } else if (isHTMLLinkElement(element)) {
             HTMLLinkElement& linkElement = toHTMLLinkElement(element);

@@ -37,7 +37,7 @@ DEFINE_NODE_FACTORY(SVGFEFloodElement)
 
 bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     ASSERT(renderer);
     LayoutStyle* style = renderer->style();
     ASSERT(style);
@@ -54,7 +54,7 @@ bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter)
 {
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (!renderer)
         return nullptr;
 

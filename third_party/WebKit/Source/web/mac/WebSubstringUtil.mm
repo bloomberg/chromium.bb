@@ -72,7 +72,7 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
             continue;
 
         Node* container = it.startContainer();
-        LayoutObject* renderer = container->renderer();
+        LayoutObject* renderer = container->layoutObject();
         ASSERT(renderer);
         if (!renderer)
             continue;

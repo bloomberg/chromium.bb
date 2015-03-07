@@ -131,7 +131,7 @@ void SVGFELightElement::svgAttributeChanged(const QualifiedName& attrName)
         if (!parent)
             return;
 
-        LayoutObject* renderer = parent->renderer();
+        LayoutObject* renderer = parent->layoutObject();
         if (!renderer || !renderer->isSVGResourceFilterPrimitive())
             return;
 
@@ -154,7 +154,7 @@ void SVGFELightElement::childrenChanged(const ChildrenChange& change)
 
     if (!change.byParser) {
         if (ContainerNode* parent = parentNode()) {
-            LayoutObject* renderer = parent->renderer();
+            LayoutObject* renderer = parent->layoutObject();
             if (renderer && renderer->isSVGResourceFilterPrimitive())
                 markForLayoutAndParentResourceInvalidation(renderer);
         }

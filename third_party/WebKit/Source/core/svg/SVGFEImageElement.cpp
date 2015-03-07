@@ -171,17 +171,17 @@ void SVGFEImageElement::notifyFinished(Resource*)
         return;
 
     Element* parent = parentElement();
-    if (!parent || !isSVGFilterElement(parent) || !parent->renderer())
+    if (!parent || !isSVGFilterElement(parent) || !parent->layoutObject())
         return;
 
-    if (LayoutObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->layoutObject())
         markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
 {
     if (m_cachedImage)
-        return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(renderer()), m_preserveAspectRatio->currentValue());
+        return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(layoutObject()), m_preserveAspectRatio->currentValue());
     return FEImage::createWithIRIReference(filter, treeScope(), hrefString(), m_preserveAspectRatio->currentValue());
 }
 

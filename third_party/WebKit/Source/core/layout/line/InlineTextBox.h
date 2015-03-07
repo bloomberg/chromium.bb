@@ -50,7 +50,7 @@ public:
         setIsText(true);
     }
 
-    LayoutText& renderer() const { return toLayoutText(InlineBox::renderer()); }
+    LayoutText& layoutObject() const { return toLayoutText(InlineBox::layoutObject()); }
 
     virtual void destroy() override final;
 

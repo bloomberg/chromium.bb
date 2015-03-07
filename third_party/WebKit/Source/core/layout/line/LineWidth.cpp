@@ -67,7 +67,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
         return;
 
     ShapeOutsideDeltas shapeDeltas;
-    if (ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo()) {
+    if (ShapeOutsideInfo* shapeOutsideInfo = newFloat->layoutObject()->shapeOutsideInfo()) {
         LayoutUnit lineHeight = m_block.lineHeight(m_isFirstLine, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
         shapeDeltas = shapeOutsideInfo->computeDeltasForContainingBlockLine(m_block, *newFloat, m_block.logicalHeight(), lineHeight);
     }
@@ -174,7 +174,7 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
     float newLineRight = m_right;
 
     FloatingObject* lastFloatFromPreviousLine = (m_block.containsFloats() ? m_block.m_floatingObjects->set().last().get() : 0);
-        if (lastFloatFromPreviousLine && lastFloatFromPreviousLine->renderer()->shapeOutsideInfo())
+        if (lastFloatFromPreviousLine && lastFloatFromPreviousLine->layoutObject()->shapeOutsideInfo())
             return wrapNextToShapeOutside(isFirstLine);
 
     while (true) {

@@ -61,7 +61,7 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor)
 
     Element* span = document().getElementById(AtomicString("span"));
     EXPECT_NE(nullptr, span);
-    EXPECT_NE(nullptr, span->renderer());
+    EXPECT_NE(nullptr, span->layoutObject());
 
     Color customColor = makeRGB(123, 145, 167);
 

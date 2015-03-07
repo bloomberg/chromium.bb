@@ -93,11 +93,11 @@ void SpinButtonElement::defaultEventHandler(Event* event)
         if (box->pixelSnappedBorderBoxRect().contains(local)) {
             // The following functions of HTMLInputElement may run JavaScript
             // code which detaches this shadow node. We need to take a reference
-            // and check renderer() after such function calls.
+            // and check layoutObject() after such function calls.
             RefPtrWillBeRawPtr<Node> protector(this);
             if (m_spinButtonOwner)
                 m_spinButtonOwner->focusAndSelectSpinButtonOwner();
-            if (renderer()) {
+            if (layoutObject()) {
                 if (m_upDownState != Indeterminate) {
                     // A JavaScript event handler called in doStepAction() below
                     // might change the element state and we might need to
@@ -125,7 +125,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
             UpDownState oldUpDownState = m_upDownState;
             m_upDownState = (local.y() < box->size().height() / 2) ? Up : Down;
             if (m_upDownState != oldUpDownState)
-                renderer()->setShouldDoFullPaintInvalidation();
+                layoutObject()->setShouldDoFullPaintInvalidation();
         } else {
             releaseCapture();
             m_upDownState = Indeterminate;

@@ -537,7 +537,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutS
 
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
     // will vanish if a style recalc happens during loading.
-    if (sharingBehavior == AllowStyleSharing && !document().isRenderingReady() && !element->renderer()) {
+    if (sharingBehavior == AllowStyleSharing && !document().isRenderingReady() && !element->layoutObject()) {
         if (!s_styleNotYetAvailable) {
             s_styleNotYetAvailable = LayoutStyle::create().leakRef();
             s_styleNotYetAvailable->setDisplay(NONE);
@@ -717,7 +717,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElement(Element
 
 PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
 {
-    LayoutObject* parentRenderer = parent.renderer();
+    LayoutObject* parentRenderer = parent.layoutObject();
     if (!parentRenderer)
         return nullptr;
 

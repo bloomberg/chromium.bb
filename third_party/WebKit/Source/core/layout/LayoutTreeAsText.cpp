@@ -514,11 +514,11 @@ static void write(TextStream& ts, Layer& layer,
     IntRect adjustedClipRect = pixelSnappedIntRect(clipRect);
     IntRect adjustedOutlineClipRect = pixelSnappedIntRect(outlineClipRect);
 
-    Settings* settings = layer.renderer()->document().settings();
-    bool reportFrameScrollInfo = layer.renderer()->isLayoutView() && settings && !settings->rootLayerScrolls();
+    Settings* settings = layer.layoutObject()->document().settings();
+    bool reportFrameScrollInfo = layer.layoutObject()->isLayoutView() && settings && !settings->rootLayerScrolls();
 
     if (reportFrameScrollInfo) {
-        LayoutView* layoutView = toLayoutView(layer.renderer());
+        LayoutView* layoutView = toLayoutView(layer.layoutObject());
 
         adjustedLayoutBoundsWithScrollbars.setWidth(layoutView->viewWidth(IncludeScrollbars));
         adjustedLayoutBoundsWithScrollbars.setHeight(layoutView->viewHeight(IncludeScrollbars));
@@ -526,7 +526,7 @@ static void write(TextStream& ts, Layer& layer,
 
     writeIndent(ts, indent);
 
-    if (layer.renderer()->style()->visibility() == HIDDEN)
+    if (layer.layoutObject()->style()->visibility() == HIDDEN)
         ts << "hidden ";
 
     ts << "layer ";
@@ -547,10 +547,10 @@ static void write(TextStream& ts, Layer& layer,
     if (layer.isTransparent())
         ts << " transparent";
 
-    if (layer.renderer()->hasOverflowClip() || reportFrameScrollInfo) {
+    if (layer.layoutObject()->hasOverflowClip() || reportFrameScrollInfo) {
         ScrollableArea* scrollableArea;
         if (reportFrameScrollInfo)
-            scrollableArea = toLayoutView(layer.renderer())->frameView();
+            scrollableArea = toLayoutView(layer.layoutObject())->frameView();
         else
             scrollableArea = layer.scrollableArea();
 
@@ -570,8 +570,8 @@ static void write(TextStream& ts, Layer& layer,
     else if (paintPhase == LayerPaintPhaseForeground)
         ts << " layerType: foreground only";
 
-    if (layer.renderer()->style()->hasBlendMode())
-        ts << " blendMode: " << compositeOperatorName(CompositeSourceOver, layer.renderer()->style()->blendMode());
+    if (layer.layoutObject()->style()->hasBlendMode())
+        ts << " blendMode: " << compositeOperatorName(CompositeSourceOver, layer.layoutObject()->style()->blendMode());
 
     if (behavior & LayoutAsTextShowCompositedLayers) {
         if (layer.hasCompositedLayerMapping()) {
@@ -587,7 +587,7 @@ static void write(TextStream& ts, Layer& layer,
     ts << "\n";
 
     if (paintPhase != LayerPaintPhaseBackground)
-        write(ts, *layer.renderer(), indent + 1, behavior);
+        write(ts, *layer.layoutObject(), indent + 1, behavior);
 }
 
 void LayoutTreeAsText::writeLayers(TextStream& ts, const Layer* rootLayer, Layer* layer,
@@ -738,7 +738,7 @@ String externalRepresentation(Element* element, LayoutAsTextBehavior behavior)
     if (!(behavior & LayoutAsTextDontUpdateLayout))
         element->document().updateLayout();
 
-    LayoutObject* renderer = element->renderer();
+    LayoutObject* renderer = element->layoutObject();
     if (!renderer || !renderer->isBox())
         return String();
 
@@ -779,7 +779,7 @@ String markerTextForListItem(Element* element)
     RefPtrWillBeRawPtr<Element> protector(element);
     element->document().updateLayout();
 
-    LayoutObject* renderer = element->renderer();
+    LayoutObject* renderer = element->layoutObject();
     if (!renderer || !renderer->isListItem())
         return String();
 

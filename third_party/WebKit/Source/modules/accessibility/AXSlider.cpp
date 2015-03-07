@@ -145,7 +145,7 @@ LayoutRect AXSliderThumb::elementRect() const
     if (!m_parent)
         return LayoutRect();
 
-    LayoutObject* sliderLayoutObject = m_parent->renderer();
+    LayoutObject* sliderLayoutObject = m_parent->layoutObject();
     if (!sliderLayoutObject || !sliderLayoutObject->isSlider())
         return LayoutRect();
     return toElement(sliderLayoutObject->node())->closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->boundingBox();

@@ -115,9 +115,9 @@ LayoutPart* HTMLFrameOwnerElement::layoutPart() const
 {
     // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
     // when using fallback content.
-    if (!renderer() || !renderer()->isLayoutPart())
+    if (!layoutObject() || !layoutObject()->isLayoutPart())
         return nullptr;
-    return toLayoutPart(renderer());
+    return toLayoutPart(layoutObject());
 }
 
 void HTMLFrameOwnerElement::setContentFrame(Frame& frame)
@@ -221,7 +221,7 @@ void HTMLFrameOwnerElement::setWidget(PassRefPtrWillBeRawPtr<Widget> widget)
 
     m_widget = widget;
 
-    LayoutPart* layoutPart = toLayoutPart(renderer());
+    LayoutPart* layoutPart = toLayoutPart(layoutObject());
     if (!layoutPart)
         return;
 

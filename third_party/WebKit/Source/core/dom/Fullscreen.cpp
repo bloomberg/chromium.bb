@@ -429,7 +429,7 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
     // when the element is removed from the normal flow. Only do this for a LayoutBox, as only
     // a box will have a frameRect. The placeholder will be created in setFullScreenRenderer()
     // during layout.
-    LayoutObject* renderer = m_fullScreenElement->renderer();
+    LayoutObject* renderer = m_fullScreenElement->layoutObject();
     bool shouldCreatePlaceholder = renderer && renderer->isBox();
     if (shouldCreatePlaceholder) {
         m_savedPlaceholderFrameRect = toLayoutBox(renderer)->frameRect();

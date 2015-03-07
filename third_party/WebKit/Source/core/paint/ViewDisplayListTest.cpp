@@ -119,8 +119,8 @@ TEST_F(ViewDisplayListTest, NestedRecorders)
 TEST_F(ViewDisplayListTest, UpdateBasic)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    LayoutObject* first = document().body()->firstChild()->renderer();
-    LayoutObject* second = document().body()->firstChild()->firstChild()->renderer();
+    LayoutObject* first = document().body()->firstChild()->layoutObject();
+    LayoutObject* second = document().body()->firstChild()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
@@ -146,9 +146,9 @@ TEST_F(ViewDisplayListTest, UpdateBasic)
 TEST_F(ViewDisplayListTest, UpdateSwapOrder)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div><div id='unaffected'></div>");
-    LayoutObject* first = document().body()->firstChild()->renderer();
-    LayoutObject* second = document().body()->firstChild()->firstChild()->renderer();
-    LayoutObject* unaffected = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->layoutObject();
+    LayoutObject* second = document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject* unaffected = document().body()->firstChild()->nextSibling()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -176,9 +176,9 @@ TEST_F(ViewDisplayListTest, UpdateSwapOrder)
 TEST_F(ViewDisplayListTest, UpdateNewItemInMiddle)
 {
     setBodyInnerHTML("<div id='first'><div id='second'><div id='third'></div></div></div>");
-    LayoutObject* first = document().body()->firstChild()->renderer();
-    LayoutObject* second = document().body()->firstChild()->firstChild()->renderer();
-    LayoutObject* third = document().body()->firstChild()->firstChild()->firstChild()->renderer();
+    LayoutObject* first = document().body()->firstChild()->layoutObject();
+    LayoutObject* second = document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject* third = document().body()->firstChild()->firstChild()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -204,9 +204,9 @@ TEST_F(ViewDisplayListTest, UpdateNewItemInMiddle)
 TEST_F(ViewDisplayListTest, UpdateInvalidationWithPhases)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div><div id='third'></div>");
-    LayoutObject* first = document().body()->firstChild()->renderer();
-    LayoutObject* second = document().body()->firstChild()->firstChild()->renderer();
-    LayoutObject* third = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->layoutObject();
+    LayoutObject* second = document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject* third = document().body()->firstChild()->nextSibling()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -258,8 +258,8 @@ TEST_F(ViewDisplayListTest, UpdateInvalidationWithPhases)
 TEST_F(ViewDisplayListTest, UpdateAddFirstOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    LayoutObject* first = document().body()->firstChild()->renderer();
-    LayoutObject* second = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->layoutObject();
+    LayoutObject* second = document().body()->firstChild()->nextSibling()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
@@ -297,8 +297,8 @@ TEST_F(ViewDisplayListTest, UpdateAddFirstOverlap)
 TEST_F(ViewDisplayListTest, UpdateAddLastOverlap)
 {
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
-    LayoutObject* first = document().body()->firstChild()->renderer();
-    LayoutObject* second = document().body()->firstChild()->nextSibling()->renderer();
+    LayoutObject* first = document().body()->firstChild()->layoutObject();
+    LayoutObject* second = document().body()->firstChild()->nextSibling()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
@@ -337,8 +337,8 @@ TEST_F(ViewDisplayListTest, UpdateAddLastOverlap)
 TEST_F(ViewDisplayListTest, UpdateClip)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->renderer());
-    LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->renderer());
+    LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->layoutObject());
+    LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->layoutObject());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     ClipRect firstClipRect(LayoutRect(1, 1, 2, 2));
@@ -385,8 +385,8 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
     RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
 
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->renderer());
-    LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->renderer());
+    LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->layoutObject());
+    LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->layoutObject());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
@@ -433,10 +433,10 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
     document().page()->focusController().setFocused(true);
     LayoutView* layoutView = document().layoutView();
     Layer* rootLayer = layoutView->layer();
-    LayoutObject* htmlRenderer = document().documentElement()->renderer();
+    LayoutObject* htmlRenderer = document().documentElement()->layoutObject();
     Element* div = toElement(document().body()->firstChild());
-    LayoutObject* divRenderer = document().body()->firstChild()->renderer();
-    InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->renderer())->firstTextBox();
+    LayoutObject* divRenderer = document().body()->firstChild()->layoutObject();
+    InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->layoutObject())->firstTextBox();
 
     SkCanvas canvas(800, 600);
     GraphicsContext context(&canvas, &rootDisplayItemList());
@@ -468,11 +468,11 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheEnabled)
     document().page()->focusController().setFocused(true);
     LayoutView* layoutView = document().layoutView();
     Layer* rootLayer = layoutView->layer();
-    LayoutObject* htmlRenderer = document().documentElement()->renderer();
-    LayoutObject* bodyRenderer = document().body()->renderer();
+    LayoutObject* htmlRenderer = document().documentElement()->layoutObject();
+    LayoutObject* bodyRenderer = document().body()->layoutObject();
     Element* div = toElement(document().body()->firstChild());
-    LayoutObject* divRenderer = document().body()->firstChild()->renderer();
-    InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->renderer())->firstTextBox();
+    LayoutObject* divRenderer = document().body()->firstChild()->layoutObject();
+    InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->layoutObject())->firstTextBox();
 
     SkCanvas canvas(800, 600);
     GraphicsContext context(&canvas, &rootDisplayItemList());
@@ -520,10 +520,10 @@ TEST_F(ViewDisplayListTest, ComplexUpdateSwapOrder)
 {
     setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
         "<div id='container2'><div id='content2'></div></div>");
-    LayoutObject* container1 = document().body()->firstChild()->renderer();
-    LayoutObject* content1 = document().body()->firstChild()->firstChild()->renderer();
-    LayoutObject* container2 = document().body()->firstChild()->nextSibling()->renderer();
-    LayoutObject* content2 = document().body()->firstChild()->nextSibling()->firstChild()->renderer();
+    LayoutObject* container1 = document().body()->firstChild()->layoutObject();
+    LayoutObject* content1 = document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject* container2 = document().body()->firstChild()->nextSibling()->layoutObject();
+    LayoutObject* content2 = document().body()->firstChild()->nextSibling()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, container1, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
@@ -575,10 +575,10 @@ TEST_F(ViewDisplayListTest, CachedSubtreeSwapOrder)
 
     setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
         "<div id='container2'><div id='content2'></div></div>");
-    LayoutObject* container1 = document().body()->firstChild()->renderer();
-    LayoutObject* content1 = document().body()->firstChild()->firstChild()->renderer();
-    LayoutObject* container2 = document().body()->firstChild()->nextSibling()->renderer();
-    LayoutObject* content2 = document().body()->firstChild()->nextSibling()->firstChild()->renderer();
+    LayoutObject* container1 = document().body()->firstChild()->layoutObject();
+    LayoutObject* content1 = document().body()->firstChild()->firstChild()->layoutObject();
+    LayoutObject* container2 = document().body()->firstChild()->nextSibling()->layoutObject();
+    LayoutObject* content2 = document().body()->firstChild()->nextSibling()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     {
@@ -681,8 +681,8 @@ TEST_F(ViewDisplayListTest, Scope)
 
     setBodyInnerHTML("<div id='multicol'><div id='content'></div></div>");
 
-    LayoutObject* multicol = document().body()->firstChild()->renderer();
-    LayoutObject* content = document().body()->firstChild()->firstChild()->renderer();
+    LayoutObject* multicol = document().body()->firstChild()->layoutObject();
+    LayoutObject* content = document().body()->firstChild()->firstChild()->layoutObject();
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     FloatRect rect1(100, 100, 50, 50);

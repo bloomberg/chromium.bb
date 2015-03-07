@@ -122,7 +122,7 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
             isWidthHeightAttribute ? StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange) : StyleChangeReasonForTracing::fromAttribute(attrName));
 
         updateRelativeLengthsInformation();
-        if (LayoutObject* renderer = this->renderer())
+        if (LayoutObject* renderer = this->layoutObject())
             markForLayoutAndParentResourceInvalidation(renderer);
     }
 }
@@ -141,7 +141,7 @@ bool SVGForeignObjectElement::layoutObjectIsNeeded(const LayoutStyle& style)
     // parentOrShadowHostElement() instead.
     Element* ancestor = parentElement();
     while (ancestor && ancestor->isSVGElement()) {
-        if (ancestor->renderer() && ancestor->renderer()->isSVGHiddenContainer())
+        if (ancestor->layoutObject() && ancestor->layoutObject()->isSVGHiddenContainer())
             return false;
 
         ancestor = ancestor->parentElement();

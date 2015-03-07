@@ -232,16 +232,16 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
 void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(Layer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
     if (root->hasCompositedLayerMapping()) {
-        if (Node* node = root->renderer()->generatingNode()) {
+        if (Node* node = root->layoutObject()->generatingNode()) {
             GraphicsLayer* graphicsLayer = root->compositedLayerMapping()->childForSuperlayers();
             layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(node));
         }
     }
     for (Layer* child = root->firstChild(); child; child = child->nextSibling())
         buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
-    if (!root->renderer()->isLayoutIFrame())
+    if (!root->layoutObject()->isLayoutIFrame())
         return;
-    FrameView* childFrameView = toFrameView(toLayoutPart(root->renderer())->widget());
+    FrameView* childFrameView = toFrameView(toLayoutPart(root->layoutObject())->widget());
     if (LayoutView* childLayoutView = childFrameView->layoutView()) {
         if (LayerCompositor* childCompositor = childLayoutView->compositor())
             buildLayerIdToNodeIdMap(childCompositor->rootLayer(), layerIdToNodeIdMap);

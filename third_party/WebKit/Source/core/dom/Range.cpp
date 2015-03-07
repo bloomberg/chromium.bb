@@ -1459,7 +1459,7 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight, RangeInFi
 
     Node* stopNode = pastLastNode();
     for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
-        LayoutObject* r = node->renderer();
+        LayoutObject* r = node->layoutObject();
         if (!r || !r->isText())
             continue;
         LayoutText* renderText = toLayoutText(r);
@@ -1487,7 +1487,7 @@ void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight, RangeIn
 
     Node* stopNode = pastLastNode();
     for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
-        LayoutObject* r = node->renderer();
+        LayoutObject* r = node->layoutObject();
         if (!r || !r->isText())
             continue;
         LayoutText* renderText = toLayoutText(r);
@@ -1764,7 +1764,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
                 }
             }
         } else if (node->isTextNode()) {
-            if (LayoutText* renderText = toText(node)->renderer()) {
+            if (LayoutText* renderText = toText(node)->layoutObject()) {
                 int startOffset = (node == startContainer) ? m_start.offset() : 0;
                 int endOffset = (node == endContainer) ? m_end.offset() : INT_MAX;
 

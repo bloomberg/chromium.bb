@@ -97,7 +97,7 @@ void SVGRadialGradientElement::svgAttributeChanged(const QualifiedName& attrName
 
     updateRelativeLengthsInformation();
 
-    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->renderer());
+    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
     if (renderer)
         renderer->invalidateCacheAndMarkForLayout();
 }
@@ -152,7 +152,7 @@ static void setGradientAttributes(SVGGradientElement* element, RadialGradientAtt
 
 bool SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttributes& attributes)
 {
-    if (!renderer())
+    if (!layoutObject())
         return false;
 
     WillBeHeapHashSet<RawPtrWillBeMember<SVGGradientElement>> processedGradients;
@@ -171,7 +171,7 @@ bool SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttribute
             if (processedGradients.contains(current))
                 break;
 
-            if (!current->renderer())
+            if (!current->layoutObject())
                 return false;
 
             setGradientAttributes(current, attributes, isSVGRadialGradientElement(*current));

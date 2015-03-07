@@ -120,12 +120,12 @@ static inline LayoutObject* firstChildConsideringContinuation(LayoutObject* layo
 static inline LayoutInline* startOfContinuations(LayoutObject* r)
 {
     if (r->isInlineElementContinuation()) {
-        return toLayoutInline(r->node()->renderer());
+        return toLayoutInline(r->node()->layoutObject());
     }
 
     // Blocks with a previous continuation always have a next continuation
     if (r->isLayoutBlock() && toLayoutBlock(r)->inlineElementContinuation())
-        return toLayoutInline(toLayoutBlock(r)->inlineElementContinuation()->node()->renderer());
+        return toLayoutInline(toLayoutBlock(r)->inlineElementContinuation()->node()->layoutObject());
 
     return 0;
 }
@@ -420,12 +420,12 @@ bool AXLayoutObject::isAttachment() const
 
 static bool isLinkable(const AXObject& object)
 {
-    if (!object.renderer())
+    if (!object.layoutObject())
         return false;
 
     // See https://wiki.mozilla.org/Accessibility/AT-Windows-API for the elements
     // Mozilla considers linkable.
-    return object.isLink() || object.isImage() || object.renderer()->isText();
+    return object.isLink() || object.isImage() || object.layoutObject()->isText();
 }
 
 bool AXLayoutObject::isLinked() const
@@ -881,7 +881,7 @@ KURL AXLayoutObject::url() const
 
 void AXLayoutObject::loadInlineTextBoxes()
 {
-    if (!renderer() || !renderer()->isText())
+    if (!layoutObject() || !layoutObject()->isText())
         return;
 
     clearChildren();
@@ -1359,7 +1359,7 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
     if (isHTMLOptionElement(node))
         node = toHTMLOptionElement(*node).ownerSelectElement();
 
-    LayoutObject* obj = node->renderer();
+    LayoutObject* obj = node->layoutObject();
     if (!obj)
         return 0;
 
@@ -1637,7 +1637,7 @@ Element* AXLayoutObject::anchorElement() const
     // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
     Node* node = currLayoutObject->node();
     for ( ; node; node = node->parentNode()) {
-        if (isHTMLAnchorElement(*node) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
+        if (isHTMLAnchorElement(*node) || (node->layoutObject() && cache->getOrCreate(node->layoutObject())->isAnchor()))
             return toElement(node);
     }
 
@@ -1734,10 +1734,10 @@ void AXLayoutObject::scrollTo(const IntPoint& point) const
 
 void AXLayoutObject::handleActiveDescendantChanged()
 {
-    Element* element = toElement(renderer()->node());
+    Element* element = toElement(layoutObject()->node());
     if (!element)
         return;
-    Document& doc = renderer()->document();
+    Document& doc = layoutObject()->document();
     if (!doc.frame()->selection().isFocusedAndActive() || doc.focusedElement() != element)
         return;
     AXLayoutObject* activedescendant = toAXLayoutObject(activeDescendant());
@@ -1877,17 +1877,17 @@ void AXLayoutObject::addInlineTextBoxChildren(bool force)
     if (!force && (!settings || !settings->inlineTextBoxAccessibilityEnabled()))
         return;
 
-    if (!renderer() || !renderer()->isText())
+    if (!layoutObject() || !layoutObject()->isText())
         return;
 
-    if (renderer()->needsLayout()) {
+    if (layoutObject()->needsLayout()) {
         // If a LayoutText needs layout, its inline text boxes are either
         // nonexistent or invalid, so defer until the layout happens and
         // the layoutObject calls AXObjectCacheImpl::inlineTextBoxesUpdated.
         return;
     }
 
-    LayoutText* layoutText = toLayoutText(renderer());
+    LayoutText* layoutText = toLayoutText(layoutObject());
     for (RefPtr<AbstractInlineTextBox> box = layoutText->firstAbstractInlineTextBox(); box.get(); box = box->nextInlineTextBox()) {
         AXObject* axObject = axObjectCache()->getOrCreate(box.get());
         if (!axObject->accessibilityIsIgnored())
@@ -2083,7 +2083,7 @@ LayoutObject* AXLayoutObject::layoutParentObject() const
     if (firstChild && firstChild->node()) {
         // Case 3: The first sibling is the beginning of a continuation chain. Find the origin of that continuation.
         // Get the node's layoutObject and follow that continuation chain until the first child is found.
-        for (LayoutObject* nodeLayoutFirstChild = firstChild->node()->renderer(); nodeLayoutFirstChild != firstChild; nodeLayoutFirstChild = firstChild->node()->renderer()) {
+        for (LayoutObject* nodeLayoutFirstChild = firstChild->node()->layoutObject(); nodeLayoutFirstChild != firstChild; nodeLayoutFirstChild = firstChild->node()->layoutObject()) {
             for (LayoutObject* contsTest = nodeLayoutFirstChild; contsTest; contsTest = nextContinuation(contsTest)) {
                 if (contsTest == firstChild) {
                     parent = nodeLayoutFirstChild->parent();
@@ -2163,7 +2163,7 @@ void AXLayoutObject::addHiddenChildren()
     // If we do have hidden nodes, we need to determine where to insert them so they match DOM order as close as possible.
     bool shouldInsertHiddenNodes = false;
     for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
-        if (!child->renderer() && isNodeAriaVisible(child)) {
+        if (!child->layoutObject() && isNodeAriaVisible(child)) {
             shouldInsertHiddenNodes = true;
             break;
         }
@@ -2176,9 +2176,9 @@ void AXLayoutObject::addHiddenChildren()
     // try to insert hidden nodes in the correct place in the DOM order.
     unsigned insertionIndex = 0;
     for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
-        if (child->renderer()) {
+        if (child->layoutObject()) {
             // Find out where the last layout sibling is located within m_children.
-            AXObject* childObject = axObjectCache()->get(child->renderer());
+            AXObject* childObject = axObjectCache()->get(child->layoutObject());
             if (childObject && childObject->accessibilityIsIgnored()) {
                 AccessibilityChildrenVector children = childObject->children();
                 if (children.size())
@@ -2375,7 +2375,7 @@ LayoutRect AXLayoutObject::computeElementRect() const
         return LayoutRect();
 
     if (obj->node()) // If we are a continuation, we want to make sure to use the primary layoutObject.
-        obj = obj->node()->renderer();
+        obj = obj->node()->layoutObject();
 
     // absoluteFocusRingBoundingBox will query the hierarchy below this element, which for large webpages can be very slow.
     // For a web area, which will have the most elements of any element, absoluteQuads should be used.
@@ -2408,7 +2408,7 @@ LayoutRect AXLayoutObject::computeElementRect() const
     // Checkboxes and radio buttons include their label as part of their rect.
     if (isCheckboxOrRadio()) {
         HTMLLabelElement* label = labelForElement(toElement(m_layoutObject->node()));
-        if (label && label->renderer()) {
+        if (label && label->layoutObject()) {
             LayoutRect labelRect = axObjectCache()->getOrCreate(label)->elementRect();
             result.unite(labelRect);
         }

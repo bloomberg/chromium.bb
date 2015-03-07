@@ -59,9 +59,9 @@ static LayoutObject* previousInPreOrder(const LayoutObject& object)
     Element* self = toElement(object.node());
     ASSERT(self);
     Element* previous = ElementTraversal::previousIncludingPseudo(*self);
-    while (previous && !previous->renderer())
+    while (previous && !previous->layoutObject())
         previous = ElementTraversal::previousIncludingPseudo(*previous);
-    return previous ? previous->renderer() : 0;
+    return previous ? previous->layoutObject() : 0;
 }
 
 // This function processes the renderer tree in the order of the DOM tree
@@ -71,12 +71,12 @@ static LayoutObject* previousSiblingOrParent(const LayoutObject& object)
     Element* self = toElement(object.node());
     ASSERT(self);
     Element* previous = ElementTraversal::pseudoAwarePreviousSibling(*self);
-    while (previous && !previous->renderer())
+    while (previous && !previous->layoutObject())
         previous = ElementTraversal::pseudoAwarePreviousSibling(*previous);
     if (previous)
-        return previous->renderer();
+        return previous->layoutObject();
     previous = self->parentElement();
-    return previous ? previous->renderer() : 0;
+    return previous ? previous->layoutObject() : 0;
 }
 
 static inline Element* parentElement(LayoutObject& object)
@@ -96,9 +96,9 @@ static LayoutObject* nextInPreOrder(const LayoutObject& object, const Element* s
     Element* self = toElement(object.node());
     ASSERT(self);
     Element* next = skipDescendants ? ElementTraversal::nextIncludingPseudoSkippingChildren(*self, stayWithin) : ElementTraversal::nextIncludingPseudo(*self, stayWithin);
-    while (next && !next->renderer())
+    while (next && !next->layoutObject())
         next = skipDescendants ? ElementTraversal::nextIncludingPseudoSkippingChildren(*next, stayWithin) : ElementTraversal::nextIncludingPseudo(*next, stayWithin);
-    return next ? next->renderer() : 0;
+    return next ? next->layoutObject() : 0;
 }
 
 static bool planCounter(LayoutObject& object, const AtomicString& identifier, bool& isReset, int& value)
@@ -117,7 +117,7 @@ static bool planCounter(LayoutObject& object, const AtomicString& identifier, bo
     case NOPSEUDO:
         // Sometimes nodes have more then one renderer. Only the first one gets the counter
         // LayoutTests/http/tests/css/counter-crash.html
-        if (generatingNode->renderer() != &object)
+        if (generatingNode->layoutObject() != &object)
             return false;
         break;
     case BEFORE:
@@ -270,7 +270,7 @@ static bool findPlaceForCounter(LayoutObject& counterOwner, const AtomicString& 
                         previousSiblingProtector = currentCounter;
                         // We are no longer interested in previous siblings of the currentRenderer or their children
                         // as counters they may have attached cannot be the previous sibling of the counter we are placing.
-                        currentRenderer = parentElement(*currentRenderer)->renderer();
+                        currentRenderer = parentElement(*currentRenderer)->layoutObject();
                         continue;
                     }
                 } else {

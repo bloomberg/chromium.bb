@@ -53,7 +53,7 @@ public:
     static LayerFilterInfo* createFilterInfoForLayerIfNeeded(Layer*);
     static void removeFilterInfoForLayer(Layer*);
 
-    FilterEffectRenderer* renderer() const { return m_renderer.get(); }
+    FilterEffectRenderer* layoutObject() const { return m_renderer.get(); }
     void setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer>);
 
     void updateReferenceFilterClients(const FilterOperations&);

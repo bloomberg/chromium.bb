@@ -100,7 +100,7 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect
     FESpecularLighting* specularLighting = static_cast<FESpecularLighting*>(effect);
 
     if (attrName == SVGNames::lighting_colorAttr) {
-        LayoutObject* renderer = this->renderer();
+        LayoutObject* renderer = this->layoutObject();
         ASSERT(renderer);
         ASSERT(renderer->style());
         return specularLighting->setLightingColor(renderer->style()->svgStyle().lightingColor());
@@ -185,7 +185,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilt
     if (!lightNode)
         return nullptr;
 
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (!renderer)
         return nullptr;
 

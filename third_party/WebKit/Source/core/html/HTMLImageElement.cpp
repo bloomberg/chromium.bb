@@ -250,8 +250,8 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
     } else if (!candidate.srcOrigin()) {
         UseCounter::count(document(), UseCounter::SrcsetXDescriptor);
     }
-    if (renderer() && renderer()->isImage())
-        toLayoutImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
+    if (layoutObject() && layoutObject()->isImage())
+        toLayoutImage(layoutObject())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
 }
 
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -351,8 +351,8 @@ void HTMLImageElement::attach(const AttachContext& context)
 {
     HTMLElement::attach(context);
 
-    if (renderer() && renderer()->isImage()) {
-        LayoutImage* layoutImage = toLayoutImage(renderer());
+    if (layoutObject() && layoutObject()->isImage()) {
+        LayoutImage* layoutImage = toLayoutImage(layoutObject());
         LayoutImageResource* layoutImageResource = layoutImage->imageResource();
         if (m_isFallbackImage) {
             float deviceScaleFactor = blink::deviceScaleFactor(layoutImage->frame());
@@ -404,7 +404,7 @@ void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
 
 int HTMLImageElement::width(bool ignorePendingStylesheets)
 {
-    if (!renderer()) {
+    if (!layoutObject()) {
         // check the attribute first for an explicit pixel value
         bool ok;
         int width = getAttribute(widthAttr).toInt(&ok);
@@ -413,7 +413,7 @@ int HTMLImageElement::width(bool ignorePendingStylesheets)
 
         // if the image is available, use its width
         if (imageLoader().image())
-            return imageLoader().image()->imageSizeForRenderer(renderer(), 1.0f).width();
+            return imageLoader().image()->imageSizeForRenderer(layoutObject(), 1.0f).width();
     }
 
     if (ignorePendingStylesheets)
@@ -427,7 +427,7 @@ int HTMLImageElement::width(bool ignorePendingStylesheets)
 
 int HTMLImageElement::height(bool ignorePendingStylesheets)
 {
-    if (!renderer()) {
+    if (!layoutObject()) {
         // check the attribute first for an explicit pixel value
         bool ok;
         int height = getAttribute(heightAttr).toInt(&ok);
@@ -436,7 +436,7 @@ int HTMLImageElement::height(bool ignorePendingStylesheets)
 
         // if the image is available, use its height
         if (imageLoader().image())
-            return imageLoader().image()->imageSizeForRenderer(renderer(), 1.0f).height();
+            return imageLoader().image()->imageSizeForRenderer(layoutObject(), 1.0f).height();
     }
 
     if (ignorePendingStylesheets)
@@ -453,7 +453,7 @@ int HTMLImageElement::naturalWidth() const
     if (!imageLoader().image())
         return 0;
 
-    return imageLoader().image()->imageSizeForRenderer(renderer(), 1.0f, ImageResource::IntrinsicSize).width();
+    return imageLoader().image()->imageSizeForRenderer(layoutObject(), 1.0f, ImageResource::IntrinsicSize).width();
 }
 
 int HTMLImageElement::naturalHeight() const
@@ -461,7 +461,7 @@ int HTMLImageElement::naturalHeight() const
     if (!imageLoader().image())
         return 0;
 
-    return imageLoader().image()->imageSizeForRenderer(renderer(), 1.0f, ImageResource::IntrinsicSize).height();
+    return imageLoader().image()->imageSizeForRenderer(layoutObject(), 1.0f, ImageResource::IntrinsicSize).height();
 }
 
 const String& HTMLImageElement::currentSrc() const
@@ -524,7 +524,7 @@ void HTMLImageElement::setWidth(int value)
 int HTMLImageElement::x() const
 {
     document().updateLayoutIgnorePendingStylesheets();
-    LayoutObject* r = renderer();
+    LayoutObject* r = layoutObject();
     if (!r)
         return 0;
 
@@ -536,7 +536,7 @@ int HTMLImageElement::x() const
 int HTMLImageElement::y() const
 {
     document().updateLayoutIgnorePendingStylesheets();
-    LayoutObject* r = renderer();
+    LayoutObject* r = layoutObject();
     if (!r)
         return 0;
 
@@ -596,10 +596,10 @@ PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageMode, Sou
         return nullptr;
     }
 
-    RefPtr<Image> sourceImage = cachedImage()->imageForRenderer(renderer());
+    RefPtr<Image> sourceImage = cachedImage()->imageForRenderer(layoutObject());
 
     // We need to synthesize a container size if a renderer is not available to provide one.
-    if (!renderer() && sourceImage->usesContainerSize())
+    if (!layoutObject() && sourceImage->usesContainerSize())
         sourceImage->setContainerSize(sourceImage->size());
 
     *status = NormalSourceImageStatus;
@@ -620,7 +620,7 @@ FloatSize HTMLImageElement::sourceSize() const
     if (!image)
         return FloatSize();
 
-    return FloatSize(image->imageSizeForRenderer(renderer(), 1.0f));
+    return FloatSize(image->imageSizeForRenderer(layoutObject(), 1.0f));
 }
 
 FloatSize HTMLImageElement::defaultDestinationSize() const
@@ -629,9 +629,9 @@ FloatSize HTMLImageElement::defaultDestinationSize() const
     if (!image)
         return FloatSize();
     LayoutSize size;
-    size = image->imageSizeForRenderer(renderer(), 1.0f);
-    if (renderer() && renderer()->isLayoutImage() && image->image() && !image->image()->hasRelativeWidth())
-        size.scale(toLayoutImage(renderer())->imageDevicePixelRatio());
+    size = image->imageSizeForRenderer(layoutObject(), 1.0f);
+    if (layoutObject() && layoutObject()->isLayoutImage() && image->image() && !image->image()->hasRelativeWidth())
+        size.scale(toLayoutImage(layoutObject())->imageDevicePixelRatio());
     return FloatSize(size);
 }
 

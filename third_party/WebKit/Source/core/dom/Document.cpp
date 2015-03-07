@@ -316,7 +316,7 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
 
 static Widget* widgetForElement(const Element& focusedElement)
 {
-    LayoutObject* renderer = focusedElement.renderer();
+    LayoutObject* renderer = focusedElement.layoutObject();
     if (!renderer || !renderer->isLayoutPart())
         return 0;
     return toLayoutPart(renderer)->widget();
@@ -1743,7 +1743,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // As a result of the style recalculation, the currently hovered element might have been
     // detached (for example, by setting display:none in the :hover style), schedule another mouseMove event
     // to check if any other elements ended up under the mouse pointer due to re-layout.
-    if (hoverNode() && !hoverNode()->renderer() && frame())
+    if (hoverNode() && !hoverNode()->layoutObject() && frame())
         frame()->eventHandler().dispatchFakeMouseMoveEventSoon();
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
@@ -1904,7 +1904,7 @@ void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks
         // is a hack, since what we really want to do is suspend JS instead of doing a layout with
         // inaccurate information.
         HTMLElement* bodyElement = body();
-        if (bodyElement && !bodyElement->renderer() && m_pendingSheetLayout == NoLayoutWithPendingSheets) {
+        if (bodyElement && !bodyElement->layoutObject() && m_pendingSheetLayout == NoLayoutWithPendingSheets) {
             m_pendingSheetLayout = DidLayoutWithPendingSheets;
             styleResolverChanged();
         } else if (m_hasNodesWithPlaceholderStyle) {
@@ -2495,7 +2495,7 @@ void Document::implicitClose()
     // We used to force a synchronous display and flush here.  This really isn't
     // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
     // (if your platform is syncing flushes and limiting them to 60fps).
-    if (!ownerElement() || (ownerElement()->renderer() && !ownerElement()->renderer()->needsLayout())) {
+    if (!ownerElement() || (ownerElement()->layoutObject() && !ownerElement()->layoutObject()->needsLayout())) {
         updateRenderTreeIfNeeded();
 
         // Always do a layout after loading if needed.
@@ -3349,7 +3349,7 @@ void Document::hoveredNodeDetached(Node* node)
         return;
 
     m_hoverNode = NodeRenderingTraversal::parent(*node);
-    while (m_hoverNode && !m_hoverNode->renderer())
+    while (m_hoverNode && !m_hoverNode->layoutObject())
         m_hoverNode = NodeRenderingTraversal::parent(*m_hoverNode);
 
     // If the mouse cursor is not visible, do not clear existing
@@ -3371,7 +3371,7 @@ void Document::activeChainNodeDetached(Node* node)
         return;
 
     Node* activeNode = NodeRenderingTraversal::parent(*node);
-    while (activeNode && activeNode->isElementNode() && !activeNode->renderer())
+    while (activeNode && activeNode->isElementNode() && !activeNode->layoutObject())
         activeNode = NodeRenderingTraversal::parent(*activeNode);
 
     m_activeHoverElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
@@ -5255,15 +5255,15 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     // Check to see if the hovered node has changed.
     // If it hasn't, we do not need to do anything.
     Node* newHoverNode = innerElementInDocument;
-    while (newHoverNode && !newHoverNode->renderer())
+    while (newHoverNode && !newHoverNode->layoutObject())
         newHoverNode = newHoverNode->parentOrShadowHostNode();
 
     // Update our current hover node.
     setHoverNode(newHoverNode);
 
     // We have two different objects. Fetch their renderers.
-    LayoutObject* oldHoverObj = oldHoverNode ? oldHoverNode->renderer() : 0;
-    LayoutObject* newHoverObj = newHoverNode ? newHoverNode->renderer() : 0;
+    LayoutObject* oldHoverObj = oldHoverNode ? oldHoverNode->layoutObject() : 0;
+    LayoutObject* newHoverObj = newHoverNode ? newHoverNode->layoutObject() : 0;
 
     // Locate the common ancestor render object for the two renderers.
     LayoutObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);

@@ -609,14 +609,14 @@ void HTMLMediaElement::attach(const AttachContext& context)
 {
     HTMLElement::attach(context);
 
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 }
 
 void HTMLMediaElement::didRecalcStyle(StyleRecalcChange)
 {
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 }
 
 void HTMLMediaElement::scheduleDelayedAction(DelayedActionType actionType)
@@ -1002,8 +1002,8 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     // they are available.
     updateDisplayState();
 
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 }
 
 void HTMLMediaElement::startPlayerLoad()
@@ -1220,8 +1220,8 @@ void HTMLMediaElement::waitForSourceChange()
 
     updateDisplayState();
 
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 }
 
 void HTMLMediaElement::noneSupported()
@@ -1259,8 +1259,8 @@ void HTMLMediaElement::noneSupported()
 
     updateDisplayState();
 
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 }
 
 void HTMLMediaElement::mediaEngineError(PassRefPtrWillBeRawPtr<MediaError> err)
@@ -1499,8 +1499,8 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
         if (mediaControls())
             mediaControls()->reset();
-        if (renderer())
-            renderer()->updateFromElement();
+        if (layoutObject())
+            layoutObject()->updateFromElement();
     }
 
     bool shouldUpdateDisplayState = false;
@@ -1566,8 +1566,8 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
         scheduleEvent(EventTypeNames::progress);
         m_previousProgressTime = time;
         m_sentStalledEvent = false;
-        if (renderer())
-            renderer()->updateFromElement();
+        if (layoutObject())
+            layoutObject()->updateFromElement();
     } else if (timedelta > 3.0 && !m_sentStalledEvent) {
         scheduleEvent(EventTypeNames::stalled);
         m_sentStalledEvent = true;
@@ -2742,8 +2742,8 @@ void HTMLMediaElement::durationChanged(double duration, bool requestSeek)
 
     if (mediaControls())
         mediaControls()->reset();
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 
     if (requestSeek)
         seek(duration);
@@ -2811,8 +2811,8 @@ void HTMLMediaElement::mediaPlayerRepaint()
         m_webLayer->invalidate();
 
     updateDisplayState();
-    if (renderer())
-        renderer()->setShouldDoFullPaintInvalidation();
+    if (layoutObject())
+        layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
 void HTMLMediaElement::mediaPlayerSizeChanged()
@@ -2823,8 +2823,8 @@ void HTMLMediaElement::mediaPlayerSizeChanged()
     if (m_readyState > HAVE_NOTHING && isHTMLVideoElement())
         scheduleEvent(EventTypeNames::resize);
 
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 }
 
 PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::buffered() const
@@ -2962,8 +2962,8 @@ void HTMLMediaElement::updatePlayState()
 
     updateMediaController();
 
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 }
 
 void HTMLMediaElement::stopPeriodicTimers()
@@ -3068,8 +3068,8 @@ void HTMLMediaElement::stop()
     m_paused = true;
     m_seeking = false;
 
-    if (renderer())
-        renderer()->updateFromElement();
+    if (layoutObject())
+        layoutObject()->updateFromElement();
 
     stopPeriodicTimers();
     cancelPendingEventsAndCallbacks();

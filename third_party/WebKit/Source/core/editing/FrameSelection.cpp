@@ -1301,10 +1301,10 @@ bool FrameSelection::contains(const LayoutPoint& point)
     HitTestResult result(point);
     document->layoutView()->hitTest(request, result);
     Node* innerNode = result.innerNode();
-    if (!innerNode || !innerNode->renderer())
+    if (!innerNode || !innerNode->layoutObject())
         return false;
 
-    VisiblePosition visiblePos(innerNode->renderer()->positionForPoint(result.localPoint()));
+    VisiblePosition visiblePos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
     if (visiblePos.isNull())
         return false;
 
@@ -1618,7 +1618,7 @@ static bool isFrameElement(const Node* n)
 {
     if (!n)
         return false;
-    LayoutObject* renderer = n->renderer();
+    LayoutObject* renderer = n->layoutObject();
     if (!renderer || !renderer->isLayoutPart())
         return false;
     Widget* widget = toLayoutPart(renderer)->widget();
@@ -1760,11 +1760,11 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
 
     Position start = this->start();
     ASSERT(start.deprecatedNode());
-    if (start.deprecatedNode() && start.deprecatedNode()->renderer()) {
+    if (start.deprecatedNode() && start.deprecatedNode()->layoutObject()) {
         // FIXME: This code only handles scrolling the startContainer's layer, but
         // the selection rect could intersect more than just that.
         // See <rdar://problem/4799899>.
-        if (start.deprecatedNode()->renderer()->scrollRectToVisible(rect, alignment, alignment))
+        if (start.deprecatedNode()->layoutObject()->scrollRectToVisible(rect, alignment, alignment))
             updateAppearance();
     }
 }

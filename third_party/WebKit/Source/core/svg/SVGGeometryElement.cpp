@@ -49,13 +49,13 @@ bool SVGGeometryElement::isPointInFill(PassRefPtrWillBeRawPtr<SVGPointTearOff> p
     document().updateLayoutIgnorePendingStylesheets();
 
     // FIXME: Eventually we should support isPointInFill for display:none elements.
-    if (!renderer() || !renderer()->isSVGShape())
+    if (!layoutObject() || !layoutObject()->isSVGShape())
         return false;
 
     HitTestRequest request(HitTestRequest::ReadOnly);
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, renderer()->style()->pointerEvents());
+    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, layoutObject()->style()->pointerEvents());
     hitRules.canHitStroke = false;
-    return toLayoutSVGShape(renderer())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
+    return toLayoutSVGShape(layoutObject())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
 bool SVGGeometryElement::isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff> point) const
@@ -63,13 +63,13 @@ bool SVGGeometryElement::isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff>
     document().updateLayoutIgnorePendingStylesheets();
 
     // FIXME: Eventually we should support isPointInStroke for display:none elements.
-    if (!renderer() || !renderer()->isSVGShape())
+    if (!layoutObject() || !layoutObject()->isSVGShape())
         return false;
 
     HitTestRequest request(HitTestRequest::ReadOnly);
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, renderer()->style()->pointerEvents());
+    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, layoutObject()->style()->pointerEvents());
     hitRules.canHitFill = false;
-    return toLayoutSVGShape(renderer())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
+    return toLayoutSVGShape(layoutObject())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
 }

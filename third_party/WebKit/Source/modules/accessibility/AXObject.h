@@ -563,7 +563,7 @@ public:
 
     // DOM and layout tree access.
     virtual Node* node() const { return 0; }
-    virtual LayoutObject* renderer() const { return 0; }
+    virtual LayoutObject* layoutObject() const { return 0; }
     virtual Document* document() const;
     virtual FrameView* documentFrameView() const;
     virtual Element* anchorElement() const { return 0; }

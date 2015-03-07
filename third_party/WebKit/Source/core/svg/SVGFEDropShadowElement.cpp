@@ -99,7 +99,7 @@ void SVGFEDropShadowElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (!renderer)
         return nullptr;
 

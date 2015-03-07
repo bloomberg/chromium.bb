@@ -842,18 +842,18 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
 
     WillBeHeapVector<RawPtrWillBeMember<Text> > textNodes;
     if (node->nodeType() == Node::TEXT_NODE) {
-        if (node->renderer())
+        if (node->layoutObject())
             textNodes.append(toText(node));
     } else {
         for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
-            if (child->nodeType() == Node::TEXT_NODE && child->renderer())
+            if (child->nodeType() == Node::TEXT_NODE && child->layoutObject())
                 textNodes.append(toText(child));
         }
     }
 
     HashCountedSet<String> fontStats;
     for (size_t i = 0; i < textNodes.size(); ++i) {
-        LayoutText* renderer = textNodes[i]->renderer();
+        LayoutText* renderer = textNodes[i]->layoutObject();
         collectPlatformFontsForRenderer(renderer, &fontStats);
 
         if (!renderer->isTextFragment())

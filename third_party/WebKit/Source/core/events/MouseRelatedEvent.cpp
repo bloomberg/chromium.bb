@@ -143,7 +143,7 @@ void MouseRelatedEvent::computeRelativePosition()
     targetNode->document().updateLayoutIgnorePendingStylesheets();
 
     // Adjust offsetLocation to be relative to the target's position.
-    if (LayoutObject* r = targetNode->renderer()) {
+    if (LayoutObject* r = targetNode->layoutObject()) {
         FloatPoint localPos = r->absoluteToLocal(FloatPoint(absoluteLocation()), UseTransforms);
         m_offsetLocation = roundedLayoutPoint(localPos);
         float scaleFactor = 1 / pageZoomFactor(this);
@@ -156,12 +156,12 @@ void MouseRelatedEvent::computeRelativePosition()
     // and probably don't always correspond to Layer offsets.
     // https://bugs.webkit.org/show_bug.cgi?id=21868
     Node* n = targetNode;
-    while (n && !n->renderer())
+    while (n && !n->layoutObject())
         n = n->parentNode();
 
     if (n) {
         // FIXME: This logic is a wrong implementation of convertToLayerCoords.
-        for (Layer* layer = n->renderer()->enclosingLayer(); layer; layer = layer->parent())
+        for (Layer* layer = n->layoutObject()->enclosingLayer(); layer; layer = layer->parent())
             m_layerLocation -= toLayoutSize(layer->location());
     }
 

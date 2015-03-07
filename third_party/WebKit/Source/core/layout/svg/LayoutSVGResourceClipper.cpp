@@ -74,7 +74,7 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, Gra
     Path clipPath = Path();
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->renderer();
+        LayoutObject* renderer = childElement->layoutObject();
         if (!renderer)
             continue;
         // Only shapes or paths are supported for direct clipping. We need to fallback to masking for texts.
@@ -161,7 +161,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
     context.beginRecording(bounds);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->renderer();
+        LayoutObject* renderer = childElement->layoutObject();
         if (!renderer)
             continue;
 
@@ -187,7 +187,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
         context.setFillRule(newClipRule);
 
         if (isUseElement)
-            renderer = childElement->renderer();
+            renderer = childElement->layoutObject();
 
         // Switch to a paint behavior where all children of this <clipPath> will be rendered using special constraints:
         // - fill-opacity/stroke-opacity/opacity set to 1
@@ -208,7 +208,7 @@ void LayoutSVGResourceClipper::calculateClipContentPaintInvalidationRect()
 {
     // This is a rough heuristic to appraise the clip size and doesn't consider clip on clip.
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->renderer();
+        LayoutObject* renderer = childElement->layoutObject();
         if (!renderer)
             continue;
         if (!renderer->isSVGShape() && !renderer->isSVGText() && !isSVGUseElement(*childElement))
@@ -241,7 +241,7 @@ bool LayoutSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
     point = animatedLocalTransform.inverse().mapPoint(point);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->renderer();
+        LayoutObject* renderer = childElement->layoutObject();
         if (!renderer)
             continue;
         if (!renderer->isSVGShape() && !renderer->isSVGText() && !isSVGUseElement(*childElement))

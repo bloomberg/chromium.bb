@@ -427,7 +427,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionStat
     // FIXME: Do we need to be able to detect preserveNewline style even when there's no renderer?
     // FIXME: Can the renderer be out of date here? Do we need to call updateStyleIfNeeded?
     // For example, for the contents of textarea elements that are display:none?
-    LayoutObject* r = renderer();
+    LayoutObject* r = layoutObject();
     if (r && r->style()->preserveNewline()) {
         if (!text.contains('\r')) {
             replaceChildrenWithText(this, text, exceptionState);
@@ -780,7 +780,7 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(Element
     Node* strongDirectionalityTextNode;
     TextDirection textDirection = directionality(&strongDirectionalityTextNode);
     setHasDirAutoFlagRecursively(child, false);
-    if (renderer() && renderer()->style() && renderer()->style()->direction() != textDirection) {
+    if (layoutObject() && layoutObject()->style() && layoutObject()->style()->direction() != textDirection) {
         Element* elementToAdjust = this;
         for (; elementToAdjust; elementToAdjust = elementToAdjust->parentElement()) {
             if (elementAffectsDirectionality(elementToAdjust)) {
@@ -798,7 +798,7 @@ void HTMLElement::calculateAndAdjustDirectionality()
     setHasDirAutoFlagRecursively(this, hasDirectionAuto(), strongDirectionalityTextNode);
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
         setHasDirAutoFlagRecursively(root, hasDirectionAuto());
-    if (renderer() && renderer()->style() && renderer()->style()->direction() != textDirection)
+    if (layoutObject() && layoutObject()->style() && layoutObject()->style()->direction() != textDirection)
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
 }
 

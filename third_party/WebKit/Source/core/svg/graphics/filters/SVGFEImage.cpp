@@ -135,7 +135,7 @@ LayoutObject* FEImage::referencedRenderer() const
     Element* hrefElement = SVGURIReference::targetElementFromIRIString(m_href, *m_treeScope);
     if (!hrefElement || !hrefElement->isSVGElement())
         return 0;
-    return hrefElement->renderer();
+    return hrefElement->layoutObject();
 }
 
 TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const

@@ -24,7 +24,7 @@ static unsigned depthCrossingShadowBoundaries(Node* node)
 
 static inline bool fullyClipsContents(Node* node)
 {
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (!renderer || !renderer->isBox() || !renderer->hasOverflowClip())
         return false;
     return toLayoutBox(renderer)->size().isEmpty();
@@ -32,7 +32,7 @@ static inline bool fullyClipsContents(Node* node)
 
 static inline bool ignoresContainerClip(Node* node)
 {
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
     if (!renderer || renderer->isText())
         return false;
     return renderer->style()->hasOutOfFlowPosition();

@@ -126,9 +126,9 @@ bool HTMLFormElement::layoutObjectIsNeeded(const LayoutStyle& style)
         return HTMLElement::layoutObjectIsNeeded(style);
 
     ContainerNode* node = parentNode();
-    if (!node || !node->renderer())
+    if (!node || !node->layoutObject())
         return HTMLElement::layoutObjectIsNeeded(style);
-    LayoutObject* parentRenderer = node->renderer();
+    LayoutObject* parentRenderer = node->layoutObject();
     // FIXME: Shouldn't we also check for table caption (see |formIsTablePart| below).
     // FIXME: This check is not correct for Shadow DOM.
     bool parentIsTableElementPart = (parentRenderer->isTable() && isHTMLTableElement(*node))
@@ -287,7 +287,7 @@ bool HTMLFormElement::validateInteractively()
     // show a validation message on a focusable form control.
 
     // Needs to update layout now because we'd like to call isFocusable(), which
-    // has !renderer()->needsLayout() assertion.
+    // has !layoutObject()->needsLayout() assertion.
     document().updateLayoutIgnorePendingStylesheets();
 
     RefPtrWillBeRawPtr<HTMLFormElement> protector(this);

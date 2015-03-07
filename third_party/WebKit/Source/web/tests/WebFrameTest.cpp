@@ -4479,14 +4479,14 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     FrameTestHelpers::WebViewHelper webViewHelper;
     initializeTextSelectionWebView(m_baseURL + "select_range_span_editable.html", &webViewHelper);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    LayoutObject* renderer = mainFrame->frame()->selection().rootEditableElement()->renderer();
+    LayoutObject* renderer = mainFrame->frame()->selection().rootEditableElement()->layoutObject();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 
     registerMockedHttpURLLoad("select_range_div_editable.html");
     initializeTextSelectionWebView(m_baseURL + "select_range_div_editable.html", &webViewHelper);
     mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    renderer = mainFrame->frame()->selection().rootEditableElement()->renderer();
+    renderer = mainFrame->frame()->selection().rootEditableElement()->layoutObject();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 }
@@ -4666,7 +4666,7 @@ protected:
 
         blink::Node* layerOwnerNodeForStart = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(0));
         ASSERT_TRUE(layerOwnerNodeForStart);
-        EXPECT_EQ(layerOwnerNodeForStart->renderer()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectStart->layerId);
+        EXPECT_EQ(layerOwnerNodeForStart->layoutObject()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectStart->layerId);
         EXPECT_EQ(expectedResult.Get(1)->Int32Value(), selectStart->edgeTopInLayer.x);
         EXPECT_EQ(expectedResult.Get(2)->Int32Value(), selectStart->edgeTopInLayer.y);
         EXPECT_EQ(expectedResult.Get(3)->Int32Value(), selectStart->edgeBottomInLayer.x);
@@ -4674,7 +4674,7 @@ protected:
 
         blink::Node* layerOwnerNodeForEnd = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(5));
         ASSERT_TRUE(layerOwnerNodeForEnd);
-        EXPECT_EQ(layerOwnerNodeForEnd->renderer()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectEnd->layerId);
+        EXPECT_EQ(layerOwnerNodeForEnd->layoutObject()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectEnd->layerId);
         EXPECT_EQ(expectedResult.Get(6)->Int32Value(), selectEnd->edgeTopInLayer.x);
         EXPECT_EQ(expectedResult.Get(7)->Int32Value(), selectEnd->edgeTopInLayer.y);
         EXPECT_EQ(expectedResult.Get(8)->Int32Value(), selectEnd->edgeBottomInLayer.x);
@@ -6628,7 +6628,7 @@ TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
     webViewImpl->layout();
 
     // Verify that the video layer is visible in fullscreen.
-    Layer* renderLayer =  videoFullscreen->renderer()->enclosingLayer();
+    Layer* renderLayer =  videoFullscreen->layoutObject()->enclosingLayer();
     GraphicsLayer* graphicsLayer = renderLayer->graphicsLayerBacking();
     EXPECT_TRUE(graphicsLayer->contentsAreVisible());
     context->notifyContextDestroyed();
@@ -6645,9 +6645,9 @@ TEST_F(WebFrameTest, LayoutBlockPercentHeightDescendants)
     webView->layout();
 
     Document* document = toWebLocalFrameImpl(webView->mainFrame())->frame()->document();
-    LayoutBlock* container = toLayoutBlock(document->getElementById("container")->renderer());
-    LayoutBox* percentHeightInAnonymous = toLayoutBox(document->getElementById("percent-height-in-anonymous")->renderer());
-    LayoutBox* percentHeightDirectChild = toLayoutBox(document->getElementById("percent-height-direct-child")->renderer());
+    LayoutBlock* container = toLayoutBlock(document->getElementById("container")->layoutObject());
+    LayoutBox* percentHeightInAnonymous = toLayoutBox(document->getElementById("percent-height-in-anonymous")->layoutObject());
+    LayoutBox* percentHeightDirectChild = toLayoutBox(document->getElementById("percent-height-direct-child")->layoutObject());
 
     EXPECT_TRUE(LayoutBlock::hasPercentHeightDescendant(percentHeightInAnonymous));
     EXPECT_TRUE(LayoutBlock::hasPercentHeightDescendant(percentHeightDirectChild));

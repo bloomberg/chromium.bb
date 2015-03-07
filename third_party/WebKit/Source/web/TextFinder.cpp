@@ -624,8 +624,8 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
     IntRect activeMatchBoundingBox = enclosingIntRect(LayoutObject::absoluteBoundingBoxRectForRange(m_activeMatch.get()));
 
     if (!activeMatchBoundingBox.isEmpty()) {
-        if (m_activeMatch->firstNode() && m_activeMatch->firstNode()->renderer()) {
-            m_activeMatch->firstNode()->renderer()->scrollRectToVisible(
+        if (m_activeMatch->firstNode() && m_activeMatch->firstNode()->layoutObject()) {
+            m_activeMatch->firstNode()->layoutObject()->scrollRectToVisible(
                 LayoutRect(activeMatchBoundingBox), ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
         }
 

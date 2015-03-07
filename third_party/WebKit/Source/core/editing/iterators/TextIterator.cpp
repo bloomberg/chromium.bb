@@ -203,7 +203,7 @@ bool TextIterator::isInsideReplacedElement() const
     if (atEnd() || length() != 1 || !m_node)
         return false;
 
-    LayoutObject* renderer = m_node->renderer();
+    LayoutObject* renderer = m_node->layoutObject();
     return renderer && renderer->isReplaced();
 }
 
@@ -259,7 +259,7 @@ void TextIterator::advance()
             return;
         }
 
-        LayoutObject* renderer = m_node->renderer();
+        LayoutObject* renderer = m_node->layoutObject();
         if (!renderer) {
             if (m_node->isShadowRoot()) {
                 // A shadow root doesn't have a renderer, but we want to visit children anyway.
@@ -336,7 +336,7 @@ void TextIterator::advance()
                 while (!next && parentNode) {
                     if ((pastEnd && parentNode == m_endContainer) || m_endContainer->isDescendantOf(parentNode))
                         return;
-                    bool haveRenderer = m_node->renderer();
+                    bool haveRenderer = m_node->layoutObject();
                     m_node = parentNode;
                     m_fullyClippedStack.pop();
                     parentNode = m_node->parentNode();
@@ -446,7 +446,7 @@ bool TextIterator::handleTextNode()
         return false;
 
     Text* textNode = toText(m_node);
-    LayoutText* renderer = textNode->renderer();
+    LayoutText* renderer = textNode->layoutObject();
 
     m_lastTextNode = textNode;
     String str = renderer->text();
@@ -477,7 +477,7 @@ bool TextIterator::handleTextNode()
         if (runStart >= runEnd)
             return true;
 
-        emitText(textNode, textNode->renderer(), runStart, runEnd);
+        emitText(textNode, textNode->layoutObject(), runStart, runEnd);
         return true;
     }
 
@@ -515,7 +515,7 @@ bool TextIterator::handleTextNode()
 
 void TextIterator::handleTextBox()
 {
-    LayoutText* renderer = m_firstLetterText ? m_firstLetterText.get() : toLayoutText(m_node->renderer());
+    LayoutText* renderer = m_firstLetterText ? m_firstLetterText.get() : toLayoutText(m_node->layoutObject());
 
     if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility) {
         m_textBox = 0;
@@ -559,11 +559,11 @@ void TextIterator::handleTextBox()
             //   FirstLetter seem to have different ideas of where things can split.
             //   FirstLetter takes the punctuation + first letter, and BIDI will
             //   split out the punctuation and possibly reorder it.
-            if (nextTextBox && nextTextBox->renderer() != renderer) {
+            if (nextTextBox && nextTextBox->layoutObject() != renderer) {
                 m_textBox = 0;
                 return;
             }
-            ASSERT(!nextTextBox || nextTextBox->renderer() == renderer);
+            ASSERT(!nextTextBox || nextTextBox->layoutObject() == renderer);
 
             if (runStart < runEnd) {
                 // Handle either a single newline character (which becomes a space),
@@ -623,7 +623,7 @@ void TextIterator::handleTextNodeFirstLetter(LayoutTextFragment* renderer)
     if (!firstLetterElement)
         return;
 
-    LayoutObject* pseudoRenderer = firstLetterElement->renderer();
+    LayoutObject* pseudoRenderer = firstLetterElement->layoutObject();
     if (pseudoRenderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
         return;
 
@@ -655,7 +655,7 @@ bool TextIterator::handleReplacedElement()
     if (m_fullyClippedStack.top())
         return false;
 
-    LayoutObject* renderer = m_node->renderer();
+    LayoutObject* renderer = m_node->layoutObject();
     if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
         return false;
 
@@ -718,13 +718,13 @@ bool TextIterator::hasVisibleTextNode(LayoutText* renderer)
         return false;
 
     ASSERT(fragment->firstLetterPseudoElement());
-    LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->renderer();
+    LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->layoutObject();
     return pseudoElementRenderer && pseudoElementRenderer->style()->visibility() == VISIBLE;
 }
 
 bool TextIterator::shouldEmitTabBeforeNode(Node* node)
 {
-    LayoutObject* r = node->renderer();
+    LayoutObject* r = node->layoutObject();
 
     // Table cells are delimited by tabs.
     if (!r || !isTableCell(node))
@@ -738,7 +738,7 @@ bool TextIterator::shouldEmitTabBeforeNode(Node* node)
 
 bool TextIterator::shouldEmitNewlineForNode(Node* node, bool emitsOriginalText)
 {
-    LayoutObject* renderer = node->renderer();
+    LayoutObject* renderer = node->layoutObject();
 
     if (renderer ? !renderer->isBR() : !isHTMLBRElement(node))
         return false;
@@ -749,7 +749,7 @@ static bool shouldEmitNewlinesBeforeAndAfterNode(Node& node)
 {
     // Block flow (versus inline flow) is represented by having
     // a newline both before and after the element.
-    LayoutObject* r = node.renderer();
+    LayoutObject* r = node.layoutObject();
     if (!r) {
         return (node.hasTagName(blockquoteTag)
             || node.hasTagName(ddTag)
@@ -804,7 +804,7 @@ bool TextIterator::shouldEmitNewlineAfterNode(Node& node)
     Node* next = &node;
     do {
         next = NodeTraversal::nextSkippingChildren(*next);
-        if (next && next->renderer())
+        if (next && next->layoutObject())
             return true;
     } while (next);
     return false;
@@ -821,7 +821,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
     // newline for a more realistic result. We end up getting the right
     // result even without margin collapsing. For example: <div><p>text</p></div>
     // will work right even if both the <div> and the <p> have bottom margins.
-    LayoutObject* r = node->renderer();
+    LayoutObject* r = node->layoutObject();
     if (!r || !r->isBox())
         return false;
 
@@ -890,8 +890,8 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
     // If this node is unrendered or invisible the VisiblePosition checks below won't have much meaning.
     // Additionally, if the range we are iterating over contains huge sections of unrendered content,
     // we would create VisiblePositions on every call to this function without this check.
-    if (!m_node->renderer() || m_node->renderer()->style()->visibility() != VISIBLE
-        || (m_node->renderer()->isLayoutBlockFlow() && !toLayoutBlock(m_node->renderer())->size().height() && !isHTMLBodyElement(*m_node)))
+    if (!m_node->layoutObject() || m_node->layoutObject()->style()->visibility() != VISIBLE
+        || (m_node->layoutObject()->isLayoutBlockFlow() && !toLayoutBlock(m_node->layoutObject())->size().height() && !isHTMLBodyElement(*m_node)))
         return false;
 
     // The startPos.isNotNull() check is needed because the start could be before the body,
@@ -905,7 +905,7 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
 
 bool TextIterator::shouldEmitSpaceBeforeAndAfterNode(Node* node)
 {
-    return isRenderedTableElement(node) && (node->renderer()->isInline() || m_emitsCharactersBetweenAllVisiblePositions);
+    return isRenderedTableElement(node) && (node->layoutObject()->isInline() || m_emitsCharactersBetweenAllVisiblePositions);
 }
 
 void TextIterator::representNodeOffsetZero()
@@ -932,7 +932,7 @@ bool TextIterator::handleNonTextNode()
 {
     if (shouldEmitNewlineForNode(m_node, m_emitsOriginalText))
         emitCharacter('\n', m_node->parentNode(), m_node, 0, 1);
-    else if (m_emitsCharactersBetweenAllVisiblePositions && m_node->renderer() && m_node->renderer()->isHR())
+    else if (m_emitsCharactersBetweenAllVisiblePositions && m_node->layoutObject() && m_node->layoutObject()->isHR())
         emitCharacter(space, m_node->parentNode(), m_node, 0, 1);
     else
         representNodeOffsetZero();

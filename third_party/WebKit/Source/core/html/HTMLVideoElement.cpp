@@ -90,8 +90,8 @@ void HTMLVideoElement::attach(const AttachContext& context)
         if (!m_imageLoader)
             m_imageLoader = HTMLImageLoader::create(this);
         m_imageLoader->updateFromElement();
-        if (renderer())
-            toLayoutImage(renderer())->imageResource()->setImageResource(m_imageLoader->image());
+        if (layoutObject())
+            toLayoutImage(layoutObject())->imageResource()->setImageResource(m_imageLoader->image());
     }
 }
 
@@ -123,8 +123,8 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
                 m_imageLoader = HTMLImageLoader::create(this);
             m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         } else {
-            if (renderer())
-                toLayoutImage(renderer())->imageResource()->setImageResource(0);
+            if (layoutObject())
+                toLayoutImage(layoutObject())->imageResource()->setImageResource(0);
         }
         // Notify the player when the poster image URL changes.
         if (webMediaPlayer())
@@ -188,8 +188,8 @@ void HTMLVideoElement::setDisplayMode(DisplayMode mode)
 
     HTMLMediaElement::setDisplayMode(mode);
 
-    if (renderer() && displayMode() != oldMode)
-        renderer()->updateFromElement();
+    if (layoutObject() && displayMode() != oldMode)
+        layoutObject()->updateFromElement();
 }
 
 void HTMLVideoElement::updateDisplayState()

@@ -93,7 +93,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
 
 PassRefPtr<LayoutStyle> PseudoElement::customStyleForRenderer()
 {
-    return parentOrShadowHostElement()->renderer()->getCachedPseudoStyle(m_pseudoId);
+    return parentOrShadowHostElement()->layoutObject()->getCachedPseudoStyle(m_pseudoId);
 }
 
 void PseudoElement::dispose()
@@ -114,11 +114,11 @@ void PseudoElement::dispose()
 
 void PseudoElement::attach(const AttachContext& context)
 {
-    ASSERT(!renderer());
+    ASSERT(!layoutObject());
 
     Element::attach(context);
 
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     if (!renderer)
         return;
 
@@ -145,12 +145,12 @@ bool PseudoElement::layoutObjectIsNeeded(const LayoutStyle& style)
 
 void PseudoElement::didRecalcStyle(StyleRecalcChange)
 {
-    if (!renderer())
+    if (!layoutObject())
         return;
 
     // The renderers inside pseudo elements are anonymous so they don't get notified of recalcStyle and must have
     // the style propagated downward manually similar to LayoutObject::propagateStyleToAnonymousChildren.
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     for (LayoutObject* child = renderer->nextInPreOrder(renderer); child; child = child->nextInPreOrder(renderer)) {
         // We only manage the style for the generated content items.
         if (!child->isText() && !child->isQuote() && !child->isImage())

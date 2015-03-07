@@ -38,7 +38,7 @@ public:
     static PassRefPtrWillBeRawPtr<Text> create(Document&, const String&);
     static PassRefPtrWillBeRawPtr<Text> createEditingText(Document&, const String&);
 
-    LayoutText* renderer() const;
+    LayoutText* layoutObject() const;
 
     // mergeNextSiblingNodesIfPossible() merges next sibling nodes if possible
     // then returns a node not merged.

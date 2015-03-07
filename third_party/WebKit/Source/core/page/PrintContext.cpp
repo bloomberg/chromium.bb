@@ -197,7 +197,7 @@ int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSi
     RefPtrWillBeRawPtr<Element> protect(element);
     element->document().updateLayout();
 
-    LayoutBoxModelObject* box = enclosingBoxModelObject(element->renderer());
+    LayoutBoxModelObject* box = enclosingBoxModelObject(element->layoutObject());
     if (!box)
         return -1;
 
@@ -264,7 +264,7 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
     }
 
     for (const auto& entry : m_linkDestinations) {
-        LayoutObject* renderer = entry.key->renderer();
+        LayoutObject* renderer = entry.key->layoutObject();
         if (!renderer)
             continue;
         KURL url = entry.value;
@@ -281,7 +281,7 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
     }
 
     for (const auto& entry : m_linkedDestinations) {
-        LayoutObject* renderer = entry.value->renderer();
+        LayoutObject* renderer = entry.value->layoutObject();
         if (!renderer)
             continue;
         IntRect boundingBox = renderer->absoluteBoundingBoxRect();

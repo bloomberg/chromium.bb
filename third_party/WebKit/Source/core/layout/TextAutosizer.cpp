@@ -125,7 +125,7 @@ static const LayoutObject* parentElementRenderer(const LayoutObject* renderer)
 
     // FIXME: This should be using NodeRenderingTraversal::parent().
     if (Element* parent = node->parentElement())
-        return parent->renderer();
+        return parent->layoutObject();
     return 0;
 }
 

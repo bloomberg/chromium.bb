@@ -205,7 +205,7 @@ void SVGSVGElement::setCurrentTranslate(const FloatPoint& point)
 
 void SVGSVGElement::updateCurrentTranslate()
 {
-    if (LayoutObject* object = renderer())
+    if (LayoutObject* object = layoutObject())
         object->setNeedsLayoutAndFullPaintInvalidation();
 }
 
@@ -302,7 +302,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
         // roots, there is an attribute synchronization missing. See
         // http://crbug.com/364807
         if (widthChanged || heightChanged) {
-            LayoutObject* layoutObject = renderer();
+            LayoutObject* layoutObject = this->layoutObject();
             if (layoutObject && layoutObject->isSVGRoot()) {
                 invalidateSVGPresentationAttributeStyle();
                 setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange));
@@ -316,7 +316,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (SVGFitToViewBox::isKnownAttribute(attrName)) {
         updateRelativeLengthsOrViewBox = true;
-        if (LayoutObject* object = renderer())
+        if (LayoutObject* object = layoutObject())
             object->setNeedsTransformUpdate();
     }
 
@@ -324,8 +324,8 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (updateRelativeLengthsOrViewBox
         || SVGZoomAndPan::isKnownAttribute(attrName)) {
-        if (renderer())
-            markForLayoutAndParentResourceInvalidation(renderer());
+        if (layoutObject())
+            markForLayoutAndParentResourceInvalidation(layoutObject());
         return;
     }
 
@@ -355,7 +355,7 @@ static bool isIntersectionOrEnclosureTarget(LayoutObject* renderer)
 bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, const FloatRect& rect,
     CheckIntersectionOrEnclosure mode) const
 {
-    LayoutObject* renderer = element.renderer();
+    LayoutObject* renderer = element.layoutObject();
     ASSERT(!renderer || renderer->style());
     if (!renderer || renderer->style()->pointerEvents() == PE_NONE)
         return false;
@@ -495,7 +495,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
         SVGLengthContext lengthContext(this);
         transform.translate(m_x->currentValue()->value(lengthContext), m_y->currentValue()->value(lengthContext));
     } else if (mode == SVGElement::ScreenScope) {
-        if (LayoutObject* renderer = this->renderer()) {
+        if (LayoutObject* renderer = this->layoutObject()) {
             FloatPoint location;
             float zoomFactor = 1;
 
@@ -623,9 +623,9 @@ FloatRect SVGSVGElement::currentViewBoxRect() const
     FloatRect useViewBox = viewBox()->currentValue()->value();
     if (!useViewBox.isEmpty())
         return useViewBox;
-    if (!renderer() || !renderer()->isSVGRoot())
+    if (!layoutObject() || !layoutObject()->isSVGRoot())
         return FloatRect();
-    if (!toLayoutSVGRoot(renderer())->isEmbeddedThroughSVGImage())
+    if (!toLayoutSVGRoot(layoutObject())->isEmbeddedThroughSVGImage())
         return FloatRect();
 
     // If no viewBox is specified but non-relative width/height values, then we
@@ -635,15 +635,15 @@ FloatRect SVGSVGElement::currentViewBoxRect() const
 
 FloatSize SVGSVGElement::currentViewportSize() const
 {
-    if (!renderer())
+    if (!layoutObject())
         return FloatSize();
 
-    if (renderer()->isSVGRoot()) {
-        LayoutRect contentBoxRect = toLayoutSVGRoot(renderer())->contentBoxRect();
-        return FloatSize(contentBoxRect.width() / renderer()->style()->effectiveZoom(), contentBoxRect.height() / renderer()->style()->effectiveZoom());
+    if (layoutObject()->isSVGRoot()) {
+        LayoutRect contentBoxRect = toLayoutSVGRoot(layoutObject())->contentBoxRect();
+        return FloatSize(contentBoxRect.width() / layoutObject()->style()->effectiveZoom(), contentBoxRect.height() / layoutObject()->style()->effectiveZoom());
     }
 
-    FloatRect viewportRect = toLayoutSVGViewportContainer(renderer())->viewport();
+    FloatRect viewportRect = toLayoutSVGViewportContainer(layoutObject())->viewport();
     return FloatSize(viewportRect.width(), viewportRect.height());
 }
 
@@ -694,7 +694,7 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
 
 void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* anchorNode)
 {
-    LayoutObject* renderer = this->renderer();
+    LayoutObject* renderer = this->layoutObject();
     SVGViewSpec* view = m_viewSpec.get();
     if (view)
         view->reset();
@@ -733,7 +733,7 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
         if (SVGSVGElement* svg = viewElement.ownerSVGElement()) {
             svg->inheritViewAttributes(&viewElement);
 
-            if (LayoutObject* renderer = svg->renderer())
+            if (LayoutObject* renderer = svg->layoutObject())
                 markForLayoutAndParentResourceInvalidation(renderer);
 
             return;

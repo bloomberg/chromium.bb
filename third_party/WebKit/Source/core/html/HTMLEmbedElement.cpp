@@ -54,11 +54,11 @@ PassRefPtrWillBeRawPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& docu
 
 static inline LayoutPart* findPartRenderer(const Node* n)
 {
-    if (!n->renderer())
+    if (!n->layoutObject())
         n = Traversal<HTMLObjectElement>::firstAncestor(*n);
 
-    if (n && n->renderer() && n->renderer()->isLayoutPart())
-        return toLayoutPart(n->renderer());
+    if (n && n->layoutObject() && n->layoutObject()->isLayoutPart())
+        return toLayoutPart(n->layoutObject());
 
     return nullptr;
 }
@@ -94,13 +94,13 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
         size_t pos = m_serviceType.find(";");
         if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
-        if (!renderer())
+        if (!layoutObject())
             requestPluginCreationWithoutRendererIfPossible();
     } else if (name == codeAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
     } else if (name == srcAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
-        if (renderer() && isImageType()) {
+        if (layoutObject() && isImageType()) {
             if (!m_imageLoader)
                 m_imageLoader = HTMLImageLoader::create(this);
             m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
@@ -143,7 +143,7 @@ void HTMLEmbedElement::updateWidgetInternal()
     RefPtrWillBeRawPtr<HTMLEmbedElement> protect(this); // Loading the plugin might remove us from the document.
 
     // FIXME: Can we not have renderer here now that beforeload events are gone?
-    if (!renderer())
+    if (!layoutObject())
         return;
 
     requestObject(m_url, m_serviceType, paramNames, paramValues);
@@ -158,9 +158,9 @@ bool HTMLEmbedElement::layoutObjectIsNeeded(const LayoutStyle& style)
     // should be ignored and not get a renderer.
     ContainerNode* p = parentNode();
     if (isHTMLObjectElement(p)) {
-        ASSERT(p->renderer());
+        ASSERT(p->layoutObject());
         if (!toHTMLObjectElement(p)->useFallbackContent()) {
-            ASSERT(!p->renderer()->isEmbeddedObject());
+            ASSERT(!p->layoutObject()->isEmbeddedObject());
             return false;
         }
     }

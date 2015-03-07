@@ -127,7 +127,7 @@ static String selectMisspelledWord(LocalFrame* selectedFrame)
     HitTestResult hitTestResult = selectedFrame->eventHandler().
         hitTestResultAtPoint(selectedFrame->page()->contextMenuController().hitTestResult().pointInInnerNodeFrame());
     Node* innerNode = hitTestResult.innerNode();
-    VisiblePosition pos(innerNode->renderer()->positionForPoint(
+    VisiblePosition pos(innerNode->layoutObject()->positionForPoint(
         hitTestResult.localPoint()));
 
     if (pos.isNull())
@@ -269,7 +269,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         if (mediaElement->shouldShowControls())
             data.mediaFlags |= WebContextMenuData::MediaControls;
     } else if (isHTMLObjectElement(*r.innerNonSharedNode()) || isHTMLEmbedElement(*r.innerNonSharedNode())) {
-        LayoutObject* object = r.innerNonSharedNode()->renderer();
+        LayoutObject* object = r.innerNonSharedNode()->layoutObject();
         if (object && object->isLayoutPart()) {
             Widget* widget = toLayoutPart(object)->widget();
             if (widget && widget->isPluginContainer()) {

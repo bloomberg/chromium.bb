@@ -35,7 +35,7 @@ namespace blink {
 
 inline LayoutStyle* Node::layoutStyle() const
 {
-    if (LayoutObject* renderer = this->renderer())
+    if (LayoutObject* renderer = this->layoutObject())
         return renderer->style();
     // <option> and <optgroup> can be styled even if they don't get renderers,
     // so they store their style internally and return it through nonRendererStyle().

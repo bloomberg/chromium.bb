@@ -55,7 +55,7 @@ void InsertIntoTextNodeCommand::doApply()
         return;
 
     if (passwordEchoEnabled) {
-        LayoutText* renderText = m_node->renderer();
+        LayoutText* renderText = m_node->layoutObject();
         if (renderText && renderText->isSecure())
             renderText->momentarilyRevealLastTypedCharacter(m_offset + m_text.length() - 1);
     }

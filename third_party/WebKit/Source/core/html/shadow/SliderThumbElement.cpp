@@ -53,8 +53,8 @@ using namespace HTMLNames;
 
 inline static bool hasVerticalAppearance(HTMLInputElement* input)
 {
-    ASSERT(input->renderer());
-    LayoutStyle* sliderStyle = input->renderer()->style();
+    ASSERT(input->layoutObject());
+    LayoutStyle* sliderStyle = input->layoutObject()->style();
 
     return sliderStyle->appearance() == SliderVerticalPart;
 }
@@ -77,8 +77,8 @@ void SliderThumbElement::setPositionFromValue()
     // Since the code to calculate position is in the LayoutSliderThumb layout
     // path, we don't actually update the value here. Instead, we poke at the
     // renderer directly to trigger layout.
-    if (renderer())
-        renderer()->setNeedsLayoutAndFullPaintInvalidation();
+    if (layoutObject())
+        layoutObject()->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 LayoutObject* SliderThumbElement::createLayoutObject(const LayoutStyle&)
@@ -118,10 +118,10 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     RefPtrWillBeRawPtr<HTMLInputElement> input(hostInput());
     Element* trackElement = input->closedShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
 
-    if (!input->renderer() || !layoutBox() || !trackElement->layoutBox())
+    if (!input->layoutObject() || !layoutBox() || !trackElement->layoutBox())
         return;
 
-    LayoutPoint offset = roundedLayoutPoint(input->renderer()->absoluteToLocal(FloatPoint(point), UseTransforms));
+    LayoutPoint offset = roundedLayoutPoint(input->layoutObject()->absoluteToLocal(FloatPoint(point), UseTransforms));
     bool isVertical = hasVerticalAppearance(input.get());
     bool isLeftToRightDirection = layoutBox()->style()->isLeftToRightDirection();
     LayoutUnit trackSize;
@@ -132,9 +132,9 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     // y() are unusable.
     // FIXME: This should probably respect transforms.
     LayoutPoint absoluteThumbOrigin = layoutBox()->absoluteBoundingBoxRectIgnoringTransforms().location();
-    LayoutPoint absoluteSliderContentOrigin = roundedLayoutPoint(input->renderer()->localToAbsolute());
-    IntRect trackBoundingBox = trackElement->renderer()->absoluteBoundingBoxRectIgnoringTransforms();
-    IntRect inputBoundingBox = input->renderer()->absoluteBoundingBoxRectIgnoringTransforms();
+    LayoutPoint absoluteSliderContentOrigin = roundedLayoutPoint(input->layoutObject()->localToAbsolute());
+    IntRect trackBoundingBox = trackElement->layoutObject()->absoluteBoundingBoxRectIgnoringTransforms();
+    IntRect inputBoundingBox = input->layoutObject()->absoluteBoundingBoxRectIgnoringTransforms();
     if (isVertical) {
         trackSize = trackElement->layoutBox()->contentHeight() - layoutBox()->size().height();
         position = offset.y() - layoutBox()->size().height() / 2 - trackBoundingBox.y() + inputBoundingBox.y() - layoutBox()->marginBottom();
@@ -167,8 +167,8 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
 
     // FIXME: This is no longer being set from renderer. Consider updating the method name.
     input->setValueFromRenderer(valueString);
-    if (renderer())
-        renderer()->setNeedsLayoutAndFullPaintInvalidation();
+    if (layoutObject())
+        layoutObject()->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 void SliderThumbElement::startDragging()
@@ -187,8 +187,8 @@ void SliderThumbElement::stopDragging()
     if (LocalFrame* frame = document().frame())
         frame->eventHandler().setCapturingMouseEventsNode(nullptr);
     m_inDragMode = false;
-    if (renderer())
-        renderer()->setNeedsLayoutAndFullPaintInvalidation();
+    if (layoutObject())
+        layoutObject()->setNeedsLayoutAndFullPaintInvalidation();
     if (hostInput())
         hostInput()->dispatchFormControlChangeEvent();
 }
@@ -280,10 +280,10 @@ static const AtomicString& mediaSliderThumbShadowPartId()
 const AtomicString& SliderThumbElement::shadowPseudoId() const
 {
     HTMLInputElement* input = hostInput();
-    if (!input || !input->renderer())
+    if (!input || !input->layoutObject())
         return sliderThumbShadowPartId();
 
-    LayoutStyle* sliderStyle = input->renderer()->style();
+    LayoutStyle* sliderStyle = input->layoutObject()->style();
     switch (sliderStyle->appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:
@@ -316,10 +316,10 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const
     DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderContainer, ("-webkit-media-slider-container", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, sliderContainer, ("-webkit-slider-container", AtomicString::ConstructFromLiteral));
 
-    if (!shadowHost() || !shadowHost()->renderer())
+    if (!shadowHost() || !shadowHost()->layoutObject())
         return sliderContainer;
 
-    LayoutStyle* sliderStyle = shadowHost()->renderer()->style();
+    LayoutStyle* sliderStyle = shadowHost()->layoutObject()->style();
     switch (sliderStyle->appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:
