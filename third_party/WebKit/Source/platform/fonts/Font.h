@@ -101,8 +101,7 @@ public:
 
     enum CustomFontNotReadyAction { DoNotPaintIfFontNotReady, UseFallbackIfFontNotReady };
     void drawText(GraphicsContext*, const TextRunPaintInfo&, const FloatPoint&) const;
-    float drawUncachedText(GraphicsContext*, const TextRunPaintInfo&, const FloatPoint&,
-        CustomFontNotReadyAction) const;
+    void drawBidiText(GraphicsContext*, const TextRunPaintInfo&, const FloatPoint&, CustomFontNotReadyAction) const;
     void drawEmphasisMarks(GraphicsContext*, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&) const;
 
     float width(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;

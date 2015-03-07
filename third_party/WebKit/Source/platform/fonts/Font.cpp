@@ -40,7 +40,9 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/text/BidiResolver.h"
 #include "platform/text/TextRun.h"
+#include "platform/text/TextRunIterator.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -143,46 +145,58 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
     GlyphBuffer glyphBuffer;
     buildGlyphBuffer(runInfo, glyphBuffer);
 
-    if (glyphBuffer.isEmpty())
-        return;
-
-    if (RuntimeEnabledFeatures::textBlobEnabled()) {
-        // Enabling text-blobs forces the blob rendering path even for uncacheable blobs.
-        TextBlobPtr uncacheableTextBlob;
-        TextBlobPtr& textBlob = runInfo.cachedTextBlob ? *runInfo.cachedTextBlob : uncacheableTextBlob;
-
-        textBlob = buildTextBlob(glyphBuffer);
-        if (textBlob) {
-            drawTextBlob(context, textBlob.get(), point.data());
-            return;
-        }
-    }
-
     drawGlyphBuffer(context, runInfo, glyphBuffer, point);
 }
 
-float Font::drawUncachedText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
+void Font::drawBidiText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
     const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction) const
 {
     // Don't draw anything while we are using custom fonts that are in the process of loading,
     // except if the 'force' argument is set to true (in which case it will use a fallback
     // font).
     if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
-        return 0;
+        return;
 
     TextDrawingModeFlags textMode = context->textDrawingMode();
     if (!(textMode & TextModeFill) && !((textMode & TextModeStroke) && context->hasStroke()))
-        return 0;
+        return;
 
-    GlyphBuffer glyphBuffer;
-    float totalAdvance = buildGlyphBuffer(runInfo, glyphBuffer);
+    // sub-run painting is not supported for Bidi text.
+    const TextRun& run = runInfo.run;
+    ASSERT((runInfo.from == 0) && (runInfo.to == run.length()));
+    BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
+    bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
+    bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
 
-    if (glyphBuffer.isEmpty())
-        return 0;
+    // FIXME: This ownership should be reversed. We should pass BidiRunList
+    // to BidiResolver in createBidiRunsForLine.
+    BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
+    bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()));
+    if (!bidiRuns.runCount())
+        return;
 
-    drawGlyphBuffer(context, runInfo, glyphBuffer, point);
+    FloatPoint currPoint = point;
+    BidiCharacterRun* bidiRun = bidiRuns.firstRun();
+    while (bidiRun) {
+        TextRun subrun = run.subRun(bidiRun->start(), bidiRun->stop() - bidiRun->start());
+        bool isRTL = bidiRun->level() % 2;
+        subrun.setDirection(isRTL ? RTL : LTR);
+        subrun.setDirectionalOverride(bidiRun->dirOverride(false));
 
-    return totalAdvance;
+        TextRunPaintInfo subrunInfo(subrun);
+        subrunInfo.bounds = runInfo.bounds;
+
+        // TODO: investigate blob consolidation/caching (technically,
+        //       all subruns could be part of the same blob).
+        GlyphBuffer glyphBuffer;
+        float runWidth = buildGlyphBuffer(subrunInfo, glyphBuffer);
+        drawGlyphBuffer(context, subrunInfo, glyphBuffer, point);
+
+        bidiRun = bidiRun->next();
+        currPoint.move(runWidth, 0);
+    }
+
+    bidiRuns.deleteRuns();
 }
 
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
@@ -803,8 +817,20 @@ void Font::drawGlyphBuffer(GraphicsContext* context,
     const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer,
     const FloatPoint& point) const
 {
-    if (!glyphBuffer.size())
+    if (glyphBuffer.isEmpty())
         return;
+
+    if (RuntimeEnabledFeatures::textBlobEnabled()) {
+        // Enabling text-blobs forces the blob rendering path even for uncacheable blobs.
+        TextBlobPtr uncacheableTextBlob;
+        TextBlobPtr& textBlob = runInfo.cachedTextBlob ? *runInfo.cachedTextBlob : uncacheableTextBlob;
+
+        textBlob = buildTextBlob(glyphBuffer);
+        if (textBlob) {
+            drawTextBlob(context, textBlob.get(), point.data());
+            return;
+        }
+    }
 
     // Draw each contiguous run of glyphs that use the same font data.
     const SimpleFontData* fontData = glyphBuffer.fontDataAt(0);

@@ -34,8 +34,6 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
-#include "platform/text/BidiResolver.h"
-#include "platform/text/TextRunIterator.h"
 #include "platform/weborigin/KURL.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkClipStack.h"
@@ -1026,37 +1024,7 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
     if (contextDisabled())
         return;
 
-    // sub-run painting is not supported for Bidi text.
-    const TextRun& run = runInfo.run;
-    ASSERT((runInfo.from == 0) && (runInfo.to == run.length()));
-    BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
-    bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
-    bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
-
-    // FIXME: This ownership should be reversed. We should pass BidiRunList
-    // to BidiResolver in createBidiRunsForLine.
-    BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
-    bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()));
-    if (!bidiRuns.runCount())
-        return;
-
-    FloatPoint currPoint = point;
-    BidiCharacterRun* bidiRun = bidiRuns.firstRun();
-    while (bidiRun) {
-        TextRun subrun = run.subRun(bidiRun->start(), bidiRun->stop() - bidiRun->start());
-        bool isRTL = bidiRun->level() % 2;
-        subrun.setDirection(isRTL ? RTL : LTR);
-        subrun.setDirectionalOverride(bidiRun->dirOverride(false));
-
-        TextRunPaintInfo subrunInfo(subrun);
-        subrunInfo.bounds = runInfo.bounds;
-        float runWidth = font.drawUncachedText(this, subrunInfo, currPoint, customFontNotReadyAction);
-
-        bidiRun = bidiRun->next();
-        currPoint.move(runWidth, 0);
-    }
-
-    bidiRuns.deleteRuns();
+    font.drawBidiText(this, runInfo, point, customFontNotReadyAction);
 }
 
 void GraphicsContext::drawHighlightForText(const Font& font, const TextRun& run, const FloatPoint& point, int h, const Color& backgroundColor, int from, int to)
