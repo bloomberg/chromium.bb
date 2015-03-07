@@ -1408,9 +1408,6 @@ crbug.com/389594 virtual/slimmingpaint/svg/filters/feBlend-all-modes.html [ Need
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
-crbug.com/133097 [ Mac ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-crbug.com/133097 [ Mac ] fast/repaint/scale-page-shrink.html [ NeedsRebaseline ]
-
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
 crbug.com/305036 fast/multicol/span/span-as-immediate-child-generated-content.html [ Failure Pass ]
