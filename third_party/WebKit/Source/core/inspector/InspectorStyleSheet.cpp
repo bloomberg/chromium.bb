@@ -1640,7 +1640,7 @@ String InspectorStyleSheet::sourceMapURL() const
             return commentValue;
         }
     }
-    return m_pageAgent->resourceSourceMapURL(finalURL());
+    return m_pageStyleSheet->contents()->sourceMapURL();
 }
 
 InspectorCSSId InspectorStyleSheet::styleId(CSSStyleDeclaration* style) const

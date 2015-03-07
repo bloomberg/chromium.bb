@@ -158,6 +158,8 @@ public:
     RuleSet& ensureRuleSet(const MediaQueryEvaluator&, AddRuleFlags);
     void clearRuleSet();
 
+    String sourceMapURL() const { return m_sourceMapURL; }
+
     DECLARE_TRACE();
 
 private:
@@ -191,6 +193,7 @@ private:
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_completedClients;
 
     OwnPtrWillBeMember<RuleSet> m_ruleSet;
+    String m_sourceMapURL;
 };
 
 } // namespace

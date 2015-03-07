@@ -289,6 +289,13 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     bool hasValidMIMEType = false;
     String sheetText = cachedStyleSheet->sheetText(enforceMIMEType, &hasValidMIMEType);
 
+    const ResourceResponse& response = cachedStyleSheet->response();
+    m_sourceMapURL = response.httpHeaderField("SourceMap");
+    if (m_sourceMapURL.isEmpty()) {
+        // Try to get deprecated header.
+        m_sourceMapURL = response.httpHeaderField("X-SourceMap");
+    }
+
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
     CSSParser::parseSheet(context, this, sheetText, TextPosition::minimumPosition(), 0, true);
 

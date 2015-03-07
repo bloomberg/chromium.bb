@@ -185,7 +185,6 @@ public:
     String loaderId(DocumentLoader*);
     LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
     LocalFrame* assertFrame(ErrorString*, const String& frameId);
-    const AtomicString& resourceSourceMapURL(const String& url);
     bool deviceMetricsOverrideEnabled();
     void pageScaleFactorChanged();
     bool screencastEnabled();
