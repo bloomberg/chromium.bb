@@ -42,6 +42,8 @@ AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
 AC_FUNC_ALLOCA
 
+AC_CHECK_HEADERS([sys/mkdev.h])
+
 # Initialize libtool
 LT_PREREQ([2.2])
 LT_INIT([disable-static])
