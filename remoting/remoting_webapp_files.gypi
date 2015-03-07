@@ -268,6 +268,7 @@
       'webapp/crd/js/crd_event_handlers.js',
       'webapp/crd/js/crd_main.js',
       'webapp/crd/js/desktop_remoting.js',
+      'webapp/crd/js/it2me_connect_flow.js',
     ],
 
     # These template files are used to construct main.html.

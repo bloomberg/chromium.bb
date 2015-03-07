@@ -55,9 +55,6 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
   /** @private {string} */
   this.defaultRemapKeys_ = defaultRemapKeys;
 
-  /** @private {string} */
-  this.clientJid_ = '';
-
   /** @private {remoting.DesktopConnectedView.Mode} */
   this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
 
@@ -90,10 +87,7 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
   /** @private {remoting.ClientSession} */
   this.clientSession_ = null;
 
-  /** @private {XMLHttpRequest} */
-  this.pendingXhr_ = null;
-
-  /** @type {remoting.CredentialsProvider} */
+  /** @private {remoting.CredentialsProvider} */
   this.credentialsProvider_ = null;
 };
 
@@ -115,14 +109,14 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
 remoting.SessionConnectorImpl.prototype.connectMe2Me =
     function(host, fetchPin, fetchThirdPartyToken,
              clientPairingId, clientPairedSecret) {
-  this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.logHostOfflineErrors_ = false;
   var credentialsProvider = new remoting.CredentialsProvider({
     fetchPin: fetchPin,
     pairingInfo: { id: clientPairingId, secret: clientPairedSecret },
     fetchThirdPartyToken: fetchThirdPartyToken
   });
-  this.connectInternal_(host, credentialsProvider);
+  this.connect(
+      remoting.DesktopConnectedView.Mode.ME2ME, host, credentialsProvider);
 };
 
 /**
@@ -135,9 +129,9 @@ remoting.SessionConnectorImpl.prototype.connectMe2Me =
  * @return {void} Nothing.
  */
 remoting.SessionConnectorImpl.prototype.retryConnectMe2Me = function(host) {
-  this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
   this.logHostOfflineErrors_ = true;
-  this.connectInternal_(host, this.credentialsProvider_);
+  this.connect(remoting.DesktopConnectedView.Mode.ME2ME, host,
+               this.credentialsProvider_);
 };
 
 /**
@@ -157,7 +151,9 @@ remoting.SessionConnectorImpl.prototype.connectMe2App =
   var credentialsProvider = new remoting.CredentialsProvider({
     fetchThirdPartyToken : fetchThirdPartyToken
   });
-  this.connectInternal_(host, credentialsProvider);
+  this.connect(
+      remoting.DesktopConnectedView.Mode.APP_REMOTING, host,
+      credentialsProvider);
 };
 
 /**
@@ -176,48 +172,20 @@ remoting.SessionConnectorImpl.prototype.updatePairingInfo =
 /**
  * Initiates a connection.
  *
+ * @param {remoting.DesktopConnectedView.Mode} mode
  * @param {remoting.Host} host the Host to connect to.
  * @param {remoting.CredentialsProvider} credentialsProvider
  * @return {void} Nothing.
  * @private
  */
-remoting.SessionConnectorImpl.prototype.connectInternal_ =
-    function(host, credentialsProvider) {
+remoting.SessionConnectorImpl.prototype.connect =
+    function(mode, host, credentialsProvider) {
   // Cancel any existing connect operation.
   this.cancel();
-
+  this.connectionMode_ = mode;
   this.host_ = host;
   this.credentialsProvider_ = credentialsProvider;
   this.connectSignaling_();
-};
-
-/**
- * Initiate an IT2Me connection.
- *
- * @param {string} accessCode The access code as entered by the user.
- * @return {void} Nothing.
- */
-remoting.SessionConnectorImpl.prototype.connectIT2Me = function(accessCode) {
-  var kSupportIdLen = 7;
-  var kHostSecretLen = 5;
-  var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
-
-  // Cancel any existing connect operation.
-  this.cancel();
-
-  var normalizedAccessCode = this.normalizeAccessCode_(accessCode);
-  if (normalizedAccessCode.length != kAccessCodeLen) {
-    this.onError_(remoting.Error.INVALID_ACCESS_CODE);
-    return;
-  }
-  var hostId = normalizedAccessCode.substring(0, kSupportIdLen);
-  this.credentialsProvider_ = new remoting.CredentialsProvider({
-    accessCode: normalizedAccessCode
-  });
-  this.connectionMode_ = remoting.DesktopConnectedView.Mode.IT2ME;
-  remoting.identity.getToken().then(
-      this.connectIT2MeWithToken_.bind(this, hostId),
-      remoting.Error.handler(this.onError_));
 };
 
 /**
@@ -231,7 +199,7 @@ remoting.SessionConnectorImpl.prototype.reconnect = function() {
     return;
   }
   this.logHostOfflineErrors_ = false;
-  this.connectInternal_(this.host_, this.credentialsProvider_);
+  this.connect(this.connectionMode_, this.host_, this.credentialsProvider_);
 };
 
 /**
@@ -241,10 +209,6 @@ remoting.SessionConnectorImpl.prototype.cancel = function() {
   if (this.clientSession_) {
     this.clientSession_.removePlugin();
     this.clientSession_ = null;
-  }
-  if (this.pendingXhr_) {
-    this.pendingXhr_.abort();
-    this.pendingXhr_ = null;
   }
   this.reset();
 };
@@ -323,56 +287,6 @@ remoting.SessionConnectorImpl.prototype.onSignalingState_ = function(state) {
     case remoting.SignalStrategy.State.FAILED:
       this.onError_(this.signalStrategy_.getError());
       break;
-  }
-};
-
-/**
- * Continue an IT2Me connection once an access token has been obtained.
- *
- * @param {string} hostId
- * @param {string} token An OAuth2 access token.
- * @return {void} Nothing.
- * @private
- */
-remoting.SessionConnectorImpl.prototype.connectIT2MeWithToken_ =
-    function(hostId, token) {
-  // Resolve the host id to get the host JID.
-  this.pendingXhr_ = remoting.xhr.start({
-    method: 'GET',
-    url: remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
-        encodeURIComponent(hostId),
-    onDone: this.onIT2MeHostInfo_.bind(this, hostId),
-    oauthToken: token
-  });
-};
-
-/**
- * Continue an IT2Me connection once the host JID has been looked up.
- *
- * @param {string} hostId
- * @param {XMLHttpRequest} xhr The server response to the support-hosts query.
- * @return {void} Nothing.
- * @private
- */
-remoting.SessionConnectorImpl.prototype.onIT2MeHostInfo_ =
-    function(hostId, xhr) {
-  this.pendingXhr_ = null;
-  if (xhr.status == 200) {
-    var host = /** @type {{data: {jabberId: string, publicKey: string}}} */
-        (base.jsonParseSafe(xhr.responseText));
-    if (host && host.data && host.data.jabberId && host.data.publicKey) {
-      this.host_ = new remoting.Host();
-      this.host_.hostId = hostId;
-      this.host_.jabberId = host.data.jabberId;
-      this.host_.publicKey = host.data.publicKey;
-      this.host_.hostName = host.data.jabberId.split('/')[0];
-      this.connectSignaling_();
-      return;
-    } else {
-      console.error('Invalid "support-hosts" response from server.');
-    }
-  } else {
-    this.onError_(this.translateSupportHostsError_(xhr.status));
   }
 };
 
@@ -472,42 +386,10 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
 };
 
 /**
- * @param {number} error An HTTP error code returned by the support-hosts
- *     endpoint.
- * @return {remoting.Error} The equivalent remoting.Error code.
- * @private
- */
-remoting.SessionConnectorImpl.prototype.translateSupportHostsError_ =
-    function(error) {
-  switch (error) {
-    case 0: return remoting.Error.NETWORK_FAILURE;
-    case 404: return remoting.Error.INVALID_ACCESS_CODE;
-    case 502: // No break
-    case 503: return remoting.Error.SERVICE_UNAVAILABLE;
-    default: return remoting.Error.UNEXPECTED;
-  }
-};
-
-/**
- * Normalize the access code entered by the user.
- *
- * @param {string} accessCode The access code, as entered by the user.
- * @return {string} The normalized form of the code (whitespace removed).
- * @private
- */
-remoting.SessionConnectorImpl.prototype.normalizeAccessCode_ =
-    function(accessCode) {
-  // Trim whitespace.
-  return accessCode.replace(/\s/g, '');
-};
-
-
-/**
  * @constructor
  * @implements {remoting.SessionConnectorFactory}
  */
-remoting.DefaultSessionConnectorFactory = function() {
-};
+remoting.DefaultSessionConnectorFactory = function() {};
 
 /**
  * @param {HTMLElement} clientContainer Container element for the client view.

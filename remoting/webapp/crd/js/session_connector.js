@@ -74,13 +74,15 @@ remoting.SessionConnector.prototype.updatePairingInfo =
     function(clientId, sharedSecret) {};
 
 /**
- * Initiate an IT2Me connection.
+ * Initiates a remote connection.
  *
- * @param {string} accessCode The access code as entered by the user.
+ * @param {remoting.DesktopConnectedView.Mode} mode
+ * @param {remoting.Host} host
+ * @param {remoting.CredentialsProvider} credentialsProvider
  * @return {void} Nothing.
  */
-remoting.SessionConnector.prototype.connectIT2Me =
-    function(accessCode) {};
+remoting.SessionConnector.prototype.connect =
+    function(mode, host, credentialsProvider) {};
 
 /**
  * Reconnect a closed connection.

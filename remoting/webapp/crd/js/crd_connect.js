@@ -19,7 +19,12 @@ remoting.connectIT2Me = function() {
   var connector = remoting.app.getSessionConnector();
   var accessCode = document.getElementById('access-code-entry').value;
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-  connector.connectIT2Me(accessCode);
+  remoting.It2MeConnectFlow.start(connector, accessCode).
+    catch(function(reason){
+      var errorDiv = document.getElementById('connect-error-message');
+      l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (reason));
+      remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
+  });
 };
 
 /**
