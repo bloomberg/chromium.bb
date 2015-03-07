@@ -431,8 +431,9 @@
       'filepath': 'content/common/sandbox.*linux.cc',
     },
     'md_settings': {
-      'filepath': 'ui/webui/resources/cr_element|'\
-                  'chrome/browser/resources/md_settings/',
+      'filepath': 'ui/webui/resources/cr_element'\
+                  '|chrome/browser/resources/md_settings/'\
+                  '|chrome/browser/resources/settings/',
     },
     'media': {
       'filepath': 'media/|third_party/(ffmpeg|openmax)/|webmediaplayer|'\
