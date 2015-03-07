@@ -1758,8 +1758,6 @@ const char* LayoutGrid::name() const
 {
     if (isFloating())
         return "LayoutGrid (floating)";
-    if (isOutOfFlowPositioned())
-        return "LayoutGrid (positioned)";
     if (isAnonymous())
         return "LayoutGrid (anonymous)";
     if (isRelPositioned())

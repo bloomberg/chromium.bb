@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (8,8) size 34x24
-  LayoutTable {TABLE} at (8,8) size 34x24
+  LayoutTable (positioned) {TABLE} at (8,8) size 34x24
     LayoutTableSection {TBODY} at (0,0) size 34x24
       LayoutTableRow {TR} at (0,2) size 34x20
         LayoutTableCell {TD} at (2,2) size 30x20 [r=0 c=0 rs=1 cs=1]

@@ -10,7 +10,7 @@ layer at (0,0) size 800x56
         text run at (0,20) width 536: "You should see a 400x300 rect containing a tiled rendering of the Acid3 reference image."
       LayoutText {#text} at (0,0) size 0x0
 layer at (10,50) size 406x306
-  LayoutSVGRoot {svg} at (10,50) size 406x306
+  LayoutSVGRoot (positioned) {svg} at (10,50) size 406x306
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourcePattern {pattern} [id="pattern"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse]
         LayoutSVGImage {image} at (13,53) size 403x303

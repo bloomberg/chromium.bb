@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 40x24
-  LayoutTable {table} at (0,0) size 40x24
+  LayoutTable (positioned) {table} at (0,0) size 40x24
     LayoutTableSection (anonymous) at (0,0) size 40x24
       LayoutTableRow {tr} at (0,2) size 40x20
         LayoutTableCell {td} at (2,2) size 36x20 [r=0 c=0 rs=1 cs=1]

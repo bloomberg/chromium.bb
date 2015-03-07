@@ -8,4 +8,4 @@ layer at (0,0) size 800x81
           text run at (0,0) width 523: "Test passes if there is no white space between the blue box below and the orange lines."
       LayoutBlockFlow {DIV} at (0,36) size 96x21 [border: (3px solid #FFA500) none (3px solid #FFA500) none]
 layer at (8,55) size 15x15
-  LayoutImage {IMG} at (8,55) size 15x15
+  LayoutImage (positioned) {IMG} at (8,55) size 15x15

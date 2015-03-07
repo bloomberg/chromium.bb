@@ -57,7 +57,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,100) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
 layer at (8,128) size 293x20
-  LayoutTable {TABLE} at (0,0) size 293x20
+  LayoutTable (positioned) {TABLE} at (0,0) size 293x20
     LayoutTableSection {TBODY} at (0,0) size 293x20
       LayoutTableRow {TR} at (0,0) size 293x20
         LayoutTableCell {TD} at (0,10) size 11x0 [bgcolor=#00FF00] [r=0 c=0 rs=1 cs=1]
@@ -81,7 +81,7 @@ layer at (8,128) size 293x20
         LayoutTableCell {TD} at (262,10) size 31x0 [bgcolor=#00FF00] [r=0 c=18 rs=1 cs=1]
         LayoutTableCell {TD} at (293,10) size 0x0 [r=0 c=19 rs=1 cs=1]
 layer at (8,128) size 1000x20
-  LayoutTable {TABLE} at (0,0) size 1000x20
+  LayoutTable (positioned) {TABLE} at (0,0) size 1000x20
     LayoutTableSection {TBODY} at (0,0) size 1000x20
       LayoutTableRow {TR} at (0,0) size 1000x20
         LayoutTableCell {TD} at (0,0) size 12x20 [bgcolor=#0000007F] [r=0 c=0 rs=1 cs=1]

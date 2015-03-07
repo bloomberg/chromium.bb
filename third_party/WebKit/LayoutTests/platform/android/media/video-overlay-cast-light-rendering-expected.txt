@@ -21,16 +21,16 @@ layer at (8,52) size 352x288
 layer at (8,52) size 352x253
   LayoutFlexibleBox {DIV} at (0,0) size 352x253
 layer at (26,65) size 30x30
-  LayoutButton {INPUT} at (17.59,12.64) size 30x30
+  LayoutButton (positioned) {INPUT} at (17.59,12.64) size 30x30
 layer at (8,345) size 320x262
   LayoutFlexibleBox {DIV} at (0,0) size 320x262
     LayoutBlockFlow {DIV} at (0,227) size 320x35
 layer at (8,345) size 320x227
   LayoutFlexibleBox {DIV} at (0,0) size 320x227
 layer at (24,356) size 30x30
-  LayoutButton {INPUT} at (16,11.34) size 30x30
+  LayoutButton (positioned) {INPUT} at (16,11.34) size 30x30
 layer at (8,612) size 320x262
-  LayoutVideo {VIDEO} at (8,612) size 320x262
+  LayoutVideo (positioned) {VIDEO} at (8,612) size 320x262
 layer at (8,612) size 320x262
   LayoutFlexibleBox {DIV} at (0,0) size 320x262
     LayoutBlockFlow {DIV} at (0,227) size 320x35

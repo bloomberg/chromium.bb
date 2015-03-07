@@ -18,7 +18,7 @@ layer at (18,122) size 0x17
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x17 [bgcolor=#808080]
     LayoutBR {BR} at (1,1) size 0x17
 layer at (19,123) size 50x17
-  LayoutImage {IMG} at (1,1) size 50x17 [bgcolor=#0000FF]
+  LayoutImage (positioned) {IMG} at (1,1) size 50x17 [bgcolor=#0000FF]
 layer at (18,234) size 764x102
   LayoutBlockFlow (relative positioned) {DIV} at (10,224) size 764x102 [border: (1px solid #000000)]
     LayoutText {#text} at (0,0) size 0x0
@@ -27,7 +27,7 @@ layer at (18,234) size 0x17
     LayoutText {#text} at (0,0) size 0x0
     LayoutBR {BR} at (1,1) size 0x17
 layer at (19,235) size 50x17
-  LayoutImage {IMG} at (1,1) size 50x17 [bgcolor=#0000FF]
+  LayoutImage (positioned) {IMG} at (1,1) size 50x17 [bgcolor=#0000FF]
 layer at (18,346) size 764x102
   LayoutBlockFlow (relative positioned) {DIV} at (10,336) size 764x102 [border: (1px solid #000000)]
     LayoutText {#text} at (0,0) size 0x0
@@ -36,7 +36,7 @@ layer at (18,346) size 0x35
     LayoutBR {BR} at (1,1) size 0x17
     LayoutBR {BR} at (1,19) size 0x17
 layer at (19,347) size 50x35
-  LayoutImage {IMG} at (1,1) size 50x35 [bgcolor=#0000FF]
+  LayoutImage (positioned) {IMG} at (1,1) size 50x35 [bgcolor=#0000FF]
 layer at (18,458) size 764x102
   LayoutBlockFlow (relative positioned) {DIV} at (10,448) size 764x102 [border: (1px solid #000000)]
     LayoutText {#text} at (0,0) size 0x0
@@ -48,4 +48,4 @@ layer at (18,458) size 0x71
     LayoutBR {BR} at (1,37) size 0x17
     LayoutBR {BR} at (1,55) size 0x17
 layer at (19,459) size 50x71
-  LayoutImage {IMG} at (1,1) size 50x71 [bgcolor=#0000FF]
+  LayoutImage (positioned) {IMG} at (1,1) size 50x71 [bgcolor=#0000FF]

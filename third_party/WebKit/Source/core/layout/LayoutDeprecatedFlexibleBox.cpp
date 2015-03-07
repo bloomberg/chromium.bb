@@ -1023,8 +1023,6 @@ const char* LayoutDeprecatedFlexibleBox::name() const
 {
     if (isFloating())
         return "LayoutDeprecatedFlexibleBox (floating)";
-    if (isOutOfFlowPositioned())
-        return "LayoutDeprecatedFlexibleBox (positioned)";
     if (isAnonymous())
         return "LayoutDeprecatedFlexibleBox (anonymous)";
     if (isRelPositioned())

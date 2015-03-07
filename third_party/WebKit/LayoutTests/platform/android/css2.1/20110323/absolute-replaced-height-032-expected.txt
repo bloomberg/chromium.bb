@@ -7,7 +7,7 @@ layer at (0,0) size 800x52
         LayoutText {#text} at (0,0) size 290x19
           text run at (0,0) width 290: "Test passes if there is no red visible on the page."
 layer at (8,148) size 306x156
-  LayoutIFrame {IFRAME} at (0,96) size 306x156 [border: (3px solid #FF0000)]
+  LayoutIFrame (positioned) {IFRAME} at (0,96) size 306x156 [border: (3px solid #FF0000)]
     layer at (0,0) size 300x150
       LayoutView at (0,0) size 300x150
     layer at (0,0) size 300x150

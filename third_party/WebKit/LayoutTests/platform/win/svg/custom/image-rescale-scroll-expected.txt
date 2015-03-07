@@ -12,6 +12,6 @@ layer at (0,0) size 800x600
           text run at (570,0) width 201: "occluding the part of the image"
           text run at (0,18) width 244: "adjacent to the bottom of the window."
 layer at (50,580) size 160x105 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
-  LayoutImage {IMG} at (50,580) size 160x105
+  LayoutImage (positioned) {IMG} at (50,580) size 160x105
 layer at (0,600) size 300x10 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {DIV} at (0,600) size 300x10 [bgcolor=#FFFFFF]

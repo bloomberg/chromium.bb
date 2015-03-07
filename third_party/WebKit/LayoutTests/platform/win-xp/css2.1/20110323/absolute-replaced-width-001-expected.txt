@@ -9,4 +9,4 @@ layer at (0,0) size 800x258
       LayoutBlockFlow {DIV} at (0,36) size 198x198 [border: (3px solid #000000)]
         LayoutBlockFlow {DIV} at (3,18) size 15x15 [bgcolor=#FFA500]
 layer at (11,55) size 15x15
-  LayoutImage {IMG} at (11,55) size 15x15
+  LayoutImage (positioned) {IMG} at (11,55) size 15x15

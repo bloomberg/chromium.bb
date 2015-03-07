@@ -55,7 +55,7 @@ layer at (8,90) size 320x30
         LayoutBlockFlow {DIV} at (1,-8) size 65.75x24
           LayoutBlockFlow {DIV} at (34.75,0) size 24x24
 layer at (8,138) size 320x100
-  LayoutMedia {AUDIO} at (8,138) size 320x100 [bgcolor=#0000FF]
+  LayoutMedia (positioned) {AUDIO} at (8,138) size 320x100 [bgcolor=#0000FF]
 layer at (8,138) size 320x100
   LayoutFlexibleBox {DIV} at (0,0) size 320x100
     LayoutBlockFlow {DIV} at (0,70) size 320x30

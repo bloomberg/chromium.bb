@@ -131,7 +131,7 @@ layer at (340,240) size 300x100
 layer at (340,240) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (340,240) size 80x80
-  LayoutImage {IMG} at (0,0) size 80x80
+  LayoutImage (positioned) {IMG} at (0,0) size 80x80
 layer at (440,240) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 24x17
@@ -145,7 +145,7 @@ layer at (340,340) size 300x100
 layer at (340,340) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (340,340) size 80x80
-  LayoutImage {IMG} at (0,0) size 80x80
+  LayoutImage (positioned) {IMG} at (0,0) size 80x80
 layer at (440,340) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (100,0) size 80x80
     LayoutText {#text} at (0,0) size 32x17

@@ -3144,8 +3144,7 @@ const char* LayoutBlockFlow::name() const
 {
     if (isFloating())
         return "LayoutBlockFlow (floating)";
-    if (isOutOfFlowPositioned())
-        return "LayoutBlockFlow (positioned)";
+
     if (style()) {
         if (isAnonymousColumnsBlock())
             return "LayoutBlockFlow (anonymous multi-column)";

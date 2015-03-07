@@ -11,10 +11,10 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (1,18) size 279x18
           text run at (1,18) width 279: "These two boxes should be the same width."
 layer at (287,50) size 100x100
-  LayoutImage {IMG} at (287.17,50) size 100x100 [bgcolor=#008000]
+  LayoutImage (positioned) {IMG} at (287.17,50) size 100x100 [bgcolor=#008000]
 layer at (287,150) size 100x100
-  LayoutImage {IMG} at (287.17,150) size 100x100 [bgcolor=#008000]
+  LayoutImage (positioned) {IMG} at (287.17,150) size 100x100 [bgcolor=#008000]
 layer at (287,250) size 100x100
-  LayoutImage {IMG} at (287.17,250) size 100x100 [bgcolor=#008000]
+  LayoutImage (positioned) {IMG} at (287.17,250) size 100x100 [bgcolor=#008000]
 layer at (287,350) size 100x100
-  LayoutImage {IMG} at (287.17,350) size 100x100 [bgcolor=#008000]
+  LayoutImage (positioned) {IMG} at (287.17,350) size 100x100 [bgcolor=#008000]

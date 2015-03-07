@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (8,8) size 404x304
-  LayoutIFrame {IFRAME} at (8,8) size 404x304 [border: (2px inset #EEEEEE)]
+  LayoutIFrame (positioned) {IFRAME} at (8,8) size 404x304 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 1008x1016
       LayoutView at (0,0) size 385x285
     layer at (0,0) size 385x1016

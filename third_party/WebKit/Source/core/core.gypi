@@ -3807,6 +3807,7 @@
             'layout/LayoutBlockTest.cpp',
             'layout/LayoutInlineTest.cpp',
             'layout/LayoutMultiColumnFlowThreadTest.cpp',
+            'layout/LayoutObjectTest.cpp',
             'layout/LayoutPartTest.cpp',
             'layout/LayoutTableCellTest.cpp',
             'layout/LayoutTableRowTest.cpp',

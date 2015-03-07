@@ -27,21 +27,21 @@ layer at (0,0) size 800x196
           text run at (0,60) width 322: "tall. The other two boxes should both be shorter than "
           text run at (322,60) width 193: "50px, and have the same height."
 layer at (120,550) size 120x50
-  LayoutTable {TABLE} at (120,550) size 120x50 [border: (1px solid #FF0000)]
+  LayoutTable (positioned) {TABLE} at (120,550) size 120x50 [border: (1px solid #FF0000)]
     LayoutTableSection {TBODY} at (1,1) size 118x48
       LayoutTableRow {TR} at (0,2) size 118x44
         LayoutTableCell {TD} at (2,13) size 114x22 [r=0 c=0 rs=1 cs=1]
           LayoutText {#text} at (1,1) size 55x19
             text run at (1,1) width 55: "Tall table"
 layer at (240,572) size 120x28
-  LayoutTable {TABLE} at (240,572) size 120x28 [border: (1px solid #FF0000)]
+  LayoutTable (positioned) {TABLE} at (240,572) size 120x28 [border: (1px solid #FF0000)]
     LayoutTableSection {TBODY} at (1,1) size 118x26
       LayoutTableRow {TR} at (0,2) size 118x22
         LayoutTableCell {TD} at (2,2) size 114x22 [r=0 c=0 rs=1 cs=1]
           LayoutText {#text} at (1,1) size 79x19
             text run at (1,1) width 79: "Normal table"
 layer at (360,572) size 120x28
-  LayoutTable {TABLE} at (360,572) size 120x28 [border: (1px solid #FF0000)]
+  LayoutTable (positioned) {TABLE} at (360,572) size 120x28 [border: (1px solid #FF0000)]
     LayoutTableSection {TBODY} at (1,1) size 118x26
       LayoutTableRow {TR} at (0,2) size 118x22
         LayoutTableCell {TD} at (2,2) size 114x22 [r=0 c=0 rs=1 cs=1]

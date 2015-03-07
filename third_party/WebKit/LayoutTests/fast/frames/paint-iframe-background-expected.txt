@@ -6,7 +6,7 @@ layer at (0,0) size 800x8
 layer at (20,50) size 200x100
   LayoutBlockFlow (positioned) {DIV} at (20,50) size 200x100 [bgcolor=#008000]
 layer at (20,50) size 200x100
-  LayoutIFrame {IFRAME} at (20,50) size 200x100
+  LayoutIFrame (positioned) {IFRAME} at (20,50) size 200x100
     layer at (0,0) size 200x100
       LayoutView at (0,0) size 200x100
     layer at (0,0) size 200x16

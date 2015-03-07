@@ -22,9 +22,9 @@ layer at (18,64) size 100x100
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 100x100 [bgcolor=#808080]
     LayoutBlockFlow {DIV} at (0,0) size 100x100
 layer at (18,64) size 50x100
-  LayoutImage {IMG} at (0,0) size 50x100 [bgcolor=#0000FF]
+  LayoutImage (positioned) {IMG} at (0,0) size 50x100 [bgcolor=#0000FF]
 layer at (18,274) size 764x200
   LayoutBlockFlow (relative positioned) {DIV} at (10,266) size 764x200
     LayoutText {#text} at (0,0) size 0x0
 layer at (18,274) size 50x99
-  LayoutImage {IMG} at (0,0) size 50x99 [bgcolor=#0000FF]
+  LayoutImage (positioned) {IMG} at (0,0) size 50x99 [bgcolor=#0000FF]

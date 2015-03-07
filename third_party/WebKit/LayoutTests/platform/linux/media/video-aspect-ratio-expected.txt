@@ -58,14 +58,14 @@ layer at (168,404) size 160x85
 layer at (328,404) size 320x120
   LayoutBlockFlow (relative positioned) {DIV} at (320,360) size 320x120
 layer at (328,404) size 160x120
-  LayoutVideo {VIDEO} at (0,0) size 160x120
+  LayoutVideo (positioned) {VIDEO} at (0,0) size 160x120
 layer at (328,404) size 160x120
   LayoutFlexibleBox {DIV} at (0,0) size 160x120
     LayoutBlockFlow {DIV} at (0,85) size 160x35
 layer at (328,404) size 160x85
   LayoutFlexibleBox {DIV} at (0,0) size 160x85
 layer at (488,404) size 160x120
-  LayoutVideo {VIDEO} at (160,0) size 160x120
+  LayoutVideo (positioned) {VIDEO} at (160,0) size 160x120
 layer at (488,404) size 160x120
   LayoutFlexibleBox {DIV} at (0,0) size 160x120
     LayoutBlockFlow {DIV} at (0,85) size 160x35

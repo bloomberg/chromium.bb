@@ -33,7 +33,7 @@ layer at (0,0) size 800x600
               text run at (8,50) width 38: "please"
       LayoutBlockFlow {P} at (0,218) size 784x0
 layer at (8,226) size 100x50
-  LayoutButton {BUTTON} at (8,226) size 100x50 [bgcolor=#C0C0C0] [border: (2px outset #FFFF00)]
+  LayoutButton (positioned) {BUTTON} at (8,226) size 100x50 [bgcolor=#C0C0C0] [border: (2px outset #FFFF00)]
     LayoutBlockFlow (anonymous) at (12,12) size 76x204
       LayoutBlockFlow {DIV} at (0,0) size 74x204 [bgcolor=#008080] [border: (2px solid #800080)]
         LayoutBlockFlow (floating) {DIV} at (52,2) size 20x100 [bgcolor=#006400]

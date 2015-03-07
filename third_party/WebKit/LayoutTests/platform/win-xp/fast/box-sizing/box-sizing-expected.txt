@@ -82,10 +82,10 @@ layer at (103,479) size 20x20
     LayoutBR {BR} at (6,26) size 0x19
     LayoutBR {BR} at (6,46) size 0x19
 layer at (13,818) size 20x20 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutImage {IMG} at (13,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+  LayoutImage (positioned) {IMG} at (13,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
 layer at (43,818) size 20x20 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutImage {IMG} at (43,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+  LayoutImage (positioned) {IMG} at (43,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
 layer at (73,818) size 20x20 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutImage {IMG} at (73,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+  LayoutImage (positioned) {IMG} at (73,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
 layer at (103,818) size 20x20 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutImage {IMG} at (103,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
+  LayoutImage (positioned) {IMG} at (103,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
