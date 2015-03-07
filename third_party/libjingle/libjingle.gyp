@@ -447,8 +447,6 @@
             '<(libjingle_source)/talk/media/webrtc/webrtccommon.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcpassthroughrender.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcpassthroughrender.h',
-            '<(libjingle_source)/talk/media/webrtc/webrtctexturevideoframe.cc',
-            '<(libjingle_source)/talk/media/webrtc/webrtctexturevideoframe.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideocapturer.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideocapturer.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoframe.cc',
