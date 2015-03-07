@@ -245,9 +245,14 @@ class BranchUtilStage(generic_stages.BuilderStage):
 
     cros_build_lib.Info('Updating manifest for %s', new_branch_name)
 
+    default_nodes = root.findall('default')
+    for node in default_nodes:
+      node.attrib['revision'] = new_branch_name
+
     for node in root.findall('project'):
       path = node.attrib['path']
       checkout = src_manifest.FindCheckoutFromPath(path)
+
       if checkout.IsBranchableProject():
         # Point at the new branch.
         node.attrib.pop('revision', None)
@@ -257,6 +262,9 @@ class BranchUtilStage(generic_stages.BuilderStage):
           node.attrib['revision'] = '%s%s' % (new_branch_name, suffix)
           cros_build_lib.Info('Pointing project %s at: %s',
                               node.attrib['name'], node.attrib['revision'])
+        elif not default_nodes:
+          # If there isn't a default node we have to add the revision directly.
+          node.attrib['revision'] = new_branch_name
       else:
         # Set this tag to any string to avoid pinning to a SHA1 on branch.
         if cros_build_lib.BooleanShellValue(node.get('pin'), True):
@@ -277,9 +285,6 @@ class BranchUtilStage(generic_stages.BuilderStage):
         upstream = checkout.get('upstream')
         if upstream is not None:
           node.attrib['upstream'] = upstream
-
-    for node in root.findall('default'):
-      node.attrib['revision'] = new_branch_name
 
     doc.write(manifest_path)
     return [node.attrib['name'] for node in root.findall('include')]
