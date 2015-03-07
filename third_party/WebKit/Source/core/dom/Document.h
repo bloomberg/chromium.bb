@@ -911,7 +911,6 @@ public:
     bool loadEventFinished() const { return m_loadEventProgress >= LoadEventCompleted; }
     bool unloadStarted() const { return m_loadEventProgress >= PageHideInProgress; }
     bool processingBeforeUnload() const { return m_loadEventProgress == BeforeUnloadEventInProgress; }
-    bool isLoadEventCompleted() const { return m_loadEventProgress == LoadEventCompleted; }
     void suppressLoadEvent();
 
     void setContainsPlugins() { m_containsPlugins = true; }
