@@ -12459,6 +12459,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Application languages used for UI.</summary>
 </histogram>
 
+<histogram name="Launch.HomeScreen" enum="LaunchFromHomeScreen">
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    Records how Chrome handled a launch from an Android Home screen shortcut.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.All.SafeThreadAccess" units="accesses">
   <obsolete>
     Deprecated 2013-10. No thread-unsafety was found.
@@ -52057,6 +52064,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="HandleUpdateOrigins Empty"/>
   <int value="7" label="HandleUpdateOrigins Parsed"/>
   <int value="8" label="HandleUpdateOrigins Invalid"/>
+</enum>
+
+<enum name="LaunchFromHomeScreen" type="int">
+  <int value="0" label="Launched as standalone web app"/>
+  <int value="1" label="Launched as a tab"/>
 </enum>
 
 <enum name="LevelDBCorruptionTypes" type="int">

@@ -11999,13 +11999,4 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="webapps.LaunchedFromHome">
-  <owner>dfalcantara@chromium.org</owner>
-  <description>
-    User launched a WebappActivity from the Android Home screen.  This
-    explicitly does not count relaunching WebappActivities via Android's
-    Recents menu.
-  </description>
-</action>
-
 </actions>

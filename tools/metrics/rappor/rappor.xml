@@ -106,6 +106,24 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Launch.HomeScreen.Shortcut" type="ETLD_PLUS_ONE">
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that was launched from the Android Home screen into a
+    tab.  This explicitly does not count relaunches via the Android Recents
+    menu.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Launch.HomeScreen.Standalone" type="ETLD_PLUS_ONE">
+  <owner>dfalcantara@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that was launched from the Android Home screen into a
+    WebappActivity.  This explicitly does not count relaunches via the Android
+    Recents menu.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Plugins.FlashOriginUrl" type="ETLD_PLUS_ONE">
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -207,15 +225,6 @@ components/rappor/rappor_service.cc.
   <summary>
     The domain+registry of a URL that triggered an SSL interstitial.     Domains
     for bad-clock warnings are not reported.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="webapps.LaunchURL" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was launched from the Android Home screen into a
-    WebappActivity.  This explicitly does not count relaunches via the Android
-    Recents menu.
   </summary>
 </rappor-metric>
 

@@ -32,6 +32,7 @@
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/logo_bridge.h"
+#include "chrome/browser/android/metrics/launch_metrics.h"
 #include "chrome/browser/android/metrics/uma_bridge.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
@@ -55,7 +56,6 @@
 #include "chrome/browser/android/tab_state.h"
 #include "chrome/browser/android/url_utilities.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
-#include "chrome/browser/android/webapps/webapp_metrics.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory_android.h"
 #include "chrome/browser/dom_distiller/tab_utils_android.h"
@@ -192,6 +192,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"IntentHelper", RegisterIntentHelper},
     {"JavascriptAppModalDialog",
      JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog},
+    {"LaunchMetrics", metrics::RegisterLaunchMetrics},
     {"LayerTitleCache", chrome::android::RegisterLayerTitleCache},
     {"LocationSettings", LocationSettingsImpl::Register},
     {"LogoBridge", RegisterLogoBridge},
@@ -237,7 +238,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"UmaSessionStats", RegisterUmaSessionStats},
     {"UrlUtilities", RegisterUrlUtilities},
     {"Variations", variations::android::RegisterVariations},
-    {"WebappMetrics", webapps::WebappMetrics::Register},
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
     {"WebsiteSettingsPopupAndroid",
      WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid},
