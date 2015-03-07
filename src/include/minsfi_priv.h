@@ -13,6 +13,10 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_base.h"
+
+EXTERN_C_BEGIN
+
 /*
  * An integer type capable of holding an address converted from an untrusted
  * pointer. Functions in the minsfi_ptr.h header file convert between
@@ -97,5 +101,7 @@ MinsfiSandbox *MinsfiGetActiveSandbox(void);
  * data structure to its own storage.
  */
 void MinsfiSetActiveSandbox(const MinsfiSandbox *sb);
+
+EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_INCLUDE_MINSFI_PRIV_H_

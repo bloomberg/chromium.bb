@@ -10,6 +10,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "native_client/src/include/nacl_base.h"
+
+EXTERN_C_BEGIN
+
 /*
  * Allocates a memory region for the sandbox and initializes it. Returns TRUE
  * if it was successful or if the sandbox has already been initialized.
@@ -28,5 +32,7 @@ int MinsfiInvokeSandbox(int argc, char **argv);
  * a subspace exists but could not be destroyed.
  */
 bool MinsfiDestroySandbox(void);
+
+EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_INCLUDE_MINSFI_H_
