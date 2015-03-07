@@ -203,7 +203,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
   // Can't return search/suggest results for bogus input.
   if (called_due_to_focus ||
       input.type() == metrics::OmniboxInputType::INVALID) {
-    Stop(true);
+    Stop(true, false);
     return;
   }
 
@@ -226,7 +226,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   if (!default_provider && !keyword_provider) {
     // No valid providers.
-    Stop(true);
+    Stop(true, false);
     return;
   }
 
@@ -240,7 +240,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
       !providers_.equal(default_provider_keyword, keyword_provider_keyword)) {
     // Cancel any in-flight suggest requests.
     if (!done_)
-      Stop(false);
+      Stop(false, false);
   }
 
   providers_.set(default_provider_keyword, keyword_provider_keyword);
@@ -258,7 +258,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
       match.allowed_to_be_default_match = true;
       matches_.push_back(match);
     }
-    Stop(true);
+    Stop(true, false);
     return;
   }
 
@@ -286,7 +286,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
   UpdateMatches();
 }
 
-void SearchProvider::Stop(bool clear_cached_results) {
+void SearchProvider::Stop(bool clear_cached_results,
+                          bool due_to_user_inactivity) {
   StopSuggest();
   done_ = true;
 

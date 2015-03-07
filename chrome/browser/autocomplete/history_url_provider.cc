@@ -493,7 +493,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // re-run the query from scratch and ignore |minimal_changes|.
 
   // Cancel any in-progress query.
-  Stop(false);
+  Stop(false, false);
 
   matches_.clear();
 
@@ -584,7 +584,8 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   }
 }
 
-void HistoryURLProvider::Stop(bool clear_cached_results) {
+void HistoryURLProvider::Stop(bool clear_cached_results,
+                              bool due_to_user_inactivity) {
   done_ = true;
 
   if (params_)

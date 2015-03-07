@@ -199,6 +199,11 @@ class AutocompleteController : public AutocompleteProviderListener {
   // Starts |stop_timer_|.
   void StartStopTimer();
 
+  // Helper function for Stop().  |due_to_user_inactivity| means this call was
+  // triggered by a user's idleness, i.e., not an explicit user action.
+  void StopHelper(bool clear_result,
+                  bool due_to_user_inactivity);
+
   AutocompleteControllerDelegate* delegate_;
 
   // A list of all providers.

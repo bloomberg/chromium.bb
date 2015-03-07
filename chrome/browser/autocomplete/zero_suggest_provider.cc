@@ -99,7 +99,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
       input.type() == metrics::OmniboxInputType::INVALID)
     return;
 
-  Stop(true);
+  Stop(true, false);
   field_trial_triggered_ = false;
   field_trial_triggered_in_session_ = false;
   results_from_cache_ = false;
@@ -146,7 +146,8 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   Run(suggest_url);
 }
 
-void ZeroSuggestProvider::Stop(bool clear_cached_results) {
+void ZeroSuggestProvider::Stop(bool clear_cached_results,
+                               bool due_to_user_inactivity) {
   if (fetcher_)
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
   fetcher_.reset();

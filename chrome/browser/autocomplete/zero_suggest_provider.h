@@ -60,7 +60,8 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   void Start(const AutocompleteInput& input,
              bool minimal_changes,
              bool called_due_to_focus) override;
-  void Stop(bool clear_cached_results) override;
+  void Stop(bool clear_cached_results,
+            bool due_to_user_inactivity) override;
   void DeleteMatch(const AutocompleteMatch& match) override;
   void AddProviderInfo(ProvidersInfo* provider_info) const override;
 

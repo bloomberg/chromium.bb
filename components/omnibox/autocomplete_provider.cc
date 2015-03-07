@@ -45,7 +45,8 @@ const char* AutocompleteProvider::TypeToString(Type type) {
   }
 }
 
-void AutocompleteProvider::Stop(bool clear_cached_results) {
+void AutocompleteProvider::Stop(bool clear_cached_results,
+                                bool due_to_user_inactivity) {
   done_ = true;
 }
 
@@ -90,7 +91,7 @@ void AutocompleteProvider::ResetSession() {
 }
 
 AutocompleteProvider::~AutocompleteProvider() {
-  Stop(false);
+  Stop(false, false);
 }
 
 // static

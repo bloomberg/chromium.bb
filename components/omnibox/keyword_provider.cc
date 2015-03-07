@@ -317,9 +317,13 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   }
 }
 
-void KeywordProvider::Stop(bool clear_cached_results) {
+void KeywordProvider::Stop(bool clear_cached_results,
+                           bool due_to_user_inactivity) {
   done_ = true;
-  if (extensions_delegate_)
+  // Only end an extension's request if the user did something to explicitly
+  // cancel it; mere inactivity shouldn't terminate long-running extension
+  // operations since the user likely explicitly requested them.
+  if (extensions_delegate_ && !due_to_user_inactivity)
     extensions_delegate_->MaybeEndExtensionKeywordMode();
 }
 

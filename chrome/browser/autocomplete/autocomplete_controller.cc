@@ -300,20 +300,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
 }
 
 void AutocompleteController::Stop(bool clear_result) {
-  for (Providers::const_iterator i(providers_.begin()); i != providers_.end();
-       ++i) {
-    (*i)->Stop(clear_result);
-  }
-
-  expire_timer_.Stop();
-  stop_timer_.Stop();
-  done_ = true;
-  if (clear_result && !result_.empty()) {
-    result_.Reset();
-    // NOTE: We pass in false since we're trying to only clear the popup, not
-    // touch the edit... this is all a mess and should be cleaned up :(
-    NotifyChanged(false);
-  }
+  StopHelper(clear_result, false);
 }
 
 void AutocompleteController::OnOmniboxFocused(const AutocompleteInput& input) {
@@ -663,7 +650,25 @@ void AutocompleteController::StartExpireTimer() {
 void AutocompleteController::StartStopTimer() {
   stop_timer_.Start(FROM_HERE,
                     stop_timer_duration_,
-                    base::Bind(&AutocompleteController::Stop,
+                    base::Bind(&AutocompleteController::StopHelper,
                                base::Unretained(this),
-                               false));
+                               false, true));
+}
+
+void AutocompleteController::StopHelper(bool clear_result,
+                                        bool due_to_user_inactivity) {
+  for (Providers::const_iterator i(providers_.begin()); i != providers_.end();
+       ++i) {
+    (*i)->Stop(clear_result, due_to_user_inactivity);
+  }
+
+  expire_timer_.Stop();
+  stop_timer_.Stop();
+  done_ = true;
+  if (clear_result && !result_.empty()) {
+    result_.Reset();
+    // NOTE: We pass in false since we're trying to only clear the popup, not
+    // touch the edit... this is all a mess and should be cleaned up :(
+    NotifyChanged(false);
+  }
 }

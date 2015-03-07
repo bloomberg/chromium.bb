@@ -275,10 +275,10 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
   static_cast<FakeEmptyTopSites*>(top_sites.get())->mv_callback.Run(urls);
   // Should have verbatim match + most visited url match.
   EXPECT_EQ(2U, provider_->matches().size());
-  provider_->Stop(false);
+  provider_->Stop(false, false);
 
   provider_->Start(input, false, true);
-  provider_->Stop(false);
+  provider_->Stop(false, false);
   EXPECT_TRUE(provider_->matches().empty());
   // Most visited results arriving after Stop() has been called, ensure they
   // are not displayed.
