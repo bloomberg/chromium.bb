@@ -122,6 +122,11 @@ class AutofillProfile : public AutofillDataModel {
   bool IsSubsetOf(const AutofillProfile& profile,
                   const std::string& app_locale) const;
 
+  // Like IsSubsetOf, but only considers the types present in |types|.
+  bool IsSubsetOfForFieldSet(const AutofillProfile& profile,
+                             const std::string& app_locale,
+                             const ServerFieldTypeSet& types) const;
+
   // Overwrites the single-valued field data in |profile| with this
   // Profile.  Or, for multi-valued fields append the new values.
   void OverwriteWithOrAddTo(const AutofillProfile& profile,

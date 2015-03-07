@@ -752,7 +752,6 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     const base::string16& field_contents,
     bool field_is_autofilled,
     const std::vector<ServerFieldType>& other_field_types) {
-  std::vector<Suggestion> suggestions;
   base::string16 field_contents_canon =
       AutofillProfile::CanonicalizeProfileString(field_contents);
 
@@ -760,6 +759,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   std::sort(profiles.begin(), profiles.end(), RankByMfu);
 
   if (field_is_autofilled) {
+    std::vector<Suggestion> suggestions;
     // This field was previously autofilled. In this case, suggesting results
     // based on prefix is useless since it will be the same thing. Instead,
     // check for a field that may have multiple possible values (for example,
@@ -783,45 +783,90 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
         for (size_t i = 0; i < values.size(); i++) {
           if (values[i].empty())
             continue;
-          suggestions.push_back(Suggestion(values[i]));
-          suggestions.back().backend_id.guid = profile->guid();
-          suggestions.back().backend_id.variant = i;
-        }
-      }
-    }
-  } else {
-    // Match based on a prefix search.
-    std::vector<AutofillProfile*> matched_profiles;
-    for (AutofillProfile* profile : profiles) {
-      std::vector<base::string16> values =
-          GetMultiInfoInOneLine(profile, type, app_locale_);
-      for (size_t i = 0; i < values.size(); i++) {
-        if (values[i].empty())
-          continue;
 
-        base::string16 value_canon =
-            AutofillProfile::CanonicalizeProfileString(values[i]);
-        if (StartsWith(value_canon, field_contents_canon, true)) {
-          // Prefix match, add suggestion.
-          matched_profiles.push_back(profile);
-          suggestions.push_back(Suggestion(values[i]));
-          suggestions.back().backend_id.guid = profile->guid();
-          suggestions.back().backend_id.variant = i;
+          bool is_unique = true;
+          for (size_t j = 0; j < suggestions.size(); ++j) {
+            if (values[i] == suggestions[j].value) {
+              is_unique = false;
+              break;
+            }
+          }
+          if (is_unique) {
+            suggestions.push_back(Suggestion(values[i]));
+            suggestions.back().backend_id.guid = profile->guid();
+            suggestions.back().backend_id.variant = i;
+          }
         }
       }
     }
 
-    // Generate disambiguating labels based on the list of matches.
-    std::vector<base::string16> labels;
-    AutofillProfile::CreateInferredLabels(
-        matched_profiles, &other_field_types,
-        type.GetStorableType(), 1, app_locale_, &labels);
-    DCHECK_EQ(suggestions.size(), labels.size());
-    for (size_t i = 0; i < labels.size(); i++)
-      suggestions[i].label = labels[i];
+    return suggestions;
   }
 
-  return suggestions;
+  std::vector<Suggestion> suggestions;
+  // Match based on a prefix search.
+  std::vector<AutofillProfile*> matched_profiles;
+  for (AutofillProfile* profile : profiles) {
+    std::vector<base::string16> values =
+        GetMultiInfoInOneLine(profile, type, app_locale_);
+    for (size_t i = 0; i < values.size(); i++) {
+      if (values[i].empty())
+        continue;
+
+      base::string16 value_canon =
+          AutofillProfile::CanonicalizeProfileString(values[i]);
+      if (StartsWith(value_canon, field_contents_canon, true)) {
+        // Prefix match, add suggestion.
+        matched_profiles.push_back(profile);
+        suggestions.push_back(Suggestion(values[i]));
+        suggestions.back().backend_id.guid = profile->guid();
+        suggestions.back().backend_id.variant = i;
+      }
+    }
+  }
+
+  // Don't show two suggestions if one is a subset of the other.
+  std::vector<AutofillProfile*> unique_matched_profiles;
+  std::vector<Suggestion> unique_suggestions;
+  ServerFieldTypeSet types(other_field_types.begin(), other_field_types.end());
+  for (size_t i = 0; i < matched_profiles.size(); ++i) {
+    bool include = true;
+    AutofillProfile* profile_a = matched_profiles[i];
+    for (size_t j = 0; j < matched_profiles.size(); ++j) {
+      AutofillProfile* profile_b = matched_profiles[j];
+      // Check if profile A is a subset of profile B. If not, continue.
+      if (i == j || suggestions[i].value != suggestions[j].value ||
+          !profile_a->IsSubsetOfForFieldSet(*profile_b, app_locale_, types)) {
+        continue;
+      }
+
+      // Check if profile B is also a subset of profile A. If so, the
+      // profiles are identical. Include the first one but not the second.
+      if (i < j &&
+          profile_b->IsSubsetOfForFieldSet(*profile_a, app_locale_, types)) {
+        continue;
+      }
+
+      // One-way subset. Don't include profile A.
+      include = false;
+      break;
+    }
+    if (include) {
+      unique_matched_profiles.push_back(matched_profiles[i]);
+      unique_suggestions.push_back(suggestions[i]);
+    }
+  }
+
+  // Generate disambiguating labels based on the list of matches.
+  std::vector<base::string16> labels;
+  AutofillProfile::CreateInferredLabels(
+      unique_matched_profiles, &other_field_types, type.GetStorableType(), 1,
+      app_locale_, &labels);
+  DCHECK_EQ(unique_suggestions.size(), labels.size());
+  for (size_t i = 0; i < labels.size(); i++)
+    unique_suggestions[i].label = labels[i];
+
+  return unique_suggestions;
 }
 
 std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(

@@ -565,9 +565,19 @@ const base::string16 AutofillProfile::PrimaryValue() const {
 bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
                                  const std::string& app_locale) const {
   ServerFieldTypeSet types;
-  GetNonEmptyTypes(app_locale, &types);
+  GetSupportedTypes(&types);
+  return IsSubsetOfForFieldSet(profile, app_locale, types);
+}
 
+bool AutofillProfile::IsSubsetOfForFieldSet(
+    const AutofillProfile& profile,
+    const std::string& app_locale,
+    const ServerFieldTypeSet& types) const {
   for (ServerFieldType type : types) {
+    base::string16 value = GetRawInfo(type);
+    if (value.empty())
+      continue;
+
     if (type == NAME_FULL || type == ADDRESS_HOME_STREET_ADDRESS) {
       // Ignore the compound "full name" field type.  We are only interested in
       // comparing the constituent parts.  For example, if |this| has a middle
@@ -580,12 +590,12 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
       if (type != PHONE_HOME_WHOLE_NUMBER) {
         continue;
       } else if (!i18n::PhoneNumbersMatch(
-                     GetRawInfo(type), profile.GetRawInfo(type),
+                     value, profile.GetRawInfo(type),
                      base::UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
                      app_locale)) {
         return false;
       }
-    } else if (base::StringToLowerASCII(GetRawInfo(type)) !=
+    } else if (base::StringToLowerASCII(value) !=
                base::StringToLowerASCII(profile.GetRawInfo(type))) {
       return false;
     }

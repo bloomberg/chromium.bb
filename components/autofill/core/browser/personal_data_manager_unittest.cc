@@ -2802,13 +2802,53 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(ADDRESS_HOME_STREET_ADDRESS),
-      base::UTF8ToUTF16("123"),
-      false,
-      std::vector<ServerFieldType>());
+      AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
+      false, std::vector<ServerFieldType>());
   ASSERT_FALSE(suggestions.empty());
   EXPECT_EQ(suggestions[0].value,
-      base::UTF8ToUTF16("123 Zoo St., Second Line, Third line, unit 5"));
+            base::ASCIIToUTF16("123 Zoo St., Second Line, Third line, unit 5"));
+}
+
+TEST_F(PersonalDataManagerTest, GetProfileSuggestionsHideSubsets) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+
+  // Dupe profile, except different in email address (irrelevant for this form).
+  AutofillProfile profile1 = profile;
+  profile1.set_guid(base::GenerateGUID());
+  profile1.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("spam_me@example.com"));
+
+  // Dupe profile, except different in address state.
+  AutofillProfile profile2 = profile;
+  profile2.set_guid(base::GenerateGUID());
+  profile2.SetRawInfo(ADDRESS_HOME_STATE, base::ASCIIToUTF16("TX"));
+
+  // Subset profile.
+  AutofillProfile profile3 = profile;
+  profile3.set_guid(base::GenerateGUID());
+  profile3.SetRawInfo(ADDRESS_HOME_STATE, base::string16());
+
+  // For easier results verification, make sure |profile| is suggested first.
+  profile.set_use_count(5);
+  personal_data_->AddProfile(profile);
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddProfile(profile2);
+  personal_data_->AddProfile(profile3);
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Simulate a form with street address, city and state.
+  std::vector<ServerFieldType> types;
+  types.push_back(ADDRESS_HOME_CITY);
+  types.push_back(ADDRESS_HOME_STATE);
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
+      false, types);
+  ASSERT_EQ(2U, suggestions.size());
+  EXPECT_EQ(base::ASCIIToUTF16("Hollywood, CA"), suggestions[0].label);
+  EXPECT_EQ(base::ASCIIToUTF16("Hollywood, TX"), suggestions[1].label);
 }
 
 TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {

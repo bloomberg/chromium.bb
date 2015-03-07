@@ -67,20 +67,6 @@ const size_t kMaxRecentFormSignaturesToRemember = 3;
 // cache, simply to prevent unbounded memory consumption.
 const size_t kMaxFormCacheSize = 100;
 
-// Removes duplicate suggestions whilst preserving their original order.
-void RemoveDuplicateSuggestions(std::vector<Suggestion>* suggestions) {
-  std::set<std::pair<base::string16, base::string16>> seen_suggestions;
-
-  for (int i = 0; i < static_cast<int>(suggestions->size()); ++i) {
-    if (!seen_suggestions.insert(std::make_pair(
-            (*suggestions)[i].value, (*suggestions)[i].label)).second) {
-      // Duplicate found, delete it.
-      suggestions->erase(suggestions->begin() + i);
-      i--;
-    }
-  }
-}
-
 // Precondition: |form_structure| and |form| should correspond to the same
 // logical form.  Returns true if any field in the given |section| within |form|
 // is auto-filled.
@@ -532,13 +518,6 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
             suggestions[i].icon = base::string16();
           }
         }
-
-        // When filling credit card suggestions, the values and labels are
-        // typically obfuscated, which makes detecting duplicates hard.  Since
-        // duplicates only tend to be a problem when filling address forms
-        // anyway, only don't de-dup credit card suggestions.
-        if (!is_filling_credit_card)
-          RemoveDuplicateSuggestions(&suggestions);
 
         // The first time we show suggestions on this page, log the number of
         // suggestions available.
