@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/at_exit.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
@@ -123,10 +122,6 @@ class ChromotingJniRuntime {
 
   // Detaches JVM from the current thread, then signals. Doesn't own |waiter|.
   void DetachFromVmAndSignal(base::WaitableEvent* waiter);
-
-  // Used by the Chromium libraries to clean up the base and net libraries' JNI
-  // bindings. It must persist for the lifetime of the singleton.
-  scoped_ptr<base::AtExitManager> at_exit_manager_;
 
   // Chromium code's connection to the Java message loop.
   scoped_ptr<base::MessageLoopForUI> ui_loop_;
