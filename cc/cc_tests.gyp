@@ -460,6 +460,17 @@
           'sources': [
             'cc_unittests.isolate',
           ],
+          'conditions': [
+            # crbug.com/464062 xdisplaycheck is used to run cc_unittests_run on
+            # the linux try bots when using X11.
+            ['OS=="linux" and use_ozone==0',
+              {
+                'dependencies': [
+                  '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+                ],
+              }
+            ],
+          ],
         },
       ],
     }],
