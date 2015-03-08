@@ -126,7 +126,7 @@
             android:paddingStart="7dp"
             android:textSize="14sp"
             android:textColor="@color/explanation_text_color"
-            android:text="@string/autofill_card_unmask_prompt_store_locally" />
+            android:text="@string/autofill_card_unmask_prompt_storage_checkbox" />
     </LinearLayout>
 
     <LinearLayout

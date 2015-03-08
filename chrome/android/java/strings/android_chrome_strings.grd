@@ -1251,9 +1251,6 @@ Drag from top to exit.
       </message>
 
       <!-- Autofill/Wallet integration prompt -->
-      <message name="IDS_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog.">
-        Verify
-      </message>
       <message name="IDS_CARD_UNMASK_INPUT_HINT" desc="Hint text for an input field containing the user's credit card CVC (card verification code).">
         CVC
       </message>
@@ -1265,9 +1262,6 @@ Drag from top to exit.
       </message>
       <message name="IDS_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR" desc="Separator for a credit card expiration date, e.g. the slash in 05/16.">
         /
-      </message>
-      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORE_LOCALLY" desc="Checkbox text that permits a user to skip past this dialog next time this credit card is used on this device.">
-        Don't ask again for this card
       </message>
 
       <!-- First Run strings -->
