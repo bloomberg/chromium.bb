@@ -30,6 +30,7 @@
   },
   'targets': [
     {
+      # GN version: //gpu/gles2_conform_support/egl
       'target_name': 'egl_native',
       'type': 'static_library',
       'dependencies': [
