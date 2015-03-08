@@ -19,13 +19,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-htmlcollection
+
 [
     DependentLifetime,
     SetWrapperReferenceFrom=ownerNode,
     WillBeGarbageCollected,
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
-    getter Element item([Default=Undefined] optional unsigned long index);
-    getter Element namedItem(DOMString name);
+    // FIXME: The index argument should not be optional.
+    getter Element? item([Default=Undefined] optional unsigned long index);
+    getter Element? namedItem(DOMString name);
 };
-

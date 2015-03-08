@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-htmlallcollection-interface
+
 // FIXME: This interface should inherit HTMLCollection.
 [
     Custom=LegacyCallAsFunction,
@@ -31,9 +33,14 @@
     SetWrapperReferenceFrom=ownerNode,
     WillBeGarbageCollected,
 ] interface HTMLAllCollection {
+    // FIXME: length and 'getter' should be inherited from HTMLCollection.
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter Element (unsigned long index);
-    [Custom] Element item([Default=Undefined] optional unsigned long index);
-    // FIXME: This should return an (HTMLCollection or Element)? union.
+    // FIXME: The custom item() implementation may return a NodeList, but the
+    // spec has a (HTMLCollection or Element)? item(DOMString name) method.
+    [Custom] Element? item([Default=Undefined] optional unsigned long index);
+    // FIXME:
+    // FIXME: namedItem() should be a legacycaller. crbug.com/465009
+    // FIXME: namedItem() should return an (HTMLCollection or Element)? union.
     [ImplementedAs=namedGetter] getter (NodeList or Element)? namedItem(DOMString name);
 };
