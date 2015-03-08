@@ -298,8 +298,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const net::HttpResponseInfo* GetMainScriptHttpResponseInfo();
 
  private:
-  class GetClientDocumentsCallback;
-
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerURLRequestJobTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
@@ -389,9 +387,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void DidSkipWaiting(int request_id);
   void DidClaimClients(int request_id, ServiceWorkerStatusCode status);
-  void DidGetClientInfo(int client_id,
-                        scoped_refptr<GetClientDocumentsCallback> callback,
-                        const ServiceWorkerClientInfo& info);
+  void DidGetClientDocuments(
+      int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.

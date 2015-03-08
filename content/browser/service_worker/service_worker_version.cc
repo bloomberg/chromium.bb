@@ -36,41 +36,9 @@
 
 namespace content {
 
-typedef ServiceWorkerVersion::StatusCallback StatusCallback;
-
-class ServiceWorkerVersion::GetClientDocumentsCallback
-    : public base::RefCounted<GetClientDocumentsCallback> {
- public:
-  GetClientDocumentsCallback(int request_id,
-                             ServiceWorkerVersion* version)
-      : request_id_(request_id),
-        version_(version) {
-    DCHECK(version_);
-  }
-
-  void AddClientInfo(int client_id, const ServiceWorkerClientInfo& info) {
-    clients_.push_back(info);
-    clients_.back().client_id = client_id;
-  }
-
- private:
-  friend class base::RefCounted<GetClientDocumentsCallback>;
-
-  virtual ~GetClientDocumentsCallback() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-    if (version_->running_status() == RUNNING) {
-      version_->embedded_worker_->SendMessage(
-          ServiceWorkerMsg_DidGetClientDocuments(request_id_, clients_));
-    }
-  }
-
-  std::vector<ServiceWorkerClientInfo> clients_;
-  int request_id_;
-  scoped_refptr<ServiceWorkerVersion> version_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetClientDocumentsCallback);
-};
+using StatusCallback = ServiceWorkerVersion::StatusCallback;
+using GetClientDocumentsCallback =
+    base::Callback<void(const std::vector<ServiceWorkerClientInfo>&)>;
 
 namespace {
 
@@ -292,6 +260,38 @@ base::TimeDelta GetTickDuration(const base::TimeTicks& time) {
   if (time.is_null())
     return base::TimeDelta();
   return base::TimeTicks().Now() - time;
+}
+
+void OnGetClientDocumentsFromUI(
+    // The tuple contains process_id, frame_id, client_id.
+    const std::vector<Tuple<int,int,int>>& clients_info,
+    const GURL& script_url,
+    const GetClientDocumentsCallback& callback) {
+  std::vector<ServiceWorkerClientInfo> clients;
+
+  for (const auto& it : clients_info) {
+    ServiceWorkerClientInfo info =
+        ServiceWorkerProviderHost::GetClientInfoOnUI(get<0>(it), get<1>(it));
+
+    // If the request to the provider_host returned an empty
+    // ServiceWorkerClientInfo, that means that it wasn't possible to associate
+    // it with a valid RenderFrameHost. It might be because the frame was killed
+    // or navigated in between.
+    if (info.IsEmpty())
+      continue;
+
+    // We can get info for a frame that was navigating end ended up with a
+    // different URL than expected. In such case, we should make sure to not
+    // expose cross-origin WindowClient.
+    if (info.url.GetOrigin() != script_url.GetOrigin())
+      return;
+
+    info.client_id = get<2>(it);
+    clients.push_back(info);
+  }
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, clients));
 }
 
 }  // namespace
@@ -1001,18 +1001,27 @@ void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
     }
     return;
   }
-  scoped_refptr<GetClientDocumentsCallback> callback(
-      new GetClientDocumentsCallback(request_id, this));
-  ControlleeByIDMap::iterator it(&controllee_by_id_);
+
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerVersion::OnGetClientDocuments");
-  while (!it.IsAtEnd()) {
-    // TODO(mlamouri): we could coalesce those requests into one.
-    it.GetCurrentValue()->GetClientInfo(
-        base::Bind(&ServiceWorkerVersion::DidGetClientInfo,
-                   weak_factory_.GetWeakPtr(), it.GetCurrentKey(), callback));
-    it.Advance();
+
+  std::vector<Tuple<int,int,int>> clients_info;
+  for (ControlleeByIDMap::iterator it(&controllee_by_id_); !it.IsAtEnd();
+       it.Advance()) {
+    int process_id = it.GetCurrentValue()->process_id();
+    int frame_id = it.GetCurrentValue()->frame_id();
+    int client_id = it.GetCurrentKey();
+
+    clients_info.push_back(MakeTuple(process_id, frame_id, client_id));
   }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&OnGetClientDocumentsFromUI, clients_info, script_url_,
+                 base::Bind(&ServiceWorkerVersion::DidGetClientDocuments,
+                            weak_factory_.GetWeakPtr(),
+                            request_id)));
+
 }
 
 void ServiceWorkerVersion::OnActivateEventFinished(
@@ -1401,24 +1410,15 @@ void ServiceWorkerVersion::DidClaimClients(
   embedded_worker_->SendMessage(ServiceWorkerMsg_DidClaimClients(request_id));
 }
 
-void ServiceWorkerVersion::DidGetClientInfo(
-    int client_id,
-    scoped_refptr<GetClientDocumentsCallback> callback,
-    const ServiceWorkerClientInfo& info) {
-  // If the request to the provider_host returned an empty
-  // ServiceWorkerClientInfo, that means that it wasn't possible to associate
-  // it with a valid RenderFrameHost. It might be because the frame was killed
-  // or navigated in between.
-  if (info.IsEmpty())
+void ServiceWorkerVersion::DidGetClientDocuments(
+    int request_id,
+    const std::vector<ServiceWorkerClientInfo>& clients) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (running_status() != RUNNING)
     return;
 
-  // We can get info for a frame that was navigating end ended up with a
-  // different URL than expected. In such case, we should make sure to not
-  // expose cross-origin WindowClient.
-  if (info.url.GetOrigin() != script_url_.GetOrigin())
-    return;
-
-  callback->AddClientInfo(client_id, info);
+  embedded_worker_->SendMessage(
+      ServiceWorkerMsg_DidGetClientDocuments(request_id, clients));
 }
 
 void ServiceWorkerVersion::StartTimeoutTimer() {

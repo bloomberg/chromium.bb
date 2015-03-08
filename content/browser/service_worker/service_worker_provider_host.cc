@@ -30,25 +30,6 @@ namespace content {
 
 namespace {
 
-ServiceWorkerClientInfo GetClientInfoOnUIThread(
-    int render_process_id,
-    int render_frame_id) {
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host)
-    return ServiceWorkerClientInfo();
-
-  // TODO(mlamouri,michaeln): it is possible to end up collecting information
-  // for a frame that is actually being navigated and isn't exactly what we are
-  // expecting.
-  return ServiceWorkerClientInfo(
-      render_frame_host->GetVisibilityState(),
-      render_frame_host->IsFocused(),
-      render_frame_host->GetLastCommittedURL(),
-      render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
-                                     : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
-}
-
 ServiceWorkerClientInfo FocusOnUIThread(
     int render_process_id,
     int render_frame_id) {
@@ -71,7 +52,8 @@ ServiceWorkerClientInfo FocusOnUIThread(
   // Move the web contents to the foreground.
   web_contents->Activate();
 
-  return GetClientInfoOnUIThread(render_process_id, render_frame_id);
+  return ServiceWorkerProviderHost::GetClientInfoOnUI(
+      render_process_id, render_frame_id);
 }
 
 }  // anonymous namespace
@@ -305,10 +287,29 @@ void ServiceWorkerProviderHost::GetClientInfo(
     const GetClientInfoCallback& callback) const {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetClientInfoOnUIThread,
-                render_process_id_,
-                render_frame_id_),
+      base::Bind(&ServiceWorkerProviderHost::GetClientInfoOnUI,
+                 render_process_id_,
+                 render_frame_id_),
       callback);
+}
+
+// static
+ServiceWorkerClientInfo ServiceWorkerProviderHost::GetClientInfoOnUI(
+    int render_process_id, int render_frame_id) {
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return ServiceWorkerClientInfo();
+
+  // TODO(mlamouri,michaeln): it is possible to end up collecting information
+  // for a frame that is actually being navigated and isn't exactly what we are
+  // expecting.
+  return ServiceWorkerClientInfo(
+      render_frame_host->GetVisibilityState(),
+      render_frame_host->IsFocused(),
+      render_frame_host->GetLastCommittedURL(),
+      render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
+                                     : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
 }
 
 void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(

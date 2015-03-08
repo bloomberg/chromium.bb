@@ -155,6 +155,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Asks the renderer to send back the document information.
   void GetClientInfo(const GetClientInfoCallback& callback) const;
 
+  // Same as above but has to be called from the UI thread.
+  // It is taking the process and frame ids in parameter because |this| is meant
+  // to live on the IO thread.
+  static ServiceWorkerClientInfo GetClientInfoOnUI(int render_process_id,
+                                                   int render_frame_id);
+
   // Adds reference of this host's process to the |pattern|, the reference will
   // be removed in destructor.
   void AddScopedProcessReferenceToPattern(const GURL& pattern);
