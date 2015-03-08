@@ -78,7 +78,7 @@ if (!is_win) {
 #
 # Base compiler configuration.
 #
-# See also "runtime_library" below for related stuff and a discusison about
+# See also "runtime_library" below for related stuff and a discussion about
 # where stuff should go. Put warning related stuff in the "warnings" config.
 
 config("compiler") {
@@ -399,6 +399,13 @@ config("compiler") {
       #"-Wl,--threads",
       #"-Wl,--thread-count=4",
     ]
+
+    # TODO(thestig): Make this flag work with GN.
+    #if (!is_official_build && !is_chromeos && !(is_asan || is_lsan || is_tsan || is_msan)) {
+    #  ldflags += [
+    #    "-Wl,--detect-odr-violations",
+    #  ]
+    #}
   }
 
   if (linux_use_bundled_binutils) {
@@ -719,7 +726,6 @@ config("default_warnings") {
   if (is_win) {
     cflags = [
       "/WX",  # Treat warnings as errors.
-
       # Warnings permanently disabled:
 
       # TODO(GYP) The GYP build doesn't have this globally enabled but disabled
@@ -774,7 +780,6 @@ config("default_warnings") {
       # have to turn off this warning (and be careful about how object
       # destruction happens in such cases).
       "/wd4611",
-
       # Warnings to evaluate and possibly fix/reenable later:
 
       "/wd4100",  # Unreferenced formal function parameter.

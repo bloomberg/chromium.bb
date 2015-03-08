@@ -4490,6 +4490,14 @@
                   # '-Wl,--threads',
                   # '-Wl,--thread-count=4',
                 ],
+                'conditions': [
+                  # TODO(thestig): Enable this for disabled cases.
+                  [ 'buildtype!="Official" and chromeos==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0 and ubsan_vptr==0', {
+                    'ldflags': [
+                      '-Wl,--detect-odr-violations',
+                    ],
+                  }],
+                ],
               }],
             ],
             'conditions': [
