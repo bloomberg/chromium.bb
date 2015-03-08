@@ -88,6 +88,14 @@ void IpcNetworkManager::OnNetworkListChanged(
       network->AddIP(rtc::IPAddress(address));
       networks.push_back(network);
     } else if (it->address.size() == net::kIPv6AddressSize) {
+
+      // Only allow temporary non-deprecated address to ensure the MAC is not
+      // included in the address.
+      if (!(it->ip_address_attributes & net::IP_ADDRESS_ATTRIBUTE_TEMPORARY) ||
+          (it->ip_address_attributes & net::IP_ADDRESS_ATTRIBUTE_DEPRECATED)) {
+        continue;
+      }
+
       in6_addr address;
       memcpy(&address, &it->address[0], sizeof(in6_addr));
       rtc::IPAddress ip6_addr(address);
