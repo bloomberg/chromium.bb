@@ -28,9 +28,10 @@ AuthorizationRef GetAuthorizationRightsWithPrompt(
     AuthorizationFlags extraFlags) {
   // Create an empty AuthorizationRef.
   ScopedAuthorizationRef authorization;
-  OSStatus status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment,
+  OSStatus status = AuthorizationCreate(NULL,
+                                        kAuthorizationEmptyEnvironment,
                                         kAuthorizationFlagDefaults,
-                                        authorization.get_pointer());
+                                        &authorization);
   if (status != errAuthorizationSuccess) {
     OSSTATUS_LOG(ERROR, status) << "AuthorizationCreate";
     return NULL;
