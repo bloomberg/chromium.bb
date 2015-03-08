@@ -18,32 +18,39 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlelement
+
 interface HTMLElement : Element {
+    // metadata attributes
     [Reflect] attribute DOMString title;
     [Reflect] attribute DOMString lang;
     attribute boolean translate;
     attribute DOMString dir;
+    // FIXME: dataset is on Element.
 
-    [CustomElementCallbacks] attribute long              tabIndex;
-    [CustomElementCallbacks] attribute boolean           draggable;
-    [Reflect, TreatNullAs=NullString, MeasureAs=PrefixedHTMLElementDropzone] attribute DOMString webkitdropzone;
+    // user interaction
     [Reflect] attribute boolean hidden;
+    void click();
+    [CustomElementCallbacks] attribute long tabIndex;
+    // FIXME: focus() and blur() are on Element.
     [Reflect] attribute DOMString accessKey;
+    [CustomElementCallbacks] attribute boolean draggable;
+    [RuntimeEnabled=ContextMenu] attribute HTMLMenuElement? contextMenu;
+    attribute boolean spellcheck;
 
-    // Extensions
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute DOMString outerText;
-
-    [RuntimeEnabled=IMEAPI] readonly attribute InputMethodContext inputMethodContext;
-
+    // HTMLElement implements ElementContentEditable
+    // https://html.spec.whatwg.org/#contenteditable
     [CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;
-    [RuntimeEnabled=ContextMenu] attribute HTMLMenuElement? contextMenu;
 
-             attribute boolean spellcheck;
+    // Input Method Editor API
+    // https://dvcs.w3.org/hg/ime-api/raw-file/default/Overview.html#the-inputmethodcontext-property
+    [RuntimeEnabled=IMEAPI] readonly attribute InputMethodContext? inputMethodContext;
 
-    void click();
+    // Non-standard APIs
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute DOMString outerText;
+    [Reflect, TreatNullAs=NullString, MeasureAs=PrefixedHTMLElementDropzone] attribute DOMString webkitdropzone;
 };
 
 HTMLElement implements GlobalEventHandlers;
-
