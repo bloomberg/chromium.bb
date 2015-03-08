@@ -1454,6 +1454,8 @@ x11_compositor_get_wm_info(struct x11_compositor *c)
 		if (atom[i] == c->atom.net_wm_state_fullscreen)
 			c->has_net_wm_state_fullscreen = 1;
 	}
+
+	free(reply);
 }
 
 static void
