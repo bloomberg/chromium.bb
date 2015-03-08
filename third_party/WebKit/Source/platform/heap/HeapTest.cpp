@@ -5050,23 +5050,34 @@ class ClassWithGarbageCollectingMixinConstructor
     , public MixinWithGarbageCollectionInConstructor {
     USING_GARBAGE_COLLECTED_MIXIN(ClassWithGarbageCollectingMixinConstructor);
 public:
-    ClassWithGarbageCollectingMixinConstructor() : m_wrapper(IntWrapper::create(32))
+    static int s_traceCalled;
+
+    ClassWithGarbageCollectingMixinConstructor()
+        : m_traceCounter(TraceCounter::create())
+        , m_wrapper(IntWrapper::create(32))
     {
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
+        s_traceCalled++;
+        visitor->trace(m_traceCounter);
         visitor->trace(m_wrapper);
     }
 
     void verify()
     {
         EXPECT_EQ(32, m_wrapper->value());
+        EXPECT_EQ(0, m_traceCounter->traceCount());
+        EXPECT_EQ(0, s_traceCalled);
     }
 
 private:
+    Member<TraceCounter> m_traceCounter;
     Member<IntWrapper> m_wrapper;
 };
+
+int ClassWithGarbageCollectingMixinConstructor::s_traceCalled = 0;
 
 // Regression test for out of bounds call through vtable.
 // Passes if it doesn't crash.
@@ -5566,6 +5577,108 @@ TEST(HeapTest, StackGrowthDirection)
     // and has a builtin assumption that the stack grows towards
     // lower addresses.
     EXPECT_EQ(GrowsTowardsLower, stackGrowthDirection());
+}
+
+class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>, public GarbageCollectedMixin {
+    USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocationA);
+public:
+    TestMixinAllocationA()
+    {
+        // Completely wrong in general, but test only
+        // runs this constructor while constructing another mixin.
+        ASSERT(ThreadState::current()->isGCForbidden());
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+};
+
+class TestMixinAllocationB : public TestMixinAllocationA {
+    USING_GARBAGE_COLLECTED_MIXIN_NESTED(TestMixinAllocationB, TestMixinAllocationA);
+public:
+    TestMixinAllocationB()
+    {
+        // Completely wrong in general, but test only
+        // runs this constructor while constructing another mixin.
+        ASSERT(ThreadState::current()->isGCForbidden());
+    }
+
+    DEFINE_INLINE_TRACE() { TestMixinAllocationA::trace(visitor); }
+};
+
+class TestMixinAllocationC final : public TestMixinAllocationB {
+    USING_GARBAGE_COLLECTED_MIXIN_NESTED(TestMixinAllocationC, TestMixinAllocationB);
+public:
+    TestMixinAllocationC()
+    {
+        ASSERT(!ThreadState::current()->isGCForbidden());
+    }
+
+    DEFINE_INLINE_TRACE() { TestMixinAllocationB::trace(visitor); }
+};
+
+TEST(HeapTest, NestedMixinConstruction)
+{
+    TestMixinAllocationC* object = new TestMixinAllocationC();
+    EXPECT_TRUE(object);
+}
+
+class ObjectWithLargeAmountsOfAllocationInConstructor {
+public:
+    ObjectWithLargeAmountsOfAllocationInConstructor(size_t numberOfLargeObjectsToAllocate, ClassWithMember* member)
+    {
+        // Should a constructor allocate plenty in its constructor,
+        // and it is a base of GC mixin, GCs will remain locked out
+        // regardless, as we cannot safely trace the leftmost GC
+        // mixin base.
+        ASSERT(ThreadState::current()->isGCForbidden());
+        for (size_t i = 0; i < numberOfLargeObjectsToAllocate; i++) {
+            LargeHeapObject* largeObject = LargeHeapObject::create();
+            EXPECT_TRUE(largeObject);
+            EXPECT_EQ(0, member->traceCount());
+        }
+    }
+};
+
+class TestMixinAllocatingObject final : public TestMixinAllocationB, public ObjectWithLargeAmountsOfAllocationInConstructor {
+    USING_GARBAGE_COLLECTED_MIXIN_NESTED(TestMixinAllocatingObject, TestMixinAllocationB);
+public:
+    static TestMixinAllocatingObject* create(ClassWithMember* member)
+    {
+        return new TestMixinAllocatingObject(member);
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_traceCounter);
+        TestMixinAllocationB::trace(visitor);
+    }
+
+    int traceCount() const { return m_traceCounter->traceCount(); }
+
+private:
+    TestMixinAllocatingObject(ClassWithMember* member)
+        : ObjectWithLargeAmountsOfAllocationInConstructor(600, member)
+        , m_traceCounter(TraceCounter::create())
+    {
+        ASSERT(!ThreadState::current()->isGCForbidden());
+        // The large object allocation should trigger a GC..
+        LargeHeapObject* largeObject = LargeHeapObject::create();
+        EXPECT_TRUE(largeObject);
+        EXPECT_GT(member->traceCount(), 0);
+        EXPECT_GT(traceCount(), 0);
+    }
+
+    Member<TraceCounter> m_traceCounter;
+};
+
+TEST(HeapTest, MixinConstructionNoGC)
+{
+    Persistent<ClassWithMember> object = ClassWithMember::create();
+    EXPECT_EQ(0, object->traceCount());
+    TestMixinAllocatingObject* mixin = TestMixinAllocatingObject::create(object.get());
+    EXPECT_TRUE(mixin);
+    EXPECT_GT(object->traceCount(), 0);
+    EXPECT_GT(mixin->traceCount(), 0);
 }
 
 } // namespace blink

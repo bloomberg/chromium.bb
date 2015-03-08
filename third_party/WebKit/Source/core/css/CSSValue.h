@@ -220,6 +220,8 @@ inline bool compareCSSValuePtr(const Member<CSSValueType>& first, const Member<C
 #define DEFINE_CSS_VALUE_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, CSSValue, value, value->predicate, value.predicate)
 
+WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(CSSValue);
+
 } // namespace blink
 
 #endif // CSSValue_h

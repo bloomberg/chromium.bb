@@ -42,7 +42,7 @@ class ExceptionState;
 
 class SharedWorker final : public AbstractWorker, public WillBeHeapSupplementable<SharedWorker> {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(SharedWorker, AbstractWorker);
 public:
     static PassRefPtrWillBeRawPtr<SharedWorker> create(ExecutionContext*, const String& url, const String& name, ExceptionState&);
     virtual ~SharedWorker();

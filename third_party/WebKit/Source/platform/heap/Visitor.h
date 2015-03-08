@@ -897,19 +897,149 @@ public:                                                                         
         return visitor->isAlive(this);                                                                                                  \
     }                                                                                                                                   \
 private:
-#if ENABLE(INLINED_TRACE)
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                       \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, TYPE)
+
+// A C++ object's vptr will be initialized to its leftmost base's vtable after
+// the constructors of all its subclasses have run, so if a subclass constructor
+// tries to access any of the vtbl entries of its leftmost base prematurely,
+// it'll find an as-yet incorrect vptr and fail. Which is exactly what a
+// garbage collector will try to do if it tries to access the leftmost base
+// while one of the subclass constructors of a GC mixin object triggers a GC.
+// It is consequently not safe to allow any GCs while these objects are under
+// (sub constructor) construction.
+//
+// To prevent GCs in that restricted window of a mixin object's construction:
+//
+//  - The initial allocation of the mixin object will enter a no GC scope.
+//    This is done by overriding 'operator new' for mixin instances.
+//  - When the constructor for the mixin is invoked, after all the
+//    derived constructors have run, it will invoke the constructor
+//    for a field whose only purpose is to leave the GC scope.
+//    GarbageCollectedMixinConstructorMarker's constructor takes care of
+//    this and the field is declared by way of USING_GARBAGE_COLLECTED_MIXIN().
+//
+// If a GC mixin class, declared so using USING_GARBAGE_COLLECTED_MIXIN(), derives
+// leftmost from another such USING_GARBAGE_COLLECTED_MIXIN-mixin class, extra
+// care and handling is needed for the above two steps; see comment below.
+
+
+// Trait template to resolve the effective base GC class to use when allocating
+// objects at some type T. Requires specialization for Node and CSSValue
+// derived types to have these be allocated on appropriate heaps.
+//
+// FIXME: this trait is needed to support Node's overriding 'operator new'
+// implementation in combination with GC mixins (step 1 above.) Should
+// Node' operator new no longer be needed, this trait can be removed.
+template<typename T, typename Enabled = void>
+class EffectiveGCBaseTrait {
+public:
+    using Type = T;
+};
+
+#define ALLOCATE_ALL_INSTANCES_ON_SAME_GC_HEAP(TYPE)  \
+template<typename T>                                  \
+class EffectiveGCBaseTrait<T, typename WTF::EnableIf<WTF::IsSubclass<T, blink::TYPE>::value>::Type> { \
+public:                \
+    using Type = TYPE; \
+}
+
+#if ENABLE(OILPAN)
+#define WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(TYPE) ALLOCATE_ALL_INSTANCES_ON_SAME_GC_HEAP(TYPE)
 #else
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE) \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE)
+#define WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(TYPE)
 #endif
+
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)                         \
+public:                                                                                 \
+    GC_PLUGIN_IGNORE("crbug.com/456823")                                                \
+    void* operator new(size_t size)                                                     \
+    {                                                                                   \
+        void* object = Heap::allocate<typename EffectiveGCBaseTrait<TYPE>::Type>(size); \
+        ThreadState* state = ThreadStateFor<ThreadingTrait<TYPE>::Affinity>::state();   \
+        state->enterGCForbiddenScope(TYPE::mixinLevels);                                \
+        return object;                                                                  \
+    }                                                                                   \
+private:                                                                                \
+    GarbageCollectedMixinConstructorMarker<TYPE> m_mixinConstructorMarker;
+
+#if ENABLE(ASSERT)
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED_DEBUG()     \
+protected:                                                   \
+    virtual void mixinsCannotBeImplicitlyNested() final { /* Please use USING_GARBAGE_COLLECTED_MIXIN_NESTED(Mixin, DerivedFromOtherMixin); */ }
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED_DEBUG(TYPE, SUBTYPE)   \
+protected:                                                           \
+    static void declaredNestedMixinsMustBeAccurate()                 \
+    {                                                                \
+        static_assert(WTF::IsSubclass<blink::TYPE, blink::SUBTYPE>::value, "Mixin class does not derive from its stated, nested mixin class."); \
+    }
+#else
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED_DEBUG()
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED_DEBUG(TYPE, SUBTYPE)
+#endif
+
+// Mixins that wrap/nest others requires extra handling:
+//
+//  class A : public GarbageCollected<A>, public GarbageCollectedMixin {
+//  USING_GARBAGE_COLLECTED_MIXIN(A);
+//  ...
+//  }'
+//  public B final : public A, public SomeOtherMixinInterface {
+//  USING_GARBAGE_COLLECTED_MIXIN(B);
+//  ...
+//  };
+//
+// The "operator new" for B will enter the forbidden GC scope, but
+// upon construction, two GarbageCollectedMixinConstructorMarker constructors
+// will run -- one for A (first) and another for B (secondly.) Only
+// the second one should leave the forbidden GC scope.
+//
+// Arrange for the balanced use of the forbidden GC scope counter by
+// adding on the number of mixin constructor markers for a type.
+// This is equal to the how many GC mixins that the type nests.
+//
+// FIXME: We currently require that a nested GC mixin (e.g., B)
+// must declare what it nests: USING_GARBAGE_COLLECTED_MIXIN_NESTED(B, A);
+// must be used for it. It's a static error if it doesn't.
+//
+// It would however be preferable to statically derive the
+// "mixin nesting level" for these mixin types and use that without
+// having to explicitly state the particular type that a mixin nests.
+// It seems like it could be expressible as a compile-time type
+// computation..
+
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED()           \
+protected:                                                   \
+    static const unsigned mixinLevels = 1;
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, SUBTYPE)      \
+protected:                                                        \
+    static const unsigned mixinLevels = SUBTYPE::mixinLevels + 1;
+
+#if ENABLE(INLINED_TRACE)
+#define USING_GARBAGE_COLLECTED_MIXIN_BASE(TYPE)                  \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, TYPE) \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
+#else
+#define USING_GARBAGE_COLLECTED_MIXIN_BASE(TYPE)                  \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
+#endif
+
+#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)          \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED_DEBUG() \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED()       \
+    USING_GARBAGE_COLLECTED_MIXIN_BASE(TYPE)
+
+#define USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, SUBTYPE)    \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED_DEBUG(TYPE, SUBTYPE) \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, SUBTYPE)       \
+    USING_GARBAGE_COLLECTED_MIXIN_BASE(TYPE)
 
 #if ENABLE(OILPAN)
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE) USING_GARBAGE_COLLECTED_MIXIN(TYPE)
+#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, NESTEDMIXIN) USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, NESTEDMIXIN)
 #else
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE)
+#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, NESTEDMIXIN)
 #endif
 
 // Template to determine if a class is a GarbageCollectedMixin by checking if it
@@ -927,6 +1057,28 @@ private:
 
 public:
     static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
+};
+
+// An empty class with a constructor that's arranged invoked when all derived constructors
+// of a mixin instance have completed and it is safe to allow GCs again. See
+// AllocateObjectTrait<> comment for more.
+//
+// USING_GARBAGE_COLLECTED_MIXIN() declares a GarbageCollectedMixinConstructorMarker<> private
+// field. By following Blink convention of using the macro at the top of a class declaration,
+// its constructor will run first.
+template<typename T>
+class GarbageCollectedMixinConstructorMarker {
+public:
+    GarbageCollectedMixinConstructorMarker()
+    {
+        // FIXME: if prompt conservative GCs are needed, forced GCs that
+        // were denied while within this scope, could now be performed.
+        // For now, assume the next out-of-line allocation request will
+        // happen soon enough and take care of it. Mixin objects aren't
+        // overly common.
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        state->leaveGCForbiddenScope();
+    }
 };
 
 #if ENABLE(GC_PROFILING)

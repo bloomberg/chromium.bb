@@ -113,6 +113,7 @@ protected:
 
 class Node;
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
+WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(Node);
 
 #if ENABLE(OILPAN)
 #define NODE_BASE_CLASSES public EventTarget

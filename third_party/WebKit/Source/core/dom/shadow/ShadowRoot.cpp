@@ -44,6 +44,9 @@
 namespace blink {
 
 struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
+#if ENABLE(OILPAN)
+    char emptyClassFieldsDueToGCMixinMarker[1];
+#endif
     void* pointers[3];
     unsigned countersAndFlags[1];
 };

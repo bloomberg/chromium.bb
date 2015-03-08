@@ -554,6 +554,21 @@ public:
 
     double collectionRate() const { return m_collectionRate; }
 
+    // By entering a gc-forbidden scope, conservative GCs will not
+    // be allowed while handling an out-of-line allocation request.
+    // Intended used when constructing subclasses of GC mixins, where
+    // the object being constructed cannot be safely traced & marked
+    // fully should a GC be allowed while its subclasses are being
+    // constructed.
+    void enterGCForbiddenScope(unsigned delta)
+    {
+        m_gcForbiddenCount += delta;
+    }
+
+#if ENABLE(ASSERT)
+    bool isGCForbidden() const { return m_gcForbiddenCount; }
+#endif
+
 private:
     ThreadState();
     ~ThreadState();
@@ -595,14 +610,7 @@ private:
     void snapshotFreeList();
 #endif
 
-    // By entering a gc-forbidden scope, conservative GCs will not
-    // be allowed while handling an out-of-line allocation request.
-    // Intended used when constructing subclasses of GC mixins, where
-    // the object being constructed cannot be safely traced & marked
-    // fully should a GC be allowed while its subclasses are being
-    // constructed.
-    template<typename U, typename V> friend class AllocateObjectTrait;
-    void enterGCForbiddenScope() { m_gcForbiddenCount++; }
+    template<typename U> friend class GarbageCollectedMixinConstructorMarker;
     void leaveGCForbiddenScope()
     {
         ASSERT(m_gcForbiddenCount > 0);

@@ -104,7 +104,7 @@ class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
 
 class WebGLRenderingContextBase : public CanvasRenderingContext, public Page::MultisamplingChangedObserver, public ScriptWrappable {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebGLRenderingContextBase);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(WebGLRenderingContextBase, CanvasRenderingContext);
 public:
     virtual ~WebGLRenderingContextBase();
 

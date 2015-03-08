@@ -37,7 +37,7 @@ class SVGUseElement final : public SVGGraphicsElement,
                             public SVGURIReference,
                             public DocumentResourceClient {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(SVGUseElement, SVGGraphicsElement);
 public:
     static PassRefPtrWillBeRawPtr<SVGUseElement> create(Document&);
     virtual ~SVGUseElement();

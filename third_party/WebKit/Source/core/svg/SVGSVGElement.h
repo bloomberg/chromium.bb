@@ -45,7 +45,7 @@ class SVGSVGElement final : public SVGGraphicsElement,
                             public SVGFitToViewBox,
                             public SVGZoomAndPan {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGSVGElement);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(SVGSVGElement, SVGGraphicsElement);
 public:
     DECLARE_NODE_FACTORY(SVGSVGElement);
 

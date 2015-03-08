@@ -114,7 +114,7 @@ private:
 // ----------------------------
 
 class MediaControlInputElement : public HTMLInputElement, public MediaControlElement {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(MediaControlInputElement, HTMLFormControlElement);
 public:
     DECLARE_VIRTUAL_TRACE();
 
