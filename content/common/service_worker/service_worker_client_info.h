@@ -7,6 +7,7 @@
 
 #include "content/public/common/request_context_frame_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerClientType.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -21,7 +22,8 @@ struct ServiceWorkerClientInfo {
   ServiceWorkerClientInfo(blink::WebPageVisibilityState page_visibility_state,
                           bool is_focused,
                           const GURL& url,
-                          RequestContextFrameType frame_type);
+                          RequestContextFrameType frame_type,
+                          blink::WebServiceWorkerClientType client_type);
 
   // Returns whether the instance is empty.
   bool IsEmpty() const;
@@ -35,6 +37,7 @@ struct ServiceWorkerClientInfo {
   bool is_focused;
   GURL url;
   RequestContextFrameType frame_type;
+  blink::WebServiceWorkerClientType client_type;
 };
 
 }  // namespace content

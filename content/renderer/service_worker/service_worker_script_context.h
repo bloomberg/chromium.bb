@@ -28,6 +28,7 @@
 namespace blink {
 struct WebCircularGeofencingRegion;
 struct WebCrossOriginServiceWorkerClient;
+struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
 }
 
@@ -72,7 +73,8 @@ class ServiceWorkerScriptContext {
                           blink::WebServiceWorkerEventResult result);
   void DidHandleSyncEvent(int request_id);
   void DidHandleCrossOriginConnectEvent(int request_id, bool accept_connection);
-  void GetClientDocuments(
+  void GetClients(
+      const blink::WebServiceWorkerClientQueryOptions& options,
       blink::WebServiceWorkerClientsCallbacks* callbacks);
   void OpenWindow(const GURL& url,
                   blink::WebServiceWorkerClientCallbacks* callbacks);
@@ -136,7 +138,7 @@ class ServiceWorkerScriptContext {
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const std::vector<int>& new_routing_ids);
-  void OnDidGetClientDocuments(
+  void OnDidGetClients(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
   void OnOpenWindowResponse(int request_id,
                             const ServiceWorkerClientInfo& client);

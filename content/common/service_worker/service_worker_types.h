@@ -15,6 +15,7 @@
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerClientType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
 #include "url/gurl.h"
@@ -215,6 +216,12 @@ class ChangedVersionAttributesMask {
 
  private:
   int changed_;
+};
+
+struct ServiceWorkerClientQueryOptions {
+  ServiceWorkerClientQueryOptions();
+  blink::WebServiceWorkerClientType client_type;
+  bool include_uncontrolled;
 };
 
 }  // namespace content

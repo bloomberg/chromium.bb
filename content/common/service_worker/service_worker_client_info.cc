@@ -13,26 +13,30 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo()
   : client_id(kInvalidServiceWorkerClientId),
     page_visibility_state(blink::WebPageVisibilityStateLast),
     is_focused(false),
-    frame_type(REQUEST_CONTEXT_FRAME_TYPE_LAST) {
+    frame_type(REQUEST_CONTEXT_FRAME_TYPE_LAST),
+    client_type(blink::WebServiceWorkerClientTypeLast) {
 }
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     blink::WebPageVisibilityState page_visibility_state,
     bool is_focused,
     const GURL& url,
-    RequestContextFrameType frame_type)
+    RequestContextFrameType frame_type,
+    blink::WebServiceWorkerClientType client_type)
     : client_id(kInvalidServiceWorkerClientId),
       page_visibility_state(page_visibility_state),
       is_focused(is_focused),
       url(url),
-      frame_type(frame_type) {
+      frame_type(frame_type),
+      client_type(client_type) {
 }
 
 bool ServiceWorkerClientInfo::IsEmpty() const {
   return page_visibility_state == blink::WebPageVisibilityStateLast &&
          is_focused == false &&
          url.is_empty() &&
-         frame_type == REQUEST_CONTEXT_FRAME_TYPE_LAST;
+         frame_type == REQUEST_CONTEXT_FRAME_TYPE_LAST &&
+         client_type == blink::WebServiceWorkerClientTypeLast;
 }
 
 bool ServiceWorkerClientInfo::IsValid() const {

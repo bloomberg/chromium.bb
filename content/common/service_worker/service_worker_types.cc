@@ -88,4 +88,9 @@ ServiceWorkerRegistrationObjectInfo::ServiceWorkerRegistrationObjectInfo()
       registration_id(kInvalidServiceWorkerRegistrationId) {
 }
 
+ServiceWorkerClientQueryOptions::ServiceWorkerClientQueryOptions()
+    : client_type(blink::WebServiceWorkerClientTypeWindow),
+      include_uncontrolled(false) {
+}
+
 }  // namespace content

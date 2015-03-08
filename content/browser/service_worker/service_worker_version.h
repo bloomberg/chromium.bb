@@ -344,7 +344,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const StatusCallback& callback);
 
   // Message handlers.
-  void OnGetClientDocuments(int request_id);
+  void OnGetClients(int request_id,
+                    const ServiceWorkerClientQueryOptions& options);
   void OnActivateEventFinished(int request_id,
                                blink::WebServiceWorkerEventResult result);
   void OnInstallEventFinished(int request_id,
@@ -387,7 +388,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void DidSkipWaiting(int request_id);
   void DidClaimClients(int request_id, ServiceWorkerStatusCode status);
-  void DidGetClientDocuments(
+  void DidGetClients(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker

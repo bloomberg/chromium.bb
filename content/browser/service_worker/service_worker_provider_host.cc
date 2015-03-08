@@ -309,7 +309,8 @@ ServiceWorkerClientInfo ServiceWorkerProviderHost::GetClientInfoOnUI(
       render_frame_host->IsFocused(),
       render_frame_host->GetLastCommittedURL(),
       render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
-                                     : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
+                                     : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+      blink::WebServiceWorkerClientTypeWindow);
 }
 
 void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(

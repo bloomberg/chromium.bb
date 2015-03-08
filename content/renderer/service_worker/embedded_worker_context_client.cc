@@ -150,9 +150,10 @@ void EmbeddedWorkerContextClient::didPauseAfterDownload() {
 }
 
 void EmbeddedWorkerContextClient::getClients(
+    const blink::WebServiceWorkerClientQueryOptions& options,
     blink::WebServiceWorkerClientsCallbacks* callbacks) {
   DCHECK(script_context_);
-  script_context_->GetClientDocuments(callbacks);
+  script_context_->GetClients(options, callbacks);
 }
 
 void EmbeddedWorkerContextClient::openWindow(

@@ -37,7 +37,7 @@
 namespace content {
 
 using StatusCallback = ServiceWorkerVersion::StatusCallback;
-using GetClientDocumentsCallback =
+using GetClientsCallback =
     base::Callback<void(const std::vector<ServiceWorkerClientInfo>&)>;
 
 namespace {
@@ -262,11 +262,11 @@ base::TimeDelta GetTickDuration(const base::TimeTicks& time) {
   return base::TimeTicks().Now() - time;
 }
 
-void OnGetClientDocumentsFromUI(
+void OnGetClientsFromUI(
     // The tuple contains process_id, frame_id, client_id.
     const std::vector<Tuple<int,int,int>>& clients_info,
     const GURL& script_url,
-    const GetClientDocumentsCallback& callback) {
+    const GetClientsCallback& callback) {
   std::vector<ServiceWorkerClientInfo> clients;
 
   for (const auto& it : clients_info) {
@@ -920,8 +920,8 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
 bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerVersion, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClientDocuments,
-                        OnGetClientDocuments)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClients,
+                        OnGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ActivateEventFinished,
                         OnActivateEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_InstallEventFinished,
@@ -992,18 +992,21 @@ void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
   }
 }
 
-void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
+void ServiceWorkerVersion::OnGetClients(
+    int request_id,
+    const ServiceWorkerClientQueryOptions& /* options */) {
+  // TODO(kinuko): Handle ClientQueryOptions. (crbug.com/455241, 460415 etc)
   if (controllee_by_id_.IsEmpty()) {
     if (running_status() == RUNNING) {
       embedded_worker_->SendMessage(
-          ServiceWorkerMsg_DidGetClientDocuments(request_id,
+          ServiceWorkerMsg_DidGetClients(request_id,
               std::vector<ServiceWorkerClientInfo>()));
     }
     return;
   }
 
   TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerVersion::OnGetClientDocuments");
+               "ServiceWorkerVersion::OnGetClients");
 
   std::vector<Tuple<int,int,int>> clients_info;
   for (ControlleeByIDMap::iterator it(&controllee_by_id_); !it.IsAtEnd();
@@ -1017,8 +1020,8 @@ void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnGetClientDocumentsFromUI, clients_info, script_url_,
-                 base::Bind(&ServiceWorkerVersion::DidGetClientDocuments,
+      base::Bind(&OnGetClientsFromUI, clients_info, script_url_,
+                 base::Bind(&ServiceWorkerVersion::DidGetClients,
                             weak_factory_.GetWeakPtr(),
                             request_id)));
 
@@ -1410,7 +1413,7 @@ void ServiceWorkerVersion::DidClaimClients(
   embedded_worker_->SendMessage(ServiceWorkerMsg_DidClaimClients(request_id));
 }
 
-void ServiceWorkerVersion::DidGetClientDocuments(
+void ServiceWorkerVersion::DidGetClients(
     int request_id,
     const std::vector<ServiceWorkerClientInfo>& clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1418,7 +1421,7 @@ void ServiceWorkerVersion::DidGetClientDocuments(
     return;
 
   embedded_worker_->SendMessage(
-      ServiceWorkerMsg_DidGetClientDocuments(request_id, clients));
+      ServiceWorkerMsg_DidGetClients(request_id, clients));
 }
 
 void ServiceWorkerVersion::StartTimeoutTimer() {

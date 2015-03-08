@@ -40,6 +40,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerState,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseType,
                           blink::WebServiceWorkerResponseTypeLast)
 
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerClientType,
+                          blink::WebServiceWorkerClientTypeLast)
+
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerProviderType,
                           content::SERVICE_WORKER_PROVIDER_TYPE_LAST)
 
@@ -113,6 +116,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientInfo)
   IPC_STRUCT_TRAITS_MEMBER(is_focused)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(frame_type)
+  IPC_STRUCT_TRAITS_MEMBER(client_type)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientQueryOptions)
+  IPC_STRUCT_TRAITS_MEMBER(client_type)
+  IPC_STRUCT_TRAITS_MEMBER(include_uncontrolled)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(
@@ -224,10 +233,10 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CrossOriginConnectEventFinished,
 // Routed to the target ServiceWorkerVersion.
 IPC_MESSAGE_ROUTED0(ServiceWorkerHostMsg_Pong)
 
-// Asks the browser to retrieve documents controlled by the sender
-// ServiceWorker.
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientDocuments,
-                    int /* request_id */)
+// Asks the browser to retrieve clients of the sender ServiceWorker.
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClients,
+                    int /* request_id */,
+                    content::ServiceWorkerClientQueryOptions)
 
 // Sends a 'message' event to a client document (renderer->browser).
 IPC_MESSAGE_ROUTED3(
@@ -472,8 +481,8 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ClaimClientsError,
 // Sent via EmbeddedWorker to Ping the worker, expecting a Pong in response.
 IPC_MESSAGE_CONTROL0(ServiceWorkerMsg_Ping)
 
-// Sent via EmbeddedWorker as a response of GetClientDocuments.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,
+// Sent via EmbeddedWorker as a response of GetClients.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClients,
                      int /* request_id */,
                      std::vector<content::ServiceWorkerClientInfo>)
 

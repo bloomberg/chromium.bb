@@ -63,7 +63,8 @@ class EmbeddedWorkerContextClient
   virtual blink::WebURL scope() const;
   virtual blink::WebServiceWorkerCacheStorage* cacheStorage();
   virtual void didPauseAfterDownload();
-  virtual void getClients(blink::WebServiceWorkerClientsCallbacks*);
+  virtual void getClients(const blink::WebServiceWorkerClientQueryOptions&,
+                          blink::WebServiceWorkerClientsCallbacks*);
   virtual void openWindow(const blink::WebURL&,
                           blink::WebServiceWorkerClientCallbacks*);
   virtual void setCachedMetadata(const blink::WebURL&,

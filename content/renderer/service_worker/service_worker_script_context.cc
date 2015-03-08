@@ -18,6 +18,7 @@
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebCrossOriginServiceWorkerClient.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerClientQueryOptions.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -85,6 +86,7 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
   web_client_info.isFocused = client_info.is_focused;
   web_client_info.url = client_info.url;
   web_client_info.frameType = GetBlinkFrameType(client_info.frame_type);
+  web_client_info.clientType = client_info.client_type;
 
   return web_client_info;
 }
@@ -118,8 +120,8 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginMessageToWorker,
                         OnCrossOriginMessageToWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClientDocuments,
-                        OnDidGetClientDocuments)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients,
+                        OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
                         OnOpenWindowResponse)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowError,
@@ -221,12 +223,16 @@ void ServiceWorkerScriptContext::DidHandleCrossOriginConnectEvent(
       GetRoutingID(), request_id, accept_connection));
 }
 
-void ServiceWorkerScriptContext::GetClientDocuments(
+void ServiceWorkerScriptContext::GetClients(
+    const blink::WebServiceWorkerClientQueryOptions& weboptions,
     blink::WebServiceWorkerClientsCallbacks* callbacks) {
   DCHECK(callbacks);
   int request_id = pending_clients_callbacks_.Add(callbacks);
-  Send(new ServiceWorkerHostMsg_GetClientDocuments(
-      GetRoutingID(), request_id));
+  ServiceWorkerClientQueryOptions options;
+  options.client_type = weboptions.clientType;
+  options.include_uncontrolled = weboptions.includeUncontrolled;
+  Send(new ServiceWorkerHostMsg_GetClients(
+      GetRoutingID(), request_id, options));
 }
 
 void ServiceWorkerScriptContext::OpenWindow(
@@ -444,10 +450,10 @@ void ServiceWorkerScriptContext::OnCrossOriginMessageToWorker(
   proxy_->dispatchCrossOriginMessageEvent(web_client, message, ports);
 }
 
-void ServiceWorkerScriptContext::OnDidGetClientDocuments(
+void ServiceWorkerScriptContext::OnDidGetClients(
     int request_id, const std::vector<ServiceWorkerClientInfo>& clients) {
   TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerScriptContext::OnDidGetClientDocuments");
+               "ServiceWorkerScriptContext::OnDidGetClients");
   blink::WebServiceWorkerClientsCallbacks* callbacks =
       pending_clients_callbacks_.Lookup(request_id);
   if (!callbacks) {
