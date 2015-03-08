@@ -66,11 +66,11 @@
 #include "public/web/WebServiceWorkerNetworkProvider.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
-#include "public/web/WebWorkerPermissionClientProxy.h"
+#include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WorkerPermissionClient.h"
+#include "web/WorkerContentSettingsClient.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 
@@ -415,7 +415,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
-    providePermissionClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerPermissionClientProxy(webSecurityOrigin)));
+    provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
     OwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(m_url, m_loadingDocument->userAgent(m_url), m_mainScriptLoader->script(), nullptr, startMode, m_contentSecurityPolicy, static_cast<ContentSecurityPolicyHeaderType>(m_policyType), starterOrigin, workerClients.release());
     m_loaderProxy = WorkerLoaderProxy::create(this);
     setWorkerThread(SharedWorkerThread::create(m_name, m_loaderProxy, *this, startupData.release()));

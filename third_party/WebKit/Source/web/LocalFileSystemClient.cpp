@@ -38,7 +38,7 @@
 #include "public/platform/WebPermissionCallbacks.h"
 #include "public/web/WebContentSettingsClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WorkerPermissionClient.h"
+#include "web/WorkerContentSettingsClient.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -61,7 +61,7 @@ bool LocalFileSystemClient::requestFileSystemAccessSync(ExecutionContext* contex
     }
 
     ASSERT(context->isWorkerGlobalScope());
-    return WorkerPermissionClient::from(*toWorkerGlobalScope(context))->requestFileSystemAccessSync();
+    return WorkerContentSettingsClient::from(*toWorkerGlobalScope(context))->requestFileSystemAccessSync();
 }
 
 void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* context, PassOwnPtr<PermissionCallbacks> callbacks)

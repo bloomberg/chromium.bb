@@ -51,6 +51,7 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebWorkerPermissionClientProxy.h"
 #include <v8.h>
 
 namespace blink {
@@ -84,7 +85,7 @@ class WebString;
 class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
-class WebWorkerPermissionClientProxy;
+class WebWorkerContentSettingsClientProxy;
 struct WebColorSuggestion;
 struct WebConsoleMessage;
 struct WebContextMenuData;
@@ -116,6 +117,12 @@ public:
 
     // May return null.
     virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(WebLocalFrame*) { return 0; }
+
+    // May return null.
+    virtual WebWorkerContentSettingsClientProxy* createWorkerContentSettingsClientProxy(WebLocalFrame* frame)
+    {
+        return createWorkerPermissionClientProxy(frame);
+    }
 
     // Create a new WebPopupMenu. In the "createExternalPopupMenu" form, the
     // client is responsible for rendering the contents of the popup menu.
