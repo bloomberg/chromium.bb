@@ -244,6 +244,13 @@ RoleMap BuildSubroleMap() {
   return [NSValue valueWithSize:self.boundsInScreen.size];
 }
 
+- (NSString*)AXTitle {
+  std::string value;
+  if (node_->GetStringAttribute(ui::AX_ATTR_NAME, &value))
+    return base::SysUTF8ToNSString(value);
+  return nil;
+}
+
 // NSAccessibility informal protocol implementation.
 
 - (BOOL)accessibilityIsIgnored {
@@ -263,13 +270,19 @@ RoleMap BuildSubroleMap() {
 }
 
 - (NSArray*)accessibilityAttributeNames {
+  // These attributes are required on all accessibility objects.
   return @[
     NSAccessibilityChildrenAttribute,
     NSAccessibilityParentAttribute,
     NSAccessibilityPositionAttribute,
     NSAccessibilityRoleAttribute,
     NSAccessibilitySizeAttribute,
+
+    // Title is required for most elements. Cocoa asks for the value even if it
+    // is omitted here, but won't present it to accessibility APIs without this.
+    NSAccessibilityTitleAttribute,
   ];
+  // TODO(tapted): Add additional attributes based on role.
 }
 
 - (BOOL)accessibilityIsAttributeSettable:(NSString*)attribute {

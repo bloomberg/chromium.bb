@@ -28,6 +28,18 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
 
+// The NSView that hosts the composited CALayer drawing the UI. It fills the
+// window but is not hittable so that accessibility hit tests always go to the
+// BridgedContentView.
+@interface ViewsCompositorSuperview : NSView
+@end
+
+@implementation ViewsCompositorSuperview
+- (NSView*)hitTest:(NSPoint)aPoint {
+  return nil;
+}
+@end
+
 namespace {
 
 int kWindowPropertiesKey;
@@ -699,7 +711,7 @@ void BridgedNativeWidget::DestroyCompositor() {
 void BridgedNativeWidget::AddCompositorSuperview() {
   DCHECK(!compositor_superview_);
   compositor_superview_.reset(
-      [[NSView alloc] initWithFrame:[bridged_view_ bounds]]);
+      [[ViewsCompositorSuperview alloc] initWithFrame:[bridged_view_ bounds]]);
 
   // Size and resize automatically with |bridged_view_|.
   [compositor_superview_
