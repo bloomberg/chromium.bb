@@ -6,6 +6,9 @@ if (strtolower($_GET["credentials"]) == "true") {
     header("Access-Control-ALlow-Credentials: true");
 }
 header("Content-Type: application/javascript");
+$delay = $_GET['delay'];
+if ($delay)
+    usleep(1000 * $delay);
 $value = $_GET['value'];
 if ($_SERVER['HTTP_ORIGIN'] && $_GET['value_cors']) {
     $value = $_GET['value_cors'];
