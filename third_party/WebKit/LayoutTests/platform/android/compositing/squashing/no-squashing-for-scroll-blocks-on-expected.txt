@@ -1,0 +1,38 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#ADD8E6"
+        },
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "bounds": [50, 50],
+              "scrollBlocksOn": ["ScrollEvent"],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#D3D3D3"
+            },
+            {
+              "position": [50, 50],
+              "bounds": [50, 50],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

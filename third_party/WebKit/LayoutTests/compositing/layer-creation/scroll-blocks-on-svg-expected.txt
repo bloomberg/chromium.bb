@@ -5,7 +5,10 @@ This test verifies that SVG documents have the default scroll-blocks-on mode app
   "children": [
     {
       "bounds": [800, 600],
-      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "scrollBlocksOn": [
+        "StartTouch",
+        "WheelEvent"
+      ],
       "contentsOpaque": true,
       "drawsContent": true
     }

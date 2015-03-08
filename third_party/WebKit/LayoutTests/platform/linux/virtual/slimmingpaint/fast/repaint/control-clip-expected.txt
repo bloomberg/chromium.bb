@@ -1,0 +1,26 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [81, 117, 54, 16],
+        [76, 117, 64, 16],
+        [67, 87, 9, 16],
+        [16, 117, 184, 16],
+        [9, 87, 198, 16],
+        [8, 80, 200, 30]
+      ],
+      "paintInvalidationClients": [
+        "LayoutMenuList SELECT id='popup'",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

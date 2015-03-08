@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [284, 15, 125, 50],
+        [9, 9, 400, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV class='container'",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

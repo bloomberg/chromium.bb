@@ -5,7 +5,9 @@ Verify that an iframe will be promoted to a composited layer only when it has ad
   "children": [
     {
       "bounds": [800, 600],
-      "scrollBlocksOn": ["StartTouch"],
+      "scrollBlocksOn": [
+        "StartTouch"
+      ],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -27,7 +29,10 @@ Verify that an iframe will be promoted to a composited layer only when it has ad
                           "children": [
                             {
                               "bounds": [100, 15],
-                              "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+                              "scrollBlocksOn": [
+                                "StartTouch",
+                                "WheelEvent"
+                              ],
                               "drawsContent": true
                             }
                           ]
@@ -58,7 +63,10 @@ Verify that an iframe will be promoted to a composited layer only when it has ad
                           "children": [
                             {
                               "bounds": [100, 15],
-                              "scrollBlocksOn": ["StartTouch", "ScrollEvent"],
+                              "scrollBlocksOn": [
+                                "StartTouch",
+                                "ScrollEvent"
+                              ],
                               "drawsContent": true
                             }
                           ]
@@ -85,7 +93,10 @@ Frame: '<!--framePath //<!--frame2-->-->'
   "children": [
     {
       "bounds": [100, 15],
-      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "scrollBlocksOn": [
+        "StartTouch",
+        "WheelEvent"
+      ],
       "drawsContent": true
     }
   ]
@@ -100,7 +111,10 @@ Frame: '<!--framePath //<!--frame3-->-->'
   "children": [
     {
       "bounds": [100, 15],
-      "scrollBlocksOn": ["StartTouch", "ScrollEvent"],
+      "scrollBlocksOn": [
+        "StartTouch",
+        "ScrollEvent"
+      ],
       "drawsContent": true
     }
   ]

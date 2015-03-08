@@ -1,0 +1,108 @@
+Verify that an iframe will be promoted to a composited layer only when it has additional scroll-blocks-on bits.
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "scrollBlocksOn": ["StartTouch"],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 60],
+          "bounds": [100, 15],
+          "drawsContent": true,
+          "children": [
+            {
+              "bounds": [100, 15],
+              "children": [
+                {
+                  "bounds": [100, 15],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [100, 15],
+                          "children": [
+                            {
+                              "bounds": [100, 15],
+                              "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+                              "drawsContent": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [8, 80],
+          "bounds": [100, 15],
+          "drawsContent": true,
+          "children": [
+            {
+              "bounds": [100, 15],
+              "children": [
+                {
+                  "bounds": [100, 15],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [100, 15],
+                          "children": [
+                            {
+                              "bounds": [100, 15],
+                              "scrollBlocksOn": ["StartTouch", "ScrollEvent"],
+                              "drawsContent": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '<!--framePath //<!--frame2-->-->'
+--------
+{
+  "bounds": [100, 15],
+  "children": [
+    {
+      "bounds": [100, 15],
+      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "drawsContent": true
+    }
+  ]
+}
+
+
+--------
+Frame: '<!--framePath //<!--frame3-->-->'
+--------
+{
+  "bounds": [100, 15],
+  "children": [
+    {
+      "bounds": [100, 15],
+      "scrollBlocksOn": ["StartTouch", "ScrollEvent"],
+      "drawsContent": true
+    }
+  ]
+}
+

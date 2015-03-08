@@ -1,0 +1,27 @@
+{
+  "bounds": [785, 2016],
+  "children": [
+    {
+      "bounds": [785, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [0, 400],
+          "bounds": [785, 600],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#008000",
+          "repaintRects": [
+            [100, 100, 200, 200]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV id='fixed'"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

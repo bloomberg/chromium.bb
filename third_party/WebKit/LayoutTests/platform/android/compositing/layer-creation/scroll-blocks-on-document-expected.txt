@@ -1,0 +1,14 @@
+Verify that scroll-blocks-on on the documentElement is propagated to the viewport without creating any additional layers.
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "scrollBlocksOn": ["StartTouch", "ScrollEvent"],
+      "contentsOpaque": true,
+      "drawsContent": true
+    }
+  ]
+}
+

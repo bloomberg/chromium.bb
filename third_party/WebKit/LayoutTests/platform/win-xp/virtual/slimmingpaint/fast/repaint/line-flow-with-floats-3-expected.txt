@@ -1,0 +1,30 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [372, 383, 48, 80],
+        [356, 383, 64, 80],
+        [352, 440, 16, 59],
+        [352, 380, 1, 19],
+        [303, 420, 66, 19],
+        [65, 400, 288, 39],
+        [65, 380, 304, 59],
+        [14, 420, 339, 39],
+        [8, 380, 418, 219]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

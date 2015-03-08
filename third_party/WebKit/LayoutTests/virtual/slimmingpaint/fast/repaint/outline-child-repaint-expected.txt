@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 240, 220, 60],
+        [0, 240, 220, 50],
+        [0, 140, 220, 60],
+        [0, 140, 220, 50]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='container'",
+        "LayoutBlockFlow DIV class='outlined'"
+      ]
+    }
+  ]
+}
+

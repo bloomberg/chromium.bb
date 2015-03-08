@@ -1,0 +1,18 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [50, 50, 600, 500],
+        [50, 50, 500, 500]
+      ],
+      "paintInvalidationClients": [
+        "LayoutHTMLCanvas (positioned) CANVAS id='canvas'"
+      ]
+    }
+  ]
+}
+

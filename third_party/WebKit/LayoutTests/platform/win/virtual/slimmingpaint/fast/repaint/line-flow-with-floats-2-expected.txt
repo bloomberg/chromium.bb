@@ -1,0 +1,54 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [372, 374, 48, 80],
+        [372, 371, 48, 80],
+        [178, 353, 146, 17],
+        [178, 350, 146, 17],
+        [65, 389, 303, 35],
+        [65, 386, 303, 35],
+        [65, 371, 304, 17],
+        [65, 368, 304, 17],
+        [14, 479, 406, 89],
+        [14, 476, 406, 89],
+        [14, 425, 355, 53],
+        [14, 422, 355, 53],
+        [14, 407, 355, 35],
+        [14, 404, 355, 35],
+        [14, 356, 48, 64],
+        [14, 353, 48, 64],
+        [14, 245, 406, 125],
+        [14, 242, 406, 125],
+        [14, 190, 406, 72],
+        [14, 188, 406, 71],
+        [14, 188, 45, 20],
+        [14, 188, 40, 17],
+        [8, 572, 418, 3],
+        [8, 569, 418, 6],
+        [8, 170, 418, 398]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow P",
+        "LayoutInline I id='would'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

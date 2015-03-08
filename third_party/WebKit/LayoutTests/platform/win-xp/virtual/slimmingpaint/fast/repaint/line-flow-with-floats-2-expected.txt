@@ -1,0 +1,57 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [485, 0, 15, 600],
+        [372, 384, 48, 80],
+        [372, 383, 48, 80],
+        [303, 421, 66, 19],
+        [303, 420, 66, 19],
+        [151, 180, 39, 19],
+        [149, 180, 44, 20],
+        [134, 361, 132, 19],
+        [134, 360, 132, 19],
+        [65, 381, 304, 59],
+        [65, 381, 287, 19],
+        [65, 380, 304, 59],
+        [65, 380, 287, 19],
+        [14, 501, 406, 99],
+        [14, 500, 406, 99],
+        [14, 441, 354, 59],
+        [14, 440, 354, 59],
+        [14, 364, 48, 64],
+        [14, 363, 48, 64],
+        [14, 241, 406, 139],
+        [14, 240, 406, 139],
+        [14, 199, 354, 1],
+        [14, 181, 406, 79],
+        [14, 180, 406, 79],
+        [8, 160, 418, 440]
+      ],
+      "paintInvalidationClients": [
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "LayoutInline I id='would'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

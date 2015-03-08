@@ -1,0 +1,25 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [40, 104, 114, 26],
+        [40, 104, 113, 27],
+        [8, 104, 114, 26],
+        [8, 104, 113, 27],
+        [8, 84, 32, 67],
+        [8, 84, 32, 32]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (anonymous)",
+        "LayoutImage IMG id='foo'",
+        "LayoutBlockFlow H2",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

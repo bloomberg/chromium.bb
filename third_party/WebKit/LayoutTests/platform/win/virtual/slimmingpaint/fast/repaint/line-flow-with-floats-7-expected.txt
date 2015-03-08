@@ -1,0 +1,20 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [14, 404, 355, 35],
+        [8, 386, 418, 53]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow P",
+        "LayoutInline SPAN id='theQueen'",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

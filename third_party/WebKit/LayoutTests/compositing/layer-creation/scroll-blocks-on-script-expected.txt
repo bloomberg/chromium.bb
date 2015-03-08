@@ -5,14 +5,19 @@ Verify that setting scroll-blocks-on from script immediately creates the necessa
   "children": [
     {
       "bounds": [800, 600],
-      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "scrollBlocksOn": [
+        "StartTouch",
+        "WheelEvent"
+      ],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
           "position": [8, 8],
           "bounds": [20, 20],
-          "scrollBlocksOn": ["ScrollEvent"]
+          "scrollBlocksOn": [
+            "ScrollEvent"
+          ]
         }
       ]
     }

@@ -5,7 +5,10 @@ Verify we get the default scroll-blocks-on mode applied to the viewport, no addi
   "children": [
     {
       "bounds": [800, 600],
-      "scrollBlocksOn": ["StartTouch", "WheelEvent"],
+      "scrollBlocksOn": [
+        "StartTouch",
+        "WheelEvent"
+      ],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [

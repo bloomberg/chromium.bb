@@ -1,0 +1,30 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [304, 132, 2, 199],
+        [254, 132, 52, 235],
+        [252, 132, 50, 199],
+        [250, 132, 36, 143],
+        [10, 331, 242, 36],
+        [10, 317, 242, 50],
+        [10, 281, 292, 50],
+        [10, 275, 240, 36],
+        [10, 132, 292, 144],
+        [10, 132, 242, 180]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD id='col1'",
+        "LayoutBlockFlow DIV",
+        "LayoutText #text",
+        "LayoutBlockFlow DIV",
+        "LayoutTableCell TD id='target'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,18 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [48, 108, 81, 20],
+        [43, 103, 91, 30]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) A id='link' class='updated'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,38 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [408, 84, 100, 100],
+        [408, 84, 100, 100],
+        [408, 84, 100, 100],
+        [408, 84, 100, 100],
+        [408, 84, 100, 100],
+        [408, 84, 100, 100],
+        [408, 84, 100, 100],
+        [408, 84, 4, 17],
+        [408, 84, 4, 17],
+        [208, 84, 100, 100],
+        [208, 84, 100, 100],
+        [208, 84, 100, 100],
+        [208, 84, 100, 100],
+        [208, 84, 4, 17]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "LayoutBlockFlow DIV id='to_remove' class='item'",
+        "LayoutBlockFlow (floating) DIV id='to_remove_inner' class='inner'",
+        "LayoutBlockFlow (floating) DIV id='node' class='outer'",
+        "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+        "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+        "LayoutBlockFlow (floating) DIV id='keep_inner' class='inner'",
+        "LayoutBlockFlow DIV id='keep' class='item'",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

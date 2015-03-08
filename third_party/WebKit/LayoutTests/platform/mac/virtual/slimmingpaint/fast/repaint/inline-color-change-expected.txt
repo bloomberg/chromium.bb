@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 68, 39, 18],
+        [8, 68, 39, 18]
+      ],
+      "paintInvalidationClients": [
+        "LayoutInline SPAN id='target'",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

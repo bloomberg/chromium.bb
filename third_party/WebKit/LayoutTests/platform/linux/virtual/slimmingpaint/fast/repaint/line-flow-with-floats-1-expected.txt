@@ -1,0 +1,43 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [378, 138, 70, 30],
+        [368, 80, 52, 119],
+        [303, 420, 66, 19],
+        [244, 420, 64, 19],
+        [151, 180, 39, 19],
+        [134, 360, 132, 19],
+        [84, 180, 39, 19],
+        [65, 380, 304, 59],
+        [65, 360, 132, 19],
+        [14, 440, 354, 59],
+        [14, 420, 354, 79],
+        [14, 380, 355, 59],
+        [14, 363, 48, 64],
+        [14, 359, 406, 20],
+        [14, 343, 48, 64],
+        [14, 239, 406, 20],
+        [8, 120, 418, 479]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (floating) DIV id='pinkFloat'",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

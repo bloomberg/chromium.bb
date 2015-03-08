@@ -5,7 +5,10 @@ Verify that scroll-blocks-on on the documentElement is propagated to the viewpor
   "children": [
     {
       "bounds": [800, 600],
-      "scrollBlocksOn": ["StartTouch", "ScrollEvent"],
+      "scrollBlocksOn": [
+        "StartTouch",
+        "ScrollEvent"
+      ],
       "contentsOpaque": true,
       "drawsContent": true
     }

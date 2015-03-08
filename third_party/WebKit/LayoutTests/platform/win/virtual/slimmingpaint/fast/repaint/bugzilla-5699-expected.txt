@@ -1,0 +1,31 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [43, 178, 1, 17],
+        [43, 148, 1, 17],
+        [8, 178, 36, 17],
+        [8, 166, 784, 30],
+        [8, 148, 36, 17],
+        [8, 145, 4, 17],
+        [8, 145, 4, 17],
+        [8, 130, 784, 65],
+        [8, 130, 4, 17]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow P",
+        "LayoutInline SPAN id='d'",
+        "LayoutText #text",
+        "LayoutBR BR",
+        "LayoutText #text",
+        "LayoutBR BR"
+      ]
+    }
+  ]
+}
+

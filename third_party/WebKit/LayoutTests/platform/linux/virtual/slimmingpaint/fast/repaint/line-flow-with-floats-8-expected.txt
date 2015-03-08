@@ -1,0 +1,43 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [485, 0, 15, 600],
+        [303, 420, 66, 19],
+        [143, 420, 64, 19],
+        [134, 360, 132, 19],
+        [83, 360, 131, 19],
+        [65, 380, 304, 59],
+        [65, 380, 287, 19],
+        [14, 500, 406, 99],
+        [14, 480, 406, 99],
+        [14, 440, 354, 59],
+        [14, 420, 354, 59],
+        [14, 380, 354, 59],
+        [14, 380, 298, 19],
+        [14, 363, 48, 64],
+        [8, 586, 418, 14],
+        [8, 583, 418, 17],
+        [8, 80, 418, 519]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+
