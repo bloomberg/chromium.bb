@@ -473,12 +473,25 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     bool reset_flag,
     QuicPacketSequenceNumber sequence_number,
     const string& data) {
+  return ConstructEncryptedPacket(
+      connection_id, version_flag, reset_flag, sequence_number, data,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER);
+}
+
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId connection_id,
+    bool version_flag,
+    bool reset_flag,
+    QuicPacketSequenceNumber sequence_number,
+    const string& data,
+    QuicConnectionIdLength connection_id_length,
+    QuicSequenceNumberLength sequence_number_length) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id;
-  header.public_header.connection_id_length = PACKET_8BYTE_CONNECTION_ID;
+  header.public_header.connection_id_length = connection_id_length;
   header.public_header.version_flag = version_flag;
   header.public_header.reset_flag = reset_flag;
-  header.public_header.sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
+  header.public_header.sequence_number_length = sequence_number_length;
   header.packet_sequence_number = sequence_number;
   header.entropy_flag = false;
   header.entropy_hash = 0;

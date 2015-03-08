@@ -202,8 +202,6 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
 
 bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     const QuicPacketPublicHeader& header) {
-  QuicSession* session = nullptr;
-
   // Port zero is only allowed for unidirectional UDP, so is disallowed by QUIC.
   // Given that we can't even send a reply rejecting the packet, just black hole
   // it.
@@ -211,45 +209,43 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     return false;
   }
 
+  // The session that we have identified as the one to which this packet
+  // belongs.
+  QuicSession* session = nullptr;
   QuicConnectionId connection_id = header.connection_id;
   SessionMap::iterator it = session_map_.find(connection_id);
   if (it == session_map_.end()) {
-    if (header.reset_flag) {
-      return false;
-    }
     if (time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id)) {
       return HandlePacketForTimeWait(header);
     }
 
-    // Ensure the packet has a version negotiation bit set before creating a new
-    // session for it.  All initial packets for a new connection are required to
-    // have the flag set.  Otherwise it may be a stray packet.
-    if (header.version_flag) {
-      session = CreateQuicSession(connection_id, current_server_address_,
-                                  current_client_address_);
+    // The packet has an unknown connection ID.
+    // If the packet is a public reset, there is nothing we must do or can do.
+    if (header.reset_flag) {
+      return false;
     }
 
-    if (session == nullptr) {
-      DVLOG(1) << "Failed to create session for " << connection_id;
+    // All packets within a connection sent by a client before receiving a
+    // response from the server are required to have the version negotiation
+    // flag set.  Since this may be a client continuing a connection we lost
+    // track of via server restart, send a rejection to fast-fail the
+    // connection.
+    if (!header.version_flag) {
+      DVLOG(1) << "Packet without version arrived for unknown connection ID "
+               << connection_id;
       // Add this connection_id fo the time-wait state, to safely reject future
       // packets.
-
-      if (header.version_flag &&
-          !framer_.IsSupportedVersion(header.versions.front())) {
-        // TODO(ianswett): Produce a no-version version negotiation packet.
-        return false;
-      }
-
-      // Use the version in the packet if possible, otherwise assume the latest.
-      QuicVersion version = header.version_flag ? header.versions.front() :
-          supported_versions_.front();
+      QuicVersion version = supported_versions_.front();
       time_wait_list_manager_->AddConnectionIdToTimeWait(connection_id, version,
                                                          nullptr);
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
       return HandlePacketForTimeWait(header);
     }
-    DVLOG(1) << "Created new session for " << connection_id;
-    session_map_.insert(std::make_pair(connection_id, session));
+
+    session = AdditionalValidityChecksThenCreateSession(header, connection_id);
+    if (session == nullptr) {
+      return false;
+    }
   } else {
     session = it->second;
   }
@@ -257,8 +253,40 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   session->connection()->ProcessUdpPacket(
       current_server_address_, current_client_address_, *current_packet_);
 
-  // Do not parse the packet further.  The session will process it completely.
+  // Do not parse the packet further.  The session methods called above have
+  // processed it completely.
   return false;
+}
+
+QuicSession* QuicDispatcher::AdditionalValidityChecksThenCreateSession(
+    const QuicPacketPublicHeader& header,
+    QuicConnectionId connection_id) {
+  QuicSession* session = CreateQuicSession(
+      connection_id, current_server_address_, current_client_address_);
+
+  if (session == nullptr) {
+    DVLOG(1) << "Failed to create session for " << connection_id;
+
+    if (!framer_.IsSupportedVersion(header.versions.front())) {
+      // TODO(ianswett): Produce packet saying "no supported version".
+      return nullptr;
+    }
+
+    // Add this connection_id to the time-wait state, to safely reject future
+    // packets.
+    QuicVersion version = header.versions.front();
+    time_wait_list_manager_->AddConnectionIdToTimeWait(connection_id, version,
+                                                       nullptr);
+    DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
+    HandlePacketForTimeWait(header);
+
+    return nullptr;
+  }
+
+  DVLOG(1) << "Created new session for " << connection_id;
+  session_map_.insert(std::make_pair(connection_id, session));
+
+  return session;
 }
 
 void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {

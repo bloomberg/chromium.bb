@@ -69,23 +69,6 @@ class QuicStreamSequencerTest : public ::testing::Test {
             QuicStreamSequencerPeer::GetBufferedFrames(sequencer_.get())) {
   }
 
-  bool VerifyIovecs(iovec* iovecs,
-                    size_t num_iovecs,
-                    const char** expected,
-                    size_t num_expected) {
-    if (num_expected != num_iovecs) {
-      LOG(ERROR) << "Incorrect number of iovecs.  Expected: "
-                 << num_expected << " Actual: " << num_iovecs;
-      return false;
-    }
-    for (size_t i = 0; i < num_expected; ++i) {
-      if (!VerifyIovec(iovecs[i], expected[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   bool VerifyIovec(const iovec& iovec, StringPiece expected) {
     if (iovec.iov_len != expected.length()) {
       LOG(ERROR) << "Invalid length: " << iovec.iov_len

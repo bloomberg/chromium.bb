@@ -96,9 +96,6 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
   // True if no pending writes remain.
   bool wrote_last_data_;
 
-  // Accumulators.
-  int num_original_packets_;
-  int num_original_bytes_;
   int num_retransmitted_packets_;
   int num_retransmitted_bytes_;
 
@@ -238,10 +235,6 @@ void ReliableQuicStream::CloseConnection(QuicErrorCode error) {
 void ReliableQuicStream::CloseConnectionWithDetails(QuicErrorCode error,
                                                     const string& details) {
   session()->connection()->SendConnectionCloseWithDetails(error, details);
-}
-
-QuicVersion ReliableQuicStream::version() const {
-  return session()->connection()->version();
 }
 
 void ReliableQuicStream::WriteOrBufferData(
@@ -507,14 +500,6 @@ void ReliableQuicStream::UpdateSendWindowOffset(QuicStreamOffset new_window) {
   if (flow_controller_.UpdateSendWindowOffset(new_window)) {
     OnCanWrite();
   }
-}
-
-bool ReliableQuicStream::IsFlowControlBlocked() {
-  if (flow_controller_.IsBlocked()) {
-    return true;
-  }
-  return stream_contributes_to_connection_flow_control_ &&
-      connection_flow_controller_->IsBlocked();
 }
 
 }  // namespace net

@@ -132,13 +132,6 @@ void QuicNegotiableTag::set(const QuicTagVector& possible,
   default_value_ = default_value;
 }
 
-QuicTag QuicNegotiableTag::GetTag() const {
-  if (negotiated()) {
-    return negotiated_tag_;
-  }
-  return default_value_;
-}
-
 void QuicNegotiableTag::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   if (negotiated()) {
     // Because of the way we serialize and parse handshake messages we can

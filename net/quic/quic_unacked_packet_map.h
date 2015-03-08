@@ -98,9 +98,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns the time that the last unacked packet was sent.
   QuicTime GetLastPacketSentTime() const;
 
-  // Returns the time that the first in flight packet was sent.
-  QuicTime GetFirstInFlightPacketSentTime() const;
-
   // Returns the number of unacked packets.
   size_t GetNumUnackedPacketsDebugOnly() const;
 

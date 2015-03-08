@@ -77,7 +77,6 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
                        true),
         client_framer_(SupportedVersions(GetParam().version), QuicTime::Zero(),
                        false),
-        sequence_number_(0),
         connection_id_(2),
         data_("foo"),
         creator_(connection_id_, &client_framer_, &mock_random_) {
@@ -143,7 +142,6 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   QuicFramer server_framer_;
   QuicFramer client_framer_;
   testing::StrictMock<MockFramerVisitor> framer_visitor_;
-  QuicPacketSequenceNumber sequence_number_;
   QuicConnectionId connection_id_;
   string data_;
   MockRandom mock_random_;

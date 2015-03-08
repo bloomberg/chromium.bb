@@ -7,6 +7,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 
 using base::StringPiece;
@@ -183,6 +184,16 @@ WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
                                                     buf_len,
                                                     self_address,
                                                     peer_address);
+}
+
+MockTimeWaitListManager::MockTimeWaitListManager(
+    QuicPacketWriter* writer,
+    QuicServerSessionVisitor* visitor,
+    EpollServer* eps)
+    : QuicTimeWaitListManager(writer, visitor, eps, QuicSupportedVersions()) {
+}
+
+MockTimeWaitListManager::~MockTimeWaitListManager() {
 }
 
 }  // namespace test

@@ -118,10 +118,6 @@ class NET_EXPORT_PRIVATE QuicNegotiableTag : public QuicNegotiableValue {
   // msg doesn't contain tag |name_|.
   void set(const QuicTagVector& possible_values, QuicTag default_value);
 
-  // Returns the negotiated tag if |negotiated_| is true, otherwise returns
-  // |default_value_| (used to set default values before negotiation finishes).
-  QuicTag GetTag() const;
-
   // Serialises |name_| and vector (either possible or negotiated) to |out|. If
   // |negotiated_| is true then |negotiated_tag_| is serialised, otherwise
   // |possible_values_| is serialised.

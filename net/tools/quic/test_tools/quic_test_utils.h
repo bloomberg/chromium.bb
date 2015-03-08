@@ -31,9 +31,9 @@ namespace test {
 static const QuicConnectionId kTestConnectionId = 42;
 static const uint16 kTestPort = 123;
 static const uint32 kInitialStreamFlowControlWindowForTest =
-    32 * 1024;  // 32 KB
+    1024 * 1024;  // 1 MB
 static const uint32 kInitialSessionFlowControlWindowForTest =
-    64 * 1024;  // 64 KB
+    1536 * 1024;  // 1.5 MB
 
 // Testing convenience method to construct a QuicAckFrame with |num_nack_ranges|
 // nack ranges of width 1 packet, starting from |least_unacked|.
@@ -219,6 +219,21 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
   void Unregister(PerConnectionPacketWriter* writer);
 
   PerConnectionPacketWriter* current_writer_;
+};
+
+class MockTimeWaitListManager : public QuicTimeWaitListManager {
+ public:
+  MockTimeWaitListManager(QuicPacketWriter* writer,
+                          QuicServerSessionVisitor* visitor,
+                          EpollServer* eps);
+  ~MockTimeWaitListManager() override;
+
+  MOCK_METHOD5(ProcessPacket,
+               void(const IPEndPoint& server_address,
+                    const IPEndPoint& client_address,
+                    QuicConnectionId connection_id,
+                    QuicPacketSequenceNumber sequence_number,
+                    const QuicEncryptedPacket& packet));
 };
 
 }  // namespace test

@@ -141,9 +141,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const QuicVersionNegotiationPacket* version_negotiation_packet() const {
     return version_negotiation_packet_.get();
   }
-  const QuicPublicResetPacket* public_reset_packet() const {
-    return public_reset_packet_.get();
-  }
 
  private:
   QuicErrorCode error_;
@@ -176,12 +173,6 @@ SimpleQuicFramer::SimpleQuicFramer(const QuicVersionVector& supported_versions)
 }
 
 SimpleQuicFramer::~SimpleQuicFramer() {
-}
-
-bool SimpleQuicFramer::ProcessPacket(const QuicPacket& packet) {
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
-      ENCRYPTION_NONE, 0, packet));
-  return ProcessPacket(*encrypted);
 }
 
 bool SimpleQuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {

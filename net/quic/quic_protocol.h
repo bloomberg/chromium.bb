@@ -57,7 +57,8 @@ const QuicByteCount kDefaultServerMaxPacketSize = 1000;
 // additional 8 bytes.  This is a total overhead of 48 bytes.  Ethernet's
 // max packet size is 1500 bytes,  1500 - 48 = 1452.
 const QuicByteCount kMaxPacketSize = 1452;
-// Default maximum packet size used in Linux TCP implementations.
+// Default maximum packet size used in the Linux TCP implementation.
+// Used in QUIC for congestion window computations in bytes.
 const QuicByteCount kDefaultTCPMSS = 1460;
 
 // We match SPDY's use of 32 when secure (since we'd compete with SPDY).
@@ -591,6 +592,9 @@ struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   QuicSequenceNumberLength sequence_number_length;
   QuicVersionVector versions;
 };
+
+// An integer which cannot be a packet sequence number.
+const QuicPacketSequenceNumber kInvalidPacketSequenceNumber = 0;
 
 // Header for Data or FEC packets.
 struct NET_EXPORT_PRIVATE QuicPacketHeader {

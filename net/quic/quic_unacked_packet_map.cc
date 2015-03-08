@@ -327,18 +327,6 @@ QuicTime QuicUnackedPacketMap::GetLastPacketSentTime() const {
   return QuicTime::Zero();
 }
 
-QuicTime QuicUnackedPacketMap::GetFirstInFlightPacketSentTime() const {
-  UnackedPacketMap::const_iterator it = unacked_packets_.begin();
-  while (it != unacked_packets_.end() && !it->in_flight) {
-    ++it;
-  }
-  if (it == unacked_packets_.end()) {
-    LOG(DFATAL) << "GetFirstInFlightPacketSentTime requires in flight packets.";
-    return QuicTime::Zero();
-  }
-  return it->sent_time;
-}
-
 size_t QuicUnackedPacketMap::GetNumUnackedPacketsDebugOnly() const {
   size_t unacked_packet_count = 0;
   QuicPacketSequenceNumber sequence_number = least_unacked_;

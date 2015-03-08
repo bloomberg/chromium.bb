@@ -133,6 +133,17 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   virtual bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header);
 
+  // Called by OnUnauthenticatedPublicHeader when the packet is not for a
+  // connection that the dispatcher has a record of, but is not handled by
+  // certain simple processing rules.  This method may apply validity checks to
+  // reject stray packets.  If the packet appears to be valid, it calls
+  // CreateQuicSession to create a new session for the packet.  Returns the
+  // QuicSession that was created, or nullptr if the packet failed the validity
+  // checks.
+  virtual QuicSession* AdditionalValidityChecksThenCreateSession(
+      const QuicPacketPublicHeader& header,
+      QuicConnectionId connection_id);
+
   // Create and return the time wait list manager for this dispatcher, which
   // will be owned by the dispatcher as time_wait_list_manager_
   virtual QuicTimeWaitListManager* CreateQuicTimeWaitListManager();
@@ -179,7 +190,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   class PacketWriterFactoryAdapter :
     public QuicConnection::PacketWriterFactory {
    public:
-    PacketWriterFactoryAdapter(QuicDispatcher* dispatcher);
+    explicit PacketWriterFactoryAdapter(QuicDispatcher* dispatcher);
     ~PacketWriterFactoryAdapter() override;
 
     QuicPacketWriter* Create(QuicConnection* connection) const override;

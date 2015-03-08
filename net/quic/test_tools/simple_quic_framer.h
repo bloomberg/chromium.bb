@@ -34,7 +34,6 @@ class SimpleQuicFramer {
   ~SimpleQuicFramer();
 
   bool ProcessPacket(const QuicEncryptedPacket& packet);
-  bool ProcessPacket(const QuicPacket& packet);
   void Reset();
 
   const QuicPacketHeader& header() const;

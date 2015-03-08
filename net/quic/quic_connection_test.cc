@@ -848,26 +848,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     return packet;
   }
 
-  QuicPacket* ConstructPingPacket(QuicPacketSequenceNumber number) {
-    header_.public_header.connection_id = connection_id_;
-    header_.packet_sequence_number = number;
-    header_.public_header.reset_flag = false;
-    header_.public_header.version_flag = false;
-    header_.entropy_flag = false;
-    header_.fec_flag = false;
-    header_.is_in_fec_group = NOT_IN_FEC_GROUP;
-    header_.fec_group = 0;
-
-    QuicPingFrame ping;
-
-    QuicFrames frames;
-    QuicFrame frame(&ping);
-    frames.push_back(frame);
-    QuicPacket* packet = BuildUnsizedDataPacket(&framer_, header_, frames);
-    EXPECT_TRUE(packet != nullptr);
-    return packet;
-  }
-
   QuicPacket* ConstructClosePacket(QuicPacketSequenceNumber number,
                                    QuicFecGroupNumber fec_group) {
     header_.public_header.connection_id = connection_id_;

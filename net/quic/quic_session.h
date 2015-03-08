@@ -219,6 +219,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   size_t get_max_open_streams() const { return max_open_streams_; }
 
+  // Used in Chrome.
   const QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
 
  protected:

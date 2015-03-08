@@ -34,10 +34,9 @@ namespace test {
 static const QuicConnectionId kTestConnectionId = 42;
 static const uint16 kTestPort = 123;
 static const uint32 kInitialStreamFlowControlWindowForTest =
-    32 * 1024;  // 32 KB
+    1024 * 1024;  // 1 MB
 static const uint32 kInitialSessionFlowControlWindowForTest =
-    64 * 1024;  // 64 KB
-
+    1536 * 1024;  // 1.5 MB
 // Data stream IDs start at 5: the crypto stream is 1, headers stream is 3.
 static const QuicStreamId kClientDataStreamId1 = 5;
 static const QuicStreamId kClientDataStreamId2 = 7;
@@ -61,6 +60,17 @@ IPAddressNumber Loopback6();
 void GenerateBody(std::string* body, int length);
 
 // Create an encrypted packet for testing.
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId connection_id,
+    bool version_flag,
+    bool reset_flag,
+    QuicPacketSequenceNumber sequence_number,
+    const std::string& data,
+    QuicConnectionIdLength connection_id_length,
+    QuicSequenceNumberLength sequence_number_length);
+
+// This form assumes |connection_id_length| == PACKET_8BYTE_CONNECTION_ID and
+// |sequence_number_length| == PACKET_6BYTE_SEQUENCE_NUMBER.
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,

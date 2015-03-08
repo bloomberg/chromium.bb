@@ -139,8 +139,19 @@ class QuicDispatcherTest : public ::testing::Test {
                      QuicConnectionId connection_id,
                      bool has_version_flag,
                      const string& data) {
+    ProcessPacket(client_address, connection_id, has_version_flag, data,
+                  PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER);
+  }
+
+  void ProcessPacket(IPEndPoint client_address,
+                     QuicConnectionId connection_id,
+                     bool has_version_flag,
+                     const string& data,
+                     QuicConnectionIdLength connection_id_length,
+                     QuicSequenceNumberLength sequence_number_length) {
     scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-        connection_id, has_version_flag, false, 1, data));
+        connection_id, has_version_flag, false, 1, data, connection_id_length,
+        sequence_number_length));
     data_ = string(packet->data(), packet->length());
     dispatcher_.ProcessPacket(server_address_, client_address, *packet);
   }
@@ -153,7 +164,7 @@ class QuicDispatcherTest : public ::testing::Test {
   void CreateTimeWaitListManager() {
     time_wait_list_manager_ = new MockTimeWaitListManager(
         QuicDispatcherPeer::GetWriter(&dispatcher_), &dispatcher_, &eps_);
-    // dispatcher takes the ownership of time_wait_list_manager.
+    // dispatcher_ takes the ownership of time_wait_list_manager_.
     QuicDispatcherPeer::SetTimeWaitListManager(&dispatcher_,
                                                time_wait_list_manager_);
   }
@@ -259,8 +270,7 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_,
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
-  string data = "foo";
-  ProcessPacket(client_address, connection_id, false, "foo");
+  ProcessPacket(client_address, connection_id, false, "data");
 }
 
 TEST_F(QuicDispatcherTest, ProcessPacketWithBogusPort) {
@@ -271,6 +281,7 @@ TEST_F(QuicDispatcherTest, ProcessPacketWithBogusPort) {
   CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &any4));
   server_address_ = IPEndPoint(any4, 5);
 
+  // dispatcher_ should drop this packet.
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address)).Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _, _, _)).Times(0);
   ProcessPacket(client_address, 1, true, "foo");
