@@ -958,12 +958,6 @@ const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 // accelerated compositing is disabled. See http://crbug.com/122430.
 const char kDisableCoreAnimationPlugins[] =
     "disable-core-animation-plugins";
-
-// Force all input events to be handled by Blink on thread. This will be removed
-// once compositor thread events have stuck.
-// http://crbug.com/138003
-extern const char kDisableThreadedEventHandlingMac[] =
-    "disable-threaded-event-handling-mac";
 #endif
 
 #if defined(OS_WIN)

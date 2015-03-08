@@ -187,7 +187,6 @@ WebPreferences::WebPreferences()
       spatial_navigation_enabled(false),
       pinch_virtual_viewport_enabled(false),
       pinch_overlay_scrollbar_thickness(0),
-      rubber_banding_on_compositor_thread(false),
       use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
       v8_cache_options(V8_CACHE_OPTIONS_DEFAULT),

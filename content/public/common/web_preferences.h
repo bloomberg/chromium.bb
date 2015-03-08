@@ -179,7 +179,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool spatial_navigation_enabled;
   bool pinch_virtual_viewport_enabled;
   int pinch_overlay_scrollbar_thickness;
-  bool rubber_banding_on_compositor_thread;
   bool use_solid_color_scrollbars;
   bool navigate_on_drag_drop;
   V8CacheOptions v8_cache_options;

@@ -564,10 +564,7 @@ void RenderThreadImpl::Init() {
   is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  is_elastic_overscroll_enabled_ =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableThreadedEventHandlingMac) &&
-      base::mac::IsOSLionOrLater();
+  is_elastic_overscroll_enabled_ = base::mac::IsOSLionOrLater();
   if (is_elastic_overscroll_enabled_) {
     base::ScopedCFTypeRef<CFStringRef> key(
         base::SysUTF8ToCFStringRef("NSScrollViewRubberbanding"));
