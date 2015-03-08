@@ -416,7 +416,7 @@ FileManager.prototype = /** @struct */ {
     this.toolbarController_ = new ToolbarController(
         this.ui_.toolbar,
         this.ui_.dialogNavigationList,
-        this.ui_.locationLine,
+        assert(this.ui_.locationLine),
         this.selectionHandler_,
         this.directoryModel_);
 

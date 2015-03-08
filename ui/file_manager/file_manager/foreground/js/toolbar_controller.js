@@ -104,7 +104,8 @@ function ToolbarController(toolbar,
   var toolbarButtons =
       this.toolbar_.querySelectorAll('.icon-button, .combobutton');
   for (var i = 0; i < toolbarButtons.length; i++) {
-    observer.observe(toolbarButtons[i], {attributes: true});
+    observer.observe(toolbarButtons[i],
+                     /** @type MutationObserverInit */({attributes: true}));
   }
 }
 
