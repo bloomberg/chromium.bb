@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 #define CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class TabStripModel;
 
@@ -32,6 +34,11 @@ enum TabMediaState {
 };
 
 namespace chrome {
+
+// String to indicate reason for muted state change (user, capture, extension
+// id, or empty string)
+extern const char kMutedToggleCauseUser[];
+extern const char kMutedToggleCauseCapture[];
 
 // Logic to determine which components (i.e., close button, favicon, and media
 // indicator) of a tab should be shown, given current state.  |capacity|
@@ -97,9 +104,17 @@ bool IsTabAudioMutingFeatureEnabled();
 // |contents|.
 bool CanToggleAudioMute(content::WebContents* contents);
 
-// Indicates/Sets whether all audio output from |contents| is muted.
+// Indicates whether all audio output from |contents| is muted.
 bool IsTabAudioMuted(content::WebContents* contents);
-void SetTabAudioMuted(content::WebContents* contents, bool mute);
+
+// Sets whether all audio output from |contents| is muted.
+// Cause is extensionid, kMutedToggleCause constant, or empty string
+void SetTabAudioMuted(content::WebContents* contents,
+                      bool mute,
+                      const std::string& cause);
+
+// Get cause of mute (extensionid, kMutedToggleCause constant, or empty string)
+const std::string& GetTabAudioMutedCause(content::WebContents* contents);
 
 // Returns true if the tabs at the |indices| in |tab_strip| are all muted.
 bool AreAllTabsMuted(const TabStripModel& tab_strip,

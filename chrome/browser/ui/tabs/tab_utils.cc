@@ -17,7 +17,21 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/multi_animation.h"
 
+struct LastMuteMetadata
+    : public content::WebContentsUserData<LastMuteMetadata> {
+  std::string cause;  // Extension ID or constant from header file
+                      // or empty string
+ private:
+  explicit LastMuteMetadata(content::WebContents* contents) {}
+  friend class content::WebContentsUserData<LastMuteMetadata>;
+};
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(LastMuteMetadata);
+
 namespace chrome {
+
+const char kMutedToggleCauseUser[] = "user";
+const char kMutedToggleCauseCapture[] = "auto-forced for capture";
 
 namespace {
 
@@ -252,9 +266,25 @@ bool CanToggleAudioMute(content::WebContents* contents) {
   return false;
 }
 
-void SetTabAudioMuted(content::WebContents* contents, bool mute) {
+const std::string& GetTabAudioMutedCause(content::WebContents* contents) {
+  LastMuteMetadata::CreateForWebContents(contents);  // Create if not exists.
+  if (GetTabMediaStateForContents(contents) == TAB_MEDIA_STATE_CAPTURING) {
+    // For tab capture, libcontent forces muting off.
+    LastMuteMetadata::FromWebContents(contents)->cause =
+        kMutedToggleCauseCapture;
+  }
+  return LastMuteMetadata::FromWebContents(contents)->cause;
+}
+
+void SetTabAudioMuted(content::WebContents* contents,
+                      bool mute,
+                      const std::string& cause) {
   if (!contents || !chrome::CanToggleAudioMute(contents))
     return;
+
+  LastMuteMetadata::CreateForWebContents(contents);  // Create if not exists.
+  LastMuteMetadata::FromWebContents(contents)->cause = cause;
+
   contents->SetAudioMuted(mute);
 }
 

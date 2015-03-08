@@ -827,7 +827,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   if (!tabStripModel_->ContainsIndex(index))
     return;
   WebContents* contents = tabStripModel_->GetWebContentsAt(index);
-  chrome::SetTabAudioMuted(contents, !chrome::IsTabAudioMuted(contents));
+  chrome::SetTabAudioMuted(contents, !chrome::IsTabAudioMuted(contents),
+                           chrome::kMutedToggleCauseUser);
 }
 
 // Called when the user closes a tab. Asks the model to close the tab. |sender|

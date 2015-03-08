@@ -1054,7 +1054,8 @@ void TabStripModel::ExecuteContextMenuCommand(
         content::RecordAction(UserMetricsAction("TabContextMenu_UnmuteTabs"));
       for (std::vector<int>::const_iterator i = indices.begin();
            i != indices.end(); ++i) {
-        chrome::SetTabAudioMuted(GetWebContentsAt(*i), mute);
+        chrome::SetTabAudioMuted(GetWebContentsAt(*i), mute,
+                                 chrome::kMutedToggleCauseUser);
       }
       break;
     }
