@@ -2036,6 +2036,8 @@
       'browser/ui/views/extensions/extension_message_bubble_view.h',
       'browser/ui/views/extensions/extension_popup.cc',
       'browser/ui/views/extensions/extension_popup.h',
+      'browser/ui/views/extensions/extension_popup_aura.cc',
+      'browser/ui/views/extensions/extension_popup_aura.h',
       'browser/ui/views/extensions/extension_uninstall_dialog_view.cc',
       'browser/ui/views/extensions/extension_view_views.cc',
       'browser/ui/views/extensions/extension_view_views.h',

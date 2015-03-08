@@ -12,7 +12,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "ui/wm/public/activation_change_observer.h"
 #include "url/gurl.h"
 
 
@@ -30,7 +29,6 @@ class ExtensionViewHost;
 }
 
 class ExtensionPopup : public views::BubbleDelegateView,
-                       public aura::client::ActivationChangeObserver,
                        public ExtensionViewViews::Container,
                        public content::NotificationObserver,
                        public TabStripModelObserver {
@@ -73,12 +71,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
       const ViewHierarchyChangedDetails& details) override;
 
   // views::WidgetObserver overrides.
-  void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-
-  // aura::client::ActivationChangeObserver overrides.
-  void OnWindowActivated(aura::Window* gained_active,
-                         aura::Window* lost_active) override;
 
   // TabStripModelObserver overrides.
   void ActiveTabChanged(content::WebContents* old_contents,
@@ -92,11 +85,20 @@ class ExtensionPopup : public views::BubbleDelegateView,
   static const int kMaxWidth;
   static const int kMaxHeight;
 
- private:
+ protected:
   ExtensionPopup(extensions::ExtensionViewHost* host,
                  views::View* anchor_view,
                  views::BubbleBorder::Arrow arrow,
                  ShowAction show_action);
+
+  // Called on anchor window activation (ie. user clicked the browser window).
+  void OnAnchorWindowActivation();
+
+ private:
+  static ExtensionPopup* Create(extensions::ExtensionViewHost* host,
+                                views::View* anchor_view,
+                                views::BubbleBorder::Arrow arrow,
+                                ShowAction show_action);
 
   // Show the bubble, focus on its content, and register listeners.
   void ShowBubble();
