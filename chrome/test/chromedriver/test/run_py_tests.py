@@ -1239,7 +1239,6 @@ class PerformanceLoggerTest(ChromeDriverBaseTest):
   def testPerformanceLogger(self):
     driver = self.CreateDriver(
         experimental_options={'perfLoggingPrefs': {
-            'enableTimeline': True,
             'traceCategories': 'webkit.console,blink.console'
           }}, performance_log_level='ALL')
     driver.Load(
@@ -1268,7 +1267,7 @@ class PerformanceLoggerTest(ChromeDriverBaseTest):
         self.assertTrue(devtools_message['params']['name'] == 'foobar')
         marked_timeline_events.append(devtools_message)
     self.assertEquals(2, len(marked_timeline_events))
-    self.assertEquals({'Network', 'Page', 'Timeline', 'Tracing'},
+    self.assertEquals({'Network', 'Page', 'Tracing'},
                       set(seen_log_domains.keys()))
 
 

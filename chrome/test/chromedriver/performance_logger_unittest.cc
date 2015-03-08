@@ -171,7 +171,6 @@ void ExpectCommand(FakeDevToolsClient& client, const std::string& method) {
 void ExpectEnableDomains(FakeDevToolsClient& client) {
   ExpectCommand(client, "Network.enable");
   ExpectCommand(client, "Page.enable");
-  ExpectCommand(client, "Timeline.start");
 }
 
 }  // namespace
@@ -215,11 +214,11 @@ TEST(PerformanceLogger, TwoWebViews) {
   ASSERT_FALSE(client2.PopSentCommand(&cmd));
 
   ASSERT_EQ(kOk, client1.TriggerEvent("Page.gaga1").code());
-  ASSERT_EQ(kOk, client2.TriggerEvent("Timeline.gaga2").code());
+  ASSERT_EQ(kOk, client2.TriggerEvent("Network.gaga2").code());
 
   ASSERT_EQ(2u, log.GetEntries().size());
   ValidateLogEntry(log.GetEntries()[0], "webview-1", "Page.gaga1");
-  ValidateLogEntry(log.GetEntries()[1], "webview-2", "Timeline.gaga2");
+  ValidateLogEntry(log.GetEntries()[1], "webview-2", "Network.gaga2");
 }
 
 TEST(PerformanceLogger, PerfLoggingPrefs) {

@@ -348,7 +348,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsInspectorDomainStatus) {
             capabilities.perf_logging_prefs.network);
   ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
             capabilities.perf_logging_prefs.page);
-  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultDisabled,
             capabilities.perf_logging_prefs.timeline);
   base::DictionaryValue perf_logging_prefs;
   perf_logging_prefs.SetBoolean("enableNetwork", true);
@@ -361,7 +361,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsInspectorDomainStatus) {
             capabilities.perf_logging_prefs.network);
   ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyDisabled,
             capabilities.perf_logging_prefs.page);
-  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultDisabled,
             capabilities.perf_logging_prefs.timeline);
 }
 

@@ -536,7 +536,7 @@ std::string Switches::ToString() const {
 PerfLoggingPrefs::PerfLoggingPrefs()
     : network(InspectorDomainStatus::kDefaultEnabled),
       page(InspectorDomainStatus::kDefaultEnabled),
-      timeline(InspectorDomainStatus::kDefaultEnabled),
+      timeline(InspectorDomainStatus::kDefaultDisabled),
       trace_categories(),
       buffer_usage_reporting_interval(1000) {}
 
