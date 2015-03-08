@@ -167,14 +167,11 @@ public:
     void setListener(Listener* listener) { m_listener = listener; }
 
     bool enabled() const;
-
-    // Methods called from the InspectorInstrumentation.
-    void setDocument(Document*);
     void releaseDanglingNodes();
 
+    // Methods called from the InspectorInstrumentation.
     void domContentLoadedEventFired(LocalFrame*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
-
     void didInsertDOMNode(Node*);
     void willRemoveDOMNode(Node*);
     void willModifyDOMAttr(Element*, const AtomicString& oldValue, const AtomicString& newValue);
@@ -224,6 +221,7 @@ private:
 
     InspectorDOMAgent(InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
 
+    void setDocument(Document*);
     void innerEnable();
 
     void setSearchingForNode(ErrorString*, SearchMode, JSONObject* highlightConfig);

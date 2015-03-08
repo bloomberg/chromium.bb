@@ -326,7 +326,7 @@ InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScri
 InspectorDOMAgent::~InspectorDOMAgent()
 {
 #if !ENABLE(OILPAN)
-    reset();
+    setDocument(nullptr);
     ASSERT(m_searchingForNode == NotSearching);
 #endif
 }
@@ -338,7 +338,6 @@ void InspectorDOMAgent::setFrontend(InspectorFrontend* frontend)
     m_domEditor = adoptPtrWillBeNoop(new DOMEditor(m_history.get()));
 
     m_frontend = frontend->dom();
-    m_instrumentingAgents->setInspectorDOMAgent(this);
     m_document = m_pageAgent->inspectedFrame()->document();
 }
 
@@ -354,9 +353,7 @@ void InspectorDOMAgent::clearFrontend()
     hideHighlight(&error);
 
     m_frontend = nullptr;
-    m_instrumentingAgents->setInspectorDOMAgent(0);
     disable(0);
-    reset();
 }
 
 void InspectorDOMAgent::restore()
@@ -380,12 +377,6 @@ WillBeHeapVector<RawPtrWillBeMember<Document> > InspectorDOMAgent::documents()
     return result;
 }
 
-void InspectorDOMAgent::reset()
-{
-    discardFrontendBindings();
-    m_document = nullptr;
-}
-
 void InspectorDOMAgent::setDOMListener(DOMListener* listener)
 {
     m_domListener = listener;
@@ -396,8 +387,7 @@ void InspectorDOMAgent::setDocument(Document* doc)
     if (doc == m_document.get())
         return;
 
-    reset();
-
+    discardFrontendBindings();
     m_document = doc;
 
     if (!enabled())
@@ -588,6 +578,7 @@ void InspectorDOMAgent::innerEnable()
 {
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
     m_document = m_pageAgent->inspectedFrame()->document();
+    m_instrumentingAgents->setInspectorDOMAgent(this);
     if (m_listener)
         m_listener->domAgentWasEnabled();
     if (m_backendNodeIdToInspect)
@@ -615,7 +606,8 @@ void InspectorDOMAgent::disable(ErrorString* errorString)
         return;
     }
     m_state->setBoolean(DOMAgentState::domAgentEnabled, false);
-    reset();
+    m_instrumentingAgents->setInspectorDOMAgent(0);
+    setDocument(nullptr);
     if (m_listener)
         m_listener->domAgentWasDisabled();
 }
