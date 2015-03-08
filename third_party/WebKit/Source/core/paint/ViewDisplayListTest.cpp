@@ -12,7 +12,7 @@
 #include "core/page/FocusController.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayerPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/SubtreeRecorder.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -87,7 +87,7 @@ public:
 
 void drawRect(GraphicsContext* context, LayoutObject* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
+    LayoutObjectDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
     if (drawingRecorder.canUseCachedDrawing())
         return;
     IntRect rect(0, 0, 10, 10);

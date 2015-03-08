@@ -10,7 +10,7 @@
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
@@ -61,7 +61,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
         LayoutRect rect = m_layoutPart.localSelectionRect();
         rect.moveBy(adjustedPaintOffset);
         IntRect selectionRect = pixelSnappedIntRect(rect);
-        RenderDrawingRecorder recorder(paintInfo.context, m_layoutPart, paintInfo.phase, selectionRect);
+        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutPart, paintInfo.phase, selectionRect);
         paintInfo.context->fillRect(selectionRect, m_layoutPart.selectionBackgroundColor());
     }
 

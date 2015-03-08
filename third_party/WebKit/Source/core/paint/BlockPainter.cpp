@@ -20,8 +20,8 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/InlinePainter.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/LineBoxListPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
@@ -184,14 +184,14 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask && m_layoutBlock.style()->visibility() == VISIBLE) {
-        RenderDrawingRecorder recorder(paintInfo.context, m_layoutBlock, paintPhase, bounds);
+        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, paintPhase, bounds);
         if (!recorder.canUseCachedDrawing())
             m_layoutBlock.paintMask(paintInfo, paintOffset);
         return;
     }
 
     if (paintPhase == PaintPhaseClippingMask && m_layoutBlock.style()->visibility() == VISIBLE) {
-        RenderDrawingRecorder recorder(paintInfo.context, m_layoutBlock, paintPhase, bounds);
+        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, paintPhase, bounds);
         if (!recorder.canUseCachedDrawing())
             m_layoutBlock.paintClippingMask(paintInfo, paintOffset);
         return;
@@ -213,7 +213,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             && m_layoutBlock.style()->visibility() == VISIBLE
             && m_layoutBlock.hasColumns()
             && !paintInfo.paintRootBackgroundOnly()) {
-            RenderDrawingRecorder recorder(paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, bounds);
+            LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, bounds);
             if (!recorder.canUseCachedDrawing())
                 paintColumnRules(paintInfo, scrolledOffset);
         }
@@ -255,7 +255,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground && hasCaret()) {
-        RenderDrawingRecorder recorder(paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
+        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
         if (!recorder.canUseCachedDrawing())
             paintCarets(paintInfo, paintOffset);
     }

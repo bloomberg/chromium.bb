@@ -9,7 +9,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -32,7 +32,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& p
     if (!styleToUse.hasOutline())
         return;
 
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutObject, paintInfo.phase, paintRect);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject, paintInfo.phase, paintRect);
     if (recorder.canUseCachedDrawing())
         return;
 

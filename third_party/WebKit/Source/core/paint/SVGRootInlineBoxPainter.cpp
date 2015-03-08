@@ -9,7 +9,7 @@
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/paint/SVGPaintContext.h"
@@ -25,7 +25,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     if (hasSelection) {
-        RenderDrawingRecorder recorder(paintInfoBeforeFiltering.context, m_svgRootInlineBox.layoutObject(), paintInfoBeforeFiltering.phase, paintInfoBeforeFiltering.rect);
+        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, m_svgRootInlineBox.layoutObject(), paintInfoBeforeFiltering.phase, paintInfoBeforeFiltering.rect);
         if (!recorder.canUseCachedDrawing()) {
             for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
                 if (child->isSVGInlineTextBox())

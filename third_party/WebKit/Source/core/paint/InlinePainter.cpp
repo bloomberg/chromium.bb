@@ -12,9 +12,9 @@
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
@@ -38,7 +38,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
         bounds = cb->visualOverflowRect();
         bounds.moveBy(paintOffset);
     }
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
     if (recorder.canUseCachedDrawing())
         return;
 

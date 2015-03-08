@@ -9,7 +9,7 @@
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
@@ -66,7 +66,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
             textWidth, m_renderFileUploadControl.style()->fontMetrics().height());
 
         // Draw the filename.
-        RenderDrawingRecorder recorder(paintInfo.context, m_renderFileUploadControl, paintInfo.phase, textRunPaintInfo.bounds);
+        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_renderFileUploadControl, paintInfo.phase, textRunPaintInfo.bounds);
         if (!recorder.canUseCachedDrawing()) {
             paintInfo.context->setFillColor(m_renderFileUploadControl.resolveColor(CSSPropertyColor));
             paintInfo.context->drawBidiText(font, textRunPaintInfo, FloatPoint(roundToInt(textX), roundToInt(textY)));

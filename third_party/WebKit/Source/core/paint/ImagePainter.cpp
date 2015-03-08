@@ -17,7 +17,7 @@
 #include "core/layout/TextRunConstructor.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
 
@@ -60,7 +60,7 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
 
     IntRect focusRect = m_layoutImage.absoluteContentBox();
 
-    RenderDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
+    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

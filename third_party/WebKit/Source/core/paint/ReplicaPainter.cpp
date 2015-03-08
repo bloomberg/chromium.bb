@@ -10,7 +10,7 @@
 #include "core/layout/PaintInfo.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayerPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 
 namespace blink {
 
@@ -32,7 +32,7 @@ void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
         LayerPainter(*m_renderReplica.layer()->parent()).paintLayer(paintInfo.context, paintingInfo, flags);
     } else if (paintInfo.phase == PaintPhaseMask) {
         LayoutRect paintRect(adjustedPaintOffset, m_renderReplica.size());
-        RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_renderReplica, paintInfo.phase, paintRect);
+        LayoutObjectDrawingRecorder renderDrawingRecorder(paintInfo.context, m_renderReplica, paintInfo.phase, paintRect);
         m_renderReplica.paintMask(paintInfo, adjustedPaintOffset);
     }
 }

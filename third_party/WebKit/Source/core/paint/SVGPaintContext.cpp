@@ -33,7 +33,7 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/SVGMaskPainter.h"
 #include "platform/FloatConversion.h"
 
@@ -45,7 +45,7 @@ SVGPaintContext::~SVGPaintContext()
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->filter() == m_filter);
 
-        RenderDrawingRecorder recorder(m_originalPaintInfo->context, *m_object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
+        LayoutObjectDrawingRecorder recorder(m_originalPaintInfo->context, *m_object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
         if (!recorder.canUseCachedDrawing())
             m_filter->finishEffect(m_object, m_originalPaintInfo->context);
 

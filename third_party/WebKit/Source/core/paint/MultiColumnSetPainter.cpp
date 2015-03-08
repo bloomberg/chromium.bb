@@ -9,7 +9,7 @@
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
@@ -53,7 +53,7 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
 
     LayoutRect paintRect = m_renderMultiColumnSet.visualOverflowRect();
     paintRect.moveBy(paintOffset);
-    RenderDrawingRecorder drawingRecorder(paintInfo.context, m_renderMultiColumnSet, DisplayItem::ColumnRules, paintRect);
+    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_renderMultiColumnSet, DisplayItem::ColumnRules, paintRect);
     if (drawingRecorder.canUseCachedDrawing())
         return;
 

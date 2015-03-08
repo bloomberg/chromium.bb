@@ -48,7 +48,7 @@
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/paint/BlockFlowPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/ClipRecorderStack.h"
 #include "platform/text/BidiTextRun.h"

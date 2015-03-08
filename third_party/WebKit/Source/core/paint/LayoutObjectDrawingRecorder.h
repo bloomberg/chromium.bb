@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RenderDrawingRecorder_h
-#define RenderDrawingRecorder_h
+#ifndef LayoutObjectDrawingRecorder_h
+#define LayoutObjectDrawingRecorder_h
 
 #include "core/layout/PaintPhase.h"
 #include "platform/geometry/FloatRect.h"
@@ -15,24 +15,24 @@ namespace blink {
 class GraphicsContext;
 class LayoutObject;
 
-class RenderDrawingRecorder {
+class LayoutObjectDrawingRecorder {
 public:
-    RenderDrawingRecorder(GraphicsContext*, const LayoutObject&, PaintPhase, const FloatRect&);
-    RenderDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const FloatRect&);
+    LayoutObjectDrawingRecorder(GraphicsContext*, const LayoutObject&, PaintPhase, const FloatRect&);
+    LayoutObjectDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const FloatRect&);
     // paintRect will be pixel-snapped.
-    RenderDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const LayoutRect& paintRect);
+    LayoutObjectDrawingRecorder(GraphicsContext*, const LayoutObject&, DisplayItem::Type, const LayoutRect& paintRect);
 
-    ~RenderDrawingRecorder();
+    ~LayoutObjectDrawingRecorder();
 
     bool canUseCachedDrawing() const { return m_drawingRecorder.canUseCachedDrawing(); }
 
 private:
     DrawingRecorder m_drawingRecorder;
 #ifndef NDEBUG
-    const LayoutObject& m_renderer;
+    const LayoutObject& m_layoutObject;
 #endif
 };
 
 } // namespace blink
 
-#endif // RenderDrawingRecorder_h
+#endif // LayoutObjectDrawingRecorder_h

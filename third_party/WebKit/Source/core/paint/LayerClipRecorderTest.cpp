@@ -8,7 +8,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/LayerCompositor.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -52,7 +52,7 @@ void drawRectInClip(GraphicsContext* context, LayoutView* renderer, PaintPhase p
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect((LayoutRect(rect)));
     LayerClipRecorder LayerClipRecorder(renderer->compositor()->rootLayer()->layoutObject(), context, DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
-    RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
+    LayoutObjectDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
     if (!drawingRecorder.canUseCachedDrawing())
         context->drawRect(rect);
 }

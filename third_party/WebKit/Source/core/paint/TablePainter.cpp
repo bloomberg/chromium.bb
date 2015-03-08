@@ -12,8 +12,8 @@
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/ScopeRecorder.h"
 
 namespace blink {
@@ -89,7 +89,7 @@ void TablePainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& pain
 
     LayoutRect rect(paintOffset, m_layoutTable.size());
     m_layoutTable.subtractCaptionRect(rect);
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutTable, paintInfo.phase, pixelSnappedIntRect(rect));
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTable, paintInfo.phase, pixelSnappedIntRect(rect));
     if (!recorder.canUseCachedDrawing())
         BoxPainter(m_layoutTable).paintMaskImages(paintInfo, rect);
 }

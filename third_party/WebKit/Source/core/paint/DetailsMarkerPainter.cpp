@@ -8,7 +8,7 @@
 #include "core/layout/LayoutDetailsMarker.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
 
@@ -28,7 +28,7 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
         return;
 
-    RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect);
+    LayoutObjectDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect);
     if (renderDrawingRecorder.canUseCachedDrawing())
         return;
 

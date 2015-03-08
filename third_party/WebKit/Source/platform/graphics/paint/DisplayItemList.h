@@ -51,7 +51,7 @@ protected:
     DisplayItemList() { };
 
 private:
-    friend class RenderDrawingRecorderTest;
+    friend class LayoutObjectDrawingRecorderTest;
     friend class ViewDisplayListTest;
 
     void updatePaintList();

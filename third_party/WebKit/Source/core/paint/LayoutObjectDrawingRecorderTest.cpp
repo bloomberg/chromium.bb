@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutTestHelper.h"
@@ -15,9 +15,9 @@
 
 namespace blink {
 
-class RenderDrawingRecorderTest : public RenderingTest {
+class LayoutObjectDrawingRecorderTest : public RenderingTest {
 public:
-    RenderDrawingRecorderTest() : m_layoutView(nullptr) { }
+    LayoutObjectDrawingRecorderTest() : m_layoutView(nullptr) { }
 
 protected:
     LayoutView* layoutView() { return m_layoutView; }
@@ -47,12 +47,12 @@ private:
 
 void drawNothing(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
+    LayoutObjectDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
 }
 
 void drawRect(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    RenderDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
+    LayoutObjectDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
     if (drawingRecorder.canUseCachedDrawing())
         return;
     IntRect rect(0, 0, 10, 10);
@@ -60,7 +60,7 @@ void drawRect(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, 
 }
 
 
-TEST_F(RenderDrawingRecorderTest, Nothing)
+TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = layoutView()->viewRect();
@@ -71,7 +71,7 @@ TEST_F(RenderDrawingRecorderTest, Nothing)
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 }
 
-TEST_F(RenderDrawingRecorderTest, Rect)
+TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = layoutView()->viewRect();
@@ -81,7 +81,7 @@ TEST_F(RenderDrawingRecorderTest, Rect)
     EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
 }
 
-TEST_F(RenderDrawingRecorderTest, Cached)
+TEST_F(LayoutObjectDrawingRecorderTest, Cached)
 {
     RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
 

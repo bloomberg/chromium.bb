@@ -10,8 +10,8 @@
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 
 namespace blink {
@@ -30,7 +30,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         m_layoutReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase == PaintPhaseMask) {
-        RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, paintRect);
+        LayoutObjectDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, paintRect);
         m_layoutReplaced.paintMask(paintInfo, adjustedPaintOffset);
         return;
     }
@@ -55,9 +55,9 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     }
 
     // FIXME(crbug.com/444591): Refactor this to not create a drawing recorder for renderers with children.
-    OwnPtr<RenderDrawingRecorder> renderDrawingRecorder;
+    OwnPtr<LayoutObjectDrawingRecorder> renderDrawingRecorder;
     if (!m_layoutReplaced.isSVGRoot())
-        renderDrawingRecorder = adoptPtr(new RenderDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, paintRect));
+        renderDrawingRecorder = adoptPtr(new LayoutObjectDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, paintRect));
     if (renderDrawingRecorder && renderDrawingRecorder->canUseCachedDrawing())
         return;
 

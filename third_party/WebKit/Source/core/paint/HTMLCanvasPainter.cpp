@@ -8,7 +8,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/PaintInfo.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 

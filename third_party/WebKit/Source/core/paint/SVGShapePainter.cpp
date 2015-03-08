@@ -14,8 +14,8 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/GraphicsContextAnnotator.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
@@ -59,7 +59,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     {
         SVGPaintContext paintContext(m_renderSVGShape, paintInfoBeforeFiltering);
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {
-            RenderDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGShape, paintContext.paintInfo().phase, boundingBox);
+            LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGShape, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 const SVGLayoutStyle& svgStyle = m_renderSVGShape.style()->svgStyle();
 

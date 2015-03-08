@@ -22,7 +22,7 @@
 #include "core/layout/style/ShadowList.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -77,7 +77,7 @@ LayoutRect BoxPainter::scrolledBackgroundRect()
 
 void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset));
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintOffset));
     if (recorder.canUseCachedDrawing())
         return;
 

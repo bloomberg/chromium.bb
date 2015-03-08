@@ -9,7 +9,7 @@
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 
 namespace blink {
 
@@ -131,7 +131,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (!m_layoutTableCell.table()->currentBorderValue())
         return;
 
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, paintInfo.phase, paintRect);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, paintInfo.phase, paintRect);
     if (recorder.canUseCachedDrawing())
         return;
 
@@ -225,7 +225,7 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
         return;
 
     LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(paintRect));
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(paintRect));
     if (recorder.canUseCachedDrawing())
         return;
 

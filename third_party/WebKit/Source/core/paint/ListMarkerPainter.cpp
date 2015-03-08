@@ -11,7 +11,7 @@
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -36,7 +36,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (!paintInfo.rect.intersects(pixelSnappedOverflowRect))
         return;
 
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect);
     if (recorder.canUseCachedDrawing())
         return;
 

@@ -11,8 +11,8 @@
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/GraphicsContextAnnotator.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGImageElement.h"
@@ -37,7 +37,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     {
         SVGPaintContext paintContext(m_renderSVGImage, paintInfoBeforeFiltering);
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {
-            RenderDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGImage, paintContext.paintInfo().phase, boundingBox);
+            LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_renderSVGImage, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
                     paintForeground(paintContext.paintInfo());

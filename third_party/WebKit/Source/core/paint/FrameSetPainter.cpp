@@ -9,7 +9,7 @@
 #include "core/layout/LayoutFrameSet.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/GraphicsContextAnnotator.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 
 namespace blink {
 
@@ -66,7 +66,7 @@ void FrameSetPainter::paintRowBorder(const PaintInfo& paintInfo, const IntRect& 
 void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint& adjustedPaintOffset)
 {
     LayoutRect adjustedFrameRect(adjustedPaintOffset, m_layoutFrameSet.size());
-    RenderDrawingRecorder recorder(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedFrameRect);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedFrameRect);
     if (recorder.canUseCachedDrawing())
         return;
 

@@ -19,7 +19,7 @@
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 
 namespace blink {
 
