@@ -1,0 +1,26 @@
+{
+  "bounds": [785, 5054],
+  "children": [
+    {
+      "bounds": [785, 5054],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 26],
+          "bounds": [769, 1974],
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "repaintRects": [
+            [10, 1824, 150, 150],
+            [10, 1424, 150, 150]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV id='searchbar'"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

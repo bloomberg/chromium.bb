@@ -8,6 +8,10 @@
       "repaintRects": [
         [372, 243, 48, 48],
         [8, 74, 418, 526]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow (floating) SPAN id='yellowFloat'"
       ]
     }
   ]

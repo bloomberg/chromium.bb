@@ -16,6 +16,17 @@
         [59, 40, 104, 26],
         [59, 40, 104, 26],
         [59, 40, 104, 26]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot (positioned) svg",
+        "LayoutSVGViewportContainer svg id='inner1'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGViewportContainer svg id='inner2'",
+        "LayoutSVGText text"
       ]
     }
   ]

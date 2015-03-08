@@ -1,0 +1,55 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [83, 268, 26, 76],
+        [79, 268, 30, 76],
+        [23, 297, 77, 17],
+        [23, 211, 34, 17],
+        [23, 125, 77, 17],
+        [22, 316, 87, 28],
+        [22, 316, 61, 28],
+        [22, 296, 87, 20],
+        [22, 296, 61, 20],
+        [22, 268, 87, 28],
+        [22, 268, 61, 28],
+        [22, 210, 96, 20],
+        [22, 144, 87, 28],
+        [22, 144, 61, 28],
+        [22, 124, 87, 20],
+        [22, 96, 87, 28],
+        [22, 96, 61, 28],
+        [12, 186, 102, 68],
+        [12, 100, 93, 68],
+        [12, 100, 67, 68],
+        [8, 182, 110, 76],
+        [8, 96, 101, 76],
+        [8, 96, 75, 76],
+        [8, 10, 97, 76]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "LayoutTableCell TD id='d'",
+        "LayoutText #text",
+        "LayoutTableCell TD id='d2'",
+        "LayoutTable TABLE id='t'",
+        "LayoutTable TABLE",
+        "LayoutTableSection TBODY",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTable TABLE",
+        "LayoutTableSection TBODY",
+        "LayoutTable TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD id='d3'",
+        "LayoutText #text",
+        "LayoutTableCell TD"
+      ]
+    }
+  ]
+}
+

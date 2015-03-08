@@ -1,0 +1,20 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 148, 214, 235],
+        [8, 68, 784, 235],
+        [8, 68, 214, 235]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (anonymous)",
+        "LayoutImage IMG id='test' class='moved'"
+      ]
+    }
+  ]
+}
+

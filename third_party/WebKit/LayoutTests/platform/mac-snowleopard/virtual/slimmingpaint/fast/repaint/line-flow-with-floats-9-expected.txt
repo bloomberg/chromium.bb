@@ -32,6 +32,33 @@
         [0, 0, 485, 600],
         [0, 0, 15, 15],
         [0, 0, 15, 15]
+      ],
+      "paintInvalidationClients": [
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame IFRAME id='iframe'",
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutBlockFlow P",
+        "LayoutBlockFlow (floating) SPAN id='yellowFloat'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text"
       ]
     }
   ]

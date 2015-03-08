@@ -14,6 +14,16 @@
         [50, 52, 574, 84],
         [50, 52, 574, 84],
         [50, 52, 574, 84]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g",
+        "LayoutSVGText text id='text'",
+        "LayoutSVGTSpan tspan id='tspan'",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text"
       ]
     }
   ]

@@ -1,0 +1,40 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [59, 140, 101, 26],
+        [59, 140, 101, 26],
+        [59, 40, 101, 126],
+        [59, 40, 101, 26],
+        [59, 40, 101, 26],
+        [59, 40, 101, 26],
+        [59, 40, 101, 26],
+        [59, 40, 101, 26],
+        [59, 40, 101, 26],
+        [0, 0, 160, 166],
+        [0, 0, 81, 5],
+        [0, 0, 81, 5],
+        [0, 0, 81, 5],
+        [0, 0, 81, 5],
+        [0, 0, 81, 5],
+        [0, 0, 81, 5]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot (positioned) svg",
+        "LayoutSVGViewportContainer svg id='inner1'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGViewportContainer svg id='inner2'",
+        "LayoutSVGText text"
+      ]
+    }
+  ]
+}
+

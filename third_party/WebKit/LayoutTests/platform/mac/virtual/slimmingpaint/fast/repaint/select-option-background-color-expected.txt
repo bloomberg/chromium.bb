@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [1, 34, 12, 14],
+        [0, 33, 25, 59]
+      ],
+      "paintInvalidationClients": [
+        "LayoutListBox SELECT",
+        "LayoutBlockFlow OPTION id='option'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,23 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [379, 267, 288, 71],
+        [304, 377, 128, 156],
+        [304, 22, 128, 206],
+        [69, 267, 288, 71]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

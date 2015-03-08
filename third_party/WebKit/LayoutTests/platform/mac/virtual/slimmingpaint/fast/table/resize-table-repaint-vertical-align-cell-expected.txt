@@ -12,6 +12,12 @@
         [2, 52, 102, 96],
         [0, 150, 106, 380],
         [0, 148, 106, 380]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTable (positioned) TABLE id='table'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutText #text"
       ]
     }
   ]

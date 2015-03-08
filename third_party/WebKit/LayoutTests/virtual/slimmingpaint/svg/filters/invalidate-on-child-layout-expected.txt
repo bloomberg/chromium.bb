@@ -1,0 +1,24 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [50, 50, 100, 100],
+        [40, 40, 120, 120],
+        [40, 40, 120, 120],
+        [0, 0, 110, 110],
+        [0, 0, 110, 110],
+        [0, 0, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g",
+        "LayoutSVGEllipse circle id='circle'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,23 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [649, 564, 100, 15],
+        [550, 564, 199, 15],
+        [314, 564, 335, 15],
+        [312, 112, 454, 469]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "HorizontalScrollbar",
+        "HorizontalScrollbar",
+        "LayoutTableCell TD id='cellToScroll' class='relative'"
+      ]
+    }
+  ]
+}
+

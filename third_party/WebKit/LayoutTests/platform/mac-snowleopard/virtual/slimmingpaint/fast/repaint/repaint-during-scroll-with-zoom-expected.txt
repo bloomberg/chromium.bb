@@ -1,0 +1,35 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [237, 79, 15, 191],
+        [237, 66, 15, 26],
+        [237, 65, 15, 14],
+        [16, 300, 191, 15],
+        [3, 300, 26, 15],
+        [2, 300, 14, 15],
+        [2, 65, 235, 235]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "HorizontalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "HorizontalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME",
+        "LayoutIFrame (positioned) IFRAME"
+      ]
+    }
+  ]
+}
+

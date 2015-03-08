@@ -29,6 +29,20 @@
         [10, 60, 317, 380],
         [10, 60, 317, 380],
         [10, 60, 317, 380]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot (positioned) svg",
+        "LayoutSVGText text",
+        "LayoutSVGTSpan tspan id='modify'",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text"
       ]
     }
   ]

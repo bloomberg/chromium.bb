@@ -1,0 +1,34 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [3, 401, 46, 17],
+        [3, 162, 46, 17],
+        [3, 116, 46, 17],
+        [3, 67, 46, 17],
+        [2, 292, 102, 236],
+        [2, 102, 102, 46],
+        [2, 52, 102, 238],
+        [2, 52, 102, 48],
+        [0, 292, 106, 236],
+        [0, 150, 106, 380],
+        [0, 102, 106, 46],
+        [0, 100, 106, 190]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTable (positioned) TABLE id='table'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutText #text",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

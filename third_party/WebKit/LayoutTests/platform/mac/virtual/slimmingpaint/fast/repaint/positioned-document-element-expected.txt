@@ -1,0 +1,29 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [108, 116, 437, 18],
+        [108, 116, 436, 18],
+        [108, 116, 436, 18],
+        [100, 100, 452, 50],
+        [8, 16, 784, 18],
+        [8, 16, 784, 18],
+        [8, 16, 437, 18],
+        [0, 0, 800, 600],
+        [0, 0, 800, 50]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutBlockFlow (positioned) HTML class='changed'",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow P",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

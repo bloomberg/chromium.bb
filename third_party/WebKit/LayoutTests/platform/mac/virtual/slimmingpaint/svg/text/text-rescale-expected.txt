@@ -51,6 +51,36 @@
         [0, 0, 1, 1],
         [0, 0, 1, 1],
         [0, 0, 1, 1]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot (positioned) svg",
+        "LayoutSVGContainer g id='text1g'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGForeignObject foreignObject",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "LayoutSVGViewportContainer svg",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGContainer g id='text2g'",
+        "LayoutSVGText text",
+        "LayoutSVGText text",
+        "LayoutSVGContainer g id='text3g'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGForeignObject foreignObject",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "LayoutSVGViewportContainer svg",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text"
       ]
     }
   ]

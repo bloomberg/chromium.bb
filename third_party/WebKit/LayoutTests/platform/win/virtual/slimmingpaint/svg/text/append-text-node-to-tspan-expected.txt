@@ -1,0 +1,50 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 62, 317, 375],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387],
+        [10, 50, 317, 387]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot (positioned) svg",
+        "LayoutSVGText text",
+        "LayoutSVGTSpan tspan id='modify'",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGTSpan tspan",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGInlineText #text"
+      ]
+    }
+  ]
+}
+

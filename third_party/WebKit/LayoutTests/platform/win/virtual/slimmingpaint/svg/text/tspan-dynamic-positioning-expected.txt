@@ -1,0 +1,27 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [200, 186, 256, 17],
+        [200, 186, 256, 17],
+        [200, 186, 256, 17],
+        [200, 186, 256, 17],
+        [20, 6, 256, 17],
+        [20, 6, 256, 17],
+        [20, 6, 256, 17],
+        [20, 6, 256, 17]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGText text",
+        "LayoutSVGTSpan tspan id='ts'",
+        "LayoutSVGInlineText #text"
+      ]
+    }
+  ]
+}
+

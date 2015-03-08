@@ -14,6 +14,12 @@
         [20, 6, 256, 18],
         [20, 6, 256, 18],
         [20, 6, 256, 18]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGText text",
+        "LayoutSVGTSpan tspan id='ts'",
+        "LayoutSVGInlineText #text"
       ]
     }
   ]
