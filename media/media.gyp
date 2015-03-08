@@ -1087,6 +1087,11 @@
             'filters/source_buffer_platform.h',
           ]
         }],
+        ['use_udev==1', {
+          'dependencies': [
+            '../device/udev_linux/udev.gyp:udev_linux',
+          ],
+        }],
       ],  # conditions
       'target_conditions': [
         ['OS == "ios" and _toolset != "host"', {
@@ -1399,6 +1404,11 @@
           'sources': [
             'midi/midi_manager_mac_unittest.cc',
             'video/capture/mac/video_capture_device_factory_mac_unittest.mm',
+          ]
+        }],
+	['use_alsa==1', {
+          'sources': [
+            'midi/midi_manager_alsa_unittest.cc',
           ]
         }],
       ],

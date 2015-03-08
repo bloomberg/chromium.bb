@@ -361,6 +361,10 @@ component("media") {
     ]
   }
 
+  if (use_udev) {
+    deps += [ "//device/udev_linux" ]
+  }
+
   # A simple WebM encoder for animated avatars on ChromeOS.
 
   if (use_ozone) {
@@ -669,6 +673,10 @@ test("media_unittests") {
       "midi/midi_manager_mac_unittest.cc",
       "video/capture/mac/video_capture_device_factory_mac_unittest.mm",
     ]
+  }
+
+  if (use_alsa) {
+    sources += [ "midi/midi_manager_alsa_unittest.cc" ]
   }
 
   #      include_dirs += [

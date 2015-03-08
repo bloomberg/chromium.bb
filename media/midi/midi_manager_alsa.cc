@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -41,16 +42,15 @@ int AddrToInt(const snd_seq_addr_t* addr) {
   return (addr->client << 8) | addr->port;
 }
 
-class CardInfo {
- public:
-  CardInfo(const std::string name, const std::string manufacturer,
-           const std::string driver)
-      : name_(name), manufacturer_(manufacturer), driver_(driver) {
-  }
-  const std::string name_;
-  const std::string manufacturer_;
-  const std::string driver_;
-};
+#if defined(USE_UDEV)
+// Copied from components/storage_monitor/udev_util_linux.cc.
+// TODO(agoode): Move this into a common place. Maybe device/udev_linux?
+std::string GetUdevDevicePropertyValue(udev_device* udev_device,
+                                       const char* key) {
+  const char* value = device::udev_device_get_property_value(udev_device, key);
+  return value ? value : std::string();
+}
+#endif  // defined(USE_UDEV)
 
 }  // namespace
 
@@ -60,6 +60,9 @@ MidiManagerAlsa::MidiManagerAlsa()
       out_client_id_(-1),
       in_port_(-1),
       decoder_(NULL),
+#if defined(USE_UDEV)
+      udev_(device::udev_new()),
+#endif  // defined(USE_UDEV)
       send_thread_("MidiSendThread"),
       event_thread_("MidiEventThread"),
       event_thread_shutdown_(false) {
@@ -126,11 +129,9 @@ void MidiManagerAlsa::StartInitialization() {
     return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
   }
 
-  // Use a heuristic to extract the list of manufacturers for the hardware MIDI
+  // Extract the list of manufacturers for the hardware MIDI
   // devices. This won't work for all devices. It is also brittle until
-  // hotplug is implemented. (See http://crbug.com/279097.)
-  // TODO(agoode): Make manufacturer extraction simple and reliable.
-  // http://crbug.com/377250.
+  // hotplug is implemented. (See http://crbug.com/431489.)
   ScopedVector<CardInfo> cards;
   snd_ctl_card_info_t* card;
   snd_rawmidi_info_t* midi_out;
@@ -138,8 +139,8 @@ void MidiManagerAlsa::StartInitialization() {
   snd_ctl_card_info_alloca(&card);
   snd_rawmidi_info_alloca(&midi_out);
   snd_rawmidi_info_alloca(&midi_in);
-  for (int index = -1; !snd_card_next(&index) && index >= 0; ) {
-    const std::string id = base::StringPrintf("hw:CARD=%i", index);
+  for (int card_index = -1; !snd_card_next(&card_index) && card_index >= 0; ) {
+    const std::string id = base::StringPrintf("hw:CARD=%i", card_index);
     snd_ctl_t* handle;
     int err = snd_ctl_open(&handle, id.c_str(), 0);
     if (err != 0) {
@@ -168,21 +169,14 @@ void MidiManagerAlsa::StartInitialization() {
       if (!output && !input)
         continue;
 
+      // Compute and save Alsa and udev properties.
       snd_rawmidi_info_t* midi = midi_out ? midi_out : midi_in;
-      const std::string name = snd_rawmidi_info_get_name(midi);
-      // We assume that card longname is in the format of
-      // "<manufacturer> <name> at <bus>". Otherwise, we give up to detect
-      // a manufacturer name here.
-      std::string manufacturer;
-      const std::string card_name = snd_ctl_card_info_get_longname(card);
-      size_t at_index = card_name.rfind(" at ");
-      if (std::string::npos != at_index) {
-        size_t name_index = card_name.rfind(name, at_index - 1);
-        if (std::string::npos != name_index)
-          manufacturer = card_name.substr(0, name_index - 1);
-      }
-      const std::string driver = snd_ctl_card_info_get_driver(card);
-      cards.push_back(new CardInfo(name, manufacturer, driver));
+      cards.push_back(new CardInfo(
+          this,
+          snd_rawmidi_info_get_name(midi),
+          snd_ctl_card_info_get_longname(card),
+          snd_ctl_card_info_get_driver(card),
+          card_index));
     }
     snd_ctl_close(handle);
   }
@@ -214,9 +208,9 @@ void MidiManagerAlsa::StartInitialization() {
     if ((snd_seq_client_info_get_type(client_info) == SND_SEQ_KERNEL_CLIENT) &&
         (current_card < cards.size())) {
       const CardInfo* info = cards[current_card];
-      if (info->name_ == client_name) {
-        manufacturer = info->manufacturer_;
-        driver = info->driver_;
+      if (info->alsa_name() == client_name) {
+        manufacturer = info->manufacturer();
+        driver = info->alsa_driver();
         current_card++;
       }
     }
@@ -335,6 +329,62 @@ MidiManagerAlsa::~MidiManagerAlsa() {
     snd_midi_event_free(*i);
 }
 
+MidiManagerAlsa::CardInfo::CardInfo(
+    const MidiManagerAlsa* outer,
+    const std::string& alsa_name, const std::string& alsa_longname,
+    const std::string& alsa_driver, int card_index)
+    : alsa_name_(alsa_name), alsa_driver_(alsa_driver) {
+  // Get udev properties if available.
+  std::string udev_id_vendor_enc;
+  std::string udev_id_vendor_id;
+  std::string udev_id_vendor_from_database;
+
+#if defined(USE_UDEV)
+  const std::string sysname = base::StringPrintf("card%i", card_index);
+  device::ScopedUdevDevicePtr udev_device(
+      device::udev_device_new_from_subsystem_sysname(
+          outer->udev_.get(), "sound", sysname.c_str()));
+  udev_id_vendor_enc = GetUdevDevicePropertyValue(
+      udev_device.get(), "ID_VENDOR_ENC");
+  udev_id_vendor_id = GetUdevDevicePropertyValue(
+      udev_device.get(), "ID_VENDOR_ID");
+  udev_id_vendor_from_database = GetUdevDevicePropertyValue(
+      udev_device.get(), "ID_VENDOR_FROM_DATABASE");
+
+  udev_id_path_ = GetUdevDevicePropertyValue(
+      udev_device.get(), "ID_PATH");
+  udev_id_id_ = GetUdevDevicePropertyValue(
+      udev_device.get(), "ID_ID");
+#endif  // defined(USE_UDEV)
+
+  manufacturer_ = ExtractManufacturerString(
+      udev_id_vendor_enc, udev_id_vendor_id, udev_id_vendor_from_database,
+      alsa_name, alsa_longname);
+}
+
+MidiManagerAlsa::CardInfo::~CardInfo() {
+}
+
+const std::string MidiManagerAlsa::CardInfo::alsa_name() const {
+  return alsa_name_;
+}
+
+const std::string MidiManagerAlsa::CardInfo::manufacturer() const {
+  return manufacturer_;
+}
+
+const std::string MidiManagerAlsa::CardInfo::alsa_driver() const {
+  return alsa_driver_;
+}
+
+const std::string MidiManagerAlsa::CardInfo::udev_id_path() const {
+  return udev_id_path_;
+}
+
+const std::string MidiManagerAlsa::CardInfo::udev_id_id() const {
+  return udev_id_id_;
+}
+
 void MidiManagerAlsa::SendMidiData(uint32 port_index,
                                    const std::vector<uint8>& data) {
   DCHECK(send_thread_.message_loop_proxy()->BelongsToCurrentThread());
@@ -445,6 +495,62 @@ void MidiManagerAlsa::EventLoop() {
   event_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
+}
+
+// static
+std::string MidiManagerAlsa::CardInfo::ExtractManufacturerString(
+    const std::string& udev_id_vendor_enc,
+    const std::string& udev_id_vendor_id,
+    const std::string& udev_id_vendor_from_database,
+    const std::string& alsa_name,
+    const std::string& alsa_longname) {
+  // Let's try to determine the manufacturer. Here is the ordered preference
+  // in extraction:
+  //  1. Vendor name from the USB device iManufacturer string, stored in
+  //     udev_id_vendor_enc.
+  //  2. Vendor name from the udev hwid database.
+  //  3. Heuristic from ALSA.
+
+  // Is the vendor string not just the USB vendor hex id?
+  std::string udev_id_vendor = UnescapeUdev(udev_id_vendor_enc);
+  if (udev_id_vendor != udev_id_vendor_id) {
+    return udev_id_vendor;
+  }
+
+  // Is there a vendor string in the hardware database?
+  if (!udev_id_vendor_from_database.empty()) {
+    return udev_id_vendor_from_database;
+  }
+
+  // Ok, udev gave us nothing useful, or was unavailable. So try a heuristic.
+  // We assume that card longname is in the format of
+  // "<manufacturer> <name> at <bus>". Otherwise, we give up to detect
+  // a manufacturer name here.
+  size_t at_index = alsa_longname.rfind(" at ");
+  if (std::string::npos != at_index) {
+    size_t name_index = alsa_longname.rfind(alsa_name, at_index - 1);
+    if (std::string::npos != name_index)
+      return alsa_longname.substr(0, name_index - 1);
+  }
+
+  // Failure.
+  return "";
+}
+
+// static
+std::string MidiManagerAlsa::CardInfo::UnescapeUdev(const std::string& s) {
+  std::string unescaped;
+  const size_t size = s.size();
+  for (size_t i = 0; i < size; ++i) {
+    char c = s[i];
+    if ((i + 3 < size) && c == '\\' && s[i + 1] == 'x') {
+      c = (HexDigitToInt(s[i + 2]) << 4) +
+          HexDigitToInt(s[i + 3]);
+      i += 3;
+    }
+    unescaped.push_back(c);
+  }
+  return unescaped;
 }
 
 MidiManager* MidiManager::Create() {

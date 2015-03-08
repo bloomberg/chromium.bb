@@ -1,5 +1,6 @@
 # Do NOT add net/ or ui/base without a great reason, they're huge!
 include_rules = [
+  "+device/udev_linux",
   "+gpu",
   "+jni",
   "+skia/ext",
