@@ -1673,4 +1673,71 @@ if (!is_android) {
       sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]
     }
   }
+
+  if (is_linux && !is_chromeos) {
+    # TODO(GYP): Figure out which of these work and are needed on other
+    # platforms.
+    test("chrome_app_unittests") {
+      sources = [
+        "../app/chrome_watcher_client_unittest_win.cc",
+        "../app/chrome_watcher_client_win.cc",
+        "../app/chrome_watcher_command_line_unittest_win.cc",
+        "../app/chrome_watcher_command_line_win.cc",
+        "../app/delay_load_hook_unittest_win.cc",
+        "../app/delay_load_hook_win.cc",
+        "../app/delay_load_hook_win.h",
+        "../app/signature_validator_win.cc",
+        "../app/signature_validator_win.h",
+        "../app/signature_validator_win_unittest.cc",
+        "../common/crash_keys.cc",
+        "../common/crash_keys.h",
+      ]
+
+      deps = [
+        ":test_support",
+        "//chrome/browser",
+        "//chrome/child",
+        "//base/test:run_all_unittests",
+        "//base/test:test_support",
+      ]
+      if (cld_version == 0 || cld_version == 2) {
+        # Use whatever CLD2 data access mode that the
+        # application embedder is using.
+        deps += [ "//third_party/cld_2:cld2_platform_impl" ]
+      }
+    }
+    # TODO(GYP): Finish me...
+    # source_set("performance_browser_tests") {
+    #   testonly = true
+    #   sources =
+    #     rebase_path(chrome_tests_gypi_values.performance_browser_tests_sources,
+    #                 ".",
+    #                 "//chrome")
+    #   deps = [
+    #     ":perf",
+    #     ":test_support",
+    #     "//base",
+    #     "//base:i18n",
+    #     "//base/test:test_support",
+    #     "//chrome/browser",
+    #     "//chrome/renderer",
+    #     "//media/cast:cast_test_utility",
+    #     "//testing/gtest",
+    #   ]
+    #
+    #   if (!is_win) {
+    #     sources -= [
+    #       "../app/chrome_command_ids.h",
+    #       # "../app/chrome_dll.rc",
+    #       #"../app/chrome_dll_resource.h",
+    #       #"../app/chrome_version.rc.version",
+    #     ]
+    #   }
+    #   if (!is_mac) {
+    #     sources -= [
+    #       "perf/mach_ports_performancetest.cc",
+    #     ]
+    #   }
+    # }
+  }
 }

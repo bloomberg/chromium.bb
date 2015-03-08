@@ -218,6 +218,45 @@ static_library("test_support") {
   ]
 }
 
+if (is_linux && !is_chromeos) {
+  # TODO(GYP): Figure out which of these work and are needed on other platforms.
+  if (toolkit_views) {
+    executable("app_list_demo") {
+      testonly = true
+
+      sources = [
+        "demo/app_list_demo_views.cc",
+      ]
+
+      deps = [
+        ":app_list",
+        ":test_support",
+        "//base",
+        "//content",
+        "//content/public/browser",
+        "//skia",
+        "//url",
+        "//ui/base",
+        "//ui/events",
+        "//ui/resources",
+        "//ui/resources:ui_test_pak",
+        "//ui/views",
+        "//ui/views_content_client",
+        "//ui/views/controls/webview",
+      ]
+      if (is_win) {
+        configs -= [ "//build/config/win:console" ]
+        configs += [ "//build/config/win:windowed" ]
+
+        deps += [
+          "//sandbox",
+          "//content:content_startup_helper_win",
+        ]
+      }
+    }
+  }
+}
+
 test("app_list_unittests") {
   sources = [
     "app_list_item_list_unittest.cc",

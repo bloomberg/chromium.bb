@@ -631,3 +631,28 @@ test("skia_unittests") {
     "//ui/gfx/geometry",
   ]
 }
+
+if (is_linux && !is_chromeos) {
+  # TODO(GYP): Figure out which of these work and are needed on other platforms.
+  executable("image_operations_bench") {
+    sources = [
+      "ext/image_operations_bench.cc",
+    ]
+
+    deps = [
+      ":skia",
+      "//base",
+    ]
+  }
+
+  executable("filter_fuzz_stub") {
+    sources = [
+      "tools/filter_fuzz_stub/filter_fuzz_stub.cc",
+    ]
+
+    deps = [
+      ":skia",
+      "//base",
+    ]
+  }
+}

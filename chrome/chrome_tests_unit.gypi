@@ -2605,6 +2605,7 @@
       ],
     },
     {
+      # GN: //chrome/test:chrome_app_unittests
       'target_name': 'chrome_app_unittests',
       'type': 'executable',
       'dependencies': [

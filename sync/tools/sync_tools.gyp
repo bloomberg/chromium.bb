@@ -9,6 +9,7 @@
 
   'targets': [
   {
+    # GN: //sync/tools:common
     'target_name': 'sync_tools_helper',
     'type': 'static_library',
     'include_dirs': [
@@ -32,6 +33,7 @@
   },
   # A tool to listen to sync notifications and print them out.
   {
+    # GN: //sync/tools:sync_listen_notifications
     'target_name': 'sync_listen_notifications',
     'type': 'executable',
     'defines': [
@@ -53,6 +55,7 @@
 
   # A standalone command-line sync client.
   {
+    # GN: //sync/tools:sync_client
     'target_name': 'sync_client',
     'type': 'executable',
     'defines': [

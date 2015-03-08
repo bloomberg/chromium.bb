@@ -121,10 +121,7 @@ group("gn_all") {
   }
 
   if (use_ozone) {
-    deps += [
-      "//ui/ozone",
-      "//ui/ozone/demo",  # GN only
-    ]
+    deps += [ "//ui/ozone" ]
   }
 
   if (is_win || is_mac || is_chromeos) {
@@ -197,13 +194,174 @@ group("gn_all") {
     if (has_chrome_android_internal) {
       deps += [ "//clank" ]  # TODO(GYP) ??
     }
-  } else if (is_linux) {
+  }
+
+  if (is_linux) {
+    # The following are definitely linux-only.
     deps += [
+      "//breakpad:breakpad_unittests",
+      "//breakpad:dump_syms",
+      "//breakpad:generate_test_dump",
+      "//breakpad:minidump-2-core",
+      "//dbus:dbus_test_server",
       "//dbus:dbus_unittests",
+      "//net:disk_cache_memory_test",
+      "//net:flip_in_mem_edsm_server",
+      "//net:flip_in_mem_edsm_server_unittests",
+      "//net:quic_client",
+      "//net:quic_server",
+      "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
+      "//sandbox/linux:sandbox_linux_jni_unittests",
     ]
-  } else if (is_mac) {
+  }
+
+  if (is_linux && !is_chromeos) {
     deps += [
+      # TODO(GYP): Figure out which of these should (and can) build
+      # under which other conditions.
+      "//base:base_perftests",
+      "//base:base_i18n_perftests",
+      "//base:check_example",
+      "//base:protect_file_posix",
+      "//base:build_utf8_validator_tables",
+      "//breakpad:core-2-minidump",
+      "//breakpad:microdump_stackwalk",
+      "//breakpad:minidump_dump",
+      "//breakpad:minidump_stackwalk",
+      "//build/sanitizers:copy_llvm_symbolizer",
+      "//cc/blink:cc_blink_unittests",
+      "//cc:cc_perftests",
+      "//chrome/test:chrome_app_unittests",
+      "//chrome/test:load_library_perf_tests",
+      "//chrome/test:sync_performance_tests",
+      "//chrome/test/chromedriver:chromedriver",
+      "//chrome/test/chromedriver:chromedriver_tests",
+      "//chrome/tools/profile_reset:jtl_compiler",
+      "//components:components_perftests",
+      "//components/network_hints/browser",
+      "//components/session_manager/core",
+      "//components/webui_generator",
+      "//content/public/app:browser",
+      "//content/public/app:child",
+      "//content/test:content_gl_tests",
+      "//content/test:content_gl_benchmark",
+      "//courgette:courgette",
+      "//courgette:courgette_fuzz",
+      "//courgette:courgette_minimal_tool",
+      "//courgette:courgette_unittests",
+      "//device:device_unittests",
+      "//gin:gin_shell",
+      "//gin:gin_v8_snapshot_fingerprint",
+      "//gin:gin_unittests",
+      "//google_apis:google_apis_unittests",
+      "//google_apis/gcm:mcs_probe",
+      "//gpu:angle_unittests",
+      "//gpu:gl_tests",
+
+      # TODO(GYP): Remove this when the gles2 tests work
+      "//gpu/command_buffer/client:gles2_implementation_no_check",
+
+      "//gpu:gpu_perftests",
+      "//ipc:ipc_perftests",
+      "//media:ffmpeg_regression_tests",  # TODO(GYP) this should be conditional on media_use_ffmpeg
+      "//media:media_perftests",
+      "//media/cast:cast_benchmarks",
+      "//media/cast:generate_barcode_video",
+      "//media/cast:generate_timecode_audio",
+      "//media/cast:tap_proxy",
+      "//mojo/application",
+      "//net:crash_cache",
+      "//net:crl_set_dump",
+      "//net:dns_fuzz_stub",
+      "//net:gdig",
+      "//net:get_server_time",
+
+      #"//net:hpack_example_generator",  # TODO(GYP) rockot in progress
+      #"//net:hpack_fuzz_mutator",  # TODO(GYP) rockot in progress
+      #"//net:hpack_fuzz_wrapper",  # TODO(GYP) rockot in progress
+      #"//net:net_perftests",  # TODO(GYP) rockot in progress
+      "//net:net_watcher",  # TODO(GYP): This should be conditional on use_v8_in_net
+      "//net:stress_cache",
+      "//net:tld_cleanup",
+      "//net:run_testserver",
+      "//net:dump_cache",
+
+      # "//ppapi:pepper_hash_for_uma",  # TODO(GYP): Implement me.
+      "//ppapi:ppapi_perftests",  # TODO(GYP): Are there other ppapi_* test targets?
+      "//skia:filter_fuzz_stub",
+      "//skia:image_operations_bench",
+      "//sync:run_sync_testserver",
+      "//sync:sync_endtoend_tests",
+      "//sync/tools:sync_client",
+      "//sync/tools:sync_listen_notifications",
+      "//testing/gmock:gmock_main",
+      "//third_party/codesighs:maptsvdifftool",
+      "//third_party/libphonenumber:libphonenumber_unittests",
+      "//third_party/mojo/src/mojo/edk/test:mojo_public_system_perftests",
+      "//tools/gn:generate_test_gn_data",
+      "//tools/perf/clear_system_cache",
+      "//ui/keyboard:keyboard_unittests",
+      "//ui/message_center:message_center_unittests",
+      "//ui/snapshot:snapshot_unittests",
+      "//ui/views/examples:views_examples_with_content_exe",
+
+      # "//v8:v8_snapshot",  # TODO(GYP): visibility?
+      # "//v8:postmortem-metadata",  # TODO(GYP): visibility?
+
+      "//third_party/codesighs:nm2tsv",
+      "//third_party/leveldatabase:env_chromium_unittests",
+      "//third_party/libaddressinput:libaddressinput_unittests",
+      "//third_party/sqlite:sqlite_shell",
+      "//ui/compositor:compositor_unittests",
+    ]
+
+    if (enable_extensions) {
+      deps += [ "//extensions/shell:app_shell" ]
+    }
+
+    if (enable_nacl) {
+      deps += [ "//components/nacl:nacl_loader_unittests" ]
+    }
+
+    if (!is_debug && !is_component_build) {
+      deps += [ "//chrome/tools/service_discovery_sniffer" ]
+    }
+
+    if (toolkit_views) {
+      deps += [ "//ui/app_list:app_list_demo" ]
+    }
+
+    if (use_ash) {
+      deps += [
+        "//ash:ash_shell",
+        "//ash:ash_shell_unittests",
+        "//ash:ash_unittests",
+      ]
+    }
+
+    if (use_aura) {
+      deps += [
+        "//ui/aura:aura_unittests",
+        "//ui/aura:bench",
+        "//ui/aura:demo",
+      ]
+    }
+
+    if (use_x11) {
+      deps += [ "//media:player_x11" ]
+    }
+
+    if (target_cpu != "arm") {
+      deps += [ "//gpu:compositor_model_bench" ]
+    }
+  }
+
+  if (is_mac) {
+    deps += [
+      "//breakpad:crash_inspector",
+      "//breakpad:dump_syms",
+      "//breakpad:symupload",
       "//third_party/apple_sample_code",
       "//third_party/molokocacao",
     ]
@@ -265,9 +423,150 @@ group("gn_all") {
 }
 
 group("gn_only") {
+  testonly = true
+
+  if (is_linux && !is_chromeos) {
+    # TODO(GYP): Figure out if any of these should be in gn_all
+    # and figure out how cross-platform they are
+    deps = [
+      ":gn_mojo_targets",
+      "//chrome/browser/resources:extension_resource_demo",
+      "//chrome/installer/util:strings",
+      "//chrome:main_dll",
+      "//chrome/test:load_library_perf_tests",
+      "//chrome/tools/convert_dict",
+      "//components/constrained_window:unit_tests",
+      "//components/enhanced_bookmarks:test_support",
+      "//components/password_manager/content/renderer:browser_tests",
+      "//components/metrics:serialization",
+      "//components/proximity_auth:proximity_auth_unittests",
+      "//components/rappor:unit_tests",
+      "//components/sessions:unit_tests",
+      "//media/blink:media_blink_unittests",
+      "//media/base:base_for_cast_ios",
+      "//media/cast:udp_proxy",
+      "//native_client/src/trusted/platform_qualify:vcpuid",
+      "//native_client/src/trusted/debug_stub:gdb_rsp_unittest",
+      "//storage/browser:dump_file_system",
+      "//third_party/angle:libANGLE",
+      "//third_party/angle:libEGL",
+      "//third_party/angle:libGLESv2",
+      "//third_party/cld_2:cld_2_dynamic_data_tool",
+      "//third_party/leveldatabase:leveldb_arena_test",
+      "//third_party/leveldatabase:leveldb_bloom_test",
+      "//third_party/leveldatabase:leveldb_db_test",
+      "//third_party/leveldatabase:leveldb_crc32c_test",
+      "//third_party/leveldatabase:leveldb_cache_test",
+      "//third_party/leveldatabase:leveldb_env_test",
+      "//third_party/leveldatabase:leveldb_write_batch_test",
+      "//third_party/leveldatabase:leveldb_filter_block_test",
+      "//third_party/leveldatabase:leveldb_version_edit_test",
+      "//third_party/leveldatabase:leveldb_db_bench",
+      "//third_party/leveldatabase:leveldb_log_test",
+      "//third_party/leveldatabase:leveldb_corruption_test",
+      "//third_party/leveldatabase:leveldb_table_test",
+      "//third_party/leveldatabase:leveldb_skiplist_test",
+      "//third_party/leveldatabase:leveldb_filename_test",
+      "//third_party/leveldatabase:leveldb_dbformat_test",
+      "//third_party/pdfium/third_party:freetype",
+      "//third_party/libjingle:peerconnnection_server",
+      "//third_party/libjpeg_turbo:simd",
+      "//third_party/libjpeg_turbo:simd_asm",
+      "//third_party/libsrtp:replay_driver",
+      "//third_party/libsrtp:roc_driver",
+      "//third_party/libsrtp:rtpw",
+      "//third_party/libsrtp:rdbx_driver",
+      "//third_party/libsrtp:srtp_driver",
+      "//third_party/libsrtp:srtp_driver",
+      "//third_party/libsrtp:srtp_test_kernel_driver",
+      "//third_party/libsrtp:srtp_test_cipher_driver",
+      "//third_party/libsrtp:srtp_test_datatypes_driver",
+      "//third_party/libsrtp:srtp_test_aes_calc",
+      "//third_party/libsrtp:srtp_test_env",
+      "//third_party/libsrtp:srtp_test_rand_gen",
+      "//third_party/libsrtp:srtp_test_sha1_driver",
+      "//third_party/libsrtp:srtp_test_stat_driver",
+      "//third_party/opus:opus_compare",
+      "//third_party/opus:opus_demo",
+      "//third_party/opus:test_opus_decode",
+      "//third_party/opus:test_opus_encode",
+      "//third_party/opus:test_opus_api",
+      "//third_party/opus:test_opus_padding",
+      "//third_party/webrtc/system_wrappers:field_trial_default",
+      "//third_party/webrtc/system_wrappers:metrics_default",
+      "//ui/display/types",
+      "//ui/shell_dialogs:shell_dialogs_unittests",
+      "//ui/views/examples:views_examples_exe",
+      "//v8:d8",
+    ]
+    if (enable_nacl) {
+      deps += [ "//native_client/src/trusted/service_runtime:sel_ldr" ]
+    }
+    if (use_ozone) {
+      deps += [ "//ui/ozone/demo" ]
+    }
+    if (is_android) {
+      deps += [ "//build/android/gyp/test:hello_world" ]
+    }
+  }
+}
+
+group("gn_mojo_targets") {
+  testonly = true
+  if (is_linux && !is_chromeos) {
+    # TODO(GYP): Figure out if any of these should be in gn_all
+    # and figure out how cross-platform they are
+    deps = [
+      "//chrome/browser/ui/webui/omnibox:mojo_bindings_python",
+      "//chrome/browser/ui/webui/omnibox:mojo_bindings_dart",
+      "//content/public/common:mojo_bindings_dart",
+      "//content/public/common:mojo_bindings_python",
+      "//content/common:mojo_bindings_dart",
+      "//content/common:mojo_bindings_python",
+      "//content/test:web_ui_test_mojo_bindings_dart",
+      "//content/test:web_ui_test_mojo_bindings_python",
+      "//device/battery:mojo_bindings_python",
+      "//device/battery:mojo_bindings_dart",
+      "//device/vibration:mojo_bindings_dart",
+      "//device/vibration:mojo_bindings_python",
+      "//ipc/mojo:ipc_mojo_perftests",
+      "//ipc/mojo:client_channel_dart",
+      "//ipc/mojo:client_channel_python",
+      "//media/mojo/interfaces:interfaces_dart",
+      "//media/mojo/interfaces:interfaces_python",
+      "//media/mojo/services:cdm_service",
+      "//media/mojo:tests",
+      "//net/interfaces:interfaces_dart",
+      "//net/interfaces:interfaces_python",
+      "//third_party/mojo/src/mojo/edk/js/test:js_integration_tests",
+      "//third_party/mojo/src/mojo/edk/js/tests:js_to_cpp_bindings_dart",
+      "//third_party/mojo/src/mojo/edk/js/tests:js_to_cpp_bindings_python",
+      "//third_party/mojo/src/mojo/public/python:packaged_application",
+      "//third_party/mojo/src/mojo/public/python:packaged_bindings",
+      "//third_party/mojo/src/mojo/public/cpp/application:test_support_standalone",
+      "//third_party/mojo_services/src/accessibility/public/interfaces:interfaces_dart",
+      "//third_party/mojo_services/src/accessibility/public/interfaces:interfaces_python",
+      "//third_party/mojo_services/src/window_manager/public/interfaces:interfaces_dart",
+      "//third_party/mojo_services/src/window_manager/public/interfaces:interfaces_python",
+    ]
+
+    if (!is_debug) {
+      deps += [
+        "//mojo/services/html_viewer:tests",
+        "//mojo/services/network:apptests",
+      ]
+    }
+  }
+}
+
+group("gn_visibility") {
   deps = [
-    "//media/mojo",
-    # "//mojo/services/html_viewer:tests",  # TODO(GYP): Do we need this?
+    # "//build/config/sanitizers:options_sources",
+    # "//third_party/pdfium:pdfium_embeddertests",  # TODO(GYP): visibility?
+    # "//third_party/pdfium:pdfium_unittests",  # TODO(GYP): visibility?
+    # "//ui/resources:repack_ui_test_mac_locale_pack",
+    # "//v8:v8_snapshot",  # TODO(GYP): visibility?
+    # "//v8:postmortem-metadata",  # TODO(GYP): visibility?
   ]
 }
 

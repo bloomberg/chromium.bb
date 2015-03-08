@@ -31,6 +31,7 @@
     ['OS == "win"', {
       'targets': [
         {
+          # GN: //content:content_startup_helper_win
           'target_name': 'content_startup_helper_win',
           'type': 'static_library',
           'include_dirs': [

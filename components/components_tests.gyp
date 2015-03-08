@@ -1037,6 +1037,7 @@
     ['OS != "ios" and android_webview_build == 0', {
       'targets': [
         {
+          # GN: //components:components_perftests
           'target_name': 'components_perftests',
           'type': '<(gtest_target_type)',
           'dependencies': [

@@ -6,8 +6,10 @@
 # the build.
 group("tools") {
   testonly = true
-  deps = [
-    # TODO(GYP) re-enable this. Currently it's giving linker errors about Mojo.
-    #"//chrome/tools/service_discovery_sniffer",
-  ]
+  if (is_linux && !is_chromeos) {
+    # TODO(GYP): Figure out which of these work and are needed on other platforms.
+    deps = [
+      "//chrome/tools/service_discovery_sniffer",
+    ]
+  }
 }

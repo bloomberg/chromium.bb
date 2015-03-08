@@ -1,0 +1,63 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+if (is_linux && !is_chromeos) {
+  # TODO(GYP): Figure out which of these work and are needed on other platforms.
+  source_set("common") {
+    testonly = true
+
+    sources = [
+      "invalidation_helper.cc",
+      "invalidation_helper.h",
+      "null_invalidation_state_tracker.cc",
+      "null_invalidation_state_tracker.h",
+    ]
+
+    deps = [
+      "//base",
+      "//components/invalidation",
+      "//sync",
+    ]
+  }
+
+  test("sync_listen_notifications") {
+    sources = [
+      "sync_listen_notifications.cc",
+    ]
+
+    defines = [ "SYNC_TEST" ]
+
+    deps = [
+      ":common",
+      "//base",
+      "//components/invalidation",
+      "//jingle:notifier",
+      "//net",
+      "//net:test_support",
+      "//sync",
+      "//sync:test_support_sync_core",
+    ]
+  }
+
+  test("sync_client") {
+    sources = [
+      "sync_client.cc",
+    ]
+
+    defines = [ "SYNC_TEST" ]
+
+    deps = [
+      ":common",
+      "//base",
+      "//components/invalidation",
+      "//jingle:notifier",
+      "//net",
+      "//net:test_support",
+      "//sync",
+      "//sync:test_support_sync_core",
+    ]
+  }
+}

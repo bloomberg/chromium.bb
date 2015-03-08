@@ -376,3 +376,39 @@ executable("udp_proxy") {
     "//net",
   ]
 }
+
+if (is_linux && !is_chromeos) {
+  # TODO(GYP): Figure out which of these work and are needed on other platforms.
+  test("cast_benchmarks") {
+    sources = [
+      "test/cast_benchmarks.cc",
+      "test/fake_single_thread_task_runner.cc",
+      "test/fake_single_thread_task_runner.h",
+      "test/utility/test_util.cc",
+      "test/utility/test_util.h",
+    ]
+
+    deps = [
+      ":common",
+      ":net",
+      ":receiver",
+      ":sender",
+      ":test_support",
+      "//base/test:test_support",
+      "//net",
+      "//testing/gtest",
+    ]
+  }
+
+  test("tap_proxy") {
+    sources = [
+      "test/utility/tap_proxy.cc",
+    ]
+
+    deps = [
+      ":test_support",
+      "//base",
+      "//media",
+    ]
+  }
+}

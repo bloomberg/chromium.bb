@@ -846,6 +846,7 @@
       ],  # target_conditions
     },
     {
+      # GN: //base:base_perftests
       'target_name': 'base_perftests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -868,6 +869,7 @@
       ],
     },
     {
+      # GN: //base:base_i18n_perftests
       'target_name': 'base_i18n_perftests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -1075,6 +1077,7 @@
     ['OS!="ios"', {
       'targets': [
         {
+          # GN: //base:check_example
           'target_name': 'check_example',
           'type': 'executable',
           'sources': [

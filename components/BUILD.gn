@@ -304,3 +304,62 @@ repack("components_tests_pak") {
     "//ui/strings",
   ]
 }
+
+if (is_linux && !is_chromeos) {
+  # TODO(GYP): Figure out which of these work and are needed on other platforms.
+
+  # TODO(GYP): Finish me ...
+  # test("components_browsertests") {
+  #   sources = [
+  #     "autofill/content/browser/risk/fingerprint_browsertest.cc",
+  #     "autofill/content/renderer/password_form_conversion_utils_browsertest.cc",
+  #     "dom_distiller/content/distiller_page_web_contents_browsertest.cc",
+  #     "password_manager/content/renderer/credential_manager_client_browsertest.cc",
+  #   ]
+  #
+  #   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+  #
+  #   deps = [
+  #     "//components/resources:components_resources",
+  #     "//components/strings",
+  #     "//components/autofill/content/browser",
+  #     "//components/autofill/content/renderer",
+  #     "//components/dom_distiller/content",
+  #     "//components/dom_distiller/core",
+  #     "//components/password_manager/content/renderer",
+  #     "//testing/gmock",
+  #     "//testing/gtest",
+  #     "//content/public/common",
+  #     "//content/public/renderer",
+  #   ]
+  #
+  #   if (is_android) {
+  #     sources -= [
+  #     ]
+  #   }
+  #   if (is_linux) {
+  #     # content_extractor_browsertest is a standalone content extraction tool built as
+  #     # a MANUAL component_browsertest.
+  #     sources += [
+  #       "dom_distiller/standalone/content_extractor_browsertest.cc",
+  #     ]
+  #   }
+  # }
+
+  test("components_perftests") {
+    sources = [
+      "visitedlink/test/visitedlink_perftest.cc",
+    ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+    deps = [
+      "//base",
+      "//base/test:test_support_perf",
+      "//testing/gtest",
+      "//content/test:test_support",
+      "//components/visitedlink/browser",
+    ]
+  }
+}

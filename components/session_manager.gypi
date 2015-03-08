@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN: //components/session_manager/core
       'target_name': 'session_manager_component',
       'type': '<(component)',
       'dependencies': [

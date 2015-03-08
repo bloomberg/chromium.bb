@@ -81,8 +81,11 @@ static_library("cacheinvalidation") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   public_configs = [ ":cacheinvalidation_config" ]
 
-  deps = [
+  public_deps = [
     "src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
+  ]
+
+  deps = [
     "//base",
   ]
 }

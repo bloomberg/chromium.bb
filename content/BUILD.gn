@@ -80,3 +80,18 @@ source_set("export") {
     "content/common/content_export.h",
   ]
 }
+
+if (is_win) {
+  source_set("content_startup_helper_win") {
+    sources = [
+      "app/startup_helper_win.cc",
+      "public/app/startup_helper_win.h",
+    ]
+
+    deps = [
+      "//base",
+      "//base:i18n",
+      "//sandbox",
+    ]
+  }
+}
