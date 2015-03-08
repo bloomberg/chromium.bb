@@ -107,7 +107,7 @@ ResourceLoader* DocumentLoader::mainResourceLoader() const
 DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || !isLoading());
-    m_fetcher->clearContext();
+    static_cast<FrameFetchContext&>(m_fetcher->context()).clearDocumentLoader();
     clearMainResourceHandle();
     m_applicationCacheHost->dispose();
 }
