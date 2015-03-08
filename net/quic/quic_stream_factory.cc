@@ -550,7 +550,6 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
                             net_log, this);
   if (rv == ERR_IO_PENDING) {
     host_port_pair_ = host_port_pair;
-    is_https_ = is_https;
     net_log_ = net_log;
     callback_ = callback;
   } else {

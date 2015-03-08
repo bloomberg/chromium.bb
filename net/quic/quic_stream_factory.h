@@ -75,7 +75,6 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
  private:
   QuicStreamFactory* factory_;
   HostPortPair host_port_pair_;
-  bool is_https_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
   scoped_ptr<QuicHttpStream> stream_;
