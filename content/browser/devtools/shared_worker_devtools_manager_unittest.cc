@@ -71,7 +71,7 @@ class SharedWorkerDevToolsManagerTest : public testing::Test {
     const SharedWorkerDevToolsManager::WorkerId id(worker_process_id,
                                                      worker_route_id);
     SharedWorkerDevToolsManager::AgentHostMap::iterator it =
-        manager_->workers().find(id);
+        manager_->workers_.find(id);
     EXPECT_TRUE(manager_->workers_.end() != it);
     EXPECT_EQ(state, it->second->state_);
   }

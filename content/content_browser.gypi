@@ -545,8 +545,6 @@
       'browser/devtools/shared_worker_devtools_manager.h',
       'browser/devtools/worker_devtools_agent_host.cc',
       'browser/devtools/worker_devtools_agent_host.h',
-      'browser/devtools/worker_devtools_manager.cc',
-      'browser/devtools/worker_devtools_manager.h',
       'browser/dom_storage/dom_storage_area.cc',
       'browser/dom_storage/dom_storage_area.h',
       'browser/dom_storage/dom_storage_context_impl.cc',

@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_DEVTOOLS_WORKER_DEVTOOLS_AGENT_HOST_H_
 
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
-#include "content/browser/devtools/worker_devtools_manager.h"
 #include "ipc/ipc_listener.h"
 
 namespace content {
@@ -17,7 +16,7 @@ class SharedWorkerInstance;
 class WorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
                                 public IPC::Listener {
  public:
-  typedef WorkerDevToolsManager::WorkerId WorkerId;
+  typedef std::pair<int, int> WorkerId;
 
   // DevToolsAgentHost override.
   bool IsWorker() const override;

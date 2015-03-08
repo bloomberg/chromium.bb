@@ -4,7 +4,6 @@
 
 #include "content/browser/devtools/protocol/service_worker_handler.h"
 
-#include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 
 namespace content {

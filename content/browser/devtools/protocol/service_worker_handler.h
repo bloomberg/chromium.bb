@@ -8,7 +8,7 @@
 #include <set>
 
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
-#include "content/browser/devtools/worker_devtools_manager.h"
+#include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 
@@ -17,7 +17,7 @@ namespace devtools {
 namespace service_worker {
 
 class ServiceWorkerHandler : public DevToolsAgentHostClient,
-                             public WorkerDevToolsManager::Observer {
+                             public ServiceWorkerDevToolsManager::Observer {
  public:
   typedef DevToolsProtocolClient::Response Response;
 
