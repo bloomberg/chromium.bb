@@ -155,17 +155,17 @@ class Brick(object):
 
     self._WriteParents([m + ':base' for m in deps])
 
-  def Inherits(self, project_name):
-    """Checks whether this brick contains |project_name|.
+  def Inherits(self, brick_name):
+    """Checks whether this brick contains |brick_name|.
 
     Args:
-      project_name: The name of the project to check containment.
+      brick_name: The name of the brick to check containment.
 
     Returns:
-      Whether |project_name| is contained in this project.
+      Whether |brick_name| is contained in this brick.
     """
     return bool('name' in self.config and
-                _FindBrickInOverlays(project_name, self.config['name']))
+                _FindBrickInOverlays(brick_name, self.config['name']))
 
   def MainPackages(self):
     """Returns the brick's main package(s).
