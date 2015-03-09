@@ -100,6 +100,11 @@ public abstract class AwContentsClient {
         public String description;
     }
 
+    /**
+     * Allow default implementations in chromium code.
+     */
+    public abstract boolean hasWebViewClient();
+
     public abstract void getVisitedHistory(ValueCallback<String[]> callback);
 
     public abstract void doUpdateVisitedHistory(String url, boolean isReload);

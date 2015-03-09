@@ -4,10 +4,7 @@
 
 package com.android.webview.chromium;
 
-import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -18,7 +15,6 @@ import android.net.http.SslError;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Browser;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -55,7 +51,6 @@ import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 
 import java.lang.ref.WeakReference;
-import java.net.URISyntaxException;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -87,12 +82,14 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     private static final String TAG = "WebViewCallback";
     // Enables API callback tracing
     private static final boolean TRACE = false;
+    // Default WebViewClient used to avoid null checks.
+    private static WebViewClient sNullWebViewClient = new WebViewClient();
     // The WebView instance that this adapter is serving.
     private final WebView mWebView;
     // The Context to use. This is different from mWebView.getContext(), which should not be used.
     private final Context mContext;
     // The WebViewClient instance that was passed to WebView.setWebViewClient().
-    private WebViewClient mWebViewClient;
+    private WebViewClient mWebViewClient = sNullWebViewClient;
     // The WebChromeClient instance that was passed to WebView.setContentViewClient().
     private WebChromeClient mWebChromeClient;
     // The listener receiving find-in-page API results.
@@ -158,63 +155,11 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         };
     }
 
-    // WebViewClassic is coded in such a way that even if a null WebViewClient is set,
-    // certain actions take place.
-    // We choose to replicate this behavior by using a NullWebViewClient implementation (also known
-    // as the Null Object pattern) rather than duplicating the WebViewClassic approach in
-    // ContentView.
-    static class NullWebViewClient extends WebViewClient {
-        @Override
-        public boolean shouldOverrideKeyEvent(WebView view, KeyEvent event) {
-            // TODO: Investigate more and add a test case.
-            // This is reflecting Clank's behavior.
-            int keyCode = event.getKeyCode();
-            return !ContentViewClient.shouldPropagateKey(keyCode);
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            Intent intent;
-            // Perform generic parsing of the URI to turn it into an Intent.
-            try {
-                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-            } catch (URISyntaxException ex) {
-                Log.w(TAG, "Bad URI " + url + ": " + ex.getMessage());
-                return false;
-            }
-            // Sanitize the Intent, ensuring web pages can not bypass browser
-            // security (only access to BROWSABLE activities).
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
-            intent.setComponent(null);
-            Intent selector = intent.getSelector();
-            if (selector != null) {
-                selector.addCategory(Intent.CATEGORY_BROWSABLE);
-                selector.setComponent(null);
-            }
-            // Pass the package name as application ID so that the intent from the
-            // same application can be opened in the same tab.
-            intent.putExtra(Browser.EXTRA_APPLICATION_ID, view.getContext().getPackageName());
-
-            Context context = view.getContext();
-            if (!(context instanceof Activity)) {
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            }
-
-            try {
-                context.startActivity(intent);
-            } catch (ActivityNotFoundException ex) {
-                Log.w(TAG, "No application can handle " + url);
-                return false;
-            }
-            return true;
-        }
-    }
-
     void setWebViewClient(WebViewClient client) {
         if (client != null) {
             mWebViewClient = client;
         } else {
-            mWebViewClient = new NullWebViewClient();
+            mWebViewClient = sNullWebViewClient;
         }
     }
 
@@ -239,7 +184,15 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     //--------------------------------------------------------------------------------------------
 
     /**
-     * @see AwContentsClient#getVisitedHistory
+     * @see AwContentsClient#hasWebViewClient.
+     */
+    @Override
+    public boolean hasWebViewClient() {
+        return mWebViewClient != sNullWebViewClient;
+    }
+
+    /**
+     * @see AwContentsClient#getVisitedHistory.
      */
     @Override
     public void getVisitedHistory(ValueCallback<String[]> callback) {
@@ -644,33 +597,10 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     public boolean shouldOverrideKeyEvent(KeyEvent event) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.shouldOverrideKeyEvent");
-            // The check below is reflecting Clank's behavior and is a workaround for
-            // http://b/7697782.
-            // 1. The check for system key should be made in AwContents or ContentViewCore, before
-            //    shouldOverrideKeyEvent() is called at all.
-            // 2. shouldOverrideKeyEvent() should be called in onKeyDown/onKeyUp, not from
-            //    dispatchKeyEvent().
-            if (!ContentViewClient.shouldPropagateKey(event.getKeyCode())) return true;
             if (TRACE) Log.d(TAG, "shouldOverrideKeyEvent");
-            boolean result = mWebViewClient.shouldOverrideKeyEvent(mWebView, event);
-            return result;
+            return mWebViewClient.shouldOverrideKeyEvent(mWebView, event);
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.shouldOverrideKeyEvent");
-        }
-    }
-
-    /**
-     * @see ContentViewClient#onStartContentIntent(Context, String)
-     * Callback when detecting a click on a content link.
-     */
-    // TODO: Delete this method when removed from base class.
-    public void onStartContentIntent(Context context, String contentUrl) {
-        try {
-            TraceEvent.begin("WebViewContentsClientAdapter.onStartContentIntent");
-            if (TRACE) Log.d(TAG, "shouldOverrideUrlLoading=" + contentUrl);
-            mWebViewClient.shouldOverrideUrlLoading(mWebView, contentUrl);
-        } finally {
-            TraceEvent.end("WebViewContentsClientAdapter.onStartContentIntent");
         }
     }
 

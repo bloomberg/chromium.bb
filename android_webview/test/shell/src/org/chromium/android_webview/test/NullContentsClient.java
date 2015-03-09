@@ -45,6 +45,11 @@ public class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public boolean hasWebViewClient() {
+        return true;
+    }
+
+    @Override
     public boolean shouldOverrideUrlLoading(String url) {
         return false;
     }
