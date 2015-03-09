@@ -146,8 +146,8 @@ class EBuildTest(cros_test_lib.MoxTestCase):
 class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
   """Project and Path related tests."""
 
-  def _MockParseWorkonVariables(self, fake_projects, _fake_localname,
-                                _fake_subdir, fake_ebuild_contents):
+  def _MockParseWorkonVariables(self, fake_projects, fake_localnames,
+                                fake_subdirs, fake_ebuild_contents):
     """Mock the necessary calls, start Replay mode, call GetSourcePath()."""
     self.mox.StubOutWithMock(os.path, 'isdir')
     self.mox.StubOutWithMock(MANIFEST, 'FindCheckoutFromPath')
@@ -156,10 +156,11 @@ class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
     ebuild_path = os.path.join(self.tempdir, 'chromeos-base', 'package',
                                'package-9999.ebuild')
     osutils.WriteFile(ebuild_path, fake_ebuild_contents, makedirs=True)
-    for p in fake_projects:
-      os.path.isdir(mox.IgnoreArg()).AndReturn(False)
-    for p in fake_projects:
-      os.path.isdir(mox.IgnoreArg()).AndReturn(True)
+    for p, l, s in zip(fake_projects, fake_localnames, fake_subdirs):
+      os.path.isdir(os.path.join(self.tempdir, l, s)).InAnyOrder(
+          'isdir').AndReturn(False)
+      os.path.isdir(os.path.join(self.tempdir, 'platform', l, s)).InAnyOrder(
+          'isdir').AndReturn(True)
       MANIFEST.FindCheckoutFromPath(mox.IgnoreArg()).AndReturn({'name': p})
     self.mox.ReplayAll()
 
@@ -187,8 +188,8 @@ CROS_WORKON_SUBDIR=%s
   def testParseArrayWorkonVariables(self):
     """Tests if ebuilds in an array format are correctly parsed."""
     fake_projects = ['my_project1', 'my_project2', 'my_project3']
-    fake_localname = ['foo', 'bar', 'bas']
-    fake_subdir = ['sub1', 'sub2', 'sub3']
+    fake_localnames = ['foo', 'bar', 'bas']
+    fake_subdirs = ['sub1', 'sub2', 'sub3']
     # The test content is formatted using the same function that
     # formats ebuild output, ensuring that we can parse our own
     # products.
@@ -197,16 +198,18 @@ CROS_WORKON_PROJECT=%s
 CROS_WORKON_LOCALNAME=%s
 CROS_WORKON_SUBDIR=%s
     """ % (portage_util.EBuild.FormatBashArray(fake_projects),
-           portage_util.EBuild.FormatBashArray(fake_localname),
-           portage_util.EBuild.FormatBashArray(fake_subdir))
-    project, subdir = self._MockParseWorkonVariables(
-        fake_projects, fake_localname, fake_subdir, fake_ebuild_contents)
-    self.assertEquals(project, fake_projects)
-    fake_path = ['%s/%s' % (fake_localname[i], fake_subdir[i])
-                 for i in range(0, len(fake_projects))]
-    fake_path = [os.path.realpath(os.path.join(self.tempdir, 'platform', x))
-                 for x in fake_path]
-    self.assertEquals(subdir, fake_path)
+           portage_util.EBuild.FormatBashArray(fake_localnames),
+           portage_util.EBuild.FormatBashArray(fake_subdirs))
+    projects, subdirs = self._MockParseWorkonVariables(
+        fake_projects, fake_localnames, fake_subdirs, fake_ebuild_contents)
+    self.assertEquals(projects, fake_projects)
+    fake_paths = [
+        os.path.realpath(os.path.join(
+            self.tempdir, 'platform',
+            '%s/%s' % (fake_localnames[i], fake_subdirs[i])))
+        for i in range(0, len(fake_projects))
+    ]
+    self.assertEquals(subdirs, fake_paths)
 
 
 class StubEBuild(portage_util.EBuild):
