@@ -14097,6 +14097,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Memory.DiscardableAllocationSize" units="KB">
+  <owner>reveman@chromium.org</owner>
+  <summary>
+    The discardable memory allocation size in KB. Recorded each time a new
+    discardable memory instance is created.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Extension" units="KB">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>

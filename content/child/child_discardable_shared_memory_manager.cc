@@ -6,6 +6,7 @@
 
 #include "base/debug/crash_logging.h"
 #include "base/memory/discardable_shared_memory.h"
+#include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -65,6 +66,12 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   base::AutoLock lock(lock_);
 
   DCHECK_NE(size, 0u);
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.DiscardableAllocationSize",
+                              size / 1024,  // In KB
+                              1,
+                              4 * 1024 * 1024,  // 4 GB
+                              50);
 
   // Round up to multiple of page size.
   size_t pages = (size + base::GetPageSize() - 1) / base::GetPageSize();
