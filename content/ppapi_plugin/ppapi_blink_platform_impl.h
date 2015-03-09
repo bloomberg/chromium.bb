@@ -50,8 +50,10 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
                                  bool sync_dir);
 
  private:
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
   class SandboxSupport;
   scoped_ptr<SandboxSupport> sandbox_support_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PpapiBlinkPlatformImpl);
 };

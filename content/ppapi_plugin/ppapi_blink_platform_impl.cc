@@ -16,13 +16,9 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-#if defined(OS_WIN)
-#include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
-#elif defined(OS_ANDROID)
-#include "third_party/WebKit/public/platform/android/WebSandboxSupport.h"
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 #include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"
 #include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
@@ -38,16 +34,14 @@ typedef struct CGFont* CGFontRef;
 
 namespace content {
 
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
+
 class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
 
-#if defined(OS_WIN)
-  virtual bool ensureFontLoaded(HFONT);
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   virtual bool loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
-#elif defined(OS_ANDROID)
-  // Empty class.
 #elif defined(OS_POSIX)
   SandboxSupport();
   virtual void getFallbackFontForCharacter(
@@ -68,19 +62,7 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
 #endif
 };
 
-#if defined(OS_WIN)
-
-bool PpapiBlinkPlatformImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
-  LOGFONT logfont;
-  GetObject(font, sizeof(LOGFONT), &logfont);
-
-  // Use the proxy sender rather than going directly to the ChildThread since
-  // the proxy browser sender will properly unlock during sync messages.
-  return ppapi::proxy::PluginGlobals::Get()->GetBrowserSender()->Send(
-      new ChildProcessHostMsg_PreCacheFont(logfont));
-}
-
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 
 bool PpapiBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
                                                       CGFontRef* out,
@@ -91,10 +73,6 @@ bool PpapiBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
   NOTIMPLEMENTED();
   return false;
 }
-
-#elif defined(OS_ANDROID)
-
-// Empty class.
 
 #elif defined(OS_POSIX)
 
@@ -134,18 +112,24 @@ void PpapiBlinkPlatformImpl::SandboxSupport::getRenderStyleForStrike(
 
 #endif
 
-PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl()
-    : sandbox_support_(new PpapiBlinkPlatformImpl::SandboxSupport()) {
+#endif  // !defined(OS_ANDROID) && !defined(OS_WIN)
+
+PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
+  sandbox_support_.reset(new PpapiBlinkPlatformImpl::SandboxSupport);
+#endif
 }
 
 PpapiBlinkPlatformImpl::~PpapiBlinkPlatformImpl() {
 }
 
 void PpapiBlinkPlatformImpl::Shutdown() {
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
   // SandboxSupport contains a map of WebFontFamily objects, which hold
   // WebCStrings, which become invalidated when blink is shut down. Hence, we
   // need to clear that map now, just before blink::shutdown() is called.
   sandbox_support_.reset();
+#endif
 }
 
 blink::WebClipboard* PpapiBlinkPlatformImpl::clipboard() {
@@ -164,7 +148,11 @@ blink::WebFileUtilities* PpapiBlinkPlatformImpl::fileUtilities() {
 }
 
 blink::WebSandboxSupport* PpapiBlinkPlatformImpl::sandboxSupport() {
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
   return sandbox_support_.get();
+#else
+  return nullptr;
+#endif
 }
 
 bool PpapiBlinkPlatformImpl::sandboxEnabled() {

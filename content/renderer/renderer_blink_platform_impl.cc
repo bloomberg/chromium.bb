@@ -111,7 +111,6 @@
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
-#include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
 #endif
 
 #if defined(USE_AURA)
@@ -188,19 +187,13 @@ class RendererBlinkPlatformImpl::FileUtilities : public WebFileUtilitiesImpl {
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 };
 
-#if defined(OS_ANDROID)
-// WebKit doesn't use WebSandboxSupport on android so we don't need to
-// implement anything here.
-class RendererBlinkPlatformImpl::SandboxSupport {};
-#else
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
 class RendererBlinkPlatformImpl::SandboxSupport
     : public blink::WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
 
-#if defined(OS_WIN)
-  virtual bool ensureFontLoaded(HFONT);
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   virtual bool loadFont(
       NSFont* src_font,
       CGFontRef* container,
@@ -221,7 +214,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
   std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
 #endif
 };
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_WIN)
 
 //------------------------------------------------------------------------------
 
@@ -237,11 +230,13 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       plugin_refresh_allowed_(true),
       default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
   } else {
     DVLOG(1) << "Disabling sandbox support for testing.";
   }
+#endif
 
   // ChildThread may not exist in some tests.
   if (ChildThreadImpl::current()) {
@@ -292,8 +287,8 @@ blink::WebFileUtilities* RendererBlinkPlatformImpl::fileUtilities() {
 }
 
 blink::WebSandboxSupport* RendererBlinkPlatformImpl::sandboxSupport() {
-#if defined(OS_ANDROID)
-  // WebKit doesn't use WebSandboxSupport on android.
+#if defined(OS_ANDROID) || defined(OS_WIN)
+  // These platforms do not require sandbox support.
   return NULL;
 #else
   return sandbox_support_.get();
@@ -519,16 +514,7 @@ bool RendererBlinkPlatformImpl::FileUtilities::SendSyncMessageFromAnyThread(
 
 //------------------------------------------------------------------------------
 
-#if defined(OS_WIN)
-
-bool RendererBlinkPlatformImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
-  LOGFONT logfont;
-  GetObject(font, sizeof(LOGFONT), &logfont);
-  RenderThread::Get()->PreCacheFont(logfont);
-  return true;
-}
-
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 
 bool RendererBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
                                                          CGFontRef* out,
@@ -559,13 +545,7 @@ bool RendererBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
   return FontLoader::CGFontRefFromBuffer(font_data, font_data_size, out);
 }
 
-#elif defined(OS_ANDROID)
-
-// WebKit doesn't use WebSandboxSupport on android so we don't need to
-// implement anything here. This is cleaner to support than excluding the
-// whole class for android.
-
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 
 void RendererBlinkPlatformImpl::SandboxSupport::getFallbackFontForCharacter(
     blink::WebUChar32 character,

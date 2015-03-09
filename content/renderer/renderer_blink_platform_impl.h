@@ -215,8 +215,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   class MimeRegistry;
   scoped_ptr<MimeRegistry> mime_registry_;
 
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
   class SandboxSupport;
   scoped_ptr<SandboxSupport> sandbox_support_;
+#endif
 
   // This counter keeps track of the number of times sudden termination is
   // enabled or disabled. It starts at 0 (enabled) and for every disable
