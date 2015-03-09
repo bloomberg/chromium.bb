@@ -25,8 +25,7 @@ public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
         if (isEnabled()) {
             CronetLibraryLoader.ensureInitialized(context, config);
             mRequestContext = new ChromiumUrlRequestContext(
-                    context.getApplicationContext(), UserAgent.from(context),
-                    config.toString());
+                    context, UserAgent.from(context), config.toString());
         }
     }
 

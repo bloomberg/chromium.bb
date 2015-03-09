@@ -44,7 +44,7 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
         CronetLibraryLoader.ensureInitialized(context, config);
         nativeSetMinLogLevel(getLoggingLevel());
         mUrlRequestContextAdapter = nativeCreateRequestContextAdapter(
-                context, config.toString());
+                context.getApplicationContext(), config.toString());
         if (mUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed.");
         }
@@ -195,8 +195,7 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
     }
 
     // Native methods are implemented in cronet_url_request_context.cc.
-    private static native long nativeCreateRequestContextAdapter(
-            Context context, String config);
+    private static native long nativeCreateRequestContextAdapter(Context appContext, String config);
 
     private static native int nativeSetMinLogLevel(int loggingLevel);
 

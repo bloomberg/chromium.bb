@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.content.ContextWrapper;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
@@ -127,5 +128,25 @@ public class ContextInitTest extends CronetTestBase {
                 url, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         request.start();
         return listener;
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testInitDifferentContexts() throws Exception {
+        // Test that concurrently instantiating ChromiumUrlRequestContext's upon
+        // various different versions of the same Android Context does not cause
+        // crashes like crbug.com/453845
+        final CronetTestActivity activity = launchCronetTestApp();
+        HttpUrlRequestFactory firstFactory =
+                HttpUrlRequestFactory.createFactory(activity, activity.getContextConfig());
+        HttpUrlRequestFactory secondFactory = HttpUrlRequestFactory.createFactory(
+                activity.getApplicationContext(), activity.getContextConfig());
+        HttpUrlRequestFactory thirdFactory = HttpUrlRequestFactory.createFactory(
+                new ContextWrapper(activity), activity.getContextConfig());
+        // Meager attempt to extend lifetimes to ensure they're concurrently
+        // alive.
+        firstFactory.getName();
+        secondFactory.getName();
+        thirdFactory.getName();
     }
 }

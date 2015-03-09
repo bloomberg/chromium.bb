@@ -75,8 +75,7 @@ public class CronetTestActivity extends Activity {
         }
 
         mUrlRequestContext = initRequestContext();
-        mStreamHandlerFactory = new CronetURLStreamHandlerFactory(
-                getApplicationContext(), getContextConfig());
+        mStreamHandlerFactory = new CronetURLStreamHandlerFactory(this, getContextConfig());
         mHistogramManager = HistogramManager.createHistogramManager();
 
         if (LIBRARY_INIT_CRONET_ONLY.equals(initString)) {
@@ -117,12 +116,12 @@ public class CronetTestActivity extends Activity {
 
     // Helper function to initialize request context. Also used in testing.
     public UrlRequestContext initRequestContext() {
-        return UrlRequestContext.createContext(getApplicationContext(), getContextConfig());
+        return UrlRequestContext.createContext(this, getContextConfig());
     }
 
     // Helper function to initialize request factory. Also used in testing.
     public HttpUrlRequestFactory initRequestFactory() {
-        return HttpUrlRequestFactory.createFactory(getApplicationContext(), getContextConfig());
+        return HttpUrlRequestFactory.createFactory(this, getContextConfig());
     }
 
     private static String getUrlFromIntent(Intent intent) {

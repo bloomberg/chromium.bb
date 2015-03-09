@@ -102,8 +102,7 @@ public class CronetSampleActivity extends Activity {
             }
         }
 
-        mRequestFactory = HttpUrlRequestFactory.createFactory(
-                getApplicationContext(), config);
+        mRequestFactory = HttpUrlRequestFactory.createFactory(this, config);
 
         String appUrl = getUrlFromIntent(getIntent());
         if (appUrl == null) {
@@ -192,8 +191,7 @@ public class CronetSampleActivity extends Activity {
 
     public void startNetLog() {
         mRequestFactory.startNetLogToFile(
-                Environment.getExternalStorageDirectory().getPath() +
-                        "/cronet_sample_netlog.json");
+                Environment.getExternalStorageDirectory().getPath() + "/cronet_sample_netlog.json");
     }
 
     public void stopNetLog() {

@@ -87,10 +87,11 @@ void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
   }
 }
 
-void CronetInitOnMainThread(JNIEnv* env, jclass jcaller, jobject jcontext) {
+void CronetInitOnMainThread(JNIEnv* env, jclass jcaller, jobject japp_context) {
   // Set application context.
-  base::android::ScopedJavaLocalRef<jobject> scoped_context(env, jcontext);
-  base::android::InitApplicationContext(env, scoped_context);
+  base::android::ScopedJavaLocalRef<jobject> scoped_app_context(env,
+                                                                japp_context);
+  base::android::InitApplicationContext(env, scoped_app_context);
 
 #if !defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
   base::i18n::InitializeICU();

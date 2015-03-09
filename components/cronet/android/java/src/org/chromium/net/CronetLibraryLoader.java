@@ -62,9 +62,9 @@ class CronetLibraryLoader {
         // NetworkChangeNotifierAndroid is created, so as to avoid receiving
         // the undesired initial network change observer notification, which
         // will cause active requests to fail with ERR_NETWORK_CHANGED.
-        nativeCronetInitOnMainThread(context);
+        nativeCronetInitOnMainThread(context.getApplicationContext());
     }
 
     // Native methods are implemented in cronet_loader.cc.
-    private static native void nativeCronetInitOnMainThread(Context context);
+    private static native void nativeCronetInitOnMainThread(Context appContext);
 }

@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.content.ContextWrapper;
 import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
@@ -518,8 +519,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Shutdown original context and create another that uses the same cache.
         mActivity.mUrlRequestContext.shutdown();
         mActivity.mUrlRequestContext = mActivity.mUrlRequestContext.createContext(
-                getInstrumentation().getTargetContext().getApplicationContext(),
-                config);
+                getInstrumentation().getTargetContext(), config);
         checkRequestCaching(url, true);
     }
 
@@ -593,5 +593,23 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         thread2.join();
         assertEquals(200, thread1.mListener.mResponseInfo.getHttpStatusCode());
         assertEquals(404, thread2.mListener.mResponseInfo.getHttpStatusCode());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testInitDifferentContexts() throws Exception {
+        // Test that concurrently instantiating Cronet context's upon various
+        // different versions of the same Android Context does not cause crashes
+        // like crbug.com/453845
+        mActivity = launchCronetTestApp();
+        CronetUrlRequestContext firstContext =
+                new CronetUrlRequestContext(mActivity, mActivity.getContextConfig());
+        CronetUrlRequestContext secondContext = new CronetUrlRequestContext(
+                mActivity.getApplicationContext(), mActivity.getContextConfig());
+        CronetUrlRequestContext thirdContext = new CronetUrlRequestContext(
+                new ContextWrapper(mActivity), mActivity.getContextConfig());
+        firstContext.shutdown();
+        secondContext.shutdown();
+        thirdContext.shutdown();
     }
 }

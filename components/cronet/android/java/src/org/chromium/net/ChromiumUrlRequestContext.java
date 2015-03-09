@@ -34,7 +34,7 @@ public class ChromiumUrlRequestContext {
     protected ChromiumUrlRequestContext(final Context context, String userAgent,
             String config) {
         mChromiumUrlRequestContextAdapter = nativeCreateRequestContextAdapter(
-                context, userAgent, getLoggingLevel(), config);
+                context.getApplicationContext(), userAgent, getLoggingLevel(), config);
         if (mChromiumUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed");
         }
@@ -134,8 +134,8 @@ public class ChromiumUrlRequestContext {
 
     // Returns an instance ChromiumUrlRequestContextAdapter to be stored in
     // mChromiumUrlRequestContextAdapter.
-    private native long nativeCreateRequestContextAdapter(Context context,
-            String userAgent, int loggingLevel, String config);
+    private native long nativeCreateRequestContextAdapter(
+            Context appContext, String userAgent, int loggingLevel, String config);
 
     private native void nativeReleaseRequestContextAdapter(
             long chromiumUrlRequestContextAdapter);
