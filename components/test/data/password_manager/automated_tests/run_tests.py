@@ -205,7 +205,6 @@ def _apply_defaults(config, defaults):
 def run_tests(config_path):
   """ Runs automated tests. """
   environment = Environment("", "", "", None, False)
-  tests.Tests(environment)
   defaults = { ("output", "save-path"): "/dev/null",
                ("run_options", "tests_in_parallel"): "1",
                ("run_options", "write_to_sheet"): "false" }
@@ -223,11 +222,12 @@ def run_tests(config_path):
      "--chromedriver-path", config.get("binaries", "chromedriver-path"),
      "--passwords-path", config.get("data_files", "passwords_path")]
   runners = []
-  tests_to_run = [test.name for test in environment.websitetests]
   if config.has_option("run_options", "tests_to_run"):
     user_selected_tests = config.get("run_options", "tests_to_run").split(',')
-    # TODO((dvadym) Validate the user selected tests are available.
-    tests_to_run = list(set(tests_to_run) & set(user_selected_tests))
+    tests_to_run = user_selected_tests
+  else:
+    tests.Tests(environment)
+    tests_to_run = [test.name for test in environment.websitetests]
 
   with open(config.get("output", "save-path"), 'w') as savefile:
     print "Tests to run %d\nTests: %s" % (len(tests_to_run), tests_to_run)

@@ -15,6 +15,7 @@ from websitetest import WebsiteTest
 class TypeOfTestedWebsites:
   """An enum to specify which groups of tests to run."""
   # Runs only the disabled tests.
+  # TODO(vabr): Remove this option.
   DISABLED_TESTS = 0
   # Runs only the enabled tests.
   ENABLED_TESTS = 1
@@ -264,68 +265,53 @@ class Vube(WebsiteTest):
       self.Wait(1)
 
 
-def Tests(environment):
+def Tests(environment, tests_to_run=None):
 
+  working_tests = {
+    "facebook": Facebook("facebook"),
+    "google": Google("google"),
+    "linkedin": Linkedin("linkedin"),
+    "mailru": Mailru("mailru"),
+    "nytimes": Nytimes("nytimes"),
+    "odnoklassniki": Odnoklassniki("odnoklassniki"),
+    "pinterest": Pinterest("pinterest"),
+    "reddit": Reddit("reddit", username_not_auto=True),
+    "tumblr": Tumblr("tumblr", username_not_auto=True),
+    "twitter": Twitter("twitter"),
+    "wikipedia": Wikipedia("wikipedia", username_not_auto=True),
+    "yahoo": Yahoo("yahoo", username_not_auto=True),
+    "yandex": Yandex("yandex")
+  }
 
-  # Working tests.
+  disabled_tests = {
+    "amazon": Amazon("amazon"), # Bug not reproducible without test.
+    "ask": Ask("ask"), # Password not saved.
+    "baidu": Baidu("baidu"), # Password not saved.
+    "cnn": Cnn("cnn"), # http://crbug.com/368690
+    "ebay": Ebay("ebay"), # http://crbug.com/368690
+    "espn": Espn("espn"), # Iframe, password saved but not autofileld.
+    "live": Live("live", username_not_auto=True),  # http://crbug.com/367768
+    "163": One63("163"), # http://crbug.com/368690
+    "vube": Vube("vube"), # http://crbug.com/368690
+  }
 
+  if tests_to_run:
+    for test in tests_to_run:
+      if (test not in working_tests.keys() and
+          test not in disabled_tests.keys()):
+        print "Skip test: test {} is not in known tests".format(test)
+        continue
+      if test in working_tests.keys():
+        test_class = working_tests[test]
+      else:
+        test_class = disabled_tests[test]
+      environment.AddWebsiteTest(test_class)
+  else:
+    for _, test in working_tests:
+      environment.AddWebsiteTest(test)
+    for _, test in disabled_tests:
+      environment.AddWebsiteTest(test, disabled=True)
 
-  environment.AddWebsiteTest(Facebook("facebook"))
-
-  environment.AddWebsiteTest(Google("google"))
-
-  environment.AddWebsiteTest(Linkedin("linkedin"))
-
-  environment.AddWebsiteTest(Mailru("mailru"))
-
-  environment.AddWebsiteTest(Nytimes("nytimes"))
-
-  environment.AddWebsiteTest(Odnoklassniki("odnoklassniki"))
-
-  environment.AddWebsiteTest(Pinterest("pinterest"))
-
-  environment.AddWebsiteTest(Reddit("reddit", username_not_auto=True))
-
-  environment.AddWebsiteTest(Tumblr("tumblr", username_not_auto=True))
-
-  environment.AddWebsiteTest(Twitter("twitter"))
-
-  environment.AddWebsiteTest(Wikipedia("wikipedia", username_not_auto=True))
-
-  environment.AddWebsiteTest(Yahoo("yahoo", username_not_auto=True))
-
-  environment.AddWebsiteTest(Yandex("yandex"))
-
-  # Disabled tests.
-
-
-  # Bug not reproducible without test.
-  environment.AddWebsiteTest(Amazon("amazon"), disabled=True)
-
-  # Password not saved.
-  environment.AddWebsiteTest(Ask("ask"), disabled=True)
-
-  # Password not saved.
-  environment.AddWebsiteTest(Baidu("baidu"), disabled=True)
-
-  # http://crbug.com/368690
-  environment.AddWebsiteTest(Cnn("cnn"), disabled=True)
-
-  # http://crbug.com/368690
-  environment.AddWebsiteTest(Ebay("ebay"), disabled=True)
-
-  # Iframe, password saved but not autofileld.
-  environment.AddWebsiteTest(Espn("espn"), disabled=True)
-
-  # http://crbug.com/367768
-  environment.AddWebsiteTest(Live("live", username_not_auto=True),
-                             disabled=True)
-
-  # http://crbug.com/368690
-  environment.AddWebsiteTest(One63("163"), disabled=True)
-
-  # http://crbug.com/368690
-  environment.AddWebsiteTest(Vube("vube"), disabled=True)
 
 def saveResults(environment_tests_results, environment_save_path):
   """Save the test results in an xml file.
@@ -388,7 +374,7 @@ def RunTests(chrome_path, chromedriver_path, profile_path,
   # to be shown. Automatic password saving results in no prompt.
   run_prompt_tests = not enable_automatic_password_saving
 
-  Tests(environment)
+  Tests(environment, tests)
 
   if environment_tested_websites == TypeOfTestedWebsites.ALL_TESTS:
     environment.AllTests(run_prompt_tests)
