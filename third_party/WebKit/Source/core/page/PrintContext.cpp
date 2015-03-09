@@ -268,7 +268,7 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
         if (!renderer)
             continue;
         KURL url = entry.value;
-        IntRect boundingBox = renderer->absoluteBoundingBoxRect();
+        IntRect boundingBox = renderer->absoluteFocusRingBoundingBoxRect();
         if (!pageRect.intersects(boundingBox))
             continue;
         if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, renderer->document().baseURL())) {

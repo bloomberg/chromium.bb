@@ -90,11 +90,11 @@ protected:
         printContext().end();
     }
 
-    static String htmlForLink(int x, int y, int width, int height, const char* url)
+    static String htmlForLink(int x, int y, int width, int height, const char* url, const char* children = nullptr)
     {
         TextStream ts;
         ts << "<a style='position: absolute; left: " << x << "px; top: " << y << "px; width: " << width << "px; height: " << height
-            << "px' href='" << url << "'>" << url << "</a>";
+            << "px' href='" << url << "'>" << (children ? children : url) << "</a>";
         return ts.release();
     }
 
@@ -186,6 +186,18 @@ TEST_F(PrintContextTest, LinkedTarget)
     size_t secondIndex = firstIndex == 0 ? 1 : 0;
     EXPECT_EQ(MockCanvas::DrawPoint, operations[secondIndex].type);
     EXPECT_SKRECT_EQ(250, 260, 0, 0, operations[secondIndex].rect);
+}
+
+TEST_F(PrintContextTest, LinkTargetBoundingBox)
+{
+    MockCanvas canvas;
+    setBodyInnerHTML(htmlForLink(50, 60, 70, 20, "http://www.google.com", "<img style='width: 200px; height: 100px'>"));
+    printSinglePage(canvas);
+
+    const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+    ASSERT_EQ(1u, operations.size());
+    EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+    EXPECT_SKRECT_EQ(50, 60, 200, 100, operations[0].rect);
 }
 
 TEST_F(PrintContextFrameTest, WithSubframe)
