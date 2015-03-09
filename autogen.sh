@@ -1,6 +1,14 @@
 #! /bin/sh
 
-test -n "$srcdir" || srcdir=`dirname "$0"`
-test -n "$srcdir" || srcdir=.
-autoreconf --force --install --verbose "$srcdir"
-test -n "$NOCONFIGURE" || "$srcdir/configure" "$@"
+srcdir=`dirname "$0"`
+test -z "$srcdir" && srcdir=.
+
+ORIGDIR=`pwd`
+cd "$srcdir"
+
+autoreconf --force --verbose --install || exit 1
+cd "$ORIGDIR" || exit $?
+
+if test -z "$NOCONFIGURE"; then
+    "$srcdir"/configure "$@"
+fi
