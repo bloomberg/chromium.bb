@@ -102,6 +102,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       config_(config),
       max_open_streams_(config_.MaxStreamsPerConnection()),
       next_stream_id_(is_server() ? 2 : 5),
+      write_blocked_streams_(true),
       largest_peer_created_stream_id_(0),
       error_(QUIC_NO_ERROR),
       flow_controller_(new QuicFlowController(

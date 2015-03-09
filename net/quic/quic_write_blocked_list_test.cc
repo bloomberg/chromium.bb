@@ -12,7 +12,7 @@ namespace test {
 namespace {
 
 TEST(QuicWriteBlockedListTest, PriorityOrder) {
-  QuicWriteBlockedList write_blocked_list;
+  QuicWriteBlockedList write_blocked_list(true);
 
   // Mark streams blocked in roughly reverse priority order, and
   // verify that streams are sorted.
@@ -46,7 +46,7 @@ TEST(QuicWriteBlockedListTest, PriorityOrder) {
 }
 
 TEST(QuicWriteBlockedListTest, CryptoStream) {
-  QuicWriteBlockedList write_blocked_list;
+  QuicWriteBlockedList write_blocked_list(true);
   write_blocked_list.PushBack(kCryptoStreamId,
                               QuicWriteBlockedList::kHighestPriority);
 
@@ -58,7 +58,7 @@ TEST(QuicWriteBlockedListTest, CryptoStream) {
 }
 
 TEST(QuicWriteBlockedListTest, HeadersStream) {
-  QuicWriteBlockedList write_blocked_list;
+  QuicWriteBlockedList write_blocked_list(true);
   write_blocked_list.PushBack(kHeadersStreamId,
                               QuicWriteBlockedList::kHighestPriority);
 
@@ -70,7 +70,7 @@ TEST(QuicWriteBlockedListTest, HeadersStream) {
 }
 
 TEST(QuicWriteBlockedListTest, VerifyHeadersStream) {
-  QuicWriteBlockedList write_blocked_list;
+  QuicWriteBlockedList write_blocked_list(true);
   write_blocked_list.PushBack(5,
                               QuicWriteBlockedList::kHighestPriority);
   write_blocked_list.PushBack(kHeadersStreamId,
@@ -90,7 +90,7 @@ TEST(QuicWriteBlockedListTest, VerifyHeadersStream) {
 
 TEST(QuicWriteBlockedListTest, NoDuplicateEntries) {
   // Test that QuicWriteBlockedList doesn't allow duplicate entries.
-  QuicWriteBlockedList write_blocked_list;
+  QuicWriteBlockedList write_blocked_list(true);
 
   // Try to add a stream to the write blocked list multiple times at the same
   // priority.
