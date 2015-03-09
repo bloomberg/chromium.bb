@@ -12,7 +12,6 @@ WebUIInjectionHost::WebUIInjectionHost(const HostID& host_id)
 WebUIInjectionHost::~WebUIInjectionHost() {
 }
 
-
 std::string WebUIInjectionHost::GetContentSecurityPolicy() const {
   return std::string();
 }

@@ -527,6 +527,7 @@
       'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
       'browser/ui/webui/web_ui_test_handler.cc',
       'browser/ui/webui/web_ui_test_handler.h',
+      'browser/ui/webui/webui_webview_browsertest.cc',
       'browser/ui/zoom/zoom_controller_browsertest.cc',
       'browser/unload_browsertest.cc',
       'common/mac/app_mode_chrome_locator_browsertest.mm',

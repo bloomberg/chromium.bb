@@ -38,7 +38,7 @@ class Handler : public content::WebContentsObserver {
           const ScriptExecutor::ExecuteScriptCallback& callback)
       : content::WebContentsObserver(web_contents),
         script_observers_(AsWeakPtr(script_observers)),
-        extension_id_(params.extension_id),
+        host_id_(params.host_id),
         request_id_(params.request_id),
         callback_(callback) {
     content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
@@ -78,9 +78,10 @@ class Handler : public content::WebContentsObserver {
                              const std::string& error,
                              const GURL& on_url,
                              const base::ListValue& script_result) {
-    if (script_observers_.get() && error.empty()) {
+    if (script_observers_.get() && error.empty() &&
+        host_id_.type() == HostID::EXTENSIONS) {
       ScriptExecutionObserver::ExecutingScriptsMap id_map;
-      id_map[extension_id_] = std::set<std::string>();
+      id_map[host_id_.id()] = std::set<std::string>();
       FOR_EACH_OBSERVER(ScriptExecutionObserver,
                         *script_observers_,
                         OnScriptsExecuted(web_contents(), id_map, on_url));
@@ -91,7 +92,7 @@ class Handler : public content::WebContentsObserver {
   }
 
   base::WeakPtr<ObserverList<ScriptExecutionObserver> > script_observers_;
-  std::string extension_id_;
+  HostID host_id_;
   int request_id_;
   ScriptExecutor::ExecuteScriptCallback callback_;
 };
@@ -113,7 +114,7 @@ ScriptExecutor::ScriptExecutor(
 ScriptExecutor::~ScriptExecutor() {
 }
 
-void ScriptExecutor::ExecuteScript(const std::string& extension_id,
+void ScriptExecutor::ExecuteScript(const HostID& host_id,
                                    ScriptExecutor::ScriptType script_type,
                                    const std::string& code,
                                    ScriptExecutor::FrameScope frame_scope,
@@ -126,16 +127,20 @@ void ScriptExecutor::ExecuteScript(const std::string& extension_id,
                                    bool user_gesture,
                                    ScriptExecutor::ResultType result_type,
                                    const ExecuteScriptCallback& callback) {
-  // Don't execute if the extension has been unloaded.
-  const Extension* extension =
-      ExtensionRegistry::Get(web_contents_->GetBrowserContext())
-          ->enabled_extensions().GetByID(extension_id);
-  if (!extension)
-    return;
+  if (host_id.type() == HostID::EXTENSIONS) {
+    // Don't execute if the extension has been unloaded.
+    const Extension* extension =
+        ExtensionRegistry::Get(web_contents_->GetBrowserContext())
+            ->enabled_extensions().GetByID(host_id.id());
+    if (!extension)
+      return;
+  } else {
+    CHECK(process_type == WEB_VIEW_PROCESS);
+  }
 
   ExtensionMsg_ExecuteCode_Params params;
   params.request_id = next_request_id_++;
-  params.extension_id = extension_id;
+  params.host_id = host_id;
   params.is_javascript = (script_type == JAVASCRIPT);
   params.code = code;
   params.all_frames = (frame_scope == ALL_FRAMES);

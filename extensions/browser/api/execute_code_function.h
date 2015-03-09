@@ -8,6 +8,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/api/extension_types.h"
+#include "extensions/common/host_id.h"
 
 namespace extensions {
 
@@ -39,6 +40,11 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
   // The injection details.
   scoped_ptr<core_api::extension_types::InjectDetails> details_;
 
+  const HostID& host_id() const { return host_id_; }
+  void set_host_id(HostID host_id) {
+    host_id_ = host_id;
+  }
+
  private:
   // Called when contents from the file whose path is specified in JSON
   // arguments has been loaded.
@@ -65,6 +71,9 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
 
   // The URL of the file being injected into the page.
   GURL file_url_;
+
+  // The ID of the injection host.
+  HostID host_id_;
 };
 
 }  // namespace extensions

@@ -82,6 +82,7 @@ PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
                ? PermissionsData::ACCESS_ALLOWED
                : PermissionsData::ACCESS_DENIED;
   }
+  DCHECK_EQ(injection_host->id().type(), HostID::EXTENSIONS);
 
   return injection_host->CanExecuteOnFrame(
       effective_document_url, top_url, tab_id, true /* is_declarative */);

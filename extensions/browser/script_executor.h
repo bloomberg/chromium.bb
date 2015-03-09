@@ -85,7 +85,7 @@ class ScriptExecutor {
   // |callback| will always be called even if the IPC'd renderer is destroyed
   // before a response is received (in this case the callback will be with a
   // failure and appropriate error message).
-  void ExecuteScript(const std::string& extension_id,
+  void ExecuteScript(const HostID& host_id,
                      ScriptType script_type,
                      const std::string& code,
                      FrameScope frame_scope,

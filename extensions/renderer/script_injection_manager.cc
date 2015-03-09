@@ -19,6 +19,7 @@
 #include "extensions/renderer/programmatic_script_injector.h"
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/scripts_run_info.h"
+#include "extensions/renderer/web_ui_injection_host.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -406,17 +407,22 @@ void ScriptInjectionManager::HandleExecuteCode(
     return;
   }
 
-  scoped_ptr<const ExtensionInjectionHost> extension_injection_host =
-      ExtensionInjectionHost::Create(params.extension_id, extensions_);
-
-  if (!extension_injection_host)
-    return;
+  scoped_ptr<const InjectionHost> injection_host;
+  if (params.host_id.type() == HostID::EXTENSIONS) {
+    injection_host = ExtensionInjectionHost::Create(params.host_id.id(),
+                                                    extensions_);
+    if (!injection_host)
+      return;
+  } else if (params.host_id.type() == HostID::WEBUI) {
+    injection_host.reset(
+        new WebUIInjectionHost(params.host_id));
+  }
 
   scoped_ptr<ScriptInjection> injection(new ScriptInjection(
       scoped_ptr<ScriptInjector>(
           new ProgrammaticScriptInjector(params, main_frame)),
       main_frame,
-      extension_injection_host.Pass(),
+      injection_host.Pass(),
       static_cast<UserScript::RunLocation>(params.run_at),
       ExtensionHelper::Get(render_view)->tab_id()));
 

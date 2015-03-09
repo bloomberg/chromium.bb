@@ -102,7 +102,19 @@ bool WebViewInternalExecuteCodeFunction::Init() {
     return false;
 
   details_ = details.Pass();
-  return true;
+
+  if (extension()) {
+    set_host_id(HostID(HostID::EXTENSIONS, extension()->id()));
+    return true;
+  }
+
+  WebContents* web_contents = GetSenderWebContents();
+  if (web_contents && web_contents->GetWebUI()) {
+    const GURL& url = render_view_host()->GetSiteInstance()->GetSiteURL();
+    set_host_id(HostID(HostID::WEBUI, url.spec()));
+    return true;
+  }
+  return false;
 }
 
 bool WebViewInternalExecuteCodeFunction::ShouldInsertCSS() const {

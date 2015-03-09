@@ -129,7 +129,7 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
   if (!executor)
     return false;
 
-  if (!extension())
+  if (!extension() && !IsWebView())
     return false;
 
   ScriptExecutor::ScriptType script_type = ScriptExecutor::JAVASCRIPT;
@@ -162,7 +162,7 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
   CHECK_NE(UserScript::UNDEFINED, run_at);
 
   executor->ExecuteScript(
-      extension()->id(),
+      host_id_,
       script_type,
       code_string,
       frame_scope,
@@ -204,6 +204,10 @@ bool ExecuteCodeFunction::RunAsync() {
 
   if (!details_->file.get())
     return false;
+
+  if (!extension())
+    return false;
+
   resource_ = extension()->GetResource(*details_->file);
 
   if (resource_.extension_root().empty() || resource_.relative_path().empty()) {

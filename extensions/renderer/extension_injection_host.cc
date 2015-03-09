@@ -18,8 +18,9 @@ ExtensionInjectionHost::~ExtensionInjectionHost() {
 }
 
 // static
-scoped_ptr<const ExtensionInjectionHost> ExtensionInjectionHost::Create(
-    const std::string& extension_id, const ExtensionSet* extensions) {
+scoped_ptr<const InjectionHost> ExtensionInjectionHost::Create(
+    const std::string& extension_id,
+    const ExtensionSet* extensions) {
   const Extension* extension = extensions->GetByID(extension_id);
   if (!extension)
     return scoped_ptr<const ExtensionInjectionHost>();

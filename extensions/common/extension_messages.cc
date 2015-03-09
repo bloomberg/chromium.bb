@@ -249,6 +249,30 @@ void ParamTraits<ManifestPermissionSet>::Log(
   LogParam(p.map(), l);
 }
 
+void ParamTraits<HostID>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.type());
+  WriteParam(m, p.id());
+}
+
+bool ParamTraits<HostID>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  HostID::HostType type;
+  std::string id;
+  if (!ReadParam(m, iter, &type))
+    return false;
+  if (!ReadParam(m, iter, &id))
+    return false;
+  *r = HostID(type, id);
+  return true;
+}
+
+void ParamTraits<HostID>::Log(
+    const param_type& p, std::string* l) {
+  LogParam(p.type(), l);
+  LogParam(p.id(), l);
+}
+
 void ParamTraits<ExtensionMsg_PermissionSetStruct>::Write(Message* m,
                                                           const param_type& p) {
   WriteParam(m, p.apis);

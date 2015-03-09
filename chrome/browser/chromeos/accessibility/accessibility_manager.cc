@@ -62,6 +62,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/host_id.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -135,7 +136,7 @@ class ContentScriptLoader {
     if (success) {
       ExtensionMsg_ExecuteCode_Params params;
       params.request_id = 0;
-      params.extension_id = extension_id_;
+      params.host_id = HostID(HostID::EXTENSIONS, extension_id_);
       params.is_javascript = true;
       params.code = data;
       params.run_at = extensions::UserScript::DOCUMENT_IDLE;
@@ -204,7 +205,7 @@ void InjectChromeVoxContentScript(
   // so that it won't interrupt our speech feedback enabled message.
   ExtensionMsg_ExecuteCode_Params params;
   params.request_id = 0;
-  params.extension_id = extension->id();
+  params.host_id = HostID(HostID::EXTENSIONS, extension->id());
   params.is_javascript = true;
   params.code = "window.INJECTED_AFTER_LOAD = true;";
   params.run_at = extensions::UserScript::DOCUMENT_IDLE;

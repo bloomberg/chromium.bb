@@ -10,7 +10,7 @@
 // IDs of hosts who own user scripts.
 // A HostID is immutable after creation.
 struct HostID {
-  enum HostType { EXTENSIONS, WEBUI };
+  enum HostType { EXTENSIONS, WEBUI, HOST_TYPE_LAST = WEBUI };
 
   HostID();
   HostID(HostType type, const std::string& id);
