@@ -179,7 +179,10 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 
 enum HeapIndices {
     NormalPageHeapIndex = 0,
-    VectorHeapIndex,
+    Vector1HeapIndex,
+    Vector2HeapIndex,
+    Vector3HeapIndex,
+    Vector4HeapIndex,
     InlineVectorHeapIndex,
     HashTableHeapIndex,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
@@ -569,6 +572,55 @@ public:
     bool isGCForbidden() const { return m_gcForbiddenCount; }
 #endif
 
+    // vectorBackingHeap() returns a heap that the vector allocation should use.
+    // We have four vector heaps and want to choose the best heap here.
+    //
+    // The goal is to improve the succession rate where expand and
+    // promptlyFree happen at an allocation point. This is a key for reusing
+    // the same memory as much as possible and thus improves performance.
+    // To achieve the goal, we use the following heuristics:
+    //
+    // - A vector that has been expanded recently is likely to be expanded
+    //   again soon.
+    // - A vector is likely to be promptly freed if the same type of vector
+    //   has been frequently promptly freed in the past.
+    // - Given the above, when allocating a new vector, look at the four vectors
+    //   that are placed immediately prior to the allocation point of each heap.
+    //   Choose the heap where the vector is least likely to be expanded
+    //   nor promptly freed.
+    //
+    // To implement the heuristics, we add a heapAge to each heap. The heapAge
+    // is updated if:
+    //
+    // - a vector on the heap is expanded; or
+    // - a vector that meets the condition (*) is allocated on the heap
+    //
+    //   (*) More than 33% of the same type of vectors have been promptly
+    //       freed since the last GC.
+    //
+    BaseHeap* vectorBackingHeap(size_t gcInfoIndex)
+    {
+        size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
+        --m_likelyToBePromptlyFreed[entryIndex];
+        int heapIndex = m_vectorBackingHeapIndex;
+        // If m_likelyToBePromptlyFreed[entryIndex] > 0, that means that
+        // more than 33% of vectors of the type have been promptly freed
+        // since the last GC.
+        if (m_likelyToBePromptlyFreed[entryIndex] > 0) {
+            m_heapAges[heapIndex] = ++m_currentHeapAges;
+            m_vectorBackingHeapIndex = heapIndexOfVectorHeapLeastRecentlyExpanded(Vector1HeapIndex, Vector4HeapIndex);
+        }
+        ASSERT(isVectorHeapIndex(heapIndex));
+        return m_heaps[heapIndex];
+    }
+    BaseHeap* expandedVectorBackingHeap(size_t gcInfoIndex);
+    static bool isVectorHeapIndex(int heapIndex)
+    {
+        return Vector1HeapIndex <= heapIndex && heapIndex <= Vector4HeapIndex;
+    }
+    void allocationPointAdjusted(int heapIndex);
+    void promptlyFreed(size_t gcInfoIndex);
+
 private:
     ThreadState();
     ~ThreadState();
@@ -609,6 +661,8 @@ private:
 #if ENABLE(GC_PROFILING)
     void snapshotFreeList();
 #endif
+    void clearHeapAges();
+    int heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, int endHeapIndex);
 
     template<typename U> friend class GarbageCollectedMixinConstructorMarker;
     void leaveGCForbiddenScope()
@@ -652,6 +706,10 @@ private:
     size_t m_allocatedObjectSizeBeforeGC;
     BaseHeap* m_heaps[NumberOfHeaps];
 
+    int m_vectorBackingHeapIndex;
+    size_t m_heapAges[NumberOfHeaps];
+    size_t m_currentHeapAges;
+
     bool m_isTerminating;
 
     bool m_shouldFlushHeapDoesNotContainCache;
@@ -673,6 +731,13 @@ private:
 #if ENABLE(GC_PROFILING)
     double m_nextFreeListSnapshotTime;
 #endif
+    // Ideally we want to allocate an array of size |gcInfoTableMax| but it will
+    // waste memory. Thus we limit the array size to 2^8 and share one entry
+    // with multiple types of vectors. This won't be an issue in practice,
+    // since there will be less than 2^8 types of objects in common cases.
+    static const int likelyToBePromptlyFreedArraySize = (1 << 8);
+    static const int likelyToBePromptlyFreedArrayMask = likelyToBePromptlyFreedArraySize - 1;
+    OwnPtr<int[]> m_likelyToBePromptlyFreed;
 };
 
 template<ThreadAffinity affinity> class ThreadStateFor;
