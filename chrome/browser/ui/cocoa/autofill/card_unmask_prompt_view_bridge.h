@@ -48,15 +48,12 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
 
 @interface CardUnmaskPromptViewCocoa : NSViewController<NSWindowDelegate> {
  @private
-  content::WebContents* webContents_;
-
   // Owns |self|.
   autofill::CardUnmaskPromptViewBridge* bridge_;
 }
 
-// Designated initializer. |webContents| and |bridge| must not be NULL.
-- (id)initWithWebContents:(content::WebContents*)webContents
-                   bridge:(autofill::CardUnmaskPromptViewBridge*)bridge;
+// Designated initializer. |bridge| must not be NULL.
+- (id)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge;
 
 // Closes the sheet and ends the modal loop.
 - (IBAction)closeSheet:(id)sender;

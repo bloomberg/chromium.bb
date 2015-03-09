@@ -38,9 +38,8 @@ CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
 CardUnmaskPromptViewBridge::CardUnmaskPromptViewBridge(
     CardUnmaskPromptController* controller)
     : controller_(controller) {
-  view_controller_.reset([[CardUnmaskPromptViewCocoa alloc]
-      initWithWebContents:controller_->GetWebContents()
-                   bridge:this]);
+  view_controller_.reset(
+      [[CardUnmaskPromptViewCocoa alloc] initWithBridge:this]);
 
   // Setup the constrained window that will show the view.
   base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
@@ -121,15 +120,12 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   }
 }
 
-- (id)initWithWebContents:(content::WebContents*)webContents
-                   bridge:(autofill::CardUnmaskPromptViewBridge*)bridge {
-  DCHECK(webContents);
+- (id)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge {
   DCHECK(bridge);
 
-  if ((self = [super initWithNibName:nil bundle:nil])) {
-    webContents_ = webContents;
+  if ((self = [super initWithNibName:nil bundle:nil]))
     bridge_ = bridge;
-  }
+
   return self;
 }
 
