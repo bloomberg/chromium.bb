@@ -36,10 +36,9 @@ class InMemoryURLIndexCacheItem;
 }
 
 namespace history {
-
-namespace imui = in_memory_url_index;
-
 class HistoryDatabase;
+}
+
 class URLIndexPrivateData;
 
 // The URL history source.
@@ -61,7 +60,7 @@ class URLIndexPrivateData;
 // will eliminate such words except in the case where a single character
 // is being searched on and which character occurs as the second char16 of a
 // multi-char16 instance.
-class InMemoryURLIndex : public HistoryServiceObserver,
+class InMemoryURLIndex : public history::HistoryServiceObserver,
                          public base::SupportsWeakPtr<InMemoryURLIndex> {
  public:
   // Defines an abstract class which is notified upon completion of restoring
@@ -147,14 +146,14 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
 
   // HistoryDBTask used to rebuild our private data from the history database.
-  class RebuildPrivateDataFromHistoryDBTask : public HistoryDBTask {
+  class RebuildPrivateDataFromHistoryDBTask : public history::HistoryDBTask {
    public:
     explicit RebuildPrivateDataFromHistoryDBTask(
         InMemoryURLIndex* index,
         const std::string& languages,
         const std::set<std::string>& scheme_whitelist);
 
-    bool RunOnDBThread(HistoryBackend* backend,
+    bool RunOnDBThread(history::HistoryBackend* backend,
                        history::HistoryDatabase* db) override;
     void DoneRunOnMainThread() override;
 
@@ -198,7 +197,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
 
   // Rebuilds the history index from the history database in |history_db|.
   // Used for unit testing only.
-  void RebuildFromHistory(HistoryDatabase* history_db);
+  void RebuildFromHistory(history::HistoryDatabase* history_db);
 
   // Determines if the private data was successfully reloaded from the cache
   // file or if the private data must be rebuilt from the history database.
@@ -228,15 +227,15 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // HistoryServiceObserver:
   void OnURLVisited(HistoryService* history_service,
                     ui::PageTransition transition,
-                    const URLRow& row,
-                    const RedirectList& redirects,
+                    const history::URLRow& row,
+                    const history::RedirectList& redirects,
                     base::Time visit_time) override;
   void OnURLsModified(HistoryService* history_service,
-                      const URLRows& changed_urls) override;
+                      const history::URLRows& changed_urls) override;
   void OnURLsDeleted(HistoryService* history_service,
                      bool all_history,
                      bool expired,
-                     const URLRows& deleted_rows,
+                     const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
   void OnHistoryServiceLoaded(HistoryService* history_service) override;
 
@@ -300,7 +299,5 @@ class InMemoryURLIndex : public HistoryServiceObserver,
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };
-
-}  // namespace history
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_H_

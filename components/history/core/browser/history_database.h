@@ -27,6 +27,7 @@ class FilePath;
 }
 
 class HistoryQuickProviderTest;
+class InMemoryURLIndexTest;
 
 namespace history {
 
@@ -159,7 +160,7 @@ class HistoryDatabase : public DownloadDatabase,
   FRIEND_TEST_ALL_PREFIXES(AndroidURLsMigrationTest, MigrateToVersion22);
 #endif
   friend class ::HistoryQuickProviderTest;
-  friend class InMemoryURLIndexTest;
+  friend class ::InMemoryURLIndexTest;
 
   // Overridden from URLDatabase:
   sql::Connection& GetDB() override;

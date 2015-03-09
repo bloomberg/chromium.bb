@@ -16,10 +16,7 @@
 #include "components/omnibox/autocomplete_match.h"
 
 class Profile;
-
-namespace history {
 struct ScoredHistoryMatch;
-}
 
 // This class is an autocomplete provider (a pseudo-internal component of
 // the history system) which quickly (and synchronously) provides matching
@@ -54,23 +51,20 @@ class HistoryQuickProvider : public HistoryProvider {
 
   // Creates an AutocompleteMatch from |history_match|, assigning it
   // the score |score|.
-  AutocompleteMatch QuickMatchToACMatch(
-      const history::ScoredHistoryMatch& history_match,
-      int score);
+  AutocompleteMatch QuickMatchToACMatch(const ScoredHistoryMatch& history_match,
+                                        int score);
 
   // Returns the index that should be used for history lookups.
-  history::InMemoryURLIndex* GetIndex();
+  InMemoryURLIndex* GetIndex();
 
   // Only for use in unittests.  Takes ownership of |index|.
-  void set_index(history::InMemoryURLIndex* index) {
-    index_for_testing_.reset(index);
-  }
+  void set_index(InMemoryURLIndex* index) { index_for_testing_.reset(index); }
 
   AutocompleteInput autocomplete_input_;
   std::string languages_;
 
   // Only used for testing.
-  scoped_ptr<history::InMemoryURLIndex> index_for_testing_;
+  scoped_ptr<InMemoryURLIndex> index_for_testing_;
 
   // This provider is disabled when true.
   static bool disabled_;

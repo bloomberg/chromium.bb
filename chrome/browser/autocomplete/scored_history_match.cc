@@ -4,15 +4,13 @@
 
 #include "chrome/browser/autocomplete/scored_history_match.h"
 
-namespace history {
-
 // static
 const size_t ScoredHistoryMatch::kMaxVisitsToScore = 10;
 
 ScoredHistoryMatch::ScoredHistoryMatch() : raw_score(0), can_inline(false) {
 }
 
-ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info,
+ScoredHistoryMatch::ScoredHistoryMatch(const history::URLRow& url_info,
                                        size_t input_location,
                                        bool match_in_scheme,
                                        bool innermost_match,
@@ -68,5 +66,3 @@ bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
   // URLs that have been visited more recently are better.
   return m1.url_info.last_visit() > m2.url_info.last_visit();
 }
-
-}  // namespace history

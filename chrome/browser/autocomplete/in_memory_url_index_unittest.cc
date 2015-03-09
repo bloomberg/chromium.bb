@@ -44,7 +44,6 @@ using base::ASCIIToUTF16;
 // Note that only lines whose first character is an upper-case letter are
 // processed when creating the test database.
 
-namespace history {
 namespace {
 const size_t kMaxMatches = 3;
 const char kTestLanguages[] = "en,ja,hi,zh";
@@ -120,7 +119,7 @@ class InMemoryURLIndexTest : public testing::Test {
 
 
   // Pass-through functions to simplify our friendship with URLIndexPrivateData.
-  bool UpdateURL(const URLRow& row);
+  bool UpdateURL(const history::URLRow& row);
   bool DeleteURL(const GURL& url);
 
   // Data verification helper functions.
@@ -134,7 +133,7 @@ class InMemoryURLIndexTest : public testing::Test {
   scoped_ptr<InMemoryURLIndex> url_index_;
   TestingProfile profile_;
   HistoryService* history_service_;
-  HistoryDatabase* history_database_;
+  history::HistoryDatabase* history_database_;
 };
 
 InMemoryURLIndexTest::InMemoryURLIndexTest()
@@ -183,7 +182,7 @@ const std::set<std::string>& InMemoryURLIndexTest::scheme_whitelist() {
   return url_index_->scheme_whitelist();
 }
 
-bool InMemoryURLIndexTest::UpdateURL(const URLRow& row) {
+bool InMemoryURLIndexTest::UpdateURL(const history::URLRow& row) {
   return GetPrivateData()->UpdateURL(history_service_,
                                      row,
                                      url_index_->languages_,
@@ -206,7 +205,7 @@ void InMemoryURLIndexTest::SetUp() {
   history_service_ = HistoryServiceFactory::GetForProfile(
       &profile_, ServiceAccessType::EXPLICIT_ACCESS);
   ASSERT_TRUE(history_service_);
-  HistoryBackend* backend = history_service_->history_backend_.get();
+  history::HistoryBackend* backend = history_service_->history_backend_.get();
   history_database_ = backend->db();
 
   // Create and populate a working copy of the URL history database.
@@ -252,7 +251,7 @@ void InMemoryURLIndexTest::SetUp() {
     sql::Transaction transaction(&db);
     transaction.Begin();
     while (statement.Step()) {
-      URLRow row;
+      history::URLRow row;
       history_database_->FillURLRow(statement, &row);
       base::Time last_visit = time_right_now;
       for (int64 i = row.last_visit().ToInternalValue(); i > 0; --i)
@@ -272,7 +271,7 @@ void InMemoryURLIndexTest::SetUp() {
     sql::Transaction transaction(&db);
     transaction.Begin();
     while (statement.Step()) {
-      VisitRow row;
+      history::VisitRow row;
       history_database_->FillVisitRow(statement, &row);
       base::Time last_visit = time_right_now;
       for (int64 i = row.visit_time.ToInternalValue(); i > 0; --i)
@@ -398,8 +397,8 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
     // gtest and STLPort in the Android build. See
     // http://code.google.com/p/googletest/issues/detail?id=359
     ASSERT_TRUE(actual_info != actual.history_info_map_.end());
-    const URLRow& expected_row(expected_info->second.url_row);
-    const URLRow& actual_row(actual_info->second.url_row);
+    const history::URLRow& expected_row(expected_info->second.url_row);
+    const history::URLRow& actual_row(actual_info->second.url_row);
     EXPECT_EQ(expected_row.visit_count(), actual_row.visit_count());
     EXPECT_EQ(expected_row.typed_count(), actual_row.typed_count());
     EXPECT_EQ(expected_row.last_visit(), actual_row.last_visit());
@@ -694,8 +693,9 @@ TEST_F(InMemoryURLIndexTest, ProperStringMatching) {
 
 TEST_F(InMemoryURLIndexTest, HugeResultSet) {
   // Create a huge set of qualifying history items.
-  for (URLID row_id = 5000; row_id < 6000; ++row_id) {
-    URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"), row_id);
+  for (history::URLID row_id = 5000; row_id < 6000; ++row_id) {
+    history::URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"),
+                            row_id);
     new_row.set_last_visit(base::Time::Now());
     EXPECT_TRUE(UpdateURL(new_row));
   }
@@ -744,14 +744,14 @@ TEST_F(InMemoryURLIndexTest, TitleChange) {
   ASSERT_EQ(1U, matches.size());
 
   // Verify that we got back the result we expected.
-  const URLID expected_id = 3;
+  const history::URLID expected_id = 3;
   EXPECT_EQ(expected_id, matches[0].url_info.id());
   EXPECT_EQ("http://www.businessandmedia.org/articles/2010/20100708120415.aspx",
             matches[0].url_info.url().spec());
   EXPECT_EQ(ASCIIToUTF16(
       "LeBronomics: Could High Taxes Influence James' Team Decision?"),
       matches[0].url_info.title());
-  URLRow old_row(matches[0].url_info);
+  history::URLRow old_row(matches[0].url_info);
 
   // Verify new title terms retrieves nothing.
   base::string16 new_terms = ASCIIToUTF16("does eat oats little lambs ivy");
@@ -866,15 +866,17 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
 
 TEST_F(InMemoryURLIndexTest, AddNewRows) {
   // Verify that the row we're going to add does not already exist.
-  URLID new_row_id = 87654321;
-  // Newly created URLRows get a last_visit time of 'right now' so it should
+  history::URLID new_row_id = 87654321;
+  // Newly created history::URLRows get a last_visit time of 'right now' so it
+  // should
   // qualify as a quick result candidate.
   EXPECT_TRUE(url_index_->HistoryItemsForTerms(ASCIIToUTF16("brokeandalone"),
                                                base::string16::npos,
                                                kMaxMatches, builder_).empty());
 
   // Add a new row.
-  URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"), new_row_id++);
+  history::URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"),
+                          new_row_id++);
   new_row.set_last_visit(base::Time::Now());
   EXPECT_TRUE(UpdateURL(new_row));
 
@@ -891,8 +893,8 @@ TEST_F(InMemoryURLIndexTest, AddNewRows) {
                                                  kMaxMatches, builder_).size());
 
   // Make up an URL that does not qualify and try to add it.
-  URLRow unqualified_row(GURL("http://www.brokeandaloneinmanitoba.com/"),
-                         new_row_id++);
+  history::URLRow unqualified_row(
+      GURL("http://www.brokeandaloneinmanitoba.com/"), new_row_id++);
   EXPECT_FALSE(UpdateURL(new_row));
 }
 
@@ -921,7 +923,7 @@ TEST_F(InMemoryURLIndexTest, ExpireRow) {
 
   // Determine the row id for the result, remember that id, broadcast a
   // delete notification, then ensure that the row has been deleted.
-  URLRows deleted_rows;
+  history::URLRows deleted_rows;
   deleted_rows.push_back(matches[0].url_info);
   url_index_->OnURLsDeleted(nullptr, false, false, deleted_rows,
                             std::set<GURL>());
@@ -1258,5 +1260,3 @@ TEST_F(InMemoryURLIndexCacheTest, CacheFilePath) {
   // Must clear the history_dir_ to satisfy the dtor's DCHECK.
   set_history_dir(base::FilePath());
 }
-
-}  // namespace history

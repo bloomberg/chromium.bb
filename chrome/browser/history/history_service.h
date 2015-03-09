@@ -34,6 +34,8 @@
 #include "ui/base/page_transition_types.h"
 
 class GURL;
+class InMemoryURLIndex;
+class InMemoryURLIndexTest;
 class PageUsageRequest;
 class SkBitmap;
 
@@ -55,8 +57,6 @@ class HistoryQueryTest;
 class HistoryServiceObserver;
 class HistoryTest;
 class InMemoryHistoryBackend;
-class InMemoryURLIndex;
-class InMemoryURLIndexTest;
 struct KeywordSearchTermVisit;
 class PageUsageData;
 class URLDatabase;
@@ -134,9 +134,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   history::TypedUrlSyncableService* GetTypedUrlSyncableService() const;
 
   // Return the quick history index.
-  history::InMemoryURLIndex* InMemoryIndex() const {
-    return in_memory_url_index_.get();
-  }
+  InMemoryURLIndex* InMemoryIndex() const { return in_memory_url_index_.get(); }
 
   // KeyedService:
   void Shutdown() override;
@@ -522,7 +520,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   friend class history::HistoryTest;
   friend class HistoryURLProvider;
   friend class HistoryURLProviderTest;
-  friend class history::InMemoryURLIndexTest;
+  friend class ::InMemoryURLIndexTest;
   template<typename Info, typename Callback> friend class DownloadRequest;
   friend class PageUsageRequest;
   friend class RedirectRequest;
@@ -806,7 +804,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // The index used for quick history lookups.
   // TODO(mrossetti): Move in_memory_url_index out of history_service.
   // See http://crbug.com/138321
-  scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
+  scoped_ptr<InMemoryURLIndex> in_memory_url_index_;
 
   ObserverList<history::HistoryServiceObserver> observers_;
   base::CallbackList<void(const std::set<GURL>&)>

@@ -12,8 +12,6 @@
 
 using base::UTF8ToUTF16;
 
-namespace history {
-
 // Helper function for verifying that the contents of a C++ iterable container
 // of ints matches a C array ints.
 template <typename T>
@@ -146,5 +144,3 @@ TEST_F(InMemoryURLIndexTypesTest, OffsetsAndTermMatches) {
   for (size_t i = 0; i < matches_b.size(); ++i)
     EXPECT_EQ(expected_offsets_b[i], matches_b[i].offset);
 }
-
-}  // namespace history

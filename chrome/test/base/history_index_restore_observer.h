@@ -14,7 +14,7 @@
 // finishes restoring. As soon as the InMemoryURLIndex finishes restoring the
 // provided Closure is invoked.
 class HistoryIndexRestoreObserver
-    : public history::InMemoryURLIndex::RestoreCacheObserver {
+    : public InMemoryURLIndex::RestoreCacheObserver {
  public:
   explicit HistoryIndexRestoreObserver(const base::Closure& task);
   ~HistoryIndexRestoreObserver() override;

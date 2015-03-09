@@ -13,12 +13,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
 
-namespace history {
-
-// The maximum number of characters to consider from an URL and page title
-// while matching user-typed terms.
-const size_t kMaxSignificantChars = 200;
-
 // Matches within URL and Title Strings ----------------------------------------
 
 // Specifies where an omnibox term occurs within a string. Used for specifying
@@ -135,7 +129,7 @@ typedef std::set<WordID> WordIDSet;  // An index into the WordList.
 typedef std::map<base::char16, WordIDSet> CharWordIDMap;
 
 // A map from word (by word_id) to history items containing that word.
-typedef URLID HistoryID;
+typedef history::URLID HistoryID;
 typedef std::set<HistoryID> HistoryIDSet;
 typedef std::vector<HistoryID> HistoryIDVector;
 typedef std::map<WordID, HistoryIDSet> WordIDHistoryMap;
@@ -143,13 +137,13 @@ typedef std::map<HistoryID, WordIDSet> HistoryIDWordMap;
 
 
 // Information used in scoring a particular URL.
-typedef std::vector<VisitInfo> VisitInfoVector;
+typedef std::vector<history::VisitInfo> VisitInfoVector;
 struct HistoryInfoMapValue {
   HistoryInfoMapValue();
   ~HistoryInfoMapValue();
 
   // This field is always populated.
-  URLRow url_row;
+  history::URLRow url_row;
 
   // This field gets filled in asynchronously after a visit.  As such,
   // it's almost always correct.  If it's wrong, it's likely to either
@@ -173,7 +167,5 @@ struct RowWordStarts {
   WordStarts title_word_starts_;
 };
 typedef std::map<HistoryID, RowWordStarts> WordStartsMap;
-
-}  // namespace history
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_TYPES_H_

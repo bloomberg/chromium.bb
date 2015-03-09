@@ -29,8 +29,7 @@ class ScoredHistoryMatchBuilderImplTest;
 // influence the final score calculated by the client of this index.  If the row
 // does not qualify the raw score will be 0.  |languages| is used to help
 // parse/format the URL before looking for the terms.
-class ScoredHistoryMatchBuilderImpl
-    : public history::ScoredHistoryMatch::Builder {
+class ScoredHistoryMatchBuilderImpl : public ScoredHistoryMatch::Builder {
  public:
   // Returns whether |url| is bookmarked which is used to affect the score. Must
   // support being called multiple times.
@@ -47,25 +46,24 @@ class ScoredHistoryMatchBuilderImpl
   ~ScoredHistoryMatchBuilderImpl() override;
 
   // history::ScoredHistoryMatch implementation.
-  history::ScoredHistoryMatch Build(
-      const history::URLRow& row,
-      const history::VisitInfoVector& visits,
-      const std::string& languages,
-      const base::string16& lower_string,
-      const history::String16Vector& terms_vector,
-      const history::WordStarts& terms_to_word_starts_offsets,
-      const history::RowWordStarts& word_starts,
-      const base::Time now) const override;
+  ScoredHistoryMatch Build(const history::URLRow& row,
+                           const VisitInfoVector& visits,
+                           const std::string& languages,
+                           const base::string16& lower_string,
+                           const String16Vector& terms_vector,
+                           const WordStarts& terms_to_word_starts_offsets,
+                           const RowWordStarts& word_starts,
+                           const base::Time now) const override;
 
   // Returns |term_matches| after removing all matches that are not at a
   // word break that are in the range [|start_pos|, |end_pos|).
   // start_pos == string::npos is treated as start_pos = length of string.
   // (In other words, no matches will be filtered.)
   // end_pos == string::npos is treated as end_pos = length of string.
-  static history::TermMatches FilterTermMatchesByWordStarts(
-      const history::TermMatches& term_matches,
-      const history::WordStarts& terms_to_word_starts_offsets,
-      const history::WordStarts& word_starts,
+  static TermMatches FilterTermMatchesByWordStarts(
+      const TermMatches& term_matches,
+      const WordStarts& terms_to_word_starts_offsets,
+      const WordStarts& word_starts,
       size_t start_pos,
       size_t end_pos);
 
@@ -90,9 +88,9 @@ class ScoredHistoryMatchBuilderImpl
   static float GetTopicalityScore(
       const int num_terms,
       const base::string16& cleaned_up_url,
-      const history::WordStarts& terms_to_word_starts_offsets,
-      const history::RowWordStarts& word_starts,
-      history::ScoredHistoryMatch* scored_history_match);
+      const WordStarts& terms_to_word_starts_offsets,
+      const RowWordStarts& word_starts,
+      ScoredHistoryMatch* scored_history_match);
 
   // Returns a recency score based on |last_visit_days_ago|, which is
   // how many days ago the page was last visited.
@@ -105,7 +103,7 @@ class ScoredHistoryMatchBuilderImpl
   // recomputing it frequently.
   static float GetFrequency(const base::Time& now,
                             const bool bookmarked,
-                            const history::VisitInfoVector& visits);
+                            const VisitInfoVector& visits);
 
   // Combines the two component scores into a final score that's
   // an appropriate value to use as a relevancy score. Scoring buckets are

@@ -34,10 +34,9 @@ class HistoryProvider : public AutocompleteProvider {
 
   // Fill and return an ACMatchClassifications structure given the |matches|
   // to highlight.
-  static ACMatchClassifications SpansFromTermMatch(
-      const history::TermMatches& matches,
-      size_t text_length,
-      bool is_url);
+  static ACMatchClassifications SpansFromTermMatch(const TermMatches& matches,
+                                                   size_t text_length,
+                                                   bool is_url);
 
   Profile* profile_;
 };

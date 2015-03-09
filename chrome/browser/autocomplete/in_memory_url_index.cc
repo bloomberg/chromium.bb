@@ -15,8 +15,6 @@
 
 using in_memory_url_index::InMemoryURLIndexCacheItem;
 
-namespace history {
-
 // Called by DoSaveToCacheFile to delete any old cache file at |path| when
 // there is no private data to save. Runs on the FILE thread.
 void DeleteCacheFile(const base::FilePath& path) {
@@ -58,8 +56,8 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 }
 
 bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
-    HistoryBackend* backend,
-    HistoryDatabase* db) {
+    history::HistoryBackend* backend,
+    history::HistoryDatabase* db) {
   data_ = URLIndexPrivateData::RebuildFromHistory(db, languages_,
                                                   scheme_whitelist_);
   succeeded_ = data_.get() && !data_->Empty();
@@ -155,8 +153,8 @@ void InMemoryURLIndex::DeleteURL(const GURL& url) {
 
 void InMemoryURLIndex::OnURLVisited(HistoryService* history_service,
                                     ui::PageTransition transition,
-                                    const URLRow& row,
-                                    const RedirectList& redirects,
+                                    const history::URLRow& row,
+                                    const history::RedirectList& redirects,
                                     base::Time visit_time) {
   DCHECK_EQ(history_service_, history_service);
   needs_to_be_cached_ |= private_data_->UpdateURL(history_service_,
@@ -167,7 +165,7 @@ void InMemoryURLIndex::OnURLVisited(HistoryService* history_service,
 }
 
 void InMemoryURLIndex::OnURLsModified(HistoryService* history_service,
-                                      const URLRows& changed_urls) {
+                                      const history::URLRows& changed_urls) {
   DCHECK_EQ(history_service_, history_service);
   for (const auto& row : changed_urls) {
     needs_to_be_cached_ |= private_data_->UpdateURL(history_service_,
@@ -181,7 +179,7 @@ void InMemoryURLIndex::OnURLsModified(HistoryService* history_service,
 void InMemoryURLIndex::OnURLsDeleted(HistoryService* history_service,
                                      bool all_history,
                                      bool expired,
-                                     const URLRows& deleted_rows,
+                                     const history::URLRows& deleted_rows,
                                      const std::set<GURL>& favicon_urls) {
   if (all_history) {
     ClearPrivateData();
@@ -292,7 +290,8 @@ void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
     restore_cache_observer_->OnCacheRestoreFinished(succeeded);
 }
 
-void InMemoryURLIndex::RebuildFromHistory(HistoryDatabase* history_db) {
+void InMemoryURLIndex::RebuildFromHistory(
+    history::HistoryDatabase* history_db) {
   private_data_tracker_.TryCancelAll();
   private_data_ = URLIndexPrivateData::RebuildFromHistory(history_db,
                                                           languages_,
@@ -329,5 +328,3 @@ void InMemoryURLIndex::OnCacheSaveDone(bool succeeded) {
   if (save_cache_observer_)
     save_cache_observer_->OnCacheSaveFinished(succeeded);
 }
-
-}  // namespace history

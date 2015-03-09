@@ -706,14 +706,14 @@ ACMatchClassifications HistoryURLProvider::ClassifyDescription(
     const base::string16& description) {
   base::string16 clean_description =
       bookmarks::CleanUpTitleForMatching(description);
-  history::TermMatches description_matches(SortAndDeoverlapMatches(
-      history::MatchTermInString(input_text, clean_description, 0)));
-  history::WordStarts description_word_starts;
-  history::String16VectorFromString16(
-      clean_description, false, &description_word_starts);
+  TermMatches description_matches(SortAndDeoverlapMatches(
+      MatchTermInString(input_text, clean_description, 0)));
+  WordStarts description_word_starts;
+  String16VectorFromString16(clean_description, false,
+                             &description_word_starts);
   // If HistoryURL retrieves any matches (and hence we reach this code), we
   // are guaranteed that the beginning of input_text must be a word break.
-  history::WordStarts offsets(1, 0u);
+  WordStarts offsets(1, 0u);
   description_matches =
       ScoredHistoryMatchBuilderImpl::FilterTermMatchesByWordStarts(
           description_matches, offsets, description_word_starts, 0,

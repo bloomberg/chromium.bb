@@ -14,11 +14,9 @@
 #include "components/history/core/browser/history_match.h"
 #include "components/history/core/browser/history_types.h"
 
-namespace history {
-
 // An HistoryMatch that has a score as well as metrics defining where in the
 // history item's URL and/or page title matches have occurred.
-struct ScoredHistoryMatch : public HistoryMatch {
+struct ScoredHistoryMatch : public history::HistoryMatch {
   // The Builder inner class allows the embedder to control how matches are
   // scored (we cannot use a base::Callback<> as base::Bind() is limited to 6
   // parameters).
@@ -46,7 +44,7 @@ struct ScoredHistoryMatch : public HistoryMatch {
     // If the row does not qualify the raw score will be 0.  |languages| is used
     // to help parse/format the URL before looking for the terms.
     virtual ScoredHistoryMatch Build(
-        const URLRow& row,
+        const history::URLRow& row,
         const VisitInfoVector& visits,
         const std::string& languages,
         const base::string16& lower_string,
@@ -63,7 +61,7 @@ struct ScoredHistoryMatch : public HistoryMatch {
   // |match_in_scheme| and |innermost_match| to HistoryMatch constructor, and
   // using |raw_score|, |url_matches|, |title_matches| and |can_inline| to
   // initialize the corresponding properties of this class.
-  ScoredHistoryMatch(const URLRow& url_info,
+  ScoredHistoryMatch(const history::URLRow& url_info,
                      size_t input_location,
                      bool match_in_scheme,
                      bool innermost_match,
@@ -105,7 +103,5 @@ struct ScoredHistoryMatch : public HistoryMatch {
   bool can_inline;
 };
 typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
-
-}  // namespace history
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SCORED_HISTORY_MATCH_H_

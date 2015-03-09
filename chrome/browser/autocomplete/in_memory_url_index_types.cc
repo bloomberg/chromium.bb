@@ -16,7 +16,11 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
-namespace history {
+namespace {
+// The maximum number of characters to consider from an URL and page title
+// while matching user-typed terms.
+const size_t kMaxSignificantChars = 200;
+}
 
 // Matches within URL and Title Strings ----------------------------------------
 
@@ -159,5 +163,3 @@ void RowWordStarts::Clear() {
   url_word_starts_.clear();
   title_word_starts_.clear();
 }
-
-}  // namespace history

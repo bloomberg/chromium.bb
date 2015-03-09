@@ -80,7 +80,7 @@ void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
 
 // static
 ACMatchClassifications HistoryProvider::SpansFromTermMatch(
-    const history::TermMatches& matches,
+    const TermMatches& matches,
     size_t text_length,
     bool is_url) {
   ACMatchClassification::Style url_style =

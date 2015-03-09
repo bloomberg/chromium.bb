@@ -648,7 +648,7 @@ void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(this);
   DCHECK(history_service);
-  history::InMemoryURLIndex* index = history_service->InMemoryIndex();
+  InMemoryURLIndex* index = history_service->InMemoryIndex();
   if (!index || index->restored())
     return;
   base::RunLoop run_loop;

@@ -46,10 +46,6 @@
 #include "url/url_parse.h"
 #include "url/url_util.h"
 
-using history::InMemoryURLIndex;
-using history::ScoredHistoryMatch;
-using history::ScoredHistoryMatches;
-
 namespace {
 
 // Returns whether |url| is bookmarked in |bookmark_model| (which can be null
@@ -268,7 +264,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       info.url(), languages_, format_types, net::UnescapeRule::SPACES, NULL,
       NULL, &adjustments);
   base::OffsetAdjuster::AdjustOffsets(adjustments, &offsets);
-  history::TermMatches new_matches =
+  TermMatches new_matches =
       ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
@@ -305,7 +301,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   return match;
 }
 
-history::InMemoryURLIndex* HistoryQuickProvider::GetIndex() {
+InMemoryURLIndex* HistoryQuickProvider::GetIndex() {
   if (index_for_testing_.get())
     return index_for_testing_.get();
 

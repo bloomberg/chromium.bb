@@ -140,19 +140,17 @@ ScoredHistoryMatchBuilderImpl::ScoredHistoryMatchBuilderImpl(
 ScoredHistoryMatchBuilderImpl::~ScoredHistoryMatchBuilderImpl() {
 }
 
-history::ScoredHistoryMatch ScoredHistoryMatchBuilderImpl::Build(
+ScoredHistoryMatch ScoredHistoryMatchBuilderImpl::Build(
     const history::URLRow& row,
-    const history::VisitInfoVector& visits,
+    const VisitInfoVector& visits,
     const std::string& languages,
     const base::string16& lower_string,
-    const history::String16Vector& terms,
-    const history::WordStarts& terms_to_word_starts_offsets,
-    const history::RowWordStarts& word_starts,
+    const String16Vector& terms,
+    const WordStarts& terms_to_word_starts_offsets,
+    const RowWordStarts& word_starts,
     const base::Time now) const {
-  history::ScoredHistoryMatch scored_history_match =
-      history::ScoredHistoryMatch(row, 0, false, false, 0,
-                                  history::TermMatches(),
-                                  history::TermMatches(), false);
+  ScoredHistoryMatch scored_history_match = ScoredHistoryMatch(
+      row, 0, false, false, 0, TermMatches(), TermMatches(), false);
 
   GURL gurl = row.url();
   if (!gurl.is_valid())
@@ -166,10 +164,8 @@ history::ScoredHistoryMatch ScoredHistoryMatchBuilderImpl::Build(
   base::string16 title = bookmarks::CleanUpTitleForMatching(row.title());
   int term_num = 0;
   for (const auto& term : terms) {
-    history::TermMatches url_term_matches =
-        history::MatchTermInString(term, url, term_num);
-    history::TermMatches title_term_matches =
-        history::MatchTermInString(term, title, term_num);
+    TermMatches url_term_matches = MatchTermInString(term, url, term_num);
+    TermMatches title_term_matches = MatchTermInString(term, title, term_num);
     if (url_term_matches.empty() && title_term_matches.empty()) {
       // A term was not found in either URL or title - reject.
       return scored_history_match;
@@ -324,19 +320,18 @@ history::ScoredHistoryMatch ScoredHistoryMatchBuilderImpl::Build(
 }
 
 // static
-history::TermMatches
-ScoredHistoryMatchBuilderImpl::FilterTermMatchesByWordStarts(
-    const history::TermMatches& term_matches,
-    const history::WordStarts& terms_to_word_starts_offsets,
-    const history::WordStarts& word_starts,
+TermMatches ScoredHistoryMatchBuilderImpl::FilterTermMatchesByWordStarts(
+    const TermMatches& term_matches,
+    const WordStarts& terms_to_word_starts_offsets,
+    const WordStarts& word_starts,
     size_t start_pos,
     size_t end_pos) {
   // Return early if no filtering is needed.
   if (start_pos == std::string::npos)
     return term_matches;
-  history::TermMatches filtered_matches;
-  history::WordStarts::const_iterator next_word_starts = word_starts.begin();
-  history::WordStarts::const_iterator end_word_starts = word_starts.end();
+  TermMatches filtered_matches;
+  WordStarts::const_iterator next_word_starts = word_starts.begin();
+  WordStarts::const_iterator end_word_starts = word_starts.end();
   for (const auto& term_match : term_matches) {
     const size_t term_offset =
         terms_to_word_starts_offsets[term_match.term_num];
@@ -398,9 +393,9 @@ void ScoredHistoryMatchBuilderImpl::Init() {
 float ScoredHistoryMatchBuilderImpl::GetTopicalityScore(
     const int num_terms,
     const base::string16& url,
-    const history::WordStarts& terms_to_word_starts_offsets,
-    const history::RowWordStarts& word_starts,
-    history::ScoredHistoryMatch* scored_history_match) {
+    const WordStarts& terms_to_word_starts_offsets,
+    const RowWordStarts& word_starts,
+    ScoredHistoryMatch* scored_history_match) {
   DCHECK(initialized);
   // A vector that accumulates per-term scores.  The strongest match--a
   // match in the hostname at a word boundary--is worth 10 points.
@@ -409,9 +404,9 @@ float ScoredHistoryMatchBuilderImpl::GetTopicalityScore(
   // in the same part of the URL/title.
   DCHECK_GT(num_terms, 0);
   std::vector<int> term_scores(num_terms, 0);
-  history::WordStarts::const_iterator next_word_starts =
+  WordStarts::const_iterator next_word_starts =
       word_starts.url_word_starts_.begin();
-  history::WordStarts::const_iterator end_word_starts =
+  WordStarts::const_iterator end_word_starts =
       word_starts.url_word_starts_.end();
   const size_t question_mark_pos = url.find('?');
   const size_t colon_pos = url.find(':');
@@ -556,7 +551,7 @@ float ScoredHistoryMatchBuilderImpl::GetRecencyScore(int last_visit_days_ago) {
 float ScoredHistoryMatchBuilderImpl::GetFrequency(
     const base::Time& now,
     const bool bookmarked,
-    const history::VisitInfoVector& visits) {
+    const VisitInfoVector& visits) {
   // Compute the weighted average |value_of_transition| over the last at
   // most kMaxVisitsToScore visits, where each visit is weighted using
   // GetRecencyScore() based on how many days ago it happened.  Use
@@ -565,7 +560,7 @@ float ScoredHistoryMatchBuilderImpl::GetFrequency(
   // fewer visits than kMaxVisitsToScore.
   float summed_visit_points = 0;
   const size_t max_visit_to_score =
-      std::min(visits.size(), history::ScoredHistoryMatch::kMaxVisitsToScore);
+      std::min(visits.size(), ScoredHistoryMatch::kMaxVisitsToScore);
   for (size_t i = 0; i < max_visit_to_score; ++i) {
     int value_of_transition =
         (visits[i].second == ui::PAGE_TRANSITION_TYPED) ? 20 : 1;
@@ -576,7 +571,7 @@ float ScoredHistoryMatchBuilderImpl::GetFrequency(
     summed_visit_points += (value_of_transition * bucket_weight);
   }
   return visits.size() * summed_visit_points /
-         history::ScoredHistoryMatch::kMaxVisitsToScore;
+         ScoredHistoryMatch::kMaxVisitsToScore;
 }
 
 // static

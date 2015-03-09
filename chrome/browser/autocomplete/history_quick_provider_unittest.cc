@@ -551,14 +551,14 @@ TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
 
 TEST_F(HistoryQuickProviderTest, Spans) {
   // Test SpansFromTermMatch
-  history::TermMatches matches_a;
+  TermMatches matches_a;
   // Simulates matches: '.xx.xxx..xx...xxxxx..' which will test no match at
   // either beginning or end as well as adjacent matches.
-  matches_a.push_back(history::TermMatch(1, 1, 2));
-  matches_a.push_back(history::TermMatch(2, 4, 3));
-  matches_a.push_back(history::TermMatch(3, 9, 1));
-  matches_a.push_back(history::TermMatch(3, 10, 1));
-  matches_a.push_back(history::TermMatch(4, 14, 5));
+  matches_a.push_back(TermMatch(1, 1, 2));
+  matches_a.push_back(TermMatch(2, 4, 3));
+  matches_a.push_back(TermMatch(3, 9, 1));
+  matches_a.push_back(TermMatch(3, 10, 1));
+  matches_a.push_back(TermMatch(4, 14, 5));
   ACMatchClassifications spans_a =
       HistoryQuickProvider::SpansFromTermMatch(matches_a, 20, false);
   // ACMatch spans should be: 'NM-NM---N-M-N--M----N-'
@@ -583,9 +583,9 @@ TEST_F(HistoryQuickProviderTest, Spans) {
   EXPECT_EQ(ACMatchClassification::NONE, spans_a[8].style);
   // Simulates matches: 'xx.xx' which will test matches at both beginning and
   // end.
-  history::TermMatches matches_b;
-  matches_b.push_back(history::TermMatch(1, 0, 2));
-  matches_b.push_back(history::TermMatch(2, 3, 2));
+  TermMatches matches_b;
+  matches_b.push_back(TermMatch(1, 0, 2));
+  matches_b.push_back(TermMatch(2, 3, 2));
   ACMatchClassifications spans_b =
       HistoryQuickProvider::SpansFromTermMatch(matches_b, 5, true);
   // ACMatch spans should be: 'M-NM-'
