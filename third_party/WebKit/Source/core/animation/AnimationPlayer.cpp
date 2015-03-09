@@ -122,8 +122,6 @@ bool AnimationPlayer::limited(double currentTime) const
 
 void AnimationPlayer::setCurrentTime(double newCurrentTime)
 {
-    UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetCurrentTime);
-
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
     m_currentTimePending = false;
@@ -195,7 +193,6 @@ double AnimationPlayer::startTime(bool& isNull) const
 
 double AnimationPlayer::startTime() const
 {
-    UseCounter::count(executionContext(), UseCounter::AnimationPlayerGetStartTime);
     return m_startTime * 1000;
 }
 
@@ -210,7 +207,6 @@ double AnimationPlayer::currentTime()
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
-    UseCounter::count(executionContext(), UseCounter::AnimationPlayerGetCurrentTime);
     if (m_currentTimePending || playStateInternal() == Idle)
         return std::numeric_limits<double>::quiet_NaN();
 
@@ -382,7 +378,6 @@ void AnimationPlayer::setStartTime(double startTime)
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
-    UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetStartTime);
     if (m_paused || playStateInternal() == Idle)
         return;
     if (startTime == m_startTime)
@@ -630,13 +625,11 @@ bool AnimationPlayer::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 
 double AnimationPlayer::playbackRate() const
 {
-    UseCounter::count(executionContext(), UseCounter::AnimationPlayerGetPlaybackRate);
     return m_playbackRate;
 }
 
 void AnimationPlayer::setPlaybackRate(double playbackRate)
 {
-    UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetPlaybackRate);
     if (playbackRate == m_playbackRate)
         return;
 

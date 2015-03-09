@@ -474,17 +474,17 @@ public:
         SRIElementWithMatchingIntegrityAttribute = 540,
         SRIElementWithNonMatchingIntegrityAttribute = 541,
         SRIElementWithUnparsableIntegrityAttribute = 542,
-        AnimationPlayerGetStartTime = 545,
-        AnimationPlayerSetStartTime = 546,
-        AnimationPlayerGetCurrentTime = 547,
-        AnimationPlayerSetCurrentTime = 548,
-        AnimationPlayerGetPlaybackRate = 549,
-        AnimationPlayerSetPlaybackRate = 550,
-        AnimationPlayerGetPlayState = 551,
-        AnimationPlayerFinish = 552,
-        AnimationPlayerPlay = 553,
-        AnimationPlayerPause = 554,
-        AnimationPlayerReverse = 555,
+        V8AnimationPlayer_StartTime_AttributeGetter = 545,
+        V8AnimationPlayer_StartTime_AttributeSetter = 546,
+        V8AnimationPlayer_CurrentTime_AttributeGetter = 547,
+        V8AnimationPlayer_CurrentTime_AttributeSetter = 548,
+        V8AnimationPlayer_PlaybackRate_AttributeGetter = 549,
+        V8AnimationPlayer_PlaybackRate_AttributeSetter = 550,
+        V8AnimationPlayer_PlayState_AttributeGetter = 551,
+        V8AnimationPlayer_Finish_Method = 552,
+        V8AnimationPlayer_Play_Method = 553,
+        V8AnimationPlayer_Pause_Method = 554,
+        V8AnimationPlayer_Reverse_Method = 555,
         // The above items are available in M39 branch.
 
         BreakIterator = 556,
@@ -633,6 +633,9 @@ public:
         WindowFind = 696,
         WindowScreenLeft = 697,
         WindowScreenTop = 698,
+        V8AnimationPlayer_Cancel_Method = 699,
+        V8AnimationPlayer_Onfinish_AttributeGetter = 700,
+        V8AnimationPlayer_Onfinish_AttributeSetter = 701,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
