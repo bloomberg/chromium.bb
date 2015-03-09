@@ -18,7 +18,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/webrtc/common_video/interface/texture_video_frame.h"
+#include "third_party/webrtc/common_video/interface/i420_video_frame.h"
 #include "third_party/webrtc/system_wrappers/interface/ref_count.h"
 
 namespace content {
@@ -390,11 +390,11 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   // Create a WebRTC video frame.
   webrtc::RefCountImpl<NativeHandleImpl>* handle =
       new webrtc::RefCountImpl<NativeHandleImpl>(frame);
-  webrtc::TextureVideoFrame decoded_image(handle,
-                                          picture.visible_rect().width(),
-                                          picture.visible_rect().height(),
-                                          timestamp,
-                                          0);
+  webrtc::I420VideoFrame decoded_image(handle,
+                                       picture.visible_rect().width(),
+                                       picture.visible_rect().height(),
+                                       timestamp,
+                                       0);
 
   // Invoke decode callback. WebRTC expects no callback after Reset or Release.
   {
