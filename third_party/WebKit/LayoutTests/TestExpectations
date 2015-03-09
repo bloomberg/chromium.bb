@@ -694,6 +694,8 @@ crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2/deriveBits-rfc6070-test-vectors.
 crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2/deriveKey-aes.html [ Failure Pass ]
 crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2/deriveKey-failures.html [ Failure Pass ]
 
+crbug.com/458898 [ MountainLion ] fast/dom/HTMLProgressElement/progress-bar-value-pseudo-element.html [ NeedsRebaseline ]
+
 # There are some unresolved problems with the teardown of WebWorkers that make
 # the "abandon" WebCrypto tests flaky-crash. This flakiness can also affect the
 # tests run immediately afterwards (the two AES-CBC decrypt tests).
