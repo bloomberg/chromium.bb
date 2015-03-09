@@ -399,6 +399,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual blink::WebSpeechRecognizer* speechRecognizer();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();
+  virtual void pageScaleFactorChanged();
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
   virtual double zoomFactorToZoomLevel(double factor) const;
   virtual void registerProtocolHandler(const blink::WebString& scheme,
@@ -677,6 +678,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
+  void OnResetPageScale();
   void OnZoom(PageZoom zoom);
   void OnEnableViewSourceMode();
   void OnWindowSnapshotCompleted(const int snapshot_id,
@@ -1036,6 +1038,8 @@ class CONTENT_EXPORT RenderViewImpl
 
   typedef std::map<cc::SharedBitmapId, cc::SharedBitmap*> BitmapMap;
   BitmapMap disambiguation_bitmaps_;
+
+  bool page_scale_factor_is_one_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

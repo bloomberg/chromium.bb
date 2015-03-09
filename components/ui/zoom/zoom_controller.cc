@@ -341,4 +341,15 @@ void ZoomController::UpdateState(const std::string& host) {
   }
 }
 
+void ZoomController::SetPageScaleFactorIsOneForTesting(bool is_one) {
+  int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents()->GetRenderViewHost()->GetRoutingID();
+  host_zoom_map_->SetPageScaleFactorIsOneForView(
+      render_process_id, render_view_id, is_one);
+}
+
+bool ZoomController::PageScaleFactorIsOne() const {
+  return content::HostZoomMap::PageScaleFactorIsOne(web_contents());
+}
+
 }  // namespace ui_zoom

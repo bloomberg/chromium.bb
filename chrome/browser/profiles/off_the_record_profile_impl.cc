@@ -560,15 +560,17 @@ void OffTheRecordProfileImpl::OnParentZoomLevelChanged(
   HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
   switch (change.mode) {
     case HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
-       return;
+      return;
     case HostZoomMap::ZOOM_CHANGED_FOR_HOST:
-       host_zoom_map->SetZoomLevelForHost(change.host, change.zoom_level);
-       return;
+      host_zoom_map->SetZoomLevelForHost(change.host, change.zoom_level);
+      return;
     case HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
-       host_zoom_map->SetZoomLevelForHostAndScheme(change.scheme,
-           change.host,
-           change.zoom_level);
-       return;
+      host_zoom_map->SetZoomLevelForHostAndScheme(change.scheme,
+          change.host,
+          change.zoom_level);
+      return;
+    case HostZoomMap::PAGE_SCALE_IS_ONE_CHANGED:
+      return;
   }
 }
 

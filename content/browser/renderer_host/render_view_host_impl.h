@@ -351,6 +351,7 @@ class CONTENT_EXPORT RenderViewHostImpl
                             const gfx::Rect& node_bounds_in_viewport);
   void OnClosePageACK();
   void OnDidZoomURL(double zoom_level, const GURL& url);
+  void OnPageScaleFactorIsOneChanged(bool is_one);
   void OnRunFileChooser(const FileChooserParams& params);
   void OnFocusedNodeTouched(bool editable);
 

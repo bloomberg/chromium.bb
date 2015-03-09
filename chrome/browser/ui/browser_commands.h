@@ -78,7 +78,7 @@ void NewTab(Browser* browser);
 void CloseTab(Browser* browser);
 bool CanZoomIn(content::WebContents* contents);
 bool CanZoomOut(content::WebContents* contents);
-bool IsAtDefaultZoom(content::WebContents* contents);
+bool CanResetZoom(content::WebContents* contents);
 void RestoreTab(Browser* browser);
 TabStripModelDelegate::RestoreTabType GetRestoreTabType(
     const Browser* browser);

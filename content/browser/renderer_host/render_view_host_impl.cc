@@ -873,6 +873,8 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorIsOneChanged,
+                        OnPageScaleFactorIsOneChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     // Have the super handle all other messages.
@@ -1346,6 +1348,19 @@ void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
                                      GetRoutingID(),
                                      zoom_level,
                                      net::GetHostOrSpecFromURL(url));
+}
+
+void RenderViewHostImpl::OnPageScaleFactorIsOneChanged(bool is_one) {
+  if (!GetSiteInstance())
+    return;
+  HostZoomMapImpl* host_zoom_map =
+      static_cast<HostZoomMapImpl*>(HostZoomMap::Get(GetSiteInstance()));
+  if (!host_zoom_map)
+    return;
+  if (!GetProcess())
+    return;
+  host_zoom_map->SetPageScaleFactorIsOneForView(GetProcess()->GetID(),
+                                                GetRoutingID(), is_one);
 }
 
 void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {

@@ -2453,6 +2453,10 @@ int WebContentsImpl::GetMaximumZoomPercent() const {
   return maximum_zoom_percent_;
 }
 
+void WebContentsImpl::ResetPageScale() {
+  Send(new ViewMsg_ResetPageScale(GetRoutingID()));
+}
+
 gfx::Size WebContentsImpl::GetPreferredSize() const {
   return capturer_count_ == 0 ? preferred_size_ : preferred_size_for_capture_;
 }

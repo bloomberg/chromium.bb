@@ -578,10 +578,11 @@ bool CanZoomOut(content::WebContents* contents) {
       contents->GetMinimumZoomPercent();
 }
 
-bool IsAtDefaultZoom(content::WebContents* contents) {
+bool CanResetZoom(content::WebContents* contents) {
   ui_zoom::ZoomController* zoom_controller =
       ui_zoom::ZoomController::FromWebContents(contents);
-  return zoom_controller->IsAtDefaultZoom();
+  return !zoom_controller->IsAtDefaultZoom() ||
+         !zoom_controller->PageScaleFactorIsOne();
 }
 
 TabStripModelDelegate::RestoreTabType GetRestoreTabType(

@@ -322,6 +322,7 @@ class CONTENT_EXPORT WebContentsImpl
   void ViewFrameSource(const GURL& url, const PageState& page_state) override;
   int GetMinimumZoomPercent() const override;
   int GetMaximumZoomPercent() const override;
+  void ResetPageScale() override;
   gfx::Size GetPreferredSize() const override;
   bool GotResponseToLockMouseRequest(bool allowed) override;
   bool HasOpener() const override;

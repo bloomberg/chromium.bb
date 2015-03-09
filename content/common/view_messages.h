@@ -690,6 +690,9 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
 IPC_MESSAGE_ROUTED1(ViewMsg_PostMessageEvent,
                     ViewMsg_PostMessage_Params)
 
+// Resets the page scale for the current main frame to the default page scale.
+IPC_MESSAGE_ROUTED0(ViewMsg_ResetPageScale)
+
 // Change the zoom level for the current main frame.  If the level actually
 // changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
 // telling it what url got zoomed and what its current zoom level is.
@@ -1430,6 +1433,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidZoomURL,
                     double /* zoom_level */,
                     GURL /* url */)
+
+// Sent when the renderer changes its page scale factor and whether or not the
+// page scale factor is one changes.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_PageScaleFactorIsOneChanged, bool /* is_one */);
 
 // Updates the minimum/maximum allowed zoom percent for this tab from the
 // default values.  If |remember| is true, then the zoom setting is applied to

@@ -91,6 +91,13 @@ double HostZoomMap::GetZoomLevel(const WebContents* web_contents) {
       *static_cast<const WebContentsImpl*>(web_contents));
 }
 
+bool HostZoomMap::PageScaleFactorIsOne(const WebContents* web_contents) {
+  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
+      HostZoomMap::GetForWebContents(web_contents));
+  return host_zoom_map->PageScaleFactorIsOneForWebContents(
+      *static_cast<const WebContentsImpl*>(web_contents));
+}
+
 void HostZoomMap::SetZoomLevel(const WebContents* web_contents, double level) {
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
       HostZoomMap::GetForWebContents(web_contents));
@@ -334,6 +341,39 @@ void HostZoomMapImpl::SetZoomLevelForView(int render_process_id,
     SetZoomLevelForHost(host, level);
 }
 
+void HostZoomMapImpl::SetPageScaleFactorIsOneForView(int render_process_id,
+                                                     int render_view_id,
+                                                     bool is_one) {
+  {
+    base::AutoLock auto_lock(lock_);
+    view_page_scale_factors_are_one_[RenderViewKey(render_process_id,
+                                                   render_view_id)] = is_one;
+  }
+  HostZoomMap::ZoomLevelChange change;
+  change.mode = HostZoomMap::PAGE_SCALE_IS_ONE_CHANGED;
+  zoom_level_changed_callbacks_.Notify(change);
+}
+
+bool HostZoomMapImpl::PageScaleFactorIsOneForWebContents(
+    const WebContentsImpl& web_contents_impl) const {
+  if (!web_contents_impl.GetRenderProcessHost())
+    return true;
+  base::AutoLock auto_lock(lock_);
+  auto found = view_page_scale_factors_are_one_.find(
+      RenderViewKey(web_contents_impl.GetRenderProcessHost()->GetID(),
+                    web_contents_impl.GetRoutingID()));
+  if (found == view_page_scale_factors_are_one_.end())
+    return true;
+  return found->second;
+}
+
+void HostZoomMapImpl::ClearPageScaleFactorIsOneForView(int render_process_id,
+                                                       int render_view_id) {
+  base::AutoLock auto_lock(lock_);
+  view_page_scale_factors_are_one_.erase(
+      RenderViewKey(render_process_id, render_view_id));
+}
+
 bool HostZoomMapImpl::UsesTemporaryZoomLevel(int render_process_id,
                                              int render_view_id) const {
   RenderViewKey key(render_process_id, render_view_id);
@@ -397,6 +437,7 @@ void HostZoomMapImpl::Observe(int type,
       int render_process_id =
           Source<RenderViewHost>(source)->GetProcess()->GetID();
       ClearTemporaryZoomLevel(render_process_id, render_view_id);
+      ClearPageScaleFactorIsOneForView(render_process_id, render_view_id);
       break;
     }
     default:

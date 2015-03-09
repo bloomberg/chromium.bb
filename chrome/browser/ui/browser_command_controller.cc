@@ -1145,7 +1145,7 @@ void BrowserCommandController::UpdateCommandsForZoomState() {
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS,
                                         CanZoomIn(contents));
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_NORMAL,
-                                        !IsAtDefaultZoom(contents));
+                                        CanResetZoom(contents));
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS,
                                         CanZoomOut(contents));
 }

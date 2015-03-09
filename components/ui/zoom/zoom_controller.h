@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -134,6 +135,10 @@ class ZoomController : public content::WebContentsObserver,
 
   // Sets the zoom mode, which defines zoom behavior (see enum ZoomMode).
   void SetZoomMode(ZoomMode zoom_mode);
+
+  // Set and query whether or not the page scale factor is one.
+  void SetPageScaleFactorIsOneForTesting(bool is_one);
+  bool PageScaleFactorIsOne() const;
 
   // content::WebContentsObserver overrides:
   void DidNavigateMainFrame(

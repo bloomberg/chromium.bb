@@ -293,6 +293,10 @@ TEST_F(BrowserCommandsTest, OnZoomReset) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_PLUS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_NORMAL));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_MINUS));
+
+  // Changing the page scale factor will re-enable IDC_ZOOM_NORMAL
+  zoom_controller->SetPageScaleFactorIsOneForTesting(false);
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_NORMAL));
 }
 
 TEST_F(BrowserCommandsTest, OnZoomLevelChanged) {

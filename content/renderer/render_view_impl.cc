@@ -660,7 +660,8 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
 #endif
       enumeration_completion_id_(0),
       session_storage_namespace_id_(params.session_storage_namespace_id),
-      next_snapshot_id_(0) {
+      next_snapshot_id_(0),
+      page_scale_factor_is_one_(true) {
 }
 
 void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
@@ -1285,6 +1286,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
+    IPC_MESSAGE_HANDLER(ViewMsg_ResetPageScale, OnResetPageScale)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
@@ -2680,6 +2682,12 @@ void RenderViewImpl::OnFindMatchRects(int current_version) {
 }
 #endif
 
+void RenderViewImpl::OnResetPageScale() {
+  if (!webview())
+    return;
+  webview()->setPageScaleFactor(1);
+}
+
 void RenderViewImpl::OnZoom(PageZoom zoom) {
   if (!webview())  // Not sure if this can happen, but no harm in being safe.
     return;
@@ -3680,6 +3688,17 @@ void RenderViewImpl::zoomLevelChanged() {
         routing_id_, zoom_level,
         GURL(webview()->mainFrame()->document().url())));
   }
+}
+
+void RenderViewImpl::pageScaleFactorChanged() {
+  if (!webview())
+    return;
+  bool page_scale_factor_is_one = webview()->pageScaleFactor() == 1;
+  if (page_scale_factor_is_one == page_scale_factor_is_one_)
+    return;
+  page_scale_factor_is_one_ = page_scale_factor_is_one;
+  Send(new ViewHostMsg_PageScaleFactorIsOneChanged(routing_id_,
+                                                   page_scale_factor_is_one_));
 }
 
 double RenderViewImpl::zoomLevelToZoomFactor(double zoom_level) const {
