@@ -36,6 +36,19 @@ static bool MaybePrintResultsForAudioReceive(
   perf_test::PrintResult(
       "audio_misc", modifier, "packets_lost", value, "frames", false);
 
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googExpandRate", ssrc), &value));
+  perf_test::PrintResult(
+      "audio_rates", modifier, "goog_expand_rate", value, "%", false);
+  EXPECT_TRUE(
+      pc_dict.GetString(Statistic("googSpeechExpandRate", ssrc), &value));
+  perf_test::PrintResult(
+      "audio_rates", modifier, "goog_speech_expand_rate", value, "%", false);
+  EXPECT_TRUE(
+      pc_dict.GetString(Statistic("googSecondaryDecodedRate", ssrc), &value));
+  perf_test::PrintResult(
+      "audio_rates", modifier, "goog_secondary_decoded_rate", value, "%",
+      false);
+
   return true;
 }
 
