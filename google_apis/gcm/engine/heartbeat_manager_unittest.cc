@@ -26,7 +26,7 @@ mcs_proto::HeartbeatConfig BuildHeartbeatConfig(int interval_ms) {
 class TestHeartbeatManager : public HeartbeatManager {
  public:
   TestHeartbeatManager() {}
-  virtual ~TestHeartbeatManager() {}
+  ~TestHeartbeatManager() override {}
 
   // Bypass the heartbeat timer, and send the heartbeat now.
   void TriggerHearbeat();

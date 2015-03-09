@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -20,10 +21,15 @@ const int64 kCellHeartbeatDefaultMs = 1000 * 60 * 28;  // 28 minutes.
 const int64 kWifiHeartbeatDefaultMs = 1000 * 60 * 15;  // 15 minutes.
 // The default heartbeat ack interval.
 const int64 kHeartbeatAckDefaultMs = 1000 * 60 * 1;  // 1 minute.
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // The period at which to check if the heartbeat time has passed. Used to
 // protect against platforms where the timer is delayed by the system being
-// suspended.
+// suspended.  Only needed on linux because the other OSes provide a standard
+// way to be notified of system suspend and resume events.
 const int kHeartbeatMissedCheckMs = 1000 * 60 * 5;  // 5 minutes.
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
 }  // namespace
 
 HeartbeatManager::HeartbeatManager()
@@ -32,9 +38,19 @@ HeartbeatManager::HeartbeatManager()
       server_interval_ms_(0),
       heartbeat_timer_(new base::Timer(true /* retain_user_task */,
                                        false /* is_repeating */)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // Listen for system suspend and resume events.
+  base::PowerMonitor* monitor = base::PowerMonitor::Get();
+  if (monitor)
+    monitor->AddObserver(this);
+}
 
-HeartbeatManager::~HeartbeatManager() {}
+HeartbeatManager::~HeartbeatManager() {
+  // Stop listening for system suspend and resume events.
+  base::PowerMonitor* monitor = base::PowerMonitor::Get();
+  if (monitor)
+    monitor->RemoveObserver(this);
+}
 
 void HeartbeatManager::Start(
     const base::Closure& send_heartbeat_callback,
@@ -96,6 +112,10 @@ void HeartbeatManager::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
     heartbeat_timer_->Start(FROM_HERE, remaining_delay, timer_task);
 }
 
+void HeartbeatManager::OnResume() {
+  CheckForMissedHeartbeat();
+}
+
 void HeartbeatManager::OnHeartbeatTriggered() {
   // Reset the weak pointers used for heartbeat checks.
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -144,14 +164,16 @@ void HeartbeatManager::RestartTimer() {
                          base::Bind(&HeartbeatManager::OnHeartbeatTriggered,
                                     weak_ptr_factory_.GetWeakPtr()));
 
-  // TODO(zea): Polling is not a particularly good way to detect the missed
-  // heartbeat. Ideally we should be listening to wake-from-suspend events,
-  // although that would require platform-specific implementations.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Windows, Mac, Android, iOS, and Chrome OS all provide a way to be notified
+  // when the system is suspending or resuming.  The only one that does not is
+  // Linux so we need to poll to check for missed heartbeats.
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&HeartbeatManager::CheckForMissedHeartbeat,
                  weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kHeartbeatMissedCheckMs));
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }
 
 void HeartbeatManager::CheckForMissedHeartbeat() {
@@ -167,12 +189,14 @@ void HeartbeatManager::CheckForMissedHeartbeat() {
     return;
   }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Otherwise check again later.
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&HeartbeatManager::CheckForMissedHeartbeat,
                  weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kHeartbeatMissedCheckMs));
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }
 
 }  // namespace gcm

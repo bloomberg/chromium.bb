@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/power_monitor/power_observer.h"
 #include "google_apis/gcm/base/gcm_export.h"
 
 namespace base {
@@ -23,10 +24,10 @@ namespace gcm {
 
 // A heartbeat management class, capable of sending and handling heartbeat
 // receipt/failures and triggering reconnection as necessary.
-class GCM_EXPORT HeartbeatManager {
+class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
  public:
   HeartbeatManager();
-  ~HeartbeatManager();
+  ~HeartbeatManager() override;
 
   // Start the heartbeat logic.
   // |send_heartbeat_callback_| is the callback the HeartbeatManager uses to
@@ -54,6 +55,9 @@ class GCM_EXPORT HeartbeatManager {
 
   // Updates the timer used for scheduling heartbeats.
   void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer);
+
+  // base::PowerObserver override.
+  void OnResume() override;
 
  protected:
   // Helper method to send heartbeat on timer trigger.
