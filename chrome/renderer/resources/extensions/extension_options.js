@@ -9,7 +9,6 @@ var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 
 function ExtensionOptionsImpl(extensionoptionsElement) {
   GuestViewContainer.call(this, extensionoptionsElement, 'extensionoptions');
-  this.autosizeDeferred = false;
 
   new ExtensionOptionsEvents(this);
   this.setupElementProperties();
