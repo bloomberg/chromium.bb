@@ -18,6 +18,7 @@ var EventBindings = require('event_bindings');
 var idGeneratorNatives = requireNative('id_generator');
 var MessagingNatives = requireNative('messaging_natives');
 var utils = require('utils');
+var WebViewEvents = require('webViewEvents').WebViewEvents;
 var WebViewImpl = require('webView').WebViewImpl;
 
 function GetUniqueSubEventName(eventName) {
@@ -94,8 +95,9 @@ var WebViewContextMenus = utils.expose(
     { functions: ['create', 'remove', 'removeAll', 'update'] });
 
 /** @private */
-WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
-  var requestId = e.requestId;
+WebViewEvents.prototype.handleContextMenu = function(event, eventName) {
+  var webViewEvent = this.makeDomEvent(event, eventName);
+  var requestId = event.requestId;
   // Construct the event.menu object.
   var actionTaken = false;
   var validateCall = function() {
@@ -112,11 +114,11 @@ WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
       validateCall();
       // TODO(lazyboy): WebViewShowContextFunction doesn't do anything useful
       // with |items|, implement.
-      ChromeWebView.showContextMenu(this.guest.getId(), requestId, items);
+      ChromeWebView.showContextMenu(this.view.guest.getId(), requestId, items);
     }.bind(this)
   };
   webViewEvent.menu = menu;
-  var element = this.element;
+  var element = this.view.element;
   var defaultPrevented = !element.dispatchEvent(webViewEvent);
   if (actionTaken) {
     return;
@@ -124,7 +126,8 @@ WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   if (!defaultPrevented) {
     actionTaken = true;
     // The default action is equivalent to just showing the context menu as is.
-    ChromeWebView.showContextMenu(this.guest.getId(), requestId, undefined);
+    ChromeWebView.showContextMenu(
+        this.view.guest.getId(), requestId, undefined);
 
     // TODO(lazyboy): Figure out a way to show warning message only when
     // listeners are registered for this event.
