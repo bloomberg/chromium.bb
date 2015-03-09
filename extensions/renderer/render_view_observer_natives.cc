@@ -21,7 +21,9 @@ class LoadWatcher : public content::RenderViewObserver {
   LoadWatcher(ScriptContext* context,
               content::RenderView* view,
               v8::Handle<v8::Function> cb)
-      : content::RenderViewObserver(view), context_(context), callback_(cb) {}
+      : content::RenderViewObserver(view),
+        context_(context),
+        callback_(context->isolate(), cb) {}
 
   void DidCreateDocumentElement(blink::WebLocalFrame* frame) override {
     CallbackAndDie(true);
@@ -37,12 +39,13 @@ class LoadWatcher : public content::RenderViewObserver {
     v8::Isolate* isolate = context_->isolate();
     v8::HandleScope handle_scope(isolate);
     v8::Handle<v8::Value> args[] = {v8::Boolean::New(isolate, succeeded)};
-    context_->CallFunction(callback_.NewHandle(isolate), 1, args);
+    context_->CallFunction(v8::Local<v8::Function>::New(isolate, callback_),
+                           arraysize(args), args);
     delete this;
   }
 
   ScriptContext* context_;
-  ScopedPersistent<v8::Function> callback_;
+  v8::UniquePersistent<v8::Function> callback_;
   DISALLOW_COPY_AND_ASSIGN(LoadWatcher);
 };
 }  // namespace

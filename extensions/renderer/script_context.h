@@ -14,7 +14,6 @@
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/safe_builtins.h"
-#include "extensions/renderer/scoped_persistent.h"
 #include "gin/runner.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -51,7 +50,7 @@ class ScriptContext : public RequestSender::Source {
   bool is_valid() const { return !v8_context_.IsEmpty(); }
 
   v8::Handle<v8::Context> v8_context() const {
-    return v8_context_.NewHandle(isolate());
+    return v8::Local<v8::Context>::New(isolate_, v8_context_);
   }
 
   const Extension* extension() const { return extension_.get(); }
@@ -153,7 +152,7 @@ class ScriptContext : public RequestSender::Source {
 
  protected:
   // The v8 context the bindings are accessible to.
-  ScopedPersistent<v8::Context> v8_context_;
+  v8::UniquePersistent<v8::Context> v8_context_;
 
  private:
   class Runner;

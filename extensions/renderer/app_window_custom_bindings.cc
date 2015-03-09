@@ -15,7 +15,6 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/scoped_persistent.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "grit/extensions_renderer_resources.h"

@@ -11,7 +11,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/renderer/guest_view/guest_view_container.h"
-#include "extensions/renderer/scoped_persistent.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "ui/gfx/geometry/size.h"
@@ -104,12 +103,12 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   scoped_ptr<blink::WebURLLoader> loader_;
 
   // The scriptable object that backs the plugin.
-  ScopedPersistent<v8::Object> scriptable_object_;
+  v8::UniquePersistent<v8::Object> scriptable_object_;
 
   // Pending postMessage messages that need to be sent to the guest. These are
   // queued while the guest is loading and once it is fully loaded they are
   // delivered so that messages aren't lost.
-  std::vector<linked_ptr<ScopedPersistent<v8::Value>>> pending_messages_;
+  std::vector<linked_ptr<v8::UniquePersistent<v8::Value>>> pending_messages_;
 
   // True if the guest page has fully loaded and its JavaScript onload function
   // has been called.

@@ -80,7 +80,7 @@ ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
                              Feature::Context context_type,
                              const Extension* effective_extension,
                              Feature::Context effective_context_type)
-    : v8_context_(v8_context),
+    : v8_context_(v8_context->GetIsolate(), v8_context),
       web_frame_(web_frame),
       extension_(extension),
       context_type_(context_type),
@@ -116,7 +116,7 @@ void ScriptContext::Invalidate() {
   if (module_system_)
     module_system_->Invalidate();
   web_frame_ = NULL;
-  v8_context_.reset();
+  v8_context_.Reset();
   runner_.reset();
 }
 
@@ -265,7 +265,8 @@ void ScriptContext::OnResponseReceived(const std::string& name,
       v8::Integer::New(isolate(), request_id),
       v8::String::NewFromUtf8(isolate(), name.c_str()),
       v8::Boolean::New(isolate(), success),
-      converter->ToV8Value(&response, v8_context_.NewHandle(isolate())),
+      converter->ToV8Value(&response,
+                           v8::Local<v8::Context>::New(isolate(), v8_context_)),
       v8::String::NewFromUtf8(isolate(), error.c_str())};
 
   v8::Handle<v8::Value> retval = module_system()->CallModuleMethod(

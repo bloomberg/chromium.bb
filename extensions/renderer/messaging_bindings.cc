@@ -24,7 +24,6 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/object_backed_native_handler.h"
-#include "extensions/renderer/scoped_persistent.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -194,7 +193,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
         const v8::WeakCallbackData<v8::Object, GCCallback>& data) {
       // v8 says we need to explicitly reset weak handles from their callbacks.
       // It's not implicit as one might expect.
-      data.GetParameter()->object_.reset();
+      data.GetParameter()->object_.Reset();
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&GCCallback::RunCallback,
@@ -204,11 +203,14 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     GCCallback(v8::Handle<v8::Object> object,
                v8::Handle<v8::Function> callback,
                v8::Isolate* isolate)
-        : object_(object), callback_(callback), isolate_(isolate) {}
+        : object_(isolate, object),
+          callback_(isolate, callback),
+          isolate_(isolate) {}
 
     void RunCallback() {
       v8::HandleScope handle_scope(isolate_);
-      v8::Handle<v8::Function> callback = callback_.NewHandle(isolate_);
+      v8::Handle<v8::Function> callback =
+          v8::Local<v8::Function>::New(isolate_, callback_);
       v8::Handle<v8::Context> context = callback->CreationContext();
       if (context.IsEmpty())
         return;
@@ -217,8 +219,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
       callback->Call(context->Global(), 0, NULL);
     }
 
-    ScopedPersistent<v8::Object> object_;
-    ScopedPersistent<v8::Function> callback_;
+    v8::UniquePersistent<v8::Object> object_;
+    v8::UniquePersistent<v8::Function> callback_;
     v8::Isolate* isolate_;
 
     DISALLOW_COPY_AND_ASSIGN(GCCallback);

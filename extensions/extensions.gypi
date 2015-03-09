@@ -934,7 +934,6 @@
       'renderer/runtime_custom_bindings.h',
       'renderer/safe_builtins.cc',
       'renderer/safe_builtins.h',
-      'renderer/scoped_persistent.h',
       'renderer/script_context.cc',
       'renderer/script_context.h',
       'renderer/script_context_set.cc',

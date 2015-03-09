@@ -177,9 +177,9 @@ v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(
   if (scriptable_object_.IsEmpty()) {
     v8::Local<v8::Object> object =
         ScriptableObject::Create(isolate, weak_factory_.GetWeakPtr());
-    scriptable_object_.reset(object);
+    scriptable_object_.Reset(isolate, object);
   }
-  return scriptable_object_.NewHandle(isolate);
+  return v8::Local<v8::Object>::New(isolate, scriptable_object_);
 }
 
 void MimeHandlerViewContainer::didReceiveData(blink::WebURLLoader* /* unused */,
@@ -200,8 +200,8 @@ void MimeHandlerViewContainer::didFinishLoading(
 void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
                                            v8::Handle<v8::Value> message) {
   if (!guest_loaded_) {
-    linked_ptr<ScopedPersistent<v8::Value>> scoped_persistent(
-        new ScopedPersistent<v8::Value>(isolate, message));
+    linked_ptr<v8::UniquePersistent<v8::Value>> scoped_persistent(
+        new v8::UniquePersistent<v8::Value>(isolate, message));
     pending_messages_.push_back(scoped_persistent);
     return;
   }
@@ -288,7 +288,7 @@ void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(frame->mainWorldScriptContext());
   for (const auto& pending_message : pending_messages_)
-    PostMessage(isolate, pending_message->NewHandle(isolate));
+    PostMessage(isolate, v8::Local<v8::Value>::New(isolate, *pending_message));
 
   pending_messages_.clear();
 }

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/memory/linked_ptr.h"
 #include "extensions/renderer/native_handler.h"
-#include "extensions/renderer/scoped_persistent.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
@@ -69,7 +68,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
   ScriptContext* context_;
 
-  ScopedPersistent<v8::ObjectTemplate> object_template_;
+  v8::UniquePersistent<v8::ObjectTemplate> object_template_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectBackedNativeHandler);
 };

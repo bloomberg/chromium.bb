@@ -25,9 +25,7 @@ ExtensionsGuestViewContainer::Request::Request(
     GuestViewContainer* container,
     v8::Handle<v8::Function> callback,
     v8::Isolate* isolate)
-    : container_(container),
-      callback_(callback),
-      isolate_(isolate) {
+    : container_(container), callback_(isolate, callback), isolate_(isolate) {
 }
 
 ExtensionsGuestViewContainer::Request::~Request() {
@@ -39,7 +37,7 @@ bool ExtensionsGuestViewContainer::Request::HasCallback() const {
 
 v8::Handle<v8::Function>
 ExtensionsGuestViewContainer::Request::GetCallback() const {
-  return callback_.NewHandle(isolate_);
+  return v8::Local<v8::Function>::New(isolate_, callback_);
 }
 
 ExtensionsGuestViewContainer::AttachRequest::AttachRequest(
@@ -161,7 +159,7 @@ ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
     return;
   v8::HandleScope handle_scope(destruction_isolate_);
   v8::Handle<v8::Function> callback =
-      destruction_callback_.NewHandle(destruction_isolate_);
+      v8::Local<v8::Function>::New(destruction_isolate_, destruction_callback_);
   v8::Handle<v8::Context> context = callback->CreationContext();
   if (context.IsEmpty())
     return;
@@ -188,14 +186,14 @@ void ExtensionsGuestViewContainer::IssueRequest(linked_ptr<Request> request) {
 void ExtensionsGuestViewContainer::RegisterDestructionCallback(
     v8::Handle<v8::Function> callback,
     v8::Isolate* isolate) {
-  destruction_callback_.reset(callback);
+  destruction_callback_.Reset(isolate, callback);
   destruction_isolate_ = isolate;
 }
 
 void ExtensionsGuestViewContainer::RegisterElementResizeCallback(
     v8::Handle<v8::Function> callback,
     v8::Isolate* isolate) {
-  element_resize_callback_.reset(callback);
+  element_resize_callback_.Reset(isolate, callback);
   element_resize_isolate_ = isolate;
 }
 
@@ -245,8 +243,8 @@ void ExtensionsGuestViewContainer::CallElementResizeCallback(
     const gfx::Size& old_size,
     const gfx::Size& new_size) {
   v8::HandleScope handle_scope(element_resize_isolate_);
-  v8::Handle<v8::Function> callback =
-      element_resize_callback_.NewHandle(element_resize_isolate_);
+  v8::Handle<v8::Function> callback = v8::Local<v8::Function>::New(
+      element_resize_isolate_, element_resize_callback_);
   v8::Handle<v8::Context> context = callback->CreationContext();
   if (context.IsEmpty())
     return;

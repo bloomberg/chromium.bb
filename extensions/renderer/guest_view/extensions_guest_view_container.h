@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/renderer/guest_view/guest_view_container.h"
-#include "extensions/renderer/scoped_persistent.h"
+#include "v8/include/v8.h"
 
 namespace gfx {
 class Size;
@@ -42,7 +42,7 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
 
    private:
     GuestViewContainer* container_;
-    ScopedPersistent<v8::Function> callback_;
+    v8::UniquePersistent<v8::Function> callback_;
     v8::Isolate* const isolate_;
   };
 
@@ -110,10 +110,10 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
   std::deque<linked_ptr<Request> > pending_requests_;
   linked_ptr<Request> pending_response_;
 
-  ScopedPersistent<v8::Function> destruction_callback_;
+  v8::UniquePersistent<v8::Function> destruction_callback_;
   v8::Isolate* destruction_isolate_;
 
-  ScopedPersistent<v8::Function> element_resize_callback_;
+  v8::UniquePersistent<v8::Function> element_resize_callback_;
   v8::Isolate* element_resize_isolate_;
 
   // Weak pointer factory used for calling the element resize callback.

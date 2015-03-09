@@ -263,7 +263,7 @@ void CastStreamingNativeHandler::CreateCastSession(
 
   // TODO(imcheng): Use a weak reference to ensure we don't call into an
   // invalid context when the callback is invoked.
-  create_callback_.reset(args[2].As<v8::Function>());
+  create_callback_.Reset(isolate, args[2].As<v8::Function>());
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -303,9 +303,10 @@ void CastStreamingNativeHandler::CallCreateCallback(
   udp_transport_map_[udp_id] =
       linked_ptr<CastUdpTransport>(udp_transport.release());
   callback_args[2] = v8::Integer::New(isolate, udp_id);
-  context()->CallFunction(create_callback_.NewHandle(isolate),
-                          3, callback_args);
-  create_callback_.reset();
+  context()->CallFunction(
+      v8::Local<v8::Function>::New(isolate, create_callback_), 3,
+      callback_args);
+  create_callback_.Reset();
 }
 
 void CastStreamingNativeHandler::CallStartCallback(int stream_id) {
@@ -519,8 +520,9 @@ void CastStreamingNativeHandler::GetRawEvents(
   const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
   // TODO(imcheng): Use a weak reference to ensure we don't call into an
   // invalid context when the callback is invoked.
-  linked_ptr<ScopedPersistent<v8::Function> > callback(
-      new ScopedPersistent<v8::Function>(args[2].As<v8::Function>()));
+  linked_ptr<v8::UniquePersistent<v8::Function>> callback(
+      new v8::UniquePersistent<v8::Function>(args.GetIsolate(),
+                                             args[2].As<v8::Function>()));
   std::string extra_data;
   if (!args[1]->IsNull()) {
     extra_data = *v8::String::Utf8Value(args[1]);
@@ -551,8 +553,9 @@ void CastStreamingNativeHandler::GetStats(
 
   // TODO(imcheng): Use a weak reference to ensure we don't call into an
   // invalid context when the callback is invoked.
-  linked_ptr<ScopedPersistent<v8::Function> > callback(
-      new ScopedPersistent<v8::Function>(args[1].As<v8::Function>()));
+  linked_ptr<v8::UniquePersistent<v8::Function>> callback(
+      new v8::UniquePersistent<v8::Function>(args.GetIsolate(),
+                                             args[1].As<v8::Function>()));
   get_stats_callbacks_.insert(std::make_pair(transport_id, callback));
 
   transport->GetStats(
@@ -572,11 +575,11 @@ void CastStreamingNativeHandler::CallGetRawEventsCallback(
       get_raw_events_callbacks_.find(transport_id);
   if (it == get_raw_events_callbacks_.end())
     return;
-  v8::Handle<v8::Value> callback_args[1];
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  callback_args[0] =
-      converter->ToV8Value(raw_events.get(), context()->v8_context());
-  context()->CallFunction(it->second->NewHandle(isolate), 1, callback_args);
+  v8::Handle<v8::Value> callback_args[] = {
+      converter->ToV8Value(raw_events.get(), context()->v8_context())};
+  context()->CallFunction(v8::Local<v8::Function>::New(isolate, *it->second),
+                          arraysize(callback_args), callback_args);
   get_raw_events_callbacks_.erase(it);
 }
 
@@ -592,9 +595,10 @@ void CastStreamingNativeHandler::CallGetStatsCallback(
     return;
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Handle<v8::Value> callback_args[1];
-  callback_args[0] = converter->ToV8Value(stats.get(), context()->v8_context());
-  context()->CallFunction(it->second->NewHandle(isolate), 1, callback_args);
+  v8::Handle<v8::Value> callback_args[] = {
+      converter->ToV8Value(stats.get(), context()->v8_context())};
+  context()->CallFunction(v8::Local<v8::Function>::New(isolate, *it->second),
+                          arraysize(callback_args), callback_args);
   get_stats_callbacks_.erase(it);
 }
 
@@ -659,7 +663,7 @@ bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
   } else if (params->codec_name == "PCM16") {
     config->codec = media::cast::CODEC_AUDIO_PCM16;
     config->rtp_timebase = 48000;
-    config->rtp_payload_type =127;
+    config->rtp_payload_type = 127;
   } else if (params->codec_name == "AAC") {
     config->codec = media::cast::CODEC_AUDIO_AAC;
     config->rtp_timebase = 48000;

@@ -13,7 +13,6 @@
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/safe_builtins.h"
-#include "extensions/renderer/scoped_persistent.h"
 #include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
 

@@ -19,15 +19,17 @@ const char* kHandlerFunction = "handler_function";
 }  // namespace
 
 ObjectBackedNativeHandler::ObjectBackedNativeHandler(ScriptContext* context)
-    : router_data_(context->v8_context()->GetIsolate()),
+    : router_data_(context->isolate()),
       context_(context),
-      object_template_(
-          v8::ObjectTemplate::New(context->v8_context()->GetIsolate())) {}
+      object_template_(context->isolate(),
+                       v8::ObjectTemplate::New(context->isolate())) {
+}
 
 ObjectBackedNativeHandler::~ObjectBackedNativeHandler() { Invalidate(); }
 
 v8::Handle<v8::Object> ObjectBackedNativeHandler::NewInstance() {
-  return object_template_.NewHandle(v8::Isolate::GetCurrent())->NewInstance();
+  return v8::Local<v8::ObjectTemplate>::New(GetIsolate(), object_template_)
+      ->NewInstance();
 }
 
 // static
@@ -63,7 +65,7 @@ void ObjectBackedNativeHandler::RouteFunction(
       v8::External::New(isolate, new HandlerFunction(handler_function)));
   v8::Handle<v8::FunctionTemplate> function_template =
       v8::FunctionTemplate::New(isolate, Router, data);
-  object_template_.NewHandle(isolate)
+  v8::Local<v8::ObjectTemplate>::New(isolate, object_template_)
       ->Set(isolate, name.c_str(), function_template);
   router_data_.Append(data);
 }
@@ -89,7 +91,7 @@ void ObjectBackedNativeHandler::Invalidate() {
     data->Delete(v8::String::NewFromUtf8(isolate, kHandlerFunction));
   }
   router_data_.Clear();
-  object_template_.reset();
+  object_template_.Reset();
   context_ = NULL;
   NativeHandler::Invalidate();
 }
