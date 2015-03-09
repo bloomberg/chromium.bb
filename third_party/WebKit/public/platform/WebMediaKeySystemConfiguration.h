@@ -30,12 +30,6 @@ struct WebMediaKeySystemConfiguration {
     Requirement distinctiveIdentifier;
     Requirement persistentState;
     WebVector<WebEncryptedMediaSessionType> sessionTypes;
-
-    // FIXME: Temporary methods until |initDataTypes| and |sessionTypes|
-    // can be converted to be WebVector<enum>.
-    BLINK_PLATFORM_EXPORT WebVector<WebEncryptedMediaInitDataType> getInitDataTypes() const;
-    BLINK_PLATFORM_EXPORT void setInitDataTypes(const WebVector<WebEncryptedMediaInitDataType>&);
-    BLINK_PLATFORM_EXPORT void setSessionTypes(const WebVector<WebEncryptedMediaSessionType>&);
 };
 
 } // namespace blink
