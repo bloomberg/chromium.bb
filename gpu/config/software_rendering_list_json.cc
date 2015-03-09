@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.18",
+  "version": "9.19",
   "entries": [
     {
       "id": 1,
@@ -1048,15 +1048,6 @@ LONG_STRING_CONST(
             "type": "android"
           },
           "gl_renderer": "Immersion.*"
-        },
-        {
-          "os": {
-            "type": "android",
-            "version": {
-              "op": ">=",
-              "value": "4.4.99"
-            }
-          }
         },
         {
           "os": {
