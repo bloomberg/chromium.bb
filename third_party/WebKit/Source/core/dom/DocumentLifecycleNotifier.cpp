@@ -36,16 +36,6 @@ DocumentLifecycleNotifier::DocumentLifecycleNotifier(Document* document)
 {
 }
 
-void DocumentLifecycleNotifier::addObserver(DocumentLifecycleObserver* observer)
-{
-    LifecycleNotifier<Document, DocumentLifecycleObserver>::addObserver(observer);
-}
-
-void DocumentLifecycleNotifier::removeObserver(DocumentLifecycleObserver* observer)
-{
-    LifecycleNotifier<Document, DocumentLifecycleObserver>::removeObserver(observer);
-}
-
 void DocumentLifecycleNotifier::notifyDocumentWasDetached()
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);

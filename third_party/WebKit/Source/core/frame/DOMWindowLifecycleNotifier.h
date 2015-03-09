@@ -36,9 +36,6 @@ class LocalDOMWindow;
 
 class DOMWindowLifecycleNotifier : public LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver> {
 public:
-    void addObserver(DOMWindowLifecycleObserver*);
-    void removeObserver(DOMWindowLifecycleObserver*);
-
     void notifyAddEventListener(LocalDOMWindow*, const AtomicString& eventType);
     void notifyRemoveEventListener(LocalDOMWindow*, const AtomicString& eventType);
     void notifyRemoveAllEventListeners(LocalDOMWindow*);

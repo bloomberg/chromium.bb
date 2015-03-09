@@ -39,7 +39,6 @@ class ExecutionContext;
 class ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext, ContextLifecycleObserver> {
 public:
     void addObserver(ContextLifecycleObserver*);
-    void removeObserver(ContextLifecycleObserver*);
 
     void notifyResumingActiveDOMObjects();
     void notifySuspendingActiveDOMObjects();

@@ -45,11 +45,6 @@ void ContextLifecycleNotifier::addObserver(ContextLifecycleObserver* observer)
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
 }
 
-void ContextLifecycleNotifier::removeObserver(ContextLifecycleObserver* observer)
-{
-    LifecycleNotifier<ExecutionContext, ContextLifecycleObserver>::removeObserver(observer);
-}
-
 void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverActiveDOMObjects);

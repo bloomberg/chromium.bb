@@ -36,16 +36,6 @@ PageLifecycleNotifier::PageLifecycleNotifier(Page* context)
 {
 }
 
-void PageLifecycleNotifier::addObserver(PageLifecycleObserver* observer)
-{
-    LifecycleNotifier<Page, PageLifecycleObserver>::addObserver(observer);
-}
-
-void PageLifecycleNotifier::removeObserver(PageLifecycleObserver* observer)
-{
-    LifecycleNotifier<Page, PageLifecycleObserver>::removeObserver(observer);
-}
-
 void PageLifecycleNotifier::notifyPageVisibilityChanged()
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);

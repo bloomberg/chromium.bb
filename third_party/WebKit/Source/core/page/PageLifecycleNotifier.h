@@ -36,9 +36,6 @@ class PageLifecycleObserver;
 
 class PageLifecycleNotifier : public LifecycleNotifier<Page, PageLifecycleObserver> {
 public:
-    void addObserver(PageLifecycleObserver*);
-    void removeObserver(PageLifecycleObserver*);
-
     void notifyPageVisibilityChanged();
     void notifyDidCommitLoad(LocalFrame*);
 

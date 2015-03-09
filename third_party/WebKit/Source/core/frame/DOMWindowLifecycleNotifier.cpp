@@ -36,16 +36,6 @@ DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LocalDOMWindow* context)
 {
 }
 
-void DOMWindowLifecycleNotifier::addObserver(DOMWindowLifecycleObserver* observer)
-{
-    LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver>::addObserver(observer);
-}
-
-void DOMWindowLifecycleNotifier::removeObserver(DOMWindowLifecycleObserver* observer)
-{
-    LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver>::removeObserver(observer);
-}
-
 void DOMWindowLifecycleNotifier::notifyAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);

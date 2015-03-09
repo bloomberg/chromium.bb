@@ -42,6 +42,9 @@ public:
     virtual ~LifecycleNotifier();
     virtual bool isContextThread() const { return true; }
 
+    void addObserver(Observer*);
+    void removeObserver(Observer*);
+
     // notifyContextDestroyed() should be explicitly dispatched from an
     // observed context to notify observers that contextDestroyed().
     //
@@ -60,9 +63,6 @@ protected:
         , m_didCallContextDestroyed(false)
     {
     }
-
-    void addObserver(Observer*);
-    void removeObserver(Observer*);
 
     Context* context() const { return m_context; }
 

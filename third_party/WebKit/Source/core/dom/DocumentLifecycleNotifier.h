@@ -35,9 +35,6 @@ class DocumentLifecycleObserver;
 
 class DocumentLifecycleNotifier : public LifecycleNotifier<Document, DocumentLifecycleObserver> {
 public:
-    void addObserver(DocumentLifecycleObserver*);
-    void removeObserver(DocumentLifecycleObserver*);
-
     void notifyDocumentWasDetached();
 #if !ENABLE(OILPAN)
     void notifyDocumentWasDisposed();
