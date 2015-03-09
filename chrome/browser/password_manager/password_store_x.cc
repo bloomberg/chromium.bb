@@ -122,18 +122,19 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginsSyncedBetweenImpl(
 }
 
 namespace {
+
 struct LoginLessThan {
   bool operator()(const PasswordForm* a, const PasswordForm* b) {
     return a->origin < b->origin;
   }
 };
-}  // anonymous namespace
 
-void PasswordStoreX::SortLoginsByOrigin(
-    std::vector<autofill::PasswordForm*>* list) {
-  // In login_database.cc, the query has ORDER BY origin_url. Simulate that.
+// Sorts |list| by origin, like the ORDER BY clause in login_database.cc.
+void SortLoginsByOrigin(std::vector<autofill::PasswordForm*>* list) {
   std::sort(list->begin(), list->end(), LoginLessThan());
 }
+
+}  // anonymous namespace
 
 ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
     const autofill::PasswordForm& form,
@@ -154,51 +155,13 @@ ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
   return matched_forms.Pass();
 }
 
-void PasswordStoreX::GetAutofillableLoginsImpl(
-    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  CheckMigration();
-  ScopedVector<autofill::PasswordForm> obtained_forms;
-  if (use_native_backend() &&
-      backend_->GetAutofillableLogins(&obtained_forms)) {
-    SortLoginsByOrigin(&obtained_forms.get());
-    // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    if (!obtained_forms.empty())
-      allow_fallback_ = false;
-    request->NotifyConsumerWithResults(obtained_forms.Pass());
-    return;
-  } else if (allow_default_store()) {
-    PasswordStoreDefault::GetAutofillableLoginsImpl(request.Pass());
-    return;
-  }
-  // The consumer will be left hanging unless we reply.
-  request->NotifyConsumerWithResults(ScopedVector<autofill::PasswordForm>());
-}
-
-void PasswordStoreX::GetBlacklistLoginsImpl(
-    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  CheckMigration();
-  ScopedVector<autofill::PasswordForm> obtained_forms;
-  if (use_native_backend() && backend_->GetBlacklistLogins(&obtained_forms)) {
-    SortLoginsByOrigin(&obtained_forms.get());
-    // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    if (!obtained_forms.empty())
-      allow_fallback_ = false;
-    request->NotifyConsumerWithResults(obtained_forms.Pass());
-    return;
-  } else if (allow_default_store()) {
-    PasswordStoreDefault::GetBlacklistLoginsImpl(request.Pass());
-    return;
-  }
-  // The consumer will be left hanging unless we reply.
-  request->NotifyConsumerWithResults(ScopedVector<autofill::PasswordForm>());
-}
-
 bool PasswordStoreX::FillAutofillableLogins(
     ScopedVector<autofill::PasswordForm>* forms) {
   CheckMigration();
   if (use_native_backend() && backend_->GetAutofillableLogins(forms)) {
+    SortLoginsByOrigin(&forms->get());
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    if (forms->size() > 0)
+    if (!forms->empty())
       allow_fallback_ = false;
     return true;
   }
@@ -212,7 +175,8 @@ bool PasswordStoreX::FillBlacklistLogins(
   CheckMigration();
   if (use_native_backend() && backend_->GetBlacklistLogins(forms)) {
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    if (forms->size() > 0)
+    SortLoginsByOrigin(&forms->get());
+    if (!forms->empty())
       allow_fallback_ = false;
     return true;
   }

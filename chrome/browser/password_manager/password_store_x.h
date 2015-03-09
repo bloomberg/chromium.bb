@@ -94,17 +94,10 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy) override;
-  void GetAutofillableLoginsImpl(
-      scoped_ptr<PasswordStore::GetLoginsRequest> request) override;
-  void GetBlacklistLoginsImpl(
-      scoped_ptr<PasswordStore::GetLoginsRequest> request) override;
   bool FillAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
-
-  // Sort logins by origin, like the ORDER BY clause in login_database.cc.
-  void SortLoginsByOrigin(std::vector<autofill::PasswordForm*>* list);
 
   // Check to see whether migration is necessary, and perform it if so.
   void CheckMigration();
