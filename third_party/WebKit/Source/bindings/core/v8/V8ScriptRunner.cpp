@@ -280,8 +280,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
         // Caching is not available in this case.
         return bind(compileWithoutOptions, V8CompileHistogram::Noncacheable);
 
-    // Do not cache for small scripts, even if caching is available.
-    if (cacheOptions == V8CacheOptionsNone || code->Length() < minimalCodeLength)
+    if (cacheOptions == V8CacheOptionsNone)
         return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
 
     // The cacheOptions will guide our strategy:
@@ -289,6 +288,10 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
     switch (cacheOptions) {
     case V8CacheOptionsDefault:
     case V8CacheOptionsParseMemory:
+        if (code->Length() < minimalCodeLength) {
+            // Do not cache for small scripts, though caching is available.
+            return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
+        }
         // Use parser-cache; in-memory only.
         return bind(compileAndConsumeOrProduce, cacheHandler, cacheTag(CacheTagParser, cacheHandler), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, CachedMetadataHandler::CacheLocally);
         break;
