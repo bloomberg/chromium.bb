@@ -73,7 +73,8 @@ class Controller : public CreditCardScannerViewDelegate,
 
 // static
 bool CreditCardScannerController::HasCreditCardScanFeature() {
-  return CreditCardScannerView::CanShow();
+  static const bool kCanShow = CreditCardScannerView::CanShow();
+  return kCanShow;
 }
 
 // static
