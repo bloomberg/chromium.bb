@@ -19,16 +19,12 @@
 
 [
     WillBeGarbageCollected,
-    Constructor
+    Constructor,
+    TypeChecking=Interface,
 ] interface XPathEvaluator {
-    [RaisesException] XPathExpression createExpression([Default=Undefined] optional DOMString expression,
-                                     [Default=Undefined] optional XPathNSResolver resolver);
+    [RaisesException] XPathExpression createExpression(DOMString expression, optional XPathNSResolver? resolver = null);
 
-    XPathNSResolver createNSResolver([Default=Undefined] optional Node nodeResolver);
+    XPathNSResolver createNSResolver(Node nodeResolver);
 
-    [RaisesException] XPathResult evaluate([Default=Undefined] optional DOMString expression,
-                         [Default=Undefined] optional Node contextNode,
-                         [Default=Undefined] optional XPathNSResolver resolver,
-                         [Default=Undefined] optional unsigned short type,
-                         [Default=Undefined] optional XPathResult inResult);
+    [RaisesException] XPathResult evaluate(DOMString expression, Node contextNode, optional XPathNSResolver? resolver = null, optional unsigned short type = 0, optional object? inResult = null);
 };

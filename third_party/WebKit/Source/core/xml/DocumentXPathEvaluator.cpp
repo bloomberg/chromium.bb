@@ -65,12 +65,12 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver
 
 PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSupplementable& document, const String& expression,
     Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, unsigned short type,
-    XPathResult* result, ExceptionState& exceptionState)
+    const ScriptValue&, ExceptionState& exceptionState)
 {
     DocumentXPathEvaluator& suplement = from(document);
     if (!suplement.m_xpathEvaluator)
         suplement.m_xpathEvaluator = XPathEvaluator::create();
-    return suplement.m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, exceptionState);
+    return suplement.m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, ScriptValue(), exceptionState);
 }
 
 DEFINE_TRACE(DocumentXPathEvaluator)

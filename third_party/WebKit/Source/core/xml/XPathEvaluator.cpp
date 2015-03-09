@@ -50,13 +50,8 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* n
 }
 
 PassRefPtrWillBeRawPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node* contextNode,
-    PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, unsigned short type, XPathResult* result, ExceptionState& exceptionState)
+    PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, unsigned short type, const ScriptValue&, ExceptionState& exceptionState)
 {
-    if (!contextNode) {
-        exceptionState.throwDOMException(NotSupportedError, "The context node provided is null.");
-        return nullptr;
-    }
-
     if (!isValidContextNode(contextNode)) {
         exceptionState.throwDOMException(NotSupportedError, "The node provided is '" + contextNode->nodeName() + "', which is not a valid context node type.");
         return nullptr;
@@ -66,7 +61,7 @@ PassRefPtrWillBeRawPtr<XPathResult> XPathEvaluator::evaluate(const String& expre
     if (exceptionState.hadException())
         return nullptr;
 
-    return expr->evaluate(contextNode, type, result, exceptionState);
+    return expr->evaluate(contextNode, type, ScriptValue(), exceptionState);
 }
 
 }

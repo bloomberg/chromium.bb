@@ -37,6 +37,7 @@ namespace blink {
 
 class ExceptionState;
 class Node;
+class ScriptValue;
 class XPathExpression;
 class XPathNSResolver;
 class XPathResult;
@@ -52,7 +53,7 @@ public:
     PassRefPtrWillBeRawPtr<XPathExpression> createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
     PassRefPtrWillBeRawPtr<XPathNSResolver> createNSResolver(Node* nodeResolver);
     PassRefPtrWillBeRawPtr<XPathResult> evaluate(const String& expression, Node* contextNode,
-        PassRefPtrWillBeRawPtr<XPathNSResolver>, unsigned short type, XPathResult*, ExceptionState&);
+        PassRefPtrWillBeRawPtr<XPathNSResolver>, unsigned short type, const ScriptValue&, ExceptionState&);
 
     DEFINE_INLINE_TRACE() { }
 

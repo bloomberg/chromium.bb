@@ -19,10 +19,8 @@
  */
 
 [
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
+    TypeChecking=Interface,
 ] interface XPathExpression {
-     [RaisesException] XPathResult evaluate([Default=Undefined] optional Node contextNode,
-                                        [Default=Undefined] optional unsigned short type,
-                                        [Default=Undefined] optional XPathResult inResult);
+     [RaisesException] XPathResult evaluate(Node contextNode, optional unsigned short type = 0, optional object? inResult = null);
 };
-

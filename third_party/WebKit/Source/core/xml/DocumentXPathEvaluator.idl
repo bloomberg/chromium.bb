@@ -17,14 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-partial interface Document {
+[
+    TypeChecking=Interface,
+] partial interface Document {
     // DOM Level 3 XPath (XPathEvaluator interface)
-    [MeasureAs=DocumentXPathCreateExpression, RaisesException] XPathExpression createExpression([Default=Undefined] optional DOMString expression,
-                                                       [Default=Undefined] optional XPathNSResolver resolver);
-    [MeasureAs=DocumentXPathCreateNSResolver] XPathNSResolver    createNSResolver(Node nodeResolver);
-    [Custom, MeasureAs=DocumentXPathEvaluate, RaisesException] XPathResult evaluate([Default=Undefined] optional DOMString expression,
-                                                   [Default=Undefined] optional Node contextNode,
-                                                   [Default=Undefined] optional XPathNSResolver resolver,
-                                                   [Default=Undefined] optional unsigned short type,
-                                                   [Default=Undefined] optional XPathResult inResult);
+    [MeasureAs=DocumentXPathCreateExpression, RaisesException] XPathExpression createExpression(DOMString expression, optional XPathNSResolver? resolver = null);
+
+    [MeasureAs=DocumentXPathCreateNSResolver] XPathNSResolver createNSResolver(Node nodeResolver);
+
+    [MeasureAs=DocumentXPathEvaluate, RaisesException] XPathResult evaluate(DOMString expression, Node contextNode, optional XPathNSResolver? resolver = null, optional unsigned short type = 0, optional object? inResult = null);
 };

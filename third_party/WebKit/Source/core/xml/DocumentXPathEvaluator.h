@@ -46,7 +46,7 @@ public:
     static PassRefPtrWillBeRawPtr<XPathNSResolver> createNSResolver(DocumentSupplementable&, Node* nodeResolver);
     static PassRefPtrWillBeRawPtr<XPathResult> evaluate(DocumentSupplementable&,
         const String& expression, Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver>,
-        unsigned short type, XPathResult*, ExceptionState&);
+        unsigned short type, const ScriptValue&, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 
