@@ -48,6 +48,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       private WebContentsObserver,
       public NotificationObserver {
  public:
+  static void AddAllAgentHosts(DevToolsAgentHost::List* result);
+
   static void OnCancelPendingNavigation(RenderFrameHost* pending,
                                         RenderFrameHost* current);
 
@@ -71,6 +73,11 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   friend class DevToolsAgentHost;
   explicit RenderFrameDevToolsAgentHost(RenderFrameHost*);
   ~RenderFrameDevToolsAgentHost() override;
+
+  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(RenderFrameHost* host);
+  static void AppendAgentHostForFrameIfApplicable(
+      DevToolsAgentHost::List* result,
+      RenderFrameHost* host);
 
   // IPCDevToolsAgentHost overrides.
   void DispatchProtocolMessage(const std::string& message) override;
@@ -117,6 +124,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void InnerOnClientAttached();
   void InnerClientDetachedFromRenderer();
+
+  bool IsChildFrame();
 
   RenderFrameHostImpl* render_frame_host_;
   scoped_ptr<devtools::dom::DOMHandler> dom_handler_;

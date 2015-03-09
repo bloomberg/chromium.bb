@@ -81,6 +81,26 @@ DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
 }
 
 // static
+scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
+    RenderFrameHost* host) {
+  RenderFrameDevToolsAgentHost* result = FindAgentHost(host);
+  if (!result)
+    result = new RenderFrameDevToolsAgentHost(host);
+  return result;
+}
+
+// static
+void RenderFrameDevToolsAgentHost::AppendAgentHostForFrameIfApplicable(
+    DevToolsAgentHost::List* result,
+    RenderFrameHost* host) {
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(host);
+  if (!rfh->IsRenderFrameLive())
+    return;
+  if (rfh->IsCrossProcessSubframe() || !rfh->GetParent())
+    result->push_back(RenderFrameDevToolsAgentHost::GetOrCreateFor(rfh));
+}
+
+// static
 bool DevToolsAgentHost::HasFor(WebContents* web_contents) {
   return FindAgentHost(web_contents) != NULL;
 }
@@ -92,25 +112,13 @@ bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
 }
 
 //static
-std::vector<WebContents*> DevToolsAgentHostImpl::GetInspectableWebContents() {
-  std::set<WebContents*> set;
-  scoped_ptr<RenderWidgetHostIterator> widgets(
-      RenderWidgetHost::GetRenderWidgetHosts());
-  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
-    // Ignore processes that don't have a connection, such as crashed contents.
-    if (!widget->GetProcess()->HasConnection())
-      continue;
-    if (!widget->IsRenderView())
-      continue;
-
-    RenderViewHost* rvh = RenderViewHost::From(widget);
-    WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-    if (web_contents)
-      set.insert(web_contents);
-  }
-  std::vector<WebContents*> result(set.size());
-  std::copy(set.begin(), set.end(), result.begin());
-  return result;
+void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
+    DevToolsAgentHost::List* result) {
+  base::Callback<void(RenderFrameHost*)> callback = base::Bind(
+      RenderFrameDevToolsAgentHost::AppendAgentHostForFrameIfApplicable,
+      base::Unretained(result));
+  for (const auto& wc : WebContentsImpl::GetAllWebContents())
+    wc->ForEachFrame(callback);
 }
 
 // static
@@ -409,6 +417,9 @@ void RenderFrameDevToolsAgentHost::Observe(int type,
 void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   DCHECK(!render_frame_host_);
   render_frame_host_ = static_cast<RenderFrameHostImpl*>(rfh);
+  // TODO(dgozman): here we should DCHECK that frame host is either root or
+  // cross process subframe, but this requires handling cross-process
+  // navigation. See http://crbug.com/464993.
 
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(rfh));
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
@@ -448,17 +459,20 @@ void RenderFrameDevToolsAgentHost::ConnectWebContents(WebContents* wc) {
 }
 
 DevToolsAgentHost::Type RenderFrameDevToolsAgentHost::GetType() {
-  return TYPE_WEB_CONTENTS;
+  return IsChildFrame() ? TYPE_FRAME : TYPE_WEB_CONTENTS;
 }
 
 std::string RenderFrameDevToolsAgentHost::GetTitle() {
+  if (IsChildFrame())
+    return GetURL().spec();
   if (WebContents* web_contents = GetWebContents())
     return base::UTF16ToUTF8(web_contents->GetTitle());
   return "";
 }
 
 GURL RenderFrameDevToolsAgentHost::GetURL() {
-  if (WebContents* web_contents = GetWebContents())
+  WebContents* web_contents = GetWebContents();
+  if (web_contents && !IsChildFrame())
     return web_contents->GetVisibleURL();
   return render_frame_host_ ?
       render_frame_host_->GetLastCommittedURL() : GURL();
@@ -532,6 +546,10 @@ void RenderFrameDevToolsAgentHost::DispatchOnInspectorFrontend(
   if (!IsAttached() || !render_frame_host_)
     return;
   SendMessageToClient(message);
+}
+
+bool RenderFrameDevToolsAgentHost::IsChildFrame() {
+  return render_frame_host_ && render_frame_host_->GetParent();
 }
 
 }  // namespace content

@@ -63,18 +63,6 @@ WebContentsTarget::WebContentsTarget(WebContents* web_contents, bool is_tab)
       tab_id_(-1) {
   set_type(kTargetTypeOther);
 
-  content::RenderFrameHost* rfh =
-      web_contents->GetRenderViewHost()->GetMainFrame();
-  if (rfh->IsCrossProcessSubframe()) {
-    set_url(rfh->GetLastCommittedURL());
-    set_type(kTargetTypeIFrame);
-    // TODO(pfeldman) Update for out of process iframes.
-    RenderViewHost* parent_rvh = rfh->GetParent()->GetRenderViewHost();
-    set_parent_id(DevToolsAgentHost::GetOrCreateFor(
-                      WebContents::FromRenderViewHost(parent_rvh))->GetId());
-    return;
-  }
-
   content::NavigationController& controller = web_contents->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
   if (entry != NULL && entry->GetURL().is_valid())
@@ -141,6 +129,28 @@ void WebContentsTarget::Inspect(Profile* profile) const {
   if (!web_contents)
     return;
   DevToolsWindow::OpenDevToolsWindow(web_contents);
+}
+
+// FrameTarget ----------------------------------------------------------------
+
+class FrameTarget : public DevToolsTargetImpl {
+ public:
+  explicit FrameTarget(scoped_refptr<DevToolsAgentHost> agent_host);
+
+  // DevToolsTargetImpl overrides:
+  void Inspect(Profile* profile) const override;
+};
+
+FrameTarget::FrameTarget(scoped_refptr<DevToolsAgentHost> agent_host)
+    : DevToolsTargetImpl(agent_host) {
+  set_type(kTargetTypePage);
+  WebContents* wc = agent_host->GetWebContents();
+  DCHECK(DevToolsAgentHost::GetOrCreateFor(wc).get() != agent_host.get());
+  set_parent_id(DevToolsAgentHost::GetOrCreateFor(wc)->GetId());
+}
+
+void FrameTarget::Inspect(Profile* profile) const {
+  DevToolsWindow::OpenDevToolsWindow(profile, GetAgentHost());
 }
 
 // WorkerTarget ----------------------------------------------------------------
@@ -280,6 +290,9 @@ void DevToolsTargetImpl::EnumerateAllTargets(Callback callback) {
               tab_web_contents.find(web_contents) != tab_web_contents.end();
           result.push_back(new WebContentsTarget(web_contents, is_tab));
         }
+        break;
+      case DevToolsAgentHost::TYPE_FRAME:
+        result.push_back(new FrameTarget(agent_host));
         break;
       case DevToolsAgentHost::TYPE_SHARED_WORKER:
         result.push_back(new WorkerTarget(agent_host));

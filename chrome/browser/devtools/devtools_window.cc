@@ -423,6 +423,21 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
 }
 
 // static
+DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
+    Profile* profile,
+    const scoped_refptr<content::DevToolsAgentHost>& agent_host) {
+  DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
+  if (!window) {
+    window = DevToolsWindow::Create(
+        profile, GURL(), nullptr, false, std::string(), false, std::string());
+    DCHECK(window);
+    window->bindings_->AttachTo(agent_host);
+  }
+  window->ScheduleShow(DevToolsToggleAction::Show());
+  return window;
+}
+
+// static
 DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     Browser* browser,
     const DevToolsToggleAction& action) {

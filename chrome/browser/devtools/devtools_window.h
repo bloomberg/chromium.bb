@@ -72,6 +72,11 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static DevToolsWindow* OpenDevToolsWindow(
       content::WebContents* inspected_web_contents);
 
+  // Open or reveal DevTools window. This window will be undocked.
+  static DevToolsWindow* OpenDevToolsWindow(
+      Profile* profile,
+      const scoped_refptr<content::DevToolsAgentHost>& agent_host);
+
   // Perform specified action for current WebContents inside a |browser|.
   // This may close currently open DevTools window.
   static DevToolsWindow* ToggleDevToolsWindow(

@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,12 +35,7 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   List result;
   SharedWorkerDevToolsManager::GetInstance()->AddAllAgentHosts(&result);
   ServiceWorkerDevToolsManager::GetInstance()->AddAllAgentHosts(&result);
-  std::vector<WebContents*> wc_list =
-      DevToolsAgentHostImpl::GetInspectableWebContents();
-  for (std::vector<WebContents*>::iterator it = wc_list.begin();
-      it != wc_list.end(); ++it) {
-    result.push_back(GetOrCreateFor(*it));
-  }
+  RenderFrameDevToolsAgentHost::AddAllAgentHosts(&result);
   return result;
 }
 
