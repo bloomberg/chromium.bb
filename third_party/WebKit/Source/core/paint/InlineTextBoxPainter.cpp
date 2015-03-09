@@ -75,7 +75,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     // within a DrawingRecorder.
     OwnPtr<DrawingRecorder> drawingRecorder;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled() && paintInfo.phase != PaintPhaseTextClip) {
-        LayoutRect paintRect = logicalVisualOverflow;
+        LayoutRect paintRect(m_inlineTextBox.logicalRectToPhysicalRect(logicalVisualOverflow));
         paintRect.moveBy(adjustedPaintOffset);
         drawingRecorder = adoptPtr(new DrawingRecorder(paintInfo.context, m_inlineTextBox.displayItemClient(), DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintRect));
         if (drawingRecorder->canUseCachedDrawing())

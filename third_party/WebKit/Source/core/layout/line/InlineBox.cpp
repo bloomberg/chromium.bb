@@ -310,14 +310,29 @@ void InlineBox::clearKnownToHaveNoOverflow()
 
 FloatPointWillBeLayoutPoint InlineBox::locationIncludingFlipping()
 {
+    return logicalPointToPhysicalPoint(m_topLeft.toFloatPoint());
+}
+
+FloatPointWillBeLayoutPoint InlineBox::logicalPointToPhysicalPoint(const FloatPoint& point)
+{
     if (!UNLIKELY(layoutObject().hasFlippedBlocksWritingMode()))
-        return FloatPointWillBeLayoutPoint(x(), y());
+        return FloatPointWillBeLayoutPoint(point.x(), point.y());
 
     LayoutBlockFlow& block = root().block();
     if (block.style()->isHorizontalWritingMode())
-        return FloatPointWillBeLayoutPoint(x(), block.size().height() - size().height() - y());
+        return FloatPointWillBeLayoutPoint(point.x(), block.size().height() - size().height() - point.y());
 
-    return FloatPointWillBeLayoutPoint(block.size().width() - size().width() - x(), y());
+    return FloatPointWillBeLayoutPoint(block.size().width() - size().width() - point.x(), point.y());
+}
+
+LayoutRect InlineBox::logicalRectToPhysicalRect(const LayoutRect& current)
+{
+    LayoutRect retval = current;
+    if (!isHorizontal()) {
+        retval = retval.transposedRect();
+    }
+    retval.setLocation(logicalPointToPhysicalPoint(FloatPoint(retval.location())).toLayoutPoint());
+    return retval;
 }
 
 void InlineBox::flipForWritingMode(FloatRect& rect)

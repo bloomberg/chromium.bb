@@ -289,6 +289,12 @@ public:
     }
 
     FloatPointWillBeLayoutPoint locationIncludingFlipping();
+
+    // Converts from a rect in the logical space of the InlineBox to one in the physical space
+    // of the containing block. The logical space of an InlineBox may be transposed for vertical text and
+    // flipped for right-to-left text.
+    LayoutRect logicalRectToPhysicalRect(const LayoutRect&);
+
     void flipForWritingMode(FloatRect&);
     FloatPoint flipForWritingMode(const FloatPoint&);
     void flipForWritingMode(LayoutRect&);
@@ -381,6 +387,10 @@ public:
 #undef ADD_BOOLEAN_BITFIELD
 
 private:
+    // Converts the given point from the logical space of the InlineBox to the physical space of the
+    // containing block.
+    FloatPointWillBeLayoutPoint logicalPointToPhysicalPoint(const FloatPoint&);
+
     InlineBox* m_next; // The next element on the same line as us.
     InlineBox* m_prev; // The previous element on the same line as us.
 
