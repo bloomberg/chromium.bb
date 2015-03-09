@@ -9,10 +9,13 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/prefs/pref_store.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/browser/cookie_store_factory.h"
+
+class JsonPrefStore;
 
 namespace chrome_browser_net {
 class Predictor;
@@ -214,6 +217,8 @@ class ProfileImplIOData : public ProfileIOData {
 
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;
+
+  mutable scoped_refptr<JsonPrefStore> network_json_store_;
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;

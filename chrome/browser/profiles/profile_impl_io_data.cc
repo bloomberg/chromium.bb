@@ -4,11 +4,15 @@
 
 #include "chrome/browser/profiles/profile_impl_io_data.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/json_pref_store.h"
+#include "base/prefs/pref_filter.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
@@ -83,6 +87,20 @@ net::BackendType ChooseCacheBackendType() {
   }
   return net::CACHE_BACKEND_BLOCKFILE;
 #endif
+}
+
+bool ShouldUseSdchPersistence() {
+  const std::string group =
+      base::FieldTrialList::FindFullName("SdchPersistence");
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSdchPersistence)) {
+    return true;
+  }
+  if (command_line->HasSwitch(switches::kDisableSdchPersistence)) {
+    return false;
+  }
+  return group == "Enabled";
 }
 
 }  // namespace
@@ -423,6 +441,16 @@ void ProfileImplIOData::InitializeInternal(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "436671 ProfileImplIOData::InitializeInternal"));
 
+  // Set up a persistent store for use by the network stack on the IO thread.
+  base::FilePath network_json_store_filepath(
+      profile_path_.Append(chrome::kNetworkPersistentStateFilename));
+  network_json_store_ = new JsonPrefStore(
+      network_json_store_filepath,
+      JsonPrefStore::GetTaskRunnerForFile(network_json_store_filepath,
+                                          BrowserThread::GetBlockingPool()),
+      scoped_ptr<PrefFilter>());
+  network_json_store_->ReadPrefsAsync(nullptr);
+
   net::URLRequestContext* main_context = main_request_context();
 
   IOThread* const io_thread = profile_params->io_thread;
@@ -611,6 +639,9 @@ void ProfileImplIOData::InitializeInternal(
   sdch_manager_.reset(new net::SdchManager);
   sdch_policy_.reset(new net::SdchOwner(sdch_manager_.get(), main_context));
   main_context->set_sdch_manager(sdch_manager_.get());
+  if (ShouldUseSdchPersistence()) {
+    sdch_policy_->EnablePersistentStorage(network_json_store_.get());
+  }
 
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.

@@ -327,6 +327,9 @@ const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 // Prevents the save password bubble from being enabled.
 const char kDisableSavePasswordBubble[] = "disable-save-password-bubble";
 
+// Prevents SDCH persistence from being used.
+const char kDisableSdchPersistence[] = "disable-sdch-persistence";
+
 // Disables using bubbles for session restore request.
 const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 
@@ -539,6 +542,9 @@ const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
 
 // Enables SDCH for https schemes.
 const char kEnableSdchOverHttps[] = "enable-sdch-over-https";
+
+// Enables SDCH persistence.
+const char kEnableSdchPersistence[] = "enable-sdch-persistence";
 
 // Enables using bubbles for session restore request instead of infobars.
 const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";

@@ -217,6 +217,7 @@ class SdchResponseHandler {
     } else {
       DCHECK_EQ(request.relative_url, kDictionaryURLPath);
       DCHECK_NE(sdch_dictionary_contents_, "");
+      response->AddCustomHeader("Cache-Control", "max-age=3600");
       response->set_content_type("application/x-sdch-dictionary");
       response->set_content(sdch_dictionary_contents_);
     }

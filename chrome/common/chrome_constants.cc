@@ -155,6 +155,8 @@ const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const base::FilePath::CharType kLocalStorePoolName[] = FPL("LocalStorePool");
 const base::FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
+const base::FilePath::CharType kNetworkPersistentStateFilename[] =
+    FPL("Network Persistent State");
 const base::FilePath::CharType kNewTabThumbnailsFilename[] =
     FPL("Top Thumbnails");
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
