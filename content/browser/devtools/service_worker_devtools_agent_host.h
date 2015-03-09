@@ -12,12 +12,12 @@ namespace content {
 
 class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
  public:
-  typedef ServiceWorkerDevToolsManager::ServiceWorkerIdentifier
-      ServiceWorkerIdentifier;
+  using List = std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
+  using ServiceWorkerIdentifier =
+      ServiceWorkerDevToolsManager::ServiceWorkerIdentifier;
 
   ServiceWorkerDevToolsAgentHost(WorkerId worker_id,
-                                 const ServiceWorkerIdentifier& service_worker,
-                                 bool debug_service_worker_on_start);
+                                 const ServiceWorkerIdentifier& service_worker);
 
   // DevToolsAgentHost override.
   Type GetType() override;

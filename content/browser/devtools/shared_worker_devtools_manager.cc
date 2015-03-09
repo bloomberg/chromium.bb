@@ -27,7 +27,7 @@ SharedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
 }
 
 void SharedWorkerDevToolsManager::AddAllAgentHosts(
-    DevToolsAgentHost::List* result) {
+    SharedWorkerDevToolsAgentHost::List* result) {
   for (auto& worker : workers_) {
     if (!worker.second->IsTerminated())
       result->push_back(worker.second);

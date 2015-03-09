@@ -159,6 +159,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());
   SetRenderFrameHost(rfh);
+  service_worker_handler_->SetURL(rfh->GetLastCommittedURL());
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
   DevToolsManager::GetInstance()->AgentHostChanged(this);
@@ -403,6 +404,14 @@ void RenderFrameDevToolsAgentHost::TitleWasSet(
 void RenderFrameDevToolsAgentHost::NavigationEntryCommitted(
     const LoadCommittedDetails& load_details) {
   DevToolsManager::GetInstance()->AgentHostChanged(this);
+}
+
+void RenderFrameDevToolsAgentHost::DidCommitProvisionalLoadForFrame(
+    RenderFrameHost* render_frame_host,
+    const GURL& url,
+    ui::PageTransition transition_type) {
+  if (render_frame_host_ == render_frame_host)
+    service_worker_handler_->SetURL(url);
 }
 
 void RenderFrameDevToolsAgentHost::Observe(int type,

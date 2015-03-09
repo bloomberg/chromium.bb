@@ -23,12 +23,15 @@ class ServiceWorkerContextCore;
 // This class lives on UI thread.
 class CONTENT_EXPORT ServiceWorkerDevToolsManager {
  public:
-  typedef std::pair<int, int> WorkerId;
+  using WorkerId = std::pair<int, int>;
+  using AgentList = std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
 
   class Observer {
    public:
-    virtual void WorkerCreated(DevToolsAgentHost* host) {}
-    virtual void WorkerDestroyed(DevToolsAgentHost* host) {}
+    virtual void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) {}
+    virtual void WorkerReadyForInspection(
+        ServiceWorkerDevToolsAgentHost* host) {}
+    virtual void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {}
 
    protected:
     virtual ~Observer() {}
@@ -65,7 +68,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
 
   DevToolsAgentHostImpl* GetDevToolsAgentHostForWorker(int worker_process_id,
                                                        int worker_route_id);
-  void AddAllAgentHosts(DevToolsAgentHost::List* result);
+  void AddAllAgentHosts(
+      std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>* result);
 
   // Returns true when the worker must be paused on start because a DevTool
   // window for the same former ServiceWorkerIdentifier is still opened or

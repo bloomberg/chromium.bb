@@ -31,6 +31,9 @@ class WorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
 
+  void PauseForDebugOnStart();
+  bool IsPausedForDebugOnStart();
+
   void WorkerReadyForInspection();
   void WorkerRestarted(WorkerId worker_id);
   void WorkerDestroyed();
@@ -53,7 +56,6 @@ class WorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   void WorkerCreated();
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
-  void set_state(WorkerState state) { state_ = state; }
   const WorkerId& worker_id() const { return worker_id_; }
 
  private:

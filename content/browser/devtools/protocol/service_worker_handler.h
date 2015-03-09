@@ -13,6 +13,9 @@
 #include "content/public/browser/devtools_agent_host_client.h"
 
 namespace content {
+
+class ServiceWorkerDevToolsAgentHost;
+
 namespace devtools {
 namespace service_worker {
 
@@ -25,6 +28,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   ~ServiceWorkerHandler() override;
 
   void SetClient(scoped_ptr<Client> client);
+  void SetURL(const GURL& url);
   void Detached();
 
   // Protocol 'service worker' domain implementation.
@@ -32,12 +36,12 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response Disable();
   Response SendMessage(const std::string& worker_id,
                        const std::string& message);
-  Response Attach(const std::string& worker_id);
-  Response Detach(const std::string& worker_id);
+  Response Stop(const std::string& worker_id);
 
   // WorkerDevToolsManager::Observer implementation.
-  void WorkerCreated(DevToolsAgentHost* host) override;
-  void WorkerDestroyed(DevToolsAgentHost* host) override;
+  void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;
+  void WorkerReadyForInspection(ServiceWorkerDevToolsAgentHost* host) override;
+  void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
 
  private:
   // DevToolsAgentHostClient overrides.
@@ -46,10 +50,16 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   void AgentHostClosed(DevToolsAgentHost* agent_host,
                        bool replaced_with_another_client) override;
 
+  void ReportWorkerCreated(DevToolsAgentHost* host, bool new_worker);
+
+  bool MatchesInspectedPage(ServiceWorkerDevToolsAgentHost* host);
+
   scoped_ptr<Client> client_;
-  using AttachedHosts = std::map<std::string,
-                                 scoped_refptr<DevToolsAgentHost>>;
+  using AttachedHosts = std::map<
+      std::string, scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
   AttachedHosts attached_hosts_;
+  bool enabled_;
+  GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandler);
 };

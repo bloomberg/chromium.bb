@@ -22,14 +22,15 @@ class SharedWorkerInstance;
 // This class lives on UI thread.
 class CONTENT_EXPORT SharedWorkerDevToolsManager {
  public:
-  typedef std::pair<int, int> WorkerId;
+  using WorkerId = std::pair<int, int>;
 
   // Returns the SharedWorkerDevToolsManager singleton.
   static SharedWorkerDevToolsManager* GetInstance();
 
   DevToolsAgentHostImpl* GetDevToolsAgentHostForWorker(int worker_process_id,
                                                        int worker_route_id);
-  void AddAllAgentHosts(DevToolsAgentHost::List* result);
+  void AddAllAgentHosts(
+      std::vector<scoped_refptr<SharedWorkerDevToolsAgentHost>>* result);
 
   // Returns true when the worker must be paused on start because a DevTool
   // window for the same former SharedWorkerInstance is still opened.

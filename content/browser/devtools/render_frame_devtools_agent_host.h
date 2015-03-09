@@ -100,6 +100,10 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
   void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) override;
+  void DidCommitProvisionalLoadForFrame(
+      RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override;
 
   // NotificationObserver overrides:
   void Observe(int type,

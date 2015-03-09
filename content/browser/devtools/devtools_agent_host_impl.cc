@@ -13,7 +13,9 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -33,8 +35,16 @@ base::LazyInstance<AgentStateCallbacks>::Leaky g_callbacks =
 // static
 DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   List result;
-  SharedWorkerDevToolsManager::GetInstance()->AddAllAgentHosts(&result);
-  ServiceWorkerDevToolsManager::GetInstance()->AddAllAgentHosts(&result);
+  SharedWorkerDevToolsAgentHost::List shared_list;
+  SharedWorkerDevToolsManager::GetInstance()->AddAllAgentHosts(&shared_list);
+  for (const auto& host : shared_list)
+    result.push_back(host);
+
+  ServiceWorkerDevToolsAgentHost::List service_list;
+  ServiceWorkerDevToolsManager::GetInstance()->AddAllAgentHosts(&service_list);
+  for (const auto& host : service_list)
+    result.push_back(host);
+
   RenderFrameDevToolsAgentHost::AddAllAgentHosts(&result);
   return result;
 }

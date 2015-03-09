@@ -13,6 +13,8 @@ class SharedWorkerInstance;
 
 class SharedWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
  public:
+  using List = std::vector<scoped_refptr<SharedWorkerDevToolsAgentHost>>;
+
   SharedWorkerDevToolsAgentHost(WorkerId worker_id,
                                 const SharedWorkerInstance& shared_worker);
 

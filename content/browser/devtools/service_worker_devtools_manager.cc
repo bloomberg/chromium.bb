@@ -58,7 +58,7 @@ ServiceWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
 }
 
 void ServiceWorkerDevToolsManager::AddAllAgentHosts(
-    DevToolsAgentHost::List* result) {
+    ServiceWorkerDevToolsAgentHost::List* result) {
   for (auto& worker : workers_) {
     if (!worker.second->IsTerminated())
       result->push_back(worker.second);
@@ -73,13 +73,15 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = FindExistingWorkerAgentHost(service_worker_id);
   if (it == workers_.end()) {
-    workers_[id] = new ServiceWorkerDevToolsAgentHost(
-        id, service_worker_id, debug_service_worker_on_start_);
-    scoped_refptr<WorkerDevToolsAgentHost> protector(workers_[id]);
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      WorkerCreated(protector.get()));
-    DevToolsManager::GetInstance()->AgentHostChanged(protector.get());
-    return debug_service_worker_on_start_;
+    scoped_refptr<ServiceWorkerDevToolsAgentHost> host =
+        new ServiceWorkerDevToolsAgentHost(
+            id, service_worker_id);
+    workers_[id] = host.get();
+    FOR_EACH_OBSERVER(Observer, observer_list_, WorkerCreated(host.get()));
+    DevToolsManager::GetInstance()->AgentHostChanged(host.get());
+    if (debug_service_worker_on_start_)
+        host->PauseForDebugOnStart();
+    return host->IsPausedForDebugOnStart();
   }
 
   // Worker was restarted.
@@ -93,12 +95,22 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
 }
 
 void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
-    int worker_process_id, int worker_route_id) {
+    int worker_process_id,
+    int worker_route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
   DCHECK(it != workers_.end());
-  it->second->WorkerReadyForInspection();
+  scoped_refptr<ServiceWorkerDevToolsAgentHost> host = it->second;
+  host->WorkerReadyForInspection();
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    WorkerReadyForInspection(host.get()));
+
+  // Then bring up UI for the ones not picked by other clients.
+  if (host->IsPausedForDebugOnStart() && !host->IsAttached()) {
+    host->Inspect(RenderProcessHost::FromID(worker_process_id)->
+        GetBrowserContext());
+  }
 }
 
 void ServiceWorkerDevToolsManager::WorkerStopIgnored(int worker_process_id,

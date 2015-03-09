@@ -40,12 +40,9 @@ void SetDevToolsAttachedOnIO(
 
 ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     WorkerId worker_id,
-    const ServiceWorkerIdentifier& service_worker,
-    bool debug_service_worker_on_start)
+    const ServiceWorkerIdentifier& service_worker)
     : WorkerDevToolsAgentHost(worker_id),
       service_worker_(new ServiceWorkerIdentifier(service_worker)) {
-  if (debug_service_worker_on_start)
-    set_state(WORKER_PAUSED_FOR_DEBUG_ON_START);
 }
 
 DevToolsAgentHost::Type ServiceWorkerDevToolsAgentHost::GetType() {

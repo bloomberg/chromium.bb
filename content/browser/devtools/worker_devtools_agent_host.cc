@@ -65,11 +65,17 @@ bool WorkerDevToolsAgentHost::OnMessageReceived(
   return handled;
 }
 
+void WorkerDevToolsAgentHost::PauseForDebugOnStart() {
+  DCHECK(state_ == WORKER_UNINSPECTED);
+  state_ = WORKER_PAUSED_FOR_DEBUG_ON_START;
+}
+
+bool WorkerDevToolsAgentHost::IsPausedForDebugOnStart() {
+  return state_ == WORKER_PAUSED_FOR_DEBUG_ON_START;
+}
+
 void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
-  if (state_ == WORKER_PAUSED_FOR_DEBUG_ON_START) {
-    RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
-    Inspect(rph->GetBrowserContext());
-  } else if (state_ == WORKER_PAUSED_FOR_REATTACH) {
+  if (state_ == WORKER_PAUSED_FOR_REATTACH) {
     DCHECK(IsAttached());
     state_ = WORKER_INSPECTED;
     AttachToWorker();
