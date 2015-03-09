@@ -2302,6 +2302,12 @@ bool WebContentsImpl::SavePage(const base::FilePath& main_file,
 
 void WebContentsImpl::SaveFrame(const GURL& url,
                                 const Referrer& referrer) {
+  SaveFrameWithHeaders(url, referrer, std::string());
+}
+
+void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
+                                           const Referrer& referrer,
+                                           const std::string& headers) {
   if (!GetLastCommittedURL().is_valid())
     return;
   if (delegate_ && delegate_->SaveFrame(url, referrer))
@@ -2325,10 +2331,22 @@ void WebContentsImpl::SaveFrame(const GURL& url,
       DownloadUrlParameters::FromWebContents(this, url));
   params->set_referrer(referrer);
   params->set_post_id(post_id);
-  params->set_prefer_cache(true);
   if (post_id >= 0)
     params->set_method("POST");
   params->set_prompt(true);
+
+  if (headers.empty()) {
+    params->set_prefer_cache(true);
+  } else {
+    std::vector<std::string> key_value_list;
+    base::SplitString(headers, '\n', &key_value_list);
+    for (const auto& key_value : key_value_list) {
+      std::vector<std::string> pair;
+      base::SplitString(key_value, ':', &pair);
+      DCHECK_EQ(2ul, pair.size());
+      params->add_request_header(pair[0], pair[1]);
+    }
+  }
   dlm->DownloadUrl(params.Pass());
 }
 

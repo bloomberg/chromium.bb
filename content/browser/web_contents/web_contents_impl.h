@@ -306,6 +306,9 @@ class CONTENT_EXPORT WebContentsImpl
                 const base::FilePath& dir_path,
                 SavePageType save_type) override;
   void SaveFrame(const GURL& url, const Referrer& referrer) override;
+  void SaveFrameWithHeaders(const GURL& url,
+                            const Referrer& referrer,
+                            const std::string& headers) override;
   void GenerateMHTML(const base::FilePath& file,
                      const base::Callback<void(int64)>& callback) override;
   const std::string& GetContentsMimeType() const override;

@@ -695,9 +695,10 @@ void RenderViewContextMenu::AppendImageItems() {
                                   IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
-  if (!browser_context_->IsOffTheRecord() &&
+  DataReductionProxyChromeSettings* settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          browser_context_)->CanUseDataReductionProxy(params_.src_url)) {
+          browser_context_);
+  if (settings && settings->CanUseDataReductionProxy(params_.src_url)) {
     menu_model_.AddItemWithStringId(
         IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB,
         IDS_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB);
@@ -1390,7 +1391,17 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
         const GURL& url = params_.src_url;
         content::Referrer referrer = CreateSaveAsReferrer(url, params_);
-        source_web_contents_->SaveFrame(url, referrer);
+
+        std::string headers;
+        DataReductionProxyChromeSettings* settings =
+            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+                browser_context_);
+        if (params_.media_type == WebContextMenuData::MediaTypeImage &&
+            settings && settings->CanUseDataReductionProxy(params_.src_url)) {
+          headers = data_reduction_proxy::kDataReductionPassThroughHeader;
+        }
+
+        source_web_contents_->SaveFrameWithHeaders(url, referrer, headers);
       }
       break;
     }
