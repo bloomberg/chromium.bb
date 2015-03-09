@@ -54,7 +54,7 @@ class ThreadBlocker {
   void Unblock(size_t count) {
     {
       base::AutoLock lock(lock_);
-      DCHECK(unblock_counter_ == 0);
+      DCHECK_EQ(unblock_counter_, 0u);
       unblock_counter_ = count;
     }
     cond_var_.Signal();

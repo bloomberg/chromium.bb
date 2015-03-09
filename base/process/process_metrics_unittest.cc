@@ -143,29 +143,29 @@ TEST_F(SystemMetricsTest, ParseMeminfo) {
     "Hugepagesize:     4096 kB\n";
 
   EXPECT_TRUE(ParseProcMeminfo(valid_input1, &meminfo));
-  EXPECT_TRUE(meminfo.total == 3981504);
-  EXPECT_TRUE(meminfo.free == 140764);
-  EXPECT_TRUE(meminfo.buffers == 116480);
-  EXPECT_TRUE(meminfo.cached == 406160);
-  EXPECT_TRUE(meminfo.active_anon == 2972352);
-  EXPECT_TRUE(meminfo.active_file == 179688);
-  EXPECT_TRUE(meminfo.inactive_anon == 270108);
-  EXPECT_TRUE(meminfo.inactive_file == 202748);
-  EXPECT_TRUE(meminfo.swap_total == 5832280);
-  EXPECT_TRUE(meminfo.swap_free == 3672368);
-  EXPECT_TRUE(meminfo.dirty == 184);
+  EXPECT_EQ(meminfo.total, 3981504);
+  EXPECT_EQ(meminfo.free, 140764);
+  EXPECT_EQ(meminfo.buffers, 116480);
+  EXPECT_EQ(meminfo.cached, 406160);
+  EXPECT_EQ(meminfo.active_anon, 2972352);
+  EXPECT_EQ(meminfo.active_file, 179688);
+  EXPECT_EQ(meminfo.inactive_anon, 270108);
+  EXPECT_EQ(meminfo.inactive_file, 202748);
+  EXPECT_EQ(meminfo.swap_total, 5832280);
+  EXPECT_EQ(meminfo.swap_free, 3672368);
+  EXPECT_EQ(meminfo.dirty, 184);
 #if defined(OS_CHROMEOS)
-  EXPECT_TRUE(meminfo.shmem == 140204);
-  EXPECT_TRUE(meminfo.slab == 54212);
+  EXPECT_EQ(meminfo.shmem, 140204);
+  EXPECT_EQ(meminfo.slab, 54212);
 #endif
   EXPECT_TRUE(ParseProcMeminfo(valid_input2, &meminfo));
-  EXPECT_TRUE(meminfo.total == 255908);
-  EXPECT_TRUE(meminfo.free == 69936);
-  EXPECT_TRUE(meminfo.buffers == 15812);
-  EXPECT_TRUE(meminfo.cached == 115124);
-  EXPECT_TRUE(meminfo.swap_total == 524280);
-  EXPECT_TRUE(meminfo.swap_free == 524200);
-  EXPECT_TRUE(meminfo.dirty == 4);
+  EXPECT_EQ(meminfo.total, 255908);
+  EXPECT_EQ(meminfo.free, 69936);
+  EXPECT_EQ(meminfo.buffers, 15812);
+  EXPECT_EQ(meminfo.cached, 115124);
+  EXPECT_EQ(meminfo.swap_total, 524280);
+  EXPECT_EQ(meminfo.swap_free, 524200);
+  EXPECT_EQ(meminfo.dirty, 4);
 }
 
 TEST_F(SystemMetricsTest, ParseVmstat) {
@@ -260,13 +260,13 @@ TEST_F(SystemMetricsTest, ParseVmstat) {
     "pgrefill_high 0\n"
     "pgrefill_movable 0\n";
   EXPECT_TRUE(ParseProcVmstat(valid_input1, &meminfo));
-  EXPECT_TRUE(meminfo.pswpin == 179);
-  EXPECT_TRUE(meminfo.pswpout == 406);
-  EXPECT_TRUE(meminfo.pgmajfault == 487192);
+  EXPECT_EQ(meminfo.pswpin, 179);
+  EXPECT_EQ(meminfo.pswpout, 406);
+  EXPECT_EQ(meminfo.pgmajfault, 487192);
   EXPECT_TRUE(ParseProcVmstat(valid_input2, &meminfo));
-  EXPECT_TRUE(meminfo.pswpin == 12);
-  EXPECT_TRUE(meminfo.pswpout == 901);
-  EXPECT_TRUE(meminfo.pgmajfault == 2023);
+  EXPECT_EQ(meminfo.pswpin, 12);
+  EXPECT_EQ(meminfo.pswpout, 901);
+  EXPECT_EQ(meminfo.pgmajfault, 2023);
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 

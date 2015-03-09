@@ -85,7 +85,7 @@ TEST_F(DiscardableMemoryAshmemAllocatorTest,
   scoped_ptr<DiscardableAshmemChunk> memory(allocator.Allocate(kPageSize));
   ASSERT_TRUE(memory);
   EXPECT_GT(kMaxAllowedAllocationSize, allocator.last_ashmem_region_size());
-  ASSERT_TRUE(allocator.last_ashmem_region_size() % kPageSize == 0);
+  ASSERT_EQ(allocator.last_ashmem_region_size() % kPageSize, 0u);
 }
 
 TEST_F(DiscardableMemoryAshmemAllocatorTest, LargeAllocation) {

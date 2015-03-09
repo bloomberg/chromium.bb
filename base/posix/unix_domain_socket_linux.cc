@@ -136,8 +136,8 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
       const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
       if (cmsg->cmsg_level == SOL_SOCKET &&
           cmsg->cmsg_type == SCM_RIGHTS) {
-        DCHECK(payload_len % sizeof(int) == 0);
-        DCHECK(wire_fds == NULL);
+        DCHECK_EQ(payload_len % sizeof(int), 0u);
+        DCHECK_EQ(wire_fds, static_cast<void*>(nullptr));
         wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
         wire_fds_len = payload_len / sizeof(int);
       }
@@ -146,8 +146,8 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
       // SCM_CREDENTIALS.
       if (cmsg->cmsg_level == SOL_SOCKET &&
           cmsg->cmsg_type == SCM_CREDENTIALS) {
-        DCHECK(payload_len == sizeof(struct ucred));
-        DCHECK(pid == -1);
+        DCHECK_EQ(payload_len, sizeof(struct ucred));
+        DCHECK_EQ(pid, -1);
         pid = reinterpret_cast<struct ucred*>(CMSG_DATA(cmsg))->pid;
       }
 #endif

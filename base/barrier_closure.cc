@@ -39,7 +39,7 @@ namespace base {
 
 base::Closure BarrierClosure(int num_callbacks_left,
                              const base::Closure& done_closure) {
-  DCHECK(num_callbacks_left >= 0);
+  DCHECK_GE(num_callbacks_left, 0);
 
   if (num_callbacks_left == 0)
     done_closure.Run();

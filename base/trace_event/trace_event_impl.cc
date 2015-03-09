@@ -624,7 +624,7 @@ void TraceEvent::Reset() {
 
 void TraceEvent::UpdateDuration(const TimeTicks& now,
                                 const TimeTicks& thread_now) {
-  DCHECK(duration_.ToInternalValue() == -1);
+  DCHECK_EQ(duration_.ToInternalValue(), -1);
   duration_ = now - timestamp_;
   thread_duration_ = thread_now - thread_timestamp_;
 }
@@ -2588,7 +2588,7 @@ namespace trace_event_internal {
 ScopedTraceBinaryEfficient::ScopedTraceBinaryEfficient(
     const char* category_group, const char* name) {
   // The single atom works because for now the category_group can only be "gpu".
-  DCHECK(strcmp(category_group, "gpu") == 0);
+  DCHECK_EQ(strcmp(category_group, "gpu"), 0);
   static TRACE_EVENT_API_ATOMIC_WORD atomic = 0;
   INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES(
       category_group, atomic, category_group_enabled_);

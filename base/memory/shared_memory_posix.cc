@@ -453,7 +453,7 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
     case SHARE_READONLY:
       // We could imagine re-opening the file from /dev/fd, but that can't make
       // it readonly on Mac: https://codereview.chromium.org/27265002/#msg10
-      CHECK(readonly_mapped_file_ >= 0);
+      CHECK_GE(readonly_mapped_file_, 0);
       handle_to_dup = readonly_mapped_file_;
       break;
   }

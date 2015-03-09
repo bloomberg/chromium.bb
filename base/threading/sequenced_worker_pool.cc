@@ -1091,7 +1091,7 @@ int SequencedWorkerPool::Inner::PrepareToStartAdditionalThreadIfHelpful() {
 void SequencedWorkerPool::Inner::FinishStartingAdditionalThread(
     int thread_number) {
   // Called outside of the lock.
-  DCHECK(thread_number > 0);
+  DCHECK_GT(thread_number, 0);
 
   // The worker is assigned to the list when the thread actually starts, which
   // will manage the memory of the pointer.

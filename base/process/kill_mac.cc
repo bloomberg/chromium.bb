@@ -66,8 +66,8 @@ void BlockingReap(pid_t child) {
 // work in that case, but waitpid won't, and killing a non-child might not be
 // the best approach.
 void WaitForChildToDie(pid_t child, int timeout) {
-  DCHECK(child > 0);
-  DCHECK(timeout > 0);
+  DCHECK_GT(child, 0);
+  DCHECK_GT(timeout, 0);
 
   // DON'T ADD ANY EARLY RETURNS TO THIS FUNCTION without ensuring that
   // |child| has been reaped. Specifically, even if a kqueue, kevent, or other

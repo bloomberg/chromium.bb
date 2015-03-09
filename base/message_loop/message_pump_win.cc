@@ -673,7 +673,7 @@ ULONG_PTR MessagePumpForIO::HandlerToKey(IOHandler* handler,
   // |IOHandler| is at least pointer-size aligned, so the lowest two bits are
   // always cleared. We use the lowest bit to distinguish completion keys with
   // and without the associated |IOContext|.
-  DCHECK((key & 1) == 0);
+  DCHECK_EQ(key & 1, 0u);
 
   // Mark the completion key as context-less.
   if (!has_valid_io_context)

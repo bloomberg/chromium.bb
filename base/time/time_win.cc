@@ -203,12 +203,12 @@ bool Time::ActivateHighResolutionTimer(bool activating) {
   UINT period = g_high_res_timer_enabled ? kMinTimerIntervalHighResMs
                                          : kMinTimerIntervalLowResMs;
   if (activating) {
-    DCHECK(g_high_res_timer_count != max);
+    DCHECK_NE(g_high_res_timer_count, max);
     ++g_high_res_timer_count;
     if (g_high_res_timer_count == 1)
       timeBeginPeriod(period);
   } else {
-    DCHECK(g_high_res_timer_count != 0);
+    DCHECK_NE(g_high_res_timer_count, 0u);
     --g_high_res_timer_count;
     if (g_high_res_timer_count == 0)
       timeEndPeriod(period);

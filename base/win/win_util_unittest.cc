@@ -49,9 +49,9 @@ TEST(BaseWinUtilTest, TestGetUserSidString) {
 TEST(BaseWinUtilTest, TestGetNonClientMetrics) {
   NONCLIENTMETRICS_XP metrics = {0};
   GetNonClientMetrics(&metrics);
-  EXPECT_TRUE(metrics.cbSize > 0);
-  EXPECT_TRUE(metrics.iScrollWidth > 0);
-  EXPECT_TRUE(metrics.iScrollHeight > 0);
+  EXPECT_GT(metrics.cbSize, 0u);
+  EXPECT_GT(metrics.iScrollWidth, 0);
+  EXPECT_GT(metrics.iScrollHeight, 0);
 }
 
 }  // namespace win

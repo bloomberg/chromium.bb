@@ -602,13 +602,13 @@ TYPED_TEST(CommonStringPieceTest, CheckComparisons2) {
 
   // check comparison operations on strings longer than 4 bytes.
   ASSERT_TRUE(abc == BasicStringPiece<TypeParam>(alphabet));
-  ASSERT_TRUE(abc.compare(BasicStringPiece<TypeParam>(alphabet)) == 0);
+  ASSERT_EQ(abc.compare(BasicStringPiece<TypeParam>(alphabet)), 0);
 
   ASSERT_TRUE(abc < BasicStringPiece<TypeParam>(alphabet_z));
-  ASSERT_TRUE(abc.compare(BasicStringPiece<TypeParam>(alphabet_z)) < 0);
+  ASSERT_LT(abc.compare(BasicStringPiece<TypeParam>(alphabet_z)), 0);
 
   ASSERT_TRUE(abc > BasicStringPiece<TypeParam>(alphabet_y));
-  ASSERT_TRUE(abc.compare(BasicStringPiece<TypeParam>(alphabet_y)) > 0);
+  ASSERT_GT(abc.compare(BasicStringPiece<TypeParam>(alphabet_y)), 0);
 }
 
 // Test operations only supported by std::string version.

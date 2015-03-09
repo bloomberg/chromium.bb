@@ -210,7 +210,7 @@ void RegKey::Set(HKEY key) {
 }
 
 HKEY RegKey::Take() {
-  DCHECK(wow64access_ == 0);
+  DCHECK_EQ(wow64access_, 0u);
   HKEY key = key_;
   key_ = NULL;
   return key;

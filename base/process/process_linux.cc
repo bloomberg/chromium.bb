@@ -103,7 +103,7 @@ bool Process::IsProcessBackgrounded() const {
             &proc)) {
       std::vector<std::string> proc_parts;
       base::SplitString(proc, ':', &proc_parts);
-      DCHECK(proc_parts.size() == 3);
+      DCHECK_EQ(proc_parts.size(), 3u);
       bool ret = proc_parts[2] == std::string(kBackground);
       return ret;
     } else {

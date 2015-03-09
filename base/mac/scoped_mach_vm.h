@@ -48,10 +48,9 @@ namespace mac {
 class BASE_EXPORT ScopedMachVM {
  public:
   explicit ScopedMachVM(vm_address_t address = 0, vm_size_t size = 0)
-      : address_(address),
-        size_(size) {
-    DCHECK(address % PAGE_SIZE == 0);
-    DCHECK(size % PAGE_SIZE == 0);
+      : address_(address), size_(size) {
+    DCHECK_EQ(address % PAGE_SIZE, 0u);
+    DCHECK_EQ(size % PAGE_SIZE, 0u);
   }
 
   ~ScopedMachVM() {

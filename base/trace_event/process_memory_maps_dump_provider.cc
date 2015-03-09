@@ -47,7 +47,7 @@ bool ParseSmapsHeader(std::istream* smaps,
 
   region->protection_flags = 0;
   *smaps >> protection_flags;
-  CHECK(4UL == protection_flags.size());
+  CHECK_EQ(4UL, protection_flags.size());
   if (protection_flags[0] == 'r') {
     region->protection_flags |=
         ProcessMemoryMaps::VMRegion::kProtectionFlagsRead;

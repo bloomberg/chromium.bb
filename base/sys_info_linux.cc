@@ -43,7 +43,7 @@ size_t MaxSharedMemorySize() {
   if (limit > std::numeric_limits<size_t>::max()) {
     limit = 0;
   }
-  DCHECK(limit > 0);
+  DCHECK_GT(limit, 0u);
   return static_cast<size_t>(limit);
 }
 
