@@ -411,6 +411,9 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   // We only need to do this because in Cocoa's memory management, removing the
   // button from the toolbar doesn't synchronously dealloc it.
   viewControllerDelegate_.reset();
+  // Also reset the context menu, since it has a dependency on the backing
+  // controller (which owns its model).
+  contextMenuController_.reset();
 }
 
 - (BOOL)isAnimating {
@@ -464,6 +467,9 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 - (NSMenu*)menu {
   if (testContextMenu_)
     return testContextMenu_;
+
+  // Make sure we delete any references to an old menu.
+  contextMenuController_.reset();
 
   ui::MenuModel* contextMenu = viewController_->GetContextMenu();
   if (!contextMenu)
