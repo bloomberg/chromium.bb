@@ -359,6 +359,8 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.federation_url = GURL("http://www.google.com/federation_url");
     form_google_.skip_zero_click = true;
     form_google_.generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
+    form_google_.form_data.name = UTF8ToUTF16("form_name");
+    form_google_.form_data.user_submitted = true;
 
     form_facebook_.origin = GURL("http://www.facebook.com/");
     form_facebook_.action = GURL("http://www.facebook.com/login");
@@ -448,7 +450,7 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ("login", item->keyring);
     EXPECT_EQ(form.origin.spec(), item->display_name);
     EXPECT_EQ(UTF16ToUTF8(form.password_value), item->password);
-    EXPECT_EQ(21u, item->attributes.size());
+    EXPECT_EQ(22u, item->attributes.size());
     CheckStringAttribute(item, "origin_url", form.origin.spec());
     CheckStringAttribute(item, "action_url", form.action.spec());
     CheckStringAttribute(item, "username_element",
@@ -476,6 +478,10 @@ class NativeBackendGnomeTest : public testing::Test {
     CheckUint32Attribute(item, "generation_upload_status",
                          form.generation_upload_status);
     CheckStringAttribute(item, "application", app_string);
+    autofill::FormData actual;
+    DeserializeFormDataFromBase64String(
+        item->attributes.at("form_data").value_string, &actual);
+    EXPECT_TRUE(form.form_data.SameFormAs(actual));
   }
 
   // Saves |credentials| and then gets logins matching |url| and |scheme|.
@@ -772,7 +778,7 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult( &NativeBackendGnome::AddLogin),
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                  base::Unretained(&backend), form_google_));
 
   ScopedVector<autofill::PasswordForm> form_list;

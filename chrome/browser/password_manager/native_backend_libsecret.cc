@@ -91,11 +91,6 @@ namespace {
 const char kLibsecretAppString[] = "chrome";
 
 // Schema is analagous to the fields in PasswordForm.
-// TODO(gcasto): Adding 'form_data' would be nice, but we would need to
-// serialize in a way that is guaranteed to not have any embedded NULLs. Pickle
-// doesn't make this guarantee, so we just don't serialize this field. Since
-// it's only used to crowd source data collection it doesn't matter that much
-// if it's not available on this platform.
 const SecretSchema kLibsecretSchema = {
     "chrome_libsecret_password_schema",
     // We have to use SECRET_SCHEMA_DONT_MATCH_NAME in order to get old
@@ -121,6 +116,7 @@ const SecretSchema kLibsecretSchema = {
      {"federation_url", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {"skip_zero_click", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
      {"generation_upload_status", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
+     {"form_data", SECRET_SCHEMA_ATTRIBUTE_STRING},
      // This field is always "chrome-profile_id" so that we can search for it.
      {"application", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING}}};
@@ -194,7 +190,8 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
           GetUintFromAttributes(attrs, "generation_upload_status"));
-
+  DeserializeFormDataFromBase64String(
+      GetStringFromAttributes(attrs, "form_data"), &form->form_data);
   return form.Pass();
 }
 
@@ -416,6 +413,8 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
   if (!date_created)
     date_created = base::Time::Now().ToInternalValue();
   int64 date_synced = form.date_synced.ToInternalValue();
+  std::string form_data;
+  SerializeFormDataToBase64String(form.form_data, &form_data);
   GError* error = nullptr;
   secret_password_store_sync(
       &kLibsecretSchema,
@@ -444,6 +443,7 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
       "federation_url", form.federation_url.spec().c_str(),
       "skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,
+      "form_data", form_data.c_str(),
       "application", app_string_.c_str(), nullptr);
 
   if (error) {

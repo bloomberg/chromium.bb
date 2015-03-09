@@ -281,6 +281,8 @@ class NativeBackendLibsecretTest : public testing::Test {
     form_google_.federation_url = GURL("http://www.google.com/federation_url");
     form_google_.skip_zero_click = true;
     form_google_.generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
+    form_google_.form_data.name = UTF8ToUTF16("form_name");
+    form_google_.form_data.user_submitted = true;
 
     form_facebook_.origin = GURL("http://www.facebook.com/");
     form_facebook_.action = GURL("http://www.facebook.com/login");
@@ -356,7 +358,7 @@ class NativeBackendLibsecretTest : public testing::Test {
                            const PasswordForm& form,
                            const std::string& app_string) {
     EXPECT_EQ(UTF16ToUTF8(form.password_value), item->value->password);
-    EXPECT_EQ(21u, g_hash_table_size(item->attributes));
+    EXPECT_EQ(22u, g_hash_table_size(item->attributes));
     CheckStringAttribute(item, "origin_url", form.origin.spec());
     CheckStringAttribute(item, "action_url", form.action.spec());
     CheckStringAttribute(item, "username_element",
@@ -385,6 +387,11 @@ class NativeBackendLibsecretTest : public testing::Test {
     CheckUint32Attribute(item, "generation_upload_status",
                          form.generation_upload_status);
     CheckStringAttribute(item, "application", app_string);
+    autofill::FormData actual;
+    DeserializeFormDataFromBase64String(
+        static_cast<char*>(g_hash_table_lookup(item->attributes, "form_data")),
+        &actual);
+    EXPECT_TRUE(form.form_data.SameFormAs(actual));
   }
 
   // Saves |credentials| and then gets logins matching |url| and |scheme|.

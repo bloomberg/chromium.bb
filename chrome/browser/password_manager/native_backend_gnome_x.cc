@@ -158,7 +158,8 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->generation_upload_status =
       static_cast<PasswordForm::GenerationUploadStatus>(
           uint_attr_map["generation_upload_status"]);
-
+  DeserializeFormDataFromBase64String(string_attr_map["form_data"],
+      &form->form_data);
   return form.Pass();
 }
 
@@ -220,11 +221,6 @@ void ConvertFormList(GList* found,
 }
 
 // Schema is analagous to the fields in PasswordForm.
-// TODO(gcasto): Adding 'form_data' would be nice, but we would need to
-// serialize in a way that is guaranteed to not have any embedded NULLs. Pickle
-// doesn't make this guarantee, so we just don't serialize this field. Since
-// it's only used to crowd source data collection it doesn't matter that much
-// if it's not available on this platform.
 const GnomeKeyringPasswordSchema kGnomeSchema = {
   GNOME_KEYRING_ITEM_GENERIC_SECRET, {
     { "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
@@ -247,6 +243,7 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
     { "federation_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { "skip_zero_click", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     { "generation_upload_status", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
+    { "form_data", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     // This field is always "chrome" so that we can search for it.
     { "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { nullptr }
@@ -339,6 +336,8 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
   if (!date_created)
     date_created = base::Time::Now().ToInternalValue();
   int64 date_synced = form.date_synced.ToInternalValue();
+  std::string form_data;
+  SerializeFormDataToBase64String(form.form_data, &form_data);
   gnome_keyring_store_password(
       &kGnomeSchema,
       nullptr,  // Default keyring.
@@ -367,6 +366,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "federation_url", form.federation_url.spec().c_str(),
       "skip_zero_click", form.skip_zero_click,
       "generation_upload_status", form.generation_upload_status,
+      "form_data", form_data.c_str(),
       "application", app_string,
       nullptr);
 }

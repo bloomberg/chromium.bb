@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/common/form_data.h"
 
+#include "base/base64.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -124,6 +125,15 @@ void SerializeFormData(const FormData& form_data, Pickle* pickle) {
   pickle->WriteBool(form_data.is_form_tag);
 }
 
+void SerializeFormDataToBase64String(const FormData& form_data,
+                                     std::string* output) {
+  Pickle pickle;
+  SerializeFormData(form_data, &pickle);
+  Base64Encode(
+      base::StringPiece(static_cast<const char*>(pickle.data()), pickle.size()),
+      output);
+}
+
 bool DeserializeFormData(PickleIterator* iter, FormData* form_data) {
   int version;
   if (!iter->ReadInt(&version)) {
@@ -167,6 +177,17 @@ bool DeserializeFormData(PickleIterator* iter, FormData* form_data) {
   }
 
   return true;
+}
+
+bool DeserializeFormDataFromBase64String(const base::StringPiece& input,
+                                         FormData* form_data) {
+  if (input.empty())
+    return false;
+  std::string pickle_data;
+  Base64Decode(input, &pickle_data);
+  Pickle pickle(pickle_data.data(), static_cast<int>(pickle_data.size()));
+  PickleIterator iter(pickle);
+  return DeserializeFormData(&iter, form_data);
 }
 
 }  // namespace autofill

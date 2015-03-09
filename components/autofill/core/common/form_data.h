@@ -44,11 +44,20 @@ struct FormData {
 std::ostream& operator<<(std::ostream& os, const FormData& form);
 
 // Serialize FormData. Used by the PasswordManager to persist FormData
-// pertaining to password forms. Serialized data is appended to |pickle|
+// pertaining to password forms. Serialized data is appended to |pickle|.
 void SerializeFormData(const FormData& form_data, Pickle* pickle);
 // Deserialize FormData. This assumes that |iter| is currently pointing to
 // the part of a pickle created by SerializeFormData. Returns true on success.
 bool DeserializeFormData(PickleIterator* iter, FormData* form_data);
+
+// Serialize FormData. Used by the PasswordManager to persist FormData
+// pertaining to password forms in base64 string. It is useful since in some
+// cases we need to store C strings without embedded '\0' symbols.
+void SerializeFormDataToBase64String(const FormData& form_data,
+                                     std::string* output);
+// Deserialize FormData. Returns true on success.
+bool DeserializeFormDataFromBase64String(const base::StringPiece& input,
+                                         FormData* form_data);
 
 }  // namespace autofill
 
