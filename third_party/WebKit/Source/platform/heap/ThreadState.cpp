@@ -95,8 +95,6 @@ ThreadState::ThreadState()
     , m_sweepForbidden(false)
     , m_noAllocationCount(0)
     , m_gcForbiddenCount(0)
-    , m_vectorBackingHeapIndex(Vector1HeapIndex)
-    , m_currentHeapAges(0)
     , m_isTerminating(false)
     , m_shouldFlushHeapDoesNotContainCache(false)
     , m_collectionRate(1.0)
@@ -123,8 +121,6 @@ ThreadState::ThreadState()
     for (int heapIndex = 0; heapIndex < LargeObjectHeapIndex; heapIndex++)
         m_heaps[heapIndex] = new NormalPageHeap(this, heapIndex);
     m_heaps[LargeObjectHeapIndex] = new LargeObjectHeap(this, LargeObjectHeapIndex);
-
-    clearHeapAges();
 
     m_weakCallbackStack = new CallbackStack();
 }
@@ -416,10 +412,7 @@ void ThreadState::snapshot()
     }
     json->beginArray("heaps");
     SNAPSHOT_HEAP(NormalPage);
-    SNAPSHOT_HEAP(Vector1);
-    SNAPSHOT_HEAP(Vector2);
-    SNAPSHOT_HEAP(Vector3);
-    SNAPSHOT_HEAP(Vector4);
+    SNAPSHOT_HEAP(Vector);
     SNAPSHOT_HEAP(InlineVector);
     SNAPSHOT_HEAP(HashTable);
     SNAPSHOT_HEAP(LargeObject);
@@ -792,8 +785,6 @@ void ThreadState::preGC()
     flushHeapDoesNotContainCacheIfNeeded();
     if (isMainThread())
         m_allocatedObjectSizeBeforeGC = Heap::allocatedObjectSize() + Heap::markedObjectSize();
-
-    clearHeapAges();
 }
 
 void ThreadState::postGC(GCType gcType)
@@ -1068,52 +1059,6 @@ void ThreadState::invokePreFinalizers(Visitor& visitor)
     }
     // FIXME: removeAll is inefficient.  It can shrink repeatedly.
     m_preFinalizers.removeAll(deadObjects);
-}
-
-void ThreadState::clearHeapAges()
-{
-    memset(m_heapAges, 0, sizeof(int) * NumberOfHeaps);
-    memset(m_likelyToBePromptlyFreed, 0, sizeof(int) * likelyToBePromptlyFreedArraySize);
-    m_currentHeapAges = 0;
-}
-
-int ThreadState::heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, int endHeapIndex)
-{
-    size_t minHeapAge = m_heapAges[beginHeapIndex];
-    int heapIndexWithMinHeapAge = beginHeapIndex;
-    for (int heapIndex = beginHeapIndex + 1; heapIndex <= endHeapIndex; heapIndex++) {
-        if (m_heapAges[heapIndex] < minHeapAge) {
-            minHeapAge = m_heapAges[heapIndex];
-            heapIndexWithMinHeapAge = heapIndex;
-        }
-    }
-    ASSERT(Vector1HeapIndex <= heapIndexWithMinHeapAge);
-    ASSERT(heapIndexWithMinHeapAge <= Vector4HeapIndex);
-    return heapIndexWithMinHeapAge;
-}
-
-BaseHeap* ThreadState::expandedVectorBackingHeap(size_t gcInfoIndex)
-{
-    size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
-    --m_likelyToBePromptlyFreed[entryIndex];
-    int heapIndex = m_vectorBackingHeapIndex;
-    m_heapAges[heapIndex] = ++m_currentHeapAges;
-    m_vectorBackingHeapIndex = heapIndexOfVectorHeapLeastRecentlyExpanded(Vector1HeapIndex, Vector4HeapIndex);
-    return m_heaps[heapIndex];
-}
-
-void ThreadState::allocationPointAdjusted(int heapIndex)
-{
-    m_heapAges[heapIndex] = ++m_currentHeapAges;
-    if (m_vectorBackingHeapIndex == heapIndex)
-        m_vectorBackingHeapIndex = heapIndexOfVectorHeapLeastRecentlyExpanded(Vector1HeapIndex, Vector4HeapIndex);
-}
-
-void ThreadState::promptlyFreed(size_t gcInfoIndex)
-{
-    size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
-    // See the comment in vectorBackingHeap() for why this is +3.
-    m_likelyToBePromptlyFreed[entryIndex] += 3;
 }
 
 #if ENABLE(GC_PROFILING)

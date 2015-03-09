@@ -306,17 +306,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             m_capacity = sizeToAllocate / sizeof(T);
         }
 
-        void allocateExpandedBuffer(size_t newCapacity)
-        {
-            ASSERT(newCapacity);
-            size_t sizeToAllocate = allocationSize(newCapacity);
-            if (hasInlineCapacity)
-                m_buffer = Allocator::template allocateInlineVectorBacking<T>(sizeToAllocate);
-            else
-                m_buffer = Allocator::template allocateExpandedVectorBacking<T>(sizeToAllocate);
-            m_capacity = sizeToAllocate / sizeof(T);
-        }
-
         size_t allocationSize(size_t capacity) const
         {
             return Allocator::Quantizer::template quantizedSize<T>(capacity);
@@ -510,14 +499,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             // FIXME: This should ASSERT(!m_buffer) to catch misuse/leaks.
             if (newCapacity > inlineCapacity)
                 Base::allocateBuffer(newCapacity);
-            else
-                resetBufferPointer();
-        }
-
-        void allocateExpandedBuffer(size_t newCapacity)
-        {
-            if (newCapacity > inlineCapacity)
-                Base::allocateExpandedBuffer(newCapacity);
             else
                 resetBufferPointer();
         }
@@ -1030,10 +1011,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         if (UNLIKELY(newCapacity <= capacity()))
             return;
         T* oldBuffer = begin();
-        if (!oldBuffer) {
-            Base::allocateBuffer(newCapacity);
-            return;
-        }
+        T* oldEnd = end();
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
         size_t oldCapacity = capacity();
 #endif
@@ -1044,8 +1022,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             ANNOTATE_CHANGE_CAPACITY(begin(), oldCapacity, m_size, capacity());
             return;
         }
-        T* oldEnd = end();
-        Base::allocateExpandedBuffer(newCapacity);
+        Base::allocateBuffer(newCapacity);
         ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
         TypeOperations::move(oldBuffer, oldEnd, begin());
         ANNOTATE_DELETE_BUFFER(oldBuffer, oldCapacity, m_size);

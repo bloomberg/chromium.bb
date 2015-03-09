@@ -785,7 +785,7 @@ public:
     bool coalesce();
     void promptlyFreeObject(HeapObjectHeader*);
     bool expandObject(HeapObjectHeader*, size_t);
-    bool shrinkObject(HeapObjectHeader*, size_t);
+    void shrinkObject(HeapObjectHeader*, size_t);
     void decreasePromptlyFreedSize(size_t size) { m_promptlyFreedSize -= size; }
 
 private:
@@ -1500,20 +1500,9 @@ public:
     template <typename T>
     static T* allocateVectorBacking(size_t size)
     {
-        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        ASSERT(state->isAllocationAllowed());
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
-        NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->vectorBackingHeap(gcInfoIndex));
-        return reinterpret_cast<T*>(heap->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
-    }
-    template <typename T>
-    static T* allocateExpandedVectorBacking(size_t size)
-    {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        ASSERT(state->isAllocationAllowed());
-        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
-        NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->vectorBackingHeap(gcInfoIndex));
-        return reinterpret_cast<T*>(heap->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, VectorHeapIndex, gcInfoIndex));
     }
     PLATFORM_EXPORT static void freeVectorBacking(void*);
     PLATFORM_EXPORT static bool expandVectorBacking(void*, size_t);
@@ -1523,6 +1512,7 @@ public:
         backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
         return true;
     }
+
     template <typename T>
     static T* allocateInlineVectorBacking(size_t size)
     {
