@@ -6,7 +6,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/cocoa/autofill/card_unmask_prompt_view_bridge.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_pop_up_button.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
@@ -88,15 +87,13 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
 @implementation CardUnmaskPromptViewCocoa
 
-+ (AutofillPopUpButton*)buildDatePopupWithModel:(ui::ComboboxModel&)model {
-  AutofillPopUpButton* popup =
-      [[AutofillPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
++ (NSPopUpButton*)buildDatePopupWithModel:(ui::ComboboxModel&)model {
+  NSPopUpButton* popup =
+      [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
 
   for (int i = 0; i < model.GetItemCount(); ++i) {
     [popup addItemWithTitle:base::SysUTF16ToNSString(model.GetItemAt(i))];
   }
-  [popup setDefaultValue:base::SysUTF16ToNSString(
-                             model.GetItemAt(model.GetDefaultIndex()))];
   [popup sizeToFit];
   return popup;
 }
@@ -177,13 +174,13 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
     // Month.
     autofill::MonthComboboxModel monthModel;
-    base::scoped_nsobject<AutofillPopUpButton> monthPopup(
+    base::scoped_nsobject<NSPopUpButton> monthPopup(
         [CardUnmaskPromptViewCocoa buildDatePopupWithModel:monthModel]);
     [expirationView addSubview:monthPopup];
 
     // Year.
     autofill::YearComboboxModel yearModel;
-    base::scoped_nsobject<AutofillPopUpButton> yearPopup(
+    base::scoped_nsobject<NSPopUpButton> yearPopup(
         [CardUnmaskPromptViewCocoa buildDatePopupWithModel:yearModel]);
     [expirationView addSubview:yearPopup];
 
