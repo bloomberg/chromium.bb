@@ -82,6 +82,7 @@ public:
     static void addProperty(const char* name, int value, SharedBuffer*);
     static void addProperty(const char* name, unsigned value, SharedBuffer*);
     static void addProperty(const char* name, bool value, SharedBuffer*);
+    static void addProperty(const char* name, double, SharedBuffer*);
     static void addProperty(const char* name, const Vector<String>& values, SharedBuffer*);
     static void addProperty(const char* name, const IntRect&, SharedBuffer*);
 };

@@ -159,6 +159,8 @@ ListPicker.prototype._listItemCount = function() {
 };
 
 ListPicker.prototype._layout = function() {
+    if (this._config.isRTL)
+        this._element.classList.add("rtl");
     this._updateChildren(this._selectElement, this._config);
     this._selectElement.value = this._config.selectedIndex;
 };
@@ -247,12 +249,16 @@ ListPicker.prototype._configureItem = function(element, config) {
         element.title = config.title;
         element.disabled = config.disabled;
         element.setAttribute("aria-label", config.ariaLabel);
+        element.style.webkitPaddingStart = this._config.paddingStart + "px";
+        element.style.webkitPaddingEnd = this._config.paddingEnd + "px";
     } else if (config.type === "optgroup") {
         element.label = config.label;
         element.title = config.title;
         element.disabled = config.disabled;
         element.setAttribute("aria-label", config.ariaLabel);
         this._updateChildren(element, config);
+        element.style.webkitPaddingStart = this._config.paddingStart + "px";
+        element.style.webkitPaddingEnd = this._config.paddingEnd + "px";
     } else if (config.type === "separator") {
         element.title = config.title;
         element.disabled = config.disabled;

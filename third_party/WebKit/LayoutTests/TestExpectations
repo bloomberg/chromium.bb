@@ -483,6 +483,15 @@ crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
 
 crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ Crash Pass ]
+crbug.com/464337 fast/forms/select/popup-menu-appearance-many.html [ NeedsRebaseline ]
+crbug.com/464337 fast/forms/select/popup-menu-appearance-rtl.html [ NeedsRebaseline ]
+crbug.com/464337 fast/forms/select/popup-menu-appearance-single-option.html [ NeedsRebaseline ]
+crbug.com/464337 fast/forms/select/popup-menu-appearance-styled.html [ NeedsRebaseline ]
+crbug.com/464337 fast/forms/select/popup-menu-appearance-transform.html [ NeedsRebaseline ]
+crbug.com/464337 fast/forms/select/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
+crbug.com/464337 fast/forms/select/popup-menu-appearance.html [ NeedsRebaseline ]
+crbug.com/464337 compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ NeedsRebaseline ]
+crbug.com/464337 virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ NeedsRebaseline ]
 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 

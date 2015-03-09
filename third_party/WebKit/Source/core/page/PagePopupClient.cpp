@@ -93,6 +93,14 @@ void PagePopupClient::addProperty(const char* name, bool value, SharedBuffer* da
     addLiteral(",\n", data);
 }
 
+void PagePopupClient::addProperty(const char* name, double value, SharedBuffer* data)
+{
+    data->append(name, strlen(name));
+    addLiteral(": ", data);
+    addString(String::number(value), data);
+    addLiteral(",\n", data);
+}
+
 void PagePopupClient::addProperty(const char* name, const Vector<String>& values, SharedBuffer* data)
 {
     data->append(name, strlen(name));

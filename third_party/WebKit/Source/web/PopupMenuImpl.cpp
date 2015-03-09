@@ -7,6 +7,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLHRElement.h"
@@ -100,6 +101,10 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     }
     PagePopupClient::addString("],\n", data);
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
+    bool isRTL = !ownerElement().layoutStyle()->isLeftToRightDirection();
+    addProperty("isRTL", isRTL, data);
+    addProperty("paddingStart", isRTL ? m_client->clientPaddingRight().toDouble() : m_client->clientPaddingLeft().toDouble(), data);
+    addProperty("paddingEnd", isRTL ? m_client->clientPaddingLeft().toDouble() : m_client->clientPaddingRight().toDouble(), data);
     PagePopupClient::addString("};\n", data);
     data->append(Platform::current()->loadResource("pickerCommon.js"));
     data->append(Platform::current()->loadResource("listPicker.js"));
