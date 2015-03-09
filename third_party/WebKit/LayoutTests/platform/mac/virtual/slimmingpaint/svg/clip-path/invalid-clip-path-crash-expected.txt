@@ -90,10 +90,6 @@
         "LayoutSVGPath path",
         "LayoutSVGPath path",
         "LayoutSVGPath path",
-        "LayoutSVGPath path",
-        "LayoutSVGPath path",
-        "LayoutSVGPath path",
-        "LayoutSVGPath path",
         "LayoutSVGPath path"
       ]
     }
