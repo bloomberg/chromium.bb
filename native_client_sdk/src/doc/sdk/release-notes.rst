@@ -75,6 +75,13 @@ Chrome/Pepper 40 (November 07 2014)
 Chrome/Pepper 39 (26 September 2014)
 ====================================
 
+NaCl
+----
+
+* This release contains a fix for CVE-2015-0565: `disable the x86 CLFLUSH
+  instruction due to rowhammer problem
+  <https://code.google.com/p/nativeclient/issues/detail?id=3944>`_.
+
 Pepper
 ------
 
