@@ -5,3 +5,7 @@
 :host {
   display: inline-flex;
 }
+
+:host([disabled]) {
+  opacity: .33;
+}

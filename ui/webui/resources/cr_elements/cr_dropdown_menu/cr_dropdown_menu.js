@@ -49,7 +49,7 @@ Polymer('cr-dropdown-menu', {
      * @type boolean
      * @default false
      */
-    disabled: {value: false, reflected: true},
+    disabled: {value: false, reflect: true},
   },
 
   /** @override */
