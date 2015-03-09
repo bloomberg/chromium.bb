@@ -741,10 +741,6 @@ class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
 
   base::StringPiece description() const { return description_; }
 
-  void set_description(base::StringPiece description) {
-    description_ = description;
-  }
-
   void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
@@ -783,9 +779,6 @@ class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
   }
 
   bool clear_settings() const { return clear_settings_; }
-  void set_clear_settings(bool clear_settings) {
-    clear_settings_ = clear_settings;
-  }
   bool is_ack() const { return is_ack_; }
   void set_is_ack(bool is_ack) {
     is_ack_ = is_ack;
@@ -927,7 +920,6 @@ class NET_EXPORT_PRIVATE SpdyPushPromiseIR
         padded_(false),
         padding_payload_len_(0) {}
   SpdyStreamId promised_stream_id() const { return promised_stream_id_; }
-  void set_promised_stream_id(SpdyStreamId id) { promised_stream_id_ = id; }
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 

@@ -18,7 +18,6 @@
 using base::StringPiece;
 using net::test::a2b_hex;
 using std::string;
-using testing::ElementsAre;
 using testing::ElementsAreArray;
 using testing::Pointwise;
 
@@ -54,32 +53,6 @@ class HpackHuffmanTablePeer {
     std::vector<DecodeEntry>::const_iterator begin =
         table_.decode_entries_.begin() + decode_table.entries_offset;
     return std::vector<DecodeEntry>(begin, begin + decode_table.size());
-  }
-  void DumpDecodeTable(const DecodeTable& table) {
-    std::vector<DecodeEntry> entries = decode_entries(table);
-    LOG(INFO) << "Table size " << (1 << table.indexed_length)
-              << " prefix " << unsigned(table.prefix_length)
-              << " indexed " << unsigned(table.indexed_length);
-    size_t i = 0;
-    while (i != table.size()) {
-      const DecodeEntry& entry = entries[i];
-      LOG(INFO) << i << ":"
-                << " next_table " << unsigned(entry.next_table_index)
-                << " length " << unsigned(entry.length)
-                << " symbol " << unsigned(entry.symbol_id);
-      size_t j = 1;
-      for (; (i + j) != table.size(); j++) {
-        const DecodeEntry& next = entries[i + j];
-        if (next.next_table_index != entry.next_table_index ||
-            next.length != entry.length ||
-            next.symbol_id != entry.symbol_id)
-          break;
-      }
-      if (j > 1) {
-        LOG(INFO) << "  (repeats " << j << " times)";
-      }
-      i += j;
-    }
   }
 
  private:

@@ -45,9 +45,6 @@ class HpackEncoderPeer {
   HpackHeaderTablePeer table_peer() {
     return HpackHeaderTablePeer(table());
   }
-  bool allow_huffman_compression() {
-    return encoder_->allow_huffman_compression_;
-  }
   void set_allow_huffman_compression(bool allow) {
     encoder_->allow_huffman_compression_ = allow;
   }
@@ -153,9 +150,6 @@ class HpackEncoderTest : public ::testing::Test {
     expected_.TakeString(&expected_out);
     EXPECT_TRUE(encoder_.EncodeHeaderSet(header_set, &actual_out));
     EXPECT_EQ(expected_out, actual_out);
-  }
-  size_t IndexOf(HpackEntry* entry) {
-    return peer_.table()->IndexOf(entry);
   }
   size_t IndexOf(const HpackEntry* entry) {
     return peer_.table()->IndexOf(entry);

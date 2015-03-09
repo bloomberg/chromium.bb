@@ -550,9 +550,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Returns the maximum size a frame can be (data or control).
   size_t GetFrameMaximumSize() const;
 
-  // Returns the maximum size that a control frame can be.
-  size_t GetControlFrameMaximumSize() const;
-
   // Returns the maximum payload size of a DATA frame.
   size_t GetDataFrameMaximumPayload() const;
 
@@ -568,8 +565,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyMajorVersion protocol_version() const { return protocol_version_; }
 
   bool probable_http_response() const { return probable_http_response_; }
-
-  SpdyStreamId expect_continuation() const { return expect_continuation_; }
 
   SpdyPriority GetLowestPriority() const {
     return protocol_version_ < SPDY3 ? 3 : 7;
