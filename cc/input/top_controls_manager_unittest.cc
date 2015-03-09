@@ -5,7 +5,9 @@
 #include "cc/input/top_controls_manager.h"
 
 #include <algorithm>
+#include <cmath>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/input/top_controls_manager_client.h"
@@ -51,6 +53,9 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   float TopControlsHeight() const override { return top_controls_height_; }
 
   void SetCurrentTopControlsShownRatio(float ratio) override {
+    ASSERT_FALSE(std::isnan(ratio));
+    ASSERT_FALSE(ratio == std::numeric_limits<float>::infinity());
+    ASSERT_FALSE(ratio == -std::numeric_limits<float>::infinity());
     ratio = std::max(ratio, 0.f);
     ratio = std::min(ratio, 1.f);
     top_controls_shown_ratio_ = ratio;
@@ -444,6 +449,21 @@ TEST(TopControlsManagerTest, ShrinkingHeightKeepsTopControlsHidden) {
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
+
+TEST(TopControlsManagerTest, ScrollByWithZeroHeightControlsIsNoop) {
+  MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
+  TopControlsManager* manager = client.manager();
+  manager->UpdateTopControlsState(BOTH, BOTH, false);
+
+  manager->ScrollBegin();
+  gfx::Vector2dF pending = manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
+  EXPECT_FLOAT_EQ(20.f, pending.y());
+  EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  manager->ScrollEnd();
+}
+
 
 }  // namespace
 }  // namespace cc
