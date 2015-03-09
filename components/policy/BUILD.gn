@@ -47,9 +47,6 @@ if (enable_configuration_policy) {
   # build puts everything into the following directory. We do the same for now.
   policy_gen_dir = "$root_gen_dir/policy"
 
-  # Directory for generating Android App Restrictions resources
-  android_resources_gen_dir = "$policy_gen_dir/android_resources"
-
   # This protobuf is equivalent to chrome_settings.proto but shares messages
   # for policies of the same type, so that less classes have to be generated
   # and compiled.
@@ -62,10 +59,7 @@ if (enable_configuration_policy) {
   constants_header_path = "$policy_gen_dir/policy_constants.h"
   constants_source_path = "$policy_gen_dir/policy_constants.cc"
   protobuf_decoder_path = "$policy_gen_dir/cloud_policy_generated.cc"
-  app_restrictions_path =
-      "$android_resources_gen_dir/xml-v21/app_restrictions.xml"
-  app_resources_path =
-      "$android_resources_gen_dir/values-v21/restriction_values.xml"
+  app_restrictions_path = "$policy_gen_dir/app_restrictions.xml"
 
   action("cloud_policy_code_generate") {
     script = "tools/generate_policy_source.py"
@@ -86,14 +80,10 @@ if (enable_configuration_policy) {
       chrome_settings_proto_path,
       cloud_policy_proto_path,
       app_restrictions_path,
-      app_resources_path,
     ]
 
-    if (current_os != "android") {
-      outputs -= [
-        app_restrictions_path,
-        app_resources_path,
-      ]
+    if (target_os != "android") {
+      outputs -= [ app_restrictions_path ]
     }
 
     args = [
@@ -109,9 +99,7 @@ if (enable_configuration_policy) {
           rebase_path(protobuf_decoder_path, root_build_dir),
       "--app-restrictions-definition=" +
           rebase_path(app_restrictions_path, root_build_dir),
-      "--app-restrictions-resources=" +
-          rebase_path(app_resources_path, root_build_dir),
-      current_os,
+      target_os,
       chromeos_flag,
       rebase_path("resources/policy_templates.json", root_build_dir),
     ]
