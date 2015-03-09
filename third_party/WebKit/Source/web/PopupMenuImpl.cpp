@@ -214,6 +214,7 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
 {
     ASSERT(m_popup);
     ASSERT(m_client);
+    RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
     bool success;
     int listIndex = stringValue.toInt(&success);
     ASSERT(success);
