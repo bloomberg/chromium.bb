@@ -12,8 +12,10 @@ import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 import isolate_format
+from depot_tools import auto_stub
 from utils import file_path
 
 
@@ -26,7 +28,7 @@ FAKE_DIR = (
     if sys.platform == 'win32' else u'/path/to/non_existing')
 
 
-class IsolateFormatTest(unittest.TestCase):
+class IsolateFormatTest(auto_stub.TestCase):
   def test_unknown_key(self):
     try:
       isolate_format.verify_variables({'foo': [],})
@@ -595,6 +597,45 @@ class IsolateFormatTest(unittest.TestCase):
     actual = isolate_format.load_isolate_as_config(FAKE_DIR, values, None)
     self.assertEqual(expected, actual.flatten())
 
+  def test_and_or_bug(self):
+    a = {
+      'conditions': [
+        ['use_x11==0', {
+          'variables': {
+            'command': ['foo', 'x11=0'],
+          },
+        }],
+        ['OS=="linux" and chromeos==0', {
+          'variables': {
+            'command': ['foo', 'linux'],
+            },
+          }],
+        ],
+      }
+
+    def load_included_isolate(isolate_dir, _isolate_path):
+      return isolate_format.load_isolate_as_config(isolate_dir, a, None)
+    self.mock(isolate_format, 'load_included_isolate', load_included_isolate)
+
+    b = {
+      'conditions': [
+        ['use_x11==1', {
+          'variables': {
+            'command': ['foo', 'x11=1'],
+          },
+        }],
+      ],
+      'includes': [
+        'a',
+      ],
+    }
+    variables = {'use_x11': 1, 'OS': 'linux', 'chromeos': 0}
+    config = isolate_format.load_isolate_for_config('/', str(b), variables)
+    self.assertEqual((['foo', 'x11=1'], [], None, '/'), config)
+    variables = {'use_x11': 0, 'OS': 'linux', 'chromeos': 0}
+    config = isolate_format.load_isolate_for_config('/', str(b), variables)
+    self.assertEqual(([], [], None, '/'), config)
+
 
 class IsolateFormatTmpDirTest(unittest.TestCase):
   def setUp(self):
@@ -740,6 +781,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
+    # Do not define command in isolate3, otherwise commands in the other
+    # included .isolated will be ignored.
     isolate3 = {
       'includes': [
         '../1/isolate1.isolate',
@@ -755,9 +798,6 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
         ['OS=="mac"', {
           'variables': {
-            'command': [
-              'foo', 'mac',
-            ],
             'files': [
               'file_mac',
             ],
@@ -803,14 +843,13 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         'isolate_dir': dir_3_2,
       },
       ('mac',): {
-        # command in isolate3 takes precedence over the ones included.
-        'command': ['foo', 'mac'],
+        'command': ['foo', 'linux_or_mac'],
         'files': [
-          '../1/file_non_linux',
-          '2/other/file',
-          'file_mac',
+          '../../1/file_non_linux',
+          '../file_mac',
+          'other/file',
         ],
-        'isolate_dir': dir_3,
+        'isolate_dir': dir_3_2,
       },
       ('win',): {
         # command comes from isolate1.
@@ -877,6 +916,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
+    # Do not define command in isolate3, otherwise commands in the other
+    # included .isolated will be ignored.
     isolate3 = {
       'includes': [
         '../1/isolate1.isolate',
@@ -892,9 +933,6 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
         ['OS=="mac"', {
           'variables': {
-            'command': [
-              'foo', 'mac', '<(PATH)',
-            ],
             'files': [
               '<(PATH)/file_mac',
             ],
@@ -935,13 +973,13 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         'isolate_dir': dir_3_2,
       },
       ('mac',): {
-        'command': ['foo', 'mac', '<(PATH)'],
+        'command': ['foo', 'linux_or_mac', '<(PATH)'],
         'files': [
           '<(PATH)/file_mac',
           '<(PATH)/file_non_linux',
           '<(PATH)/other/file',
         ],
-        'isolate_dir': dir_3,
+        'isolate_dir': dir_3_2,
       },
       ('win',): {
         # command comes from isolate1.

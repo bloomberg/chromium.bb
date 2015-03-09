@@ -904,6 +904,8 @@ class IsolateLoad(IsolateBase):
         }],
       ],
     }
+    # Do not define command in isolate3, otherwise commands in the other
+    # included .isolated will be ignored.
     isolate3 = {
       'includes': [
         '../1/isolate1.isolate',
@@ -919,9 +921,6 @@ class IsolateLoad(IsolateBase):
         }],
         ['OS=="mac"', {
           'variables': {
-            'command': [
-              'foo', 'mac',
-            ],
             'files': [
               'file_mac',
             ],
@@ -1022,8 +1021,8 @@ class IsolateLoad(IsolateBase):
           u'3/2/other/file',
           u'3/file_mac',
         ),
-        ['foo', 'mac'],
-        '3')
+        ['foo', 'linux_or_mac'],
+        '3/2')
     # root is .../isolate/1/.
     test_with_os(
         'win',
@@ -1179,6 +1178,8 @@ class IsolateLoad(IsolateBase):
         'relative_cwd': relative_cwd,
         'version': isolated_format.ISOLATED_FILE_VERSION,
       }
+      if not command:
+        expected.pop('command')
       self.assertEqual(expected, c.saved_state.to_isolated())
 
     cwd_name = os.path.basename(self.cwd)
@@ -1188,26 +1189,15 @@ class IsolateLoad(IsolateBase):
         (
           'file_amiga',
         ),
-        [
-          'foo',
-          'amiga_or_win',
-          os.path.join(u'..', '..', '..', '..', cwd_name, 'amiga', 'path'),
-          'indeed',
-        ],
-        os.path.join(dir_name, u'amiga', 'isolate', '1'))
+        [],
+        os.path.join(dir_name, u'amiga', 'isolate', '3'))
     test_with_os(
         'linux',
         (
           u'file_linux',
           os.path.join(u'other', 'file'),
         ),
-        [
-          'foo',
-          'linux_or_mac',
-          os.path.join(
-              u'..', '..', '..', '..', '..', cwd_name, 'linux', 'path'),
-          'indeed',
-        ],
+        [],
         os.path.join(dir_name, u'linux', 'isolate', '3', '2'))
     test_with_os(
         'mac',
@@ -1228,12 +1218,7 @@ class IsolateLoad(IsolateBase):
         (
           'file_non_linux',
         ),
-        [
-          'foo',
-          'amiga_or_win',
-          os.path.join(u'..', '..', '..', '..', cwd_name, 'win', 'path'),
-          'indeed',
-        ],
+        [],
         os.path.join(dir_name, u'win', 'isolate', '1'))
 
 

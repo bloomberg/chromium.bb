@@ -538,6 +538,23 @@ class Configs(object):
       ''.join('\n  %s' % str(f) for f in self._by_config))
 
 
+def load_included_isolate(isolate_dir, isolate_path):
+  if os.path.isabs(isolate_path):
+    raise IsolateError(
+        'Failed to load configuration; absolute include path \'%s\'' %
+        isolate_path)
+  included_isolate = os.path.normpath(os.path.join(isolate_dir, isolate_path))
+  if sys.platform == 'win32':
+    if included_isolate[0].lower() != isolate_dir[0].lower():
+      raise IsolateError(
+          'Can\'t reference a .isolate file from another drive')
+  with open(included_isolate, 'r') as f:
+    return load_isolate_as_config(
+        os.path.dirname(included_isolate),
+        eval_content(f.read()),
+        None)
+
+
 def load_isolate_as_config(isolate_dir, value, file_comment):
   """Parses one .isolate file and returns a Configs() instance.
 
@@ -600,23 +617,19 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
       new.set_config(config, ConfigSettings(then['variables'], isolate_dir))
     isolate = isolate.union(new)
 
+  # If the .isolate contains command, ignore any command in child .isolate.
+  root_has_command = any(c.command for c in isolate._by_config.itervalues())
+
   # Load the includes. Process them in reverse so the last one take precedence.
   for include in reversed(value.get('includes', [])):
-    if os.path.isabs(include):
-      raise IsolateError(
-          'Failed to load configuration; absolute include path \'%s\'' %
-          include)
-    included_isolate = os.path.normpath(os.path.join(isolate_dir, include))
-    if sys.platform == 'win32':
-      if included_isolate[0].lower() != isolate_dir[0].lower():
-        raise IsolateError(
-            'Can\'t reference a .isolate file from another drive')
-    with open(included_isolate, 'r') as f:
-      included_isolate = load_isolate_as_config(
-          os.path.dirname(included_isolate),
-          eval_content(f.read()),
-          None)
-    isolate = isolate.union(included_isolate)
+    included = load_included_isolate(isolate_dir, include)
+    if root_has_command:
+      # Strip any command in the imported isolate. It is because the chosen
+      # command is not related to the one in the top-most .isolate, since the
+      # configuration is flattened.
+      for c in included._by_config.itervalues():
+        c.command = []
+    isolate = isolate.union(included)
 
   return isolate
 
