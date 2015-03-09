@@ -18,6 +18,10 @@ public class LocalStorageInfo implements Serializable {
         mSize = size;
     }
 
+    public String getOrigin() {
+        return mOrigin;
+    }
+
     public void clear() {
         WebsitePreferenceBridge.nativeClearCookieData(mOrigin);
         WebsitePreferenceBridge.nativeClearLocalStorageData(mOrigin);

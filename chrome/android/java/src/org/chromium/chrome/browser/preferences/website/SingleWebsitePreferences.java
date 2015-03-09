@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.preferences.website;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -62,6 +63,19 @@ public class SingleWebsitePreferences extends PreferenceFragment
             "push_notifications_list";
     public static final String PREF_VOICE_AND_VIDEO_CAPTURE_PERMISSION =
             "voice_and_video_capture_permission_list";
+
+    // All permissions from the permissions preference category must be listed here.
+    // TODO(mvanouwerkerk): Use this array in more places to reduce verbosity.
+    private static final String[] PERMISSION_PREFERENCE_KEYS = {
+        PREF_COOKIES_PERMISSION,
+        PREF_JAVASCRIPT_PERMISSION,
+        PREF_LOCATION_ACCESS,
+        PREF_MIDI_SYSEX_PERMISSION,
+        PREF_POPUP_PERMISSION,
+        PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION,
+        PREF_PUSH_NOTIFICATIONS_PERMISSION,
+        PREF_VOICE_AND_VIDEO_CAPTURE_PERMISSION
+    };
 
     // The website this page is displaying details about.
     private Website mSite;
@@ -133,8 +147,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
      * Given an address and a list of sets of websites, returns a new site with the same origin
      * as |address| which has merged into it the permissions of the matching input sites. If a
      * permission is found more than once, the one found first is used and the latter are ignored.
-     * This should not drop any relevant data as this method already aggressively filters on an
-     * exact match of origin and embedder.
+     * This should not drop any relevant data as there should not be duplicates like that in the
+     * first place.
      *
      * @param address The address to search for.
      * @param websiteSets The websites to search in.
@@ -143,6 +157,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     private static Website mergePermissionInfoForTopLevelOrigin(
             WebsiteAddress address, List<Set<Website>> websiteSets) {
         String origin = address.getOrigin();
+        String host = Uri.parse(origin).getHost();
         Website merged = new Website(address);
         // This nested loop looks expensive, but the amount of data is likely to be relatively
         // small because most sites have very few permissions.
@@ -181,12 +196,23 @@ public class SingleWebsitePreferences extends PreferenceFragment
                         merged.setVoiceAndVideoCaptureInfo(other.getVoiceAndVideoCaptureInfo());
                     }
                 }
-                // TODO(mvanouwerkerk): Can VoiceAndVideoCaptureInfo share a base type with the
-                // others?
-                // TODO(mvanouwerkerk): Merge in PopupExceptionInfo? It is not a PermissionInfo.
-                // TODO(mvanouwerkerk): Merge in LocalStorageInfo? It is not a PermissionInfo.
-                // TODO(mvanouwerkerk): Merge in all instances of StorageInfo? It is not a
-                // PermissionInfo.
+                if (merged.getLocalStorageInfo() == null
+                        && other.getLocalStorageInfo() != null
+                        && origin.equals(other.getLocalStorageInfo().getOrigin())) {
+                    merged.setLocalStorageInfo(other.getLocalStorageInfo());
+                }
+                for (StorageInfo storageInfo : other.getStorageInfo()) {
+                    if (host.equals(storageInfo.getHost())) {
+                        merged.addStorageInfo(storageInfo);
+                    }
+                }
+
+                // TODO(mvanouwerkerk): Make the various info types share a common interface that
+                // supports reading the origin or host.
+                // TODO(mvanouwerkerk): Merge in PopupExceptionInfo? It uses a pattern, and is never
+                // set on Android.
+                // TODO(mvanouwerkerk): Merge in JavaScriptExceptionInfo? It uses a pattern, and is
+                // never set on Android.
             }
         }
         return merged;
@@ -263,17 +289,11 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private boolean hasPermissionsPreferences() {
-        // New permissions (from the Permissions preference category) must be listed here so that
-        // category headings can be removed when no permissions are shown.
         PreferenceScreen screen = getPreferenceScreen();
-        return screen.findPreference(PREF_COOKIES_PERMISSION) != null
-                || screen.findPreference(PREF_JAVASCRIPT_PERMISSION) != null
-                || screen.findPreference(PREF_LOCATION_ACCESS) != null
-                || screen.findPreference(PREF_MIDI_SYSEX_PERMISSION) != null
-                || screen.findPreference(PREF_POPUP_PERMISSION) != null
-                || screen.findPreference(PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION) != null
-                || screen.findPreference(PREF_PUSH_NOTIFICATIONS_PERMISSION) != null
-                || screen.findPreference(PREF_VOICE_AND_VIDEO_CAPTURE_PERMISSION) != null;
+        for (String key : PERMISSION_PREFERENCE_KEYS) {
+            if (screen.findPreference(key) != null) return true;
+        }
+        return false;
     }
 
     /**
@@ -339,7 +359,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
         return null;
     }
-
 
     /**
      * Based on the type of media allowed or denied for this website, the title and summary
@@ -491,6 +510,17 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private void resetSite() {
+        // Clear the screen.
+        // TODO(mvanouwerkerk): Refactor this class so that it does not depend on the screen state
+        // for its logic. This class should maintain its own data model, and only update the screen
+        // after a change is made.
+        PreferenceScreen screen = getPreferenceScreen();
+        for (String key : PERMISSION_PREFERENCE_KEYS) {
+            Preference preference = screen.findPreference(key);
+            if (preference != null) screen.removePreference(preference);
+        }
+
+        // Clear the permissions.
         mSite.setCookiePermission(null);
         mSite.setGeolocationPermission(null);
         mSite.setJavaScriptPermission(null);
@@ -501,11 +531,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setVideoCapturePermission(null);
         mSite.setVoiceCapturePermission(null);
 
+        // Clear the storage and finish the activity if necessary.
         if (mSite.getTotalUsage() > 0) {
             clearStoredData();
         } else {
             // Clearing stored data implies popping back to parent menu if there
-            // is nothing left to show. Therefore, we only need to implicitly
+            // is nothing left to show. Therefore, we only need to explicitly
             // close the activity if there's no stored data to begin with.
             getActivity().finish();
         }
