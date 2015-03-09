@@ -20,6 +20,7 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
+  "!chrome/browser/autocomplete/in_memory_url_index.h",
   "!chrome/browser/chrome_notification_types.h",
   "!chrome/browser/prerender/prerender_contents.h",
   "!chrome/browser/prerender/prerender_manager.h",
@@ -29,7 +30,6 @@ include_rules = [
   "!chrome/browser/profiles/profile_manager.h",
   "!chrome/browser/ui/browser.h",
   "!chrome/browser/ui/browser_finder.h",
-  "!components/bookmarks/browser/bookmark_utils.h",
   "!components/dom_distiller/core/url_constants.h",
 ]
 

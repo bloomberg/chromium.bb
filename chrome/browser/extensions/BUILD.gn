@@ -45,7 +45,6 @@ static_library("extensions") {
     "//chrome/common/safe_browsing:proto",
     "//chrome/installer/util",
     "//components/copresence",
-    "//components/history/core/browser:proto",
     "//components/onc",
     "//components/proximity_auth",
     "//components/strings",

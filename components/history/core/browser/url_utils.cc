@@ -79,7 +79,7 @@ GURL ToggleHTTPAndHTTPS(const GURL& url) {
   else
     return GURL::EmptyGURL();
   url::Component comp;
-  comp.len = new_scheme.length();
+  comp.len = static_cast<int>(new_scheme.length());
   GURL::Replacements replacement;
   replacement.SetScheme(new_scheme.c_str(), comp);
   return url.ReplaceComponents(replacement);

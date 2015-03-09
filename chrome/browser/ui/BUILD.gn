@@ -49,7 +49,6 @@ static_library("ui") {
     "//components/auto_login_parser",
     "//components/dom_distiller/webui",
     "//components/feedback/proto",
-    "//components/history/core/browser:proto",
     "//components/invalidation",
     "//components/onc",
     "//components/password_manager/core/browser",

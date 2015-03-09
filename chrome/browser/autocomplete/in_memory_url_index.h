@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_H_
-#define CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_H_
 
 #include <functional>
 #include <map>
@@ -18,10 +18,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "chrome/browser/autocomplete/scored_history_match.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/scored_history_match.h"
 #include "sql/connection.h"
 
 class HistoryService;
@@ -294,7 +294,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // index has been destructed.
   bool needs_to_be_cached_;
 
-  // This flag is set to true,if we want to listen to the
+  // This flag is set to true if we want to listen to the
   // HistoryServiceLoaded Notification.
   bool listen_to_history_service_loaded_;
 
@@ -303,4 +303,4 @@ class InMemoryURLIndex : public HistoryServiceObserver,
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_H_

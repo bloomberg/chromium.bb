@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/protobuf/proto_library.gni")
-
 static_library("browser") {
   sources = [
     "download_constants.h",
@@ -34,15 +32,11 @@ static_library("browser") {
     "history_types.h",
     "in_memory_database.cc",
     "in_memory_database.h",
-    "in_memory_url_index_types.cc",
-    "in_memory_url_index_types.h",
     "keyword_id.h",
     "keyword_search_term.cc",
     "keyword_search_term.h",
     "page_usage_data.cc",
     "page_usage_data.h",
-    "scored_history_match.cc",
-    "scored_history_match.h",
     "thumbnail_database.cc",
     "thumbnail_database.h",
     "top_sites.cc",
@@ -113,10 +107,4 @@ static_library("browser") {
   }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-}
-
-proto_library("proto") {
-  sources = [
-    "in_memory_url_index_cache.proto",
-  ]
 }

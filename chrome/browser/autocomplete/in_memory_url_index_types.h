@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_URL_INDEX_TYPES_H_
-#define COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_URL_INDEX_TYPES_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_TYPES_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_TYPES_H_
 
 #include <map>
 #include <set>
@@ -176,4 +176,4 @@ typedef std::map<HistoryID, RowWordStarts> WordStartsMap;
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_URL_INDEX_TYPES_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_IN_MEMORY_URL_INDEX_TYPES_H_

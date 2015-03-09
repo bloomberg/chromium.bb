@@ -1112,7 +1112,6 @@
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',
         '../components/components.gyp:cloud_policy_proto',
-        '../components/components.gyp:history_core_browser_proto',
         '../components/components.gyp:login',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:ownership',

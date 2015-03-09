@@ -197,7 +197,6 @@
     'history_unittest_sources': [
       'history/core/browser/android/android_history_types_unittest.cc',
       'history/core/browser/history_types_unittest.cc',
-      'history/core/browser/in_memory_url_index_types_unittest.cc',
       'history/core/browser/top_sites_cache_unittest.cc',
       'history/core/browser/top_sites_database_unittest.cc',
       'history/core/browser/url_database_unittest.cc',

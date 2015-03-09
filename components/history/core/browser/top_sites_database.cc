@@ -307,7 +307,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // "lots recovered".  More than 10,000 rows recovered probably means there's
   // something wrong with the profile.
   UMA_HISTOGRAM_COUNTS_10000("History.TopSitesRecoveredRowsThumbnails",
-                             thumbnails_recovered);
+                             static_cast<int>(thumbnails_recovered));
 
   RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
 }

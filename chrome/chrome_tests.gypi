@@ -69,6 +69,7 @@
       'browser/apps/speech_recognition_browsertest.cc',
       'browser/apps/window_controls_browsertest.cc',
       'browser/autocomplete/autocomplete_browsertest.cc',
+      'browser/autocomplete/in_memory_url_index_types_unittest.cc',
       'browser/autofill/autofill_browsertest.cc',
       'browser/autofill/autofill_server_browsertest.cc',
       'browser/autofill/content_autofill_driver_browsertest.cc',

@@ -861,7 +861,6 @@
         'installer_util',
         'safe_browsing_proto',
         '../components/components.gyp:copresence',
-        '../components/components.gyp:history_core_browser_proto',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:proximity_auth',
         '../components/components.gyp:update_client',

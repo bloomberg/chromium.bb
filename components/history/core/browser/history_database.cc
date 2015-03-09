@@ -176,9 +176,11 @@ void HistoryDatabase::ComputeDatabaseMetrics(
       }
     }
     UMA_HISTOGRAM_COUNTS("History.WeeklyURLCount", week_url_count);
-    UMA_HISTOGRAM_COUNTS_10000("History.WeeklyHostCount", week_hosts.size());
+    UMA_HISTOGRAM_COUNTS_10000("History.WeeklyHostCount",
+                               static_cast<int>(week_hosts.size()));
     UMA_HISTOGRAM_COUNTS("History.MonthlyURLCount", month_url_count);
-    UMA_HISTOGRAM_COUNTS_10000("History.MonthlyHostCount", month_hosts.size());
+    UMA_HISTOGRAM_COUNTS_10000("History.MonthlyHostCount",
+                               static_cast<int>(month_hosts.size()));
     UMA_HISTOGRAM_TIMES("History.DatabaseAdvancedMetricsTime",
                         base::TimeTicks::Now() - start_time);
   }

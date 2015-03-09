@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_URL_INDEX_PRIVATE_DATA_H_
-#define CHROME_BROWSER_HISTORY_URL_INDEX_PRIVATE_DATA_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_URL_INDEX_PRIVATE_DATA_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_URL_INDEX_PRIVATE_DATA_H_
 
 #include <set>
 #include <string>
@@ -11,10 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_cache.pb.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_types.h"
+#include "chrome/browser/autocomplete/scored_history_match.h"
 #include "chrome/browser/history/history_service.h"
-#include "components/history/core/browser/in_memory_url_index_cache.pb.h"
-#include "components/history/core/browser/in_memory_url_index_types.h"
-#include "components/history/core/browser/scored_history_match.h"
 
 class HistoryQuickProviderTest;
 
@@ -391,4 +391,4 @@ class URLIndexPrivateData
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_URL_INDEX_PRIVATE_DATA_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_URL_INDEX_PRIVATE_DATA_H_

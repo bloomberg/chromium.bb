@@ -359,7 +359,7 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
 
     // Confirm all previous URLs in the chain have already been seen;
     // if not, fill in with null or discard record.
-    int current_chain_size = info_map[id]->url_chain.size();
+    int current_chain_size = static_cast<int>(info_map[id]->url_chain.size());
     std::vector<GURL>* url_chain(&info_map[id]->url_chain);
     DCHECK_EQ(chain_index, current_chain_size);
     while (current_chain_size < chain_index) {
@@ -528,7 +528,7 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
                                  "VALUES (?, ?, ?)"));
   for (size_t i = 0; i < info.url_chain.size(); ++i) {
     statement_insert_chain.BindInt(0, info.id);
-    statement_insert_chain.BindInt(1, i);
+    statement_insert_chain.BindInt(1, static_cast<int>(i));
     statement_insert_chain.BindString(2, info.url_chain[i].spec());
     if (!statement_insert_chain.Run()) {
       UMA_HISTOGRAM_ENUMERATION("Download.DatabaseURLChainInsertError",

@@ -7,9 +7,9 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_types.h"
+#include "chrome/browser/autocomplete/scored_history_match.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/in_memory_url_index_types.h"
-#include "components/history/core/browser/scored_history_match.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class ScoredHistoryMatchBuilderImplTest;

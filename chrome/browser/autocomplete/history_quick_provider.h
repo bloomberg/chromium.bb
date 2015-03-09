@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/history_provider.h"
-#include "chrome/browser/history/in_memory_url_index.h"
+#include "chrome/browser/autocomplete/in_memory_url_index.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"

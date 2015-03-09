@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_BROWSER_SCORED_HISTORY_MATCH_H_
-#define COMPONENTS_HISTORY_CORE_BROWSER_SCORED_HISTORY_MATCH_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_SCORED_HISTORY_MATCH_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_SCORED_HISTORY_MATCH_H_
 
 #include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_types.h"
 #include "components/history/core/browser/history_match.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/in_memory_url_index_types.h"
 
 namespace history {
 
@@ -22,6 +22,9 @@ struct ScoredHistoryMatch : public HistoryMatch {
   // The Builder inner class allows the embedder to control how matches are
   // scored (we cannot use a base::Callback<> as base::Bind() is limited to 6
   // parameters).
+  // TODO(sdefresne): remove this since ScoredHistoryMatch can now depends on
+  // chrome/browser/autocomplete and components/bookmarks
+  // http://crbug.com/462645
   class Builder {
    public:
     Builder() {}
@@ -105,4 +108,4 @@ typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_BROWSER_SCORED_HISTORY_MATCH_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_SCORED_HISTORY_MATCH_H_

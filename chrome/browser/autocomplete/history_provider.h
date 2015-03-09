@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_
 
 #include "base/compiler_specific.h"
-#include "components/history/core/browser/in_memory_url_index_types.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_types.h"
 #include "components/omnibox/autocomplete_provider.h"
 
 class AutocompleteInput;

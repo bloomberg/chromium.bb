@@ -115,7 +115,7 @@ void VisitFilter::GetTimesInRange(base::Time begin_time_of_the_day,
     return;
   }
 
-  for (size_t i = 0; i < max_results; ++i) {
+  for (int i = 0; i < static_cast<int>(max_results); ++i) {
     times->push_back(
         std::make_pair(begin_time_of_the_day - base::TimeDelta::FromDays(i),
                        end_time_of_the_day - base::TimeDelta::FromDays(i)));
@@ -213,7 +213,7 @@ void VisitFilter::GetTimesOnTheDayOfTheWeek(int day,
   if (!max_results)
     max_results = kMaxReturnedResults;
 
-  for (size_t i = 0; i < max_results; ++i) {
+  for (int i = 0; i < static_cast<int>(max_results); ++i) {
     times->push_back(
         std::make_pair(day_base - base::TimeDelta::FromDays(i * 7),
                        day_base + one_day - base::TimeDelta::FromDays(i * 7)));
@@ -245,7 +245,7 @@ void VisitFilter::GetTimesOnTheSameDayType(bool workday,
   } else {
     TimeVector vectors[3];
     GetTimesOnTheDayOfTheWeek(1, week, max_results, &vectors[0]);
-    for (size_t i = 2; i <= 5; ++i) {
+    for (int i = 2; i <= 5; ++i) {
       GetTimesOnTheDayOfTheWeek(i, week, max_results, &vectors[(i - 1) % 3]);
       UniteTimeVectors(vectors[(i - 2) % 3], vectors[(i - 1) % 3],
                        &vectors[i % 3]);

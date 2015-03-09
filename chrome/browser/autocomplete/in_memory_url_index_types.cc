@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/in_memory_url_index_types.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_types.h"
 
 #include <algorithm>
 #include <functional>

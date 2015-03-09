@@ -22,7 +22,6 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
         'favicon_base',
-        'history_core_browser_proto',
         'keyed_service_core',
         'query_parser',
         'signin_core_browser',
@@ -57,15 +56,11 @@
         'history/core/browser/history_types.h',
         'history/core/browser/in_memory_database.cc',
         'history/core/browser/in_memory_database.h',
-        'history/core/browser/in_memory_url_index_types.cc',
-        'history/core/browser/in_memory_url_index_types.h',
         'history/core/browser/keyword_id.h',
         'history/core/browser/keyword_search_term.cc',
         'history/core/browser/keyword_search_term.h',
         'history/core/browser/page_usage_data.cc',
         'history/core/browser/page_usage_data.h',
-        'history/core/browser/scored_history_match.cc',
-        'history/core/browser/scored_history_match.h',
         'history/core/browser/thumbnail_database.cc',
         'history/core/browser/thumbnail_database.h',
         'history/core/browser/top_sites.cc',
@@ -119,21 +114,6 @@
           ],
         }],
       ],
-    },
-    {
-      # GN version: //components/history/core/browser:proto
-      # Protobuf compiler / generator for the InMemoryURLIndex caching
-      # protocol buffer.
-      'target_name': 'history_core_browser_proto',
-      'type': 'static_library',
-      'sources': [
-        'history/core/browser/in_memory_url_index_cache.proto',
-      ],
-      'variables': {
-        'proto_in_dir': 'history/core/browser',
-        'proto_out_dir': 'components/history/core/browser',
-      },
-      'includes': [ '../build/protoc.gypi' ]
     },
     {
       # GN version: //components/history/core/common

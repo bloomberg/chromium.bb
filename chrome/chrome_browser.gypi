@@ -1193,6 +1193,12 @@
       'browser/autocomplete/history_quick_provider.h',
       'browser/autocomplete/history_url_provider.cc',
       'browser/autocomplete/history_url_provider.h',
+      'browser/autocomplete/in_memory_url_index.cc',
+      'browser/autocomplete/in_memory_url_index.h',
+      'browser/autocomplete/in_memory_url_index_types.cc',
+      'browser/autocomplete/in_memory_url_index_types.h',
+      'browser/autocomplete/scored_history_match.cc',
+      'browser/autocomplete/scored_history_match.h',
       'browser/autocomplete/scored_history_match_builder_impl.cc',
       'browser/autocomplete/scored_history_match_builder_impl.h',
       'browser/autocomplete/shortcuts_backend.cc',
@@ -1203,6 +1209,8 @@
       'browser/autocomplete/shortcuts_database.h',
       'browser/autocomplete/shortcuts_provider.cc',
       'browser/autocomplete/shortcuts_provider.h',
+      'browser/autocomplete/url_index_private_data.cc',
+      'browser/autocomplete/url_index_private_data.h',
       'browser/autocomplete/zero_suggest_provider.cc',
       'browser/autocomplete/zero_suggest_provider.h',
     ],
@@ -1569,16 +1577,12 @@
       'browser/history/history_utils.h',
       'browser/history/in_memory_history_backend.cc',
       'browser/history/in_memory_history_backend.h',
-      'browser/history/in_memory_url_index.cc',
-      'browser/history/in_memory_url_index.h',
       'browser/history/top_sites_factory.cc',
       'browser/history/top_sites_factory.h',
       'browser/history/top_sites_impl.cc',
       'browser/history/top_sites_impl.h',
       'browser/history/typed_url_syncable_service.cc',
       'browser/history/typed_url_syncable_service.h',
-      'browser/history/url_index_private_data.cc',
-      'browser/history/url_index_private_data.h',
       'browser/history/web_history_service_factory.cc',
       'browser/history/web_history_service_factory.h',
     ],
@@ -2900,6 +2904,7 @@
         'chrome_resources.gyp:theme_resources',
         'common',
         'common_net',
+        'in_memory_url_index_cache_proto',
         'probe_message_proto',
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:bookmarks_browser',
@@ -3559,6 +3564,19 @@
           ]
         }],
       ],
+    },
+    {
+      # Protobuf compiler / generator for the InMemoryURLIndex caching
+      # protocol buffer.
+      # GN version: //chrome/browser/autocomplete:in_memory_url_index_cache_proto
+      'target_name': 'in_memory_url_index_cache_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/autocomplete/in_memory_url_index_cache.proto', ],
+      'variables': {
+        'proto_in_dir': 'browser/autocomplete',
+        'proto_out_dir': 'chrome/browser/autocomplete',
+      },
+      'includes': [ '../build/protoc.gypi', ],
     },
     {
       # Protobuf compiler / generator for the fraudulent certificate reporting

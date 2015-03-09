@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/url_index_private_data.h"
+#include "chrome/browser/autocomplete/url_index_private_data.h"
 
 #include <functional>
 #include <iterator>
@@ -19,8 +19,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/autocomplete/in_memory_url_index.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/in_memory_url_index.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"

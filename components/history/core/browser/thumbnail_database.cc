@@ -532,11 +532,11 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // recovered" and "lots recovered".  More than 10,000 rows recovered
   // probably means there's something wrong with the profile.
   UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsFavicons",
-                             favicons_rows_recovered);
+                             static_cast<int>(favicons_rows_recovered));
   UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsFaviconBitmaps",
-                             favicon_bitmaps_rows_recovered);
+                             static_cast<int>(favicon_bitmaps_rows_recovered));
   UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsIconMapping",
-                             icon_mapping_rows_recovered);
+                             static_cast<int>(icon_mapping_rows_recovered));
 
   RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
 }

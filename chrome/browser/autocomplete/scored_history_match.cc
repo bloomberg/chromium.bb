@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/browser/scored_history_match.h"
+#include "chrome/browser/autocomplete/scored_history_match.h"
 
 namespace history {
 

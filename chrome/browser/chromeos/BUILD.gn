@@ -61,7 +61,6 @@ source_set("chromeos") {
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
     "//chromeos:power_manager_proto",
-    "//components/history/core/browser:proto",
     "//components/onc",
     "//components/ownership",
     "//components/pairing",

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/history/in_memory_url_index.h"
+#include "chrome/browser/autocomplete/in_memory_url_index.h"
 
 // HistoryIndexRestoreObserver is used when blocking until the InMemoryURLIndex
 // finishes restoring. As soon as the InMemoryURLIndex finishes restoring the
