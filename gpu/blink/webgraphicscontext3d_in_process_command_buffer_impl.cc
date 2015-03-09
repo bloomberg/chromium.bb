@@ -24,6 +24,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_implementation.h"
 
+using blink::WGC3Denum;
 using gpu::gles2::GLES2Implementation;
 using gpu::GLInProcessContext;
 

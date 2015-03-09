@@ -23,22 +23,6 @@ struct ContextCreationAttribHelper;
 }
 }
 
-using blink::WebGLId;
-
-using blink::WGC3Dbyte;
-using blink::WGC3Dchar;
-using blink::WGC3Denum;
-using blink::WGC3Dboolean;
-using blink::WGC3Dbitfield;
-using blink::WGC3Dint;
-using blink::WGC3Dsizei;
-using blink::WGC3Duint;
-using blink::WGC3Dfloat;
-using blink::WGC3Dclampf;
-using blink::WGC3Dintptr;
-using blink::WGC3Dsizeiptr;
-using blink::WGC3Duint64;
-
 namespace gpu_blink {
 
 class WebGraphicsContext3DErrorMessageCallback;
@@ -56,7 +40,8 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   virtual unsigned int insertSyncPoint();
   virtual void waitSyncPoint(unsigned int sync_point);
 
-  virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other);
+  virtual void loseContextCHROMIUM(blink::WGC3Denum current,
+                                   blink::WGC3Denum other);
 
   virtual void reshapeWithScaleFactor(
       int width, int height, float scale_factor);
@@ -64,368 +49,442 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   virtual void prepareTexture();
   virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
 
-  virtual void activeTexture(WGC3Denum texture);
-  virtual void attachShader(WebGLId program, WebGLId shader);
-  virtual void bindAttribLocation(WebGLId program, WGC3Duint index,
-                                  const WGC3Dchar* name);
-  virtual void bindBuffer(WGC3Denum target, WebGLId buffer);
-  virtual void bindFramebuffer(WGC3Denum target, WebGLId framebuffer);
-  virtual void bindRenderbuffer(WGC3Denum target, WebGLId renderbuffer);
-  virtual void bindTexture(WGC3Denum target, WebGLId texture);
-  virtual void blendColor(WGC3Dclampf red, WGC3Dclampf green,
-                          WGC3Dclampf blue, WGC3Dclampf alpha);
-  virtual void blendEquation(WGC3Denum mode);
-  virtual void blendEquationSeparate(WGC3Denum modeRGB,
-                                     WGC3Denum modeAlpha);
-  virtual void blendFunc(WGC3Denum sfactor, WGC3Denum dfactor);
-  virtual void blendFuncSeparate(WGC3Denum srcRGB,
-                                 WGC3Denum dstRGB,
-                                 WGC3Denum srcAlpha,
-                                 WGC3Denum dstAlpha);
+  virtual void activeTexture(blink::WGC3Denum texture);
+  virtual void attachShader(blink::WebGLId program, blink::WebGLId shader);
+  virtual void bindAttribLocation(blink::WebGLId program,
+                                  blink::WGC3Duint index,
+                                  const blink::WGC3Dchar* name);
+  virtual void bindBuffer(blink::WGC3Denum target, blink::WebGLId buffer);
+  virtual void bindFramebuffer(blink::WGC3Denum target,
+                               blink::WebGLId framebuffer);
+  virtual void bindRenderbuffer(blink::WGC3Denum target,
+                                blink::WebGLId renderbuffer);
+  virtual void bindTexture(blink::WGC3Denum target, blink::WebGLId texture);
+  virtual void blendColor(blink::WGC3Dclampf red,
+                          blink::WGC3Dclampf green,
+                          blink::WGC3Dclampf blue,
+                          blink::WGC3Dclampf alpha);
+  virtual void blendEquation(blink::WGC3Denum mode);
+  virtual void blendEquationSeparate(blink::WGC3Denum modeRGB,
+                                     blink::WGC3Denum modeAlpha);
+  virtual void blendFunc(blink::WGC3Denum sfactor, blink::WGC3Denum dfactor);
+  virtual void blendFuncSeparate(blink::WGC3Denum srcRGB,
+                                 blink::WGC3Denum dstRGB,
+                                 blink::WGC3Denum srcAlpha,
+                                 blink::WGC3Denum dstAlpha);
 
-  virtual void bufferData(WGC3Denum target, WGC3Dsizeiptr size,
-                          const void* data, WGC3Denum usage);
-  virtual void bufferSubData(WGC3Denum target, WGC3Dintptr offset,
-                             WGC3Dsizeiptr size, const void* data);
+  virtual void bufferData(blink::WGC3Denum target,
+                          blink::WGC3Dsizeiptr size,
+                          const void* data,
+                          blink::WGC3Denum usage);
+  virtual void bufferSubData(blink::WGC3Denum target,
+                             blink::WGC3Dintptr offset,
+                             blink::WGC3Dsizeiptr size,
+                             const void* data);
 
-  virtual WGC3Denum checkFramebufferStatus(WGC3Denum target);
-  virtual void clear(WGC3Dbitfield mask);
-  virtual void clearColor(WGC3Dclampf red, WGC3Dclampf green,
-                          WGC3Dclampf blue, WGC3Dclampf alpha);
-  virtual void clearDepth(WGC3Dclampf depth);
-  virtual void clearStencil(WGC3Dint s);
-  virtual void colorMask(WGC3Dboolean red, WGC3Dboolean green,
-                         WGC3Dboolean blue, WGC3Dboolean alpha);
-  virtual void compileShader(WebGLId shader);
+  virtual blink::WGC3Denum checkFramebufferStatus(blink::WGC3Denum target);
+  virtual void clear(blink::WGC3Dbitfield mask);
+  virtual void clearColor(blink::WGC3Dclampf red,
+                          blink::WGC3Dclampf green,
+                          blink::WGC3Dclampf blue,
+                          blink::WGC3Dclampf alpha);
+  virtual void clearDepth(blink::WGC3Dclampf depth);
+  virtual void clearStencil(blink::WGC3Dint s);
+  virtual void colorMask(blink::WGC3Dboolean red,
+                         blink::WGC3Dboolean green,
+                         blink::WGC3Dboolean blue,
+                         blink::WGC3Dboolean alpha);
+  virtual void compileShader(blink::WebGLId shader);
 
-  virtual void compressedTexImage2D(WGC3Denum target,
-                                    WGC3Dint level,
-                                    WGC3Denum internalformat,
-                                    WGC3Dsizei width,
-                                    WGC3Dsizei height,
-                                    WGC3Dint border,
-                                    WGC3Dsizei imageSize,
+  virtual void compressedTexImage2D(blink::WGC3Denum target,
+                                    blink::WGC3Dint level,
+                                    blink::WGC3Denum internalformat,
+                                    blink::WGC3Dsizei width,
+                                    blink::WGC3Dsizei height,
+                                    blink::WGC3Dint border,
+                                    blink::WGC3Dsizei imageSize,
                                     const void* data);
-  virtual void compressedTexSubImage2D(WGC3Denum target,
-                                       WGC3Dint level,
-                                       WGC3Dint xoffset,
-                                       WGC3Dint yoffset,
-                                       WGC3Dsizei width,
-                                       WGC3Dsizei height,
-                                       WGC3Denum format,
-                                       WGC3Dsizei imageSize,
+  virtual void compressedTexSubImage2D(blink::WGC3Denum target,
+                                       blink::WGC3Dint level,
+                                       blink::WGC3Dint xoffset,
+                                       blink::WGC3Dint yoffset,
+                                       blink::WGC3Dsizei width,
+                                       blink::WGC3Dsizei height,
+                                       blink::WGC3Denum format,
+                                       blink::WGC3Dsizei imageSize,
                                        const void* data);
-  virtual void copyTexImage2D(WGC3Denum target,
-                              WGC3Dint level,
-                              WGC3Denum internalformat,
-                              WGC3Dint x,
-                              WGC3Dint y,
-                              WGC3Dsizei width,
-                              WGC3Dsizei height,
-                              WGC3Dint border);
-  virtual void copyTexSubImage2D(WGC3Denum target,
-                                 WGC3Dint level,
-                                 WGC3Dint xoffset,
-                                 WGC3Dint yoffset,
-                                 WGC3Dint x,
-                                 WGC3Dint y,
-                                 WGC3Dsizei width,
-                                 WGC3Dsizei height);
-  virtual void cullFace(WGC3Denum mode);
-  virtual void depthFunc(WGC3Denum func);
-  virtual void depthMask(WGC3Dboolean flag);
-  virtual void depthRange(WGC3Dclampf zNear, WGC3Dclampf zFar);
-  virtual void detachShader(WebGLId program, WebGLId shader);
-  virtual void disable(WGC3Denum cap);
-  virtual void disableVertexAttribArray(WGC3Duint index);
-  virtual void drawArrays(WGC3Denum mode, WGC3Dint first, WGC3Dsizei count);
-  virtual void drawElements(WGC3Denum mode,
-                            WGC3Dsizei count,
-                            WGC3Denum type,
-                            WGC3Dintptr offset);
+  virtual void copyTexImage2D(blink::WGC3Denum target,
+                              blink::WGC3Dint level,
+                              blink::WGC3Denum internalformat,
+                              blink::WGC3Dint x,
+                              blink::WGC3Dint y,
+                              blink::WGC3Dsizei width,
+                              blink::WGC3Dsizei height,
+                              blink::WGC3Dint border);
+  virtual void copyTexSubImage2D(blink::WGC3Denum target,
+                                 blink::WGC3Dint level,
+                                 blink::WGC3Dint xoffset,
+                                 blink::WGC3Dint yoffset,
+                                 blink::WGC3Dint x,
+                                 blink::WGC3Dint y,
+                                 blink::WGC3Dsizei width,
+                                 blink::WGC3Dsizei height);
+  virtual void cullFace(blink::WGC3Denum mode);
+  virtual void depthFunc(blink::WGC3Denum func);
+  virtual void depthMask(blink::WGC3Dboolean flag);
+  virtual void depthRange(blink::WGC3Dclampf zNear, blink::WGC3Dclampf zFar);
+  virtual void detachShader(blink::WebGLId program, blink::WebGLId shader);
+  virtual void disable(blink::WGC3Denum cap);
+  virtual void disableVertexAttribArray(blink::WGC3Duint index);
+  virtual void drawArrays(blink::WGC3Denum mode,
+                          blink::WGC3Dint first,
+                          blink::WGC3Dsizei count);
+  virtual void drawElements(blink::WGC3Denum mode,
+                            blink::WGC3Dsizei count,
+                            blink::WGC3Denum type,
+                            blink::WGC3Dintptr offset);
 
-  virtual void enable(WGC3Denum cap);
-  virtual void enableVertexAttribArray(WGC3Duint index);
+  virtual void enable(blink::WGC3Denum cap);
+  virtual void enableVertexAttribArray(blink::WGC3Duint index);
   virtual void finish();
   virtual void flush();
-  virtual void framebufferRenderbuffer(WGC3Denum target,
-                                       WGC3Denum attachment,
-                                       WGC3Denum renderbuffertarget,
-                                       WebGLId renderbuffer);
-  virtual void framebufferTexture2D(WGC3Denum target,
-                                    WGC3Denum attachment,
-                                    WGC3Denum textarget,
-                                    WebGLId texture,
-                                    WGC3Dint level);
-  virtual void frontFace(WGC3Denum mode);
-  virtual void generateMipmap(WGC3Denum target);
+  virtual void framebufferRenderbuffer(blink::WGC3Denum target,
+                                       blink::WGC3Denum attachment,
+                                       blink::WGC3Denum renderbuffertarget,
+                                       blink::WebGLId renderbuffer);
+  virtual void framebufferTexture2D(blink::WGC3Denum target,
+                                    blink::WGC3Denum attachment,
+                                    blink::WGC3Denum textarget,
+                                    blink::WebGLId texture,
+                                    blink::WGC3Dint level);
+  virtual void frontFace(blink::WGC3Denum mode);
+  virtual void generateMipmap(blink::WGC3Denum target);
 
-  virtual bool getActiveAttrib(WebGLId program,
-                               WGC3Duint index,
+  virtual bool getActiveAttrib(blink::WebGLId program,
+                               blink::WGC3Duint index,
                                ActiveInfo&);
-  virtual bool getActiveUniform(WebGLId program,
-                                WGC3Duint index,
+  virtual bool getActiveUniform(blink::WebGLId program,
+                                blink::WGC3Duint index,
                                 ActiveInfo&);
 
-  virtual void getAttachedShaders(WebGLId program,
-                                  WGC3Dsizei maxCount,
-                                  WGC3Dsizei* count,
-                                  WebGLId* shaders);
+  virtual void getAttachedShaders(blink::WebGLId program,
+                                  blink::WGC3Dsizei maxCount,
+                                  blink::WGC3Dsizei* count,
+                                  blink::WebGLId* shaders);
 
-  virtual WGC3Dint  getAttribLocation(WebGLId program, const WGC3Dchar* name);
+  virtual blink::WGC3Dint getAttribLocation(blink::WebGLId program,
+                                            const blink::WGC3Dchar* name);
 
-  virtual void getBooleanv(WGC3Denum pname, WGC3Dboolean* value);
+  virtual void getBooleanv(blink::WGC3Denum pname, blink::WGC3Dboolean* value);
 
-  virtual void getBufferParameteriv(WGC3Denum target,
-                                    WGC3Denum pname,
-                                    WGC3Dint* value);
+  virtual void getBufferParameteriv(blink::WGC3Denum target,
+                                    blink::WGC3Denum pname,
+                                    blink::WGC3Dint* value);
 
-  virtual WGC3Denum getError();
+  virtual blink::WGC3Denum getError();
 
-  virtual void getFloatv(WGC3Denum pname, WGC3Dfloat* value);
+  virtual void getFloatv(blink::WGC3Denum pname, blink::WGC3Dfloat* value);
 
-  virtual void getFramebufferAttachmentParameteriv(WGC3Denum target,
-                                                   WGC3Denum attachment,
-                                                   WGC3Denum pname,
-                                                   WGC3Dint* value);
+  virtual void getFramebufferAttachmentParameteriv(blink::WGC3Denum target,
+                                                   blink::WGC3Denum attachment,
+                                                   blink::WGC3Denum pname,
+                                                   blink::WGC3Dint* value);
 
-  virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value);
+  virtual void getIntegerv(blink::WGC3Denum pname, blink::WGC3Dint* value);
 
-  virtual void getProgramiv(WebGLId program, WGC3Denum pname, WGC3Dint* value);
+  virtual void getProgramiv(blink::WebGLId program,
+                            blink::WGC3Denum pname,
+                            blink::WGC3Dint* value);
 
-  virtual blink::WebString getProgramInfoLog(WebGLId program);
+  virtual blink::WebString getProgramInfoLog(blink::WebGLId program);
 
-  virtual void getRenderbufferParameteriv(WGC3Denum target,
-                                          WGC3Denum pname,
-                                          WGC3Dint* value);
+  virtual void getRenderbufferParameteriv(blink::WGC3Denum target,
+                                          blink::WGC3Denum pname,
+                                          blink::WGC3Dint* value);
 
-  virtual void getShaderiv(WebGLId shader, WGC3Denum pname, WGC3Dint* value);
+  virtual void getShaderiv(blink::WebGLId shader,
+                           blink::WGC3Denum pname,
+                           blink::WGC3Dint* value);
 
-  virtual blink::WebString getShaderInfoLog(WebGLId shader);
+  virtual blink::WebString getShaderInfoLog(blink::WebGLId shader);
 
-  virtual void getShaderPrecisionFormat(WGC3Denum shadertype,
-                                        WGC3Denum precisiontype,
-                                        WGC3Dint* range,
-                                        WGC3Dint* precision);
+  virtual void getShaderPrecisionFormat(blink::WGC3Denum shadertype,
+                                        blink::WGC3Denum precisiontype,
+                                        blink::WGC3Dint* range,
+                                        blink::WGC3Dint* precision);
 
-  virtual blink::WebString getShaderSource(WebGLId shader);
-  virtual blink::WebString getString(WGC3Denum name);
+  virtual blink::WebString getShaderSource(blink::WebGLId shader);
+  virtual blink::WebString getString(blink::WGC3Denum name);
 
-  virtual void getTexParameterfv(WGC3Denum target,
-                                 WGC3Denum pname,
-                                 WGC3Dfloat* value);
-  virtual void getTexParameteriv(WGC3Denum target,
-                                 WGC3Denum pname,
-                                 WGC3Dint* value);
+  virtual void getTexParameterfv(blink::WGC3Denum target,
+                                 blink::WGC3Denum pname,
+                                 blink::WGC3Dfloat* value);
+  virtual void getTexParameteriv(blink::WGC3Denum target,
+                                 blink::WGC3Denum pname,
+                                 blink::WGC3Dint* value);
 
-  virtual void getUniformfv(WebGLId program,
-                            WGC3Dint location,
-                            WGC3Dfloat* value);
-  virtual void getUniformiv(WebGLId program,
-                            WGC3Dint location,
-                            WGC3Dint* value);
+  virtual void getUniformfv(blink::WebGLId program,
+                            blink::WGC3Dint location,
+                            blink::WGC3Dfloat* value);
+  virtual void getUniformiv(blink::WebGLId program,
+                            blink::WGC3Dint location,
+                            blink::WGC3Dint* value);
 
-  virtual WGC3Dint getUniformLocation(WebGLId program, const WGC3Dchar* name);
+  virtual blink::WGC3Dint getUniformLocation(blink::WebGLId program,
+                                             const blink::WGC3Dchar* name);
 
-  virtual void getVertexAttribfv(WGC3Duint index, WGC3Denum pname,
-                                 WGC3Dfloat* value);
-  virtual void getVertexAttribiv(WGC3Duint index, WGC3Denum pname,
-                                 WGC3Dint* value);
+  virtual void getVertexAttribfv(blink::WGC3Duint index,
+                                 blink::WGC3Denum pname,
+                                 blink::WGC3Dfloat* value);
+  virtual void getVertexAttribiv(blink::WGC3Duint index,
+                                 blink::WGC3Denum pname,
+                                 blink::WGC3Dint* value);
 
-  virtual WGC3Dsizeiptr getVertexAttribOffset(WGC3Duint index, WGC3Denum pname);
+  virtual blink::WGC3Dsizeiptr getVertexAttribOffset(blink::WGC3Duint index,
+                                                     blink::WGC3Denum pname);
 
-  virtual void hint(WGC3Denum target, WGC3Denum mode);
-  virtual WGC3Dboolean isBuffer(WebGLId buffer);
-  virtual WGC3Dboolean isEnabled(WGC3Denum cap);
-  virtual WGC3Dboolean isFramebuffer(WebGLId framebuffer);
-  virtual WGC3Dboolean isProgram(WebGLId program);
-  virtual WGC3Dboolean isRenderbuffer(WebGLId renderbuffer);
-  virtual WGC3Dboolean isShader(WebGLId shader);
-  virtual WGC3Dboolean isTexture(WebGLId texture);
-  virtual void lineWidth(WGC3Dfloat);
-  virtual void linkProgram(WebGLId program);
-  virtual void pixelStorei(WGC3Denum pname, WGC3Dint param);
-  virtual void polygonOffset(WGC3Dfloat factor, WGC3Dfloat units);
+  virtual void hint(blink::WGC3Denum target, blink::WGC3Denum mode);
+  virtual blink::WGC3Dboolean isBuffer(blink::WebGLId buffer);
+  virtual blink::WGC3Dboolean isEnabled(blink::WGC3Denum cap);
+  virtual blink::WGC3Dboolean isFramebuffer(blink::WebGLId framebuffer);
+  virtual blink::WGC3Dboolean isProgram(blink::WebGLId program);
+  virtual blink::WGC3Dboolean isRenderbuffer(blink::WebGLId renderbuffer);
+  virtual blink::WGC3Dboolean isShader(blink::WebGLId shader);
+  virtual blink::WGC3Dboolean isTexture(blink::WebGLId texture);
+  virtual void lineWidth(blink::WGC3Dfloat);
+  virtual void linkProgram(blink::WebGLId program);
+  virtual void pixelStorei(blink::WGC3Denum pname, blink::WGC3Dint param);
+  virtual void polygonOffset(blink::WGC3Dfloat factor, blink::WGC3Dfloat units);
 
-  virtual void readPixels(WGC3Dint x,
-                          WGC3Dint y,
-                          WGC3Dsizei width,
-                          WGC3Dsizei height,
-                          WGC3Denum format,
-                          WGC3Denum type,
+  virtual void readPixels(blink::WGC3Dint x,
+                          blink::WGC3Dint y,
+                          blink::WGC3Dsizei width,
+                          blink::WGC3Dsizei height,
+                          blink::WGC3Denum format,
+                          blink::WGC3Denum type,
                           void* pixels);
 
   virtual void releaseShaderCompiler();
-  virtual void renderbufferStorage(WGC3Denum target,
-                                   WGC3Denum internalformat,
-                                   WGC3Dsizei width,
-                                   WGC3Dsizei height);
-  virtual void sampleCoverage(WGC3Dfloat value, WGC3Dboolean invert);
-  virtual void scissor(WGC3Dint x, WGC3Dint y,
-                       WGC3Dsizei width, WGC3Dsizei height);
-  virtual void shaderSource(WebGLId shader, const WGC3Dchar* string);
-  virtual void stencilFunc(WGC3Denum func, WGC3Dint ref, WGC3Duint mask);
-  virtual void stencilFuncSeparate(WGC3Denum face,
-                                   WGC3Denum func,
-                                   WGC3Dint ref,
-                                   WGC3Duint mask);
-  virtual void stencilMask(WGC3Duint mask);
-  virtual void stencilMaskSeparate(WGC3Denum face, WGC3Duint mask);
-  virtual void stencilOp(WGC3Denum fail,
-                         WGC3Denum zfail,
-                         WGC3Denum zpass);
-  virtual void stencilOpSeparate(WGC3Denum face,
-                                 WGC3Denum fail,
-                                 WGC3Denum zfail,
-                                 WGC3Denum zpass);
+  virtual void renderbufferStorage(blink::WGC3Denum target,
+                                   blink::WGC3Denum internalformat,
+                                   blink::WGC3Dsizei width,
+                                   blink::WGC3Dsizei height);
+  virtual void sampleCoverage(blink::WGC3Dfloat value,
+                              blink::WGC3Dboolean invert);
+  virtual void scissor(blink::WGC3Dint x,
+                       blink::WGC3Dint y,
+                       blink::WGC3Dsizei width,
+                       blink::WGC3Dsizei height);
+  virtual void shaderSource(blink::WebGLId shader,
+                            const blink::WGC3Dchar* string);
+  virtual void stencilFunc(blink::WGC3Denum func,
+                           blink::WGC3Dint ref,
+                           blink::WGC3Duint mask);
+  virtual void stencilFuncSeparate(blink::WGC3Denum face,
+                                   blink::WGC3Denum func,
+                                   blink::WGC3Dint ref,
+                                   blink::WGC3Duint mask);
+  virtual void stencilMask(blink::WGC3Duint mask);
+  virtual void stencilMaskSeparate(blink::WGC3Denum face,
+                                   blink::WGC3Duint mask);
+  virtual void stencilOp(blink::WGC3Denum fail,
+                         blink::WGC3Denum zfail,
+                         blink::WGC3Denum zpass);
+  virtual void stencilOpSeparate(blink::WGC3Denum face,
+                                 blink::WGC3Denum fail,
+                                 blink::WGC3Denum zfail,
+                                 blink::WGC3Denum zpass);
 
-  virtual void texImage2D(WGC3Denum target,
-                          WGC3Dint level,
-                          WGC3Denum internalformat,
-                          WGC3Dsizei width,
-                          WGC3Dsizei height,
-                          WGC3Dint border,
-                          WGC3Denum format,
-                          WGC3Denum type,
+  virtual void texImage2D(blink::WGC3Denum target,
+                          blink::WGC3Dint level,
+                          blink::WGC3Denum internalformat,
+                          blink::WGC3Dsizei width,
+                          blink::WGC3Dsizei height,
+                          blink::WGC3Dint border,
+                          blink::WGC3Denum format,
+                          blink::WGC3Denum type,
                           const void* pixels);
 
-  virtual void texParameterf(WGC3Denum target,
-                             WGC3Denum pname,
-                             WGC3Dfloat param);
-  virtual void texParameteri(WGC3Denum target,
-                             WGC3Denum pname,
-                             WGC3Dint param);
+  virtual void texParameterf(blink::WGC3Denum target,
+                             blink::WGC3Denum pname,
+                             blink::WGC3Dfloat param);
+  virtual void texParameteri(blink::WGC3Denum target,
+                             blink::WGC3Denum pname,
+                             blink::WGC3Dint param);
 
-  virtual void texSubImage2D(WGC3Denum target,
-                             WGC3Dint level,
-                             WGC3Dint xoffset,
-                             WGC3Dint yoffset,
-                             WGC3Dsizei width,
-                             WGC3Dsizei height,
-                             WGC3Denum format,
-                             WGC3Denum type,
+  virtual void texSubImage2D(blink::WGC3Denum target,
+                             blink::WGC3Dint level,
+                             blink::WGC3Dint xoffset,
+                             blink::WGC3Dint yoffset,
+                             blink::WGC3Dsizei width,
+                             blink::WGC3Dsizei height,
+                             blink::WGC3Denum format,
+                             blink::WGC3Denum type,
                              const void* pixels);
 
-  virtual void uniform1f(WGC3Dint location, WGC3Dfloat x);
-  virtual void uniform1fv(WGC3Dint location,
-                          WGC3Dsizei count, const WGC3Dfloat* v);
-  virtual void uniform1i(WGC3Dint location, WGC3Dint x);
-  virtual void uniform1iv(WGC3Dint location,
-                          WGC3Dsizei count, const WGC3Dint* v);
-  virtual void uniform2f(WGC3Dint location, WGC3Dfloat x, WGC3Dfloat y);
-  virtual void uniform2fv(WGC3Dint location,
-                          WGC3Dsizei count, const WGC3Dfloat* v);
-  virtual void uniform2i(WGC3Dint location, WGC3Dint x, WGC3Dint y);
-  virtual void uniform2iv(WGC3Dint location,
-                          WGC3Dsizei count, const WGC3Dint* v);
-  virtual void uniform3f(WGC3Dint location,
-                         WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z);
-  virtual void uniform3fv(WGC3Dint location,
-                          WGC3Dsizei count, const WGC3Dfloat* v);
-  virtual void uniform3i(WGC3Dint location,
-                         WGC3Dint x, WGC3Dint y, WGC3Dint z);
-  virtual void uniform3iv(WGC3Dint location,
-                          WGC3Dsizei count, const WGC3Dint* v);
-  virtual void uniform4f(WGC3Dint location,
-                         WGC3Dfloat x, WGC3Dfloat y,
-                         WGC3Dfloat z, WGC3Dfloat w);
-  virtual void uniform4fv(WGC3Dint location,
-                          WGC3Dsizei count, const WGC3Dfloat* v);
-  virtual void uniform4i(WGC3Dint location,
-                         WGC3Dint x, WGC3Dint y, WGC3Dint z, WGC3Dint w);
-  virtual void uniform4iv(WGC3Dint location,
-                          WGC3Dsizei count, const WGC3Dint* v);
-  virtual void uniformMatrix2fv(WGC3Dint location,
-                                WGC3Dsizei count,
-                                WGC3Dboolean transpose,
-                                const WGC3Dfloat* value);
-  virtual void uniformMatrix3fv(WGC3Dint location,
-                                WGC3Dsizei count,
-                                WGC3Dboolean transpose,
-                                const WGC3Dfloat* value);
-  virtual void uniformMatrix4fv(WGC3Dint location,
-                                WGC3Dsizei count,
-                                WGC3Dboolean transpose,
-                                const WGC3Dfloat* value);
+  virtual void uniform1f(blink::WGC3Dint location, blink::WGC3Dfloat x);
+  virtual void uniform1fv(blink::WGC3Dint location,
+                          blink::WGC3Dsizei count,
+                          const blink::WGC3Dfloat* v);
+  virtual void uniform1i(blink::WGC3Dint location, blink::WGC3Dint x);
+  virtual void uniform1iv(blink::WGC3Dint location,
+                          blink::WGC3Dsizei count,
+                          const blink::WGC3Dint* v);
+  virtual void uniform2f(blink::WGC3Dint location,
+                         blink::WGC3Dfloat x,
+                         blink::WGC3Dfloat y);
+  virtual void uniform2fv(blink::WGC3Dint location,
+                          blink::WGC3Dsizei count,
+                          const blink::WGC3Dfloat* v);
+  virtual void uniform2i(blink::WGC3Dint location,
+                         blink::WGC3Dint x,
+                         blink::WGC3Dint y);
+  virtual void uniform2iv(blink::WGC3Dint location,
+                          blink::WGC3Dsizei count,
+                          const blink::WGC3Dint* v);
+  virtual void uniform3f(blink::WGC3Dint location,
+                         blink::WGC3Dfloat x,
+                         blink::WGC3Dfloat y,
+                         blink::WGC3Dfloat z);
+  virtual void uniform3fv(blink::WGC3Dint location,
+                          blink::WGC3Dsizei count,
+                          const blink::WGC3Dfloat* v);
+  virtual void uniform3i(blink::WGC3Dint location,
+                         blink::WGC3Dint x,
+                         blink::WGC3Dint y,
+                         blink::WGC3Dint z);
+  virtual void uniform3iv(blink::WGC3Dint location,
+                          blink::WGC3Dsizei count,
+                          const blink::WGC3Dint* v);
+  virtual void uniform4f(blink::WGC3Dint location,
+                         blink::WGC3Dfloat x,
+                         blink::WGC3Dfloat y,
+                         blink::WGC3Dfloat z,
+                         blink::WGC3Dfloat w);
+  virtual void uniform4fv(blink::WGC3Dint location,
+                          blink::WGC3Dsizei count,
+                          const blink::WGC3Dfloat* v);
+  virtual void uniform4i(blink::WGC3Dint location,
+                         blink::WGC3Dint x,
+                         blink::WGC3Dint y,
+                         blink::WGC3Dint z,
+                         blink::WGC3Dint w);
+  virtual void uniform4iv(blink::WGC3Dint location,
+                          blink::WGC3Dsizei count,
+                          const blink::WGC3Dint* v);
+  virtual void uniformMatrix2fv(blink::WGC3Dint location,
+                                blink::WGC3Dsizei count,
+                                blink::WGC3Dboolean transpose,
+                                const blink::WGC3Dfloat* value);
+  virtual void uniformMatrix3fv(blink::WGC3Dint location,
+                                blink::WGC3Dsizei count,
+                                blink::WGC3Dboolean transpose,
+                                const blink::WGC3Dfloat* value);
+  virtual void uniformMatrix4fv(blink::WGC3Dint location,
+                                blink::WGC3Dsizei count,
+                                blink::WGC3Dboolean transpose,
+                                const blink::WGC3Dfloat* value);
 
-  virtual void useProgram(WebGLId program);
-  virtual void validateProgram(WebGLId program);
+  virtual void useProgram(blink::WebGLId program);
+  virtual void validateProgram(blink::WebGLId program);
 
-  virtual void vertexAttrib1f(WGC3Duint index, WGC3Dfloat x);
-  virtual void vertexAttrib1fv(WGC3Duint index, const WGC3Dfloat* values);
-  virtual void vertexAttrib2f(WGC3Duint index, WGC3Dfloat x, WGC3Dfloat y);
-  virtual void vertexAttrib2fv(WGC3Duint index, const WGC3Dfloat* values);
-  virtual void vertexAttrib3f(WGC3Duint index,
-                              WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z);
-  virtual void vertexAttrib3fv(WGC3Duint index, const WGC3Dfloat* values);
-  virtual void vertexAttrib4f(WGC3Duint index,
-                              WGC3Dfloat x, WGC3Dfloat y,
-                              WGC3Dfloat z, WGC3Dfloat w);
-  virtual void vertexAttrib4fv(WGC3Duint index, const WGC3Dfloat* values);
-  virtual void vertexAttribPointer(WGC3Duint index,
-                                   WGC3Dint size,
-                                   WGC3Denum type,
-                                   WGC3Dboolean normalized,
-                                   WGC3Dsizei stride,
-                                   WGC3Dintptr offset);
+  virtual void vertexAttrib1f(blink::WGC3Duint index, blink::WGC3Dfloat x);
+  virtual void vertexAttrib1fv(blink::WGC3Duint index,
+                               const blink::WGC3Dfloat* values);
+  virtual void vertexAttrib2f(blink::WGC3Duint index,
+                              blink::WGC3Dfloat x,
+                              blink::WGC3Dfloat y);
+  virtual void vertexAttrib2fv(blink::WGC3Duint index,
+                               const blink::WGC3Dfloat* values);
+  virtual void vertexAttrib3f(blink::WGC3Duint index,
+                              blink::WGC3Dfloat x,
+                              blink::WGC3Dfloat y,
+                              blink::WGC3Dfloat z);
+  virtual void vertexAttrib3fv(blink::WGC3Duint index,
+                               const blink::WGC3Dfloat* values);
+  virtual void vertexAttrib4f(blink::WGC3Duint index,
+                              blink::WGC3Dfloat x,
+                              blink::WGC3Dfloat y,
+                              blink::WGC3Dfloat z,
+                              blink::WGC3Dfloat w);
+  virtual void vertexAttrib4fv(blink::WGC3Duint index,
+                               const blink::WGC3Dfloat* values);
+  virtual void vertexAttribPointer(blink::WGC3Duint index,
+                                   blink::WGC3Dint size,
+                                   blink::WGC3Denum type,
+                                   blink::WGC3Dboolean normalized,
+                                   blink::WGC3Dsizei stride,
+                                   blink::WGC3Dintptr offset);
 
-  virtual void viewport(WGC3Dint x, WGC3Dint y,
-                        WGC3Dsizei width, WGC3Dsizei height);
+  virtual void viewport(blink::WGC3Dint x,
+                        blink::WGC3Dint y,
+                        blink::WGC3Dsizei width,
+                        blink::WGC3Dsizei height);
 
-  virtual WebGLId createBuffer();
-  virtual WebGLId createFramebuffer();
-  virtual WebGLId createRenderbuffer();
-  virtual WebGLId createTexture();
+  virtual blink::WebGLId createBuffer();
+  virtual blink::WebGLId createFramebuffer();
+  virtual blink::WebGLId createRenderbuffer();
+  virtual blink::WebGLId createTexture();
 
-  virtual void deleteBuffer(WebGLId);
-  virtual void deleteFramebuffer(WebGLId);
-  virtual void deleteRenderbuffer(WebGLId);
-  virtual void deleteTexture(WebGLId);
+  virtual void deleteBuffer(blink::WebGLId);
+  virtual void deleteFramebuffer(blink::WebGLId);
+  virtual void deleteRenderbuffer(blink::WebGLId);
+  virtual void deleteTexture(blink::WebGLId);
 
-  virtual WebGLId createProgram();
-  virtual WebGLId createShader(WGC3Denum);
+  virtual blink::WebGLId createProgram();
+  virtual blink::WebGLId createShader(blink::WGC3Denum);
 
-  virtual void deleteProgram(WebGLId);
-  virtual void deleteShader(WebGLId);
+  virtual void deleteProgram(blink::WebGLId);
+  virtual void deleteShader(blink::WebGLId);
 
-  virtual void synthesizeGLError(WGC3Denum);
+  virtual void synthesizeGLError(blink::WGC3Denum);
 
-  virtual void* mapBufferSubDataCHROMIUM(
-      WGC3Denum target, WGC3Dintptr offset,
-      WGC3Dsizeiptr size, WGC3Denum access);
+  virtual void* mapBufferSubDataCHROMIUM(blink::WGC3Denum target,
+                                         blink::WGC3Dintptr offset,
+                                         blink::WGC3Dsizeiptr size,
+                                         blink::WGC3Denum access);
   virtual void unmapBufferSubDataCHROMIUM(const void*);
-  virtual void* mapTexSubImage2DCHROMIUM(
-      WGC3Denum target,
-      WGC3Dint level,
-      WGC3Dint xoffset,
-      WGC3Dint yoffset,
-      WGC3Dsizei width,
-      WGC3Dsizei height,
-      WGC3Denum format,
-      WGC3Denum type,
-      WGC3Denum access);
+  virtual void* mapTexSubImage2DCHROMIUM(blink::WGC3Denum target,
+                                         blink::WGC3Dint level,
+                                         blink::WGC3Dint xoffset,
+                                         blink::WGC3Dint yoffset,
+                                         blink::WGC3Dsizei width,
+                                         blink::WGC3Dsizei height,
+                                         blink::WGC3Denum format,
+                                         blink::WGC3Denum type,
+                                         blink::WGC3Denum access);
   virtual void unmapTexSubImage2DCHROMIUM(const void*);
 
   virtual void setVisibilityCHROMIUM(bool visible);
 
-  virtual void discardFramebufferEXT(WGC3Denum target,
-                                     WGC3Dsizei numAttachments,
-                                     const WGC3Denum* attachments);
-  virtual void copyTextureToParentTextureCHROMIUM(
-      WebGLId texture, WebGLId parentTexture);
+  virtual void discardFramebufferEXT(blink::WGC3Denum target,
+                                     blink::WGC3Dsizei numAttachments,
+                                     const blink::WGC3Denum* attachments);
+  virtual void copyTextureToParentTextureCHROMIUM(blink::WebGLId texture,
+                                                  blink::WebGLId parentTexture);
 
   virtual blink::WebString getRequestableExtensionsCHROMIUM();
   virtual void requestExtensionCHROMIUM(const char*);
 
-  virtual void blitFramebufferCHROMIUM(
-      WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1,
-      WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1,
-      WGC3Dbitfield mask, WGC3Denum filter);
+  virtual void blitFramebufferCHROMIUM(blink::WGC3Dint srcX0,
+                                       blink::WGC3Dint srcY0,
+                                       blink::WGC3Dint srcX1,
+                                       blink::WGC3Dint srcY1,
+                                       blink::WGC3Dint dstX0,
+                                       blink::WGC3Dint dstY0,
+                                       blink::WGC3Dint dstX1,
+                                       blink::WGC3Dint dstY1,
+                                       blink::WGC3Dbitfield mask,
+                                       blink::WGC3Denum filter);
   virtual void renderbufferStorageMultisampleCHROMIUM(
-      WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat,
-      WGC3Dsizei width, WGC3Dsizei height);
+      blink::WGC3Denum target,
+      blink::WGC3Dsizei samples,
+      blink::WGC3Denum internalformat,
+      blink::WGC3Dsizei width,
+      blink::WGC3Dsizei height);
 
-  virtual blink::WebString getTranslatedShaderSourceANGLE(WebGLId shader);
+  virtual blink::WebString getTranslatedShaderSourceANGLE(
+      blink::WebGLId shader);
 
   virtual void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
@@ -433,291 +492,424 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   virtual void setErrorMessageCallback(
       WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback);
 
-  virtual void texImageIOSurface2DCHROMIUM(
-      WGC3Denum target, WGC3Dint width, WGC3Dint height,
-      WGC3Duint ioSurfaceId, WGC3Duint plane);
+  virtual void texImageIOSurface2DCHROMIUM(blink::WGC3Denum target,
+                                           blink::WGC3Dint width,
+                                           blink::WGC3Dint height,
+                                           blink::WGC3Duint ioSurfaceId,
+                                           blink::WGC3Duint plane);
 
-  virtual void texStorage2DEXT(
-      WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
-      WGC3Dint width, WGC3Dint height);
+  virtual void texStorage2DEXT(blink::WGC3Denum target,
+                               blink::WGC3Dint levels,
+                               blink::WGC3Duint internalformat,
+                               blink::WGC3Dint width,
+                               blink::WGC3Dint height);
 
-  virtual WebGLId createQueryEXT();
-  virtual void deleteQueryEXT(WebGLId query);
-  virtual WGC3Dboolean isQueryEXT(WGC3Duint query);
-  virtual void beginQueryEXT(WGC3Denum target, WebGLId query);
-  virtual void endQueryEXT(WGC3Denum target);
-  virtual void getQueryivEXT(
-      WGC3Denum target, WGC3Denum pname, WGC3Dint* params);
-  virtual void getQueryObjectuivEXT(
-      WebGLId query, WGC3Denum pname, WGC3Duint* params);
+  virtual blink::WebGLId createQueryEXT();
+  virtual void deleteQueryEXT(blink::WebGLId query);
+  virtual blink::WGC3Dboolean isQueryEXT(blink::WGC3Duint query);
+  virtual void beginQueryEXT(blink::WGC3Denum target, blink::WebGLId query);
+  virtual void endQueryEXT(blink::WGC3Denum target);
+  virtual void getQueryivEXT(blink::WGC3Denum target,
+                             blink::WGC3Denum pname,
+                             blink::WGC3Dint* params);
+  virtual void getQueryObjectuivEXT(blink::WebGLId query,
+                                    blink::WGC3Denum pname,
+                                    blink::WGC3Duint* params);
 
   // TODO(dshwang): Remove |level| in Blink and then remove it.
-  void copyTextureCHROMIUM(WGC3Denum target,
-                           WebGLId source_id,
-                           WebGLId dest_id,
-                           WGC3Dint level,
-                           WGC3Denum internal_format,
-                           WGC3Denum dest_type) override;
+  void copyTextureCHROMIUM(blink::WGC3Denum target,
+                           blink::WebGLId source_id,
+                           blink::WebGLId dest_id,
+                           blink::WGC3Dint level,
+                           blink::WGC3Denum internal_format,
+                           blink::WGC3Denum dest_type) override;
 
-  void copySubTextureCHROMIUM(WGC3Denum target,
-                              WebGLId source_id,
-                              WebGLId dest_id,
-                              WGC3Dint level,
-                              WGC3Dint xoffset,
-                              WGC3Dint yoffset) override;
+  void copySubTextureCHROMIUM(blink::WGC3Denum target,
+                              blink::WebGLId source_id,
+                              blink::WebGLId dest_id,
+                              blink::WGC3Dint level,
+                              blink::WGC3Dint xoffset,
+                              blink::WGC3Dint yoffset) override;
 
-  virtual void copyTextureCHROMIUM(WGC3Denum target,
-                                   WebGLId source_id,
-                                   WebGLId dest_id,
-                                   WGC3Denum internal_format,
-                                   WGC3Denum dest_type);
+  virtual void copyTextureCHROMIUM(blink::WGC3Denum target,
+                                   blink::WebGLId source_id,
+                                   blink::WebGLId dest_id,
+                                   blink::WGC3Denum internal_format,
+                                   blink::WGC3Denum dest_type);
 
-  virtual void copySubTextureCHROMIUM(WGC3Denum target,
-                                      WebGLId sourceId,
-                                      WebGLId destId,
-                                      WGC3Dint xoffset,
-                                      WGC3Dint yoffset);
+  virtual void copySubTextureCHROMIUM(blink::WGC3Denum target,
+                                      blink::WebGLId sourceId,
+                                      blink::WebGLId destId,
+                                      blink::WGC3Dint xoffset,
+                                      blink::WGC3Dint yoffset);
 
-  virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location,
-                                           const WGC3Dchar* uniform);
+  virtual void bindUniformLocationCHROMIUM(blink::WebGLId program,
+                                           blink::WGC3Dint location,
+                                           const blink::WGC3Dchar* uniform);
 
   virtual void shallowFlushCHROMIUM();
   virtual void shallowFinishCHROMIUM();
 
-  virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox);
-  virtual void produceTextureCHROMIUM(WGC3Denum target,
-                                      const WGC3Dbyte* mailbox);
-  virtual void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target,
-                                      const WGC3Dbyte* mailbox);
-  virtual void consumeTextureCHROMIUM(WGC3Denum target,
-                                      const WGC3Dbyte* mailbox);
-  virtual WebGLId createAndConsumeTextureCHROMIUM(WGC3Denum target,
-                                      const WGC3Dbyte* mailbox);
+  virtual void genMailboxCHROMIUM(blink::WGC3Dbyte* mailbox);
+  virtual void produceTextureCHROMIUM(blink::WGC3Denum target,
+                                      const blink::WGC3Dbyte* mailbox);
+  virtual void produceTextureDirectCHROMIUM(blink::WebGLId texture,
+                                            blink::WGC3Denum target,
+                                            const blink::WGC3Dbyte* mailbox);
+  virtual void consumeTextureCHROMIUM(blink::WGC3Denum target,
+                                      const blink::WGC3Dbyte* mailbox);
+  virtual blink::WebGLId createAndConsumeTextureCHROMIUM(
+      blink::WGC3Denum target,
+      const blink::WGC3Dbyte* mailbox);
 
-  virtual void genValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids);
-  virtual WebGLId createValuebufferCHROMIUM();
-  virtual void deleteValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids);
-  virtual void deleteValuebufferCHROMIUM(WebGLId);
-  virtual void bindValuebufferCHROMIUM(WGC3Denum target, WebGLId valuebuffer);
-  virtual WGC3Dboolean isValuebufferCHROMIUM(WebGLId renderbuffer);
-  virtual void subscribeValueCHROMIUM(WGC3Denum target, WGC3Denum subscription);
-  virtual void populateSubscribedValuesCHROMIUM(WGC3Denum target);
-  virtual void uniformValuebufferCHROMIUM(WGC3Dint location,
-                                          WGC3Denum target,
-                                          WGC3Denum subscription);
-  virtual void traceBeginCHROMIUM(const WGC3Dchar* category_name,
-                                  const WGC3Dchar* trace_name);
+  virtual void genValuebuffersCHROMIUM(blink::WGC3Dsizei count,
+                                       blink::WebGLId* ids);
+  virtual blink::WebGLId createValuebufferCHROMIUM();
+  virtual void deleteValuebuffersCHROMIUM(blink::WGC3Dsizei count,
+                                          blink::WebGLId* ids);
+  virtual void deleteValuebufferCHROMIUM(blink::WebGLId);
+  virtual void bindValuebufferCHROMIUM(blink::WGC3Denum target,
+                                       blink::WebGLId valuebuffer);
+  virtual blink::WGC3Dboolean isValuebufferCHROMIUM(
+      blink::WebGLId renderbuffer);
+  virtual void subscribeValueCHROMIUM(blink::WGC3Denum target,
+                                      blink::WGC3Denum subscription);
+  virtual void populateSubscribedValuesCHROMIUM(blink::WGC3Denum target);
+  virtual void uniformValuebufferCHROMIUM(blink::WGC3Dint location,
+                                          blink::WGC3Denum target,
+                                          blink::WGC3Denum subscription);
+  virtual void traceBeginCHROMIUM(const blink::WGC3Dchar* category_name,
+                                  const blink::WGC3Dchar* trace_name);
   virtual void traceEndCHROMIUM();
 
-  virtual void insertEventMarkerEXT(const WGC3Dchar* marker);
-  virtual void pushGroupMarkerEXT(const WGC3Dchar* marker);
+  virtual void insertEventMarkerEXT(const blink::WGC3Dchar* marker);
+  virtual void pushGroupMarkerEXT(const blink::WGC3Dchar* marker);
   virtual void popGroupMarkerEXT();
 
   // GL_OES_vertex_array_object
-  virtual WebGLId createVertexArrayOES();
-  virtual void deleteVertexArrayOES(WebGLId array);
-  virtual WGC3Dboolean isVertexArrayOES(WebGLId array);
-  virtual void bindVertexArrayOES(WebGLId array);
+  virtual blink::WebGLId createVertexArrayOES();
+  virtual void deleteVertexArrayOES(blink::WebGLId array);
+  virtual blink::WGC3Dboolean isVertexArrayOES(blink::WebGLId array);
+  virtual void bindVertexArrayOES(blink::WebGLId array);
 
-  virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint image_id);
-  virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint image_id);
+  virtual void bindTexImage2DCHROMIUM(blink::WGC3Denum target,
+                                      blink::WGC3Dint image_id);
+  virtual void releaseTexImage2DCHROMIUM(blink::WGC3Denum target,
+                                         blink::WGC3Dint image_id);
 
-  virtual void* mapBufferCHROMIUM(WGC3Denum target, WGC3Denum access);
-  virtual WGC3Dboolean unmapBufferCHROMIUM(WGC3Denum target);
+  virtual void* mapBufferCHROMIUM(blink::WGC3Denum target,
+                                  blink::WGC3Denum access);
+  virtual blink::WGC3Dboolean unmapBufferCHROMIUM(blink::WGC3Denum target);
 
   // Async pixel transfer functions.
-  virtual void asyncTexImage2DCHROMIUM(
-      WGC3Denum target,
-      WGC3Dint level,
-      WGC3Denum internalformat,
-      WGC3Dsizei width,
-      WGC3Dsizei height,
-      WGC3Dint border,
-      WGC3Denum format,
-      WGC3Denum type,
-      const void* pixels);
-  virtual void asyncTexSubImage2DCHROMIUM(
-      WGC3Denum target,
-      WGC3Dint level,
-      WGC3Dint xoffset,
-      WGC3Dint yoffset,
-      WGC3Dsizei width,
-      WGC3Dsizei height,
-      WGC3Denum format,
-      WGC3Denum type,
-      const void* pixels);
-  virtual void waitAsyncTexImage2DCHROMIUM(WGC3Denum target);
+  virtual void asyncTexImage2DCHROMIUM(blink::WGC3Denum target,
+                                       blink::WGC3Dint level,
+                                       blink::WGC3Denum internalformat,
+                                       blink::WGC3Dsizei width,
+                                       blink::WGC3Dsizei height,
+                                       blink::WGC3Dint border,
+                                       blink::WGC3Denum format,
+                                       blink::WGC3Denum type,
+                                       const void* pixels);
+  virtual void asyncTexSubImage2DCHROMIUM(blink::WGC3Denum target,
+                                          blink::WGC3Dint level,
+                                          blink::WGC3Dint xoffset,
+                                          blink::WGC3Dint yoffset,
+                                          blink::WGC3Dsizei width,
+                                          blink::WGC3Dsizei height,
+                                          blink::WGC3Denum format,
+                                          blink::WGC3Denum type,
+                                          const void* pixels);
+  virtual void waitAsyncTexImage2DCHROMIUM(blink::WGC3Denum target);
 
   // GL_EXT_draw_buffers
-  virtual void drawBuffersEXT(
-      WGC3Dsizei n,
-      const WGC3Denum* bufs);
+  virtual void drawBuffersEXT(blink::WGC3Dsizei n,
+                              const blink::WGC3Denum* bufs);
 
   // GL_ANGLE_instanced_arrays
-  virtual void drawArraysInstancedANGLE(WGC3Denum mode, WGC3Dint first,
-      WGC3Dsizei count, WGC3Dsizei primcount);
-  virtual void drawElementsInstancedANGLE(WGC3Denum mode, WGC3Dsizei count,
-      WGC3Denum type, WGC3Dintptr offset, WGC3Dsizei primcount);
-  virtual void vertexAttribDivisorANGLE(WGC3Duint index, WGC3Duint divisor);
+  virtual void drawArraysInstancedANGLE(blink::WGC3Denum mode,
+                                        blink::WGC3Dint first,
+                                        blink::WGC3Dsizei count,
+                                        blink::WGC3Dsizei primcount);
+  virtual void drawElementsInstancedANGLE(blink::WGC3Denum mode,
+                                          blink::WGC3Dsizei count,
+                                          blink::WGC3Denum type,
+                                          blink::WGC3Dintptr offset,
+                                          blink::WGC3Dsizei primcount);
+  virtual void vertexAttribDivisorANGLE(blink::WGC3Duint index,
+                                        blink::WGC3Duint divisor);
 
   // GL_CHROMIUM_gpu_memory_buffer_image
-  virtual WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width,
-                                                       WGC3Dsizei height,
-                                                       WGC3Denum internalformat,
-                                                       WGC3Denum usage);
-  virtual void destroyImageCHROMIUM(WGC3Duint image_id);
+  virtual blink::WGC3Duint createGpuMemoryBufferImageCHROMIUM(
+      blink::WGC3Dsizei width,
+      blink::WGC3Dsizei height,
+      blink::WGC3Denum internalformat,
+      blink::WGC3Denum usage);
+  virtual void destroyImageCHROMIUM(blink::WGC3Duint image_id);
 
   // GL_EXT_multisampled_render_to_texture
-  virtual void framebufferTexture2DMultisampleEXT(WGC3Denum target,
-                                    WGC3Denum attachment,
-                                    WGC3Denum textarget,
-                                    WebGLId texture,
-                                    WGC3Dint level,
-                                    WGC3Dsizei samples);
+  virtual void framebufferTexture2DMultisampleEXT(blink::WGC3Denum target,
+                                                  blink::WGC3Denum attachment,
+                                                  blink::WGC3Denum textarget,
+                                                  blink::WebGLId texture,
+                                                  blink::WGC3Dint level,
+                                                  blink::WGC3Dsizei samples);
   virtual void renderbufferStorageMultisampleEXT(
-      WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat,
-      WGC3Dsizei width, WGC3Dsizei height);
+      blink::WGC3Denum target,
+      blink::WGC3Dsizei samples,
+      blink::WGC3Denum internalformat,
+      blink::WGC3Dsizei width,
+      blink::WGC3Dsizei height);
 
   // OpenGL ES 3.0 functions not represented by pre-existing extensions
-  virtual void beginTransformFeedback(WGC3Denum primitiveMode);
-  virtual void bindBufferBase(WGC3Denum target, WGC3Duint index,
-      WGC3Duint buffer);
-  virtual void bindBufferRange(WGC3Denum target, WGC3Duint index,
-      WGC3Duint buffer, WGC3Dintptr offset, WGC3Dsizeiptr size);
-  virtual void bindSampler(WGC3Duint unit, WebGLId sampler);
-  virtual void bindTransformFeedback(WGC3Denum target,
-      WebGLId transformfeedback);
-  virtual void clearBufferfi(WGC3Denum buffer, WGC3Dint drawbuffer,
-      WGC3Dfloat depth, WGC3Dint stencil);
-  virtual void clearBufferfv(WGC3Denum buffer, WGC3Dint drawbuffer,
-      const WGC3Dfloat *value);
-  virtual void clearBufferiv(WGC3Denum buffer, WGC3Dint drawbuffer,
-      const WGC3Dint *value);
-  virtual void clearBufferuiv(WGC3Denum buffer, WGC3Dint drawbuffer,
-      const WGC3Duint *value);
-  //virtual WGC3Denum clientWaitSync(WebGLId sync, WGC3Dbitfield flags,
-  //    WGC3Duint64 timeout);
-  //virtual void compressedTexImage3D(WGC3Denum target, WGC3Dint level,
-  //    WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height,
-  //    WGC3Dsizei depth, WGC3Dint border, WGC3Dsizei imageSize,
-  //    const void *data);
-  //virtual void compressedTexSubImage3D(WGC3Denum target, WGC3Dint level,
-  //    WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dsizei width,
-  //    WGC3Dsizei height, WGC3Dsizei depth, WGC3Denum format,
+  virtual void beginTransformFeedback(blink::WGC3Denum primitiveMode);
+  virtual void bindBufferBase(blink::WGC3Denum target,
+                              blink::WGC3Duint index,
+                              blink::WGC3Duint buffer);
+  virtual void bindBufferRange(blink::WGC3Denum target,
+                               blink::WGC3Duint index,
+                               blink::WGC3Duint buffer,
+                               blink::WGC3Dintptr offset,
+                               blink::WGC3Dsizeiptr size);
+  virtual void bindSampler(blink::WGC3Duint unit, blink::WebGLId sampler);
+  virtual void bindTransformFeedback(blink::WGC3Denum target,
+                                     blink::WebGLId transformfeedback);
+  virtual void clearBufferfi(blink::WGC3Denum buffer,
+                             blink::WGC3Dint drawbuffer,
+                             blink::WGC3Dfloat depth,
+                             blink::WGC3Dint stencil);
+  virtual void clearBufferfv(blink::WGC3Denum buffer,
+                             blink::WGC3Dint drawbuffer,
+                             const blink::WGC3Dfloat* value);
+  virtual void clearBufferiv(blink::WGC3Denum buffer,
+                             blink::WGC3Dint drawbuffer,
+                             const blink::WGC3Dint* value);
+  virtual void clearBufferuiv(blink::WGC3Denum buffer,
+                              blink::WGC3Dint drawbuffer,
+                              const blink::WGC3Duint* value);
+  // virtual blink::WGC3Denum clientWaitSync(blink::WebGLId sync,
+  //                                         blink::WGC3Dbitfield flags,
+  //                                         blink::WGC3Duint64 timeout);
+  // virtual void compressedTexImage3D(blink::WGC3Denum target, blink::WGC3Dint
+  // level,
+  //    blink::WGC3Denum internalformat, blink::WGC3Dsizei width,
+  //    WGC3Dsizei height, WGC3Dsizei depth, blink::WGC3Dint border,
   //    WGC3Dsizei imageSize, const void *data);
-  virtual void copyBufferSubData(WGC3Denum readTarget, WGC3Denum writeTarget,
-      WGC3Dintptr readOffset, WGC3Dintptr writeOffset, WGC3Dsizeiptr size);
-  virtual void copyTexSubImage3D(WGC3Denum target, WGC3Dint level,
-      WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dint x,
-      WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height);
-  virtual WebGLId createSampler();
-  virtual WebGLId createTransformFeedback();
-  virtual void deleteSampler(WebGLId sampler);
-  //virtual void deleteSync(WebGLId sync);
-  virtual void deleteTransformFeedback(WebGLId transformfeedback);
+  // virtual void compressedTexSubImage3D(blink::WGC3Denum target,
+  //    blink::WGC3Dint level, blink::WGC3Dint xoffset, blink::WGC3Dint yoffset,
+  //    blink::WGC3Dint zoffset,
+  //    blink::WGC3Dsizei width, blink::WGC3Dsizei height,
+  //    blink::WGC3Dsizei depth, blink::WGC3Denum format,
+  //    blink::WGC3Dsizei imageSize, const void *data);
+  virtual void copyBufferSubData(blink::WGC3Denum readTarget,
+                                 blink::WGC3Denum writeTarget,
+                                 blink::WGC3Dintptr readOffset,
+                                 blink::WGC3Dintptr writeOffset,
+                                 blink::WGC3Dsizeiptr size);
+  virtual void copyTexSubImage3D(blink::WGC3Denum target,
+                                 blink::WGC3Dint level,
+                                 blink::WGC3Dint xoffset,
+                                 blink::WGC3Dint yoffset,
+                                 blink::WGC3Dint zoffset,
+                                 blink::WGC3Dint x,
+                                 blink::WGC3Dint y,
+                                 blink::WGC3Dsizei width,
+                                 blink::WGC3Dsizei height);
+  virtual blink::WebGLId createSampler();
+  virtual blink::WebGLId createTransformFeedback();
+  virtual void deleteSampler(blink::WebGLId sampler);
+  // virtual void deleteSync(blink::WebGLId sync);
+  virtual void deleteTransformFeedback(blink::WebGLId transformfeedback);
   virtual void endTransformFeedback(void);
-  //virtual WebGLId fenceSync(WGC3Denum condition, WGC3Dbitfield flags);
-  virtual void framebufferTextureLayer(WGC3Denum target, WGC3Denum attachment,
-      WGC3Duint texture, WGC3Dint level, WGC3Dint layer);
-  virtual void getActiveUniformBlockName(WGC3Duint program,
-      WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length,
-      WGC3Dchar *uniformBlockName);
-  virtual void getActiveUniformBlockiv(WGC3Duint program,
-      WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params);
-  //virtual void getActiveUniformsiv(WGC3Duint program, WGC3Dsizei uniformCount,
-  //    const WGC3Duint *uniformIndices, WGC3Denum pname, WGC3Dint *params);
-  virtual WGC3Dint getFragDataLocation(WGC3Duint program,
-      const WGC3Dchar *name);
-  virtual void getInternalformativ(WGC3Denum target, WGC3Denum internalformat,
-      WGC3Denum pname, WGC3Dsizei bufSize, WGC3Dint *params);
-  virtual void getSamplerParameterfv(WGC3Duint sampler, WGC3Denum pname,
-      WGC3Dfloat *params);
-  virtual void getSamplerParameteriv(WGC3Duint sampler, WGC3Denum pname,
-      WGC3Dint *params);
-  //virtual void getTransformFeedbackVarying(WGC3Duint program, WGC3Duint index,
-  //    WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dsizei *size,
-  //    WGC3Denum *type, WGC3Dchar *name);
-  virtual WGC3Duint getUniformBlockIndex(WGC3Duint program,
-      const WGC3Dchar *uniformBlockName);
-  //virtual void getUniformIndices(WGC3Duint program, WGC3Dsizei uniformCount,
-  //    const WGC3Dchar *const*uniformNames, WGC3Duint *uniformIndices);
-  //virtual void getUniformuiv(WGC3Duint program, WGC3Dint location,
-  //    WGC3Duint *params);
-  //virtual void getVertexAttribIiv(WGC3Duint index, WGC3Denum pname,
-  //    WGC3Dint *params);
-  //virtual void getVertexAttribIuiv(WGC3Duint index, WGC3Denum pname,
-  //    WGC3Duint *params);
-  virtual void invalidateFramebuffer(WGC3Denum target,
-      WGC3Dsizei numAttachments, const WGC3Denum *attachments);
-  virtual void invalidateSubFramebuffer(WGC3Denum target,
-      WGC3Dsizei numAttachments, const WGC3Denum *attachments, WGC3Dint x,
-      WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height);
-  virtual WGC3Dboolean isSampler(WebGLId sampler);
-  //virtual WGC3Dboolean isSync(WebGLId sync);
-  virtual WGC3Dboolean isTransformFeedback(WGC3Duint id);
+  // virtual blink::WebGLId fenceSync(blink::WGC3Denum condition,
+  //                                  blink::WGC3Dbitfield flags);
+  virtual void framebufferTextureLayer(blink::WGC3Denum target,
+                                       blink::WGC3Denum attachment,
+                                       blink::WGC3Duint texture,
+                                       blink::WGC3Dint level,
+                                       blink::WGC3Dint layer);
+  virtual void getActiveUniformBlockName(blink::WGC3Duint program,
+                                         blink::WGC3Duint uniformBlockIndex,
+                                         blink::WGC3Dsizei bufSize,
+                                         blink::WGC3Dsizei* length,
+                                         blink::WGC3Dchar* uniformBlockName);
+  virtual void getActiveUniformBlockiv(blink::WGC3Duint program,
+                                       blink::WGC3Duint uniformBlockIndex,
+                                       blink::WGC3Denum pname,
+                                       blink::WGC3Dint* params);
+  // virtual void getActiveUniformsiv(blink::WGC3Duint program,
+  //    blink::WGC3Dsizei uniformCount, const blink::WGC3Duint *uniformIndices,
+  //    blink::WGC3Denum pname, blink::WGC3Dint *params);
+  virtual blink::WGC3Dint getFragDataLocation(blink::WGC3Duint program,
+                                              const blink::WGC3Dchar* name);
+  virtual void getInternalformativ(blink::WGC3Denum target,
+                                   blink::WGC3Denum internalformat,
+                                   blink::WGC3Denum pname,
+                                   blink::WGC3Dsizei bufSize,
+                                   blink::WGC3Dint* params);
+  virtual void getSamplerParameterfv(blink::WGC3Duint sampler,
+                                     blink::WGC3Denum pname,
+                                     blink::WGC3Dfloat* params);
+  virtual void getSamplerParameteriv(blink::WGC3Duint sampler,
+                                     blink::WGC3Denum pname,
+                                     blink::WGC3Dint* params);
+  // virtual void getTransformFeedbackVarying(blink::WGC3Duint program,
+  // blink::WGC3Duint index,
+  //    blink::WGC3Dsizei bufSize, blink::WGC3Dsizei *length,
+  //    blink::WGC3Dsizei *size, blink::WGC3Denum *type,
+  //    blink::WGC3Dchar *name);
+  virtual blink::WGC3Duint getUniformBlockIndex(
+      blink::WGC3Duint program,
+      const blink::WGC3Dchar* uniformBlockName);
+  // virtual void getUniformIndices(blink::WGC3Duint program,
+  //    blink::WGC3Dsizei uniformCount,
+  //    const blink::WGC3Dchar *const*uniformNames,
+  //    blink::WGC3Duint *uniformIndices);
+  // virtual void getUniformuiv(blink::WGC3Duint program, blink::WGC3Dint
+  // location,
+  //    blink::WGC3Duint *params);
+  // virtual void getVertexAttribIiv(blink::WGC3Duint index, blink::WGC3Denum
+  // pname,
+  //    blink::WGC3Dint *params);
+  // virtual void getVertexAttribIuiv(blink::WGC3Duint index, blink::WGC3Denum
+  // pname,
+  //    blink::WGC3Duint *params);
+  virtual void invalidateFramebuffer(blink::WGC3Denum target,
+                                     blink::WGC3Dsizei numAttachments,
+                                     const blink::WGC3Denum* attachments);
+  virtual void invalidateSubFramebuffer(blink::WGC3Denum target,
+                                        blink::WGC3Dsizei numAttachments,
+                                        const blink::WGC3Denum* attachments,
+                                        blink::WGC3Dint x,
+                                        blink::WGC3Dint y,
+                                        blink::WGC3Dsizei width,
+                                        blink::WGC3Dsizei height);
+  virtual blink::WGC3Dboolean isSampler(blink::WebGLId sampler);
+  // virtual blink::WGC3Dboolean isSync(blink::WebGLId sync);
+  virtual blink::WGC3Dboolean isTransformFeedback(blink::WGC3Duint id);
   virtual void pauseTransformFeedback(void);
-  //virtual void programParameteri(WGC3Duint program, WGC3Denum pname,
-  //    WGC3Dint value);
-  virtual void readBuffer(WGC3Denum src);
+  // virtual void programParameteri(blink::WGC3Duint program, blink::WGC3Denum
+  // pname,
+  //    blink::WGC3Dint value);
+  virtual void readBuffer(blink::WGC3Denum src);
   virtual void resumeTransformFeedback(void);
-  virtual void samplerParameterf(WGC3Duint sampler, WGC3Denum pname,
-      WGC3Dfloat param);
-  virtual void samplerParameterfv(WGC3Duint sampler, WGC3Denum pname,
-      const WGC3Dfloat *param);
-  virtual void samplerParameteri(WGC3Duint sampler, WGC3Denum pname,
-      WGC3Dint param);
-  virtual void samplerParameteriv(WGC3Duint sampler, WGC3Denum pname,
-      const WGC3Dint *param);
-  virtual void texImage3D(WGC3Denum target, WGC3Dint level,
-      WGC3Dint internalformat, WGC3Dsizei width, WGC3Dsizei height,
-      WGC3Dsizei depth, WGC3Dint border, WGC3Denum format, WGC3Denum type,
-      const void *pixels);
-  virtual void texStorage3D(WGC3Denum target, WGC3Dsizei levels,
-      WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height,
-      WGC3Dsizei depth);
-  virtual void texSubImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset,
-      WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dsizei width, WGC3Dsizei height,
-      WGC3Dsizei depth, WGC3Denum format, WGC3Denum type, const void *pixels);
-  virtual void transformFeedbackVaryings(WGC3Duint program, WGC3Dsizei count,
-      const WGC3Dchar *const*varyings, WGC3Denum bufferMode);
-  virtual void uniform1ui(WGC3Dint location, WGC3Duint x);
-  virtual void uniform1uiv(WGC3Dint location, WGC3Dsizei count,
-      const WGC3Duint *value);
-  virtual void uniform2ui(WGC3Dint location, WGC3Duint x, WGC3Duint y);
-  virtual void uniform2uiv(WGC3Dint location, WGC3Dsizei count,
-      const WGC3Duint *value);
-  virtual void uniform3ui(WGC3Dint location, WGC3Duint x, WGC3Duint y,
-      WGC3Duint z);
-  virtual void uniform3uiv(WGC3Dint location, WGC3Dsizei count,
-      const WGC3Duint *value);
-  virtual void uniform4ui(WGC3Dint location, WGC3Duint x, WGC3Duint y,
-      WGC3Duint z, WGC3Duint w);
-  virtual void uniform4uiv(WGC3Dint location, WGC3Dsizei count,
-      const WGC3Duint *value);
-  virtual void uniformBlockBinding(WGC3Duint program,
-      WGC3Duint uniformBlockIndex, WGC3Duint uniformBlockBinding);
-  virtual void uniformMatrix2x3fv(WGC3Dint location, WGC3Dsizei count,
-      WGC3Dboolean transpose, const WGC3Dfloat* value);
-  virtual void uniformMatrix2x4fv(WGC3Dint location, WGC3Dsizei count,
-      WGC3Dboolean transpose, const WGC3Dfloat* value);
-  virtual void uniformMatrix3x2fv(WGC3Dint location, WGC3Dsizei count,
-      WGC3Dboolean transpose, const WGC3Dfloat* value);
-  virtual void uniformMatrix3x4fv(WGC3Dint location, WGC3Dsizei count,
-      WGC3Dboolean transpose, const WGC3Dfloat* value);
-  virtual void uniformMatrix4x2fv(WGC3Dint location, WGC3Dsizei count,
-      WGC3Dboolean transpose, const WGC3Dfloat* value);
-  virtual void uniformMatrix4x3fv(WGC3Dint location, WGC3Dsizei count,
-      WGC3Dboolean transpose, const WGC3Dfloat* value);
-  virtual void vertexAttribI4i(WGC3Duint index, WGC3Dint x, WGC3Dint y,
-      WGC3Dint z, WGC3Dint w);
-  virtual void vertexAttribI4iv(WGC3Duint index, const WGC3Dint *v);
-  virtual void vertexAttribI4ui(WGC3Duint index, WGC3Duint x, WGC3Duint y,
-      WGC3Duint z, WGC3Duint w);
-  virtual void vertexAttribI4uiv(WGC3Duint index, const WGC3Duint *v);
-  virtual void vertexAttribIPointer(WGC3Duint index, WGC3Dint size,
-      WGC3Denum type, WGC3Dsizei stride, WGC3Dintptr pointer);
-  //virtual void waitSync(WebGLId sync, WGC3Dbitfield flags,
-  //    WGC3Duint64 timeout);
+  virtual void samplerParameterf(blink::WGC3Duint sampler,
+                                 blink::WGC3Denum pname,
+                                 blink::WGC3Dfloat param);
+  virtual void samplerParameterfv(blink::WGC3Duint sampler,
+                                  blink::WGC3Denum pname,
+                                  const blink::WGC3Dfloat* param);
+  virtual void samplerParameteri(blink::WGC3Duint sampler,
+                                 blink::WGC3Denum pname,
+                                 blink::WGC3Dint param);
+  virtual void samplerParameteriv(blink::WGC3Duint sampler,
+                                  blink::WGC3Denum pname,
+                                  const blink::WGC3Dint* param);
+  virtual void texImage3D(blink::WGC3Denum target,
+                          blink::WGC3Dint level,
+                          blink::WGC3Dint internalformat,
+                          blink::WGC3Dsizei width,
+                          blink::WGC3Dsizei height,
+                          blink::WGC3Dsizei depth,
+                          blink::WGC3Dint border,
+                          blink::WGC3Denum format,
+                          blink::WGC3Denum type,
+                          const void* pixels);
+  virtual void texStorage3D(blink::WGC3Denum target,
+                            blink::WGC3Dsizei levels,
+                            blink::WGC3Denum internalformat,
+                            blink::WGC3Dsizei width,
+                            blink::WGC3Dsizei height,
+                            blink::WGC3Dsizei depth);
+  virtual void texSubImage3D(blink::WGC3Denum target,
+                             blink::WGC3Dint level,
+                             blink::WGC3Dint xoffset,
+                             blink::WGC3Dint yoffset,
+                             blink::WGC3Dint zoffset,
+                             blink::WGC3Dsizei width,
+                             blink::WGC3Dsizei height,
+                             blink::WGC3Dsizei depth,
+                             blink::WGC3Denum format,
+                             blink::WGC3Denum type,
+                             const void* pixels);
+  virtual void transformFeedbackVaryings(
+      blink::WGC3Duint program,
+      blink::WGC3Dsizei count,
+      const blink::WGC3Dchar* const* varyings,
+      blink::WGC3Denum bufferMode);
+  virtual void uniform1ui(blink::WGC3Dint location, blink::WGC3Duint x);
+  virtual void uniform1uiv(blink::WGC3Dint location,
+                           blink::WGC3Dsizei count,
+                           const blink::WGC3Duint* value);
+  virtual void uniform2ui(blink::WGC3Dint location,
+                          blink::WGC3Duint x,
+                          blink::WGC3Duint y);
+  virtual void uniform2uiv(blink::WGC3Dint location,
+                           blink::WGC3Dsizei count,
+                           const blink::WGC3Duint* value);
+  virtual void uniform3ui(blink::WGC3Dint location,
+                          blink::WGC3Duint x,
+                          blink::WGC3Duint y,
+                          blink::WGC3Duint z);
+  virtual void uniform3uiv(blink::WGC3Dint location,
+                           blink::WGC3Dsizei count,
+                           const blink::WGC3Duint* value);
+  virtual void uniform4ui(blink::WGC3Dint location,
+                          blink::WGC3Duint x,
+                          blink::WGC3Duint y,
+                          blink::WGC3Duint z,
+                          blink::WGC3Duint w);
+  virtual void uniform4uiv(blink::WGC3Dint location,
+                           blink::WGC3Dsizei count,
+                           const blink::WGC3Duint* value);
+  virtual void uniformBlockBinding(blink::WGC3Duint program,
+                                   blink::WGC3Duint uniformBlockIndex,
+                                   blink::WGC3Duint uniformBlockBinding);
+  virtual void uniformMatrix2x3fv(blink::WGC3Dint location,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Dboolean transpose,
+                                  const blink::WGC3Dfloat* value);
+  virtual void uniformMatrix2x4fv(blink::WGC3Dint location,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Dboolean transpose,
+                                  const blink::WGC3Dfloat* value);
+  virtual void uniformMatrix3x2fv(blink::WGC3Dint location,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Dboolean transpose,
+                                  const blink::WGC3Dfloat* value);
+  virtual void uniformMatrix3x4fv(blink::WGC3Dint location,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Dboolean transpose,
+                                  const blink::WGC3Dfloat* value);
+  virtual void uniformMatrix4x2fv(blink::WGC3Dint location,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Dboolean transpose,
+                                  const blink::WGC3Dfloat* value);
+  virtual void uniformMatrix4x3fv(blink::WGC3Dint location,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Dboolean transpose,
+                                  const blink::WGC3Dfloat* value);
+  virtual void vertexAttribI4i(blink::WGC3Duint index,
+                               blink::WGC3Dint x,
+                               blink::WGC3Dint y,
+                               blink::WGC3Dint z,
+                               blink::WGC3Dint w);
+  virtual void vertexAttribI4iv(blink::WGC3Duint index,
+                                const blink::WGC3Dint* v);
+  virtual void vertexAttribI4ui(blink::WGC3Duint index,
+                                blink::WGC3Duint x,
+                                blink::WGC3Duint y,
+                                blink::WGC3Duint z,
+                                blink::WGC3Duint w);
+  virtual void vertexAttribI4uiv(blink::WGC3Duint index,
+                                 const blink::WGC3Duint* v);
+  virtual void vertexAttribIPointer(blink::WGC3Duint index,
+                                    blink::WGC3Dint size,
+                                    blink::WGC3Denum type,
+                                    blink::WGC3Dsizei stride,
+                                    blink::WGC3Dintptr pointer);
+  // virtual void waitSync(blink::WebGLId sync, blink::WGC3Dbitfield flags,
+  //    blink::WGC3Duint64 timeout);
 
   virtual GrGLInterface* createGrGLInterface();
 
@@ -748,7 +940,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   bool initialize_failed_;
 
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
-  WGC3Denum context_lost_reason_;
+  blink::WGC3Denum context_lost_reason_;
 
   WebGraphicsContext3D::WebGraphicsErrorMessageCallback*
       error_message_callback_;
@@ -756,7 +948,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
       client_error_message_callback_;
 
   // Errors raised by synthesizeGLError().
-  std::vector<WGC3Denum> synthetic_errors_;
+  std::vector<blink::WGC3Denum> synthetic_errors_;
 
   ::gpu::gles2::GLES2Interface* gl_;
   bool lose_context_when_out_of_memory_;

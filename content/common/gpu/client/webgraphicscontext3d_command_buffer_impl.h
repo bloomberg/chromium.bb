@@ -148,7 +148,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // WebGraphicsContext3D methods
   virtual bool isContextLost();
 
-  virtual WGC3Denum getGraphicsResetStatusARB();
+  virtual blink::WGC3Denum getGraphicsResetStatusARB();
 
  private:
   // These are the same error codes as used by EGL.

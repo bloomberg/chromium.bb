@@ -19,6 +19,21 @@
 #endif
 #include "third_party/khronos/GLES2/gl2ext.h"
 
+using blink::WGC3Dbitfield;
+using blink::WGC3Dboolean;
+using blink::WGC3Dbyte;
+using blink::WGC3Dchar;
+using blink::WGC3Dclampf;
+using blink::WGC3Denum;
+using blink::WGC3Dfloat;
+using blink::WGC3Dint;
+using blink::WGC3Dintptr;
+using blink::WGC3Dsizei;
+using blink::WGC3Dsizeiptr;
+using blink::WGC3Duint64;
+using blink::WGC3Duint;
+using blink::WebGLId;
+
 namespace gpu_blink {
 
 namespace {

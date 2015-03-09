@@ -37,6 +37,8 @@
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
+using blink::WGC3Denum;
+
 namespace content {
 
 namespace {
