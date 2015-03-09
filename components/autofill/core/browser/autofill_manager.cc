@@ -16,6 +16,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -296,7 +297,10 @@ int AutofillManager::AccessAddressBookPromptCount() {
 bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                                const FormFieldData& field) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          autofill::switches::kEnableCreditCardScan)) {
+          autofill::switches::kEnableCreditCardScan) &&
+      (base::FieldTrialList::FindFullName("CreditCardScan") != "Enabled" ||
+       base::CommandLine::ForCurrentProcess()->HasSwitch(
+           autofill::switches::kDisableCreditCardScan))) {
     return false;
   }
 
