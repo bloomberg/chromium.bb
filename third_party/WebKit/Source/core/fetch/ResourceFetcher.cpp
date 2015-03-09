@@ -45,7 +45,6 @@
 #include "core/fetch/SubstituteData.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/fetch/XSLStyleSheetResource.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -54,7 +53,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -240,19 +238,6 @@ static WebURLRequest::RequestContext requestContextFromType(const ResourceFetche
     }
     ASSERT_NOT_REACHED();
     return WebURLRequest::RequestContextSubresource;
-}
-
-static ResourceRequestCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
-    const CachePolicy policy) {
-    if (policy == CachePolicyVerify)
-        return UseProtocolCachePolicy;
-    if (policy == CachePolicyRevalidate)
-        return ReloadIgnoringCacheData;
-    if (policy == CachePolicyReload)
-        return ReloadBypassingCache;
-    if (policy == CachePolicyHistoryBuffer)
-        return ReturnCacheDataElseLoad;
-    return UseProtocolCachePolicy;
 }
 
 ResourceFetcher::ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext> context)
@@ -826,56 +811,16 @@ void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource
     request.setRequestContext(requestContext);
 }
 
-ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type)
-{
-    if (type == Resource::MainResource) {
-        FrameLoadType frameLoadType = frame()->loader().loadType();
-        if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
-            return ReturnCacheDataDontLoad;
-        if (!frame()->host()->overrideEncoding().isEmpty() || frameLoadType == FrameLoadTypeBackForward)
-            return ReturnCacheDataElseLoad;
-        if (frameLoadType == FrameLoadTypeReloadFromOrigin)
-            return ReloadBypassingCache;
-        if (frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
-            return ReloadIgnoringCacheData;
-        Frame* parent = frame()->tree().parent();
-        if (parent && parent->isLocalFrame())
-            return toLocalFrame(parent)->document()->fetcher()->resourceRequestCachePolicy(request, type);
-        return UseProtocolCachePolicy;
-    }
-
-    if (request.isConditional())
-        return ReloadIgnoringCacheData;
-
-    if (documentLoader() && document() && !document()->loadEventFinished()) {
-        // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
-        // This policy should not be inherited by subresources.
-        ResourceRequestCachePolicy mainResourceCachePolicy = documentLoader()->request().cachePolicy();
-        if (documentLoader()->request().httpMethod() == "POST") {
-            if (mainResourceCachePolicy == ReturnCacheDataDontLoad)
-                return ReturnCacheDataElseLoad;
-            return UseProtocolCachePolicy;
-        }
-        return memoryCachePolicyToResourceRequestCachePolicy(context().cachePolicy(document()));
-    }
-    return UseProtocolCachePolicy;
-}
-
 void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Resource::Type type)
 {
-    if (!frame())
-        return;
-
     if (request.cachePolicy() == UseProtocolCachePolicy)
-        request.setCachePolicy(resourceRequestCachePolicy(request, type));
+        request.setCachePolicy(context().resourceRequestCachePolicy(request, type));
     if (request.requestContext() == WebURLRequest::RequestContextUnspecified)
         determineRequestContext(request, type);
     if (type == Resource::LinkPrefetch || type == Resource::LinkSubresource)
         request.setHTTPHeaderField("Purpose", "prefetch");
-    if (frame()->document())
-        request.setOriginatesFromReservedIPRange(frame()->document()->isHostedInReservedIPRange());
 
-    context().addAdditionalRequestHeaders(document(), request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
+    context().addAdditionalRequestHeaders(request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }
 
 void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
@@ -940,8 +885,8 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const Fetch
     const AtomicString& lastModified = resource->response().httpHeaderField("Last-Modified");
     const AtomicString& eTag = resource->response().httpHeaderField("ETag");
     if (!lastModified.isEmpty() || !eTag.isEmpty()) {
-        ASSERT(context().cachePolicy(document()) != CachePolicyReload);
-        if (context().cachePolicy(document()) == CachePolicyRevalidate)
+        ASSERT(context().cachePolicy() != CachePolicyReload);
+        if (context().cachePolicy() == CachePolicyRevalidate)
             revalidatingRequest.setHTTPHeaderField("Cache-Control", "max-age=0");
     }
     if (!lastModified.isEmpty())
@@ -1061,7 +1006,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         return Use;
 
     // CachePolicyHistoryBuffer uses the cache no matter what.
-    CachePolicy cachePolicy = context().cachePolicy(document());
+    CachePolicy cachePolicy = context().cachePolicy();
     if (cachePolicy == CachePolicyHistoryBuffer)
         return Use;
 
@@ -1250,8 +1195,7 @@ void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
     context().dispatchDidLoadResourceFromMemoryCache(request, resource->response());
     // FIXME: If willSendRequest changes the request, we don't respect it.
     willSendRequest(identifier, request, ResourceResponse(), resource->options().initiatorInfo);
-    InspectorInstrumentation::markResourceAsCached(frame(), identifier);
-    context().sendRemainingDelegateMessages(documentLoader(), identifier, resource->response(), resource->encodedSize());
+    context().sendRemainingDelegateMessages(identifier, resource->response(), resource->encodedSize());
 }
 
 int ResourceFetcher::requestCount() const
@@ -1373,7 +1317,7 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
             reportResourceTiming(info.get(), document(), resource->type() == Resource::MainResource);
         }
     }
-    context().dispatchDidFinishLoading(documentLoader(), resource->identifier(), finishTime, encodedDataLength);
+    context().dispatchDidFinishLoading(resource->identifier(), finishTime, encodedDataLength);
 }
 
 void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, ResourceLoadPriority loadPriority, int intraPriorityValue)
@@ -1387,18 +1331,16 @@ void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceErr
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
     willTerminateResourceLoader(resource->loader());
     bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
-    context().dispatchDidFail(documentLoader(), resource->identifier(), error, isInternalRequest);
+    context().dispatchDidFail(resource->identifier(), error, isInternalRequest);
 }
 
 void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
-    context().dispatchWillSendRequest(documentLoader(), identifier, request, redirectResponse, initiatorInfo);
+    context().dispatchWillSendRequest(identifier, request, redirectResponse, initiatorInfo);
 }
 
 void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response)
 {
-    MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
-
     // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
     // We check the URL not to load the resources which are forbidden by the page CSP. This behavior is not specified in the CSP specification yet.
     if (response.wasFetchedViaServiceWorker()) {
@@ -1406,26 +1348,26 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
         if (!canRequest(resource->type(), resource->resourceRequest(), originalURL, resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
             resource->loader()->cancel();
             bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
-            context().dispatchDidFail(documentLoader(), resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.string(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
+            context().dispatchDidFail(resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.string(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
             return;
         }
     }
-    context().dispatchDidReceiveResponse(documentLoader(), resource->identifier(), response, resource->loader());
+    context().dispatchDidReceiveResponse(resource->identifier(), response, resource->loader());
 }
 
 void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength)
 {
-    context().dispatchDidReceiveData(documentLoader(), resource->identifier(), data, dataLength, encodedDataLength);
+    context().dispatchDidReceiveData(resource->identifier(), data, dataLength, encodedDataLength);
 }
 
 void ResourceFetcher::didDownloadData(const Resource* resource, int dataLength, int encodedDataLength)
 {
-    context().dispatchDidDownloadData(documentLoader(), resource->identifier(), dataLength, encodedDataLength);
+    context().dispatchDidDownloadData(resource->identifier(), dataLength, encodedDataLength);
 }
 
 void ResourceFetcher::acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
-    context().dispatchDidReceiveData(documentLoader(), identifier, data, dataLength, encodedDataLength);
+    context().dispatchDidReceiveData(identifier, data, dataLength, encodedDataLength);
 }
 
 void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)

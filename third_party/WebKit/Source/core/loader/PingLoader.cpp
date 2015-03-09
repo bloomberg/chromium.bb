@@ -68,7 +68,7 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
     ResourceRequest request(url);
     request.setRequestContext(blink::WebURLRequest::RequestContextPing);
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
-    frame->document()->fetcher()->context().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
     frame->document()->fetcher()->context().setFirstPartyForCookies(request);
 
     FetchInitiatorInfo initiatorInfo;
@@ -85,7 +85,7 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
     request.setHTTPContentType("text/ping");
     request.setHTTPBody(FormData::create("PING"));
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
-    frame->document()->fetcher()->context().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
     frame->document()->fetcher()->context().setFirstPartyForCookies(request);
 
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
@@ -113,7 +113,7 @@ void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, P
     request.setHTTPMethod("POST");
     request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
     request.setHTTPBody(report);
-    frame->document()->fetcher()->context().addAdditionalRequestHeaders(frame->document(), request, FetchSubresource);
+    frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
     frame->document()->fetcher()->context().setFirstPartyForCookies(request);
 
     FetchInitiatorInfo initiatorInfo;

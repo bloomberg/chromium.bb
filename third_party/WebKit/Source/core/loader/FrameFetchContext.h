@@ -62,25 +62,26 @@ public:
     DocumentLoader* documentLoader() const override { return m_documentLoader; }
     void clearDocumentLoader() { m_documentLoader = nullptr; }
 
-    virtual void reportLocalLoadFailed(const KURL&) override;
-    virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType) override;
-    virtual void setFirstPartyForCookies(ResourceRequest&) override;
-    virtual CachePolicy cachePolicy(Document*) const override;
-    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
-    virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
-    virtual void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) override;
-    virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0) override;
-    virtual void dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength) override;
-    virtual void dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength)  override;
-    virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier, double finishTime, int64_t encodedDataLength) override;
-    virtual void dispatchDidFail(DocumentLoader*, unsigned long identifier, const ResourceError&, bool isInternalRequest) override;
-    virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, int dataLength) override;
+    void reportLocalLoadFailed(const KURL&) override;
+    void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType) override;
+    void setFirstPartyForCookies(ResourceRequest&) override;
+    CachePolicy cachePolicy() const override;
+    ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const;
+    void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
+    void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
+    void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) override;
+    void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0) override;
+    void dispatchDidReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength) override;
+    void dispatchDidDownloadData(unsigned long identifier, int dataLength, int encodedDataLength)  override;
+    void dispatchDidFinishLoading(unsigned long identifier, double finishTime, int64_t encodedDataLength) override;
+    void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest) override;
+    void sendRemainingDelegateMessages(unsigned long identifier, const ResourceResponse&, int dataLength) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit FrameFetchContext(DocumentLoader*);
-    inline DocumentLoader* ensureLoader(DocumentLoader*);
+    inline DocumentLoader* ensureLoaderForNotifications();
 
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
     // currently leak because LayoutStyle and its data are not on the heap.

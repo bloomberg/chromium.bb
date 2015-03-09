@@ -197,7 +197,6 @@ private:
     RevalidationPolicy determineRevalidationPolicy(Resource::Type, const FetchRequest&, Resource* existingResource) const;
 
     void determineRequestContext(ResourceRequest&, Resource::Type);
-    ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
     void upgradeInsecureRequest(FetchRequest&);
     void addClientHintsIfNeccessary(FetchRequest&);

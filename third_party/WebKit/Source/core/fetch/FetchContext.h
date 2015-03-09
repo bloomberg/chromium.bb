@@ -69,19 +69,20 @@ public:
     virtual DocumentLoader* documentLoader() const { return nullptr; }
 
     virtual void reportLocalLoadFailed(const KURL&);
-    virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType);
+    virtual void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
     virtual void setFirstPartyForCookies(ResourceRequest&);
-    virtual CachePolicy cachePolicy(Document*) const;
+    virtual CachePolicy cachePolicy() const;
+    virtual ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const;
 
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
-    virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());
+    virtual void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());
     virtual void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&);
-    virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0);
-    virtual void dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
-    virtual void dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength);
-    virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier, double finishTime, int64_t encodedDataLength);
-    virtual void dispatchDidFail(DocumentLoader*, unsigned long identifier, const ResourceError&, bool isInternalRequest);
-    virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, int dataLength);
+    virtual void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0);
+    virtual void dispatchDidReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
+    virtual void dispatchDidDownloadData(unsigned long identifier, int dataLength, int encodedDataLength);
+    virtual void dispatchDidFinishLoading(unsigned long identifier, double finishTime, int64_t encodedDataLength);
+    virtual void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest);
+    virtual void sendRemainingDelegateMessages(unsigned long identifier, const ResourceResponse&, int dataLength);
 };
 
 }

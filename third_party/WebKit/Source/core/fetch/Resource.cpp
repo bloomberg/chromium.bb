@@ -25,7 +25,6 @@
 #include "core/fetch/Resource.h"
 
 #include "core/FetchInitiatorTypeNames.h"
-#include "core/fetch/AcceptClientHints.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/MemoryCache.h"
@@ -35,7 +34,6 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/LinkLoader.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
@@ -429,15 +427,6 @@ void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<Web
     String encoding = response.textEncodingName();
     if (!encoding.isNull())
         setEncoding(encoding);
-
-    if (m_loader) {
-        ResourceFetcher* fetcher = ResourceFetcher::toResourceFetcher(m_loader->host());
-        if (fetcher && fetcher->frame()) {
-            LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), fetcher->frame()->document());
-            if (type() == Resource::MainResource)
-                handleAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), fetcher->frame());
-        }
-    }
 
     if (!m_resourceToRevalidate)
         return;
