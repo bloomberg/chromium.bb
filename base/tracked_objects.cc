@@ -227,10 +227,6 @@ int Births::birth_count() const { return birth_count_; }
 
 void Births::RecordBirth() { ++birth_count_; }
 
-void Births::ForgetBirth() { --birth_count_; }
-
-void Births::Clear() { birth_count_ = 0; }
-
 //------------------------------------------------------------------------------
 // ThreadData maintains the central data for all births and deaths on a single
 // thread.
@@ -652,26 +648,6 @@ void ThreadData::SnapshotMaps(BirthMap* birth_map,
   for (ParentChildSet::iterator it = parent_child_set_.begin();
        it != parent_child_set_.end(); ++it)
     parent_child_set->insert(*it);
-}
-
-// static
-void ThreadData::ResetAllThreadData() {
-  ThreadData* my_list = first();
-
-  for (ThreadData* thread_data = my_list;
-       thread_data;
-       thread_data = thread_data->next())
-    thread_data->Reset();
-}
-
-void ThreadData::Reset() {
-  base::AutoLock lock(map_lock_);
-  for (DeathMap::iterator it = death_map_.begin();
-       it != death_map_.end(); ++it)
-    it->second.Clear();
-  for (BirthMap::iterator it = birth_map_.begin();
-       it != birth_map_.end(); ++it)
-    it->second->Clear();
 }
 
 static void OptionallyInitializeAlternateTimer() {

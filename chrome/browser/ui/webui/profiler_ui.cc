@@ -121,7 +121,6 @@ class ProfilerMessageHandler : public WebUIMessageHandler {
 
   // Messages.
   void OnGetData(const base::ListValue* list);
-  void OnResetData(const base::ListValue* list);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfilerMessageHandler);
@@ -132,18 +131,11 @@ void ProfilerMessageHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback("getData",
       base::Bind(&ProfilerMessageHandler::OnGetData, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("resetData",
-      base::Bind(&ProfilerMessageHandler::OnResetData,
-                 base::Unretained(this)));
 }
 
 void ProfilerMessageHandler::OnGetData(const base::ListValue* list) {
   ProfilerUI* profiler_ui = static_cast<ProfilerUI*>(web_ui()->GetController());
   profiler_ui->GetData();
-}
-
-void ProfilerMessageHandler::OnResetData(const base::ListValue* list) {
-  tracked_objects::ThreadData::ResetAllThreadData();
 }
 
 }  // namespace

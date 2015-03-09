@@ -240,13 +240,6 @@ class BASE_EXPORT Births: public BirthOnThread {
   // When we have a birth we update the count for this birthplace.
   void RecordBirth();
 
-  // When a birthplace is changed (updated), we need to decrement the counter
-  // for the old instance.
-  void ForgetBirth();
-
-  // Hack to quickly reset all counts to zero.
-  void Clear();
-
  private:
   // The number of births on this thread for our location_.
   int birth_count_;
@@ -422,12 +415,6 @@ class BASE_EXPORT ThreadData {
 
   const std::string& thread_name() const { return thread_name_; }
 
-  // Hack: asynchronously clear all birth counts and death tallies data values
-  // in all ThreadData instances.  The numerical (zeroing) part is done without
-  // use of a locks or atomics exchanges, and may (for int64 values) produce
-  // bogus counts VERY rarely.
-  static void ResetAllThreadData();
-
   // Initializes all statics if needed (this initialization call should be made
   // while we are single threaded). Returns false if unable to initialize.
   static bool Initialize();
@@ -544,9 +531,6 @@ class BASE_EXPORT ThreadData {
   void SnapshotMaps(BirthMap* birth_map,
                     DeathMap* death_map,
                     ParentChildSet* parent_child_set);
-
-  // Using our lock to protect the iteration, Clear all birth and death data.
-  void Reset();
 
   // This method is called by the TLS system when a thread terminates.
   // The argument may be NULL if this thread has never tracked a birth or death.
