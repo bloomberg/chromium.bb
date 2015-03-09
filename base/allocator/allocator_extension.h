@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_ALLOCATOR_EXTENSION_H
-#define BASE_ALLOCATOR_ALLOCATOR_EXTENSION_H
+#ifndef BASE_ALLOCATOR_ALLOCATOR_EXTENSION_H_
+#define BASE_ALLOCATOR_ALLOCATOR_EXTENSION_H_
 
 #include <stddef.h> // for size_t
 
@@ -56,4 +56,4 @@ BASE_EXPORT void SetReleaseFreeMemoryFunction(
 }  // namespace allocator
 }  // namespace base
 
-#endif
+#endif  // BASE_ALLOCATOR_ALLOCATOR_EXTENSION_H_

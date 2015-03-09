@@ -38,4 +38,4 @@ class BASE_EXPORT MessagePumpDefault : public MessagePump {
 
 }  // namespace base
 
-#endif  // BASE__MESSAGE_LOOPMESSAGE_PUMP_DEFAULT_H_
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_DEFAULT_H_

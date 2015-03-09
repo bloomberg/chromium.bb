@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_BUILD_TIME_
-#define BASE_BUILD_TIME_
+#ifndef BASE_BUILD_TIME_H_
+#define BASE_BUILD_TIME_H_
 
 #include "base/base_export.h"
 #include "base/time/time.h"
@@ -25,4 +25,4 @@ Time BASE_EXPORT GetBuildTime();
 
 }  // namespace base
 
-#endif  // BASE_BUILD_TIME_
+#endif  // BASE_BUILD_TIME_H_

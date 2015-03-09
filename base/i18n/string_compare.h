@@ -25,4 +25,4 @@ BASE_I18N_EXPORT UCollationResult CompareString16WithCollator(
 }  // namespace i18n
 }  // namespace base
 
-#endif  // BASE_I18N_STRING_COMPARATOR_H_
+#endif  // BASE_I18N_STRING_COMPARE_H_

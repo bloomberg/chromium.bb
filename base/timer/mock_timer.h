@@ -38,4 +38,4 @@ class BASE_EXPORT MockTimer : public Timer {
 
 }  // namespace base
 
-#endif  // !BASE_TIMER_MOCK_TIMER_H_
+#endif  // BASE_TIMER_MOCK_TIMER_H_

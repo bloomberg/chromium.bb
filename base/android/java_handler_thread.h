@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_THREADING_JAVA_THREAD_H_
-#define BASE_THREADING_JAVA_THREAD_H_
+#ifndef BASE_ANDROID_JAVA_HANDLER_THREAD_H_
+#define BASE_ANDROID_JAVA_HANDLER_THREAD_H_
 
 #include <jni.h>
 
@@ -46,4 +46,4 @@ class BASE_EXPORT JavaHandlerThread {
 }  // namespace android
 }  // namespace base
 
-#endif  // BASE_THREADING_JAVA_THREAD_H_
+#endif  // BASE_ANDROID_JAVA_HANDLER_THREAD_H_

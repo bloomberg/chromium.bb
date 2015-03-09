@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CLOCK_H_
-#define BASE_CLOCK_H_
+#ifndef BASE_TIME_CLOCK_H_
+#define BASE_TIME_CLOCK_H_
 
 #include "base/base_export.h"
 #include "base/time/time.h"
@@ -37,4 +37,4 @@ class BASE_EXPORT Clock {
 
 }  // namespace base
 
-#endif  // BASE_CLOCK_H_
+#endif  // BASE_TIME_CLOCK_H_

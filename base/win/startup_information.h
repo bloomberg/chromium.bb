@@ -45,5 +45,4 @@ class BASE_EXPORT StartupInformation {
 }  // namespace win
 }  // namespace base
 
-#endif  // BASE_WIN_SCOPED_STARTUP_INFO_EX_H_
-
+#endif  // BASE_WIN_STARTUP_INFORMATION_H__

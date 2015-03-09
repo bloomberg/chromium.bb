@@ -18,4 +18,4 @@ BASE_I18N_EXPORT std::string CountryCodeForCurrentTimezone();
 
 }  // namespace base
 
-#endif  // BASE_TIME_TIMEZONE_H_
+#endif  // BASE_I18N_TIMEZONE_H_
