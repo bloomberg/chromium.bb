@@ -117,8 +117,12 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
                 break;
         }
 
-        return mContentsClient.onConsoleMessage(
+        boolean result = mContentsClient.onConsoleMessage(
                 new ConsoleMessage(message, sourceId, lineNumber, messageLevel));
+        if (result && message != null && message.startsWith("[blocked]")) {
+            Log.e(TAG, "Blocked URL: " + message);
+        }
+        return result;
     }
 
     @Override

@@ -385,10 +385,6 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
             if (mWebChromeClient != null) {
                 if (TRACE) Log.d(TAG, "onConsoleMessage: " + consoleMessage.message());
                 result = mWebChromeClient.onConsoleMessage(consoleMessage);
-                String message = consoleMessage.message();
-                if (result && message != null && message.startsWith("[blocked]")) {
-                    Log.e(TAG, "Blocked URL: " + message);
-                }
             } else {
                 result = false;
             }
