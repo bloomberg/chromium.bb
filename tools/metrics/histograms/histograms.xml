@@ -3611,7 +3611,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.TimeLoadDBQueueWait" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>erikchen@chromium.org</owner>
   <summary>
     This histogram records the wall-clock delay between the Load task being
     posted to the DB-thread and its execution.
