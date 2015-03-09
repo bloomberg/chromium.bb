@@ -93,7 +93,7 @@ FcBlanksIsMember (FcBlanks *b, FcChar32 ucs4)
 	middle = (lower + higher) / 2;
 	if (b->blanks[middle] == ucs4)
 	    return FcTrue;
-	if (lower == higher)
+	if (lower >= higher)
 	    break;
 	if (b->blanks[middle] < ucs4)
 	    lower = middle + 1;
