@@ -104,7 +104,7 @@ SignedInDevicesManager::SignedInDevicesManager()
 SignedInDevicesManager::SignedInDevicesManager(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)),
       extension_registry_observer_(this) {
-  extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
+  EventRouter* router = EventRouter::Get(profile_);
   if (router) {
     router->RegisterObserver(
         this, api::signed_in_devices::OnDeviceInfoChange::kEventName);
@@ -115,7 +115,13 @@ SignedInDevicesManager::SignedInDevicesManager(content::BrowserContext* context)
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
-SignedInDevicesManager::~SignedInDevicesManager() {}
+SignedInDevicesManager::~SignedInDevicesManager() {
+  if (profile_) {
+    EventRouter* router = EventRouter::Get(profile_);
+    if (router)
+      router->UnregisterObserver(this);
+  }
+}
 
 void SignedInDevicesManager::OnListenerAdded(
     const EventListenerInfo& details) {
