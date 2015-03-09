@@ -26,30 +26,32 @@
  */
 
 #include "config.h"
-
-#include "core/layout/LayoutTextTrackContainerElement.h"
+#include "core/layout/LayoutTextTrackContainer.h"
 
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
-#include "core/layout/LayoutView.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/html/track/TextTrackContainer.h"
 
 namespace blink {
 
-LayoutTextTrackContainerElement::LayoutTextTrackContainerElement(Element* element)
+LayoutTextTrackContainer::LayoutTextTrackContainer(Element* element)
     : LayoutBlockFlow(element)
 {
 }
 
-void LayoutTextTrackContainerElement::layout()
+void LayoutTextTrackContainer::layout()
 {
     LayoutBlockFlow::layout();
     if (style()->display() == NONE)
         return;
 
-    ASSERT(mediaControlElementType(node()) == MediaTextTrackDisplayContainer);
-
     DeprecatedScheduleStyleRecalcDuringLayout marker(node()->document().lifecycle());
 
-    static_cast<MediaControlTextTrackContainerElement*>(node())->updateSizes();
+    TextTrackContainer* textTrackContainer = toTextTrackContainer(node());
+    ASSERT(textTrackContainer);
+    // Overlay enclosure -> Media controls -> Media element
+    LayoutObject* mediaElementLayoutObject = parent()->parent()->parent();
+    textTrackContainer->updateSizes(mediaElementLayoutObject);
 }
 
 } // namespace blink

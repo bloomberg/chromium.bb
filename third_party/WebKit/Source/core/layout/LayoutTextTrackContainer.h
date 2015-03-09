@@ -25,25 +25,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutTextTrackContainerElement_h
-#define LayoutTextTrackContainerElement_h
+#ifndef LayoutTextTrackContainer_h
+#define LayoutTextTrackContainer_h
 
-#include "core/html/shadow/MediaControlElements.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutFlexibleBox.h"
 
 namespace blink {
 
-class LayoutTextTrackContainerElement final : public LayoutBlockFlow {
+class Element;
+
+class LayoutTextTrackContainer final : public LayoutBlockFlow {
 public:
-    LayoutTextTrackContainerElement(Element*);
+    LayoutTextTrackContainer(Element*);
 
 private:
     virtual void layout() override;
 };
 
-
 } // namespace blink
 
-#endif // LayoutTextTrackContainerElement_h
-
+#endif // LayoutTextTrackContainer_h

@@ -33,6 +33,7 @@
 namespace blink {
 
 class Event;
+class TextTrackContainer;
 
 class MediaControls final : public HTMLDivElement {
 public:
@@ -67,7 +68,7 @@ public:
     void refreshCastButtonVisibility();
     void showOverlayCastButton();
 
-    void updateTextTrackDisplay();
+    TextTrackContainer* textTrackContainer();
 
     void mediaElementFocused();
 
@@ -100,8 +101,6 @@ private:
     // element in the page, it will be hidden.
     void tryShowOverlayCastButton();
 
-    void createTextTrackDisplay();
-
     // Node
     virtual bool isMediaControls() const override { return true; }
     virtual bool willRespondToMouseMoveEvents() override { return true; }
@@ -114,7 +113,7 @@ private:
     RawPtrWillBeMember<MediaControlPanelElement> m_panel;
 
     // Container for the text track cues.
-    RawPtrWillBeMember<MediaControlTextTrackContainerElement> m_textDisplayContainer;
+    RawPtrWillBeMember<TextTrackContainer> m_textTrackContainer;
 
     // Media control elements.
     RawPtrWillBeMember<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;

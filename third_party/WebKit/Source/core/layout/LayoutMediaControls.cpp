@@ -401,7 +401,6 @@ bool LayoutMediaControls::paintMediaControlsPart(MediaControlElementType part, L
     case MediaTimeRemainingDisplay:
     case MediaControlsPanel:
     case MediaHideClosedCaptionsButton:
-    case MediaTextTrackDisplayContainer:
     case MediaFullScreenVolumeSlider:
     case MediaFullScreenVolumeSliderThumb:
         ASSERT_NOT_REACHED();

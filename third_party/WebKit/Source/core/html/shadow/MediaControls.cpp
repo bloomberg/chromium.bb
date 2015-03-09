@@ -33,6 +33,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaController.h"
+#include "core/html/track/TextTrackContainer.h"
 #include "core/layout/LayoutTheme.h"
 
 namespace blink {
@@ -50,7 +51,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     : HTMLDivElement(mediaElement.document())
     , m_mediaElement(&mediaElement)
     , m_panel(nullptr)
-    , m_textDisplayContainer(nullptr)
+    , m_textTrackContainer(nullptr)
     , m_overlayPlayButton(nullptr)
     , m_overlayEnclosure(nullptr)
     , m_playButton(nullptr)
@@ -83,7 +84,7 @@ PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& me
 //
 // MediaControls                                       (-webkit-media-controls)
 // +-MediaControlOverlayEnclosureElement               (-webkit-media-controls-overlay-enclosure)
-// | +-MediaControlTextTrackContainerElement           (-webkit-media-text-track-container)
+// | +-TextTrackContainer                              (-webkit-media-text-track-container)
 // | | {when text tracks are enabled}
 // | +-MediaControlOverlayPlayButtonElement            (-webkit-media-controls-overlay-play-button)
 // | | {if mediaControlsOverlayPlayButtonEnabled}
@@ -101,8 +102,8 @@ PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& me
 //     \-MediaControlFullscreenButtonElement           (-webkit-media-controls-fullscreen-button)
 //
 // Most of the structure is built by MediaControls::initializeControls() - the
-// exception being MediaControlTextTrackContainerElement which is added
-// on-demand by MediaControls::createTextTrackDisplay().
+// exception being TextTrackContainer which is added on-demand by
+// MediaControls::textTrackContainer().
 void MediaControls::initializeControls()
 {
     RefPtrWillBeRawPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
@@ -516,31 +517,23 @@ bool MediaControls::containsRelatedTarget(Event* event)
     return contains(relatedTarget->toNode());
 }
 
-void MediaControls::createTextTrackDisplay()
+TextTrackContainer* MediaControls::textTrackContainer()
 {
-    if (m_textDisplayContainer)
-        return;
+    if (!m_textTrackContainer) {
+        RefPtrWillBeRawPtr<TextTrackContainer> textTrackContainer = TextTrackContainer::create(mediaElement().document());
+        m_textTrackContainer = textTrackContainer.get();
 
-    RefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(*this);
-    m_textDisplayContainer = textDisplayContainer.get();
-
-    // Insert it before (behind) all other control elements.
-    m_overlayEnclosure->insertBefore(textDisplayContainer.release(), m_overlayEnclosure->firstChild());
-}
-
-void MediaControls::updateTextTrackDisplay()
-{
-    if (!m_textDisplayContainer)
-        createTextTrackDisplay();
-
-    m_textDisplayContainer->updateDisplay();
+        // Insert it before (behind) all other control elements.
+        m_overlayEnclosure->insertBefore(textTrackContainer.release(), m_overlayEnclosure->firstChild());
+    }
+    return m_textTrackContainer.get();
 }
 
 DEFINE_TRACE(MediaControls)
 {
     visitor->trace(m_mediaElement);
     visitor->trace(m_panel);
-    visitor->trace(m_textDisplayContainer);
+    visitor->trace(m_textTrackContainer);
     visitor->trace(m_overlayPlayButton);
     visitor->trace(m_overlayEnclosure);
     visitor->trace(m_playButton);

@@ -58,7 +58,6 @@ enum MediaControlElementType {
     MediaVolumeSliderThumb,
     MediaFullScreenVolumeSlider,
     MediaFullScreenVolumeSliderThumb,
-    MediaTextTrackDisplayContainer,
     MediaExitFullscreenButton,
     MediaOverlayPlayButton,
     MediaCastOffButton,

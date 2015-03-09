@@ -258,6 +258,7 @@ public:
 
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
+    virtual bool isTextTrackContainer() const { return false; }
     virtual bool isVTTElement() const { return false; }
     virtual bool isAttributeNode() const { return false; }
     virtual bool isCharacterDataNode() const { return false; }

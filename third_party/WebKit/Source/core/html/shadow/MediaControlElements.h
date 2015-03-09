@@ -236,25 +236,6 @@ private:
     explicit MediaControlCurrentTimeDisplayElement(MediaControls&);
 };
 
-// ----------------------------
-
-class MediaControlTextTrackContainerElement final : public MediaControlDivElement {
-public:
-    static PassRefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> create(MediaControls&);
-
-    void updateDisplay();
-    void updateSizes();
-
-private:
-    explicit MediaControlTextTrackContainerElement(MediaControls&);
-
-    virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
-
-    IntRect m_videoDisplaySize;
-    float m_fontSize;
-};
-
-
 } // namespace blink
 
 #endif // MediaControlElements_h

@@ -58,6 +58,7 @@ class MediaController;
 class MediaControls;
 class MediaError;
 class HTMLMediaSource;
+class TextTrackContainer;
 class TextTrackList;
 class TimeRanges;
 class URLRegistry;
@@ -413,6 +414,8 @@ private:
 
     void ensureMediaControls();
     void configureMediaControls();
+
+    TextTrackContainer& ensureTextTrackContainer();
 
     virtual void* preDispatchEventHandler(Event*) override final;
 

@@ -55,6 +55,7 @@
 #include "core/html/track/AutomaticTrackSelection.h"
 #include "core/html/track/CueTimeline.h"
 #include "core/html/track/InbandTextTrack.h"
+#include "core/html/track/TextTrackContainer.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/html/track/VideoTrack.h"
 #include "core/html/track/VideoTrackList.h"
@@ -3183,12 +3184,17 @@ bool HTMLMediaElement::closedCaptionsVisible() const
     return m_closedCaptionsVisible;
 }
 
+TextTrackContainer& HTMLMediaElement::ensureTextTrackContainer()
+{
+    ensureMediaControls();
+    return *mediaControls()->textTrackContainer();
+}
+
 void HTMLMediaElement::updateTextTrackDisplay()
 {
     WTF_LOG(Media, "HTMLMediaElement::updateTextTrackDisplay(%p)", this);
 
-    ensureMediaControls();
-    mediaControls()->updateTextTrackDisplay();
+    ensureTextTrackContainer().updateDisplay(*this);
 }
 
 void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
