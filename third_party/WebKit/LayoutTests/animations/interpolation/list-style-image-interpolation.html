@@ -17,9 +17,24 @@
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
-// None to image
-var from = 'none';
+// Constant image
+var from = 'url(../resources/stripes-20.png)';
 var to = 'url(../resources/stripes-20.png)';
+assertInterpolation({
+  property: 'list-style-image',
+  from: from,
+  to: to
+}, [
+  {at: -0.3, is: from},
+  {at: 0, is: from},
+  {at: 0.3, is: '-webkit-cross-fade(url(../resources/stripes-20.png), url(../resources/stripes-20.png), 0.3)'},
+  {at: 0.6, is: '-webkit-cross-fade(url(../resources/stripes-20.png), url(../resources/stripes-20.png), 0.6)'},
+  {at: 1, is: to},
+  {at: 1.5, is: to},
+]);
+
+// None to image
+from = 'none';
 assertInterpolation({
   property: 'list-style-image',
   from: from,

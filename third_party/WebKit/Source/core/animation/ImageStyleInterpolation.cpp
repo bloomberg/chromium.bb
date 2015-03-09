@@ -12,7 +12,7 @@ namespace blink {
 
 bool ImageStyleInterpolation::canCreateFrom(const CSSValue& value)
 {
-    return value.isImageValue();
+    return value.isImageValue() || value.isGradientValue();
 }
 
 void ImageStyleInterpolation::apply(StyleResolverState& state) const

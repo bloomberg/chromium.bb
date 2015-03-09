@@ -273,11 +273,13 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyBorderImageSource:
     case CSSPropertyListStyleImage:
     case CSSPropertyWebkitMaskBoxImageSource:
+        if (fromCSSValue == toCSSValue)
+            return ConstantStyleInterpolation::create(fromCSSValue, property);
+
         if (ImageStyleInterpolation::canCreateFrom(*fromCSSValue) && ImageStyleInterpolation::canCreateFrom(*toCSSValue))
             return ImageStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
 
-        // FIXME: Handle gradients.
-        fallBackToLegacy = true;
+        forceDefaultInterpolation = true;
         break;
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
