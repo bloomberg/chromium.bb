@@ -2968,7 +2968,9 @@ size_t SpdyFramer::GetNumberRequiredContinuationFrames(size_t size) {
   DCHECK_GT(protocol_version(), SPDY3);
   DCHECK_GT(size, kMaxControlFrameSize);
   size_t overflow = size - kMaxControlFrameSize;
-  return overflow / (kMaxControlFrameSize - GetContinuationMinimumSize()) + 1;
+  size_t payload_size = kMaxControlFrameSize - GetContinuationMinimumSize();
+  // This is ceiling(overflow/payload_size) using integer arithmetics.
+  return (overflow - 1) / payload_size + 1;
 }
 
 void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
