@@ -26,6 +26,8 @@ public:
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
+    const TransformationMatrix& transform() const { return m_transform; }
+
 private:
     const TransformationMatrix m_transform;
     FloatPoint3D m_transformOrigin;
