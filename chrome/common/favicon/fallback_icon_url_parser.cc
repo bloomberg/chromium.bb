@@ -7,8 +7,25 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "third_party/skia/include/utils/SkParse.h"
 #include "ui/gfx/favicon_size.h"
+
+namespace {
+
+// Returns whether |color_str| is a valid CSS color in hex format if we prepend
+// '#', i.e., whether |color_str| matches /^[0-9A-Fa-f]{3,4,6,8}$/.
+bool IsHexColorString(const std::string& color_str) {
+  size_t len = color_str.length();
+  if (len != 3 && len != 4 && len != 6 && len != 8)
+    return false;
+  for (auto ch : color_str)
+    if (!IsHexDigit(ch))
+      return false;
+  return true;
+}
+
+}  // namespace
 
 namespace chrome {
 
@@ -76,9 +93,23 @@ bool ParsedFallbackIconPath::ParseSpecs(
 // static
 bool ParsedFallbackIconPath::ParseColor(const std::string& color_str,
                                         SkColor* color) {
-  const char* end = SkParse::FindColor(color_str.c_str(), color);
-  // Return true if FindColor() succeeds and |color_str| is entirely consumed.
-  return end && !*end;
+  // Exclude empty case. Also disallow '#' prefix since '#' is used to specify
+  // ref fragment in an URL, and so we want to avoid using it.
+  if (color_str.empty() || color_str[0] == '#')
+    return false;
+  // Force alpha = 0xFF since SkParse::FindColor() preserves unspecified alpha.
+  SkColor temp_color = SK_ColorWHITE;
+  // Prepend '#' if color hex string is given. This is unambiguous because no
+  // named color consists of leters 'a' to 'f' only.
+  const char* end = IsHexColorString(color_str) ?
+      SkParse::FindColor(("#" + color_str).c_str(), &temp_color) :
+      SkParse::FindColor(color_str.c_str(), &temp_color);
+  // Successful if FindColor() succeeds and |color_str| is completely consumed.
+  if (end && !*end) {
+    *color = temp_color;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace chrome
