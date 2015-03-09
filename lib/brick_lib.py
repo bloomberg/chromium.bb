@@ -228,6 +228,15 @@ class Brick(object):
     """Returns the project's source directory."""
     return os.path.join(self.brick_dir, 'src')
 
+  def FriendlyName(self):
+    """Return the friendly name for this brick.
+
+    This name is used as the board name for legacy commands (--board).
+    """
+    if self.legacy:
+      raise BrickFeatureNotSupported()
+    return self.brick_locator[len(_WORKSPACE_PREFIX):].replace('/', '.')
+
   def BrickStack(self):
     """Returns the brick stack for this brick.
 

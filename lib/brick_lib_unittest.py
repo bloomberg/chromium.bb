@@ -221,6 +221,16 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
     brick_lib.Brick(os.path.join(self.tempdir, 'foobar'))
     brick_lib.Brick(os.path.join(self.tempdir, 'bricks', 'some', 'path'))
 
+  def testFriendlyName(self):
+    """Tests that the friendly name generation works."""
+    self.SetupFakeWorkspace()
+    first = brick_lib.Brick('//foo/bar/test', initial_config={'name': 'test'})
+    self.assertEqual('foo.bar.test', first.FriendlyName())
+
+    second = brick_lib.Brick(os.path.join(self.tempdir, 'test', 'foo'),
+                             initial_config={'name': 'foo'})
+    self.assertEqual('test.foo', second.FriendlyName())
+
   def testPathToLocator(self):
     """Tests the path to locator conversion."""
     self.SetupFakeWorkspace()
