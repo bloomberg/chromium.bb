@@ -957,6 +957,8 @@ def _SetupConnections(options, build_config):
   # See crbug.com/406940
   waterfall = os.environ.get('BUILDBOT_MASTERNAME', '')
   if not waterfall in constants.CIDB_KNOWN_WATERFALLS:
+    graphite.StatsFactory.SetupMock()
+    graphite.ESMetadataFactory.SetupReadOnly()
     cidb.CIDBConnectionFactory.SetupNoCidb()
     return
 
