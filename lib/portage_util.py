@@ -665,6 +665,17 @@ class EBuild(object):
                          'it returned no valid version for "%s"' %
                          (self.pkgname, ' '.join(srcdirs)))
 
+    # Sanity check: disallow versions that will be larger than the 9999 ebuild
+    # used by cros-workon.
+    main_pv = output.split('.', 1)[0]
+    try:
+      main_pv = int(main_pv)
+    except ValueError:
+      raise ValueError('PV returned is invalid: %s' % output)
+    if main_pv >= int(WORKON_EBUILD_VERSION):
+      raise ValueError('cros-workon packages must have a PV < %s; not %s'
+                       % (WORKON_EBUILD_VERSION, output))
+
     return output
 
   @staticmethod

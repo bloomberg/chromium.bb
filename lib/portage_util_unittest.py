@@ -288,8 +288,12 @@ class StubEBuild(portage_util.EBuild):
       return 'you_lose'
 
 
-class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
-  """Tests for EBuildRevWorkon."""
+class EBuildRevWorkonMoxTest(cros_test_lib.MoxTempDirTestCase):
+  """Tests for EBuildRevWorkon.
+
+  Note: This test set is deprecated due to mox usage.  Add new tests to
+  EBuildRevWorkonTest instead.
+  """
   # Lines that we will feed as fake ebuild contents to
   # EBuild.MarAsStable().  This is the minimum content needed
   # to test the various branches in the function's main processing
@@ -470,6 +474,72 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     # A real change.
     osutils.WriteFile(os.path.join(self.tempdir, 'LICENSE'), 'hi')
     self.assertTrue(portage_util.EBuild.GitRepoHasChanges(self.tempdir))
+
+
+class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for EBuildRevWorkon."""
+
+  def setUp(self):
+    self.overlay = '/sources/overlay'
+    package_name = os.path.join(self.overlay,
+                                'category/test_package/test_package-0.0.1')
+    ebuild_path = package_name + '-r1.ebuild'
+    self.m_ebuild = StubEBuild(ebuild_path)
+    self.revved_ebuild_path = package_name + '-r2.ebuild'
+
+  def testNoVersionScript(self):
+    """Verify default behavior with no chromeos-version.sh script."""
+    self.assertEqual('1234', self.m_ebuild.GetVersion(None, None, '1234'))
+
+  def testValidVersionScript(self):
+    """Verify normal behavior with a chromeos-version.sh script."""
+    exists = self.PatchObject(os.path, 'exists', return_value=True)
+    self.PatchObject(portage_util.EBuild, 'GetSourcePath',
+                     return_value=(None, []))
+    self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='1122')
+    self.assertEqual('1122', self.m_ebuild.GetVersion(None, None, '1234'))
+    # Sanity check.
+    self.assertEqual(exists.call_count, 1)
+
+  def testVersionScriptNoOutput(self):
+    """Reject scripts that output nothing."""
+    exists = self.PatchObject(os.path, 'exists', return_value=True)
+    self.PatchObject(portage_util.EBuild, 'GetSourcePath',
+                     return_value=(None, []))
+    run = self.PatchObject(portage_util.EBuild, '_RunCommand')
+
+    # Reject no output.
+    run.return_value = ''
+    self.assertRaises(SystemExit, self.m_ebuild.GetVersion, None, None, '1234')
+    # Sanity check.
+    self.assertEqual(exists.call_count, 1)
+    exists.reset_mock()
+
+    # Reject simple output.
+    run.return_value = '\n'
+    self.assertRaises(SystemExit, self.m_ebuild.GetVersion, None, None, '1234')
+    # Sanity check.
+    self.assertEqual(exists.call_count, 1)
+
+  def testVersionScriptTooHighVersion(self):
+    """Reject scripts that output high version numbers."""
+    exists = self.PatchObject(os.path, 'exists', return_value=True)
+    self.PatchObject(portage_util.EBuild, 'GetSourcePath',
+                     return_value=(None, []))
+    self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='999999')
+    self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
+    # Sanity check.
+    self.assertEqual(exists.call_count, 1)
+
+  def testVersionScriptInvalidVersion(self):
+    """Reject scripts that output bad version numbers."""
+    exists = self.PatchObject(os.path, 'exists', return_value=True)
+    self.PatchObject(portage_util.EBuild, 'GetSourcePath',
+                     return_value=(None, []))
+    self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='abcd')
+    self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
+    # Sanity check.
+    self.assertEqual(exists.call_count, 1)
 
 
 class ListOverlaysTest(cros_test_lib.MockTempDirTestCase):
