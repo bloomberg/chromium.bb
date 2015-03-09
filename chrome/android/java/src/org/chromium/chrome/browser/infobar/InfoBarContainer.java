@@ -41,7 +41,7 @@ public class InfoBarContainer extends SwipableOverlayView {
     private static final int TAB_STRIP_AND_TOOLBAR_HEIGHT_TABLET_DP = 96;
 
     /** WHether or not the InfoBarContainer is allowed to hide when the user scrolls. */
-    private static boolean sIsAllowedToAutoHide;
+    private static boolean sIsAllowedToAutoHide = true;
 
     /**
      * A listener for the InfoBar animation.
