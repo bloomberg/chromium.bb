@@ -876,7 +876,8 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
     }
 
     /**
-     * Callback for {@link com.google.android.apps.chrome.ChromeAnimation.Animatable}
+     * Callback for
+     * {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable}
      *
      * @param prop The property to set
      * @param val The value to set it to

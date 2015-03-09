@@ -73,4 +73,71 @@ public class MathUtils {
         int mod = a % b;
         return mod >= 0 ? mod : mod + b;
     }
+
+    /**
+     * Moves {@code value} forward to {@code target} based on {@code speed}.
+     * @param value  The current value.
+     * @param target The target value.
+     * @param speed  How far to move {@code value} to {@code target}.  0 doesn't move it at all.  1
+     *               moves it to {@code target}.
+     * @return       The new interpolated value.
+     */
+    public static float interpolate(float value, float target, float speed) {
+        return (value + (target - value) * speed);
+    }
+
+    /**
+     * Smooth a value between 0 and 1.
+     * @param t The value to smooth.
+     * @return  The smoothed value between 0 and 1.
+     */
+    public static float smoothstep(float t) {
+        return t * t * (3.0f - 2.0f * t);
+    }
+
+    /**
+     * Scales the provided dimension such that it is just large enough to fit
+     * the target width and height.
+     *
+     * @param dimensions The dimensions to scale
+     * @param targetWidth The target width
+     * @param targetHeight The target height
+     * @return The scale factor applied to dimensions
+     */
+    public static float scaleToFitTargetSize(
+            int [] dimensions, int targetWidth, int targetHeight) {
+        if (dimensions.length < 2 || dimensions[0] <= 0 || dimensions[1] <= 0) {
+            throw new IllegalArgumentException(
+                    "Expected dimensions to have length >= 2 && dimensions[0] > 0 && "
+                    + "dimensions[1] > 0");
+        }
+        float scale = Math.max(
+                (float) targetWidth / dimensions[0],
+                (float) targetHeight / dimensions[1]);
+        dimensions[0] *= scale;
+        dimensions[1] *= scale;
+        return scale;
+    }
+
+    /**
+     * Flips {@code value} iff {@code flipSign} is {@code true}.
+     * @param value    The value to flip.
+     * @param flipSign Whether or not to flip the value.
+     * @return         {@code value} iff {@code flipSign} is {@code false}, otherwise negative
+     *                 {@code value}.
+     */
+    public static int flipSignIf(int value, boolean flipSign) {
+        return flipSign ? -value : value;
+    }
+
+    /**
+     * Flips {@code value} iff {@code flipSign} is {@code true}.
+     * @param value    The value to flip.
+     * @param flipSign Whether or not to flip the value.
+     * @return         {@code value} iff {@code flipSign} is {@code false}, otherwise negative
+     *                 {@code value}.
+     */
+    public static float flipSignIf(float value, boolean flipSign) {
+        return flipSign ? -value : value;
+    }
 }

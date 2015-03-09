@@ -49,6 +49,9 @@
     <dimen name="app_banner_icon_size">48dp</dimen>
     <dimen name="app_banner_icon_spacing">16dp</dimen>
 
+    <!-- Contextual search dimensions -->
+    <dimen name="contextual_search_bar_height">80dp</dimen>
+
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_divider_height">1dp</dimen>
     <dimen name="password_generation_text_size">14sp</dimen>
