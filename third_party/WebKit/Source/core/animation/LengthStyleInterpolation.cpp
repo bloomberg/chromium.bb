@@ -5,8 +5,11 @@
 #include "config.h"
 #include "core/animation/LengthStyleInterpolation.h"
 
+#include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/resolver/StyleBuilder.h"
+#include "core/css/resolver/StyleResolverState.h"
+#include "platform/CalculationValue.h"
 
 namespace blink {
 
@@ -52,6 +55,95 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::toInterpolab
     return listOfValuesAndTypes.release();
 }
 
+bool LengthStyleInterpolation::isPixelsOrPercentOnly(const InterpolableValue& value)
+{
+    const InterpolableList& types = *toInterpolableList(toInterpolableList(value).get(1));
+    bool result = false;
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
+        bool typeIsPresent = toInterpolableNumber(types.get(i))->value();
+        if (i == CSSPrimitiveValue::UnitTypePixels)
+            result |= typeIsPresent;
+        else if (i == CSSPrimitiveValue::UnitTypePercentage)
+            result |= typeIsPresent;
+        else if (typeIsPresent)
+            return false;
+    }
+    return result;
+}
+
+LengthStyleInterpolation::LengthSetter LengthStyleInterpolation::lengthSetterForProperty(CSSPropertyID property)
+{
+    switch (property) {
+    case CSSPropertyBottom:
+        return &LayoutStyle::setBottom;
+    case CSSPropertyFlexBasis:
+        return &LayoutStyle::setFlexBasis;
+    case CSSPropertyHeight:
+        return &LayoutStyle::setHeight;
+    case CSSPropertyLeft:
+        return &LayoutStyle::setLeft;
+    case CSSPropertyLineHeight:
+        return &LayoutStyle::setLineHeight;
+    case CSSPropertyMarginBottom:
+        return &LayoutStyle::setMarginBottom;
+    case CSSPropertyMarginLeft:
+        return &LayoutStyle::setMarginLeft;
+    case CSSPropertyMarginRight:
+        return &LayoutStyle::setMarginRight;
+    case CSSPropertyMarginTop:
+        return &LayoutStyle::setMarginTop;
+    case CSSPropertyMaxHeight:
+        return &LayoutStyle::setMaxHeight;
+    case CSSPropertyMaxWidth:
+        return &LayoutStyle::setMaxWidth;
+    case CSSPropertyMinHeight:
+        return &LayoutStyle::setMinHeight;
+    case CSSPropertyMinWidth:
+        return &LayoutStyle::setMinWidth;
+    case CSSPropertyMotionOffset:
+        return &LayoutStyle::setMotionOffset;
+    case CSSPropertyPaddingBottom:
+        return &LayoutStyle::setPaddingBottom;
+    case CSSPropertyPaddingLeft:
+        return &LayoutStyle::setPaddingLeft;
+    case CSSPropertyPaddingRight:
+        return &LayoutStyle::setPaddingRight;
+    case CSSPropertyPaddingTop:
+        return &LayoutStyle::setPaddingTop;
+    case CSSPropertyRight:
+        return &LayoutStyle::setRight;
+    case CSSPropertyShapeMargin:
+        return &LayoutStyle::setShapeMargin;
+    case CSSPropertyTop:
+        return &LayoutStyle::setTop;
+    case CSSPropertyWidth:
+        return &LayoutStyle::setWidth;
+    // These properties don't have a LayoutStyle setter with the signature void(*)(const Length&).
+    case CSSPropertyBaselineShift:
+    case CSSPropertyBorderBottomWidth:
+    case CSSPropertyBorderLeftWidth:
+    case CSSPropertyBorderRightWidth:
+    case CSSPropertyBorderTopWidth:
+    case CSSPropertyFontSize:
+    case CSSPropertyLetterSpacing:
+    case CSSPropertyOutlineOffset:
+    case CSSPropertyOutlineWidth:
+    case CSSPropertyPerspective:
+    case CSSPropertyStrokeDashoffset:
+    case CSSPropertyVerticalAlign:
+    case CSSPropertyWebkitBorderHorizontalSpacing:
+    case CSSPropertyWebkitBorderVerticalSpacing:
+    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyWordSpacing:
+        return nullptr;
+    default:
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+}
+
 namespace {
 
 static CSSPrimitiveValue::UnitType toUnitType(int lengthUnitType)
@@ -77,6 +169,35 @@ static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(Pas
         position++;
     }
     return previous;
+}
+
+static double clampToRange(double x, ValueRange range)
+{
+    return (range == ValueRangeNonNegative && x < 0) ? 0 : x;
+}
+
+static Length lengthFromInterpolableValue(const InterpolableValue& value, InterpolationRange interpolationRange, float zoom)
+{
+    const InterpolableList& values = *toInterpolableList(toInterpolableList(value).get(0));
+    const InterpolableList& types = *toInterpolableList(toInterpolableList(value).get(1));
+    bool hasPixels = toInterpolableNumber(types.get(CSSPrimitiveValue::UnitTypePixels))->value();
+    bool hasPercent = toInterpolableNumber(types.get(CSSPrimitiveValue::UnitTypePercentage))->value();
+
+    ValueRange range = (interpolationRange == RangeNonNegative) ? ValueRangeNonNegative : ValueRangeAll;
+    PixelsAndPercent pixelsAndPercent(0, 0);
+    if (hasPixels)
+        pixelsAndPercent.pixels = toInterpolableNumber(values.get(CSSPrimitiveValue::UnitTypePixels))->value() * zoom;
+    if (hasPercent)
+        pixelsAndPercent.percent = toInterpolableNumber(values.get(CSSPrimitiveValue::UnitTypePercentage))->value();
+
+    if (hasPixels && hasPercent)
+        return Length(CalculationValue::create(pixelsAndPercent, range));
+    if (hasPixels)
+        return Length(clampToRange(pixelsAndPercent.pixels, range), Fixed);
+    if (hasPercent)
+        return Length(clampToRange(pixelsAndPercent.percent, range), Percent);
+    ASSERT_NOT_REACHED();
+    return Length(0, Fixed);
 }
 
 }
@@ -117,7 +238,17 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::fromInterpol
 
 void LengthStyleInterpolation::apply(StyleResolverState& state) const
 {
-    StyleBuilder::applyProperty(m_id, state, fromInterpolableValue(*m_cachedValue.get(), m_range).get());
+    if (m_lengthSetter) {
+        (state.style()->*m_lengthSetter)(lengthFromInterpolableValue(*m_cachedValue, m_range, state.style()->effectiveZoom()));
+#if ENABLE(ASSERT)
+        RefPtrWillBeRawPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(m_id, *state.style());
+        StyleBuilder::applyProperty(m_id, state, fromInterpolableValue(*m_cachedValue, m_range).get());
+        RefPtrWillBeRawPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(m_id, *state.style());
+        ASSERT(before->equals(*after));
+#endif
+    } else {
+        StyleBuilder::applyProperty(m_id, state, fromInterpolableValue(*m_cachedValue, m_range).get());
+    }
 }
 
 DEFINE_TRACE(LengthStyleInterpolation)

@@ -7,13 +7,15 @@
 
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "platform/Length.h"
 
 namespace blink {
 
+class LayoutStyle;
+class Length;
+
 class LengthStyleInterpolation : public StyleInterpolation {
 public:
-
+    typedef void (LayoutStyle::*LengthSetter)(const Length&);
     typedef void NonInterpolableType;
 
     static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range)
@@ -31,12 +33,20 @@ public:
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> fromInterpolableValue(const InterpolableValue&, InterpolationRange);
 
 private:
-    LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id,  InterpolationRange range)
+    LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, InterpolationRange range)
         : StyleInterpolation(start, end, id)
         , m_range(range)
-        { }
+        , m_lengthSetter(nullptr)
+    {
+        if (isPixelsOrPercentOnly(*m_start) && isPixelsOrPercentOnly(*m_end))
+            m_lengthSetter = lengthSetterForProperty(id);
+    }
+
+    static bool isPixelsOrPercentOnly(const InterpolableValue&);
+    static LengthSetter lengthSetterForProperty(CSSPropertyID);
 
     InterpolationRange m_range;
+    LengthSetter m_lengthSetter;
 };
 
 }
