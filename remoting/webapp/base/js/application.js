@@ -88,9 +88,28 @@ remoting.Application.prototype.start = function() {
   remoting.initIdentity();
 
   this.delegate_.init();
+
+  var that = this;
   remoting.identity.getToken().then(
-      this.delegate_.start.bind(this.delegate_, this.getSessionConnector()),
-      remoting.Error.handler(this.delegate_.signInFailed.bind(this.delegate_)));
+      this.delegate_.start.bind(this.delegate_, this.getSessionConnector())
+  ).catch(remoting.Error.handler(
+      function(/** remoting.Error */ error) {
+        if (error == remoting.Error.CANCELLED) {
+          that.exit();
+        } else {
+          that.delegate_.signInFailed(error);
+        }
+      }
+    )
+  );
+};
+
+/**
+ * Quit the application.
+ */
+remoting.Application.prototype.exit = function() {
+  this.delegate_.handleExit();
+  chrome.app.window.current().close();
 };
 
 /** Disconnect the remoting client. */
@@ -268,7 +287,7 @@ remoting.Application.Delegate.prototype.start = function(connector, token) {};
 
 /**
  * Report an authentication error to the user. This is called in lieu of start()
- * if the user cannot be authenticated or if they decline the app permissions.
+ * if the user cannot be authenticated.
  *
  * @param {remoting.Error} error The failure reason.
  */
@@ -336,6 +355,14 @@ remoting.Application.Delegate.prototype.handleExtensionMessage =
  * @return {void} Nothing.
  */
 remoting.Application.Delegate.prototype.handleError = function(errorTag) {};
+
+/**
+ * Perform any application-specific cleanup before exiting. This is called in
+ * lieu of start() if the user declines the app permissions, and will usually
+ * be called immediately prior to exiting, although delegates should not rely
+ * on this.
+ */
+remoting.Application.Delegate.prototype.handleExit = function() {};
 
 
 /** @type {remoting.Application} */

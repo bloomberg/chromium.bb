@@ -53,7 +53,7 @@ remoting.WindowFrame = function(titleBar) {
     { cls: 'window-maximize-restore',
       fn: this.maximizeOrRestoreWindow_.bind(this) },
     { cls: 'window-minimize', fn: this.minimizeWindow_.bind(this) },
-    { cls: 'window-close', fn: window.close.bind(window) },
+    { cls: 'window-close', fn: remoting.app.exit.bind(remoting.app) },
     { cls: 'window-controls-stub', fn: this.toggleWindowControls_.bind(this) }
   ];
   for (var i = 0; i < handlers.length; ++i) {

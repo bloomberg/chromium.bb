@@ -140,11 +140,7 @@ remoting.DesktopRemoting.prototype.start = function(connector, token) {
  * @param {remoting.Error} error The failure reason.
  */
 remoting.DesktopRemoting.prototype.signInFailed = function(error) {
-  if (error == remoting.Error.CANCELLED) {
-    chrome.app.window.current().close();
-  } else {
-    remoting.showErrorMessage(error);
-  }
+  remoting.showErrorMessage(error);
 };
 
 /**
@@ -328,4 +324,10 @@ remoting.DesktopRemoting.prototype.handleError = function(errorTag) {
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
   }
+};
+
+/**
+ * No cleanup required for desktop remoting.
+ */
+remoting.DesktopRemoting.prototype.handleExit = function() {
 };

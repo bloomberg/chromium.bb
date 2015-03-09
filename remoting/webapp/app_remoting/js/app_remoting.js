@@ -184,12 +184,7 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
  * @param {remoting.Error} error The failure reason.
  */
 remoting.AppRemoting.prototype.signInFailed = function(error) {
-  if (error == remoting.Error.CANCELLED) {
-    chrome.app.window.current().close();
-    remoting.LoadingWindow.close();
-  } else {
-    this.handleError(error);
-  }
+  this.handleError(error);
 };
 
 /**
@@ -342,4 +337,11 @@ remoting.AppRemoting.prototype.handleError = function(errorTag) {
   remoting.MessageWindow.showErrorMessage(
       chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
       chrome.i18n.getMessage(/** @type {string} */ (errorTag)));
+};
+
+/**
+ * Close the loading window before exiting.
+ */
+remoting.AppRemoting.prototype.handleExit = function() {
+  remoting.LoadingWindow.close();
 };
