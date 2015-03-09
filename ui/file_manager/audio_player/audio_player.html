@@ -83,8 +83,7 @@
             <div class="current">{{timeString_}}</div>
           </div>
           <div class="progress media-control custom-slider">
-            <input name="timeInput"
-                   type="range"
+            <input name="timeInput" type="range" touch-action="manipulation"
                    min="0" max="{{duration}}" value="{{time}}">
             <div class="bar">
               <div class="filled" style="width: {{time/duration*100}}%;"></div>
@@ -184,7 +183,7 @@
       <link rel="stylesheet" href="elements/volume_controller.css">
 
       <div id="background"></div>
-      <input name="rawValueInput" id="rawValueInput"
+      <input name="rawValueInput" id="rawValueInput" touch-action="manipulation"
              type="range" min="0" max="100" value="{{rawValue}}">
       <div id="bar">
         <div class="filled" style="height: {{rawValue}}%;"></div>
