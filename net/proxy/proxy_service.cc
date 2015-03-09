@@ -904,9 +904,6 @@ ProxyService::ProxyService(ProxyConfigService* config_service,
       stall_proxy_auto_config_delay_(TimeDelta::FromMilliseconds(
           kDelayAfterNetworkChangesMs)),
       quick_check_enabled_(true) {
-  // TODO(eroman): Remove once crbug.com/454983 is solved.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("454983 ProxyService::ProxyService"));
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
   ResetConfigService(config_service);
@@ -1392,10 +1389,6 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
 void ProxyService::SetProxyScriptFetchers(
     ProxyScriptFetcher* proxy_script_fetcher,
     DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher) {
-  // TODO(eroman): Remove once crbug.com/454983 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "454983 ProxyService::SetProxyScriptFetchers"));
   DCHECK(CalledOnValidThread());
   State previous_state = ResetProxyConfig(false);
   proxy_script_fetcher_.reset(proxy_script_fetcher);
@@ -1428,11 +1421,6 @@ ProxyService::State ProxyService::ResetProxyConfig(bool reset_fetched_config) {
 
 void ProxyService::ResetConfigService(
     ProxyConfigService* new_proxy_config_service) {
-  // TODO(eroman): Remove once crbug.com/454983 is solved.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "454983 ProxyService::ResetConfigService"));
-
   DCHECK(CalledOnValidThread());
   State previous_state = ResetProxyConfig(true);
 

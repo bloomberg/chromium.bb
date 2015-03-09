@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -63,11 +62,6 @@ void ProxyConfigServiceWin::AddObserver(Observer* observer) {
 }
 
 void ProxyConfigServiceWin::StartWatchingRegistryForChanges() {
-  // TODO(eroman): Remove once crbug.com/454983 is solved.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "454983 ProxyConfigServiceWin::StartWatchingRegistryForChanges"));
-
   if (!keys_to_watch_.empty())
     return;  // Already initialized.
 
