@@ -139,23 +139,6 @@ int ExtensionOptionsGuest::GetTaskPrefix() const {
   return IDS_EXTENSION_TASK_MANAGER_EXTENSIONOPTIONS_TAG_PREFIX;
 }
 
-void ExtensionOptionsGuest::GuestSizeChangedDueToAutoSize(
-    const gfx::Size& old_size,
-    const gfx::Size& new_size) {
-  extension_options_internal::SizeChangedOptions options;
-  options.old_width = old_size.width();
-  options.old_height = old_size.height();
-  options.new_width = new_size.width();
-  options.new_height = new_size.height();
-  DispatchEventToView(new GuestViewBase::Event(
-      extension_options_internal::OnSizeChanged::kEventName,
-      options.ToValue()));
-}
-
-bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
-  return true;
-}
-
 bool ExtensionOptionsGuest::IsPreferredSizeModeEnabled() const {
   return true;
 }

@@ -33,9 +33,6 @@ class ExtensionOptionsGuest
   void DidStopLoading() override;
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;
-  void GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
-                                     const gfx::Size& new_size) override;
-  bool IsAutoSizeSupported() const override;
   bool IsPreferredSizeModeEnabled() const override;
   void OnPreferredSizeChanged(const gfx::Size& pref_size) override;
 

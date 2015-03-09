@@ -26,11 +26,6 @@ ExtensionOptionsEvents.EVENTS = {
   'load': {
     evt: CreateEvent('extensionOptionsInternal.onLoad')
   },
-  'sizechanged': {
-    evt: CreateEvent('extensionOptionsInternal.onSizeChanged'),
-    handler: 'handleSizeChangedEvent',
-    fields:['newWidth', 'newHeight', 'oldWidth', 'oldHeight']
-  },
   'preferredsizechanged': {
     evt: CreateEvent('extensionOptionsInternal.onPreferredSizeChanged'),
     fields:['width', 'height']
@@ -40,14 +35,6 @@ ExtensionOptionsEvents.EVENTS = {
 ExtensionOptionsEvents.prototype.getEvents = function() {
   return ExtensionOptionsEvents.EVENTS;
 };
-
-ExtensionOptionsEvents.prototype.handleSizeChangedEvent = function(event,
-                                                                   eventName) {
-  this.view.onSizeChanged(
-      event.newWidth, event.newHeight, event.oldWidth, event.oldHeight);
-  var extensionOptionsEvent = this.makeDomEvent(event, eventName);
-  this.view.dispatchEvent(extensionOptionsEvent);
-}
 
 // Exports.
 exports.ExtensionOptionsEvents = ExtensionOptionsEvents;

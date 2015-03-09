@@ -122,32 +122,6 @@ chrome.test.runTests([
     document.body.appendChild(extensionoptions);
   },
 
-  function autosizedGuestIsWithinSizeConstraints() {
-    var done = chrome.test.callbackAdded();
-
-    var extensionoptions = new ExtensionOptions();
-    extensionoptions.extension = chrome.runtime.id;
-    extensionoptions.autosize = 'on';
-    extensionoptions.minheight = 499;
-    extensionoptions.minwidth = 499;
-    extensionoptions.maxheight = 501;
-    extensionoptions.maxwidth = 501;
-
-    extensionoptions.onsizechanged = function(evt) {
-      try {
-        chrome.test.assertTrue(evt.newWidth >= 499);
-        chrome.test.assertTrue(evt.newHeight >= 499);
-        chrome.test.assertTrue(evt.newWidth <= 501);
-        chrome.test.assertTrue(evt.newHeight <= 501);
-        done();
-      } finally {
-        document.body.removeChild(extensionoptions);
-      }
-    };
-
-    document.body.appendChild(extensionoptions);
-  },
-
   function externalLinksOpenInNewTab() {
     var done = chrome.test.listenForever(chrome.runtime.onMessage,
         function(message, sender, sendResponse) {
