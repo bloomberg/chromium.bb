@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientCallbackHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginRequestHelper;
@@ -203,7 +204,13 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
                 mContentsClient.getOnReceivedErrorHelper();
 
         int onReceivedErrorCount = receivedErrorHelper.getCallCount();
-        mClientHelper.postOnReceivedError(ERROR_CODE, ERROR_MESSAGE, TEST_URL);
+        AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest();
+        request.url = TEST_URL;
+        request.isMainFrame = true;
+        AwContentsClient.AwWebResourceError error = new AwContentsClient.AwWebResourceError();
+        error.errorCode = ERROR_CODE;
+        error.description = ERROR_MESSAGE;
+        mClientHelper.postOnReceivedError(request, error);
         receivedErrorHelper.waitForCallback(onReceivedErrorCount);
         assertEquals(ERROR_CODE, receivedErrorHelper.getErrorCode());
         assertEquals(ERROR_MESSAGE, receivedErrorHelper.getDescription());

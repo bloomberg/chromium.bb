@@ -370,14 +370,14 @@ public class AwContents implements SmartClipProvider,
                 mContentsClient.getCallbackHelper().postOnLoadResource(url);
             }
 
-            if (request.isMainFrame && awWebResourceResponse != null
-                    && awWebResourceResponse.getData() == null) {
+            if (awWebResourceResponse != null && awWebResourceResponse.getData() == null) {
                 // In this case the intercepted URLRequest job will simulate an empty response
                 // which doesn't trigger the onReceivedError callback. For WebViewClassic
                 // compatibility we synthesize that callback. http://crbug.com/180950
                 mContentsClient.getCallbackHelper().postOnReceivedError(
-                        ErrorCodeConversionHelper.ERROR_UNKNOWN,
-                        null /* filled in by the glue layer */, url);
+                        request,
+                        /* error description filled in by the glue layer */
+                        new AwContentsClient.AwWebResourceError());
             }
             return awWebResourceResponse;
         }

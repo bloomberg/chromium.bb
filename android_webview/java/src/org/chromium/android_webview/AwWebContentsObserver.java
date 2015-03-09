@@ -40,18 +40,27 @@ public class AwWebContentsObserver extends WebContentsObserver {
         String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
         boolean isErrorUrl =
                 unreachableWebDataUrl != null && unreachableWebDataUrl.equals(failingUrl);
-        if (isMainFrame && !isErrorUrl) {
-            if (errorCode != NetError.ERR_ABORTED) {
-                // This error code is generated for the following reasons:
-                // - WebView.stopLoading is called,
-                // - the navigation is intercepted by the embedder via shouldOverrideNavigation.
-                //
-                // The Android WebView does not notify the embedder of these situations using
-                // this error code with the WebViewClient.onReceivedError callback.
-                mAwContentsClient.onReceivedError(
-                        ErrorCodeConversionHelper.convertErrorCode(errorCode), description,
-                                failingUrl);
-            }
+        if (isErrorUrl) return;
+        if (errorCode != NetError.ERR_ABORTED) {
+            // This error code is generated for the following reasons:
+            // - WebView.stopLoading is called,
+            // - the navigation is intercepted by the embedder via shouldOverrideNavigation.
+            //
+            // The Android WebView does not notify the embedder of these situations using
+            // this error code with the WebViewClient.onReceivedError callback.
+            AwContentsClient.AwWebResourceRequest request =
+                    new AwContentsClient.AwWebResourceRequest();
+            request.url = failingUrl;
+            request.isMainFrame = isMainFrame;
+            // TODO(mnaganov): Fill in the rest of AwWebResourceRequest fields. Probably,
+            // we will have to actually invoke the error callback from the network delegate
+            // in order to catch load errors for all resources.
+            AwContentsClient.AwWebResourceError error = new AwContentsClient.AwWebResourceError();
+            error.errorCode = ErrorCodeConversionHelper.convertErrorCode(errorCode);
+            error.description = description;
+            mAwContentsClient.onReceivedError(request, error);
+        }
+        if (isMainFrame) {
             // Need to call onPageFinished after onReceivedError (if there is an error) for
             // backwards compatibility with the classic webview.
             mAwContentsClient.onPageFinished(failingUrl);

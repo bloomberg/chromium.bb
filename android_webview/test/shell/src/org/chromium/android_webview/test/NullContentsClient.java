@@ -163,6 +163,10 @@ public class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public void onReceivedError2(AwWebResourceRequest request, AwWebResourceError error) {
+    }
+
+    @Override
     public void onFormResubmission(Message dontResend, Message resend) {
         dontResend.sendToTarget();
     }

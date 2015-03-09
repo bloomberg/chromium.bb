@@ -578,6 +578,10 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
      */
     @Override
     public void onReceivedError(int errorCode, String description, String failingUrl) {
+        // TODO(mnaganov): In the next version of glue, this will look as follows:
+        // if (<next-level-api>) return;
+        // Currently, we should just run this code always.
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.CUR_DEVELOPMENT + 1) return;
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onReceivedError");
             if (description == null || description.isEmpty()) {
@@ -587,7 +591,35 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                 description = mWebViewDelegate.getErrorString(mContext, errorCode);
             }
             if (TRACE) Log.d(TAG, "onReceivedError=" + failingUrl);
-            mWebViewClient.onReceivedError(mWebView, errorCode, description, failingUrl);
+            mWebViewClient.onReceivedError(
+                    mWebView, errorCode, description, failingUrl);
+        } finally {
+            TraceEvent.end("WebViewContentsClientAdapter.onReceivedError");
+        }
+    }
+
+    /**
+     * @see ContentViewClient#onReceivedError(
+     * AwContentsClient.AwWebResourceRequest,AwContentsClient.AwWebResourceError)
+     */
+    @Override
+    public void onReceivedError2(AwContentsClient.AwWebResourceRequest request,
+            AwContentsClient.AwWebResourceError error) {
+        // TODO(mnaganov): In the next version of glue, this will look as follows:
+        // if (!<next-level-api>) return;
+        // Currently, we should never run this code.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.CUR_DEVELOPMENT + 1) return;
+        try {
+            TraceEvent.begin("WebViewContentsClientAdapter.onReceivedError");
+            if (error.description == null || error.description.isEmpty()) {
+                // ErrorStrings is @hidden, so we can't do this in AwContents.  Normally the net/
+                // layer will set a valid description, but for synthesized callbacks (like in the
+                // case for intercepted requests) AwContents will pass in null.
+                error.description = mWebViewDelegate.getErrorString(mContext, error.errorCode);
+            }
+            if (TRACE) Log.d(TAG, "onReceivedError=" + request.url);
+            // TODO(mnaganov): When the new API becomes available, uncomment the following:
+            //   mWebViewClient.onReceivedError(request, error);
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onReceivedError");
         }
