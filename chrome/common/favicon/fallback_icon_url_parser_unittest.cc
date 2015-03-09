@@ -42,7 +42,13 @@ class FallbackIconUrlParserTest : public testing::Test {
   }
 
   bool ParseColor(const std::string& color_str, SkColor* color) {
-    return ParsedFallbackIconPath::ParseColor(color_str, color);
+    int size_dummy;
+    favicon_base::FallbackIconStyle style;
+    std::string spec_str = "16," + color_str + ",,,";
+    if (!ParseSpecs(spec_str, &size_dummy, &style))
+      return false;
+    *color = style.background_color;
+    return true;
   }
 
  private:
@@ -51,15 +57,13 @@ class FallbackIconUrlParserTest : public testing::Test {
 
 TEST_F(FallbackIconUrlParserTest, ParseColorSuccess) {
   SkColor c;
-  EXPECT_TRUE(ParseColor("31aBf0f4", &c));
-  EXPECT_EQ(SkColorSetARGB(0x31, 0xAB, 0xF0, 0xF4), c);
-  EXPECT_TRUE(ParseColor("01aBf0", &c));
+  EXPECT_TRUE(ParseColor("#01aBf0f4", &c));
+  EXPECT_EQ(SkColorSetARGB(0x01, 0xAB, 0xF0, 0xF4), c);
+  EXPECT_TRUE(ParseColor("#01aBf0", &c));
   EXPECT_EQ(SkColorSetRGB(0x01, 0xAB, 0xF0), c);
-  EXPECT_TRUE(ParseColor("501a", &c));
-  EXPECT_EQ(SkColorSetARGB(0x55, 0x00, 0x11, 0xAA), c);
-  EXPECT_TRUE(ParseColor("01a", &c));
+  EXPECT_TRUE(ParseColor("#01a", &c));
   EXPECT_EQ(SkColorSetRGB(0x00, 0x11, 0xAA), c);
-  EXPECT_TRUE(ParseColor("000000", &c));
+  EXPECT_TRUE(ParseColor("#000000", &c));
   EXPECT_EQ(SkColorSetARGB(0xFF, 0x00, 0x00, 0x00), c);
   EXPECT_TRUE(ParseColor("red", &c));
   EXPECT_EQ(SkColorSetARGB(0xFF, 0xFF, 0x00, 0x00), c);
@@ -67,16 +71,12 @@ TEST_F(FallbackIconUrlParserTest, ParseColorSuccess) {
 
 TEST_F(FallbackIconUrlParserTest, ParseColorFailure) {
   const char* test_cases[] = {
-    "",
-    "00000",
-    "000000000",
-    " 000000",
-    "ABCDEFG",
-    "#000",
-    "#000000",
-    "000000 ",
-    "ABCDEFH",
-    "#ABCDEF",
+    "#00000",
+    "#000000000",
+    " #000000",
+    "#ABCDEFG",
+    "000000",
+    "#000000 ",
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SkColor c;
@@ -99,7 +99,7 @@ TEST_F(FallbackIconUrlParserTest, ParseSpecsEmpty) {
 TEST_F(FallbackIconUrlParserTest, ParseSpecsPartial) {
   int size;
   FallbackIconStyle style;
-  EXPECT_TRUE(ParseSpecs(",,aCE,,0.1", &size, &style));
+  EXPECT_TRUE(ParseSpecs(",,#aCE,,0.1", &size, &style));
   EXPECT_EQ(16, size);
   EXPECT_EQ(kDefaultBackgroundColor, style.background_color);
   EXPECT_EQ(SkColorSetRGB(0xAA, 0xCC, 0xEE), style.text_color);
@@ -112,7 +112,7 @@ TEST_F(FallbackIconUrlParserTest, ParseSpecsFull) {
 
   {
     FallbackIconStyle style;
-    EXPECT_TRUE(ParseSpecs("16,000,f01,0.75,0.25", &size, &style));
+    EXPECT_TRUE(ParseSpecs("16,#000,#f01,0.75,0.25", &size, &style));
     EXPECT_EQ(16, size);
     EXPECT_EQ(SkColorSetRGB(0x00, 0x00, 0x00), style.background_color);
     EXPECT_EQ(SkColorSetRGB(0xff, 0x00, 0x11), style.text_color);
@@ -122,7 +122,7 @@ TEST_F(FallbackIconUrlParserTest, ParseSpecsFull) {
 
   {
     FallbackIconStyle style;
-    EXPECT_TRUE(ParseSpecs("48,black,123456,0.5,0.3", &size, &style));
+    EXPECT_TRUE(ParseSpecs("48,black,#123456,0.5,0.3", &size, &style));
     EXPECT_EQ(48, size);
     EXPECT_EQ(SkColorSetRGB(0x00, 0x00, 0x00), style.background_color);
     EXPECT_EQ(SkColorSetRGB(0x12, 0x34, 0x56), style.text_color);
@@ -132,7 +132,7 @@ TEST_F(FallbackIconUrlParserTest, ParseSpecsFull) {
 
   {
     FallbackIconStyle style;
-    EXPECT_TRUE(ParseSpecs("1,000,red,0,0", &size, &style));
+    EXPECT_TRUE(ParseSpecs("1,#000,red,0,0", &size, &style));
     EXPECT_EQ(1, size);
     EXPECT_EQ(SkColorSetRGB(0x00, 0x00, 0x00), style.background_color);
     EXPECT_EQ(SkColorSetRGB(0xFF, 0x00, 0x00), style.text_color);
@@ -147,21 +147,21 @@ TEST_F(FallbackIconUrlParserTest, ParseSpecsDefaultTextColor) {
   {
     // Dark background -> Light text.
     FallbackIconStyle style;
-    EXPECT_TRUE(ParseSpecs(",000,,,", &size, &style));
+    EXPECT_TRUE(ParseSpecs(",#000,,,", &size, &style));
     EXPECT_EQ(kDefaultTextColorLight, style.text_color);
   }
 
   {
     // Light background -> Dark text.
     FallbackIconStyle style;
-    EXPECT_TRUE(ParseSpecs(",fff,,,", &size, &style));
+    EXPECT_TRUE(ParseSpecs(",#fff,,,", &size, &style));
     EXPECT_EQ(kDefaultTextColorDark, style.text_color);
   }
 
   {
     // Light background -> Dark text, more params don't matter.
     FallbackIconStyle style;
-    EXPECT_TRUE(ParseSpecs("107,fff,,0.3,0.5", &size, &style));
+    EXPECT_TRUE(ParseSpecs("107,#fff,,0.3,0.5", &size, &style));
     EXPECT_EQ(kDefaultTextColorDark, style.text_color);
   }
 }
@@ -172,30 +172,30 @@ TEST_F(FallbackIconUrlParserTest, ParseSpecsFailure) {
     "",
     "16",
     "16,black",
-    "16,black,fff",
-    "16,black,fff,0.75",
+    "16,black,#fff",
+    "16,black,#fff,0.75",
     ",,,"
     ",,,,,",
-    "16,black,fff,0.75,0.25,junk",
+    "16,black,#fff,0.75,0.25,junk",
     // Don't allow any space.
-    "16,black,fff, 0.75,0.25",
-    "16,black ,fff,0.75,0.25",
-    "16,black,fff,0.75,0.25 ",
+    "16,black,#fff, 0.75,0.25",
+    "16,black ,#fff,0.75,0.25",
+    "16,black,#fff,0.75,0.25 ",
     // Adding junk text.
-    "16,black,fff,0.75,0.25junk",
-    "junk,black,fff,0.75,0.25",
-    "16,#junk,fff,0.75,0.25",
-    "16,black,junk,0.75,0.25",
-    "16,black,fff,junk,0.25",
-    "16,black,fff,0.75,junk",
+    "16,black,#fff,0.75,0.25junk",
+    "junk,black,#fff,0.75,0.25",
+    "16,#junk,#fff,0.75,0.25",
+    "16,black,#junk,0.75,0.25",
+    "16,black,#fff,junk,0.25",
+    "16,black,#fff,0.75,junk",
     // Out of bound.
-    "0,black,fff,0.75,0.25",  // size.
-    "4294967296,black,fff,0.75,0.25",  // size.
-    "-1,black,fff,0.75,0.25",  // size.
-    "16,black,fff,-0.1,0.25",  // font_size_ratio.
-    "16,black,fff,1.1,0.25",  // font_size_ratio.
-    "16,black,fff,0.75,-0.1",  // roundness.
-    "16,black,fff,0.75,1.1",  // roundness.
+    "0,black,#fff,0.75,0.25",  // size.
+    "4294967296,black,#fff,0.75,0.25",  // size.
+    "-1,black,#fff,0.75,0.25",  // size.
+    "16,black,#fff,-0.1,0.25",  // font_size_ratio.
+    "16,black,#fff,1.1,0.25",  // font_size_ratio.
+    "16,black,#fff,0.75,-0.1",  // roundness.
+    "16,black,#fff,0.75,1.1",  // roundness.
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     int size;
@@ -207,7 +207,7 @@ TEST_F(FallbackIconUrlParserTest, ParseSpecsFailure) {
 }
 
 TEST_F(FallbackIconUrlParserTest, ParseFallbackIconPathSuccess) {
-  const std::string specs = "31,black,fff,0.75,0.25";
+  const std::string specs = "31,black,#fff,0.75,0.25";
 
   // Everything populated.
   {
@@ -252,11 +252,11 @@ TEST_F(FallbackIconUrlParserTest, ParseFallbackIconPathSuccess) {
 TEST_F(FallbackIconUrlParserTest, ParseFallbackIconPathFailure) {
   const char* test_cases[] = {
     // Bad size.
-    "-1,000,fff,0.75,0.25/http://www.google.com/",
+    "-1,#000,#fff,0.75,0.25/http://www.google.com/",
     // Bad specs.
-    "32,#junk,fff,0.75,0.25/http://www.google.com/",
+    "32,#junk,#fff,0.75,0.25/http://www.google.com/",
     // Bad URL.
-    "32,000,fff,0.75,0.25/NOT A VALID URL",
+    "32,#000,#fff,0.75,0.25/NOT A VALID URL",
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     chrome::ParsedFallbackIconPath parsed;
