@@ -143,7 +143,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/hunspell.git' + '@' + 'c956c0e97af00ef789afb2f64d02c9a5a50e6eb1',
 
   'src/third_party/hunspell_dictionaries':
-   Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '94eb94ce85661b54bb3c27bedeff5428b4a2798e', # from svn revision 292714
+   Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '4e3f3cced36cf64b8d1821804ddb9fbe2048494e', # from svn revision 294375
 
   'src/third_party/safe_browsing/testing':
     Var('chromium_git') + '/external/google-safe-browsing/testing.git' + '@' + '9d7e8064f3ca2e45891470c9b5b1dce54af6a9d6',
