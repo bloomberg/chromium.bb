@@ -27,14 +27,6 @@ base::LazyInstance<ThreadLocalBoolean>::Leaky
 
 const int kIdleSecondsBeforeExit = 10 * 60;
 
-#ifdef ADDRESS_SANITIZER
-const int kWorkerThreadStackSize = 256 * 1024;
-#else
-// A stack size of 64 KB is too small for the CERT_PKIXVerifyCert
-// function of NSS because of NSS bug 439169.
-const int kWorkerThreadStackSize = 128 * 1024;
-#endif
-
 class WorkerPoolImpl {
  public:
   WorkerPoolImpl();
@@ -168,7 +160,7 @@ void PosixDynamicThreadPool::AddTask(PendingTask* pending_task) {
     // which will delete itself on exit.
     WorkerThread* worker =
         new WorkerThread(name_prefix_, this);
-    PlatformThread::CreateNonJoinable(kWorkerThreadStackSize, worker);
+    PlatformThread::CreateNonJoinable(0, worker);
   }
 }
 
