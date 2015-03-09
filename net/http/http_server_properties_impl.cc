@@ -53,10 +53,10 @@ void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
   // Keep all the broken ones since those don't get persisted.
   for (AlternateProtocolMap::iterator it = alternate_protocol_map_.begin();
        it != alternate_protocol_map_.end();) {
-    AlternateProtocolMap::iterator old_it = it;
-    ++it;
-    if (!old_it->second.is_broken) {
-      alternate_protocol_map_.Erase(old_it);
+    if (it->second.is_broken) {
+      ++it;
+    } else {
+      it = alternate_protocol_map_.Erase(it);
     }
   }
 
