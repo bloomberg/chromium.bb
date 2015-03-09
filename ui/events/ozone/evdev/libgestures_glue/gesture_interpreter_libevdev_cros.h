@@ -51,6 +51,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   void OnLibEvdevCrosEvent(Evdev* evdev,
                            EventStateRec* evstate,
                            const timeval& time) override;
+  void OnLibEvdevCrosStopped(Evdev* evdev, EventStateRec* state) override;
   void SetAllowedKeys(
       scoped_ptr<std::set<DomCode>> allowed_keys) override;
   void AllowAllKeys() override;
@@ -79,7 +80,8 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   void DispatchMouseButton(unsigned int modifier,
                            bool down,
                            stime_t time);
-  void DispatchChangedKeys(Evdev* evdev, const timeval& time);
+  void DispatchChangedKeys(unsigned long* changed_keys, stime_t timestamp);
+  void ReleaseKeys();
 
   // The unique device id.
   int id_;

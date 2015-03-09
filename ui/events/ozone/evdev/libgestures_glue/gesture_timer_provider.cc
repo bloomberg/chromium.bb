@@ -28,12 +28,8 @@ struct GesturesTimer {
 
  private:
   void OnTimerExpired() {
-    struct timespec ts;
-    int fail = clock_gettime(CLOCK_MONOTONIC, &ts);
-    DCHECK(!fail);
-
     // Run the callback and reschedule the next run if requested.
-    stime_t next_delay = callback_(StimeFromTimespec(&ts), callback_data_);
+    stime_t next_delay = callback_(ui::StimeNow(), callback_data_);
     if (next_delay >= 0) {
       timer_.Start(FROM_HERE,
                    base::TimeDelta::FromMicroseconds(
@@ -67,6 +63,15 @@ void GesturesTimerCancel(void* data, GesturesTimer* timer) { timer->Cancel(); }
 void GesturesTimerFree(void* data, GesturesTimer* timer) { delete timer; }
 
 }  // namespace
+
+stime_t StimeNow() {
+  struct timespec ts;
+
+  if (clock_gettime(CLOCK_MONOTONIC, &ts))
+    PLOG(FATAL) << "clock_gettime";
+
+  return StimeFromTimespec(&ts);
+}
 
 const GesturesTimerProvider kGestureTimerProvider = {
     GesturesTimerCreate, GesturesTimerSet, GesturesTimerCancel,

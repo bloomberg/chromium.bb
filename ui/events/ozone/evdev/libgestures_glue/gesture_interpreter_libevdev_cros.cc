@@ -79,10 +79,6 @@ base::TimeDelta StimeToTimedelta(stime_t timestamp) {
                                            base::Time::kMicrosecondsPerSecond);
 }
 
-base::TimeDelta TimeValToTimeDelta(const timeval& tv) {
-  return base::TimeDelta::FromMicroseconds(tv.tv_sec * 1000000 + tv.tv_usec);
-}
-
 // Number of fingers for scroll gestures.
 const int kGestureScrollFingerCount = 2;
 
@@ -160,12 +156,14 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosOpen(
 void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
                                                          EventStateRec* evstate,
                                                          const timeval& time) {
-  // If the device has keys no it, dispatch any presses/release.
-  DispatchChangedKeys(evdev, time);
+  stime_t timestamp = StimeFromTimeval(&time);
+
+  // If the device has keys on it, dispatch any presses/release.
+  DispatchChangedKeys(evdev->key_state_bitmask, timestamp);
 
   HardwareState hwstate;
   memset(&hwstate, 0, sizeof(hwstate));
-  hwstate.timestamp = StimeFromTimeval(&time);
+  hwstate.timestamp = timestamp;
 
   // Mouse.
   hwstate.rel_x = evstate->rel_x;
@@ -205,6 +203,12 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
     hwstate.buttons_down |= GESTURES_BUTTON_RIGHT;
 
   GestureInterpreterPushHardwareState(interpreter_, &hwstate);
+}
+
+void GestureInterpreterLibevdevCros::OnLibEvdevCrosStopped(
+    Evdev* evdev,
+    EventStateRec* state) {
+  ReleaseKeys();
 }
 
 void GestureInterpreterLibevdevCros::SetAllowedKeys(
@@ -421,18 +425,19 @@ void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int button,
                              allow_remap, StimeToTimedelta(time)));
 }
 
-void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
-                                                         const timeval& time) {
+void GestureInterpreterLibevdevCros::DispatchChangedKeys(
+    unsigned long* new_key_state,
+    stime_t timestamp) {
   unsigned long key_state_diff[EVDEV_BITS_TO_LONGS(KEY_CNT)];
 
   // Find changed keys.
   for (unsigned long i = 0; i < arraysize(key_state_diff); ++i)
-    key_state_diff[i] = evdev->key_state_bitmask[i] ^ prev_key_state_[i];
+    key_state_diff[i] = new_key_state[i] ^ prev_key_state_[i];
 
   // Dispatch events for changed keys.
   for (unsigned long key = 0; key < KEY_CNT; ++key) {
     if (EvdevBitIsSet(key_state_diff, key)) {
-      bool value = EvdevBitIsSet(evdev->key_state_bitmask, key);
+      bool value = EvdevBitIsSet(new_key_state, key);
 
       // Mouse buttons are handled by DispatchMouseButton.
       if (key >= BTN_MOUSE && key < BTN_JOYSTICK)
@@ -447,13 +452,20 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
 
       // Dispatch key press or release to keyboard.
       dispatcher_->DispatchKeyEvent(
-          KeyEventParams(id_, key, value, TimeValToTimeDelta(time)));
+          KeyEventParams(id_, key, value, StimeToTimedelta(timestamp)));
     }
   }
 
   // Update internal key state.
   for (unsigned long i = 0; i < EVDEV_BITS_TO_LONGS(KEY_CNT); ++i)
-    prev_key_state_[i] = evdev->key_state_bitmask[i];
+    prev_key_state_[i] = new_key_state[i];
+}
+
+void GestureInterpreterLibevdevCros::ReleaseKeys() {
+  unsigned long new_key_state[EVDEV_BITS_TO_LONGS(KEY_CNT)];
+  memset(&new_key_state, 0, sizeof(new_key_state));
+
+  DispatchChangedKeys(new_key_state, StimeNow());
 }
 
 }  // namespace ui

@@ -9,6 +9,8 @@
 
 namespace ui {
 
+stime_t StimeNow();
+
 extern const GesturesTimerProvider kGestureTimerProvider;
 
 }  // namspace ui

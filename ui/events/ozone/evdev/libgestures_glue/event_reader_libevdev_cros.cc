@@ -98,6 +98,10 @@ void EventReaderLibevdevCros::AllowAllKeys() {
   delegate_->AllowAllKeys();
 }
 
+void EventReaderLibevdevCros::OnStopped() {
+  delegate_->OnLibEvdevCrosStopped(&evdev_, &evstate_);
+}
+
 // static
 void EventReaderLibevdevCros::OnSynReport(void* data,
                                           EventStateRec* evstate,
