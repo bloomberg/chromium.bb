@@ -5,7 +5,6 @@
 #include "net/spdy/spdy_priority_tree.h"
 
 #include "base/basictypes.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -36,8 +35,6 @@ TEST(SpdyPriorityTreeTest, AddAndRemoveNodes) {
   ASSERT_TRUE(tree.NodeExists(1));
   EXPECT_EQ(100, tree.GetWeight(1));
   EXPECT_FALSE(tree.NodeExists(5));
-  EXPECT_THAT(tree.GetChildren(0),
-              ::testing::Pointee(::testing::ElementsAre(1)));
 
   EXPECT_TRUE(tree.AddNode(5, 0, 50, false));
   // Should not be able to add a node with an id that already exists.
@@ -73,11 +70,6 @@ TEST(SpdyPriorityTreeTest, AddAndRemoveNodes) {
   EXPECT_FALSE(tree.AddNode(7, 1, 70, false));
   // Try adding a second child to node 13:
   EXPECT_TRUE(tree.AddNode(17, 13, 170, false));
-
-  // TODO(birenroy): Add a separate test that verifies weight invariants when
-  // SetWeight is called.
-  EXPECT_TRUE(tree.SetWeight(17, 150));
-  EXPECT_EQ(150, tree.GetWeight(17));
 
   ASSERT_TRUE(tree.ValidateInvariantsForTests());
 }
