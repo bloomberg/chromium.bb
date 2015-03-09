@@ -1884,3 +1884,5 @@ crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFailure ]
+
+crbug.com/451235 virtual/slimmingpaint/svg/clip-path/invalid-clip-path-crash.html [ NeedsRebaseline ]
