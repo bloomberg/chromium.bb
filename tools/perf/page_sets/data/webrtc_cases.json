@@ -9,6 +9,16 @@
             "third_party/webrtc/samples/js/demos/html/pc1.html", 
             "webrtc/local-video.html"
         ], 
+        "webrtc_cases_010.wpr": [
+            "http://webrtc.github.io/samples/src/content/peerconnection/audio/?codec=PCMU", 
+            "http://webrtc.github.io/samples/src/content/peerconnection/audio/?codec=G722", 
+            "http://webrtc.github.io/samples/src/content/peerconnection/constraints/", 
+            "http://webrtc.github.io/samples/src/content/getusermedia/gum/", 
+            "http://webrtc.github.io/samples/src/content/peerconnection/pc1/", 
+            "http://webrtc.github.io/samples/src/content/peerconnection/audio/?codec=ISAC_16K", 
+            "http://webrtc.github.io/samples/src/content/getusermedia/resolution/", 
+            "http://webrtc.github.io/samples/src/content/peerconnection/audio/?codec=OPUS"
+        ], 
         "webrtc_cases_009.wpr": [
             "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/audio/?codec=PCMU", 
             "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/resolution/", 
