@@ -415,12 +415,17 @@ if test "x$GCC" = xyes; then
 
     # Restore CFLAGS; VISIBILITY_CFLAGS are added to it where needed.
     CFLAGS=$save_CFLAGS
-
-    if test "x$VISIBILITY_CFLAGS" != x; then
-        AC_DEFINE(HAVE_VISIBILITY, 1, [Compiler has -fvisibility support])
-    fi
-
     AC_SUBST([VISIBILITY_CFLAGS])
+fi
+
+AC_MSG_CHECKING([whether $CC supports __attribute__((visibility))])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
+    int foo_default( void ) __attribute__((visibility("default")));
+    int foo_hidden( void ) __attribute__((visibility("hidden")));
+])], HAVE_ATTRIBUTE_VISIBILITY="yes"; AC_MSG_RESULT([yes]), AC_MSG_RESULT([no]));
+
+if test "x$HAVE_ATTRIBUTE_VISIBILITY" = xyes; then
+    AC_DEFINE(HAVE_VISIBILITY, 1, [Compiler supports __attribute__((visibility))])
 fi
 
 AC_SUBST(WARN_CFLAGS)
