@@ -640,7 +640,7 @@ OAuth2TokenService* TokenServiceProvider::GetTokenService() {
 
 scoped_ptr<syncer::AttachmentService>
 ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
-    scoped_ptr<syncer::AttachmentStore> attachment_store,
+    const scoped_refptr<syncer::AttachmentStore>& attachment_store,
     const syncer::UserShare& user_share,
     const std::string& store_birthday,
     syncer::ModelType model_type,
@@ -685,10 +685,12 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
       base::TimeDelta::FromMinutes(30);
   const base::TimeDelta max_backoff_delay = base::TimeDelta::FromHours(4);
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(
-          attachment_store.Pass(), attachment_uploader.Pass(),
-          attachment_downloader.Pass(), delegate, initial_backoff_delay,
-          max_backoff_delay));
+      new syncer::AttachmentServiceImpl(attachment_store,
+                                        attachment_uploader.Pass(),
+                                        attachment_downloader.Pass(),
+                                        delegate,
+                                        initial_backoff_delay,
+                                        max_backoff_delay));
   return attachment_service.Pass();
 }
 

@@ -65,7 +65,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
   }
 
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
-      scoped_ptr<syncer::AttachmentStore> attachment_store,
+      const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
       syncer::ModelType model_type,

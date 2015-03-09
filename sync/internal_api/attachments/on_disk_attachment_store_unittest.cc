@@ -37,9 +37,9 @@ class OnDiskAttachmentStoreFactory {
   OnDiskAttachmentStoreFactory() {}
   ~OnDiskAttachmentStoreFactory() {}
 
-  scoped_ptr<AttachmentStore> CreateAttachmentStore() {
+  scoped_refptr<AttachmentStore> CreateAttachmentStore() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    scoped_ptr<AttachmentStore> store;
+    scoped_refptr<AttachmentStore> store;
     AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
     store = AttachmentStore::CreateOnDiskStore(
         temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
@@ -64,7 +64,7 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath db_path_;
   base::MessageLoop message_loop_;
-  scoped_ptr<AttachmentStore> store_;
+  scoped_refptr<AttachmentStore> store_;
 
   OnDiskAttachmentStoreSpecificTest() {}
 

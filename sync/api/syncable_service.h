@@ -66,16 +66,15 @@ class SYNC_EXPORT SyncableService
   SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
                                const SyncChangeList& change_list) override = 0;
 
-  // Returns AttachmentStore for use by sync when uploading or downloading
-  // attachments.
+  // Returns AttachmentStore used by datatype. Attachment store is used by sync
+  // when uploading or downloading attachments.
   // GetAttachmentStore is called right before MergeDataAndStartSyncing. If at
   // that time GetAttachmentStore returns NULL then datatype is considered not
   // using attachments and all attempts to upload/download attachments will
   // fail. Default implementation returns NULL. Datatype that uses sync
-  // attachments should create attachment store, implement GetAttachmentStore
-  // to return result of AttachmentStore::CreateAttachmentStoreForSync() from
-  // attachment store object.
-  virtual scoped_ptr<AttachmentStore> GetAttachmentStoreForSync();
+  // attachemnts should create attachment store and implement GetAttachmentStore
+  // to return pointer to it.
+  virtual scoped_refptr<AttachmentStore> GetAttachmentStore();
 
   // Called by sync to provide AttachmentService to be used to download
   // attachments.

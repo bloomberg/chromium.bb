@@ -24,10 +24,13 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     SyncApiComponentFactory* sync_factory) {
   DCHECK(user_share);
   return make_scoped_ptr(new GenericChangeProcessor(
-                             type, error_handler, local_service, merge_result,
-                             user_share, sync_factory,
-                             local_service->GetAttachmentStoreForSync()))
-      .Pass();
+                             type,
+                             error_handler,
+                             local_service,
+                             merge_result,
+                             user_share,
+                             sync_factory,
+                             local_service->GetAttachmentStore())).Pass();
 }
 
 }  // namespace sync_driver

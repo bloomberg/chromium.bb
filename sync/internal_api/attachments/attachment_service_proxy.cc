@@ -49,6 +49,10 @@ AttachmentServiceProxy::AttachmentServiceProxy(
 AttachmentServiceProxy::~AttachmentServiceProxy() {
 }
 
+AttachmentStore* AttachmentServiceProxy::GetStore() {
+  return NULL;
+}
+
 void AttachmentServiceProxy::GetOrDownloadAttachments(
     const AttachmentIdList& attachment_ids,
     const GetOrDownloadCallback& callback) {
@@ -79,6 +83,10 @@ AttachmentServiceProxy::Core::Core(
 }
 
 AttachmentServiceProxy::Core::~Core() {
+}
+
+AttachmentStore* AttachmentServiceProxy::Core::GetStore() {
+  return NULL;
 }
 
 void AttachmentServiceProxy::Core::GetOrDownloadAttachments(

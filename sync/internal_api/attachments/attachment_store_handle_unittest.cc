@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/attachments/attachment_store_frontend.h"
+#include "sync/internal_api/public/attachments/attachment_store_handle.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -13,7 +13,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/attachment_id.h"
-#include "sync/api/attachments/attachment_store_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -49,14 +48,12 @@ class MockAttachmentStore : public AttachmentStoreBackend {
     read_called_.Run();
   }
 
-  void Write(AttachmentStore::AttachmentReferrer referrer,
-             const AttachmentList& attachments,
+  void Write(const AttachmentList& attachments,
              const AttachmentStore::WriteCallback& callback) override {
     write_called_.Run();
   }
 
-  void Drop(AttachmentStore::AttachmentReferrer referrer,
-            const AttachmentIdList& ids,
+  void Drop(const AttachmentIdList& ids,
             const AttachmentStore::DropCallback& callback) override {
     drop_called_.Run();
   }
@@ -68,7 +65,6 @@ class MockAttachmentStore : public AttachmentStoreBackend {
   }
 
   void ReadAllMetadata(
-      AttachmentStore::AttachmentReferrer referrer,
       const AttachmentStore::ReadMetadataCallback& callback) override {
     read_all_metadata_called_.Run();
   }
@@ -84,9 +80,9 @@ class MockAttachmentStore : public AttachmentStoreBackend {
 
 }  // namespace
 
-class AttachmentStoreFrontendTest : public testing::Test {
+class AttachmentStoreHandleTest : public testing::Test {
  protected:
-  AttachmentStoreFrontendTest()
+  AttachmentStoreHandleTest()
       : init_call_count_(0),
         read_call_count_(0),
         write_call_count_(0),
@@ -97,21 +93,21 @@ class AttachmentStoreFrontendTest : public testing::Test {
 
   void SetUp() override {
     scoped_ptr<AttachmentStoreBackend> backend(new MockAttachmentStore(
-        base::Bind(&AttachmentStoreFrontendTest::InitCalled,
+        base::Bind(&AttachmentStoreHandleTest::InitCalled,
                    base::Unretained(this)),
-        base::Bind(&AttachmentStoreFrontendTest::ReadCalled,
+        base::Bind(&AttachmentStoreHandleTest::ReadCalled,
                    base::Unretained(this)),
-        base::Bind(&AttachmentStoreFrontendTest::WriteCalled,
+        base::Bind(&AttachmentStoreHandleTest::WriteCalled,
                    base::Unretained(this)),
-        base::Bind(&AttachmentStoreFrontendTest::DropCalled,
+        base::Bind(&AttachmentStoreHandleTest::DropCalled,
                    base::Unretained(this)),
-        base::Bind(&AttachmentStoreFrontendTest::ReadMetadataCalled,
+        base::Bind(&AttachmentStoreHandleTest::ReadMetadataCalled,
                    base::Unretained(this)),
-        base::Bind(&AttachmentStoreFrontendTest::ReadAllMetadataCalled,
+        base::Bind(&AttachmentStoreHandleTest::ReadAllMetadataCalled,
                    base::Unretained(this)),
-        base::Bind(&AttachmentStoreFrontendTest::DtorCalled,
+        base::Bind(&AttachmentStoreHandleTest::DtorCalled,
                    base::Unretained(this))));
-    attachment_store_frontend_ = new AttachmentStoreFrontend(
+    attachment_store_handle_ = new AttachmentStoreHandle(
         backend.Pass(), base::ThreadTaskRunnerHandle::Get());
   }
 
@@ -150,7 +146,7 @@ class AttachmentStoreFrontendTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_refptr<AttachmentStoreFrontend> attachment_store_frontend_;
+  scoped_refptr<AttachmentStoreHandle> attachment_store_handle_;
   int init_call_count_;
   int read_call_count_;
   int write_call_count_;
@@ -161,52 +157,49 @@ class AttachmentStoreFrontendTest : public testing::Test {
 };
 
 // Test that method calls are forwarded to backend loop
-TEST_F(AttachmentStoreFrontendTest, MethodsCalled) {
+TEST_F(AttachmentStoreHandleTest, MethodsCalled) {
   AttachmentIdList ids;
   AttachmentList attachments;
 
-  attachment_store_frontend_->Init(
-      base::Bind(&AttachmentStoreFrontendTest::DoneWithResult));
+  attachment_store_handle_->Init(
+      base::Bind(&AttachmentStoreHandleTest::DoneWithResult));
   EXPECT_EQ(init_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(init_call_count_, 1);
 
-  attachment_store_frontend_->Read(
-      ids, base::Bind(&AttachmentStoreFrontendTest::ReadDone));
+  attachment_store_handle_->Read(
+      ids, base::Bind(&AttachmentStoreHandleTest::ReadDone));
   EXPECT_EQ(read_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(read_call_count_, 1);
 
-  attachment_store_frontend_->Write(
-      AttachmentStore::SYNC, attachments,
-      base::Bind(&AttachmentStoreFrontendTest::DoneWithResult));
+  attachment_store_handle_->Write(
+      attachments, base::Bind(&AttachmentStoreHandleTest::DoneWithResult));
   EXPECT_EQ(write_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(write_call_count_, 1);
 
-  attachment_store_frontend_->Drop(
-      AttachmentStore::SYNC, ids,
-      base::Bind(&AttachmentStoreFrontendTest::DoneWithResult));
+  attachment_store_handle_->Drop(
+      ids, base::Bind(&AttachmentStoreHandleTest::DoneWithResult));
   EXPECT_EQ(drop_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(drop_call_count_, 1);
 
-  attachment_store_frontend_->ReadMetadata(
-      ids, base::Bind(&AttachmentStoreFrontendTest::ReadMetadataDone));
+  attachment_store_handle_->ReadMetadata(
+      ids, base::Bind(&AttachmentStoreHandleTest::ReadMetadataDone));
   EXPECT_EQ(read_metadata_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(read_metadata_call_count_, 1);
 
-  attachment_store_frontend_->ReadAllMetadata(
-      AttachmentStore::SYNC,
-      base::Bind(&AttachmentStoreFrontendTest::ReadMetadataDone));
+  attachment_store_handle_->ReadAllMetadata(
+      base::Bind(&AttachmentStoreHandleTest::ReadMetadataDone));
   EXPECT_EQ(read_all_metadata_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(read_all_metadata_call_count_, 1);
 
-  // Releasing referehce to AttachmentStoreFrontend should result in
+  // Releasing referehce to AttachmentStoreHandle should result in
   // MockAttachmentStore being deleted on backend loop.
-  attachment_store_frontend_ = NULL;
+  attachment_store_handle_ = NULL;
   EXPECT_EQ(dtor_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(dtor_call_count_, 1);

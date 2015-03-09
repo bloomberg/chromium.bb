@@ -20,7 +20,7 @@ FakeGenericChangeProcessor::FakeGenericChangeProcessor(
                              base::WeakPtr<syncer::SyncMergeResult>(),
                              NULL,
                              sync_factory,
-                             nullptr),
+                             scoped_refptr<syncer::AttachmentStore>()),
       sync_model_has_user_created_nodes_(true),
       sync_model_has_user_created_nodes_success_(true) {
 }

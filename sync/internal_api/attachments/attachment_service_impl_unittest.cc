@@ -8,9 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
-#include "sync/api/attachments/attachment_store_backend.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"
 #include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
@@ -21,46 +19,37 @@ namespace syncer {
 
 namespace {
 
-class MockAttachmentStoreBackend
-    : public AttachmentStoreBackend,
-      public base::SupportsWeakPtr<MockAttachmentStoreBackend> {
+class MockAttachmentStore : public AttachmentStore,
+                            public base::SupportsWeakPtr<MockAttachmentStore> {
  public:
-  MockAttachmentStoreBackend(
-      const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner)
-      : AttachmentStoreBackend(callback_task_runner) {}
+  MockAttachmentStore() {}
 
-  ~MockAttachmentStoreBackend() override {}
-
-  void Init(const AttachmentStore::InitCallback& callback) override {}
+  void Init(const InitCallback& callback) override {
+  }
 
   void Read(const AttachmentIdList& ids,
-            const AttachmentStore::ReadCallback& callback) override {
+            const ReadCallback& callback) override {
     read_ids.push_back(ids);
     read_callbacks.push_back(callback);
   }
 
-  void Write(AttachmentStore::AttachmentReferrer referrer,
-             const AttachmentList& attachments,
-             const AttachmentStore::WriteCallback& callback) override {
+  void Write(const AttachmentList& attachments,
+             const WriteCallback& callback) override {
     write_attachments.push_back(attachments);
     write_callbacks.push_back(callback);
   }
 
-  void Drop(AttachmentStore::AttachmentReferrer referrer,
-            const AttachmentIdList& ids,
-            const AttachmentStore::DropCallback& callback) override {
+  void Drop(const AttachmentIdList& ids,
+            const DropCallback& callback) override {
     NOTREACHED();
   }
 
-  void ReadMetadata(
-      const AttachmentIdList& ids,
-      const AttachmentStore::ReadMetadataCallback& callback) override {
+  void ReadMetadata(const AttachmentIdList& ids,
+                    const ReadMetadataCallback& callback) override {
     NOTREACHED();
   }
 
-  void ReadAllMetadata(
-      AttachmentStore::AttachmentReferrer referrer,
-      const AttachmentStore::ReadMetadataCallback& callback) override {
+  void ReadAllMetadata(const ReadMetadataCallback& callback) override {
     NOTREACHED();
   }
 
@@ -68,7 +57,7 @@ class MockAttachmentStoreBackend
   // returned, everything else should be reported unavailable.
   void RespondToRead(const AttachmentIdSet& local_attachments) {
     scoped_refptr<base::RefCountedString> data = new base::RefCountedString();
-    AttachmentStore::ReadCallback callback = read_callbacks.back();
+    ReadCallback callback = read_callbacks.back();
     AttachmentIdList ids = read_ids.back();
     read_callbacks.pop_back();
     read_ids.pop_back();
@@ -87,9 +76,8 @@ class MockAttachmentStoreBackend
         unavailable_attachments->push_back(*iter);
       }
     }
-    AttachmentStore::Result result = unavailable_attachments->empty()
-                                         ? AttachmentStore::SUCCESS
-                                         : AttachmentStore::UNSPECIFIED_ERROR;
+    Result result =
+        unavailable_attachments->empty() ? SUCCESS : UNSPECIFIED_ERROR;
 
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -100,8 +88,8 @@ class MockAttachmentStoreBackend
   }
 
   // Respond to Write request with |result|.
-  void RespondToWrite(const AttachmentStore::Result& result) {
-    AttachmentStore::WriteCallback callback = write_callbacks.back();
+  void RespondToWrite(const Result& result) {
+    WriteCallback callback = write_callbacks.back();
     AttachmentList attachments = write_attachments.back();
     write_callbacks.pop_back();
     write_attachments.pop_back();
@@ -110,12 +98,14 @@ class MockAttachmentStoreBackend
   }
 
   std::vector<AttachmentIdList> read_ids;
-  std::vector<AttachmentStore::ReadCallback> read_callbacks;
+  std::vector<ReadCallback> read_callbacks;
   std::vector<AttachmentList> write_attachments;
-  std::vector<AttachmentStore::WriteCallback> write_callbacks;
+  std::vector<WriteCallback> write_callbacks;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockAttachmentStoreBackend);
+  ~MockAttachmentStore() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(MockAttachmentStore);
 };
 
 class MockAttachmentDownloader
@@ -195,8 +185,7 @@ class AttachmentServiceImplTest : public testing::Test,
 
   void TearDown() override {
     attachment_service_.reset();
-    RunLoop();
-    ASSERT_FALSE(attachment_store_backend_);
+    ASSERT_FALSE(attachment_store_);
     ASSERT_FALSE(attachment_uploader_);
     ASSERT_FALSE(attachment_downloader_);
   }
@@ -210,15 +199,9 @@ class AttachmentServiceImplTest : public testing::Test,
       scoped_ptr<MockAttachmentUploader> uploader,
       scoped_ptr<MockAttachmentDownloader> downloader,
       AttachmentService::Delegate* delegate) {
-    // Initialize mock attachment store
-    scoped_refptr<base::SingleThreadTaskRunner> runner =
-        base::ThreadTaskRunnerHandle::Get();
-    scoped_ptr<MockAttachmentStoreBackend> attachment_store_backend(
-        new MockAttachmentStoreBackend(runner));
-    attachment_store_backend_ = attachment_store_backend->AsWeakPtr();
-    scoped_ptr<AttachmentStore> attachment_store =
-        AttachmentStore::CreateMockStoreForTest(
-            attachment_store_backend.Pass());
+    scoped_refptr<MockAttachmentStore> attachment_store(
+        new MockAttachmentStore());
+    attachment_store_ = attachment_store->AsWeakPtr();
 
     if (uploader.get()) {
       attachment_uploader_ = uploader->AsWeakPtr();
@@ -226,9 +209,13 @@ class AttachmentServiceImplTest : public testing::Test,
     if (downloader.get()) {
       attachment_downloader_ = downloader->AsWeakPtr();
     }
-    attachment_service_.reset(new AttachmentServiceImpl(
-        attachment_store.Pass(), uploader.Pass(), downloader.Pass(), delegate,
-        base::TimeDelta::FromMinutes(1), base::TimeDelta::FromMinutes(8)));
+    attachment_service_.reset(
+        new AttachmentServiceImpl(attachment_store,
+                                  uploader.Pass(),
+                                  downloader.Pass(),
+                                  delegate,
+                                  base::TimeDelta::FromMinutes(1),
+                                  base::TimeDelta::FromMinutes(8)));
 
     scoped_ptr<base::MockTimer> timer_to_pass(
         new base::MockTimer(false, false));
@@ -260,8 +247,8 @@ class AttachmentServiceImplTest : public testing::Test,
     RunLoop();
     if (mock_timer()->IsRunning()) {
       mock_timer()->Fire();
-      RunLoop();
     }
+    RunLoop();
   }
 
   const std::vector<AttachmentService::GetOrDownloadResult>&
@@ -277,9 +264,7 @@ class AttachmentServiceImplTest : public testing::Test,
     return network_change_notifier_.get();
   }
 
-  MockAttachmentStoreBackend* store() {
-    return attachment_store_backend_.get();
-  }
+  MockAttachmentStore* store() { return attachment_store_.get(); }
 
   MockAttachmentDownloader* downloader() {
     return attachment_downloader_.get();
@@ -296,7 +281,7 @@ class AttachmentServiceImplTest : public testing::Test,
  private:
   base::MessageLoop message_loop_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  base::WeakPtr<MockAttachmentStoreBackend> attachment_store_backend_;
+  base::WeakPtr<MockAttachmentStore> attachment_store_;
   base::WeakPtr<MockAttachmentDownloader> attachment_downloader_;
   base::WeakPtr<MockAttachmentUploader> attachment_uploader_;
   scoped_ptr<AttachmentServiceImpl> attachment_service_;
@@ -307,11 +292,14 @@ class AttachmentServiceImplTest : public testing::Test,
   std::vector<AttachmentId> on_attachment_uploaded_list_;
 };
 
+TEST_F(AttachmentServiceImplTest, GetStore) {
+  EXPECT_EQ(store(), attachment_service()->GetStore());
+}
+
 TEST_F(AttachmentServiceImplTest, GetOrDownload_EmptyAttachmentList) {
   AttachmentIdList attachment_ids;
   attachment_service()->GetOrDownloadAttachments(attachment_ids,
                                                  download_callback());
-  RunLoop();
   store()->RespondToRead(AttachmentIdSet());
 
   RunLoop();
@@ -326,7 +314,6 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_Local) {
                                                  download_callback());
   AttachmentIdSet local_attachments;
   local_attachments.insert(attachment_ids[0]);
-  RunLoop();
   store()->RespondToRead(local_attachments);
 
   RunLoop();
@@ -346,7 +333,6 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_LocalRemoteUnavailable) {
   // Call attachment service.
   attachment_service()->GetOrDownloadAttachments(attachment_ids,
                                                  download_callback());
-  RunLoop();
   // Ensure AttachmentStore is called.
   EXPECT_FALSE(store()->read_ids.empty());
 
@@ -412,7 +398,6 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_NoDownloader) {
   attachment_ids.push_back(AttachmentId::Create());
   attachment_service()->GetOrDownloadAttachments(attachment_ids,
                                                  download_callback());
-  RunLoop();
   EXPECT_FALSE(store()->read_ids.empty());
 
   AttachmentIdSet local_attachments;

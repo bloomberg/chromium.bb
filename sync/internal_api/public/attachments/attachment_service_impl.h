@@ -26,9 +26,6 @@ class SYNC_EXPORT AttachmentServiceImpl
       public net::NetworkChangeNotifier::NetworkChangeObserver,
       public base::NonThreadSafe {
  public:
-  // |attachment_store| is required. UploadAttachments reads attachment data
-  // from it. Downloaded attachments will be written into it.
-  //
   // |attachment_uploader| is optional. If null, attachments will never be
   // uploaded to the sync server and |delegate|'s OnAttachmentUploaded will
   // never be invoked.
@@ -50,7 +47,7 @@ class SYNC_EXPORT AttachmentServiceImpl
   //
   // |max_backoff_delay| the maxmium delay between upload attempts when backed
   // off.
-  AttachmentServiceImpl(scoped_ptr<AttachmentStore> attachment_store,
+  AttachmentServiceImpl(scoped_refptr<AttachmentStore> attachment_store,
                         scoped_ptr<AttachmentUploader> attachment_uploader,
                         scoped_ptr<AttachmentDownloader> attachment_downloader,
                         Delegate* delegate,
@@ -62,6 +59,7 @@ class SYNC_EXPORT AttachmentServiceImpl
   static scoped_ptr<syncer::AttachmentService> CreateForTest();
 
   // AttachmentService implementation.
+  AttachmentStore* GetStore() override;
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
                                 const GetOrDownloadCallback& callback) override;
   void UploadAttachments(const AttachmentIdSet& attachment_ids) override;
@@ -97,7 +95,7 @@ class SYNC_EXPORT AttachmentServiceImpl
       scoped_ptr<AttachmentMap> attachments,
       scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
 
-  scoped_ptr<AttachmentStore> attachment_store_;
+  scoped_refptr<AttachmentStore> attachment_store_;
 
   // May be null.
   const scoped_ptr<AttachmentUploader> attachment_uploader_;

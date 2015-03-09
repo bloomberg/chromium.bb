@@ -94,7 +94,7 @@ GenericChangeProcessor::GenericChangeProcessor(
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     syncer::UserShare* user_share,
     SyncApiComponentFactory* sync_factory,
-    scoped_ptr<syncer::AttachmentStore> attachment_store)
+    const scoped_refptr<syncer::AttachmentStore>& attachment_store)
     : ChangeProcessor(error_handler),
       type_(type),
       local_service_(local_service),
@@ -103,14 +103,14 @@ GenericChangeProcessor::GenericChangeProcessor(
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(type_, syncer::UNSPECIFIED);
-  if (attachment_store) {
+  if (attachment_store.get()) {
     std::string store_birthday;
     {
       syncer::ReadTransaction trans(FROM_HERE, share_handle());
       store_birthday = trans.GetStoreBirthday();
     }
     attachment_service_ = sync_factory->CreateAttachmentService(
-        attachment_store.Pass(), *user_share, store_birthday, type, this);
+        attachment_store, *user_share, store_birthday, type, this);
     attachment_service_weak_ptr_factory_.reset(
         new base::WeakPtrFactory<syncer::AttachmentService>(
             attachment_service_.get()));

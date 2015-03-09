@@ -33,6 +33,8 @@ class StubAttachmentService : public AttachmentService,
 
   ~StubAttachmentService() override {}
 
+  AttachmentStore* GetStore() override { return NULL; }
+
   void GetOrDownloadAttachments(
       const AttachmentIdList& attachment_ids,
       const GetOrDownloadCallback& callback) override {
@@ -129,6 +131,10 @@ class AttachmentServiceProxyTest : public testing::Test,
   // number of times callback_get_or_download was invoked
   int count_callback_get_or_download;
 };
+
+TEST_F(AttachmentServiceProxyTest, GetStore) {
+  EXPECT_EQ(NULL, proxy->GetStore());
+}
 
 // Verify that each of AttachmentServiceProxy's methods are invoked on the stub.
 // Verify that the methods that take callbacks invoke passed callbacks on this

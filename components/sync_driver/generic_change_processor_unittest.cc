@@ -37,7 +37,8 @@ namespace {
 // A mock that keeps track of attachments passed to UploadAttachments.
 class MockAttachmentService : public syncer::AttachmentServiceImpl {
  public:
-  MockAttachmentService(scoped_ptr<syncer::AttachmentStore> attachment_store);
+  MockAttachmentService(
+      const scoped_refptr<syncer::AttachmentStore>& attachment_store);
   ~MockAttachmentService() override;
   void UploadAttachments(
       const syncer::AttachmentIdSet& attachment_ids) override;
@@ -48,8 +49,8 @@ class MockAttachmentService : public syncer::AttachmentServiceImpl {
 };
 
 MockAttachmentService::MockAttachmentService(
-    scoped_ptr<syncer::AttachmentStore> attachment_store)
-    : AttachmentServiceImpl(attachment_store.Pass(),
+    const scoped_refptr<syncer::AttachmentStore>& attachment_store)
+    : AttachmentServiceImpl(attachment_store,
                             scoped_ptr<syncer::AttachmentUploader>(
                                 new syncer::FakeAttachmentUploader),
                             scoped_ptr<syncer::AttachmentDownloader>(
@@ -77,7 +78,9 @@ MockAttachmentService::attachment_id_sets() {
 // pass MockAttachmentService to it.
 class MockSyncApiComponentFactory : public SyncApiComponentFactory {
  public:
-  MockSyncApiComponentFactory() {}
+  MockSyncApiComponentFactory(
+      scoped_ptr<syncer::AttachmentService> attachment_service)
+      : attachment_service_(attachment_service.Pass()) {}
 
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override {
@@ -87,27 +90,17 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   }
 
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
-      scoped_ptr<syncer::AttachmentStore> attachment_store,
+      const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
       syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override {
-    scoped_ptr<MockAttachmentService> attachment_service(
-        new MockAttachmentService(attachment_store.Pass()));
-    // GenericChangeProcessor takes ownership of the AttachmentService, but we
-    // need to have a pointer to it so we can see that it was used properly.
-    // Take a pointer and trust that GenericChangeProcessor does not prematurely
-    // destroy it.
-    mock_attachment_service_ = attachment_service.get();
-    return attachment_service.Pass();
-  }
-
-  MockAttachmentService* GetMockAttachmentService() {
-    return mock_attachment_service_;
+    EXPECT_TRUE(attachment_service_ != NULL);
+    return attachment_service_.Pass();
   }
 
  private:
-  MockAttachmentService* mock_attachment_service_;
+  scoped_ptr<syncer::AttachmentService> attachment_service_;
 };
 
 class SyncGenericChangeProcessorTest : public testing::Test {
@@ -156,15 +149,25 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
   void ConstructGenericChangeProcessor(syncer::ModelType type) {
-    MockSyncApiComponentFactory sync_factory;
-    scoped_ptr<syncer::AttachmentStore> attachment_store =
+    scoped_refptr<syncer::AttachmentStore> attachment_store =
         syncer::AttachmentStore::CreateInMemoryStore();
-    change_processor_.reset(new GenericChangeProcessor(
-        type, &data_type_error_handler_,
-        syncable_service_ptr_factory_.GetWeakPtr(),
-        merge_result_ptr_factory_->GetWeakPtr(), test_user_share_->user_share(),
-        &sync_factory, attachment_store.Pass()));
-    mock_attachment_service_ = sync_factory.GetMockAttachmentService();
+    scoped_ptr<MockAttachmentService> mock_attachment_service(
+        new MockAttachmentService(attachment_store));
+    // GenericChangeProcessor takes ownership of the AttachmentService, but we
+    // need to have a pointer to it so we can see that it was used properly.
+    // Take a pointer and trust that GenericChangeProcessor does not prematurely
+    // destroy it.
+    mock_attachment_service_ = mock_attachment_service.get();
+    sync_factory_.reset(
+        new MockSyncApiComponentFactory(mock_attachment_service.Pass()));
+    change_processor_.reset(
+        new GenericChangeProcessor(type,
+                                   &data_type_error_handler_,
+                                   syncable_service_ptr_factory_.GetWeakPtr(),
+                                   merge_result_ptr_factory_->GetWeakPtr(),
+                                   test_user_share_->user_share(),
+                                   sync_factory_.get(),
+                                   attachment_store));
   }
 
   void BuildChildNodes(syncer::ModelType type, int n) {
@@ -208,6 +211,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   DataTypeErrorHandlerMock data_type_error_handler_;
   scoped_ptr<syncer::TestUserShare> test_user_share_;
   MockAttachmentService* mock_attachment_service_;
+  scoped_ptr<SyncApiComponentFactory> sync_factory_;
 
   scoped_ptr<GenericChangeProcessor> change_processor_;
 };

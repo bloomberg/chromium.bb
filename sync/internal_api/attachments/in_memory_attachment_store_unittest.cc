@@ -13,7 +13,7 @@ class InMemoryAttachmentStoreFactory {
   InMemoryAttachmentStoreFactory() {}
   ~InMemoryAttachmentStoreFactory() {}
 
-  scoped_ptr<AttachmentStore> CreateAttachmentStore() {
+  scoped_refptr<AttachmentStore> CreateAttachmentStore() {
     return AttachmentStore::CreateInMemoryStore();
   }
 };

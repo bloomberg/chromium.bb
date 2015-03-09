@@ -282,7 +282,7 @@
         'internal_api/attachments/attachment_downloader_impl_unittest.cc',
         'internal_api/attachments/attachment_service_impl_unittest.cc',
         'internal_api/attachments/attachment_service_proxy_unittest.cc',
-        'internal_api/attachments/attachment_store_frontend_unittest.cc',
+        'internal_api/attachments/attachment_store_handle_unittest.cc',
         'internal_api/attachments/attachment_store_test_template.h',
         'internal_api/attachments/attachment_uploader_impl_unittest.cc',
         'internal_api/attachments/fake_attachment_downloader_unittest.cc',
