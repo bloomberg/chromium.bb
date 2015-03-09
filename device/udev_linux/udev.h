@@ -79,6 +79,9 @@ void udev_unref(udev* udev);
 std::string UdevDeviceGetPropertyValue(udev_device* udev_device,
                                        const char* key);
 
+// Decodes udev-encoded string. Useful for decoding "*_ENC" udev properties.
+std::string UdevDecodeString(const std::string& encoded);
+
 }  // namespace device
 
 #endif  // DEVICE_UDEV_LINUX_UDEV_H_

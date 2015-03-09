@@ -4,6 +4,7 @@
 
 #include "device/udev_linux/udev.h"
 
+#include "base/strings/string_util.h"
 #include "device/udev_linux/udev_loader.h"
 
 namespace device {
@@ -150,6 +151,21 @@ std::string UdevDeviceGetPropertyValue(udev_device* udev_device,
                                        const char* key) {
   const char* value = device::udev_device_get_property_value(udev_device, key);
   return value ? value : std::string();
+}
+
+std::string UdevDecodeString(const std::string& encoded) {
+  std::string decoded;
+  const size_t size = encoded.size();
+  for (size_t i = 0; i < size; ++i) {
+    char c = encoded[i];
+    if ((i + 3 < size) && c == '\\' && encoded[i + 1] == 'x') {
+      c = (HexDigitToInt(encoded[i + 2]) << 4) +
+          HexDigitToInt(encoded[i + 3]);
+      i += 3;
+    }
+    decoded.push_back(c);
+  }
+  return decoded;
 }
 
 }  // namespace device

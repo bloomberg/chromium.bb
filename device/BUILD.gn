@@ -86,6 +86,12 @@ test("device_unittests") {
     libs = [ "IOBluetooth.framework" ]
   }
 
+  if (use_udev) {
+    sources += [ "udev_linux/udev_unittest.cc" ]
+
+    deps += [ "//device/udev_linux" ]
+  }
+
   if (is_linux && !use_udev) {
     # Udev is the only Linux implementation. If we're compiling without Udev,
     # disable these unittests.

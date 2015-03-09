@@ -94,6 +94,14 @@
             }],
           ],
         }],
+        ['use_udev==1', {
+          'dependencies': [
+            'udev_linux/udev.gyp:udev_linux',
+          ],
+          'sources': [
+            'udev_linux/udev_unittest.cc',
+          ],
+        }],
         ['OS=="linux" and use_udev==0', {
           # Udev is the only Linux implementation. If we're compiling without
           # Udev, disable these unittests.

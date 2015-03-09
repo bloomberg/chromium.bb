@@ -15,7 +15,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -41,16 +40,6 @@ const unsigned int kRequiredOutputPortCaps =
 int AddrToInt(const snd_seq_addr_t* addr) {
   return (addr->client << 8) | addr->port;
 }
-
-#if defined(USE_UDEV)
-// Copied from components/storage_monitor/udev_util_linux.cc.
-// TODO(agoode): Move this into a common place. Maybe device/udev_linux?
-std::string GetUdevDevicePropertyValue(udev_device* udev_device,
-                                       const char* key) {
-  const char* value = device::udev_device_get_property_value(udev_device, key);
-  return value ? value : std::string();
-}
-#endif  // defined(USE_UDEV)
 
 }  // namespace
 
@@ -335,7 +324,7 @@ MidiManagerAlsa::CardInfo::CardInfo(
     const std::string& alsa_driver, int card_index)
     : alsa_name_(alsa_name), alsa_driver_(alsa_driver) {
   // Get udev properties if available.
-  std::string udev_id_vendor_enc;
+  std::string udev_id_vendor;
   std::string udev_id_vendor_id;
   std::string udev_id_vendor_from_database;
 
@@ -344,21 +333,21 @@ MidiManagerAlsa::CardInfo::CardInfo(
   device::ScopedUdevDevicePtr udev_device(
       device::udev_device_new_from_subsystem_sysname(
           outer->udev_.get(), "sound", sysname.c_str()));
-  udev_id_vendor_enc = GetUdevDevicePropertyValue(
-      udev_device.get(), "ID_VENDOR_ENC");
-  udev_id_vendor_id = GetUdevDevicePropertyValue(
+  udev_id_vendor = device::UdevDecodeString(device::UdevDeviceGetPropertyValue(
+      udev_device.get(), "ID_VENDOR_ENC"));
+  udev_id_vendor_id = device::UdevDeviceGetPropertyValue(
       udev_device.get(), "ID_VENDOR_ID");
-  udev_id_vendor_from_database = GetUdevDevicePropertyValue(
+  udev_id_vendor_from_database = device::UdevDeviceGetPropertyValue(
       udev_device.get(), "ID_VENDOR_FROM_DATABASE");
 
-  udev_id_path_ = GetUdevDevicePropertyValue(
+  udev_id_path_ = device::UdevDeviceGetPropertyValue(
       udev_device.get(), "ID_PATH");
-  udev_id_id_ = GetUdevDevicePropertyValue(
+  udev_id_id_ = device::UdevDeviceGetPropertyValue(
       udev_device.get(), "ID_ID");
 #endif  // defined(USE_UDEV)
 
   manufacturer_ = ExtractManufacturerString(
-      udev_id_vendor_enc, udev_id_vendor_id, udev_id_vendor_from_database,
+      udev_id_vendor, udev_id_vendor_id, udev_id_vendor_from_database,
       alsa_name, alsa_longname);
 }
 
@@ -499,20 +488,19 @@ void MidiManagerAlsa::EventLoop() {
 
 // static
 std::string MidiManagerAlsa::CardInfo::ExtractManufacturerString(
-    const std::string& udev_id_vendor_enc,
+    const std::string& udev_id_vendor,
     const std::string& udev_id_vendor_id,
     const std::string& udev_id_vendor_from_database,
     const std::string& alsa_name,
     const std::string& alsa_longname) {
   // Let's try to determine the manufacturer. Here is the ordered preference
   // in extraction:
-  //  1. Vendor name from the USB device iManufacturer string, stored in
-  //     udev_id_vendor_enc.
-  //  2. Vendor name from the udev hwid database.
+  //  1. Vendor name from the USB device iManufacturer string, from
+  //     the udev property ID_VENDOR_ENC.
+  //  2. Vendor name from the udev database (property ID_VENDOR_FROM_DATABASE).
   //  3. Heuristic from ALSA.
 
   // Is the vendor string not just the USB vendor hex id?
-  std::string udev_id_vendor = UnescapeUdev(udev_id_vendor_enc);
   if (udev_id_vendor != udev_id_vendor_id) {
     return udev_id_vendor;
   }
@@ -535,22 +523,6 @@ std::string MidiManagerAlsa::CardInfo::ExtractManufacturerString(
 
   // Failure.
   return "";
-}
-
-// static
-std::string MidiManagerAlsa::CardInfo::UnescapeUdev(const std::string& s) {
-  std::string unescaped;
-  const size_t size = s.size();
-  for (size_t i = 0; i < size; ++i) {
-    char c = s[i];
-    if ((i + 3 < size) && c == '\\' && s[i + 1] == 'x') {
-      c = (HexDigitToInt(s[i + 2]) << 4) +
-          HexDigitToInt(s[i + 3]);
-      i += 3;
-    }
-    unescaped.push_back(c);
-  }
-  return unescaped;
 }
 
 MidiManager* MidiManager::Create() {

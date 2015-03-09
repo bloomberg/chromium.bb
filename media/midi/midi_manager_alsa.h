@@ -57,15 +57,11 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
 
     // Extracts the manufacturer using heuristics and a variety of sources.
     static std::string ExtractManufacturerString(
-        const std::string& udev_id_vendor_enc,
+        const std::string& udev_id_vendor,
         const std::string& udev_id_vendor_id,
         const std::string& udev_id_vendor_from_database,
         const std::string& alsa_name,
         const std::string& alsa_longname);
-
-    // TODO(agoode): Move this into a common place. Maybe device/udev_linux?
-    // Decodes just \xXX in strings.
-    static std::string UnescapeUdev(const std::string& s);
 
     std::string alsa_name_;
     std::string manufacturer_;
