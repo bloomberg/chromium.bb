@@ -41,5 +41,20 @@ assertInterpolation({
   {at: 1, is: '100px'},
   {at: 1.5, is: '125px'}
 ]);
+
+assertInterpolation({
+  property: 'perspective',
+  from: '50px',
+  to: 'none'
+}, [
+  {at: -20, is: '50px'},
+  {at: -1, is: '50px'},
+  {at: -0.3, is: '50px'},
+  {at: 0, is: '50px'},
+  {at: 0.3, is: '50px'},
+  {at: 0.6, is: 'none'},
+  {at: 1, is: 'none'},
+  {at: 1.5, is: 'none'}
+]);
 </script>
 </body>

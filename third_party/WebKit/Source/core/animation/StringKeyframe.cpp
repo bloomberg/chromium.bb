@@ -194,12 +194,9 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyVerticalAlign:
     case CSSPropertyWordSpacing:
     case CSSPropertyWebkitColumnRuleWidth:
-        if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
+        if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue, property) && LengthStyleInterpolation::canCreateFrom(*toCSSValue, property))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
 
-        // FIXME: Handle keywords e.g. 'none'.
-        if (property == CSSPropertyPerspective)
-            fallBackToLegacy = true;
         // FIXME: Handle keywords e.g. 'smaller', 'larger'.
         if (property == CSSPropertyFontSize)
             fallBackToLegacy = true;
@@ -208,13 +205,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         if (property == CSSPropertyBaselineShift)
             fallBackToLegacy = true;
 
-        // FIXME: Handle keywords e.g. 'normal'
-        if (property == CSSPropertyLetterSpacing)
-            fallBackToLegacy = true;
-
-        // FIXME: Handle keywords e.g. 'thick'
-        if (property == CSSPropertyOutlineWidth || property == CSSPropertyWebkitColumnRuleWidth)
-            fallBackToLegacy = true;
         break;
     case CSSPropertyOrphans:
     case CSSPropertyWidows:

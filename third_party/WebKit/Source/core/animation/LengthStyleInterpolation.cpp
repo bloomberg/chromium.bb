@@ -13,12 +13,55 @@
 
 namespace blink {
 
-bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value)
+namespace {
+
+bool pixelsForKeyword(CSSPropertyID property, CSSValueID valueID, double& result)
+{
+    switch (property) {
+    case CSSPropertyBorderBottomWidth:
+    case CSSPropertyBorderLeftWidth:
+    case CSSPropertyBorderRightWidth:
+    case CSSPropertyBorderTopWidth:
+    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyOutlineWidth:
+        if (valueID == CSSValueThin) {
+            result = 1;
+            return true;
+        }
+        if (valueID == CSSValueMedium) {
+            result = 3;
+            return true;
+        }
+        if (valueID == CSSValueThick) {
+            result = 5;
+            return true;
+        }
+        return false;
+    case CSSPropertyLetterSpacing:
+        if (valueID == CSSValueNormal) {
+            result = 0;
+            return true;
+        }
+        return false;
+    default:
+        return false;
+    }
+}
+
+} // namespace
+
+bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value, CSSPropertyID property)
 {
     if (value.isPrimitiveValue()) {
         const CSSPrimitiveValue& primitiveValue = blink::toCSSPrimitiveValue(value);
         if (primitiveValue.cssCalcValue())
             return true;
+
+        if (primitiveValue.isValueID()) {
+            CSSValueID valueID = primitiveValue.getValueID();
+            double pixels;
+            return pixelsForKeyword(property, valueID, pixels);
+        }
 
         CSSPrimitiveValue::LengthUnitType type;
         // Only returns true if the type is a primitive length unit.
@@ -27,9 +70,9 @@ bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value)
     return value.isCalcValue();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::toInterpolableValue(const CSSValue& value)
+PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::toInterpolableValue(const CSSValue& value, CSSPropertyID id)
 {
-    ASSERT(canCreateFrom(value));
+    ASSERT(canCreateFrom(value, id));
     OwnPtrWillBeRawPtr<InterpolableList> listOfValuesAndTypes = InterpolableList::create(2);
     OwnPtrWillBeRawPtr<InterpolableList> listOfValues = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
     OwnPtrWillBeRawPtr<InterpolableList> listOfTypes = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
@@ -42,7 +85,15 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::toInterpolab
         arrayOfValues.append(0);
 
     arrayOfTypes.ensureSize(CSSPrimitiveValue::LengthUnitTypeCount);
-    primitive.accumulateLengthArray(arrayOfValues, arrayOfTypes);
+    if (primitive.isValueID()) {
+        CSSValueID valueID = primitive.getValueID();
+        double pixels;
+        pixelsForKeyword(id, valueID, pixels);
+        arrayOfTypes.set(CSSPrimitiveValue::UnitTypePixels);
+        arrayOfValues[CSSPrimitiveValue::UnitTypePixels] = pixels;
+    } else {
+        primitive.accumulateLengthArray(arrayOfValues, arrayOfTypes);
+    }
 
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
         listOfValues->set(i, InterpolableNumber::create(arrayOfValues.at(i)));

@@ -28,5 +28,61 @@ assertInterpolation({
   {at: 1, is: '10px'},
   {at: 1.5, is: '15px'}
 ]);
+
+assertInterpolation({
+  property: 'border-bottom-width',
+  from: 'thick',
+  to: '15px'
+}, [
+  {at: -2, is: '0px'}, // CSS border-bottom-width can't be negative.
+  {at: -0.3, is: '2px'},
+  {at: 0, is: '5px'},
+  {at: 0.3, is: '8px'},
+  {at: 0.6, is: '11px'},
+  {at: 1, is: '15px'},
+  {at: 1.5, is: '20px'}
+]);
+
+assertInterpolation({
+  property: 'border-left-width',
+  from: 'medium',
+  to: '13px'
+}, [
+  {at: -2, is: '0px'}, // CSS border-left-width can't be negative.
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '3px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '9px'},
+  {at: 1, is: '13px'},
+  {at: 1.5, is: '18px'}
+]);
+
+assertInterpolation({
+  property: 'border-right-width',
+  from: 'thin',
+  to: '11px'
+}, [
+  {at: -2, is: '0px'}, // CSS border-right-width can't be negative.
+  {at: -0.3, is: '0px'}, // CSS border-right-width can't be negative.
+  {at: 0, is: '1px'},
+  {at: 0.3, is: '4px'},
+  {at: 0.6, is: '7px'},
+  {at: 1, is: '11px'},
+  {at: 1.5, is: '16px'}
+]);
+
+assertInterpolation({
+  property: 'border-top-width',
+  from: '15px',
+  to: 'thick'
+}, [
+  {at: -2, is: '35px'},
+  {at: -0.3, is: '18px'},
+  {at: 0, is: '15px'},
+  {at: 0.3, is: '12px'},
+  {at: 0.6, is: '9px'},
+  {at: 1, is: '5px'},
+  {at: 1.5, is: '0px'}
+]);
 </script>
 </body>

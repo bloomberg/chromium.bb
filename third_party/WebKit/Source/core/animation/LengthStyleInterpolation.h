@@ -20,16 +20,16 @@ public:
 
     static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range)
     {
-        return adoptRefWillBeNoop(new LengthStyleInterpolation(toInterpolableValue(start), toInterpolableValue(end), id, range));
+        return adoptRefWillBeNoop(new LengthStyleInterpolation(toInterpolableValue(start, id), toInterpolableValue(end, id), id, range));
     }
 
-    static bool canCreateFrom(const CSSValue&);
+    static bool canCreateFrom(const CSSValue&, CSSPropertyID = CSSPropertyInvalid);
 
     virtual void apply(StyleResolverState&) const override;
 
     DECLARE_VIRTUAL_TRACE();
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(const CSSValue&);
+    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(const CSSValue&, CSSPropertyID = CSSPropertyInvalid);
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> fromInterpolableValue(const InterpolableValue&, InterpolationRange);
 
 private:
