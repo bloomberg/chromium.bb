@@ -117,6 +117,8 @@ TEST_P(SpdyHeadersBlockParserTest, BasicTest) {
   // Sanity test, verify that we parse out correctly a block with
   // a single key-value pair and that we notify when we start and finish
   // handling a headers block.
+  EXPECT_EQ(spdy_version_, parser_->spdy_version());
+
   string headers(CreateHeaders(1, false));
 
   EXPECT_CALL(handler_, OnHeaderBlock(1)).Times(1);
