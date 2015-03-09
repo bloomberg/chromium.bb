@@ -1863,8 +1863,6 @@ crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463892 inspector/agents-enable-disable.html [ Skip ]
 
-crbug.com/458898 fast/dom/HTMLProgressElement/progress-bar-value-pseudo-element.html [ NeedsRebaseline ]
-
 
 crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-evenodd.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-nonzero.html [ Pass ImageOnlyFailure ]
