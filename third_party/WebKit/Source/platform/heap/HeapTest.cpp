@@ -731,11 +731,11 @@ private:
 
 int SimpleFinalizedObject::s_destructorCalls = 0;
 
-class Node : public GarbageCollected<Node> {
+class IntNode : public GarbageCollected<IntNode> {
 public:
-    static Node* create(int i)
+    static IntNode* create(int i)
     {
-        return new Node(i);
+        return new IntNode(i);
     }
 
     DEFINE_INLINE_TRACE() { }
@@ -743,8 +743,21 @@ public:
     int value() { return m_value; }
 
 private:
-    Node(int i) : m_value(i) { }
+    IntNode(int i) : m_value(i) { }
     int m_value;
+};
+
+// IntNode is used to test typed heap allocation. Instead of
+// redefining blink::Node to our test version, we keep it separate
+// so as to avoid possible warnings about linker duplicates.
+// Provide a HeapIndexTrait<> specialization to assign the test
+// object to Node's typed heap instead.
+//
+// FIXME: untangling the heap unit tests from Blink would simplify
+// and avoid running into this problem - http://crbug.com/425381
+template<>
+struct HeapIndexTrait<IntNode> {
+    static int index() { return NodeHeapIndex; }
 };
 
 class Bar : public GarbageCollectedFinalized<Bar> {
@@ -1848,7 +1861,7 @@ TEST(HeapTest, TypedHeapSanity)
 {
     // We use TraceCounter for allocating an object on the general heap.
     Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
-    Persistent<Node> typedHeapObject = Node::create(0);
+    Persistent<IntNode> typedHeapObject = IntNode::create(0);
     EXPECT_NE(pageFromObject(generalHeapObject.get()),
         pageFromObject(typedHeapObject.get()));
 }
@@ -5401,15 +5414,15 @@ class NonNodeAllocatingNodeInDestructor : public GarbageCollectedFinalized<NonNo
 public:
     ~NonNodeAllocatingNodeInDestructor()
     {
-        s_node = new Persistent<Node>(Node::create(10));
+        s_node = new Persistent<IntNode>(IntNode::create(10));
     }
 
     DEFINE_INLINE_TRACE() { }
 
-    static Persistent<Node>* s_node;
+    static Persistent<IntNode>* s_node;
 };
 
-Persistent<Node>* NonNodeAllocatingNodeInDestructor::s_node = 0;
+Persistent<IntNode>* NonNodeAllocatingNodeInDestructor::s_node = 0;
 
 TEST(HeapTest, NonNodeAllocatingNodeInDestructor)
 {
