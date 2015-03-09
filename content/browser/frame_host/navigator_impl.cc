@@ -627,11 +627,18 @@ void NavigatorImpl::RequestTransferURL(
   }
 
   int64 frame_tree_node_id = -1;
+
+  // Send the navigation to the current FrameTreeNode if it's destined for a
+  // subframe in the current tab.  We'll assume it's for the main frame
+  // (possibly of a new or different WebContents) otherwise.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+          switches::kSitePerProcess) &&
+      disposition == CURRENT_TAB &&
+      render_frame_host->GetParent()) {
     frame_tree_node_id =
         render_frame_host->frame_tree_node()->frame_tree_node_id();
   }
+
   OpenURLParams params(
       dest_url, referrer, frame_tree_node_id, disposition, page_transition,
       true /* is_renderer_initiated */);
