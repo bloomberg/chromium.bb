@@ -492,8 +492,21 @@ void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
   window_shape_ = NULL;
 
   if (native_region) {
+    gfx::Transform transform = GetRootTransform();
+    if (!transform.IsIdentity() && !native_region->isEmpty()) {
+      SkPath path_in_dip;
+      if (native_region->getBoundaryPath(&path_in_dip)) {
+        SkPath path_in_pixels;
+        path_in_dip.transform(transform.matrix(), &path_in_pixels);
+        window_shape_ = gfx::CreateRegionFromSkPath(path_in_pixels);
+      } else {
+        window_shape_ = XCreateRegion();
+      }
+    } else {
+      window_shape_ = gfx::CreateRegionFromSkRegion(*native_region);
+    }
+
     custom_window_shape_ = true;
-    window_shape_ = gfx::CreateRegionFromSkRegion(*native_region);
     delete native_region;
   }
   ResetWindowRegion();
