@@ -660,6 +660,39 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   source->AddString("packExtensionErrorTitle",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_ERROR_TITLE));
 
+  // Extension Error and Extension Error Overlay:
+  source->AddString(
+      "extensionErrorsShowMore",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_SHOW_MORE));
+  source->AddString(
+      "extensionErrorsShowFewer",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_SHOW_FEWER));
+  source->AddString(
+      "extensionErrorViewDetails",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_DETAILS));
+  source->AddString(
+      "extensionErrorViewManifest",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_MANIFEST));
+  source->AddString("extensionErrorOverlayDone",
+                    l10n_util::GetStringUTF16(IDS_DONE));
+  source->AddString(
+      "extensionErrorOverlayContextUrl",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CONTEXT));
+  source->AddString(
+      "extensionErrorOverlayStackTrace",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_STACK_TRACE));
+  source->AddString(
+      "extensionErrorOverlayAnonymousFunction",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION));
+  source->AddString(
+      "extensionErrorOverlayLaunchDevtools",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS));
+  source->AddString(
+      "extensionErrorOverlayContextUnknown",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CONTEXT_UNKNOWN));
+  source->AddString(
+      "extensionErrorOverlayNoCodeToDisplay",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_NO_CODE_TO_DISPLAY));
 }
 
 void ExtensionSettingsHandler::RenderViewDeleted(

@@ -91,24 +91,6 @@ cr.define('extensions', function() {
     return !/^extensions::/.test(url);
   };
 
-  /**
-   * Send a call to chrome to open the developer tools for an error.
-   * This will call either the bound function in ExtensionErrorHandler or the
-   * API function from developerPrivate, depending on whether this is being
-   * used in the native chrome:extensions page or the Apps Developer Tool.
-   * @see chrome/browser/ui/webui/extensions/extension_error_ui_util.h
-   * @param {OpenDevToolsProperties} args The arguments to pass to openDevTools.
-   * @private
-   */
-  RuntimeErrorContent.openDevtools_ = function(args) {
-    if (chrome.send)
-      chrome.send('extensionErrorOpenDevTools', [args]);
-    else if (chrome.developerPrivate)
-      chrome.developerPrivate.openDevTools(args);
-    else
-      assertNotReached('Cannot call either openDevTools function.');
-  };
-
   RuntimeErrorContent.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -236,10 +218,8 @@ cr.define('extensions', function() {
         frameNode.addEventListener('click', function(frame, frameNode, e) {
           this.setActiveFrame_(frameNode);
 
-          // Request the file source with the section highlighted; this will
-          // call ExtensionErrorOverlay.requestFileSourceResponse() when
-          // completed, which in turn calls setCode().
-          ExtensionErrorOverlay.requestFileSource(
+          // Request the file source with the section highlighted.
+          extensions.ExtensionErrorOverlay.getInstance().requestFileSource(
               {extensionId: this.error_.extensionId,
                message: this.error_.message,
                pathSuffix: getRelativeUrl(frame.url,
@@ -268,7 +248,7 @@ cr.define('extensions', function() {
       var stackFrame =
           this.error_.stackTrace[this.currentFrameNode_.indexIntoTrace];
 
-      RuntimeErrorContent.openDevtools_(
+      chrome.developerPrivate.openDevTools(
           {renderProcessId: this.error_.renderProcessId || -1,
            renderViewId: this.error_.renderViewId || -1,
            url: stackFrame.url,
@@ -346,27 +326,6 @@ cr.define('extensions', function() {
     }
 
     return false;
-  };
-
-  /**
-   * Send a call to chrome to request the source of a given file.
-   * This will call either the bound function in ExtensionErrorHandler or the
-   * API function from developerPrivate, depending on whether this is being
-   * used in the native chrome:extensions page or the Apps Developer Tool.
-   * @see chrome/browser/ui/webui/extensions/extension_error_ui_util.h
-   * @param {RequestFileSourceProperties} args The arguments to pass to
-   *     requestFileSource.
-   */
-  ExtensionErrorOverlay.requestFileSource = function(args) {
-    if (chrome.send) {
-      chrome.send('extensionErrorRequestFileSource', [args]);
-    } else if (chrome.developerPrivate) {
-      chrome.developerPrivate.requestFileSource(args, function(result) {
-        extensions.ExtensionErrorOverlay.requestFileSourceResponse(result);
-      });
-    } else {
-      assertNotReached('Cannot call either requestFileSource function.');
-    }
   };
 
   cr.addSingletonGetter(ExtensionErrorOverlay);
@@ -500,43 +459,40 @@ cr.define('extensions', function() {
               error.stackTrace && error.stackTrace[0] ?
                   error.stackTrace[0].lineNumber : 0;
         }
-        ExtensionErrorOverlay.requestFileSource(requestFileSourceArgs);
+        this.requestFileSource(requestFileSourceArgs);
       } else {
-        ExtensionErrorOverlay.requestFileSourceResponse(null);
+        this.onFileSourceResponse_(null);
       }
     },
 
+    /**
+     * Requests a file's source.
+     * @param {RequestFileSourceProperties} args The arguments for the call.
+     */
+    requestFileSource: function(args) {
+      chrome.developerPrivate.requestFileSource(
+          args, this.onFileSourceResponse_.bind(this));
+    },
 
     /**
      * Set the code to be displayed in the code portion of the overlay.
      * @see ExtensionErrorOverlay.requestFileSourceResponse().
-     * @param {?ExtensionHighlight} code The code to be displayed. If |code| is
-     *     null, then
-     *     a "Could not display code" message will be displayed instead.
+     * @param {?RequestFileSourceResponse} response The response from the
+     *     request file source call, which will be shown as code. If |response|
+     *     is null, then a "Could not display code" message will be displayed
+     *     instead.
      */
-    setCode: function(code) {
-      document.querySelector(
-          '#extension-error-overlay .extension-error-overlay-title').
-              textContent = code.title;
-
+    onFileSourceResponse_: function(response) {
+      if (response) {
+        document.querySelector(
+            '#extension-error-overlay .extension-error-overlay-title').
+                textContent = response.title;
+      }
       this.codeDiv_.populate(
-          code,
+          response,  // ExtensionCode can handle a null response.
           loadTimeData.getString('extensionErrorOverlayNoCodeToDisplay'));
+      this.setVisible(true);
     },
-  };
-
-  /**
-   * Called by the ExtensionErrorHandler responding to the request for a file's
-   * source. Populate the content area of the overlay and display the overlay.
-   * @param {?ExtensionHighlight} result The three 'highlight' strings represent
-   *     three portions of the file's content to display - the portion which is
-   *     most relevant and should be emphasized (highlight), and the parts both
-   *     before and after this portion. These may be empty.
-   */
-  ExtensionErrorOverlay.requestFileSourceResponse = function(result) {
-    var overlay = extensions.ExtensionErrorOverlay.getInstance();
-    overlay.setCode(result);
-    overlay.setVisible(true);
   };
 
   // Export

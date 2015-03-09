@@ -372,4 +372,36 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
                     current_ids).size());
 }
 
+// Test developerPrivate.requestFileSource.
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
+  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
+  // Testing of this function seems light, but that's because it basically just
+  // forwards to reading a file to a string, and highlighting it - both of which
+  // are already tested separately.
+  const Extension* extension = LoadUnpackedExtension();
+  const char kErrorMessage[] = "Something went wrong";
+  api::developer_private::RequestFileSourceProperties properties;
+  properties.extension_id = extension->id();
+  properties.path_suffix = "manifest.json";
+  properties.message = kErrorMessage;
+  properties.manifest_key.reset(new std::string("name"));
+
+  scoped_refptr<UIThreadExtensionFunction> function(
+      new api::DeveloperPrivateRequestFileSourceFunction());
+  base::ListValue file_source_args;
+  file_source_args.Append(properties.ToValue().release());
+  EXPECT_TRUE(RunFunction(function, file_source_args)) << function->GetError();
+
+  const base::Value* response_value = nullptr;
+  ASSERT_TRUE(function->GetResultList()->Get(0u, &response_value));
+  scoped_ptr<api::developer_private::RequestFileSourceResponse> response =
+      api::developer_private::RequestFileSourceResponse::FromValue(
+          *response_value);
+  EXPECT_FALSE(response->before_highlight.empty());
+  EXPECT_EQ("\"name\": \"foo\"", response->highlight);
+  EXPECT_FALSE(response->after_highlight.empty());
+  EXPECT_EQ("foo: manifest.json", response->title);
+  EXPECT_EQ(kErrorMessage, response->message);
+}
+
 }  // namespace extensions

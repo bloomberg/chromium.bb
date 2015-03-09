@@ -352,8 +352,8 @@ cr.define('extensions', function() {
   };
 
   /**
-   * Sets the given overlay to show. This hides whatever overlay is currently
-   * showing, if any.
+   * Sets the given overlay to show. If the overlay is already showing, this is
+   * a no-op; otherwise, hides any currently-showing overlay.
    * @param {HTMLElement} node The overlay page to show. If null, all overlays
    *     are hidden.
    */
@@ -364,6 +364,8 @@ cr.define('extensions', function() {
 
     var currentlyShowingOverlay = ExtensionSettings.getCurrentOverlay();
     if (currentlyShowingOverlay) {
+      if (currentlyShowingOverlay == node)  // Already displayed.
+        return;
       currentlyShowingOverlay.classList.remove('showing');
       cr.dispatchSimpleEvent($('overlay'), 'cancelOverlay');
     }

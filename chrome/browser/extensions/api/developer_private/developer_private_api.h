@@ -47,6 +47,10 @@ struct ItemInfo;
 struct ItemInspectView;
 struct ProjectInfo;
 
+namespace RequestFileSource {
+struct Params;
+}
+
 }  // namespace developer_private
 
 }  // namespace api
@@ -443,36 +447,32 @@ class DeveloperPrivateLoadDirectoryFunction
 };
 
 class DeveloperPrivateRequestFileSourceFunction
-    : public ChromeAsyncExtensionFunction {
+    : public DeveloperPrivateAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.requestFileSource",
                              DEVELOPERPRIVATE_REQUESTFILESOURCE);
-
   DeveloperPrivateRequestFileSourceFunction();
 
  protected:
   ~DeveloperPrivateRequestFileSourceFunction() override;
-
-  // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
-  void LaunchCallback(const base::DictionaryValue& results);
+  void Finish(const std::string& file_contents);
+
+  scoped_ptr<api::developer_private::RequestFileSource::Params> params_;
 };
 
 class DeveloperPrivateOpenDevToolsFunction
-    : public ChromeAsyncExtensionFunction {
+    : public DeveloperPrivateAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.openDevTools",
                              DEVELOPERPRIVATE_OPENDEVTOOLS);
-
   DeveloperPrivateOpenDevToolsFunction();
 
  protected:
   ~DeveloperPrivateOpenDevToolsFunction() override;
-
-  // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace api

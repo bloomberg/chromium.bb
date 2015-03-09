@@ -14,6 +14,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -32,8 +33,9 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/webui/extensions/extension_error_ui_util.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -53,6 +55,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/file_highlighter.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/view_type_utils.h"
@@ -100,8 +103,13 @@ const char kCouldNotShowSelectFileDialogError[] =
     "Could not show a file chooser.";
 const char kFileSelectionCanceled[] =
     "File selection was canceled.";
+const char kInvalidPathError[] = "Invalid path.";
+const char kManifestKeyIsRequiredError[] =
+    "The 'manifestKey' argument is required for manifest files.";
+const char kNoSuchRendererError[] = "Could not find the renderer.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
+const char kManifestFile[] = "manifest.json";
 
 ExtensionService* GetExtensionService(content::BrowserContext* context) {
   return ExtensionSystem::Get(context)->extension_service();
@@ -168,6 +176,12 @@ void BroadcastItemStateChanged(content::BrowserContext* browser_context,
   scoped_ptr<Event> event(new Event(
       developer_private::OnItemStateChanged::kEventName, args.Pass()));
   EventRouter::Get(browser_context)->BroadcastEvent(event.Pass());
+}
+
+std::string ReadFileToString(const base::FilePath& path) {
+  std::string data;
+  ignore_result(base::ReadFileToString(path, &data));
+  return data;
 }
 
 }  // namespace
@@ -1332,46 +1346,124 @@ DeveloperPrivateRequestFileSourceFunction::
 DeveloperPrivateRequestFileSourceFunction::
     ~DeveloperPrivateRequestFileSourceFunction() {}
 
-bool DeveloperPrivateRequestFileSourceFunction::RunAsync() {
-  scoped_ptr<developer::RequestFileSource::Params> params(
-      developer::RequestFileSource::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
+ExtensionFunction::ResponseAction
+DeveloperPrivateRequestFileSourceFunction::Run() {
+  params_ = developer::RequestFileSource::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_);
 
-  base::DictionaryValue* dict = nullptr;
-  // TODO(devlin): Use generated |params|.
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0u, &dict));
+  const developer::RequestFileSourceProperties& properties =
+      params_->properties;
+  const Extension* extension = GetExtensionById(properties.extension_id);
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
 
-  AddRef();  // Balanced in LaunchCallback().
-  error_ui_util::HandleRequestFileSource(
-      dict,
-      GetProfile(),
-      base::Bind(&DeveloperPrivateRequestFileSourceFunction::LaunchCallback,
-                 base::Unretained(this)));
-  return true;
+  // Under no circumstances should we ever need to reference a file outside of
+  // the extension's directory. If it tries to, abort.
+  base::FilePath path_suffix =
+      base::FilePath::FromUTF8Unsafe(properties.path_suffix);
+  if (path_suffix.empty() || path_suffix.ReferencesParent())
+    return RespondNow(Error(kInvalidPathError));
+
+  if (properties.path_suffix == kManifestFile && !properties.manifest_key)
+    return RespondNow(Error(kManifestKeyIsRequiredError));
+
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&ReadFileToString, extension->path().Append(path_suffix)),
+      base::Bind(&DeveloperPrivateRequestFileSourceFunction::Finish, this));
+
+  return RespondLater();
 }
 
-void DeveloperPrivateRequestFileSourceFunction::LaunchCallback(
-    const base::DictionaryValue& results) {
-  SetResult(results.DeepCopy());
-  SendResponse(true);
-  Release();  // Balanced in RunAsync().
+void DeveloperPrivateRequestFileSourceFunction::Finish(
+    const std::string& file_contents) {
+  const developer::RequestFileSourceProperties& properties =
+      params_->properties;
+  const Extension* extension = GetExtensionById(properties.extension_id);
+  if (!extension) {
+    Respond(Error(kNoSuchExtensionError));
+    return;
+  }
+
+  developer::RequestFileSourceResponse response;
+  base::FilePath path_suffix =
+      base::FilePath::FromUTF8Unsafe(properties.path_suffix);
+  base::FilePath path = extension->path().Append(path_suffix);
+  response.title = base::StringPrintf("%s: %s",
+                                      extension->name().c_str(),
+                                      path.BaseName().AsUTF8Unsafe().c_str());
+  response.message = properties.message;
+
+  scoped_ptr<FileHighlighter> highlighter;
+  if (properties.path_suffix == kManifestFile) {
+    highlighter.reset(new ManifestHighlighter(
+        file_contents,
+        *properties.manifest_key,
+        properties.manifest_specific ?
+            *properties.manifest_specific : std::string()));
+  } else {
+    highlighter.reset(new SourceHighlighter(
+        file_contents,
+        properties.line_number ? *properties.line_number : 0));
+  }
+
+  response.before_highlight = highlighter->GetBeforeFeature();
+  response.highlight = highlighter->GetFeature();
+  response.after_highlight = highlighter->GetAfterFeature();
+
+  Respond(OneArgument(response.ToValue().release()));
 }
 
 DeveloperPrivateOpenDevToolsFunction::DeveloperPrivateOpenDevToolsFunction() {}
 DeveloperPrivateOpenDevToolsFunction::~DeveloperPrivateOpenDevToolsFunction() {}
 
-bool DeveloperPrivateOpenDevToolsFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+DeveloperPrivateOpenDevToolsFunction::Run() {
   scoped_ptr<developer::OpenDevTools::Params> params(
       developer::OpenDevTools::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
+  const developer::OpenDevToolsProperties& properties = params->properties;
 
-  base::DictionaryValue* dict = nullptr;
-  // TODO(devlin): Use generated |params|.
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0u, &dict));
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(properties.render_process_id,
+                                      properties.render_view_id);
+  content::WebContents* web_contents =
+      rvh ? content::WebContents::FromRenderViewHost(rvh) : nullptr;
+  // It's possible that the render view was closed since we last updated the
+  // links. Handle this gracefully.
+  if (!web_contents)
+    return RespondNow(Error(kNoSuchRendererError));
 
-  error_ui_util::HandleOpenDevTools(dict);
+  // If we include a url, we should inspect it specifically (and not just the
+  // render view).
+  if (properties.url) {
+    // Line/column numbers are reported in display-friendly 1-based numbers,
+    // but are inspected in zero-based numbers.
+    // Default to the first line/column.
+    DevToolsWindow::OpenDevToolsWindow(
+        web_contents,
+        DevToolsToggleAction::Reveal(
+            base::UTF8ToUTF16(*properties.url),
+            properties.line_number ? *properties.line_number - 1 : 0,
+            properties.column_number ? *properties.column_number - 1 : 0));
+  } else {
+    DevToolsWindow::OpenDevToolsWindow(web_contents);
+  }
 
-  return true;
+  // Once we open the inspector, we focus on the appropriate tab...
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+
+  // ... but some pages (popups and apps) don't have tabs, and some (background
+  // pages) don't have an associated browser. For these, the inspector opens in
+  // a new window, and our work is done.
+  if (!browser || !browser->is_type_tabbed())
+    return RespondNow(NoArguments());
+
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(web_contents),
+                           false);  // Not through direct user gesture.
+  return RespondNow(NoArguments());
 }
 
 }  // namespace api
