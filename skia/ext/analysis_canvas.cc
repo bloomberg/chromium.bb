@@ -418,7 +418,7 @@ SkCanvas::SaveLayerStrategy AnalysisCanvas::willSaveLayer(
   SkXfermode::Mode xfermode = SkXfermode::kSrc_Mode;
   if (paint)
     SkXfermode::AsMode(paint->getXfermode(), &xfermode);
-  if (xfermode != SkXfermode::kSrc_Mode) {
+  if (xfermode != SkXfermode::kDst_Mode) {
     if (force_not_transparent_stack_level_ == kNoLayer) {
       force_not_transparent_stack_level_ = saved_stack_size_;
       SetForceNotTransparent(true);

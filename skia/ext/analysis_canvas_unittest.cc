@@ -222,6 +222,49 @@ TEST(AnalysisCanvasTest, ClipPath) {
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
 }
 
+TEST(AnalysisCanvasTest, SaveLayerWithXfermode) {
+  skia::AnalysisCanvas canvas(255, 255);
+  SkRect bounds = SkRect::MakeWH(255, 255);
+  SkColor outputColor;
+
+  EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
+  SkPaint paint;
+
+  // Note: nothing is draw to the the save layer, but solid color
+  // and transparency are handled conservatively in case the layer's
+  // SkPaint draws something. For example, there could be an
+  // SkPictureImageFilter. If someday analysis_canvas starts doing
+  // a deeper analysis of the SkPaint, this test may need to be
+  // redesigned.
+  TransparentFill(canvas);
+  EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  canvas.saveLayer(&bounds, &paint);
+  canvas.restore();
+  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+
+  TransparentFill(canvas);
+  EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
+  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  canvas.saveLayer(&bounds, &paint);
+  canvas.restore();
+  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+
+  // Layer with dst xfermode is a no-op, so this is the only case
+  // where solid color is unaffected by the layer.
+  TransparentFill(canvas);
+  EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
+  paint.setXfermodeMode(SkXfermode::kDst_Mode);
+  canvas.saveLayer(&bounds, &paint);
+  canvas.restore();
+  EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
+}
+
 TEST(AnalysisCanvasTest, SaveLayerRestore) {
   skia::AnalysisCanvas canvas(255, 255);
 
