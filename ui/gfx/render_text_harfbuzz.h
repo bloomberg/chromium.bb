@@ -235,12 +235,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // ICU grapheme iterator for the layout text. Can be NULL in case of an error.
   base::i18n::BreakIterator* GetGraphemeIterator();
 
-  // Convert an index in |text_| to the index in |given_text|. The
-  // |given_text| should be either |display_text_| or |layout_text_|
-  // depending on the elide state.
-  size_t TextIndexToGivenTextIndex(const base::string16& given_text,
-                                   size_t index);
-
   // Returns the current run list, |display_run_list_| if the text is
   // elided, or |layout_run_list_| otherwise.
   internal::TextRunList* GetRunList();

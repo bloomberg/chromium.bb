@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/render_text.h"
 
 namespace gfx {
@@ -20,7 +21,7 @@ namespace gfx {
 //
 // Note: The current implementation only supports drawing and sizing the text,
 //       but not text selection or cursor movement.
-class RenderTextMac : public RenderText {
+class GFX_EXPORT RenderTextMac : public RenderText {
  public:
   RenderTextMac();
   ~RenderTextMac() override;
@@ -53,6 +54,8 @@ class RenderTextMac : public RenderText {
   void DrawVisualText(Canvas* canvas) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Mac_ElidedText);
+
   struct TextRun {
     CTRunRef ct_run;
     SkPoint origin;
@@ -71,8 +74,27 @@ class RenderTextMac : public RenderText {
     ~TextRun();
   };
 
+  // Returns the width used to draw |layout_text_|.
+  float GetLayoutTextWidth();
+
+  // Computes the size used to draw |line|. Stores the baseline position into
+  // |baseline|.
+  gfx::SizeF GetCTLineSize(CTLineRef line, SkScalar* baseline);
+
+  // Creates Core Text line object and its attributes for the given text and
+  // returns the line. |attributes| keeps the ownership of the text attributes.
+  // See the comments of ArrayStyles() implementation for the ownership details.
+  base::ScopedCFTypeRef<CTLineRef> EnsureLayoutInternal(
+      const base::string16& text,
+      base::ScopedCFTypeRef<CFMutableArrayRef>* attributes);
+
   // Applies RenderText styles to |attr_string| with the given |ct_font|.
-  void ApplyStyles(CFMutableAttributedStringRef attr_string, CTFontRef ct_font);
+  // Returns the array of attributes to keep the ownership of the attributes.
+  // See the comments in .cc file for the details.
+  base::ScopedCFTypeRef<CFMutableArrayRef> ApplyStyles(
+      const base::string16& text,
+      CFMutableAttributedStringRef attr_string,
+      CTFontRef ct_font);
 
   // Updates |runs_| based on |line_| and sets |runs_valid_| to true.
   void ComputeRuns();

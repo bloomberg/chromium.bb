@@ -581,6 +581,12 @@ class GFX_EXPORT RenderText {
   // |text|.
   base::i18n::TextDirection GetTextDirection(const base::string16& text);
 
+  // Convert an index in |text_| to the index in |given_text|. The
+  // |given_text| should be either |display_text_| or |layout_text_|
+  // depending on the elide state.
+  size_t TextIndexToGivenTextIndex(const base::string16& given_text,
+                                   size_t index);
+
   // A convenience function to check whether the glyph attached to the caret
   // is within the given range.
   static bool RangeContainsCaret(const Range& range,

@@ -33,8 +33,8 @@ const base::string16& RenderTextMac::GetDisplayText() {
 }
 
 Size RenderTextMac::GetStringSize() {
-  EnsureLayout();
-  return Size(std::ceil(string_size_.width()), string_size_.height());
+  SizeF size_f = GetStringSizeF();
+  return Size(std::ceil(size_f.width()), size_f.height());
 }
 
 SizeF RenderTextMac::GetStringSizeF() {
@@ -113,7 +113,7 @@ void RenderTextMac::OnLayoutTextAttributeChanged(bool text_changed) {
     if (elide_behavior() != NO_ELIDE &&
         elide_behavior() != FADE_TAIL &&
         !layout_text().empty()) {
-      UpdateDisplayText(GetContentWidth());
+      UpdateDisplayText(std::ceil(GetLayoutTextWidth()));
     } else {
       UpdateDisplayText(0);
     }
@@ -134,50 +134,8 @@ void RenderTextMac::EnsureLayout() {
   runs_.clear();
   runs_valid_ = false;
 
-  CTFontRef ct_font = base::mac::NSToCFCast(
-      font_list().GetPrimaryFont().GetNativeFont());
-
-  const void* keys[] = { kCTFontAttributeName };
-  const void* values[] = { ct_font };
-  base::ScopedCFTypeRef<CFDictionaryRef> attributes(
-      CFDictionaryCreate(NULL,
-                         keys,
-                         values,
-                         arraysize(keys),
-                         NULL,
-                         &kCFTypeDictionaryValueCallBacks));
-
-  base::ScopedCFTypeRef<CFStringRef> cf_text(
-      base::SysUTF16ToCFStringRef(text()));
-  base::ScopedCFTypeRef<CFAttributedStringRef> attr_text(
-      CFAttributedStringCreate(NULL, cf_text, attributes));
-  base::ScopedCFTypeRef<CFMutableAttributedStringRef> attr_text_mutable(
-      CFAttributedStringCreateMutableCopy(NULL, 0, attr_text));
-
-  // TODO(asvitkine|msw): Respect GetTextDirection(), which may not match the
-  // natural text direction. See kCTTypesetterOptionForcedEmbeddingLevel, etc.
-
-  ApplyStyles(attr_text_mutable, ct_font);
-  line_.reset(CTLineCreateWithAttributedString(attr_text_mutable));
-
-  CGFloat ascent = 0;
-  CGFloat descent = 0;
-  CGFloat leading = 0;
-  // TODO(asvitkine): Consider using CTLineGetBoundsWithOptions() on 10.8+.
-  double width = CTLineGetTypographicBounds(line_, &ascent, &descent, &leading);
-  // Ensure ascent and descent are not smaller than ones of the font list.
-  // Keep them tall enough to draw often-used characters.
-  // For example, if a text field contains a Japanese character, which is
-  // smaller than Latin ones, and then later a Latin one is inserted, this
-  // ensures that the text baseline does not shift.
-  CGFloat font_list_height = font_list().GetHeight();
-  CGFloat font_list_baseline = font_list().GetBaseline();
-  ascent = std::max(ascent, font_list_baseline);
-  descent = std::max(descent, font_list_height - font_list_baseline);
-  string_size_ =
-      SizeF(width, std::max(ascent + descent + leading,
-                            static_cast<CGFloat>(min_line_height())));
-  common_baseline_ = ascent;
+  line_ = EnsureLayoutInternal(GetDisplayText(), &attributes_);
+  string_size_ = GetCTLineSize(line_.get(), &common_baseline_);
 }
 
 void RenderTextMac::DrawVisualText(Canvas* canvas) {
@@ -218,8 +176,70 @@ RenderTextMac::TextRun::TextRun()
 RenderTextMac::TextRun::~TextRun() {
 }
 
-void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
-                                CTFontRef font) {
+float RenderTextMac::GetLayoutTextWidth() {
+  base::ScopedCFTypeRef<CFMutableArrayRef> attributes_owner;
+  base::ScopedCFTypeRef<CTLineRef> line(
+      EnsureLayoutInternal(layout_text(), &attributes_owner));
+  SkScalar baseline;
+  return GetCTLineSize(line.get(), &baseline).width();
+}
+
+gfx::SizeF RenderTextMac::GetCTLineSize(CTLineRef line, SkScalar* baseline) {
+  CGFloat ascent = 0;
+  CGFloat descent = 0;
+  CGFloat leading = 0;
+  // TODO(asvitkine): Consider using CTLineGetBoundsWithOptions() on 10.8+.
+  double width = CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+  // Ensure ascent and descent are not smaller than ones of the font list.
+  // Keep them tall enough to draw often-used characters.
+  // For example, if a text field contains a Japanese character, which is
+  // smaller than Latin ones, and then later a Latin one is inserted, this
+  // ensures that the text baseline does not shift.
+  CGFloat font_list_height = font_list().GetHeight();
+  CGFloat font_list_baseline = font_list().GetBaseline();
+  ascent = std::max(ascent, font_list_baseline);
+  descent = std::max(descent, font_list_height - font_list_baseline);
+  *baseline = ascent;
+  return SizeF(
+      width, std::max(ascent + descent + leading,
+                      static_cast<CGFloat>(min_line_height())));
+}
+
+base::ScopedCFTypeRef<CTLineRef> RenderTextMac::EnsureLayoutInternal(
+    const base::string16& text,
+    base::ScopedCFTypeRef<CFMutableArrayRef>* attributes_owner) {
+  CTFontRef ct_font = base::mac::NSToCFCast(
+      font_list().GetPrimaryFont().GetNativeFont());
+
+  const void* keys[] = { kCTFontAttributeName };
+  const void* values[] = { ct_font };
+  base::ScopedCFTypeRef<CFDictionaryRef> attributes(
+      CFDictionaryCreate(NULL,
+                         keys,
+                         values,
+                         arraysize(keys),
+                         NULL,
+                         &kCFTypeDictionaryValueCallBacks));
+
+  base::ScopedCFTypeRef<CFStringRef> cf_text(
+      base::SysUTF16ToCFStringRef(text));
+  base::ScopedCFTypeRef<CFAttributedStringRef> attr_text(
+      CFAttributedStringCreate(NULL, cf_text, attributes));
+  base::ScopedCFTypeRef<CFMutableAttributedStringRef> attr_text_mutable(
+      CFAttributedStringCreateMutableCopy(NULL, 0, attr_text));
+
+  // TODO(asvitkine|msw): Respect GetTextDirection(), which may not match the
+  // natural text direction. See kCTTypesetterOptionForcedEmbeddingLevel, etc.
+
+  *attributes_owner = ApplyStyles(text, attr_text_mutable, ct_font);
+  return base::ScopedCFTypeRef<CTLineRef>(
+      CTLineCreateWithAttributedString(attr_text_mutable));
+}
+
+base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
+    const base::string16& text,
+    CFMutableAttributedStringRef attr_string,
+    CTFontRef font) {
   // Temporarily apply composition underlines and selection colors.
   ApplyCompositionAndSelectionStyles();
 
@@ -227,19 +247,20 @@ void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
   // passed in, as can be verified via CFGetRetainCount(). To ensure the
   // attribute objects do not leak, they are saved to |attributes_|.
   // Clear the attributes storage.
-  attributes_.reset(CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks));
+  base::ScopedCFTypeRef<CFMutableArrayRef> attributes(
+      CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks));
 
   // https://developer.apple.com/library/mac/#documentation/Carbon/Reference/CoreText_StringAttributes_Ref/Reference/reference.html
   internal::StyleIterator style(colors(), styles());
-  const size_t layout_text_length = GetDisplayText().length();
+  const size_t layout_text_length = CFAttributedStringGetLength(attr_string);
   for (size_t i = 0, end = 0; i < layout_text_length; i = end) {
-    end = TextIndexToDisplayIndex(style.GetRange().end());
+    end = TextIndexToGivenTextIndex(text, style.GetRange().end());
     const CFRange range = CFRangeMake(i, end - i);
     base::ScopedCFTypeRef<CGColorRef> foreground(
         CGColorCreateFromSkColor(style.color()));
     CFAttributedStringSetAttribute(attr_string, range,
         kCTForegroundColorAttributeName, foreground);
-    CFArrayAppendValue(attributes_, foreground);
+    CFArrayAppendValue(attributes, foreground);
 
     if (style.style(UNDERLINE)) {
       CTUnderlineStyle value = kCTUnderlineStyleSingle;
@@ -248,7 +269,7 @@ void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
       CFAttributedStringSetAttribute(attr_string, range,
                                      kCTUnderlineStyleAttributeName,
                                      underline_value);
-      CFArrayAppendValue(attributes_, underline_value);
+      CFArrayAppendValue(attributes, underline_value);
     }
 
     const int traits = (style.style(BOLD) ? kCTFontBoldTrait : 0) |
@@ -260,7 +281,7 @@ void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
       if (styled_font) {
         CFAttributedStringSetAttribute(attr_string, range, kCTFontAttributeName,
                                        styled_font);
-        CFArrayAppendValue(attributes_, styled_font);
+        CFArrayAppendValue(attributes, styled_font);
       }
     }
 
@@ -269,6 +290,8 @@ void RenderTextMac::ApplyStyles(CFMutableAttributedStringRef attr_string,
 
   // Undo the temporarily applied composition underlines and selection colors.
   UndoCompositionAndSelectionStyles();
+
+  return attributes;
 }
 
 void RenderTextMac::ComputeRuns() {

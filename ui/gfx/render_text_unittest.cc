@@ -28,6 +28,12 @@
 #include "ui/gfx/platform_font_win.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
+
+#include "ui/gfx/render_text_mac.h"
+#endif
+
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
@@ -2625,5 +2631,27 @@ TEST_F(RenderTextTest, TextDoesntClip) {
     }
   }
 }
+
+#if defined(OS_MACOSX)
+TEST_F(RenderTextTest, Mac_ElidedText) {
+  RenderTextMac render_text;
+  base::string16 text(ASCIIToUTF16("This is an example."));
+  render_text.SetText(text);
+  gfx::Size string_size = render_text.GetStringSize();
+  render_text.SetDisplayRect(gfx::Rect(string_size));
+  render_text.EnsureLayout();
+  // NOTE: Character and glyph counts are only comparable for simple text.
+  EXPECT_EQ(text.size(),
+            static_cast<size_t>(CTLineGetGlyphCount(render_text.line_)));
+
+  render_text.SetElideBehavior(ELIDE_TAIL);
+  string_size.set_width(string_size.width() / 2);
+  render_text.SetDisplayRect(gfx::Rect(string_size));
+  render_text.EnsureLayout();
+  CFIndex glyph_count = CTLineGetGlyphCount(render_text.line_);
+  EXPECT_GT(text.size(), static_cast<size_t>(glyph_count));
+  EXPECT_NE(0, glyph_count);
+}
+#endif
 
 }  // namespace gfx

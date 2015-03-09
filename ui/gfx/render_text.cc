@@ -1187,6 +1187,16 @@ base::i18n::TextDirection RenderText::GetTextDirection(
   return text_direction_;
 }
 
+size_t RenderText::TextIndexToGivenTextIndex(const base::string16& given_text,
+                                             size_t index) {
+  DCHECK(given_text == layout_text() || given_text == display_text());
+  DCHECK_LE(index, text().length());
+  ptrdiff_t i = obscured() ? UTF16IndexToOffset(text(), 0, index) : index;
+  CHECK_GE(i, 0);
+  // Clamp indices to the length of the given layout or display text.
+  return std::min<size_t>(given_text.length(), i);
+}
+
 // static
 bool RenderText::RangeContainsCaret(const Range& range,
                                     size_t caret_pos,
@@ -1208,6 +1218,7 @@ void RenderText::MoveCursorTo(size_t position, bool select) {
 void RenderText::OnTextAttributeChanged() {
   layout_text_.clear();
   display_text_.clear();
+  text_elided_ = false;
   line_breaks_.SetMax(0);
 
   if (obscured_) {
