@@ -26,13 +26,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/webdatabase/#sqltransaction
+
+typedef sequence<any> ObjectArray;
+
 [
     GarbageCollected,
     NoInterfaceObject,
 ] interface SQLTransaction {
-    [Custom] void executeSql(DOMString sqlStatement,
-                             object[] arguments,
-                             optional SQLStatementCallback callback,
-                             optional SQLStatementErrorCallback errorCallback);
+    // The spec defines |arguments| to be an "optional ObjectArray" though it defines the
+    // behavior when null is being passed.
+    [RaisesException, CallWith=ScriptState] void executeSql(DOMString sqlStatement,
+                                                            optional ObjectArray? arguments,
+                                                            optional SQLStatementCallback callback,
+                                                            optional SQLStatementErrorCallback errorCallback);
 
 };

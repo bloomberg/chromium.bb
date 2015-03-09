@@ -17,6 +17,7 @@ bindings_modules_v8_files = get_path_info(
     "SerializedScriptValueForModulesFactory.cpp",
     "SerializedScriptValueForModulesFactory.h",
     "ToV8ForModules.h",
+    "V8BindingForModules.h",
   ],
   "abspath") + bindings_modules_v8_custom_files
 

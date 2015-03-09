@@ -29,7 +29,9 @@
 #ifndef SQLTransaction_h
 #define SQLTransaction_h
 
+#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/modules/v8/V8BindingForModules.h"
 #include "modules/webdatabase/SQLStatement.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
 #include "platform/heap/Handle.h"
@@ -45,6 +47,7 @@ class SQLTransactionBackend;
 class SQLTransactionCallback;
 class SQLTransactionErrorCallback;
 class SQLValue;
+class ScriptValue;
 class VoidCallback;
 
 class SQLTransaction final
@@ -61,6 +64,9 @@ public:
     void performPendingCallback();
 
     void executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments,
+        SQLStatementCallback*, SQLStatementErrorCallback*, ExceptionState&);
+    void executeSql(ScriptState*, const String& sqlStatement, ExceptionState&);
+    void executeSql(ScriptState*, const String& sqlStatement, const Nullable<Vector<ScriptValue>>& arguments,
         SQLStatementCallback*, SQLStatementErrorCallback*, ExceptionState&);
 
     Database* database() { return m_database.get(); }

@@ -730,6 +730,19 @@ Vector<T> toImplArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolat
     return result;
 }
 
+template <typename T>
+Vector<T> toImplArray(const Vector<ScriptValue>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    Vector<T> result;
+    result.reserveInitialCapacity(value.size());
+    for (unsigned i = 0; i < value.size(); ++i) {
+        result.uncheckedAppend(NativeValueTraits<T>::nativeValue(value[i].v8Value(), isolate, exceptionState));
+        if (exceptionState.hadException())
+            return Vector<T>();
+    }
+    return result;
+}
+
 template <class T>
 Vector<T> toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int startIndex, ExceptionState& exceptionState)
 {
