@@ -361,11 +361,12 @@ bool WebGraphicsContext3DImpl::getActiveAttrib(
       program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_name_length);
   if (max_name_length < 0)
     return false;
-  scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
-  if (!name) {
-    synthesizeGLError(GL_OUT_OF_MEMORY);
+  if (max_name_length == 0) {
+    // No active attributes exist.
+    synthesizeGLError(GL_INVALID_VALUE);
     return false;
   }
+  scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
   GLsizei length = 0;
   GLint size = -1;
   GLenum type = 0;
@@ -387,11 +388,12 @@ bool WebGraphicsContext3DImpl::getActiveUniform(
       program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length);
   if (max_name_length < 0)
     return false;
-  scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
-  if (!name) {
-    synthesizeGLError(GL_OUT_OF_MEMORY);
+  if (max_name_length == 0) {
+    // No active uniforms exist.
+    synthesizeGLError(GL_INVALID_VALUE);
     return false;
   }
+  scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
   GLsizei length = 0;
   GLint size = -1;
   GLenum type = 0;
