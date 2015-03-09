@@ -8,6 +8,7 @@
 #include <linux/input.h>
 
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
@@ -89,6 +90,10 @@ void EventConverterEvdevImpl::AllowAllKeys() {
   allowed_keys_.reset();
 }
 
+void EventConverterEvdevImpl::OnStopped() {
+  ReleaseKeys();
+}
+
 void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
                                             int count) {
   for (int i = 0; i < count; ++i) {
@@ -102,8 +107,9 @@ void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
         break;
       case EV_SYN:
         if (input.code == SYN_DROPPED)
-          LOG(WARNING) << "kernel dropped input events";
-        FlushEvents(input);
+          OnLostSync();
+        else if (input.code == SYN_REPORT)
+          FlushEvents(input);
         break;
     }
   }
@@ -121,13 +127,8 @@ void EventConverterEvdevImpl::ConvertKeyEvent(const input_event& input) {
   }
 
   // Keyboard processing.
-  DomCode key_code = KeycodeConverter::NativeKeycodeToDomCode(
-      EvdevCodeToNativeCode(input.code));
-  if (!allowed_keys_ || allowed_keys_->count(key_code)) {
-    dispatcher_->DispatchKeyEvent(
-        KeyEventParams(id_, input.code, input.value != kKeyReleaseValue,
-        TimeDeltaFromInputEvent(input)));
-  }
+  OnKeyChange(input.code, input.value != kKeyReleaseValue,
+              TimeDeltaFromInputEvent(input));
 }
 
 void EventConverterEvdevImpl::ConvertMouseMoveEvent(const input_event& input) {
@@ -141,6 +142,44 @@ void EventConverterEvdevImpl::ConvertMouseMoveEvent(const input_event& input) {
       y_offset_ = input.value;
       break;
   }
+}
+
+void EventConverterEvdevImpl::OnKeyChange(unsigned int key,
+                                          bool down,
+                                          const base::TimeDelta& timestamp) {
+  if (key > KEY_MAX)
+    return;
+
+  if (down == key_state_.test(key))
+    return;
+
+  // Apply key filter (releases for previously pressed keys are excepted).
+  DomCode key_code =
+      KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
+  if (down && allowed_keys_ && allowed_keys_->count(key_code))
+    return;
+
+  // State transition: !(down) -> (down)
+  if (down)
+    key_state_.set(key);
+  else
+    key_state_.reset(key);
+
+  dispatcher_->DispatchKeyEvent(KeyEventParams(id_, key, down, timestamp));
+}
+
+void EventConverterEvdevImpl::ReleaseKeys() {
+  base::TimeDelta timestamp = ui::EventTimeForNow();
+  for (int key = 0; key < KEY_CNT; ++key)
+    OnKeyChange(key, false /* down */, timestamp);
+}
+
+void EventConverterEvdevImpl::OnLostSync() {
+  LOG(WARNING) << "kernel dropped input events";
+
+  // We may have missed key releases. Release everything.
+  // TODO(spang): Use EVIOCGKEY to avoid releasing keys that are still held.
+  ReleaseKeys();
 }
 
 void EventConverterEvdevImpl::DispatchMouseButton(const input_event& input) {

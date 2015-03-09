@@ -44,14 +44,18 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   bool HasCapsLockLed() const override;
   void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) override;
   void AllowAllKeys() override;
+  void OnStopped() override;
 
   void ProcessEvents(const struct input_event* inputs, int count);
 
  private:
   void ConvertKeyEvent(const input_event& input);
-
   void ConvertMouseMoveEvent(const input_event& input);
-
+  void OnKeyChange(unsigned int key,
+                   bool down,
+                   const base::TimeDelta& timestamp);
+  void ReleaseKeys();
+  void OnLostSync();
   void DispatchMouseButton(const input_event& input);
 
   // Flush events delimited by EV_SYN. This is useful for handling
@@ -77,6 +81,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   // The keys which should be processed. nullptr if all keys should be
   // processed.
   scoped_ptr<std::set<DomCode>> allowed_keys_;
+
+  // Pressed keys bitset.
+  std::bitset<KEY_CNT> key_state_;
 
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;

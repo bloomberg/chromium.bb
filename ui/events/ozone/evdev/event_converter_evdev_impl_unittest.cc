@@ -127,6 +127,8 @@ class EventConverterEvdevImplTest : public testing::Test {
     return static_cast<ui::MouseEvent*>(ev);
   }
 
+  void DestroyDevice() { device_.reset(); }
+
  private:
   void DispatchEventForTest(ui::Event* event) {
     scoped_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
@@ -419,4 +421,49 @@ TEST_F(EventConverterEvdevImplTest, UnmappedKeyPress) {
 
   dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
   EXPECT_EQ(0u, size());
+}
+
+TEST_F(EventConverterEvdevImplTest, ShouldReleaseKeysOnUnplug) {
+  ui::MockEventConverterEvdevImpl* dev = device();
+
+  struct input_event mock_kernel_queue[] = {
+      {{0, 0}, EV_KEY, KEY_A, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
+  EXPECT_EQ(1u, size());
+
+  DestroyDevice();
+  EXPECT_EQ(2u, size());
+
+  ui::KeyEvent* event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+}
+
+TEST_F(EventConverterEvdevImplTest, ShouldReleaseKeysOnSynDropped) {
+  ui::MockEventConverterEvdevImpl* dev = device();
+
+  struct input_event mock_kernel_queue[] = {
+      {{0, 0}, EV_KEY, KEY_A, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      {{0, 0}, EV_SYN, SYN_DROPPED, 0},
+  };
+
+  dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
+  EXPECT_EQ(2u, size());
+
+  ui::KeyEvent* event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
 }

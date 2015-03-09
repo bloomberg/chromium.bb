@@ -36,9 +36,6 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   // Handlers for raw key presses & releases.
   void OnKeyChange(unsigned int code, bool down, base::TimeDelta timestamp);
 
-  // Release all pressed keys.
-  void Reset();
-
   // Handle Caps Lock modifier.
   void SetCapsLockEnabled(bool enabled);
   bool IsCapsLockEnabled();

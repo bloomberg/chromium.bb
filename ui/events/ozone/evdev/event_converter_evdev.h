@@ -43,6 +43,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // Stop reading events.
   void Stop();
 
+  // Cleanup after we stop reading events (release buttons, etc).
+  virtual void OnStopped();
+
   // Returns true if the converter is used for a keyboard device.
   virtual bool HasKeyboard() const;
 

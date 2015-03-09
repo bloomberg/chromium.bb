@@ -30,9 +30,12 @@ void EventConverterEvdev::Start() {
 }
 
 void EventConverterEvdev::Stop() {
-  // TODO(spang): If we reach here due to an error, we should treat it
-  // as if we have lost sync & release held keys, etc.
   controller_.StopWatchingFileDescriptor();
+
+  OnStopped();
+}
+
+void EventConverterEvdev::OnStopped() {
 }
 
 void EventConverterEvdev::OnFileCanWriteWithoutBlocking(int fd) {

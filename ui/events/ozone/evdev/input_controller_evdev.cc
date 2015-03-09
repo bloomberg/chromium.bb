@@ -99,9 +99,6 @@ void InputControllerEvdev::DisableInternalKeyboardExceptKeys(
   if (input_device_factory_) {
     input_device_factory_->DisableInternalKeyboardExceptKeys(
         excepted_keys.Pass());
-
-    // Release keys since we may block key up events.
-    keyboard_->Reset();
   }
 }
 
