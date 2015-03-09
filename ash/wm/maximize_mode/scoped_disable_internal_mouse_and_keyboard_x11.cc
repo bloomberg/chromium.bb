@@ -19,6 +19,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event.h"
@@ -33,9 +35,6 @@ namespace {
 
 // The name of the xinput device corresponding to the internal touchpad.
 const char kInternalTouchpadName[] = "Elan Touchpad";
-
-// The name of the xinput device corresponding to the internal keyboard.
-const char kInternalKeyboardName[] = "AT Translated Set 2 keyboard";
 
 // Repeated key events have their source set to the core keyboard device.
 // These must be disabled also until http://crbug.com/402898 is resolved.
@@ -86,12 +85,18 @@ ScopedDisableInternalMouseAndKeyboardX11::
         device_data_manager->DisableDevice(touchpad_device_id_);
         aura::client::GetCursorClient(
             Shell::GetInstance()->GetPrimaryRootWindow())->HideCursor();
-      } else if (device_name == kInternalKeyboardName) {
-        keyboard_device_id_ = xi_dev_list[i].deviceid;
-        device_data_manager->DisableDevice(keyboard_device_id_);
       } else if (device_name == kCoreKeyboardName) {
         core_keyboard_device_id_ = xi_dev_list[i].deviceid;
         device_data_manager->DisableDevice(core_keyboard_device_id_);
+      }
+    }
+
+    for (const ui::KeyboardDevice& device :
+         device_data_manager->keyboard_devices()) {
+      if (device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+        keyboard_device_id_ = device.id;
+        device_data_manager->DisableDevice(keyboard_device_id_);
+        break;
       }
     }
   }

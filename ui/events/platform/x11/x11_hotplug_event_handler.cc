@@ -41,7 +41,9 @@ namespace {
 // TODO(rsadam@): Identify these devices using udev rules. (Crbug.com/420728.)
 const char* kKnownInvalidKeyboardDeviceNames[] = {"Power Button",
                                                   "Sleep Button",
-                                                  "Video Bus"};
+                                                  "Video Bus",
+                                                  "gpio-keys.12",
+                                                  "ROCKCHIP-I2S Headset Jack"};
 
 const char* kCachedAtomList[] = {
   "Abs MT Position X",
