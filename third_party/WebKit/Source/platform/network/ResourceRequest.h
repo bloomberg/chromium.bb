@@ -228,6 +228,9 @@ public:
     InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const { return m_inputPerfMetricReportPolicy; }
     void setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy) { m_inputPerfMetricReportPolicy = inputPerfMetricReportPolicy; }
 
+    void setFollowedRedirect(bool followed) { m_followedRedirect = followed; };
+    bool followedRedirect() const { return m_followedRedirect; };
+
 private:
     void initialize(const KURL&);
 
@@ -268,6 +271,8 @@ private:
     mutable CacheControlHeader m_cacheControlHeaderCache;
 
     static double s_defaultTimeoutInterval;
+
+    bool m_followedRedirect;
 };
 
 bool equalIgnoringHeaderFields(const ResourceRequest&, const ResourceRequest&);
@@ -310,6 +315,7 @@ public:
     double m_uiStartTime;
     bool m_originatesFromReservedIPRange;
     InputToLoadPerfMetricReportPolicy m_inputPerfMetricReportPolicy;
+    bool m_followedRedirect;
 };
 
 unsigned initializeMaximumHTTPConnectionCountPerHost();

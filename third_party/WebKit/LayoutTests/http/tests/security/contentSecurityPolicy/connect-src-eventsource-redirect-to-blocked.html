@@ -10,7 +10,9 @@
 
         var es;
         try {
-            es = new EventSource("resources/redir.php?url=/eventsource/resources/simple-event-stream.asis");
+            // Redirect to a different host, because as of CSP2 paths
+            // are ignored when matching after a redirect.
+            es = new EventSource("resources/redir.php?url=http://localhost:8000/eventsource/resources/simple-event-stream.asis");
         } catch(e) {
             testFailed("EventSource() should not throw an exception.");
         }

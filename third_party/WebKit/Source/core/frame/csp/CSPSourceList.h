@@ -23,7 +23,7 @@ public:
 
     void parse(const UChar* begin, const UChar* end);
 
-    bool matches(const KURL&) const;
+    bool matches(const KURL&, ContentSecurityPolicy::RedirectStatus = ContentSecurityPolicy::DidNotRedirect) const;
     bool allowInline() const;
     bool allowEval() const;
     bool allowNonce(const String&) const;

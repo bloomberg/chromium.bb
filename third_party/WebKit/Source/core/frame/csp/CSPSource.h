@@ -5,6 +5,7 @@
 #ifndef CSPSource_h
 #define CSPSource_h
 
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -20,7 +21,7 @@ public:
     };
 
     CSPSource(ContentSecurityPolicy*, const String& scheme, const String& host, int port, const String& path, WildcardDisposition hostWildcard, WildcardDisposition portWildcard);
-    bool matches(const KURL&) const;
+    bool matches(const KURL&, ContentSecurityPolicy::RedirectStatus = ContentSecurityPolicy::DidNotRedirect) const;
 
 private:
     bool schemeMatches(const KURL&) const;

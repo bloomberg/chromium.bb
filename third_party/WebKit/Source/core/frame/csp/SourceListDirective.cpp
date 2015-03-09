@@ -23,9 +23,9 @@ SourceListDirective::SourceListDirective(const String& name, const String& value
     m_sourceList.parse(characters.data(), characters.data() + characters.size());
 }
 
-bool SourceListDirective::allows(const KURL& url) const
+bool SourceListDirective::allows(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
-    return m_sourceList.matches(url.isEmpty() ? policy()->url() : url);
+    return m_sourceList.matches(url.isEmpty() ? policy()->url() : url, redirectStatus);
 }
 
 bool SourceListDirective::allowInline() const
@@ -59,4 +59,3 @@ uint8_t SourceListDirective::hashAlgorithmsUsed() const
 }
 
 } // namespace blink
-

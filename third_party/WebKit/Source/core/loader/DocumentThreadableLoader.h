@@ -34,6 +34,7 @@
 
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/Timer.h"
 #include "platform/network/HTTPHeaderMap.h"
@@ -112,7 +113,7 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
 
         void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
         bool isAllowedRedirect(const KURL&) const;
-        bool isAllowedByContentSecurityPolicy(const KURL&) const;
+        bool isAllowedByContentSecurityPolicy(const KURL&, ContentSecurityPolicy::RedirectStatus) const;
         // Returns DoNotAllowStoredCredentials
         // if m_forceDoNotAllowStoredCredentials is set. Otherwise, just
         // returns allowCredentials value of m_resourceLoaderOptions.

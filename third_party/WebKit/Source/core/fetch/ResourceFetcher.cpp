@@ -483,6 +483,10 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
     ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
         ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
 
+    // As of CSP2, for requests that are the results of redirects, the match
+    // algorithm should ignore the path component of the URL.
+    ContentSecurityPolicy::RedirectStatus redirectStatus = resourceRequest.followedRedirect() ? ContentSecurityPolicy::DidRedirect : ContentSecurityPolicy::DidNotRedirect;
+
     // document() can be null, but not in any of the cases where csp is actually used below.
     // ImageResourceTest.MultipartImage crashes w/o the document() null check.
     // I believe it's the Resource::Raw case.
@@ -494,12 +498,12 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
     switch (type) {
     case Resource::XSLStyleSheet:
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
             return false;
         break;
     case Resource::Script:
     case Resource::ImportResource:
-        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
             return false;
 
         if (frame()) {
@@ -511,16 +515,16 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
         }
         break;
     case Resource::CSSStyleSheet:
-        if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, redirectStatus, cspReporting))
             return false;
         break;
     case Resource::SVGDocument:
     case Resource::Image:
-        if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, redirectStatus, cspReporting))
             return false;
         break;
     case Resource::Font: {
-        if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, redirectStatus, cspReporting))
             return false;
         break;
     }
@@ -531,7 +535,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
         break;
     case Resource::Media:
     case Resource::TextTrack:
-        if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, redirectStatus, cspReporting))
             return false;
 
         if (frame()) {
@@ -550,7 +554,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
 
     // FIXME: Once we use RequestContext for CSP (http://crbug.com/390497), remove this extra check.
     if (resourceRequest.requestContext() == WebURLRequest::RequestContextManifest) {
-        if (!shouldBypassMainWorldCSP && !csp->allowManifestFromSource(url, cspReporting))
+        if (!shouldBypassMainWorldCSP && !csp->allowManifestFromSource(url, redirectStatus, cspReporting))
             return false;
     }
 

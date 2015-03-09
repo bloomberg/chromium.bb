@@ -24,13 +24,14 @@ CSPSource::CSPSource(ContentSecurityPolicy* policy, const String& scheme, const 
 {
 }
 
-bool CSPSource::matches(const KURL& url) const
+bool CSPSource::matches(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
     if (!schemeMatches(url))
         return false;
     if (isSchemeOnly())
         return true;
-    return hostMatches(url) && portMatches(url) && pathMatches(url);
+    bool pathsMatch = (redirectStatus == ContentSecurityPolicy::DidRedirect) || pathMatches(url);
+    return hostMatches(url) && portMatches(url) && pathsMatch;
 }
 
 bool CSPSource::schemeMatches(const KURL& url) const

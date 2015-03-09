@@ -101,6 +101,13 @@ public:
         SuppressReport
     };
 
+    // When a resource is loaded after a redirect, source paths are
+    // ignored in the matching algorithm.
+    enum RedirectStatus {
+        DidRedirect,
+        DidNotRedirect
+    };
+
     static PassRefPtr<ContentSecurityPolicy> create()
     {
         return adoptRef(new ContentSecurityPolicy());
@@ -130,20 +137,27 @@ public:
     // plugin-types directives from the parent document.
     bool allowPluginTypeForDocument(const Document&, const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
 
-    bool allowScriptFromSource(const KURL&, ReportingStatus = SendReport) const;
-    bool allowObjectFromSource(const KURL&, ReportingStatus = SendReport) const;
-    bool allowChildFrameFromSource(const KURL&, ReportingStatus = SendReport) const;
-    bool allowImageFromSource(const KURL&, ReportingStatus = SendReport) const;
-    bool allowStyleFromSource(const KURL&, ReportingStatus = SendReport) const;
-    bool allowFontFromSource(const KURL&, ReportingStatus = SendReport) const;
-    bool allowMediaFromSource(const KURL&, ReportingStatus = SendReport) const;
-    bool allowConnectToSource(const KURL&, ReportingStatus = SendReport) const;
-    bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
-    bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
-    bool allowAncestors(LocalFrame*, const KURL&, ReportingStatus = SendReport) const;
-    bool allowWorkerContextFromSource(const KURL&, ReportingStatus = SendReport) const;
+    bool allowScriptFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowObjectFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowChildFrameFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowImageFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowStyleFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowFontFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowMediaFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowConnectToSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowFormAction(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowBaseURI(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+    bool allowWorkerContextFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
 
-    bool allowManifestFromSource(const KURL&, ReportingStatus = SendReport) const;
+    bool allowManifestFromSource(const KURL&, RedirectStatus = DidNotRedirect, ReportingStatus = SendReport) const;
+
+    // |allowAncestors| does not need to know whether the resource was a
+    // result of a redirect. After a redirect, source paths are usually
+    // ignored to stop a page from learning the path to which the
+    // request was redirected, but this is not a concern for ancestors,
+    // because a child frame can't manipulate the URL of a cross-origin
+    // parent.
+    bool allowAncestors(LocalFrame*, const KURL&, ReportingStatus = SendReport) const;
 
     // The nonce and hash allow functions are guaranteed to not have any side
     // effects, including reporting.

@@ -277,6 +277,7 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
     ASSERT(!newRequest.isNull());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     ASSERT(!redirectResponse.isNull());
+    newRequest.setFollowedRedirect(true);
     if (!m_host->canAccessRedirect(m_resource, newRequest, redirectResponse, m_options)) {
         cancel(ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
         return;

@@ -7,6 +7,7 @@
 
 #include "core/frame/csp/CSPDirective.h"
 #include "core/frame/csp/CSPSourceList.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
@@ -21,7 +22,7 @@ class SourceListDirective final : public CSPDirective {
 public:
     SourceListDirective(const String& name, const String& value, ContentSecurityPolicy*);
 
-    bool allows(const KURL&) const;
+    bool allows(const KURL&, blink::ContentSecurityPolicy::RedirectStatus) const;
     bool allowInline() const;
     bool allowEval() const;
     bool allowNonce(const String& nonce) const;

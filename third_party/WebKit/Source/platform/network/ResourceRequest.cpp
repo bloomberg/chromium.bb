@@ -66,6 +66,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->m_uiStartTime = data->m_uiStartTime;
     request->m_originatesFromReservedIPRange = data->m_originatesFromReservedIPRange;
     request->m_inputPerfMetricReportPolicy = data->m_inputPerfMetricReportPolicy;
+    request->m_followedRedirect = data->m_followedRedirect;
     return request.release();
 }
 
@@ -103,6 +104,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_uiStartTime = m_uiStartTime;
     data->m_originatesFromReservedIPRange = m_originatesFromReservedIPRange;
     data->m_inputPerfMetricReportPolicy = m_inputPerfMetricReportPolicy;
+    data->m_followedRedirect = m_followedRedirect;
     return data.release();
 }
 
@@ -451,6 +453,7 @@ void ResourceRequest::initialize(const KURL& url)
     m_uiStartTime = 0;
     m_originatesFromReservedIPRange = false;
     m_inputPerfMetricReportPolicy = InputToLoadPerfMetricReportPolicy::NoReport;
+    m_followedRedirect = false;
 }
 
 // This is used by the loader to control the number of issued parallel load requests.

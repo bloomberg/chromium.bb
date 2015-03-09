@@ -268,7 +268,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
 
     RefPtr<DocumentThreadableLoader> protect(this);
 
-    if (!isAllowedByContentSecurityPolicy(request.url())) {
+    if (!isAllowedByContentSecurityPolicy(request.url(), ContentSecurityPolicy::DidRedirect)) {
         m_client->didFailRedirectCheck();
 
         clearResource();
@@ -612,7 +612,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
     // FIXME: A synchronous request does not tell us whether a redirect happened or not, so we guess by comparing the
     // request and response URLs. This isn't a perfect test though, since a server can serve a redirect to the same URL that was
     // requested. Also comparing the request and response URLs as strings will fail if the requestURL still has its credentials.
-    if (requestURL != response.url() && (!isAllowedByContentSecurityPolicy(response.url()) || !isAllowedRedirect(response.url()))) {
+    if (requestURL != response.url() && (!isAllowedByContentSecurityPolicy(response.url(), ContentSecurityPolicy::DidRedirect) || !isAllowedRedirect(response.url()))) {
         m_client->didFailRedirectCheck();
         return;
     }
@@ -634,11 +634,11 @@ bool DocumentThreadableLoader::isAllowedRedirect(const KURL& url) const
     return m_sameOriginRequest && securityOrigin()->canRequest(url);
 }
 
-bool DocumentThreadableLoader::isAllowedByContentSecurityPolicy(const KURL& url) const
+bool DocumentThreadableLoader::isAllowedByContentSecurityPolicy(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
     if (m_options.contentSecurityPolicyEnforcement != EnforceConnectSrcDirective)
         return true;
-    return m_document.contentSecurityPolicy()->allowConnectToSource(url);
+    return m_document.contentSecurityPolicy()->allowConnectToSource(url, redirectStatus);
 }
 
 StoredCredentials DocumentThreadableLoader::effectiveAllowCredentials() const
