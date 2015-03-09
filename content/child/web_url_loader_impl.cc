@@ -418,7 +418,7 @@ void WebURLLoaderImpl::Context::DidChangePriority(
 bool WebURLLoaderImpl::Context::AttachThreadedDataReceiver(
     blink::WebThreadedDataReceiver* threaded_data_receiver) {
   if (request_id_ != -1) {
-    resource_dispatcher_->AttachThreadedDataReceiver(
+    return resource_dispatcher_->AttachThreadedDataReceiver(
         request_id_, threaded_data_receiver);
   }
 
