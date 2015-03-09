@@ -175,7 +175,8 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
             if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
                 localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
         }
-        StorageNamespaceController::from(page)->inspectorAgent()->didDispatchDOMStorageEvent(key, oldValue, newValue, LocalStorage, securityOrigin);
+        if (InspectorDOMStorageAgent* agent = StorageNamespaceController::from(page)->inspectorAgent())
+            agent->didDispatchDOMStorageEvent(key, oldValue, newValue, LocalStorage, securityOrigin);
     }
 }
 
@@ -208,7 +209,8 @@ void StorageArea::dispatchSessionStorageEvent(const String& key, const String& o
         if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
             localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
     }
-    StorageNamespaceController::from(page)->inspectorAgent()->didDispatchDOMStorageEvent(key, oldValue, newValue, SessionStorage, securityOrigin);
+    if (InspectorDOMStorageAgent* agent = StorageNamespaceController::from(page)->inspectorAgent())
+        agent->didDispatchDOMStorageEvent(key, oldValue, newValue, SessionStorage, securityOrigin);
 }
 
 bool StorageArea::isEventSource(Storage* storage, WebStorageArea* sourceAreaInstance)

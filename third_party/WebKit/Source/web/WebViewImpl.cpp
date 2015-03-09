@@ -461,14 +461,12 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page->inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(m_page.get()));
     m_page->inspectorController().registerModuleAgent(InspectorIndexedDBAgent::create(m_page.get()));
     m_page->inspectorController().registerModuleAgent(InspectorAccessibilityAgent::create(m_page.get()));
-    OwnPtrWillBeRawPtr<InspectorDOMStorageAgent> domStorageAgent = InspectorDOMStorageAgent::create(m_page.get());
-    InspectorDOMStorageAgent* domStorageAgentPointer = domStorageAgent.get();
-    m_page->inspectorController().registerModuleAgent(domStorageAgent.release());
+    m_page->inspectorController().registerModuleAgent(InspectorDOMStorageAgent::create(m_page.get()));
 
     provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
     m_page->setValidationMessageClient(ValidationMessageClientImpl::create(*this));
     provideWorkerGlobalScopeProxyProviderTo(*m_page, WorkerGlobalScopeProxyProviderImpl::create());
-    StorageNamespaceController::provideStorageNamespaceTo(*m_page, &m_storageClientImpl, domStorageAgentPointer);
+    StorageNamespaceController::provideStorageNamespaceTo(*m_page, &m_storageClientImpl);
 
     m_page->makeOrdinary();
 

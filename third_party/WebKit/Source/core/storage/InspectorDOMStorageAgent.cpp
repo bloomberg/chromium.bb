@@ -104,14 +104,22 @@ void InspectorDOMStorageAgent::restore()
 
 void InspectorDOMStorageAgent::enable(ErrorString*)
 {
+    if (m_isEnabled)
+        return;
     m_isEnabled = true;
     m_state->setBoolean(DOMStorageAgentState::domStorageAgentEnabled, true);
+    if (StorageNamespaceController* controller = StorageNamespaceController::from(m_page))
+        controller->setInspectorAgent(this);
 }
 
 void InspectorDOMStorageAgent::disable(ErrorString*)
 {
+    if (!m_isEnabled)
+        return;
     m_isEnabled = false;
     m_state->setBoolean(DOMStorageAgentState::domStorageAgentEnabled, false);
+    if (StorageNamespaceController* controller = StorageNamespaceController::from(m_page))
+        controller->setInspectorAgent(nullptr);
 }
 
 void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>>& items)
@@ -183,7 +191,7 @@ PassRefPtr<TypeBuilder::DOMStorage::StorageId> InspectorDOMStorageAgent::storage
 
 void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin)
 {
-    if (!m_frontend || !m_isEnabled)
+    if (!m_frontend)
         return;
 
     RefPtr<TypeBuilder::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);

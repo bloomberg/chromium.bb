@@ -22,14 +22,15 @@ public:
     StorageClient* storageClient() { return m_client; }
     ~StorageNamespaceController();
 
-    static void provideStorageNamespaceTo(Page&, StorageClient*, InspectorDOMStorageAgent*);
+    static void provideStorageNamespaceTo(Page&, StorageClient*);
     static StorageNamespaceController* from(Page* page) { return static_cast<StorageNamespaceController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
 
     DECLARE_TRACE();
 
     InspectorDOMStorageAgent* inspectorAgent() { return m_inspectorAgent; }
+    void setInspectorAgent(InspectorDOMStorageAgent* agent) { m_inspectorAgent = agent; }
 private:
-    explicit StorageNamespaceController(StorageClient*, InspectorDOMStorageAgent*);
+    explicit StorageNamespaceController(StorageClient*);
     static const char* supplementName();
     OwnPtr<StorageNamespace> m_sessionStorage;
     StorageClient* m_client;

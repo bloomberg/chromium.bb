@@ -16,9 +16,9 @@ const char* StorageNamespaceController::supplementName()
     return "StorageNamespaceController";
 }
 
-StorageNamespaceController::StorageNamespaceController(StorageClient* client, InspectorDOMStorageAgent* agent)
+StorageNamespaceController::StorageNamespaceController(StorageClient* client)
     : m_client(client)
-    , m_inspectorAgent(agent)
+    , m_inspectorAgent(nullptr)
 {
 }
 
@@ -39,9 +39,9 @@ StorageNamespace* StorageNamespaceController::sessionStorage(bool optionalCreate
     return m_sessionStorage.get();
 }
 
-void StorageNamespaceController::provideStorageNamespaceTo(Page& page, StorageClient* client, InspectorDOMStorageAgent* agent)
+void StorageNamespaceController::provideStorageNamespaceTo(Page& page, StorageClient* client)
 {
-    StorageNamespaceController::provideTo(page, supplementName(), adoptPtrWillBeNoop(new StorageNamespaceController(client, agent)));
+    StorageNamespaceController::provideTo(page, supplementName(), adoptPtrWillBeNoop(new StorageNamespaceController(client)));
 }
 
 } // namespace blink
