@@ -26,11 +26,19 @@
 var Statistics = new (function () {
 
     this.max = function (values) {
-        return Math.max.apply(Math, values);
+        var maxVal = values[0];
+        for (var i = 1; i < values.length; i++) {
+            maxVal = Math.max(maxVal, values[i]);
+        }
+        return maxVal;
     }
 
     this.min = function (values) {
-        return Math.min.apply(Math, values);
+        var minVal = values[0];
+        for (var i = 1; i < values.length; i++) {
+            minVal = Math.min(minVal, values[i]);
+        }
+        return minVal;
     }
 
     this.sum = function (values) {
