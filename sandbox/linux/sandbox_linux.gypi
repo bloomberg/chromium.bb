@@ -137,6 +137,8 @@
         'bpf_dsl/syscall_set.cc',
         'bpf_dsl/syscall_set.h',
         'bpf_dsl/trap_registry.h',
+        'bpf_dsl/verifier.cc',
+        'bpf_dsl/verifier.h',
         'seccomp-bpf/die.cc',
         'seccomp-bpf/die.h',
         'seccomp-bpf/errorcode.cc',
@@ -147,8 +149,6 @@
         'seccomp-bpf/syscall.h',
         'seccomp-bpf/trap.cc',
         'seccomp-bpf/trap.h',
-        'seccomp-bpf/verifier.cc',
-        'seccomp-bpf/verifier.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',

@@ -32,7 +32,7 @@ class SANDBOX_EXPORT PolicyCompiler {
 
   // Compile registers any trap handlers needed by the policy and
   // compiles the policy to a BPF program, which it returns.
-  scoped_ptr<CodeGen::Program> Compile();
+  scoped_ptr<CodeGen::Program> Compile(bool verify);
 
   // DangerousSetEscapePC sets the "escape PC" that is allowed to issue any
   // system calls, regardless of policy.

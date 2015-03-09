@@ -12,6 +12,9 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
+#include <map>
+#include <utility>
+
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -21,8 +24,8 @@
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
+#include "sandbox/linux/bpf_dsl/verifier.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define CASES SANDBOX_BPF_DSL_CASES
@@ -56,12 +59,14 @@ struct arch_seccomp_data FakeSyscall(int nr,
 
 class FakeTrapRegistry : public TrapRegistry {
  public:
-  FakeTrapRegistry() : next_id_(1) {}
+  FakeTrapRegistry() : map_() {}
   virtual ~FakeTrapRegistry() {}
 
   uint16_t Add(TrapFnc fnc, const void* aux, bool safe) override {
-    EXPECT_NE(0U, next_id_);
-    return next_id_++;
+    EXPECT_TRUE(safe);
+
+    const uint16_t next_id = map_.size() + 1;
+    return map_.insert(std::make_pair(Key(fnc, aux), next_id)).first->second;
   }
 
   bool EnableUnsafeTraps() override {
@@ -70,15 +75,43 @@ class FakeTrapRegistry : public TrapRegistry {
   }
 
  private:
-  uint16_t next_id_;
+  using Key = std::pair<TrapFnc, const void*>;
+
+  std::map<Key, uint16_t> map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTrapRegistry);
 };
 
+intptr_t FakeTrapFuncOne(const arch_seccomp_data& data, void* aux) { return 1; }
+intptr_t FakeTrapFuncTwo(const arch_seccomp_data& data, void* aux) { return 2; }
+
+// Test that FakeTrapRegistry correctly assigns trap IDs to trap handlers.
+TEST(FakeTrapRegistry, TrapIDs) {
+  struct {
+    TrapRegistry::TrapFnc fnc;
+    const void* aux;
+  } funcs[] = {
+      {FakeTrapFuncOne, nullptr},
+      {FakeTrapFuncTwo, nullptr},
+      {FakeTrapFuncOne, funcs},
+      {FakeTrapFuncTwo, funcs},
+  };
+
+  FakeTrapRegistry traps;
+
+  // Add traps twice to test that IDs are reused correctly.
+  for (int i = 0; i < 2; ++i) {
+    for (size_t j = 0; j < arraysize(funcs); ++j) {
+      // Trap IDs start at 1.
+      EXPECT_EQ(j + 1, traps.Add(funcs[j].fnc, funcs[j].aux, true));
+    }
+  }
+}
+
 class PolicyEmulator {
  public:
   explicit PolicyEmulator(const Policy* policy) : program_(), traps_() {
-    program_ = *PolicyCompiler(policy, &traps_).Compile();
+    program_ = *PolicyCompiler(policy, &traps_).Compile(true /* verify */);
   }
   ~PolicyEmulator() {}
 

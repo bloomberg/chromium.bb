@@ -24,16 +24,13 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
-#include "sandbox/linux/bpf_dsl/dump_bpf.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
-#include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
-#include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
@@ -192,28 +189,12 @@ scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
   force_verification = true;
 #endif
   DCHECK(policy_);
+
   bpf_dsl::PolicyCompiler compiler(policy_.get(), Trap::Registry());
   if (Trap::SandboxDebuggingAllowedByUser()) {
     compiler.DangerousSetEscapePC(EscapePC());
   }
-  scoped_ptr<CodeGen::Program> program = compiler.Compile();
-
-  // Make sure compilation resulted in a BPF program that executes
-  // correctly. Otherwise, there is an internal error in our BPF compiler.
-  // There is really nothing the caller can do until the bug is fixed.
-  if (force_verification) {
-    // Verification is expensive. We only perform this step, if we are
-    // compiled in debug mode, or if the caller explicitly requested
-    // verification.
-
-    const char* err = NULL;
-    if (!Verifier::VerifyBPF(&compiler, *program, *policy_, &err)) {
-      bpf_dsl::DumpBPF::PrintProgram(*program);
-      SANDBOX_DIE(err);
-    }
-  }
-
-  return program.Pass();
+  return compiler.Compile(force_verification);
 }
 
 void SandboxBPF::InstallFilter(bool must_sync_threads) {

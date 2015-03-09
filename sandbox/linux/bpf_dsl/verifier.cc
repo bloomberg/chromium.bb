@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/linux/seccomp-bpf/verifier.h"
+#include "sandbox/linux/bpf_dsl/verifier.h"
 
 #include <string.h>
 
@@ -15,16 +15,15 @@
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 
 namespace sandbox {
+namespace bpf_dsl {
 
 namespace {
 
 const uint64_t kLower32Bits = std::numeric_limits<uint32_t>::max();
 const uint64_t kUpper32Bits = static_cast<uint64_t>(kLower32Bits) << 32;
-const uint64_t kFull64Bits = std::numeric_limits<uint64_t>::max();
 
 struct State {
   State(const std::vector<struct sock_filter>& p,
@@ -54,8 +53,8 @@ uint32_t EvaluateErrorCode(bpf_dsl::PolicyCompiler* compiler,
       return compiler->Unexpected64bitArgument().err();
     }
     bool equal = (data.args[code.argno()] & code.mask()) == code.value();
-    return EvaluateErrorCode(
-        compiler, equal ? *code.passed() : *code.failed(), data);
+    return EvaluateErrorCode(compiler, equal ? *code.passed() : *code.failed(),
+                             data);
   } else {
     return SECCOMP_RET_INVALID;
   }
@@ -69,10 +68,12 @@ bool VerifyErrorCode(bpf_dsl::PolicyCompiler* compiler,
                      const char** err) {
   if (code.error_type() == ErrorCode::ET_SIMPLE ||
       code.error_type() == ErrorCode::ET_TRAP) {
-    uint32_t computed_ret = Verifier::EvaluateBPF(program, *data, err);
+    const uint32_t computed_ret = Verifier::EvaluateBPF(program, *data, err);
     if (*err) {
       return false;
-    } else if (computed_ret != EvaluateErrorCode(compiler, root_code, *data)) {
+    }
+    const uint32_t policy_ret = EvaluateErrorCode(compiler, root_code, *data);
+    if (computed_ret != policy_ret) {
       // For efficiency's sake, we'd much rather compare "computed_ret"
       // against "code.err()". This works most of the time, but it doesn't
       // always work for nested conditional expressions. The test values
@@ -97,8 +98,8 @@ bool VerifyErrorCode(bpf_dsl::PolicyCompiler* compiler,
 
     // Verify that we can check a value for simple equality.
     data->args[code.argno()] = code.value();
-    if (!VerifyErrorCode(
-            compiler, program, data, root_code, *code.passed(), err)) {
+    if (!VerifyErrorCode(compiler, program, data, root_code, *code.passed(),
+                         err)) {
       return false;
     }
 
@@ -110,15 +111,15 @@ bool VerifyErrorCode(bpf_dsl::PolicyCompiler* compiler,
     }
     if ((ignored_bits & kLower32Bits) != 0) {
       data->args[code.argno()] = code.value() | (ignored_bits & kLower32Bits);
-      if (!VerifyErrorCode(
-              compiler, program, data, root_code, *code.passed(), err)) {
+      if (!VerifyErrorCode(compiler, program, data, root_code, *code.passed(),
+                           err)) {
         return false;
       }
     }
     if ((ignored_bits & kUpper32Bits) != 0) {
       data->args[code.argno()] = code.value() | (ignored_bits & kUpper32Bits);
-      if (!VerifyErrorCode(
-              compiler, program, data, root_code, *code.passed(), err)) {
+      if (!VerifyErrorCode(compiler, program, data, root_code, *code.passed(),
+                           err)) {
         return false;
       }
     }
@@ -126,15 +127,15 @@ bool VerifyErrorCode(bpf_dsl::PolicyCompiler* compiler,
     // Verify that changing bits included in the mask is detected as inequality.
     if ((code.mask() & kLower32Bits) != 0) {
       data->args[code.argno()] = code.value() ^ (code.mask() & kLower32Bits);
-      if (!VerifyErrorCode(
-              compiler, program, data, root_code, *code.failed(), err)) {
+      if (!VerifyErrorCode(compiler, program, data, root_code, *code.failed(),
+                           err)) {
         return false;
       }
     }
     if ((code.mask() & kUpper32Bits) != 0) {
       data->args[code.argno()] = code.value() ^ (code.mask() & kUpper32Bits);
-      if (!VerifyErrorCode(
-              compiler, program, data, root_code, *code.failed(), err)) {
+      if (!VerifyErrorCode(compiler, program, data, root_code, *code.failed(),
+                           err)) {
         return false;
       }
     }
@@ -145,24 +146,16 @@ bool VerifyErrorCode(bpf_dsl::PolicyCompiler* compiler,
 
       // Arbitrary 64-bit values should be rejected.
       data->args[code.argno()] = 1ULL << 32;
-      if (!VerifyErrorCode(compiler,
-                           program,
-                           data,
-                           root_code,
-                           compiler->Unexpected64bitArgument(),
-                           err)) {
+      if (!VerifyErrorCode(compiler, program, data, root_code,
+                           compiler->Unexpected64bitArgument(), err)) {
         return false;
       }
 
       // Upper 32-bits set without the MSB of the lower 32-bits set should be
       // rejected too.
       data->args[code.argno()] = kUpper32Bits;
-      if (!VerifyErrorCode(compiler,
-                           program,
-                           data,
-                           root_code,
-                           compiler->Unexpected64bitArgument(),
-                           err)) {
+      if (!VerifyErrorCode(compiler, program, data, root_code,
+                           compiler->Unexpected64bitArgument(), err)) {
         return false;
       }
     }
@@ -182,8 +175,7 @@ void Ld(State* state, const struct sock_filter& insn, const char** err) {
   if (insn.k < sizeof(struct arch_seccomp_data) && (insn.k & 3) == 0) {
     // We only allow loading of properly aligned 32bit quantities.
     memcpy(&state->accumulator,
-           reinterpret_cast<const char*>(&state->data) + insn.k,
-           4);
+           reinterpret_cast<const char*>(&state->data) + insn.k, 4);
   } else {
     *err = "Invalid operand in BPF_LD instruction";
     return;
@@ -399,4 +391,5 @@ uint32_t Verifier::EvaluateBPF(const std::vector<struct sock_filter>& program,
   return 0;
 }
 
+}  // namespace bpf_dsl
 }  // namespace sandbox
