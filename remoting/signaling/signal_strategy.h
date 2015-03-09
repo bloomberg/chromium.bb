@@ -34,6 +34,7 @@ class SignalStrategy {
     OK,
     AUTHENTICATION_FAILED,
     NETWORK_ERROR,
+    PROTOCOL_ERROR,
   };
 
   // Callback interface for signaling event. Event handlers are not

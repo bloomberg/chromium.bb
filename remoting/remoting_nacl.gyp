@@ -105,6 +105,7 @@
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '../net/net_nacl.gyp:net_nacl',
         '../third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
+        '../third_party/expat/expat_nacl.gyp:expat_nacl',
         '../third_party/khronos/khronos.gyp:khronos_headers',
         '../third_party/libjingle/libjingle_nacl.gyp:libjingle_nacl',
         '../third_party/libvpx/libvpx_nacl.gyp:libvpx_nacl',

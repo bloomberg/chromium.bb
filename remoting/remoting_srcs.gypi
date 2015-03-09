@@ -203,6 +203,10 @@
       'signaling/signal_strategy.h',
       'signaling/xmpp_signal_strategy.cc',
       'signaling/xmpp_signal_strategy.h',
+      'signaling/xmpp_stream_parser.cc',
+      'signaling/xmpp_stream_parser.h',
+      'signaling/xmpp_login_handler.cc',
+      'signaling/xmpp_login_handler.h',
     ],
 
     'remoting_client_sources': [
