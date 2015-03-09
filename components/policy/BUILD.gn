@@ -105,6 +105,34 @@ if (enable_configuration_policy) {
     ]
   }
 
+  grit("policy_templates") {
+    import("resources/policy_templates.gni")
+    source = "resources/policy_templates.grd"
+    use_qualified_include = true
+    output_dir = "$root_gen_dir/chrome"
+    outputs = policy_templates_doc_outputs
+    if (is_android) {
+      outputs += policy_templates_android_outputs
+    }
+    if (is_linux) {
+      outputs += policy_templates_linux_outputs
+    }
+    if (is_mac) {
+      outputs += policy_templates_mac_outputs
+
+      # TODO(knn) : Move this out once more targets use this.
+      if (is_chrome_branded) {
+        mac_bundle_id = "com.google.Chrome"
+      } else {
+        mac_bundle_id = "org.chromium.Chromium"
+      }
+      defines = [ "mac_bundle_id=$mac_bundle_id" ]
+    }
+    if (is_win) {
+      outputs += policy_templates_windows_outputs
+    }
+  }
+
   proto_library("cloud_policy_proto_generated_compile") {
     sources = [
       cloud_policy_proto_path,
@@ -206,4 +234,4 @@ if (enable_configuration_policy) {
     ]
   }
 }
-#TODO(GYP) policy templates, chrome_manifest_bundle
+#TODO(GYP) chrome_manifest_bundle
