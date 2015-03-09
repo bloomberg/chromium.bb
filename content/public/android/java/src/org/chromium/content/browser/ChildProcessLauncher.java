@@ -351,6 +351,9 @@ public class ChildProcessLauncher {
     private static Map<Pair<Integer, Integer>, Surface> sSurfaceTextureSurfaceMap =
             new ConcurrentHashMap<Pair<Integer, Integer>, Surface>();
 
+    // Whether the main application is currently brought to the foreground.
+    private static boolean sApplicationInForeground = true;
+
     @VisibleForTesting
     public static void setBindingManagerForTesting(BindingManager manager) {
         sBindingManager = manager;
@@ -433,6 +436,7 @@ public class ChildProcessLauncher {
      * Called when the embedding application is sent to background.
      */
     public static void onSentToBackground() {
+        sApplicationInForeground = false;
         sBindingManager.onSentToBackground();
     }
 
@@ -440,7 +444,15 @@ public class ChildProcessLauncher {
      * Called when the embedding application is brought to foreground.
      */
     public static void onBroughtToForeground() {
+        sApplicationInForeground = true;
         sBindingManager.onBroughtToForeground();
+    }
+
+    /**
+     * Returns whether the application is currently in the foreground.
+     */
+    static boolean isApplicationInForeground() {
+        return sApplicationInForeground;
     }
 
     /**
