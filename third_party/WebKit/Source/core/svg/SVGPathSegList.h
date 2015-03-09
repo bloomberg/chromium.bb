@@ -35,7 +35,6 @@
 #include "core/svg/SVGPathSeg.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGListPropertyHelper.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

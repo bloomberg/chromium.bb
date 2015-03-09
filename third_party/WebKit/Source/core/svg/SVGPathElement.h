@@ -28,7 +28,6 @@
 #include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "platform/heap/Handle.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

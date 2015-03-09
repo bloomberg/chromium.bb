@@ -44,13 +44,16 @@ class MediaKeys;
 
 // References are held by JS only. However, even if all JS references are
 // dropped, it won't be garbage collected until close event received or
-// MediaKeys goes away (as determined by the validity of a WeakPtr). This allows
+// MediaKeys goes away (as determined by a WeakMember reference). This allows
 // the CDM to continue to fire events for this session, as long as the session
 // is open.
 //
-// WeakPtr<MediaKeys> is used instead of having MediaKeys and MediaKeySession
+// WeakMember<MediaKeys> is used instead of having MediaKeys and MediaKeySession
 // keep references to each other, and then having to inform the other object
-// when it gets destroyed.
+// when it gets destroyed. When the Oilpan garbage collector determines that
+// only WeakMember<> references remain to the MediaKeys object, the MediaKeys
+// object will be finalized and the WeakMember<> references will be cleared
+// out(zeroed) by the garbage collector.
 //
 // Because this object controls the lifetime of the WebContentDecryptionModuleSession,
 // it may outlive any JavaScript references as long as the MediaKeys object is alive.

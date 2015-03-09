@@ -36,7 +36,6 @@
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"
 #include "wtf/Forward.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

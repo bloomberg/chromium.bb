@@ -25,7 +25,6 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGZoomAndPan.h"
 #include "platform/heap/Handle.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
