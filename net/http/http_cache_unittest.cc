@@ -2108,7 +2108,7 @@ void RevalidationServer::Handler(const net::HttpRequestInfo* request,
 }
 
 // Tests revalidation after a vary match.
-TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMatch) {
+TEST(HttpCache, GET_ValidateCache_VaryMatch) {
   MockHttpCache cache;
 
   // Write to the cache.
@@ -2141,7 +2141,7 @@ TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMatch) {
 }
 
 // Tests revalidation after a vary mismatch if etag is present.
-TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMismatch) {
+TEST(HttpCache, GET_ValidateCache_VaryMismatch) {
   MockHttpCache cache;
 
   // Write to the cache.
@@ -2175,7 +2175,7 @@ TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMismatch) {
 }
 
 // Tests lack of revalidation after a vary mismatch and no etag.
-TEST(HttpCache, SimpleGET_LoadDontValidateCache_VaryMismatch) {
+TEST(HttpCache, GET_DontValidateCache_VaryMismatch) {
   MockHttpCache cache;
 
   // Write to the cache.
@@ -2205,6 +2205,154 @@ TEST(HttpCache, SimpleGET_LoadDontValidateCache_VaryMismatch) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
   TestLoadTimingNetworkRequest(load_timing_info);
   RemoveMockTransaction(&transaction);
+}
+
+// Tests that a new vary header provided when revalidating an entry is saved.
+TEST(HttpCache, GET_ValidateCache_VaryMatch_UpdateVary) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  ScopedMockTransaction transaction(kTypicalGET_Transaction);
+  transaction.request_headers = "Foo: bar\r\n Name: bar\r\n";
+  transaction.response_headers =
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=0\n"
+      "Vary: Foo\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Validate the entry and change the vary field in the response.
+  transaction.request_headers = "Foo: bar\r\n Name: none\r\n";
+  transaction.status = "HTTP/1.1 304 Not Modified";
+  transaction.response_headers =
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=3600\n"
+      "Vary: Name\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Make sure that the ActiveEntry is gone.
+  base::RunLoop().RunUntilIdle();
+
+  // Generate a vary mismatch.
+  transaction.request_headers = "Foo: bar\r\n Name: bar\r\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(2, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// Tests that new request headers causing a vary mismatch are paired with the
+// new response when the server says the old response can be used.
+TEST(HttpCache, GET_ValidateCache_VaryMismatch_UpdateRequestHeader) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  ScopedMockTransaction transaction(kTypicalGET_Transaction);
+  transaction.request_headers = "Foo: bar\r\n";
+  transaction.response_headers =
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=3600\n"
+      "Vary: Foo\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Vary-mismatch validation receives 304.
+  transaction.request_headers = "Foo: none\r\n";
+  transaction.status = "HTTP/1.1 304 Not Modified";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Make sure that the ActiveEntry is gone.
+  base::RunLoop().RunUntilIdle();
+
+  // Generate a vary mismatch.
+  transaction.request_headers = "Foo: bar\r\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(2, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// Tests that a 304 without vary headers doesn't delete the previously stored
+// vary data after a vary match revalidation.
+TEST(HttpCache, GET_ValidateCache_VaryMatch_DontDeleteVary) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  ScopedMockTransaction transaction(kTypicalGET_Transaction);
+  transaction.request_headers = "Foo: bar\r\n";
+  transaction.response_headers =
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=0\n"
+      "Vary: Foo\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Validate the entry and remove the vary field in the response.
+  transaction.status = "HTTP/1.1 304 Not Modified";
+  transaction.response_headers =
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=3600\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Make sure that the ActiveEntry is gone.
+  base::RunLoop().RunUntilIdle();
+
+  // Generate a vary mismatch.
+  transaction.request_headers = "Foo: none\r\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(2, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// Tests that a 304 without vary headers doesn't delete the previously stored
+// vary data after a vary mismatch.
+TEST(HttpCache, GET_ValidateCache_VaryMismatch_DontDeleteVary) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  ScopedMockTransaction transaction(kTypicalGET_Transaction);
+  transaction.request_headers = "Foo: bar\r\n";
+  transaction.response_headers =
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=3600\n"
+      "Vary: Foo\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Vary-mismatch validation receives 304 and no vary header.
+  transaction.request_headers = "Foo: none\r\n";
+  transaction.status = "HTTP/1.1 304 Not Modified";
+  transaction.response_headers =
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=3600\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Make sure that the ActiveEntry is gone.
+  base::RunLoop().RunUntilIdle();
+
+  // Generate a vary mismatch.
+  transaction.request_headers = "Foo: bar\r\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(3, cache.network_layer()->transaction_count());
+  EXPECT_EQ(2, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
 static void ETagGet_UnconditionalRequest_Handler(

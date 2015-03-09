@@ -1665,6 +1665,15 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   response_.request_time = new_response_->request_time;
   response_.network_accessed = new_response_->network_accessed;
   response_.unused_since_prefetch = new_response_->unused_since_prefetch;
+  if (new_response_->vary_data.is_valid()) {
+    response_.vary_data = new_response_->vary_data;
+  } else if (response_.vary_data.is_valid()) {
+    // There is a vary header in the stored response but not in the current one.
+    // Update the data with the new request headers.
+    HttpVaryData new_vary_data;
+    new_vary_data.Init(*request_, *response_.headers.get());
+    response_.vary_data = new_vary_data;
+  }
 
   if (response_.headers->HasHeaderValue("cache-control", "no-store")) {
     if (!entry_->doomed) {
