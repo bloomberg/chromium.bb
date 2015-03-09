@@ -11,6 +11,7 @@ import json
 import os
 
 from chromite.cbuildbot import constants
+from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -98,6 +99,20 @@ def GetToolchainsForBoard(board, buildroot=constants.SOURCE_ROOT):
   if board == 'sdk':
     toolchains = FilterToolchains(toolchains, 'sdk', True)
   return toolchains
+
+
+def GetToolchainsForBrick(brick_locator):
+  """Get a list of toolchain tuples for a given brick locator.
+
+  Args:
+    brick_locator: locator for the brick.
+
+  Returns:
+    The list of toolchain tuples for the given brick.
+  """
+  brick_stack = brick_lib.Brick(brick_locator).BrickStack()
+  overlays = [b.OverlayDir() for b in brick_stack]
+  return GetTuplesForOverlays(overlays)
 
 
 def FilterToolchains(targets, key, value):

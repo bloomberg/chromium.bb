@@ -12,6 +12,7 @@ import json
 import os
 
 from chromite.cbuildbot import constants
+from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -575,13 +576,16 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
   RebuildLibtool()
 
 
-def ShowBoardConfig(board):
-  """Show the toolchain tuples used by |board|
+def ShowConfig(name):
+  """Show the toolchain tuples used by |name|
 
   Args:
-    board: The board to query.
+    name: The board name or brick locator to query.
   """
-  toolchains = toolchain.GetToolchainsForBoard(board)
+  if brick_lib.IsLocator(name):
+    toolchains = toolchain.GetToolchainsForBrick(name)
+  else:
+    toolchains = toolchain.GetToolchainsForBoard(name)
   # Make sure we display the default toolchain first.
   print(','.join(
       toolchain.FilterToolchains(toolchains, 'default', True).keys() +
@@ -1000,9 +1004,9 @@ def main(argv):
                       dest='hostonly', default=False, action='store_true',
                       help='Only setup the host toolchain. '
                            'Useful for bootstrapping chroot')
-  parser.add_argument('--show-board-cfg',
-                      dest='board_cfg', default=None,
-                      help='Board to list toolchain tuples for')
+  parser.add_argument('--show-board-cfg', '--show-cfg',
+                      dest='cfg_name', default=None,
+                      help='Board or brick to list toolchains tuples for')
   parser.add_argument('--create-packages',
                       action='store_true', default=False,
                       help='Build redistributable packages')
@@ -1015,15 +1019,15 @@ def main(argv):
   options.Freeze()
 
   # Figure out what we're supposed to do and reject conflicting options.
-  if options.board_cfg and options.create_packages:
+  if options.cfg_name and options.create_packages:
     parser.error('conflicting options: create-packages & show-board-cfg')
 
   targets = set(options.targets.split(','))
   boards = (set(options.include_boards.split(',')) if options.include_boards
             else set())
 
-  if options.board_cfg:
-    ShowBoardConfig(options.board_cfg)
+  if options.cfg_name:
+    ShowConfig(options.cfg_name)
   elif options.create_packages:
     cros_build_lib.AssertInsideChroot()
     Crossdev.Load(False)
