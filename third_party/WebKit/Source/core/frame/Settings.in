@@ -219,7 +219,7 @@ touchEditingEnabled initial=false
 # These settings are for an experimental modification to how pinch-zoom
 # behaves.  TODO(wjmaclean): link to design document.
 # crbug.com/304869 tracks removal.
-pinchVirtualViewportEnabled initial=false
+pinchVirtualViewportEnabled initial=true
 useSolidColorScrollbars initial=false
 pinchOverlayScrollbarThickness type=int, initial=0
 
