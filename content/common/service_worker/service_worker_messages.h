@@ -492,8 +492,9 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowResponse,
                      content::ServiceWorkerClientInfo /* client */)
 
 // Sent via EmbeddedWorker as an error response of OpenWindow.
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_OpenWindowError,
-                     int /* request_id */ )
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowError,
+                     int /* request_id */,
+                     std::string /* message */ )
 
 // Sent via EmbeddedWorker as a response of FocusClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,

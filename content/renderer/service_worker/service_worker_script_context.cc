@@ -492,7 +492,9 @@ void ServiceWorkerScriptContext::OnOpenWindowResponse(
   pending_client_callbacks_.Remove(request_id);
 }
 
-void ServiceWorkerScriptContext::OnOpenWindowError(int request_id) {
+void ServiceWorkerScriptContext::OnOpenWindowError(
+    int request_id,
+    const std::string& message) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnOpenWindowError");
   blink::WebServiceWorkerClientCallbacks* callbacks =
@@ -504,7 +506,7 @@ void ServiceWorkerScriptContext::OnOpenWindowError(int request_id) {
   scoped_ptr<blink::WebServiceWorkerError> error(
       new blink::WebServiceWorkerError(
           blink::WebServiceWorkerError::ErrorTypeUnknown,
-          "Something went wrong while trying to open the window."));
+          blink::WebString::fromUTF8(message)));
   callbacks->onError(error.release());
   pending_client_callbacks_.Remove(request_id);
 }

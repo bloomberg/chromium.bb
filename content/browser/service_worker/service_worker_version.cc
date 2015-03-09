@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -241,7 +242,6 @@ void OpenWindowOnUI(
 
 void KillEmbeddedWorkerProcess(int process_id, ResultCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   RenderProcessHost* render_process_host =
       RenderProcessHost::FromID(process_id);
   if (render_process_host->GetHandle() != base::kNullProcessHandle)
@@ -1178,20 +1178,33 @@ void ServiceWorkerVersion::OnCrossOriginConnectEventFinished(
   RemoveCallbackAndStopIfDoomed(&cross_origin_connect_callbacks_, request_id);
 }
 
-void ServiceWorkerVersion::OnOpenWindow(int request_id, const GURL& url) {
+void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
   // Just abort if we are shutting down.
   if (!context_)
     return;
 
-  if (url.GetOrigin() != script_url_.GetOrigin()) {
-    // There should be a same origin check by Blink, if the request is still not
-    // same origin, the process might be compromised and should be eliminated.
-    DVLOG(1) << "Received a cross origin openWindow() request from a service "
-                "worker. Killing associated process.";
+  if (!url.is_valid()) {
+    DVLOG(1) << "Received unexpected invalid URL from renderer process.";
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&KillEmbeddedWorkerProcess,
                                        embedded_worker_->process_id(),
                                        RESULT_CODE_KILLED_BAD_MESSAGE));
+    return;
+  }
+
+  // The renderer treats all URLs in the about: scheme as being about:blank.
+  // Canonicalize about: URLs to about:blank.
+  if (url.SchemeIs(url::kAboutScheme))
+    url = GURL(url::kAboutBlankURL);
+
+  // Reject requests for URLs that the process is not allowed to access. It's
+  // possible to receive such requests since the renderer-side checks are
+  // slightly different. For example, the view-source scheme will not be
+  // filtered out by Blink.
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          embedded_worker_->process_id(), url)) {
+    embedded_worker_->SendMessage(ServiceWorkerMsg_OpenWindowError(
+        request_id, url.spec() + " cannot be opened."));
     return;
   }
 
@@ -1217,7 +1230,8 @@ void ServiceWorkerVersion::DidOpenWindow(int request_id,
 
   if (render_process_id == ChildProcessHost::kInvalidUniqueID &&
       render_frame_id == MSG_ROUTING_NONE) {
-    embedded_worker_->SendMessage(ServiceWorkerMsg_OpenWindowError(request_id));
+    embedded_worker_->SendMessage(ServiceWorkerMsg_OpenWindowError(
+        request_id, "Something went wrong while trying to open the window."));
     return;
   }
 

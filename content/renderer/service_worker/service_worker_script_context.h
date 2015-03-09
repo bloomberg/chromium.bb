@@ -142,7 +142,7 @@ class ServiceWorkerScriptContext {
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
   void OnOpenWindowResponse(int request_id,
                             const ServiceWorkerClientInfo& client);
-  void OnOpenWindowError(int request_id);
+  void OnOpenWindowError(int request_id, const std::string& message);
   void OnFocusClientResponse(int request_id,
                              const ServiceWorkerClientInfo& client);
   void OnDidSkipWaiting(int request_id);

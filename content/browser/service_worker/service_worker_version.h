@@ -360,7 +360,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnGeofencingEventFinished(int request_id);
   void OnCrossOriginConnectEventFinished(int request_id,
                                          bool accept_connection);
-  void OnOpenWindow(int request_id, const GURL& url);
+  void OnOpenWindow(int request_id, GURL url);
   void DidOpenWindow(int request_id,
                      int render_process_id,
                      int render_frame_id);
