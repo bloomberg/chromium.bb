@@ -226,7 +226,7 @@ bool ClientSocketPoolBaseHelper::IsStalled() const {
   // which does not count.)
   for (GroupMap::const_iterator it = group_map_.begin();
        it != group_map_.end(); ++it) {
-    if (it->second->IsStalledOnPoolMaxSockets(max_sockets_per_group_))
+    if (it->second->CanUseAdditionalSocketSlot(max_sockets_per_group_))
       return true;
   }
   return false;
@@ -278,7 +278,7 @@ int ClientSocketPoolBaseHelper::RequestSocket(
     // call back in to |this|, which will cause all sorts of fun and exciting
     // re-entrancy issues if the socket pool is doing something else at the
     // time.
-    if (group->IsStalledOnPoolMaxSockets(max_sockets_per_group_)) {
+    if (group->CanUseAdditionalSocketSlot(max_sockets_per_group_)) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(
@@ -578,7 +578,7 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
     return max_state;
   }
 
-  if (group.IsStalledOnPoolMaxSockets(max_sockets_per_group_))
+  if (group.CanUseAdditionalSocketSlot(max_sockets_per_group_))
     return LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL;
   return LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET;
 }
@@ -632,9 +632,8 @@ base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
     }
     group_dict->Set("connect_jobs", connect_jobs_list);
 
-    group_dict->SetBoolean("is_stalled",
-                           group->IsStalledOnPoolMaxSockets(
-                               max_sockets_per_group_));
+    group_dict->SetBoolean("is_stalled", group->CanUseAdditionalSocketSlot(
+                                             max_sockets_per_group_));
     group_dict->SetBoolean("backup_job_timer_is_running",
                            group->BackupJobTimerIsRunning());
 
@@ -836,7 +835,7 @@ bool ClientSocketPoolBaseHelper::FindTopStalledGroup(
     Group* curr_group = i->second;
     if (!curr_group->has_pending_requests())
       continue;
-    if (curr_group->IsStalledOnPoolMaxSockets(max_sockets_per_group_)) {
+    if (curr_group->CanUseAdditionalSocketSlot(max_sockets_per_group_)) {
       if (!group)
         return true;
       has_stalled_group = true;
@@ -960,6 +959,15 @@ void ClientSocketPoolBaseHelper::ProcessPendingRequest(
     const std::string& group_name, Group* group) {
   const Request* next_request = group->GetNextPendingRequest();
   DCHECK(next_request);
+
+  // If the group has no idle sockets, and can't make use of an additional slot,
+  // either because it's at the limit or because it's at the socket per group
+  // limit, then there's nothing to do.
+  if (group->idle_sockets().empty() &&
+      !group->CanUseAdditionalSocketSlot(max_sockets_per_group_)) {
+    return;
+  }
+
   int rv = RequestSocketInternal(group_name, *next_request);
   if (rv != ERR_IO_PENDING) {
     scoped_ptr<const Request> request = group->PopNextPendingRequest();

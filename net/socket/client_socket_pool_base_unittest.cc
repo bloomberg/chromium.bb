@@ -1750,6 +1750,22 @@ TEST_F(ClientSocketPoolBaseTest,
       entries, 2, NetLog::TYPE_SOCKET_POOL));
 }
 
+// Check that an async ConnectJob failure does not result in creation of a new
+// ConnectJob when there's another pending request also waiting on its own
+// ConnectJob.  See http://crbug.com/463960.
+TEST_F(ClientSocketPoolBaseTest, AsyncFailureWithPendingRequestWithJob) {
+  CreatePool(2, 2);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingFailingJob);
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", DEFAULT_PRIORITY));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", DEFAULT_PRIORITY));
+
+  EXPECT_EQ(ERR_CONNECTION_FAILED, request(0)->WaitForResult());
+  EXPECT_EQ(ERR_CONNECTION_FAILED, request(1)->WaitForResult());
+
+  EXPECT_EQ(2, client_socket_factory_.allocation_count());
+}
+
 TEST_F(ClientSocketPoolBaseTest, TwoRequestsCancelOne) {
   // TODO(eroman): Add back the log expectations! Removed them because the
   //               ordering is difficult, and some may fire during destructor.

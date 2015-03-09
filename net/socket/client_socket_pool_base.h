@@ -383,7 +383,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
           static_cast<int>(idle_sockets_.size());
     }
 
-    bool IsStalledOnPoolMaxSockets(int max_sockets_per_group) const {
+    // Returns true if the group could make use of an additional socket slot, if
+    // it were given one.
+    bool CanUseAdditionalSocketSlot(int max_sockets_per_group) const {
       return HasAvailableSocketSlot(max_sockets_per_group) &&
           pending_requests_.size() > jobs_.size();
     }
