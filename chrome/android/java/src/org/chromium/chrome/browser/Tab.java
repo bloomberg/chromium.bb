@@ -109,6 +109,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public static final int INVALID_TAB_ID = -1;
     private static final long INVALID_TIMESTAMP = -1;
 
+    /**
+     * The required page load percentage for the page to be considered ready assuming the
+     * TextureView is also ready.
+     */
+    private static final int CONSIDERED_READY_LOAD_PERCENTAGE = 100;
+
     /** Used for logging. */
     private static final String TAG = "Tab";
 
@@ -986,9 +992,30 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
     }
 
+    /**
+     * @return Whether or not the loading and rendering of the page is done.
+     */
+    @VisibleForTesting
+    public boolean isLoadingAndRenderingDone() {
+        return isReady() && getProgress() >= CONSIDERED_READY_LOAD_PERCENTAGE;
+    }
+
     /** Stop the current navigation. */
     public void stopLoading() {
+        if (isLoading()) {
+            RewindableIterator<TabObserver> observers = getTabObservers();
+            while (observers.hasNext()) observers.next().onPageLoadFinished(this);
+        }
         if (getWebContents() != null) getWebContents().stop();
+    }
+
+    /**
+     * @return a value between 0 and 100 reflecting what percentage of the page load is complete.
+     */
+    public int getProgress() {
+        ChromeWebContentsDelegateAndroid delegate = getChromeWebContentsDelegateAndroid();
+        if (delegate == null) return 0;
+        return isLoading() ? delegate.getMostRecentProgress() : 100;
     }
 
     /**
@@ -1173,6 +1200,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             if (mContentViewCore != null) mContentViewCore.onShow();
 
             showInternal(type);
+
+            // If the page is still loading, update the progress bar (otherwise it would not show
+            // until the renderer notifies of new progress being made).
+            if (getProgress() < 100 && !isShowingInterstitialPage()) {
+                notifyLoadProgress(getProgress());
+            }
 
             // Updating the timestamp has to happen after the showInternal() call since subclasses
             // may use it for logging.
