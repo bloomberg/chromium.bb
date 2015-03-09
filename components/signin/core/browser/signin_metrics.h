@@ -169,6 +169,8 @@ void LogExternalCcResultFetches(
 // Track when the current authentication error changed.
 void LogAuthError(GoogleServiceAuthError::State auth_error);
 
+void LogSigninConfirmHistogramValue(int action);
+
 }  // namespace signin_metrics
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_METRICS_H_
