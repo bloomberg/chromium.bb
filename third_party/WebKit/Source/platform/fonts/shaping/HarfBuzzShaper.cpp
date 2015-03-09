@@ -347,8 +347,9 @@ float HarfBuzzShaper::HarfBuzzRun::xPositionForOffset(unsigned offset)
 }
 
 
-HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, ForTextEmphasisOrNot forTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
-    : Shaper(font, run, forTextEmphasis, fallbackFonts, bounds)
+HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, const GlyphData* emphasisData,
+    HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
+    : Shaper(font, run, emphasisData, fallbackFonts, bounds)
     , m_wordSpacingAdjustment(font->fontDescription().wordSpacing())
     , m_letterSpacing(font->fontDescription().letterSpacing())
     , m_expansionOpportunityCount(0)
@@ -1163,9 +1164,6 @@ float HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer,
 
 float HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, HarfBuzzRun* currentRun, float initialAdvance)
 {
-    // FIXME: Instead of generating a synthetic GlyphBuffer here which is then used by the
-    // drawEmphasisMarks method of FontFastPath, we should roll our own emphasis mark drawing function.
-
     float* advances = currentRun->advances();
     unsigned numGlyphs = currentRun->numGlyphs();
     uint16_t* glyphToCharacterIndexes = currentRun->glyphToCharacterIndexes();
@@ -1214,9 +1212,9 @@ float HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, H
             float glyphAdvanceX = clusterAdvance / graphemesInCluster;
             for (unsigned j = 0; j < graphemesInCluster; ++j) {
                 // Do not put emphasis marks on space, separator, and control characters.
-                Glyph glyphToAdd = Character::canReceiveTextEmphasis(m_run[currentCharacterIndex]) ? 1 : 0;
-                // The emphasis code expects mid-glyph offsets.
-                glyphBuffer->add(glyphToAdd, currentRun->fontData(), advanceSoFar + glyphAdvanceX / 2);
+                if (Character::canReceiveTextEmphasis(m_run[currentCharacterIndex]))
+                    addEmphasisMark(glyphBuffer, advanceSoFar + glyphAdvanceX / 2);
+
                 advanceSoFar += glyphAdvanceX;
             }
             clusterStart = clusterEnd;
@@ -1238,7 +1236,7 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
         // Skip runs that only contain control characters.
         if (!currentRun->numGlyphs())
             continue;
-        advanceSoFar += (m_forTextEmphasis == ForTextEmphasis)
+        advanceSoFar += forTextEmphasis()
             ? fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun, advanceSoFar)
             : fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, advanceSoFar);
     }

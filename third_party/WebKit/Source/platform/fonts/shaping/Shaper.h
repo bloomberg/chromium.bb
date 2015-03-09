@@ -42,19 +42,18 @@ class GlyphBuffer;
 class SimpleFontData;
 class TextRun;
 
-class PLATFORM_EXPORT Shaper {
-public:
-    enum ForTextEmphasisOrNot {
-        NotForTextEmphasis,
-        ForTextEmphasis
-    };
+struct GlyphData;
 
+class PLATFORM_EXPORT Shaper {
 protected:
-    Shaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);
+    Shaper(const Font*, const TextRun&, const GlyphData* emphasisData = nullptr,
+        HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);
 
     void trackNonPrimaryFallbackFont(const SimpleFontData*);
 
-protected:
+    bool forTextEmphasis() const { return m_emphasisSubstitutionData; }
+    void addEmphasisMark(GlyphBuffer*, float midGlyphOffset) const;
+
     const Font* m_font;
     const TextRun& m_run;
     HashSet<const SimpleFontData*>* m_fallbackFonts;
@@ -64,7 +63,11 @@ protected:
     float m_expansionPerOpportunity; // Pixels to be added to each expansion opportunity.
     bool m_isAfterExpansion;
 
-    ForTextEmphasisOrNot m_forTextEmphasis;
+private:
+    // Emphasis substitution info. If specified, this will be used to replace all glyphs which
+    // can receive text emphasis with center-aligned emphasis glyphs.
+    const GlyphData* m_emphasisSubstitutionData;
+    FloatPoint m_emphasisGlyphCenter;
 };
 
 inline void Shaper::trackNonPrimaryFallbackFont(const SimpleFontData* fontData)

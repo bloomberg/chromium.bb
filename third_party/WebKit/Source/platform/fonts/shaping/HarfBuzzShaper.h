@@ -52,7 +52,8 @@ class SimpleFontData;
 
 class HarfBuzzShaper final : public Shaper {
 public:
-    HarfBuzzShaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts = 0, FloatRect* = 0);
+    HarfBuzzShaper(const Font*, const TextRun&, const GlyphData* emphasisData = nullptr,
+        HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);
 
     void setDrawRange(int from, int to);
     bool shape(GlyphBuffer* = 0);

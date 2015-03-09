@@ -42,7 +42,8 @@ struct GlyphData;
 struct PLATFORM_EXPORT SimpleShaper : public Shaper {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    SimpleShaper(const Font*, const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, FloatRect* = 0, bool forTextEmphasis = false);
+    SimpleShaper(const Font*, const TextRun&, const GlyphData* emphasisData = nullptr,
+        HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);
 
     unsigned advance(unsigned to, GlyphBuffer* = 0);
     bool advanceOneCharacter(float& width);

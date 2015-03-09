@@ -37,9 +37,9 @@ using namespace Unicode;
 
 namespace blink {
 
-SimpleShaper::SimpleShaper(const Font* font, const TextRun& run,
-    HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds, bool forTextEmphasis)
-    : Shaper(font, run, forTextEmphasis ? ForTextEmphasis : NotForTextEmphasis, fallbackFonts, bounds)
+SimpleShaper::SimpleShaper(const Font* font, const TextRun& run, const GlyphData* emphasisData,
+    HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
+    : Shaper(font, run, emphasisData, fallbackFonts, bounds)
     , m_currentCharacter(0)
     , m_runWidthSoFar(0)
 {
@@ -173,17 +173,13 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
             m_glyphBoundingBox->unite(glyphBounds);
         }
 
-        if (m_forTextEmphasis) {
-            if (!Character::canReceiveTextEmphasis(charData.character))
-                glyph = 0;
-
-            // The emphasis code expects mid-glyph offsets.
-            width /= 2;
-            m_runWidthSoFar += width;
+        if (glyphBuffer) {
+            if (!forTextEmphasis()) {
+                glyphBuffer->add(glyph, fontData, m_runWidthSoFar);
+            } else if (Character::canReceiveTextEmphasis(charData.character)) {
+                addEmphasisMark(glyphBuffer, m_runWidthSoFar + width / 2);
+            }
         }
-
-        if (glyphBuffer)
-            glyphBuffer->add(glyph, fontData, m_runWidthSoFar);
 
         // Advance past the character we just dealt with.
         textIterator.advance(charData.clusterLength);

@@ -31,11 +31,13 @@
 #include "config.h"
 #include "platform/fonts/shaping/Shaper.h"
 
+#include "platform/fonts/GlyphBuffer.h"
+#include "platform/fonts/GlyphPage.h"
 #include "platform/text/TextRun.h"
 
 namespace blink {
 
-Shaper::Shaper(const Font* font, const TextRun& run, ForTextEmphasisOrNot forTextEmphasis,
+Shaper::Shaper(const Font* font, const TextRun& run, const GlyphData* emphasisData,
     HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
     : m_font(font)
     , m_run(run)
@@ -44,8 +46,32 @@ Shaper::Shaper(const Font* font, const TextRun& run, ForTextEmphasisOrNot forTex
     , m_expansion(0)
     , m_expansionPerOpportunity(0)
     , m_isAfterExpansion(!run.allowsLeadingExpansion())
-    , m_forTextEmphasis(forTextEmphasis)
+    , m_emphasisSubstitutionData(emphasisData)
 {
+    if (emphasisData) {
+        ASSERT(emphasisData->fontData);
+        m_emphasisGlyphCenter = emphasisData->fontData->boundsForGlyph(emphasisData->glyph).center();
+    }
+}
+
+void Shaper::addEmphasisMark(GlyphBuffer* buffer, float midGlyphOffset) const
+{
+    ASSERT(buffer);
+    ASSERT(m_emphasisSubstitutionData);
+
+    const SimpleFontData* emphasisFontData = m_emphasisSubstitutionData->fontData;
+    ASSERT(emphasisFontData);
+
+    bool isVertical = emphasisFontData->platformData().orientation() == Vertical
+        && emphasisFontData->verticalData();
+
+    if (!isVertical) {
+        buffer->add(m_emphasisSubstitutionData->glyph, emphasisFontData,
+            midGlyphOffset - m_emphasisGlyphCenter.x());
+    } else {
+        buffer->add(m_emphasisSubstitutionData->glyph, emphasisFontData,
+            FloatPoint(-m_emphasisGlyphCenter.x(), midGlyphOffset - m_emphasisGlyphCenter.y()));
+    }
 }
 
 } // namespace blink

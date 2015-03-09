@@ -99,18 +99,16 @@ void Font::update(PassRefPtrWillBeRawPtr<FontSelector> fontSelector) const
 }
 
 float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo, GlyphBuffer& glyphBuffer,
-    ForTextEmphasisOrNot forTextEmphasis) const
+    const GlyphData* emphasisData) const
 {
     if (codePath(runInfo) == ComplexPath) {
-        HarfBuzzShaper shaper(this, runInfo.run, (forTextEmphasis == ForTextEmphasis)
-            ? HarfBuzzShaper::ForTextEmphasis : HarfBuzzShaper::NotForTextEmphasis);
+        HarfBuzzShaper shaper(this, runInfo.run, emphasisData);
         shaper.setDrawRange(runInfo.from, runInfo.to);
         shaper.shape(&glyphBuffer);
         return shaper.totalWidth();
     }
 
-    SimpleShaper shaper(this, runInfo.run, nullptr /* fallbackFonts */,
-        nullptr, forTextEmphasis);
+    SimpleShaper shaper(this, runInfo.run, emphasisData, nullptr /* fallbackFonts */, nullptr);
     shaper.advance(runInfo.from);
     shaper.advance(runInfo.to, &glyphBuffer);
     float width = shaper.runWidthSoFar();
@@ -204,13 +202,23 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     if (shouldSkipDrawing())
         return;
 
+    FontCachePurgePreventer purgePreventer;
+
+    GlyphData emphasisGlyphData;
+    if (!getEmphasisMarkGlyphData(mark, emphasisGlyphData))
+        return;
+
+    ASSERT(emphasisGlyphData.fontData);
+    if (!emphasisGlyphData.fontData)
+        return;
+
     GlyphBuffer glyphBuffer;
-    buildGlyphBuffer(runInfo, glyphBuffer, ForTextEmphasis);
+    buildGlyphBuffer(runInfo, glyphBuffer, &emphasisGlyphData);
 
     if (glyphBuffer.isEmpty())
         return;
 
-    drawEmphasisMarks(context, runInfo, glyphBuffer, mark, point);
+    drawGlyphBuffer(context, runInfo, glyphBuffer, point);
 }
 
 static inline void updateGlyphOverflowFromBounds(const IntRectOutsets& glyphBounds,
@@ -781,7 +789,7 @@ void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoi
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const
 {
     FloatRect bounds;
-    HarfBuzzShaper shaper(this, run, HarfBuzzShaper::NotForTextEmphasis, fallbackFonts, glyphBounds ? &bounds : 0);
+    HarfBuzzShaper shaper(this, run, nullptr, fallbackFonts, glyphBounds ? &bounds : 0);
     if (!shaper.shape())
         return 0;
 
@@ -853,54 +861,10 @@ void Font::drawGlyphBuffer(GraphicsContext* context,
         runInfo.bounds);
 }
 
-inline static float offsetToMiddleOfGlyph(const SimpleFontData* fontData, Glyph glyph, FontOrientation orientation = Horizontal)
-{
-    FloatRect bounds = fontData->boundsForGlyph(glyph);
-    if (orientation == Horizontal)
-        return bounds.x() + bounds.width() / 2;
-    return bounds.y() + bounds.height() / 2;
-}
-
-void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const AtomicString& mark, const FloatPoint& point) const
-{
-    FontCachePurgePreventer purgePreventer;
-
-    GlyphData markGlyphData;
-    if (!getEmphasisMarkGlyphData(mark, markGlyphData))
-        return;
-
-    const SimpleFontData* markFontData = markGlyphData.fontData;
-    ASSERT(markFontData);
-    if (!markFontData)
-        return;
-
-    GlyphBuffer markBuffer;
-    bool drawVertically = markFontData->platformData().orientation() == Vertical && markFontData->verticalData();
-    for (unsigned i = 0; i < glyphBuffer.size(); ++i) {
-        // Skip marks for suppressed glyphs.
-        if (!glyphBuffer.glyphAt(i))
-            continue;
-
-        // We want the middle of the emphasis mark aligned with the middle of the glyph.
-        // The input offsets are already adjusted to point to the middle of the glyph, so all
-        // is left to do is adjust for 1/2 mark width.
-        // FIXME: we could avoid this by passing some additional info to the shaper,
-        //        and perform all adjustments at buffer build time.
-        if (!drawVertically) {
-            markBuffer.add(markGlyphData.glyph, markFontData, glyphBuffer.xOffsetAt(i) - offsetToMiddleOfGlyph(markFontData, markGlyphData.glyph));
-        } else {
-            markBuffer.add(markGlyphData.glyph, markFontData, FloatPoint(- offsetToMiddleOfGlyph(markFontData, markGlyphData.glyph),
-                glyphBuffer.xOffsetAt(i) - offsetToMiddleOfGlyph(markFontData, markGlyphData.glyph, Vertical)));
-        }
-    }
-
-    drawGlyphBuffer(context, runInfo, markBuffer, point);
-}
-
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const
 {
     FloatRect bounds;
-    SimpleShaper shaper(this, run, fallbackFonts, glyphBounds ? &bounds : 0);
+    SimpleShaper shaper(this, run, nullptr, fallbackFonts, glyphBounds ? &bounds : 0);
     shaper.advance(run.length());
     float runWidth = shaper.runWidthSoFar();
 
@@ -916,7 +880,7 @@ float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFont
 FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
     FloatRect bounds;
-    SimpleShaper shaper(this, run, 0, accountForGlyphBounds ? &bounds : 0);
+    SimpleShaper shaper(this, run, nullptr, nullptr, accountForGlyphBounds ? &bounds : nullptr);
     shaper.advance(from);
     float fromX = shaper.runWidthSoFar();
     shaper.advance(to);
