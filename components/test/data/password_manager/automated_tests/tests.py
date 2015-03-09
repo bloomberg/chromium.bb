@@ -71,6 +71,13 @@ class Nytimes(WebsiteTest):
     self.FillPasswordInto("#password")
     self.Submit("#password")
 
+class Odnoklassniki(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://ok.ru")
+    self.FillUsernameInto("#field_email")
+    self.FillPasswordInto("#field_password")
+    self.Submit("#field_password")
 
 class Pinterest(WebsiteTest):
 
@@ -272,6 +279,8 @@ def Tests(environment):
   environment.AddWebsiteTest(Mailru("mailru"))
 
   environment.AddWebsiteTest(Nytimes("nytimes"))
+
+  environment.AddWebsiteTest(Odnoklassniki("odnoklassniki"))
 
   environment.AddWebsiteTest(Pinterest("pinterest"))
 
