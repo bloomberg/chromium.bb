@@ -642,13 +642,6 @@
           ],
         }, # target_name: chromium_gpu_debug_builder
         {
-          'target_name': 'chromium_builder_perf_av',
-          'type': 'none',
-          'dependencies': [
-            'blink_tests', # to run layout tests
-          ],
-        },  # target_name: chromium_builder_perf_av
-        {
           # This target contains everything we need to run tests on the special
           # device-equipped WebRTC bots. We have device-requiring tests in
           # browser_tests and content_browsertests.
