@@ -1953,13 +1953,13 @@ blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
       RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy());
 }
 
-blink::WebWorkerPermissionClientProxy*
-RenderFrameImpl::createWorkerPermissionClientProxy(
+blink::WebWorkerContentSettingsClientProxy*
+RenderFrameImpl::createWorkerContentSettingsClientProxy(
     blink::WebLocalFrame* frame) {
   if (!frame || !frame->view())
     return NULL;
   DCHECK(!frame_ || frame_ == frame);
-  return GetContentClient()->renderer()->CreateWorkerPermissionClientProxy(
+  return GetContentClient()->renderer()->CreateWorkerContentSettingsClientProxy(
       this, frame);
 }
 

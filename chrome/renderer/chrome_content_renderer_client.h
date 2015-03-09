@@ -139,9 +139,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const override;
   bool ShouldEnableSiteIsolationPolicy() const override;
-  blink::WebWorkerPermissionClientProxy* CreateWorkerPermissionClientProxy(
-      content::RenderFrame* render_frame,
-      blink::WebFrame* frame) override;
+  blink::WebWorkerContentSettingsClientProxy*
+  CreateWorkerContentSettingsClientProxy(content::RenderFrame* render_frame,
+                                         blink::WebFrame* frame) override;
   bool AllowPepperMediaStreamAPI(const GURL& url) override;
   void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;

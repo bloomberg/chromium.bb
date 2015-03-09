@@ -47,7 +47,7 @@ class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebThemeEngine;
 class WebURLRequest;
-class WebWorkerPermissionClientProxy;
+class WebWorkerContentSettingsClientProxy;
 struct WebPluginParams;
 struct WebURLError;
 }
@@ -281,9 +281,9 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool ShouldEnableSiteIsolationPolicy() const;
 
   // Creates a permission client proxy for in-renderer worker.
-  virtual blink::WebWorkerPermissionClientProxy*
-      CreateWorkerPermissionClientProxy(RenderFrame* render_frame,
-                                        blink::WebFrame* frame);
+  virtual blink::WebWorkerContentSettingsClientProxy*
+      CreateWorkerContentSettingsClientProxy(RenderFrame* render_frame,
+                                             blink::WebFrame* frame);
 
   // Returns true if the page at |url| can use Pepper CameraDevice APIs.
   virtual bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url);

@@ -68,8 +68,8 @@
       'renderer/web_apps.h',
       'renderer/webview_color_overlay.cc',
       'renderer/webview_color_overlay.h',
-      'renderer/worker_permission_client_proxy.cc',
-      'renderer/worker_permission_client_proxy.h',
+      'renderer/worker_content_settings_client_proxy.cc',
+      'renderer/worker_content_settings_client_proxy.h',
     ],
     'chrome_renderer_webrtc_sources': [
       'renderer/media/chrome_webrtc_log_message_delegate.cc',

@@ -190,8 +190,8 @@ bool ContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
   return true;
 }
 
-blink::WebWorkerPermissionClientProxy*
-ContentRendererClient::CreateWorkerPermissionClientProxy(
+blink::WebWorkerContentSettingsClientProxy*
+ContentRendererClient::CreateWorkerContentSettingsClientProxy(
     RenderFrame* render_frame, blink::WebFrame* frame) {
   return nullptr;
 }

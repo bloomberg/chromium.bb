@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_WORKER_PERMISSION_CLIENT_PROXY_H_
-#define CHROME_RENDERER_WORKER_PERMISSION_CLIENT_PROXY_H_
+#ifndef CHROME_RENDERER_WORKER_CONTENT_SETTINGS_CLIENT_PROXY_H_
+#define CHROME_RENDERER_WORKER_CONTENT_SETTINGS_CLIENT_PROXY_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/web/WebWorkerPermissionClientProxy.h"
+#include "third_party/WebKit/public/web/WebWorkerContentSettingsClientProxy.h"
 #include "url/gurl.h"
 
 namespace IPC {
@@ -24,14 +24,14 @@ class WebFrame;
 
 // This proxy is created on the main renderer thread then passed onto
 // the blink's worker thread.
-class WorkerPermissionClientProxy
-    : public blink::WebWorkerPermissionClientProxy {
+class WorkerContentSettingsClientProxy
+    : public blink::WebWorkerContentSettingsClientProxy {
  public:
-  WorkerPermissionClientProxy(content::RenderFrame* render_frame,
+  WorkerContentSettingsClientProxy(content::RenderFrame* render_frame,
                               blink::WebFrame* frame);
-  virtual ~WorkerPermissionClientProxy();
+  virtual ~WorkerContentSettingsClientProxy();
 
-  // WebWorkerPermissionClientProxy overrides.
+  // WebWorkerContentSettingsClientProxy overrides.
   virtual bool allowDatabase(const blink::WebString& name,
                              const blink::WebString& display_name,
                              unsigned long estimated_size);
@@ -46,7 +46,7 @@ class WorkerPermissionClientProxy
   GURL top_frame_origin_url_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkerPermissionClientProxy);
+  DISALLOW_COPY_AND_ASSIGN(WorkerContentSettingsClientProxy);
 };
 
-#endif  // CHROME_RENDERER_WORKER_PERMISSION_CLIENT_PROXY_H_
+#endif  // CHROME_RENDERER_WORKER_CONTENT_SETTINGS_CLIENT_PROXY_H_

@@ -348,8 +348,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
       blink::WebLocalFrame* frame,
       blink::WebApplicationCacheHostClient* client);
-  virtual blink::WebWorkerPermissionClientProxy*
-      createWorkerPermissionClientProxy(blink::WebLocalFrame* frame);
+  virtual blink::WebWorkerContentSettingsClientProxy*
+      createWorkerContentSettingsClientProxy(blink::WebLocalFrame* frame);
   virtual blink::WebExternalPopupMenu* createExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client);

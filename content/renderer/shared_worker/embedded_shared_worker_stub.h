@@ -22,7 +22,7 @@ class WebMessagePortChannel;
 class WebNotificationPresenter;
 class WebSecurityOrigin;
 class WebSharedWorker;
-class WebWorkerPermissionClientProxy;
+class WebWorkerContentSettingsClientProxy;
 }
 
 namespace content {
@@ -55,8 +55,8 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   virtual blink::WebNotificationPresenter* notificationPresenter() override;
   virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
       blink::WebApplicationCacheHostClient*) override;
-  virtual blink::WebWorkerPermissionClientProxy*
-      createWorkerPermissionClientProxy(
+  virtual blink::WebWorkerContentSettingsClientProxy*
+      createWorkerContentSettingsClientProxy(
           const blink::WebSecurityOrigin& origin) override;
   virtual blink::WebServiceWorkerNetworkProvider*
       createServiceWorkerNetworkProvider(blink::WebDataSource*) override;

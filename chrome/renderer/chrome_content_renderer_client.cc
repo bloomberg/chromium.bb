@@ -55,7 +55,7 @@
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "chrome/renderer/tts_dispatcher.h"
-#include "chrome/renderer/worker_permission_client_proxy.h"
+#include "chrome/renderer/worker_content_settings_client_proxy.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
@@ -1596,11 +1596,11 @@ bool ChromeContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
 #endif
 }
 
-blink::WebWorkerPermissionClientProxy*
-ChromeContentRendererClient::CreateWorkerPermissionClientProxy(
+blink::WebWorkerContentSettingsClientProxy*
+ChromeContentRendererClient::CreateWorkerContentSettingsClientProxy(
     content::RenderFrame* render_frame,
     blink::WebFrame* frame) {
-  return new WorkerPermissionClientProxy(render_frame, frame);
+  return new WorkerContentSettingsClientProxy(render_frame, frame);
 }
 
 bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/shared_worker/embedded_shared_worker_permission_client_proxy.h"
+#include "content/renderer/shared_worker/embedded_shared_worker_content_settings_client_proxy.h"
 
 #include "content/child/thread_safe_sender.h"
 #include "content/common/worker_messages.h"
@@ -11,8 +11,8 @@
 
 namespace content {
 
-EmbeddedSharedWorkerPermissionClientProxy::
-    EmbeddedSharedWorkerPermissionClientProxy(
+EmbeddedSharedWorkerContentSettingsClientProxy::
+    EmbeddedSharedWorkerContentSettingsClientProxy(
         const GURL& origin_url,
         bool is_unique_origin,
         int routing_id,
@@ -23,11 +23,11 @@ EmbeddedSharedWorkerPermissionClientProxy::
       thread_safe_sender_(thread_safe_sender) {
 }
 
-EmbeddedSharedWorkerPermissionClientProxy::
-    ~EmbeddedSharedWorkerPermissionClientProxy() {
+EmbeddedSharedWorkerContentSettingsClientProxy::
+    ~EmbeddedSharedWorkerContentSettingsClientProxy() {
 }
 
-bool EmbeddedSharedWorkerPermissionClientProxy::allowDatabase(
+bool EmbeddedSharedWorkerContentSettingsClientProxy::allowDatabase(
     const blink::WebString& name,
     const blink::WebString& display_name,
     unsigned long estimated_size) {
@@ -39,7 +39,8 @@ bool EmbeddedSharedWorkerPermissionClientProxy::allowDatabase(
   return result;
 }
 
-bool EmbeddedSharedWorkerPermissionClientProxy::requestFileSystemAccessSync() {
+bool
+EmbeddedSharedWorkerContentSettingsClientProxy::requestFileSystemAccessSync() {
   if (is_unique_origin_)
     return false;
   bool result = false;
@@ -49,7 +50,7 @@ bool EmbeddedSharedWorkerPermissionClientProxy::requestFileSystemAccessSync() {
   return result;
 }
 
-bool EmbeddedSharedWorkerPermissionClientProxy::allowIndexedDB(
+bool EmbeddedSharedWorkerContentSettingsClientProxy::allowIndexedDB(
     const blink::WebString& name) {
   if (is_unique_origin_)
     return false;

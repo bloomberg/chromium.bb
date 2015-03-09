@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/renderer/worker_content_settings_client_proxy.h"
+
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/worker_permission_client_proxy.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -12,7 +13,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
-WorkerPermissionClientProxy::WorkerPermissionClientProxy(
+WorkerContentSettingsClientProxy::WorkerContentSettingsClientProxy(
     content::RenderFrame* render_frame,
     blink::WebFrame* frame)
     : routing_id_(render_frame->GetRoutingID()),
@@ -26,9 +27,9 @@ WorkerPermissionClientProxy::WorkerPermissionClientProxy(
       frame->top()->document().securityOrigin().toString());
 }
 
-WorkerPermissionClientProxy::~WorkerPermissionClientProxy() {}
+WorkerContentSettingsClientProxy::~WorkerContentSettingsClientProxy() {}
 
-bool WorkerPermissionClientProxy::allowDatabase(
+bool WorkerContentSettingsClientProxy::allowDatabase(
     const blink::WebString& name,
     const blink::WebString& display_name,
     unsigned long estimated_size) {
@@ -42,7 +43,7 @@ bool WorkerPermissionClientProxy::allowDatabase(
   return result;
 }
 
-bool WorkerPermissionClientProxy::requestFileSystemAccessSync() {
+bool WorkerContentSettingsClientProxy::requestFileSystemAccessSync() {
   if (is_unique_origin_)
     return false;
 
@@ -52,7 +53,7 @@ bool WorkerPermissionClientProxy::requestFileSystemAccessSync() {
   return result;
 }
 
-bool WorkerPermissionClientProxy::allowIndexedDB(
+bool WorkerContentSettingsClientProxy::allowIndexedDB(
     const blink::WebString& name) {
   if (is_unique_origin_)
     return false;
