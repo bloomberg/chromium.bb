@@ -18,23 +18,30 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlbodyelement
+
 interface HTMLBodyElement : HTMLElement {
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString aLink;
-    [Reflect] attribute DOMString background;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString link;
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLBodyElement-partial
     [Reflect, TreatNullAs=EmptyString] attribute DOMString text;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString link;
     [Reflect, TreatNullAs=EmptyString] attribute DOMString vLink;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString aLink;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
+    [Reflect] attribute DOMString background;
 
-    [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
-
-    // Overrides of GlobalEventHandler attributes
+    // FIXME: The spec requires special behavior for these event
+    // handler attributes but does not include them in the IDL:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28166
     attribute EventHandler onblur;
     attribute EventHandler onerror;
     attribute EventHandler onfocus;
     attribute EventHandler onload;
     attribute EventHandler onresize;
     attribute EventHandler onscroll;
+
+    // Non-standard APIs
+    [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
 };
 
 HTMLBodyElement implements WindowEventHandlers;

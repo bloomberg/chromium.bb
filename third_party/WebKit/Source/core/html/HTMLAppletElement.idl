@@ -18,6 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlappletelement
+
 interface HTMLAppletElement : HTMLElement {
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString alt;
@@ -27,9 +29,11 @@ interface HTMLAppletElement : HTMLElement {
     [Reflect] attribute DOMString height;
     [Reflect] attribute unsigned long hspace;
     [Reflect] attribute DOMString name;
-    [Reflect, URL] attribute DOMString _object;  // "object" is a reserved word
+    [Reflect, URL] attribute DOMString _object; // the underscore is not part of the identifier
     [Reflect] attribute unsigned long vspace;
     [Reflect] attribute DOMString width;
+
+    // FIXME: These getters and setters are not in the spec.
     [Custom, NotEnumerable] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom, NotEnumerable] getter Node (DOMString name);

@@ -17,6 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlbaseelement
+
 interface HTMLBaseElement : HTMLElement {
     attribute DOMString href;
     [Reflect] attribute DOMString target;

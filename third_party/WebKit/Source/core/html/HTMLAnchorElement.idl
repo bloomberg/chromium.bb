@@ -18,21 +18,31 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlanchorelement
+
 interface HTMLAnchorElement : HTMLElement {
-    [Reflect] attribute DOMString charset;
-    [Reflect] attribute DOMString coords;
+    [Reflect] attribute DOMString target;
     [Reflect] attribute DOMString download;
-    [Reflect] attribute DOMString hreflang;
-    [Reflect] attribute DOMString name;
+    // FIXME: ping should be a DOMSettableTokenList.
     [Reflect] attribute DOMString ping;
     [Reflect] attribute DOMString rel;
-    [Reflect] attribute DOMString rev;
-    [Reflect] attribute DOMString shape;
-    [Reflect] attribute DOMString target;
+    // FIXME: readonly attribute DOMTokenList relList;
+    [Reflect] attribute DOMString hreflang;
     [Reflect] attribute DOMString type;
 
     [ImplementedAs=textContent] attribute DOMString text;
 
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLAnchorElement-partial
+    [Reflect] attribute DOMString coords;
+    [Reflect] attribute DOMString charset;
+    [Reflect] attribute DOMString name;
+    [Reflect] attribute DOMString rev;
+    [Reflect] attribute DOMString shape;
+
+    // Subresource Integrity
+    // http://w3c.github.io/webappsec/specs/subresourceintegrity/
+    // FIXME: The spec does not extend HTMLAnchorElement.
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };
 
