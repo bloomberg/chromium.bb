@@ -118,6 +118,11 @@ Status ExecuteGetLocation(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+Status ExecuteGetNetworkConditions(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 Status ExecuteGetWindowPosition(
     Session* session,
     const base::DictionaryValue& params,

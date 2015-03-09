@@ -50,6 +50,8 @@ _NEGATIVE_FILTER = [
     # This test is flaky since it uses setTimeout.
     # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
     'ChromeDriverTest.testAlert',
+    # Enable per-browser when http://crbug.com/456324 is fixed.
+    'ChromeDriverTest.testEmulateNetworkConditionsOffline',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -786,6 +788,47 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     script = 's = ""; for (i = 0; i < 10e6; i++) s += "0"; return s;'
     lots_of_data = self._driver.ExecuteScript(script)
     self.assertEquals('0'.zfill(int(10e6)), lots_of_data)
+
+  def testEmulateNetworkConditions(self):
+    # DSL: 2Mbps throughput, 5ms RTT
+    latency = 5
+    throughput = 2048 * 1024
+    self._driver.SetNetworkConditions(latency, throughput, throughput)
+
+    network = self._driver.GetNetworkConditions()
+    self.assertEquals(latency, network['latency']);
+    self.assertEquals(throughput, network['download_throughput']);
+    self.assertEquals(throughput, network['upload_throughput']);
+
+  def testEmulateNetworkConditionsOffline(self):
+    self._driver.SetNetworkConditions(5, 2048, 2048, offline=True)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    self.assertIn('is not available', self._driver.GetTitle())
+
+  def testEmulateNetworkConditionsSpeed(self):
+    # Warm up the browser.
+    self._http_server.SetDataForPath(
+        '/', "<html><body>blank</body></html>")
+    self._driver.Load(self._http_server.GetUrl() + '/')
+
+    # DSL: 2Mbps throughput, 5ms RTT
+    latency = 5
+    throughput_kbps = 2048
+    throughput = throughput_kbps * 1024
+    self._driver.SetNetworkConditions(latency, throughput, throughput)
+
+    _32_bytes = " 0 1 2 3 4 5 6 7 8 9 A B C D E F"
+    _1_megabyte = _32_bytes * 32768
+    self._http_server.SetDataForPath(
+        '/1MB',
+        "<html><body>%s</body></html>" % _1_megabyte)
+    start = time.time()
+    self._driver.Load(self._http_server.GetUrl() + '/1MB')
+    finish = time.time()
+    duration = finish - start
+    actual_throughput_kbps = 1024 / duration
+    self.assertLessEqual(actual_throughput_kbps, throughput_kbps * 1.5)
+    self.assertGreaterEqual(actual_throughput_kbps, throughput_kbps / 1.5)
 
   def testShadowDomFindElementWithSlashDeep(self):
     """Checks that chromedriver can find elements in a shadow DOM using /deep/

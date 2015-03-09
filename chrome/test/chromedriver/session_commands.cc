@@ -356,6 +356,20 @@ Status ExecuteSwitchToWindow(
       return status;
   }
 
+  if (session->overridden_network_conditions) {
+    WebView* web_view;
+    status = session->chrome->GetWebViewById(web_view_id, &web_view);
+    if (status.IsError())
+      return status;
+    status = web_view->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+    status = web_view->OverrideNetworkConditions(
+        *session->overridden_network_conditions);
+    if (status.IsError())
+      return status;
+  }
+
   session->window = web_view_id;
   session->SwitchToTopFrame();
   session->mouse_position = WebPoint(0, 0);
@@ -453,6 +467,29 @@ Status ExecuteGetLocation(
   // https://code.google.com/p/chromedriver/issues/detail?id=281
   location.SetDouble("altitude", 0);
   value->reset(location.DeepCopy());
+  return Status(kOk);
+}
+
+Status ExecuteGetNetworkConditions(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  if (!session->overridden_network_conditions) {
+    return Status(kUnknownError,
+                  "network conditions must be set before it can be retrieved");
+  }
+  base::DictionaryValue conditions;
+  conditions.SetBoolean("offline",
+                        session->overridden_network_conditions->offline);
+  conditions.SetInteger("latency",
+                        session->overridden_network_conditions->latency);
+  conditions.SetInteger(
+      "download_throughput",
+      session->overridden_network_conditions->download_throughput);
+  conditions.SetInteger(
+      "upload_throughput",
+      session->overridden_network_conditions->upload_throughput);
+  value->reset(conditions.DeepCopy());
   return Status(kOk);
 }
 

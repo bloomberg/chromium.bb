@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
+#include "chrome/test/chromedriver/chrome/recorder_devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(JavaScriptDialogManager, NoDialog) {
@@ -22,30 +22,6 @@ TEST(JavaScriptDialogManager, NoDialog) {
   ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
 }
 
-namespace {
-
-class RecorderDevToolsClient : public StubDevToolsClient {
- public:
-  RecorderDevToolsClient() {}
-  ~RecorderDevToolsClient() override {}
-
-  // Overridden from StubDevToolsClient:
-  Status SendCommandAndGetResult(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) override {
-    method_ = method;
-    params_.Clear();
-    params_.MergeDictionary(&params);
-    return Status(kOk);
-  }
-
-  std::string method_;
-  base::DictionaryValue params_;
-};
-
-}  // namespace
-
 TEST(JavaScriptDialogManager, HandleDialogPassesParams) {
   RecorderDevToolsClient client;
   JavaScriptDialogManager manager(&client);
@@ -57,9 +33,9 @@ TEST(JavaScriptDialogManager, HandleDialogPassesParams) {
   std::string given_text("text");
   ASSERT_EQ(kOk, manager.HandleDialog(false, &given_text).code());
   std::string text;
-  client.params_.GetString("promptText", &text);
+  ASSERT_TRUE(client.commands_[0].params.GetString("promptText", &text));
   ASSERT_EQ(given_text, text);
-  ASSERT_TRUE(client.params_.HasKey("accept"));
+  ASSERT_TRUE(client.commands_[0].params.HasKey("accept"));
 }
 
 TEST(JavaScriptDialogManager, HandleDialogNullPrompt) {
@@ -71,8 +47,8 @@ TEST(JavaScriptDialogManager, HandleDialogNullPrompt) {
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
   ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
-  ASSERT_FALSE(client.params_.HasKey("promptText"));
-  ASSERT_TRUE(client.params_.HasKey("accept"));
+  ASSERT_FALSE(client.commands_[0].params.HasKey("promptText"));
+  ASSERT_TRUE(client.commands_[0].params.HasKey("accept"));
 }
 
 TEST(JavaScriptDialogManager, ReconnectClearsStateAndSendsEnable) {
@@ -88,7 +64,7 @@ TEST(JavaScriptDialogManager, ReconnectClearsStateAndSendsEnable) {
   ASSERT_EQ(kOk, manager.GetDialogMessage(&message).code());
 
   ASSERT_TRUE(manager.OnConnected(&client).IsOk());
-  ASSERT_EQ("Page.enable", client.method_);
+  ASSERT_EQ("Page.enable", client.commands_[0].method);
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
   ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());

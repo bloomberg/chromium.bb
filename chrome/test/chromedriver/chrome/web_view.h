@@ -24,6 +24,7 @@ struct Geoposition;
 class JavaScriptDialogManager;
 struct KeyEvent;
 struct MouseEvent;
+struct NetworkConditions;
 struct TouchEvent;
 class Status;
 
@@ -143,6 +144,10 @@ class WebView {
 
   // Overrides normal geolocation with a given geoposition.
   virtual Status OverrideGeolocation(const Geoposition& geoposition) = 0;
+
+  // Overrides normal network conditions with given conditions.
+  virtual Status OverrideNetworkConditions(
+      const NetworkConditions& network_conditions) = 0;
 
   // Captures the visible portions of the web view as a base64-encoded PNG.
   virtual Status CaptureScreenshot(std::string* screenshot) = 0;

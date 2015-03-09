@@ -60,6 +60,8 @@ class StubWebView : public WebView {
                              bool* is_pending) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager() override;
   Status OverrideGeolocation(const Geoposition& geoposition) override;
+  Status OverrideNetworkConditions(
+      const NetworkConditions& network_conditions) override;
   Status CaptureScreenshot(std::string* screenshot) override;
   Status SetFileInputFiles(const std::string& frame,
                            const base::DictionaryValue& element,

@@ -27,6 +27,7 @@ class DomTracker;
 class FrameTracker;
 class GeolocationOverrideManager;
 class MobileEmulationOverrideManager;
+class NetworkConditionsOverrideManager;
 class HeapSnapshotTaker;
 struct KeyEvent;
 struct MouseEvent;
@@ -87,6 +88,8 @@ class WebViewImpl : public WebView {
                              bool* is_pending) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager() override;
   Status OverrideGeolocation(const Geoposition& geoposition) override;
+  Status OverrideNetworkConditions(
+      const NetworkConditions& network_conditions) override;
   Status CaptureScreenshot(std::string* screenshot) override;
   Status SetFileInputFiles(const std::string& frame,
                            const base::DictionaryValue& element,
@@ -117,6 +120,8 @@ class WebViewImpl : public WebView {
   scoped_ptr<JavaScriptDialogManager> dialog_manager_;
   scoped_ptr<MobileEmulationOverrideManager> mobile_emulation_override_manager_;
   scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
+  scoped_ptr<NetworkConditionsOverrideManager>
+      network_conditions_override_manager_;
   scoped_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
   scoped_ptr<DebuggerTracker> debugger_;
   scoped_ptr<DevToolsClient> client_;

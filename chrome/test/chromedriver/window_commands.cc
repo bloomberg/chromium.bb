@@ -869,6 +869,53 @@ Status ExecuteSetLocation(
   return status;
 }
 
+Status ExecuteSetNetworkConditions(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const base::DictionaryValue* conditions = NULL;
+  NetworkConditions network_conditions;
+  // |latency| is required.
+  if (!params.GetDictionary("network_conditions", &conditions) ||
+      !conditions->GetDouble("latency", &network_conditions.latency))
+    return Status(kUnknownError, "missing or invalid 'network_conditions'");
+
+  // Either |throughput| or the pair |download_throughput| and
+  // |upload_throughput| is required.
+  if (conditions->HasKey("throughput")) {
+    if (!conditions->GetDouble("throughput",
+                                &network_conditions.download_throughput))
+      return Status(kUnknownError, "invalid 'throughput'");
+    conditions->GetDouble("throughput", &network_conditions.upload_throughput);
+  } else if (conditions->HasKey("download_throughput") &&
+             conditions->HasKey("upload_throughput")) {
+    if (!conditions->GetDouble("download_throughput",
+                                &network_conditions.download_throughput) ||
+        !conditions->GetDouble("upload_throughput",
+                                &network_conditions.upload_throughput))
+      return Status(kUnknownError,
+                    "invalid 'download_throughput' or 'upload_throughput'");
+  } else {
+    return Status(kUnknownError,
+                  "invalid 'network_conditions' is missing 'throughput' or "
+                  "'download_throughput'/'upload_throughput' pair");
+  }
+
+  // |offline| is optional.
+  if (conditions->HasKey("offline")) {
+    if (!conditions->GetBoolean("offline", &network_conditions.offline))
+      return Status(kUnknownError, "invalid 'offline'");
+  } else {
+    network_conditions.offline = false;
+  }
+
+  session->overridden_network_conditions.reset(
+      new NetworkConditions(network_conditions));
+  return web_view->OverrideNetworkConditions(
+      *session->overridden_network_conditions);
+}
+
 Status ExecuteTakeHeapSnapshot(
     Session* session,
     WebView* web_view,

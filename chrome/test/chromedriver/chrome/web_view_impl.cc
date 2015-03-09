@@ -24,6 +24,7 @@
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/mobile_emulation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
+#include "chrome/test/chromedriver/chrome/network_conditions_override_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 
@@ -127,6 +128,8 @@ WebViewImpl::WebViewImpl(const std::string& id,
           new MobileEmulationOverrideManager(client.get(), device_metrics)),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),
+      network_conditions_override_manager_(
+          new NetworkConditionsOverrideManager(client.get())),
       heap_snapshot_taker_(new HeapSnapshotTaker(client.get())),
       debugger_(new DebuggerTracker(client.get())),
       client_(client.release()) {}
@@ -408,6 +411,12 @@ JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {
 
 Status WebViewImpl::OverrideGeolocation(const Geoposition& geoposition) {
   return geolocation_override_manager_->OverrideGeolocation(geoposition);
+}
+
+Status WebViewImpl::OverrideNetworkConditions(
+    const NetworkConditions& network_conditions) {
+  return network_conditions_override_manager_->OverrideNetworkConditions(
+      network_conditions);
 }
 
 Status WebViewImpl::CaptureScreenshot(std::string* screenshot) {

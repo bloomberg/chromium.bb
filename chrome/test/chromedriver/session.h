@@ -16,6 +16,7 @@
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/device_metrics.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
+#include "chrome/test/chromedriver/chrome/network_conditions.h"
 #include "chrome/test/chromedriver/command_listener.h"
 
 namespace base {
@@ -72,6 +73,7 @@ struct Session {
   scoped_ptr<std::string> prompt_text;
   scoped_ptr<Geoposition> overridden_geoposition;
   scoped_ptr<DeviceMetrics> overridden_device_metrics;
+  scoped_ptr<NetworkConditions> overridden_network_conditions;
   // Logs that populate from DevTools events.
   ScopedVector<WebDriverLog> devtools_logs;
   scoped_ptr<WebDriverLog> driver_log;

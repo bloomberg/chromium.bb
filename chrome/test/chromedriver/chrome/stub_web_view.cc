@@ -121,6 +121,11 @@ Status StubWebView::OverrideGeolocation(const Geoposition& geoposition) {
   return Status(kOk);
 }
 
+Status StubWebView::OverrideNetworkConditions(
+    const NetworkConditions& network_conditions) {
+  return Status(kOk);
+}
+
 Status StubWebView::CaptureScreenshot(std::string* screenshot) {
   return Status(kOk);
 }
