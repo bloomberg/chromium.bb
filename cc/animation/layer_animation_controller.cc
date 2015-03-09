@@ -955,7 +955,7 @@ void LayerAnimationController::NotifyObserversOpacityAnimated(
     bool notify_pending_observers) {
   if (value_observers_.might_have_observers()) {
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        value_observers_);
+        &value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != nullptr) {
       if ((notify_active_observers && notify_pending_observers) ||
@@ -972,7 +972,7 @@ void LayerAnimationController::NotifyObserversTransformAnimated(
     bool notify_pending_observers) {
   if (value_observers_.might_have_observers()) {
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        value_observers_);
+        &value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != nullptr) {
       if ((notify_active_observers && notify_pending_observers) ||
@@ -989,7 +989,7 @@ void LayerAnimationController::NotifyObserversFilterAnimated(
     bool notify_pending_observers) {
   if (value_observers_.might_have_observers()) {
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        value_observers_);
+        &value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != nullptr) {
       if ((notify_active_observers && notify_pending_observers) ||
@@ -1006,7 +1006,7 @@ void LayerAnimationController::NotifyObserversScrollOffsetAnimated(
     bool notify_pending_observers) {
   if (value_observers_.might_have_observers()) {
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        value_observers_);
+        &value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != nullptr) {
       if ((notify_active_observers && notify_pending_observers) ||
@@ -1026,7 +1026,7 @@ void LayerAnimationController::NotifyObserversAnimationWaitingForDeletion() {
 bool LayerAnimationController::HasValueObserver() {
   if (value_observers_.might_have_observers()) {
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        value_observers_);
+        &value_observers_);
     return it.GetNext() != nullptr;
   }
   return false;
@@ -1035,7 +1035,7 @@ bool LayerAnimationController::HasValueObserver() {
 bool LayerAnimationController::HasActiveValueObserver() {
   if (value_observers_.might_have_observers()) {
     ObserverListBase<LayerAnimationValueObserver>::Iterator it(
-        value_observers_);
+        &value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != nullptr)
       if (obs->IsActive())

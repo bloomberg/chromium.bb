@@ -801,7 +801,7 @@ void LayerAnimator::GetTargetValue(
 
 void LayerAnimator::OnScheduled(LayerAnimationSequence* sequence) {
   if (observers_.might_have_observers()) {
-    ObserverListBase<LayerAnimationObserver>::Iterator it(observers_);
+    ObserverListBase<LayerAnimationObserver>::Iterator it(&observers_);
     LayerAnimationObserver* obs;
     while ((obs = it.GetNext()) != NULL) {
       sequence->AddObserver(obs);

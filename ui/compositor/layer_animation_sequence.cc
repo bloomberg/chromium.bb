@@ -228,7 +228,7 @@ void LayerAnimationSequence::OnScheduled() {
 
 void LayerAnimationSequence::OnAnimatorDestroyed() {
   if (observers_.might_have_observers()) {
-    ObserverListBase<LayerAnimationObserver>::Iterator it(observers_);
+    ObserverListBase<LayerAnimationObserver>::Iterator it(&observers_);
     LayerAnimationObserver* obs;
     while ((obs = it.GetNext()) != NULL) {
       if (!obs->RequiresNotificationWhenAnimatorDestroyed()) {

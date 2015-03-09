@@ -58,7 +58,7 @@ class MockPrefNotifier : public PrefNotifierImpl {
       return false;
 
     PrefObserverList* observer_list = observer_iterator->second;
-    PrefObserverList::Iterator it(*observer_list);
+    PrefObserverList::Iterator it(observer_list);
     PrefObserver* existing_obs;
     size_t count = 0;
     while ((existing_obs = it.GetNext()) != NULL) {

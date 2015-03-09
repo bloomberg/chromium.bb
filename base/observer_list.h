@@ -79,7 +79,7 @@ class ObserverListBase
   // also the FOR_EACH_OBSERVER macro defined below.
   class Iterator {
    public:
-    Iterator(ObserverListBase<ObserverType>& list);
+    explicit Iterator(ObserverListBase<ObserverType>* list);
     ~Iterator();
     ObserverType* GetNext();
 
@@ -126,12 +126,11 @@ class ObserverListBase
 
 template <class ObserverType>
 ObserverListBase<ObserverType>::Iterator::Iterator(
-  ObserverListBase<ObserverType>& list)
-    : list_(list.AsWeakPtr()),
+    ObserverListBase<ObserverType>* list)
+    : list_(list->AsWeakPtr()),
       index_(0),
-      max_index_(list.type_ == NOTIFY_ALL ?
-                 std::numeric_limits<size_t>::max() :
-                 list.observers_.size()) {
+      max_index_(list->type_ == NOTIFY_ALL ? std::numeric_limits<size_t>::max()
+                                           : list->observers_.size()) {
   ++list_->notify_depth_;
 }
 
@@ -228,15 +227,15 @@ class ObserverList : public ObserverListBase<ObserverType> {
   }
 };
 
-#define FOR_EACH_OBSERVER(ObserverType, observer_list, func)               \
-  do {                                                                     \
-    if ((observer_list).might_have_observers()) {                          \
-      ObserverListBase<ObserverType>::Iterator                             \
-          it_inside_observer_macro(observer_list);                         \
-      ObserverType* obs;                                                   \
-      while ((obs = it_inside_observer_macro.GetNext()) != NULL)           \
-        obs->func;                                                         \
-    }                                                                      \
+#define FOR_EACH_OBSERVER(ObserverType, observer_list, func)             \
+  do {                                                                   \
+    if ((observer_list).might_have_observers()) {                        \
+      ObserverListBase<ObserverType>::Iterator it_inside_observer_macro( \
+          &observer_list);                                               \
+      ObserverType* obs;                                                 \
+      while ((obs = it_inside_observer_macro.GetNext()) != NULL)         \
+        obs->func;                                                       \
+    }                                                                    \
   } while (0)
 
 #endif  // BASE_OBSERVER_LIST_H__

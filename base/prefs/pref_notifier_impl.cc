@@ -22,7 +22,7 @@ PrefNotifierImpl::~PrefNotifierImpl() {
   // Verify that there are no pref observers when we shut down.
   for (PrefObserverMap::iterator it = pref_observers_.begin();
        it != pref_observers_.end(); ++it) {
-    PrefObserverList::Iterator obs_iterator(*(it->second));
+    PrefObserverList::Iterator obs_iterator(it->second);
     if (obs_iterator.GetNext()) {
       LOG(WARNING) << "pref observer found at shutdown " << it->first;
     }

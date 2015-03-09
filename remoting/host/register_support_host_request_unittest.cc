@@ -150,7 +150,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
 
   int consumed = 0;
   ObserverListBase<SignalStrategy::Listener>::Iterator it(
-      signal_strategy_listeners_);
+      &signal_strategy_listeners_);
   SignalStrategy::Listener* listener;
   while ((listener = it.GetNext()) != nullptr) {
     if (listener->OnSignalStrategyIncomingStanza(response.get()))

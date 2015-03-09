@@ -41,7 +41,7 @@ base::ProcessId TestSink::GetSelfPID() const {
 }
 
 bool TestSink::OnMessageReceived(const Message& msg) {
-  ObserverListBase<Listener>::Iterator it(filter_list_);
+  ObserverListBase<Listener>::Iterator it(&filter_list_);
   Listener* observer;
   while ((observer = it.GetNext()) != NULL) {
     if (observer->OnMessageReceived(msg))

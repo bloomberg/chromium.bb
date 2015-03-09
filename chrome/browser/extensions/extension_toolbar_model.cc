@@ -655,7 +655,7 @@ bool ExtensionToolbarModel::ShowExtensionActionPopup(
     const Extension* extension,
     Browser* browser,
     bool grant_active_tab) {
-  ObserverListBase<Observer>::Iterator it(observers_);
+  ObserverListBase<Observer>::Iterator it(&observers_);
   Observer* obs = NULL;
   // Look for the Observer associated with the browser.
   // This would be cleaner if we had an abstract class for the Toolbar UI

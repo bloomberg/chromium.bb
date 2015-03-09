@@ -276,7 +276,7 @@ void NetLog::UpdateLogLevel() {
   // Look through all the observers and find the finest granularity
   // log level (higher values of the enum imply *lower* log levels).
   LogLevel new_effective_log_level = LOG_NONE;
-  ObserverListBase<ThreadSafeObserver>::Iterator it(observers_);
+  ObserverListBase<ThreadSafeObserver>::Iterator it(&observers_);
   ThreadSafeObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     new_effective_log_level =

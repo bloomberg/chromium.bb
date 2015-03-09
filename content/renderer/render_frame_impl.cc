@@ -959,7 +959,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   if (!frame_->document().isNull())
     GetContentClient()->SetActiveURL(frame_->document().url());
 
-  ObserverListBase<RenderFrameObserver>::Iterator it(observers_);
+  ObserverListBase<RenderFrameObserver>::Iterator it(&observers_);
   RenderFrameObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     if (observer->OnMessageReceived(msg))

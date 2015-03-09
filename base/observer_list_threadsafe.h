@@ -213,7 +213,6 @@ class ObserverListThreadSafe
   template <class Method, class Params>
   void NotifyWrapper(ObserverListContext* context,
       const UnboundMethod<ObserverType, Method, Params>& method) {
-
     // Check that this list still needs notifications.
     {
       base::AutoLock lock(list_lock_);
@@ -229,7 +228,7 @@ class ObserverListThreadSafe
     }
 
     {
-      typename ObserverList<ObserverType>::Iterator it(context->list);
+      typename ObserverList<ObserverType>::Iterator it(&context->list);
       ObserverType* obs;
       while ((obs = it.GetNext()) != NULL)
         method.Run(obs);

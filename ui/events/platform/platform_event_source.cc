@@ -76,7 +76,7 @@ uint32_t PlatformEventSource::DispatchEvent(PlatformEvent platform_event) {
 
   if ((action & POST_DISPATCH_PERFORM_DEFAULT) &&
       dispatchers_.might_have_observers()) {
-    ObserverList<PlatformEventDispatcher>::Iterator iter(dispatchers_);
+    ObserverList<PlatformEventDispatcher>::Iterator iter(&dispatchers_);
     while (PlatformEventDispatcher* dispatcher = iter.GetNext()) {
       if (dispatcher->CanDispatchEvent(platform_event))
         action = dispatcher->DispatchEvent(platform_event);

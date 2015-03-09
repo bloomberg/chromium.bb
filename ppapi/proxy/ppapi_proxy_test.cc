@@ -65,8 +65,7 @@ PPB_Proxy_Private ppb_proxy_private = {
 ObserverList<ProxyTestHarnessBase> get_interface_handlers_;
 
 const void* MockGetInterface(const char* name) {
-  ObserverList<ProxyTestHarnessBase>::Iterator it =
-      get_interface_handlers_;
+  ObserverList<ProxyTestHarnessBase>::Iterator it(&get_interface_handlers_);
   while (ProxyTestHarnessBase* observer = it.GetNext()) {
     const void* interface = observer->GetInterface(name);
     if (interface)

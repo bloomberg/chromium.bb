@@ -1487,7 +1487,7 @@ void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
 }
 
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
-  ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
+  ObserverListBase<RenderProcessObserver>::Iterator it(&observers_);
   RenderProcessObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     if (observer->OnControlMessageReceived(msg))

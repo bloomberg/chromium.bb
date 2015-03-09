@@ -1268,7 +1268,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   if (main_frame && main_frame->isWebLocalFrame())
     GetContentClient()->SetActiveURL(main_frame->document().url());
 
-  ObserverListBase<RenderViewObserver>::Iterator it(observers_);
+  ObserverListBase<RenderViewObserver>::Iterator it(&observers_);
   RenderViewObserver* observer;
   while ((observer = it.GetNext()) != NULL)
     if (observer->OnMessageReceived(message))
