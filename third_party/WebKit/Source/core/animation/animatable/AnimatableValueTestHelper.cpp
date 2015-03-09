@@ -74,12 +74,6 @@ void PrintTo(const AnimatableRepeatable& animValue, ::std::ostream* os)
     *os << ")";
 }
 
-void PrintTo(const AnimatableSVGLength& animSVGLength, ::std::ostream* os)
-{
-    *os << "AnimatableSVGLength("
-        << animSVGLength.toSVGLength()->valueAsString().utf8().data() << ")";
-}
-
 void PrintTo(const AnimatableShapeValue& animValue, ::std::ostream* os)
 {
     *os << "AnimatableShapeValue@" << &animValue;
@@ -188,8 +182,6 @@ void PrintTo(const AnimatableValue& animValue, ::std::ostream* os)
         PrintTo(static_cast<const AnimatableNeutral&>(animValue), os);
     else if (animValue.isRepeatable())
         PrintTo(toAnimatableRepeatable(animValue), os);
-    else if (animValue.isSVGLength())
-        PrintTo(toAnimatableSVGLength(animValue), os);
     else if (animValue.isSVGPaint())
         PrintTo(toAnimatableSVGPaint(animValue), os);
     else if (animValue.isShapeValue())

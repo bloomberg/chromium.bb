@@ -78,6 +78,7 @@ public:
     static PassRefPtr<SVGDashArray> initialStrokeDashArray();
     static Length initialStrokeDashOffset() { return Length(Fixed); }
     static float initialStrokeMiterLimit() { return 4; }
+    static UnzoomedLength initialStrokeWidth() { return UnzoomedLength(Length(1, Fixed)); }
     static float initialStopOpacity() { return 1; }
     static Color initialStopColor() { return Color(0, 0, 0); }
     static float initialFloodOpacity() { return 1; }
@@ -95,13 +96,6 @@ public:
     static Length initialY() { return Length(Fixed); }
     static Length initialRx() { return Length(Fixed); }
     static Length initialRy() { return Length(Fixed); }
-
-    static PassRefPtrWillBeRawPtr<SVGLength> initialStrokeWidth()
-    {
-        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create();
-        length->newValueSpecifiedUnits(LengthTypeNumber, 1);
-        return length.release();
-    }
 
     // SVG CSS Property setters
     void setAlignmentBaseline(EAlignmentBaseline val) { svg_noninherited_flags.f._alignmentBaseline = val; }
@@ -207,10 +201,10 @@ public:
             stroke.access()->miterLimit = obj;
     }
 
-    void setStrokeWidth(PassRefPtrWillBeRawPtr<SVGLength> obj)
+    void setStrokeWidth(const UnzoomedLength& strokeWidth)
     {
-        if (*stroke->width != *obj)
-            stroke.access()->width = obj;
+        if (!(stroke->width == strokeWidth))
+            stroke.access()->width = strokeWidth;
     }
 
     void setStrokeDashOffset(const Length& dashOffset)
@@ -321,7 +315,7 @@ public:
     const String& strokePaintUri() const { return stroke->paintUri; }
     SVGDashArray* strokeDashArray() const { return stroke->dashArray.get(); }
     float strokeMiterLimit() const { return stroke->miterLimit; }
-    SVGLength* strokeWidth() const { return stroke->width.get(); }
+    const UnzoomedLength& strokeWidth() const { return stroke->width; }
     const Length& strokeDashOffset() const { return stroke->dashOffset; }
     float stopOpacity() const { return stops->opacity; }
     const Color& stopColor() const { return stops->color; }
@@ -356,7 +350,7 @@ public:
     bool hasFilter() const { return !filterResource().isEmpty(); }
     bool hasMarkers() const { return !markerStartResource().isEmpty() || !markerMidResource().isEmpty() || !markerEndResource().isEmpty(); }
     bool hasStroke() const { return strokePaintType() != SVG_PAINTTYPE_NONE; }
-    bool hasVisibleStroke() const { return hasStroke() && !strokeWidth()->isZero(); }
+    bool hasVisibleStroke() const { return hasStroke() && !strokeWidth().isZero(); }
     bool hasFill() const { return fillPaintType() != SVG_PAINTTYPE_NONE; }
     bool isVerticalWritingMode() const { return writingMode() == WM_TBRL || writingMode() == WM_TB; }
 

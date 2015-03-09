@@ -41,7 +41,6 @@
 #include "core/animation/animatable/AnimatableImage.h"
 #include "core/animation/animatable/AnimatableNeutral.h"
 #include "core/animation/animatable/AnimatableRepeatable.h"
-#include "core/animation/animatable/AnimatableSVGLength.h"
 #include "core/animation/animatable/AnimatableSVGPaint.h"
 #include "core/animation/animatable/AnimatableShapeValue.h"
 #include "core/animation/animatable/AnimatableStrokeDasharrayList.h"
@@ -66,7 +65,6 @@ void PrintTo(const AnimatableColor&, ::std::ostream*);
 void PrintTo(const AnimatableImage&, ::std::ostream*);
 void PrintTo(const AnimatableNeutral&, ::std::ostream*);
 void PrintTo(const AnimatableRepeatable&, ::std::ostream*);
-void PrintTo(const AnimatableSVGLength&, ::std::ostream*);
 void PrintTo(const AnimatableShapeValue&, ::std::ostream*);
 void PrintTo(const AnimatableStrokeDasharrayList&, ::std::ostream*);
 void PrintTo(const AnimatableTransform&, ::std::ostream*);

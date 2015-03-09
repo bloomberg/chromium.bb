@@ -229,7 +229,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
     case CSSPropertyStrokeOpacity:
         return a.strokeOpacity() == b.strokeOpacity();
     case CSSPropertyStrokeWidth:
-        return dataEquivalent(a.strokeWidth(), b.strokeWidth());
+        return a.strokeWidth() == b.strokeWidth();
     case CSSPropertyTextDecorationColor:
         return a.textDecorationColor() == b.textDecorationColor()
             && a.visitedLinkTextDecorationColor() == b.visitedLinkTextDecorationColor();

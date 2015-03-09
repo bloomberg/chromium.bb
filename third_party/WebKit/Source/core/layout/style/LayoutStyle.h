@@ -1367,8 +1367,8 @@ public:
     Color strokePaintColor() const { return svgStyle().strokePaintColor(); }
     float strokeOpacity() const { return svgStyle().strokeOpacity(); }
     void setStrokeOpacity(float f) { accessSVGStyle().setStrokeOpacity(f); }
-    SVGLength* strokeWidth() const { return svgStyle().strokeWidth(); }
-    void setStrokeWidth(PassRefPtrWillBeRawPtr<SVGLength> w) { accessSVGStyle().setStrokeWidth(w); }
+    const UnzoomedLength& strokeWidth() const { return svgStyle().strokeWidth(); }
+    void setStrokeWidth(const UnzoomedLength& w) { accessSVGStyle().setStrokeWidth(w); }
     SVGDashArray* strokeDashArray() const { return svgStyle().strokeDashArray(); }
     void setStrokeDashArray(PassRefPtr<SVGDashArray> array) { accessSVGStyle().setStrokeDashArray(array); }
     const Length& strokeDashOffset() const { return svgStyle().strokeDashOffset(); }

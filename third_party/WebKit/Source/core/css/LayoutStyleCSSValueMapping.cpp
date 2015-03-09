@@ -72,6 +72,14 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValueForLength
     return cssValuePool().createValue(length, style);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> pixelValueForUnzoomedLength(const UnzoomedLength& unzoomedLength, const LayoutStyle& style)
+{
+    const Length& length = unzoomedLength.length();
+    if (length.isFixed())
+        return cssValuePool().createValue(length.value(), CSSPrimitiveValue::CSS_PX);
+    return cssValuePool().createValue(length, style);
+}
+
 static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propertyID, const FillLayer& layer, const LayoutStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> positionList = CSSValueList::createSpaceSeparated();
@@ -2522,7 +2530,7 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
     case CSSPropertyStrokeDashoffset:
         return zoomAdjustedPixelValueForLength(svgStyle.strokeDashOffset(), style);
     case CSSPropertyStrokeWidth:
-        return SVGLength::toCSSPrimitiveValue(svgStyle.strokeWidth());
+        return pixelValueForUnzoomedLength(svgStyle.strokeWidth(), style);
     case CSSPropertyBaselineShift: {
         switch (svgStyle.baselineShift()) {
         case BS_SUPER:

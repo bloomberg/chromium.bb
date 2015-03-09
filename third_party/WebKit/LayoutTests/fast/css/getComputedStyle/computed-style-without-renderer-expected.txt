@@ -223,7 +223,7 @@ stroke-linecap: butt
 stroke-linejoin: miter
 stroke-miterlimit: 4
 stroke-opacity: 1
-stroke-width: 1
+stroke-width: 1px
 alignment-baseline: auto
 baseline-shift: 0px
 dominant-baseline: auto

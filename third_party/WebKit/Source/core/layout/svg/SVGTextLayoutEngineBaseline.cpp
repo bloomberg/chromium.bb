@@ -23,6 +23,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/SVGLayoutStyle.h"
 #include "core/layout/svg/SVGTextMetrics.h"
+#include "core/svg/SVGLengthContext.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/UnicodeRange.h"
 

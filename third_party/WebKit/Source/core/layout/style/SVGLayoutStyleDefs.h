@@ -28,7 +28,6 @@
 #ifndef SVGLayoutStyleDefs_h
 #define SVGLayoutStyleDefs_h
 
-#include "core/svg/SVGLength.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
 #include "wtf/OwnPtr.h"
@@ -143,6 +142,21 @@ private:
     StyleFillData(const StyleFillData&);
 };
 
+class UnzoomedLength {
+public:
+    explicit UnzoomedLength(const Length& length) : m_length(length) { }
+
+    bool isZero() const { return m_length.isZero(); }
+
+    bool operator==(const UnzoomedLength& other) const { return m_length == other.m_length; }
+    bool operator!=(const UnzoomedLength& other) const { return !operator==(other); }
+
+    const Length& length() const { return m_length; }
+
+private:
+    Length m_length;
+};
+
 class StyleStrokeData : public RefCounted<StyleStrokeData> {
 public:
     static PassRefPtr<StyleStrokeData> create()
@@ -164,7 +178,7 @@ public:
     float opacity;
     float miterLimit;
 
-    RefPtrWillBePersistent<SVGLength> width;
+    UnzoomedLength width;
     Length dashOffset;
     RefPtr<SVGDashArray> dashArray;
 

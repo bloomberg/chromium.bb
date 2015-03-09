@@ -45,7 +45,6 @@
 #include "core/animation/animatable/AnimatableLengthPoint3D.h"
 #include "core/animation/animatable/AnimatableLengthSize.h"
 #include "core/animation/animatable/AnimatableRepeatable.h"
-#include "core/animation/animatable/AnimatableSVGLength.h"
 #include "core/animation/animatable/AnimatableSVGPaint.h"
 #include "core/animation/animatable/AnimatableShadow.h"
 #include "core/animation/animatable/AnimatableShapeValue.h"
@@ -63,13 +62,13 @@
 
 namespace blink {
 
-static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& length, const LayoutStyle& style)
+static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthWithZoom(const Length& length, float zoom)
 {
     switch (length.type()) {
     case Fixed:
     case Percent:
     case Calculated:
-        return AnimatableLength::create(length, style.effectiveZoom());
+        return AnimatableLength::create(length, zoom);
     case Auto:
     case Intrinsic:
     case MinIntrinsic:
@@ -88,6 +87,16 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& le
     }
     ASSERT_NOT_REACHED();
     return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& length, const LayoutStyle& style)
+{
+    return createFromLengthWithZoom(length, style.effectiveZoom());
+}
+
+static PassRefPtrWillBeRawPtr<AnimatableValue> createFromUnzoomedLength(const UnzoomedLength& unzoomedLength)
+{
+    return createFromLengthWithZoom(unzoomedLength.length(), 1);
 }
 
 static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLineHeight(const Length& length, const LayoutStyle& style)
@@ -434,7 +443,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyRight:
         return createFromLength(style.right(), style);
     case CSSPropertyStrokeWidth:
-        return AnimatableSVGLength::create(style.strokeWidth());
+        return createFromUnzoomedLength(style.strokeWidth());
     case CSSPropertyStopColor:
         return createFromColor(property, style);
     case CSSPropertyStopOpacity:

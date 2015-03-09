@@ -259,7 +259,7 @@ stroke-linecap svg, inherited, type_name=LineCap, name_for_methods=CapStyle
 stroke-linejoin svg, inherited, type_name=LineJoin, name_for_methods=JoinStyle
 stroke-miterlimit animatable, inherited, svg, type_name=float, name_for_methods=StrokeMiterLimit
 stroke-opacity animatable, inherited, svg, converter=convertNumberOrPercentage
-stroke-width animatable, inherited, svg, converter=convertSVGLength
+stroke-width animatable, inherited, svg, converter=convertUnzoomedLength
 table-layout
 tab-size inherited, converter=convertLengthOrTabSpaces
 text-align inherited, custom_value

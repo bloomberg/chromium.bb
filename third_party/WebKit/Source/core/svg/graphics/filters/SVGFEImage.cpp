@@ -29,6 +29,7 @@
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"

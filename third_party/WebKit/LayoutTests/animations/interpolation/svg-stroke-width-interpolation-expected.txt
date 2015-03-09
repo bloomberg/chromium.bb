@@ -6,29 +6,29 @@ PASS: stroke-width from [0px] to [20px] was [12px] at 0.6
 PASS: stroke-width from [0px] to [20px] was [20px] at 1
 PASS: stroke-width from [0px] to [20px] was [30px] at 1.5
 PASS: stroke-width from [0px] to [10em] was [0em] at -0.3
-FAIL: stroke-width from [0px] to [10em] was [0px] at 0, expected [0em]
+PASS: stroke-width from [0px] to [10em] was [0em] at 0
 PASS: stroke-width from [0px] to [10em] was [3em] at 0.3
 PASS: stroke-width from [0px] to [10em] was [6em] at 0.6
 PASS: stroke-width from [0px] to [10em] was [10em] at 1
 PASS: stroke-width from [0px] to [10em] was [15em] at 1.5
-PASS: stroke-width from [30px] to [10em] was [30px] at -0.3
+PASS: stroke-width from [30px] to [10em] was [0px] at -0.3
 PASS: stroke-width from [30px] to [10em] was [30px] at 0
-PASS: stroke-width from [30px] to [10em] was [30px] at 0.3
-PASS: stroke-width from [30px] to [10em] was [10em] at 0.6
+PASS: stroke-width from [30px] to [10em] was [69px] at 0.3
+PASS: stroke-width from [30px] to [10em] was [108px] at 0.6
 PASS: stroke-width from [30px] to [10em] was [10em] at 1
-PASS: stroke-width from [30px] to [10em] was [10em] at 1.5
+PASS: stroke-width from [30px] to [10em] was [225px] at 1.5
 PASS: stroke-width from [10em] to [0px] was [13em] at -0.3
 PASS: stroke-width from [10em] to [0px] was [10em] at 0
 PASS: stroke-width from [10em] to [0px] was [7em] at 0.3
 PASS: stroke-width from [10em] to [0px] was [4em] at 0.6
-FAIL: stroke-width from [10em] to [0px] was [0px] at 1, expected [0em]
+PASS: stroke-width from [10em] to [0px] was [0em] at 1
 PASS: stroke-width from [10em] to [0px] was [0em] at 1.5
-PASS: stroke-width from [10em] to [30px] was [10em] at -0.3
+PASS: stroke-width from [10em] to [30px] was [199px] at -0.3
 PASS: stroke-width from [10em] to [30px] was [10em] at 0
-PASS: stroke-width from [10em] to [30px] was [10em] at 0.3
-PASS: stroke-width from [10em] to [30px] was [30px] at 0.6
+PASS: stroke-width from [10em] to [30px] was [121px] at 0.3
+PASS: stroke-width from [10em] to [30px] was [82px] at 0.6
 PASS: stroke-width from [10em] to [30px] was [30px] at 1
-PASS: stroke-width from [10em] to [30px] was [30px] at 1.5
+PASS: stroke-width from [10em] to [30px] was [0px] at 1.5
 
 Web Animations API:
 PASS: strokeWidth from [0px] to [20px] was [0px] at -0.3
@@ -43,22 +43,22 @@ PASS: strokeWidth from [0px] to [10em] was [3em] at 0.3
 PASS: strokeWidth from [0px] to [10em] was [6em] at 0.6
 PASS: strokeWidth from [0px] to [10em] was [10em] at 1
 PASS: strokeWidth from [0px] to [10em] was [15em] at 1.5
-PASS: strokeWidth from [30px] to [10em] was [30px] at -0.3
+PASS: strokeWidth from [30px] to [10em] was [0px] at -0.3
 PASS: strokeWidth from [30px] to [10em] was [30px] at 0
-PASS: strokeWidth from [30px] to [10em] was [30px] at 0.3
-PASS: strokeWidth from [30px] to [10em] was [10em] at 0.6
+PASS: strokeWidth from [30px] to [10em] was [69px] at 0.3
+PASS: strokeWidth from [30px] to [10em] was [108px] at 0.6
 PASS: strokeWidth from [30px] to [10em] was [10em] at 1
-PASS: strokeWidth from [30px] to [10em] was [10em] at 1.5
+PASS: strokeWidth from [30px] to [10em] was [225px] at 1.5
 PASS: strokeWidth from [10em] to [0px] was [13em] at -0.3
 PASS: strokeWidth from [10em] to [0px] was [10em] at 0
 PASS: strokeWidth from [10em] to [0px] was [7em] at 0.3
 PASS: strokeWidth from [10em] to [0px] was [4em] at 0.6
 PASS: strokeWidth from [10em] to [0px] was [0em] at 1
 PASS: strokeWidth from [10em] to [0px] was [0em] at 1.5
-PASS: strokeWidth from [10em] to [30px] was [10em] at -0.3
+PASS: strokeWidth from [10em] to [30px] was [199px] at -0.3
 PASS: strokeWidth from [10em] to [30px] was [10em] at 0
-PASS: strokeWidth from [10em] to [30px] was [10em] at 0.3
-PASS: strokeWidth from [10em] to [30px] was [30px] at 0.6
+PASS: strokeWidth from [10em] to [30px] was [121px] at 0.3
+PASS: strokeWidth from [10em] to [30px] was [82px] at 0.6
 PASS: strokeWidth from [10em] to [30px] was [30px] at 1
-PASS: strokeWidth from [10em] to [30px] was [30px] at 1.5
+PASS: strokeWidth from [10em] to [30px] was [0px] at 1.5
 

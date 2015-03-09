@@ -289,7 +289,7 @@ static void writeStyle(TextStream& ts, const LayoutObject& object)
 
             SVGLengthContext lengthContext(shape.element());
             double dashOffset = lengthContext.valueForLength(svgStyle.strokeDashOffset(), style);
-            double strokeWidth = svgStyle.strokeWidth()->value(lengthContext);
+            double strokeWidth = lengthContext.valueForLength(svgStyle.strokeWidth());
             DashArray dashArray = SVGLayoutSupport::resolveSVGDashArray(*svgStyle.strokeDashArray(), style, lengthContext);
 
             writeIfNotDefault(ts, "opacity", svgStyle.strokeOpacity(), 1.0f);

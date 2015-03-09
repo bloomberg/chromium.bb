@@ -36,6 +36,7 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGShapePainter.h"
 #include "core/svg/SVGGraphicsElement.h"
+#include "core/svg/SVGLengthContext.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/StrokeData.h"
 #include "wtf/MathExtras.h"
@@ -260,7 +261,7 @@ void LayoutSVGShape::updatePaintInvalidationBoundingBox()
 float LayoutSVGShape::strokeWidth() const
 {
     SVGLengthContext lengthContext(element());
-    return style()->svgStyle().strokeWidth()->value(lengthContext);
+    return lengthContext.valueForLength(style()->svgStyle().strokeWidth());
 }
 
 }

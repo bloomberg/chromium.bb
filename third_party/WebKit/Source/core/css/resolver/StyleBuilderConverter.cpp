@@ -508,6 +508,11 @@ Length StyleBuilderConverter::convertLength(const StyleResolverState& state, CSS
     return toCSSPrimitiveValue(value)->convertToLength(state.cssToLengthConversionData());
 }
 
+UnzoomedLength StyleBuilderConverter::convertUnzoomedLength(const StyleResolverState& state, CSSValue* value)
+{
+    return UnzoomedLength(toCSSPrimitiveValue(value)->convertToLength(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0f)));
+}
+
 Length StyleBuilderConverter::convertLengthOrAuto(const StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
@@ -851,11 +856,6 @@ Color StyleBuilderConverter::convertSVGColor(StyleResolverState& state, CSSValue
         return primitiveValue->getRGBA32Value();
     ASSERT(primitiveValue->getValueID() == CSSValueCurrentcolor);
     return state.style()->color();
-}
-
-PassRefPtrWillBeRawPtr<SVGLength> StyleBuilderConverter::convertSVGLength(StyleResolverState&, CSSValue* value)
-{
-    return SVGLength::fromCSSPrimitiveValue(toCSSPrimitiveValue(value));
 }
 
 float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, CSSValue* value)

@@ -44,7 +44,6 @@
 #include "core/animation/animatable/AnimatableLengthPoint3D.h"
 #include "core/animation/animatable/AnimatableLengthSize.h"
 #include "core/animation/animatable/AnimatableRepeatable.h"
-#include "core/animation/animatable/AnimatableSVGLength.h"
 #include "core/animation/animatable/AnimatableSVGPaint.h"
 #include "core/animation/animatable/AnimatableShadow.h"
 #include "core/animation/animatable/AnimatableShapeValue.h"
@@ -65,12 +64,22 @@ namespace blink {
 
 namespace {
 
-Length animatableValueToLength(const AnimatableValue* value, const StyleResolverState& state, ValueRange range = ValueRangeAll)
+Length animatableValueToLengthWithZoom(const AnimatableValue* value, float zoom, ValueRange range = ValueRangeAll)
 {
     if (value->isLength())
-        return toAnimatableLength(value)->length(state.style()->effectiveZoom(), range);
+        return toAnimatableLength(value)->length(zoom, range);
     ASSERT(toAnimatableUnknown(value)->toCSSValueID() == CSSValueAuto);
     return Length(Auto);
+}
+
+Length animatableValueToLength(const AnimatableValue* value, const StyleResolverState& state, ValueRange range = ValueRangeAll)
+{
+    return animatableValueToLengthWithZoom(value, state.style()->effectiveZoom(), range);
+}
+
+UnzoomedLength animatableValueToUnzoomedLength(const AnimatableValue* value, const StyleResolverState&, ValueRange range = ValueRangeAll)
+{
+    return UnzoomedLength(animatableValueToLengthWithZoom(value, 1, range));
 }
 
 BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* value, const StyleResolverState& state)
@@ -141,14 +150,6 @@ void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, StyleResolv
         fillLayer->setSize(FillSize(SizeLength, animatableValueToLengthSize(value, state, ValueRangeNonNegative)));
     else
         CSSToStyleMap::mapFillSize(state, fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
-}
-
-PassRefPtrWillBeRawPtr<SVGLength> animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
-{
-    RefPtrWillBeRawPtr<SVGLength> length = toAnimatableSVGLength(value)->toSVGLength();
-    if (length->valueInSpecifiedUnits() < 0)
-        length->setValueInSpecifiedUnits(0);
-    return length.release();
 }
 
 template <CSSPropertyID property>
@@ -477,7 +478,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setRight(animatableValueToLength(value, state));
         return;
     case CSSPropertyStrokeWidth:
-        style->setStrokeWidth(animatableValueToNonNegativeSVGLength(value));
+        style->setStrokeWidth(animatableValueToUnzoomedLength(value, state, ValueRangeNonNegative));
         return;
     case CSSPropertyStopColor:
         style->setStopColor(toAnimatableColor(value)->color());

@@ -175,7 +175,7 @@ bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* o
 
     // Some stroke properties, requires relayouts, as the cached stroke boundaries need to be recalculated.
     if (stroke.get() != other->stroke.get()) {
-        if (*stroke->width != *other->stroke->width
+        if (stroke->width != other->stroke->width
             || stroke->paintType != other->stroke->paintType
             || stroke->paintColor != other->stroke->paintColor
             || stroke->paintUri != other->stroke->paintUri

@@ -364,7 +364,7 @@ void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const
     const SVGLayoutStyle& svgStyle = style.svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object.node()));
-    context.setStrokeThickness(svgStyle.strokeWidth()->value(lengthContext));
+    context.setStrokeThickness(lengthContext.valueForLength(svgStyle.strokeWidth()));
     context.setLineCap(svgStyle.capStyle());
     context.setLineJoin(svgStyle.joinStyle());
     context.setMiterLimit(svgStyle.strokeMiterLimit());
@@ -381,7 +381,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, cons
     const SVGLayoutStyle& svgStyle = style.svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object.node()));
-    strokeData.setThickness(svgStyle.strokeWidth()->value(lengthContext));
+    strokeData.setThickness(lengthContext.valueForLength(svgStyle.strokeWidth()));
     strokeData.setLineCap(svgStyle.capStyle());
     strokeData.setLineJoin(svgStyle.joinStyle());
     strokeData.setMiterLimit(svgStyle.strokeMiterLimit());

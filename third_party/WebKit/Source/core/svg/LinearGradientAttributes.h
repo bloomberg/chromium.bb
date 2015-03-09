@@ -21,6 +21,7 @@
 #define LinearGradientAttributes_h
 
 #include "core/svg/GradientAttributes.h"
+#include "core/svg/SVGLength.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

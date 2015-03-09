@@ -16,7 +16,6 @@
 #include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
-#include "core/animation/SVGLengthStyleInterpolation.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/ShadowStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
@@ -172,6 +171,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyPaddingTop:
     case CSSPropertyPerspective:
     case CSSPropertyShapeMargin:
+    case CSSPropertyStrokeWidth:
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
     case CSSPropertyWebkitColumnGap:
@@ -323,13 +323,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         break;
     }
 
-    case CSSPropertyStrokeWidth: {
-        RefPtrWillBeRawPtr<Interpolation> interpolation = SVGLengthStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
-        if (interpolation)
-            return interpolation.release();
-
-        break;
-    }
     case CSSPropertyStrokeDasharray: {
         RefPtrWillBeRawPtr<Interpolation> interpolation = SVGStrokeDasharrayStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property);
         if (interpolation)
@@ -337,6 +330,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
         break;
     }
+
     default:
         // Fall back to LegacyStyleInterpolation.
         fallBackToLegacy = true;

@@ -47,12 +47,12 @@ assertInterpolation({
   from: '30px',
   to: '10em'
 }, [
-  {at: -0.3, is: '30px'},
+  {at: -0.3, is: '0px'},
   {at: 0, is: '30px'},
-  {at: 0.3, is: '30px'},
-  {at: 0.6, is: '10em'},
+  {at: 0.3, is: '69px'},
+  {at: 0.6, is: '108px'},
   {at: 1, is: '10em'},
-  {at: 1.5, is: '10em'},
+  {at: 1.5, is: '225px'},
 ]);
 assertInterpolation({
   property: 'stroke-width',
@@ -71,12 +71,12 @@ assertInterpolation({
   from: '10em',
   to: '30px'
 }, [
-  {at: -0.3, is: '10em'},
+  {at: -0.3, is: '199px'},
   {at: 0, is: '10em'},
-  {at: 0.3, is: '10em'},
-  {at: 0.6, is: '30px'},
+  {at: 0.3, is: '121px'},
+  {at: 0.6, is: '82px'},
   {at: 1, is: '30px'},
-  {at: 1.5, is: '30px'},
+  {at: 1.5, is: '0px'},
 ]);
 </script>
 </body>

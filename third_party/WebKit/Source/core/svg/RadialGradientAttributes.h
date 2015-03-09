@@ -21,6 +21,7 @@
 #define RadialGradientAttributes_h
 
 #include "core/svg/GradientAttributes.h"
+#include "core/svg/SVGLength.h"
 
 namespace blink {
 struct RadialGradientAttributes final : GradientAttributes {

@@ -96,7 +96,17 @@ float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::S
     return x.valueAsPercentage();
 }
 
+float SVGLengthContext::valueForLength(const UnzoomedLength& unzoomedLength, SVGLengthMode mode) const
+{
+    return valueForLength(unzoomedLength.length(), 1, mode);
+}
+
 float SVGLengthContext::valueForLength(const Length& length, const LayoutStyle& style, SVGLengthMode mode) const
+{
+    return valueForLength(length, style.effectiveZoom(), mode);
+}
+
+float SVGLengthContext::valueForLength(const Length& length, float zoom, SVGLengthMode mode) const
 {
     float dimension = 0;
     if (length.isPercent()) {
@@ -105,12 +115,16 @@ float SVGLengthContext::valueForLength(const Length& length, const LayoutStyle& 
         // The viewport will be unaffected by zoom.
         dimension = dimensionForLengthMode(mode, viewportSize);
     }
-    return valueForLength(length, style, dimension);
+    return valueForLength(length, zoom, dimension);
 }
 
 float SVGLengthContext::valueForLength(const Length& length, const LayoutStyle& style, float dimension)
 {
-    const float zoom = style.effectiveZoom();
+    return valueForLength(length, style.effectiveZoom(), dimension);
+}
+
+float SVGLengthContext::valueForLength(const Length& length, float zoom, float dimension)
+{
     ASSERT(zoom != 0);
     return floatValueForLength(length, dimension * zoom) / zoom;
 }

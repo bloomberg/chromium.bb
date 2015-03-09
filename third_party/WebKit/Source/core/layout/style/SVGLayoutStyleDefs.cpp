@@ -85,7 +85,7 @@ StyleStrokeData::StyleStrokeData(const StyleStrokeData& other)
     : RefCounted<StyleStrokeData>()
     , opacity(other.opacity)
     , miterLimit(other.miterLimit)
-    , width(other.width->clone())
+    , width(other.width)
     , dashOffset(other.dashOffset)
     , dashArray(other.dashArray)
     , paintType(other.paintType)
@@ -99,7 +99,7 @@ StyleStrokeData::StyleStrokeData(const StyleStrokeData& other)
 
 bool StyleStrokeData::operator==(const StyleStrokeData& other) const
 {
-    return *width == *other.width
+    return width == other.width
         && opacity == other.opacity
         && miterLimit == other.miterLimit
         && dashOffset == other.dashOffset

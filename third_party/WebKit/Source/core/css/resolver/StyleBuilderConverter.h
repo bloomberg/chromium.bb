@@ -35,7 +35,6 @@
 #include "core/layout/style/ShadowList.h"
 #include "core/layout/style/StyleReflection.h"
 #include "core/layout/style/TransformOrigin.h"
-#include "core/svg/SVGLength.h"
 #include "platform/LengthSize.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/text/TabSize.h"
@@ -64,6 +63,7 @@ public:
     static GridTrackSize convertGridTrackSize(StyleResolverState&, CSSValue*);
     template <typename T> static T convertLineWidth(StyleResolverState&, CSSValue*);
     static Length convertLength(const StyleResolverState&, CSSValue*);
+    static UnzoomedLength convertUnzoomedLength(const StyleResolverState&, CSSValue*);
     static Length convertLengthOrAuto(const StyleResolverState&, CSSValue*);
     static Length convertLengthSizing(StyleResolverState&, CSSValue*);
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
@@ -85,7 +85,6 @@ public:
     static PassRefPtr<SVGDashArray> convertStrokeDasharray(StyleResolverState&, CSSValue*);
     static StyleColor convertStyleColor(StyleResolverState&, CSSValue*, bool forVisitedLink = false);
     static Color convertSVGColor(StyleResolverState&, CSSValue*);
-    static PassRefPtrWillBeRawPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
     static float convertTextStrokeWidth(StyleResolverState&, CSSValue*);
     static TransformOrigin convertTransformOrigin(StyleResolverState&, CSSValue*);
 

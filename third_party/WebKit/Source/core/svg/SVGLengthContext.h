@@ -29,6 +29,7 @@ namespace blink {
 class LayoutStyle;
 class SVGElement;
 class SVGLength;
+class UnzoomedLength;
 
 enum SVGLengthType {
     LengthTypeUnknown = 0,
@@ -68,12 +69,16 @@ public:
     float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit) const;
     float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit) const;
 
+    float valueForLength(const UnzoomedLength&, SVGLengthMode = SVGLengthMode::Other) const;
     float valueForLength(const Length&, const LayoutStyle&, SVGLengthMode = SVGLengthMode::Other) const;
     static float valueForLength(const Length&, const LayoutStyle&, float dimension);
 
     bool determineViewport(FloatSize&) const;
 
 private:
+    float valueForLength(const Length&, float zoom, SVGLengthMode) const;
+    static float valueForLength(const Length&, float zoom, float dimension);
+
     float convertValueFromUserUnitsToEMS(float value) const;
     float convertValueFromEMSToUserUnits(float value) const;
 

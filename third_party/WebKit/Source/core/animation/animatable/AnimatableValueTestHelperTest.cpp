@@ -32,10 +32,8 @@
 
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/layout/ClipPathOperation.h"
 #include "core/layout/style/BasicShapes.h"
-#include "core/svg/SVGLengthContext.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 
@@ -71,15 +69,6 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
     EXPECT_THAT(
         PrintToString(const_cast<AnimatableValue*>(AnimatableValue::neutralValue())),
         testing::StartsWith("AnimatableNeutral@"));
-
-    RefPtrWillBeRawPtr<SVGLength> length1cm = SVGLength::create();
-    RefPtrWillBeRawPtr<SVGLength> length2cm = SVGLength::create();
-    length1cm->setValueAsString("1cm", ASSERT_NO_EXCEPTION);
-    length2cm->setValueAsString("2cm", ASSERT_NO_EXCEPTION);
-
-    EXPECT_EQ(
-        ::std::string("AnimatableSVGLength(1cm)"),
-        PrintToString(AnimatableSVGLength::create(length1cm)));
 
     EXPECT_THAT(
         PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get(), ContentBox).get())),
