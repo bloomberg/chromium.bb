@@ -578,7 +578,6 @@ if (is_linux) {
     testonly = true
     deps = [
       # components_browsertests  TODO(GYP)
-      # device_unittests  TODO(GYP)
       # nacl_loader_unittests  TODO(GYP)
 
       "//base:base_unittests",  # PASSES (*) 2/25/2015
@@ -593,6 +592,7 @@ if (is_linux) {
       "//content/test:content_unittests",  # PASSES 2/25/2015
       "//crypto:crypto_unittests",  # PASSES 2/25/2015
       "//dbus:dbus_unittests",  # PASSES 2/25/2015
+      "//device:device_unittests",  # PASSES 3/07/2015
       "//extensions:extensions_browsertests",  # PASSES 2/25/2015
       "//extensions:extensions_unittests",  # PASSES 2/25/2015
       "//extensions/shell:app_shell_unittests",  # PASSES 2/25/2015
