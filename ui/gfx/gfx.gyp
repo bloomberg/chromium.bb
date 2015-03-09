@@ -212,6 +212,10 @@
         'image/image_util_ios.mm',
         'interpolated_transform.cc',
         'interpolated_transform.h',
+        'ios/NSString+CrStringDrawing.h',
+        'ios/NSString+CrStringDrawing.mm',
+        'ios/uikit_util.h',
+        'ios/uikit_util.mm',
         'linux_font_delegate.cc',
         'linux_font_delegate.h',
         'mac/coordinate_conversion.h',
@@ -313,12 +317,13 @@
       ],
       'conditions': [
         ['OS=="ios"', {
-          'dependencies': [
-            '<(DEPTH)/ui/ios/ui_ios.gyp:ui_ios',
-          ],
-          # iOS only uses a subset of UI.
-          'sources/': [
-            ['exclude', '^codec/jpeg_codec\\.cc$'],
+          # Linkable dependents need to set the linker flag '-ObjC' in order to
+          # use the categories in this target (e.g. NSString+CrStringDrawing.h).
+          'link_settings': {
+            'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
+          },
+          'sources!': [
+            'codec/jpeg_codec.cc',
           ],
         }, {
           'dependencies': [

@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
-#include "ui/ios/NSString+CrStringDrawing.h"
+#include "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 namespace gfx {
 

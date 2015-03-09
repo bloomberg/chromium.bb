@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_IOS_UIKIT_UTIL_H_
-#define UI_IOS_UIKIT_UTIL_H_
+#ifndef UI_GFX_IOS_UIKIT_UTIL_H_
+#define UI_GFX_IOS_UIKIT_UTIL_H_
 
 #import <UIKit/UIKit.h>
 
@@ -23,4 +23,4 @@ CGSize AlignSizeToUpperPixel(CGSize size) WARN_UNUSED_RESULT;
 
 } // namespace ui
 
-#endif  // UI_IOS_UIKIT_UTIL_H_
+#endif  // UI_GFX_IOS_UIKIT_UTIL_H_

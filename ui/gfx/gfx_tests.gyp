@@ -18,6 +18,8 @@
         'image/image_ios_unittest.mm',
         'image/image_skia_unittest.cc',
         'image/image_unittest.cc',
+        'ios/NSString+CrStringDrawing_unittest.mm',
+        'ios/uikit_util_unittest.mm',
         'screen_unittest.cc',
         'test/run_all_unittests.cc',
         'text_elider_unittest.cc',

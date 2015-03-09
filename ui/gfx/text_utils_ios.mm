@@ -10,7 +10,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "ui/gfx/font_list.h"
-#include "ui/ios/NSString+CrStringDrawing.h"
+#include "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 namespace gfx {
 

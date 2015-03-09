@@ -8,7 +8,7 @@
 
 #include "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ui/ios/uikit_util.h"
+#include "ui/gfx/ios/uikit_util.h"
 
 bool IsIPadIdiom() {
   UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];

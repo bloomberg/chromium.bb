@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_IOS_NSSTRING_CR_STRING_DRAWING_H_
-#define UI_IOS_NSSTRING_CR_STRING_DRAWING_H_
+#ifndef UI_GFX_IOS_NSSTRING_CR_STRING_DRAWING_H_
+#define UI_GFX_IOS_NSSTRING_CR_STRING_DRAWING_H_
 
 #import <UIKit/UIKit.h>
 
@@ -52,4 +52,4 @@
 
 @end
 
-#endif  // UI_IOS_NSSTRING_CR_STRING_DRAWING_H_
+#endif  // UI_GFX_IOS_NSSTRING_CR_STRING_DRAWING_H_

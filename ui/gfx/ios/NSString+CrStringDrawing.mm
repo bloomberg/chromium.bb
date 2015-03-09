@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/ios/NSString+CrStringDrawing.h"
+#import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 #include "base/logging.h"
-#include "ui/ios/uikit_util.h"
+#include "ui/gfx/ios/uikit_util.h"
 
 @implementation NSString (CrStringDrawing)
 

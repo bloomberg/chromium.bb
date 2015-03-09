@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "testing/platform_test.h"
-#import "ui/ios/uikit_util.h"
+#import "ui/gfx/ios/uikit_util.h"
 
 namespace {
 
