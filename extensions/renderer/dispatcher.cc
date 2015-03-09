@@ -91,6 +91,7 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
@@ -103,7 +104,6 @@
 using base::UserMetricsAction;
 using blink::WebDataSource;
 using blink::WebDocument;
-using blink::WebFrame;
 using blink::WebScopedUserGesture;
 using blink::WebSecurityPolicy;
 using blink::WebString;
@@ -229,7 +229,7 @@ bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
 }
 
 const Extension* Dispatcher::GetExtensionFromFrameAndWorld(
-    const WebFrame* frame,
+    const blink::WebFrame* frame,
     int world_id,
     bool use_effective_url) {
   std::string extension_id;
@@ -262,7 +262,7 @@ const Extension* Dispatcher::GetExtensionFromFrameAndWorld(
 }
 
 void Dispatcher::DidCreateScriptContext(
-    WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const v8::Handle<v8::Context>& v8_context,
     int extension_group,
     int world_id) {
@@ -394,7 +394,7 @@ void Dispatcher::DidCreateScriptContext(
 }
 
 void Dispatcher::WillReleaseScriptContext(
-    WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const v8::Handle<v8::Context>& v8_context,
     int world_id) {
   ScriptContext* context = script_context_set_.GetByV8Context(v8_context);

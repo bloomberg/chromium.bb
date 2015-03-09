@@ -121,7 +121,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                        const GURL& url,
                        const GURL& first_party_for_cookies,
                        GURL* new_url) override;
-  void DidCreateScriptContext(blink::WebFrame* frame,
+  void DidCreateScriptContext(blink::WebLocalFrame* frame,
                               v8::Handle<v8::Context> context,
                               int extension_group,
                               int world_id) override;

@@ -167,8 +167,6 @@ using blink::WebCache;
 using blink::WebConsoleMessage;
 using blink::WebDataSource;
 using blink::WebDocument;
-using blink::WebFrame;
-using blink::WebLocalFrame;
 using blink::WebPlugin;
 using blink::WebPluginParams;
 using blink::WebSecurityOrigin;
@@ -647,7 +645,7 @@ ChromeContentRendererClient::CreatePluginPlaceholder(
 
 bool ChromeContentRendererClient::OverrideCreatePlugin(
     content::RenderFrame* render_frame,
-    WebLocalFrame* frame,
+    blink::WebLocalFrame* frame,
     const WebPluginParams& params,
     WebPlugin** plugin) {
   std::string orig_mime_type = params.mimeType.utf8();
@@ -704,7 +702,7 @@ void ChromeContentRendererClient::DeferMediaLoad(
 
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
     content::RenderFrame* render_frame,
-    WebLocalFrame* frame,
+    blink::WebLocalFrame* frame,
     const WebPluginParams& original_params,
     const ChromeViewHostMsg_GetPluginInfo_Output& output) {
   const ChromeViewHostMsg_GetPluginInfo_Status& status = output.status;
@@ -1254,7 +1252,7 @@ bool ChromeContentRendererClient::AllowPopup() {
   return false;
 }
 
-bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
+bool ChromeContentRendererClient::ShouldFork(blink::WebFrame* frame,
                                              const GURL& url,
                                              const std::string& http_method,
                                              bool is_initial_navigation,
@@ -1396,7 +1394,9 @@ bool ChromeContentRendererClient::WillSendRequest(
 }
 
 void ChromeContentRendererClient::DidCreateScriptContext(
-    WebFrame* frame, v8::Handle<v8::Context> context, int extension_group,
+    blink::WebLocalFrame* frame,
+    v8::Handle<v8::Context> context,
+    int extension_group,
     int world_id) {
 #if defined(ENABLE_EXTENSIONS)
   extension_dispatcher_->DidCreateScriptContext(
@@ -1443,7 +1443,7 @@ ChromeContentRendererClient::GetExtensionDispatcherForTest() {
 }
 
 bool ChromeContentRendererClient::CrossesExtensionExtents(
-    WebFrame* frame,
+    blink::WebFrame* frame,
     const GURL& new_url,
     const extensions::ExtensionSet& extensions,
     bool is_extension_url,

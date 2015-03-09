@@ -234,7 +234,7 @@ class CONTENT_EXPORT ContentRendererClient {
                                GURL* new_url);
 
   // See the corresponding functions in blink::WebFrameClient.
-  virtual void DidCreateScriptContext(blink::WebFrame* frame,
+  virtual void DidCreateScriptContext(blink::WebLocalFrame* frame,
                                       v8::Handle<v8::Context> context,
                                       int extension_group,
                                       int world_id) {}

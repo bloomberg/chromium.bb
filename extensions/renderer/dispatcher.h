@@ -38,6 +38,7 @@ struct ExtensionMsg_UpdatePermissions_Params;
 
 namespace blink {
 class WebFrame;
+class WebLocalFrame;
 class WebSecurityOrigin;
 }
 
@@ -96,12 +97,12 @@ class Dispatcher : public content::RenderProcessObserver,
                                                  int world_id,
                                                  bool use_effective_url);
 
-  void DidCreateScriptContext(blink::WebFrame* frame,
+  void DidCreateScriptContext(blink::WebLocalFrame* frame,
                               const v8::Handle<v8::Context>& context,
                               int extension_group,
                               int world_id);
 
-  void WillReleaseScriptContext(blink::WebFrame* frame,
+  void WillReleaseScriptContext(blink::WebLocalFrame* frame,
                                 const v8::Handle<v8::Context>& context,
                                 int world_id);
 

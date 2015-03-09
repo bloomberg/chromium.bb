@@ -111,7 +111,7 @@ bool ShellContentRendererClient::WillSendRequest(
 }
 
 void ShellContentRendererClient::DidCreateScriptContext(
-    WebFrame* frame,
+    blink::WebLocalFrame* frame,
     v8::Handle<v8::Context> context,
     int extension_group,
     int world_id) {
