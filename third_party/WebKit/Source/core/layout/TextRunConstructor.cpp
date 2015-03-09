@@ -75,6 +75,8 @@ TextRun constructTextRun(LayoutObject* context, const Font& font, const UChar* c
 
 TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, const LayoutStyle& style, TextDirection direction)
 {
+    if (text->hasEmptyText())
+        return constructTextRunInternal(context, font, static_cast<const LChar*>(nullptr), 0, style, direction);
     if (text->is8Bit())
         return constructTextRunInternal(context, font, text->characters8(), text->textLength(), style, direction);
     return constructTextRunInternal(context, font, text->characters16(), text->textLength(), style, direction);
@@ -83,6 +85,8 @@ TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutTe
 TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, unsigned offset, unsigned length, const LayoutStyle& style, TextDirection direction)
 {
     ASSERT(offset + length <= text->textLength());
+    if (text->hasEmptyText())
+        return constructTextRunInternal(context, font, static_cast<const LChar*>(nullptr), 0, style, direction);
     if (text->is8Bit())
         return constructTextRunInternal(context, font, text->characters8() + offset, length, style, direction);
     return constructTextRunInternal(context, font, text->characters16() + offset, length, style, direction);
@@ -100,12 +104,14 @@ TextRun constructTextRun(LayoutObject* context, const Font& font, const String& 
 
 TextRun constructTextRun(LayoutObject* context, const Font& font, const String& string, const LayoutStyle& style, TextRunFlags flags)
 {
-    return constructTextRun(context, font, string, style, string.is8Bit() ? LTR : determineDirectionality(string), flags);
+    return constructTextRun(context, font, string, style, string.isEmpty() || string.is8Bit() ? LTR : determineDirectionality(string), flags);
 }
 
 TextRun constructTextRun(LayoutObject* context, const Font& font, const LayoutText* text, unsigned offset, unsigned length, const LayoutStyle& style)
 {
     ASSERT(offset + length <= text->textLength());
+    if (text->hasEmptyText())
+        return constructTextRunInternal(context, font, static_cast<const LChar*>(nullptr), 0, style, LTR);
     if (text->is8Bit())
         return constructTextRunInternal(context, font, text->characters8() + offset, length, style, LTR);
 
