@@ -32,7 +32,6 @@
 #define WebSharedWorkerClient_h
 
 #include "public/platform/WebMessagePortChannel.h"
-#include "public/web/WebWorkerPermissionClientProxy.h"
 
 namespace blink {
 
@@ -70,12 +69,7 @@ public:
     // WebWorkerContentSettingsClientProxy should not retain the given
     // WebSecurityOrigin, as the proxy instance is passed to worker thread
     // while WebSecurityOrigin is not thread safe.
-    virtual WebWorkerContentSettingsClientProxy* createWorkerContentSettingsClientProxy(const WebSecurityOrigin& origin)
-    {
-        return createWorkerPermissionClientProxy(origin);
-    }
-    // Deprecated call required by embedder.
-    virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(const WebSecurityOrigin&) { return nullptr; }
+    virtual WebWorkerContentSettingsClientProxy* createWorkerContentSettingsClientProxy(const WebSecurityOrigin& origin) { return nullptr; }
 
     // Called on the main thread during initialization.
     // Ownership of the returned object is transferred to the caller.
