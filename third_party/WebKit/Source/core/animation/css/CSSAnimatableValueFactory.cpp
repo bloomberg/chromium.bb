@@ -200,7 +200,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBackgroundPositi
 template<CSSPropertyID property>
 inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillLayers(const FillLayer& fillLayers, const LayoutStyle& style)
 {
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > values;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> values;
     for (const FillLayer* fillLayer = &fillLayers; fillLayer; fillLayer = fillLayer->next()) {
         if (property == CSSPropertyBackgroundImage || property == CSSPropertyWebkitMaskImage) {
             if (!fillLayer->isImageSet())

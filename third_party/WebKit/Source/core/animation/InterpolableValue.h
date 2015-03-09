@@ -137,7 +137,7 @@ private:
     }
 
     size_t m_size;
-    WillBeHeapVector<OwnPtrWillBeMember<InterpolableValue> > m_values;
+    WillBeHeapVector<OwnPtrWillBeMember<InterpolableValue>> m_values;
 };
 
 // FIXME: Remove this when we can.

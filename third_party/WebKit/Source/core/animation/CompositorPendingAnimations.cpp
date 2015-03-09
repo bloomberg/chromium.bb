@@ -60,7 +60,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
     WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer>> waitingForStartTime;
     bool startedSynchronizedOnCompositor = false;
 
-    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > players;
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> players;
     players.swap(m_pending);
     int compositorGroup = ++m_compositorGroup;
     if (compositorGroup == 0) {
@@ -125,7 +125,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
 void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime, int compositorGroup)
 {
     TRACE_EVENT0("blink", "CompositorPendingAnimations::notifyCompositorAnimationStarted");
-    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > players;
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> players;
     players.swap(m_waitingForCompositorAnimationStart);
 
     for (auto player : players) {

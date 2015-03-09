@@ -532,7 +532,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& 
     }
 }
 
-void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations, double playerPlaybackRate)
+void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<WebCompositorAnimation>>& animations, double playerPlaybackRate)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;

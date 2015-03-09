@@ -34,7 +34,7 @@ TEST_F(AnimationInterpolationEffectTest, SingleInterpolation)
     interpolationEffect->addInterpolation(Interpolation::create(InterpolableNumber::create(0), InterpolableNumber::create(10)),
         RefPtr<TimingFunction>(), 0, 1, -1, 2);
 
-    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > activeInterpolations = nullptr;
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> activeInterpolations = nullptr;
     interpolationEffect->getActiveInterpolations(-2, duration, activeInterpolations);
     EXPECT_EQ(0ul, activeInterpolations->size());
 
@@ -64,7 +64,7 @@ TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations)
     interpolationEffect->addInterpolation(Interpolation::create(InterpolableNumber::create(1), InterpolableNumber::create(6)),
         CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease), 0.5, 1.5, 0.5, 1.5);
 
-    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > activeInterpolations = nullptr;
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> activeInterpolations = nullptr;
     interpolationEffect->getActiveInterpolations(-0.5, duration, activeInterpolations);
     EXPECT_EQ(0ul, activeInterpolations->size());
 

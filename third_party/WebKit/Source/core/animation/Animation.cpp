@@ -136,7 +136,7 @@ void Animation::applyEffects()
 
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
-    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations = m_sampledEffect ? m_sampledEffect->mutableInterpolations() : nullptr;
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations = m_sampledEffect ? m_sampledEffect->mutableInterpolations() : nullptr;
     // FIXME: Handle iteration values which overflow int.
     m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), interpolations);
     if (m_sampledEffect) {

@@ -10,7 +10,7 @@ namespace blink {
 void InterpolationEffect::getActiveInterpolations(double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& result) const
 {
     if (!result)
-        result = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<Interpolation> >());
+        result = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<Interpolation>>());
 
     size_t existingSize = result->size();
     size_t resultIndex = 0;

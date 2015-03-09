@@ -56,7 +56,7 @@ protected:
 private:
     AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray>, float zoom);
     // This will consume the vector passed into it.
-    AnimatableStrokeDasharrayList(WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& values)
+    AnimatableStrokeDasharrayList(WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>>& values)
         : AnimatableRepeatable(values)
     {
     }

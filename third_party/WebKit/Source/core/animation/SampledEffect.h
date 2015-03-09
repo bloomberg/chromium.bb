@@ -15,21 +15,21 @@ namespace blink {
 
 class SampledEffect : public NoBaseWillBeGarbageCollected<SampledEffect> {
 public:
-    static PassOwnPtrWillBeRawPtr<SampledEffect> create(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations)
+    static PassOwnPtrWillBeRawPtr<SampledEffect> create(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
     {
         return adoptPtrWillBeNoop(new SampledEffect(animation, interpolations));
     }
 
     void clear();
 
-    const WillBeHeapVector<RefPtrWillBeMember<Interpolation> >& interpolations() const { return *m_interpolations; }
+    const WillBeHeapVector<RefPtrWillBeMember<Interpolation>>& interpolations() const { return *m_interpolations; }
 #if ENABLE(OILPAN)
     RawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> mutableInterpolations() { return m_interpolations.get(); }
 #else
     PassOwnPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> mutableInterpolations() { return m_interpolations.release(); }
 #endif
 
-    void setInterpolations(PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations) { m_interpolations = interpolations; }
+    void setInterpolations(PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations) { m_interpolations = interpolations; }
 
     Animation* animation() const { return m_animation; }
     unsigned sequenceNumber() const { return m_sequenceNumber; }
@@ -38,7 +38,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    SampledEffect(Animation*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > >);
+    SampledEffect(Animation*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>);
 
     RawPtrWillBeWeakMember<Animation> m_animation;
     RefPtrWillBeMember<AnimationPlayer> m_player;

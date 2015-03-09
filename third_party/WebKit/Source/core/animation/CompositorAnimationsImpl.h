@@ -61,7 +61,7 @@ private:
 
     static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out, double playerPlaybackRate);
 
-    static void getAnimationOnCompositor(const Timing&, int group, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<WebCompositorAnimation> >& animations, double playerPlaybackRate);
+    static void getAnimationOnCompositor(const Timing&, int group, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<WebCompositorAnimation>>& animations, double playerPlaybackRate);
 
     static void addKeyframesToCurve(WebCompositorAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, const Timing&);
 

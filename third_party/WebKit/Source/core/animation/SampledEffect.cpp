@@ -9,7 +9,7 @@
 
 namespace blink {
 
-SampledEffect::SampledEffect(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations)
+SampledEffect::SampledEffect(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
     : m_animation(animation)
     , m_player(animation->player())
     , m_interpolations(interpolations)

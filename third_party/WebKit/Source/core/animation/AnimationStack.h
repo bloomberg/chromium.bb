@@ -52,14 +52,14 @@ public:
     void add(PassOwnPtrWillBeRawPtr<SampledEffect> effect) { m_effects.append(effect); }
     bool isEmpty() const { return m_effects.isEmpty(); }
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
-    static WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> >* suppressedAnimationPlayers, Animation::Priority, double timelineCurrentTime);
+    static WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>>* suppressedAnimationPlayers, Animation::Priority, double timelineCurrentTime);
 
     bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
     DECLARE_TRACE();
 
 private:
     // Effects sorted by priority. Lower priority at the start of the list.
-    WillBeHeapVector<OwnPtrWillBeMember<SampledEffect> > m_effects;
+    WillBeHeapVector<OwnPtrWillBeMember<SampledEffect>> m_effects;
 
     friend class AnimationAnimationStackTest;
 };

@@ -72,9 +72,9 @@ public:
         return animateInternal(element, effect, Timing());
     }
 
-    static WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > getAnimationPlayers(Element& element)
+    static WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> getAnimationPlayers(Element& element)
     {
-        WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > animationPlayers;
+        WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> animationPlayers;
 
         if (!element.hasAnimations())
             return animationPlayers;

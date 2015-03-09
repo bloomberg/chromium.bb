@@ -122,11 +122,11 @@ public:
     {
         return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *m_element.get(), nullptr, effect, 1);
     }
-    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations)
+    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<WebCompositorAnimation>>& animations)
     {
         return getAnimationOnCompositor(timing, effect, animations, 1);
     }
-    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations, double playerPlaybackRate)
+    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<WebCompositorAnimation>>& animations, double playerPlaybackRate)
     {
         return CompositorAnimationsImpl::getAnimationOnCompositor(timing, 0, std::numeric_limits<double>::quiet_NaN(), 0, effect, animations, playerPlaybackRate);
     }
@@ -672,7 +672,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -720,7 +720,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -775,7 +775,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -825,7 +825,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -885,7 +885,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -946,7 +946,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -997,7 +997,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -1045,7 +1045,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     // Set player plaback rate also
     getAnimationOnCompositor(m_timing, *effect.get(), result, -1.5);
     EXPECT_EQ(1U, result.size());
@@ -1094,7 +1094,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -1142,7 +1142,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -1190,7 +1190,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<WebCompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();

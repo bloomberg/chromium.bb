@@ -72,7 +72,7 @@ private:
         }
     };
 
-    WillBeHeapVector<OwnPtrWillBeMember<InterpolationRecord> > m_interpolations;
+    WillBeHeapVector<OwnPtrWillBeMember<InterpolationRecord>> m_interpolations;
 };
 
 } // namespace blink

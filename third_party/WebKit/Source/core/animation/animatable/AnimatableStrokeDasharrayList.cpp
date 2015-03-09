@@ -84,7 +84,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpola
         }
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > interpolatedValues;
+    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> interpolatedValues;
     bool success = interpolateLists(from, to, fraction, interpolatedValues);
     ASSERT_UNUSED(success, success);
     return adoptRefWillBeNoop(new AnimatableStrokeDasharrayList(interpolatedValues));

@@ -190,7 +190,7 @@ private:
 
     unsigned m_sequenceNumber;
 
-    typedef ScriptPromiseProperty<RawPtrWillBeMember<AnimationPlayer>, RawPtrWillBeMember<AnimationPlayer>, RefPtrWillBeMember<DOMException> > AnimationPlayerPromise;
+    typedef ScriptPromiseProperty<RawPtrWillBeMember<AnimationPlayer>, RawPtrWillBeMember<AnimationPlayer>, RefPtrWillBeMember<DOMException>> AnimationPlayerPromise;
     PersistentWillBeMember<AnimationPlayerPromise> m_finishedPromise;
     PersistentWillBeMember<AnimationPlayerPromise> m_readyPromise;
 
