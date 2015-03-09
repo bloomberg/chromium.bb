@@ -124,8 +124,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // uses RenderWidgetHost::AsRenderWidgetHostImpl().
   static RenderWidgetHostImpl* From(RenderWidgetHost* rwh);
 
-  void set_hung_renderer_delay_ms(const base::TimeDelta& timeout) {
-    hung_renderer_delay_ms_ = timeout.InMilliseconds();
+  void set_hung_renderer_delay(const base::TimeDelta& delay) {
+    hung_renderer_delay_ = delay;
   }
 
   // RenderWidgetHost implementation.
@@ -592,7 +592,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool renderer_initialized_;
 
   // This value indicates how long to wait before we consider a renderer hung.
-  int64 hung_renderer_delay_ms_;
+  base::TimeDelta hung_renderer_delay_;
 
  private:
   friend class MockRenderWidgetHost;

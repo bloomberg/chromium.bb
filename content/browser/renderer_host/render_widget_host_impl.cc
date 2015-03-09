@@ -160,7 +160,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            bool hidden)
     : view_(NULL),
       renderer_initialized_(false),
-      hung_renderer_delay_ms_(kHungRendererDelayMs),
+      hung_renderer_delay_(
+          base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       delegate_(delegate),
       process_(process),
       routing_id_(routing_id),
@@ -537,6 +538,11 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
 
   SendScreenRects();
 
+  // When hidden, timeout monitoring for input events is disabled. Restore it
+  // now to ensure consistent hang detection.
+  if (in_flight_event_count_)
+    RestartHangMonitorTimeout();
+
   // Always repaint on restore.
   bool needs_repainting = true;
   needs_repainting_on_restore_ = false;
@@ -863,8 +869,7 @@ void RenderWidgetHostImpl::StartHangMonitorTimeout(base::TimeDelta delay) {
 
 void RenderWidgetHostImpl::RestartHangMonitorTimeout() {
   if (hang_monitor_timeout_)
-    hang_monitor_timeout_->Restart(
-        base::TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
+    hang_monitor_timeout_->Restart(hung_renderer_delay_);
 }
 
 void RenderWidgetHostImpl::StopHangMonitorTimeout() {
@@ -1210,6 +1215,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
 
   // Reset this to ensure the hung renderer mechanism is working properly.
   in_flight_event_count_ = 0;
+  StopHangMonitorTimeout();
 
   if (view_) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(surface_id_,
@@ -1793,9 +1799,9 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
 }
 
 void RenderWidgetHostImpl::IncrementInFlightEventCount() {
-  StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
   increment_in_flight_event_count();
+  if (!is_hidden_)
+    StartHangMonitorTimeout(hung_renderer_delay_);
 }
 
 void RenderWidgetHostImpl::DecrementInFlightEventCount() {
@@ -1804,7 +1810,8 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount() {
     StopHangMonitorTimeout();
   } else {
     // The renderer is responsive, but there are in-flight events to wait for.
-    RestartHangMonitorTimeout();
+    if (!is_hidden_)
+      RestartHangMonitorTimeout();
   }
 }
 

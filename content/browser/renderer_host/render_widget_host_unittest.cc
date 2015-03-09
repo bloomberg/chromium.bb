@@ -158,10 +158,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return unresponsive_timer_fired_;
   }
 
-  void set_hung_renderer_delay_ms(int64 delay_ms) {
-    hung_renderer_delay_ms_ = delay_ms;
-  }
-
   void DisableGestureDebounce() {
     input_router_.reset(new InputRouterImpl(
         process_, this, this, routing_id_, InputRouterImpl::Config()));
@@ -983,13 +979,51 @@ TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
 
+// Test that the hang monitor timer is effectively disabled when the widget is
+// hidden.
+TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
+  host_->set_hung_renderer_delay(base::TimeDelta::FromMicroseconds(1));
+  SimulateMouseEvent(WebInputEvent::MouseMove, 10, 10, 0, false);
+
+  // Hiding the widget should deactivate the timeout.
+  host_->WasHidden();
+
+  // The timeout should not fire.
+  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMicroseconds(2));
+  base::MessageLoop::current()->Run();
+  EXPECT_FALSE(host_->unresponsive_timer_fired());
+
+  // The timeout should never reactivate while hidden.
+  SimulateMouseEvent(WebInputEvent::MouseMove, 10, 10, 0, false);
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMicroseconds(2));
+  base::MessageLoop::current()->Run();
+  EXPECT_FALSE(host_->unresponsive_timer_fired());
+
+  // Showing the widget should restore the timeout, as the events have
+  // not yet been ack'ed.
+  host_->WasShown(ui::LatencyInfo());
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TimeDelta::FromMicroseconds(2));
+  base::MessageLoop::current()->Run();
+  EXPECT_TRUE(host_->unresponsive_timer_fired());
+}
+
 // Test that the hang monitor catches two input events but only one ack.
 // This can happen if the second input event causes the renderer to hang.
 // This test will catch a regression of crbug.com/111185.
 TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   // Configure the host to wait 10ms before considering
   // the renderer hung.
-  host_->set_hung_renderer_delay_ms(10);
+  host_->set_hung_renderer_delay(base::TimeDelta::FromMicroseconds(10));
 
   // Send two events but only one ack.
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
@@ -1001,7 +1035,7 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::MessageLoop::QuitClosure(),
-      TimeDelta::FromMilliseconds(40));
+      TimeDelta::FromMicroseconds(20));
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }

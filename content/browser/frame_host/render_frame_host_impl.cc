@@ -1678,9 +1678,10 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // leave the current page. In this case, use the regular timeout value used
   // during the (before)unload handling.
   if (is_waiting) {
-    render_view_host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(
-        success ? RenderViewHostImpl::kUnloadTimeoutMS
-                : render_view_host_->hung_renderer_delay_ms_));
+    render_view_host_->StartHangMonitorTimeout(
+        success
+            ? TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS)
+            : render_view_host_->hung_renderer_delay_);
   }
 
   FrameHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,

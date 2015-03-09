@@ -482,7 +482,7 @@ void BrowserPluginGuest::RenderViewReady() {
   Send(new InputMsg_SetFocus(routing_id(), focused_));
   UpdateVisibility();
 
-  RenderWidgetHostImpl::From(rvh)->set_hung_renderer_delay_ms(
+  RenderWidgetHostImpl::From(rvh)->set_hung_renderer_delay(
       base::TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
 
