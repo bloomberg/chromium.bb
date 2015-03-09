@@ -714,20 +714,6 @@ crbug.com/242735 fast/css/ex-unit-with-no-x-height.html [ ImageOnlyFailure Failu
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Linux Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 
-crbug.com/462643 crbug.com/446011 fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 transforms/2d/hindi-rotated.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 virtual/antialiasedtext/fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 virtual/antialiasedtext/fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 virtual/antialiasedtext/fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 virtual/antialiasedtext/fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 virtual/slimmingpaint/fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 virtual/slimmingpaint/fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 virtual/slimmingpaint/fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
-crbug.com/462643 crbug.com/446011 virtual/slimmingpaint/fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
-
 # Flaky on several platforms.
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 crbug.com/320139 virtual/slimmingpaint/fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
