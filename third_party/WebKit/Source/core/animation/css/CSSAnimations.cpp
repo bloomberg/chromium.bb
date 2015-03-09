@@ -417,20 +417,16 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             AnimatableValueKeyframeVector newFrames;
             newFrames.append(toAnimatableValueKeyframe(frames[0]->clone().get()));
             newFrames.append(toAnimatableValueKeyframe(frames[1]->clone().get()));
-
+            newFrames.append(toAnimatableValueKeyframe(frames[2]->clone().get()));
             newFrames[0]->clearPropertyValue(id);
+            newFrames[1]->clearPropertyValue(id);
+
             RefPtrWillBeRawPtr<InertAnimation> inertAnimationForSampling = InertAnimation::create(oldAnimation->effect(), oldAnimation->specifiedTiming(), false, inheritedTime);
             OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
             inertAnimationForSampling->sample(sample);
             if (sample && sample->size() == 1) {
                 newFrames[0]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
-
-                if (frames.size() == 3) {
-                    newFrames.append(toAnimatableValueKeyframe(frames[2]->clone().get()));
-                    newFrames[1]->clearPropertyValue(id);
-                    newFrames[1]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
-                }
-
+                newFrames[1]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
                 effect = AnimatableValueKeyframeEffectModel::create(newFrames);
             }
         }
@@ -483,11 +479,12 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPr
         timing.iterationDuration += timing.startDelay;
         startKeyframeOffset = timing.startDelay / timing.iterationDuration;
         timing.startDelay = 0;
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> delayKeyframe = AnimatableValueKeyframe::create();
-        delayKeyframe->setPropertyValue(id, from.get());
-        delayKeyframe->setOffset(0);
-        keyframes.append(delayKeyframe);
     }
+
+    RefPtrWillBeRawPtr<AnimatableValueKeyframe> delayKeyframe = AnimatableValueKeyframe::create();
+    delayKeyframe->setPropertyValue(id, from.get());
+    delayKeyframe->setOffset(0);
+    keyframes.append(delayKeyframe);
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> startKeyframe = AnimatableValueKeyframe::create();
     startKeyframe->setPropertyValue(id, from.get());
