@@ -3170,13 +3170,27 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinish) {
 
   // Start a handshake up to the server Finished message.
   TestCompletionCallback callback;
-  FakeBlockingStreamSocket* raw_transport1;
+  FakeBlockingStreamSocket* raw_transport1 = NULL;
   scoped_ptr<SSLClientSocket> sock1;
   ASSERT_NO_FATAL_FAILURE(CreateAndConnectUntilServerFinishedReceived(
       client_config, &callback, &raw_transport1, &sock1));
   // Although raw_transport1 has the server Finished blocked, the handshake
   // still completes.
   EXPECT_EQ(OK, callback.WaitForResult());
+
+  // Continue to block the client (|sock1|) from processing the Finished
+  // message, but allow it to arrive on the socket. This ensures that, from the
+  // server's point of view, it has completed the handshake and added the
+  // session to its session cache.
+  //
+  // The actual read on |sock1| will not complete until the Finished message is
+  // processed; however, pump the underlying transport so that it is read from
+  // the socket. This still has the potential to race, but is generally unlikely
+  // due to socket buffer sizes.
+  scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
+  int rv = sock1->Read(buf.get(), 4096, callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  raw_transport1->WaitForReadResult();
 
   // Drop the old socket. This is needed because the Python test server can't
   // service two sockets in parallel.
