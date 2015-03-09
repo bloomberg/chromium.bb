@@ -41,9 +41,4 @@ public class MockTabDelegate implements TabDelegate {
     @Override
     public void createTabForDevTools(String url) {
     }
-
-    @Override
-    public boolean isTabCoveredByChildActivity(Tab tab) {
-        return false;
-    }
 }

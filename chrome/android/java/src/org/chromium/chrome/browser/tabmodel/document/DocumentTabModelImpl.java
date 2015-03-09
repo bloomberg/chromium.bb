@@ -439,7 +439,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         Entry currentEntry = mEntryMap.get(id);
         String currentUrl = tab.getUrl();
         boolean canGoBack = tab.canGoBack();
-        boolean isCoveredByChildActivity = mTabDelegate.isTabCoveredByChildActivity(tab);
+        boolean isCoveredByChildActivity = tab.isCoveredByChildActivity();
         TabState state = tab.getState();
         if (currentEntry != null
                 && currentEntry.tabId == id

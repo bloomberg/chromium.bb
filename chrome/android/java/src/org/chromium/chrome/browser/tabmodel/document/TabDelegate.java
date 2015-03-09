@@ -53,11 +53,4 @@ public interface TabDelegate {
      * @param url URL to spawn a Tab for.
      */
     void createTabForDevTools(String url);
-
-    /**
-     * Check if the tab is covered by its child activity.
-     * @param tab Tab to be checked.
-     * @return Whether the tab is covered by its child activity.
-     */
-    boolean isTabCoveredByChildActivity(Tab tab);
 }

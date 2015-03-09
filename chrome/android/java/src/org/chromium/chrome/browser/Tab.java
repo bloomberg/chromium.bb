@@ -2604,6 +2604,23 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * Check if the tab is covered by its child activity.
+     * @return Whether the tab is covered by its child activity.
+     */
+    public boolean isCoveredByChildActivity() {
+        // Default return value, this is only used by subclasses.
+        return false;
+    }
+
+    /**
+     * Update whether the tab is covered by its child activity.
+     * @param isCoveredByChildActivity Whether the tab is covered by its child activity.
+     */
+    public void setCoveredByChildActivity(boolean isCoveredByChildActivity) {
+        // Empty implementation, only used by subclasses.
+    }
+
+    /**
      * Ensures the counter is at least as high as the specified value.  The counter should always
      * point to an unused ID (which will be handed out next time a request comes in).  Exposed so
      * that anything externally loading tabs and ids can set enforce new tabs start at the correct
