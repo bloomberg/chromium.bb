@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#htmlcanvaselement
+
 typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
 interface HTMLCanvasElement : HTMLElement {
-
+    // FIXME: width and height should be unsigned long.
     attribute long width;
     attribute long height;
-
-    [RaisesException] DOMString toDataURL(optional DOMString? type = null, optional any arguments);
 
     // Note: this differs deliberately from the specified Web IDL for this function:
     //     RenderingContext? getContext(DOMString contextId, any... arguments);
@@ -46,5 +46,12 @@ interface HTMLCanvasElement : HTMLElement {
     // InspectorInstrumentation wrappers to be called for canvases. If that could be
     // handled differently the return type could be changed to "RenderingContext?"
     // and the [CallWith=ScriptState] extended attribute removed.
+    //
+    // FIXME: The contextId argument should not be optional.
     [CallWith=ScriptState] any getContext([Default=Undefined] optional DOMString contextId, [PermissiveDictionaryConversion] optional CanvasContextCreationAttributes attributes);
+
+    // Note: The arguments argument is variadic in the spec, but not here as
+    // only one extra argument is actually used.
+    // FIXME: type should not be nullable or have a default value.
+    [RaisesException] DOMString toDataURL(optional DOMString? type = null, optional any arguments);
 };

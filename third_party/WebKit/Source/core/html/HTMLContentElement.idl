@@ -24,8 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-] interface HTMLContentElement : HTMLElement {
+// http://w3c.github.io/webcomponents/spec/shadow/#the-content-element
+
+interface HTMLContentElement : HTMLElement {
+    // FIXME: select should not have [TreatNullAs=NullString].
     [Reflect, TreatNullAs=NullString] attribute DOMString select;
     NodeList getDistributedNodes();
 };
