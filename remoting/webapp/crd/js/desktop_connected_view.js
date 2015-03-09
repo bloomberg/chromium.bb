@@ -25,25 +25,25 @@ var remoting = remoting || {};
 remoting.enableMouseLock = false;
 
 /**
+ * @param {remoting.ClientPlugin} plugin
  * @param {remoting.ClientSession} session
  * @param {HTMLElement} container
  * @param {remoting.Host} host
  * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
  * @param {string} defaultRemapKeys The default set of remap keys, to use
  *     when the client doesn't define any.
- * @param {function(remoting.Error, remoting.ClientPlugin): void} onInitialized
  * @constructor
  * @extends {base.EventSourceImpl}
  */
-remoting.DesktopConnectedView = function(session, container, host, mode,
-                                         defaultRemapKeys, onInitialized) {
+remoting.DesktopConnectedView = function(plugin, session, container, host, mode,
+                                         defaultRemapKeys) {
   this.session_ = session;
 
   /** @private {HTMLElement} */
   this.container_ = container;
 
   /** @private {remoting.ClientPlugin} */
-  this.plugin_ = null;
+  this.plugin_ = plugin;
 
   /** @private */
   this.host_ = host;
@@ -53,12 +53,6 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
 
   /** @private {string} */
   this.defaultRemapKeys_ = defaultRemapKeys;
-
-  /**
-   * Called when the UI is finished initializing.
-   * @type {function(remoting.Error, remoting.ClientPlugin):void}
-   */
-  this.onInitialized_ = onInitialized;
 
   /** @private */
   this.callPluginLostFocus_ = this.pluginLostFocus_.bind(this);
@@ -91,6 +85,8 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
 
   /** private {base.Disposable} */
   this.eventHooks_ = null;
+
+  this.setupPlugin_();
 };
 
 // The mode of this session.
@@ -156,42 +152,8 @@ remoting.DesktopConnectedView.prototype.getViewportForTesting = function() {
   return this.viewport_;
 };
 
-/**
- * Adds <embed> element to the UI container and readies the session object.
- *
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
- * @param {Array<string>} requiredCapabilities A list of capabilities
- *     required by this application.
- */
-remoting.DesktopConnectedView.prototype.createPluginAndConnect =
-    function(onExtensionMessage, requiredCapabilities) {
-  this.plugin_ = remoting.ClientPlugin.factory.createPlugin(
-      this.getPluginContainer_(),
-      onExtensionMessage, requiredCapabilities);
-  var that = this;
-  this.host_.options.load().then(function(){
-    that.plugin_.initialize(that.onPluginInitialized_.bind(that));
-  });
-};
-
-/**
- * @param {boolean} initialized
- */
-remoting.DesktopConnectedView.prototype.onPluginInitialized_ = function(
-    initialized) {
-  if (!initialized) {
-    console.error('ERROR: remoting plugin not loaded');
-    this.onInitialized_(remoting.Error.MISSING_PLUGIN, this.plugin_);
-    return;
-  }
-
-  if (!this.plugin_.isSupportedVersion()) {
-    this.onInitialized_(remoting.Error.BAD_PLUGIN_VERSION, this.plugin_);
-    return;
-  }
-
+/** @private */
+remoting.DesktopConnectedView.prototype.setupPlugin_ = function() {
   // Show the Send Keys menu only if the plugin has the injectKeyEvent feature,
   // and the Ctrl-Alt-Del button only in Me2Me mode.
   if (!this.plugin_.hasFeature(
@@ -217,8 +179,6 @@ remoting.DesktopConnectedView.prototype.onPluginInitialized_ = function(
   }
 
   this.plugin_.setMouseCursorHandler(this.updateMouseCursorImage_.bind(this));
-
-  this.onInitialized_(remoting.Error.NONE, this.plugin_);
 };
 
 /**
@@ -268,7 +228,6 @@ remoting.DesktopConnectedView.prototype.removePlugin = function() {
         'focus', this.callPluginGotFocus_, false);
     this.plugin_.element().removeEventListener(
         'blur', this.callPluginLostFocus_, false);
-    this.plugin_.dispose();
     this.plugin_ = null;
   }
 

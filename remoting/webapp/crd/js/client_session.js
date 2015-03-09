@@ -32,20 +32,15 @@ var remoting = remoting || {};
 remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
 
 /**
+ * @param {remoting.ClientPlugin} plugin
  * @param {remoting.Host} host The host to connect to.
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
- * @param {remoting.CredentialsProvider} credentialsProvider
- *     The credentialsProvider to authenticate the client with the host.
- * @param {HTMLElement} container Container element for the client view.
  * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
- * @param {string} defaultRemapKeys The default set of remap keys, to use
- *     when the client doesn't define any.
  * @constructor
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
  */
-remoting.ClientSession = function(host, signalStrategy, credentialsProvider,
-                                  container, mode, defaultRemapKeys) {
+remoting.ClientSession = function(plugin, host, signalStrategy, mode) {
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
 
@@ -56,18 +51,8 @@ remoting.ClientSession = function(host, signalStrategy, credentialsProvider,
   this.host_ = host;
 
   /** @private */
-  this.credentialsProvider_ = credentialsProvider;
-
-  /** @private */
-  this.uiHandler_ = new remoting.DesktopConnectedView(
-      this, container, this.host_, mode, defaultRemapKeys,
-      this.onPluginInitialized_.bind(this));
-  remoting.desktopConnectedView = this.uiHandler_;
-
-  /** @private */
   this.sessionId_ = '';
-  /** @private {remoting.ClientPlugin}  */
-  this.plugin_ = null;
+
   /** @private */
   this.hasReceivedFrame_ = false;
   this.logToServer = new remoting.LogToServer(signalStrategy, mode);
@@ -93,6 +78,20 @@ remoting.ClientSession = function(host, signalStrategy, credentialsProvider,
 
   /** @private {remoting.CastExtensionHandler} */
   this.castExtensionHandler_ = null;
+
+  /** @private {remoting.ClientPlugin} */
+  this.plugin_ = plugin;
+  plugin.setOnOutgoingIqHandler(this.sendIq_.bind(this));
+  plugin.setOnDebugMessageHandler(this.onDebugMessage_.bind(this));
+  plugin.setConnectionStatusUpdateHandler(
+      this.onConnectionStatusUpdate_.bind(this));
+  plugin.setRouteChangedHandler(this.onRouteChanged_.bind(this));
+  plugin.setConnectionReadyHandler(this.onConnectionReady_.bind(this));
+  plugin.setCapabilitiesHandler(this.onSetCapabilities_.bind(this));
+  plugin.setGnubbyAuthHandler(
+      this.processGnubbyAuthMessage_.bind(this));
+  plugin.setCastExtensionHandler(
+      this.processCastExtensionMessage_.bind(this));
 
   this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
@@ -249,69 +248,10 @@ remoting.ClientSession.prototype.hasCapability = function(capability) {
 };
 
 /**
- * Adds <embed> element to the UI container and readies the session object.
- *
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
- * @param {Array<string>} requiredCapabilities A list of capabilities
- *     required by this application.
- */
-remoting.ClientSession.prototype.createPluginAndConnect =
-    function(onExtensionMessage, requiredCapabilities) {
-  this.uiHandler_.createPluginAndConnect(onExtensionMessage,
-                                         requiredCapabilities);
-};
-
-/**
- * @param {remoting.Error} error
- * @param {remoting.ClientPlugin} plugin
- */
-remoting.ClientSession.prototype.onPluginInitialized_ = function(
-    error, plugin) {
-  if (error != remoting.Error.NONE) {
-    this.resetWithError_(error);
-  }
-
-  this.plugin_ = plugin;
-  plugin.setOnOutgoingIqHandler(this.sendIq_.bind(this));
-  plugin.setOnDebugMessageHandler(this.onDebugMessage_.bind(this));
-
-  plugin.setConnectionStatusUpdateHandler(
-      this.onConnectionStatusUpdate_.bind(this));
-  plugin.setRouteChangedHandler(this.onRouteChanged_.bind(this));
-  plugin.setConnectionReadyHandler(this.onConnectionReady_.bind(this));
-  plugin.setCapabilitiesHandler(this.onSetCapabilities_.bind(this));
-  plugin.setGnubbyAuthHandler(
-      this.processGnubbyAuthMessage_.bind(this));
-  plugin.setCastExtensionHandler(
-      this.processCastExtensionMessage_.bind(this));
-
-  this.plugin_.connect(
-      this.host_, this.signalStrategy_.getJid(), this.credentialsProvider_);
-};
-
-/**
- * @param {remoting.Error} error
- */
-remoting.ClientSession.prototype.resetWithError_ = function(error) {
-  this.signalStrategy_.setIncomingStanzaCallback(null);
-  this.removePlugin();
-  this.error_ = error;
-  this.setState_(remoting.ClientSession.State.FAILED);
-};
-
-/**
- * Deletes the <embed> element from the container, without sending a
- * session_terminate request.  This is to be called when the session was
- * disconnected by the Host.
- *
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.removePlugin = function() {
-  this.uiHandler_.removePlugin();
   this.plugin_ = null;
-  remoting.desktopConnectedView = null;
 };
 
 /**
@@ -449,7 +389,7 @@ remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
 remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     function(status, error) {
   if (status == remoting.ClientSession.State.CONNECTED) {
-    this.uiHandler_.updateClientSessionUi_(this);
+    remoting.desktopConnectedView.updateClientSessionUi_(this);
 
   } else if (status == remoting.ClientSession.State.FAILED) {
     switch (error) {
@@ -508,7 +448,7 @@ remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
     return;
   }
 
-  this.uiHandler_.onConnectionReady(ready);
+  remoting.desktopConnectedView.onConnectionReady(ready);
 
   this.raiseEvent(remoting.ClientSession.Events.videoChannelStateChanged,
                   ready);
@@ -535,7 +475,7 @@ remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
   }
   if (this.hasCapability(
       remoting.ClientSession.Capability.VIDEO_RECORDER)) {
-    this.uiHandler_.initVideoFrameRecorder();
+    remoting.desktopConnectedView.initVideoFrameRecorder();
   }
 };
 
@@ -674,7 +614,8 @@ remoting.ClientSession.prototype.processGnubbyAuthMessage_ = function(data) {
  * @private
  */
 remoting.ClientSession.prototype.createGnubbyAuthHandler_ = function() {
-  if (this.uiHandler_.getMode() == remoting.DesktopConnectedView.Mode.ME2ME) {
+  if (remoting.desktopConnectedView.getMode() ==
+      remoting.DesktopConnectedView.Mode.ME2ME) {
     this.gnubbyAuthHandler_ = new remoting.GnubbyAuthHandler(this);
     // TODO(psj): Move to more generic capabilities mechanism.
     this.sendGnubbyAuthMessage({'type': 'control', 'option': 'auth-v1'});
@@ -741,7 +682,8 @@ remoting.ClientSession.prototype.processCastExtensionMessage_ = function(data) {
  */
 remoting.ClientSession.prototype.createCastExtensionHandler_ = function() {
   if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST) &&
-      this.uiHandler_.getMode() == remoting.DesktopConnectedView.Mode.ME2ME) {
+      remoting.desktopConnectedView.getMode() ==
+          remoting.DesktopConnectedView.Mode.ME2ME) {
     this.castExtensionHandler_ = new remoting.CastExtensionHandler(this);
   }
 };
@@ -754,7 +696,7 @@ remoting.ClientSession.prototype.createCastExtensionHandler_ = function() {
  */
 remoting.ClientSession.prototype.handleExtensionMessage =
     function(type, message) {
-  if (this.uiHandler_.handleExtensionMessage(type, message)) {
+  if (remoting.desktopConnectedView.handleExtensionMessage(type, message)) {
     return true;
   }
   return false;
@@ -767,7 +709,8 @@ remoting.ClientSession.prototype.handleExtensionMessage =
 remoting.ClientSession.prototype.enableDebugRegion = function(enable) {
   if (enable) {
     this.plugin_.setDebugDirtyRegionHandler(
-        this.uiHandler_.handleDebugRegion.bind(this.uiHandler_));
+        remoting.desktopConnectedView.handleDebugRegion.bind(
+            remoting.desktopConnectedView));
   } else {
     this.plugin_.setDebugDirtyRegionHandler(null);
   }

@@ -13,19 +13,6 @@
 var remoting = remoting || {};
 
 /**
- * @type {remoting.ClientSession} The client session object, set once the
- *     connector has invoked its onOk callback.
- * TODO(garykac): Make clientSession a member var of Application.
- */
-remoting.clientSession = null;
-
-/**
- * @type {remoting.DesktopConnectedView} The client session view object, set
- *     once the connector has invoked its onOk callback.
- */
-remoting.desktopConnectedView = null;
-
-/**
  * @param {Array<string>} app_capabilities Array of application capabilities.
  * @constructor
  */
@@ -121,7 +108,6 @@ remoting.Application.prototype.disconnect = function() {
  * @return {void} Nothing.
  */
 remoting.Application.prototype.onConnected = function(clientSession) {
-  remoting.clientSession = clientSession;
   this.sessionConnectedHooks_ = new base.Disposables(
     new base.EventHook(
       clientSession, 'stateChanged', this.onClientStateChange_.bind(this)),

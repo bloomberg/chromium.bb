@@ -18,12 +18,6 @@ var remoting = remoting || {};
 remoting.SessionConnector = function() {};
 
 /**
- * Reset the per-connection state so that the object can be re-used for a
- * second connection. Note the none of the shared WCS state is reset.
- */
-remoting.SessionConnector.prototype.reset = function() {};
-
-/**
  * Initiate a Me2Me connection.
  *
  * @param {remoting.Host} host The Me2Me host to which to connect.

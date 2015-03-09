@@ -149,7 +149,6 @@ remoting.MockSessionConnector.prototype.connect_ = function() {
   clientSession.addEventListener(
       remoting.ClientSession.Events.stateChanged,
       onStateChange);
-  clientSession.createPluginAndConnect(this.onExtensionMessage_);
 };
 
 

@@ -13,6 +13,20 @@
 var remoting = remoting || {};
 
 /**
+ * @type {remoting.ClientSession} The client session object, set once the
+ *     connector has invoked its onOk callback.
+ * TODO(garykac): Have this owned by someone instead of being global.
+ */
+remoting.clientSession = null;
+
+/**
+ * @type {remoting.DesktopConnectedView} The client session view object, set
+ *     once the connector has invoked its onOk callback.
+ * TODO(garykac): Have this owned by someone instead of being global.
+ */
+remoting.desktopConnectedView = null;
+
+/**
  * @param {HTMLElement} clientContainer Container element for the client view.
  * @param {function(remoting.ClientSession):void} onConnected Callback on
  *     success.
@@ -70,22 +84,34 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
   };
 
   // Initialize/declare per-connection state.
-  this.reset();
+  this.resetConnection_();
 };
 
 /**
  * Reset the per-connection state so that the object can be re-used for a
  * second connection. Note the none of the shared WCS state is reset.
+ * @private
  */
-remoting.SessionConnectorImpl.prototype.reset = function() {
+remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
+  this.removePlugin_();
+
   /** @private {remoting.Host} */
   this.host_ = null;
 
   /** @private {boolean} */
   this.logHostOfflineErrors_ = false;
 
+  /** @private {remoting.ClientPlugin} */
+  this.plugin_ = null;
+
   /** @private {remoting.ClientSession} */
   this.clientSession_ = null;
+
+  /** @private {remoting.DesktopConnectedView} */
+  this.connectedView_ = null;
+
+  /** @private {XMLHttpRequest} */
+  this.pendingXhr_ = null;
 
   /** @private {remoting.CredentialsProvider} */
   this.credentialsProvider_ = null;
@@ -206,11 +232,7 @@ remoting.SessionConnectorImpl.prototype.reconnect = function() {
  * Cancel a connection-in-progress.
  */
 remoting.SessionConnectorImpl.prototype.cancel = function() {
-  if (this.clientSession_) {
-    this.clientSession_.removePlugin();
-    this.clientSession_ = null;
-  }
-  this.reset();
+  this.resetConnection_();
 };
 
 /**
@@ -297,20 +319,85 @@ remoting.SessionConnectorImpl.prototype.createSession_ = function() {
   // In some circumstances, the WCS <iframe> can get reloaded, which results
   // in a new clientJid and a new callback. In this case, remove the old
   // client plugin before instantiating a new one.
-  if (this.clientSession_) {
-    this.clientSession_.removePlugin();
-    this.clientSession_ = null;
+  this.removePlugin_();
+
+  var pluginContainer = this.clientContainer_.querySelector(
+      '.client-plugin-container');
+
+  this.plugin_ = remoting.ClientPlugin.factory.createPlugin(
+      pluginContainer, this.onExtensionMessage_, this.requiredCapabilities_);
+
+  var that = this;
+  this.host_.options.load().then(function(){
+    that.plugin_.initialize(that.onPluginInitialized_.bind(that));
+  });
+};
+
+/**
+ * @param {boolean} initialized
+ * @private
+ */
+remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
+    initialized) {
+  if (!initialized) {
+    console.error('ERROR: remoting plugin not loaded');
+    this.pluginError_(remoting.Error.MISSING_PLUGIN);
+    return;
+  }
+
+  if (!this.plugin_.isSupportedVersion()) {
+    console.error('ERROR: bad plugin version');
+    this.pluginError_(remoting.Error.BAD_PLUGIN_VERSION);
+    return;
   }
 
   this.clientSession_ = new remoting.ClientSession(
-      this.host_, this.signalStrategy_, this.credentialsProvider_,
-      this.clientContainer_, this.connectionMode_, this.defaultRemapKeys_);
+      this.plugin_, this.host_, this.signalStrategy_, this.connectionMode_);
+  remoting.clientSession = this.clientSession_;
+
+  this.connectedView_ = new remoting.DesktopConnectedView(
+      this.plugin_, this.clientSession_, this.clientContainer_, this.host_,
+      this.connectionMode_,
+      this.defaultRemapKeys_);
+  remoting.desktopConnectedView = this.connectedView_;
+
   this.clientSession_.logHostOfflineErrors(this.logHostOfflineErrors_);
   this.clientSession_.addEventListener(
       remoting.ClientSession.Events.stateChanged,
       this.bound_.onStateChange);
-  this.clientSession_.createPluginAndConnect(this.onExtensionMessage_,
-                                             this.requiredCapabilities_);
+
+  this.plugin_.connect(
+      this.host_, this.signalStrategy_.getJid(), this.credentialsProvider_);
+};
+
+/**
+ * @param {remoting.Error} error
+ * @private
+ */
+remoting.SessionConnectorImpl.prototype.pluginError_ = function(error) {
+  this.signalStrategy_.setIncomingStanzaCallback(null);
+  this.clientSession_.disconnect(error);
+  this.removePlugin_();
+};
+
+/** @private */
+remoting.SessionConnectorImpl.prototype.removePlugin_ = function() {
+  if (this.clientSession_) {
+    this.clientSession_.removePlugin();
+  }
+  this.clientSession_ = null;
+  remoting.clientSession = null;
+
+  if (this.connectedView_) {
+    this.connectedView_.removePlugin();
+  }
+  this.connectedView_ = null;
+  remoting.desktopConnectedView = null;
+
+  if (this.plugin_) {
+    this.plugin_.dispose();
+  }
+  this.plugin_ = null;
 };
 
 /**
