@@ -30,7 +30,7 @@ cr.define('extensions', function() {
     /**
      * Populate the content area of the code div with the given code. This will
      * highlight the erroneous section (if any).
-     * @param {ExtensionHighlight} code The 'highlight' strings represent the
+     * @param {?ExtensionHighlight} code The 'highlight' strings represent the
      *     three portions of the file's content to display - the portion which
      *     is most relevant and should be emphasized (highlight), and the parts
      *     both before and after this portion. The title is the error message,
