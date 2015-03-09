@@ -522,6 +522,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
         // Clear the permissions.
         mSite.setCookiePermission(null);
+        WebsitePreferenceBridge.nativeClearCookieData(mSite.getAddress().getOrigin());
         mSite.setGeolocationPermission(null);
         mSite.setJavaScriptPermission(null);
         mSite.setMidiPermission(null);
