@@ -4,9 +4,11 @@
 
 package org.chromium.media;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
+import android.os.Build;
 import android.util.Log;
 
 import org.chromium.base.JNINamespace;
@@ -22,6 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
  **/
 @JNINamespace("media")
 @SuppressWarnings("deprecation")
+//TODO: is this class only used on ICS MR1 (or some later version) and above?
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
 public abstract class VideoCaptureCamera extends VideoCapture
         implements android.hardware.Camera.PreviewCallback {
 

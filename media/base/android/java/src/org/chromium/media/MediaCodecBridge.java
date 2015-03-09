@@ -4,6 +4,7 @@
 
 package org.chromium.media;
 
+import android.annotation.TargetApi;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -30,6 +31,7 @@ import java.util.Map;
  * audio rendering.
  */
 @JNINamespace("media")
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 class MediaCodecBridge {
     private static final String TAG = "MediaCodecBridge";
 
@@ -212,6 +214,7 @@ class MediaCodecBridge {
     /**
      * Get a name of default android codec.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @SuppressWarnings("deprecation")
     @CalledByNative
     private static String getDefaultCodecName(String mime, int direction) {
@@ -237,6 +240,8 @@ class MediaCodecBridge {
     /**
      * Get a list of encoder supported color formats for specified mime type.
      */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @SuppressWarnings("deprecation")
     @CalledByNative
     private static int[] getEncoderColorFormatsForMime(String mime) {
         MediaCodecInfo[] codecs = null;
@@ -495,6 +500,7 @@ class MediaCodecBridge {
         return MEDIA_CODEC_OK;
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @CalledByNative
     private void setVideoBitrate(int bps) {
         Bundle b = new Bundle();
@@ -636,6 +642,7 @@ class MediaCodecBridge {
         return width <= MAX_ADAPTIVE_PLAYBACK_WIDTH && height <= MAX_ADAPTIVE_PLAYBACK_HEIGHT;
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private static boolean codecSupportsAdaptivePlayback(MediaCodec mediaCodec, String mime) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT || mediaCodec == null) {
             return false;
