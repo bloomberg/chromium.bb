@@ -29,7 +29,7 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<DrmDevice>& drm,
       !drm_->AddFramebuffer(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
                             kColorDepth, kPixelDepth, gbm_bo_get_stride(bo),
                             gbm_bo_get_handle(bo).u32, &framebuffer_))
-    LOG(ERROR) << "Failed to register buffer";
+    PLOG(ERROR) << "Failed to register buffer";
 }
 
 GbmBufferBase::~GbmBufferBase() {

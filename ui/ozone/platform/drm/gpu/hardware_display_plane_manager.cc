@@ -75,7 +75,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
 
   ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(drm->get_fd()));
   if (!plane_resources) {
-    LOG(ERROR) << "Failed to get plane resources.";
+    PLOG(ERROR) << "Failed to get plane resources";
     return false;
   }
 
@@ -90,7 +90,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
     ScopedDrmPlanePtr drm_plane(
         drmModeGetPlane(drm->get_fd(), plane_resources->planes[i]));
     if (!drm_plane) {
-      LOG(ERROR) << "Failed to get plane " << i << ".";
+      PLOG(ERROR) << "Failed to get plane " << i;
       return false;
     }
     plane_ids.insert(drm_plane->plane_id);

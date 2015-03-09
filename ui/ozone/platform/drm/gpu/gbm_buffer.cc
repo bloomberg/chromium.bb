@@ -75,7 +75,7 @@ bool GbmPixmap::Initialize() {
   // especially when sharing buffers via DMABUF.
   dma_buf_ = gbm_bo_get_fd(buffer_->bo());
   if (dma_buf_ < 0) {
-    LOG(ERROR) << "Failed to export buffer to dma_buf";
+    PLOG(ERROR) << "Failed to export buffer to dma_buf";
     return false;
   }
   return true;

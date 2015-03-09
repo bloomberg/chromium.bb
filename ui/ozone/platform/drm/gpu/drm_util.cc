@@ -129,7 +129,7 @@ bool MapDumbBuffer(int fd, uint32_t handle, uint32_t size, void** pixels) {
 
 void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
                                          ScreenManager* screen_manager) {
-  LOG(WARNING) << "Forcing initialization of primary display.";
+  VLOG(2) << "Forcing initialization of primary display.";
   ScopedVector<HardwareDisplayControllerInfo> displays =
       GetAvailableDisplayControllerInfos(drm->get_fd());
 
@@ -159,8 +159,10 @@ base::FilePath GetPrimaryDisplayCardPath() {
       break;
 
     int fd = open(card_path.c_str(), O_RDWR | O_CLOEXEC);
-    if (fd < 0)
+    if (fd < 0) {
+      VPLOG(1) << "Failed to open '" << card_path << "'";
       continue;
+    }
 
     memset(&res, 0, sizeof(struct drm_mode_card_res));
     int ret = drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res);
@@ -168,6 +170,8 @@ base::FilePath GetPrimaryDisplayCardPath() {
     if (ret == 0 && res.count_crtcs > 0) {
       return base::FilePath(card_path);
     }
+
+    VPLOG_IF(1, ret) << "Failed to get DRM resources for '" << card_path << "'";
   }
 
   return base::FilePath();

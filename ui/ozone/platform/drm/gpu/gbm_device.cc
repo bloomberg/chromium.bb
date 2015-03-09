@@ -27,7 +27,7 @@ bool GbmDevice::Initialize() {
 
   device_ = gbm_create_device(get_fd());
   if (!device_) {
-    LOG(ERROR) << "Unable to initialize GBM";
+    PLOG(ERROR) << "Unable to initialize GBM";
     return false;
   }
 

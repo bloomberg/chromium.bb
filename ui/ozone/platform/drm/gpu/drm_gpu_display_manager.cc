@@ -336,14 +336,14 @@ bool DrmGpuDisplayManager::GetHDCPState(const DrmDisplaySnapshot& output,
   ScopedDrmConnectorPtr connector(
       output.drm()->GetConnector(output.connector()));
   if (!connector) {
-    LOG(ERROR) << "Failed to get connector " << output.connector();
+    PLOG(ERROR) << "Failed to get connector " << output.connector();
     return false;
   }
 
   ScopedDrmPropertyPtr hdcp_property(
       output.drm()->GetProperty(connector.get(), kContentProtection));
   if (!hdcp_property) {
-    LOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
+    PLOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
     return false;
   }
 
@@ -369,14 +369,14 @@ bool DrmGpuDisplayManager::SetHDCPState(const DrmDisplaySnapshot& output,
   ScopedDrmConnectorPtr connector(
       output.drm()->GetConnector(output.connector()));
   if (!connector) {
-    LOG(ERROR) << "Failed to get connector " << output.connector();
+    PLOG(ERROR) << "Failed to get connector " << output.connector();
     return false;
   }
 
   ScopedDrmPropertyPtr hdcp_property(
       output.drm()->GetProperty(connector.get(), kContentProtection));
   if (!hdcp_property) {
-    LOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
+    PLOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
     return false;
   }
 
