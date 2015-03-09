@@ -65,8 +65,7 @@ class BrowserFontResource_Trusted
                         const PP_BrowserFont_Trusted_TextRun& text,
                         const PP_Point* position,
                         uint32_t color,
-                        const PP_Rect* clip,
-                        PP_Bool image_data_is_opaque);
+                        const PP_Rect* clip);
 
  private:
   scoped_ptr<blink::WebFont> font_;
