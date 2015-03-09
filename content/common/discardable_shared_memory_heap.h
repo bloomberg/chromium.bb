@@ -5,11 +5,8 @@
 #ifndef CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
 #define CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
 
-#include <bitset>
-
 #include "base/containers/hash_tables.h"
 #include "base/containers/linked_list.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
@@ -68,21 +65,53 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // memory. If found, the span is removed from the free list and returned.
   scoped_ptr<Span> SearchFreeList(size_t blocks);
 
-  // Release shared memory segments that have been purged. Returns bytes of
-  // memory that were released.
-  size_t ReleaseFreeMemory();
+  // Release free shared memory segments.
+  void ReleaseFreeMemory();
+
+  // Release shared memory segments that have been purged.
+  void ReleasePurgedMemory();
+
+  // Returns total bytes of memory in heap.
+  size_t GetSize() const;
+
+  // Returns bytes of memory currently in the free list.
+  size_t GetFreeListSize() const;
 
  private:
+  class ScopedMemorySegment {
+   public:
+    ScopedMemorySegment(DiscardableSharedMemoryHeap* heap,
+                        scoped_ptr<base::DiscardableSharedMemory> shared_memory,
+                        size_t size);
+    ~ScopedMemorySegment();
+
+    bool IsUsed() const;
+    bool IsResident() const;
+
+   private:
+    DiscardableSharedMemoryHeap* const heap_;
+    scoped_ptr<base::DiscardableSharedMemory> shared_memory_;
+    const size_t size_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedMemorySegment);
+  };
+
   scoped_ptr<Span> RemoveFromFreeList(Span* span);
   scoped_ptr<Span> Carve(Span* span, size_t blocks);
   void RegisterSpan(Span* span);
   void UnregisterSpan(Span* span);
-  void ReleaseMemory(base::DiscardableSharedMemory* shared_memory);
+  bool IsMemoryUsed(const base::DiscardableSharedMemory* shared_memory,
+                    size_t size);
+  bool IsMemoryResident(const base::DiscardableSharedMemory* shared_memory);
+  void ReleaseMemory(const base::DiscardableSharedMemory* shared_memory,
+                     size_t size);
 
   size_t block_size_;
+  size_t num_blocks_;
+  size_t num_free_blocks_;
 
-  // Discardable shared memory instances.
-  ScopedVector<base::DiscardableSharedMemory> shared_memory_segments_;
+  // Vector of memory segments.
+  ScopedVector<ScopedMemorySegment> memory_segments_;
 
   // Mapping from first/last block of span to Span instance.
   typedef base::hash_map<size_t, Span*> SpanMap;

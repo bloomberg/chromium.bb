@@ -11,11 +11,15 @@
 namespace content {
 namespace {
 
-class DiscardableSharedMemoryHeapTest : public testing::Test {};
-
-TEST_F(DiscardableSharedMemoryHeapTest, Basic) {
+TEST(DiscardableSharedMemoryHeapTest, Basic) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
+
+  // Initial size should be 0.
+  EXPECT_EQ(0u, heap.GetSize());
+
+  // Initial free list size should be 0.
+  EXPECT_EQ(0u, heap.GetFreeListSize());
 
   // Free list is initially empty.
   EXPECT_FALSE(heap.SearchFreeList(1));
@@ -31,11 +35,20 @@ TEST_F(DiscardableSharedMemoryHeapTest, Basic) {
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
       heap.Grow(memory.Pass(), memory_size));
 
+  // Size should match |memory_size|.
+  EXPECT_EQ(memory_size, heap.GetSize());
+
+  // Free list size should still be 0.
+  EXPECT_EQ(0u, heap.GetFreeListSize());
+
   // Free list should still be empty as |new_span| is currently in use.
   EXPECT_FALSE(heap.SearchFreeList(1));
 
   // Done using |new_span|. Merge it into the free list.
   heap.MergeIntoFreeList(new_span.Pass());
+
+  // Free list size should now match |memory_size|.
+  EXPECT_EQ(memory_size, heap.GetFreeListSize());
 
   // Free list should not contain a span that is larger than kBlocks.
   EXPECT_FALSE(heap.SearchFreeList(kBlocks + 1));
@@ -52,7 +65,7 @@ TEST_F(DiscardableSharedMemoryHeapTest, Basic) {
   heap.MergeIntoFreeList(span.Pass());
 }
 
-TEST_F(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
+TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
 
@@ -105,7 +118,7 @@ TEST_F(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
   heap.MergeIntoFreeList(large_span.Pass());
 }
 
-TEST_F(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
+TEST(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
 
@@ -130,7 +143,7 @@ TEST_F(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
   heap.MergeIntoFreeList(leftover.Pass());
 }
 
-TEST_F(DiscardableSharedMemoryHeapTest, Grow) {
+TEST(DiscardableSharedMemoryHeapTest, Grow) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
 
@@ -161,7 +174,33 @@ TEST_F(DiscardableSharedMemoryHeapTest, Grow) {
   heap.MergeIntoFreeList(span2.Pass());
 }
 
-TEST_F(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
+TEST(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
+  size_t block_size = base::GetPageSize();
+  DiscardableSharedMemoryHeap heap(block_size);
+
+  scoped_ptr<base::DiscardableSharedMemory> memory(
+      new base::DiscardableSharedMemory);
+  ASSERT_TRUE(memory->CreateAndMap(block_size));
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
+      heap.Grow(memory.Pass(), block_size);
+
+  // Free list should be empty.
+  EXPECT_EQ(0u, heap.GetFreeListSize());
+
+  heap.ReleaseFreeMemory();
+
+  // Size should still match |block_size|.
+  EXPECT_EQ(block_size, heap.GetSize());
+
+  heap.MergeIntoFreeList(span.Pass());
+  heap.ReleaseFreeMemory();
+
+  // Memory should have been released.
+  EXPECT_EQ(0u, heap.GetSize());
+  EXPECT_EQ(0u, heap.GetFreeListSize());
+}
+
+TEST(DiscardableSharedMemoryHeapTest, ReleasePurgedMemory) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
 
@@ -177,10 +216,13 @@ TEST_F(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
   // Purge and release shared memory.
   bool rv = span->shared_memory()->Purge(base::Time::Now());
   EXPECT_TRUE(rv);
-  heap.ReleaseFreeMemory();
+  heap.ReleasePurgedMemory();
 
   // Shared memory backing for |span| should be gone.
   EXPECT_FALSE(span->shared_memory());
+
+  // Size should be 0.
+  EXPECT_EQ(0u, heap.GetSize());
 }
 
 }  // namespace

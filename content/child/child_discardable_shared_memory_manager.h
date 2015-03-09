@@ -36,12 +36,12 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
  private:
   scoped_ptr<base::DiscardableSharedMemory>
   AllocateLockedDiscardableSharedMemory(size_t size);
-  void BytesAllocatedChanged(size_t new_bytes_allocated) const;
+  void MemoryUsageChanged(size_t new_bytes_allocated,
+                          size_t new_bytes_free) const;
 
   mutable base::Lock lock_;
   DiscardableSharedMemoryHeap heap_;
   scoped_refptr<ThreadSafeSender> sender_;
-  size_t bytes_allocated_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildDiscardableSharedMemoryManager);
 };
