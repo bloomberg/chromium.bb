@@ -192,8 +192,11 @@ bool SVGLayoutStyle::diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* o
     if (layout.get() != other->layout.get()) {
         if (layout->x != other->layout->x
             || layout->y != other->layout->y
+            || layout->r != other->layout->r
             || layout->rx != other->layout->rx
-            || layout->ry != other->layout->ry)
+            || layout->ry != other->layout->ry
+            || layout->cx != other->layout->cx
+            || layout->cy != other->layout->cy)
             return true;
     }
 

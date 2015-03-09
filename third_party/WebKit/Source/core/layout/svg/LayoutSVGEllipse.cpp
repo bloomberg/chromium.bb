@@ -82,21 +82,19 @@ void LayoutSVGEllipse::updateShapeFromElement()
 void LayoutSVGEllipse::calculateRadiiAndCenter()
 {
     ASSERT(element());
+    SVGLengthContext lengthContext(element());
+    m_center = FloatPoint(
+        lengthContext.valueForLength(style()->svgStyle().cx(), styleRef(), SVGLengthMode::Width),
+        lengthContext.valueForLength(style()->svgStyle().cy(), styleRef(), SVGLengthMode::Height));
+
     if (isSVGCircleElement(*element())) {
-        SVGCircleElement& circle = toSVGCircleElement(*element());
-
-        SVGLengthContext lengthContext(&circle);
-        float radius = circle.r()->currentValue()->value(lengthContext);
+        float radius = lengthContext.valueForLength(style()->svgStyle().r(), styleRef(), SVGLengthMode::Other);
         m_radii = FloatSize(radius, radius);
-        m_center = FloatPoint(circle.cx()->currentValue()->value(lengthContext), circle.cy()->currentValue()->value(lengthContext));
-        return;
+    } else {
+        m_radii = FloatSize(
+            lengthContext.valueForLength(style()->svgStyle().rx(), styleRef(), SVGLengthMode::Width),
+            lengthContext.valueForLength(style()->svgStyle().ry(), styleRef(), SVGLengthMode::Height));
     }
-
-    SVGEllipseElement& ellipse = toSVGEllipseElement(*element());
-
-    SVGLengthContext lengthContext(&ellipse);
-    m_radii = FloatSize(ellipse.rx()->currentValue()->value(lengthContext), ellipse.ry()->currentValue()->value(lengthContext));
-    m_center = FloatPoint(ellipse.cx()->currentValue()->value(lengthContext), ellipse.cy()->currentValue()->value(lengthContext));
 }
 
 bool LayoutSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)

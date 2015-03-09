@@ -37,11 +37,14 @@ static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acce
     case CSSPropertyWebkitPaddingEnd:
     case CSSPropertyWebkitPaddingStart:
     case CSSPropertyShapeMargin:
+    case CSSPropertyR:
     case CSSPropertyRx:
     case CSSPropertyRy:
         acceptsNegativeNumbers = false;
         return true;
     case CSSPropertyBottom:
+    case CSSPropertyCx:
+    case CSSPropertyCy:
     case CSSPropertyLeft:
     case CSSPropertyMarginBottom:
     case CSSPropertyMarginLeft:

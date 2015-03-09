@@ -92,8 +92,11 @@ public:
     static const AtomicString& initialMarkerEndResource() { return nullAtom; }
     static EMaskType initialMaskType() { return MT_LUMINANCE; }
     static EPaintOrder initialPaintOrder() { return PO_NORMAL; }
+    static Length initialCx() { return Length(Fixed); }
+    static Length initialCy() { return Length(Fixed); }
     static Length initialX() { return Length(Fixed); }
     static Length initialY() { return Length(Fixed); }
+    static Length initialR() { return Length(Fixed); }
     static Length initialRx() { return Length(Fixed); }
     static Length initialRy() { return Length(Fixed); }
 
@@ -117,6 +120,16 @@ public:
     void setGlyphOrientationVertical(EGlyphOrientation val) { svg_inherited_flags._glyphOrientationVertical = val; }
     void setMaskType(EMaskType val) { svg_noninherited_flags.f.maskType = val; }
     void setPaintOrder(EPaintOrder val) { svg_inherited_flags._paintOrder = (int)val; }
+    void setCx(const Length& obj)
+    {
+        if (!(layout->cx == obj))
+            layout.access()->cx = obj;
+    }
+    void setCy(const Length& obj)
+    {
+        if (!(layout->cy == obj))
+            layout.access()->cy = obj;
+    }
     void setX(const Length& obj)
     {
         if (!(layout->x == obj))
@@ -126,6 +139,11 @@ public:
     {
         if (!(layout->y == obj))
             layout.access()->y = obj;
+    }
+    void setR(const Length& obj)
+    {
+        if (!(layout->r == obj))
+            layout.access()->r = obj;
     }
     void setRx(const Length& obj)
     {
@@ -323,8 +341,11 @@ public:
     const Color& floodColor() const { return misc->floodColor; }
     const Color& lightingColor() const { return misc->lightingColor; }
     const Length& baselineShiftValue() const { return misc->baselineShiftValue; }
+    const Length& cx() const { return layout->cx; }
+    const Length& cy() const { return layout->cy; }
     const Length& x() const { return layout->x; }
     const Length& y() const { return layout->y; }
+    const Length& r() const { return layout->r; }
     const Length& rx() const { return layout->rx; }
     const Length& ry() const { return layout->ry; }
     const AtomicString& clipperResource() const { return resources->clipper; }

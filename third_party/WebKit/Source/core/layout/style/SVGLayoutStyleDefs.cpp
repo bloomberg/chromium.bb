@@ -201,8 +201,11 @@ bool StyleInheritedResourceData::operator==(const StyleInheritedResourceData& ot
 }
 
 StyleLayoutData::StyleLayoutData()
-    : x(SVGLayoutStyle::initialX())
+    : cx(SVGLayoutStyle::initialCx())
+    , cy(SVGLayoutStyle::initialCy())
+    , x(SVGLayoutStyle::initialX())
     , y(SVGLayoutStyle::initialY())
+    , r(SVGLayoutStyle::initialR())
     , rx(SVGLayoutStyle::initialRx())
     , ry(SVGLayoutStyle::initialRy())
 {
@@ -210,8 +213,11 @@ StyleLayoutData::StyleLayoutData()
 
 inline StyleLayoutData::StyleLayoutData(const StyleLayoutData& other)
     : RefCounted<StyleLayoutData>()
+    , cx(other.cx)
+    , cy(other.cy)
     , x(other.x)
     , y(other.y)
+    , r(other.r)
     , rx(other.rx)
     , ry(other.ry)
 {
@@ -226,8 +232,11 @@ bool StyleLayoutData::operator==(const StyleLayoutData& other) const
 {
     return x == other.x
         && y == other.y
+        && r == other.r
         && rx == other.rx
-        && ry == other.ry;
+        && ry == other.ry
+        && cx == other.cx
+        && cy == other.cy;
 }
 
 }

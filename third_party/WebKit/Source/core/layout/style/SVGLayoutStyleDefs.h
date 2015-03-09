@@ -288,8 +288,11 @@ class StyleLayoutData : public RefCounted<StyleLayoutData> {
         {
             return !(*this == other);
         }
+        Length cx;
+        Length cy;
         Length x;
         Length y;
+        Length r;
         Length rx;
         Length ry;
     private:

@@ -40,21 +40,25 @@ using namespace SVGNames;
 
 static void updatePathFromCircleElement(SVGElement* element, Path& path)
 {
-    SVGCircleElement* circle = toSVGCircleElement(element);
+    ASSERT(element->layoutObject());
 
     SVGLengthContext lengthContext(element);
-    float r = circle->r()->currentValue()->value(lengthContext);
-    if (r > 0)
-        path.addEllipse(FloatRect(circle->cx()->currentValue()->value(lengthContext) - r, circle->cy()->currentValue()->value(lengthContext) - r, r * 2, r * 2));
+    const LayoutStyle& style = element->layoutObject()->styleRef();
+    float r = lengthContext.valueForLength(style.svgStyle().r(), style, SVGLengthMode::Other);
+    if (r > 0) {
+        path.addEllipse(FloatRect(
+            lengthContext.valueForLength(style.svgStyle().cx(), style, SVGLengthMode::Width) - r,
+            lengthContext.valueForLength(style.svgStyle().cy(), style, SVGLengthMode::Height) - r,
+            r * 2, r * 2));
+    }
 }
 
 static void updatePathFromEllipseElement(SVGElement* element, Path& path)
 {
-    SVGEllipseElement* ellipse = toSVGEllipseElement(element);
-    ASSERT(ellipse->layoutObject());
+    ASSERT(element->layoutObject());
 
     SVGLengthContext lengthContext(element);
-    const LayoutStyle& style = ellipse->layoutObject()->styleRef();
+    const LayoutStyle& style = element->layoutObject()->styleRef();
     float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, SVGLengthMode::Width);
     if (rx < 0)
         return;
@@ -64,7 +68,10 @@ static void updatePathFromEllipseElement(SVGElement* element, Path& path)
     if (!rx && !ry)
         return;
 
-    path.addEllipse(FloatRect(ellipse->cx()->currentValue()->value(lengthContext) - rx, ellipse->cy()->currentValue()->value(lengthContext) - ry, rx * 2, ry * 2));
+    path.addEllipse(FloatRect(
+        lengthContext.valueForLength(style.svgStyle().cx(), style, SVGLengthMode::Width) - rx,
+        lengthContext.valueForLength(style.svgStyle().cy(), style, SVGLengthMode::Height) - ry,
+        rx * 2, ry * 2));
 }
 
 static void updatePathFromLineElement(SVGElement* element, Path& path)

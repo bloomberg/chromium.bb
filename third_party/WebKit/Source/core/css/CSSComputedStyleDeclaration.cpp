@@ -343,8 +343,11 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGlyphOrientationVertical,
     CSSPropertyVectorEffect,
     CSSPropertyPaintOrder,
+    CSSPropertyCx,
+    CSSPropertyCy,
     CSSPropertyX,
     CSSPropertyY,
+    CSSPropertyR,
     CSSPropertyRx,
     CSSPropertyRy
 };

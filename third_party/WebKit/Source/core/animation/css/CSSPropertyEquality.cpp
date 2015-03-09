@@ -300,10 +300,16 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
         return a.width() == b.width();
     case CSSPropertyWordSpacing:
         return a.wordSpacing() == b.wordSpacing();
+    case CSSPropertyCx:
+        return a.svgStyle().cx() == b.svgStyle().cx();
+    case CSSPropertyCy:
+        return a.svgStyle().cy() == b.svgStyle().cy();
     case CSSPropertyX:
         return a.svgStyle().x() == b.svgStyle().x();
     case CSSPropertyY:
         return a.svgStyle().y() == b.svgStyle().y();
+    case CSSPropertyR:
+        return a.svgStyle().r() == b.svgStyle().r();
     case CSSPropertyRx:
         return a.svgStyle().rx() == b.svgStyle().rx();
     case CSSPropertyRy:

@@ -82,6 +82,8 @@ counterIncrement
 counterReset
 cssText
 cursor
+cx
+cy
 direction
 display
 dominantBaseline
@@ -200,6 +202,7 @@ perspectiveOrigin
 pointerEvents
 position
 quotes
+r
 removeProperty
 resize
 right

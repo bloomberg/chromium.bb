@@ -63,6 +63,35 @@ void SVGCircleElement::parseAttribute(const QualifiedName& name, const AtomicStr
     parseAttributeNew(name, value);
 }
 
+bool SVGCircleElement::isPresentationAttribute(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
+        || attrName == SVGNames::rAttr)
+        return true;
+    return SVGGeometryElement::isPresentationAttribute(attrName);
+}
+
+bool SVGCircleElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
+{
+    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
+        || attrName == SVGNames::rAttr)
+        return true;
+    return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
+}
+
+void SVGCircleElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
+{
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    if (property == m_cx)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyCx, *m_cx->currentValue());
+    else if (property == m_cy)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyCy, *m_cy->currentValue());
+    else if (property == m_r)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyR, *m_r->currentValue());
+    else
+        SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
+}
+
 void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
@@ -72,24 +101,17 @@ void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    bool isLengthAttribute = attrName == SVGNames::cxAttr
-                          || attrName == SVGNames::cyAttr
-                          || attrName == SVGNames::rAttr;
-
-    if (isLengthAttribute)
-        updateRelativeLengthsInformation();
+    invalidateSVGPresentationAttributeStyle();
+    setNeedsStyleRecalc(LocalStyleChange,
+        StyleChangeReasonForTracing::fromAttribute(attrName));
+    updateRelativeLengthsInformation();
 
     LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
     if (!renderer)
         return;
 
-    if (isLengthAttribute) {
-        renderer->setNeedsShapeUpdate();
-        markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
+    renderer->setNeedsShapeUpdate();
+    markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 bool SVGCircleElement::selfHasRelativeLengths() const

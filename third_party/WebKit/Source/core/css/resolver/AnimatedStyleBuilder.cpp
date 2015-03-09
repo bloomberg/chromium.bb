@@ -627,11 +627,20 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyZIndex:
         style->setZIndex(animatableValueRoundClampTo<int>(value));
         return;
+    case CSSPropertyCx:
+        style->setCx(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyCy:
+        style->setCy(animatableValueToLength(value, state));
+        return;
     case CSSPropertyX:
         style->setX(animatableValueToLength(value, state));
         return;
     case CSSPropertyY:
         style->setY(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyR:
+        style->setR(animatableValueToLength(value, state));
         return;
     case CSSPropertyRx:
         style->setRx(animatableValueToLength(value, state));

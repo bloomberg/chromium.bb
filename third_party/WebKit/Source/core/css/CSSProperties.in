@@ -155,6 +155,8 @@ content custom_all
 counter-increment custom_all
 counter-reset custom_all
 cursor inherited, custom_all
+cx animatable, svg, converter=convertLength
+cy animatable, svg, converter=convertLength
 display
 dominant-baseline svg
 empty-cells inherited, type_name=EEmptyCell
@@ -240,6 +242,7 @@ position
 quotes inherited, converter=convertQuotes
 resize custom_value
 right animatable, initial=initialOffset, converter=convertLengthOrAuto
+r animatable, svg, converter=convertLength
 rx animatable, svg, converter=convertLength
 ry animatable, svg, converter=convertLength
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior

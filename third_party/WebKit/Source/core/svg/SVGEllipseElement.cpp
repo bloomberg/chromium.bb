@@ -69,14 +69,16 @@ void SVGEllipseElement::parseAttribute(const QualifiedName& name, const AtomicSt
 
 bool SVGEllipseElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
-    if (attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
+    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
+        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
         return true;
     return SVGGeometryElement::isPresentationAttribute(attrName);
 }
 
 bool SVGEllipseElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
 {
-    if (attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
+    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
+        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
         return true;
     return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
@@ -84,7 +86,11 @@ bool SVGEllipseElement::isPresentationAttributeWithSVGDOM(const QualifiedName& a
 void SVGEllipseElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
-    if (property == m_rx)
+    if (property == m_cx)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyCx, *m_cx->currentValue());
+    else if (property == m_cy)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyCy, *m_cy->currentValue());
+    else if (property == m_rx)
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyRx, *m_rx->currentValue());
     else if (property == m_ry)
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyRy, *m_ry->currentValue());
@@ -102,33 +108,17 @@ void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    bool isPresentationLengthAttribute =
-        attrName == SVGNames::rxAttr
-        || attrName == SVGNames::ryAttr;
-    if (isPresentationLengthAttribute) {
-        invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange,
-            StyleChangeReasonForTracing::fromAttribute(attrName));
-    }
-
-    bool isLengthAttribute = attrName == SVGNames::cxAttr
-        || attrName == SVGNames::cyAttr
-        || isPresentationLengthAttribute;
-
-    if (isLengthAttribute)
-        updateRelativeLengthsInformation();
+    invalidateSVGPresentationAttributeStyle();
+    setNeedsStyleRecalc(LocalStyleChange,
+        StyleChangeReasonForTracing::fromAttribute(attrName));
+    updateRelativeLengthsInformation();
 
     LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
     if (!renderer)
         return;
 
-    if (isLengthAttribute) {
-        renderer->setNeedsShapeUpdate();
-        markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
+    renderer->setNeedsShapeUpdate();
+    markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 bool SVGEllipseElement::selfHasRelativeLengths() const
