@@ -1862,3 +1862,7 @@ crbug.com/462404 fast/js/mozilla/strict/function-name-arity.html [ Pass Failure 
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463892 inspector/agents-enable-disable.html [ Skip ]
+
+crbug.com/458898 fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ NeedsRebaseline ]
+crbug.com/458898 fast/forms/datalist/input-appearance-range-with-transform.html [ NeedsRebaseline ]
+crbug.com/458898 svg/wicd/test-scalable-background-image2.xhtml [ NeedsRebaseline ]
