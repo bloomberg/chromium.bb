@@ -164,13 +164,10 @@ crbug.com/453312 html5lib/webkit-resumer.html [ Slow ]
 # FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
 # Double-check the data after they've been running another week or so.
 webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.html [ Slow ]
-webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ Slow ]
 crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Slow ]
-crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Slow ]
 crbug.com/9798 [ Win ] http/tests/cookies/multiple-cookies.html [ Slow ]
 crbug.com/9798 http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html [ Slow ]
 crbug.com/24182 http/tests/xmlhttprequest/simple-cross-origin-progress-events.html [ Slow ]
-crbug.com/27569 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Slow ]
 crbug.com/231721 svg/custom/invisible-text-after-scrolling.xhtml [ Slow ]
 crbug.com/237270 [ Win7 ] fast/css/custom-font-xheight.html [ Slow ]
 crbug.com/241576 [ Win ] http/tests/appcache/404-manifest.html [ Slow ]
@@ -189,7 +186,6 @@ crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow 
 
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
-crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Slow ]
 crbug.com/362509 [ Debug ] fast/parser/xml-error-adopted.xml [ Slow ]
 
 crbug.com/363029 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Slow ]

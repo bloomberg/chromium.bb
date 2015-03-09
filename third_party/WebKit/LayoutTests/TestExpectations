@@ -110,8 +110,6 @@ crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
-crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-network-error.html [ Pass Timeout ]
-crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Pass Timeout ] # Also slow
 
 crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
@@ -538,9 +536,6 @@ crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-docume
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
-# Seems to be hit by the try jobs only.
-crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
-
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
@@ -847,8 +842,6 @@ crbug.com/345646 virtual/slimmingpaint/fast/repaint/selection-after-remove.html 
 
 crbug.com/345767 fast/repaint/selection-gap-overflow-scroll-2.html [ Pass Failure ]
 crbug.com/345767 virtual/slimmingpaint/fast/repaint/selection-gap-overflow-scroll-2.html [ Pass Failure ]
-
-crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure ]
 
 crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
 crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
@@ -1357,9 +1350,6 @@ crbug.com/30536 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cached
 crbug.com/30536 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
-
-# switching to apache-win32 flakiness that needs triaging.
-crbug.com/30536 [ Win7 ] http/tests/xmlhttprequest/origin-whitelisting-ip-addresses-with-subdomains.html [ Failure Pass ]
 
 crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
 crbug.com/394210 [ Win ] inspector/profiler/webgl/webgl-profiler-api-changes.html [ Timeout Pass ]
