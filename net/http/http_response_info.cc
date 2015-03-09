@@ -382,6 +382,8 @@ HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
       return CONNECTION_INFO_HTTP2_14;
     case kProtoSPDY4_15:
       return CONNECTION_INFO_HTTP2_15;
+    case kProtoSPDY4:
+      return CONNECTION_INFO_HTTP2;
     case kProtoQUIC1SPDY3:
       return CONNECTION_INFO_QUIC1_SPDY3;
 
@@ -413,6 +415,8 @@ std::string HttpResponseInfo::ConnectionInfoToString(
     case CONNECTION_INFO_HTTP2_15:
       // This is the HTTP/2 draft-15 identifier.
       return "h2-15";
+    case CONNECTION_INFO_HTTP2:
+      return "h2";
     case CONNECTION_INFO_QUIC1_SPDY3:
       return "quic/1+spdy/3";
     case NUM_OF_CONNECTION_INFOS:

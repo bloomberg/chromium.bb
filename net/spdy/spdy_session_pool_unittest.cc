@@ -51,7 +51,7 @@ class SpdySessionPoolTest : public ::testing::Test,
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdySessionPoolTest,
-    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
+    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15, kProtoSPDY4));
 
 // A delegate that opens a new session when it is closed.
 class SessionOpeningDelegate : public SpdyStream::Delegate {

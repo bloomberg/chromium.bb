@@ -181,7 +181,7 @@ class SpdySessionTest : public PlatformTest,
 INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdySessionTest,
-    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15));
+    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15, kProtoSPDY4));
 
 // Try to create a SPDY session that will fail during
 // initialization. Nothing should blow up.

@@ -106,6 +106,7 @@ std::string GetDomainReliabilityProtocol(
     case net::HttpResponseInfo::CONNECTION_INFO_SPDY3:
     case net::HttpResponseInfo::CONNECTION_INFO_HTTP2_14:
     case net::HttpResponseInfo::CONNECTION_INFO_HTTP2_15:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP2:
       return "SPDY";
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3:
       return "QUIC";

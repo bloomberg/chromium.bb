@@ -101,11 +101,10 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy31Enabled) {
 TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
   bool use_alternate_protocols = false;
   IOThreadPeer::ConfigureSpdyFromTrial("Spdy4Enabled", &globals_);
-  EXPECT_THAT(globals_.next_protos,
-              ElementsAre(net::kProtoHTTP11,
-                          net::kProtoQUIC1SPDY3,
-                          net::kProtoSPDY31,
-                          net::kProtoSPDY4_14));
+  EXPECT_THAT(
+      globals_.next_protos,
+      ElementsAre(net::kProtoHTTP11, net::kProtoQUIC1SPDY3, net::kProtoSPDY31,
+                  net::kProtoSPDY4_14, net::kProtoSPDY4));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
 }

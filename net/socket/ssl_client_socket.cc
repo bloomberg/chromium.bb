@@ -46,6 +46,8 @@ NextProto SSLClientSocket::NextProtoFromString(
   } else if (proto_string == "h2-15") {
     // This is the HTTP/2 draft-15 identifier.
     return kProtoSPDY4_15;
+  } else if (proto_string == "h2") {
+    return kProtoSPDY4;
   } else if (proto_string == "quic/1+spdy/3") {
     return kProtoQUIC1SPDY3;
   } else {
@@ -71,6 +73,8 @@ const char* SSLClientSocket::NextProtoToString(NextProto next_proto) {
     case kProtoSPDY4_15:
       // This is the HTTP/2 draft-15 identifier.
       return "h2-15";
+    case kProtoSPDY4:
+      return "h2";
     case kProtoQUIC1SPDY3:
       return "quic/1+spdy/3";
     case kProtoUnknown:

@@ -19,13 +19,13 @@ namespace {
 // The order of these strings much match the order of the enum definition
 // for AlternateProtocol.
 const char* const kAlternateProtocolStrings[] = {
-  "npn-spdy/2",
-  "npn-spdy/3",
-  "npn-spdy/3.1",
-  "npn-h2-14",  // HTTP/2 draft-14. Called SPDY4 internally.
-  "npn-h2-15",  // HTTP/2 draft-15. Called SPDY4 internally.
-  "quic"
-};
+    "npn-spdy/2",
+    "npn-spdy/3",
+    "npn-spdy/3.1",
+    "npn-h2-14",  // HTTP/2 draft-14. Called SPDY4 internally.
+    "npn-h2-15",  // HTTP/2 draft-15. Called SPDY4 internally.
+    "npn-h2",
+    "quic"};
 
 static_assert(arraysize(kAlternateProtocolStrings) ==
                   NUM_VALID_ALTERNATE_PROTOCOLS,
@@ -56,6 +56,7 @@ const char* AlternateProtocolToString(AlternateProtocol protocol) {
     case NPN_SPDY_3_1:
     case NPN_SPDY_4_14:
     case NPN_SPDY_4_15:
+    case NPN_SPDY_4:
     case QUIC:
       DCHECK(IsAlternateProtocolValid(protocol));
       return kAlternateProtocolStrings[
@@ -89,6 +90,8 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
       return NPN_SPDY_4_14;
     case kProtoSPDY4_15:
       return NPN_SPDY_4_15;
+    case kProtoSPDY4:
+      return NPN_SPDY_4;
     case kProtoQUIC1SPDY3:
       return QUIC;
 
