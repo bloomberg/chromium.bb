@@ -47,7 +47,6 @@ void CompareComplex32(struct SnrResult* snr, OMX_SC32* actual,
   for (k = 0; k < size; ++k) {
     double x2;
     double y2;
-    double z2;
 
     if (verbose > 255) {
       printf("%4d: (%10d, %10d) (%10d, %10d)\n", k,
@@ -86,7 +85,6 @@ void CompareComplex16(struct SnrResult* snr, OMX_SC16* actual,
     for (k = 0; k < size; ++k) {
         double x2;
         double y2;
-        double z2;
 
         if (verbose > 255) {
             printf("%4d: (%10d, %10d) (%10d, %10d)\n", k,
@@ -172,7 +170,6 @@ void CompareComplexFloat(struct SnrResult* snr, OMX_FC32* actual,
   for (k = 0; k < size; ++k) {
     double x2;
     double y2;
-    double z2;
 
     if (verbose > 255) {
       printf("%4d: (%10g, %10g) (%10g, %10g)\n", k,

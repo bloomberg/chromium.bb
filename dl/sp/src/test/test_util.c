@@ -214,7 +214,7 @@ void DumpArrayComplex32(const char* array_name, int count,
                         const OMX_SC32* array) {
   int n;
 
-  printf("%4s\t%10s.re[n]\t%10s.im[n]\n", "n", array_name);
+  printf("%4s\t%10s.re[n]\t%10s.im[n]\n", "n", array_name, array_name);
   for (n = 0; n < count; ++n) {
     printf("%4d\t%16d\t%16d\n", n, array[n].Re, array[n].Im);
   }

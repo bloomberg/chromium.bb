@@ -134,7 +134,6 @@ float RunOneForwardTest(int fft_log_size, int signal_type, float signal_value,
 
   OMX_FC32* y_true;
 
-  OMX_INT n;
   OMX_INT fft_spec_buffer_size;
   OMXResult status;
   OMXFFTSpec_R_F32 * fft_fwd_spec = NULL;
@@ -210,10 +209,8 @@ float RunOneInverseTest(int fft_log_size, int signal_type, float signal_value,
   OMX_FC32* yTrue;
   struct AlignedPtr* yTrueAligned;
 
-  OMX_INT n;
   OMX_INT fft_spec_buffer_size;
   OMXResult status;
-  OMXFFTSpec_R_F32 * fft_fwd_spec = NULL;
   OMXFFTSpec_R_F32 * fft_inv_spec = NULL;
   int fft_size;
 
