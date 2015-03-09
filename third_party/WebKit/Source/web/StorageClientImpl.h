@@ -5,7 +5,7 @@
 #ifndef StorageClientImpl_h
 #define StorageClientImpl_h
 
-#include "core/page/StorageClient.h"
+#include "modules/storage/StorageClient.h"
 
 namespace blink {
 

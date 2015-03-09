@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "core/storage/StorageNamespace.h"
+#include "modules/storage/StorageNamespace.h"
 
-#include "core/storage/StorageArea.h"
+#include "modules/storage/StorageArea.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebStorageArea.h"

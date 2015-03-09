@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/storage/InspectorDOMStorageAgent.h"
+#include "modules/storage/InspectorDOMStorageAgent.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/InspectorFrontend.h"
@@ -40,9 +40,9 @@
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
-#include "core/storage/Storage.h"
-#include "core/storage/StorageNamespace.h"
-#include "core/storage/StorageNamespaceController.h"
+#include "modules/storage/Storage.h"
+#include "modules/storage/StorageNamespace.h"
+#include "modules/storage/StorageNamespaceController.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/SecurityOrigin.h"
 

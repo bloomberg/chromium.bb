@@ -58,7 +58,6 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/storage/Storage.h"
 #include "platform/PlatformScreen.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"

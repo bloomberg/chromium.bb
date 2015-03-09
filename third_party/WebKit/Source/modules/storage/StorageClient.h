@@ -5,7 +5,7 @@
 #ifndef StorageClient_h
 #define StorageClient_h
 
-#include "core/storage/StorageArea.h"
+#include "modules/storage/StorageArea.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

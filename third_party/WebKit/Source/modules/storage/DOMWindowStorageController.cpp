@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/storage/DOMWindowStorageController.h"
+#include "modules/storage/DOMWindowStorageController.h"
 
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
-#include "core/storage/DOMWindowStorage.h"
+#include "modules/storage/DOMWindowStorage.h"
 
 namespace blink {
 

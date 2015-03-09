@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/storage/Storage.h"
+#include "modules/storage/Storage.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "wtf/PassOwnPtr.h"

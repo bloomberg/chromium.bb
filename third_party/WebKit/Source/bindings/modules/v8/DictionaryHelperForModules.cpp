@@ -36,6 +36,7 @@
 #include "bindings/modules/v8/V8PushMessageData.h"
 #include "bindings/modules/v8/V8SpeechRecognitionResult.h"
 #include "bindings/modules/v8/V8SpeechRecognitionResultList.h"
+#include "bindings/modules/v8/V8Storage.h"
 #include "modules/gamepad/Gamepad.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/push_messaging/PushMessageData.h"
@@ -74,12 +75,18 @@ struct DictionaryHelperTraits<Headers> {
     typedef V8Headers type;
 };
 
+template <>
+struct DictionaryHelperTraits<Storage> {
+    typedef V8Storage type;
+};
+
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<MIDIPort>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<SpeechRecognitionResultList>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<Gamepad>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<MediaStream>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<Headers>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<PushMessageData>& value);
+template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Storage>& value);
 
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<MIDIPort>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<SpeechRecognitionResultList>& value);
@@ -87,5 +94,6 @@ template bool DictionaryHelper::convert(const Dictionary&, Dictionary::Conversio
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<MediaStream>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<Headers>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<PushMessageData>& value);
+template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<Storage>& value);
 
 } // namespace blink

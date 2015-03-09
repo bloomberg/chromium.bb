@@ -26,7 +26,7 @@
 #include "config.h"
 #include "web/StorageClientImpl.h"
 
-#include "core/storage/StorageNamespace.h"
+#include "modules/storage/StorageNamespace.h"
 #include "public/platform/WebStorageNamespace.h"
 #include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebViewClient.h"

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/storage/StorageNamespaceController.h"
+#include "modules/storage/StorageNamespaceController.h"
 
-#include "core/page/StorageClient.h"
-#include "core/storage/InspectorDOMStorageAgent.h"
-#include "core/storage/StorageNamespace.h"
+#include "modules/storage/InspectorDOMStorageAgent.h"
+#include "modules/storage/StorageClient.h"
+#include "modules/storage/StorageNamespace.h"
 
 namespace blink {
 

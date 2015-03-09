@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/storage/DOMWindowStorage.h"
+#include "modules/storage/DOMWindowStorage.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"
@@ -11,9 +11,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
-#include "core/storage/Storage.h"
-#include "core/storage/StorageNamespace.h"
-#include "core/storage/StorageNamespaceController.h"
+#include "modules/storage/Storage.h"
+#include "modules/storage/StorageNamespace.h"
+#include "modules/storage/StorageNamespaceController.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {

@@ -24,10 +24,11 @@
  */
 
 #include "config.h"
-#include "core/storage/StorageEvent.h"
+#include "modules/storage/StorageEvent.h"
 
-#include "core/storage/Storage.h"
-#include "core/storage/StorageEventInit.h"
+#include "modules/EventModules.h"
+#include "modules/storage/Storage.h"
+#include "modules/storage/StorageEventInit.h"
 
 namespace blink {
 
