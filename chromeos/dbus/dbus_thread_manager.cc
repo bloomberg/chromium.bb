@@ -8,6 +8,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/ap_manager_client.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
@@ -110,6 +111,10 @@ DBusThreadManager::~DBusThreadManager() {
 
 dbus::Bus* DBusThreadManager::GetSystemBus() {
   return system_bus_.get();
+}
+
+ApManagerClient* DBusThreadManager::GetApManagerClient() {
+  return client_bundle_->ap_manager_client();
 }
 
 BluetoothAdapterClient* DBusThreadManager::GetBluetoothAdapterClient() {
@@ -292,6 +297,7 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
 }
 
 void DBusThreadManager::InitializeClients() {
+  GetApManagerClient()->Init(GetSystemBus());
   GetBluetoothAdapterClient()->Init(GetSystemBus());
   GetBluetoothAgentManagerClient()->Init(GetSystemBus());
   GetBluetoothDeviceClient()->Init(GetSystemBus());

@@ -25,6 +25,7 @@ class ObjectPath;
 namespace chromeos {
 
 // Style Note: Clients are sorted by names.
+class ApManagerClient;
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
 class BluetoothDeviceClient;
@@ -118,6 +119,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // All returned objects are owned by DBusThreadManager.  Do not use these
   // pointers after DBusThreadManager has been shut down.
+  ApManagerClient* GetApManagerClient();
   BluetoothAdapterClient* GetBluetoothAdapterClient();
   BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
   BluetoothDeviceClient* GetBluetoothDeviceClient();

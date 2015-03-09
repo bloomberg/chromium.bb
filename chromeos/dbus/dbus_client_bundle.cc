@@ -10,6 +10,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/ap_manager_client.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
@@ -26,6 +27,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
+#include "chromeos/dbus/fake_ap_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
@@ -98,6 +100,7 @@ const struct {
   const char* param_name;
   DBusClientBundle::DBusClientType client_type;
 } client_type_map[] = {
+    { "ap",  DBusClientBundle::AP_MANAGER },
     { "bluetooth",  DBusClientBundle::BLUETOOTH },
     { "cras",  DBusClientBundle::CRAS },
     { "cros_disks",  DBusClientBundle::CROS_DISKS },
@@ -285,6 +288,11 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     leadership_daemon_manager_client_.reset(
         new FakeLeadershipDaemonManagerClient);
   }
+
+  if (!IsUsingStub(AP_MANAGER))
+    ap_manager_client_.reset(ApManagerClient::Create());
+  else
+    ap_manager_client_.reset(new FakeApManagerClient);
 
   power_manager_client_.reset(PowerManagerClient::Create(
       IsUsingStub(POWER_MANAGER) ? STUB_DBUS_CLIENT_IMPLEMENTATION

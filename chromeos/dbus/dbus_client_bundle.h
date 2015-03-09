@@ -12,6 +12,7 @@
 
 namespace chromeos {
 
+class ApManagerClient;
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
 class BluetoothDeviceClient;
@@ -87,6 +88,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     PEER_DAEMON =          1 << 19,
     LEADERSHIP_DAEMON =    1 << 20,
     METRONOME =            1 << 21,
+    AP_MANAGER =           1 << 22,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -104,6 +106,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // Parses command line param values for dbus subsystem that should be
   // un-stubbed.
   static DBusClientTypeMask ParseUnstubList(const std::string& unstub_list);
+
+  ApManagerClient* ap_manager_client() { return ap_manager_client_.get(); }
 
   BluetoothAdapterClient* bluetooth_adapter_client() {
     return bluetooth_adapter_client_.get();
@@ -274,6 +278,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // are defined within DBusClientType enum.
   DBusClientTypeMask unstub_client_mask_;
 
+  scoped_ptr<ApManagerClient> ap_manager_client_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
