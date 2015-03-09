@@ -36,5 +36,6 @@
     Constructor(Element? target, sequence<Dictionary> keyframes, AnimationTimingProperties timing),
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI,
+    TypeChecking=Interface,
 ] interface Animation : AnimationNode {
 };
