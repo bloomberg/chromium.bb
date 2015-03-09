@@ -677,7 +677,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                     SpdyFrameType type,
                                     int padding_payload_len);
 
- private:
   // Deliver the given control frame's uncompressed headers block to the
   // visitor in chunks. Returns true if the visitor has accepted all of the
   // chunks.
@@ -745,14 +744,17 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // The type of the frame currently being read.
   SpdyFrameType current_frame_type_;
 
-  // The flags field of the frame currently being read.
-  uint8 current_frame_flags_;
-
   // The total length of the frame currently being read, including frame header.
   uint32 current_frame_length_;
 
   // The stream ID field of the frame currently being read, if applicable.
   SpdyStreamId current_frame_stream_id_;
+
+  // Set this to the current stream when we receive a HEADERS, PUSH_PROMISE, or
+  // CONTINUATION frame without the END_HEADERS(0x4) bit set. These frames must
+  // be followed by a CONTINUATION frame, or else we throw a PROTOCOL_ERROR.
+  // A value of 0 indicates that we are not expecting a CONTINUATION frame.
+  SpdyStreamId expect_continuation_;
 
   // Scratch space for handling SETTINGS frames.
   // TODO(hkhalil): Unify memory for this scratch space with
@@ -761,7 +763,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   SpdyAltSvcScratch altsvc_scratch_;
 
-  bool enable_compression_;  // Controls all compression
   // SPDY header compressors.
   scoped_ptr<z_stream> header_compressor_;
   scoped_ptr<z_stream> header_decompressor_;
@@ -777,6 +778,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // The protocol version to be spoken/understood by this framer.
   const SpdyMajorVersion protocol_version_;
 
+  // The flags field of the frame currently being read.
+  uint8 current_frame_flags_;
+
+  // Determines whether HPACK or gzip compression is used.
+  bool enable_compression_;
+
   // Tracks if we've ever gotten far enough in framing to see a control frame of
   // type SYN_STREAM or SYN_REPLY.
   //
@@ -791,12 +798,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // corrupt data that just looks like HTTP, but deterministic checking requires
   // a lot more state.
   bool probable_http_response_;
-
-  // Set this to the current stream when we receive a HEADERS, PUSH_PROMISE, or
-  // CONTINUATION frame without the END_HEADERS(0x4) bit set. These frames must
-  // be followed by a CONTINUATION frame, or else we throw a PROTOCOL_ERROR.
-  // A value of 0 indicates that we are not expecting a CONTINUATION frame.
-  SpdyStreamId expect_continuation_;
 
   // If a HEADERS frame is followed by a CONTINUATION frame, the FIN/END_STREAM
   // flag is still carried in the HEADERS frame. If it's set, flip this so that
