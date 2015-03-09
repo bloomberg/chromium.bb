@@ -28,33 +28,34 @@ CHROMIUM_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Chromium'
 class PolicyDetails:
   """Parses a policy template and caches all its details."""
 
-  # Maps policy types to a tuple with 4 other types:
+  # Maps policy types to a tuple with 5 other types:
   # - the equivalent base::Value::Type or 'TYPE_EXTERNAL' if the policy
   #   references external data
   # - the equivalent Protobuf field type
   # - the name of one of the protobufs for shared policy types
   # - the equivalent type in Android's App Restriction Schema
+  # - whether the equivalent app restriction type needs supporting resources
   # TODO(joaodasilva): refactor the 'dict' type into a more generic 'json' type
   # that can also be used to represent lists of other JSON objects.
   TYPE_MAP = {
     'dict':             ('TYPE_DICTIONARY',   'string',       'String',
-                        'string'),
+                        'string',             False),
     'external':         ('TYPE_EXTERNAL',     'string',       'String',
-                        'invalid'),
+                        'invalid',            False),
     'int':              ('TYPE_INTEGER',      'int64',        'Integer',
-                        'integer'),
+                        'integer',            False),
     'int-enum':         ('TYPE_INTEGER',      'int64',        'Integer',
-                        'choice'),
+                        'choice',             True),
     'list':             ('TYPE_LIST',         'StringList',   'StringList',
-                        'string'),
+                        'string',             False),
     'main':             ('TYPE_BOOLEAN',      'bool',         'Boolean',
-                        'bool'),
+                        'bool',               False),
     'string':           ('TYPE_STRING',       'string',       'String',
-                        'string'),
+                        'string',             False),
     'string-enum':      ('TYPE_STRING',       'string',       'String',
-                        'choice'),
+                        'choice',             True),
     'string-enum-list': ('TYPE_LIST',         'StringList',   'StringList',
-                        'multi-select'),
+                        'multi-select',       True),
   }
 
   class EnumItem:
@@ -97,7 +98,8 @@ class PolicyDetails:
       raise NotImplementedError('Unknown policy type for %s: %s' %
                                 (policy['name'], policy['type']))
     self.policy_type, self.protobuf_type, self.policy_protobuf_type, \
-        self.restriction_type = PolicyDetails.TYPE_MAP[policy['type']]
+        self.restriction_type, self.has_restriction_resources = \
+            PolicyDetails.TYPE_MAP[policy['type']]
     self.schema = policy['schema']
 
     self.desc = '\n'.join(
@@ -152,6 +154,12 @@ def main():
                     help='generate an XML file as specified by '
                     'Android\'s App Restriction Schema',
                     metavar='FILE')
+  parser.add_option('--arr', '--app-restrictions-resources',
+                    dest='app_resources_path',
+                    help='generate an XML file with resources supporting the '
+                    'restrictions defined in --app-restrictions-definition '
+                    'parameter',
+                    metavar='FILE')
 
   (opts, args) = parser.parse_args()
 
@@ -183,6 +191,7 @@ def main():
 
   if os == 'android':
     GenerateFile(opts.app_restrictions_path, _WriteAppRestrictions, xml=True)
+    GenerateFile(opts.app_resources_path, _WriteResourcesForPolicies, xml=True)
 
   return 0
 
@@ -998,6 +1007,14 @@ def _WriteCloudPolicyDecoder(policies, os, f):
   f.write(CPP_FOOT)
 
 
+def _EscapeResourceString(raw_resource):
+  if type(raw_resource) == int:
+    return raw_resource
+  return xml_escape(raw_resource)\
+      .replace('\\', '\\\\')\
+      .replace('\"','\\\"')\
+      .replace('\'','\\\'')
+
 def _WriteAppRestrictions(policies, os, f):
 
   def WriteRestrictionCommon(key):
@@ -1014,7 +1031,7 @@ def _WriteAppRestrictions(policies, os, f):
     policy_name = policy.name
     WriteRestrictionCommon(policy_name)
 
-    if policy.items is not None:
+    if policy.has_restriction_resources:
       WriteItemsDefinition(policy_name)
 
     f.write('        android:restrictionType="%s"/>' % policy.restriction_type)
@@ -1027,6 +1044,45 @@ def _WriteAppRestrictions(policies, os, f):
     if policy.is_supported and policy.restriction_type != 'invalid':
       WriteAppRestriction(policy)
   f.write('</restrictions>')
+
+
+def _WriteResourcesForPolicies(policies, os, f):
+
+  # TODO(knn): Update this to support i18n.
+  def WriteString(key, value):
+    f.write('    <string name="%s">%s</string>\n'
+            % (key, _EscapeResourceString(value)))
+
+  def WriteItems(key, items):
+    if items:
+      f.write('    <string-array name="%sEntries">\n' % key)
+      for item in items:
+        f.write('        <item>%s</item>\n' %
+                _EscapeResourceString(item.caption))
+      f.write('    </string-array>\n')
+      f.write('    <string-array name="%sValues">\n' % key)
+      for item in items:
+        f.write('        <item>%s</item>\n' % _EscapeResourceString(item.value))
+      f.write('    </string-array>\n')
+
+  def WriteResourceForPolicy(policy):
+    policy_name = policy.name
+    WriteString(policy_name + 'Title', policy.caption)
+
+    # Get the first line of the policy description.
+    description = policy.desc.split('\n', 1)[0]
+    WriteString(policy_name + 'Desc', description)
+
+    if policy.has_restriction_resources:
+      WriteItems(policy_name, policy.items)
+
+  # _WriteResourcesForPolicies body
+  f.write('<resources>\n\n')
+  for policy in policies:
+    if policy.is_supported and policy.restriction_type != 'invalid':
+      WriteResourceForPolicy(policy)
+  f.write('</resources>')
+
 
 if __name__ == '__main__':
   sys.exit(main())

@@ -7297,10 +7297,6 @@
       'desc': '''Caption text of the field 'mac/linux preference name' in the summary chart of a policy in the generated documentation''',
       'text': '''Mac/Linux preference name:'''
     },
-    'doc_android_restriction_name': {
-      'desc': '''Caption text of the field 'android restriction name' in the summary chart of a policy in the generated documentation''',
-      'text': '''Android restriction name:'''
-    },
     'doc_supported_on': {
       'desc': '''Caption text of the list of 'products, platforms and versions where this policy is supported' in the summary chart of a policy in the generated documentation''',
       'text': '''Supported on:'''

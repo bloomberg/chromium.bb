@@ -12,6 +12,7 @@
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'policy_out_dir': '<(SHARED_INTERMEDIATE_DIR)/policy',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
+    'android_resources_out_dir': '<(policy_out_dir)/android_resources',
     'generate_policy_source_script_path':
         'policy/tools/generate_policy_source.py',
     'policy_constant_header_path':
@@ -21,7 +22,9 @@
     'protobuf_decoder_path':
         '<(policy_out_dir)/policy/cloud_policy_generated.cc',
     'app_restrictions_path':
-        '<(policy_out_dir)/app_restrictions.xml',
+        '<(android_resources_out_dir)/xml-v21/app_restrictions.xml',
+    'app_resources_path':
+        '<(android_resources_out_dir)/values-v21/restriction_values.xml',
     # This is the "full" protobuf, which defines one protobuf message per
     # policy. It is also the format currently used by the server.
     'chrome_settings_proto_path':
@@ -112,6 +115,7 @@
                 '<(chrome_settings_proto_path)',
                 '<(cloud_policy_proto_path)',
                 '<(app_restrictions_path)',
+                '<(app_resources_path)',
               ],
               'action_name': 'generate_policy_source',
               'action': [
@@ -123,6 +127,7 @@
                 '--cloud-policy-protobuf=<(cloud_policy_proto_path)',
                 '--cloud-policy-decoder=<(protobuf_decoder_path)',
                 '--app-restrictions-definition=<(app_restrictions_path)',
+                '--app-restrictions-resources=<(app_resources_path)',
                 '<(OS)',
                 '<(chromeos)',
                 'policy/resources/policy_templates.json',
@@ -132,6 +137,7 @@
                 ['OS!="android"', {
                   'outputs!': [
                     '<(app_restrictions_path)',
+                    '<(app_resources_path)',
                   ],
                 }],
               ],
@@ -364,7 +370,7 @@
         },
       ],
     }],
-    ['OS!="ios"', {
+    ['OS=="win" or OS=="mac" or OS=="linux"', {
       'targets': [
         {
           # policy_templates has different inputs and outputs, so it can't use
