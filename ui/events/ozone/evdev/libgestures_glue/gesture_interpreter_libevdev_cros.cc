@@ -208,7 +208,10 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
 void GestureInterpreterLibevdevCros::OnLibEvdevCrosStopped(
     Evdev* evdev,
     EventStateRec* state) {
-  ReleaseKeys();
+  stime_t timestamp = StimeNow();
+
+  ReleaseKeys(timestamp);
+  ReleaseMouseButtons(timestamp);
 }
 
 void GestureInterpreterLibevdevCros::SetAllowedKeys(
@@ -419,6 +422,9 @@ void GestureInterpreterLibevdevCros::OnGestureMetrics(
 void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int button,
                                                          bool down,
                                                          stime_t time) {
+  if (!SetMouseButtonState(button, down))
+    return;  // No change.
+
   bool allow_remap = is_mouse_;
   dispatcher_->DispatchMouseButtonEvent(
       MouseButtonEventParams(id_, cursor_->GetLocation(), button, down,
@@ -461,11 +467,34 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(
     prev_key_state_[i] = new_key_state[i];
 }
 
-void GestureInterpreterLibevdevCros::ReleaseKeys() {
+void GestureInterpreterLibevdevCros::ReleaseKeys(stime_t timestamp) {
   unsigned long new_key_state[EVDEV_BITS_TO_LONGS(KEY_CNT)];
   memset(&new_key_state, 0, sizeof(new_key_state));
 
-  DispatchChangedKeys(new_key_state, StimeNow());
+  DispatchChangedKeys(new_key_state, timestamp);
+}
+
+bool GestureInterpreterLibevdevCros::SetMouseButtonState(unsigned int button,
+                                                         bool down) {
+  DCHECK(BTN_MOUSE <= button && button < BTN_JOYSTICK);
+  int button_offset = button - BTN_MOUSE;
+
+  if (mouse_button_state_.test(button_offset) == down)
+    return false;
+
+  // State transition: !(down) -> (down)
+  if (down)
+    mouse_button_state_.set(button_offset);
+  else
+    mouse_button_state_.reset(button_offset);
+
+  return true;
+}
+
+void GestureInterpreterLibevdevCros::ReleaseMouseButtons(stime_t timestamp) {
+  DispatchMouseButton(BTN_LEFT, false /* down */, timestamp);
+  DispatchMouseButton(BTN_MIDDLE, false /* down */, timestamp);
+  DispatchMouseButton(BTN_RIGHT, false /* down */, timestamp);
 }
 
 }  // namespace ui

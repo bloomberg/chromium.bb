@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_LIBGESTURES_GLUE_GESTURE_INTERPRETER_LIBEVDEV_CROS_H_
 #define UI_EVENTS_OZONE_EVDEV_LIBGESTURES_GLUE_GESTURE_INTERPRETER_LIBEVDEV_CROS_H_
 
+#include <bitset>
 #include <gestures/gestures.h>
 #include <libevdev/libevdev.h>
 
@@ -81,7 +82,9 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
                            bool down,
                            stime_t time);
   void DispatchChangedKeys(unsigned long* changed_keys, stime_t timestamp);
-  void ReleaseKeys();
+  void ReleaseKeys(stime_t timestamp);
+  bool SetMouseButtonState(unsigned int button, bool down);
+  void ReleaseMouseButtons(stime_t timestamp);
 
   // The unique device id.
   int id_;
@@ -108,6 +111,10 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
 
   // Last key state from libevdev.
   unsigned long prev_key_state_[EVDEV_BITS_TO_LONGS(KEY_CNT)];
+
+  // Last mouse button state.
+  static const int kMouseButtonCount = BTN_JOYSTICK - BTN_MOUSE;
+  std::bitset<kMouseButtonCount> mouse_button_state_;
 
   // Device pointer.
   Evdev* evdev_;
