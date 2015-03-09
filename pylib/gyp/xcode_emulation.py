@@ -215,6 +215,12 @@ class XcodeSettings(object):
     if test_key in self._Settings():
       print 'Warning: Ignoring not yet implemented key "%s".' % test_key
 
+  def IsBinaryOutputFormat(self, configname):
+    default = "binary" if self.isIOS else "xml"
+    format = self.xcode_settings[configname].get('INFOPLIST_OUTPUT_FORMAT',
+                                                 default)
+    return format == "binary"
+
   def _IsBundle(self):
     return int(self.spec.get('mac_bundle', 0)) != 0
 

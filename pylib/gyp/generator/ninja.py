@@ -763,8 +763,10 @@ class NinjaWriter(object):
         self.xcode_settings, map(self.GypPathToNinja, resources)):
       output = self.ExpandSpecial(output)
       if os.path.splitext(output)[-1] != '.xcassets':
+        isBinary = self.xcode_settings.IsBinaryOutputFormat(self.config_name)
         self.ninja.build(output, 'mac_tool', res,
-                         variables=[('mactool_cmd', 'copy-bundle-resource')])
+                         variables=[('mactool_cmd', 'copy-bundle-resource'), \
+                                    ('binary', isBinary)])
         bundle_depends.append(output)
       else:
         xcassets.append(res)
@@ -844,8 +846,10 @@ class NinjaWriter(object):
 
     keys = self.xcode_settings.GetExtraPlistItems(self.config_name)
     keys = QuoteShellArgument(json.dumps(keys), self.flavor)
+    isBinary = self.xcode_settings.IsBinaryOutputFormat(self.config_name)
     self.ninja.build(out, 'copy_infoplist', info_plist,
-                     variables=[('env', env), ('keys', keys)])
+                     variables=[('env', env), ('keys', keys),
+                                ('binary', isBinary)])
     bundle_depends.append(out)
 
   def WriteSources(self, ninja_file, config_name, config, sources, predepends,
@@ -2193,7 +2197,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'copy_infoplist',
       description='COPY INFOPLIST $in',
-      command='$env ./gyp-mac-tool copy-info-plist $in $out $keys')
+      command='$env ./gyp-mac-tool copy-info-plist $in $out $binary $keys')
     master_ninja.rule(
       'merge_infoplist',
       description='MERGE INFOPLISTS $in',
@@ -2205,7 +2209,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'mac_tool',
       description='MACTOOL $mactool_cmd $in',
-      command='$env ./gyp-mac-tool $mactool_cmd $in $out')
+      command='$env ./gyp-mac-tool $mactool_cmd $in $out $binary')
     master_ninja.rule(
       'package_framework',
       description='PACKAGE FRAMEWORK $out, POSTBUILDS',
