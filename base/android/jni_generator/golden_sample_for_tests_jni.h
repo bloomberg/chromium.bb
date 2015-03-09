@@ -7,8 +7,8 @@
 // For
 //     org/chromium/example/jni_generator/SampleForTests
 
-#ifndef BASE_ANDROID_JNI_GENERATOR_GOLDEN_SAMPLE_FOR_TESTS_JNI_H_
-#define BASE_ANDROID_JNI_GENERATOR_GOLDEN_SAMPLE_FOR_TESTS_JNI_H_
+#ifndef org_chromium_example_jni_generator_SampleForTests_JNI
+#define org_chromium_example_jni_generator_SampleForTests_JNI
 
 #include <jni.h>
 
@@ -397,4 +397,4 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 }  // namespace android
 }  // namespace base
 
-#endif  // BASE_ANDROID_JNI_GENERATOR_GOLDEN_SAMPLE_FOR_TESTS_JNI_H_
+#endif  // org_chromium_example_jni_generator_SampleForTests_JNI

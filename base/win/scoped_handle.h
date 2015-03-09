@@ -174,4 +174,4 @@ void BASE_EXPORT OnHandleBeingClosed(HANDLE handle);
 }  // namespace win
 }  // namespace base
 
-#endif  // BASE_WIN_SCOPED_HANDLE_H_
+#endif  // BASE_SCOPED_HANDLE_WIN_H_

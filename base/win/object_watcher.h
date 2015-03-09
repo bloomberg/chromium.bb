@@ -103,4 +103,4 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
 }  // namespace win
 }  // namespace base
 
-#endif  // BASE_WIN_OBJECT_WATCHER_H_
+#endif  // BASE_OBJECT_WATCHER_H_

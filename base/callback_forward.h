@@ -14,4 +14,4 @@ typedef Callback<void(void)> Closure;
 
 }  // namespace base
 
-#endif  // BASE_CALLBACK_FORWARD_H_
+#endif  // BASE_CALLBACK_FORWARD_H

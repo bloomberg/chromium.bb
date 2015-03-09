@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PENDING_TASK_H_
-#define BASE_PENDING_TASK_H_
+#ifndef PENDING_TASK_H_
+#define PENDING_TASK_H_
 
 #include <queue>
 
@@ -57,4 +57,4 @@ typedef std::priority_queue<base::PendingTask> DelayedTaskQueue;
 
 }  // namespace base
 
-#endif  // BASE_PENDING_TASK_H_
+#endif  // PENDING_TASK_H_

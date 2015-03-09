@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MAC_COCOA_PROTOCOLS_H_
-#define BASE_MAC_COCOA_PROTOCOLS_H_
+#ifndef BASE_COCOA_PROTOCOLS_MAC_H_
+#define BASE_COCOA_PROTOCOLS_MAC_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -28,4 +28,4 @@ DEFINE_EMPTY_PROTOCOL(ICCameraDeviceDownloadDelegate)
 
 #undef DEFINE_EMPTY_PROTOCOL
 
-#endif  // BASE_MAC_COCOA_PROTOCOLS_H_
+#endif  // BASE_COCOA_PROTOCOLS_MAC_H_

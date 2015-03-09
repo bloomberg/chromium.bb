@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PROCESS_PROCESS_H_
-#define BASE_PROCESS_PROCESS_H_
+#ifndef BASE_PROCESS_PROCESS_PROCESS_H_
+#define BASE_PROCESS_PROCESS_PROCESS_H_
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
@@ -130,4 +130,4 @@ class BASE_EXPORT Process {
 
 }  // namespace base
 
-#endif  // BASE_PROCESS_PROCESS_H_
+#endif  // BASE_PROCESS_PROCESS_PROCESS_H_
