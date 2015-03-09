@@ -213,8 +213,7 @@ class MRUCacheBase {
 template<class PayloadType>
 class MRUCacheNullDeletor {
  public:
-  void operator()(PayloadType& payload) {
-  }
+  void operator()(const PayloadType& payload) {}
 };
 
 // A container that does not do anything to free its data. Use this when storing
@@ -244,9 +243,7 @@ class MRUCache : public MRUCacheBase<KeyType,
 template<class PayloadType>
 class MRUCachePointerDeletor {
  public:
-  void operator()(PayloadType& payload) {
-    delete payload;
-  }
+  void operator()(const PayloadType& payload) { delete payload; }
 };
 
 // A cache that owns the payload type, which must be a non-const pointer type.

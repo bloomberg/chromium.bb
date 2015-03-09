@@ -23,7 +23,7 @@ const char kPeopleQueryPrefix[] = "people:";
 
 }  // namespace
 
-void WebserviceCache::CacheDeletor::operator()(Payload& payload) {
+void WebserviceCache::CacheDeletor::operator()(const Payload& payload) {
   delete payload.result;
 }
 

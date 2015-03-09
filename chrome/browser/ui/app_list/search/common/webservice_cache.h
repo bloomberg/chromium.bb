@@ -75,7 +75,7 @@ class WebserviceCache : public KeyedService,
 
   class CacheDeletor {
    public:
-    void operator()(Payload& payload);
+    void operator()(const Payload& payload);
   };
   typedef base::MRUCacheBase<std::string, Payload, CacheDeletor> Cache;
 
