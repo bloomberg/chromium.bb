@@ -20,25 +20,17 @@
 using device::BluetoothAdapter;
 using device::BluetoothUUID;
 
-namespace {
-
-void DoNothingDBusErrorCallback(const std::string& error_name,
-                                const std::string& error_message) {
-}
-
-}  // namespace
-
 namespace chromeos {
 
 class BluetoothAdapterProfileChromeOSTest : public testing::Test {
  public:
   BluetoothAdapterProfileChromeOSTest()
-      : fake_delegate_paired_(FakeBluetoothDeviceClient::kPairedDevicePath),
+      : success_callback_count_(0),
+        error_callback_count_(0),
+        fake_delegate_paired_(FakeBluetoothDeviceClient::kPairedDevicePath),
         fake_delegate_autopair_(FakeBluetoothDeviceClient::kLegacyAutopairPath),
         fake_delegate_listen_(""),
-        profile_(nullptr),
-        success_callback_count_(0),
-        error_callback_count_(0) {}
+        profile_user_ptr_(nullptr) {}
 
   void SetUp() override {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
@@ -70,6 +62,7 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
   }
 
   void TearDown() override {
+    profile_.reset();
     adapter_ = nullptr;
     DBusThreadManager::Shutdown();
   }
@@ -95,24 +88,20 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
         scoped_ptr<dbus::FileDescriptor> fd,
         const BluetoothProfileServiceProvider::Delegate::Options& options,
         const ConfirmationCallback& callback) override {
-      VLOG(1) << "connection for " << device_path.value() << " on "
-              << device_path_.value();
       ++connections_;
       fd->CheckValidity();
       close(fd->TakeValue());
       callback.Run(SUCCESS);
       if (device_path_.value() != "")
-        ASSERT_TRUE(device_path == device_path_);
+        ASSERT_EQ(device_path_, device_path);
     }
 
     void RequestDisconnection(const dbus::ObjectPath& device_path,
                               const ConfirmationCallback& callback) override {
-      VLOG(1) << "disconnect " << device_path.value();
       ++disconnections_;
     }
 
     void Cancel() override {
-      VLOG(1) << "cancel";
       // noop
     }
 
@@ -121,17 +110,30 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
     dbus::ObjectPath device_path_;
   };
 
-  FakeDelegate fake_delegate_paired_;
-  FakeDelegate fake_delegate_autopair_;
-  FakeDelegate fake_delegate_listen_;
+  void ProfileSuccessCallback(
+      scoped_ptr<BluetoothAdapterProfileChromeOS> profile) {
+    profile_.swap(profile);
+    ++success_callback_count_;
+  }
 
-  BluetoothAdapterProfileChromeOS* profile_;
+  void ProfileUserSuccessCallback(BluetoothAdapterProfileChromeOS* profile) {
+    profile_user_ptr_ = profile;
+    ++success_callback_count_;
+  }
+
+  void MatchedProfileCallback(BluetoothAdapterProfileChromeOS* profile) {
+    ASSERT_EQ(profile_user_ptr_, profile);
+    ++success_callback_count_;
+  }
 
   void DBusConnectSuccessCallback() { ++success_callback_count_; }
 
   void DBusErrorCallback(const std::string& error_name,
                          const std::string& error_message) {
-    VLOG(1) << "DBus Connect Error: " << error_name << " - " << error_message;
+    ++error_callback_count_;
+  }
+
+  void BasicErrorCallback(const std::string& error_message) {
     ++error_callback_count_;
   }
 
@@ -142,6 +144,16 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
 
   unsigned int success_callback_count_;
   unsigned int error_callback_count_;
+
+  FakeDelegate fake_delegate_paired_;
+  FakeDelegate fake_delegate_autopair_;
+  FakeDelegate fake_delegate_listen_;
+
+  scoped_ptr<BluetoothAdapterProfileChromeOS> profile_;
+
+  // unowned pointer as expected to be used by clients of
+  // BluetoothAdapterChromeOS::UseProfile like BluetoothSocketChromeOS
+  BluetoothAdapterProfileChromeOS* profile_user_ptr_;
 };
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, DelegateCount) {
@@ -150,13 +162,18 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, DelegateCount) {
 
   options.require_authentication.reset(new bool(false));
 
-  profile_ = BluetoothAdapterProfileChromeOS::Register(
-      static_cast<BluetoothAdapterChromeOS*>(adapter_.get()), uuid, options,
-      base::Bind(&base::DoNothing), base::Bind(&DoNothingDBusErrorCallback));
+  BluetoothAdapterProfileChromeOS::Register(
+      uuid, options,
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::ProfileSuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
 
   message_loop_.RunUntilIdle();
 
   EXPECT_TRUE(profile_);
+  EXPECT_EQ(1U, success_callback_count_);
+  EXPECT_EQ(0U, error_callback_count_);
 
   EXPECT_EQ(0U, profile_->DelegateCount());
 
@@ -174,8 +191,6 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, DelegateCount) {
                            base::Bind(&base::DoNothing));
 
   EXPECT_EQ(0U, profile_->DelegateCount());
-
-  delete profile_;
 };
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, BlackHole) {
@@ -184,11 +199,10 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, BlackHole) {
 
   options.require_authentication.reset(new bool(false));
 
-  profile_ = BluetoothAdapterProfileChromeOS::Register(
-      static_cast<BluetoothAdapterChromeOS*>(adapter_.get()), uuid, options,
-      base::Bind(
-          &BluetoothAdapterProfileChromeOSTest::DBusConnectSuccessCallback,
-          base::Unretained(this)),
+  BluetoothAdapterProfileChromeOS::Register(
+      uuid, options,
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::ProfileSuccessCallback,
+                 base::Unretained(this)),
       base::Bind(&BluetoothAdapterProfileChromeOSTest::DBusErrorCallback,
                  base::Unretained(this)));
 
@@ -213,8 +227,6 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, BlackHole) {
   EXPECT_EQ(1U, error_callback_count_);
 
   EXPECT_EQ(0U, fake_delegate_paired_.connections_);
-
-  delete profile_;
 };
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
@@ -223,17 +235,18 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
 
   options.require_authentication.reset(new bool(false));
 
-  profile_ = BluetoothAdapterProfileChromeOS::Register(
-      static_cast<BluetoothAdapterChromeOS*>(adapter_.get()), uuid, options,
-      base::Bind(
-          &BluetoothAdapterProfileChromeOSTest::DBusConnectSuccessCallback,
-          base::Unretained(this)),
+  BluetoothAdapterProfileChromeOS::Register(
+      uuid, options,
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::ProfileSuccessCallback,
+                 base::Unretained(this)),
       base::Bind(&BluetoothAdapterProfileChromeOSTest::DBusErrorCallback,
                  base::Unretained(this)));
 
   message_loop_.RunUntilIdle();
 
   ASSERT_TRUE(profile_);
+  ASSERT_EQ(1U, success_callback_count_);
+  ASSERT_EQ(0U, error_callback_count_);
 
   profile_->SetDelegate(fake_delegate_paired_.device_path_,
                         &fake_delegate_paired_);
@@ -290,8 +303,81 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
   EXPECT_EQ(0U, error_callback_count_);
 
   EXPECT_EQ(1U, fake_delegate_listen_.connections_);
+};
 
-  delete profile_;
+TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegister) {
+  BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kRfcommUuid);
+  BluetoothProfileManagerClient::Options options;
+  BluetoothAdapterChromeOS* adapter =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
+
+  options.require_authentication.reset(new bool(false));
+
+  success_callback_count_ = 0;
+  error_callback_count_ = 0;
+
+  adapter->UseProfile(
+      uuid, fake_delegate_paired_.device_path_, options, &fake_delegate_paired_,
+      base::Bind(
+          &BluetoothAdapterProfileChromeOSTest::ProfileUserSuccessCallback,
+          base::Unretained(this)),
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::BasicErrorCallback,
+                 base::Unretained(this)));
+
+  adapter->UseProfile(
+      uuid, fake_delegate_autopair_.device_path_, options,
+      &fake_delegate_autopair_,
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::MatchedProfileCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::BasicErrorCallback,
+                 base::Unretained(this)));
+
+  message_loop_.RunUntilIdle();
+
+  EXPECT_TRUE(profile_user_ptr_);
+  EXPECT_EQ(2U, success_callback_count_);
+  EXPECT_EQ(0U, error_callback_count_);
+
+  adapter->ReleaseProfile(fake_delegate_paired_.device_path_,
+                          profile_user_ptr_);
+  adapter->ReleaseProfile(fake_delegate_autopair_.device_path_,
+                          profile_user_ptr_);
+
+  message_loop_.RunUntilIdle();
+};
+
+TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegisterFail) {
+  BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kUnregisterableUuid);
+  BluetoothProfileManagerClient::Options options;
+  BluetoothAdapterChromeOS* adapter =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
+
+  options.require_authentication.reset(new bool(false));
+
+  success_callback_count_ = 0;
+  error_callback_count_ = 0;
+
+  adapter->UseProfile(
+      uuid, fake_delegate_paired_.device_path_, options, &fake_delegate_paired_,
+      base::Bind(
+          &BluetoothAdapterProfileChromeOSTest::ProfileUserSuccessCallback,
+          base::Unretained(this)),
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::BasicErrorCallback,
+                 base::Unretained(this)));
+
+  adapter->UseProfile(
+      uuid, fake_delegate_autopair_.device_path_, options,
+      &fake_delegate_autopair_,
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::MatchedProfileCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothAdapterProfileChromeOSTest::BasicErrorCallback,
+                 base::Unretained(this)));
+
+  message_loop_.RunUntilIdle();
+
+  EXPECT_FALSE(profile_user_ptr_);
+  EXPECT_EQ(0U, success_callback_count_);
+  EXPECT_EQ(2U, error_callback_count_);
 };
 
 }  // namespace chromeos

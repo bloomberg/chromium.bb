@@ -21,23 +21,32 @@ namespace chromeos {
 // profile for custom Bluetooth services managed by a BluetoothAdapter.
 // Maintains a list of delegates which may serve the profile.
 // One delegate is allowed for each device.
+//
+// BluetoothAdapterProfileChromeOS objects are owned by the
+// BluetoothAdapterChromeOS and allocated through Register()
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileChromeOS
     : public chromeos::BluetoothProfileServiceProvider::Delegate {
  public:
+  typedef base::Callback<void(scoped_ptr<BluetoothAdapterProfileChromeOS>
+                                  profile)> ProfileRegisteredCallback;
+
   // Registers a profile with the BlueZ server for |uuid| with the
-  // options |options|.  Returns a newly allocated pointer, or nullptr
-  // if there was a problem.
-  static BluetoothAdapterProfileChromeOS* Register(
-      BluetoothAdapterChromeOS* adapter,
+  // options |options|.  |success_callback| is provided with a newly
+  // allocated profile if registration is successful, otherwise |error_callback|
+  // will be called.
+  static void Register(
       const device::BluetoothUUID& uuid,
       const BluetoothProfileManagerClient::Options& options,
-      const base::Closure& success_callback,
+      const ProfileRegisteredCallback& success_callback,
       const BluetoothProfileManagerClient::ErrorCallback& error_callback);
 
   ~BluetoothAdapterProfileChromeOS() override;
 
   // The object path of the profile.
   const dbus::ObjectPath& object_path() const { return object_path_; }
+
+  // Returns the UUID of the profile
+  const device::BluetoothUUID& uuid() const { return uuid_; }
 
   // Add a delegate for a device associated with this profile.
   // An empty |device_path| indicates a local listening service.
@@ -55,8 +64,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileChromeOS
   size_t DelegateCount() const { return delegates_.size(); }
 
  private:
-  BluetoothAdapterProfileChromeOS(BluetoothAdapterChromeOS* adapter,
-                                  const device::BluetoothUUID& uuid);
+  BluetoothAdapterProfileChromeOS(const device::BluetoothUUID& uuid);
 
   // BluetoothProfileServiceProvider::Delegate:
   void Released() override;
@@ -85,9 +93,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileChromeOS
 
   // Profile dbus object for receiving profile method calls from BlueZ
   scoped_ptr<BluetoothProfileServiceProvider> profile_;
-
-  // Adapter that owns this profile.
-  BluetoothAdapterChromeOS* adapter_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
