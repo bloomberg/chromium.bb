@@ -165,7 +165,7 @@ def DeleteChroot(chroot_path):
 
 
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
-                additional_args):
+                workspace, additional_args):
   """Enters an existing SDK chroot"""
   st = os.statvfs(os.path.join(chroot_path, 'usr', 'bin', 'sudo'))
   # The os.ST_NOSUID constant wasn't added until python-3.2.
@@ -177,6 +177,9 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
     cmd.extend(['--chrome_root', chrome_root])
   if chrome_root_mount:
     cmd.extend(['--chrome_root_mount', chrome_root_mount])
+  if workspace:
+    cmd.extend(['--workspace_root', workspace])
+
   if len(additional_args) > 0:
     cmd.append('--')
     cmd.extend(additional_args)
@@ -450,6 +453,8 @@ If given args those are passed to the chroot environment, and executed."""
                     help=('Use this sdk version.  For prebuilt, current is %r'
                           ', for bootstrapping it is %r.'
                           % (sdk_latest_version, bootstrap_latest_version)))
+  parser.add_option('--workspace', default=None,
+                    help='Workspace directory to mount into the chroot.')
 
   # Commands.
   group = parser.add_option_group('Commands')
@@ -626,4 +631,5 @@ def main(argv):
       if options.enter:
         lock.read_lock()
         EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
-                    options.chrome_root_mount, chroot_command)
+                    options.chrome_root_mount, options.workspace,
+                    chroot_command)
