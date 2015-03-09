@@ -32,6 +32,7 @@ class CronetLibraryLoader {
                 return;
             }
             System.loadLibrary(config.libraryName());
+            nativeCronetInitApplicationContext(context.getApplicationContext());
             // Init native Chromium URLRequestContext on Main UI thread.
             Runnable task = new Runnable() {
                 public void run() {
@@ -62,9 +63,10 @@ class CronetLibraryLoader {
         // NetworkChangeNotifierAndroid is created, so as to avoid receiving
         // the undesired initial network change observer notification, which
         // will cause active requests to fail with ERR_NETWORK_CHANGED.
-        nativeCronetInitOnMainThread(context.getApplicationContext());
+        nativeCronetInitOnMainThread();
     }
 
     // Native methods are implemented in cronet_loader.cc.
-    private static native void nativeCronetInitOnMainThread(Context appContext);
+    private static native void nativeCronetInitOnMainThread();
+    private static native void nativeCronetInitApplicationContext(Context appContext);
 }

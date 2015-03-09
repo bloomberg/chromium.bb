@@ -309,7 +309,6 @@ void CronetURLRequestContextAdapter::StopNetLogOnNetworkThread() {
 // returns 0 otherwise.
 static jlong CreateRequestContextAdapter(JNIEnv* env,
                                          jclass jcaller,
-                                         jobject japp_context,
                                          jstring jconfig) {
   std::string config_string =
       base::android::ConvertJavaStringToUTF8(env, jconfig);

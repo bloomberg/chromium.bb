@@ -31,10 +31,11 @@ public class ChromiumUrlRequestContext {
     /**
      * Constructor.
      */
-    protected ChromiumUrlRequestContext(final Context context, String userAgent,
-            String config) {
-        mChromiumUrlRequestContextAdapter = nativeCreateRequestContextAdapter(
-                context.getApplicationContext(), userAgent, getLoggingLevel(), config);
+    protected ChromiumUrlRequestContext(
+            final Context context, String userAgent, UrlRequestContextConfig config) {
+        CronetLibraryLoader.ensureInitialized(context, config);
+        mChromiumUrlRequestContextAdapter =
+                nativeCreateRequestContextAdapter(userAgent, getLoggingLevel(), config.toString());
         if (mChromiumUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed");
         }
@@ -44,12 +45,6 @@ public class ChromiumUrlRequestContext {
         // API to handle the case where we are already on main thread.
         Runnable task = new Runnable() {
             public void run() {
-                NetworkChangeNotifier.init(context);
-                // Registers to always receive network notifications. Note that
-                // this call is fine for Cronet because Cronet embedders do not
-                // have API access to create network change observers. Existing
-                // observers in the net stack do not perform expensive work.
-                NetworkChangeNotifier.registerToReceiveNotificationsAlways();
                 nativeInitRequestContextOnMainThread(
                         mChromiumUrlRequestContextAdapter);
             }
@@ -135,7 +130,7 @@ public class ChromiumUrlRequestContext {
     // Returns an instance ChromiumUrlRequestContextAdapter to be stored in
     // mChromiumUrlRequestContextAdapter.
     private native long nativeCreateRequestContextAdapter(
-            Context appContext, String userAgent, int loggingLevel, String config);
+            String userAgent, int loggingLevel, String config);
 
     private native void nativeReleaseRequestContextAdapter(
             long chromiumUrlRequestContextAdapter);
