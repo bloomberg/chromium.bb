@@ -123,7 +123,7 @@ WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(Node);
 #define NODE_BASE_CLASSES public EventTarget, public TreeShared<Node>
 #endif
 
-class GC_PLUGIN_IGNORE("crbug.com/443854") Node : NODE_BASE_CLASSES {
+class Node : NODE_BASE_CLASSES {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(TreeShared<Node>);
     DEFINE_WRAPPERTYPEINFO();
     friend class TreeScope;
@@ -167,6 +167,8 @@ public:
     // static type dispatching of typed heap for Nodes. We override GarbageCollected<>'s operator new here, to put
     // Node descendants into typed heap for Nodes. <http://crbug.com/443854>
     using GarbageCollectedBase = EventTarget;
+
+    GC_PLUGIN_IGNORE("crbug.com/443854")
     void* operator new(size_t size) { return Heap::allocate<Node>(size); }
 #else // !ENABLE(OILPAN)
     // All Nodes are placed in their own heap partition for security.
