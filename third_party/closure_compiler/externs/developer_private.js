@@ -67,8 +67,8 @@ var ItemInfo;
 /**
  * @typedef {{
  *   extension_id: string,
- *   render_process_id: string,
- *   render_view_id: string,
+ *   render_process_id: (string|number),
+ *   render_view_id: (string|number),
  *   incognito: boolean
  * }}
  */

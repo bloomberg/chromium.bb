@@ -68,10 +68,11 @@ namespace developerPrivate {
     ItemInspectView[] views;
   };
 
+  // TODO(devlin): Combine inspect and openDevTools?
   dictionary InspectOptions {
     DOMString extension_id;
-    DOMString render_process_id;
-    DOMString render_view_id;
+    (DOMString or long) render_process_id;
+    (DOMString or long) render_view_id;
     boolean incognito;
   };
 

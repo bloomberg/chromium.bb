@@ -228,7 +228,7 @@ class DeveloperPrivateGetItemsInfoFunction
       bool generated_background_page);
 };
 
-class DeveloperPrivateInspectFunction : public ChromeSyncExtensionFunction {
+class DeveloperPrivateInspectFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.inspect",
                              DEVELOPERPRIVATE_INSPECT)
@@ -237,7 +237,7 @@ class DeveloperPrivateInspectFunction : public ChromeSyncExtensionFunction {
   ~DeveloperPrivateInspectFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class DeveloperPrivateAllowFileAccessFunction

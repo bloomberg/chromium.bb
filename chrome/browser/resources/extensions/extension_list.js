@@ -730,13 +730,12 @@ cr.define('extensions', function() {
                   ' ' + loadTimeData.getString('viewInactive') : '');
           link.textContent = label;
           link.clickHandler = function(e) {
-            // TODO(estade): remove conversion to string?
-            chrome.send('extensionSettingsInspect', [
-              String(extension.id),
-              String(view.renderProcessId),
-              String(view.renderViewId),
-              view.incognito
-            ]);
+            chrome.developerPrivate.inspect({
+              extension_id: extension.id,
+              render_process_id: view.renderProcessId,
+              render_view_id: view.renderViewId,
+              incognito: view.incognito
+            });
           };
           link.addEventListener('click', link.clickHandler);
 

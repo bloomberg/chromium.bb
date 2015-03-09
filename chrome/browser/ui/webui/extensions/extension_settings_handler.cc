@@ -22,11 +22,9 @@
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -731,9 +729,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsToggleDeveloperMode",
       base::Bind(&ExtensionSettingsHandler::HandleToggleDeveloperMode,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsInspect",
-      base::Bind(&ExtensionSettingsHandler::HandleInspectMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsLaunch",
       base::Bind(&ExtensionSettingsHandler::HandleLaunchMessage,
                  AsWeakPtr()));
@@ -992,45 +987,6 @@ void ExtensionSettingsHandler::HandleToggleDeveloperMode(
   CHECK(args->GetBoolean(0, &developer_mode_on));
   profile->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode,
                                   developer_mode_on);
-}
-
-void ExtensionSettingsHandler::HandleInspectMessage(
-    const base::ListValue* args) {
-  std::string extension_id;
-  std::string render_process_id_str;
-  std::string render_view_id_str;
-  int render_process_id;
-  int render_view_id;
-  bool incognito;
-  CHECK_EQ(4U, args->GetSize());
-  CHECK(args->GetString(0, &extension_id));
-  CHECK(args->GetString(1, &render_process_id_str));
-  CHECK(args->GetString(2, &render_view_id_str));
-  CHECK(args->GetBoolean(3, &incognito));
-  CHECK(base::StringToInt(render_process_id_str, &render_process_id));
-  CHECK(base::StringToInt(render_view_id_str, &render_view_id));
-
-  if (render_process_id == -1) {
-    // This message is for a lazy background page. Start the page if necessary.
-    Profile* profile = Profile::FromWebUI(web_ui());
-    const Extension* extension =
-        ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
-            extension_id);
-    DCHECK(extension);
-    if (incognito)
-      profile = profile->GetOffTheRecordProfile();
-    devtools_util::InspectBackgroundPage(extension, profile);
-    return;
-  }
-
-  RenderViewHost* host = RenderViewHost::FromID(render_process_id,
-                                                render_view_id);
-  if (!host || !WebContents::FromRenderViewHost(host)) {
-    // This can happen if the host has gone away since the page was displayed.
-    return;
-  }
-
-  DevToolsWindow::OpenDevToolsWindow(WebContents::FromRenderViewHost(host));
 }
 
 void ExtensionSettingsHandler::HandleLaunchMessage(

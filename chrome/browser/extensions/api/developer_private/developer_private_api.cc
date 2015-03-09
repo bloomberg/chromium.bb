@@ -103,10 +103,10 @@ const char kCouldNotShowSelectFileDialogError[] =
     "Could not show a file chooser.";
 const char kFileSelectionCanceled[] =
     "File selection was canceled.";
+const char kNoSuchRendererError[] = "No such renderer.";
 const char kInvalidPathError[] = "Invalid path.";
 const char kManifestKeyIsRequiredError[] =
     "The 'manifestKey' argument is required for manifest files.";
-const char kNoSuchRendererError[] = "Could not find the renderer.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
 const char kManifestFile[] = "manifest.json";
@@ -850,39 +850,54 @@ DeveloperPrivateShowPermissionsDialogFunction::
 DeveloperPrivateShowPermissionsDialogFunction::
     ~DeveloperPrivateShowPermissionsDialogFunction() {}
 
-bool DeveloperPrivateInspectFunction::RunSync() {
+ExtensionFunction::ResponseAction DeveloperPrivateInspectFunction::Run() {
   scoped_ptr<developer::Inspect::Params> params(
       developer::Inspect::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+  EXTENSION_FUNCTION_VALIDATE(params);
   const developer::InspectOptions& options = params->options;
 
-  int render_process_id;
-  base::StringToInt(options.render_process_id, &render_process_id);
-
-  if (render_process_id == -1) {
-    // This is a lazy background page. Identify if it is a normal
-    // or incognito background page.
-    const Extension* extension = ExtensionRegistry::Get(
-        GetProfile())->enabled_extensions().GetByID(options.extension_id);
-    DCHECK(extension);
-    // Wakes up the background page and  opens the inspect window.
-    devtools_util::InspectBackgroundPage(extension, GetProfile());
-    return false;
+  int render_process_id = 0;
+  if (options.render_process_id.as_string &&
+      !base::StringToInt(*options.render_process_id.as_string,
+                         &render_process_id)) {
+    return RespondNow(Error(kNoSuchRendererError));
+  } else {
+    render_process_id = *options.render_process_id.as_integer;
   }
 
-  int render_view_id;
-  base::StringToInt(options.render_view_id, &render_view_id);
+  int render_view_id = 0;
+  if (options.render_view_id.as_string &&
+      !base::StringToInt(*options.render_view_id.as_string, &render_view_id)) {
+    return RespondNow(Error(kNoSuchRendererError));
+  } else {
+    render_view_id = *options.render_view_id.as_integer;
+  }
+
+  if (render_process_id == -1) {
+    // This is a lazy background page.
+    const Extension* extension = ExtensionRegistry::Get(
+        browser_context())->enabled_extensions().GetByID(options.extension_id);
+    if (!extension)
+      return RespondNow(Error(kNoSuchExtensionError));
+
+    Profile* profile = Profile::FromBrowserContext(browser_context());
+    if (options.incognito)
+      profile = profile->GetOffTheRecordProfile();
+
+    // Wakes up the background page and opens the inspect window.
+    devtools_util::InspectBackgroundPage(extension, profile);
+    return RespondNow(NoArguments());
+  }
+
   content::RenderViewHost* host = content::RenderViewHost::FromID(
       render_process_id, render_view_id);
 
-  if (!host || !content::WebContents::FromRenderViewHost(host)) {
-    // This can happen if the host has gone away since the page was displayed.
-    return false;
-  }
+  if (!host || !content::WebContents::FromRenderViewHost(host))
+    return RespondNow(Error(kNoSuchRendererError));
 
   DevToolsWindow::OpenDevToolsWindow(
       content::WebContents::FromRenderViewHost(host));
-  return true;
+  return RespondNow(NoArguments());
 }
 
 DeveloperPrivateInspectFunction::~DeveloperPrivateInspectFunction() {}

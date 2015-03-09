@@ -151,9 +151,6 @@ class ExtensionSettingsHandler
   // Callback for "toggleDeveloperMode" message.
   void HandleToggleDeveloperMode(const base::ListValue* args);
 
-  // Callback for "inspect" message.
-  void HandleInspectMessage(const base::ListValue* args);
-
   // Callback for "launch" message.
   void HandleLaunchMessage(const base::ListValue* args);
 
