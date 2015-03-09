@@ -23,6 +23,9 @@ function test()
     InspectorTest.animationModel.ensureEnabled();
     // Override timeline width for testing
     WebInspector.AnimationTimeline.prototype.width = function() { return 500; }
+    // Override animation color for testing
+    // FIXME: Set animation name of Web Animation instead; not supported yet
+    WebInspector.AnimationUI.prototype._color = function() { return "black"; }
 
     function step1()
     {
