@@ -60,11 +60,13 @@
                 android:background="?attr/selectableItemBackground"
                 android:scaleType="center"/>
         </LinearLayout>
-        <org.chromium.chrome.browser.widget.ClipDrawableProgressBar
+        <org.chromium.chrome.browser.widget.ToolbarProgressBar
             android:id="@+id/progress"
+            style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
+            android:progressDrawable="@drawable/progress_bar"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:src="@drawable/clip_drawable_progress_bar" />
+            android:progress="0" />
     </org.chromium.chrome.shell.ChromeShellToolbar>
     <FrameLayout android:id="@+id/content_container"
         android:layout_width="match_parent"
