@@ -338,6 +338,75 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
+                       TestTouchSelectionWhenOverscrolling) {
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
+      web_contents->GetView());
+  TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
+  view_aura->SetTouchEditableForTest(touch_editable);
+  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+      web_contents->GetRenderWidgetHostView());
+  EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);
+
+  // Long press to select word.
+  ui::GestureEvent long_press(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  touch_editable->Reset();
+  rwhva->OnGestureEvent(&long_press);
+  touch_editable->WaitForSelectionChangeCallback();
+
+  // Check if selection handles are showing.
+  EXPECT_TRUE(GetTouchSelectionController(touch_editable));
+
+  scoped_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
+  std::string selection;
+  value->GetAsString(&selection);
+  EXPECT_STREQ("Some", selection.c_str());
+
+  // Overscroll is preceded with a scroll. Handles should get hidden.
+  ui::GestureEvent scroll_begin(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
+  rwhva->OnGestureEvent(&scroll_begin);
+  EXPECT_FALSE(GetTouchSelectionController(touch_editable));
+
+  // Then overscroll itself starts. Handles should remain hidden.
+  touch_editable->OverscrollStarted();
+  EXPECT_FALSE(GetTouchSelectionController(touch_editable));
+
+  // We might have multiple overscroll-starts in one overscroll session. Handles
+  // should still remain hidden.
+  touch_editable->OverscrollStarted();
+  EXPECT_FALSE(GetTouchSelectionController(touch_editable));
+
+  // An overscroll session ends with a single overscroll-complete.  Handles
+  // should still remain hidden as the scroll is still in progress.
+  touch_editable->OverscrollCompleted();
+  EXPECT_FALSE(GetTouchSelectionController(touch_editable));
+
+  // And, finally an scroll-end. Handles should come back.
+  ui::GestureEvent scroll_end(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+  rwhva->OnGestureEvent(&scroll_end);
+  EXPECT_TRUE(GetTouchSelectionController(touch_editable));
+}
+
+IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
                        TouchSelectionOnLongPressTest) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
   WebContentsImpl* web_contents =

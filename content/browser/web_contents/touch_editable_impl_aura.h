@@ -78,7 +78,7 @@ class CONTENT_EXPORT TouchEditableImplAura
 
   // A convenience function that is called after scroll/fling/overscroll ends to
   // re-activate touch selection if necessary.
-  void ScrollEnded();
+  void StartTouchEditingIfNecessary();
 
   void Cleanup();
 
@@ -100,8 +100,9 @@ class CONTENT_EXPORT TouchEditableImplAura
   // whether to re-show handles after a scrolling session.
   bool handles_hidden_due_to_scroll_;
 
-  // Keeps track of number of scrolls/flings/overscrolls in progress.
-  int scrolls_in_progress_;
+  // Keep track of scrolls/overscrolls in progress.
+  bool scroll_in_progress_;
+  bool overscroll_in_progress_;
 
   // Used to track if a textfield was focused when the current tap gesture
   // happened.
