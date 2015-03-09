@@ -16,16 +16,12 @@ MojoDemuxerStreamAdapter::MojoDemuxerStreamAdapter(
     mojo::DemuxerStreamPtr demuxer_stream,
     const base::Closure& stream_ready_cb)
     : demuxer_stream_(demuxer_stream.Pass()),
-      binding_(this),
       stream_ready_cb_(stream_ready_cb),
       type_(DemuxerStream::UNKNOWN),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
-  mojo::DemuxerStreamObserverPtr observer_ptr;
-  binding_.Bind(GetProxy(&observer_ptr));
-  demuxer_stream_->Initialize(
-      observer_ptr.Pass(), base::Bind(&MojoDemuxerStreamAdapter::OnStreamReady,
-                                      weak_factory_.GetWeakPtr()));
+  demuxer_stream_->Initialize(base::Bind(
+      &MojoDemuxerStreamAdapter::OnStreamReady, weak_factory_.GetWeakPtr()));
 }
 
 MojoDemuxerStreamAdapter::~MojoDemuxerStreamAdapter() {
@@ -45,14 +41,12 @@ void MojoDemuxerStreamAdapter::Read(const DemuxerStream::ReadCB& read_cb) {
 
 AudioDecoderConfig MojoDemuxerStreamAdapter::audio_decoder_config() {
   DCHECK_EQ(type_, DemuxerStream::AUDIO);
-  DCHECK(!audio_config_queue_.empty());
-  return audio_config_queue_.front();
+  return audio_config_;
 }
 
 VideoDecoderConfig MojoDemuxerStreamAdapter::video_decoder_config() {
   DCHECK_EQ(type_, DemuxerStream::VIDEO);
-  DCHECK(!video_config_queue_.empty());
-  return video_config_queue_.front();
+  return video_config_;
 }
 
 DemuxerStream::Type MojoDemuxerStreamAdapter::type() const {
@@ -74,52 +68,33 @@ VideoRotation MojoDemuxerStreamAdapter::video_rotation() {
 
 // TODO(xhwang): Pass liveness here.
 void MojoDemuxerStreamAdapter::OnStreamReady(
-    mojo::ScopedDataPipeConsumerHandle pipe) {
+      mojo::DemuxerStream::Type type,
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      mojo::AudioDecoderConfigPtr audio_config,
+      mojo::VideoDecoderConfigPtr video_config) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(pipe.is_valid());
-  DCHECK_NE(type_, DemuxerStream::UNKNOWN);
+  DCHECK_EQ(DemuxerStream::UNKNOWN, type_);
+
+  type_ = static_cast<DemuxerStream::Type>(type);
   stream_pipe_ = pipe.Pass();
+  UpdateConfig(audio_config.Pass(), video_config.Pass());
+
   stream_ready_cb_.Run();
-}
-
-void MojoDemuxerStreamAdapter::OnAudioDecoderConfigChanged(
-    mojo::AudioDecoderConfigPtr config) {
-  DCHECK(type_ == DemuxerStream::UNKNOWN || type_ == DemuxerStream::AUDIO)
-      << type_;
-  type_ = DemuxerStream::AUDIO;
-
-  audio_config_queue_.push(config.To<AudioDecoderConfig>());
-}
-
-void MojoDemuxerStreamAdapter::OnVideoDecoderConfigChanged(
-    mojo::VideoDecoderConfigPtr config) {
-  DCHECK(type_ == DemuxerStream::UNKNOWN || type_ == DemuxerStream::VIDEO)
-      << type_;
-  type_ = DemuxerStream::VIDEO;
-
-  video_config_queue_.push(config.To<VideoDecoderConfig>());
 }
 
 void MojoDemuxerStreamAdapter::OnBufferReady(
     mojo::DemuxerStream::Status status,
-    mojo::MediaDecoderBufferPtr buffer) {
+    mojo::MediaDecoderBufferPtr buffer,
+    mojo::AudioDecoderConfigPtr audio_config,
+    mojo::VideoDecoderConfigPtr video_config) {
   DVLOG(3) << __FUNCTION__;
   DCHECK(!read_cb_.is_null());
   DCHECK_NE(type_, DemuxerStream::UNKNOWN);
   DCHECK(stream_pipe_.is_valid());
 
   if (status == mojo::DemuxerStream::STATUS_CONFIG_CHANGED) {
-    if (type_ == DemuxerStream::AUDIO) {
-      audio_config_queue_.pop();
-      DCHECK(!audio_config_queue_.empty());
-    } else if (type_ == DemuxerStream::VIDEO) {
-      video_config_queue_.pop();
-      DCHECK(!video_config_queue_.empty());
-    } else {
-      NOTREACHED() << "Unsupported config change encountered for type: "
-                   << type_;
-    }
-
+    UpdateConfig(audio_config.Pass(), video_config.Pass());
     base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kConfigChanged, nullptr);
     return;
   }
@@ -145,6 +120,25 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
   }
 
   base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kOk, media_buffer);
+}
+
+void MojoDemuxerStreamAdapter::UpdateConfig(
+    mojo::AudioDecoderConfigPtr audio_config,
+    mojo::VideoDecoderConfigPtr video_config) {
+  DCHECK_NE(type_, DemuxerStream::UNKNOWN);
+
+  switch(type_) {
+    case DemuxerStream::AUDIO:
+      DCHECK(audio_config && !video_config);
+      audio_config_ = audio_config.To<AudioDecoderConfig>();
+      break;
+    case DemuxerStream::VIDEO:
+      DCHECK(video_config && !audio_config);
+      video_config_ = video_config.To<VideoDecoderConfig>();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace media

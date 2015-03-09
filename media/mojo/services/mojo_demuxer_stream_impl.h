@@ -24,26 +24,14 @@ class MojoDemuxerStreamImpl : public mojo::InterfaceImpl<mojo::DemuxerStream> {
   ~MojoDemuxerStreamImpl() override;
 
   // mojo::DemuxerStream implementation.
-  void Read(const mojo::Callback<void(mojo::DemuxerStream::Status,
-                                      mojo::MediaDecoderBufferPtr)>& callback)
-      override;
-
-  void Initialize(
-      mojo::DemuxerStreamObserverPtr observer,
-      const mojo::Callback<void(mojo::ScopedDataPipeConsumerHandle)>& callback)
-      override;
+  // InitializeCallback and ReadCallback are defined in mojo::DemuxerStream.
+  void Initialize(const InitializeCallback& callback) override;
+  void Read(const ReadCallback& callback) override;
 
  private:
-  // |callback| is the callback that was passed to the initiating Read()
-  //     call by our client.
-  // |status| and |buffer| are the standard media::ReadCB parameters.
-  typedef mojo::Callback<void(mojo::DemuxerStream::Status,
-                              mojo::MediaDecoderBufferPtr)> BufferReadyCB;
-  void OnBufferReady(const BufferReadyCB& callback,
+  void OnBufferReady(const ReadCallback& callback,
                      media::DemuxerStream::Status status,
                      const scoped_refptr<media::DecoderBuffer>& buffer);
-
-  mojo::DemuxerStreamObserverPtr observer_;
 
   // See constructor.  We do not own |stream_|.
   media::DemuxerStream* stream_;

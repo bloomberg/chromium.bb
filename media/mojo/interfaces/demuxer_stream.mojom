@@ -25,35 +25,32 @@ interface DemuxerStream {
     CONFIG_CHANGED,
   };
 
-  // Tells the DemuxerStream which DemuxerStreamObserver to interact with. Must
-  // be called before any other methods. Upon receipt of the callback, clients
-  // may call DemuxerStream::Read() to request buffers. The returned |pipe| will
-  // be used to fill out the data section of the media::DecoderBuffer returned
-  // via DemuxerStream::Read().
-  Initialize(DemuxerStreamObserver observer)
-      => (handle<data_pipe_consumer> pipe);
+  // Initializes the DemuxerStream. Read() can only be called after the callback
+  // is received. The returned |pipe| will be used to fill out the data section
+  // of the media::DecoderBuffer returned via DemuxerStream::Read(). Only the
+  // config for |type| should be non-null, which is the initial config of the
+  // stream.
+  Initialize() => (Type type,
+                   handle<data_pipe_consumer> pipe,
+                   AudioDecoderConfig? audio_config,
+                   VideoDecoderConfig? video_config);
 
-  // Request a MediaDecoderBuffer from this stream for decoding and rendering.
-  // See media::DemuxerStream::ReadCB for an explanation of the fields.
+  // Requests a MediaDecoderBuffer from this stream for decoding and rendering.
+  // See media::DemuxerStream::ReadCB for a general explanation of the fields.
   //
-  // Upon receipt of the callback, clients must fill out the data section of
-  // the returned media::DecoderBuffer by reading from the |pipe| provided
-  // during Initialize().
+  // Notes on the callback:
+  // - If |status| is OK, |buffer| should be non-null and clients must fill out
+  //   the data section of the returned media::DecoderBuffer by reading from
+  //   the |pipe| provided during Initialize().
+  // - If |status| is ABORTED, all other fields should be null.
+  // - If |status| is CONFIG_CHANGED, the config for the stream type should be
+  //   non-null.
   //
   // TODO(dalecurtis): Remove this method in favor of serializing everything
   // into the DataPipe given to Initialize() once DataPipe supports framed data
   // in a nicer fashion.
-  Read() => (Status status, MediaDecoderBuffer? buffer);
-};
-
-interface DemuxerStreamObserver {
-  // A new AudioDecoderConfig is available. Will be sent by the DemuxerStream
-  // whenever a DemuxerStream::STATUS_CONFIG_CHANGED is observed (either
-  // in a Read() callback or over the DataPipe).
-  OnAudioDecoderConfigChanged(AudioDecoderConfig config);
-
-  // A new VideoDecoderConfig is available. Will be sent by the DemuxerStream
-  // whenever a DemuxerStream::STATUS_CONFIG_CHANGED is observed (either
-  // in a Read() callback or over the DataPipe).
-  OnVideoDecoderConfigChanged(VideoDecoderConfig config);
+  Read() => (Status status,
+             MediaDecoderBuffer? buffer,
+             AudioDecoderConfig? audio_config,
+             VideoDecoderConfig? video_config);
 };
