@@ -714,6 +714,20 @@ crbug.com/242735 fast/css/ex-unit-with-no-x-height.html [ ImageOnlyFailure Failu
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Linux Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 
+crbug.com/462643 crbug.com/446011 fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 transforms/2d/hindi-rotated.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 virtual/antialiasedtext/fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 virtual/antialiasedtext/fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 virtual/antialiasedtext/fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 virtual/antialiasedtext/fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 virtual/slimmingpaint/fast/text/international/bidi-linebreak-001.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 virtual/slimmingpaint/fast/text/international/bidi-linebreak-002.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 virtual/slimmingpaint/fast/text/international/bidi-linebreak-003.html [ NeedsRebaseline ]
+crbug.com/462643 crbug.com/446011 virtual/slimmingpaint/fast/text/international/hindi-whitespace.html [ NeedsRebaseline ]
+
 # Flaky on several platforms.
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 crbug.com/320139 virtual/slimmingpaint/fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
@@ -1868,7 +1882,8 @@ crbug.com/463358 [ Debug ] svg/custom/massive-coordinates.svg [ Pass ImageOnlyFa
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
-crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFailure ]
+# FIXME: Uncomment this line once rebaselines for followup to r191572 land.
+#crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/451235 virtual/slimmingpaint/svg/clip-path/invalid-clip-path-crash.html [ Pass Failure ]
