@@ -4,15 +4,20 @@
 
 #import "ios/web/web_state/js/crw_js_message_dynamic_manager.h"
 
+#include "base/logging.h"
 #import "ios/web/web_state/js/crw_js_common_manager.h"
-#include "ios/web/web_view_util.h"
 
 @implementation CRWJSMessageDynamicManager
 
 - (NSString*)scriptPath {
-  if (web::IsWKWebViewEnabled())
-    return @"message_dynamic_wk";
-  return @"message_dynamic_ui";
+  switch ([[self receiver] webViewType]) {
+    case web::UI_WEB_VIEW_TYPE:
+      return @"message_dynamic_ui";
+    case web::WK_WEB_VIEW_TYPE:
+      return @"message_dynamic_wk";
+  }
+  NOTREACHED();
+  return nil;
 }
 
 - (NSString*)presenceBeacon {

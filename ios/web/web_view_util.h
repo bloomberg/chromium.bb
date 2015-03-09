@@ -7,19 +7,8 @@
 
 namespace web {
 
-// Returns true if WKWebView is being used instead of UIWebView.
-// TODO(stuartmorgan): Eliminate this global flag in favor of a per-web-view
-// flag.
-bool IsWKWebViewEnabled();
-
-// If |flag| is true, causes IsWKWebViewEnabled to return false, even if
-// WKWebView is enabled using the compile time flag. Should only be called from
-// ScopedUIWebViewEnforcer for use in unit tests that need to test UIWebView
-// while WKWebView is enabled.
-void SetForceUIWebView(bool flag);
-
-// Returns true if use of UIWebView is to be enforced.
-bool GetForceUIWebView();
+// Returns true if WKWebView is supported on current OS/platform/arch.
+bool IsWKWebViewSupported();
 
 }  // web
 
