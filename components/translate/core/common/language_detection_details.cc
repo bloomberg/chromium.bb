@@ -6,7 +6,9 @@
 
 namespace translate {
 
-LanguageDetectionDetails::LanguageDetectionDetails() {}
+LanguageDetectionDetails::LanguageDetectionDetails()
+    : is_cld_reliable(false) {
+}
 
 LanguageDetectionDetails::~LanguageDetectionDetails() {}
 
