@@ -708,7 +708,7 @@ void ProfileManager::ScheduleProfileForDeletion(
                                   base::Unretained(this),
                                   profile_dir,
                                   last_non_supervised_profile_path,
-                                  callback),
+                                  CreateCallback()),
                        base::string16(),
                        base::string16(),
                        std::string());
