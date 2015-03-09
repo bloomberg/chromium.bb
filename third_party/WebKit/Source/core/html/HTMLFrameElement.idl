@@ -18,22 +18,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface HTMLFrameElement : HTMLElement {
+// https://html.spec.whatwg.org/#htmlframeelement
 
-    [Reflect] attribute DOMString frameBorder;
-    [Reflect, URL] attribute DOMString longDesc;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
+interface HTMLFrameElement : HTMLElement {
     [Reflect] attribute DOMString name;
-    [Reflect] attribute boolean noResize;
     [Reflect] attribute DOMString scrolling;
     [Reflect, URL] attribute DOMString src;
+    [Reflect] attribute DOMString frameBorder;
+    [Reflect, URL] attribute DOMString longDesc;
+    [Reflect] attribute boolean noResize;
+    [CheckSecurity=Node] readonly attribute Document? contentDocument;
+    readonly attribute Window? contentWindow;
 
-    // Introduced in DOM Level 2:
-    [CheckSecurity=Node] readonly attribute Document contentDocument;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
 
-    // Extensions
-    readonly attribute Window contentWindow;
-
-    [CheckSecurity=Node, RaisesException] Document getSVGDocument();
+    // FIXME: The spec defines getSVGDocument() for HTMLIFrameElement,
+    // HTMLEmbedElement and HTMLObjectElement, but not here.
+    [CheckSecurity=Node, RaisesException] Document? getSVGDocument();
 };

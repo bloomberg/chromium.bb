@@ -17,19 +17,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlfieldsetelement
+
 interface HTMLFieldSetElement : HTMLElement {
     [Reflect] attribute boolean disabled;
-    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     [Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;
 
-    readonly attribute HTMLCollection elements;
+    readonly attribute HTMLFormControlsCollection elements;
 
-    readonly attribute boolean         willValidate;
-    readonly attribute ValidityState   validity;
-    readonly attribute DOMString       validationMessage;
-    boolean  checkValidity();
-    boolean  reportValidity();
-    void     setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
+    readonly attribute boolean willValidate;
+    readonly attribute ValidityState validity;
+    readonly attribute DOMString validationMessage;
+    boolean checkValidity();
+    boolean reportValidity();
+    // FIXME: The error argument should not be nullable.
+    void setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
 };

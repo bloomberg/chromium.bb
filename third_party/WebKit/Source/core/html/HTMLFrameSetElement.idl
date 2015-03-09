@@ -18,22 +18,28 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlframesetelement
+
+// FIXME: HTMLFrameSetElement should not have [OverrideBuiltins].
 [
     OverrideBuiltins,
 ] interface HTMLFrameSetElement : HTMLElement {
-    [NotEnumerable] getter Window (DOMString name);
     [Reflect] attribute DOMString cols;
     [Reflect] attribute DOMString rows;
 
-    [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
-
-    // Overrides of GlobalEventHandler attributes
+    // FIXME: The spec requires special behavior for these event
+    // handler attributes but does not include them in the IDL:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28166
     attribute EventHandler onblur;
     attribute EventHandler onerror;
     attribute EventHandler onfocus;
     attribute EventHandler onload;
     attribute EventHandler onresize;
     attribute EventHandler onscroll;
+
+    // Non-standard APIs
+    [NotEnumerable] getter Window (DOMString name);
+    [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
 };
 
 HTMLFrameSetElement implements WindowEventHandlers;

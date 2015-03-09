@@ -18,6 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlformelement
+
 [
     OverrideBuiltins,
 ] interface HTMLFormElement : HTMLElement {
@@ -31,9 +33,10 @@
     [Reflect] attribute boolean noValidate;
     [Reflect] attribute DOMString target;
 
-    readonly attribute HTMLCollection elements;
+    readonly attribute HTMLFormControlsCollection elements;
     readonly attribute long length;
     [ImplementedAs=item] getter Element (unsigned long index);
+    // FIXME: This getter should not have [NotEnumerable].
     [NotEnumerable] getter (RadioNodeList or Element) (DOMString name);
 
     [ImplementedAs=submitFromJavaScript] void submit();

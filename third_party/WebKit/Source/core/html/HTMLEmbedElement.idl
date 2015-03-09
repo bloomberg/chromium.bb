@@ -18,21 +18,31 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlembedelement
+
 [
     Custom=LegacyCallAsFunction,
 ] interface HTMLEmbedElement : HTMLElement {
-    [Reflect] attribute DOMString align;
-    [Reflect] attribute DOMString height;
-    [Reflect] attribute DOMString name;
     [Reflect, URL] attribute DOMString src;
     [Reflect] attribute DOMString type;
     [Reflect] attribute DOMString width;
+    [Reflect] attribute DOMString height;
+    [CheckSecurity=Node, RaisesException] Document? getSVGDocument();
+    // FIXME: The spec has a legacycaller any (any... arguments); crbug.com/465009
+
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLEmbedElement-partial
+    [Reflect] attribute DOMString align;
+    [Reflect] attribute DOMString name;
+
+    // FIXME: None of these getters and setters are in the spec.
     [Custom, NotEnumerable] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom, NotEnumerable] getter Node (DOMString name);
     [Custom] setter Node (DOMString name, Node value);
 
-    [CheckSecurity=Node, RaisesException] Document getSVGDocument();
-
+    // Subresource Integrity
+    // http://w3c.github.io/webappsec/specs/subresourceintegrity/
+    // FIXME: The spec does not extend HTMLEmbedElement.
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };
