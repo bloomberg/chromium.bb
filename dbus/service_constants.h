@@ -1708,6 +1708,7 @@ const char kGetFileInfo[] = "GetFileInfo";
 const char kReadFileChunk[] = "ReadFileChunk";
 const char kCopyFileFromLocal[] = "CopyFileFromLocal";
 const char kDeleteObject[] = "DeleteObject";
+const char kRenameObject[] = "RenameObject";
 
 // Signals.
 const char kMTPStorageAttached[] = "MTPStorageAttached";
