@@ -97,12 +97,12 @@ public class ChromeShellTab extends Tab {
         return new ChromeContextMenuPopulator(new TabChromeContextMenuItemDelegate() {
             @Override
             public void onOpenInNewTab(String url, Referrer referrer) {
-                mTabManager.createTab(url, TabLaunchType.FROM_LINK);
+                mTabManager.createTab(url, TabLaunchType.FROM_LONGPRESS_FOREGROUND);
             }
 
             @Override
             public void onOpenImageInNewTab(String url, Referrer referrer) {
-                mTabManager.createTab(url, TabLaunchType.FROM_LINK);
+                mTabManager.createTab(url, TabLaunchType.FROM_LONGPRESS_FOREGROUND);
             }
         });
     }
