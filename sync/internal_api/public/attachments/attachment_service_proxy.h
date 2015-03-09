@@ -50,10 +50,6 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
 
   ~AttachmentServiceProxy() override;
 
-  // AttachmentService implementation.
-  //
-  // GetStore always returns NULL.
-  AttachmentStore* GetStore() override;
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
                                 const GetOrDownloadCallback& callback) override;
   void UploadAttachments(const AttachmentIdSet& attachment_ids) override;
@@ -79,7 +75,6 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
     Core(const base::WeakPtr<syncer::AttachmentService>& wrapped);
 
     // AttachmentService implementation.
-    AttachmentStore* GetStore() override;
     void GetOrDownloadAttachments(
         const AttachmentIdList& attachment_ids,
         const GetOrDownloadCallback& callback) override;

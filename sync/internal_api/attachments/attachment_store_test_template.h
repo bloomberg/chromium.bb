@@ -47,7 +47,7 @@ class AttachmentStoreTest : public testing::Test {
  protected:
   AttachmentStoreFactory attachment_store_factory;
   base::MessageLoop message_loop;
-  scoped_refptr<AttachmentStore> store;
+  scoped_ptr<AttachmentStore> store;
   AttachmentStore::Result result;
   scoped_ptr<AttachmentMap> attachments;
   scoped_ptr<AttachmentIdList> failed_attachment_ids;

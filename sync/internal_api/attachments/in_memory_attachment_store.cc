@@ -66,6 +66,7 @@ void InMemoryAttachmentStore::Read(
 }
 
 void InMemoryAttachmentStore::Write(
+    AttachmentStore::AttachmentReferrer referrer,
     const AttachmentList& attachments,
     const AttachmentStore::WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -78,6 +79,7 @@ void InMemoryAttachmentStore::Write(
 }
 
 void InMemoryAttachmentStore::Drop(
+    AttachmentStore::AttachmentReferrer referrer,
     const AttachmentIdList& ids,
     const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -115,6 +117,7 @@ void InMemoryAttachmentStore::ReadMetadata(
 }
 
 void InMemoryAttachmentStore::ReadAllMetadata(
+    AttachmentStore::AttachmentReferrer referrer,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;

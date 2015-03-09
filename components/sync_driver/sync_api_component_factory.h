@@ -37,7 +37,7 @@ class SyncApiComponentFactory {
   // provided. AttachmentService doesn't take ownership of delegate, the pointer
   // must be valid throughout AttachmentService lifetime.
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
-      const scoped_refptr<syncer::AttachmentStore>& attachment_store,
+      scoped_ptr<syncer::AttachmentStore> attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
       syncer::ModelType model_type,

@@ -11,6 +11,7 @@
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_store.h"
+#include "sync/api/attachments/attachment_store_backend.h"
 #include "sync/base/sync_export.h"
 
 namespace attachment_store_pb {
@@ -42,14 +43,17 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
   void Init(const AttachmentStore::InitCallback& callback) override;
   void Read(const AttachmentIdList& ids,
             const AttachmentStore::ReadCallback& callback) override;
-  void Write(const AttachmentList& attachments,
+  void Write(AttachmentStore::AttachmentReferrer referrer,
+             const AttachmentList& attachments,
              const AttachmentStore::WriteCallback& callback) override;
-  void Drop(const AttachmentIdList& ids,
+  void Drop(AttachmentStore::AttachmentReferrer referrer,
+            const AttachmentIdList& ids,
             const AttachmentStore::DropCallback& callback) override;
   void ReadMetadata(
       const AttachmentIdList& ids,
       const AttachmentStore::ReadMetadataCallback& callback) override;
   void ReadAllMetadata(
+      AttachmentStore::AttachmentReferrer referrer,
       const AttachmentStore::ReadMetadataCallback& callback) override;
 
  private:
