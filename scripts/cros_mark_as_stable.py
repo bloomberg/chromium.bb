@@ -6,11 +6,10 @@
 
 from __future__ import print_function
 
-import optparse
 import os
-import sys
 
 from chromite.cbuildbot import constants
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -84,35 +83,6 @@ def _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
   output = git.RunGit(
       cwd, ['rev-parse', 'HEAD', tracking_branch]).output.split()
   return output[0] != output[1]
-
-
-def _CheckSaneArguments(command, options):
-  """Checks to make sure the flags are sane.  Dies if arguments are not sane."""
-  if not command in COMMAND_DICTIONARY.keys():
-    _PrintUsageAndDie('%s is not a valid command' % command)
-  if not options.packages and command == 'commit' and not options.all:
-    _PrintUsageAndDie('Please specify at least one package')
-  if options.boards:
-    cros_build_lib.AssertInsideChroot()
-  if not os.path.isdir(options.srcroot):
-    _PrintUsageAndDie('srcroot is not a valid path')
-  options.srcroot = os.path.abspath(options.srcroot)
-
-
-def _PrintUsageAndDie(error_message=''):
-  """Prints optional error_message the usage and returns an error exit code."""
-  command_usage = 'Commands: \n'
-  # Add keys and usage information from dictionary.
-  commands = sorted(COMMAND_DICTIONARY.keys())
-  for command in commands:
-    command_usage += '  %s: %s\n' % (command, COMMAND_DICTIONARY[command])
-  commands_str = '|'.join(commands)
-  cros_build_lib.Warning('Usage: %s FLAGS [%s]\n\n%s' % (
-      sys.argv[0], commands_str, command_usage))
-  if error_message:
-    cros_build_lib.Die(error_message)
-  else:
-    sys.exit(1)
 
 
 # ======================= End Global Helper Functions ========================
@@ -212,38 +182,50 @@ class GitBranch(object):
     return branch in branches.split()
 
 
-def main(_argv):
-  parser = optparse.OptionParser('cros_mark_as_stable OPTIONS packages')
-  parser.add_option('--all', action='store_true',
-                    help='Mark all packages as stable.')
-  parser.add_option('-b', '--boards', default='',
-                    help='Colon-separated list of boards')
-  parser.add_option('--drop_file',
-                    help='File to list packages that were revved.')
-  parser.add_option('--dryrun', action='store_true',
-                    help='Passes dry-run to git push if pushing a change.')
-  parser.add_option('-o', '--overlays',
-                    help='Colon-separated list of overlays to modify.')
-  parser.add_option('-p', '--packages',
-                    help='Colon separated list of packages to rev.')
-  parser.add_option('-r', '--srcroot',
-                    default=os.path.join(constants.SOURCE_ROOT, 'src'),
-                    help='Path to root src directory.')
-  parser.add_option('--verbose', action='store_true',
-                    help='Prints out debug info.')
-  (options, args) = parser.parse_args()
+def GetParser():
+  """Creates the argparse parser."""
+  parser = commandline.ArgumentParser()
+  parser.add_argument('--all', action='store_true',
+                      help='Mark all packages as stable.')
+  parser.add_argument('-b', '--boards', default='',
+                      help='Colon-separated list of boards.')
+  parser.add_argument('--drop_file',
+                      help='File to list packages that were revved.')
+  parser.add_argument('--dryrun', action='store_true',
+                      help='Passes dry-run to git push if pushing a change.')
+  parser.add_argument('-o', '--overlays',
+                      help='Colon-separated list of overlays to modify.')
+  parser.add_argument('-p', '--packages',
+                      help='Colon separated list of packages to rev.')
+  parser.add_argument('-r', '--srcroot', type='path',
+                      default=os.path.join(constants.SOURCE_ROOT, 'src'),
+                      help='Path to root src directory.')
+  parser.add_argument('--verbose', action='store_true',
+                      help='Prints out debug info.')
+  parser.add_argument('command', choices=COMMAND_DICTIONARY.keys(),
+                      help='Command to run.')
+  return parser
+
+
+def main(argv):
+  parser = GetParser()
+  options = parser.parse_args(argv)
+
+  if not options.packages and options.command == 'commit' and not options.all:
+    parser.error('Please specify at least one package (--packages)')
+  if not os.path.isdir(options.srcroot):
+    parser.error('srcroot is not a valid path: %s' % options.srcroot)
+  if options.boards:
+    cros_build_lib.AssertInsideChroot()
+
+  options.Freeze()
 
   portage_util.EBuild.VERBOSE = options.verbose
 
-  if len(args) != 1:
-    _PrintUsageAndDie('Must specify a valid command [commit, push]')
-
-  command = args[0]
   package_list = None
   if options.packages:
     package_list = options.packages.split(':')
 
-  _CheckSaneArguments(command, options)
   if options.overlays:
     overlays = {}
     for path in options.overlays.split(':'):
@@ -259,7 +241,7 @@ def main(_argv):
 
   manifest = git.ManifestCheckout.Cached(options.srcroot)
 
-  if command == 'commit':
+  if options.command == 'commit':
     portage_util.BuildEBuildDictionary(overlays, options.all, package_list)
 
   # Contains the array of packages we actually revved.
@@ -300,10 +282,10 @@ def main(_argv):
       tracking_branch = git.GetTrackingBranchViaManifest(
           overlay, manifest=manifest)[1]
 
-      if command == 'push':
+      if options.command == 'push':
         PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                    options.dryrun, cwd=overlay)
-      elif command == 'commit':
+      elif options.command == 'commit':
         existing_commit = git.GetGitRepoRevision(overlay)
         work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                                 cwd=overlay)
@@ -341,7 +323,7 @@ def main(_argv):
           # catch when users make changes without updating cache files.
           queue.put([overlay])
 
-  if command == 'commit':
+  if options.command == 'commit':
     if cros_build_lib.IsInsideChroot():
       CleanStalePackages(options.boards.split(':'), new_package_atoms)
     if options.drop_file:
