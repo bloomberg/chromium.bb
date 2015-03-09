@@ -19,18 +19,19 @@ document.onkeydown = function(e) {
 <link rel="stylesheet" href="plugin_placeholders.css"></link>
 <style>
 #outer {
+  position: relative;
   border: none;
   cursor: pointer;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
 }
 
 #shielding {
   background-color: rgba(0, 0, 0, 0.5);
-  height: 100%;
   position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
   width: 100%;
+  z-index: 2;
 }
 
 #plugin_icon {
@@ -41,15 +42,22 @@ document.onkeydown = function(e) {
   opacity: 0.95;
 }
 
+#poster {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
 #inner {
   margin-top: -25px;
 }
 </style>
+<base i18n-values="href:baseurl">
 </head>
 
 <body onload="notifyDidFinishLoading();">
-  <div i18n-values="title:name;.style.background-image:background" id="outer"
-       onclick="plugin.load()">
+  <div i18n-values="title:name" id="outer" onclick="plugin.load()">
+    <img id="poster" i18n-values="srcset:poster">
     <div id="shielding">
       <div id="inner">
         <div><img id="plugin_icon" src="plugin_power_saver_play.png" /></div>

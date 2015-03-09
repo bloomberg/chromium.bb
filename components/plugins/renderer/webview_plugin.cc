@@ -109,8 +109,13 @@ WebPluginContainer* WebViewPlugin::container() const { return container_; }
 
 bool WebViewPlugin::initialize(WebPluginContainer* container) {
   container_ = container;
-  if (container_)
+  if (container_) {
     old_title_ = container_->element().getAttribute("title");
+
+    // Propagate device scale to inner webview to load the correct resource
+    // when images have a "srcset" attribute.
+    web_view_->setDeviceScaleFactor(container_->deviceScaleFactor());
+  }
   return true;
 }
 
@@ -136,8 +141,14 @@ void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
 
   paint_rect.Offset(-rect_.x(), -rect_.y());
 
-  canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
   canvas->save();
+  canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
+
+  // Apply inverse device scale factor, as the outer webview has already
+  // applied it, and the inner webview will apply it again.
+  SkScalar inverse_scale =
+      SkFloatToScalar(1.0 / container_->deviceScaleFactor());
+  canvas->scale(inverse_scale, inverse_scale);
 
   web_view_->layout();
   web_view_->paint(canvas, paint_rect);

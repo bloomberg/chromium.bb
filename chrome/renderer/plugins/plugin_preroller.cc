@@ -61,7 +61,7 @@ void PluginPreroller::OnThrottleStateChange() {
   ChromePluginPlaceholder* placeholder =
       ChromePluginPlaceholder::CreateBlockedPlugin(
           render_frame(), frame_, params_, info_, identifier_, name_,
-          IDR_PLUGIN_POSTER_HTML, message_, keyframe_data_url_);
+          IDR_PLUGIN_POSTER_HTML, message_, keyframe_data_url_.spec(), GURL());
   placeholder->SetPremadePlugin(throttler_);
   placeholder->set_power_saver_enabled(true);
   placeholder->set_allow_loading(true);

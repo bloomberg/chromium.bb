@@ -22,6 +22,8 @@ PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
                                     render_frame->GetWebkitPreferences(),
                                     html_data,
                                     placeholderDataUrl)) {
+  DCHECK(placeholderDataUrl.is_valid())
+      << "Blink requires the placeholder to have a valid URL.";
 }
 
 PluginPlaceholder::~PluginPlaceholder() {}

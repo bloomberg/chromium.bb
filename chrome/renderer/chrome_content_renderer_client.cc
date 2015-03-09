@@ -318,17 +318,17 @@ void TrackPosterParamPresence(const blink::WebPluginParams& params,
     RecordPosterParamPresence(POSTER_PRESENCE_NO_PARAM_PPS_DISABLED);
 }
 
-GURL GetPluginInstancePosterImage(const blink::WebPluginParams& params,
-                                  const GURL& page_base_url) {
+std::string GetPluginInstancePosterAttribute(
+    const blink::WebPluginParams& params) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
 
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
     if (params.attributeNames[i].utf8() == "poster" &&
         !params.attributeValues[i].isEmpty()) {
-      return page_base_url.Resolve(params.attributeValues[i].utf8());
+      return params.attributeValues[i].utf8();
     }
   }
-  return GURL();
+  return std::string();
 }
 #endif
 
@@ -796,10 +796,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     auto create_blocked_plugin =
         [&render_frame, &frame, &params, &info, &identifier, &group_name](
             int template_id, const base::string16& message) {
-      return ChromePluginPlaceholder::CreateBlockedPlugin(
-          render_frame, frame, params, info, identifier, group_name,
-          template_id, message, GURL());
-    };
+          return ChromePluginPlaceholder::CreateBlockedPlugin(
+              render_frame, frame, params, info, identifier, group_name,
+              template_id, message, std::string(), GURL());
+        };
     switch (status_value) {
       case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
         NOTREACHED();
@@ -878,11 +878,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (info.name == ASCIIToUTF16(content::kFlashPluginName))
           TrackPosterParamPresence(params, power_saver_enabled);
 
-        GURL poster_url;
-        if (power_saver_enabled) {
-          poster_url =
-              GetPluginInstancePosterImage(params, frame->document().url());
-        }
+        std::string poster_attribute;
+        if (power_saver_enabled)
+          poster_attribute = GetPluginInstancePosterAttribute(params);
 
         // Delay loading plugins if prerendering.
         // TODO(mmenke):  In the case of prerendering, feed into
@@ -891,13 +889,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         bool is_prerendering =
             prerender::PrerenderHelper::IsPrerendering(render_frame);
         if (blocked_for_background_tab || is_prerendering ||
-            poster_url.is_valid()) {
+            !poster_attribute.empty()) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
               render_frame, frame, params, info, identifier, group_name,
-              poster_url.is_valid() ? IDR_PLUGIN_POSTER_HTML
-                                    : IDR_BLOCKED_PLUGIN_HTML,
+              poster_attribute.empty() ? IDR_BLOCKED_PLUGIN_HTML
+                                       : IDR_PLUGIN_POSTER_HTML,
               l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
-              poster_url);
+              poster_attribute, frame->document().url());
           placeholder->set_blocked_for_background_tab(
               blocked_for_background_tab);
           placeholder->set_blocked_for_prerendering(is_prerendering);

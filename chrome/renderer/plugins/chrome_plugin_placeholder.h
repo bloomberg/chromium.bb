@@ -17,6 +17,8 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
  public:
   static const char kPluginPlaceholderDataURL[];
 
+  // If |poster_attribute| contains relative paths, |base_url| must be
+  // non-empty. This is so the placeholder can resolve the relative paths.
   static ChromePluginPlaceholder* CreateBlockedPlugin(
       content::RenderFrame* render_frame,
       blink::WebLocalFrame* frame,
@@ -26,7 +28,8 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
       const base::string16& name,
       int resource_id,
       const base::string16& message,
-      const GURL& poster_url);
+      const std::string& poster_attribute,
+      const GURL& base_url);
 
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static ChromePluginPlaceholder* CreateMissingPlugin(

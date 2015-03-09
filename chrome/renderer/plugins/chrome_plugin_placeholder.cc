@@ -153,14 +153,17 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     const base::string16& name,
     int template_id,
     const base::string16& message,
-    const GURL& poster_url) {
+    const std::string& poster_attribute,
+    const GURL& base_url) {
   base::DictionaryValue values;
   values.SetString("message", message);
   values.SetString("name", name);
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
 
-  if (poster_url.is_valid())
-    values.SetString("background", "url('" + poster_url.spec() + "')");
+  if (!poster_attribute.empty()) {
+    values.SetString("poster", poster_attribute);
+    values.SetString("baseurl", base_url.spec());
+  }
 
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(template_id));
@@ -174,7 +177,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
       render_frame, frame, params, html_data, name);
 
 #if defined(ENABLE_PLUGINS)
-  if (poster_url.is_valid())
+  if (!poster_attribute.empty())
     blocked_plugin->BlockForPowerSaverPoster();
 #endif
   blocked_plugin->SetPluginInfo(info);
