@@ -414,8 +414,9 @@ TEST(TopControlsManagerTest, HeightChangeMaintainsFullyVisibleControls) {
 TEST(TopControlsManagerTest, GrowingHeightKeepsTopControlsHidden) {
   MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
+  client.SetTopControlsHeight(1.f);
   manager->UpdateTopControlsState(HIDDEN, HIDDEN, false);
-  EXPECT_EQ(0.f, manager->ControlsTopOffset());
+  EXPECT_EQ(-1.f, manager->ControlsTopOffset());
   EXPECT_EQ(0.f, manager->ContentTopOffset());
 
   client.SetTopControlsHeight(50.f);

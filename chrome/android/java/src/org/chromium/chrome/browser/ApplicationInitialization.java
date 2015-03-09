@@ -35,8 +35,6 @@ public final class ApplicationInitialization {
         CommandLine commandLine = CommandLine.getInstance();
         if (commandLine.hasSwitch(ChromeSwitches.DISABLE_FULLSCREEN)) return;
 
-        commandLine.appendSwitch(ContentSwitches.ENABLE_TOP_CONTROLS_POSITION_CALCULATION);
-
         TypedValue threshold = new TypedValue();
         resources.getValue(R.floats.top_controls_show_threshold, threshold, true);
         commandLine.appendSwitchWithValue(

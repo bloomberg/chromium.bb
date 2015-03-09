@@ -101,6 +101,9 @@ void TopControlsManager::ScrollBegin() {
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
     const gfx::Vector2dF& pending_delta) {
+  if (!TopControlsHeight())
+    return pending_delta;
+
   if (pinch_gesture_active_)
     return pending_delta;
 
@@ -182,6 +185,12 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
 
   if (top_controls_animation_ && animation_direction_ == direction)
     return;
+
+  if (!TopControlsHeight()) {
+    client_->SetCurrentTopControlsShownRatio(
+        direction == HIDING_CONTROLS ? 0.f : 1.f);
+    return;
+  }
 
   top_controls_animation_ = KeyframedFloatAnimationCurve::Create();
   base::TimeDelta start_time = gfx::FrameTime::Now() - base::TimeTicks();
