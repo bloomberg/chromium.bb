@@ -33,13 +33,6 @@ class ToolbarLayer : public Layer {
                     bool anonymize_component_is_incognito,
                     bool show_debug);
 
-  // TODO(tedchoc): Remove after migrating downstream to signature that takes
-  //                the progress_resource.
-  void PushResource(ui::ResourceManager::Resource* resource,
-                    bool anonymize,
-                    bool anonymize_component_is_incognito,
-                    bool show_debug);
-
  protected:
   ToolbarLayer();
   ~ToolbarLayer() override;

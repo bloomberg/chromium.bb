@@ -63,17 +63,6 @@ void ToolbarLayer::PushResource(
     debug_layer_->RemoveFromParent();
 }
 
-void ToolbarLayer::PushResource(ui::ResourceManager::Resource* resource,
-                                bool anonymize,
-                                bool anonymize_component_is_incognito,
-                                bool show_debug) {
-  PushResource(resource,
-               nullptr,
-               anonymize,
-               anonymize_component_is_incognito,
-               show_debug);
-}
-
 ToolbarLayer::ToolbarLayer()
     : layer_(cc::Layer::Create()),
       bitmap_layer_(cc::UIResourceLayer::Create()),
