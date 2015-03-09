@@ -391,8 +391,6 @@ inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPr
 {
     if (identifier)
         return cssValuePool().createIdentifierValue(identifier);
-    if (value->unit == CSSPrimitiveValue::CSS_STRING)
-        return createPrimitiveCustomIdentValue(value);
     if (value->unit >= CSSPrimitiveValue::CSS_NUMBER && value->unit <= CSSPrimitiveValue::CSS_KHZ)
         return createPrimitiveNumericValue(value);
     if (value->unit >= CSSPrimitiveValue::CSS_TURN && value->unit <= CSSPrimitiveValue::CSS_CHS)
@@ -528,9 +526,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTextAlign:
         // left | right | center | justify | -webkit-left | -webkit-right | -webkit-center | -webkit-match-parent
         // | start | end | <string> | inherit | -webkit-auto (converted to start)
-        if ((id >= CSSValueWebkitAuto && id <= CSSValueWebkitMatchParent) || id == CSSValueStart || id == CSSValueEnd
-            || value->unit == CSSPrimitiveValue::CSS_STRING)
+        // FIXME: <string> not supported right now
+        if ((id >= CSSValueWebkitAuto && id <= CSSValueWebkitMatchParent) || id == CSSValueStart || id == CSSValueEnd) {
             validPrimitive = true;
+        }
         break;
 
     case CSSPropertyFontWeight:  { // normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit
@@ -2179,7 +2178,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseQuotes()
         RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
         if (val->unit != CSSPrimitiveValue::CSS_STRING)
             return nullptr;
-        parsedValue = CSSPrimitiveValue::create(val->string, CSSPrimitiveValue::CSS_STRING);
+        parsedValue = createPrimitiveStringValue(val);
         values->append(parsedValue.release());
         m_valueList->next();
     }
