@@ -239,8 +239,6 @@ Polymer('audio-player', {
     }
 
     this.trackList.currentTrackIndex = nextTrackIndex;
-
-    Platform.performMicrotaskCheckpoint();
   },
 
   /**

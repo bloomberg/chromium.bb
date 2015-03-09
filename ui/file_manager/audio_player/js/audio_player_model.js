@@ -54,7 +54,7 @@
         model[key.substr(STORAGE_PREFIX.length)] = result[key];
       }
       callback();
-    }.bind(this));
+    });
   };
 
   /**
@@ -69,13 +69,13 @@
     Object.seal(this);
 
     // Restores the values from the storage
-    loadModel(this, function() {
+    var target = this;
+    loadModel(target, function() {
       // Installs observer to watch changes of the values.
-      var observer = new ObjectObserver(this);
-      observer.open(function(added, removed, changed, getOldValueFn) {
-        saveModel(this);
-      }.bind(this));
-    }.bind(this));
+      Object.observe(target, function(changes) {
+        saveModel(target);
+      });
+    });
   }
 
   // Exports AudioPlayerModel class to the global.

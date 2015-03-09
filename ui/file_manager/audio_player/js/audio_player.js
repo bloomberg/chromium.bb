@@ -21,10 +21,14 @@ function AudioPlayer(container) {
   this.selectedEntry_ = null;
 
   this.model_ = new AudioPlayerModel();
-  var observer = new PathObserver(this.model_, 'expanded');
-  observer.open(function(newValue, oldValue) {
-    // Inverse arguments intentionally to match the Polymer way.
-    this.onModelExpandedChanged(oldValue, newValue);
+  Object.observe(this.model_, function(changes) {
+    for (var i = 0; i < changes.lenfth; i++) {
+      var change = changes[i];
+      if (change.name == 'expanded' && change.type == 'update') {
+        this.onModelExpandedChanged(change.oldValue, change.object.expanded);
+        break;
+      }
+    }
   }.bind(this));
 
   this.entries_ = [];
@@ -45,27 +49,29 @@ function AudioPlayer(container) {
   // TODO(yoshiki): Move tracks into the model.
   this.player_.tracks = [];
   this.player_.model = this.model_;
-  Platform.performMicrotaskCheckpoint();
 
-  this.errorString_ = '';
-  this.offlineString_ = '';
-  chrome.fileManagerPrivate.getStrings(function(strings) {
-    container.ownerDocument.title = strings['AUDIO_PLAYER_TITLE'];
-    this.errorString_ = strings['AUDIO_ERROR'];
-    this.offlineString_ = strings['AUDIO_OFFLINE'];
-    AudioPlayer.TrackInfo.DEFAULT_ARTIST =
-        strings['AUDIO_PLAYER_DEFAULT_ARTIST'];
+  // Run asynchronously after an event of model change is delivered.
+  setTimeout(function() {
+    this.errorString_ = '';
+    this.offlineString_ = '';
+    chrome.fileManagerPrivate.getStrings(function(strings) {
+      container.ownerDocument.title = strings['AUDIO_PLAYER_TITLE'];
+      this.errorString_ = strings['AUDIO_ERROR'];
+      this.offlineString_ = strings['AUDIO_OFFLINE'];
+      AudioPlayer.TrackInfo.DEFAULT_ARTIST =
+          strings['AUDIO_PLAYER_DEFAULT_ARTIST'];
+    }.bind(this));
+
+    this.volumeManager_.addEventListener('externally-unmounted',
+        this.onExternallyUnmounted_.bind(this));
+
+    window.addEventListener('resize', this.onResize_.bind(this));
+
+    // Show the window after DOM is processed.
+    var currentWindow = chrome.app.window.current();
+    if (currentWindow)
+      setTimeout(currentWindow.show.bind(currentWindow), 0);
   }.bind(this));
-
-  this.volumeManager_.addEventListener('externally-unmounted',
-      this.onExternallyUnmounted_.bind(this));
-
-  window.addEventListener('resize', this.onResize_.bind(this));
-
-  // Show the window after DOM is processed.
-  var currentWindow = chrome.app.window.current();
-  if (currentWindow)
-    setTimeout(currentWindow.show.bind(currentWindow), 0);
 }
 
 /**
@@ -134,22 +140,21 @@ AudioPlayer.prototype.load = function(playlist) {
           unchanged = false;
       }
 
-      if (!unchanged) {
+      if (!unchanged)
         this.player_.tracks = newTracks;
 
-        // Makes it sure that the handler of the track list is called, before
-        // the handler of the track index.
-        Platform.performMicrotaskCheckpoint();
-      }
+      // Run asynchronously, to makes it sure that the handler of the track list
+      // is called, before the handler of the track index.
+      setTimeout(function() {
+        this.select_(position, !!time);
 
-      this.select_(position, !!time);
-
-      // Load the selected track metadata first, then load the rest.
-      this.loadMetadata_(position);
-      for (i = 0; i != this.entries_.length; i++) {
-        if (i != position)
-          this.loadMetadata_(i);
-      }
+        // Load the selected track metadata first, then load the rest.
+        this.loadMetadata_(position);
+        for (i = 0; i != this.entries_.length; i++) {
+          if (i != position)
+            this.loadMetadata_(i);
+        }
+      }.bind(this));
     }.bind(this));
   }.bind(this));
 };
@@ -212,22 +217,24 @@ AudioPlayer.prototype.select_ = function(newTrack, time) {
   this.currentTrackIndex_ = newTrack;
   this.player_.currentTrackIndex = this.currentTrackIndex_;
   this.player_.audioController.time = time;
-  Platform.performMicrotaskCheckpoint();
 
-  if (!window.appReopen)
-    this.player_.audioElement.play();
+  // Run asynchronously after an event of current track change is delivered.
+  setTimeout(function() {
+    if (!window.appReopen)
+      this.player_.audioElement.play();
 
-  window.appState.position = this.currentTrackIndex_;
-  window.appState.time = 0;
-  util.saveAppState();
+    window.appState.position = this.currentTrackIndex_;
+    window.appState.time = 0;
+    util.saveAppState();
 
-  var entry = this.entries_[this.currentTrackIndex_];
+    var entry = this.entries_[this.currentTrackIndex_];
 
-  this.fetchMetadata_(entry, function(metadata) {
-    if (this.currentTrackIndex_ != newTrack)
-      return;
+    this.fetchMetadata_(entry, function(metadata) {
+      if (this.currentTrackIndex_ != newTrack)
+        return;
 
-    this.selectedEntry_ = entry;
+      this.selectedEntry_ = entry;
+    }.bind(this));
   }.bind(this));
 };
 
