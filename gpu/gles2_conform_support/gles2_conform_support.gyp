@@ -61,6 +61,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //gpu/gles2_conform_support/native
       'target_name': 'egl_main_native',
       'type': 'static_library',
       'dependencies': [
