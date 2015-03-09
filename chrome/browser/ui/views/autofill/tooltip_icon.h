@@ -11,6 +11,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/widget/widget_observer.h"
@@ -42,6 +43,10 @@ class TooltipIcon : public views::ImageView,
   // views::WidgetObserver:
   void OnWidgetDestroyed(views::Widget* widget) override;
 
+  void set_bubble_arrow(views::BubbleBorder::Arrow arrow) {
+    bubble_arrow_ = arrow;
+  }
+
  private:
   // Changes this view's image to the resource indicated by |idr|.
   void ChangeImageTo(int idr);
@@ -61,6 +66,9 @@ class TooltipIcon : public views::ImageView,
 
   // A bubble shown on hover. Weak; owns itself. NULL while hiding.
   InfoBubble* bubble_;
+
+  // The position of the bubble's arrow.
+  views::BubbleBorder::Arrow bubble_arrow_;
 
   // A timer to delay showing |bubble_|.
   base::OneShotTimer<TooltipIcon> show_timer_;

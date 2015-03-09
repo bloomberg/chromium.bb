@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
+#include "chrome/browser/ui/views/autofill/tooltip_icon.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -133,7 +134,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     // Must hardcode a width so the label knows where to wrap. TODO(estade):
     // This can lead to a weird looking dialog if we end up getting allocated
     // more width than we ask for, e.g. if the title is super long.
-    const int kWidth = 450;
+    const int kWidth = 375;
     return gfx::Size(kWidth, GetHeightForWidth(kWidth));
   }
 
@@ -283,10 +284,23 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     error_label_->SetEnabledColor(kWarningColor);
     controls_container_->AddChildView(error_label_);
 
+    // Local storage checkbox and (?) tooltip.
+    views::View* storage_row = new views::View();
+    views::BoxLayout* storage_row_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    storage_row->SetLayoutManager(storage_row_layout);
+    controls_container_->AddChildView(storage_row);
+
     storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
     storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
-    controls_container_->AddChildView(storage_checkbox_);
+    storage_row->AddChildView(storage_checkbox_);
+    storage_row_layout->SetFlexForView(storage_checkbox_, 1);
+
+    TooltipIcon* tooltip = new TooltipIcon(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP));
+    tooltip->set_bubble_arrow(views::BubbleBorder::BOTTOM_RIGHT);
+    storage_row->AddChildView(tooltip);
 
     progress_overlay_ = new views::View();
     views::BoxLayout* progress_layout =

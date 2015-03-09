@@ -11204,6 +11204,9 @@ Chrome ran out of memory.
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX" desc="Text for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device. If checked, the dialog won't show up again for the given credit card." formatter_data="android_java">
         Don't ask again for this card
       </message>
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP" desc="Text that provides further explanation for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device.">
+        If checked, Chrome will stash a copy of your card on this device for faster form filling.
+      </message>
       <message name="IDS_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog." formatter_data="android_java">
         Verify
       </message>
