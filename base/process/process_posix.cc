@@ -287,12 +287,13 @@ void Process::Close() {
   // end up w/ a zombie when it does finally exit.
 }
 
-void Process::Terminate(int result_code) {
+bool Process::Terminate(int result_code, bool wait) const {
   // result_code isn't supportable.
   DCHECK(IsValid());
   // We don't wait here. It's the responsibility of other code to reap the
   // child.
-  KillProcess(process_, result_code, false);
+  // TODO(rvargas) crbug/417532: Move the implementation here.
+  return KillProcess(process_, result_code, wait);
 }
 
 bool Process::WaitForExit(int* exit_code) {

@@ -123,8 +123,10 @@ void Process::Close() {
   process_.Close();
 }
 
-void Process::Terminate(int result_code) {
-  ::TerminateProcess(Handle(), result_code);
+bool Process::Terminate(int result_code, bool wait) const {
+  DCHECK(IsValid());
+  // TODO(rvargas) crbug/417532: Move the implementation here.
+  return KillProcess(Handle(), result_code, wait);
 }
 
 bool Process::WaitForExit(int* exit_code) {

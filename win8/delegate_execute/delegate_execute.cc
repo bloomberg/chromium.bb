@@ -110,7 +110,7 @@ int RelaunchChrome(const DelegateExecuteOperation& operation) {
       // This could mean that Chrome is hung. Proceed to exterminate.
       base::Process process = operation.GetParent();
       AtlTrace("%ds timeout. Killing Chrome %d\n", kWaitSeconds, process.Pid());
-      process.Terminate(0);
+      process.Terminate(0, false);
     } else {
       AtlTrace("Failed to wait for relaunch mutex, result is 0x%x\n", result);
     }

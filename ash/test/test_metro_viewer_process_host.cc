@@ -29,7 +29,7 @@ void TestMetroViewerProcessHost::TerminateViewer() {
         viewer_process_id,
         PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE);
     if (viewer_process.IsValid()) {
-      viewer_process.Terminate(0);
+      viewer_process.Terminate(0, false);
       int exit_code;
       viewer_process.WaitForExit(&exit_code);
     }

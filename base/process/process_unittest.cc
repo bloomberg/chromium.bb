@@ -123,7 +123,7 @@ TEST_F(ProcessTest, Terminate) {
 
   exit_code = kDummyExitCode;
   int kExpectedExitCode = 250;
-  process.Terminate(kExpectedExitCode);
+  process.Terminate(kExpectedExitCode, false);
   process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
                                  &exit_code);
 
@@ -160,7 +160,7 @@ TEST_F(ProcessTest, WaitForExitWithTimeout) {
   EXPECT_FALSE(process.WaitForExitWithTimeout(timeout, &exit_code));
   EXPECT_EQ(kDummyExitCode, exit_code);
 
-  process.Terminate(kDummyExitCode);
+  process.Terminate(kDummyExitCode, false);
 }
 
 // Ensure that the priority of a process is restored correctly after

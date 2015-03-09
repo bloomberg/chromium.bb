@@ -38,7 +38,7 @@ class ScopedSleeperProcess {
 
   ~ScopedSleeperProcess() {
     if (process_.IsValid()) {
-      process_.Terminate(-1);
+      process_.Terminate(-1, false);
       int exit_code = 0;
       EXPECT_TRUE(process_.WaitForExit(&exit_code));
     }
@@ -57,7 +57,7 @@ class ScopedSleeperProcess {
   void Kill(int exit_code, bool wait) {
     ASSERT_TRUE(process_.IsValid());
     ASSERT_FALSE(is_killed_);
-    process_.Terminate(exit_code);
+    process_.Terminate(exit_code, false);
     int seen_exit_code = 0;
     EXPECT_TRUE(process_.WaitForExit(&seen_exit_code));
     EXPECT_EQ(exit_code, seen_exit_code);

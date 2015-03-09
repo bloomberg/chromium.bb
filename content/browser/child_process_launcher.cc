@@ -522,7 +522,7 @@ void ChildProcessLauncher::Context::TerminateInternal(
 #else
   // Client has gone away, so just kill the process.  Using exit code 0
   // means that UMA won't treat this as a crash.
-  process.Terminate(RESULT_CODE_NORMAL_EXIT);
+  process.Terminate(RESULT_CODE_NORMAL_EXIT, false);
   // On POSIX, we must additionally reap the child.
 #if defined(OS_POSIX)
 #if !defined(OS_MACOSX)

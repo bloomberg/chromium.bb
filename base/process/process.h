@@ -92,9 +92,11 @@ class BASE_EXPORT Process {
   void Close();
 
   // Terminates the process with extreme prejudice. The given |result_code| will
-  // be the exit code of the process.
+  // be the exit code of the process. If |wait| is true, this method will wait
+  // for up to one minute for the process to actually terminate.
+  // Returns true if the process terminates within the allowed time.
   // NOTE: On POSIX |result_code| is ignored.
-  void Terminate(int result_code);
+  bool Terminate(int result_code, bool wait) const;
 
   // Waits for the process to exit. Returns true on success.
   // On POSIX, if the process has been signaled then |exit_code| is set to -1.

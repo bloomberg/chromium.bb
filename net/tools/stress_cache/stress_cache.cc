@@ -204,7 +204,7 @@ void CrashCallback() {
     printf("sweet death...\n");
 #if defined(OS_WIN)
     // Windows does more work on _exit() than we would like.
-    base::Process::Current().Terminate(kExpectedCrash);
+    base::Process::Current().Terminate(kExpectedCrash, false);
 #elif defined(OS_POSIX)
     // On POSIX, _exit() will terminate the process with minimal cleanup,
     // and it is cleaner than killing.
