@@ -318,7 +318,8 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
   // extensions go at their previous position.
   size_t new_index = 0;
   if (is_new_extension) {
-    new_index = visible_icon_count();
+    new_index = Manifest::IsComponentLocation(extension->location()) ?
+        0 : visible_icon_count();
     // For the last-known position, we use the index of the extension that is
     // just before this extension, plus one. (Note that this isn't the same
     // as new_index + 1, because last_known_positions_ can include disabled
