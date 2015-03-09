@@ -261,10 +261,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_DITHER
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_ADDOVAL
-#   define SK_SUPPORT_LEGACY_ADDOVAL
-#endif
-
 #ifndef    SK_LEGACY_STROKE_CURVES
 #   define SK_LEGACY_STROKE_CURVES
 #endif

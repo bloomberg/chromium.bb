@@ -395,8 +395,8 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
 
   float percentage_pixels_large_error = 2.5f;  // 2.5%, ~1600px / (256*256)
   float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 60.0f;
-  int large_error_allowed = 100;
+  float average_error_allowed_in_bad_pixels = 100.0f;
+  int large_error_allowed = 256;
   int small_error_allowed = 0;
   pixel_comparator_.reset(new FuzzyPixelComparator(
       true,  // discard_alpha
