@@ -3295,6 +3295,37 @@ drm_intel_reg_read(drm_intel_bufmgr *bufmgr,
 	return ret;
 }
 
+drm_public int
+drm_intel_get_subslice_total(int fd, unsigned int *subslice_total)
+{
+	drm_i915_getparam_t gp;
+	int ret;
+
+	memclear(gp);
+	gp.value = (int*)subslice_total;
+	gp.param = I915_PARAM_SUBSLICE_TOTAL;
+	ret = drmIoctl(fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	if (ret)
+		return -errno;
+
+	return 0;
+}
+
+drm_public int
+drm_intel_get_eu_total(int fd, unsigned int *eu_total)
+{
+	drm_i915_getparam_t gp;
+	int ret;
+
+	memclear(gp);
+	gp.value = (int*)eu_total;
+	gp.param = I915_PARAM_EU_TOTAL;
+	ret = drmIoctl(fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	if (ret)
+		return -errno;
+
+	return 0;
+}
 
 /**
  * Annotate the given bo for use in aub dumping.
