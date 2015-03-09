@@ -32,10 +32,8 @@
 #include "web/WebPagePopupImpl.h"
 
 #include "core/dom/ContextFeatures.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/EmptyClients.h"
@@ -378,11 +376,8 @@ void WebPagePopupImpl::resize(const WebSize& newSize)
     m_windowRectInScreen = WebRect(m_windowRectInScreen.x, m_windowRectInScreen.y, newSize.width, newSize.height);
     m_widgetClient->setWindowRect(m_windowRectInScreen);
 
-    if (m_page) {
+    if (m_page)
         toLocalFrame(m_page->mainFrame())->view()->resize(newSize);
-        m_page->frameHost().pinchViewport().setSize(newSize);
-    }
-
     m_widgetClient->didInvalidateRect(WebRect(0, 0, newSize.width, newSize.height));
 }
 

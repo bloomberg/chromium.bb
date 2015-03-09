@@ -403,12 +403,23 @@ void FrameView::setFrameRect(const IntRect& newRect)
     if (newRect == oldRect)
         return;
 
+    // Autosized font sizes depend on the width of the viewing area.
+    bool autosizerNeedsUpdating = false;
+    if (newRect.width() != oldRect.width() && m_frame->isMainFrame() && m_frame->settings()->textAutosizingEnabled())
+        autosizerNeedsUpdating = true;
+
     Widget::setFrameRect(newRect);
 
     updateScrollbars(scrollOffsetDouble());
     frameRectsChanged();
 
     updateScrollableAreaSet();
+
+    if (autosizerNeedsUpdating) {
+        // This needs to be after the call to Widget::setFrameRect, because it reads the new width.
+        if (TextAutosizer* textAutosizer = m_frame->document()->textAutosizer())
+            textAutosizer->updatePageInfoInAllFrames();
+    }
 
     if (LayoutView* layoutView = this->layoutView()) {
         if (layoutView->usesCompositing())

@@ -36,7 +36,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -88,10 +87,6 @@ void PinchViewport::setSize(const IntSize& size)
     if (m_size == size)
         return;
 
-    bool autosizerNeedsUpdating =
-        (size.width() != m_size.width())
-        && mainFrame()->settings()->textAutosizingEnabled();
-
     TRACE_EVENT2("blink", "PinchViewport::setSize", "width", size.width(), "height", size.height());
     m_size = size;
 
@@ -101,12 +96,6 @@ void PinchViewport::setSize(const IntSize& size)
         // Need to re-compute sizes for the overlay scrollbars.
         setupScrollbar(WebScrollbar::Horizontal);
         setupScrollbar(WebScrollbar::Vertical);
-    }
-
-    if (autosizerNeedsUpdating) {
-        // This needs to happen after setting the m_size member since it'll be read in the update call.
-        if (TextAutosizer* textAutosizer = mainFrame()->document()->textAutosizer())
-            textAutosizer->updatePageInfoInAllFrames();
     }
 }
 
