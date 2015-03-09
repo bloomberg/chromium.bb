@@ -68,6 +68,11 @@ public:
     {
         return reinterpret_cast<T*>(allocateBacking(size));
     }
+    template <typename T>
+    static T* allocateExpandedVectorBacking(size_t size)
+    {
+        return reinterpret_cast<T*>(allocateBacking(size));
+    }
     WTF_EXPORT static void freeVectorBacking(void* address);
     static inline bool expandVectorBacking(void*, size_t)
     {

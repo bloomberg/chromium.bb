@@ -969,7 +969,7 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
     return false;
 }
 
-void NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
+bool NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
 {
     ASSERT(header->payloadSize() > newSize);
     size_t allocationSize = Heap::allocationSizeFromSize(newSize);
@@ -981,15 +981,16 @@ void NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
         FILL_ZERO_IF_PRODUCTION(m_currentAllocationPoint, shrinkSize);
         ASAN_POISON_MEMORY_REGION(m_currentAllocationPoint, shrinkSize);
         header->setSize(allocationSize);
-    } else {
-        ASSERT(shrinkSize >= sizeof(HeapObjectHeader));
-        ASSERT(header->gcInfoIndex() > 0);
-        HeapObjectHeader* freedHeader = new (NotNull, header->payloadEnd() - shrinkSize) HeapObjectHeader(shrinkSize, header->gcInfoIndex());
-        freedHeader->markPromptlyFreed();
-        ASSERT(pageFromObject(reinterpret_cast<Address>(header)) == findPageFromAddress(reinterpret_cast<Address>(header)));
-        m_promptlyFreedSize += shrinkSize;
-        header->setSize(allocationSize);
+        return true;
     }
+    ASSERT(shrinkSize >= sizeof(HeapObjectHeader));
+    ASSERT(header->gcInfoIndex() > 0);
+    HeapObjectHeader* freedHeader = new (NotNull, header->payloadEnd() - shrinkSize) HeapObjectHeader(shrinkSize, header->gcInfoIndex());
+    freedHeader->markPromptlyFreed();
+    ASSERT(pageFromObject(reinterpret_cast<Address>(header)) == findPageFromAddress(reinterpret_cast<Address>(header)));
+    m_promptlyFreedSize += shrinkSize;
+    header->setSize(allocationSize);
+    return false;
 }
 
 Address NormalPageHeap::lazySweepPages(size_t allocationSize, size_t gcInfoIndex)
@@ -2671,7 +2672,9 @@ void HeapAllocator::backingFree(void* address)
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
-    static_cast<NormalPage*>(page)->heapForNormalPage()->promptlyFreeObject(header);
+    NormalPageHeap* heap = static_cast<NormalPage*>(page)->heapForNormalPage();
+    state->promptlyFreed(header->gcInfoIndex());
+    heap->promptlyFreeObject(header);
 }
 
 void HeapAllocator::freeVectorBacking(void* address)
@@ -2708,7 +2711,11 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
-    return static_cast<NormalPage*>(page)->heapForNormalPage()->expandObject(header, newSize);
+    NormalPageHeap* heap = static_cast<NormalPage*>(page)->heapForNormalPage();
+    bool succeed = heap->expandObject(header, newSize);
+    if (succeed)
+        state->allocationPointAdjusted(heap->heapIndex());
+    return succeed;
 }
 
 bool HeapAllocator::expandVectorBacking(void* address, size_t newSize)
@@ -2751,7 +2758,10 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     header->checkHeader();
-    static_cast<NormalPage*>(page)->heapForNormalPage()->shrinkObject(header, quantizedShrunkSize);
+    NormalPageHeap* heap = static_cast<NormalPage*>(page)->heapForNormalPage();
+    bool succeed = heap->shrinkObject(header, quantizedShrunkSize);
+    if (succeed)
+        state->allocationPointAdjusted(heap->heapIndex());
 }
 
 BasePage* Heap::lookup(Address address)
