@@ -21,6 +21,7 @@ class PrefService;
 namespace base {
 class ListValue;
 class SequencedTaskRunner;
+class Value;
 }
 
 namespace data_reduction_proxy {
@@ -63,6 +64,11 @@ public:
   // Writes the prefs stored in |DataReductionProxyPrefMap| and
   // |DataReductionProxyListPrefMap| to |pref_service|.
   void WritePrefs();
+
+  // Creates a |Value| summary of the persistent state of the network session.
+  // The caller is responsible for deleting the returned value.
+  // Must be called on the UI thread.
+  base::Value* HistoricNetworkStatsInfoToValue();
 
   base::WeakPtr<DataReductionProxyStatisticsPrefs> GetWeakPtr();
 

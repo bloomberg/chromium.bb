@@ -143,6 +143,23 @@ void DataReductionProxyStatisticsPrefs::WritePrefs() {
   delayed_task_posted_ = false;
 }
 
+base::Value*
+DataReductionProxyStatisticsPrefs::HistoricNetworkStatsInfoToValue() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  int64 total_received = GetInt64(
+      data_reduction_proxy::prefs::kHttpReceivedContentLength);
+  int64 total_original = GetInt64(
+      data_reduction_proxy::prefs::kHttpOriginalContentLength);
+
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  // Use strings to avoid overflow. base::Value only supports 32-bit integers.
+  dict->SetString("historic_received_content_length",
+                  base::Int64ToString(total_received));
+  dict->SetString("historic_original_content_length",
+                  base::Int64ToString(total_original));
+  return dict;
+}
+
 void DataReductionProxyStatisticsPrefs::DelayedWritePrefs() {
   // Only write after the first time posting the task.
   if (delayed_task_posted_)

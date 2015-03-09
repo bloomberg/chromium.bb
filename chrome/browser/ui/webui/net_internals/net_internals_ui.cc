@@ -45,6 +45,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/onc/onc_constants.h"
 #include "components/url_fixer/url_fixer.h"
@@ -584,9 +586,13 @@ void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
     const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Profile* profile = Profile::FromWebUI(web_ui());
+  DataReductionProxyChromeSettings* data_reduction_proxy_settings =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
+  data_reduction_proxy::DataReductionProxyStatisticsPrefs* statistics_prefs =
+      data_reduction_proxy_settings->data_reduction_proxy_service()->
+          statistics_prefs();
   base::Value* historic_network_info =
-      data_reduction_proxy::DataReductionProxyNetworkDelegate::
-          HistoricNetworkStatsInfoToValue(profile->GetPrefs());
+      statistics_prefs->HistoricNetworkStatsInfoToValue();
   SendJavascriptCommand("receivedHistoricNetworkStats", historic_network_info);
 }
 

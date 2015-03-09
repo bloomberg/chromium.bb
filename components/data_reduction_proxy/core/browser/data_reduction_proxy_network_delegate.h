@@ -74,12 +74,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       BooleanPrefMember* data_reduction_proxy_enabled,
       DataReductionProxyUsageStats* usage_stats);
 
-  // Creates a |Value| summary of the persistent state of the network session.
-  // The caller is responsible for deleting the returned value.
-  // Must be called on the UI thread.
-  static base::Value* HistoricNetworkStatsInfoToValue(
-      PrefService* profile_prefs);
-
   // Creates a |Value| summary of the state of the network session. The caller
   // is responsible for deleting the returned value.
   base::Value* SessionNetworkStatsInfoToValue() const;

@@ -110,25 +110,6 @@ void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
   data_reduction_proxy_usage_stats_ = usage_stats;
 }
 
-// static
-// TODO(megjablon): Use data_reduction_proxy_delayed_pref_service to read prefs.
-// Until updated the pref values may be up to an hour behind on desktop.
-base::Value* DataReductionProxyNetworkDelegate::HistoricNetworkStatsInfoToValue(
-    PrefService* profile_prefs) {
-  int64 total_received = profile_prefs->GetInt64(
-      data_reduction_proxy::prefs::kHttpReceivedContentLength);
-  int64 total_original = profile_prefs->GetInt64(
-      data_reduction_proxy::prefs::kHttpOriginalContentLength);
-
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  // Use strings to avoid overflow. base::Value only supports 32-bit integers.
-  dict->SetString("historic_received_content_length",
-                  base::Int64ToString(total_received));
-  dict->SetString("historic_original_content_length",
-                  base::Int64ToString(total_original));
-  return dict;
-}
-
 base::Value*
 DataReductionProxyNetworkDelegate::SessionNetworkStatsInfoToValue() const {
   base::DictionaryValue* dict = new base::DictionaryValue();

@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -41,6 +42,35 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
 
   void SetUp() override { RegisterPrefs(simple_pref_service_.registry()); }
 
+  void SetUpPrefs() {
+    CreatePrefList(prefs::kDailyHttpOriginalContentLength);
+    CreatePrefList(prefs::kDailyHttpReceivedContentLength);
+
+    const int64 kOriginalLength = 150;
+    const int64 kReceivedLength = 100;
+
+    statistics_prefs_->SetInt64(
+        prefs::kHttpOriginalContentLength, kOriginalLength);
+    statistics_prefs_->SetInt64(
+        prefs::kHttpReceivedContentLength, kReceivedLength);
+
+    base::ListValue* original_daily_content_length_list =
+        statistics_prefs_->GetList(prefs::kDailyHttpOriginalContentLength);
+    base::ListValue* received_daily_content_length_list =
+        statistics_prefs_->GetList(prefs::kDailyHttpReceivedContentLength);
+
+    for (size_t i = 0; i < kNumDaysInHistory; ++i) {
+      original_daily_content_length_list->Set(
+          i, new base::StringValue(base::Int64ToString(i)));
+    }
+
+    received_daily_content_length_list->Clear();
+    for (size_t i = 0; i < kNumDaysInHistory/2; ++i) {
+      received_daily_content_length_list->Set(
+          i, new base::StringValue(base::Int64ToString(i)));
+    }
+  }
+
   // Create daily pref list of |kNumDaysInHistory| zero values.
   void CreatePrefList(const char* pref) {
     base::ListValue* update = statistics_prefs_->GetList(pref);
@@ -72,6 +102,25 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
     EXPECT_EQ(delayed_pref, written_pref);
   }
 
+  // Verify the pref values in |dict| are equal to that in |statistics_prefs_|.
+  void VerifyPrefs(base::DictionaryValue* dict) {
+    base::string16 dict_pref_string;
+    int64 dict_pref;
+    int64 service_pref;
+
+    dict->GetString("historic_original_content_length", &dict_pref_string);
+    base::StringToInt64(dict_pref_string, &dict_pref);
+    service_pref = statistics_prefs_->GetInt64(
+        prefs::kHttpOriginalContentLength);
+    EXPECT_EQ(service_pref, dict_pref);
+
+    dict->GetString("historic_received_content_length", &dict_pref_string);
+    base::StringToInt64(dict_pref_string, &dict_pref);
+    service_pref = statistics_prefs_->GetInt64(
+        prefs::kHttpReceivedContentLength);
+    EXPECT_EQ(service_pref, dict_pref);
+  }
+
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   TestingPrefServiceSimple simple_pref_service_;
   scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
@@ -82,43 +131,12 @@ TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDirect) {
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta()));
-  const int64 kOriginalLength = 150;
-  const int64 kReceivedLength = 100;
+  SetUpPrefs();
 
-  CreatePrefList(
-      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
-  CreatePrefList(
-      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
-
-  statistics_prefs_->SetInt64(
-      data_reduction_proxy::prefs::kHttpOriginalContentLength, kOriginalLength);
-  statistics_prefs_->SetInt64(
-      data_reduction_proxy::prefs::kHttpReceivedContentLength, kReceivedLength);
-
-  base::ListValue* original_daily_content_length_list =
-      statistics_prefs_->GetList(data_reduction_proxy::prefs::
-                                 kDailyHttpOriginalContentLength);
-  base::ListValue* received_daily_content_length_list =
-      statistics_prefs_->GetList(data_reduction_proxy::prefs::
-                                 kDailyHttpReceivedContentLength);
-
-  for (size_t i = 0; i < kNumDaysInHistory; ++i) {
-    original_daily_content_length_list->Set(
-        i, new base::StringValue(base::Int64ToString(i)));
-  }
-
-  received_daily_content_length_list->Clear();
-  for (size_t i = 0; i < kNumDaysInHistory/2; ++i) {
-    received_daily_content_length_list->Set(
-        i, new base::StringValue(base::Int64ToString(i)));
-  }
-
-  VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpOriginalContentLength);
-  VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpReceivedContentLength);
-  VerifyPrefListWasWritten(
-      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
-  VerifyPrefListWasWritten(
-      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
+  VerifyPrefWasWritten(prefs::kHttpOriginalContentLength);
+  VerifyPrefWasWritten(prefs::kHttpReceivedContentLength);
+  VerifyPrefListWasWritten(prefs::kDailyHttpOriginalContentLength);
+  VerifyPrefListWasWritten(prefs::kDailyHttpReceivedContentLength);
 }
 
 TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDelayed) {
@@ -126,46 +144,14 @@ TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDelayed) {
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
-
-  CreatePrefList(
-      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
-  CreatePrefList(
-      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
-
-  const int64 kOriginalLength = 150;
-  const int64 kReceivedLength = 100;
-
-  statistics_prefs_->SetInt64(
-      data_reduction_proxy::prefs::kHttpOriginalContentLength, kOriginalLength);
-  statistics_prefs_->SetInt64(
-      data_reduction_proxy::prefs::kHttpReceivedContentLength, kReceivedLength);
-
-  base::ListValue* original_daily_content_length_list =
-      statistics_prefs_->GetList(data_reduction_proxy::prefs::
-                                 kDailyHttpOriginalContentLength);
-  base::ListValue* received_daily_content_length_list =
-      statistics_prefs_->GetList(data_reduction_proxy::prefs::
-                                 kDailyHttpReceivedContentLength);
-
-  for (size_t i = 0; i < kNumDaysInHistory; ++i) {
-    original_daily_content_length_list->Set(
-        i, new base::StringValue(base::Int64ToString(i)));
-  }
-
-  received_daily_content_length_list->Clear();
-  for (size_t i = 0; i < kNumDaysInHistory/2; ++i) {
-    received_daily_content_length_list->Set(
-        i, new base::StringValue(base::Int64ToString(i)));
-  }
+  SetUpPrefs();
 
   task_runner_->RunPendingTasks();
 
-  VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpOriginalContentLength);
-  VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpReceivedContentLength);
-  VerifyPrefListWasWritten(
-      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
-  VerifyPrefListWasWritten(
-      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
+  VerifyPrefWasWritten(prefs::kHttpOriginalContentLength);
+  VerifyPrefWasWritten(prefs::kHttpReceivedContentLength);
+  VerifyPrefListWasWritten(prefs::kDailyHttpOriginalContentLength);
+  VerifyPrefListWasWritten(prefs::kDailyHttpReceivedContentLength);
 }
 
 TEST_F(DataReductionProxyStatisticsPrefsTest,
@@ -174,47 +160,65 @@ TEST_F(DataReductionProxyStatisticsPrefsTest,
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
-
-  CreatePrefList(
-      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
-  CreatePrefList(
-      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
-
-  const int64 kOriginalLength = 150;
-  const int64 kReceivedLength = 100;
-
-  statistics_prefs_->SetInt64(
-      data_reduction_proxy::prefs::kHttpOriginalContentLength, kOriginalLength);
-  statistics_prefs_->SetInt64(
-      data_reduction_proxy::prefs::kHttpReceivedContentLength, kReceivedLength);
-
-  base::ListValue* original_daily_content_length_list =
-      statistics_prefs_->GetList(data_reduction_proxy::prefs::
-                                 kDailyHttpOriginalContentLength);
-  base::ListValue* received_daily_content_length_list =
-      statistics_prefs_->GetList(data_reduction_proxy::prefs::
-                                 kDailyHttpReceivedContentLength);
-
-  for (size_t i = 0; i < kNumDaysInHistory; ++i) {
-    original_daily_content_length_list->Set(
-        i, new base::StringValue(base::Int64ToString(i)));
-  }
-
-  received_daily_content_length_list->Clear();
-  for (size_t i = 0; i < kNumDaysInHistory/2; ++i) {
-    received_daily_content_length_list->Set(
-        i, new base::StringValue(base::Int64ToString(i)));
-  }
+  SetUpPrefs();
 
   simple_pref_service_.SetBoolean(
-      data_reduction_proxy::prefs::kUpdateDailyReceivedContentLengths, true);
+      prefs::kUpdateDailyReceivedContentLengths, true);
 
-  VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpOriginalContentLength);
-  VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpReceivedContentLength);
-  VerifyPrefListWasWritten(
-      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
-  VerifyPrefListWasWritten(
-      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
+  VerifyPrefWasWritten(prefs::kHttpOriginalContentLength);
+  VerifyPrefWasWritten(prefs::kHttpReceivedContentLength);
+  VerifyPrefListWasWritten(prefs::kDailyHttpOriginalContentLength);
+  VerifyPrefListWasWritten(prefs::kDailyHttpReceivedContentLength);
+}
+
+TEST_F(DataReductionProxyStatisticsPrefsTest,
+       HistoricNetworkStatsInfoToValue) {
+  const int64 kOriginalLength = 150;
+  const int64 kReceivedLength = 100;
+  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+      &simple_pref_service_,
+      task_runner_,
+      base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
+
+  base::DictionaryValue* dict = nullptr;
+  scoped_ptr<base::Value> stats_value(
+      statistics_prefs_->HistoricNetworkStatsInfoToValue());
+  EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
+  VerifyPrefs(dict);
+
+  statistics_prefs_->SetInt64(prefs::kHttpOriginalContentLength,
+                              kOriginalLength);
+  statistics_prefs_->SetInt64(prefs::kHttpReceivedContentLength,
+                              kReceivedLength);
+
+  stats_value.reset(statistics_prefs_->HistoricNetworkStatsInfoToValue());
+  EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
+  VerifyPrefs(dict);
+}
+
+TEST_F(DataReductionProxyStatisticsPrefsTest,
+       HistoricNetworkStatsInfoToValueDirect) {
+  const int64 kOriginalLength = 150;
+  const int64 kReceivedLength = 100;
+  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+      &simple_pref_service_,
+      task_runner_,
+      base::TimeDelta()));
+
+  base::DictionaryValue* dict = nullptr;
+  scoped_ptr<base::Value> stats_value(
+      statistics_prefs_->HistoricNetworkStatsInfoToValue());
+  EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
+  VerifyPrefs(dict);
+
+  statistics_prefs_->SetInt64(prefs::kHttpOriginalContentLength,
+                              kOriginalLength);
+  statistics_prefs_->SetInt64(prefs::kHttpReceivedContentLength,
+                              kReceivedLength);
+
+  stats_value.reset(statistics_prefs_->HistoricNetworkStatsInfoToValue());
+  EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
+  VerifyPrefs(dict);
 }
 
 }  // namespace data_reduction_proxy

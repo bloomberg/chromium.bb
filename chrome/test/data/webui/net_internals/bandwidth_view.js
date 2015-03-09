@@ -59,7 +59,7 @@ BandwidthTask.prototype = {
     assertEquals('string', typeof url);
     this.url_ = url;
     g_browser.addSessionNetworkStatsObserver(this, true);
-    g_browser.addHistoricNetworkStatsObserver(this, false);
+    g_browser.addHistoricNetworkStatsObserver(this, true);
     NetInternalsTest.switchToView('bandwidth');
     chrome.send('loadPage', [this.url_]);
   },
@@ -116,7 +116,7 @@ BandwidthTask.prototype = {
    * @param {object} networkStats State of the network session.
    */
   onSessionNetworkStatsChanged: function(networkStats) {
-    if (this.isDone() || this.sessionVerified)
+    if (this.isDone())
       return;
     // Wait until the received content length is at least the size of
     // our test page and favicon.
@@ -137,15 +137,16 @@ BandwidthTask.prototype = {
    * @param {object} networkStats State of the network session.
    */
   onHistoricNetworkStatsChanged: function(networkStats) {
-    if (this.isDone() || this.historicVerified)
+    if (this.isDone())
       return;
-    // The received content length should be zero since the historic
-    // information only updates every hour.
-    var expectedLength = 0;
-    // Wait until the table has changed, otherwise the columns will be NaN
-    if (!isNaN(this.getBandwidthTableCell_(0, 2))) {
+    // Wait until the received content length is at least the size of
+    // our test page and favicon.
+    var expectedLength = this.expectedLength_ + this.faviconLength_;
+    if (networkStats.historic_received_content_length >= expectedLength) {
       expectLE(expectedLength, networkStats.historic_original_content_length);
-      // Column 2 contains historic information.
+      // Column 2 contains historic information. The expected length should
+      // only be what has been collected in this session, because previously
+      // there was no history
       this.validateBandwidthTableColumn_(2, expectedLength, expectedLength);
       this.historicVerified = true;
       this.completeIfDone();
