@@ -530,24 +530,33 @@ void LoginDialogCallback(const GURL& request_url,
     return;
   }
 
-  // Check if the request is cross origin. There are two different ways the
-  // navigation can occur:
+  // Check if this is a main frame navigation and
+  // (a) if the request is cross origin or
+  // (b) if an interstitial is already being shown.
+  //
+  // For (a), there are two different ways the navigation can occur:
   // 1- The user enters the resource URL in the omnibox.
   // 2- The page redirects to the resource.
   // In both cases, the last committed URL is different than the resource URL,
   // so checking it is sufficient.
   // Note that (1) will not be true once site isolation is enabled, as any
   // navigation could cause a cross-process swap, including link clicks.
-  if (is_main_frame &&
-      parent_contents->GetLastCommittedURL().GetOrigin() !=
-          request_url.GetOrigin()) {
+  //
+  // For (b), the login interstitial should always replace an existing
+  // interstitial. This is because |LoginHandler::CloseContentsDeferred| tries
+  // to proceed whatever interstitial is being shown when the login dialog is
+  // closed, so that interstitial should only be a login interstitial.
+  if (is_main_frame && (parent_contents->ShowingInterstitialPage() ||
+                        parent_contents->GetLastCommittedURL().GetOrigin() !=
+                            request_url.GetOrigin())) {
     // Show a blank interstitial for main-frame, cross origin requests
     // so that the correct URL is shown in the omnibox.
     base::Closure callback = base::Bind(&ShowLoginPrompt,
                                         request_url,
                                         make_scoped_refptr(auth_info),
                                         make_scoped_refptr(handler));
-    // This is owned by the interstitial it creates.
+    // This is owned by the interstitial it creates. It cancels any existing
+    // interstitial.
     new LoginInterstitialDelegate(parent_contents,
                                   request_url,
                                   callback);
