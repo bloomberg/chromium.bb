@@ -26,16 +26,20 @@ CueTimeline::CueTimeline(HTMLMediaElement& mediaElement)
 void CueTimeline::addCues(TextTrack* track, const TextTrackCueList* cues)
 {
     ASSERT(track->mode() != TextTrack::disabledKeyword());
-
-    TrackDisplayUpdateScope scope(*this);
     for (size_t i = 0; i < cues->length(); ++i)
-        addCue(cues->item(i)->track(), cues->item(i));
+        addCueInternal(cues->item(i));
+    updateActiveCues(mediaElement().currentTime());
 }
 
 void CueTimeline::addCue(TextTrack* track, PassRefPtrWillBeRawPtr<TextTrackCue> cue)
 {
     ASSERT(track->mode() != TextTrack::disabledKeyword());
+    addCueInternal(cue);
+    updateActiveCues(mediaElement().currentTime());
+}
 
+void CueTimeline::addCueInternal(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
+{
     // Negative duration cues need be treated in the interval tree as
     // zero-length cues.
     double endTime = std::max(cue->startTime(), cue->endTime());
@@ -43,17 +47,22 @@ void CueTimeline::addCue(TextTrack* track, PassRefPtrWillBeRawPtr<TextTrackCue> 
     CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue.get());
     if (!m_cueTree.contains(interval))
         m_cueTree.add(interval);
-    updateActiveCues(mediaElement().currentTime());
 }
 
 void CueTimeline::removeCues(TextTrack*, const TextTrackCueList* cues)
 {
-    TrackDisplayUpdateScope scope(*this);
     for (size_t i = 0; i < cues->length(); ++i)
-        removeCue(cues->item(i)->track(), cues->item(i));
+        removeCueInternal(cues->item(i));
+    updateActiveCues(mediaElement().currentTime());
 }
 
 void CueTimeline::removeCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue> cue)
+{
+    removeCueInternal(cue);
+    updateActiveCues(mediaElement().currentTime());
+}
+
+void CueTimeline::removeCueInternal(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
 {
     // Negative duration cues need to be treated in the interval tree as
     // zero-length cues.
@@ -72,7 +81,6 @@ void CueTimeline::removeCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue> cue
         // removal shouldn't be done.
         cue->removeDisplayTree(TextTrackCue::DontNotifyRegion);
     }
-    updateActiveCues(mediaElement().currentTime());
 }
 
 static bool trackIndexCompare(TextTrack* a, TextTrack* b)

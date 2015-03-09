@@ -44,6 +44,9 @@ public:
 private:
     HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
 
+    void addCueInternal(PassRefPtrWillBeRawPtr<TextTrackCue>);
+    void removeCueInternal(PassRefPtrWillBeRawPtr<TextTrackCue>);
+
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 
     CueIntervalTree m_cueTree;
