@@ -117,37 +117,14 @@ class NET_EXPORT HttpServerPropertiesImpl
   typedef std::vector<std::string> CanonicalSufficList;
   typedef std::set<HostPortPair> Http11ServerHostPortSet;
 
-  // Server, port, and AlternateProtocol: an entity that can be broken.  (Once
-  // we use AlternativeService, the same AltSvc can be broken for one server but
-  // not for another depending on what certificate it can offer.)
-  struct BrokenAlternateProtocolEntry {
-    BrokenAlternateProtocolEntry(const BrokenAlternateProtocolEntry&) = default;
-    BrokenAlternateProtocolEntry(const HostPortPair& server,
-                                 uint16 port,
-                                 AlternateProtocol protocol)
-        : server(server), port(port), protocol(protocol) {}
-
-    bool operator<(const BrokenAlternateProtocolEntry& other) const {
-      if (!server.Equals(other.server))
-        return server < other.server;
-      if (port != other.port)
-        return port < other.port;
-      return protocol < other.protocol;
-    }
-
-    HostPortPair server;
-    uint16 port;
-    AlternateProtocol protocol;
-  };
-  // BrokenAlternateProtocolEntry with expiration time.
+  // Broken alternative service with expiration time.
   struct BrokenAlternateProtocolEntryWithTime {
     BrokenAlternateProtocolEntryWithTime(
-        const BrokenAlternateProtocolEntry& broken_alternate_protocol_entry,
+        const AlternativeService& alternative_service,
         base::TimeTicks when)
-        : broken_alternate_protocol_entry(broken_alternate_protocol_entry),
-          when(when) {}
+        : alternative_service(alternative_service), when(when) {}
 
-    BrokenAlternateProtocolEntry broken_alternate_protocol_entry;
+    AlternativeService alternative_service;
     base::TimeTicks when;
   };
   // Deque of BrokenAlternateProtocolEntryWithTime items, ordered by expiration
@@ -156,8 +133,7 @@ class NET_EXPORT HttpServerPropertiesImpl
       BrokenAlternateProtocolList;
   // Map from (server, alternate protocol and port) to the number of
   // times that alternate protocol has been marked broken for that server.
-  typedef std::map<BrokenAlternateProtocolEntry, int>
-      BrokenAlternateProtocolMap;
+  typedef std::map<AlternativeService, int> BrokenAlternateProtocolMap;
 
   // Return the iterator for |server|, or for its canonical host, or end.
   AlternateProtocolMap::const_iterator GetAlternateProtocolIterator(

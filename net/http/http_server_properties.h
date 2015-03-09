@@ -86,6 +86,32 @@ NET_EXPORT AlternateProtocol AlternateProtocolFromString(
 NET_EXPORT_PRIVATE AlternateProtocol AlternateProtocolFromNextProto(
     NextProto next_proto);
 
+struct NET_EXPORT AlternativeService {
+  AlternativeService()
+      : protocol(UNINITIALIZED_ALTERNATE_PROTOCOL), host(), port(0) {}
+
+  AlternativeService(AlternateProtocol protocol,
+                     const std::string& host,
+                     uint16 port)
+      : protocol(protocol), host(host), port(port) {}
+
+  AlternativeService(const AlternativeService& alternative_service) = default;
+  AlternativeService& operator=(const AlternativeService& alternative_service) =
+      default;
+
+  bool operator<(const AlternativeService& other) const {
+    if (protocol != other.protocol)
+      return protocol < other.protocol;
+    if (host != other.host)
+      return host < other.host;
+    return port < other.port;
+  }
+
+  AlternateProtocol protocol;
+  std::string host;
+  uint16 port;
+};
+
 struct NET_EXPORT AlternateProtocolInfo {
   AlternateProtocolInfo()
       : port(0),
