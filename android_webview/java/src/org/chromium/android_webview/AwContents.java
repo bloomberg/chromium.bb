@@ -18,10 +18,12 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -198,6 +200,7 @@ public class AwContents implements SmartClipProvider,
     private ViewGroup mContainerView;
     private final AwLayoutChangeListener mLayoutChangeListener;
     private final Context mContext;
+    private final int mAppTargetSdkVersion;
     private ContentViewCore mContentViewCore;
     private WindowAndroid mWindowAndroid;
     private WebContents mWebContents;
@@ -607,6 +610,7 @@ public class AwContents implements SmartClipProvider,
 
         mHandler = new Handler();
         mContext = context;
+        mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
         mInternalAccessAdapter = internalAccessAdapter;
         mNativeGLDelegate = nativeGLDelegate;
         mContentsClient = contentsClient;
@@ -1165,6 +1169,112 @@ public class AwContents implements SmartClipProvider,
             }
         };
         mContentsClient.getVisitedHistory(callback);
+    }
+
+    /**
+     * WebView.loadUrl.
+     */
+    public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
+        // TODO: We may actually want to do some sanity checks here (like filter about://chrome).
+
+        // For backwards compatibility, apps targeting less than K will have JS URLs evaluated
+        // directly and any result of the evaluation will not replace the current page content.
+        // Matching Chrome behavior more closely; apps targetting >= K that load a JS URL will
+        // have the result of that URL replace the content of the current page.
+        final String javaScriptScheme = "javascript:";
+        if (mAppTargetSdkVersion < Build.VERSION_CODES.KITKAT && url != null
+                && url.startsWith(javaScriptScheme)) {
+            evaluateJavaScript(url.substring(javaScriptScheme.length()), null);
+            return;
+        }
+
+        LoadUrlParams params = new LoadUrlParams(url);
+        if (additionalHttpHeaders != null) params.setExtraHeaders(additionalHttpHeaders);
+        loadUrl(params);
+    }
+
+    /**
+     * WebView.loadUrl.
+     */
+    public void loadUrl(String url) {
+        // Early out to match old WebView implementation
+        if (url == null) {
+            return;
+        }
+        loadUrl(url, null);
+    }
+
+    /**
+     * WebView.postUrl.
+     */
+    public void postUrl(String url, byte[] postData) {
+        LoadUrlParams params = LoadUrlParams.createLoadHttpPostParams(url, postData);
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Content-Type", "application/x-www-form-urlencoded");
+        params.setExtraHeaders(headers);
+        loadUrl(params);
+    }
+
+    private static String fixupMimeType(String mimeType) {
+        return TextUtils.isEmpty(mimeType) ? "text/html" : mimeType;
+    }
+
+    private static String fixupData(String data) {
+        return TextUtils.isEmpty(data) ? "" : data;
+    }
+
+    private static String fixupBase(String url) {
+        return TextUtils.isEmpty(url) ? "about:blank" : url;
+    }
+
+    private static String fixupHistory(String url) {
+        return TextUtils.isEmpty(url) ? "about:blank" : url;
+    }
+
+    private static boolean isBase64Encoded(String encoding) {
+        return "base64".equals(encoding);
+    }
+
+    /**
+     * WebView.loadData.
+     */
+    public void loadData(String data, String mimeType, String encoding) {
+        loadUrl(LoadUrlParams.createLoadDataParams(
+                fixupData(data), fixupMimeType(mimeType), isBase64Encoded(encoding)));
+    }
+
+    /**
+     * WebView.loadDataWithBaseURL.
+     */
+    public void loadDataWithBaseURL(
+            String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+        data = fixupData(data);
+        mimeType = fixupMimeType(mimeType);
+        LoadUrlParams loadUrlParams;
+        baseUrl = fixupBase(baseUrl);
+        historyUrl = fixupHistory(historyUrl);
+
+        if (baseUrl.startsWith("data:")) {
+            // For backwards compatibility with WebViewClassic, we use the value of |encoding|
+            // as the charset, as long as it's not "base64".
+            boolean isBase64 = isBase64Encoded(encoding);
+            loadUrlParams = LoadUrlParams.createLoadDataParamsWithBaseUrl(
+                    data, mimeType, isBase64, baseUrl, historyUrl, isBase64 ? null : encoding);
+        } else {
+            // When loading data with a non-data: base URL, the classic WebView would effectively
+            // "dump" that string of data into the WebView without going through regular URL
+            // loading steps such as decoding URL-encoded entities. We achieve this same behavior by
+            // base64 encoding the data that is passed here and then loading that as a data: URL.
+            try {
+                loadUrlParams = LoadUrlParams.createLoadDataParamsWithBaseUrl(
+                        Base64.encodeToString(data.getBytes("utf-8"), Base64.DEFAULT), mimeType,
+                        true, baseUrl, historyUrl, "utf-8");
+            } catch (java.io.UnsupportedEncodingException e) {
+                Log.wtf(TAG, "Unable to load data string " + data, e);
+                return;
+            }
+        }
+        loadUrl(loadUrlParams);
     }
 
     /**
@@ -1801,11 +1911,6 @@ public class AwContents implements SmartClipProvider,
         }
 
         mWebContents.evaluateJavaScript(script, jsCallback);
-    }
-
-    // TODO(boliu): Remove this once Android side no longer calls this.
-    public void evaluateJavaScriptEvenIfNotYetNavigated(String script) {
-        if (!isDestroyed()) mWebContents.evaluateJavaScript(script, null);
     }
 
     /**
