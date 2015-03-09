@@ -37,6 +37,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {
@@ -46,7 +47,7 @@ typedef HashMap<String, OwnPtr<OriginAccessWhiteList>> OriginAccessMap;
 
 static OriginAccessMap& originAccessMap()
 {
-    DEFINE_STATIC_LOCAL(OriginAccessMap, originAccessMap, ());
+    AtomicallyInitializedStaticReference(OriginAccessMap, originAccessMap, new OriginAccessMap);
     return originAccessMap;
 }
 

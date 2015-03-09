@@ -40,11 +40,16 @@ addEventListener('notificationclick', function(event) {
     // Copies the serializable attributes of the Notification instance on |event|.
     var notificationCopy = JSON.parse(JSON.stringify(event.notification));
 
-    messagePort.postMessage({ command: 'click',
-                              notification: notificationCopy });
-
     // Notifications containing "ACTION:CLOSE" in their message will be closed
     // immediately by the Service Worker.
     if (event.notification.body.indexOf('ACTION:CLOSE') != -1)
         event.notification.close();
+
+    // Notifications containing "ACTION:OPENWINDOW" in their message will attempt
+    // to open a new window for an example URL.
+    if (event.notification.body.indexOf('ACTION:OPENWINDOW') != -1)
+        event.waitUntil(clients.openWindow('https://example.com/'));
+
+    messagePort.postMessage({ command: 'click',
+                              notification: notificationCopy });
 });
