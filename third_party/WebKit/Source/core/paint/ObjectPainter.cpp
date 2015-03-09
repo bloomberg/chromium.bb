@@ -26,20 +26,20 @@ void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutPoint
     paintInfo.context->drawFocusRing(focusRingIntRects, style.outlineWidth(), style.outlineOffset(), m_layoutObject.resolveColor(style, CSSPropertyOutlineColor));
 }
 
-void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& paintRect)
+void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& objectBounds, const LayoutRect& visualOverflowBounds)
 {
     const LayoutStyle& styleToUse = m_layoutObject.styleRef();
     if (!styleToUse.hasOutline())
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject, paintInfo.phase, paintRect);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject, paintInfo.phase, visualOverflowBounds);
     if (recorder.canUseCachedDrawing())
         return;
 
     if (styleToUse.outlineStyleIsAuto()) {
         if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
-            paintFocusRing(paintInfo, paintRect.location(), styleToUse);
+            paintFocusRing(paintInfo, objectBounds.location(), styleToUse);
         }
         return;
     }
@@ -47,7 +47,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& p
     if (styleToUse.outlineStyle() == BNONE)
         return;
 
-    IntRect inner = pixelSnappedIntRect(paintRect);
+    IntRect inner = pixelSnappedIntRect(objectBounds);
     inner.inflate(styleToUse.outlineOffset());
 
     IntRect outer = inner;

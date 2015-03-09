@@ -68,8 +68,11 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 
     // Paint outline.
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutTable.style()->hasOutline() && m_layoutTable.style()->visibility() == VISIBLE)
-        ObjectPainter(m_layoutTable).paintOutline(paintInfo, LayoutRect(paintOffset, m_layoutTable.size()));
+    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutTable.style()->hasOutline() && m_layoutTable.style()->visibility() == VISIBLE) {
+        LayoutRect overflowRect(m_layoutTable.visualOverflowRect());
+        overflowRect.moveBy(paintOffset);
+        ObjectPainter(m_layoutTable).paintOutline(paintInfo, LayoutRect(paintOffset, m_layoutTable.size()), overflowRect);
+    }
 }
 
 void TablePainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

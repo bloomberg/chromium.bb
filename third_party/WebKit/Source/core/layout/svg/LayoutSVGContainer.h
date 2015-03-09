@@ -53,6 +53,8 @@ public:
 
     virtual const char* name() const override { return "LayoutSVGContainer"; }
 
+    virtual FloatRect objectBoundingBox() const override final { return m_objectBoundingBox; }
+
 protected:
     virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
@@ -64,7 +66,6 @@ protected:
     virtual void removeChild(LayoutObject*) override final;
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 
-    virtual FloatRect objectBoundingBox() const override final { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const override final { return m_strokeBoundingBox; }
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;

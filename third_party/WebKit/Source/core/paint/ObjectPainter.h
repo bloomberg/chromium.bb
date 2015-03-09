@@ -21,7 +21,7 @@ class ObjectPainter {
 public:
     ObjectPainter(LayoutObject& layoutObject) : m_layoutObject(layoutObject) { }
 
-    void paintOutline(const PaintInfo&, const LayoutRect& paintRect);
+    void paintOutline(const PaintInfo&, const LayoutRect& objectBounds, const LayoutRect& visualOverflowBounds);
     void paintFocusRing(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutStyle&);
 
     static void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);

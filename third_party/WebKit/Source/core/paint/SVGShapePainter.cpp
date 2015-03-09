@@ -116,7 +116,8 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     if (m_renderSVGShape.style()->outlineWidth()) {
         PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
         outlinePaintInfo.phase = PaintPhaseSelfOutline;
-        ObjectPainter(m_renderSVGShape).paintOutline(outlinePaintInfo, LayoutRect(boundingBox));
+        LayoutRect layoutObjectBounds(boundingBox);
+        ObjectPainter(m_renderSVGShape).paintOutline(outlinePaintInfo, layoutObjectBounds, layoutObjectBounds);
     }
 }
 

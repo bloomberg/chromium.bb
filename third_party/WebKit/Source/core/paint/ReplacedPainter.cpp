@@ -26,11 +26,14 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutReplaced.location();
     LayoutRect paintRect(adjustedPaintOffset, m_layoutReplaced.size());
 
+    LayoutRect visualOverflowRect(m_layoutReplaced.visualOverflowRect());
+    visualOverflowRect.moveBy(adjustedPaintOffset);
+
     if (m_layoutReplaced.hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
         m_layoutReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase == PaintPhaseMask) {
-        LayoutObjectDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, paintRect);
+        LayoutObjectDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, visualOverflowRect);
         m_layoutReplaced.paintMask(paintInfo, adjustedPaintOffset);
         return;
     }
@@ -39,7 +42,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         return;
 
     if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_layoutReplaced.style()->outlineWidth())
-        ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, paintRect);
+        ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, paintRect, visualOverflowRect);
 
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && !m_layoutReplaced.canHaveChildren() && paintInfo.phase != PaintPhaseClippingMask)
         return;
@@ -57,7 +60,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     // FIXME(crbug.com/444591): Refactor this to not create a drawing recorder for renderers with children.
     OwnPtr<LayoutObjectDrawingRecorder> renderDrawingRecorder;
     if (!m_layoutReplaced.isSVGRoot())
-        renderDrawingRecorder = adoptPtr(new LayoutObjectDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, paintRect));
+        renderDrawingRecorder = adoptPtr(new LayoutObjectDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, visualOverflowRect));
     if (renderDrawingRecorder && renderDrawingRecorder->canUseCachedDrawing())
         return;
 

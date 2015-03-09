@@ -55,8 +55,10 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
         }
     }
 
-    if (m_renderSVGImage.style()->outlineWidth())
-        ObjectPainter(m_renderSVGImage).paintOutline(paintInfoBeforeFiltering, LayoutRect(boundingBox));
+    if (m_renderSVGImage.style()->outlineWidth()) {
+        LayoutRect layoutBoundingBox(boundingBox);
+        ObjectPainter(m_renderSVGImage).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, layoutBoundingBox);
+    }
 }
 
 void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)

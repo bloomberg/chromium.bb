@@ -33,8 +33,11 @@ void TableRowPainter::paintOutlineForRowIfNeeded(const PaintInfo& paintInfo, con
 {
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
     PaintPhase paintPhase = paintInfo.phase;
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutTableRow.style()->visibility() == VISIBLE)
-        ObjectPainter(m_layoutTableRow).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_layoutTableRow.size()));
+    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutTableRow.style()->visibility() == VISIBLE) {
+        LayoutRect visualOverflowRect(m_layoutTableRow.visualOverflowRect());
+        visualOverflowRect.moveBy(adjustedPaintOffset);
+        ObjectPainter(m_layoutTableRow).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_layoutTableRow.size()), visualOverflowRect);
+    }
 }
 
 } // namespace blink

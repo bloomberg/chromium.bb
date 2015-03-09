@@ -52,8 +52,10 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
         }
     }
 
-    if (paintInfoBeforeFiltering.phase == PaintPhaseForeground && m_renderSVGContainer.style()->outlineWidth() && m_renderSVGContainer.style()->visibility() == VISIBLE)
-        ObjectPainter(m_renderSVGContainer).paintOutline(paintInfoBeforeFiltering, LayoutRect(m_renderSVGContainer.paintInvalidationRectInLocalCoordinates()));
+    if (paintInfoBeforeFiltering.phase == PaintPhaseForeground && m_renderSVGContainer.style()->outlineWidth() && m_renderSVGContainer.style()->visibility() == VISIBLE) {
+        LayoutRect layoutBoundingBox(m_renderSVGContainer.paintInvalidationRectInLocalCoordinates());
+        ObjectPainter(m_renderSVGContainer).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, layoutBoundingBox);
+    }
 }
 
 } // namespace blink
