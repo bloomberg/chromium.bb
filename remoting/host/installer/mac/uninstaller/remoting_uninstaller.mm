@@ -152,8 +152,9 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 
 - (OSStatus)remotingUninstall {
   base::mac::ScopedAuthorizationRef authRef;
-  OSStatus status = AuthorizationCreate(nullptr, kAuthorizationEmptyEnvironment,
-                                        kAuthorizationFlagDefaults, &authRef);
+  OSStatus status =
+      AuthorizationCreate(nullptr, kAuthorizationEmptyEnvironment,
+                          kAuthorizationFlagDefaults, authRef.get_pointer());
   if (status != errAuthorizationSuccess) {
     [NSException raise:@"AuthorizationCreate Failure"
                 format:@"Error during AuthorizationCreate status=%d",
