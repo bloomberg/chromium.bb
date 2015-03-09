@@ -82,8 +82,7 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsWithheldPermissions) {
                              .Set("permissions",
                                   ListBuilder().Append("http://*/*")
                                                .Append("http://www.google.com/")
-                                               .Append("tabs")))
-                             .Build();
+                                               .Append("tabs"))).Build();
   ExtensionInstallPrompt prompt(nullptr /* no web contents in this test */);
   base::RunLoop run_loop;
 
@@ -107,10 +106,10 @@ TEST(ExtensionInstallPromptUnittest, DelegatedPromptShowsOptionalPermissions) {
                              .Set("version", "1.0")
                              .Set("manifest_version", 2)
                              .Set("description", "Random Ext")
-                             .Set("permissions", ListBuilder().Append("tabs"))
+                             .Set("permissions",
+                                  ListBuilder().Append("clipboardRead"))
                              .Set("optional_permissions",
-                                  ListBuilder().Append("location")))
-                             .Build();
+                                  ListBuilder().Append("tabs"))).Build();
   ExtensionInstallPrompt prompt(nullptr /* no web contents in this test */);
   base::RunLoop run_loop;
   prompt.set_callback_for_test(
