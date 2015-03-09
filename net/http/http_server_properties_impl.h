@@ -17,12 +17,24 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/linked_hash_map.h"
 #include "net/base/net_export.h"
 #include "net/http/http_server_properties.h"
 
 namespace base {
 class ListValue;
 }
+
+namespace BASE_HASH_NAMESPACE {
+
+template <>
+struct hash<net::AlternativeService> {
+  size_t operator()(const net::AlternativeService& entry) const {
+    return entry.protocol ^ hash<std::string>()(entry.host) ^ entry.port;
+  }
+};
+
+}  // namespace BASE_HASH_NAMESPACE
 
 namespace net {
 
@@ -117,23 +129,13 @@ class NET_EXPORT HttpServerPropertiesImpl
   typedef std::vector<std::string> CanonicalSufficList;
   typedef std::set<HostPortPair> Http11ServerHostPortSet;
 
-  // Broken alternative service with expiration time.
-  struct BrokenAlternateProtocolEntryWithTime {
-    BrokenAlternateProtocolEntryWithTime(
-        const AlternativeService& alternative_service,
-        base::TimeTicks when)
-        : alternative_service(alternative_service), when(when) {}
-
-    AlternativeService alternative_service;
-    base::TimeTicks when;
-  };
-  // Deque of BrokenAlternateProtocolEntryWithTime items, ordered by expiration
-  // time.
-  typedef std::deque<BrokenAlternateProtocolEntryWithTime>
-      BrokenAlternateProtocolList;
-  // Map from (server, alternate protocol and port) to the number of
-  // times that alternate protocol has been marked broken for that server.
-  typedef std::map<AlternativeService, int> BrokenAlternateProtocolMap;
+  // Linked hash map from AlternativeService to expiration time.  This container
+  // is a queue with O(1) enqueue and dequeue, and a hash_map with O(1) lookup
+  // at the same time.
+  typedef linked_hash_map<AlternativeService, base::TimeTicks>
+      BrokenAlternativeServices;
+  // Map to the number of times each alternative service has been marked broken.
+  typedef std::map<AlternativeService, int> RecentlyBrokenAlternativeServices;
 
   // Return the iterator for |server|, or for its canonical host, or end.
   AlternateProtocolMap::const_iterator GetAlternateProtocolIterator(
@@ -150,8 +152,10 @@ class NET_EXPORT HttpServerPropertiesImpl
   Http11ServerHostPortSet http11_servers_;
 
   AlternateProtocolMap alternate_protocol_map_;
-  BrokenAlternateProtocolList broken_alternate_protocol_list_;
-  BrokenAlternateProtocolMap broken_alternate_protocol_map_;
+  BrokenAlternativeServices broken_alternative_services_;
+  // Class invariant:  Every alternative service in broken_alternative_services_
+  // must also be in recently_broken_alternative_services_.
+  RecentlyBrokenAlternativeServices recently_broken_alternative_services_;
 
   IPAddressNumber last_quic_address_;
   SpdySettingsMap spdy_settings_map_;

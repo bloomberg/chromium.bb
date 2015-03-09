@@ -99,6 +99,11 @@ struct NET_EXPORT AlternativeService {
   AlternativeService& operator=(const AlternativeService& alternative_service) =
       default;
 
+  bool operator==(const AlternativeService& other) const {
+    return protocol == other.protocol && host == other.host &&
+           port == other.port;
+  }
+
   bool operator<(const AlternativeService& other) const {
     if (protocol != other.protocol)
       return protocol < other.protocol;

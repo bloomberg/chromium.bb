@@ -320,12 +320,16 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   it->second.is_broken = true;
   const AlternativeService alternative_service(alternate.protocol,
                                                server.host(), alternate.port);
-  int count = ++broken_alternate_protocol_map_[alternative_service];
+  int count = ++recently_broken_alternative_services_[alternative_service];
   base::TimeDelta delay =
       base::TimeDelta::FromSeconds(kBrokenAlternateProtocolDelaySecs);
   base::TimeTicks when = base::TimeTicks::Now() + delay * (1 << (count - 1));
-  broken_alternate_protocol_list_.push_back(
-      BrokenAlternateProtocolEntryWithTime(alternative_service, when));
+  auto result = broken_alternative_services_.insert(
+      std::make_pair(alternative_service, when));
+  // Return if alternative service is already in expiration queue.
+  if (!result.second) {
+    return;
+  }
 
   // Do not leave this host as canonical so that we don't infer the other
   // hosts are also broken without testing them first.
@@ -333,7 +337,7 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
 
   // If this is the only entry in the list, schedule an expiration task.
   // Otherwise it will be rescheduled automatically when the pending task runs.
-  if (broken_alternate_protocol_list_.size() == 1) {
+  if (broken_alternative_services_.size() == 1) {
     ScheduleBrokenAlternateProtocolMappingsExpiration();
   }
 }
@@ -345,7 +349,8 @@ bool HttpServerPropertiesImpl::WasAlternateProtocolRecentlyBroken(
     return false;
   const AlternativeService alternative_service(
       alternate_protocol.protocol, server.host(), alternate_protocol.port);
-  return ContainsKey(broken_alternate_protocol_map_, alternative_service);
+  return ContainsKey(recently_broken_alternative_services_,
+                     alternative_service);
 }
 
 void HttpServerPropertiesImpl::ConfirmAlternateProtocol(
@@ -355,7 +360,7 @@ void HttpServerPropertiesImpl::ConfirmAlternateProtocol(
     return;
   const AlternativeService alternative_service(
       alternate_protocol.protocol, server.host(), alternate_protocol.port);
-  broken_alternate_protocol_map_.erase(alternative_service);
+  recently_broken_alternative_services_.erase(alternative_service);
 }
 
 void HttpServerPropertiesImpl::ClearAlternateProtocol(
@@ -504,29 +509,28 @@ void HttpServerPropertiesImpl::RemoveCanonicalHost(
 
 void HttpServerPropertiesImpl::ExpireBrokenAlternateProtocolMappings() {
   base::TimeTicks now = base::TimeTicks::Now();
-  while (!broken_alternate_protocol_list_.empty()) {
-    BrokenAlternateProtocolEntryWithTime entry_with_time =
-        broken_alternate_protocol_list_.front();
-    if (now < entry_with_time.when) {
+  while (!broken_alternative_services_.empty()) {
+    BrokenAlternativeServices::iterator it =
+        broken_alternative_services_.begin();
+    if (now < it->second) {
       break;
     }
 
-    const AlternativeService& alternative_service =
-        entry_with_time.alternative_service;
+    const AlternativeService& alternative_service = it->first;
     ClearAlternateProtocol(
         HostPortPair(alternative_service.host, alternative_service.port));
-    broken_alternate_protocol_list_.pop_front();
+    broken_alternative_services_.erase(it);
   }
   ScheduleBrokenAlternateProtocolMappingsExpiration();
 }
 
 void
 HttpServerPropertiesImpl::ScheduleBrokenAlternateProtocolMappingsExpiration() {
-  if (broken_alternate_protocol_list_.empty()) {
+  if (broken_alternative_services_.empty()) {
     return;
   }
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks when = broken_alternate_protocol_list_.front().when;
+  base::TimeTicks when = broken_alternative_services_.front().second;
   base::TimeDelta delay = when > now ? when - now : base::TimeDelta();
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
