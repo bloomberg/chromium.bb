@@ -79,7 +79,7 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
         return;
 
     if (toAXTable(m_parent)->isAriaTable()) {
-        AccessibilityChildrenVector columnChildren = children();
+        const AccessibilityChildrenVector& columnChildren = children();
         unsigned childrenCount = columnChildren.size();
         for (unsigned i = 0; i < childrenCount; i++) {
             AXObject* cell = columnChildren[i].get();

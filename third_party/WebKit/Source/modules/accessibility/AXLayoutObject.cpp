@@ -1940,7 +1940,7 @@ void AXLayoutObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& re
 {
     bool isMulti = isMultiSelectable();
 
-    AccessibilityChildrenVector childObjects = children();
+    const AccessibilityChildrenVector& childObjects = children();
     unsigned childrenSize = childObjects.size();
     for (unsigned k = 0; k < childrenSize; ++k) {
         // Every child should have aria-role option, and if so, check for selected attribute/state.
@@ -2031,7 +2031,7 @@ AXObject* AXLayoutObject::accessibilityImageMapHitTest(HTMLAreaElement* area, co
     if (!parent)
         return 0;
 
-    AXObject::AccessibilityChildrenVector children = parent->children();
+    const AccessibilityChildrenVector& children = parent->children();
     unsigned count = children.size();
     for (unsigned k = 0; k < count; ++k) {
         if (children[k]->elementRect().contains(point))
@@ -2180,7 +2180,7 @@ void AXLayoutObject::addHiddenChildren()
             // Find out where the last layout sibling is located within m_children.
             AXObject* childObject = axObjectCache()->get(child->layoutObject());
             if (childObject && childObject->accessibilityIsIgnored()) {
-                AccessibilityChildrenVector children = childObject->children();
+                const AccessibilityChildrenVector& children = childObject->children();
                 if (children.size())
                     childObject = children.last().get();
                 else
@@ -2290,7 +2290,7 @@ void AXLayoutObject::addRemoteSVGChildren()
     root->setParent(this);
 
     if (root->accessibilityIsIgnored()) {
-        AccessibilityChildrenVector children = root->children();
+        const AccessibilityChildrenVector& children = root->children();
         unsigned length = children.size();
         for (unsigned i = 0; i < length; ++i)
             m_children.append(children[i]);

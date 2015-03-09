@@ -494,8 +494,7 @@ void AXTable::cells(AXObject::AccessibilityChildrenVector& cells)
 
     int numRows = m_rows.size();
     for (int row = 0; row < numRows; ++row) {
-        AccessibilityChildrenVector rowChildren = m_rows[row]->children();
-        cells.appendVector(rowChildren);
+        cells.appendVector(m_rows[row]->children());
     }
 }
 
@@ -522,7 +521,7 @@ AXTableCell* AXTable::cellForColumnAndRow(unsigned column, unsigned row)
     // Iterate backwards through the rows in case the desired cell has a rowspan and exists in a previous row.
     for (unsigned rowIndexCounter = row + 1; rowIndexCounter > 0; --rowIndexCounter) {
         unsigned rowIndex = rowIndexCounter - 1;
-        AccessibilityChildrenVector children = m_rows[rowIndex]->children();
+        const AccessibilityChildrenVector& children = m_rows[rowIndex]->children();
         // Since some cells may have colspans, we have to check the actual range of each
         // cell to determine which is the right one.
         for (unsigned colIndexCounter = std::min(static_cast<unsigned>(children.size()), column + 1); colIndexCounter > 0; --colIndexCounter) {

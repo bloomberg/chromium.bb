@@ -535,7 +535,7 @@ bool AXObject::supportsRangeValue() const
 
 void AXObject::ariaTreeRows(AccessibilityChildrenVector& result)
 {
-    AccessibilityChildrenVector axChildren = children();
+    const AccessibilityChildrenVector& axChildren = children();
     unsigned count = axChildren.size();
     for (unsigned k = 0; k < count; ++k) {
         AXObject* obj = axChildren[k].get();

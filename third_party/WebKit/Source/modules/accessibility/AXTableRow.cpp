@@ -116,7 +116,7 @@ void AXTableRow::headerObjectsForRow(AccessibilityChildrenVector& headers)
     if (!m_layoutObject || !m_layoutObject->isTableRow())
         return;
 
-    AccessibilityChildrenVector rowChildren = children();
+    const AccessibilityChildrenVector& rowChildren = children();
     unsigned childrenCount = rowChildren.size();
     for (unsigned i = 0; i < childrenCount; i++) {
         AXObject* cell = rowChildren[i].get();
