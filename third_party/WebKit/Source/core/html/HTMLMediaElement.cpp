@@ -2353,7 +2353,6 @@ void HTMLMediaElement::addTextTrack(TextTrack* track)
 
 void HTMLMediaElement::removeTextTrack(TextTrack* track)
 {
-    TrackDisplayUpdateScope scope(this->cueTimeline());
     m_textTracks->remove(track);
 
     textTracksChanged();
