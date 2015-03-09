@@ -25,21 +25,21 @@
 
 namespace blink {
 
-CSSParserImpl::CSSParserImpl(const CSSParserContext& context, const String& string, StyleSheetContents* styleSheet)
+CSSParserImpl::CSSParserImpl(const CSSParserContext& context, StyleSheetContents* styleSheet)
 : m_context(context)
 , m_defaultNamespace(starAtom)
 , m_styleSheet(styleSheet)
 {
-    CSSTokenizer::tokenize(string, m_tokens);
 }
 
 bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
 {
-    CSSParserImpl parser(context, string);
+    CSSParserImpl parser(context);
     StyleRule::Type ruleType = StyleRule::Style;
     if (declaration->cssParserMode() == CSSViewportRuleMode)
         ruleType = StyleRule::Viewport;
-    parser.consumeDeclarationValue(CSSParserTokenRange(parser.m_tokens), propertyID, important, ruleType);
+    CSSTokenizer::Scope scope(string);
+    parser.consumeDeclarationValue(scope.tokenRange(), propertyID, important, ruleType);
     if (parser.m_parsedProperties.isEmpty())
         return false;
     declaration->addParsedProperties(parser.m_parsedProperties);
@@ -79,18 +79,20 @@ PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParserImpl::parseInlineStyl
     CSSParserContext context = CSSParserContext(document.elementSheet().contents()->parserContext(), UseCounter::getFrom(&document));
     CSSParserMode mode = element->isHTMLElement() && !document.inQuirksMode() ? HTMLStandardMode : HTMLQuirksMode;
     context.setMode(mode);
-    CSSParserImpl parser(context, string);
-    parser.consumeDeclarationList(CSSParserTokenRange(parser.m_tokens), StyleRule::Style);
+    CSSParserImpl parser(context);
+    CSSTokenizer::Scope scope(string);
+    parser.consumeDeclarationList(scope.tokenRange(), StyleRule::Style);
     return createStylePropertySet(parser.m_parsedProperties, mode);
 }
 
 bool CSSParserImpl::parseDeclaration(MutableStylePropertySet* declaration, const String& string, const CSSParserContext& context)
 {
-    CSSParserImpl parser(context, string);
+    CSSParserImpl parser(context);
     StyleRule::Type ruleType = StyleRule::Style;
     if (declaration->cssParserMode() == CSSViewportRuleMode)
         ruleType = StyleRule::Viewport;
-    parser.consumeDeclarationList(CSSParserTokenRange(parser.m_tokens), ruleType);
+    CSSTokenizer::Scope scope(string);
+    parser.consumeDeclarationList(scope.tokenRange(), ruleType);
     if (parser.m_parsedProperties.isEmpty())
         return false;
     declaration->addParsedProperties(parser.m_parsedProperties);
@@ -99,8 +101,9 @@ bool CSSParserImpl::parseDeclaration(MutableStylePropertySet* declaration, const
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& string, const CSSParserContext& context, AllowedRulesType allowedRules)
 {
-    CSSParserImpl parser(context, string);
-    CSSParserTokenRange range(parser.m_tokens);
+    CSSParserImpl parser(context);
+    CSSTokenizer::Scope scope(string);
+    CSSParserTokenRange range = scope.tokenRange();
     range.consumeWhitespaceAndComments();
     if (range.atEnd())
         return nullptr; // Parse error, empty rule
@@ -119,17 +122,16 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& str
 
 void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext& context, StyleSheetContents* styleSheet)
 {
-    CSSParserImpl parser(context, string, styleSheet);
-    parser.consumeRuleList(parser.m_tokens, TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
+    CSSParserImpl parser(context, styleSheet);
+    CSSTokenizer::Scope scope(string);
+    parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
         styleSheet->parserAppendRule(rule);
     });
 }
 
 PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
 {
-    Vector<CSSParserToken> tokens;
-    CSSTokenizer::tokenize(keyList, tokens);
-    return consumeKeyframeKeyList(tokens);
+    return consumeKeyframeKeyList(CSSTokenizer::Scope(keyList).tokenRange());
 }
 
 bool CSSParserImpl::supportsDeclaration(CSSParserTokenRange& range)

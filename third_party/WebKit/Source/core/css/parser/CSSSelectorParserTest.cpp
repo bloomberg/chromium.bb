@@ -73,11 +73,9 @@ TEST(CSSSelectorParserTest, ValidANPlusB)
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(testCases); ++i) {
         SCOPED_TRACE(testCases[i].input);
 
-        Vector<CSSParserToken> tokens;
-        CSSTokenizer::tokenize(testCases[i].input, tokens);
-        CSSParserTokenRange range(tokens);
-
         std::pair<int, int> ab;
+        CSSTokenizer::Scope scope(testCases[i].input);
+        CSSParserTokenRange range = scope.tokenRange();
         bool passed = CSSSelectorParser::consumeANPlusB(range, ab);
         EXPECT_TRUE(passed);
         EXPECT_EQ(ab.first, testCases[i].a);
@@ -106,11 +104,9 @@ TEST(CSSSelectorParserTest, InvalidANPlusB)
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(testCases); ++i) {
         SCOPED_TRACE(testCases[i]);
 
-        Vector<CSSParserToken> tokens;
-        CSSTokenizer::tokenize(testCases[i], tokens);
-        CSSParserTokenRange range(tokens);
-
         std::pair<int, int> ab;
+        CSSTokenizer::Scope scope(testCases[i]);
+        CSSParserTokenRange range = scope.tokenRange();
         bool passed = CSSSelectorParser::consumeANPlusB(range, ab);
         EXPECT_FALSE(passed);
     }

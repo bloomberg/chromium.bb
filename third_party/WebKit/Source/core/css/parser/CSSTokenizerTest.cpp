@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/parser/CSSTokenizer.h"
 
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/MediaQueryBlockWatcher.h"
 #include <gtest/gtest.h>
 
@@ -65,12 +66,13 @@ void testTokens(const String& string, const CSSParserToken& token1, const CSSPar
             expectedTokens.append(token3);
     }
 
-    Vector<CSSParserToken> actualTokens;
-    CSSTokenizer::tokenize(string, actualTokens);
+    CSSParserTokenRange expected(expectedTokens);
 
-    ASSERT_EQ(expectedTokens.size(), actualTokens.size());
-    for (size_t i = 0; i < expectedTokens.size(); ++i)
-        compareTokens(expectedTokens[i], actualTokens[i]);
+    CSSTokenizer::Scope actualScope(string);
+    CSSParserTokenRange actual = actualScope.tokenRange();
+
+    while (!expected.atEnd() || !actual.atEnd())
+        compareTokens(expected.consume(), actual.consume());
 }
 
 static CSSParserToken ident(const String& string) { return CSSParserToken(IdentToken, string); }
@@ -455,14 +457,14 @@ TEST(CSSTokenizerBlockTest, Basic)
         {0, 0, 0} // Do not remove the terminator line.
     };
     for (int i = 0; testCases[i].input; ++i) {
-        Vector<CSSParserToken> tokens;
-        CSSTokenizer::tokenize(testCases[i].input, tokens);
+        CSSTokenizer::Scope scope(testCases[i].input);
+        CSSParserTokenRange range = scope.tokenRange();
         MediaQueryBlockWatcher blockWatcher;
 
         unsigned maxLevel = 0;
         unsigned level = 0;
-        for (size_t j = 0; j < tokens.size(); ++j) {
-            blockWatcher.handleToken(tokens[j]);
+        while (!range.atEnd()) {
+            blockWatcher.handleToken(range.consume());
             level = blockWatcher.blockLevel();
             maxLevel = std::max(level, maxLevel);
         }

@@ -34,9 +34,8 @@ bool CSSParser::parseDeclaration(MutableStylePropertySet* propertySet, const Str
 void CSSParser::parseSelector(const String& selector, CSSSelectorList& selectorList)
 {
     if (RuntimeEnabledFeatures::newCSSParserEnabled()) {
-        Vector<CSSParserToken> tokens;
-        CSSTokenizer::tokenize(selector, tokens);
-        CSSSelectorParser::parseSelector(tokens, m_bisonParser.m_context, starAtom, nullptr, selectorList);
+        CSSTokenizer::Scope scope(selector);
+        CSSSelectorParser::parseSelector(scope.tokenRange(), m_bisonParser.m_context, starAtom, nullptr, selectorList);
         return;
     }
     m_bisonParser.parseSelector(selector, selectorList);
@@ -124,10 +123,9 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParser::parseKeyframeRule(const CSS
 bool CSSParser::parseSupportsCondition(const String& condition)
 {
     if (RuntimeEnabledFeatures::newCSSParserEnabled()) {
-        Vector<CSSParserToken> tokens;
-        CSSTokenizer::tokenize(condition, tokens);
-        CSSParserImpl parser(strictCSSParserContext(), "");
-        return CSSSupportsParser::supportsCondition(tokens, parser) == CSSSupportsParser::Supported;
+        CSSTokenizer::Scope scope(condition);
+        CSSParserImpl parser(strictCSSParserContext());
+        return CSSSupportsParser::supportsCondition(scope.tokenRange(), parser) == CSSSupportsParser::Supported;
     }
     return BisonCSSParser(CSSParserContext(HTMLStandardMode, 0)).parseSupportsCondition(condition);
 }

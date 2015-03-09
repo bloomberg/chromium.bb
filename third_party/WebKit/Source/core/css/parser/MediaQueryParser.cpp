@@ -14,11 +14,7 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const String& queryString)
 {
-    // FIXME: Replace the CSSTokenizer with a generic CSSTokenizer, once there is one,
-    // or better yet, replace the MediaQueryParser with a generic thread-safe CSS parser.
-    Vector<CSSParserToken> tokens;
-    CSSTokenizer::tokenize(queryString, tokens);
-    return parseMediaQuerySet(tokens);
+    return parseMediaQuerySet(CSSTokenizer::Scope(queryString).tokenRange());
 }
 
 PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(CSSParserTokenRange range)

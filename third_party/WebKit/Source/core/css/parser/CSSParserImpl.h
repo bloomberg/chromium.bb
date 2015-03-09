@@ -35,7 +35,7 @@ class MutableStylePropertySet;
 class CSSParserImpl {
     STACK_ALLOCATED();
 public:
-    CSSParserImpl(const CSSParserContext&, const String&, StyleSheetContents* = nullptr);
+    CSSParserImpl(const CSSParserContext&, StyleSheetContents* = nullptr);
 
     enum AllowedRulesType {
         // As per css-syntax, css-cascade and css-namespaces, @charset rules
@@ -95,7 +95,6 @@ private:
     // FIXME: Can we build StylePropertySets directly?
     // FIXME: Investigate using a smaller inline buffer
     WillBeHeapVector<CSSProperty, 256> m_parsedProperties;
-    Vector<CSSParserToken> m_tokens;
     CSSParserContext m_context;
 
     AtomicString m_defaultNamespace;

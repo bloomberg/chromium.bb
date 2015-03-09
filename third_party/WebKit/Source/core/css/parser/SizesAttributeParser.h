@@ -21,7 +21,7 @@ public:
     float length();
 
 private:
-    bool parse(Vector<CSSParserToken>& tokens);
+    bool parse(CSSParserTokenRange);
     float effectiveSize();
     bool calculateLengthInPixels(CSSParserTokenRange, float& result);
     bool mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition);
@@ -31,7 +31,6 @@ private:
     RefPtr<MediaValues> m_mediaValues;
     float m_length;
     bool m_lengthWasSet;
-    Vector<CSSParserToken> m_tokens;
     bool m_isValid;
 };
 

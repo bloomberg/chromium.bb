@@ -105,10 +105,8 @@ TEST(CSSParserValuesTest, CSSParserValuelistClear)
 
 TEST(CSSParserValuesTest, CSSParserTokenUrlConversion)
 {
-    Vector<CSSParserToken> tokens;
-    CSSTokenizer::tokenize("url(some) uRL('test') UrL(  \"words\" /**/ ) URl( /**/hi/**/ )", tokens);
-    CSSParserTokenRange range(tokens);
-    CSSParserValueList valueList(range);
+    CSSTokenizer::Scope scope("url(some) uRL('test') UrL(  \"words\" /**/ ) URl( /**/hi/**/ )");
+    CSSParserValueList valueList(scope.tokenRange());
     ASSERT_EQ(valueList.size(), 4u);
     ASSERT_EQ(valueList.valueAt(0)->unit, CSSPrimitiveValue::CSS_URI);
     EXPECT_EQ(String(valueList.valueAt(0)->string), "some");

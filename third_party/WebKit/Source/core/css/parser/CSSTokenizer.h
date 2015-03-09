@@ -14,12 +14,21 @@
 namespace blink {
 
 class CSSTokenizerInputStream;
+class CSSParserTokenRange;
 
 class CSSTokenizer {
     WTF_MAKE_NONCOPYABLE(CSSTokenizer);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static void tokenize(String, Vector<CSSParserToken>&);
+    class Scope {
+    public:
+        Scope(const String&);
+        CSSParserTokenRange tokenRange();
+
+    private:
+        Vector<CSSParserToken> m_tokens;
+    };
+
 private:
     CSSTokenizer(CSSTokenizerInputStream&);
 

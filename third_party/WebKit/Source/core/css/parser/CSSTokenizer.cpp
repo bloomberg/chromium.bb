@@ -9,11 +9,44 @@ namespace blink {
 #include "core/CSSTokenizerCodepoints.cpp"
 }
 
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizerInputStream.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/unicode/CharacterNames.h"
 
 namespace blink {
+
+CSSTokenizer::Scope::Scope(const String& string)
+{
+    // According to the spec, we should perform preprocessing here.
+    // See: http://dev.w3.org/csswg/css-syntax/#input-preprocessing
+    //
+    // However, we can skip this step since:
+    // * We're using HTML spaces (which accept \r and \f as a valid white space)
+    // * Do not count white spaces
+    // * consumeEscape replaces NULLs for replacement characters
+
+    if (string.isEmpty())
+        return;
+
+    // To avoid resizing we err on the side of reserving too much space.
+    // Most strings we tokenize have about 3.5 to 5 characters per token.
+    m_tokens.reserveInitialCapacity(string.length() / 3);
+
+    CSSTokenizerInputStream input(string);
+    CSSTokenizer tokenizer(input);
+    while (true) {
+        CSSParserToken token = tokenizer.nextToken();
+        if (token.type() == EOFToken)
+            return;
+        m_tokens.append(token);
+    }
+}
+
+CSSParserTokenRange CSSTokenizer::Scope::tokenRange()
+{
+    return m_tokens;
+}
 
 // http://dev.w3.org/csswg/css-syntax/#name-start-code-point
 static bool isNameStart(UChar c)
@@ -293,33 +326,6 @@ CSSParserToken CSSTokenizer::stringStart(UChar cc)
 CSSParserToken CSSTokenizer::endOfFile(UChar cc)
 {
     return CSSParserToken(EOFToken);
-}
-
-void CSSTokenizer::tokenize(String string, Vector<CSSParserToken>& outTokens)
-{
-    // According to the spec, we should perform preprocessing here.
-    // See: http://dev.w3.org/csswg/css-syntax/#input-preprocessing
-    //
-    // However, we can skip this step since:
-    // * We're using HTML spaces (which accept \r and \f as a valid white space)
-    // * Do not count white spaces
-    // * consumeEscape replaces NULLs for replacement characters
-
-    if (string.isEmpty())
-        return;
-
-    // To avoid resizing we err on the side of reserving too much space.
-    // Most strings we tokenize have about 3.5 to 5 characters per token.
-    outTokens.reserveInitialCapacity(string.length() / 3);
-
-    CSSTokenizerInputStream input(string);
-    CSSTokenizer tokenizer(input);
-    while (true) {
-        CSSParserToken token = tokenizer.nextToken();
-        if (token.type() == EOFToken)
-            return;
-        outTokens.append(token);
-    }
 }
 
 CSSParserToken CSSTokenizer::nextToken()
