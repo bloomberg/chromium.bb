@@ -94,12 +94,6 @@ public class TabManager extends LinearLayout {
             protected void onReadyToRender() {
                 if (mCurrentTab == null) createTab(mStartupUrl, TabLaunchType.FROM_RESTORE);
             }
-
-            @Override
-            protected void onWindowVisibilityChanged(int visibility) {
-                if (visibility == View.GONE && mCurrentTab != null) mCurrentTab.hide();
-                super.onWindowVisibilityChanged(visibility);
-            }
         };
         mContentViewRenderView.onNativeLibraryLoaded(window);
         mContentViewHolder.addView(mContentViewRenderView,

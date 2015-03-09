@@ -88,15 +88,6 @@ public class ShellManager extends FrameLayout {
                     sStartup = false;
                 }
             }
-
-            @Override
-            protected void onWindowVisibilityChanged(int visibility) {
-                if (visibility == View.GONE && mActiveShell != null) {
-                    ContentViewCore contentViewCore = mActiveShell.getContentViewCore();
-                    if (contentViewCore != null) contentViewCore.onHide();
-                }
-                super.onWindowVisibilityChanged(visibility);
-            }
         };
         mContentViewRenderView.onNativeLibraryLoaded(window);
     }

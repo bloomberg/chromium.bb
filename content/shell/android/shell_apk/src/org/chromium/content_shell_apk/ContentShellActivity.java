@@ -183,6 +183,14 @@ public class ContentShellActivity extends Activity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+
+        ContentViewCore contentViewCore = getActiveContentViewCore();
+        if (contentViewCore != null) contentViewCore.onHide();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
 
