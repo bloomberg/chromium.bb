@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 
-using web_modal::NativeWebContentsModalDialog;
 using web_modal::SingleWebContentsDialogManagerDelegate;
 
 SingleWebContentsDialogManagerCocoa::SingleWebContentsDialogManagerCocoa(
@@ -69,7 +68,7 @@ void SingleWebContentsDialogManagerCocoa::HostChanged(
     web_modal::WebContentsModalDialogHost* new_host) {
 }
 
-NativeWebContentsModalDialog SingleWebContentsDialogManagerCocoa::dialog() {
+gfx::NativeWindow SingleWebContentsDialogManagerCocoa::dialog() {
   return [sheet_ sheetWindow];
 }
 
@@ -77,7 +76,7 @@ namespace web_modal {
 
 SingleWebContentsDialogManager*
 WebContentsModalDialogManager::CreateNativeWebModalManager(
-    NativeWebContentsModalDialog dialog,
+    gfx::NativeWindow dialog,
     SingleWebContentsDialogManagerDelegate* delegate) {
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:dialog]);

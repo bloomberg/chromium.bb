@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_WEB_MODAL_SINGLE_POPUP_MANAGER_H_
 #define COMPONENTS_WEB_MODAL_SINGLE_POPUP_MANAGER_H_
 
-#include "components/web_modal/native_web_contents_modal_dialog.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class WebContents;
@@ -21,18 +21,18 @@ class SinglePopupManagerDelegate {
 
   // Notify the delegate that the dialog is closing. The
   // calling SinglePopupManager will be deleted before the end of this call.
-  virtual void WillClose(NativePopup popup) = 0;
+  virtual void WillClose(gfx::NativeWindow popup) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SinglePopupManagerDelegate);
 };
 
 // Provides an interface for platform-specific UI implementation for popups.
-// Each object will manage a single NativePopup window during its lifecycle.
+// Each object will manage a single native popup window during its lifecycle.
 // The rule of thumb is that only one popup will be shown at a time per tab.
 // (Exceptions exist.)
 //
-// Implementation classes should accept a NativePopup at construction time
+// Implementation classes should accept a native popup at construction time
 // and register to be notified when the dialog is closing, so that it can
 // notify its delegate (WillClose method).
 class SinglePopupManager {
@@ -62,11 +62,11 @@ class SinglePopupManager {
   virtual void Pulse() = 0;
 
   // Returns the popup under management by this object.
-  virtual NativePopup popup() = 0;
+  virtual gfx::NativeWindow popup() = 0;
 
   // Returns true if the popup under management was initiated by a user
   // gesture. When this is true, the popup manager will hide any existing
-  // popups and move the newly-created NativePopup to the top of the display
+  // popups and move the newly-created native popup to the top of the display
   // queue.
   virtual bool HasUserGesture() = 0;
 

@@ -124,7 +124,7 @@ class ConstrainedWebDialogDelegateViews
   }
 
   // ConstrainedWebDialogDelegate:
-  web_modal::NativeWebContentsModalDialog GetNativeDialog() override {
+  gfx::NativeWindow GetNativeDialog() override {
     return view_->GetWidget()->GetNativeWindow();
   }
 
@@ -173,7 +173,7 @@ class ConstrainedWebDialogDelegateViewViews
   void ReleaseWebContentsOnDialogClose() override {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  web_modal::NativeWebContentsModalDialog GetNativeDialog() override {
+  gfx::NativeWindow GetNativeDialog() override {
     return impl_->GetNativeDialog();
   }
   content::WebContents* GetWebContents() override {

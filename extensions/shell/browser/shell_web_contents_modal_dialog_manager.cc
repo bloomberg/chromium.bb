@@ -8,7 +8,7 @@ namespace web_modal {
 
 SingleWebContentsDialogManager*
 WebContentsModalDialogManager::CreateNativeWebModalManager(
-    NativeWebContentsModalDialog dialog,
+    gfx::NativeWindow dialog,
     SingleWebContentsDialogManagerDelegate* native_delegate) {
   // TODO(oshima): Investigate if we need to implement this.
   NOTREACHED();

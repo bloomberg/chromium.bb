@@ -27,7 +27,6 @@
 #include "ui/wm/core/window_modality_controller.h"
 #endif
 
-using web_modal::NativeWebContentsModalDialog;
 using web_modal::SingleWebContentsDialogManager;
 using web_modal::SingleWebContentsDialogManagerDelegate;
 using web_modal::WebContentsModalDialogHost;
@@ -41,7 +40,7 @@ class NativeWebContentsModalDialogManagerViews
       public views::WidgetObserver {
  public:
   NativeWebContentsModalDialogManagerViews(
-      NativeWebContentsModalDialog dialog,
+      gfx::NativeWindow dialog,
       SingleWebContentsDialogManagerDelegate* native_delegate)
       : native_delegate_(native_delegate),
         dialog_(dialog),
@@ -196,10 +195,10 @@ class NativeWebContentsModalDialogManagerViews
     }
   }
 
-  NativeWebContentsModalDialog dialog() override { return dialog_; }
+  gfx::NativeWindow dialog() override { return dialog_; }
 
  private:
-  static views::Widget* GetWidget(NativeWebContentsModalDialog dialog) {
+  static views::Widget* GetWidget(gfx::NativeWindow dialog) {
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
     DCHECK(widget);
     return widget;
@@ -224,7 +223,7 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   SingleWebContentsDialogManagerDelegate* native_delegate_;
-  NativeWebContentsModalDialog dialog_;
+  gfx::NativeWindow dialog_;
   WebContentsModalDialogHost* host_;
   std::set<views::Widget*> observed_widgets_;
   std::set<views::Widget*> shown_widgets_;
@@ -236,9 +235,9 @@ class NativeWebContentsModalDialogManagerViews
 
 namespace web_modal {
 
-SingleWebContentsDialogManager* WebContentsModalDialogManager::
-CreateNativeWebModalManager(
-    NativeWebContentsModalDialog dialog,
+SingleWebContentsDialogManager*
+WebContentsModalDialogManager::CreateNativeWebModalManager(
+    gfx::NativeWindow dialog,
     SingleWebContentsDialogManagerDelegate* native_delegate) {
   return new NativeWebContentsModalDialogManagerViews(dialog, native_delegate);
 }

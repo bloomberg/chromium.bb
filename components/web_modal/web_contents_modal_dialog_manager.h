@@ -29,17 +29,17 @@ class WebContentsModalDialogManager
   void SetDelegate(WebContentsModalDialogManagerDelegate* d);
 
   static SingleWebContentsDialogManager* CreateNativeWebModalManager(
-      NativeWebContentsModalDialog dialog,
+      gfx::NativeWindow dialog,
       SingleWebContentsDialogManagerDelegate* native_delegate);
 
   // Shows the dialog as a web contents modal dialog. The dialog will notify via
   // WillClose() when it is being destroyed.
-  void ShowModalDialog(NativeWebContentsModalDialog dialog);
+  void ShowModalDialog(gfx::NativeWindow dialog);
 
   // Allow clients to supply their own native dialog manager. Suitable for
   // bubble clients.
   void ShowDialogWithManager(
-      NativeWebContentsModalDialog dialog,
+      gfx::NativeWindow dialog,
       scoped_ptr<SingleWebContentsDialogManager> manager);
 
   // Returns true if any dialogs are active and not closed.
@@ -51,7 +51,7 @@ class WebContentsModalDialogManager
 
   // SingleWebContentsDialogManagerDelegate:
   content::WebContents* GetWebContents() const override;
-  void WillClose(NativeWebContentsModalDialog dialog) override;
+  void WillClose(gfx::NativeWindow dialog) override;
 
   // For testing.
   class TestApi {
@@ -76,11 +76,11 @@ class WebContentsModalDialogManager
   friend class PopupManager;
 
   struct DialogState {
-    DialogState(NativeWebContentsModalDialog dialog,
+    DialogState(gfx::NativeWindow dialog,
                 scoped_ptr<SingleWebContentsDialogManager> manager);
     ~DialogState();
 
-    NativeWebContentsModalDialog dialog;
+    gfx::NativeWindow dialog;
     scoped_ptr<SingleWebContentsDialogManager> manager;
   };
 
@@ -88,7 +88,7 @@ class WebContentsModalDialogManager
 
   // Utility function to get the dialog state for a dialog.
   WebContentsModalDialogList::iterator FindDialogState(
-      NativeWebContentsModalDialog dialog);
+      gfx::NativeWindow dialog);
 
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);

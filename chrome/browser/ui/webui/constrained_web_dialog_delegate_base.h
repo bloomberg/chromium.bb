@@ -36,7 +36,7 @@ class ConstrainedWebDialogDelegateBase
   void OnDialogCloseFromWebUI() override;
   void ReleaseWebContentsOnDialogClose() override;
   content::WebContents* GetWebContents() override;
-  web_modal::NativeWebContentsModalDialog GetNativeDialog() override;
+  gfx::NativeWindow GetNativeDialog() override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   gfx::Size GetPreferredSize() const override;

@@ -45,18 +45,13 @@ void PopupManager::ShowPopup(scoped_ptr<SinglePopupManager> manager) {
   // TODO(gbillock): get rid of this when we handle bubbles
   DCHECK(web_contents);
 
-  // TODO(gbillock): remove when we port the popup management logic to this
-  // class.
-  NativeWebContentsModalDialog dialog =
-      static_cast<NativeWebContentsModalDialog>(manager->popup());
-
   WebContentsModalDialogManager* wm_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   DCHECK(wm_manager);
-  wm_manager->ShowModalDialog(dialog);
+  wm_manager->ShowModalDialog(manager->popup());
 }
 
-void PopupManager::ShowModalDialog(NativePopup popup,
+void PopupManager::ShowModalDialog(gfx::NativeWindow popup,
                                    content::WebContents* web_contents) {
   // TODO make a new native popup manager and call ShowPopup.
   // For now just lay off to WCMDM.
@@ -85,7 +80,7 @@ void PopupManager::WasFocused(const content::WebContents* web_contents) {
     manager->FocusTopmostDialog();
 }
 
-void PopupManager::WillClose(NativePopup popup) {
+void PopupManager::WillClose(gfx::NativeWindow popup) {
 }
 
 void PopupManager::RegisterWith(content::WebContents* web_contents) {

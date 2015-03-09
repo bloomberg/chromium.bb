@@ -25,7 +25,6 @@
 
 using content::WebContents;
 using content::WebUIMessageHandler;
-using web_modal::NativeWebContentsModalDialog;
 
 // Shows a certificate using the WebUI certificate viewer.
 void ShowCertificateViewer(WebContents* web_contents,
@@ -58,7 +57,7 @@ void CertificateViewerModalDialog::Show(content::WebContents* web_contents,
                                   this);
 }
 
-NativeWebContentsModalDialog
+gfx::NativeWindow
 CertificateViewerModalDialog::GetNativeWebContentsModalDialog() {
 #if defined(USE_AURA)
   return window_;
@@ -232,8 +231,7 @@ void CertificateViewerDialog::Show(WebContents* web_contents,
                                      web_contents);
 }
 
-NativeWebContentsModalDialog
-CertificateViewerDialog::GetNativeWebContentsModalDialog() {
+gfx::NativeWindow CertificateViewerDialog::GetNativeWebContentsModalDialog() {
   return dialog_->GetNativeDialog();
 }
 
@@ -276,7 +274,7 @@ void CertificateViewerDialogHandler::ExportCertificate(
   if (cert_index < 0)
     return;
 
-  NativeWebContentsModalDialog window =
+  gfx::NativeWindow window =
       platform_util::GetTopLevel(dialog_->GetNativeWebContentsModalDialog());
   ShowCertExportDialog(web_ui()->GetWebContents(),
                        window,

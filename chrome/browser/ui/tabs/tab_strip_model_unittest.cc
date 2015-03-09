@@ -39,7 +39,6 @@
 using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
-using web_modal::NativeWebContentsModalDialog;
 
 namespace {
 
@@ -108,7 +107,7 @@ class DummySingleWebContentsDialogManager
     : public web_modal::SingleWebContentsDialogManager {
  public:
   explicit DummySingleWebContentsDialogManager(
-      NativeWebContentsModalDialog dialog,
+      gfx::NativeWindow dialog,
       web_modal::SingleWebContentsDialogManagerDelegate* delegate)
       : delegate_(delegate),
         dialog_(dialog) {}
@@ -120,11 +119,11 @@ class DummySingleWebContentsDialogManager
   void Focus() override {}
   void Pulse() override {}
   void HostChanged(web_modal::WebContentsModalDialogHost* new_host) override {}
-  NativeWebContentsModalDialog dialog() override { return dialog_; }
+  gfx::NativeWindow dialog() override { return dialog_; }
 
  private:
   web_modal::SingleWebContentsDialogManagerDelegate* delegate_;
-  NativeWebContentsModalDialog dialog_;
+  gfx::NativeWindow dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(DummySingleWebContentsDialogManager);
 };
@@ -2668,13 +2667,12 @@ TEST_F(TabStripModelTest, TabBlockedState) {
 
   // Show a dialog that blocks tab |contents2|.
   // DummySingleWebContentsDialogManager doesn't care about the
-  // NativeWebContentsModalDialog value, so any dummy value works.
+  // dialog window value, so any dummy value works.
   DummySingleWebContentsDialogManager* native_manager =
       new DummySingleWebContentsDialogManager(
-          reinterpret_cast<NativeWebContentsModalDialog>(0),
-          modal_dialog_manager);
+          reinterpret_cast<gfx::NativeWindow>(0), modal_dialog_manager);
   modal_dialog_manager->ShowDialogWithManager(
-      reinterpret_cast<NativeWebContentsModalDialog>(0),
+      reinterpret_cast<gfx::NativeWindow>(0),
       scoped_ptr<web_modal::SingleWebContentsDialogManager>(
           native_manager).Pass());
   EXPECT_TRUE(strip_src.IsTabBlocked(1));

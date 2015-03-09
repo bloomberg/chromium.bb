@@ -6,7 +6,6 @@ static_library("web_modal") {
   sources = [
     "modal_dialog_host.cc",
     "modal_dialog_host.h",
-    "native_web_contents_modal_dialog.h",
     "popup_manager.cc",
     "popup_manager.h",
     "single_popup_manager.h",

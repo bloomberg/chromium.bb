@@ -32,8 +32,7 @@ void WebContentsModalDialogManager::SetDelegate(
   }
 }
 
-void WebContentsModalDialogManager::ShowModalDialog(
-    NativeWebContentsModalDialog dialog) {
+void WebContentsModalDialogManager::ShowModalDialog(gfx::NativeWindow dialog) {
   scoped_ptr<SingleWebContentsDialogManager> mgr(
       CreateNativeWebModalManager(dialog, this));
   ShowDialogWithManager(dialog, mgr.Pass());
@@ -41,7 +40,7 @@ void WebContentsModalDialogManager::ShowModalDialog(
 
 // TODO(gbillock): Maybe "ShowBubbleWithManager"?
 void WebContentsModalDialogManager::ShowDialogWithManager(
-    NativeWebContentsModalDialog dialog,
+    gfx::NativeWindow dialog,
     scoped_ptr<SingleWebContentsDialogManager> manager) {
   if (delegate_)
     manager->HostChanged(delegate_->GetWebContentsModalDialogHost());
@@ -67,8 +66,7 @@ content::WebContents* WebContentsModalDialogManager::GetWebContents() const {
   return web_contents();
 }
 
-void WebContentsModalDialogManager::WillClose(
-    NativeWebContentsModalDialog dialog) {
+void WebContentsModalDialogManager::WillClose(gfx::NativeWindow dialog) {
   WebContentsModalDialogList::iterator dlg = FindDialogState(dialog);
 
   // The Views tab contents modal dialog calls WillClose twice.  Ignore the
@@ -95,7 +93,7 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
 }
 
 WebContentsModalDialogManager::DialogState::DialogState(
-    NativeWebContentsModalDialog dialog,
+    gfx::NativeWindow dialog,
     scoped_ptr<SingleWebContentsDialogManager> mgr)
     : dialog(dialog),
       manager(mgr.release()) {
@@ -104,8 +102,7 @@ WebContentsModalDialogManager::DialogState::DialogState(
 WebContentsModalDialogManager::DialogState::~DialogState() {}
 
 WebContentsModalDialogManager::WebContentsModalDialogList::iterator
-    WebContentsModalDialogManager::FindDialogState(
-        NativeWebContentsModalDialog dialog) {
+WebContentsModalDialogManager::FindDialogState(gfx::NativeWindow dialog) {
   WebContentsModalDialogList::iterator i;
   for (i = child_dialogs_.begin(); i != child_dialogs_.end(); ++i) {
     if ((*i)->dialog == dialog)

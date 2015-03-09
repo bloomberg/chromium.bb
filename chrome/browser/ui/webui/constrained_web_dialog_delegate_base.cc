@@ -85,8 +85,7 @@ void ConstrainedWebDialogDelegateBase::ReleaseWebContentsOnDialogClose() {
   release_contents_on_close_ = true;
 }
 
-web_modal::NativeWebContentsModalDialog
-    ConstrainedWebDialogDelegateBase::GetNativeDialog() {
+gfx::NativeWindow ConstrainedWebDialogDelegateBase::GetNativeDialog() {
   NOTREACHED();
   return NULL;
 }

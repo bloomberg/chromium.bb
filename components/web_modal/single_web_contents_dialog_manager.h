@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_WEB_MODAL_SINGLE_WEB_CONTENTS_DIALOG_MANAGER_H_
 #define COMPONENTS_WEB_MODAL_SINGLE_WEB_CONTENTS_DIALOG_MANAGER_H_
 
-#include "components/web_modal/native_web_contents_modal_dialog.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class WebContents;
@@ -26,19 +26,19 @@ class SingleWebContentsDialogManagerDelegate {
 
   // Notify the delegate that the dialog is closing. The native
   // manager will be deleted before the end of this call.
-  virtual void WillClose(NativeWebContentsModalDialog dialog) = 0;
+  virtual void WillClose(gfx::NativeWindow dialog) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleWebContentsDialogManagerDelegate);
 };
 
 // Provides an interface for platform-specific UI implementation for the web
-// contents modal dialog. Each object will manage a single
-// NativeWebContentsModalDialog during its lifecycle.
+// contents modal dialog. Each object will manage a single dialog window
+// during its lifecycle.
 //
-// Implementation classes should accept a NativeWebContentsModalDialog at
-// construction time and register to be notified when the dialog is closing,
-// so that it can notify its delegate (WillClose method).
+// Implementation classes should accept a dialog window at construction time
+// and register to be notified when the dialog is closing, so that it can
+// notify its delegate (WillClose method).
 class SingleWebContentsDialogManager {
  public:
   virtual ~SingleWebContentsDialogManager() {}
@@ -65,7 +65,7 @@ class SingleWebContentsDialogManager {
   virtual void HostChanged(WebContentsModalDialogHost* new_host) = 0;
 
   // Return the dialog under management by this object.
-  virtual NativeWebContentsModalDialog dialog() = 0;
+  virtual gfx::NativeWindow dialog() = 0;
 
  protected:
   SingleWebContentsDialogManager() {}

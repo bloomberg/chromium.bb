@@ -28,7 +28,7 @@ class SingleWebContentsDialogManagerCocoa
   void Focus() override;
   void Pulse() override;
   void HostChanged(web_modal::WebContentsModalDialogHost* new_host) override;
-  web_modal::NativeWebContentsModalDialog dialog() override;
+  gfx::NativeWindow dialog() override;
 
  private:
   ConstrainedWindowMac* client_;  // Weak. Can be null.

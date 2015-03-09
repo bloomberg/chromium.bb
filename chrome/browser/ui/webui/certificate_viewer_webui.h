@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/values.h"
-#include "components/web_modal/native_web_contents_modal_dialog.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
@@ -36,8 +35,7 @@ class CertificateViewerModalDialog : public ui::WebDialogDelegate {
 
   virtual void Show(content::WebContents* web_contents,
                     gfx::NativeWindow parent);
-  virtual web_modal::NativeWebContentsModalDialog
-  GetNativeWebContentsModalDialog();
+  virtual gfx::NativeWindow GetNativeWebContentsModalDialog();
   const content::WebUI* GetWebUI() const { return webui_; }
 
  protected:
@@ -83,8 +81,7 @@ class CertificateViewerDialog : public CertificateViewerModalDialog {
   // CertificateViewerModalDialog overrides.
   void Show(content::WebContents* web_contents,
             gfx::NativeWindow parent) override;
-  web_modal::NativeWebContentsModalDialog GetNativeWebContentsModalDialog()
-      override;
+  gfx::NativeWindow GetNativeWebContentsModalDialog() override;
 
  protected:
   // Overridden from ui::WebDialogDelegate:

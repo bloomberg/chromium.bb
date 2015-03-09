@@ -38,7 +38,7 @@ class PopupManager : public SinglePopupManagerDelegate {
 
   // Temporary method: Provides compatibility with existing
   // WebContentsModalDialogManager code.
-  virtual void ShowModalDialog(NativePopup popup,
+  virtual void ShowModalDialog(gfx::NativeWindow popup,
                                content::WebContents* web_contents);
 
   // Returns true if a web modal dialog is active and not closed in the
@@ -47,8 +47,8 @@ class PopupManager : public SinglePopupManagerDelegate {
   virtual bool IsWebModalDialogActive(
       const content::WebContents* web_contents) const;
 
-  // Called when a NativePopup we own is about to be closed.
-  void WillClose(NativePopup popup) override;
+  // Called when a native popup we own is about to be closed.
+  void WillClose(gfx::NativeWindow popup) override;
 
   // Called by views code to re-activate popups anchored to a particular tab
   // when that tab gets focus. Note that depending on the situation, more than

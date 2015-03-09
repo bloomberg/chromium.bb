@@ -19,7 +19,6 @@
 using content::WebContents;
 using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
-using web_modal::NativeWebContentsModalDialog;
 
 namespace {
 
@@ -72,7 +71,7 @@ class ConstrainedWebDialogDelegateViewMac :
   void ReleaseWebContentsOnDialogClose() override {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  NativeWebContentsModalDialog GetNativeDialog() override { return window_; }
+  gfx::NativeWindow GetNativeDialog() override { return window_; }
   WebContents* GetWebContents() override { return impl_->GetWebContents(); }
   gfx::Size GetMinimumSize() const override {
     NOTIMPLEMENTED();

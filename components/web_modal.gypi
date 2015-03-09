@@ -20,7 +20,6 @@
         # Note: sources list duplicated in GN build.
         'web_modal/modal_dialog_host.cc',
         'web_modal/modal_dialog_host.h',
-        'web_modal/native_web_contents_modal_dialog.h',
         'web_modal/popup_manager.cc',
         'web_modal/popup_manager.h',
         'web_modal/single_popup_manager.h',
