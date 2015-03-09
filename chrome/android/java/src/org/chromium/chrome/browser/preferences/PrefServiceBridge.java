@@ -511,6 +511,13 @@ public final class PrefServiceBridge {
         nativeClearBrowsingData(history, cache, cookiesAndSiteData, passwords, formData);
     }
 
+    /*
+     * Whether browser history can be deleted by the user.
+     */
+    public boolean canDeleteBrowsingHistory() {
+        return nativeCanDeleteBrowsingHistory();
+    }
+
     @CalledByNative
     private void browsingDataCleared() {
         if (mClearBrowsingDataListener != null) {
@@ -795,6 +802,7 @@ public final class PrefServiceBridge {
     private native void nativeGetJavaScriptExceptions(List<JavaScriptExceptionInfo> list);
     private native void nativeClearBrowsingData(boolean history, boolean cache,
             boolean cookiesAndSiteData, boolean passwords, boolean formData);
+    private native boolean nativeCanDeleteBrowsingHistory();
     private native void nativeSetAllowCookiesEnabled(boolean allow);
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);
     private native void nativeSetDoNotTrackEnabled(boolean enabled);

@@ -341,6 +341,10 @@ static void ClearBrowsingData(JNIEnv* env, jobject obj, jboolean history,
                                 BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
+static jboolean CanDeleteBrowsingHistory(JNIEnv* env, jobject obj) {
+  return GetPrefService()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
+}
+
 static void SetAllowCookiesEnabled(JNIEnv* env, jobject obj, jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
       GetOriginalProfile()->GetHostContentSettingsMap();

@@ -17,7 +17,10 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckedTextView;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -70,6 +73,7 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
     private DialogOption[] mOptions;
     private AlertDialog mDialog;
     private ProgressDialog mProgressDialog;
+    private boolean mCanDeleteBrowsingHistory;
 
     protected final void clearBrowsingData(EnumSet<DialogOption> selectedOptions) {
         PrefServiceBridge.getInstance().clearBrowsingData(this,
@@ -107,8 +111,12 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
      * @return EnumSet containing dialog options to be selected.
      */
     protected EnumSet<DialogOption> getDefaultDialogOptionsSelections() {
-        return EnumSet.of(DialogOption.CLEAR_HISTORY, DialogOption.CLEAR_CACHE,
+        EnumSet<DialogOption> defaultOptions = EnumSet.of(DialogOption.CLEAR_CACHE,
                 DialogOption.CLEAR_COOKIES_AND_SITE_DATA);
+        if (mCanDeleteBrowsingHistory) {
+            defaultOptions.add(DialogOption.CLEAR_HISTORY);
+        }
+        return defaultOptions;
     }
 
     // Called when "clear browsing data" completes.
@@ -136,16 +144,31 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
 
     @Override
     public void onClick(DialogInterface dialog, int whichButton, boolean isChecked) {
-        if (isChecked) {
-            mSelectedOptions.add(mOptions[whichButton]);
+        DialogOption clickedOption = mOptions[whichButton];
+        CheckedTextView clickedCheckBox =
+                (CheckedTextView) mDialog.getListView().getChildAt(whichButton);
+        if (!mCanDeleteBrowsingHistory) {
+            // Manually managing the Checkbox to handle disabled options.
+            if (clickedOption == DialogOption.CLEAR_HISTORY) {
+                Toast.makeText(getActivity(),
+                               R.string.can_not_clear_browsing_history_toast,
+                               Toast.LENGTH_SHORT).show();
+                return;
+            }
+            clickedCheckBox.toggle();
+        }
+        // isChecked is always false when ListView does not manage the Checkbox.
+        if (clickedCheckBox.isChecked()) {
+            mSelectedOptions.add(clickedOption);
         } else {
-            mSelectedOptions.remove(mOptions[whichButton]);
+            mSelectedOptions.remove(clickedOption);
         }
         updateButtonState();
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        mCanDeleteBrowsingHistory = PrefServiceBridge.getInstance().canDeleteBrowsingHistory();
         DialogOption[] options = getDialogOptions();
         mOptions = Arrays.copyOf(options, options.length);
         mSelectedOptions = getDefaultDialogOptionsSelections();
@@ -193,6 +216,19 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
         }
 
         mDialog = builder.create();
+        if (!mCanDeleteBrowsingHistory) {
+            // Disable management of the Checkboxes by the ListView.
+            mDialog.getListView().setChoiceMode(ListView.CHOICE_MODE_NONE);
+            // Children views of the ListView are not created until it is drawn.
+            mDialog.getListView().post(new Runnable() {
+                @Override
+                public void run() {
+                    int positionOfHistoryElement =
+                            Arrays.asList(mOptions).indexOf(DialogOption.CLEAR_HISTORY);
+                    mDialog.getListView().getChildAt(positionOfHistoryElement).setEnabled(false);
+                }
+            });
+        }
         return mDialog;
     }
 
