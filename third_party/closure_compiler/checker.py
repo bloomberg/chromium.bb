@@ -44,8 +44,6 @@ class Checker(object):
     "--jscomp_error=visibility",
     "--language_in=ECMASCRIPT5_STRICT",
     "--summary_detail_level=3",
-    "--compilation_level=WHITESPACE_ONLY",
-    "--source_map_format=V3",
   ]
 
   # These are the extra flags used when compiling in 'strict' mode.
@@ -179,16 +177,11 @@ class Checker(object):
       tmp_file.write(contents)
     return tmp_file.name
 
-  def _run_js_check(self, sources, out_file=None, externs=None):
+  def run_js_check(self, sources, externs=None):
     if not self._check_java_path():
       return 1, ""
 
     args = ["--js=%s" % s for s in sources]
-
-    if out_file:
-      args += ["--js_output_file=%s" % out_file]
-      args += ["--create_source_map=%s.map" % out_file]
-
     if externs:
       args += ["--externs=%s" % e for e in externs]
     args_file_content = " %s" % " ".join(self._common_args() + args)
@@ -208,12 +201,11 @@ class Checker(object):
 
     return errors, stderr
 
-  def check(self, source_file, out_file=None, depends=None, externs=None):
+  def check(self, source_file, depends=None, externs=None):
     """Closure compile a file and check for errors.
 
     Args:
         source_file: A file to check.
-        out_file: A file where the compiled output is written to.
         depends: Other files that would be included with a <script> earlier in
             the page.
         externs: @extern files that inform the compiler about custom globals.
@@ -248,8 +240,7 @@ class Checker(object):
     self._expanded_file = self._create_temp_file(self._processor.contents)
     self._debug("Expanded file: %s" % self._expanded_file)
 
-    errors, stderr = self._run_js_check([self._expanded_file],
-                                        out_file=out_file, externs=externs)
+    errors, stderr = self.run_js_check([self._expanded_file], externs)
 
     # Filter out false-positive promise chain errors.
     # See https://github.com/google/closure-compiler/issues/715 for details.
@@ -292,8 +283,7 @@ if __name__ == "__main__":
                                  help="Process all source files as a group")
   parser.add_argument("-d", "--depends", nargs=argparse.ZERO_OR_MORE)
   parser.add_argument("-e", "--externs", nargs=argparse.ZERO_OR_MORE)
-  parser.add_argument("-o", "--out_file",
-                      help="A file where the compiled output is written to")
+  parser.add_argument("-o", "--out_file", help="A place to output results")
   parser.add_argument("-v", "--verbose", action="store_true",
                       help="Show more information as this script runs")
   parser.add_argument("--strict", action="store_true",
@@ -307,11 +297,6 @@ if __name__ == "__main__":
   depends = opts.depends or []
   externs = opts.externs or set()
 
-  if opts.out_file:
-    out_dir = os.path.dirname(opts.out_file)
-    if not os.path.exists(out_dir):
-      os.makedirs(out_dir)
-
   checker = Checker(verbose=opts.verbose, strict=opts.strict)
   if opts.single_file:
     for source in opts.sources:
@@ -319,11 +304,16 @@ if __name__ == "__main__":
           source,
           depends,
           externs)
-      has_errors, _ = checker.check(source, out_file=opts.out_file,
-                                    depends=depends, externs=externs)
+      has_errors, _ = checker.check(source, depends=depends, externs=externs)
       if has_errors:
         sys.exit(1)
 
+      if opts.out_file:
+        out_dir = os.path.dirname(opts.out_file)
+        if not os.path.exists(out_dir):
+          os.makedirs(out_dir)
+        # TODO(dbeam): write compiled file to |opts.out_file|.
+        open(opts.out_file, "w").write("")
   else:
     has_errors, errors = checker.check_multiple(opts.sources)
     if has_errors:
