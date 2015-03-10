@@ -14,6 +14,8 @@
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/script_context.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
 using content::V8ValueConverter;
@@ -28,6 +30,9 @@ GuestViewInternalCustomBindings::GuestViewInternalCustomBindings(
                            base::Unretained(this)));
   RouteFunction("DetachGuest",
                 base::Bind(&GuestViewInternalCustomBindings::DetachGuest,
+                           base::Unretained(this)));
+  RouteFunction("GetContentWindow",
+                base::Bind(&GuestViewInternalCustomBindings::GetContentWindow,
                            base::Unretained(this)));
   RouteFunction(
       "RegisterDestructionCallback",
@@ -120,6 +125,31 @@ void GuestViewInternalCustomBindings::DetachGuest(
   guest_view_container->IssueRequest(request);
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
+}
+
+void GuestViewInternalCustomBindings::GetContentWindow(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // Default to returning null.
+  args.GetReturnValue().SetNull();
+
+  if (args.Length() != 1)
+    return;
+
+  // The routing ID for the RenderView.
+  if (!args[0]->IsInt32())
+    return;
+
+  int view_id = args[0]->Int32Value();
+  if (view_id == MSG_ROUTING_NONE)
+    return;
+
+  content::RenderView* view = content::RenderView::FromRoutingID(view_id);
+  if (!view)
+    return;
+
+  blink::WebFrame* frame = view->GetWebView()->mainFrame();
+  v8::Local<v8::Value> window = frame->mainWorldScriptContext()->Global();
+  args.GetReturnValue().Set(window);
 }
 
 void GuestViewInternalCustomBindings::RegisterDestructionCallback(

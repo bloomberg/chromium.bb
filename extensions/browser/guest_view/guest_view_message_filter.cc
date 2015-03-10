@@ -40,8 +40,6 @@ void GuestViewMessageFilter::OverrideThreadForMessage(
   switch (message.type()) {
     case GuestViewHostMsg_AttachGuest::ID:
     case GuestViewHostMsg_CreateMimeHandlerViewGuest::ID:
-      *thread = BrowserThread::UI;
-      break;
     case GuestViewHostMsg_ResizeGuest::ID:
       *thread = BrowserThread::UI;
       break;

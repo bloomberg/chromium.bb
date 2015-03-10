@@ -31,7 +31,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/guest_sizer.h"
+#include "content/public/browser/guest_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -99,13 +99,44 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
   DCHECK(delegate);
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Create"));
   web_contents->SetBrowserPluginGuest(this);
-  delegate->RegisterDestructionCallback(
-      base::Bind(&BrowserPluginGuest::WillDestroy, AsWeakPtr()));
-  delegate->SetGuestSizer(this);
+  delegate->SetGuestHost(this);
+}
+
+int BrowserPluginGuest::GetGuestProxyRoutingID() {
+  if (guest_proxy_routing_id_ != MSG_ROUTING_NONE)
+    return guest_proxy_routing_id_;
+
+  // Create a swapped out RenderView for the guest in the embedder renderer
+  // process, so that the embedder can access the guest's window object.
+  // On reattachment, we can reuse the same swapped out RenderView because
+  // the embedder process will always be the same even if the embedder
+  // WebContents changes.
+  //
+  // TODO(fsamuel): Make sure this works for transferring guests across
+  // owners in different processes. We probably need to clear the
+  // |guest_proxy_routing_id_| and perform any necessary cleanup on Detach
+  // to enable this.
+  SiteInstance* owner_site_instance = owner_web_contents_->GetSiteInstance();
+  guest_proxy_routing_id_ =
+      GetWebContents()->CreateSwappedOutRenderView(owner_site_instance);
+
+  return guest_proxy_routing_id_;
+}
+
+int BrowserPluginGuest::LoadURLWithParams(
+    const NavigationController::LoadURLParams& load_params) {
+  GetWebContents()->GetController().LoadURLWithParams(load_params);
+  return GetGuestProxyRoutingID();
 }
 
 void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {
   GetWebContents()->GetView()->SizeContents(new_size);
+}
+
+void BrowserPluginGuest::WillDestroy() {
+  is_in_destruction_ = true;
+  owner_web_contents_ = nullptr;
+  attached_ = false;
 }
 
 void BrowserPluginGuest::Init() {
@@ -121,13 +152,8 @@ void BrowserPluginGuest::Init() {
 
   WebContentsImpl* owner_web_contents = static_cast<WebContentsImpl*>(
       delegate_->GetOwnerWebContents());
+  owner_web_contents->CreateBrowserPluginEmbedderIfNecessary();
   InitInternal(BrowserPluginHostMsg_Attach_Params(), owner_web_contents);
-}
-
-void BrowserPluginGuest::WillDestroy() {
-  is_in_destruction_ = true;
-  owner_web_contents_ = nullptr;
-  attached_ = false;
 }
 
 base::WeakPtr<BrowserPluginGuest> BrowserPluginGuest::AsWeakPtr() {
@@ -620,18 +646,7 @@ void BrowserPluginGuest::Attach(
   attached_ = true;
   SendQueuedMessages();
 
-  // Create a swapped out RenderView for the guest in the embedder render
-  // process, so that the embedder can access the guest's window object.
-  // On reattachment, we can reuse the same swapped out RenderView because
-  // the embedder process will always be the same even if the embedder
-  // WebContents changes.
-  if (guest_proxy_routing_id_ == MSG_ROUTING_NONE) {
-    guest_proxy_routing_id_ =
-        GetWebContents()->CreateSwappedOutRenderView(
-            owner_web_contents_->GetSiteInstance());
-  }
-
-  delegate_->DidAttach(guest_proxy_routing_id_);
+  delegate_->DidAttach(GetGuestProxyRoutingID());
 
   has_render_view_ = true;
 

@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
-#include "content/public/browser/guest_sizer.h"
+#include "content/public/browser/guest_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -198,6 +198,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void InitWithWebContents(const base::DictionaryValue& create_params,
                            content::WebContents* guest_web_contents);
 
+  void LoadURLWithParams(
+      const content::NavigationController::LoadURLParams& load_params);
+
   bool IsViewType(const char* const view_type) const {
     return !strcmp(GetViewType(), view_type);
   }
@@ -214,6 +217,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   content::WebContents* owner_web_contents() const {
     return owner_web_contents_;
+  }
+
+  content::GuestHost* host() const {
+    return guest_host_;
   }
 
   // Returns the parameters associated with the element hosting this GuestView
@@ -257,6 +264,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Whether the guest view is inside a plugin document.
   bool is_full_page_plugin() { return is_full_page_plugin_; }
 
+  // Returns the routing ID of the guest proxy in the owner's renderer process.
+  // This value is only valid after attachment or first navigation.
+  int proxy_routing_id() const { return guest_proxy_routing_id_; }
+
   // Destroy this guest.
   void Destroy();
 
@@ -271,8 +282,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void DidDetach() final;
   content::WebContents* GetOwnerWebContents() const final;
   void GuestSizeChanged(const gfx::Size& new_size) final;
-  void RegisterDestructionCallback(const DestructionCallback& callback) final;
-  void SetGuestSizer(content::GuestSizer* guest_sizer) final;
+  void SetGuestHost(content::GuestHost* guest_host) final;
   void WillAttach(content::WebContents* embedder_web_contents,
                   int browser_plugin_instance_id,
                   bool is_full_page_plugin) final;
@@ -396,8 +406,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // The opener guest view.
   base::WeakPtr<GuestViewBase> opener_;
 
-  DestructionCallback destruction_callback_;
-
   // The parameters associated with the element hosting this GuestView that
   // are passed in from JavaScript. This will typically be the view instance ID,
   // and element-specific parameters. These parameters are passed along to new
@@ -416,8 +424,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // element may not match the size of the guest.
   gfx::Size guest_size_;
 
-  // A pointer to the guest_sizer.
-  content::GuestSizer* guest_sizer_;
+  // A pointer to the guest_host.
+  content::GuestHost* guest_host_;
 
   // Indicates whether autosize mode is enabled or not.
   bool auto_size_enabled_;
@@ -433,6 +441,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Whether the guest view is inside a plugin document.
   bool is_full_page_plugin_;
+
+  // The routing ID of the proxy to the guest in the owner's renderer process.
+  int guest_proxy_routing_id_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

@@ -40,6 +40,10 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // been detached.
   void DetachGuest(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // GetContentWindow takes in a RenderView routing ID and returns the
+  // Window JavaScript object for that RenderView.
+  void GetContentWindow(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // RegisterDestructionCallback registers a JavaScript callback function to be
   // called when the guestview's container is destroyed.
   // RegisterDestructionCallback takes in a single paramater, |callback|.

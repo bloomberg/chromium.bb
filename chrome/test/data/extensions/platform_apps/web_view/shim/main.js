@@ -1738,8 +1738,11 @@ function testResizeWebviewWithDisplayNoneResizesContent() {
 
 function testPostMessageCommChannel() {
   var webview = new WebView();
+  // Run this test with display:none to verify that postMessage works correctly.
+  webview.style.display = 'none';
   webview.src = 'about:blank';
   webview.addEventListener('loadstop', function(e) {
+    window.console.log('loadstop');
     webview.executeScript(
       {file: 'inject_comm_channel.js'},
       function(results) {
@@ -1750,6 +1753,9 @@ function testPostMessageCommChannel() {
         webview.contentWindow.postMessage(JSON.stringify(msg), '*');
       }
     );
+  });
+  webview.addEventListener('consolemessage', function(e) {
+    window.console.log('Guest: "' + e.message + '"');
   });
   window.addEventListener('message', function(e) {
     var data = JSON.parse(e.data);

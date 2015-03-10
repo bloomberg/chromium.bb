@@ -3189,13 +3189,8 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int routing_id,
 
 void WebContentsImpl::OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
                                              const IPC::Message& message) {
-  // This creates a BrowserPluginEmbedder, which handles all the BrowserPlugin
-  // specific messages for this WebContents. This means that any message from
-  // a BrowserPlugin prior to this will be ignored.
-  // For more info, see comment above classes BrowserPluginEmbedder and
-  // BrowserPluginGuest.
   CHECK(!browser_plugin_embedder_.get());
-  browser_plugin_embedder_.reset(BrowserPluginEmbedder::Create(this));
+  CreateBrowserPluginEmbedderIfNecessary();
   browser_plugin_embedder_->OnMessageReceived(message, render_frame_host);
 }
 #endif  // defined(ENABLE_PLUGINS)
@@ -4496,6 +4491,12 @@ void WebContentsImpl::SetBrowserPluginGuest(BrowserPluginGuest* guest) {
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();
+}
+
+void WebContentsImpl::CreateBrowserPluginEmbedderIfNecessary() {
+  if (browser_plugin_embedder_)
+    return;
+  browser_plugin_embedder_.reset(BrowserPluginEmbedder::Create(this));
 }
 
 void WebContentsImpl::ClearPowerSaveBlockers(

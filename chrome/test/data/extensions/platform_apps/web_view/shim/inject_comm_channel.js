@@ -5,6 +5,7 @@
 var embedder = null;
 
 function reportConnected() {
+  window.console.log('Reporting connection to embedder.');
   var msg = ['connected'];
   embedder.postMessage(JSON.stringify(msg), '*');
 }
@@ -20,3 +21,5 @@ window.addEventListener('message', function(e) {
   }
 });
 
+
+window.console.log('Script has been successfully injected.');

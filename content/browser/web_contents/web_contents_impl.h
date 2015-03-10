@@ -153,6 +153,10 @@ class CONTENT_EXPORT WebContentsImpl
   // an embedder.
   BrowserPluginEmbedder* GetBrowserPluginEmbedder() const;
 
+  // Creates a BrowserPluginEmbedder object for this WebContents if one doesn't
+  // already exist.
+  void CreateBrowserPluginEmbedderIfNecessary();
+
   // Gets the current fullscreen render widget's routing ID. Returns
   // MSG_ROUTING_NONE when there is no fullscreen render widget.
   int GetFullscreenWidgetRoutingID() const;

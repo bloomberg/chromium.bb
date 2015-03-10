@@ -153,9 +153,10 @@ GuestViewBase::GuestViewBase(content::WebContents* owner_web_contents)
       element_instance_id_(guestview::kInstanceIDNone),
       initialized_(false),
       is_being_destroyed_(false),
-      guest_sizer_(nullptr),
+      guest_host_(nullptr),
       auto_size_enabled_(false),
       is_full_page_plugin_(false),
+      guest_proxy_routing_id_(MSG_ROUTING_NONE),
       weak_ptr_factory_(this) {
 }
 
@@ -232,6 +233,14 @@ void GuestViewBase::InitWithWebContents(
   DidInitialize(create_params);
 }
 
+void GuestViewBase::LoadURLWithParams(
+      const content::NavigationController::LoadURLParams& load_params) {
+  int guest_proxy_routing_id = host()->LoadURLWithParams(load_params);
+  DCHECK(guest_proxy_routing_id_ == MSG_ROUTING_NONE ||
+         guest_proxy_routing_id == guest_proxy_routing_id_);
+  guest_proxy_routing_id_ = guest_proxy_routing_id;
+}
+
 void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
                                           const gfx::Size& new_size) {
   if (new_size == old_size)
@@ -291,7 +300,7 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
       GuestSizeChangedDueToAutoSize(guest_size_, new_size);
     } else {
       // Autosize was already disabled.
-      guest_sizer_->SizeContents(new_size);
+      guest_host_->SizeContents(new_size);
     }
 
     DispatchOnResizeEvent(guest_size_, new_size);
@@ -379,6 +388,10 @@ content::WebContents* GuestViewBase::CreateNewGuestWindow(
 }
 
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
+  DCHECK(guest_proxy_routing_id_ == MSG_ROUTING_NONE ||
+         guest_proxy_routing_id == guest_proxy_routing_id_);
+  guest_proxy_routing_id_ = guest_proxy_routing_id;
+
   opener_lifetime_observer_.reset();
 
   SetUpSizing(*attach_params());
@@ -424,8 +437,6 @@ void GuestViewBase::Destroy() {
 
   is_being_destroyed_ = true;
 
-  guest_sizer_ = nullptr;
-
   // It is important to clear owner_web_contents_ after the call to
   // StopTrackingEmbedderZoomLevel(), but before the rest of
   // the statements in this function.
@@ -443,8 +454,8 @@ void GuestViewBase::Destroy() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Give the content module an opportunity to perform some cleanup.
-  if (!destruction_callback_.is_null())
-    destruction_callback_.Run();
+  guest_host_->WillDestroy();
+  guest_host_ = nullptr;
 
   webcontents_guestview_map.Get().erase(web_contents());
   GuestViewManager::FromBrowserContext(browser_context_)->
@@ -471,13 +482,8 @@ void GuestViewBase::SetOpener(GuestViewBase* guest) {
   opener_lifetime_observer_.reset();
 }
 
-void GuestViewBase::RegisterDestructionCallback(
-    const DestructionCallback& callback) {
-  destruction_callback_ = callback;
-}
-
-void GuestViewBase::SetGuestSizer(content::GuestSizer* guest_sizer) {
-  guest_sizer_ = guest_sizer;
+void GuestViewBase::SetGuestHost(content::GuestHost* guest_host) {
+  guest_host_ = guest_host;
 }
 
 void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,

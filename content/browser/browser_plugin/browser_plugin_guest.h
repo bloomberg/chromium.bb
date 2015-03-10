@@ -28,6 +28,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
+#include "content/public/browser/guest_host.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
@@ -39,8 +40,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 
-class GuestSizer;
-class SkBitmap;
 struct BrowserPluginHostMsg_Attach_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
 struct FrameHostMsg_ReclaimCompositorResources_Params;
@@ -77,7 +76,7 @@ struct DropData;
 // A BrowserPluginGuest can also create a new unattached guest via
 // CreateNewWindow. The newly created guest will live in the same partition,
 // which means it can share storage and can script this guest.
-class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
+class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                                           public WebContentsObserver {
  public:
   ~BrowserPluginGuest() override;
@@ -132,6 +131,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   WebContentsImpl* CreateNewGuestWindow(
       const WebContents::CreateParams& params);
 
+  // Creates, if necessary, and returns the routing ID of a proxy for the guest
+  // in the owner's renderer process.
+  int GetGuestProxyRoutingID();
+
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
   int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
@@ -166,8 +169,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
 
-  // GuestSizer implementation.
+  // GuestHost implementation.
+  int LoadURLWithParams(
+      const NavigationController::LoadURLParams& load_params) override;
   void SizeContents(const gfx::Size& new_size) override;
+  void WillDestroy() override;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents() const;
@@ -228,8 +234,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestSizer,
   BrowserPluginGuest(bool has_render_view,
                      WebContentsImpl* web_contents,
                      BrowserPluginGuestDelegate* delegate);
-
-  void WillDestroy();
 
   void InitInternal(const BrowserPluginHostMsg_Attach_Params& params,
                     WebContentsImpl* owner_web_contents);

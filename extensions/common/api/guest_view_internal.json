@@ -66,8 +66,9 @@
             "name": "callback",
             "parameters": [
               {
-                "type": "integer",
-                "name": "instanceId"
+                "type": "object",
+                "name": "returnParams",
+                "additionalProperties": {"type": "any"}
               }
             ]
           }
