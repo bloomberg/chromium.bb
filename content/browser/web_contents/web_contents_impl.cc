@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -2938,6 +2939,12 @@ void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
 }
 
 void WebContentsImpl::OnDidStopLoading() {
+  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "465796 WebContentsImpl::OnDidStopLoading::Start"));
+
   if (!HasValidFrameSource())
     return;
 
@@ -2947,6 +2954,13 @@ void WebContentsImpl::OnDidStopLoading() {
   rfh->frame_tree_node()->set_is_loading(false);
 
   if (loading_progresses_.find(render_frame_id) != loading_progresses_.end()) {
+    // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "465796 "
+            "WebContentsImpl::OnDidStopLoading::SendLoadProgressChanged"));
+
     // Load stopped while we were still tracking load.  Make sure we update
     // progress based on this frame's completion.
     loading_progresses_[render_frame_id] = 1.0;
@@ -2956,6 +2970,11 @@ void WebContentsImpl::OnDidStopLoading() {
       ResetLoadProgressState();
   }
 
+  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "465796 WebContentsImpl::OnDidStopLoading::NotifyRenderManager"));
   // Notify the RenderFrameHostManager of the event.
   rfh->frame_tree_node()->render_manager()->OnDidStopLoading();
 
@@ -2963,6 +2982,12 @@ void WebContentsImpl::OnDidStopLoading() {
   // calls DidStopLoading() without a matching DidStartLoading().
   if (loading_frames_in_progress_ == 0)
     return;
+
+  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "465796 WebContentsImpl::OnDidStopLoading::PDFDidStopLoading"));
   --loading_frames_in_progress_;
   if (loading_frames_in_progress_ == 0)
     DidStopLoading(rfh);
