@@ -154,6 +154,7 @@ class DelayLoadStartAndExecuteJavascript
         delay_url_(delay_url),
         until_url_suffix_(until_url_suffix),
         script_(script),
+        has_user_gesture_(false),
         script_was_executed_(false),
         rvh_(NULL) {
     registrar_.Add(this,
@@ -183,7 +184,12 @@ class DelayLoadStartAndExecuteJavascript
     if (validated_url != delay_url_ || !rvh_)
       return;
 
-    rvh_->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(script_));
+    if (has_user_gesture_) {
+      rvh_->GetMainFrame()->ExecuteJavaScriptForTests(
+          base::UTF8ToUTF16(script_));
+    } else {
+      rvh_->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(script_));
+    }
     script_was_executed_ = true;
   }
 
@@ -198,6 +204,10 @@ class DelayLoadStartAndExecuteJavascript
     rvh_ = render_frame_host->GetRenderViewHost();
   }
 
+  void set_has_user_gesture(bool has_user_gesture) {
+    has_user_gesture_ = has_user_gesture;
+  }
+
  private:
   content::NotificationRegistrar registrar_;
 
@@ -206,6 +216,7 @@ class DelayLoadStartAndExecuteJavascript
   GURL delay_url_;
   std::string until_url_suffix_;
   std::string script_;
+  bool has_user_gesture_;
   bool script_was_executed_;
   content::RenderViewHost* rvh_;
 
@@ -544,6 +555,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
       embedded_test_server()->GetURL("/test1"),
       "navigate2()",
       "empty.html");
+
+  DelayLoadStartAndExecuteJavascript call_script_user_gesture(
+      test_navigation_listener(),
+      embedded_test_server()->GetURL("/test2"),
+      "navigate2()",
+      "empty.html");
+  call_script_user_gesture.set_has_user_gesture(true);
 
   ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcess")) << message_;
 }
