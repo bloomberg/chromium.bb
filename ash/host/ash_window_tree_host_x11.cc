@@ -33,10 +33,7 @@
 namespace ash {
 
 AshWindowTreeHostX11::AshWindowTreeHostX11(const gfx::Rect& initial_bounds)
-    : WindowTreeHostX11(initial_bounds),
-      transformer_helper_(this),
-      display_ids_(std::make_pair(gfx::Display::kInvalidDisplayID,
-                                  gfx::Display::kInvalidDisplayID)) {
+    : WindowTreeHostX11(initial_bounds), transformer_helper_(this) {
   aura::Env::GetInstance()->AddObserver(this);
 }
 
@@ -126,11 +123,6 @@ gfx::Insets AshWindowTreeHostX11::GetHostInsets() const {
 
 aura::WindowTreeHost* AshWindowTreeHostX11::AsWindowTreeHost() { return this; }
 
-void AshWindowTreeHostX11::UpdateDisplayID(int64 id1, int64 id2) {
-  display_ids_.first = id1;
-  display_ids_.second = id2;
-}
-
 void AshWindowTreeHostX11::PrepareForShutdown() {
   // Block the root window from dispatching events because it is weird for a
   // ScreenPositionClient not to be attached to the root window and for
@@ -213,7 +205,7 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
 #if defined(OS_CHROMEOS)
       XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
       int64 touch_display_id =
-          ui::DeviceDataManager::GetInstance()->GetDisplayForTouchDevice(
+          ui::DeviceDataManager::GetInstance()->GetTargetDisplayForTouchDevice(
               xiev->deviceid);
       // If we don't have record of display id for this touch device, check
       // that if the event is within the bound of the root window. Note
@@ -223,9 +215,10 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
         if (base::SysInfo::IsRunningOnChromeOS() &&
             !bounds().Contains(ui::EventLocationFromNative(xev)))
           return false;
-      } else if (touch_display_id != display_ids_.first &&
-                 touch_display_id != display_ids_.second) {
-        return false;
+      } else {
+        gfx::Screen* screen = gfx::Screen::GetScreenFor(window());
+        gfx::Display display = screen->GetDisplayNearestWindow(window());
+        return touch_display_id == display.id();
       }
 #endif  // defined(OS_CHROMEOS)
       return true;

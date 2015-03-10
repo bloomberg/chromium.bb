@@ -52,13 +52,6 @@ class ASH_EXPORT AshWindowTreeHost {
 
   virtual aura::WindowTreeHost* AsWindowTreeHost() = 0;
 
-  // Updates the display IDs associated with this root window.
-  // A root window can be associated with up to 2 display IDs (e.g. in mirror
-  // mode dual monitors case). If the root window is only associated with one
-  // display id, then the other id should be set to
-  // gfx::Display::kInvalidDisplayID.
-  virtual void UpdateDisplayID(int64 id1, int64 id2) {}
-
   // Stop listening for events in preparation for shutdown.
   virtual void PrepareForShutdown() {}
 

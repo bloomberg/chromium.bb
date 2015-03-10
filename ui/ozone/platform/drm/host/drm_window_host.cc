@@ -133,7 +133,7 @@ bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
     // touchscreen has a bezel, touches in the bezel have a location outside of
     // |bounds_|.
     int64_t display_id =
-        DeviceDataManager::GetInstance()->GetDisplayForTouchDevice(
+        DeviceDataManager::GetInstance()->GetTargetDisplayForTouchDevice(
             event->source_device_id());
 
     if (display_id == gfx::Display::kInvalidDisplayID)

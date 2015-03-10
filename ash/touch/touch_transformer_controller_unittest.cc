@@ -77,13 +77,13 @@ TEST_F(TouchTransformerControllerTest, MirrorModeLetterboxing) {
                                        internal_touchscreen, fb_size));
 
   device_manager->UpdateTouchInfoForDisplay(
-      external_display_info.id(), external_display_info.touch_device_id(),
+      internal_display_info.id(), external_display_info.touch_device_id(),
       tt_controller->GetTouchTransform(external_display_info,
                                        external_display_info,
                                        external_touchscreen, fb_size));
 
-  EXPECT_EQ(1, device_manager->GetDisplayForTouchDevice(10));
-  EXPECT_EQ(2, device_manager->GetDisplayForTouchDevice(11));
+  EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
+  EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
 
   // External touch display has the default TouchTransformer.
   float x = 100.0;
@@ -148,13 +148,13 @@ TEST_F(TouchTransformerControllerTest, MirrorModePillarboxing) {
                                        internal_touchscreen, fb_size));
 
   device_manager->UpdateTouchInfoForDisplay(
-      external_display_info.id(), external_display_info.touch_device_id(),
+      internal_display_info.id(), external_display_info.touch_device_id(),
       tt_controller->GetTouchTransform(external_display_info,
                                        external_display_info,
                                        external_touchscreen, fb_size));
 
-  EXPECT_EQ(1, device_manager->GetDisplayForTouchDevice(10));
-  EXPECT_EQ(2, device_manager->GetDisplayForTouchDevice(11));
+  EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
+  EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
 
   // External touch display has the default TouchTransformer.
   float x = 100.0;
@@ -221,12 +221,12 @@ TEST_F(TouchTransformerControllerTest, SoftwareMirrorMode) {
                                        display1_touchscreen, fb_size));
 
   device_manager->UpdateTouchInfoForDisplay(
-      display2_info.id(), display2_info.touch_device_id(),
+      display1_info.id(), display2_info.touch_device_id(),
       tt_controller->GetTouchTransform(display1_info, display2_info,
                                        display2_touchscreen, fb_size));
 
-  EXPECT_EQ(1, device_manager->GetDisplayForTouchDevice(10));
-  EXPECT_EQ(2, device_manager->GetDisplayForTouchDevice(11));
+  EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
+  EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
 
   // Mapping for touch events from display 1's touchscreen:
   // [0, 1920) x [0, 1990) -> [0, 1280) x [0, 850)
@@ -295,8 +295,8 @@ TEST_F(TouchTransformerControllerTest, ExtendedMode) {
       tt_controller->GetTouchTransform(display2, display2, touchscreen2,
                                        fb_size));
 
-  EXPECT_EQ(1, device_manager->GetDisplayForTouchDevice(5));
-  EXPECT_EQ(2, device_manager->GetDisplayForTouchDevice(6));
+  EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(5));
+  EXPECT_EQ(2, device_manager->GetTargetDisplayForTouchDevice(6));
 
   // Mapping for touch events from internal touch display:
   // [0, 2560) x [0, 2428) -> [0, 1366) x [0, 768)

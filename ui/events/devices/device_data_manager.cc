@@ -31,10 +31,7 @@ DeviceDataManager::DeviceDataManager() {
   base::AtExitManager::RegisterTask(
       base::Bind(&base::DeletePointer<DeviceDataManager>, this));
 
-  for (int i = 0; i < kMaxDeviceNum; ++i) {
-    touch_device_to_display_map_[i] = gfx::Display::kInvalidDisplayID;
-    touch_radius_scale_map_[i] = 1.0;
-  }
+  ClearTouchDeviceAssociations();
 }
 
 DeviceDataManager::~DeviceDataManager() {
@@ -64,10 +61,10 @@ bool DeviceDataManager::HasInstance() {
   return instance_ != NULL;
 }
 
-void DeviceDataManager::ClearTouchTransformerRecord() {
+void DeviceDataManager::ClearTouchDeviceAssociations() {
   for (int i = 0; i < kMaxDeviceNum; i++) {
     touch_device_transformer_map_[i] = gfx::Transform();
-    touch_device_to_display_map_[i] = gfx::Display::kInvalidDisplayID;
+    touch_device_to_target_display_map_[i] = gfx::Display::kInvalidDisplayID;
     touch_radius_scale_map_[i] = 1.0;
   }
 }
@@ -78,11 +75,11 @@ bool DeviceDataManager::IsTouchDeviceIdValid(
 }
 
 void DeviceDataManager::UpdateTouchInfoForDisplay(
-    int64_t display_id,
+    int64_t target_display_id,
     unsigned int touch_device_id,
     const gfx::Transform& touch_transformer) {
   if (IsTouchDeviceIdValid(touch_device_id)) {
-    touch_device_to_display_map_[touch_device_id] = display_id;
+    touch_device_to_target_display_map_[touch_device_id] = target_display_id;
     touch_device_transformer_map_[touch_device_id] = touch_transformer;
   }
 }
@@ -112,10 +109,10 @@ void DeviceDataManager::ApplyTouchTransformer(unsigned int touch_device_id,
   }
 }
 
-int64_t DeviceDataManager::GetDisplayForTouchDevice(
+int64_t DeviceDataManager::GetTargetDisplayForTouchDevice(
     unsigned int touch_device_id) const {
   if (IsTouchDeviceIdValid(touch_device_id))
-    return touch_device_to_display_map_[touch_device_id];
+    return touch_device_to_target_display_map_[touch_device_id];
   return gfx::Display::kInvalidDisplayID;
 }
 

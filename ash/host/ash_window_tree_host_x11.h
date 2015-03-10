@@ -32,7 +32,6 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
       scoped_ptr<RootWindowTransformer> transformer) override;
   gfx::Insets GetHostInsets() const override;
   aura::WindowTreeHost* AsWindowTreeHost() override;
-  void UpdateDisplayID(int64 id1, int64 id2) override;
   void PrepareForShutdown() override;
 
   // aura::WindowTreehost:
@@ -61,13 +60,6 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   scoped_ptr<XID[]> pointer_barriers_;
 
   TransformerHelper transformer_helper_;
-
-  // The display IDs associated with this root window.
-  // In single monitor or extended mode dual monitor case, the root window
-  // is associated with one display.
-  // In mirror mode dual monitors case, the root window is associated with
-  // both displays.
-  std::pair<int64, int64> display_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AshWindowTreeHostX11);
 };

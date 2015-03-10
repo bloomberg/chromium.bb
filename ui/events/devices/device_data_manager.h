@@ -33,12 +33,14 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   static DeviceDataManager* GetInstance();
   static bool HasInstance();
 
-  void ClearTouchTransformerRecord();
-  void UpdateTouchInfoForDisplay(int64_t display_id,
+  void ClearTouchDeviceAssociations();
+  void UpdateTouchInfoForDisplay(int64_t target_display_id,
                                  unsigned int touch_device_id,
                                  const gfx::Transform& touch_transformer);
   void ApplyTouchTransformer(unsigned int touch_device_id, float* x, float* y);
-  int64_t GetDisplayForTouchDevice(unsigned int touch_device_id) const;
+
+  // Gets the display that touches from |touch_device_id| should be sent to.
+  int64_t GetTargetDisplayForTouchDevice(unsigned int touch_device_id) const;
 
   void UpdateTouchRadiusScale(unsigned int touch_device_id, double scale);
   void ApplyTouchRadiusScale(unsigned int touch_device_id, double* radius);
@@ -76,8 +78,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
 
   double touch_radius_scale_map_[kMaxDeviceNum];
 
-  // Table to keep track of which display id is mapped to which touch device.
-  int64_t touch_device_to_display_map_[kMaxDeviceNum];
+  // Index table to find the target display id for a touch device.
+  int64_t touch_device_to_target_display_map_[kMaxDeviceNum];
   // Index table to find the TouchTransformer for a touch device.
   gfx::Transform touch_device_transformer_map_[kMaxDeviceNum];
 

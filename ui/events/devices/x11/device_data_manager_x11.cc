@@ -111,8 +111,8 @@ namespace ui {
 
 namespace {
 
-bool KeyboardDeviceHasId(const ui::KeyboardDevice keyboard, unsigned int id) {
-  return keyboard.id == id;
+bool DeviceHasId(const ui::InputDevice input_device, unsigned int id) {
+  return input_device.id == id;
 }
 
 }  // namespace
@@ -667,13 +667,17 @@ void DeviceDataManagerX11::InitializeValuatorsForTest(int deviceid,
 
 bool DeviceDataManagerX11::TouchEventNeedsCalibrate(
     unsigned int touch_device_id) const {
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-  int64 touch_display_id = GetDisplayForTouchDevice(touch_device_id);
-  if (base::SysInfo::IsRunningOnChromeOS() &&
-      touch_display_id == gfx::Display::InternalDisplayId()) {
-    return true;
-  }
-#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return false;
+
+  const std::vector<TouchscreenDevice>& touch_devices =
+      ui::DeviceDataManager::GetInstance()->touchscreen_devices();
+  std::vector<TouchscreenDevice>::const_iterator it =
+      std::find_if(touch_devices.begin(), touch_devices.end(),
+                   std::bind2nd(std::ptr_fun(&DeviceHasId), touch_device_id));
+  return it != touch_devices.end() && it->type == INPUT_DEVICE_INTERNAL;
+#endif  // defined(OS_CHROMEOS)
   return false;
 }
 
@@ -691,7 +695,7 @@ void DeviceDataManagerX11::DisableDevice(unsigned int deviceid) {
   std::vector<KeyboardDevice>::iterator it =
       std::find_if(keyboards.begin(),
                    keyboards.end(),
-                   std::bind2nd(std::ptr_fun(&KeyboardDeviceHasId), deviceid));
+                   std::bind2nd(std::ptr_fun(&DeviceHasId), deviceid));
   if (it != std::end(keyboards)) {
     blocked_keyboards_.insert(
         std::pair<unsigned int, KeyboardDevice>(deviceid, *it));
@@ -740,11 +744,9 @@ void DeviceDataManagerX11::OnKeyboardDevicesUpdated(
            blocked_keyboards_.begin();
        blocked_iter != blocked_keyboards_.end();) {
     // Check if the blocked device still exists in list of devices.
-    std::vector<KeyboardDevice>::iterator it =
-        std::find_if(keyboards.begin(),
-                     keyboards.end(),
-                     std::bind2nd(std::ptr_fun(&KeyboardDeviceHasId),
-                                  (*blocked_iter).first));
+    std::vector<KeyboardDevice>::iterator it = std::find_if(
+        keyboards.begin(), keyboards.end(),
+        std::bind2nd(std::ptr_fun(&DeviceHasId), (*blocked_iter).first));
     // If the device no longer exists, unblock it, else filter it out from our
     // active list.
     if (it == keyboards.end()) {
