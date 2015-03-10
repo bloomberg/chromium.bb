@@ -6,5 +6,8 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
+# TODO(sky): nuke this. Temporary while sorting out http://crbug.com/465456.
+enable_correct_v8_arch = false
+
 v8_use_external_startup_data =
     !((is_android && is_android_webview_build) || is_chromeos || is_win)
