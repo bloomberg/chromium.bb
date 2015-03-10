@@ -160,10 +160,6 @@ struct weston_output_zoom {
 	float trans_x, trans_y;
 	struct weston_animation animation_z;
 	struct weston_spring spring_z;
-	struct weston_animation animation_xy;
-	struct weston_spring spring_xy;
-	struct weston_fixed_point from;
-	struct weston_fixed_point to;
 	struct weston_fixed_point current;
 	struct wl_listener motion_listener;
 };
