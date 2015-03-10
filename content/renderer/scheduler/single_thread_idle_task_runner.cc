@@ -16,8 +16,10 @@ SingleThreadIdleTaskRunner::SingleThreadIdleTaskRunner(
     : idle_priority_task_runner_(idle_priority_task_runner),
       after_wakeup_task_runner_(after_wakeup_task_runner),
       deadline_supplier_(deadline_supplier) {
-  DCHECK(idle_priority_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(after_wakeup_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!idle_priority_task_runner_ ||
+         idle_priority_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!after_wakeup_task_runner_ ||
+         after_wakeup_task_runner_->RunsTasksOnCurrentThread());
 }
 
 SingleThreadIdleTaskRunner::~SingleThreadIdleTaskRunner() {
