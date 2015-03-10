@@ -598,6 +598,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                            UnclosedStreamDataCompressorsOneByteAtATime);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
                            UncompressLargerThanFrameBufferInitialSize);
+  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, GetNumberRequiredContinuationFrames);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
                            CreatePushPromiseThenContinuationUncompressed);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ReadLargeSettingsFrame);

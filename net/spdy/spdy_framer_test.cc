@@ -3269,6 +3269,17 @@ TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
   }
 }
 
+TEST_P(SpdyFramerTest, GetNumberRequiredContinuationFrames) {
+  if (spdy_version_ <= SPDY3) {
+    return;
+  }
+
+  SpdyFramer framer(spdy_version_);
+  // Test case from https://crbug.com/464748.
+  EXPECT_EQ(1u, framer.GetNumberRequiredContinuationFrames(2039));
+  EXPECT_EQ(2u, framer.GetNumberRequiredContinuationFrames(2040));
+}
+
 TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
   if (spdy_version_ <= SPDY3) {
     return;
