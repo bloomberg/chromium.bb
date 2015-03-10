@@ -46,6 +46,7 @@ keyboard::KeyboardMode getKeyboardModeEnum(SetMode::Params::Mode mode) {
     case SetMode::Params::MODE_FLOATING:
       return keyboard::FLOATING;
   }
+  return keyboard::NONE;
 }
 
 }  // namespace
