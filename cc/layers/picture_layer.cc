@@ -79,20 +79,23 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   Layer::SetLayerTreeHost(host);
-  if (host) {
-    if (!recording_source_) {
-      if (host->settings().use_display_lists) {
-        recording_source_.reset(new DisplayListRecordingSource);
-      } else {
-        recording_source_.reset(
-            new PicturePile(host->settings().minimum_contents_scale,
-                            host->settings().default_tile_grid_size));
-      }
+  if (!host)
+    return;
+
+  if (!recording_source_) {
+    if (host->settings().use_display_lists) {
+      recording_source_.reset(new DisplayListRecordingSource);
+    } else {
+      recording_source_.reset(
+          new PicturePile(host->settings().minimum_contents_scale,
+                          host->settings().default_tile_grid_size));
     }
-    recording_source_->DidMoveToNewCompositor();
-    recording_source_->SetSlowdownRasterScaleFactor(
-        host->debug_state().slow_down_raster_scale_factor);
   }
+  recording_source_->DidMoveToNewCompositor();
+  recording_source_->SetSlowdownRasterScaleFactor(
+      host->debug_state().slow_down_raster_scale_factor);
+
+  DCHECK(host->settings().raster_enabled);
 }
 
 void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {

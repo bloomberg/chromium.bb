@@ -104,6 +104,7 @@ class LayerTreeHostNoMessageLoopTest
     LayerTreeSettings settings;
     settings.single_thread_proxy_scheduler = false;
     settings.verify_property_trees = true;
+    settings.raster_enabled = false;
     layer_tree_host_ = LayerTreeHost::CreateSingleThreaded(
         this, this, nullptr, nullptr, settings, nullptr, nullptr);
     layer_tree_host_->SetViewportSize(size_);

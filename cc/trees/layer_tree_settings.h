@@ -21,6 +21,7 @@ class CC_EXPORT LayerTreeSettings {
 
   RendererSettings renderer_settings;
   bool impl_side_painting;
+  bool raster_enabled;
   bool throttle_frame_production;
   bool single_thread_proxy_scheduler;
   bool use_external_begin_frame_source;

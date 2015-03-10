@@ -1055,7 +1055,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   // This will cause NotifyTileStateChanged() to be called for any visible tiles
   // that completed, which will add damage to the frame for them so they appear
   // as part of the current frame being drawn.
-  if (settings().impl_side_painting)
+  if (tile_manager_)
     tile_manager_->UpdateVisibleTiles(global_tile_state_);
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
@@ -1705,7 +1705,8 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
   // Only valid for the single-threaded non-scheduled/synchronous case
   // using the zero copy raster worker pool.
-  single_thread_synchronous_task_graph_runner_->RunUntilIdle();
+  if (tile_manager_)
+    single_thread_synchronous_task_graph_runner_->RunUntilIdle();
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
@@ -2136,7 +2137,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   CreateAndSetRenderer();
 
-  if (settings_.impl_side_painting)
+  if (settings_.impl_side_painting && settings_.raster_enabled)
     CreateAndSetTileManager();
   RecreateTreeResources();
 
