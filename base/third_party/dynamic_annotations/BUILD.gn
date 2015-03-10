@@ -6,7 +6,10 @@ if (is_nacl) {
   # Native client doesn't need dynamic annotations, so we provide a
   # dummy target in order for clients to not have to special-case the
   # dependency.
-  group("dynamic_annotations") {
+  source_set("dynamic_annotations") {
+    sources = [
+      "dynamic_annotations.h",
+    ]
   }
 } else {
   source_set("dynamic_annotations") {

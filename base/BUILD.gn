@@ -9,6 +9,41 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+source_set("base_paths") {
+  sources = [
+    "base_paths.cc",
+    "base_paths.h",
+    "base_paths_android.cc",
+    "base_paths_android.h",
+    "base_paths_mac.h",
+    "base_paths_mac.mm",
+    "base_paths_posix.cc",
+    "base_paths_posix.h",
+    "base_paths_win.cc",
+    "base_paths_win.h",
+  ]
+
+  if (is_android || is_mac) {
+    sources -= [ "base_paths_posix.cc" ]
+  }
+
+  if (is_nacl) {
+    sources -= [
+      "base_paths.cc",
+      "base_paths_posix.cc",
+    ]
+  }
+
+  defines = [ "BASE_IMPLEMENTATION" ]
+
+  deps = [
+    "//base/memory",
+    "//base/process",
+  ]
+
+  visibility = [ ":base" ]
+}
+
 component("base") {
   sources = [
     "allocator/allocator_extension.cc",
@@ -92,16 +127,6 @@ component("base") {
     "base64.cc",
     "base64.h",
     "base_export.h",
-    "base_paths.cc",
-    "base_paths.h",
-    "base_paths_android.cc",
-    "base_paths_android.h",
-    "base_paths_mac.h",
-    "base_paths_mac.mm",
-    "base_paths_posix.cc",
-    "base_paths_posix.h",
-    "base_paths_win.cc",
-    "base_paths_win.h",
     "base_switches.h",
     "basictypes.h",
     "big_endian.cc",
@@ -135,43 +160,6 @@ component("base") {
     "cpu.h",
     "critical_closure.h",
     "critical_closure_internal_ios.mm",
-    "debug/alias.cc",
-    "debug/alias.h",
-    "debug/asan_invalid_access.cc",
-    "debug/asan_invalid_access.h",
-    "debug/crash_logging.cc",
-    "debug/crash_logging.h",
-    "debug/debugger.cc",
-    "debug/debugger.h",
-    "debug/debugger_posix.cc",
-    "debug/debugger_win.cc",
-    "debug/dump_without_crashing.cc",
-    "debug/dump_without_crashing.h",
-    "debug/gdi_debug_util_win.cc",
-    "debug/gdi_debug_util_win.h",
-    "third_party/dmg_fp/dmg_fp.h",
-    "third_party/dmg_fp/dtoa_wrapper.cc",
-    "third_party/dmg_fp/g_fmt.cc",
-    "third_party/icu/icu_utf.cc",
-    "third_party/icu/icu_utf.h",
-    "third_party/superfasthash/superfasthash.c",
-
-    # This file depends on files from the "allocator" target,
-    # but this target does not depend on "allocator" (see
-    # allocator.gyp for details).
-    "debug/leak_annotations.h",
-    "debug/leak_tracker.h",
-    "debug/proc_maps_linux.cc",
-    "debug/proc_maps_linux.h",
-    "debug/profiler.cc",
-    "debug/profiler.h",
-    "debug/stack_trace.cc",
-    "debug/stack_trace.h",
-    "debug/stack_trace_android.cc",
-    "debug/stack_trace_posix.cc",
-    "debug/stack_trace_win.cc",
-    "debug/task_annotator.cc",
-    "debug/task_annotator.h",
     "deferred_sequenced_task_runner.cc",
     "deferred_sequenced_task_runner.h",
     "environment.cc",
@@ -243,20 +231,6 @@ component("base") {
     "ios/scoped_critical_action.mm",
     "ios/weak_nsobject.h",
     "ios/weak_nsobject.mm",
-    "json/json_file_value_serializer.cc",
-    "json/json_file_value_serializer.h",
-    "json/json_parser.cc",
-    "json/json_parser.h",
-    "json/json_reader.cc",
-    "json/json_reader.h",
-    "json/json_string_value_serializer.cc",
-    "json/json_string_value_serializer.h",
-    "json/json_value_converter.cc",
-    "json/json_value_converter.h",
-    "json/json_writer.cc",
-    "json/json_writer.h",
-    "json/string_escape.cc",
-    "json/string_escape.h",
     "lazy_instance.cc",
     "lazy_instance.h",
     "linux_util.cc",
@@ -316,46 +290,6 @@ component("base") {
     "macros.h",
     "md5.cc",
     "md5.h",
-    "memory/aligned_memory.cc",
-    "memory/aligned_memory.h",
-    "memory/discardable_memory.cc",
-    "memory/discardable_memory.h",
-    "memory/discardable_memory_android.cc",
-    "memory/discardable_memory_emulated.cc",
-    "memory/discardable_memory_emulated.h",
-    "memory/discardable_memory_linux.cc",
-    "memory/discardable_memory_mac.cc",
-    "memory/discardable_memory_manager.cc",
-    "memory/discardable_memory_manager.h",
-    "memory/discardable_memory_shmem.cc",
-    "memory/discardable_memory_shmem.h",
-    "memory/discardable_memory_shmem_allocator.cc",
-    "memory/discardable_memory_shmem_allocator.h",
-    "memory/discardable_memory_win.cc",
-    "memory/discardable_shared_memory.cc",
-    "memory/discardable_shared_memory.h",
-    "memory/linked_ptr.h",
-    "memory/manual_constructor.h",
-    "memory/memory_pressure_listener.cc",
-    "memory/memory_pressure_listener.h",
-    "memory/raw_scoped_refptr_mismatch_checker.h",
-    "memory/ref_counted.cc",
-    "memory/ref_counted.h",
-    "memory/ref_counted_delete_on_message_loop.h",
-    "memory/ref_counted_memory.cc",
-    "memory/ref_counted_memory.h",
-    "memory/scoped_policy.h",
-    "memory/scoped_ptr.h",
-    "memory/scoped_vector.h",
-    "memory/shared_memory.h",
-    "memory/shared_memory_android.cc",
-    "memory/shared_memory_nacl.cc",
-    "memory/shared_memory_posix.cc",
-    "memory/shared_memory_win.cc",
-    "memory/singleton.cc",
-    "memory/singleton.h",
-    "memory/weak_ptr.cc",
-    "memory/weak_ptr.h",
     "message_loop/incoming_task_queue.cc",
     "message_loop/incoming_task_queue.h",
     "message_loop/message_loop.cc",
@@ -380,33 +314,6 @@ component("base") {
     "message_loop/message_pump_mac.mm",
     "message_loop/message_pump_win.cc",
     "message_loop/message_pump_win.h",
-    "metrics/bucket_ranges.cc",
-    "metrics/bucket_ranges.h",
-    "metrics/field_trial.cc",
-    "metrics/field_trial.h",
-    "metrics/histogram.cc",
-    "metrics/histogram.h",
-    "metrics/histogram_base.cc",
-    "metrics/histogram_base.h",
-    "metrics/histogram_delta_serialization.",
-    "metrics/histogram_delta_serialization.cc",
-    "metrics/histogram_flattener.h",
-    "metrics/histogram_macros.h",
-    "metrics/histogram_samples.cc",
-    "metrics/histogram_samples.h",
-    "metrics/histogram_snapshot_manager.cc",
-    "metrics/histogram_snapshot_manager.h",
-    "metrics/sample_map.cc",
-    "metrics/sample_map.h",
-    "metrics/sample_vector.cc",
-    "metrics/sample_vector.h",
-    "metrics/sparse_histogram.cc",
-    "metrics/sparse_histogram.h",
-    "metrics/statistics_recorder.cc",
-    "metrics/statistics_recorder.h",
-    "metrics/user_metrics.cc",
-    "metrics/user_metrics.h",
-    "metrics/user_metrics_action.h",
     "move.h",
     "native_library.h",
     "native_library_mac.mm",
@@ -453,54 +360,6 @@ component("base") {
     "power_monitor/power_monitor_source.cc",
     "power_monitor/power_monitor_source.h",
     "power_monitor/power_observer.h",
-    "process/internal_linux.cc",
-    "process/internal_linux.h",
-    "process/kill.cc",
-    "process/kill.h",
-    "process/kill_mac.cc",
-    "process/kill_posix.cc",
-    "process/kill_win.cc",
-    "process/launch.cc",
-    "process/launch.h",
-    "process/launch_ios.cc",
-    "process/launch_mac.cc",
-    "process/launch_posix.cc",
-    "process/launch_win.cc",
-    "process/memory.cc",
-    "process/memory.h",
-    "process/memory_linux.cc",
-    "process/memory_mac.mm",
-    "process/memory_win.cc",
-    "process/process.h",
-    "process/process_handle_freebsd.cc",
-    "process/process_handle_linux.cc",
-    "process/process_handle_mac.cc",
-    "process/process_handle_openbsd.cc",
-    "process/process_handle_posix.cc",
-    "process/process_handle_win.cc",
-    "process/process_info.h",
-    "process/process_info_linux.cc",
-    "process/process_info_mac.cc",
-    "process/process_info_win.cc",
-    "process/process_iterator.cc",
-    "process/process_iterator.h",
-    "process/process_iterator_freebsd.cc",
-    "process/process_iterator_linux.cc",
-    "process/process_iterator_mac.cc",
-    "process/process_iterator_openbsd.cc",
-    "process/process_iterator_win.cc",
-    "process/process_linux.cc",
-    "process/process_metrics.cc",
-    "process/process_metrics.h",
-    "process/process_metrics_freebsd.cc",
-    "process/process_metrics_ios.cc",
-    "process/process_metrics_linux.cc",
-    "process/process_metrics_mac.cc",
-    "process/process_metrics_openbsd.cc",
-    "process/process_metrics_posix.cc",
-    "process/process_metrics_win.cc",
-    "process/process_posix.cc",
-    "process/process_win.cc",
     "profiler/alternate_timer.cc",
     "profiler/alternate_timer.h",
     "profiler/scoped_profile.cc",
@@ -608,6 +467,12 @@ component("base") {
     "task_runner.h",
     "task_runner_util.h",
     "template_util.h",
+    "third_party/dmg_fp/dmg_fp.h",
+    "third_party/dmg_fp/dtoa_wrapper.cc",
+    "third_party/dmg_fp/g_fmt.cc",
+    "third_party/icu/icu_utf.cc",
+    "third_party/icu/icu_utf.h",
+    "third_party/superfasthash/superfasthash.c",
     "thread_task_runner_handle.cc",
     "thread_task_runner_handle.h",
     "threading/non_thread_safe.h",
@@ -673,34 +538,6 @@ component("base") {
     "timer/mock_timer.h",
     "timer/timer.cc",
     "timer/timer.h",
-    "trace_event/memory_dump_manager.cc",
-    "trace_event/memory_dump_manager.h",
-    "trace_event/memory_dump_provider.h",
-    "trace_event/process_memory_dump.cc",
-    "trace_event/process_memory_dump.h",
-    "trace_event/process_memory_maps.cc",
-    "trace_event/process_memory_maps.h",
-    "trace_event/process_memory_maps_dump_provider.cc",
-    "trace_event/process_memory_maps_dump_provider.h",
-    "trace_event/process_memory_totals.cc",
-    "trace_event/process_memory_totals.h",
-    "trace_event/process_memory_totals_dump_provider.cc",
-    "trace_event/process_memory_totals_dump_provider.h",
-    "trace_event/trace_event.h",
-    "trace_event/trace_event_android.cc",
-    "trace_event/trace_event_argument.cc",
-    "trace_event/trace_event_argument.h",
-    "trace_event/trace_event_impl.cc",
-    "trace_event/trace_event_impl.h",
-    "trace_event/trace_event_impl_constants.cc",
-    "trace_event/trace_event_memory.cc",
-    "trace_event/trace_event_memory.h",
-    "trace_event/trace_event_synthetic_delay.cc",
-    "trace_event/trace_event_synthetic_delay.h",
-    "trace_event/trace_event_system_stats_monitor.cc",
-    "trace_event/trace_event_system_stats_monitor.h",
-    "trace_event/trace_event_win.cc",
-    "trace_event/trace_event_win.h",
     "tracked_objects.cc",
     "tracked_objects.h",
     "tracking_info.cc",
@@ -765,6 +602,63 @@ component("base") {
     "win/wrapped_window_proc.h",
   ]
 
+  sources -= [
+    "sys_info_freebsd.cc",
+    "sys_info_openbsd.cc",
+  ]
+
+  defines = [ "BASE_IMPLEMENTATION" ]
+
+  deps = [
+    ":base_static",
+    "//base/allocator:allocator_extension_thunks",
+    "//base/third_party/dynamic_annotations",
+    "//base/third_party/nspr",
+    "//third_party/modp_b64",
+  ]
+
+  public_deps = [
+    ":base_paths",
+    "//base/debug",
+    "//base/json",
+    "//base/memory",
+    "//base/metrics",
+    "//base/process",
+    "//base/trace_event",
+  ]
+
+  # Allow more direct string conversions on platforms with native utf8
+  # strings
+  if (is_mac || is_ios || is_chromeos) {
+    defines += [ "SYSTEM_NATIVE_UTF8" ]
+  }
+
+  if (is_android) {
+    sources -= [ "power_monitor/power_monitor_device_source_posix.cc" ]
+
+    # Android uses some Linux sources, put those back.
+    set_sources_assignment_filter([])
+    sources += [
+      "files/file_path_watcher_linux.cc",
+      "posix/unix_domain_socket_linux.cc",
+      "sys_info_linux.cc",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+
+    deps += [
+      ":base_jni_headers",
+      "//third_party/ashmem",
+      "//third_party/android_tools:cpu_features",
+    ]
+
+    # logging.cc uses the Android logging library.
+    libs = [ "log" ]
+  }
+
+  if (is_chromeos) {
+    sources -= [ "power_monitor/power_monitor_device_source_posix.cc" ]
+  }
+
   if (is_nacl) {
     # We reset sources_assignment_filter in order to explicitly include
     # the linux file (which would otherwise be filtered out).
@@ -780,110 +674,27 @@ component("base") {
       "allocator/type_profiler_control.cc",
       "allocator/type_profiler_control.h",
       "async_socket_io_handler_posix.cc",
-      "base_paths.cc",
       "cpu.cc",
+      "files/file_enumerator_posix.cc",
       "files/file_proxy.cc",
       "files/file_util.cc",
-      "files/file_util_proxy.cc",
-      "files/scoped_temp_dir.cc",
-      "path_service.cc",
-      "scoped_native_library.cc",
-    ]
-  }
-
-  sources -= [
-    "process/process_handle_freebsd.cc",
-    "process/process_handle_openbsd.cc",
-    "process/process_iterator_freebsd.cc",
-    "process/process_iterator_openbsd.cc",
-    "process/process_metrics_freebsd.cc",
-    "process/process_metrics_openbsd.cc",
-    "sys_info_freebsd.cc",
-    "sys_info_openbsd.cc",
-  ]
-
-  defines = [ "BASE_IMPLEMENTATION" ]
-
-  deps = [
-    ":base_static",
-    "//base/allocator:allocator_extension_thunks",
-    "//base/third_party/dynamic_annotations",
-    "//base/third_party/nspr",
-    "//third_party/modp_b64",
-  ]
-
-  # Allow more direct string conversions on platforms with native utf8
-  # strings
-  if (is_mac || is_ios || is_chromeos) {
-    defines += [ "SYSTEM_NATIVE_UTF8" ]
-  }
-
-  if (is_android) {
-    sources += [
-      "memory/discardable_memory_ashmem.cc",
-      "memory/discardable_memory_ashmem.h",
-      "memory/discardable_memory_ashmem_allocator.cc",
-      "memory/discardable_memory_ashmem_allocator.h",
-    ]
-    sources -= [
-      "base_paths_posix.cc",
-      "power_monitor/power_monitor_device_source_posix.cc",
-    ]
-
-    # Android uses some Linux sources, put those back.
-    set_sources_assignment_filter([])
-    sources += [
-      "debug/proc_maps_linux.cc",
-      "files/file_path_watcher_linux.cc",
-      "posix/unix_domain_socket_linux.cc",
-      "process/internal_linux.cc",
-      "process/memory_linux.cc",
-      "process/process_handle_linux.cc",
-      "process/process_iterator_linux.cc",
-      "process/process_metrics_linux.cc",
-      "sys_info_linux.cc",
-    ]
-    set_sources_assignment_filter(sources_assignment_filter)
-
-    deps += [
-      ":base_jni_headers",
-      "//third_party/ashmem",
-      "//third_party/android_tools:cpu_features",
-    ]
-
-    # logging.cc uses the Android logging library.
-    libs = [ "log" ]
-
-    sources -= [ "debug/stack_trace_posix.cc" ]
-  }
-
-  if (is_chromeos) {
-    sources -= [ "power_monitor/power_monitor_device_source_posix.cc" ]
-  }
-
-  if (is_nacl) {
-    # These things would otherwise be built on a Posix build but aren't
-    # supported on NaCl.
-    sources -= [
-      "debug/stack_trace_posix.cc",
-      "files/file_enumerator_posix.cc",
       "files/file_util_posix.cc",
-      "memory/shared_memory_posix.cc",
+      "files/file_util_proxy.cc",
+      "files/important_file_writer.cc",
+      "files/important_file_writer.h",
+      "files/scoped_temp_dir.cc",
       "message_loop/message_pump_libevent.cc",
-      "metrics/field_trial.cc",
       "native_library_posix.cc",
-      "process/kill_posix.cc",
-      "process/launch_posix.cc",
-      "process/process_metrics_posix.cc",
-      "process/process_posix.cc",
+      "path_service.cc",
       "rand_util_posix.cc",
+      "scoped_native_library.cc",
       "sync_socket_posix.cc",
+      "sys_info.cc",
       "sys_info_posix.cc",
     ]
   } else {
     # Remove NaCl stuff.
     sources -= [
-      "memory/shared_memory_nacl.cc",
       "os_compat_nacl.cc",
       "os_compat_nacl.h",
       "rand_util_nacl.cc",
@@ -927,7 +738,6 @@ component("base") {
       "memory/discardable_memory_mach.h",
     ]
     sources -= [
-      "base_paths_posix.cc",
       "native_library_posix.cc",
       "strings/sys_string_conversions_posix.cc",
     ]
@@ -990,6 +800,8 @@ component("base") {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
+
+  allow_circular_includes_from = public_deps
 }
 
 # This is the subset of files from base that should not be used with a dynamic

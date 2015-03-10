@@ -8,6 +8,20 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+source_set("test_config") {
+  # TODO http://crbug.com/412064 enable this flag all the time.
+  testonly = !is_component_build
+  sources = [
+    "test_switches.cc",
+    "test_switches.h",
+    "test_timeouts.cc",
+    "test_timeouts.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 # GYP: //base/base.gyp:test_support_base
 source_set("test_support") {
   # TODO http://crbug.com/412064 enable this flag all the time.
@@ -94,10 +108,6 @@ source_set("test_support") {
     "test_support_android.h",
     "test_support_ios.h",
     "test_support_ios.mm",
-    "test_switches.cc",
-    "test_switches.h",
-    "test_timeouts.cc",
-    "test_timeouts.h",
     "thread_test_helper.cc",
     "thread_test_helper.h",
     "trace_event_analyzer.cc",
@@ -109,6 +119,7 @@ source_set("test_support") {
   ]
 
   public_deps = [
+    ":test_config",
     "//base",
     "//base:i18n",
     "//base:base_static",
