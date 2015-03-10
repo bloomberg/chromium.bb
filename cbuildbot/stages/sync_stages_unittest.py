@@ -587,7 +587,8 @@ pre-cq-configs: link-pre-cq
     # Change should be submitted by the pre-cq-launcher.
     m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
     self.PerformSync(pre_cq_status=None, changes=[change], patch_objects=False)
-    m.assert_called_with(set([change]), check_tree_open=False)
+    m.assert_called_with(set([change]), reason=constants.STRATEGY_PRECQ_SUBMIT,
+                         check_tree_open=False)
 
 
   def testSubmitUnableInPreCQ(self):

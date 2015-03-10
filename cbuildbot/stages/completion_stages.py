@@ -500,7 +500,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
   def HandleSuccess(self):
     if self._run.config.master:
-      self.sync_stage.pool.SubmitPool()
+      self.sync_stage.pool.SubmitPool(reason=constants.STRATEGY_CQ_SUCCESS)
       # After submitting the pool, update the commit hashes for uprevved
       # ebuilds.
       manifest = git.ManifestCheckout.Cached(self._build_root)
@@ -668,7 +668,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
       changes = self.sync_stage.pool.SubmitPartialPool(
-          changes, messages, changes_by_config, failing, inflight, no_stat)
+          changes, messages, changes_by_config, failing, inflight, no_stat,
+          reason=constants.STRATEGY_CQ_PARTIAL)
     else:
       logging.warn('Not doing any partial submission, due to critical stage '
                    'failure(s).')

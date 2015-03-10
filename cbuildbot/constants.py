@@ -696,6 +696,12 @@ CL_PRECQ_CONFIG_STATUSES = (CL_PRECQ_CONFIG_STATUS_PENDING,
                             CL_PRECQ_CONFIG_STATUS_FAILED,
                             CL_PRECQ_CONFIG_STATUS_VERIFIED)
 
+# CL submission, rejection, or forgiven reasons (i.e. strategies).
+STRATEGY_CQ_SUCCESS = 'strategy:cq-success'
+STRATEGY_CQ_PARTIAL = 'strategy:cq-submit-partial-pool'
+STRATEGY_PRECQ_SUBMIT = 'strategy:pre-cq-submit'
+STRATEGY_NONMANIFEST = 'strategy:non-manifest-submit'
+
 # CQ types.
 CQ = 'cq'
 PRE_CQ = 'pre-cq'

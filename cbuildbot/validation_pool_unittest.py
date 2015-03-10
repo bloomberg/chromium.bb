@@ -1530,6 +1530,7 @@ class MockValidationPool(partial_mock.PartialMock):
   def GetSubmittedChanges(self):
     return list(self.submitted)
 
+  # pylint: disable=unused-argument
   def _SubmitChange(self, _inst, change, reason=None):
     result = self.submit_results.get(change, True)
     self.submitted.append(change)
