@@ -31,7 +31,22 @@
 #define CLIENT_LINUX_DUMP_WRITER_COMMON_THREAD_INFO_H_
 
 #include <sys/ucontext.h>
+
+// TODO(primiano): remove this after Chromium has stably rolled to NDK r10d.
+// Historical context: NDK releases < r10d had a typo in sys/user.h (mxcsr_mask
+// instead of mxcr_mask), which is fixed in r10d. However, just switching to use
+// the correct one (mxcr_mask) would put Breakpad in a state where it can be
+// rolled in chromium only atomically with the r10d NDK. A revert of either
+// project (android_tools, breakpad) would make the other one unrollable.
+// This hack makes breakpad code compatible with both r10c and r10d NDKs,
+// reducing the dependency entangling with android_tools.
+#if defined (__ANDROID__)
+#define mxcsr_mask mxcr_mask
 #include <sys/user.h>
+#undef mxcsr_mask
+#else
+#include <sys/user.h>
+#endif
 
 #include "client/linux/dump_writer_common/raw_context_cpu.h"
 #include "common/memory.h"
