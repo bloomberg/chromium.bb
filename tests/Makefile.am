@@ -1,7 +1,7 @@
-SUBDIRS = modeprint proptest
+SUBDIRS = modeprint proptest modetest
 
 if HAVE_LIBKMS
-SUBDIRS += kmstest modetest
+SUBDIRS += kmstest
 endif
 
 if HAVE_RADEON
