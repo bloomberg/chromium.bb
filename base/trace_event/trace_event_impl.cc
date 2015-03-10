@@ -430,25 +430,22 @@ scoped_ptr<TraceBufferChunk> TraceBufferChunk::Clone() const {
 // and unlocks at the end of scope if locked.
 class TraceLog::OptionalAutoLock {
  public:
-  explicit OptionalAutoLock(Lock& lock)
-      : lock_(lock),
-        locked_(false) {
-  }
+  explicit OptionalAutoLock(Lock* lock) : lock_(lock), locked_(false) {}
 
   ~OptionalAutoLock() {
     if (locked_)
-      lock_.Release();
+      lock_->Release();
   }
 
   void EnsureAcquired() {
     if (!locked_) {
-      lock_.Acquire();
+      lock_->Acquire();
       locked_ = true;
     }
   }
 
  private:
-  Lock& lock_;
+  Lock* lock_;
   bool locked_;
   DISALLOW_COPY_AND_ASSIGN(OptionalAutoLock);
 };
@@ -1977,7 +1974,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   std::string console_message;
   if (*category_group_enabled &
       (ENABLED_FOR_RECORDING | ENABLED_FOR_MONITORING)) {
-    OptionalAutoLock lock(lock_);
+    OptionalAutoLock lock(&lock_);
 
     TraceEvent* trace_event = NULL;
     if (thread_local_event_buffer) {
@@ -2130,7 +2127,7 @@ void TraceLog::UpdateTraceEventDuration(
 
   std::string console_message;
   if (*category_group_enabled & ENABLED_FOR_RECORDING) {
-    OptionalAutoLock lock(lock_);
+    OptionalAutoLock lock(&lock_);
 
     TraceEvent* trace_event = GetEventByHandleInternal(handle, &lock);
     if (trace_event) {

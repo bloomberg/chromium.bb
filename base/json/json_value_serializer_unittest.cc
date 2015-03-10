@@ -61,7 +61,7 @@ const char kWinLineEnds[] = "\r\n";
 const char kLinuxLineEnds[] = "\n";
 
 // Verifies the generated JSON against the expected output.
-void CheckJSONIsStillTheSame(Value& value) {
+void CheckJSONIsStillTheSame(const Value& value) {
   // Serialize back the output.
   std::string serialized_json;
   JSONStringValueSerializer str_serializer(&serialized_json);

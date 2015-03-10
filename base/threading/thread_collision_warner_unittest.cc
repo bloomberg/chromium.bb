@@ -146,24 +146,23 @@ TEST(ThreadCollisionTest, MTBookCriticalSectionTest) {
 
   class QueueUser : public base::DelegateSimpleThread::Delegate {
    public:
-    explicit QueueUser(NonThreadSafeQueue& queue)
-        : queue_(queue) {}
+    explicit QueueUser(NonThreadSafeQueue* queue) : queue_(queue) {}
 
     void Run() override {
-      queue_.push(0);
-      queue_.pop();
+      queue_->push(0);
+      queue_->pop();
     }
 
    private:
-    NonThreadSafeQueue& queue_;
+    NonThreadSafeQueue* queue_;
   };
 
   AssertReporter* local_reporter = new AssertReporter();
 
   NonThreadSafeQueue queue(local_reporter);
 
-  QueueUser queue_user_a(queue);
-  QueueUser queue_user_b(queue);
+  QueueUser queue_user_a(&queue);
+  QueueUser queue_user_b(&queue);
 
   base::DelegateSimpleThread thread_a(&queue_user_a, "queue_user_thread_a");
   base::DelegateSimpleThread thread_b(&queue_user_b, "queue_user_thread_b");
@@ -204,24 +203,23 @@ TEST(ThreadCollisionTest, MTScopedBookCriticalSectionTest) {
 
   class QueueUser : public base::DelegateSimpleThread::Delegate {
    public:
-    explicit QueueUser(NonThreadSafeQueue& queue)
-        : queue_(queue) {}
+    explicit QueueUser(NonThreadSafeQueue* queue) : queue_(queue) {}
 
     void Run() override {
-      queue_.push(0);
-      queue_.pop();
+      queue_->push(0);
+      queue_->pop();
     }
 
    private:
-    NonThreadSafeQueue& queue_;
+    NonThreadSafeQueue* queue_;
   };
 
   AssertReporter* local_reporter = new AssertReporter();
 
   NonThreadSafeQueue queue(local_reporter);
 
-  QueueUser queue_user_a(queue);
-  QueueUser queue_user_b(queue);
+  QueueUser queue_user_a(&queue);
+  QueueUser queue_user_b(&queue);
 
   base::DelegateSimpleThread thread_a(&queue_user_a, "queue_user_thread_a");
   base::DelegateSimpleThread thread_b(&queue_user_b, "queue_user_thread_b");
@@ -264,23 +262,22 @@ TEST(ThreadCollisionTest, MTSynchedScopedBookCriticalSectionTest) {
   // a lock.
   class QueueUser : public base::DelegateSimpleThread::Delegate {
    public:
-    QueueUser(NonThreadSafeQueue& queue, base::Lock& lock)
-        : queue_(queue),
-          lock_(lock) {}
+    QueueUser(NonThreadSafeQueue* queue, base::Lock* lock)
+        : queue_(queue), lock_(lock) {}
 
     void Run() override {
       {
-        base::AutoLock auto_lock(lock_);
-        queue_.push(0);
+        base::AutoLock auto_lock(*lock_);
+        queue_->push(0);
       }
       {
-        base::AutoLock auto_lock(lock_);
-        queue_.pop();
+        base::AutoLock auto_lock(*lock_);
+        queue_->pop();
       }
     }
    private:
-    NonThreadSafeQueue& queue_;
-    base::Lock& lock_;
+    NonThreadSafeQueue* queue_;
+    base::Lock* lock_;
   };
 
   AssertReporter* local_reporter = new AssertReporter();
@@ -289,8 +286,8 @@ TEST(ThreadCollisionTest, MTSynchedScopedBookCriticalSectionTest) {
 
   base::Lock lock;
 
-  QueueUser queue_user_a(queue, lock);
-  QueueUser queue_user_b(queue, lock);
+  QueueUser queue_user_a(&queue, &lock);
+  QueueUser queue_user_b(&queue, &lock);
 
   base::DelegateSimpleThread thread_a(&queue_user_a, "queue_user_thread_a");
   base::DelegateSimpleThread thread_b(&queue_user_b, "queue_user_thread_b");
@@ -338,27 +335,26 @@ TEST(ThreadCollisionTest, MTSynchedScopedRecursiveBookCriticalSectionTest) {
   // a lock.
   class QueueUser : public base::DelegateSimpleThread::Delegate {
    public:
-    QueueUser(NonThreadSafeQueue& queue, base::Lock& lock)
-        : queue_(queue),
-          lock_(lock) {}
+    QueueUser(NonThreadSafeQueue* queue, base::Lock* lock)
+        : queue_(queue), lock_(lock) {}
 
     void Run() override {
       {
-        base::AutoLock auto_lock(lock_);
-        queue_.push(0);
+        base::AutoLock auto_lock(*lock_);
+        queue_->push(0);
       }
       {
-        base::AutoLock auto_lock(lock_);
-        queue_.bar();
+        base::AutoLock auto_lock(*lock_);
+        queue_->bar();
       }
       {
-        base::AutoLock auto_lock(lock_);
-        queue_.pop();
+        base::AutoLock auto_lock(*lock_);
+        queue_->pop();
       }
     }
    private:
-    NonThreadSafeQueue& queue_;
-    base::Lock& lock_;
+    NonThreadSafeQueue* queue_;
+    base::Lock* lock_;
   };
 
   AssertReporter* local_reporter = new AssertReporter();
@@ -367,8 +363,8 @@ TEST(ThreadCollisionTest, MTSynchedScopedRecursiveBookCriticalSectionTest) {
 
   base::Lock lock;
 
-  QueueUser queue_user_a(queue, lock);
-  QueueUser queue_user_b(queue, lock);
+  QueueUser queue_user_a(&queue, &lock);
+  QueueUser queue_user_b(&queue, &lock);
 
   base::DelegateSimpleThread thread_a(&queue_user_a, "queue_user_thread_a");
   base::DelegateSimpleThread thread_b(&queue_user_b, "queue_user_thread_b");

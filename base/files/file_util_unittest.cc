@@ -197,9 +197,9 @@ class FileUtilTest : public PlatformTest {
 // interface to query whether a given file is present.
 class FindResultCollector {
  public:
-  explicit FindResultCollector(FileEnumerator& enumerator) {
+  explicit FindResultCollector(FileEnumerator* enumerator) {
     FilePath cur_file;
-    while (!(cur_file = enumerator.Next()).value().empty()) {
+    while (!(cur_file = enumerator->Next()).value().empty()) {
       FilePath::StringType path = cur_file.value();
       // The file should not be returned twice.
       EXPECT_TRUE(files_.end() == files_.find(path))
@@ -824,7 +824,7 @@ TEST_F(FileUtilTest, ChangeDirectoryPermissionsAndEnumerate) {
   // Make sure the file in the directory can't be enumerated.
   FileEnumerator f1(subdir_path, true, FileEnumerator::FILES);
   EXPECT_TRUE(PathExists(subdir_path));
-  FindResultCollector c1(f1);
+  FindResultCollector c1(&f1);
   EXPECT_EQ(0, c1.size());
   EXPECT_FALSE(GetPosixFilePermissions(file_name, &mode));
 
@@ -835,7 +835,7 @@ TEST_F(FileUtilTest, ChangeDirectoryPermissionsAndEnumerate) {
 
   // Make sure the file in the directory can be enumerated.
   FileEnumerator f2(subdir_path, true, FileEnumerator::FILES);
-  FindResultCollector c2(f2);
+  FindResultCollector c2(&f2);
   EXPECT_TRUE(c2.HasFile(file_name));
   EXPECT_EQ(1, c2.size());
 
@@ -1871,7 +1871,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
 
   // Only enumerate files.
   FileEnumerator f1(temp_dir_.path(), true, FileEnumerator::FILES);
-  FindResultCollector c1(f1);
+  FindResultCollector c1(&f1);
   EXPECT_TRUE(c1.HasFile(file1));
   EXPECT_TRUE(c1.HasFile(file2_abs));
   EXPECT_TRUE(c1.HasFile(dir2file));
@@ -1880,7 +1880,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
 
   // Only enumerate directories.
   FileEnumerator f2(temp_dir_.path(), true, FileEnumerator::DIRECTORIES);
-  FindResultCollector c2(f2);
+  FindResultCollector c2(&f2);
   EXPECT_TRUE(c2.HasFile(dir1));
   EXPECT_TRUE(c2.HasFile(dir2));
   EXPECT_TRUE(c2.HasFile(dir2inner));
@@ -1889,7 +1889,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   // Only enumerate directories non-recursively.
   FileEnumerator f2_non_recursive(
       temp_dir_.path(), false, FileEnumerator::DIRECTORIES);
-  FindResultCollector c2_non_recursive(f2_non_recursive);
+  FindResultCollector c2_non_recursive(&f2_non_recursive);
   EXPECT_TRUE(c2_non_recursive.HasFile(dir1));
   EXPECT_TRUE(c2_non_recursive.HasFile(dir2));
   EXPECT_EQ(2, c2_non_recursive.size());
@@ -1898,7 +1898,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   FileEnumerator f2_dotdot(temp_dir_.path(), false,
                            FileEnumerator::DIRECTORIES |
                            FileEnumerator::INCLUDE_DOT_DOT);
-  FindResultCollector c2_dotdot(f2_dotdot);
+  FindResultCollector c2_dotdot(&f2_dotdot);
   EXPECT_TRUE(c2_dotdot.HasFile(dir1));
   EXPECT_TRUE(c2_dotdot.HasFile(dir2));
   EXPECT_TRUE(c2_dotdot.HasFile(temp_dir_.path().Append(FPL(".."))));
@@ -1906,7 +1906,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
 
   // Enumerate files and directories.
   FileEnumerator f3(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
-  FindResultCollector c3(f3);
+  FindResultCollector c3(&f3);
   EXPECT_TRUE(c3.HasFile(dir1));
   EXPECT_TRUE(c3.HasFile(dir2));
   EXPECT_TRUE(c3.HasFile(file1));
@@ -1918,7 +1918,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
 
   // Non-recursive operation.
   FileEnumerator f4(temp_dir_.path(), false, FILES_AND_DIRECTORIES);
-  FindResultCollector c4(f4);
+  FindResultCollector c4(&f4);
   EXPECT_TRUE(c4.HasFile(dir2));
   EXPECT_TRUE(c4.HasFile(dir2));
   EXPECT_TRUE(c4.HasFile(file1));
@@ -1927,7 +1927,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
 
   // Enumerate with a pattern.
   FileEnumerator f5(temp_dir_.path(), true, FILES_AND_DIRECTORIES, FPL("dir*"));
-  FindResultCollector c5(f5);
+  FindResultCollector c5(&f5);
   EXPECT_TRUE(c5.HasFile(dir1));
   EXPECT_TRUE(c5.HasFile(dir2));
   EXPECT_TRUE(c5.HasFile(dir2file));
@@ -1946,7 +1946,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
       // the file system so skip this test for XP.
       // Enumerate the reparse point.
       FileEnumerator f6(dir1, true, FILES_AND_DIRECTORIES);
-      FindResultCollector c6(f6);
+      FindResultCollector c6(&f6);
       FilePath inner2 = dir1.Append(FPL("inner"));
       EXPECT_TRUE(c6.HasFile(inner2));
       EXPECT_TRUE(c6.HasFile(inner2.Append(FPL("innerfile.txt"))));
@@ -1956,7 +1956,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
 
     // No changes for non recursive operation.
     FileEnumerator f7(temp_dir_.path(), false, FILES_AND_DIRECTORIES);
-    FindResultCollector c7(f7);
+    FindResultCollector c7(&f7);
     EXPECT_TRUE(c7.HasFile(dir2));
     EXPECT_TRUE(c7.HasFile(dir2));
     EXPECT_TRUE(c7.HasFile(file1));
@@ -1965,7 +1965,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
 
     // Should not enumerate inside dir1 when using recursion.
     FileEnumerator f8(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
-    FindResultCollector c8(f8);
+    FindResultCollector c8(&f8);
     EXPECT_TRUE(c8.HasFile(dir1));
     EXPECT_TRUE(c8.HasFile(dir2));
     EXPECT_TRUE(c8.HasFile(file1));

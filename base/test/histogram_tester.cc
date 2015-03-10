@@ -90,7 +90,7 @@ void HistogramTester::CheckBucketCount(
     const std::string& name,
     base::HistogramBase::Sample sample,
     base::HistogramBase::Count expected_count,
-    base::HistogramSamples& samples) const {
+    const base::HistogramSamples& samples) const {
   int actual_count = samples.GetCount(sample);
   std::map<std::string, HistogramSamples*>::const_iterator histogram_data;
   histogram_data = histograms_snapshot_.find(name);
@@ -104,9 +104,10 @@ void HistogramTester::CheckBucketCount(
       << ").";
 }
 
-void HistogramTester::CheckTotalCount(const std::string& name,
-                                      base::HistogramBase::Count expected_count,
-                                      base::HistogramSamples& samples) const {
+void HistogramTester::CheckTotalCount(
+    const std::string& name,
+    base::HistogramBase::Count expected_count,
+    const base::HistogramSamples& samples) const {
   int actual_count = samples.TotalCount();
   std::map<std::string, HistogramSamples*>::const_iterator histogram_data;
   histogram_data = histograms_snapshot_.find(name);

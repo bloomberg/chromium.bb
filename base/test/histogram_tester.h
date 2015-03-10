@@ -59,14 +59,14 @@ class HistogramTester {
   void CheckBucketCount(const std::string& name,
                         base::HistogramBase::Sample sample,
                         base::Histogram::Count expected_count,
-                        base::HistogramSamples& samples) const;
+                        const base::HistogramSamples& samples) const;
 
   // Verifies that the total number of values recorded for the histogram |name|
   // is |expected_count|. This is checked against |samples| minus the snapshot
   // that was taken for |name|.
   void CheckTotalCount(const std::string& name,
                        base::Histogram::Count expected_count,
-                       base::HistogramSamples& samples) const;
+                       const base::HistogramSamples& samples) const;
 
   // Used to determine the histogram changes made during this instance's
   // lifecycle. This instance takes ownership of the samples, which are deleted
