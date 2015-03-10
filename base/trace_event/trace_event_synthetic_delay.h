@@ -163,4 +163,4 @@ TRACE_EVENT_API_CLASS_EXPORT base::trace_event::TraceEventSyntheticDelay*
 
 }  // namespace trace_event_internal
 
-#endif /* BASE_TRACE_EVENT_TRACE_EVENT_SYNTHETIC_DELAY_H_ */
+#endif  // BASE_TRACE_EVENT_TRACE_EVENT_SYNTHETIC_DELAY_H_

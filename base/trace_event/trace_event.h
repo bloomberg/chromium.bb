@@ -1607,4 +1607,4 @@ template<typename IDType> class TraceScopedTrackableObject {
 }  // namespace trace_event
 }  // namespace base
 
-#endif /* BASE_TRACE_EVENT_TRACE_EVENT_H_ */
+#endif  // BASE_TRACE_EVENT_TRACE_EVENT_H_

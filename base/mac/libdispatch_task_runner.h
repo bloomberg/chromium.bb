@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MAC_LIBDISPATCH_SEQUENCED_TASK_RUNNER_H_
-#define BASE_MAC_LIBDISPATCH_SEQUENCED_TASK_RUNNER_H_
+#ifndef BASE_MAC_LIBDISPATCH_TASK_RUNNER_H_
+#define BASE_MAC_LIBDISPATCH_TASK_RUNNER_H_
 
 #include <dispatch/dispatch.h>
 
@@ -77,4 +77,4 @@ class BASE_EXPORT LibDispatchTaskRunner : public base::SingleThreadTaskRunner {
 }  // namespace mac
 }  // namespace base
 
-#endif  // BASE_MAC_LIBDISPATCH_SEQUENCED_TASK_RUNNER_H_
+#endif  // BASE_MAC_LIBDISPATCH_TASK_RUNNER_H_

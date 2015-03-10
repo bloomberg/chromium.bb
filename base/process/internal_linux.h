@@ -5,8 +5,8 @@
 // This file contains internal routines that are called by other files in
 // base/process/.
 
-#ifndef BASE_PROCESS_LINUX_INTERNAL_H_
-#define BASE_PROCESS_LINUX_INTERNAL_H_
+#ifndef BASE_PROCESS_INTERNAL_LINUX_H_
+#define BASE_PROCESS_INTERNAL_LINUX_H_
 
 #include <unistd.h>
 
@@ -87,4 +87,4 @@ TimeDelta ClockTicksToTimeDelta(int clock_ticks);
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_PROCESS_LINUX_INTERNAL_H_
+#endif  // BASE_PROCESS_INTERNAL_LINUX_H_

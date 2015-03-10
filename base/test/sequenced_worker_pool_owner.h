@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_THREADING_SEQUENCED_WORKER_POOL_UNITTEST_H_
-#define BASE_THREADING_SEQUENCED_WORKER_POOL_UNITTEST_H_
+#ifndef BASE_TEST_SEQUENCED_WORKER_POOL_OWNER_H_
+#define BASE_TEST_SEQUENCED_WORKER_POOL_OWNER_H_
 
 #include <cstddef>
 #include <string>
@@ -58,4 +58,4 @@ class SequencedWorkerPoolOwner : public SequencedWorkerPool::TestingObserver {
 
 }  // namespace base
 
-#endif  // BASE_THREADING_SEQUENCED_WORKER_POOL_UNITTEST_H_
+#endif  // BASE_TEST_SEQUENCED_WORKER_POOL_OWNER_H_

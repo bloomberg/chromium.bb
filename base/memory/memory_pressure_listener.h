@@ -7,8 +7,8 @@
 // The app will try to discard buffers that aren't deemed essential (individual
 // modules will implement their own policy).
 
-#ifndef BASE_MEMORY_PRESSURE_LISTENER_H_
-#define BASE_MEMORY_PRESSURE_LISTENER_H_
+#ifndef BASE_MEMORY_MEMORY_PRESSURE_LISTENER_H_
+#define BASE_MEMORY_MEMORY_PRESSURE_LISTENER_H_
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
@@ -82,4 +82,4 @@ class BASE_EXPORT MemoryPressureListener {
 
 }  // namespace base
 
-#endif  // BASE_MEMORY_PRESSURE_LISTENER_H_
+#endif  // BASE_MEMORY_MEMORY_PRESSURE_LISTENER_H_

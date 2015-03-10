@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SAFE_MATH_H_
-#define BASE_SAFE_MATH_H_
+#ifndef BASE_NUMERICS_SAFE_MATH_H_
+#define BASE_NUMERICS_SAFE_MATH_H_
 
 #include "base/numerics/safe_math_impl.h"
 
@@ -269,4 +269,4 @@ using internal::CheckedNumeric;
 
 }  // namespace base
 
-#endif  // BASE_SAFE_MATH_H_
+#endif  // BASE_NUMERICS_SAFE_MATH_H_

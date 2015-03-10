@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TEST_TEST_REG_UTIL_H_
-#define BASE_TEST_TEST_REG_UTIL_H_
+#ifndef BASE_TEST_TEST_REG_UTIL_WIN_H_
+#define BASE_TEST_TEST_REG_UTIL_WIN_H_
 
 // Registry utility functions used only by tests.
 
@@ -74,4 +74,4 @@ base::string16 GenerateTempKeyPath();
 
 }  // namespace registry_util
 
-#endif  // BASE_TEST_TEST_REG_UTIL_H_
+#endif  // BASE_TEST_TEST_REG_UTIL_WIN_H_

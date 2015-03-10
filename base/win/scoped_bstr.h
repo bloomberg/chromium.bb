@@ -94,4 +94,4 @@ class BASE_EXPORT ScopedBstr {
 }  // namespace win
 }  // namespace base
 
-#endif  // BASE_SCOPED_BSTR_H_
+#endif  // BASE_WIN_SCOPED_BSTR_H_

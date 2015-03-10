@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_FRAMEWORK_CHROME_IMPORTANT_FILE_WRITE_ANDROID_H_
-#define NATIVE_FRAMEWORK_CHROME_IMPORTANT_FILE_WRITE_ANDROID_H_
+#ifndef BASE_ANDROID_IMPORTANT_FILE_WRITER_ANDROID_H_
+#define BASE_ANDROID_IMPORTANT_FILE_WRITER_ANDROID_H_
 
 #include <jni.h>
 
@@ -15,4 +15,4 @@ bool RegisterImportantFileWriterAndroid(JNIEnv* env);
 }  // namespace android
 }  // namespace base
 
-#endif  // NATIVE_FRAMEWORK_CHROME_IMPORTANT_FILE_WRITE_ANDROID_H_
+#endif  // BASE_ANDROID_IMPORTANT_FILE_WRITER_ANDROID_H_

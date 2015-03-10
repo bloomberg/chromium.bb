@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ANDROID_LIBRARY_LOAD_FROM_APK_STATUS_CODES_H_
-#define BASE_ANDROID_LIBRARY_LOAD_FROM_APK_STATUS_CODES_H_
+#ifndef BASE_ANDROID_LIBRARY_LOADER_LIBRARY_LOAD_FROM_APK_STATUS_CODES_H_
+#define BASE_ANDROID_LIBRARY_LOADER_LIBRARY_LOAD_FROM_APK_STATUS_CODES_H_
 
 namespace base {
 namespace android {
@@ -43,4 +43,4 @@ enum LibraryLoadFromApkStatusCodes {
 }  // namespace android
 }  // namespace base
 
-#endif  // BASE_ANDROID_LIBRARY_LOAD_FROM_APK_STATUS_CODES_H_
+#endif  // BASE_ANDROID_LIBRARY_LOADER_LIBRARY_LOAD_FROM_APK_STATUS_CODES_H_

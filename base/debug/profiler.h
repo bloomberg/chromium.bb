@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_DEBUG_PROFILER_H
-#define BASE_DEBUG_PROFILER_H
+#ifndef BASE_DEBUG_PROFILER_H_
+#define BASE_DEBUG_PROFILER_H_
 
 #include <string>
 
@@ -87,4 +87,4 @@ BASE_EXPORT MoveDynamicSymbol GetProfilerMoveDynamicSymbolFunc();
 }  // namespace debug
 }  // namespace base
 
-#endif  // BASE_DEBUG_DEBUGGER_H
+#endif  // BASE_DEBUG_PROFILER_H__

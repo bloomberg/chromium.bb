@@ -6,8 +6,8 @@
 // pass in order to be conformant. See task_runner_test_template.h for a
 // description of how to use the constructs in this file; these work the same.
 
-#ifndef BASE_SEQUENCED_TASK_RUNNER_TEST_TEMPLATE_H_
-#define BASE_SEQUENCED_TASK_RUNNER_TEST_TEMPLATE_H_
+#ifndef BASE_TEST_SEQUENCED_TASK_RUNNER_TEST_TEMPLATE_H_
+#define BASE_TEST_SEQUENCED_TASK_RUNNER_TEST_TEMPLATE_H_
 
 #include <cstddef>
 #include <iosfwd>
@@ -338,4 +338,4 @@ REGISTER_TYPED_TEST_CASE_P(SequencedTaskRunnerTest,
 
 }  // namespace base
 
-#endif  // BASE_TASK_RUNNER_TEST_TEMPLATE_H_
+#endif  // BASE_TEST_SEQUENCED_TASK_RUNNER_TEST_TEMPLATE_H_

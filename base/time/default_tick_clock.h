@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_DEFAULT_TICK_CLOCK_H_
-#define BASE_DEFAULT_TICK_CLOCK_H_
+#ifndef BASE_TIME_DEFAULT_TICK_CLOCK_H_
+#define BASE_TIME_DEFAULT_TICK_CLOCK_H_
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
@@ -22,4 +22,4 @@ class BASE_EXPORT DefaultTickClock : public TickClock {
 
 }  // namespace base
 
-#endif  // BASE_DEFAULT_CLOCK_H_
+#endif  // BASE_TIME_DEFAULT_TICK_CLOCK_H_

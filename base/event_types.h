@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_EVENT_TYPES_H
-#define BASE_EVENT_TYPES_H
+#ifndef BASE_EVENT_TYPES_H_
+#define BASE_EVENT_TYPES_H_
 
 #include "build/build_config.h"
 
@@ -34,4 +34,4 @@ typedef void* NativeEvent;
 
 } // namespace base
 
-#endif  // BASE_EVENT_TYPES_H
+#endif  // BASE_EVENT_TYPES_H_

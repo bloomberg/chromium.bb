@@ -49,4 +49,4 @@ class BASE_EXPORT ScopedNativeLibrary {
 
 }  // namespace base
 
-#endif  // BASE_MEMORY_NATIVE_LIBRARY_H_
+#endif  // BASE_SCOPED_NATIVE_LIBRARY_H_
