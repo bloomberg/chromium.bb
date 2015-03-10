@@ -66,6 +66,10 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Called when the player thinks it stopped or started making sound.
   virtual void OnAudibleStateChanged(int player_id, bool is_audible_now) = 0;
 
+  // Called when the player pauses as a new key is required to decrypt
+  // encrypted content.
+  virtual void OnWaitingForDecryptionKey(int player_id) = 0;
+
   // Returns the player that's in the fullscreen mode currently.
   virtual MediaPlayerAndroid* GetFullscreenPlayer() = 0;
 

@@ -508,6 +508,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
       ResumePlaybackAfterKeyAdded();
     } else {
       is_waiting_for_key_ = true;
+      manager()->OnWaitingForDecryptionKey(player_id());
     }
     return;
   }

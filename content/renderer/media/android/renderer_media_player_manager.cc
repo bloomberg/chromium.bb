@@ -42,6 +42,8 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaVideoSizeChanged,
                         OnVideoSizeChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaTimeUpdate, OnTimeUpdate)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_WaitingForDecryptionKey,
+                        OnWaitingForDecryptionKey)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaPlayerReleased,
                         OnMediaPlayerReleased)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_ConnectedToRemoteDevice,
@@ -187,6 +189,12 @@ void RendererMediaPlayerManager::OnTimeUpdate(
   WebMediaPlayerAndroid* player = GetMediaPlayer(player_id);
   if (player)
     player->OnTimeUpdate(current_timestamp, current_time_ticks);
+}
+
+void RendererMediaPlayerManager::OnWaitingForDecryptionKey(int player_id) {
+  WebMediaPlayerAndroid* player = GetMediaPlayer(player_id);
+  if (player)
+    player->OnWaitingForDecryptionKey();
 }
 
 void RendererMediaPlayerManager::OnMediaPlayerReleased(int player_id) {

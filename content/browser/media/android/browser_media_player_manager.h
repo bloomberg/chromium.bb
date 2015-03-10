@@ -89,6 +89,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void OnVideoSizeChanged(int player_id, int width, int height) override;
   void OnAudibleStateChanged(
       int player_id, bool is_audible_now) override;
+  void OnWaitingForDecryptionKey(int player_id) override;
 
   media::MediaResourceGetter* GetMediaResourceGetter() override;
   media::MediaUrlInterceptor* GetMediaUrlInterceptor() override;

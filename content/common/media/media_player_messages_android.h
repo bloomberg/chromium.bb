@@ -162,6 +162,9 @@ IPC_MESSAGE_ROUTED3(MediaPlayerMsg_MediaTimeUpdate,
                     base::TimeDelta /* current_timestamp */,
                     base::TimeTicks /* current_time_ticks */)
 
+// A new key is required in order to continue decrypting encrypted content.
+IPC_MESSAGE_ROUTED1(MediaPlayerMsg_WaitingForDecryptionKey, int /* player_id */)
+
 // The player has been released.
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_MediaPlayerReleased,
                     int /* player_id */)

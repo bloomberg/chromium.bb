@@ -132,6 +132,7 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
   void OnTimeUpdate(int player_id,
                     base::TimeDelta current_timestamp,
                     base::TimeTicks current_time_ticks);
+  void OnWaitingForDecryptionKey(int player_id);
   void OnMediaPlayerReleased(int player_id);
   void OnConnectedToRemoteDevice(int player_id,
       const std::string& remote_playback_message);

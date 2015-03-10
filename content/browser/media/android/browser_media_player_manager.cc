@@ -264,6 +264,10 @@ void BrowserMediaPlayerManager::OnAudibleStateChanged(
       render_frame_host_, player_id, is_audible);
 }
 
+void BrowserMediaPlayerManager::OnWaitingForDecryptionKey(int player_id) {
+  Send(new MediaPlayerMsg_WaitingForDecryptionKey(RoutingID(), player_id));
+}
+
 media::MediaResourceGetter*
 BrowserMediaPlayerManager::GetMediaResourceGetter() {
   if (!media_resource_getter_.get()) {
