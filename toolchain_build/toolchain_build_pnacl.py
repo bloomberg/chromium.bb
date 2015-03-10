@@ -606,7 +606,8 @@ def HostTools(host, options):
 
   llvm_cmake = {
       H('llvm'): {
-          'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
+          'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
+                           'subzero_src'],
           'type': 'build',
           'commands': [
               command.SkipForIncrementalCommand([
@@ -626,6 +627,7 @@ def HostTools(host, options):
                   '-LLVM_ENABLE_WERROR=' + ('ON' if llvm_do_werror else 'OFF'),
                   '-DLLVM_ENABLE_ZLIB=OFF',
                   '-DLLVM_EXTERNAL_CLANG_SOURCE_DIR=%(clang_src)s',
+                  '-DLLVM_EXTERNAL_SUBZERO_SOURCE_DIR=%(subzero_src)s',
                   '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips',
                   '%(llvm_src)s']),
               command.Command(['ninja', '-v']),
