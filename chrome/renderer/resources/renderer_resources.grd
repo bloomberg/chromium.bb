@@ -43,9 +43,9 @@
         <include name="IDR_CHROME_DIRECT_SETTING_JS"
         file="extensions\chrome_direct_setting.js" type="BINDATA" />
         <include name="IDR_CHROME_SETTING_JS" file="extensions\chrome_setting.js" type="BINDATA" />
-        <include name="IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\chrome_web_view_internal_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_CHROME_WEB_VIEW_EXPERIMENTAL_JS" file="extensions\chrome_web_view_experimental.js" type="BINDATA" />
-        <include name="IDR_CHROME_WEB_VIEW_JS" file="extensions\chrome_web_view.js" type="BINDATA" />
+        <include name="IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\web_view\chrome_web_view_internal_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_CHROME_WEB_VIEW_EXPERIMENTAL_JS" file="extensions\web_view\chrome_web_view_experimental.js" type="BINDATA" />
+        <include name="IDR_CHROME_WEB_VIEW_JS" file="extensions\web_view\chrome_web_view.js" type="BINDATA" />
         <include name="IDR_CONTENT_SETTING_JS" file="extensions\content_setting.js" type="BINDATA" />
         <include name="IDR_DECLARATIVE_CONTENT_CUSTOM_BINDINGS_JS" file="extensions\declarative_content_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DESKTOP_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\desktop_capture_custom_bindings.js" type="BINDATA" />
@@ -56,8 +56,6 @@
         <include name="IDR_ENTERPRISE_PLATFORM_KEYS_KEY_PAIR_JS" file="extensions\enterprise_platform_keys\key_pair.js" type="BINDATA" />
         <include name="IDR_ENTERPRISE_PLATFORM_KEYS_SUBTLE_CRYPTO_JS" file="extensions\enterprise_platform_keys\subtle_crypto.js" type="BINDATA" />
         <include name="IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS" file="extensions\enterprise_platform_keys\token.js" type="BINDATA" />
-        <include name="IDR_EXTENSION_OPTIONS_JS" file="extensions\extension_options.js" type="BINDATA"/>
-        <include name="IDR_EXTENSION_OPTIONS_EVENTS_JS" file="extensions\extension_options_events.js" type="BINDATA"/>
         <include name="IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\feedback_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS" file="extensions\file_browser_handler_custom_bindings.js" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\file_manager_private_custom_bindings.js" type="BINDATA" />

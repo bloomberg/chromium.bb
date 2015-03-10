@@ -331,7 +331,7 @@ void Dispatcher::DidCreateScriptContext(
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     module_system->Require("appView");
   } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
-    module_system->Require("denyAppView");
+    module_system->Require("appViewDeny");
   }
 
   if (extensions::FeatureSwitch::surface_worker()->IsEnabled() &&
@@ -356,7 +356,7 @@ void Dispatcher::DidCreateScriptContext(
       module_system->Require("webViewExperimental");
     }
   } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
-    module_system->Require("denyWebView");
+    module_system->Require("webViewDeny");
   }
 
   delegate_->RequireAdditionalModules(context, is_within_platform_app);
@@ -563,18 +563,39 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
 
   // Libraries.
   resources.push_back(std::make_pair("appView", IDR_APP_VIEW_JS));
-  resources.push_back(std::make_pair("denyAppView", IDR_APP_VIEW_DENY_JS));
+  resources.push_back(std::make_pair("appViewDeny", IDR_APP_VIEW_DENY_JS));
   resources.push_back(std::make_pair("entryIdManager", IDR_ENTRY_ID_MANAGER));
   resources.push_back(std::make_pair(kEventBindings, IDR_EVENT_BINDINGS_JS));
+  resources.push_back(std::make_pair("extensionOptions",
+                                     IDR_EXTENSION_OPTIONS_JS));
+  resources.push_back(std::make_pair("extensionOptionsEvents",
+                                     IDR_EXTENSION_OPTIONS_EVENTS_JS));
+  resources.push_back(std::make_pair("extensionView", IDR_EXTENSION_VIEW_JS));
+  resources.push_back(std::make_pair("extensionViewApiMethods",
+                                     IDR_EXTENSION_VIEW_API_METHODS_JS));
+  resources.push_back(std::make_pair("extensionViewAttributes",
+                                     IDR_EXTENSION_VIEW_ATTRIBUTES_JS));
+  resources.push_back(std::make_pair("extensionViewConstants",
+                                     IDR_EXTENSION_VIEW_CONSTANTS_JS));
+  resources.push_back(std::make_pair("extensionViewEvents",
+                                     IDR_EXTENSION_VIEW_EVENTS_JS));
+  resources.push_back(std::make_pair(
+      "extensionViewInternal", IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
+  resources.push_back(std::make_pair("guestView", IDR_GUEST_VIEW_JS));
+  resources.push_back(std::make_pair("guestViewContainer",
+                                     IDR_GUEST_VIEW_CONTAINER_JS));
+  resources.push_back(std::make_pair("guestViewEvents",
+                                     IDR_GUEST_VIEW_EVENTS_JS));
   resources.push_back(std::make_pair("imageUtil", IDR_IMAGE_UTIL_JS));
   resources.push_back(std::make_pair("json_schema", IDR_JSON_SCHEMA_JS));
   resources.push_back(std::make_pair("lastError", IDR_LAST_ERROR_JS));
   resources.push_back(std::make_pair("messaging", IDR_MESSAGING_JS));
-  resources.push_back(
-      std::make_pair("messaging_utils", IDR_MESSAGING_UTILS_JS));
+  resources.push_back(std::make_pair("messaging_utils",
+                                     IDR_MESSAGING_UTILS_JS));
   resources.push_back(std::make_pair(kSchemaUtils, IDR_SCHEMA_UTILS_JS));
   resources.push_back(std::make_pair("sendRequest", IDR_SEND_REQUEST_JS));
   resources.push_back(std::make_pair("setIcon", IDR_SET_ICON_JS));
+  resources.push_back(std::make_pair("surfaceWorker", IDR_SURFACE_VIEW_JS));
   resources.push_back(std::make_pair("test", IDR_TEST_CUSTOM_BINDINGS_JS));
   resources.push_back(
       std::make_pair("test_environment_specific_bindings",
@@ -590,24 +611,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                       IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS));
   // Note: webView not webview so that this doesn't interfere with the
   // chrome.webview API bindings.
-  resources.push_back(std::make_pair("guestView", IDR_GUEST_VIEW_JS));
-  resources.push_back(std::make_pair("guestViewContainer",
-                                     IDR_GUEST_VIEW_CONTAINER_JS));
-  resources.push_back(std::make_pair("guestViewEvents",
-                                     IDR_GUEST_VIEW_EVENTS_JS));
-  resources.push_back(std::make_pair("extensionView", IDR_EXTENSION_VIEW_JS));
-  resources.push_back(std::make_pair("extensionViewApiMethods",
-                                     IDR_EXTENSION_VIEW_API_METHODS_JS));
-  resources.push_back(std::make_pair("extensionViewAttributes",
-                                     IDR_EXTENSION_VIEW_ATTRIBUTES_JS));
-  resources.push_back(std::make_pair("extensionViewConstants",
-                                     IDR_EXTENSION_VIEW_CONSTANTS_JS));
-  resources.push_back(std::make_pair("extensionViewEvents",
-      IDR_EXTENSION_VIEW_EVENTS_JS));
-  resources.push_back(std::make_pair(
-      "extensionViewInternal", IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));
-  resources.push_back(std::make_pair("surfaceWorker", IDR_SURFACE_VIEW_JS));
   resources.push_back(std::make_pair("webViewActionRequests",
                                      IDR_WEB_VIEW_ACTION_REQUESTS_JS));
   resources.push_back(std::make_pair("webViewApiMethods",
@@ -616,12 +620,12 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                                      IDR_WEB_VIEW_ATTRIBUTES_JS));
   resources.push_back(std::make_pair("webViewConstants",
                                      IDR_WEB_VIEW_CONSTANTS_JS));
+  resources.push_back(std::make_pair("webViewDeny", IDR_WEB_VIEW_DENY_JS));
   resources.push_back(std::make_pair("webViewEvents", IDR_WEB_VIEW_EVENTS_JS));
-  resources.push_back(
-      std::make_pair("webViewExperimental", IDR_WEB_VIEW_EXPERIMENTAL_JS));
+  resources.push_back(std::make_pair("webViewExperimental",
+                                     IDR_WEB_VIEW_EXPERIMENTAL_JS));
   resources.push_back(std::make_pair("webViewInternal",
                                      IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
-  resources.push_back(std::make_pair("denyWebView", IDR_WEB_VIEW_DENY_JS));
   resources.push_back(
       std::make_pair(mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS));
   resources.push_back(

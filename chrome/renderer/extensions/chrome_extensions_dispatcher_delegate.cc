@@ -229,9 +229,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   // Platform app sources that are not API-specific..
   source_map->RegisterSource("fileEntryBindingUtil",
                              IDR_FILE_ENTRY_BINDING_UTIL_JS);
-  source_map->RegisterSource("extensionOptions", IDR_EXTENSION_OPTIONS_JS);
-  source_map->RegisterSource("extensionOptionsEvents",
-                             IDR_EXTENSION_OPTIONS_EVENTS_JS);
   source_map->RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);
   source_map->RegisterSource("chromeWebViewInternal",
                              IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);

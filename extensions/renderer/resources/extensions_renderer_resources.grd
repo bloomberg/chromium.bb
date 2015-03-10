@@ -19,6 +19,8 @@
       <include name="IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS" file="${mojom_root}\device\serial\data_stream_serialization.mojom.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_ENTRY_ID_MANAGER" file="entry_id_manager.js" type="BINDATA" />
       <include name="IDR_EVENT_BINDINGS_JS" file="event.js" type="BINDATA" />
+      <include name="IDR_EXTENSION_OPTIONS_JS" file="guest_view/extension_options/extension_options.js" type="BINDATA"/>
+      <include name="IDR_EXTENSION_OPTIONS_EVENTS_JS" file="guest_view/extension_options/extension_options_events.js" type="BINDATA"/>
       <include name="IDR_EXTENSION_VIEW_JS" file="guest_view/extension_view/extension_view.js" type="BINDATA" />
       <include name="IDR_EXTENSION_VIEW_API_METHODS_JS" file="guest_view/extension_view/extension_view_api_methods.js" type="BINDATA" />
       <include name="IDR_EXTENSION_VIEW_ATTRIBUTES_JS" file="guest_view/extension_view/extension_view_attributes.js" type="BINDATA" />
