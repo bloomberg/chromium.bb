@@ -4,11 +4,35 @@
 
 #include "chrome/common/favicon/fallback_icon_url_parser.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "third_party/skia/include/utils/SkParse.h"
 #include "ui/gfx/favicon_size.h"
+
+namespace {
+
+// List of sizes corresponding to RGB, ARGB, RRGGBB, AARRGGBB.
+const size_t kValidHexColorSizes[] = {3, 4, 6, 8};
+
+// Returns whether |color_str| is a valid CSS color in hex format if we prepend
+// '#', i.e., whether |color_str| matches /^[0-9A-Fa-f]{3,4,6,8}$/.
+bool IsHexColorString(const std::string& color_str) {
+  size_t len = color_str.length();
+  const size_t* end = kValidHexColorSizes + arraysize(kValidHexColorSizes);
+  if (std::find(kValidHexColorSizes, end, len) == end)
+    return false;
+  for (auto ch : color_str)
+    if (!IsHexDigit(ch))
+      return false;
+  return true;
+}
+
+}  // namespace
 
 namespace chrome {
 
@@ -76,9 +100,32 @@ bool ParsedFallbackIconPath::ParseSpecs(
 // static
 bool ParsedFallbackIconPath::ParseColor(const std::string& color_str,
                                         SkColor* color) {
-  const char* end = SkParse::FindColor(color_str.c_str(), color);
-  // Return true if FindColor() succeeds and |color_str| is entirely consumed.
-  return end && !*end;
+  DCHECK(color);
+  // Exclude the empty case. Also disallow the '#' prefix, since we want color
+  // to be part of an URL, but in URL '#' is used for ref fragment.
+  if (color_str.empty() || color_str[0] == '#')
+    return false;
+
+  // If a valid color hex string is given, prepend '#' and parse (always works).
+  // This is unambiguous since named color never only use leters 'a' to 'f'.
+  if (IsHexColorString(color_str)) {
+    // Default alpha to 0xFF since FindColor() preserves unspecified alpha.
+    *color = SK_ColorWHITE;
+    // Need temp variable to avoid use-after-free of returned pointer.
+    std::string color_str_with_hash = "#" + color_str;
+    const char* end = SkParse::FindColor(color_str_with_hash.c_str(), color);
+    DCHECK(end && !*end);  // Call should succeed and consume string.
+    return true;
+  }
+
+  // Default alpha to 0xFF.
+  SkColor temp_color = SK_ColorWHITE;
+  const char* end = SkParse::FindColor(color_str.c_str(), &temp_color);
+  if (end && !*end) {  // Successful if call succeeds and string is consumed.
+    *color = temp_color;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace chrome

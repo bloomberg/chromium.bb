@@ -38,8 +38,8 @@ class ParsedFallbackIconPath {
                          int *size,
                          favicon_base::FallbackIconStyle* style);
 
-  // Helper to parse color string (e.g., "red", "#f00", "#fF0000"). Returns true
-  // on success.
+  // Helper to parse color string (e.g., "red", "#f00", "#aB0137"). On success,
+  // returns true and writes te result to |*color|.
   static bool ParseColor(const std::string& color_str, SkColor* color);
 
   friend class FallbackIconUrlParserTest;

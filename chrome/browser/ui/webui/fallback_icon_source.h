@@ -20,11 +20,11 @@
 //  'size'
 //    Positive integer to specify the fallback icon's size in pixels.
 //  'bc'
-//    Fallback icon's background color, as named CSS color, or #RGB / #RRGGBB /
-//    #AARRGGBB hex formats.
+//    Fallback icon's background color, as named CSS color, or RGB / ARGB /
+//    RRGGBB / AARRGGBB hex formats (no leading "#").
 //  'tc'
-//    Fallback icon text color, as named CSS color, or #RGB / #RRGGBB /
-//    #AARRGGBB hex formats.
+//    Fallback icon text color, as named CSS color, or RGB / ARGB / RRGGBB /
+//    AARRGGBB hex formats (no leading "#").
 //  'fsr'
 //    Number in [0.0, 1.0] to specify the fallback icon's font size (pixels)
 //    as a ratio to the icon's size.
