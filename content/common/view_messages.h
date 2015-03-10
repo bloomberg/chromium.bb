@@ -1436,7 +1436,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidZoomURL,
 
 // Sent when the renderer changes its page scale factor and whether or not the
 // page scale factor is one changes.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_PageScaleFactorIsOneChanged, bool /* is_one */);
+IPC_MESSAGE_ROUTED1(ViewHostMsg_PageScaleFactorIsOneChanged, bool /* is_one */)
 
 // Updates the minimum/maximum allowed zoom percent for this tab from the
 // default values.  If |remember| is true, then the zoom setting is applied to
