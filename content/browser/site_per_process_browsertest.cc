@@ -337,8 +337,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             child->current_frame_host()->GetSiteInstance());
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/446575
+#define MAYBE_NavigateRemoteFrameToBlankAndDataURLs \
+    DISABLED_NavigateRemoteFrameToBlankAndDataURLs
+#else
+#define MAYBE_NavigateRemoteFrameToBlankAndDataURLs \
+    NavigateRemoteFrameToBlankAndDataURLs
+#endif
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       NavigateRemoteFrameToBlankAndDataURLs) {
+                       MAYBE_NavigateRemoteFrameToBlankAndDataURLs) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
