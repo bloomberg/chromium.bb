@@ -16,7 +16,6 @@ SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
     case kProtoSPDY31:
       return SPDY3;
     case kProtoSPDY4_14:
-    case kProtoSPDY4_15:
     case kProtoSPDY4:
       return SPDY4;
     case kProtoUnknown:

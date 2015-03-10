@@ -729,9 +729,6 @@ INSTANTIATE_TEST_CASE_P(
         SpdyNetworkTransactionTestParams(kProtoSPDY4_14, SPDYNOSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY4_14, SPDYSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY4_14, SPDYNPN),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4_15, SPDYNOSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4_15, SPDYSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4_15, SPDYNPN),
         SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNOSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNPN)));
@@ -4622,7 +4619,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_14);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_15);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
@@ -4716,7 +4712,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_14);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_15);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
@@ -6810,7 +6805,6 @@ INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionTLSUsageCheckTest,
     ::testing::Values(SpdyNetworkTransactionTestParams(kProtoSPDY4_14, SPDYNPN),
-                      SpdyNetworkTransactionTestParams(kProtoSPDY4_15, SPDYNPN),
                       SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNPN)));
 
 TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {

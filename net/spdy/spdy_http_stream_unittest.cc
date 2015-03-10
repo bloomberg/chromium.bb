@@ -127,10 +127,11 @@ class SpdyHttpStreamTest : public testing::Test,
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
 };
 
-INSTANTIATE_TEST_CASE_P(
-    NextProto,
-    SpdyHttpStreamTest,
-    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15, kProtoSPDY4));
+INSTANTIATE_TEST_CASE_P(NextProto,
+                        SpdyHttpStreamTest,
+                        testing::Values(kProtoSPDY31,
+                                        kProtoSPDY4_14,
+                                        kProtoSPDY4));
 
 // SpdyHttpStream::GetUploadProgress() should still work even before the
 // stream is initialized.

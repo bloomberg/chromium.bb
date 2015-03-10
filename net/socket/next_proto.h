@@ -30,7 +30,7 @@ enum NextProto {
   kProtoSPDY31 = 102,
   kProtoSPDY4_14 = 103,  // HTTP/2 draft-14, designated implementation draft.
   kProtoSPDY4MinimumVersion = kProtoSPDY4_14,
-  kProtoSPDY4_15 = 104,  // HTTP/2 draft-15
+  // kProtoSPDY4_15 = 104,  // HTTP/2 draft-15
   // kProtoSPDY4_16 = 105,  // HTTP/2 draft-16
   // kProtoSPDY4_17 = 106,  // HTTP/2 draft-17
   kProtoSPDY4 = 107,  // HTTP/2.  TODO(bnc):  Add RFC number when published.

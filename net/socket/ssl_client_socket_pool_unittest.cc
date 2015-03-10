@@ -227,10 +227,11 @@ class SSLClientSocketPoolTest
   bool enable_ssl_connect_job_waiting_;
 };
 
-INSTANTIATE_TEST_CASE_P(
-    NextProto,
-    SSLClientSocketPoolTest,
-    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15, kProtoSPDY4));
+INSTANTIATE_TEST_CASE_P(NextProto,
+                        SSLClientSocketPoolTest,
+                        testing::Values(kProtoSPDY31,
+                                        kProtoSPDY4_14,
+                                        kProtoSPDY4));
 
 // Tests that the final socket will connect even if all sockets
 // prior to it fail.

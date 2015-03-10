@@ -420,10 +420,11 @@ class HttpNetworkTransactionTest
   int old_max_pool_sockets_;
 };
 
-INSTANTIATE_TEST_CASE_P(
-    NextProto,
-    HttpNetworkTransactionTest,
-    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15, kProtoSPDY4));
+INSTANTIATE_TEST_CASE_P(NextProto,
+                        HttpNetworkTransactionTest,
+                        testing::Values(kProtoSPDY31,
+                                        kProtoSPDY4_14,
+                                        kProtoSPDY4));
 
 namespace {
 

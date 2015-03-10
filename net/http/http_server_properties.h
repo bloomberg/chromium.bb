@@ -62,7 +62,6 @@ enum AlternateProtocol {
   NPN_SPDY_3,
   NPN_SPDY_3_1,
   NPN_SPDY_4_14,  // HTTP/2 draft-14
-  NPN_SPDY_4_15,  // HTTP/2 draft-15
   NPN_SPDY_4,     // HTTP/2
   NPN_SPDY_MAXIMUM_VERSION = NPN_SPDY_4,
   QUIC,

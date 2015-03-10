@@ -16,10 +16,11 @@ class HttpStreamFactoryImplRequestTest
     : public ::testing::Test,
       public ::testing::WithParamInterface<NextProto> {};
 
-INSTANTIATE_TEST_CASE_P(
-    NextProto,
-    HttpStreamFactoryImplRequestTest,
-    testing::Values(kProtoSPDY31, kProtoSPDY4_14, kProtoSPDY4_15, kProtoSPDY4));
+INSTANTIATE_TEST_CASE_P(NextProto,
+                        HttpStreamFactoryImplRequestTest,
+                        testing::Values(kProtoSPDY31,
+                                        kProtoSPDY4_14,
+                                        kProtoSPDY4));
 
 namespace {
 
