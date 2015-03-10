@@ -770,14 +770,33 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-  // Releasing a key also hides the cursor but does not disable mouse events.
+  // Releasing a key does does not hide the cursor and does not disable mouse
+  // events.
   generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
-  EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-  // Moving mouse shows the cursor again.
-  generator.MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+}
+
+// Test that pressing an accelerator does not hide the cursor.
+TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  ::wm::CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+
+  ASSERT_TRUE(cursor_manager->IsCursorVisible());
+
+  // Press Ctrl+A, release A first.
+  generator.PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator.ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator.ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+
+  // Press Ctrl+A, release Ctrl first.
+  generator.PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  generator.ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
 }
 
 TEST_F(WindowManagerTest, TestCursorClientObserver) {

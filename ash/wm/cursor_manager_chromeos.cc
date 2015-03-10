@@ -21,6 +21,9 @@ CursorManager::~CursorManager() {
 
 bool CursorManager::ShouldHideCursorOnKeyEvent(
     const ui::KeyEvent& event) const {
+  if (event.type() != ui::ET_KEY_PRESSED)
+    return false;
+
   // Clicking on a key when the accessibility virtual keyboard is enabled should
   // not hide the cursor.
   if (keyboard::GetAccessibilityKeyboardEnabled())
