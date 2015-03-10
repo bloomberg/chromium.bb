@@ -17,6 +17,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.JavascriptInterface;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -423,6 +424,7 @@ public class AwContentsTest extends AwTestBase {
             mCallbackHelper = callbackHelper;
         }
 
+        @JavascriptInterface
         public void run() {
             mCallbackHelper.notifyCalled();
         }
@@ -440,8 +442,7 @@ public class AwContentsTest extends AwTestBase {
                 AwContents awContents = testView.getAwContents();
                 AwSettings awSettings = awContents.getSettings();
                 awSettings.setJavaScriptEnabled(true);
-                awContents.addPossiblyUnsafeJavascriptInterface(
-                        new JavaScriptObject(callback), "bridge", null);
+                awContents.addJavascriptInterface(new JavaScriptObject(callback), "bridge");
                 awContents.evaluateJavaScript("javascript:window.bridge.run();", null);
             }
         });

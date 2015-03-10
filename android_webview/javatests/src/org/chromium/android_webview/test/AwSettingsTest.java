@@ -2092,8 +2092,7 @@ public class AwSettingsTest extends AwTestBase {
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    awContents.addPossiblyUnsafeJavascriptInterface(
-                            new AudioEvent(callback), "AudioEvent", null);
+                    awContents.addJavascriptInterface(new AudioEvent(callback), "AudioEvent");
                 }
             });
             int count = callback.getCallCount();

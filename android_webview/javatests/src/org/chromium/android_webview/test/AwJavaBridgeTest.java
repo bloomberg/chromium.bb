@@ -6,11 +6,11 @@ package org.chromium.android_webview.test;
 
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.webkit.JavascriptInterface;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.content.browser.JavascriptInterface;
 
 /**
  * Test suite for the WebView specific JavaBridge features.
@@ -59,7 +59,7 @@ public class AwJavaBridgeTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    awContents.addPossiblyUnsafeJavascriptInterface(new Test(), "test", null);
+                    awContents.addJavascriptInterface(new Test(), "test");
             }
         });
 
@@ -100,8 +100,8 @@ public class AwJavaBridgeTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    awContents1.addPossiblyUnsafeJavascriptInterface(new Test(1), "test", null);
-                    awContents2.addPossiblyUnsafeJavascriptInterface(new Test(2), "test", null);
+                    awContents1.addJavascriptInterface(new Test(1), "test");
+                    awContents2.addJavascriptInterface(new Test(2), "test");
                 }
         });
         final String html = "<html>Hello World</html>";
@@ -136,7 +136,7 @@ public class AwJavaBridgeTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    awContents1.addPossiblyUnsafeJavascriptInterface(new Test(1), "test", null);
+                    awContents1.addJavascriptInterface(new Test(1), "test");
                 }
         });
         final String html = "<html>Hello World</html>";
@@ -153,7 +153,7 @@ public class AwJavaBridgeTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    awContents2.addPossiblyUnsafeJavascriptInterface(new Test(2), "test", null);
+                    awContents2.addJavascriptInterface(new Test(2), "test");
                 }
         });
         loadDataSync(awContents2, client2.getOnPageFinishedHelper(), html,

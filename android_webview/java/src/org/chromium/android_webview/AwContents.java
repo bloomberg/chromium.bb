@@ -36,6 +36,7 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.widget.OverScroller;
 
@@ -2128,9 +2129,12 @@ public class AwContents implements SmartClipProvider,
     /**
      * @see ContentViewCore#addPossiblyUnsafeJavascriptInterface(Object, String, Class)
      */
-    public void addPossiblyUnsafeJavascriptInterface(Object object, String name,
-            Class<? extends Annotation> requiredAnnotation) {
+    public void addJavascriptInterface(Object object, String name) {
         if (isDestroyed()) return;
+        Class<? extends Annotation> requiredAnnotation = null;
+        if (mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            requiredAnnotation = JavascriptInterface.class;
+        }
         mContentViewCore.addPossiblyUnsafeJavascriptInterface(object, name, requiredAnnotation);
     }
 

@@ -31,7 +31,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.webkit.DownloadListener;
 import android.webkit.FindActionModeCallback;
-import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
@@ -51,7 +50,6 @@ import org.chromium.content.browser.SmartClipProvider;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -879,9 +877,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return ret;
         }
-        String url = mAwContents.getUrl();
-        if (url == null || url.trim().isEmpty()) return null;
-        return url;
+        return mAwContents.getUrl();
     }
 
     @Override
@@ -896,9 +892,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return ret;
         }
-        String url = mAwContents.getOriginalUrl();
-        if (url == null || url.trim().isEmpty()) return null;
-        return url;
+        return mAwContents.getOriginalUrl();
     }
 
     @Override
@@ -1299,11 +1293,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return;
         }
-        Class<? extends Annotation> requiredAnnotation = null;
-        if (mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            requiredAnnotation = JavascriptInterface.class;
-        }
-        mAwContents.addPossiblyUnsafeJavascriptInterface(obj, interfaceName, requiredAnnotation);
+        mAwContents.addJavascriptInterface(obj, interfaceName);
     }
 
     @Override

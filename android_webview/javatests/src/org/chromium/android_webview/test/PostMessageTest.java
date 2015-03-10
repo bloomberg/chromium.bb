@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.os.Build;
 import android.os.Handler;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.webkit.JavascriptInterface;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
@@ -44,6 +45,7 @@ public class PostMessageTest extends AwTestBase {
         private int[] mPorts;
         private Object mLock = new Object();
 
+        @JavascriptInterface
         public void setMessageParams(String data, String origin, int[] ports) {
             synchronized (mLock) {
                 mData = data;
@@ -92,8 +94,7 @@ public class PostMessageTest extends AwTestBase {
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mAwContents.addPossiblyUnsafeJavascriptInterface(mMessageObject,
-                            "messageObject", null);
+                    mAwContents.addJavascriptInterface(mMessageObject, "messageObject");
                 }
             });
         } catch (Throwable t) {
