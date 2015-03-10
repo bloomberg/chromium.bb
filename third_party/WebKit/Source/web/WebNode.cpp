@@ -173,11 +173,10 @@ bool WebNode::isElementNode() const
     return m_private->isElementNode();
 }
 
-bool WebNode::dispatchEvent(const WebDOMEvent& event)
+void WebNode::dispatchEvent(const WebDOMEvent& event)
 {
     if (!event.isNull())
-        return m_private->dispatchEvent(event);
-    return false;
+        m_private->dispatchEvent(event);
 }
 
 void WebNode::simulateClick()

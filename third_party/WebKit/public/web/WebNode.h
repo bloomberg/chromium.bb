@@ -108,7 +108,7 @@ public:
     BLINK_EXPORT bool isFocusable() const;
     BLINK_EXPORT bool isContentEditable() const;
     BLINK_EXPORT bool isElementNode() const;
-    BLINK_EXPORT bool dispatchEvent(const WebDOMEvent&);
+    BLINK_EXPORT void dispatchEvent(const WebDOMEvent&);
     BLINK_EXPORT void simulateClick();
     // The argument should be lower-cased.
     BLINK_EXPORT WebElementCollection getElementsByHTMLTagName(const WebString&) const;
