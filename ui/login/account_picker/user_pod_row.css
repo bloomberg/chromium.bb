@@ -391,7 +391,8 @@ html[dir=rtl] .action-box-area {
 
 .action-box-area:focus,
 .action-box-area.hovered,
-.action-box-area.active {
+.action-box-area.active,
+.action-box-area.forced {
   opacity: 1;
 }
 

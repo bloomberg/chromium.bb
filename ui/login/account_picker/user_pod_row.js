@@ -2138,9 +2138,8 @@ cr.define('login', function() {
     // Array of users that are shown (public/supervised/regular).
     users_: [],
 
-    // If we're disabling single pod autofocus for Touch View.
-    touchViewSinglePodExperimentOn_: true,
-
+    // If we're in Touch View mode.
+    touchViewEnabled_: false,
 
     /** @override */
     decorate: function() {
@@ -2178,9 +2177,7 @@ cr.define('login', function() {
       var isDesktopUserManager = Oobe.getInstance().displayType ==
           DISPLAY_TYPE.DESKTOP_USER_MANAGER;
 
-      return (isDesktopUserManager ||
-              (this.touchViewSinglePodExperimentOn_ &&
-               this.touchViewEnabled_)) ?
+      return (isDesktopUserManager || this.touchViewEnabled_) ?
           false : this.children.length == 1;
     },
 
@@ -2532,6 +2529,9 @@ cr.define('login', function() {
      */
     setTouchViewState: function(isTouchViewEnabled) {
       this.touchViewEnabled_ = isTouchViewEnabled;
+      this.pods.forEach(function(pod, index) {
+        pod.actionBoxAreaElement.classList.toggle('forced', isTouchViewEnabled);
+      });
     },
 
     /**
