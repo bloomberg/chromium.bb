@@ -262,6 +262,7 @@ interface TestObject {
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
     [Measure] attribute long measuredLongAttribute;
+    [SameObject] attribute TestInterface sameObjectAttribute;
 
 
     // Methods
@@ -574,6 +575,7 @@ interface TestObject {
     void voidMethodTestInterfaceGarbageCollectedArrayArg(TestInterfaceGarbageCollected[] testInterfaceGarbageCollectedArrayArg);
     void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg(sequence<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedSequenceArg);
     void voidMethodTestInterfaceWillBeGarbageCollectedArrayArg(TestInterfaceWillBeGarbageCollected[] testInterfaceWillBeGarbageCollectedArrayArg);
+    [NewObject] TestInterface newObjectTestInterfaceMethod();
 
     // Extended attributes on referenced interfaces
     // (not self; self-reference tests at interface themselves)

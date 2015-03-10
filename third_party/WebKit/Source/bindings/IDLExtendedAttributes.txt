@@ -67,6 +67,7 @@ LegacyInterfaceTypeChecking
 LegacyTreatAsPartialInterface
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds
+NewObject
 Measure
 MeasureAs=*
 NamedConstructor=*
@@ -93,6 +94,7 @@ Replaceable
 # Valid values for [RuntimeEnabled] are the Runtime Enabled Features, listed in
 # Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
+SameObject
 SetWrapperReferenceFrom=*
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptArguments|ActiveWindow|FirstWindow
