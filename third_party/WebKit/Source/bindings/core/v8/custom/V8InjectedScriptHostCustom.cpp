@@ -138,6 +138,14 @@ void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::Functio
     v8SetReturnValue(info, result);
 }
 
+void V8InjectedScriptHost::isDOMWrapperMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+
+    v8SetReturnValue(info, V8DOMWrapper::isWrapper(info.GetIsolate(), info[0]));
+}
+
 void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -149,42 +157,6 @@ void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCal
     }
 
     v8SetReturnValue(info, V8HTMLAllCollection::hasInstance(info[0], info.GetIsolate()));
-}
-
-void V8InjectedScriptHost::isPopularDOMObjectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    // FIXME: Stop using this function (whilelisting) once we come up with a way
-    // to distinguish DOM wrappers from other obejcts.
-
-    if (info.Length() < 1)
-        return;
-
-    if (!info[0]->IsObject()) {
-        v8SetReturnValue(info, false);
-        return;
-    }
-
-    v8::Local<v8::Value> object = info[0];
-    v8::Isolate* isolate = info.GetIsolate();
-    bool isPopularDOMObject = false;
-    static bool (*hasInstances[])(v8::Local<v8::Value>, v8::Isolate*) = {
-        V8Blob::hasInstance,
-        V8DOMError::hasInstance,
-        V8DOMException::hasInstance,
-        V8Element::hasInstance,
-        V8Event::hasInstance,
-        V8EventTarget::hasInstance,
-        V8Location::hasInstance,
-        V8Navigator::hasInstance,
-    };
-    for (size_t i = 0; i < sizeof hasInstances / sizeof *hasInstances; ++i) {
-        if (hasInstances[i](object, isolate)) {
-            isPopularDOMObject = true;
-            break;
-        }
-    }
-
-    v8SetReturnValue(info, isPopularDOMObject);
 }
 
 void V8InjectedScriptHost::isTypedArrayMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

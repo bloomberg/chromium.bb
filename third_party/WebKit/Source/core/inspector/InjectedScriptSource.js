@@ -220,6 +220,40 @@ function indexOf(str, searchElement, fromIndex)
 }
 
 /**
+ * DOM Attributes which have observable side effect on getter, in the form of
+ *   {interfaceName1: {attributeName1: true,
+ *                     attributeName2: true,
+ *                     ...},
+ *    interfaceName2: {...},
+ *    ...}
+ * @type {!Object<string, !Object<string, boolean>>}
+ * @const
+ */
+var domAttributesWithObservableSideEffectOnGet = nullifyObjectProto({});
+domAttributesWithObservableSideEffectOnGet["Request"] = nullifyObjectProto({});
+domAttributesWithObservableSideEffectOnGet["Request"]["body"] = true;
+domAttributesWithObservableSideEffectOnGet["Response"] = nullifyObjectProto({});
+domAttributesWithObservableSideEffectOnGet["Response"]["body"] = true;
+
+/**
+ * @param {!Object} object
+ * @param {!string} attribute
+ * @return {boolean}
+ */
+function doesAttributeHaveObservableSideEffectOnGet(object, attribute)
+{
+    for (var interfaceName in domAttributesWithObservableSideEffectOnGet) {
+        var isInstance = InjectedScriptHost.suppressWarningsAndCallFunction(function(object, interfaceName) {
+            return typeof window[interfaceName] === "function" && object instanceof window[interfaceName];
+        }, null, [object, interfaceName]);
+        if (isInstance) {
+            return attribute in domAttributesWithObservableSideEffectOnGet[interfaceName];
+        }
+    }
+    return false;
+}
+
+/**
  * @constructor
  */
 var InjectedScript = function()
@@ -555,7 +589,7 @@ InjectedScript.prototype = {
                     if (descriptor) {
                         if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
                             continue;
-                        if ("get" in descriptor && "set" in descriptor && InjectedScriptHost.isPopularDOMObject(object) && name != "__proto__") {
+                        if ("get" in descriptor && "set" in descriptor && name != "__proto__" && InjectedScriptHost.isDOMWrapper(object) && !doesAttributeHaveObservableSideEffectOnGet(object, name)) {
                             descriptor.value = InjectedScriptHost.suppressWarningsAndCallFunction(function(attribute) { return this[attribute]; }, object, [name]);
                             delete descriptor.get;
                             delete descriptor.set;
@@ -1516,6 +1550,7 @@ InjectedScript.RemoteObject.prototype = {
 
     __proto__: null
 }
+
 /**
  * @constructor
  * @param {number} ordinal

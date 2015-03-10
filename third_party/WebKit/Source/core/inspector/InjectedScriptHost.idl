@@ -39,8 +39,8 @@
     [NotEnumerable, Unforgeable, Custom] void inspect(any objectId, object hints);
     [NotEnumerable, Unforgeable, Custom] any inspectedObject(long num);
     [NotEnumerable, Unforgeable, Custom] DOMString internalConstructorName(any obj);
+    [NotEnumerable, Unforgeable, Custom] boolean isDOMWrapper(any obj);
     [NotEnumerable, Unforgeable, Custom] boolean isHTMLAllCollection(any obj);
-    [NotEnumerable, Unforgeable, Custom] boolean isPopularDOMObject(any obj);
     [NotEnumerable, Unforgeable, Custom] boolean isTypedArray(any obj);
     [NotEnumerable, Unforgeable, Custom] DOMString subtype(any obj);
     [NotEnumerable, Unforgeable, Custom] any functionDetails(Function obj);
