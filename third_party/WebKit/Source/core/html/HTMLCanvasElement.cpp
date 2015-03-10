@@ -299,7 +299,11 @@ void HTMLCanvasElement::didFinalizeFrame()
     // before restarting with a blank dirty rect.
     FloatRect srcRect(0, 0, size().width(), size().height());
     m_dirtyRect.intersect(srcRect);
-    if (LayoutBox* ro = layoutBox()) {
+    LayoutBox* ro = layoutBox();
+    // Canvas content updates do not need to be propagated as
+    // paint invalidations if the canvas is accelerated, since
+    // the canvas contents are sent separately through a texture layer.
+    if (ro && (!m_context || !m_context->isAccelerated())) {
         LayoutRect mappedDirtyRect(enclosingIntRect(mapRect(m_dirtyRect, srcRect, ro->contentBoxRect())));
         // For querying Layer::compositingState()
         // FIXME: is this invalidation using the correct compositing state?
