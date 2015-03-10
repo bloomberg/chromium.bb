@@ -41,6 +41,12 @@ struct WebPrintPresetOptions {
 
     // Specifies page range to be used for printing.
     WebPageRanges pageRanges;
+
+    // True if all the pages in the PDF are the same size.
+    bool isPageSizeUniform;
+
+    // Only valid if the page sizes are uniform. The page size in points.
+    WebSize uniformPageSize;
 };
 
 } // namespace blink
