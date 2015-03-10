@@ -327,6 +327,9 @@ void VpnService::DestroyConfiguration(const std::string& extension_id,
 
   VpnConfiguration* configuration = key_to_configuration_map_[key];
   const std::string service_path = configuration->service_path();
+  if (active_configuration_ == configuration) {
+    configuration->OnPlatformMessage(api_vpn::PLATFORM_MESSAGE_DISCONNECTED);
+  }
   DestroyConfigurationInternal(configuration);
 
   network_configuration_handler_->RemoveConfiguration(
@@ -403,6 +406,24 @@ void VpnService::OnExtensionUninstalled(
                          iter->configuration_name(),  // Configuration name
                          base::Bind(base::DoNothing),
                          base::Bind(DoNothingFailureCallback));
+  }
+}
+
+void VpnService::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  if (browser_context != browser_context_) {
+    NOTREACHED();
+    return;
+  }
+
+  if (active_configuration_ &&
+      active_configuration_->extension_id() == extension->id()) {
+    shill_client_->UpdateConnectionState(
+        active_configuration_->object_path(),
+        static_cast<uint32_t>(api_vpn::VPN_CONNECTION_STATE_FAILURE),
+        base::Bind(base::DoNothing), base::Bind(DoNothingFailureCallback));
   }
 }
 

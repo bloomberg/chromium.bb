@@ -90,6 +90,10 @@ class VpnService : public KeyedService,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 
   // Creates a new VPN configuration with |configuration_name| as the name and
   // attaches it to the extension with id |extension_id|.
