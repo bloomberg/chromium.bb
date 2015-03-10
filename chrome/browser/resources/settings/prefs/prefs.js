@@ -34,6 +34,7 @@ Polymer('cr-settings-prefs', {
 
     this.settings = {};
     this.initializeA11y_();
+    this.initializeDownloads_();
     var observer = new ObjectObserver(this.settings);
     observer.open(this.propertyChangeCallback_.bind(this, 'settings'));
 
@@ -73,6 +74,17 @@ Polymer('cr-settings-prefs', {
     this.settings.accessibility = false;
 
     // TODO(jlklein): Actually pull the data out of prefs and initialize.
+  },
+
+  /**
+   * Initializes some defaults for the downloads settings.
+   * @private
+   */
+  initializeDownloads_: function() {
+    this.settings.download = {
+      downloadLocation: '',
+      promptForDownload: false,
+    };
   },
 
   /**

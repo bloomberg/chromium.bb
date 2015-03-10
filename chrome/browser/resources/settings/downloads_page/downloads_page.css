@@ -1,0 +1,25 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+core-label {
+  margin: 10px;
+}
+
+cr-checkbox {
+  -webkit-margin-end: 10px;
+}
+
+cr-input {
+  width: 300px;
+}
+
+cr-input::shadow #input {
+  /* This ensures that the "Download location" label and the text in the input
+   * itself are vertically aligned. */
+  margin: 0.25em 0;
+}
+
+.location-label {
+  -webkit-margin-end: 10px;
+}

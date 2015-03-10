@@ -12,6 +12,7 @@ var CrSettingsPrefs = {};
  * @typedef {{
  *   a11y: CrSettingsPrefs.A11y,
  *   touchpad: CrSettingsPrefs.Touchpad,
+ *   downloads: CrSettingsPrefs.Downloads,
  *   accessibility: boolean
  * }}
  */
@@ -30,6 +31,14 @@ CrSettingsPrefs.Settings;
  * }}
  */
 CrSettingsPrefs.A11y;
+
+/**
+ * @typedef {{
+ *   downloadLocation: string,
+ *   promptForDownload: boolean
+ * }}
+ */
+CrSettingsPrefs.Downloads;
 
 /**
  * @typedef {{
