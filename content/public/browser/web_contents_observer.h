@@ -266,6 +266,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when the main frame changes size.
   virtual void MainFrameWasResized(bool width_changed) {}
 
+  // Invoked when the given frame changes its window.name property.
+  virtual void FrameNameChanged(RenderFrameHost* render_frame_host,
+                                const std::string& name) {}
+
   // This methods is invoked when the title of the WebContents is set. If the
   // title was explicitly set, |explicit_set| is true, otherwise the title was
   // synthesized and |explicit_set| is false.

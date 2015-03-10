@@ -2126,10 +2126,21 @@ void RenderFrameImpl::willClose(blink::WebFrame* frame) {
 void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
                                     const blink::WebString& name) {
   DCHECK(!frame_ || frame_ == frame);
-  if (!render_view_->renderer_preferences_.report_frame_name_changes)
-    return;
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeName(name));
+  // TODO(alexmos): According to https://crbug.com/169110, sending window.name
+  // updates may have performance implications for benchmarks like SunSpider.
+  // For now, send these updates only for --site-per-process, which needs to
+  // replicate frame names to frame proxies, and when
+  // |report_frame_name_changes| is set (used by <webview>).  If needed, this
+  // can be optimized further by only sending the update if there are any
+  // remote frames in the frame tree, or delaying and batching up IPCs if
+  // updates are happening too frequently.
+  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
+  if (is_site_per_process ||
+      render_view_->renderer_preferences_.report_frame_name_changes) {
+    Send(new FrameHostMsg_DidChangeName(routing_id_, base::UTF16ToUTF8(name)));
+  }
 }
 
 void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,

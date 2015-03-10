@@ -26,7 +26,6 @@ class ExtensionsRenderFrameObserver
                                    const base::string16& stack_trace,
                                    int32 line_number,
                                    int32 severity_level) override;
-  void DidChangeName(const base::string16& name) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsRenderFrameObserver);
 };

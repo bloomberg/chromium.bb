@@ -210,6 +210,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
+    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -296,6 +297,10 @@ void RenderFrameProxy::OnDidStopLoading() {
 
 void RenderFrameProxy::OnDispatchLoad() {
   web_frame_->DispatchLoadEventForFrameOwner();
+}
+
+void RenderFrameProxy::OnDidUpdateName(const std::string& name) {
+  web_frame_->setReplicatedName(blink::WebString::fromUTF8(name));
 }
 
 void RenderFrameProxy::frameDetached() {

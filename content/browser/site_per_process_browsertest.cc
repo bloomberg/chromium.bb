@@ -1487,6 +1487,64 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, WindowNameReplication) {
   EXPECT_EQ("3-1-name", result);
 }
 
+// Verify that dynamic updates to a frame's window.name propagate to the
+// frame's proxies, so that the latest frame names can be used in navigations.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicWindowName) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/2-4.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  TestNavigationObserver observer(shell()->web_contents());
+
+  // Load cross-site page into iframe.
+  GURL frame_url =
+      embedded_test_server()->GetURL("foo.com", "/frame_tree/3-1.html");
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(frame_url, observer.last_navigation_url());
+
+  // Browser process should know the child frame's original window.name
+  // specified in the iframe element.
+  EXPECT_EQ(root->child_at(0)->frame_name(), "3-1-name");
+
+  // Update the child frame's window.name.
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            "window.domAutomationController.send("
+                            "window.name = 'updated-name');"));
+
+  // The change should propagate to the browser process.
+  EXPECT_EQ(root->child_at(0)->frame_name(), "updated-name");
+
+  // The proxy in the parent process should also receive the updated name.
+  // Check that it can reference the child frame by its new name.
+  bool success = false;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(shell()->web_contents(),
+                                  "window.domAutomationController.send("
+                                  "frames['updated-name'] == frames[0]);",
+                                  &success));
+  EXPECT_TRUE(success);
+
+  // Issue a renderer-initiated navigation from the root frame to the child
+  // frame using the frame's name. Make sure correct frame is navigated.
+  //
+  // TODO(alexmos): When blink::createWindow is refactored to handle
+  // RemoteFrames, this should also be tested via window.open(url, frame_name)
+  // and a more complicated frame hierarchy (https://crbug.com/463742)
+  TestFrameNavigationObserver frame_observer(root->child_at(0));
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  std::string script = base::StringPrintf(
+      "window.domAutomationController.send("
+      "frames['updated-name'].location.href = '%s');",
+      foo_url.spec().c_str());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  frame_observer.Wait();
+  EXPECT_EQ(foo_url, root->child_at(0)->current_url());
+}
+
 // Ensure that navigating subframes in --site-per-process mode properly fires
 // the DidStopLoading event on WebContentsObserver.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteDidStopLoading) {

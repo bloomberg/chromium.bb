@@ -266,10 +266,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       bool is_iframe_srcdoc) override;
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void UserAgentOverrideSet(const std::string& user_agent) override;
+  void FrameNameChanged(content::RenderFrameHost* render_frame_host,
+                        const std::string& name) override;
 
   // Informs the embedder of a frame name change.
   void ReportFrameNameChange(const std::string& name);
@@ -307,8 +307,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void LoadAbort(bool is_top_level,
                  const GURL& url,
                  const std::string& error_type);
-
-  void OnFrameNameChanged(bool is_top_level, const std::string& name);
 
   // Creates a new guest window owned by this WebViewGuest.
   void CreateNewGuestWebViewWindow(const content::OpenURLParams& params);

@@ -475,17 +475,6 @@ void WebViewGuest::LoadAbort(bool is_top_level,
       new GuestViewBase::Event(webview::kEventLoadAbort, args.Pass()));
 }
 
-void WebViewGuest::OnFrameNameChanged(bool is_top_level,
-                                      const std::string& name) {
-  if (!is_top_level)
-    return;
-
-  if (name_ == name)
-    return;
-
-  ReportFrameNameChange(name);
-}
-
 void WebViewGuest::CreateNewGuestWebViewWindow(
     const content::OpenURLParams& params) {
   GuestViewManager* guest_manager =
@@ -725,16 +714,6 @@ void WebViewGuest::DocumentLoadedInFrame(
     web_view_guest_delegate_->OnDocumentLoadedInFrame(render_frame_host);
 }
 
-bool WebViewGuest::OnMessageReceived(const IPC::Message& message,
-                                     RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WebViewGuest, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_FrameNameChanged, OnFrameNameChanged)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
   // Cancel all find sessions in progress.
   find_helper_.CancelAllFindSessions();
@@ -754,6 +733,17 @@ void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
     return;
   entry->SetIsOverridingUserAgent(!user_agent.empty());
   web_contents()->GetController().Reload(false);
+}
+
+void WebViewGuest::FrameNameChanged(RenderFrameHost* render_frame_host,
+                                    const std::string& name) {
+  if (render_frame_host->GetParent())
+    return;
+
+  if (name_ == name)
+    return;
+
+  ReportFrameNameChange(name);
 }
 
 void WebViewGuest::ReportFrameNameChange(const std::string& name) {

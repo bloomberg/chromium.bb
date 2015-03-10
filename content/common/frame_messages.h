@@ -510,6 +510,10 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DispatchLoad)
 // Notifies the frame that its parent has changed the frame's sandbox flags.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateSandboxFlags, content::SandboxFlags)
 
+// Update a proxy's window.name property.  Used when the frame's name is
+// changed in another process.
+IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateName, std::string /* name */)
+
 #if defined(OS_ANDROID)
 
 // External popup menus.
@@ -613,6 +617,9 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidStartLoading,
 
 // Sent when the renderer is done loading a page.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
+
+// Sent when the frame changes its window.name.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeName, std::string /* name */)
 
 // Sent when the renderer changed the progress of a load.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,

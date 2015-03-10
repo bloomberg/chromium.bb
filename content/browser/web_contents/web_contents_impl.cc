@@ -3947,6 +3947,12 @@ void WebContentsImpl::DidAccessInitialDocument() {
   NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
 }
 
+void WebContentsImpl::DidChangeName(RenderFrameHost* render_frame_host,
+                                    const std::string& name) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    FrameNameChanged(render_frame_host, name));
+}
+
 void WebContentsImpl::DidDisownOpener(RenderFrameHost* render_frame_host) {
   // No action is necessary if the opener has already been cleared.
   if (!opener_)

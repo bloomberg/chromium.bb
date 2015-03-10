@@ -770,11 +770,6 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_OnWatchedPageChange,
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_TransferBlobsAck,
                      std::vector<std::string> /* blob_uuids */)
 
-// Informs of updated frame names.
-IPC_MESSAGE_ROUTED2(ExtensionHostMsg_FrameNameChanged,
-                    bool /* is_top_level */,
-                    std::string /* name */)
-
 // Tells listeners that a detailed message was reported to the console by
 // WebKit.
 IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,

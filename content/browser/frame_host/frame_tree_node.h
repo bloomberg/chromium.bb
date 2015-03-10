@@ -93,6 +93,8 @@ class CONTENT_EXPORT FrameTreeNode {
     replication_state_.origin = origin;
   }
 
+  void SetFrameName(const std::string& name);
+
   SandboxFlags effective_sandbox_flags() { return effective_sandbox_flags_; }
 
   void set_sandbox_flags(SandboxFlags sandbox_flags) {

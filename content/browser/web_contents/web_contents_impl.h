@@ -386,6 +386,8 @@ class CONTENT_EXPORT WebContentsImpl
                               bool is_reload,
                               IPC::Message* reply_msg) override;
   void DidAccessInitialDocument() override;
+  void DidChangeName(RenderFrameHost* render_frame_host,
+                     const std::string& name) override;
   void DidDisownOpener(RenderFrameHost* render_frame_host) override;
   void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) override;
   void UpdateTitle(RenderFrameHost* render_frame_host,

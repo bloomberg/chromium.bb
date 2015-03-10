@@ -409,6 +409,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   void OnDidStartLoading();
   void OnDidStopLoading();
 
+  // Send updated frame name to all frame proxies when the frame changes its
+  // window.name property.
+  void OnDidUpdateName(const std::string& name);
+
   void EnsureRenderViewInitialized(FrameTreeNode* source,
                                    RenderViewHostImpl* render_view_host,
                                    SiteInstance* instance);

@@ -96,12 +96,4 @@ void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(
       routing_id(), trimmed_message, source, stack_trace, severity_level));
 }
 
-void ExtensionsRenderFrameObserver::DidChangeName(
-    const base::string16& name) {
-  Send(new ExtensionHostMsg_FrameNameChanged(
-      routing_id(),
-      !render_frame()->GetWebFrame()->parent(),
-      base::UTF16ToUTF8(name)));
-}
-
 }  // namespace extensions

@@ -369,6 +369,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAccessInitialDocument,
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisownOpener, OnDidDisownOpener)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeName, OnDidChangeName)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAssignPageId, OnDidAssignPageId)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeSandboxFlags,
                         OnDidChangeSandboxFlags)
@@ -1191,6 +1192,11 @@ void RenderFrameHostImpl::OnDidDisownOpener() {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   delegate_->DidDisownOpener(this);
+}
+
+void RenderFrameHostImpl::OnDidChangeName(const std::string& name) {
+  frame_tree_node()->SetFrameName(name);
+  delegate_->DidChangeName(this, name);
 }
 
 void RenderFrameHostImpl::OnDidAssignPageId(int32 page_id) {

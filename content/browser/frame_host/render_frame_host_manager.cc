@@ -856,6 +856,20 @@ void RenderFrameHostManager::OnDidStopLoading() {
   }
 }
 
+void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
+  // The window.name message may be sent outside of --site-per-process when
+  // report_frame_name_changes renderer preference is set (used by
+  // WebView).  Don't send the update to proxies in those cases.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return;
+
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(
+        new FrameMsg_DidUpdateName(pair.second->GetRoutingID(), name));
+  }
+}
+
 void RenderFrameHostManager::Observe(
     int type,
     const NotificationSource& source,

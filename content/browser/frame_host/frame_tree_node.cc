@@ -104,6 +104,13 @@ void FrameTreeNode::ResetForNewProcess() {
   old_children.clear();  // May notify observers.
 }
 
+void FrameTreeNode::SetFrameName(const std::string& name) {
+  replication_state_.name = name;
+
+  // Notify this frame's proxies about the updated name.
+  render_manager_.OnDidUpdateName(name);
+}
+
 bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {
   if (!other || !other->child_count())
     return false;

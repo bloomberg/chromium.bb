@@ -496,6 +496,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                           size_t end_offset);
   void OnDidAccessInitialDocument();
   void OnDidDisownOpener();
+  void OnDidChangeName(const std::string& name);
   void OnDidAssignPageId(int32 page_id);
   void OnDidChangeSandboxFlags(int32 frame_routing_id, SandboxFlags flags);
   void OnUpdateTitle(const base::string16& title,
