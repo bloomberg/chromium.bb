@@ -191,6 +191,18 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // /MergeSession requests.
   void StartGetCheckConnectionInfo();
 
+  // Starts listing any sessions that exist for the IDP. If all requested scopes
+  // have been approved by the session user, then a login hint is included in
+  // the response.
+  void StartListIDPSessions(const std::string& scopes,
+                            const std::string& domain);
+
+  // Generates an access token for the session, specifying the scopes and
+  // |login_hint|.
+  void StartGetTokenResponse(const std::string& scopes,
+                             const std::string& domain,
+                             const std::string& login_hint);
+
   // Implementation of net::URLFetcherDelegate
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
@@ -314,6 +326,14 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                                        const net::URLRequestStatus& status,
                                        int response_code);
 
+  void OnListIdpSessionsFetched(const std::string& data,
+                                const net::URLRequestStatus& status,
+                                int response_code);
+
+  void OnGetTokenResponseFetched(const std::string& data,
+                                 const net::URLRequestStatus& status,
+                                 int response_code);
+
   // Tokenize the results of a ClientLogin fetch.
   static void ParseClientLoginResponse(const std::string& data,
                                        std::string* sid,
@@ -333,6 +353,9 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
 
   static bool ParseClientLoginToOAuth2Cookie(const std::string& cookie,
                                              std::string* auth_code);
+
+  static bool ParseListIdpSessionsResponse(const std::string& data,
+                                           std::string* login_hint);
 
   // Is this a special case Gaia error for TwoFactor auth?
   static bool IsSecondFactorSuccess(const std::string& alleged_error);
@@ -375,6 +398,13 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static std::string MakeOAuthLoginBody(const std::string& service,
                                         const std::string& source);
 
+  static std::string MakeListIDPSessionsBody(const std::string& scopes,
+                                             const std::string& domain);
+
+  static std::string MakeGetTokenResponseBody(const std::string& scopes,
+                                              const std::string& domain,
+                                              const std::string& login_hint);
+
   // Create a fetcher usable for making any Gaia request.  |body| is used
   // as the body of the POST request sent to GAIA.  Any strings listed in
   // |headers| are added as extra HTTP headers in the request.
@@ -410,12 +440,13 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL oauth_login_gurl_;
   const GURL list_accounts_gurl_;
   const GURL get_check_connection_info_url_;
+  const GURL oauth2_iframe_url_;
 
   // While a fetch is going on:
   scoped_ptr<net::URLFetcher> fetcher_;
   GURL client_login_to_oauth2_gurl_;
   std::string request_body_;
-  std::string requested_service_; // Currently tracked for IssueAuthToken only.
+  std::string requested_service_;
   bool fetch_pending_;
 
   friend class GaiaAuthFetcherTest;

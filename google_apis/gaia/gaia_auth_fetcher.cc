@@ -41,22 +41,38 @@ static bool CookiePartsContains(const std::vector<std::string>& parts,
   return false;
 }
 
-bool ExtractOAuth2TokenPairResponse(base::DictionaryValue* dict,
+// From the JSON string |data|, extract the |access_token| and |expires_in_secs|
+// both of which must exist. If the |refresh_token| is non-NULL, then it also
+// must exist and is extraced; if it's NULL, then no extraction is attempted.
+bool ExtractOAuth2TokenPairResponse(const std::string& data,
                                     std::string* refresh_token,
                                     std::string* access_token,
                                     int* expires_in_secs) {
-  DCHECK(refresh_token);
   DCHECK(access_token);
   DCHECK(expires_in_secs);
 
-  if (!dict->GetStringWithoutPathExpansion("refresh_token", refresh_token) ||
-      !dict->GetStringWithoutPathExpansion("access_token", access_token) ||
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
+    return false;
+
+  base::DictionaryValue* dict =
+        static_cast<base::DictionaryValue*>(value.get());
+
+  if (!dict->GetStringWithoutPathExpansion("access_token", access_token) ||
       !dict->GetIntegerWithoutPathExpansion("expires_in", expires_in_secs)) {
     return false;
   }
 
+  // Refresh token may not be required.
+  if (refresh_token) {
+    if (!dict->GetStringWithoutPathExpansion("refresh_token", refresh_token))
+      return false;
+  }
   return true;
 }
+
+const char kListIdpServiceRequested[] = "list_idp";
+const char kGetTokenResponseRequested[] = "get_token";
 
 }  // namespace
 
@@ -192,6 +208,7 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
           GaiaUrls::GetInstance()->ListAccountsURLWithSource(source)),
       get_check_connection_info_url_(
           GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(source)),
+      oauth2_iframe_url_(GaiaUrls::GetInstance()->oauth2_iframe_url()),
       client_login_to_oauth2_gurl_(
           GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
       fetch_pending_(false) {}
@@ -422,6 +439,45 @@ std::string GaiaAuthFetcher::MakeOAuthLoginBody(const std::string& service,
 }
 
 // static
+std::string GaiaAuthFetcher::MakeListIDPSessionsBody(
+    const std::string& scopes,
+    const std::string& domain) {
+  static const char getTokenResponseBodyFormat[] =
+    "action=listSessions&"
+    "client_id=%s&"
+    "e=3100087&"  // temporarily enable the experiment.
+    "origin=%s&"
+    "scope=%s";
+  std::string encoded_client_id = net::EscapeUrlEncodedData(
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true);
+  return base::StringPrintf(getTokenResponseBodyFormat,
+                            encoded_client_id.c_str(),
+                            domain.c_str(),
+                            scopes.c_str());
+}
+
+std::string GaiaAuthFetcher::MakeGetTokenResponseBody(
+    const std::string& scopes,
+    const std::string& domain,
+    const std::string& login_hint) {
+  static const char getTokenResponseBodyFormat[] =
+    "action=issueToken&"
+    "client_id=%s&"
+    "login_hint=%s&"
+    "origin=%s&"
+    "e=3100087&"  // temporarily enable the experiment.
+    "response_type=token&"
+    "scope=%s";
+  std::string encoded_client_id = net::EscapeUrlEncodedData(
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true);
+  return base::StringPrintf(getTokenResponseBodyFormat,
+                            encoded_client_id.c_str(),
+                            login_hint.c_str(),
+                            domain.c_str(),
+                            scopes.c_str());
+}
+
+// static
 void GaiaAuthFetcher::ParseClientLoginFailure(const std::string& data,
                                               std::string* error,
                                               std::string* error_url,
@@ -482,6 +538,39 @@ bool GaiaAuthFetcher::ParseClientLoginToOAuth2Cookie(const std::string& cookie,
     }
   }
   return false;
+}
+
+// static
+bool GaiaAuthFetcher::ParseListIdpSessionsResponse(const std::string& data,
+                                                   std::string* login_hint) {
+  DCHECK(login_hint);
+
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
+    return false;
+
+  base::DictionaryValue* dict =
+        static_cast<base::DictionaryValue*>(value.get());
+
+  base::ListValue* sessionsList;
+  if (!dict->GetList("sessions", &sessionsList))
+    return false;
+
+  // Find the first login_hint present in any session.
+  for (base::ListValue::iterator iter = sessionsList->begin();
+       iter != sessionsList->end();
+       iter++) {
+    base::DictionaryValue* sessionDictionary;
+    if (!(*iter)->GetAsDictionary(&sessionDictionary))
+      continue;
+
+    if (sessionDictionary->GetString("login_hint", login_hint))
+      break;
+  }
+
+  if (login_hint->empty())
+    return false;
+  return true;
 }
 
 void GaiaAuthFetcher::StartClientLogin(
@@ -724,6 +813,40 @@ void GaiaAuthFetcher::StartGetCheckConnectionInfo() {
   fetcher_->Start();
 }
 
+void GaiaAuthFetcher::StartListIDPSessions(const std::string& scopes,
+                                           const std::string& domain) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  request_body_ = MakeListIDPSessionsBody(scopes, domain);
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   request_body_,
+                                   std::string(),
+                                   oauth2_iframe_url_,
+                                   net::LOAD_NORMAL,
+                                   this));
+  requested_service_ = kListIdpServiceRequested;
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
+void GaiaAuthFetcher::StartGetTokenResponse(const std::string& scopes,
+                                            const std::string& domain,
+                                            const std::string& login_hint) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  request_body_ = MakeGetTokenResponseBody(scopes, domain, login_hint);
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   request_body_,
+                                   std::string(),
+                                   oauth2_iframe_url_,
+                                   net::LOAD_NORMAL,
+                                   this));
+
+  requested_service_ = kGetTokenResponseRequested;
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
 // static
 GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     const std::string& data,
@@ -834,13 +957,8 @@ void GaiaAuthFetcher::OnOAuth2TokenPairFetched(
 
   bool success = false;
   if (status.is_success() && response_code == net::HTTP_OK) {
-    scoped_ptr<base::Value> value(base::JSONReader::Read(data));
-    if (value.get() && value->GetType() == base::Value::TYPE_DICTIONARY) {
-      base::DictionaryValue* dict =
-          static_cast<base::DictionaryValue*>(value.get());
-      success = ExtractOAuth2TokenPairResponse(dict, &refresh_token,
+      success = ExtractOAuth2TokenPairResponse(data, &refresh_token,
                                                &access_token, &expires_in_secs);
-    }
   }
 
   if (success) {
@@ -934,6 +1052,48 @@ void GaiaAuthFetcher::OnGetCheckConnectionInfoFetched(
   }
 }
 
+void GaiaAuthFetcher::OnListIdpSessionsFetched(
+    const std::string& data,
+    const net::URLRequestStatus& status,
+    int response_code) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
+    DVLOG(1) << "ListIdpSessions successful!";
+    std::string login_hint;
+    if (ParseListIdpSessionsResponse(data, &login_hint)) {
+      consumer_->OnListIdpSessionsSuccess(login_hint);
+    } else {
+      GoogleServiceAuthError auth_error(
+          GoogleServiceAuthError::FromUnexpectedServiceResponse(
+              "List Sessions response didn't contain a login_hint."));
+      consumer_->OnListIdpSessionsError(auth_error);
+    }
+  } else {
+    consumer_->OnListIdpSessionsError(GenerateAuthError(data, status));
+  }
+}
+
+void GaiaAuthFetcher::OnGetTokenResponseFetched(
+    const std::string& data,
+    const net::URLRequestStatus& status,
+    int response_code) {
+  std::string access_token;
+  int expires_in_secs = 0;
+  bool success = false;
+  if (status.is_success() && response_code == net::HTTP_OK) {
+    DVLOG(1) << "GetTokenResponse successful!";
+    success = ExtractOAuth2TokenPairResponse(data, NULL,
+                                             &access_token, &expires_in_secs);
+  }
+
+  if (success) {
+    consumer_->OnGetTokenResponseSuccess(
+        GaiaAuthConsumer::ClientOAuthResult(std::string(), access_token,
+                                            expires_in_secs));
+  } else {
+    consumer_->OnGetTokenResponseError(GenerateAuthError(data, status));
+  }
+}
+
 void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   fetch_pending_ = false;
   // Some of the GAIA requests perform redirects, which results in the final
@@ -977,6 +1137,13 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     OnListAccountsFetched(data, status, response_code);
   } else if (url == get_check_connection_info_url_) {
     OnGetCheckConnectionInfoFetched(data, status, response_code);
+  } else if (url == oauth2_iframe_url_) {
+    if (requested_service_ == kListIdpServiceRequested)
+      OnListIdpSessionsFetched(data, status, response_code);
+    else if (requested_service_ == kGetTokenResponseRequested)
+      OnGetTokenResponseFetched(data, status, response_code);
+    else
+      NOTREACHED();
   } else {
     NOTREACHED();
   }
