@@ -48,7 +48,7 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
 
                 websitePreferences.onPreferenceChange(location, enabled);
                 assertEquals("Location should be " + (enabled ? "allowed" : "blocked"), enabled,
-                        LocationSettings.areAllLocationSettingsEnabled());
+                        LocationSettings.getInstance().areAllLocationSettingsEnabled());
                 preferenceActivity.finish();
             }
         });

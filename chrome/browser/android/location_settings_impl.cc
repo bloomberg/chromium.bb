@@ -15,7 +15,7 @@ LocationSettingsImpl::~LocationSettingsImpl() {}
 
 bool LocationSettingsImpl::IsLocationEnabled() {
   JNIEnv* env = AttachCurrentThread();
-  return Java_LocationSettings_areAllLocationSettingsEnabled(env);
+  return Java_LocationSettings_staticIsSystemLocationSettingEnabled(env);
 }
 
 // Register native methods

@@ -114,7 +114,10 @@ public abstract class ChromiumApplication extends ContentApplication {
      * Returns an instance of LocationSettings to be installed as a singleton.
      */
     public LocationSettings createLocationSettings() {
-        return new LocationSettings(this);
+        // Using an anonymous subclass as the constructor is protected.
+        // This is done to deter instantiation of LocationSettings elsewhere without using the
+        // getInstance() helper method.
+        return new LocationSettings(this){};
     }
 
     /**

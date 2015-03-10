@@ -32,7 +32,7 @@ public class LocationSettings {
      * Don't use this; use getInstance() instead. This should be used only by the Application inside
      * of createLocationSettings().
      */
-    public LocationSettings(Context context) {
+    protected LocationSettings(Context context) {
         mContext = context;
     }
 
@@ -51,13 +51,18 @@ public class LocationSettings {
     }
 
     /**
-     * Returns true if location is enabled system-wide and the Chrome location setting is enabled.
+     * Returns true if location is enabled system-wide.
      */
     @CalledByNative
-    public static boolean areAllLocationSettingsEnabled() {
-        LocationSettings settings = LocationSettings.getInstance();
-        return settings.isChromeLocationSettingEnabled()
-                && settings.isSystemLocationSettingEnabled();
+    private static boolean staticIsSystemLocationSettingEnabled() {
+        return LocationSettings.getInstance().isSystemLocationSettingEnabled();
+    }
+
+    /**
+     * Returns true if location is enabled system-wide and the Chrome location setting is enabled.
+     */
+    public boolean areAllLocationSettingsEnabled() {
+        return isChromeLocationSettingEnabled() && isSystemLocationSettingEnabled();
     }
 
     /**

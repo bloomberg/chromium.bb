@@ -13,8 +13,7 @@ class LocationSettings {
  public:
   virtual ~LocationSettings() {}
 
-  // Returns true if location is enabled system-wide (in Android settings)
-  // and browser-wide (in Chrome location settings).
+  // Returns true if location is enabled system-wide (in Android settings).
   virtual bool IsLocationEnabled() = 0;
 };
 

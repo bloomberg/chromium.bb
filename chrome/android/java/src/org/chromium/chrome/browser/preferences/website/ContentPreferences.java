@@ -97,7 +97,7 @@ public class ContentPreferences extends PreferenceFragment
                     Website.PermissionDataEntry.getPermissionDataEntry(type);
             boolean checked = false;
             if (LOCATION_KEY.equals(p.getKey())) {
-                checked = LocationSettings.areAllLocationSettingsEnabled();
+                checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
             } else if (CAMERA_AND_MIC_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isCameraMicEnabled();
             } else if (JAVASCRIPT_KEY.equals(prefName)) {
