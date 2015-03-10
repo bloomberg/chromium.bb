@@ -218,12 +218,7 @@ class TestLayerDelegate : public LayerDelegate {
     colors_.push_back(color);
   }
 
-  const gfx::Size& paint_size() const { return paint_size_; }
   int color_index() const { return color_index_; }
-
-  std::string ToScaleString() const {
-    return base::StringPrintf("%.1f %.1f", scale_x_, scale_y_);
-  }
 
   float device_scale_factor() const {
     return device_scale_factor_;
@@ -231,13 +226,8 @@ class TestLayerDelegate : public LayerDelegate {
 
   // Overridden from LayerDelegate:
   void OnPaintLayer(gfx::Canvas* canvas) override {
-    SkISize size = canvas->sk_canvas()->getBaseLayerSize();
-    paint_size_ = gfx::Size(size.width(), size.height());
     canvas->DrawColor(colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
-    const SkMatrix& matrix = canvas->sk_canvas()->getTotalMatrix();
-    scale_x_ = matrix.getScaleX();
-    scale_y_ = matrix.getScaleY();
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
@@ -252,17 +242,12 @@ class TestLayerDelegate : public LayerDelegate {
 
   void reset() {
     color_index_ = 0;
-    paint_size_.SetSize(0, 0);
-    scale_x_ = scale_y_ = 0.0f;
     device_scale_factor_ = 0.0f;
   }
 
  private:
   std::vector<SkColor> colors_;
   int color_index_;
-  gfx::Size paint_size_;
-  float scale_x_;
-  float scale_y_;
   float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
@@ -509,8 +494,11 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Medium) {
 }
 
 TEST_F(LayerWithRealCompositorTest, Delegate) {
-  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorBLACK,
-                                        gfx::Rect(20, 20, 400, 400)));
+  // This test makes sure that whenever paint happens at a layer, its layer
+  // delegate gets the paint, which in this test update its color and
+  // |color_index|.
+  scoped_ptr<Layer> l1(
+      CreateColorLayer(SK_ColorBLACK, gfx::Rect(20, 20, 400, 400)));
   GetCompositor()->SetRootLayer(l1.get());
   WaitForDraw();
 
@@ -522,19 +510,18 @@ TEST_F(LayerWithRealCompositorTest, Delegate) {
 
   l1->SchedulePaint(gfx::Rect(0, 0, 400, 400));
   WaitForDraw();
-
-  EXPECT_EQ(delegate.color_index(), 1);
-  EXPECT_EQ(delegate.paint_size(), l1->bounds().size());
+  // Test that paint happened at layer delegate.
+  EXPECT_EQ(1, delegate.color_index());
 
   l1->SchedulePaint(gfx::Rect(10, 10, 200, 200));
   WaitForDraw();
-  EXPECT_EQ(delegate.color_index(), 2);
-  EXPECT_EQ(delegate.paint_size(), gfx::Size(200, 200));
+  // Test that paint happened at layer delegate.
+  EXPECT_EQ(2, delegate.color_index());
 
   l1->SchedulePaint(gfx::Rect(5, 5, 50, 50));
   WaitForDraw();
-  EXPECT_EQ(delegate.color_index(), 0);
-  EXPECT_EQ(delegate.paint_size(), gfx::Size(50, 50));
+  // Test that paint happened at layer delegate.
+  EXPECT_EQ(0, delegate.color_index());
 }
 
 TEST_F(LayerWithRealCompositorTest, DrawTree) {
@@ -1308,9 +1295,6 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ(0.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 
-  EXPECT_EQ("200x220", root_delegate.paint_size().ToString());
-  EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
-
   // Scale up to 2.0. Changing scale doesn't change the bounds in DIP.
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
@@ -1320,16 +1304,10 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ("200x220", cc_bounds_size.ToString());
   cc_bounds_size = l1->cc_layer()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
-  // New scale factor must have been notified.
+  // New scale factor must have been notified. Make sure painting happens at
+  // right scale.
   EXPECT_EQ(2.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
-
-  // Canvas size must have been scaled down up.
-  WaitForDraw();
-  EXPECT_EQ("400x440", root_delegate.paint_size().ToString());
-  EXPECT_EQ("2.0 2.0", root_delegate.ToScaleString());
-  EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
-  EXPECT_EQ("2.0 2.0", l1_delegate.ToScaleString());
 
   // Scale down back to 1.0f.
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500));
@@ -1340,16 +1318,10 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ("200x220", cc_bounds_size.ToString());
   cc_bounds_size = l1->cc_layer()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
-  // New scale factor must have been notified.
+  // New scale factor must have been notified. Make sure painting happens at
+  // right scale.
   EXPECT_EQ(1.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(1.0f, l1_delegate.device_scale_factor());
-
-  // Canvas size must have been scaled down too.
-  WaitForDraw();
-  EXPECT_EQ("200x220", root_delegate.paint_size().ToString());
-  EXPECT_EQ("1.0 1.0", root_delegate.ToScaleString());
-  EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
-  EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
 
   root_delegate.reset();
   l1_delegate.reset();
@@ -1359,11 +1331,6 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   // No scale change, so no scale notification.
   EXPECT_EQ(0.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
-  WaitForDraw();
-  EXPECT_EQ("0x0", root_delegate.paint_size().ToString());
-  EXPECT_EQ("0.0 0.0", root_delegate.ToScaleString());
-  EXPECT_EQ("0x0", l1_delegate.paint_size().ToString());
-  EXPECT_EQ("0.0 0.0", l1_delegate.ToScaleString());
 }
 
 TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
@@ -1377,17 +1344,12 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
 
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500));
   GetCompositor()->SetRootLayer(root.get());
-  WaitForDraw();
 
   root->Add(l1.get());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   gfx::Size cc_bounds_size = l1->cc_layer()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
-
-  WaitForDraw();
-  EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
-  EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
 
   // Remove l1 from root and change the scale.
   root->Remove(l1.get());
@@ -1404,9 +1366,6 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   cc_bounds_size = l1->cc_layer()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
   EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
-  WaitForDraw();
-  EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
-  EXPECT_EQ("2.0 2.0", l1_delegate.ToScaleString());
 }
 
 // Verifies that when changing bounds on a layer that is invisible, and then
