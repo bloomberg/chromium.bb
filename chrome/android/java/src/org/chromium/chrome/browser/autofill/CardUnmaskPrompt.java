@@ -168,8 +168,8 @@ public class CardUnmaskPrompt
         setInputsEnabled(false);
         setOverlayVisibility(View.VISIBLE);
         mVerificationProgressBar.setVisibility(View.VISIBLE);
-        mVerificationView.setText(mDialog.getContext().getResources().getString(
-                R.string.autofill_card_unmask_verification_in_progress));
+        mVerificationView.setText(
+                R.string.autofill_card_unmask_verification_in_progress);
         setInputError(null);
     }
 
@@ -187,8 +187,8 @@ public class CardUnmaskPrompt
         } else {
             mVerificationProgressBar.setVisibility(View.GONE);
             mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
-            mVerificationView.setText(mDialog.getContext().getResources().getString(
-                    R.string.autofill_card_unmask_verification_success));
+            mVerificationView.setText(
+                    R.string.autofill_card_unmask_verification_success);
             Handler h = new Handler();
             h.postDelayed(new Runnable() {
                 @Override

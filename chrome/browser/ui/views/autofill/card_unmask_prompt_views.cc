@@ -35,6 +35,10 @@ namespace autofill {
 
 namespace {
 
+// The number of pixels of blank space on the outer horizontal edges of the
+// dialog.
+const int kEdgePadding = 19;
+
 class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               views::ComboboxListener,
                               views::DialogDelegateView,
@@ -42,7 +46,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
  public:
   explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller)
       : controller_(controller),
-        controls_container_(nullptr),
+        main_contents_(nullptr),
         cvc_input_(nullptr),
         month_input_(nullptr),
         year_input_(nullptr),
@@ -84,34 +88,53 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
                                 base::Unretained(this)),
           base::TimeDelta::FromSeconds(1));
     } else {
-      SetInputsEnabled(allow_retry);
-
-      // If there is more than one input showing, don't mark anything as invalid
-      // since we don't know the location of the problem.
-      if (controller_->ShouldRequestExpirationDate())
-        cvc_input_->SetInvalid(true);
-
       // TODO(estade): it's somewhat jarring when the error comes back too
       // quickly.
       progress_overlay_->SetVisible(false);
-      // TODO(estade): When do we hide |error_label_|?
-      error_label_->SetMultiLine(true);
-      error_label_->SetText(error_message);
 
-      // Update the dialog's size, which may change depending on
-      // |error_message|.
-      if (GetWidget() && controller_->GetWebContents()) {
-        constrained_window::UpdateWebContentsModalDialogPosition(
-            GetWidget(),
-            web_modal::WebContentsModalDialogManager::FromWebContents(
-                controller_->GetWebContents())
-                ->delegate()
-                ->GetWebContentsModalDialogHost());
+      if (allow_retry) {
+        SetInputsEnabled(true);
+
+        // If there is more than one input showing, don't mark anything as
+        // invalid since we don't know the location of the problem.
+        if (!controller_->ShouldRequestExpirationDate())
+          cvc_input_->SetInvalid(true);
+      } else {
+        // Move the error message up to the top of the content area.
+        main_contents_->AddChildViewAt(error_label_, 0);
+        error_label_->set_background(views::Background::CreateSolidBackground(
+            SkColorSetRGB(0xee, 0xee, 0xee)));
+        error_label_->SetBorder(views::Border::CreateEmptyBorder(
+            10, kEdgePadding, 10, kEdgePadding));
       }
+
+      // TODO(estade): When do we hide |error_label_|?
+      SetErrorMessage(error_message);
+
       GetDialogClientView()->UpdateDialogButtons();
     }
 
     Layout();
+  }
+
+  void SetErrorMessage(const base::string16& message) {
+    if (message.empty()) {
+      error_label_->SetMultiLine(false);
+      error_label_->SetText(base::ASCIIToUTF16(" "));
+    } else {
+      error_label_->SetMultiLine(true);
+      error_label_->SetText(message);
+    }
+
+    // Update the dialog's size.
+    if (GetWidget() && controller_->GetWebContents()) {
+      constrained_window::UpdateWebContentsModalDialogPosition(
+          GetWidget(),
+          web_modal::WebContentsModalDialogManager::FromWebContents(
+              controller_->GetWebContents())
+              ->delegate()
+              ->GetWebContentsModalDialogHost());
+    }
   }
 
   void SetInputsEnabled(bool enabled) {
@@ -149,8 +172,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     if (!has_children())
       return 0;
     const gfx::Insets insets = GetInsets();
-    return controls_container_->GetHeightForWidth(width - insets.width()) +
-        insets.height();
+    return main_contents_->GetHeightForWidth(width - insets.width()) +
+           insets.height();
   }
 
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
@@ -189,13 +212,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
 
     return cvc_input_->enabled() &&
-           controller_->InputTextIsValid(cvc_input_->text()) &&
-           (!month_input_ ||
-            month_input_->selected_index() !=
-                month_combobox_model_.GetDefaultIndex()) &&
-           (!year_input_ ||
-            year_input_->selected_index() !=
-                year_combobox_model_.GetDefaultIndex());
+           controller_->InputCvcIsValid(cvc_input_->text()) &&
+           ExpirationDateIsValid();
   }
 
   views::View* GetInitiallyFocusedView() override { return cvc_input_; }
@@ -211,11 +229,10 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     controller_->OnUnmaskResponse(
         cvc_input_->text(),
         month_input_
-            ? month_combobox_model_.GetItemAt(month_input_->selected_index())
+            ? month_input_->GetTextForRow(month_input_->selected_index())
             : base::string16(),
-        year_input_
-            ? year_combobox_model_.GetItemAt(year_input_->selected_index())
-            : base::string16(),
+        year_input_ ? year_input_->GetTextForRow(year_input_->selected_index())
+                    : base::string16(),
         storage_checkbox_ ? storage_checkbox_->checked() : false);
     return false;
   }
@@ -223,13 +240,32 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // views::TextfieldController
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override {
-    cvc_input_->SetInvalid(false);
+    if (controller_->InputCvcIsValid(new_contents))
+      cvc_input_->SetInvalid(false);
+
     GetDialogClientView()->UpdateDialogButtons();
   }
 
   // views::ComboboxListener
   void OnPerformAction(views::Combobox* combobox) override {
-    combobox->SetInvalid(false);
+    if (ExpirationDateIsValid()) {
+      if (month_input_->invalid()) {
+        month_input_->SetInvalid(false);
+        year_input_->SetInvalid(false);
+        error_label_->SetMultiLine(false);
+        SetErrorMessage(base::string16());
+      }
+    } else if (month_input_->selected_index() !=
+                   month_combobox_model_.GetDefaultIndex() &&
+               year_input_->selected_index() !=
+                   year_combobox_model_.GetDefaultIndex()) {
+      month_input_->SetInvalid(true);
+      year_input_->SetInvalid(true);
+      error_label_->SetMultiLine(true);
+      SetErrorMessage(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE));
+    }
+
     GetDialogClientView()->UpdateDialogButtons();
   }
 
@@ -238,58 +274,65 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     if (has_children())
       return;
 
-    controls_container_ = new views::View();
-    controls_container_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 19, 0, 5));
-    AddChildView(controls_container_);
+    main_contents_ = new views::View();
+    main_contents_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+    AddChildView(main_contents_);
+
+    views::View* controls_container = new views::View();
+    controls_container->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, kEdgePadding, 10, 10));
+    main_contents_->AddChildView(controls_container);
 
     views::Label* instructions =
         new views::Label(controller_->GetInstructionsMessage());
 
     instructions->SetMultiLine(true);
     instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    controls_container_->AddChildView(instructions);
+    controls_container->AddChildView(instructions);
 
     views::View* input_row = new views::View();
     input_row->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5));
-    controls_container_->AddChildView(input_row);
+    controls_container->AddChildView(input_row);
 
     if (controller_->ShouldRequestExpirationDate()) {
       month_input_ = new views::Combobox(&month_combobox_model_);
       month_input_->set_listener(this);
       input_row->AddChildView(month_input_);
+      input_row->AddChildView(new views::Label(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR)));
       year_input_ = new views::Combobox(&year_combobox_model_);
       year_input_->set_listener(this);
       input_row->AddChildView(year_input_);
+
+      input_row->AddChildView(new views::Label(base::ASCIIToUTF16("    ")));
     }
 
     cvc_input_ = new DecoratedTextfield(
         base::string16(),
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC),
         this);
-    cvc_input_->set_default_width_in_chars(10);
+    cvc_input_->set_default_width_in_chars(8);
     input_row->AddChildView(cvc_input_);
 
     views::ImageView* cvc_image = new views::ImageView();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
     cvc_image->SetImage(rb.GetImageSkiaNamed(controller_->GetCvcImageRid()));
-
     input_row->AddChildView(cvc_image);
 
     // Reserve vertical space for the error label, assuming it's one line.
     error_label_ = new views::Label(base::ASCIIToUTF16(" "));
     error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     error_label_->SetEnabledColor(kWarningColor);
-    controls_container_->AddChildView(error_label_);
+    controls_container->AddChildView(error_label_);
 
     // Local storage checkbox and (?) tooltip.
     views::View* storage_row = new views::View();
     views::BoxLayout* storage_row_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     storage_row->SetLayoutManager(storage_row_layout);
-    controls_container_->AddChildView(storage_row);
+    controls_container->AddChildView(storage_row);
 
     storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
@@ -321,9 +364,18 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   void ClosePrompt() { GetWidget()->Close(); }
 
+  bool ExpirationDateIsValid() const {
+    if (!controller_->ShouldRequestExpirationDate())
+      return true;
+
+    return controller_->InputExpirationIsValid(
+        month_input_->GetTextForRow(month_input_->selected_index()),
+        year_input_->GetTextForRow(year_input_->selected_index()));
+  }
+
   CardUnmaskPromptController* controller_;
 
-  views::View* controls_container_;
+  views::View* main_contents_;
 
   DecoratedTextfield* cvc_input_;
 
@@ -334,6 +386,9 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   MonthComboboxModel month_combobox_model_;
   YearComboboxModel year_combobox_model_;
 
+  // The error label for most errors, which lives beneath the inputs. When
+  // the dialog reaches an error state that is unrecoverable, the label is moved
+  // to the top of the content area.
   views::Label* error_label_;
 
   views::Checkbox* storage_checkbox_;

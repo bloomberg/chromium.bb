@@ -56,7 +56,7 @@ void CardUnmaskPromptViewAndroid::Show() {
 bool CardUnmaskPromptViewAndroid::CheckUserInputValidity(JNIEnv* env,
                                                          jobject obj,
                                                          jstring response) {
-  return controller_->InputTextIsValid(
+  return controller_->InputCvcIsValid(
       base::android::ConvertJavaStringToUTF16(env, response));
 }
 

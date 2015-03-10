@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/risk_util.h"
@@ -148,7 +149,7 @@ bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
   return prefs->GetBoolean(prefs::kAutofillWalletImportStorageCheckboxState);
 }
 
-bool CardUnmaskPromptControllerImpl::InputTextIsValid(
+bool CardUnmaskPromptControllerImpl::InputCvcIsValid(
     const base::string16& input_text) const {
   base::string16 trimmed_text;
   base::TrimWhitespace(input_text, base::TRIM_ALL, &trimmed_text);
@@ -156,6 +157,39 @@ bool CardUnmaskPromptControllerImpl::InputTextIsValid(
   return trimmed_text.size() == input_size &&
          base::ContainsOnlyChars(trimmed_text,
                                  base::ASCIIToUTF16("0123456789"));
+}
+
+bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
+    const base::string16& month,
+    const base::string16& year) const {
+  if ((month.size() != 2U && month.size() != 1U) ||
+      (year.size() != 4U && year.size() != 2U)) {
+    return false;
+  }
+
+  int month_value = 0, year_value = 0;
+  if (!base::StringToInt(month, &month_value) ||
+      !base::StringToInt(year, &year_value)) {
+    return false;
+  }
+
+  if (month_value < 1 || month_value > 12)
+    return false;
+
+  base::Time::Exploded now;
+  base::Time::Now().LocalExplode(&now);
+
+  // Convert 2 digit year to 4 digit year.
+  if (year_value < 100)
+    year_value += (now.year / 100) * 100;
+
+  if (year_value < now.year)
+    return false;
+
+  if (year_value > now.year)
+    return true;
+
+  return month_value >= now.month;
 }
 
 void CardUnmaskPromptControllerImpl::LoadRiskFingerprint() {

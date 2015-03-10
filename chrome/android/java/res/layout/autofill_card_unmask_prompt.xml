@@ -73,7 +73,7 @@
               <TextView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="@string/card_unmask_expiration_date_separator" />
+                  android:text="@string/autofill_card_unmask_expiration_date_separator" />
 
               <EditText
                   android:id="@+id/expiration_year"

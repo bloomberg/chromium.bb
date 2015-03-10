@@ -1263,9 +1263,6 @@ Drag from top to exit.
       <message name="IDS_CARD_UNMASK_YEAR_HINT" desc="Hint text for an input field containing a credit card expiration year in two digit format.">
         YY
       </message>
-      <message name="IDS_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR" desc="Separator for a credit card expiration date, e.g. the slash in 05/16.">
-        /
-      </message>
 
       <!-- First Run strings -->
       <message name="IDS_FRE_SET_UP_CHROME" desc="Header text shown when the user is first setting up Chrome">
