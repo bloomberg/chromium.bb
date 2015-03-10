@@ -283,15 +283,16 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
     if (cacheOptions == V8CacheOptionsNone)
         return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
 
+    // Caching is not worthwhile for small scripts.  Do not use caching
+    // unless explicitly expected, indicated by the cache option.
+    if (code->Length() < minimalCodeLength && cacheOptions != V8CacheOptionsParse && cacheOptions != V8CacheOptionsCode)
+        return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
+
     // The cacheOptions will guide our strategy:
     // FIXME: Clean up code caching options. crbug.com/455187.
     switch (cacheOptions) {
     case V8CacheOptionsDefault:
     case V8CacheOptionsParseMemory:
-        if (code->Length() < minimalCodeLength) {
-            // Do not cache for small scripts, though caching is available.
-            return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
-        }
         // Use parser-cache; in-memory only.
         return bind(compileAndConsumeOrProduce, cacheHandler, cacheTag(CacheTagParser, cacheHandler), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, CachedMetadataHandler::CacheLocally);
         break;
@@ -303,13 +304,13 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
 
     case V8CacheOptionsHeuristicsDefault:
     case V8CacheOptionsCode:
-        // Always use code caching.
+        // Use code caching.
         return bind(compileAndConsumeOrProduce, cacheHandler, cacheTag(CacheTagCode, cacheHandler), v8::ScriptCompiler::kConsumeCodeCache, v8::ScriptCompiler::kProduceCodeCache, false, CachedMetadataHandler::SendToPlatform);
         break;
 
     case V8CacheOptionsHeuristicsDefaultMobile:
     case V8CacheOptionsCodeCompressed:
-        // Always use code caching. Compress depending on cacheOptions.
+        // Use code caching with compression.
         return bind(compileAndConsumeOrProduce, cacheHandler, cacheTag(CacheTagCodeCompressed, cacheHandler), v8::ScriptCompiler::kConsumeCodeCache, v8::ScriptCompiler::kProduceCodeCache, true, CachedMetadataHandler::SendToPlatform);
         break;
 
@@ -317,6 +318,8 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
     case V8CacheOptionsHeuristicsMobile:
     case V8CacheOptionsRecent:
     case V8CacheOptionsRecentSmall: {
+        // Use code caching for recently seen resources.
+        // Use compression depending on the cache option.
         bool compress = (cacheOptions == V8CacheOptionsRecentSmall || cacheOptions == V8CacheOptionsHeuristicsMobile);
         unsigned codeCacheTag = cacheTag(compress ? CacheTagCodeCompressed : CacheTagCode, cacheHandler);
         CachedMetadata* codeCache = cacheHandler->cachedMetadata(codeCacheTag);
