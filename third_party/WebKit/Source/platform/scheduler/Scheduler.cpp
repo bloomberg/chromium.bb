@@ -48,6 +48,11 @@ Scheduler* Scheduler::shared()
     return s_sharedScheduler;
 }
 
+void Scheduler::setForTesting(Scheduler* scheduler)
+{
+    s_sharedScheduler = scheduler;
+}
+
 Scheduler::Scheduler(WebScheduler* webScheduler)
     : m_webScheduler(webScheduler)
 {

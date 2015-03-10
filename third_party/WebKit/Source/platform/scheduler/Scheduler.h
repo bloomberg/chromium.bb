@@ -24,6 +24,7 @@ public:
     typedef Function<void(double deadlineSeconds)> IdleTask;
 
     static Scheduler* shared();
+    static void setForTesting(Scheduler*);
     static void shutdown();
 
     // For non-critical tasks which may be reordered relative to other task types and may be starved

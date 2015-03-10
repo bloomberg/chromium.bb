@@ -92,6 +92,10 @@ public:
 
         m_scriptRunner = ScriptRunner::create(m_document.get());
         m_oldPlatform = Platform::current();
+        m_oldScheduler = Scheduler::shared();
+
+        // Force Platform::initialize to create a new one pointing at MockPlatform.
+        Scheduler::setForTesting(nullptr);
         Platform::initialize(&m_platform);
         m_platform.setShouldYield(false);
         m_platform.setShouldYieldEveryOtherTime(false);
@@ -101,6 +105,7 @@ public:
     {
         m_scriptRunner.release();
         Scheduler::shutdown();
+        Scheduler::setForTesting(m_oldScheduler);
         Platform::initialize(m_oldPlatform);
     }
 
@@ -109,7 +114,8 @@ public:
     OwnPtrWillBePersistent<ScriptRunner> m_scriptRunner;
     std::vector<int> m_order; // gmock matchers don't work nicely with WTF::Vector
     MockPlatform m_platform;
-    Platform* m_oldPlatform;
+    Platform* m_oldPlatform; // NOT OWNED
+    Scheduler* m_oldScheduler; // NOT OWNED
 };
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async)
