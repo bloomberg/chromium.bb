@@ -278,6 +278,26 @@ class NetworkingPrivateStartDisconnectFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateStartDisconnectFunction);
 };
 
+// Implements the chrome.networkingPrivate.startActivate method.
+class NetworkingPrivateStartActivateFunction : public AsyncExtensionFunction {
+ public:
+  NetworkingPrivateStartActivateFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.startActivate",
+                             NETWORKINGPRIVATE_STARTACTIVATE);
+
+ protected:
+  ~NetworkingPrivateStartActivateFunction() override;
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ private:
+  void Success();
+  void Failure(const std::string& error);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateStartActivateFunction);
+};
+
 // Implements the chrome.networkingPrivate.verifyDestination method.
 class NetworkingPrivateVerifyDestinationFunction
     : public AsyncExtensionFunction {

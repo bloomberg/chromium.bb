@@ -52,6 +52,10 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
   void StartDisconnect(const std::string& guid,
                        const VoidCallback& success_callback,
                        const FailureCallback& failure_callback) override;
+  void StartActivate(const std::string& guid,
+                     const std::string& carrier,
+                     const VoidCallback& success_callback,
+                     const FailureCallback& failure_callback) override;
   void SetWifiTDLSEnabledState(
       const std::string& ip_or_mac_address,
       bool enabled,

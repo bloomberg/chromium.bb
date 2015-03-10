@@ -102,6 +102,13 @@ class TestDelegate : public NetworkingPrivateDelegate {
     VoidResult(success_callback, failure_callback);
   }
 
+  void StartActivate(const std::string& guid,
+                     const std::string& carrier,
+                     const VoidCallback& success_callback,
+                     const FailureCallback& failure_callback) override {
+    VoidResult(success_callback, failure_callback);
+  }
+
   void SetWifiTDLSEnabledState(
       const std::string& ip_or_mac_address,
       bool enabled,
@@ -366,6 +373,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, StartDisconnect) {
   EXPECT_TRUE(RunNetworkingSubtest("startDisconnect")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, StartActivate) {
+  EXPECT_TRUE(RunNetworkingSubtest("startActivate")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, VerifyDestination) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyDestination")) << message_;
 }
@@ -443,6 +454,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, StartConnect) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, StartDisconnect) {
   EXPECT_FALSE(RunNetworkingSubtest("startDisconnect")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, StartActivate) {
+  EXPECT_FALSE(RunNetworkingSubtest("startActivate")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, VerifyDestination) {

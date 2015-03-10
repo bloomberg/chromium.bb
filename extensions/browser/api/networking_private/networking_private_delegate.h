@@ -111,6 +111,10 @@ class NetworkingPrivateDelegate : public KeyedService {
   virtual void StartDisconnect(const std::string& guid,
                                const VoidCallback& success_callback,
                                const FailureCallback& failure_callback) = 0;
+  virtual void StartActivate(const std::string& guid,
+                             const std::string& carrier,
+                             const VoidCallback& success_callback,
+                             const FailureCallback& failure_callback);
   virtual void SetWifiTDLSEnabledState(
       const std::string& ip_or_mac_address,
       bool enabled,

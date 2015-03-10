@@ -333,6 +333,30 @@
         ]
       },
       {
+        "name": "startActivate",
+        "description": "Starts activation of the Cellular network with networkGuid.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the Cellular network to activate."
+          },
+          {
+            "name": "carrier",
+            "type": "string",
+            "optional": true,
+            "description": "Optional name of carrier to activate."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [],
+            "description": "A callback function that indicates that activation has been started."
+          }
+        ]
+      },
+      {
         "name": "verifyDestination",
         "description": "Verifies that the device is a trusted device.",
         "parameters": [

@@ -1,0 +1,29 @@
+;; -*- mode: emacs-lisp; coding: emacs-mule; -*-
+;; --------------------------------------------------------------------------
+;; Desktop File for Emacs
+;; --------------------------------------------------------------------------
+;; Created Tue Mar 10 13:49:27 2015
+;; Desktop file format version 206
+;; Emacs version 24.3.1
+
+;; Global section:
+(setq desktop-missing-file-warning nil)
+(setq tags-file-name nil)
+(setq tags-table-list nil)
+(setq search-ring '("<<<<"))
+(setq regexp-search-ring nil)
+(setq register-alist nil)
+(setq file-name-history '("/ssd1/chrome/src/extensions/browser/"))
+
+;; Buffer section -- buffers listed in same order as in buffer list:
+(desktop-create-buffer 206
+  "/ssd1/chrome/src/extensions/browser/extension_function_histogram_value.h"
+  "extension_function_histogram_value.h"
+  'c++-mode
+  '(abbrev-mode googlemenu-mode)
+  34684
+  '(34684 nil)
+  nil
+  nil
+  '((show-trailing-whitespace . t) (indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+

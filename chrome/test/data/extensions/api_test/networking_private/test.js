@@ -83,6 +83,10 @@ var availableTests = [
     chrome.networkingPrivate.startDisconnect(
         kGuid, callbackPass(callbackResult));
   },
+  function startActivate() {
+    chrome.networkingPrivate.startActivate(
+        kGuid, '' /* carrier */, callbackPass(callbackResult));
+  },
   function verifyDestination() {
     chrome.networkingPrivate.verifyDestination(
         verificationProperties, callbackPass(callbackResult));

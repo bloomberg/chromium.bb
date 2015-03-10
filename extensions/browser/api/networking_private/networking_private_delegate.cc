@@ -33,6 +33,14 @@ void NetworkingPrivateDelegate::RemoveObserver(
   NOTREACHED() << "Class does not use NetworkingPrivateDelegateObserver";
 }
 
+void NetworkingPrivateDelegate::StartActivate(
+    const std::string& guid,
+    const std::string& carrier,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  failure_callback.Run(networking_private::kErrorNotSupported);
+}
+
 void NetworkingPrivateDelegate::VerifyDestination(
     const VerificationProperties& verification_properties,
     const BoolCallback& success_callback,

@@ -8356,6 +8356,15 @@ chrome.networkingPrivate.startDisconnect = function(guid, opt_callback) {};
 
 
 /**
+ * @param {string} guid
+ * @param {string} opt_carrier
+ * @param {function()=} opt_callback
+ */
+chrome.networkingPrivate.startActivate =
+  function(guid, opt_carrier, opt_callback) {};
+
+
+/**
  * @param {!chrome.networkingPrivate.VerificationProperties} verificationInfo
  * @param {function(boolean)} callback
  */

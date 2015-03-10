@@ -417,6 +417,35 @@ void NetworkingPrivateStartDisconnectFunction::Failure(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateStartActivateFunction
+
+NetworkingPrivateStartActivateFunction::
+    ~NetworkingPrivateStartActivateFunction() {
+}
+
+bool NetworkingPrivateStartActivateFunction::RunAsync() {
+  scoped_ptr<private_api::StartActivate::Params> params =
+      private_api::StartActivate::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  GetDelegate(browser_context())
+      ->StartActivate(
+          params->network_guid, params->carrier ? *params->carrier : "",
+          base::Bind(&NetworkingPrivateStartActivateFunction::Success, this),
+          base::Bind(&NetworkingPrivateStartActivateFunction::Failure, this));
+  return true;
+}
+
+void NetworkingPrivateStartActivateFunction::Success() {
+  SendResponse(true);
+}
+
+void NetworkingPrivateStartActivateFunction::Failure(const std::string& error) {
+  error_ = error;
+  SendResponse(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateVerifyDestinationFunction
 
 NetworkingPrivateVerifyDestinationFunction::

@@ -82,11 +82,24 @@ var availableTests = [
   },
   function startDisconnect() {
     // Must connect to a network before we can disconnect from it.
-    chrome.networkingPrivate.startConnect("stub_wifi2_guid", callbackPass(
-      function() {
-        chrome.networkingPrivate.startDisconnect("stub_wifi2_guid",
-                                                 callbackPass());
-      }));
+    chrome.networkingPrivate.startConnect(
+        "stub_wifi2_guid", callbackPass(function() {
+          chrome.networkingPrivate.startDisconnect("stub_wifi2_guid",
+                                                   callbackPass());
+        }));
+  },
+  function startActivate() {
+    // Must connect to a network before we can activate it.
+    chrome.networkingPrivate.startConnect(
+        "stub_cellular1_guid", callbackPass(function() {
+          chrome.networkingPrivate.startActivate(
+            "stub_cellular1_guid", callbackPass(function() {
+              chrome.networkingPrivate.getState(
+                "stub_cellular1_guid", callbackPass(function(state) {
+                  assertEq("Activated", state.Cellular.ActivationState);
+              }));
+            }));
+        }));
   },
   function startConnectNonexistent() {
     chrome.networkingPrivate.startConnect(
