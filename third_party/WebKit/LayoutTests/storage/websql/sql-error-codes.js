@@ -70,15 +70,6 @@ function testBindParameterOfWrongType(db)
     }, "UNKNOWN_ERR");
 }
 
-function testQuotaExceeded(db)
-{
-    testTransaction(db,
-                    function(tx) {
-                        tx.executeSql("CREATE TABLE IF NOT EXISTS QuotaTest (Foo BLOB)");
-                        tx.executeSql("INSERT INTO QuotaTest VALUES (ZEROBLOB(10 * 1024 * 1024))");
-                    }, "QUOTA_ERR");
-}
-
 function testConstraintFailure(db)
 {
     testTransaction(db,
@@ -87,6 +78,15 @@ function testConstraintFailure(db)
                         tx.executeSql("INSERT INTO ConstraintTest VALUES (1)");
                         tx.executeSql("INSERT INTO ConstraintTest VALUES (1)");
                     }, "CONSTRAINT_ERR");
+}
+
+function testQuotaExceeded(db)
+{
+    testTransaction(db,
+                    function(tx) {
+                        tx.executeSql("CREATE TABLE IF NOT EXISTS QuotaTest (Foo BLOB)");
+                        tx.executeSql("INSERT INTO QuotaTest VALUES (ZEROBLOB(10 * 1024 * 1024))");
+                    }, "QUOTA_ERR");
 }
 
 function testVersionMismatch(db)
@@ -119,7 +119,7 @@ function runTest()
     testInvalidStatement(db);
     testIncorrectNumberOfBindParameters(db);
     testBindParameterOfWrongType(db);
-    testQuotaExceeded(db);
     testConstraintFailure(db);
+    testQuotaExceeded(db);
     testVersionMismatch(db);
 }

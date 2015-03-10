@@ -6,6 +6,7 @@ PASS: expected and got error code UNKNOWN_ERR
 PASS: expected and got error code SYNTAX_ERR
 PASS: expected and got error code SYNTAX_ERR
 PASS: expected and got error code UNKNOWN_ERR
+PASS: expected and got error code CONSTRAINT_ERR
 PASS: expected and got error code QUOTA_ERR
-FAIL: expected error code CONSTRAINT_ERR (6); got 1
+FAIL: expected error code VERSION_ERR (2); got 1
 

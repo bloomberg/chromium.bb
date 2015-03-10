@@ -590,8 +590,6 @@ crbug.com/282094 fast/repaint/video-mute-repaint.html [ Pass Failure Timeout ]
 crbug.com/282094 virtual/slimmingpaint/fast/repaint/video-mute-repaint.html [ Pass Failure Timeout ]
 crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
 
-crbug.com/457500 [ Win ] storage/websql/sql-error-codes.html [ Failure Pass ]
-
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/371716 [ Win ] http/tests/local/formdata/send-form-data.html [ Pass Timeout ]
 
