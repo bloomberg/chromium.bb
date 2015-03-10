@@ -60,7 +60,7 @@ AC_ARG_ENABLE([udev],
 
 AC_ARG_ENABLE(libkms,
 	      AS_HELP_STRING([--disable-libkms],
-	      [Disable KMS mm abstraction library (default: auto)]),
+	      [Disable KMS mm abstraction library (default: auto, enabled on x86]),
 	      [LIBKMS=$enableval], [LIBKMS=auto])
 
 AC_ARG_ENABLE(intel,
@@ -95,7 +95,7 @@ AC_ARG_ENABLE(exynos-experimental-api,
 
 AC_ARG_ENABLE(freedreno,
 	      AS_HELP_STRING([--disable-freedreno],
-	      [Enable support for freedreno's KMS API (default: enabled on arm)]),
+	      [Enable support for freedreno's KMS API (default: auto, enabled on arm)]),
 	      [FREEDRENO=$enableval], [FREEDRENO=auto])
 
 AC_ARG_ENABLE(freedreno-kgsl,
