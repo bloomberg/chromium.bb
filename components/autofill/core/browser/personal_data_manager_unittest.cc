@@ -3142,7 +3142,8 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
 
   EXPECT_EQ(2U, personal_data_->GetCreditCards()[2]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
-  EXPECT_NE(initial_use_date, personal_data_->GetCreditCards()[2]->use_date());
+  // Time may or may not have elapsed between unmasking and RecordUseOf.
+  EXPECT_LE(initial_use_date, personal_data_->GetCreditCards()[2]->use_date());
 }
 
 }  // namespace autofill
