@@ -45,6 +45,7 @@ class AwMessagePortServiceImpl : public AwMessagePortService {
   void PostAppToWebMessage(JNIEnv* env, jobject object, int sender_id,
       jstring message, jintArray sent_ports);
   void ClosePort(JNIEnv* env, jobject object, int message_port_id);
+  void ReleaseMessages(JNIEnv* env, jobject object, int message_port_id);
 
   void RemoveSentPorts(const std::vector<int>& sent_ports);
 

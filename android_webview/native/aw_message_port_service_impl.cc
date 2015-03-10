@@ -150,6 +150,15 @@ void AwMessagePortServiceImpl::ClosePort(JNIEnv* env, jobject obj,
                  message_port_id));
 }
 
+void AwMessagePortServiceImpl::ReleaseMessages(JNIEnv* env, jobject obj,
+    int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&MessagePortProvider::ReleaseMessages, message_port_id));
+}
+
 void AwMessagePortServiceImpl::RemoveSentPorts(
     const std::vector<int>& sent_ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -181,6 +190,8 @@ void AwMessagePortServiceImpl::CreateMessageChannelOnIOThread(
     int* portId1,
     int* portId2) {
   MessagePortProvider::CreateMessageChannel(filter.get(), portId1, portId2);
+  MessagePortProvider::HoldMessages(*portId1);
+  MessagePortProvider::HoldMessages(*portId2);
   AddPort(*portId1, filter.get());
   AddPort(*portId2, filter.get());
 }

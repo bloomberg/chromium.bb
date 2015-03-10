@@ -122,8 +122,14 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
         // Sanity check all the ports that are being transferred.
         if (sentPorts != null) {
             for (MessagePort p : sentPorts) {
-                if (p.isClosed() || p.isTransferred()) {
-                    throw new IllegalStateException("Port cannot be transferred");
+                if (p.isClosed()) {
+                    throw new IllegalStateException("Closed port cannot be transfered");
+                }
+                if (p.isTransferred()) {
+                    throw new IllegalStateException("Port cannot be re-transferred");
+                }
+                if (p.isStarted()) {
+                    throw new IllegalStateException("Started port cannot be transferred");
                 }
                 p.setTransferred();
             }

@@ -220,6 +220,116 @@ public class PostMessageTest extends AwTestBase {
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
+    // There are two cases that put a port in a started state.
+    // 1. posting a message
+    // 2. setting an event handler.
+    // A started port cannot return to "non-started" state. The four tests below verifies
+    // these conditions for both conditions, using message ports and message channels.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testStartedPortCannotBeTransferredUsingPostMessageToFrame1() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                channel[1].postMessage("1", null);
+                try {
+                    mAwContents.postMessageToFrame(null, "2", mWebServer.getBaseUrl(),
+                            new MessagePort[]{channel[1]});
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToFrame1
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testStartedPortCannotBeTransferredUsingPostMessageToFrame2() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                // set a web event handler, this puts the port in a started state.
+                channel[1].setWebEventHandler(new MessagePort.WebEventHandler() {
+                    @Override
+                    public void onMessage(String message) {
+                    }
+                }, null);
+                try {
+                    mAwContents.postMessageToFrame(null, "2", mWebServer.getBaseUrl(),
+                            new MessagePort[]{channel[1]});
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToFrame1
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testStartedPortCannotBeTransferredUsingMessageChannel1() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel1 = mAwContents.createMessageChannel();
+                channel1[1].postMessage("1", null);
+                MessagePort[] channel2 = mAwContents.createMessageChannel();
+                try {
+                    channel2[0].postMessage("2", new MessagePort[]{channel1[1]});
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToFrame1
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testStartedPortCannotBeTransferredUsingMessageChannel2() throws Throwable {
+        loadPage(TEST_PAGE);
+        final CountDownLatch latch = new CountDownLatch(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel1 = mAwContents.createMessageChannel();
+                // set a web event handler, this puts the port in a started state.
+                channel1[1].setWebEventHandler(new MessagePort.WebEventHandler() {
+                    @Override
+                    public void onMessage(String message) { }
+                }, null);
+                MessagePort[] channel2 = mAwContents.createMessageChannel();
+                try {
+                    channel2[0].postMessage("1", new MessagePort[]{channel1[1]});
+                } catch (IllegalStateException ex) {
+                    latch.countDown();
+                    return;
+                }
+                fail();
+            }
+        });
+        boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+
     // channel[0] and channel[1] are entangled ports, establishing a channel. Verify
     // it is not allowed to transfer channel[0] on channel[0].postMessage.
     // TODO(sgurun) Note that the related case of posting channel[1] via
@@ -229,7 +339,7 @@ public class PostMessageTest extends AwTestBase {
     // this case.
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
-    public void testTransferSourcePortViaMessageChannelNotAllowed() throws Throwable {
+    public void testTransferringSourcePortViaMessageChannelNotAllowed() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
         runTestOnUiThread(new Runnable() {

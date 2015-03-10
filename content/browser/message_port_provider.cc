@@ -80,6 +80,20 @@ void MessagePortProvider::ClosePort(int message_port_id) {
 }
 
 // static
+void MessagePortProvider::HoldMessages(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  MessagePortService* msp = MessagePortService::GetInstance();
+  msp->HoldMessages(message_port_id);
+}
+
+// static
+void MessagePortProvider::ReleaseMessages(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  MessagePortService* msp = MessagePortService::GetInstance();
+  msp->ReleaseMessages(message_port_id);
+}
+
+// static
 void MessagePortProvider::OnMessagePortDelegateClosing(
     MessagePortDelegate* delegate) {
   MessagePortService::GetInstance()->OnMessagePortDelegateClosing(delegate);

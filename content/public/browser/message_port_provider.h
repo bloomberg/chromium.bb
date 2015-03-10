@@ -54,6 +54,14 @@ class CONTENT_EXPORT MessagePortProvider {
   // Close the message port. Should be called on IO thread.
   static void ClosePort(int message_port_id);
 
+  // Queue up all the messages for this message port until ReleaseMessages
+  // is called. Should be called on IO thread.
+  static void HoldMessages(int message_port_id);
+
+  // Release any queued messages as a result of HoldMessages. Should be
+  // called on IO thread.
+  static void ReleaseMessages(int message_port_id);
+
   // Cleanup the message ports that belong to the closing delegate.
   static void OnMessagePortDelegateClosing(MessagePortDelegate * delegate);
 

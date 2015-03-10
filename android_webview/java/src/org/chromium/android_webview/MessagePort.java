@@ -38,7 +38,36 @@ import android.util.Log;
  * The fact that messages can be handled on a separate thread means that thread
  * synchronization is important. All methods are called on UI thread except as noted.
  *
- * TODO(sgurun) implement queueing messages while a port is in transfer.
+ * Restrictions:
+ * The HTML5 message protocol is very flexible in transferring ports. However, this
+ * sometimes leads to surprising behavior. For example, in current version of chrome (m41)
+ * the code below
+ *  1.  var c1 = new MessageChannel();
+ *  2.  var c2 = new MessageChannel();
+ *  3.  c1.port2.onmessage= function(e) { console.log("1"); }
+ *  4.  c2.port2.onmessage = function(e) {
+ *  5.     e.ports[0].onmessage = function(f) {
+ *  6.          console.log("3");
+ *  7.      }
+ *  8.  }
+ *  9.  c1.port1.postMessage("test");
+ *  10. c2.port1.postMessage("test2",[c1.port2])
+ *
+ * prints 1 or 3 depending on whether or not line 10 is included in code. Further if
+ * it gets executed with a timeout, depending on timeout value, the printout value
+ * changes.
+ *
+ * To prevent such problems, Android webview implementation limits the transfer of ports
+ * as below:
+ * Webview puts a port to a "started" state if:
+ * 1. The port is ever used to post a message, or
+ * 2. The port was ever registered a handler to receive a message.
+ * A started port cannot be transferred.
+ *
+ * This restriction should not impact postmessage functionality in a big way,
+ * because an app can still create as many channels as it wants to and use it for
+ * transferring data. As a return, it simplifies implementation and prevents hard
+ * to debug, racy corner cases while receiving/sending data.
  */
 public class MessagePort implements PostMessageSender.PostMessageSenderDelegate {
 
@@ -91,6 +120,8 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     private AwMessagePortService mMessagePortService;
     private boolean mClosed;
     private boolean mTransferred;
+    private boolean mStarted;
+    private boolean mReleasedMessages;
     private PostMessageSender mPostMessageSender;
     private MessageHandler mHandler;
     private Object mLock = new Object();
@@ -111,6 +142,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
 
     public void setPortId(int id) {
         mPortId = id;
+        releaseMessages();
     }
 
     public void close() {
@@ -142,16 +174,23 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         mTransferred = true;
     }
 
+    public boolean isStarted() {
+        return mStarted;
+    }
+
+    // Only called on UI thread
     public void setWebEventHandler(WebEventHandler webEventHandler, Handler handler) {
+        mStarted = true;
         synchronized (mLock) {
             mWebEventHandler = webEventHandler;
             if (handler != null) {
                 mHandler = new MessageHandler(handler.getLooper());
             }
         }
+        releaseMessages();
     }
 
-    // Called on IO thread.
+    // Only called on IO thread.
     public void onReceivedMessage(String message) {
         synchronized (mLock) {
             PostMessageFromWeb m = new PostMessageFromWeb(this, message);
@@ -159,6 +198,14 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
             Message msg = handler.obtainMessage(POST_MESSAGE, m);
             handler.sendMessage(msg);
         }
+    }
+
+    private void releaseMessages() {
+        if (mReleasedMessages || !isReady() || mWebEventHandler == null) {
+            return;
+        }
+        mReleasedMessages = true;
+        mMessagePortService.releaseMessages(mPortId);
     }
 
     // This method may be called on a different thread than UI thread.
@@ -188,6 +235,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
                 }
             }
         }
+        mStarted = true;
         mPostMessageSender.postMessage(null, message, null, msgPorts);
     }
 

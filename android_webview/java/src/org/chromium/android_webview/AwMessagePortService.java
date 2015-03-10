@@ -115,6 +115,12 @@ public class AwMessagePortService {
         return new MessagePort[]{new MessagePort(this), new MessagePort(this)};
     }
 
+    // Called on UI thread.
+    public void releaseMessages(int portId) {
+        if (mNativeMessagePortService == 0) return;
+        nativeReleaseMessages(mNativeMessagePortService, portId);
+    }
+
     private MessagePort addPort(MessagePort m, int portId) {
         if (mPortStorage.get(portId) != null) {
             throw new IllegalStateException("Port already exists");
@@ -151,5 +157,7 @@ public class AwMessagePortService {
     private native void nativePostAppToWebMessage(long nativeAwMessagePortServiceImpl,
             int senderId, String message, int[] portIds);
     private native void nativeClosePort(long nativeAwMessagePortServiceImpl,
+            int messagePortId);
+    private native void nativeReleaseMessages(long nativeAwMessagePortServiceImpl,
             int messagePortId);
 }
