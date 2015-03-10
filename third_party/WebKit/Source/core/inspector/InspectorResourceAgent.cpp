@@ -196,10 +196,10 @@ void InspectorResourceAgent::restore()
         enable();
 }
 
-static PassRefPtr<TypeBuilder::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing, DocumentLoader* loader)
+static PassRefPtr<TypeBuilder::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing)
 {
     return TypeBuilder::Network::ResourceTiming::create()
-        .setRequestTime(loader->timing().monotonicTimeToPseudoWallTime(timing.requestTime()))
+        .setRequestTime(timing.requestTime())
         .setProxyStart(timing.calculateMillisecondDelta(timing.proxyStart()))
         .setProxyEnd(timing.calculateMillisecondDelta(timing.proxyEnd()))
         .setDnsStart(timing.calculateMillisecondDelta(timing.dnsStart()))
@@ -231,7 +231,7 @@ static PassRefPtr<TypeBuilder::Network::Request> buildObjectForResourceRequest(c
     return requestObject;
 }
 
-static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse(const ResourceResponse& response, DocumentLoader* loader)
+static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse(const ResourceResponse& response)
 {
     if (response.isNull())
         return nullptr;
@@ -265,8 +265,8 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
 
     responseObject->setFromDiskCache(response.wasCached());
     responseObject->setFromServiceWorker(response.wasFetchedViaServiceWorker());
-    if (loader && response.resourceLoadTiming())
-        responseObject->setTiming(buildObjectForTiming(*response.resourceLoadTiming(), loader));
+    if (response.resourceLoadTiming())
+        responseObject->setTiming(buildObjectForTiming(*response.resourceLoadTiming()));
 
     if (response.resourceLoadInfo()) {
         if (!response.resourceLoadInfo()->responseHeadersText.isEmpty())
@@ -381,7 +381,7 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
         request.addHTTPHeaderField(kDevToolsEmulateNetworkConditionsClientId, AtomicString(m_hostId));
 
     TypeBuilder::Page::ResourceType::Enum resourceType = InspectorPageAgent::resourceTypeJson(type);
-    m_frontend->requestWillBeSent(requestId, frameId, m_pageAgent->loaderId(loader), urlWithoutFragment(loader->url()).string(), requestInfo.release(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse, loader), &resourceType);
+    m_frontend->requestWillBeSent(requestId, frameId, m_pageAgent->loaderId(loader), urlWithoutFragment(loader->url()).string(), requestInfo.release(), monotonicallyIncreasingTime(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse), &resourceType);
 }
 
 void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
@@ -404,7 +404,7 @@ bool isResponseEmpty(PassRefPtr<TypeBuilder::Network::Response> response)
 void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
-    RefPtr<TypeBuilder::Network::Response> resourceResponse = buildObjectForResourceResponse(response, loader);
+    RefPtr<TypeBuilder::Network::Response> resourceResponse = buildObjectForResourceResponse(response);
 
     bool isNotModified = response.httpStatusCode() == 304;
 
@@ -434,7 +434,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     m_resourcesData->setResourceType(requestId, type);
 
     if (!isResponseEmpty(resourceResponse))
-        m_frontend->responseReceived(requestId, m_pageAgent->frameId(frame), m_pageAgent->loaderId(loader), currentTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse);
+        m_frontend->responseReceived(requestId, m_pageAgent->frameId(frame), m_pageAgent->loaderId(loader), monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse);
     // If we revalidated the resource and got Not modified, send content length following didReceiveResponse
     // as there will be no calls to didReceiveData from the network stack.
     if (isNotModified && cachedResource && cachedResource->encodedSize())
@@ -456,35 +456,30 @@ void InspectorResourceAgent::didReceiveData(LocalFrame*, unsigned long identifie
             m_resourcesData->maybeAddResourceData(requestId, data, dataLength);
     }
 
-    m_frontend->dataReceived(requestId, currentTime(), dataLength, encodedDataLength);
+    m_frontend->dataReceived(requestId, monotonicallyIncreasingTime(), dataLength, encodedDataLength);
 }
 
-void InspectorResourceAgent::didFinishLoading(unsigned long identifier, DocumentLoader* loader, double monotonicFinishTime, int64_t encodedDataLength)
+void InspectorResourceAgent::didFinishLoading(unsigned long identifier, double monotonicFinishTime, int64_t encodedDataLength)
 {
-    double finishTime = 0.0;
-    // FIXME: Expose all of the timing details to inspector and have it calculate finishTime.
-    if (monotonicFinishTime)
-        finishTime = loader->timing().monotonicTimeToPseudoWallTime(monotonicFinishTime);
-
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->maybeDecodeDataToContent(requestId);
-    if (!finishTime)
-        finishTime = currentTime();
-    m_frontend->loadingFinished(requestId, finishTime, encodedDataLength);
+    if (!monotonicFinishTime)
+        monotonicFinishTime = monotonicallyIncreasingTime();
+    m_frontend->loadingFinished(requestId, monotonicFinishTime, encodedDataLength);
 }
 
 void InspectorResourceAgent::didReceiveCORSRedirectResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     // Update the response and finish loading
     didReceiveResourceResponse(frame, identifier, loader, response, resourceLoader);
-    didFinishLoading(identifier, loader, 0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
+    didFinishLoading(identifier, 0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
 void InspectorResourceAgent::didFailLoading(unsigned long identifier, const ResourceError& error)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     bool canceled = error.isCancellation();
-    m_frontend->loadingFailed(requestId, currentTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), error.localizedDescription(), canceled ? &canceled : 0);
+    m_frontend->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), error.localizedDescription(), canceled ? &canceled : 0);
 }
 
 void InspectorResourceAgent::scriptImported(unsigned long identifier, const String& sourceString)
@@ -571,7 +566,7 @@ void InspectorResourceAgent::willDispachEventSourceEvent(ThreadableLoaderClient*
     EventSourceRequestIdMap::iterator it = m_eventSourceRequestIdMap.find(eventSource);
     if (it == m_eventSourceRequestIdMap.end())
         return;
-    m_frontend->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), currentTime(), eventName.string(), eventId.string(), String(data));
+    m_frontend->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), monotonicallyIncreasingTime(), eventName.string(), eventId.string(), String(data));
 }
 
 void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient* eventSource)
@@ -663,7 +658,7 @@ void InspectorResourceAgent::willSendWebSocketHandshakeRequest(Document*, unsign
     ASSERT(request);
     RefPtr<TypeBuilder::Network::WebSocketRequest> requestObject = TypeBuilder::Network::WebSocketRequest::create()
         .setHeaders(buildObjectForHeaders(request->headerFields()));
-    m_frontend->webSocketWillSendHandshakeRequest(IdentifiersFactory::requestId(identifier), currentTime(), requestObject);
+    m_frontend->webSocketWillSendHandshakeRequest(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), currentTime(), requestObject);
 }
 
 void InspectorResourceAgent::didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeRequest* request, const WebSocketHandshakeResponse* response)
@@ -681,12 +676,12 @@ void InspectorResourceAgent::didReceiveWebSocketHandshakeResponse(Document*, uns
         if (!request->headersText().isEmpty())
             responseObject->setRequestHeadersText(request->headersText());
     }
-    m_frontend->webSocketHandshakeResponseReceived(IdentifiersFactory::requestId(identifier), currentTime(), responseObject);
+    m_frontend->webSocketHandshakeResponseReceived(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), responseObject);
 }
 
 void InspectorResourceAgent::didCloseWebSocket(Document*, unsigned long identifier)
 {
-    m_frontend->webSocketClosed(IdentifiersFactory::requestId(identifier), currentTime());
+    m_frontend->webSocketClosed(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime());
 }
 
 void InspectorResourceAgent::didReceiveWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength)
@@ -695,7 +690,7 @@ void InspectorResourceAgent::didReceiveWebSocketFrame(unsigned long identifier, 
         .setOpcode(opCode)
         .setMask(masked)
         .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength));
-    m_frontend->webSocketFrameReceived(IdentifiersFactory::requestId(identifier), currentTime(), frameObject);
+    m_frontend->webSocketFrameReceived(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), frameObject);
 }
 
 void InspectorResourceAgent::didSendWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength)
@@ -704,12 +699,12 @@ void InspectorResourceAgent::didSendWebSocketFrame(unsigned long identifier, int
         .setOpcode(opCode)
         .setMask(masked)
         .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength));
-    m_frontend->webSocketFrameSent(IdentifiersFactory::requestId(identifier), currentTime(), frameObject);
+    m_frontend->webSocketFrameSent(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), frameObject);
 }
 
 void InspectorResourceAgent::didReceiveWebSocketFrameError(unsigned long identifier, const String& errorMessage)
 {
-    m_frontend->webSocketFrameError(IdentifiersFactory::requestId(identifier), currentTime(), errorMessage);
+    m_frontend->webSocketFrameError(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), errorMessage);
 }
 
 void InspectorResourceAgent::enable(ErrorString*)

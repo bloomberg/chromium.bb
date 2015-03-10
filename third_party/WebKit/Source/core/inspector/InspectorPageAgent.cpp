@@ -1011,14 +1011,14 @@ void InspectorPageAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
     if (frame != inspectedFrame())
         return;
-    m_frontend->domContentEventFired(currentTime());
+    m_frontend->domContentEventFired(monotonicallyIncreasingTime());
 }
 
 void InspectorPageAgent::loadEventFired(LocalFrame* frame)
 {
     if (frame != inspectedFrame())
         return;
-    m_frontend->loadEventFired(currentTime());
+    m_frontend->loadEventFired(monotonicallyIncreasingTime());
 }
 
 void InspectorPageAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)

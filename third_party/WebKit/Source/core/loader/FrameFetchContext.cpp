@@ -277,7 +277,7 @@ void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier, doubl
     frame()->loader().client()->dispatchDidFinishLoading(m_documentLoader, identifier);
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(identifier, finishTime, false));
-    InspectorInstrumentation::didFinishLoading(frame(), identifier, ensureLoaderForNotifications(), finishTime, encodedDataLength);
+    InspectorInstrumentation::didFinishLoading(frame(), identifier, finishTime, encodedDataLength);
 }
 
 void FrameFetchContext::dispatchDidFail(unsigned long identifier, const ResourceError& error, bool isInternalRequest)
