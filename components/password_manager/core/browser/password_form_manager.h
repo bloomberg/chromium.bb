@@ -178,6 +178,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Returns the realm URL for the form managed my this manager.
   const std::string& realm() const { return pending_credentials_.signon_realm; }
 
+#if defined(UNIT_TEST)
+  void SimulateFetchMatchingLoginsFromPasswordStore() {
+    // Just need to update the internal states.
+    state_ = MATCHING_PHASE;
+  }
+#endif
+
  protected:
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
 

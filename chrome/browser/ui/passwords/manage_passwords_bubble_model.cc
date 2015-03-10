@@ -199,6 +199,8 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
       manage_passwords_ui_controller) {
     // It's time to run the pending callback if it wasn't called in
     // OnChooseCredentials().
+    // TODO(vasilii): remove this. It's not a bubble's problem because the
+    // controller is notified anyway about closed bubble.
     manage_passwords_ui_controller->ChooseCredential(
         autofill::PasswordForm(),
         password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);

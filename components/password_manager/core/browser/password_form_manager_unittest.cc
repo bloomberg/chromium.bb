@@ -219,12 +219,6 @@ class PasswordFormManagerTest : public testing::Test {
     p->preferred_match_ = match;
   }
 
-  void SimulateFetchMatchingLoginsFromPasswordStore(
-      PasswordFormManager* manager) {
-    // Just need to update the internal states.
-    manager->state_ = PasswordFormManager::MATCHING_PHASE;
-  }
-
   void SanitizePossibleUsernames(PasswordFormManager* p, PasswordForm* form) {
     p->SanitizePossibleUsernames(form);
   }
@@ -260,7 +254,7 @@ class PasswordFormManagerTest : public testing::Test {
     form_to_save.username_value = result[0]->username_value;
     form_to_save.password_value = result[0]->password_value;
 
-    SimulateFetchMatchingLoginsFromPasswordStore(&form_manager);
+    form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
     form_manager.OnGetPasswordStoreResults(result.Pass());
 
     if (field_type) {
@@ -799,7 +793,7 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   // "not blacklisted" message.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  SimulateFetchMatchingLoginsFromPasswordStore(&manager_no_creds);
+  manager_no_creds.SimulateFetchMatchingLoginsFromPasswordStore();
   manager_no_creds.OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
   Mock::VerifyAndClearExpectations(client()->mock_driver());
 
@@ -810,7 +804,7 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
       &password_manager, client(), client()->driver(), *observed_form(), false);
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  SimulateFetchMatchingLoginsFromPasswordStore(&manager_creds);
+  manager_creds.SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<PasswordForm> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
   manager_creds.OnGetPasswordStoreResults(simulated_results.Pass());
@@ -826,7 +820,7 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
       &password_manager, client(), client()->driver(), signup_form, false);
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  SimulateFetchMatchingLoginsFromPasswordStore(&manager_dropped_creds);
+  manager_dropped_creds.SimulateFetchMatchingLoginsFromPasswordStore();
   simulated_results.push_back(CreateSavedMatch(false));
   manager_dropped_creds.OnGetPasswordStoreResults(simulated_results.Pass());
   Mock::VerifyAndClearExpectations(client()->mock_driver());
@@ -838,7 +832,7 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
       &password_manager, client(), client()->driver(), *observed_form(), false);
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(0);
-  SimulateFetchMatchingLoginsFromPasswordStore(&manager_blacklisted);
+  manager_blacklisted.SimulateFetchMatchingLoginsFromPasswordStore();
   simulated_results.push_back(CreateSavedMatch(true));
   manager_blacklisted.OnGetPasswordStoreResults(simulated_results.Pass());
   Mock::VerifyAndClearExpectations(client()->mock_driver());
@@ -860,7 +854,7 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   simulated_results[1]->username_value = ASCIIToUTF16("other@gmail.com");
   simulated_results[1]->password_element = ASCIIToUTF16("signup_password");
   simulated_results[1]->username_element = ASCIIToUTF16("signup_username");
-  SimulateFetchMatchingLoginsFromPasswordStore(&manager_match);
+  manager_match.SimulateFetchMatchingLoginsFromPasswordStore();
   manager_match.OnGetPasswordStoreResults(simulated_results.Pass());
   EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
 
@@ -877,7 +871,7 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   simulated_results[1]->password_element = ASCIIToUTF16("signup_password");
   simulated_results[1]->username_element = ASCIIToUTF16("signup_username");
   simulated_results[1]->type = PasswordForm::TYPE_GENERATED;
-  SimulateFetchMatchingLoginsFromPasswordStore(&manager_no_match);
+  manager_no_match.SimulateFetchMatchingLoginsFromPasswordStore();
   manager_no_match.OnGetPasswordStoreResults(simulated_results.Pass());
   EXPECT_EQ(2u, password_manager.GetLatestBestMatches().size());
 }
@@ -1003,7 +997,7 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
       GURL("http://accounts.google.com/a/ServiceLoginAuth2");
   simulated_results[1]->action =
       GURL("http://accounts.google.com/a/ServiceLogin2");
-  SimulateFetchMatchingLoginsFromPasswordStore(&manager);
+  manager.SimulateFetchMatchingLoginsFromPasswordStore();
   manager.OnGetPasswordStoreResults(simulated_results.Pass());
   EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
   EXPECT_EQ("", password_manager.GetLatestBestMatches()

@@ -520,6 +520,7 @@
       'browser/ui/login/login_prompt_unittest.cc',
       'browser/ui/passwords/manage_passwords_bubble_model_unittest.cc',
       'browser/ui/passwords/manage_passwords_icon_mock.cc',
+      'browser/ui/passwords/manage_passwords_state_unittest.cc',
       'browser/ui/passwords/manage_passwords_ui_controller_unittest.cc',
       'browser/ui/passwords/manage_passwords_view_utils_unittest.cc',
       'browser/ui/passwords/password_bubble_experiment_unittest.cc',

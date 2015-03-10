@@ -26,7 +26,7 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         test_web_contents_(
             content::WebContentsTester::CreateTestWebContents(&profile_,
-                                                              NULL)) {}
+                                                              nullptr)) {}
 
   void SetUp() override {
     // Create the test UIController here so that it's bound to
@@ -112,7 +112,7 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutLogging) {
   scoped_ptr<base::HistogramSamples> samples(
       histogram_tester.GetHistogramSamplesSinceCreation(
           kUIDismissalReasonMetric));
-  EXPECT_EQ(NULL, samples.get());
+  EXPECT_FALSE(samples);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {

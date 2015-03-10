@@ -189,6 +189,8 @@ class ManagePasswordsUIController
   // (and destroy) the timer in DidNavigateMainFrame.
   scoped_ptr<base::ElapsedTimer> timer_;
 
+  // TODO(vasilii): remove these data variables, use ManagePasswordsState.
+
   // Set by OnPasswordSubmitted() when the user submits a form containing login
   // information.  If the user responds to a subsequent "Do you want to save
   // this password?" prompt, we ask this object to save or blacklist the

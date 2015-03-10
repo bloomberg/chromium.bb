@@ -798,6 +798,8 @@
       'browser/ui/passwords/manage_passwords_bubble_model.h',
       'browser/ui/passwords/manage_passwords_icon.cc',
       'browser/ui/passwords/manage_passwords_icon.h',
+      'browser/ui/passwords/manage_passwords_state.cc',
+      'browser/ui/passwords/manage_passwords_state.h',
       'browser/ui/passwords/manage_passwords_ui_controller.cc',
       'browser/ui/passwords/manage_passwords_ui_controller.h',
       'browser/ui/passwords/manage_passwords_view_utils.cc',
