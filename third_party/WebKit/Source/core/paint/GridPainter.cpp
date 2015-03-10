@@ -76,7 +76,7 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
         if (current == previous)
             continue;
 
-        BlockPainter(m_layoutGrid).paintChild(*current, paintInfo, paintOffset);
+        BlockPainter(m_layoutGrid).paintChildAsInlineBlock(*current, paintInfo, paintOffset);
         previous = current;
     }
 }
