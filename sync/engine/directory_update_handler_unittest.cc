@@ -401,7 +401,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
   scoped_ptr<sync_pb::SyncEntity> e1 = CreateUpdate(
       SyncableIdToProto(Id::CreateFromServerId("e1")), "", ARTICLES);
   sync_pb::AttachmentIdProto* attachment_id = e1->add_attachment_id();
-  *attachment_id = CreateAttachmentIdProto(0, 0);
+  *attachment_id = CreateAttachmentIdProto();
 
   SyncEntityList updates;
   updates.push_back(e1.get());
@@ -1080,10 +1080,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
   *specifics.mutable_article() = sync_pb::ArticleSpecifics();
   int64 handle = entry_factory()->CreateSyncedItem("art1", ARTICLES, is_folder);
 
-  sync_pb::AttachmentIdProto local_attachment_id =
-      CreateAttachmentIdProto(0, 0);
-  sync_pb::AttachmentIdProto server_attachment_id =
-      CreateAttachmentIdProto(0, 0);
+  sync_pb::AttachmentIdProto local_attachment_id = CreateAttachmentIdProto();
+  sync_pb::AttachmentIdProto server_attachment_id = CreateAttachmentIdProto();
 
   // Add an attachment to the local attachment metadata.
   sync_pb::AttachmentMetadata local_metadata;
@@ -1124,8 +1122,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
   *specifics.mutable_article() = sync_pb::ArticleSpecifics();
   int64 handle = entry_factory()->CreateSyncedItem("art1", ARTICLES, is_folder);
 
-  sync_pb::AttachmentIdProto id1 = CreateAttachmentIdProto(0, 0);
-  sync_pb::AttachmentIdProto id2 = CreateAttachmentIdProto(0, 0);
+  sync_pb::AttachmentIdProto id1 = CreateAttachmentIdProto();
+  sync_pb::AttachmentIdProto id2 = CreateAttachmentIdProto();
 
   // Add id1, then id2 to the local attachment metadata.
   sync_pb::AttachmentMetadata local_metadata;

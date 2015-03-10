@@ -35,23 +35,13 @@ class SYNC_EXPORT AttachmentId {
   // Needed for using AttachmentId as key in std::map.
   bool operator<(const AttachmentId& other) const;
 
-  // Creates a unique id for an attachment.
-  //
-  // |size| is the attachment's size in bytes.
-  //
-  // |crc32c| is the attachment's crc32c.
-  static AttachmentId Create(size_t size, uint32_t crc32c);
+  // Creates a unique attachment id.
+  static AttachmentId Create();
 
   // Creates an attachment id from an initialized proto.
   static AttachmentId CreateFromProto(const sync_pb::AttachmentIdProto& proto);
 
   const sync_pb::AttachmentIdProto& GetProto() const;
-
-  // Returns the size (in bytes) the attachment.
-  size_t GetSize() const;
-
-  // Returns the crc32c the attachment.
-  uint32_t GetCrc32c() const;
 
  private:
   // Necessary since we forward-declare sync_pb::AttachmentIdProto; see comments

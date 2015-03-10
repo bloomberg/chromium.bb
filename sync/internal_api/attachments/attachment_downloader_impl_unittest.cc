@@ -152,12 +152,7 @@ class AttachmentDownloaderImplTest : public testing::Test {
     HASH_HEADER_INVALID
   };
 
-  AttachmentDownloaderImplTest()
-      : num_completed_downloads_(0),
-        attachment_id_(
-            Attachment::Create(new base::RefCountedStaticMemory(
-                                   kAttachmentContent,
-                                   strlen(kAttachmentContent))).GetId()) {}
+  AttachmentDownloaderImplTest() : num_completed_downloads_(0) {}
 
   void SetUp() override;
   void TearDown() override;
@@ -167,8 +162,6 @@ class AttachmentDownloaderImplTest : public testing::Test {
   MockOAuth2TokenService* token_service() { return token_service_.get(); }
 
   int num_completed_downloads() { return num_completed_downloads_; }
-
-  const AttachmentId attachment_id() const { return attachment_id_; }
 
   AttachmentDownloader::DownloadCallback download_callback(
       const AttachmentId& id) {
@@ -200,7 +193,6 @@ class AttachmentDownloaderImplTest : public testing::Test {
   scoped_ptr<AttachmentDownloader> attachment_downloader_;
   ResultsMap download_results_;
   int num_completed_downloads_;
-  const AttachmentId attachment_id_;
 };
 
 void AttachmentDownloaderImplTest::SetUp() {
@@ -302,7 +294,7 @@ void AttachmentDownloaderImplTest::AddHashHeader(
 }
 
 TEST_F(AttachmentDownloaderImplTest, HappyCase) {
-  AttachmentId id1 = attachment_id();
+  AttachmentId id1 = AttachmentId::Create();
   // DownloadAttachment should trigger RequestAccessToken.
   downloader()->DownloadAttachment(id1, download_callback(id1));
   RunMessageLoop();
@@ -322,7 +314,7 @@ TEST_F(AttachmentDownloaderImplTest, HappyCase) {
 }
 
 TEST_F(AttachmentDownloaderImplTest, SameIdMultipleDownloads) {
-  AttachmentId id1 = attachment_id();
+  AttachmentId id1 = AttachmentId::Create();
   base::HistogramTester histogram_tester;
   // Call DownloadAttachment two times for the same id.
   downloader()->DownloadAttachment(id1, download_callback(id1));
@@ -359,8 +351,8 @@ TEST_F(AttachmentDownloaderImplTest, SameIdMultipleDownloads) {
 }
 
 TEST_F(AttachmentDownloaderImplTest, RequestAccessTokenFails) {
-  AttachmentId id1 = attachment_id();
-  AttachmentId id2 = AttachmentId::Create(id1.GetSize(), id1.GetCrc32c());
+  AttachmentId id1 = AttachmentId::Create();
+  AttachmentId id2 = AttachmentId::Create();
   // Trigger first RequestAccessToken.
   downloader()->DownloadAttachment(id1, download_callback(id1));
   RunMessageLoop();
@@ -383,7 +375,7 @@ TEST_F(AttachmentDownloaderImplTest, RequestAccessTokenFails) {
 }
 
 TEST_F(AttachmentDownloaderImplTest, URLFetcher_BadToken) {
-  AttachmentId id1 = attachment_id();
+  AttachmentId id1 = AttachmentId::Create();
   downloader()->DownloadAttachment(id1, download_callback(id1));
   RunMessageLoop();
   // Return valid access token.
@@ -401,7 +393,7 @@ TEST_F(AttachmentDownloaderImplTest, URLFetcher_BadToken) {
 }
 
 TEST_F(AttachmentDownloaderImplTest, URLFetcher_ServiceUnavailable) {
-  AttachmentId id1 = attachment_id();
+  AttachmentId id1 = AttachmentId::Create();
   downloader()->DownloadAttachment(id1, download_callback(id1));
   RunMessageLoop();
   // Return valid access token.
@@ -421,7 +413,7 @@ TEST_F(AttachmentDownloaderImplTest, URLFetcher_ServiceUnavailable) {
 // Verify that if no hash is present on the response the downloader accepts the
 // received attachment.
 TEST_F(AttachmentDownloaderImplTest, NoHash) {
-  AttachmentId id1 = attachment_id();
+  AttachmentId id1 = AttachmentId::Create();
   downloader()->DownloadAttachment(id1, download_callback(id1));
   RunMessageLoop();
   token_service()->RespondToAccessTokenRequest(
@@ -434,7 +426,7 @@ TEST_F(AttachmentDownloaderImplTest, NoHash) {
 // Verify that if an invalid hash is present on the response the downloader
 // treats it as a transient error.
 TEST_F(AttachmentDownloaderImplTest, InvalidHash) {
-  AttachmentId id1 = attachment_id();
+  AttachmentId id1 = AttachmentId::Create();
   downloader()->DownloadAttachment(id1, download_callback(id1));
   RunMessageLoop();
   token_service()->RespondToAccessTokenRequest(
@@ -443,21 +435,6 @@ TEST_F(AttachmentDownloaderImplTest, InvalidHash) {
   CompleteDownload(net::HTTP_OK, HASH_HEADER_INVALID);
   VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_TRANSIENT_ERROR);
 }
-
-// Verify that when the hash from the attachment id does not match the one on
-// the response the result is an unspecified error.
-TEST_F(AttachmentDownloaderImplTest, IdHashDoesNotMatch) {
-  // id1 has the wrong crc32c.
-  AttachmentId id1 = AttachmentId::Create(attachment_id().GetSize(), 12345);
-  downloader()->DownloadAttachment(id1, download_callback(id1));
-  RunMessageLoop();
-  token_service()->RespondToAccessTokenRequest(
-      GoogleServiceAuthError::AuthErrorNone());
-  RunMessageLoop();
-  CompleteDownload(net::HTTP_OK, HASH_HEADER_VALID);
-  VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_UNSPECIFIED_ERROR);
-}
-
 
 // Verify that extract fails when there is no headers object.
 TEST_F(AttachmentDownloaderImplTest, ExtractCrc32c_NoHeaders) {

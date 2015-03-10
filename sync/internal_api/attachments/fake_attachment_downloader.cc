@@ -25,8 +25,9 @@ void FakeAttachmentDownloader::DownloadAttachment(
   // attachment.
   scoped_refptr<base::RefCountedMemory> data(new base::RefCountedBytes());
   scoped_ptr<Attachment> attachment;
+  const uint32_t crc32c = ComputeCrc32c(data);
   attachment.reset(
-      new Attachment(Attachment::CreateFromParts(attachment_id, data)));
+      new Attachment(Attachment::CreateFromParts(attachment_id, data, crc32c)));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, DOWNLOAD_SUCCESS, base::Passed(&attachment)));

@@ -72,9 +72,9 @@ TEST_F(SyncDataTest, CreateLocalData) {
 TEST_F(SyncDataTest, CreateLocalDataWithAttachments) {
   specifics.mutable_preference();
   AttachmentIdList attachment_ids;
-  attachment_ids.push_back(AttachmentId::Create(0, 0));
-  attachment_ids.push_back(AttachmentId::Create(0, 0));
-  attachment_ids.push_back(AttachmentId::Create(0, 0));
+  attachment_ids.push_back(AttachmentId::Create());
+  attachment_ids.push_back(AttachmentId::Create());
+  attachment_ids.push_back(AttachmentId::Create());
 
   SyncData data = SyncData::CreateLocalDataWithAttachments(
       kSyncTag, kNonUniqueTitle, specifics, attachment_ids);

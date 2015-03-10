@@ -15,7 +15,7 @@ typedef testing::Test AttachmentIdProtoTest;
 // Verify that that we generate a proto with a properly formatted unique_id
 // field.
 TEST(AttachmentIdProtoTest, UniqueIdFormat) {
-  sync_pb::AttachmentIdProto id_proto = CreateAttachmentIdProto(0, 0);
+  sync_pb::AttachmentIdProto id_proto = CreateAttachmentIdProto();
   ASSERT_TRUE(id_proto.has_unique_id());
   // gtest's regular expression support is pretty poor so we cannot test as
   // closely as we would like.
@@ -35,9 +35,9 @@ TEST(AttachmentIdProtoTest, CreateAttachmentMetadata_Empty) {
 
 TEST(AttachmentIdProtoTest, CreateAttachmentMetadata_NonEmpty) {
   google::protobuf::RepeatedPtrField<sync_pb::AttachmentIdProto> ids;
-  *ids.Add() = CreateAttachmentIdProto(0, 0);
-  *ids.Add() = CreateAttachmentIdProto(0, 0);
-  *ids.Add() = CreateAttachmentIdProto(0, 0);
+  *ids.Add() = CreateAttachmentIdProto();
+  *ids.Add() = CreateAttachmentIdProto();
+  *ids.Add() = CreateAttachmentIdProto();
   sync_pb::AttachmentMetadata metadata = CreateAttachmentMetadata(ids);
   ASSERT_EQ(3, metadata.record_size());
   for (int i = 0; i < metadata.record_size(); ++i) {

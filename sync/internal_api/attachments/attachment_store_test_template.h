@@ -133,8 +133,9 @@ TYPED_TEST_CASE_P(AttachmentStoreTest);
 TYPED_TEST_P(AttachmentStoreTest, Write_NoOverwriteNoError) {
   // Create two attachments with the same id but different data.
   Attachment attachment1 = Attachment::Create(this->some_data1);
-  Attachment attachment2 =
-      Attachment::CreateFromParts(attachment1.GetId(), this->some_data2);
+  uint32_t crc32c = ComputeCrc32c(this->some_data2);
+  Attachment attachment2 = Attachment::CreateFromParts(
+      attachment1.GetId(), this->some_data2, crc32c);
 
   // Write the first one.
   AttachmentList some_attachments;

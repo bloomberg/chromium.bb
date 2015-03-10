@@ -311,9 +311,8 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, RecordMetadata) {
   VerifyAttachmentRecordsPresent(attachments[1].GetId(), true);
 }
 
-// Ensure that attachment store fails to load attachment if the crc in the store
-// does not match the data.
-TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrcInStore) {
+// Ensure that attachment store fails to load attachment with mismatched crc.
+TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrc) {
   // Create attachment store.
   AttachmentStore::Result create_result = AttachmentStore::UNSPECIFIED_ERROR;
   store_ = AttachmentStore::CreateOnDiskStore(
@@ -323,12 +322,10 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrcInStore) {
   // Write attachment with incorrect crc32c.
   AttachmentStore::Result write_result = AttachmentStore::UNSPECIFIED_ERROR;
   const uint32_t intentionally_wrong_crc32c = 0;
-
-  scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString());
-  some_data->data() = "data1";
+  std::string some_data("data1");
   Attachment attachment = Attachment::CreateFromParts(
-      AttachmentId::Create(some_data->size(), intentionally_wrong_crc32c),
-      some_data);
+      AttachmentId::Create(), base::RefCountedString::TakeString(&some_data),
+      intentionally_wrong_crc32c);
   AttachmentList attachments;
   attachments.push_back(attachment);
   store_->Write(attachments,
@@ -351,44 +348,6 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrcInStore) {
   EXPECT_THAT(failed_attachment_ids, testing::ElementsAre(attachment.GetId()));
 }
 
-// Ensure that attachment store fails to load attachment if the crc in the id
-// does not match the data.
-TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrcInId) {
-  // Create attachment store.
-  AttachmentStore::Result create_result = AttachmentStore::UNSPECIFIED_ERROR;
-  store_ = AttachmentStore::CreateOnDiskStore(
-      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AttachmentStoreCreated, &create_result));
-
-  AttachmentStore::Result write_result = AttachmentStore::UNSPECIFIED_ERROR;
-  scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString());
-  some_data->data() = "data1";
-  Attachment attachment = Attachment::Create(some_data);
-  AttachmentList attachments;
-  attachments.push_back(attachment);
-  store_->Write(attachments,
-                base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
-                           base::Unretained(this), &write_result));
-
-  // Read, but with the wrong crc32c in the id.
-  AttachmentStore::Result read_result = AttachmentStore::SUCCESS;
-
-  AttachmentId id_with_bad_crc32c =
-      AttachmentId::Create(attachment.GetId().GetSize(), 12345);
-  AttachmentIdList attachment_ids;
-  attachment_ids.push_back(id_with_bad_crc32c);
-  AttachmentIdList failed_attachment_ids;
-  store_->Read(
-      attachment_ids,
-      base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultAttachments,
-                 base::Unretained(this), &read_result, &failed_attachment_ids));
-  RunLoop();
-  EXPECT_EQ(AttachmentStore::SUCCESS, create_result);
-  EXPECT_EQ(AttachmentStore::SUCCESS, write_result);
-  EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, read_result);
-  EXPECT_THAT(failed_attachment_ids, testing::ElementsAre(id_with_bad_crc32c));
-}
-
 // Ensure that after store initialization failure ReadWrite/Drop operations fail
 // with correct error.
 TEST_F(OnDiskAttachmentStoreSpecificTest, OpsAfterInitializationFailed) {
@@ -406,10 +365,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, OpsAfterInitializationFailed) {
   // STORE_INITIALIZATION_FAILED.
   AttachmentStore::Result read_result = AttachmentStore::SUCCESS;
   AttachmentIdList attachment_ids;
-  std::string some_data("data1");
-  Attachment attachment =
-      Attachment::Create(base::RefCountedString::TakeString(&some_data));
-  attachment_ids.push_back(attachment.GetId());
+  attachment_ids.push_back(AttachmentId::Create());
   AttachmentIdList failed_attachment_ids;
   store_->Read(
       attachment_ids,
@@ -426,8 +382,11 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, OpsAfterInitializationFailed) {
   // Writing to uninitialized store should result in
   // STORE_INITIALIZATION_FAILED.
   AttachmentStore::Result write_result = AttachmentStore::SUCCESS;
+  std::string some_data;
   AttachmentList attachments;
-  attachments.push_back(attachment);
+  some_data = "data1";
+  attachments.push_back(
+      Attachment::Create(base::RefCountedString::TakeString(&some_data)));
   store_->Write(attachments,
                 base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
                            base::Unretained(this), &write_result));

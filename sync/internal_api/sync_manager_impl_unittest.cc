@@ -676,7 +676,7 @@ TEST_F(SyncApiTest, GetTotalNodeCountMultipleChildren) {
 TEST_F(SyncApiTest, AttachmentLinking) {
   // Add an entry with an attachment.
   std::string tag1("some tag");
-  syncer::AttachmentId attachment_id(syncer::AttachmentId::Create(0, 0));
+  syncer::AttachmentId attachment_id(syncer::AttachmentId::Create());
   sync_pb::AttachmentMetadata attachment_metadata;
   sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
   *record->mutable_id() = attachment_id.GetProto();
@@ -3112,7 +3112,7 @@ TEST_F(SyncManagerChangeProcessingTest, AttachmentMetadataOnlyChanges) {
         FROM_HERE, syncable::SYNCER, share()->directory.get());
     syncable::MutableEntry article(&trans, syncable::GET_BY_HANDLE, article_id);
     sync_pb::AttachmentMetadata metadata;
-    *metadata.add_record()->mutable_id() = CreateAttachmentIdProto(0, 0);
+    *metadata.add_record()->mutable_id() = CreateAttachmentIdProto();
     article.PutAttachmentMetadata(metadata);
   }
   ASSERT_EQ(1UL, GetChangeListSize());
@@ -3126,7 +3126,7 @@ TEST_F(SyncManagerChangeProcessingTest, AttachmentMetadataOnlyChanges) {
         FROM_HERE, syncable::SYNCER, share()->directory.get());
     syncable::MutableEntry article(&trans, syncable::GET_BY_HANDLE, article_id);
     sync_pb::AttachmentMetadata metadata = article.GetAttachmentMetadata();
-    *metadata.add_record()->mutable_id() = CreateAttachmentIdProto(0, 0);
+    *metadata.add_record()->mutable_id() = CreateAttachmentIdProto();
     article.PutAttachmentMetadata(metadata);
   }
   ASSERT_EQ(1UL, GetChangeListSize());

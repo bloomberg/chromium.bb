@@ -15,14 +15,15 @@ Attachment::~Attachment() {}
 Attachment Attachment::Create(
     const scoped_refptr<base::RefCountedMemory>& data) {
   uint32_t crc32c = ComputeCrc32c(data);
-  return CreateFromParts(AttachmentId::Create(data->size(), crc32c), data);
+  return CreateFromParts(AttachmentId::Create(), data, crc32c);
 }
 
 // Static.
 Attachment Attachment::CreateFromParts(
     const AttachmentId& id,
-    const scoped_refptr<base::RefCountedMemory>& data) {
-  return Attachment(id, data);
+    const scoped_refptr<base::RefCountedMemory>& data,
+    uint32_t crc32c) {
+  return Attachment(id, data, crc32c);
 }
 
 const AttachmentId& Attachment::GetId() const { return id_; }
@@ -31,14 +32,12 @@ const scoped_refptr<base::RefCountedMemory>& Attachment::GetData() const {
   return data_;
 }
 
-uint32_t Attachment::GetCrc32c() const {
-  return id_.GetCrc32c();
-}
+uint32_t Attachment::GetCrc32c() const { return crc32c_; }
 
 Attachment::Attachment(const AttachmentId& id,
-                       const scoped_refptr<base::RefCountedMemory>& data)
-    : id_(id), data_(data) {
-  DCHECK_EQ(id.GetSize(), data->size());
+                       const scoped_refptr<base::RefCountedMemory>& data,
+                       uint32_t crc32c)
+    : id_(id), data_(data), crc32c_(crc32c) {
   DCHECK(data.get());
 }
 

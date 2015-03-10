@@ -316,18 +316,12 @@ scoped_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
   scoped_refptr<base::RefCountedMemory> data =
       base::RefCountedString::TakeString(&data_str);
   uint32_t crc32c = ComputeCrc32c(data);
-  if (record_metadata.has_crc32c()) {
-    if (record_metadata.crc32c() != crc32c) {
-      DVLOG(1) << "Attachment crc32c does not match value read from store";
-      return attachment.Pass();
-    }
-    if (record_metadata.crc32c() != attachment_id.GetCrc32c()) {
-      DVLOG(1) << "Attachment crc32c does not match value in AttachmentId";
-      return attachment.Pass();
-    }
+  if (record_metadata.has_crc32c() && record_metadata.crc32c() != crc32c) {
+    DVLOG(1) << "Attachment crc does not match";
+    return attachment.Pass();
   }
   attachment.reset(
-      new Attachment(Attachment::CreateFromParts(attachment_id, data)));
+      new Attachment(Attachment::CreateFromParts(attachment_id, data, crc32c)));
   return attachment.Pass();
 }
 

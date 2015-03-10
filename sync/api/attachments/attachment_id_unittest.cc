@@ -10,25 +10,29 @@
 
 namespace syncer {
 
+namespace {
+
+}  // namespace
+
 class AttachmentIdTest : public testing::Test {};
 
 TEST_F(AttachmentIdTest, Create_IsUnique) {
-  AttachmentId id1 = AttachmentId::Create(0, 0);
-  AttachmentId id2 = AttachmentId::Create(0, 0);
+  AttachmentId id1 = AttachmentId::Create();
+  AttachmentId id2 = AttachmentId::Create();
   EXPECT_NE(id1, id2);
 }
 
 TEST_F(AttachmentIdTest, OperatorEqual) {
-  AttachmentId id1 = AttachmentId::Create(0, 0);
+  AttachmentId id1 = AttachmentId::Create();
   AttachmentId id2(id1);
   EXPECT_EQ(id1, id2);
 }
 
 TEST_F(AttachmentIdTest, OperatorLess) {
-  AttachmentId id1 = AttachmentId::Create(0, 0);
+  AttachmentId id1 = AttachmentId::Create();
   EXPECT_FALSE(id1 < id1);
 
-  AttachmentId id2 = AttachmentId::Create(0, 0);
+  AttachmentId id2 = AttachmentId::Create();
   EXPECT_FALSE(id1 < id1);
 
   EXPECT_NE(id1, id2);
