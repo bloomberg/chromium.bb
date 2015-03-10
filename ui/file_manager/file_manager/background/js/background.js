@@ -627,11 +627,6 @@ FileBrowserBackground.prototype.initContextMenu_ = function() {
   });
 };
 
-// Ensure that the user gets a new analytics ID each time Files.app starts.
-// NOTE: This must be called before FileBrowserBackground is instantiated.
-// TODO(kenobi): Revisit this once users have the ability to do this themselves.
-metrics.clearUserId();
-
 /**
  * Singleton instance of Background.
  * NOTE: This must come after the call to metrics.clearUserId.

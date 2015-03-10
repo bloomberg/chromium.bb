@@ -28,6 +28,9 @@ metrics.convertName_ = function(name) {
   return 'FileBrowser.' + name;
 };
 
+/** @private {analytics.GoogleAnalytics} */
+metrics.analytics_ = null;
+
 /** @private {analytics.Tracker} */
 metrics.tracker_ = null;
 
@@ -47,39 +50,49 @@ metrics.getTracker = function() {
  * @private
  */
 metrics.createTracker_ = function() {
-  var analyticsService = analytics.getService('Files app');
+  metrics.analytics_ = analytics.getService('Files app');
 
   // Create a tracker, add a filter that only enables analytics when UMA is
   // enabled.
-  metrics.tracker_ = analyticsService.getTracker(metrics.TRACKING_ID);
+  metrics.tracker_ = metrics.analytics_.getTracker(metrics.TRACKING_ID);
   metrics.tracker_.addFilter(metrics.umaEnabledFilter_);
 };
 
 /**
  * Queries the chrome UMA enabled setting, and filters hits based on that.
  * @param {!analytics.Tracker.Hit} hit
+ * @return {!goog.async.Deferred} A deferred indicating when the filter has
+ *     completed running.
  * @private
  */
 metrics.umaEnabledFilter_ = function(hit) {
+  // TODO(kenobi): Change this to use Promises when analytics supports it.
+  var deferred = new goog.async.Deferred();
+
   chrome.fileManagerPrivate.isUMAEnabled(
-      /** @param {boolean} enabled */
       function(enabled) {
+        if (!enabled) {
+          // If UMA was just toggled, reset the analytics ID.
+          if (metrics.enabled_) {
+            metrics.clearUserId_();
+          }
+          hit.cancel();
+        }
         metrics.enabled_ = enabled;
+        deferred.callback(enabled);
       });
-  if (!metrics.enabled_) {
-    hit.cancel();
-  }
+
+  return deferred;
 };
 
 /**
  * Clears the previously set analytics user id.
+ * @return {!Promise} Resolves when the analytics ID has been reset.
  */
-metrics.clearUserId = function() {
-  chrome.storage.local.remove(
-     'google-analytics.analytics.user-id',
-     function () {
-       if (chrome.runtime.lastError) {
-         throw new Error(chrome.runtime.lastError.message);
-       }
-     });
+metrics.clearUserId_ = function() {
+  return metrics.analytics_.getConfig().then(
+      /** @param {!analytics.Config} config */
+      function(config) {
+        config.resetUserId();
+      });
 };

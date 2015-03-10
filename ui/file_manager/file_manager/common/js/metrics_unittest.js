@@ -14,16 +14,16 @@ var tracker;
 function setUp() {
   setupFakeChromeAPIs();
 
+  // Set a fake tracking ID so the tests aren't actually sending analytics.
+  metrics.TRACKING_ID = 'UA-XXXXX-XX';
   tracker  = metrics.getTracker();
 
-  // Make a filter that logs the last received hit.  Cancel the hit so that
-  // running tests doesn't actually send any analytics.
+  // Make a filter that logs the last received hit.
   tracker.addFilter(
       /** @param {!analytics.Tracker.Hit} hit */
       function(hit) {
         // Log the hit.
         lastHit = hit;
-        hit.cancel();
       });
   // Reset the last logged hit.
   lastHit = null;
@@ -52,6 +52,39 @@ function testUMADisabled(callback) {
           function() {
             assertTrue(lastHit === null);
           }),
+      callback);
+}
+
+// Verifies that toggling the UMA setting causes the user's analytics ID to be
+// reset.
+function testResetAnalyticsOnUMAToggle(callback) {
+  var id0 = null;
+  var id1 = null;
+
+  // Simulate UMA enabled, and send a hit.
+  chrome.fileManagerPrivate.umaEnabled = true;
+  reportPromise(
+      tracker.sendAppView('Test0')
+          .then(
+              function() {
+                // Log the analytics ID that got sent.
+                id0 = lastHit.getParameters().toObject()['clientId'];
+                // Simulate UMA disabled, send another hit.
+                chrome.fileManagerPrivate.umaEnabled = false;
+                return tracker.sendAppView('Test1');
+              })
+          .then(
+              function() {
+                // Re-enable analytics, send another hit.
+                chrome.fileManagerPrivate.umaEnabled = true;
+                return tracker.sendAppView('Test2');
+              })
+          .then(
+              function() {
+                // Check that a subsequent hit has a different analytics ID.
+                id1 = lastHit.getParameters().toObject()['clientId'];
+                assertTrue(id0 !== id1);
+              }),
       callback);
 }
 
