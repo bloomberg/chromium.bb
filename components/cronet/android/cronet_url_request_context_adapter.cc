@@ -18,7 +18,6 @@
 #include "net/base/net_log_logger.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -147,11 +146,11 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         jcronet_url_request_context) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   DCHECK(!is_context_initialized_);
+  DCHECK(proxy_config_service_);
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
   context_builder.set_network_delegate(new BasicNetworkDelegate());
-  context_builder.set_proxy_config_service(
-      new net::ProxyConfigServiceFixed(net::ProxyConfig()));
+  context_builder.set_proxy_config_service(proxy_config_service_.release());
   config->ConfigureURLRequestContextBuilder(&context_builder);
 
   context_.reset(context_builder.Build());
