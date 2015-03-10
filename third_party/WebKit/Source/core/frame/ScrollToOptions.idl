@@ -5,7 +5,6 @@
 // Spec: http://http://dev.w3.org/csswg/cssom-view#extensions-to-the-window-interface
 
 dictionary ScrollToOptions : ScrollOptions {
-    // FIXME: Spec has regular (not unrestricted) doubles.
     unrestricted double left;
     unrestricted double top;
 };
