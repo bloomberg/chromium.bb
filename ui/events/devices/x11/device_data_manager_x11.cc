@@ -214,7 +214,7 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
   }
 
   // Find all the touchpad devices.
-  XDeviceList dev_list =
+  const XDeviceList& dev_list =
       ui::DeviceListCacheX11::GetInstance()->GetXDeviceList(display);
   Atom xi_touchpad = XInternAtom(display, XI_TOUCHPAD, false);
   for (int i = 0; i < dev_list.count; ++i)
@@ -225,30 +225,30 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
     return;
 
   // Update the structs with new valuator information
-  XIDeviceList info_list =
+  const XIDeviceList& info_list =
       ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(display);
   Atom atoms[DT_LAST_ENTRY];
   for (int data_type = 0; data_type < DT_LAST_ENTRY; ++data_type)
     atoms[data_type] = atom_cache_.GetAtom(kCachedAtoms[data_type]);
 
   for (int i = 0; i < info_list.count; ++i) {
-    XIDeviceInfo* info = info_list.devices + i;
+    const XIDeviceInfo& info = info_list[i];
 
-    if (info->use == XIMasterPointer)
-      master_pointers_.push_back(info->deviceid);
+    if (info.use == XIMasterPointer)
+      master_pointers_.push_back(info.deviceid);
 
     // We currently handle only slave, non-keyboard devices
-    if (info->use != XISlavePointer && info->use != XIFloatingSlave)
+    if (info.use != XISlavePointer && info.use != XIFloatingSlave)
       continue;
 
     bool possible_cmt = false;
     bool not_cmt = false;
-    const int deviceid = info->deviceid;
+    const int deviceid = info.deviceid;
 
-    for (int j = 0; j < info->num_classes; ++j) {
-      if (info->classes[j]->type == XIValuatorClass)
+    for (int j = 0; j < info.num_classes; ++j) {
+      if (info.classes[j]->type == XIValuatorClass)
         ++valuator_count_[deviceid];
-      else if (info->classes[j]->type == XIScrollClass)
+      else if (info.classes[j]->type == XIScrollClass)
         not_cmt = true;
     }
 
@@ -263,12 +263,12 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
     valuator_max_[deviceid].resize(DT_LAST_ENTRY, 0);
     for (int j = 0; j < kMaxSlotNum; j++)
       last_seen_valuator_[deviceid][j].resize(DT_LAST_ENTRY, 0);
-    for (int j = 0; j < info->num_classes; ++j) {
-      if (info->classes[j]->type != XIValuatorClass)
+    for (int j = 0; j < info.num_classes; ++j) {
+      if (info.classes[j]->type != XIValuatorClass)
         continue;
 
       XIValuatorClassInfo* v =
-          reinterpret_cast<XIValuatorClassInfo*>(info->classes[j]);
+          reinterpret_cast<XIValuatorClassInfo*>(info.classes[j]);
       for (int data_type = 0; data_type < DT_LAST_ENTRY; ++data_type) {
         if (v->label == atoms[data_type]) {
           valuator_lookup_[deviceid][data_type] = v->number;

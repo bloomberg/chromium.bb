@@ -283,10 +283,7 @@ source_set("common") {
     configs += [ "//build/config/linux:xcomposite" ]
 
     if (current_cpu != "arm" || !is_chromeos) {
-      sources += [
-        "gpu/x_util.cc",
-        "gpu/x_util.h",
-      ]
+      sources += [ "gpu/x_util.h" ]
     }
   }
 

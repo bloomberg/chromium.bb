@@ -705,11 +705,9 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
        kind_index++) {
     int dummy;
     int shape_rects_size = 0;
-    XRectangle* shape_rects = XShapeGetRectangles(gfx::GetXDisplay(),
-                                                  window,
-                                                  rectangle_kind[kind_index],
-                                                  &shape_rects_size,
-                                                  &dummy);
+    gfx::XScopedPtr<XRectangle[]> shape_rects(XShapeGetRectangles(
+        gfx::GetXDisplay(), window, rectangle_kind[kind_index],
+        &shape_rects_size, &dummy));
     if (!shape_rects) {
       // The shape is empty. This can occur when |window| is minimized.
       DCHECK_EQ(0, shape_rects_size);
@@ -719,16 +717,15 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
     for (int i = 0; i < shape_rects_size; ++i) {
       // The ShapeInput and ShapeBounding rects are to be in window space, so we
       // have to translate by the window_rect's offset to map to screen space.
+      const XRectangle& rect = shape_rects[i];
       gfx::Rect shape_rect =
-          gfx::Rect(shape_rects[i].x + window_rect.x(),
-                    shape_rects[i].y + window_rect.y(),
-                    shape_rects[i].width, shape_rects[i].height);
+          gfx::Rect(rect.x + window_rect.x(), rect.y + window_rect.y(),
+                    rect.width, rect.height);
       if (shape_rect.Contains(screen_loc)) {
         is_in_shape_rects = true;
         break;
       }
     }
-    XFree(shape_rects);
     if (!is_in_shape_rects)
       return false;
   }
@@ -744,10 +741,10 @@ bool PropertyExists(XID window, const std::string& property_name) {
 
   int result = GetProperty(window, property_name, 1,
                            &type, &format, &num_items, &property);
+  gfx::XScopedPtr<unsigned char> scoped_property(property);
   if (result != Success)
     return false;
 
-  XFree(property);
   return num_items > 0;
 }
 
@@ -768,6 +765,7 @@ bool GetRawBytesOfProperty(XID window,
                          &nitems, &nbytes, &property_data) != Success) {
     return false;
   }
+  gfx::XScopedPtr<unsigned char> scoped_property(property_data);
 
   if (prop_type == None)
     return false;
@@ -792,9 +790,7 @@ bool GetRawBytesOfProperty(XID window,
   }
 
   if (out_data)
-    *out_data = new XRefcountedMemory(property_data, bytes);
-  else
-    XFree(property_data);
+    *out_data = new XRefcountedMemory(scoped_property.release(), bytes);
 
   if (out_data_items)
     *out_data_items = nitems;
@@ -813,16 +809,14 @@ bool GetIntProperty(XID window, const std::string& property_name, int* value) {
 
   int result = GetProperty(window, property_name, 1,
                            &type, &format, &num_items, &property);
+  gfx::XScopedPtr<unsigned char> scoped_property(property);
   if (result != Success)
     return false;
 
-  if (format != 32 || num_items != 1) {
-    XFree(property);
+  if (format != 32 || num_items != 1)
     return false;
-  }
 
   *value = static_cast<int>(*(reinterpret_cast<long*>(property)));
-  XFree(property);
   return true;
 }
 
@@ -834,16 +828,14 @@ bool GetXIDProperty(XID window, const std::string& property_name, XID* value) {
 
   int result = GetProperty(window, property_name, 1,
                            &type, &format, &num_items, &property);
+  gfx::XScopedPtr<unsigned char> scoped_property(property);
   if (result != Success)
     return false;
 
-  if (format != 32 || num_items != 1) {
-    XFree(property);
+  if (format != 32 || num_items != 1)
     return false;
-  }
 
   *value = *(reinterpret_cast<XID*>(property));
-  XFree(property);
   return true;
 }
 
@@ -858,20 +850,18 @@ bool GetIntArrayProperty(XID window,
   int result = GetProperty(window, property_name,
                            (~0L), // (all of them)
                            &type, &format, &num_items, &properties);
+  gfx::XScopedPtr<unsigned char> scoped_properties(properties);
   if (result != Success)
     return false;
 
-  if (format != 32) {
-    XFree(properties);
+  if (format != 32)
     return false;
-  }
 
   long* int_properties = reinterpret_cast<long*>(properties);
   value->clear();
   for (unsigned long i = 0; i < num_items; ++i) {
     value->push_back(static_cast<int>(int_properties[i]));
   }
-  XFree(properties);
   return true;
 }
 
@@ -886,18 +876,16 @@ bool GetAtomArrayProperty(XID window,
   int result = GetProperty(window, property_name,
                            (~0L), // (all of them)
                            &type, &format, &num_items, &properties);
+  gfx::XScopedPtr<unsigned char> scoped_properties(properties);
   if (result != Success)
     return false;
 
-  if (type != XA_ATOM) {
-    XFree(properties);
+  if (type != XA_ATOM)
     return false;
-  }
 
   XAtom* atom_properties = reinterpret_cast<XAtom*>(properties);
   value->clear();
   value->insert(value->begin(), atom_properties, atom_properties + num_items);
-  XFree(properties);
   return true;
 }
 
@@ -910,16 +898,14 @@ bool GetStringProperty(
 
   int result = GetProperty(window, property_name, 1024,
                            &type, &format, &num_items, &property);
+  gfx::XScopedPtr<unsigned char> scoped_property(property);
   if (result != Success)
     return false;
 
-  if (format != 8) {
-    XFree(property);
+  if (format != 8)
     return false;
-  }
 
   value->assign(reinterpret_cast<char*>(property), num_items);
-  XFree(property);
   return true;
 }
 
@@ -1178,6 +1164,7 @@ bool GetXWindowStack(Window window, std::vector<XID>* windows) {
                   &data) != Success) {
     return false;
   }
+  gfx::XScopedPtr<unsigned char> scoped_data(data);
 
   bool result = false;
   if (type == XA_WINDOW && format == 32 && data && count > 0) {
@@ -1186,9 +1173,6 @@ bool GetXWindowStack(Window window, std::vector<XID>* windows) {
     for (long i = static_cast<long>(count) - 1; i >= 0; i--)
       windows->push_back(stack[i]);
   }
-
-  if (data)
-    XFree(data);
 
   return result;
 }
@@ -1350,8 +1334,12 @@ bool WmSupportsHint(XAtom atom) {
       supported_atoms.end();
 }
 
+XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)
+    : x11_data_(length ? x11_data : nullptr), length_(length) {
+}
+
 const unsigned char* XRefcountedMemory::front() const {
-  return x11_data_;
+  return x11_data_.get();
 }
 
 size_t XRefcountedMemory::size() const {
@@ -1359,11 +1347,6 @@ size_t XRefcountedMemory::size() const {
 }
 
 XRefcountedMemory::~XRefcountedMemory() {
-  XFree(x11_data_);
-}
-
-XScopedString::~XScopedString() {
-  XFree(string_);
 }
 
 XScopedImage::~XScopedImage() {
@@ -1470,7 +1453,9 @@ void LogErrorEventDescription(XDisplay* dpy,
         sizeof(request_str));
   } else {
     int num_ext;
-    char** ext_list = XListExtensions(dpy, &num_ext);
+    gfx::XScopedPtr<char* [],
+                    gfx::XObjectDeleter<char*, int, XFreeExtensionList>>
+        ext_list(XListExtensions(dpy, &num_ext));
 
     for (int i = 0; i < num_ext; i++) {
       int ext_code, first_event, first_error;
@@ -1484,7 +1469,6 @@ void LogErrorEventDescription(XDisplay* dpy,
         break;
       }
     }
-    XFreeExtensionList(ext_list);
   }
 
   LOG(WARNING)

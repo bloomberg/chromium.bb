@@ -33,15 +33,6 @@ namespace gfx {
 
 namespace {
 
-// scoped_ptr functor for XFree(). Use as follows:
-//   scoped_ptr<XVisualInfo, ScopedPtrXFree> foo(...);
-// where "XVisualInfo" is any X type that is freed with XFree.
-struct ScopedPtrXFree {
-  void operator()(void* x) const {
-    ::XFree(x);
-  }
-};
-
 Display* g_display = NULL;
 const char* g_glx_extensions = NULL;
 bool g_glx_context_create = false;
@@ -180,9 +171,8 @@ class SGIVideoSyncProviderThreadShim {
     visual_info_template.visualid = XVisualIDFromVisual(attributes.visual);
 
     int visual_info_count = 0;
-    scoped_ptr<XVisualInfo, ScopedPtrXFree> visual_info_list(
-        XGetVisualInfo(display_, VisualIDMask,
-                       &visual_info_template, &visual_info_count));
+    gfx::XScopedPtr<XVisualInfo> visual_info_list(XGetVisualInfo(
+        display_, VisualIDMask, &visual_info_template, &visual_info_count));
 
     DCHECK(visual_info_list.get());
     if (visual_info_count == 0) {
@@ -553,10 +543,8 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
     int visual_id = XVisualIDFromVisual(attributes.visual);
 
     int num_elements = 0;
-    scoped_ptr<GLXFBConfig, ScopedPtrXFree> configs(
-        glXGetFBConfigs(g_display,
-                        DefaultScreen(g_display),
-                        &num_elements));
+    gfx::XScopedPtr<GLXFBConfig> configs(
+        glXGetFBConfigs(g_display, DefaultScreen(g_display), &num_elements));
     if (!configs.get()) {
       LOG(ERROR) << "glXGetFBConfigs failed.";
       return NULL;
@@ -628,11 +616,8 @@ bool PbufferGLSurfaceGLX::Initialize() {
   };
 
   int num_elements = 0;
-  scoped_ptr<GLXFBConfig, ScopedPtrXFree> configs(
-      glXChooseFBConfig(g_display,
-                        DefaultScreen(g_display),
-                        config_attributes,
-                        &num_elements));
+  gfx::XScopedPtr<GLXFBConfig> configs(glXChooseFBConfig(
+      g_display, DefaultScreen(g_display), config_attributes, &num_elements));
   if (!configs.get()) {
     LOG(ERROR) << "glXChooseFBConfig failed.";
     return false;

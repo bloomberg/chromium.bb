@@ -153,14 +153,16 @@ void X11InputMethodContextImplGtk2::ResetXModifierKeycodesCache() {
   hyper_keycodes_.clear();
 
   Display* display = gfx::GetXDisplay();
-  const XModifierKeymap* modmap = XGetModifierMapping(display);
+  gfx::XScopedPtr<XModifierKeymap,
+                  gfx::XObjectDeleter<XModifierKeymap, int, XFreeModifiermap>>
+      modmap(XGetModifierMapping(display));
   int min_keycode = 0;
   int max_keycode = 0;
   int keysyms_per_keycode = 1;
   XDisplayKeycodes(display, &min_keycode, &max_keycode);
-  const KeySym* keysyms = XGetKeyboardMapping(
-      display, min_keycode, max_keycode - min_keycode + 1,
-      &keysyms_per_keycode);
+  gfx::XScopedPtr<KeySym[]> keysyms(
+      XGetKeyboardMapping(display, min_keycode, max_keycode - min_keycode + 1,
+                          &keysyms_per_keycode));
   for (int i = 0; i < 8 * modmap->max_keypermod; ++i) {
     const int keycode = modmap->modifiermap[i];
     if (!keycode)
@@ -186,8 +188,6 @@ void X11InputMethodContextImplGtk2::ResetXModifierKeycodesCache() {
       }
     }
   }
-  XFree(const_cast<KeySym*>(keysyms));
-  XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
 }
 
 GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(

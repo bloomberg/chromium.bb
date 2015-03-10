@@ -75,8 +75,9 @@ ScopedDisableInternalMouseAndKeyboardX11::
       static_cast<ui::DeviceDataManagerX11*>(
           ui::DeviceDataManager::GetInstance());
   if (device_data_manager->IsXInput2Available()) {
-    XIDeviceList xi_dev_list = ui::DeviceListCacheX11::GetInstance()->
-        GetXI2DeviceList(gfx::GetXDisplay());
+    const XIDeviceList& xi_dev_list =
+        ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(
+            gfx::GetXDisplay());
     for (int i = 0; i < xi_dev_list.count; ++i) {
       std::string device_name(xi_dev_list[i].name);
       base::TrimWhitespaceASCII(device_name, base::TRIM_TRAILING, &device_name);

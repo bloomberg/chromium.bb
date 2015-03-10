@@ -45,20 +45,16 @@ void PutARGBImage(XDisplay* display,
 
 int BitsPerPixelForPixmapDepth(XDisplay* dpy, int depth) {
   int count;
-  XPixmapFormatValues* formats = XListPixmapFormats(dpy, &count);
+  XScopedPtr<XPixmapFormatValues[]> formats(XListPixmapFormats(dpy, &count));
   if (!formats)
     return -1;
 
-  int bits_per_pixel = -1;
   for (int i = 0; i < count; ++i) {
-    if (formats[i].depth == depth) {
-      bits_per_pixel = formats[i].bits_per_pixel;
-      break;
-    }
+    if (formats[i].depth == depth)
+      return formats[i].bits_per_pixel;
   }
 
-  XFree(formats);
-  return bits_per_pixel;
+  return -1;
 }
 
 void PutARGBImage(XDisplay* display,

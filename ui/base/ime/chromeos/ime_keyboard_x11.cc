@@ -84,12 +84,11 @@ unsigned int ImeKeyboardX11::GetNumLockMask() {
     const std::string string_to_find(kNumLockVirtualModifierString);
     for (size_t i = 0; i < XkbNumVirtualMods; ++i) {
       const unsigned int virtual_mod_mask = 1U << i;
-      char* virtual_mod_str_raw_ptr =
-          XGetAtomName(xkb_desc->dpy, xkb_desc->names->vmods[i]);
+      gfx::XScopedPtr<char> virtual_mod_str_raw_ptr(
+          XGetAtomName(xkb_desc->dpy, xkb_desc->names->vmods[i]));
       if (!virtual_mod_str_raw_ptr)
         continue;
-      const std::string virtual_mod_str = virtual_mod_str_raw_ptr;
-      XFree(virtual_mod_str_raw_ptr);
+      const std::string virtual_mod_str = virtual_mod_str_raw_ptr.get();
 
       if (string_to_find == virtual_mod_str) {
         if (!XkbVirtualModsToReal(xkb_desc, virtual_mod_mask, &real_mask)) {

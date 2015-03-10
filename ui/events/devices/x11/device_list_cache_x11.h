@@ -11,26 +11,25 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/events/devices/events_devices_export.h"
+#include "ui/gfx/x/x11_types.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 typedef struct _XDisplay Display;
 
-template <typename T>
+template <typename T, void (*D)(T*)>
 struct DeviceList {
-  DeviceList() : devices(NULL), count(0) {
-  }
-  T& operator[] (int x) {
-    return devices[x];
-  }
+  DeviceList() : count(0) {}
+  T& operator[](int x) { return devices[x]; }
   const T& operator[](int x) const { return devices[x]; }
-  T* devices;
+  scoped_ptr<T[], gfx::XObjectDeleter<T, void, D>> devices;
   int count;
 };
 
-typedef struct DeviceList<XDeviceInfo> XDeviceList;
-typedef struct DeviceList<XIDeviceInfo> XIDeviceList;
+typedef struct DeviceList<XDeviceInfo, XFreeDeviceList> XDeviceList;
+typedef struct DeviceList<XIDeviceInfo, XIFreeDeviceInfo> XIDeviceList;
 
 namespace ui {
 
@@ -59,8 +58,8 @@ class EVENTS_DEVICES_EXPORT DeviceListCacheX11 {
   DeviceListCacheX11();
   ~DeviceListCacheX11();
 
-  std::map<Display*, XDeviceList> x_dev_list_map_;
-  std::map<Display*, XIDeviceList> xi_dev_list_map_;
+  XDeviceList x_dev_list_;
+  XIDeviceList xi_dev_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceListCacheX11);
 };

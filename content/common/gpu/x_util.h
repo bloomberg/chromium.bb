@@ -33,16 +33,6 @@ typedef struct __GLXcontextRec *GLXContext;
 
 }  // extern "C"
 
-// Utils -----------------------------------------------------------------------
-
-// scoped_ptr functor for XFree(). Use as follows:
-//   scoped_ptr_mallox<XVisualInfo, ScopedPtrXFree> foo(...);
-// where "XVisualInfo" is any X type that is freed with XFree.
-class ScopedPtrXFree {
- public:
-  void operator()(void* x) const;
-};
-
 }  // namespace content
 
 #endif  // USE_X11

@@ -820,10 +820,10 @@ void DesktopWindowTreeHostX11::FlashFrame(bool flash_frame) {
   if (urgency_hint_set_ == flash_frame)
     return;
 
-  XWMHints* hints = XGetWMHints(xdisplay_, xwindow_);
+  gfx::XScopedPtr<XWMHints> hints(XGetWMHints(xdisplay_, xwindow_));
   if (!hints) {
     // The window hasn't had its hints set yet.
-    hints = XAllocWMHints();
+    hints.reset(XAllocWMHints());
   }
 
   if (flash_frame)
@@ -831,8 +831,7 @@ void DesktopWindowTreeHostX11::FlashFrame(bool flash_frame) {
   else
     hints->flags &= ~XUrgencyHint;
 
-  XSetWMHints(xdisplay_, xwindow_, hints);
-  XFree(hints);
+  XSetWMHints(xdisplay_, xwindow_, hints.get());
 
   urgency_hint_set_ = flash_frame;
 }
@@ -1548,12 +1547,10 @@ void DesktopWindowTreeHostX11::SerializeImageRepresentation(
 Visual* DesktopWindowTreeHostX11::GetARGBVisual() {
   XVisualInfo visual_template;
   visual_template.screen = 0;
-  Visual* to_return = NULL;
 
   int visuals_len;
-  XVisualInfo* visual_list = XGetVisualInfo(xdisplay_,
-                                            VisualScreenMask,
-                                            &visual_template, &visuals_len);
+  gfx::XScopedPtr<XVisualInfo[]> visual_list(XGetVisualInfo(
+      xdisplay_, VisualScreenMask, &visual_template, &visuals_len));
   for (int i = 0; i < visuals_len; ++i) {
     // Why support only 8888 ARGB? Because it's all that GTK+ supports. In
     // gdkvisual-x11.cc, they look for this specific visual and use it for all
@@ -1563,19 +1560,15 @@ Visual* DesktopWindowTreeHostX11::GetARGBVisual() {
     // don't believe that this has an alpha channel. According to marcheu@,
     // this should work on open source driver though. (It doesn't work with
     // NVidia's binaries currently.) http://crbug.com/369209
-    if (visual_list[i].depth == 32 &&
-        visual_list[i].visual->red_mask == 0xff0000 &&
-        visual_list[i].visual->green_mask == 0x00ff00 &&
-        visual_list[i].visual->blue_mask == 0x0000ff) {
-      to_return = visual_list[i].visual;
-      break;
+    const XVisualInfo& info = visual_list[i];
+    if (info.depth == 32 && info.visual->red_mask == 0xff0000 &&
+        info.visual->green_mask == 0x00ff00 &&
+        info.visual->blue_mask == 0x0000ff) {
+      return info.visual;
     }
   }
 
-  if (visual_list)
-    XFree(visual_list);
-
-  return to_return;
+  return nullptr;
 }
 
 std::list<XID>& DesktopWindowTreeHostX11::open_windows() {

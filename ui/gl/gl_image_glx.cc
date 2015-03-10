@@ -16,13 +16,6 @@ namespace gfx {
 
 namespace {
 
-// scoped_ptr functor for XFree(). Use as follows:
-//   scoped_ptr<XVisualInfo, ScopedPtrXFree> foo(...);
-// where "XVisualInfo" is any X type that is freed with XFree.
-struct ScopedPtrXFree {
-  void operator()(void* x) const { ::XFree(x); }
-};
-
 bool ValidFormat(unsigned internalformat) {
   switch (internalformat) {
     case GL_RGB:
@@ -141,11 +134,9 @@ bool GLImageGLX::Initialize(XID pixmap) {
       BindToTextureFormat(internalformat_), GL_TRUE,
       0};
   int num_elements = 0;
-  scoped_ptr<GLXFBConfig, ScopedPtrXFree> config(
-      glXChooseFBConfig(gfx::GetXDisplay(),
-                        DefaultScreen(gfx::GetXDisplay()),
-                        config_attribs,
-                        &num_elements));
+  gfx::XScopedPtr<GLXFBConfig> config(
+      glXChooseFBConfig(gfx::GetXDisplay(), DefaultScreen(gfx::GetXDisplay()),
+                        config_attribs, &num_elements));
   if (!config.get()) {
     DVLOG(0) << "glXChooseFBConfig failed.";
     return false;

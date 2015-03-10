@@ -28,16 +28,6 @@ DeviceListCacheX11::DeviceListCacheX11() {
 }
 
 DeviceListCacheX11::~DeviceListCacheX11() {
-  std::map<Display*, XDeviceList>::iterator xp;
-  for (xp = x_dev_list_map_.begin(); xp != x_dev_list_map_.end(); xp++) {
-    if (xp->second.devices)
-      XFreeDeviceList(xp->second.devices);
-  }
-  std::map<Display*, XIDeviceList>::iterator xip;
-  for (xip = xi_dev_list_map_.begin(); xip != xi_dev_list_map_.end(); xip++) {
-    if (xip->second.devices)
-      XIFreeDeviceInfo(xip->second.devices);
-  }
 }
 
 DeviceListCacheX11* DeviceListCacheX11::GetInstance() {
@@ -45,31 +35,30 @@ DeviceListCacheX11* DeviceListCacheX11::GetInstance() {
 }
 
 void DeviceListCacheX11::UpdateDeviceList(Display* display) {
-  XDeviceList& new_x_dev_list = x_dev_list_map_[display];
-  if (new_x_dev_list.devices)
-    XFreeDeviceList(new_x_dev_list.devices);
-  new_x_dev_list.devices = XListInputDevices(display, &new_x_dev_list.count);
+  XDeviceList& new_x_dev_list = x_dev_list_;
+  new_x_dev_list.devices.reset(
+      XListInputDevices(display, &new_x_dev_list.count));
 
-  XIDeviceList& new_xi_dev_list = xi_dev_list_map_[display];
-  if (new_xi_dev_list.devices)
-    XIFreeDeviceInfo(new_xi_dev_list.devices);
-  new_xi_dev_list.devices = IsXI2Available() ?
-      XIQueryDevice(display, XIAllDevices, &new_xi_dev_list.count) : NULL;
+  XIDeviceList& new_xi_dev_list = xi_dev_list_;
+  new_xi_dev_list.devices.reset(
+      IsXI2Available()
+          ? XIQueryDevice(display, XIAllDevices, &new_xi_dev_list.count)
+          : nullptr);
 }
 
 const XDeviceList& DeviceListCacheX11::GetXDeviceList(Display* display) {
-  XDeviceList& x_dev_list = x_dev_list_map_[display];
+  XDeviceList& x_dev_list = x_dev_list_;
   // Note that the function can be called before any update has taken place.
   if (!x_dev_list.devices && !x_dev_list.count)
-    x_dev_list.devices = XListInputDevices(display, &x_dev_list.count);
+    x_dev_list.devices.reset(XListInputDevices(display, &x_dev_list.count));
   return x_dev_list;
 }
 
 const XIDeviceList& DeviceListCacheX11::GetXI2DeviceList(Display* display) {
-  XIDeviceList& xi_dev_list = xi_dev_list_map_[display];
+  XIDeviceList& xi_dev_list = xi_dev_list_;
   if (!xi_dev_list.devices && !xi_dev_list.count) {
-    xi_dev_list.devices = XIQueryDevice(display, XIAllDevices,
-                                       &xi_dev_list.count);
+    xi_dev_list.devices.reset(
+        XIQueryDevice(display, XIAllDevices, &xi_dev_list.count));
   }
   return xi_dev_list;
 }

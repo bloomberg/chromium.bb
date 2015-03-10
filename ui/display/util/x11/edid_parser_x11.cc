@@ -39,14 +39,14 @@ bool GetEDIDProperty(XID output, std::vector<uint8_t>* edid) {
 
   bool has_edid_property = false;
   int num_properties = 0;
-  Atom* properties = XRRListOutputProperties(display, output, &num_properties);
+  gfx::XScopedPtr<Atom[]> properties(
+      XRRListOutputProperties(display, output, &num_properties));
   for (int i = 0; i < num_properties; ++i) {
     if (properties[i] == edid_property) {
       has_edid_property = true;
       break;
     }
   }
-  XFree(properties);
   if (!has_edid_property)
     return false;
 

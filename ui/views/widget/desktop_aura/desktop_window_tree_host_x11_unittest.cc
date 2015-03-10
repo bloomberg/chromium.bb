@@ -156,21 +156,14 @@ scoped_ptr<Widget> CreateWidget(WidgetDelegate* delegate) {
 std::vector<gfx::Rect> GetShapeRects(XID xid) {
   int dummy;
   int shape_rects_size;
-  XRectangle* shape_rects = XShapeGetRectangles(gfx::GetXDisplay(),
-                                                xid,
-                                                ShapeBounding,
-                                                &shape_rects_size,
-                                                &dummy);
+  gfx::XScopedPtr<XRectangle[]> shape_rects(XShapeGetRectangles(
+      gfx::GetXDisplay(), xid, ShapeBounding, &shape_rects_size, &dummy));
 
   std::vector<gfx::Rect> shape_vector;
   for (int i = 0; i < shape_rects_size; ++i) {
-    shape_vector.push_back(gfx::Rect(
-        shape_rects[i].x,
-        shape_rects[i].y,
-        shape_rects[i].width,
-        shape_rects[i].height));
+    const XRectangle& rect = shape_rects[i];
+    shape_vector.push_back(gfx::Rect(rect.x, rect.y, rect.width, rect.height));
   }
-  XFree(shape_rects);
   return shape_vector;
 }
 

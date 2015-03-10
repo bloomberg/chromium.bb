@@ -17,18 +17,14 @@ class IdleData {
     int error_base;
     if (XScreenSaverQueryExtension(gfx::GetXDisplay(), &event_base,
                                    &error_base)) {
-      mit_info = XScreenSaverAllocInfo();
-    } else {
-      mit_info = NULL;
+      mit_info.reset(XScreenSaverAllocInfo());
     }
   }
 
   ~IdleData() {
-    if (mit_info)
-      XFree(mit_info);
   }
 
-  XScreenSaverInfo *mit_info;
+  gfx::XScopedPtr<XScreenSaverInfo> mit_info;
 };
 
 IdleQueryX11::IdleQueryX11() : idle_data_(new IdleData()) {}
@@ -41,7 +37,7 @@ int IdleQueryX11::IdleTime() {
 
   if (XScreenSaverQueryInfo(gfx::GetXDisplay(),
                             RootWindow(gfx::GetXDisplay(), 0),
-                            idle_data_->mit_info)) {
+                            idle_data_->mit_info.get())) {
     return (idle_data_->mit_info->idle) / 1000;
   } else {
     return 0;

@@ -6,6 +6,7 @@
 #define UI_GFX_X_X11_UTIL_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gfx_export.h"
 
 typedef unsigned long XAtom;
@@ -14,7 +15,19 @@ typedef struct _XImage XImage;
 typedef struct _XGC *GC;
 typedef struct _XDisplay XDisplay;
 
+extern "C" {
+int XFree(void*);
+}
+
 namespace gfx {
+
+template <class T, class R, R (*F)(T*)>
+struct XObjectDeleter {
+  inline void operator()(void* ptr) const { F(static_cast<T*>(ptr)); }
+};
+
+template <class T, class D = XObjectDeleter<void, int, XFree>>
+using XScopedPtr = scoped_ptr<T, D>;
 
 // TODO(oshima|evan): This assume there is one display and doesn't work
 // undef multiple displays/monitor environment. Remove this and change the

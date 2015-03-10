@@ -77,21 +77,19 @@ bool GetAtomPairArrayProperty(XID window,
                                   &num_items,
                                   &remaining_bytes,
                                   &properties);
+  gfx::XScopedPtr<unsigned char> scoped_properties(properties);
 
   if (result != Success)
     return false;
 
   // GTK does not require |type| to be kAtomPair.
-  if (format != 32 || num_items % 2 != 0) {
-    XFree(properties);
+  if (format != 32 || num_items % 2 != 0)
     return false;
-  }
 
   XAtom* atom_properties = reinterpret_cast<XAtom*>(properties);
   value->clear();
   for (size_t i = 0; i < num_items; i+=2)
     value->push_back(std::make_pair(atom_properties[i], atom_properties[i+1]));
-  XFree(properties);
   return true;
 }
 

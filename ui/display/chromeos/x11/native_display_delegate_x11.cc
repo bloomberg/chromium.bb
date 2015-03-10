@@ -400,7 +400,6 @@ bool NativeDisplayDelegateX11::GetHDCPState(const DisplaySnapshot& output,
   // TODO(kcwu): Use X11AtomCache to save round trip time of XInternAtom.
   Atom prop = XInternAtom(display_, kContentProtectionAtomName, False);
 
-  bool ok = true;
   // TODO(kcwu): Move this to x11_util (similar method calls in this file and
   // output_util.cc)
   success = XRRGetOutputProperty(display_,
@@ -416,12 +415,15 @@ bool NativeDisplayDelegateX11::GetHDCPState(const DisplaySnapshot& output,
                                  &nitems,
                                  &bytes_after,
                                  &values);
+  gfx::XScopedPtr<unsigned char> scoped_values(values);
   if (actual_type == None) {
     LOG(ERROR) << "Property '" << kContentProtectionAtomName
                << "' does not exist";
-    ok = false;
-  } else if (success == Success && actual_type == XA_ATOM &&
-             actual_format == 32 && nitems == 1) {
+    return false;
+  }
+
+  if (success == Success && actual_type == XA_ATOM && actual_format == 32 &&
+      nitems == 1) {
     Atom value = reinterpret_cast<Atom*>(values)[0];
     if (value == XInternAtom(display_, kProtectionUndesiredAtomName, False)) {
       *state = HDCP_STATE_UNDESIRED;
@@ -434,17 +436,15 @@ bool NativeDisplayDelegateX11::GetHDCPState(const DisplaySnapshot& output,
     } else {
       LOG(ERROR) << "Unknown " << kContentProtectionAtomName
                  << " value: " << value;
-      ok = false;
+      return false;
     }
   } else {
     LOG(ERROR) << "XRRGetOutputProperty failed";
-    ok = false;
+    return false;
   }
-  if (values)
-    XFree(values);
 
-  VLOG(3) << "HDCP state: " << ok << "," << *state;
-  return ok;
+  VLOG(3) << "HDCP state: success," << *state;
+  return true;
 }
 
 bool NativeDisplayDelegateX11::SetHDCPState(const DisplaySnapshot& output,
@@ -537,16 +537,14 @@ void NativeDisplayDelegateX11::UpdateCrtcsForNewFramebuffer(
 }
 
 bool NativeDisplayDelegateX11::IsOutputAspectPreservingScaling(RROutput id) {
-  bool ret = false;
-
   Atom scaling_prop = XInternAtom(display_, "scaling mode", False);
   Atom full_aspect_atom = XInternAtom(display_, "Full aspect", False);
   if (scaling_prop == None || full_aspect_atom == None)
     return false;
 
   int nprop = 0;
-  Atom* props = XRRListOutputProperties(display_, id, &nprop);
-  for (int j = 0; j < nprop && !ret; j++) {
+  gfx::XScopedPtr<Atom[]> props(XRRListOutputProperties(display_, id, &nprop));
+  for (int j = 0; j < nprop; j++) {
     Atom prop = props[j];
     if (scaling_prop == prop) {
       unsigned char* values = NULL;
@@ -569,20 +567,16 @@ bool NativeDisplayDelegateX11::IsOutputAspectPreservingScaling(RROutput id) {
                                      &nitems,
                                      &bytes_after,
                                      &values);
+      gfx::XScopedPtr<unsigned char> scoped_value(values);
       if (success == Success && actual_type == XA_ATOM && actual_format == 32 &&
           nitems == 1) {
         Atom value = reinterpret_cast<Atom*>(values)[0];
         if (full_aspect_atom == value)
-          ret = true;
+          return true;
       }
-      if (values)
-        XFree(values);
     }
   }
-  if (props)
-    XFree(props);
-
-  return ret;
+  return false;
 }
 
 
