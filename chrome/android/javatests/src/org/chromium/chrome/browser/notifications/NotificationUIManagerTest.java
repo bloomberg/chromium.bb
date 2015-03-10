@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.util.SparseArray;
 
 import org.chromium.base.ThreadUtils;
@@ -293,5 +294,34 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
         assertEquals(1, notifications.size());
         assertEquals("SecondNotification",
                 notifications.valueAt(0).extras.getString(Notification.EXTRA_TITLE));
+    }
+
+    /**
+     * Verifies that the getOriginFromTag method returns the origin for valid input, and null for
+     * invalid input.
+     */
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testGetOriginFromTag() throws Exception {
+        // The common case.
+        assertEquals("https://example.com", NotificationUIManager.getOriginFromTag(
+                "NotificationUIManager;https://example.com;42"));
+
+        // An tag that includes the separator. Probably a bit unusual, but valid.
+        assertEquals("https://example.com", NotificationUIManager.getOriginFromTag(
+                "NotificationUIManager;https://example.com;this;tag;contains;the;separator"));
+
+        // Some invalid input.
+        assertNull(NotificationUIManager.getOriginFromTag("SystemDownloadNotifier"));
+        assertNull(NotificationUIManager.getOriginFromTag(null));
+        assertNull(NotificationUIManager.getOriginFromTag(""));
+        assertNull(NotificationUIManager.getOriginFromTag(";"));
+        assertNull(NotificationUIManager.getOriginFromTag(";;;;;;;"));
+        assertNull(NotificationUIManager.getOriginFromTag(
+                "SystemDownloadNotifier;NotificationUIManager;42"));
+        assertNull(NotificationUIManager.getOriginFromTag(
+                "SystemDownloadNotifier;https://example.com;42"));
+        assertNull(NotificationUIManager.getOriginFromTag(
+                "NotificationUIManager;SystemDownloadNotifier;42"));
     }
 }
