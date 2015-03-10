@@ -3,6 +3,29 @@
 # found in the LICENSE file.
 {
   'conditions': [
+    ['use_x11==0', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/ash_unittests<(EXECUTABLE_SUFFIX)',
+          '--test-launcher-bot-mode',
+        ],
+      },
+    }],
+    ['use_x11==1', {
+      'variables': {
+        'command': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)',
+          '<(PRODUCT_DIR)/ash_unittests',
+          '--test-launcher-bot-mode',
+        ],
+        'files': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
     ['OS=="win" or chromeos==1', {
       'variables': {
         'files': [
@@ -17,33 +40,14 @@
     }],
     ['OS=="linux"', {
       'variables': {
-        'command': [
-          '../testing/xvfb.py',
-          '<(PRODUCT_DIR)',
-          '<(PRODUCT_DIR)/ash_unittests',
-          '--test-launcher-bot-mode',
-        ],
         'files': [
-          '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
         ],
       },
     }],
-    ['OS=="linux" and use_ozone==0', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
-        ],
-      },
-    }],
     ['OS=="win"', {
       'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/ash_unittests.exe',
-          '--test-launcher-bot-mode',
-        ],
         'files': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/osmesa.dll',

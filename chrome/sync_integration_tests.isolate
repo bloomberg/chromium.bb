@@ -3,7 +3,15 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="linux"', {
+    ['use_x11==0', {
+      'variables': {
+        'command': [
+          '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
+          '--test-launcher-bot-mode',
+        ],
+      },
+    }],
+    ['use_x11==1', {
       'variables': {
         'command': [
           '../testing/xvfb.py',
@@ -14,15 +22,15 @@
         'files': [
           '../testing/test_env.py',
           '../testing/xvfb.py',
-          '<(PRODUCT_DIR)/libffmpegsumo.so',
-          '<(PRODUCT_DIR)/libosmesa.so',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
-    ['OS=="linux" and use_ozone==0', {
+    ['OS=="linux"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/libosmesa.so',
         ],
       },
     }],
@@ -46,14 +54,6 @@
           '<(PRODUCT_DIR)/pyproto/',
           '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
-        ],
-      },
-    }],
-    ['OS=="mac" or OS=="win"', {
-      'variables': {
-        'command': [
-          '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
-          '--test-launcher-bot-mode',
         ],
       },
     }],

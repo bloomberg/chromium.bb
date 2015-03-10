@@ -41,6 +41,7 @@ def DefaultConfigVariables():
     'use_instrumented_libraries': '0',
     'use_openssl': '0',
     'use_ozone': '0',
+    'use_x11': '0',
     'v8_use_external_startup_data': '1',
   }
 

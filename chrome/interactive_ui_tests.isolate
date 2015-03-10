@@ -3,7 +3,19 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="linux"', {
+    ['use_x11==0', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/interactive_ui_tests<(EXECUTABLE_SUFFIX)',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
+        ],
+      },
+    }],
+    ['use_x11==1', {
       'variables': {
         'command': [
           '../testing/xvfb.py',
@@ -16,17 +28,17 @@
         ],
         'files': [
           '../testing/xvfb.py',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    ['OS=="linux"', {
+      'variables': {
+        'files': [
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/libppapi_tests.so',
           '<(PRODUCT_DIR)/pyproto/google/',
-        ],
-      },
-    }],
-    ['OS=="linux" and use_ozone==0', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
@@ -78,18 +90,6 @@
           '<(PRODUCT_DIR)/interactive_ui_tests.dSYM/',
           '<(PRODUCT_DIR)/osmesa.so.dSYM/',
           '<(PRODUCT_DIR)/ppapi_tests.plugin.dSYM/',
-        ],
-      },
-    }],
-    ['OS=="mac" or OS=="win"', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/interactive_ui_tests<(EXECUTABLE_SUFFIX)',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--msan=<(msan)',
-          '--tsan=<(tsan)',
         ],
       },
     }],

@@ -3,6 +3,37 @@
 # found in the LICENSE file.
 {
   'conditions': [
+    ['use_x11==0', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
+        ],
+      },
+    }],
+    ['use_x11==1', {
+      'variables': {
+        'command': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)',
+          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
+        ],
+        'files': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
     ['OS=="android" or OS=="linux" or OS=="win" or OS=="mac"', {
       'variables': {
         'files': [
@@ -41,28 +72,10 @@
     }],
     ['OS=="linux"', {
       'variables': {
-        'command': [
-          '../testing/xvfb.py',
-          '<(PRODUCT_DIR)',
-          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--msan=<(msan)',
-          '--tsan=<(tsan)',
-        ],
         'files': [
-          '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/locales/fr.pak',
-        ],
-      },
-    }],
-    ['OS=="linux" and use_ozone==0', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
@@ -102,19 +115,6 @@
           '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
           '<(PRODUCT_DIR)/osmesa.so.dSYM/',
           '<(PRODUCT_DIR)/unit_tests.dSYM/',
-        ],
-      },
-    }],
-    ['OS=="mac" or OS=="win"', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--msan=<(msan)',
-          '--tsan=<(tsan)',
         ],
       },
     }],

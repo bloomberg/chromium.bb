@@ -3,14 +3,20 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+    ['use_x11==0', {
       'variables': {
-        'files': [
-          'test/data/',
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
         ],
       },
     }],
-    ['OS=="linux"', {
+    ['use_x11==1', {
       'variables': {
         'command': [
           '../testing/xvfb.py',
@@ -24,13 +30,14 @@
         ],
         'files': [
           '../testing/xvfb.py',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
-    ['OS=="linux" and use_ozone==0', {
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+          'test/data/',
         ],
       },
     }],
@@ -41,19 +48,6 @@
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
         ],
         'read_only': 1,
-      },
-    }],
-    ['OS=="mac" or OS=="win"', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--msan=<(msan)',
-          '--tsan=<(tsan)',
-        ],
       },
     }],
     ['OS=="mac" and asan==1 and fastbuild==0', {
