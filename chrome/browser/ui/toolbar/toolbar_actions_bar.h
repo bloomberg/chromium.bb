@@ -149,16 +149,18 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   using ToolbarActions = ScopedVector<ToolbarActionViewController>;
 
   // ExtensionToolbarModel::Observer:
-  void ToolbarExtensionAdded(const extensions::Extension* extension,
-                             int index) override;
-  void ToolbarExtensionRemoved(const extensions::Extension* extension) override;
-  void ToolbarExtensionMoved(const extensions::Extension* extension,
-                             int index) override;
-  void ToolbarExtensionUpdated(const extensions::Extension* extension) override;
+  void OnToolbarExtensionAdded(const extensions::Extension* extension,
+                               int index) override;
+  void OnToolbarExtensionRemoved(
+      const extensions::Extension* extension) override;
+  void OnToolbarExtensionMoved(const extensions::Extension* extension,
+                               int index) override;
+  void OnToolbarExtensionUpdated(
+      const extensions::Extension* extension) override;
   bool ShowExtensionActionPopup(const extensions::Extension* extension,
                                 bool grant_active_tab) override;
-  void ToolbarVisibleCountChanged() override;
-  void ToolbarHighlightModeChanged(bool is_highlighting) override;
+  void OnToolbarVisibleCountChanged() override;
+  void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
   Browser* GetBrowser() override;
 

@@ -666,7 +666,7 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
   }
 }
 
-void ToolbarActionsBar::ToolbarExtensionAdded(
+void ToolbarActionsBar::OnToolbarExtensionAdded(
     const extensions::Extension* extension,
     int index) {
   DCHECK(GetActionForId(extension->id()) == nullptr) <<
@@ -697,7 +697,7 @@ void ToolbarActionsBar::ToolbarExtensionAdded(
   ResizeDelegate(gfx::Tween::LINEAR, true);
 }
 
-void ToolbarActionsBar::ToolbarExtensionRemoved(
+void ToolbarActionsBar::OnToolbarExtensionRemoved(
     const extensions::Extension* extension) {
   ToolbarActions::iterator iter = toolbar_actions_.begin();
   while (iter != toolbar_actions_.end() && (*iter)->GetId() != extension->id())
@@ -740,7 +740,7 @@ void ToolbarActionsBar::ToolbarExtensionRemoved(
   }
 }
 
-void ToolbarActionsBar::ToolbarExtensionMoved(
+void ToolbarActionsBar::OnToolbarExtensionMoved(
     const extensions::Extension* extension,
     int index) {
   DCHECK(index >= 0 && index < static_cast<int>(toolbar_actions_.size()));
@@ -750,7 +750,7 @@ void ToolbarActionsBar::ToolbarExtensionMoved(
   ReorderActions();
 }
 
-void ToolbarActionsBar::ToolbarExtensionUpdated(
+void ToolbarActionsBar::OnToolbarExtensionUpdated(
     const extensions::Extension* extension) {
   ToolbarActionViewController* action = GetActionForId(extension->id());
   // There might not be a view in cases where we are highlighting or if we
@@ -781,7 +781,7 @@ bool ToolbarActionsBar::ShowExtensionActionPopup(
   return action && action->ExecuteAction(grant_active_tab);
 }
 
-void ToolbarActionsBar::ToolbarVisibleCountChanged() {
+void ToolbarActionsBar::OnToolbarVisibleCountChanged() {
   ResizeDelegate(gfx::Tween::EASE_OUT, false);
   SetOverflowedActionWantsToRun();
 }
@@ -806,7 +806,7 @@ void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
   }
 }
 
-void ToolbarActionsBar::ToolbarHighlightModeChanged(bool is_highlighting) {
+void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
   // It's a bit of a pain that we delete and recreate everything here, but given
   // everything else going on (the lack of highlight, [n] more extensions
   // appearing, etc), it's not worth the extra complexity to create and insert

@@ -55,28 +55,28 @@ class ExtensionToolbarModelTestObserver
 
  private:
   // ExtensionToolbarModel::Observer:
-  void ToolbarExtensionAdded(const Extension* extension, int index) override {
+  void OnToolbarExtensionAdded(const Extension* extension, int index) override {
     ++inserted_count_;
   }
 
-  void ToolbarExtensionRemoved(const Extension* extension) override {
+  void OnToolbarExtensionRemoved(const Extension* extension) override {
     ++removed_count_;
   }
 
-  void ToolbarExtensionMoved(const Extension* extension, int index) override {
+  void OnToolbarExtensionMoved(const Extension* extension, int index) override {
     ++moved_count_;
   }
 
-  void ToolbarExtensionUpdated(const Extension* extension) override {}
+  void OnToolbarExtensionUpdated(const Extension* extension) override {}
 
   bool ShowExtensionActionPopup(const Extension* extension,
                                 bool grant_active_tab) override {
     return false;
   }
 
-  void ToolbarVisibleCountChanged() override {}
+  void OnToolbarVisibleCountChanged() override {}
 
-  void ToolbarHighlightModeChanged(bool is_highlighting) override {
+  void OnToolbarHighlightModeChanged(bool is_highlighting) override {
     // Add one if highlighting, subtract one if not.
     highlight_mode_count_ += is_highlighting ? 1 : -1;
   }

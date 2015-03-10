@@ -116,8 +116,8 @@ void ExtensionToolbarModel::MoveExtensionIcon(const std::string& id,
     last_known_positions_.push_back(id);
   }
 
-  FOR_EACH_OBSERVER(
-      Observer, observers_, ToolbarExtensionMoved(extension.get(), index));
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnToolbarExtensionMoved(extension.get(), index));
   MaybeUpdateVisibilityPref(extension.get(), index);
   UpdatePrefs();
 }
@@ -141,7 +141,7 @@ void ExtensionToolbarModel::SetVisibleIconCount(size_t count) {
     prefs_->SetInteger(pref_names::kToolbarSize, visible_icon_count_);
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
+  FOR_EACH_OBSERVER(Observer, observers_, OnToolbarVisibleCountChanged());
 }
 
 void ExtensionToolbarModel::OnExtensionActionUpdated(
@@ -154,8 +154,8 @@ void ExtensionToolbarModel::OnExtensionActionUpdated(
   // Notify observers if the extension exists and is in the model.
   if (std::find(toolbar_items_.begin(), toolbar_items_.end(), extension) !=
           toolbar_items_.end()) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, ToolbarExtensionUpdated(extension));
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnToolbarExtensionUpdated(extension));
   }
 }
 
@@ -349,8 +349,8 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
   // to the full list (|toolbar_items_|, there won't be another *visible*
   // browser action, which was what the observers care about.
   if (!is_highlighting_) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, ToolbarExtensionAdded(extension, new_index));
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnToolbarExtensionAdded(extension, new_index));
 
     int visible_count_delta = 0;
     if (is_new_extension && !all_icons_visible()) {
@@ -404,14 +404,15 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
                     extension);
     if (pos != highlighted_items_.end()) {
       highlighted_items_.erase(pos);
-      FOR_EACH_OBSERVER(
-          Observer, observers_, ToolbarExtensionRemoved(extension));
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        OnToolbarExtensionRemoved(extension));
       // If the highlighted list is now empty, we stop highlighting.
       if (highlighted_items_.empty())
         StopHighlighting();
     }
   } else {
-    FOR_EACH_OBSERVER(Observer, observers_, ToolbarExtensionRemoved(extension));
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnToolbarExtensionRemoved(extension));
   }
 
   UpdatePrefs();
@@ -619,8 +620,8 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
   while (!toolbar_items_.empty()) {
     scoped_refptr<const Extension> extension = toolbar_items_.back();
     toolbar_items_.pop_back();
-    FOR_EACH_OBSERVER(
-        Observer, observers_, ToolbarExtensionRemoved(extension.get()));
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnToolbarExtensionRemoved(extension.get()));
   }
   DCHECK(toolbar_items_.empty());
 
@@ -629,9 +630,8 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
 
   // ...And notify.
   for (size_t i = 0; i < toolbar_items().size(); ++i) {
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
-                      ToolbarExtensionAdded(toolbar_items()[i].get(), i));
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnToolbarExtensionAdded(toolbar_items()[i].get(), i));
   }
 
   if (last_known_positions_.size() > pref_position_size) {
@@ -719,7 +719,8 @@ bool ExtensionToolbarModel::HighlightExtensions(
     if (visible_icon_count() < extension_ids.size())
       SetVisibleIconCount(extension_ids.size());
 
-    FOR_EACH_OBSERVER(Observer, observers_, ToolbarHighlightModeChanged(true));
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnToolbarHighlightModeChanged(true));
     return true;
   }
 
@@ -736,7 +737,8 @@ void ExtensionToolbarModel::StopHighlighting() {
     is_highlighting_ = false;
     if (old_visible_icon_count_ != visible_icon_count_)
       SetVisibleIconCount(old_visible_icon_count_);
-    FOR_EACH_OBSERVER(Observer, observers_, ToolbarHighlightModeChanged(false));
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnToolbarHighlightModeChanged(false));
   }
 }
 
