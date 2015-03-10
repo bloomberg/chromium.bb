@@ -109,7 +109,6 @@ public:
     void setHasBeenConfigured(bool flag) { m_hasBeenConfigured = flag; }
 
     virtual bool isDefault() const { return false; }
-    virtual void setIsDefault(bool) { }
 
     void removeAllCues();
 

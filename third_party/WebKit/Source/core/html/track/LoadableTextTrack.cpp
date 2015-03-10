@@ -39,7 +39,6 @@ LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
     : TextTrack(emptyAtom, emptyAtom, emptyAtom, emptyAtom, TrackElement)
     , m_trackElement(track)
     , m_loadTimer(this, &LoadableTextTrack::loadTimerFired)
-    , m_isDefault(false)
 {
 }
 
@@ -56,6 +55,12 @@ void LoadableTextTrack::clearTrackElement()
     m_trackElement = nullptr;
 }
 #endif
+
+bool LoadableTextTrack::isDefault() const
+{
+    ASSERT(m_trackElement);
+    return m_trackElement->fastHasAttribute(defaultAttr);
+}
 
 void LoadableTextTrack::setMode(const AtomicString& mode)
 {

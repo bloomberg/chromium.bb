@@ -55,8 +55,7 @@ public:
     void clearTrackElement();
 #endif
 
-    virtual bool isDefault() const override { return m_isDefault; }
-    virtual void setIsDefault(bool isDefault) override  { m_isDefault = isDefault; }
+    virtual bool isDefault() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -74,7 +73,6 @@ private:
     Timer<LoadableTextTrack> m_loadTimer;
     OwnPtrWillBeMember<TextTrackLoader> m_loader;
     KURL m_url;
-    bool m_isDefault;
 };
 } // namespace blink
 
