@@ -41,6 +41,11 @@ function GuestViewEvents(view) {
 //     should be dispatched within this handler function (if desired). With no
 //     handler function, the DOM event will be dispatched by default each time
 //     the extension event is caught.
+// |internal| (default: false) specifies that the event will not be dispatched
+//     as a DOM event, and will also not appear as an on* property on the view’s
+//     element. A |handler| should be specified for all internal events, and
+//     |fields| and |cancelable| should be left unspecified (as they are only
+//     meaningful for DOM events).
 GuestViewEvents.EVENTS = {};
 
 // Sets up the handling of events.
@@ -57,13 +62,20 @@ GuestViewEvents.prototype.setupEvents = function() {
 
 // Sets up the handling of the |eventName| event.
 GuestViewEvents.prototype.setupEvent = function(eventName, eventInfo) {
-  this.setupEventProperty(eventName);
+  if (!eventInfo.internal) {
+    this.setupEventProperty(eventName);
+  }
 
   var listenerOpts = { instanceId: this.view.viewInstanceId };
   if (eventInfo.handler) {
     eventInfo.evt.addListener(function(e) {
       this[eventInfo.handler](e, eventName);
     }.bind(this), listenerOpts);
+    return;
+  }
+
+  // Internal events are not dispatched as DOM events.
+  if (eventInfo.internal) {
     return;
   }
 
@@ -78,6 +90,11 @@ GuestViewEvents.prototype.setupEvent = function(eventName, eventInfo) {
 GuestViewEvents.prototype.makeDomEvent = function(event, eventName) {
   var eventInfo =
       GuestViewEvents.EVENTS[eventName] || this.getEvents()[eventName];
+
+  // Internal events are not dispatched as DOM events.
+  if (eventInfo.internal) {
+    return null;
+  }
 
   var details = { bubbles: true };
   if (eventInfo.cancelable) {

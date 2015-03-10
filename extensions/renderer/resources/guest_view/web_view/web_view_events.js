@@ -68,7 +68,8 @@ WebViewEvents.EVENTS = {
   },
   'framenamechanged': {
     evt: CreateEvent('webViewInternal.onFrameNameChanged'),
-    handler: 'handleFrameNameChangedEvent'
+    handler: 'handleFrameNameChangedEvent',
+    internal: true
   },
   'loadabort': {
     cancelable: true,

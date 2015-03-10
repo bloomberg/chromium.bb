@@ -16,7 +16,8 @@ ExtensionViewEvents.prototype.__proto__ = GuestViewEvents.prototype;
 ExtensionViewEvents.EVENTS = {
   'loadcommit': {
     evt: CreateEvent('extensionViewInternal.onLoadCommit'),
-    handler: 'handleLoadCommitEvent'
+    handler: 'handleLoadCommitEvent',
+    internal: true
   }
 };
 
