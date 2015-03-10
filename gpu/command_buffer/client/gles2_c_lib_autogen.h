@@ -1065,6 +1065,12 @@ void* GLES2MapBufferSubDataCHROMIUM(GLuint target,
 void GLES2UnmapBufferSubDataCHROMIUM(const void* mem) {
   gles2::GetGLContext()->UnmapBufferSubDataCHROMIUM(mem);
 }
+void* GLES2MapBufferRange(GLenum target,
+                          GLintptr offset,
+                          GLsizeiptr size,
+                          GLbitfield access) {
+  return gles2::GetGLContext()->MapBufferRange(target, offset, size, access);
+}
 void* GLES2MapTexSubImage2DCHROMIUM(GLenum target,
                                     GLint level,
                                     GLint xoffset,
@@ -2291,6 +2297,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glUnmapBufferSubDataCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glUnmapBufferSubDataCHROMIUM),
+    },
+    {
+     "glMapBufferRange",
+     reinterpret_cast<GLES2FunctionPointer>(glMapBufferRange),
     },
     {
      "glMapTexSubImage2DCHROMIUM",

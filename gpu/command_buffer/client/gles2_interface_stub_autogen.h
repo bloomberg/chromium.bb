@@ -568,6 +568,10 @@ void* MapBufferSubDataCHROMIUM(GLuint target,
                                GLsizeiptr size,
                                GLenum access) override;
 void UnmapBufferSubDataCHROMIUM(const void* mem) override;
+void* MapBufferRange(GLenum target,
+                     GLintptr offset,
+                     GLsizeiptr size,
+                     GLbitfield access) override;
 void* MapTexSubImage2DCHROMIUM(GLenum target,
                                GLint level,
                                GLint xoffset,

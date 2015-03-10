@@ -4845,6 +4845,19 @@ std::string GLES2Util::GetStringIndexedBufferTarget(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringMapBufferAccess(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_MAP_READ_BIT, "GL_MAP_READ_BIT"},
+      {GL_MAP_WRITE_BIT, "GL_MAP_WRITE_BIT"},
+      {GL_MAP_INVALIDATE_RANGE_BIT, "GL_MAP_INVALIDATE_RANGE_BIT"},
+      {GL_MAP_INVALIDATE_BUFFER_BIT, "GL_MAP_INVALIDATE_BUFFER_BIT"},
+      {GL_MAP_FLUSH_EXPLICIT_BIT, "GL_MAP_FLUSH_EXPLICIT_BIT"},
+      {GL_MAP_UNSYNCHRONIZED_BIT, "GL_MAP_UNSYNCHRONIZED_BIT"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringMatrixMode(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_PATH_PROJECTION_CHROMIUM, "GL_PATH_PROJECTION_CHROMIUM"},

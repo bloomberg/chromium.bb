@@ -222,6 +222,10 @@ GLES2Implementation::~GLES2Implementation() {
     DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
   }
 
+  // Release remaining BufferRange mem; This is when a MapBufferRange() is
+  // called but not the UnmapBuffer() pair.
+  ClearMappedBufferRangeMap();
+
   // Release any per-context data in share group.
   share_group_->FreeContext(this);
 
@@ -605,6 +609,11 @@ GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
 }
 
 bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
+  // TODO(zmo): For all the BINDING points, there is a possibility where
+  // resources are shared among multiple contexts, that the cached points
+  // are invalid. It is not a problem for now, but once we allow resource
+  // sharing in WebGL, we need to implement a mechanism to allow correct
+  // client side binding points tracking.  crbug.com/465562.
   switch (pname) {
     case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
       *params = capabilities_.max_combined_texture_image_units;
@@ -643,18 +652,12 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = capabilities_.num_shader_binary_formats;
       return true;
     case GL_ARRAY_BUFFER_BINDING:
-      if (share_group_->bind_generates_resource()) {
-        *params = bound_array_buffer_id_;
-        return true;
-      }
-      return false;
+      *params = bound_array_buffer_id_;
+      return true;
     case GL_ELEMENT_ARRAY_BUFFER_BINDING:
-      if (share_group_->bind_generates_resource()) {
-        *params =
-            vertex_array_object_manager_->bound_element_array_buffer();
-        return true;
-      }
-      return false;
+      *params =
+          vertex_array_object_manager_->bound_element_array_buffer();
+      return true;
     case GL_PIXEL_PACK_TRANSFER_BUFFER_BINDING_CHROMIUM:
       *params = bound_pixel_pack_transfer_buffer_id_;
       return true;
@@ -665,43 +668,27 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = active_texture_unit_ + GL_TEXTURE0;
       return true;
     case GL_TEXTURE_BINDING_2D:
-      if (share_group_->bind_generates_resource()) {
-        *params = texture_units_[active_texture_unit_].bound_texture_2d;
-        return true;
-      }
-      return false;
+      *params = texture_units_[active_texture_unit_].bound_texture_2d;
+      return true;
     case GL_TEXTURE_BINDING_CUBE_MAP:
-      if (share_group_->bind_generates_resource()) {
-        *params = texture_units_[active_texture_unit_].bound_texture_cube_map;
-        return true;
-      }
-      return false;
+      *params = texture_units_[active_texture_unit_].bound_texture_cube_map;
+      return true;
     case GL_TEXTURE_BINDING_EXTERNAL_OES:
-      if (share_group_->bind_generates_resource()) {
-        *params =
-            texture_units_[active_texture_unit_].bound_texture_external_oes;
-        return true;
-      }
-      return false;
+      *params =
+          texture_units_[active_texture_unit_].bound_texture_external_oes;
+      return true;
     case GL_FRAMEBUFFER_BINDING:
-      if (share_group_->bind_generates_resource()) {
-        *params = bound_framebuffer_;
-        return true;
-      }
-      return false;
+      *params = bound_framebuffer_;
+      return true;
     case GL_READ_FRAMEBUFFER_BINDING:
-      if (IsChromiumFramebufferMultisampleAvailable() &&
-          share_group_->bind_generates_resource()) {
+      if (IsChromiumFramebufferMultisampleAvailable()) {
         *params = bound_read_framebuffer_;
         return true;
       }
       return false;
     case GL_RENDERBUFFER_BINDING:
-      if (share_group_->bind_generates_resource()) {
-        *params = bound_renderbuffer_;
-        return true;
-      }
-      return false;
+      *params = bound_renderbuffer_;
+      return true;
     case GL_MAX_UNIFORM_BUFFER_BINDINGS:
       *params = capabilities_.max_uniform_buffer_bindings;
       return true;
@@ -711,6 +698,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:
       *params = capabilities_.uniform_buffer_offset_alignment;
       return true;
+    // TODO(zmo): Support ES3 pnames.
     default:
       return false;
   }
@@ -1384,12 +1372,10 @@ void GLES2Implementation::BufferDataHelper(
     return;
   }
 
-  if (size == 0) {
-    return;
-  }
+  RemoveMappedBufferRangeByTarget(target);
 
   // If there is no data just send BufferData
-  if (!data) {
+  if (size == 0 || !data) {
     helper_->BufferData(target, size, 0, 0, usage);
     return;
   }
@@ -3291,6 +3277,8 @@ void GLES2Implementation::DeleteBuffersHelper(
     if (buffers[ii] == bound_pixel_unpack_transfer_buffer_id_) {
       bound_pixel_unpack_transfer_buffer_id_ = 0;
     }
+
+    RemoveMappedBufferRangeById(buffers[ii]);
   }
 }
 
@@ -3670,6 +3658,94 @@ void GLES2Implementation::UnmapBufferSubDataCHROMIUM(const void* mem) {
   mapped_memory_->FreePendingToken(mb.shm_memory, helper_->InsertToken());
   mapped_buffers_.erase(it);
   CheckGLError();
+}
+
+GLuint GLES2Implementation::GetBoundBufferHelper(GLenum target) {
+  GLenum binding = GLES2Util::MapBufferTargetToBindingEnum(target);
+  GLint id = 0;
+  bool cached = GetHelper(binding, &id);
+  DCHECK(cached);
+  return static_cast<GLuint>(id);
+}
+
+void GLES2Implementation::RemoveMappedBufferRangeByTarget(GLenum target) {
+  GLuint buffer = GetBoundBufferHelper(target);
+  RemoveMappedBufferRangeById(buffer);
+}
+
+void GLES2Implementation::RemoveMappedBufferRangeById(GLuint buffer) {
+  if (buffer > 0) {
+    auto iter = mapped_buffer_range_map_.find(buffer);
+    if (iter != mapped_buffer_range_map_.end() && iter->second.shm_memory) {
+      mapped_memory_->FreePendingToken(
+          iter->second.shm_memory, helper_->InsertToken());
+      mapped_buffer_range_map_.erase(iter);
+    }
+  }
+}
+
+void GLES2Implementation::ClearMappedBufferRangeMap() {
+  for (auto& buffer_range : mapped_buffer_range_map_) {
+    if (buffer_range.second.shm_memory) {
+      mapped_memory_->FreePendingToken(
+          buffer_range.second.shm_memory, helper_->InsertToken());
+    }
+  }
+  mapped_buffer_range_map_.clear();
+}
+
+void* GLES2Implementation::MapBufferRange(
+    GLenum target, GLintptr offset, GLsizeiptr size, GLbitfield access) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMapBufferRange("
+      << GLES2Util::GetStringEnum(target) << ", " << offset << ", "
+      << size << ", " << access << ")");
+  if (!ValidateSize("glMapBufferRange", size) ||
+      !ValidateOffset("glMapBufferRange", offset)) {
+    return nullptr;
+  }
+
+  int32 shm_id;
+  unsigned int shm_offset;
+  void* mem = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
+  if (!mem) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMapBufferRange", "out of memory");
+    return nullptr;
+  }
+
+  typedef cmds::MapBufferRange::Result Result;
+  Result* result = GetResultAs<Result*>();
+  *result = 0;
+  helper_->MapBufferRange(target, offset, size, access, shm_id, shm_offset,
+                          GetResultShmId(), GetResultShmOffset());
+  // TODO(zmo): For write only mode with MAP_INVALID_*_BIT, we should
+  // consider an early return without WaitForCmd(). crbug.com/465804.
+  WaitForCmd();
+  if (*result) {
+    const GLbitfield kInvalidateBits =
+        GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT;
+    if ((access & kInvalidateBits) != 0) {
+      // We do not read back from the buffer, therefore, we set the client
+      // side memory to zero to avoid uninitialized data.
+      memset(mem, 0, size);
+    }
+    GLuint buffer = GetBoundBufferHelper(target);
+    DCHECK_NE(0u, buffer);
+    // glMapBufferRange fails on an already mapped buffer.
+    DCHECK(mapped_buffer_range_map_.find(buffer) ==
+           mapped_buffer_range_map_.end());
+    auto iter = mapped_buffer_range_map_.insert(std::make_pair(
+        buffer,
+        MappedBuffer(access, shm_id, mem, shm_offset, target, offset, size)));
+    DCHECK(iter.second);
+  } else {
+    mapped_memory_->Free(mem);
+    mem = nullptr;
+  }
+
+  GPU_CLIENT_LOG("  returned " << mem);
+  CheckGLError();
+  return mem;
 }
 
 void* GLES2Implementation::MapTexSubImage2DCHROMIUM(

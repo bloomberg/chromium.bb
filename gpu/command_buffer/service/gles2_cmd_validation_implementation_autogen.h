@@ -289,6 +289,15 @@ static const GLenum valid_indexed_buffer_target_table[] = {
     GL_UNIFORM_BUFFER,
 };
 
+static const GLenum valid_map_buffer_access_table[] = {
+    GL_MAP_READ_BIT,
+    GL_MAP_WRITE_BIT,
+    GL_MAP_INVALIDATE_RANGE_BIT,
+    GL_MAP_INVALIDATE_BUFFER_BIT,
+    GL_MAP_FLUSH_EXPLICIT_BIT,
+    GL_MAP_UNSYNCHRONIZED_BIT,
+};
+
 static const GLenum valid_matrix_mode_table[] = {
     GL_PATH_PROJECTION_CHROMIUM,
     GL_PATH_MODELVIEW_CHROMIUM,
@@ -670,6 +679,8 @@ Validators::Validators()
       index_type(valid_index_type_table, arraysize(valid_index_type_table)),
       indexed_buffer_target(valid_indexed_buffer_target_table,
                             arraysize(valid_indexed_buffer_target_table)),
+      map_buffer_access(valid_map_buffer_access_table,
+                        arraysize(valid_map_buffer_access_table)),
       matrix_mode(valid_matrix_mode_table, arraysize(valid_matrix_mode_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),
       pixel_store_alignment(valid_pixel_store_alignment_table,

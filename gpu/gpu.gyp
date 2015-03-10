@@ -220,6 +220,7 @@
         'command_buffer/service/gles2_cmd_decoder_unittest_attribs.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_base.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_base.h',
+        'command_buffer/service/gles2_cmd_decoder_unittest_buffers.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_context_state.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_drawing.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_extensions.cc',

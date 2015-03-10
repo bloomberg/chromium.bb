@@ -2858,37 +2858,6 @@ TEST_F(GLES2ImplementationTest, TexSubImage3D4Writes) {
       reinterpret_cast<uint8*>(pixels.get()) + offset_to_last, mem2_2.ptr));
 }
 
-// Binds can not be cached with bind_generates_resource = false because
-// our id might not be valid. More specifically if you bind on contextA then
-// delete on contextB the resource is still bound on contextA but GetInterger
-// won't return an id.
-TEST_F(GLES2ImplementationStrictSharedTest, BindsNotCached) {
-  struct PNameValue {
-    GLenum pname;
-    GLint expected;
-  };
-  const PNameValue pairs[] = {{GL_TEXTURE_BINDING_2D, 1, },
-                              {GL_TEXTURE_BINDING_CUBE_MAP, 2, },
-                              {GL_TEXTURE_BINDING_EXTERNAL_OES, 3, },
-                              {GL_FRAMEBUFFER_BINDING, 4, },
-                              {GL_RENDERBUFFER_BINDING, 5, },
-                              {GL_ARRAY_BUFFER_BINDING, 6, },
-                              {GL_ELEMENT_ARRAY_BUFFER_BINDING, 7, }, };
-  size_t num_pairs = sizeof(pairs) / sizeof(pairs[0]);
-  for (size_t ii = 0; ii < num_pairs; ++ii) {
-    const PNameValue& pv = pairs[ii];
-    GLint v = -1;
-    ExpectedMemoryInfo result1 =
-        GetExpectedResultMemory(sizeof(cmds::GetIntegerv::Result));
-    EXPECT_CALL(*command_buffer(), OnFlush())
-        .WillOnce(SetMemory(result1.ptr,
-                            SizedResultHelper<GLuint>(pv.expected)))
-        .RetiresOnSaturation();
-    gl_->GetIntegerv(pv.pname, &v);
-    EXPECT_EQ(pv.expected, v);
-  }
-}
-
 // glGen* Ids must not be reused until glDelete* commands have been
 // flushed by glFlush.
 TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestBuffers) {
@@ -3629,6 +3598,89 @@ TEST_F(GLES2ImplementationTest, WaitSync) {
 
   gl_->WaitSync(reinterpret_cast<GLsync>(kClientSyncId), 0, kTimeout);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, MapBufferRangeWrite) {
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result.ptr, uint32_t(1)))
+      .RetiresOnSaturation();
+
+  const GLuint kBufferId = 123;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kBufferId);
+
+  void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_WRITE_BIT);
+  EXPECT_TRUE(mem != nullptr);
+}
+
+TEST_F(GLES2ImplementationTest, MapBufferRangeWriteWithInvalidateBit) {
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result.ptr, uint32_t(1)))
+      .RetiresOnSaturation();
+
+  const GLuint kBufferId = 123;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kBufferId);
+
+  GLsizeiptr kSize = 64;
+  void* mem = gl_->MapBufferRange(
+      GL_ARRAY_BUFFER, 10, kSize,
+      GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+  EXPECT_TRUE(mem != nullptr);
+  std::vector<int8_t> zero(kSize);
+  memset(&zero[0], 0, kSize);
+  EXPECT_EQ(0, memcmp(mem, &zero[0], kSize));
+}
+
+TEST_F(GLES2ImplementationTest, MapBufferRangeWriteWithGLError) {
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
+
+  // Return a result of 0 to indicate an GL error.
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result.ptr, uint32_t(0)))
+      .RetiresOnSaturation();
+
+  const GLuint kBufferId = 123;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kBufferId);
+
+  void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_WRITE_BIT);
+  EXPECT_TRUE(mem == nullptr);
+}
+
+TEST_F(GLES2ImplementationTest, MapBufferRangeRead) {
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result.ptr, uint32_t(1)))
+      .RetiresOnSaturation();
+
+  const GLuint kBufferId = 123;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kBufferId);
+
+  void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_READ_BIT);
+  EXPECT_TRUE(mem != nullptr);
+}
+
+TEST_F(GLES2ImplementationTest, MapBufferRangeReadWithGLError) {
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
+
+  // Return a result of 0 to indicate an GL error.
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result.ptr, uint32_t(0)))
+      .RetiresOnSaturation();
+
+  const GLuint kBufferId = 123;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kBufferId);
+
+  void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_READ_BIT);
+  EXPECT_TRUE(mem == nullptr);
 }
 
 TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {

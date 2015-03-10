@@ -1683,6 +1683,14 @@ void GLES2TraceImplementation::UnmapBufferSubDataCHROMIUM(const void* mem) {
   gl_->UnmapBufferSubDataCHROMIUM(mem);
 }
 
+void* GLES2TraceImplementation::MapBufferRange(GLenum target,
+                                               GLintptr offset,
+                                               GLsizeiptr size,
+                                               GLbitfield access) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MapBufferRange");
+  return gl_->MapBufferRange(target, offset, size, access);
+}
+
 void* GLES2TraceImplementation::MapTexSubImage2DCHROMIUM(GLenum target,
                                                          GLint level,
                                                          GLint xoffset,

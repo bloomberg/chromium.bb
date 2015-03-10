@@ -10939,6 +10939,86 @@ static_assert(offsetof(EnableFeatureCHROMIUM, result_shm_id) == 8,
 static_assert(offsetof(EnableFeatureCHROMIUM, result_shm_offset) == 12,
               "offset of EnableFeatureCHROMIUM result_shm_offset should be 12");
 
+struct MapBufferRange {
+  typedef MapBufferRange ValueType;
+  static const CommandId kCmdId = kMapBufferRange;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef uint32_t Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLintptr _offset,
+            GLsizeiptr _size,
+            GLbitfield _access,
+            uint32_t _data_shm_id,
+            uint32_t _data_shm_offset,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    SetHeader();
+    target = _target;
+    offset = _offset;
+    size = _size;
+    access = _access;
+    data_shm_id = _data_shm_id;
+    data_shm_offset = _data_shm_offset;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLintptr _offset,
+            GLsizeiptr _size,
+            GLbitfield _access,
+            uint32_t _data_shm_id,
+            uint32_t _data_shm_offset,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target, _offset, _size, _access,
+                                       _data_shm_id, _data_shm_offset,
+                                       _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t offset;
+  int32_t size;
+  uint32_t access;
+  uint32_t data_shm_id;
+  uint32_t data_shm_offset;
+  uint32_t result_shm_id;
+  uint32_t result_shm_offset;
+};
+
+static_assert(sizeof(MapBufferRange) == 36,
+              "size of MapBufferRange should be 36");
+static_assert(offsetof(MapBufferRange, header) == 0,
+              "offset of MapBufferRange header should be 0");
+static_assert(offsetof(MapBufferRange, target) == 4,
+              "offset of MapBufferRange target should be 4");
+static_assert(offsetof(MapBufferRange, offset) == 8,
+              "offset of MapBufferRange offset should be 8");
+static_assert(offsetof(MapBufferRange, size) == 12,
+              "offset of MapBufferRange size should be 12");
+static_assert(offsetof(MapBufferRange, access) == 16,
+              "offset of MapBufferRange access should be 16");
+static_assert(offsetof(MapBufferRange, data_shm_id) == 20,
+              "offset of MapBufferRange data_shm_id should be 20");
+static_assert(offsetof(MapBufferRange, data_shm_offset) == 24,
+              "offset of MapBufferRange data_shm_offset should be 24");
+static_assert(offsetof(MapBufferRange, result_shm_id) == 28,
+              "offset of MapBufferRange result_shm_id should be 28");
+static_assert(offsetof(MapBufferRange, result_shm_offset) == 32,
+              "offset of MapBufferRange result_shm_offset should be 32");
+
 struct ResizeCHROMIUM {
   typedef ResizeCHROMIUM ValueType;
   static const CommandId kCmdId = kResizeCHROMIUM;

@@ -870,6 +870,31 @@ uint64_t GLES2Util::MapTwoUint32ToUint64(uint32_t v32_0, uint32_t v32_1) {
   return (v64 << 32) | v32_0;
 }
 
+// static
+uint32_t GLES2Util::MapBufferTargetToBindingEnum(uint32_t target) {
+  switch (target) {
+    case GL_ARRAY_BUFFER:
+      return GL_ARRAY_BUFFER_BINDING;
+    case GL_COPY_READ_BUFFER:
+      return GL_COPY_READ_BUFFER_BINDING;
+    case GL_COPY_WRITE_BUFFER:
+      return GL_COPY_WRITE_BUFFER_BINDING;
+    case GL_ELEMENT_ARRAY_BUFFER:
+      return GL_ELEMENT_ARRAY_BUFFER_BINDING;
+    case GL_PIXEL_PACK_BUFFER:
+      return GL_PIXEL_PACK_BUFFER_BINDING;
+    case GL_PIXEL_UNPACK_BUFFER:
+      return GL_PIXEL_UNPACK_BUFFER_BINDING;
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+      return GL_TRANSFORM_FEEDBACK_BUFFER_BINDING;
+    case GL_UNIFORM_BUFFER:
+      return GL_UNIFORM_BUFFER_BINDING;
+    default:
+      return 0;
+  }
+}
+
+
 namespace {
 
 // WebGraphicsContext3DCommandBufferImpl configuration attributes. Those in

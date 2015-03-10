@@ -2718,6 +2718,7 @@ TEST_F(GLES2ImplementationTest, IsVertexArrayOES) {
   EXPECT_TRUE(result);
 }
 // TODO(zmo): Implement unit test for EnableFeatureCHROMIUM
+// TODO(zmo): Implement unit test for MapBufferRange
 
 TEST_F(GLES2ImplementationTest, ResizeCHROMIUM) {
   struct Cmds {

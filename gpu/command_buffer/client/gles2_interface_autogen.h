@@ -583,6 +583,10 @@ virtual void* MapBufferSubDataCHROMIUM(GLuint target,
                                        GLsizeiptr size,
                                        GLenum access) = 0;
 virtual void UnmapBufferSubDataCHROMIUM(const void* mem) = 0;
+virtual void* MapBufferRange(GLenum target,
+                             GLintptr offset,
+                             GLsizeiptr size,
+                             GLbitfield access) = 0;
 virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
                                        GLint level,
                                        GLint xoffset,

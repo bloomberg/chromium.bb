@@ -987,6 +987,12 @@ void* GLES2InterfaceStub::MapBufferSubDataCHROMIUM(GLuint /* target */,
 }
 void GLES2InterfaceStub::UnmapBufferSubDataCHROMIUM(const void* /* mem */) {
 }
+void* GLES2InterfaceStub::MapBufferRange(GLenum /* target */,
+                                         GLintptr /* offset */,
+                                         GLsizeiptr /* size */,
+                                         GLbitfield /* access */) {
+  return 0;
+}
 void* GLES2InterfaceStub::MapTexSubImage2DCHROMIUM(GLenum /* target */,
                                                    GLint /* level */,
                                                    GLint /* xoffset */,

@@ -82,7 +82,8 @@ Buffer::Buffer(BufferManager* manager, GLuint service_id)
       is_client_side_array_(false),
       service_id_(service_id),
       target_(0),
-      usage_(GL_STATIC_DRAW) {
+      usage_(GL_STATIC_DRAW),
+      buffer_range_pointer_(nullptr) {
   manager_->StartTracking(this);
 }
 
@@ -119,6 +120,7 @@ void Buffer::SetInfo(
       memset(shadow_.get(), 0, size);
     }
   }
+  buffer_range_pointer_ = nullptr;
 }
 
 bool Buffer::CheckRange(
@@ -397,12 +399,23 @@ bool BufferManager::SetTarget(Buffer* buffer, GLenum target) {
 // Since one BufferManager can be shared by multiple decoders, ContextState is
 // passed in each time and not just passed in during initialization.
 Buffer* BufferManager::GetBufferInfoForTarget(
-    ContextState* state, GLenum target) {
-  DCHECK(target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER);
-  if (target == GL_ARRAY_BUFFER) {
-    return state->bound_array_buffer.get();
-  } else {
-    return state->vertex_attrib_manager->element_array_buffer();
+    ContextState* state, GLenum target) const {
+  switch (target) {
+    case GL_ARRAY_BUFFER:
+      return state->bound_array_buffer.get();
+    case GL_ELEMENT_ARRAY_BUFFER:
+      return state->vertex_attrib_manager->element_array_buffer();
+    case GL_COPY_READ_BUFFER:
+    case GL_COPY_WRITE_BUFFER:
+    case GL_PIXEL_PACK_BUFFER:
+    case GL_PIXEL_UNPACK_BUFFER:
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+    case GL_UNIFORM_BUFFER:
+      NOTIMPLEMENTED();
+      return nullptr;
+    default:
+      NOTREACHED();
+      return nullptr;
   }
 }
 

@@ -67,6 +67,14 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     return is_client_side_array_;
   }
 
+  void set_buffer_range_pointer(void* mem) {
+    buffer_range_pointer_ = mem;
+  }
+
+  void* buffer_range_pointer() const {
+    return buffer_range_pointer_;
+  }
+
  private:
   friend class BufferManager;
   friend class BufferManagerTestBase;
@@ -163,6 +171,9 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Usage of buffer.
   GLenum usage_;
 
+  // Returned value from last glMapBufferRange call.
+  void* buffer_range_pointer_;
+
   // A map of ranges to the highest value in that range of a certain type.
   typedef std::map<Range, GLuint, Range::Less> RangeToMaxValueMap;
   RangeToMaxValueMap range_set_;
@@ -232,14 +243,15 @@ class GPU_EXPORT BufferManager {
   // set to a non-zero size.
   bool UseNonZeroSizeForClientSideArrayBuffer();
 
+  Buffer* GetBufferInfoForTarget(ContextState* state, GLenum target) const;
+
  private:
   friend class Buffer;
   friend class TestHelper;  // Needs access to DoBufferData.
   friend class BufferManagerTestBase;  // Needs access to DoBufferSubData.
+
   void StartTracking(Buffer* buffer);
   void StopTracking(Buffer* buffer);
-
-  Buffer* GetBufferInfoForTarget(ContextState* state, GLenum target);
 
   // Does a glBufferSubData and updates the approriate accounting.
   // Assumes the values have already been validated.

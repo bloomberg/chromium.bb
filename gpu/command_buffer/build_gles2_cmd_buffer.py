@@ -607,6 +607,20 @@ _NAMED_TYPE_INFO = {
       'GL_RENDERBUFFER',
     ],
   },
+  'MapBufferAccess': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_MAP_READ_BIT',
+      'GL_MAP_WRITE_BIT',
+      'GL_MAP_INVALIDATE_RANGE_BIT',
+      'GL_MAP_INVALIDATE_BUFFER_BIT',
+      'GL_MAP_FLUSH_EXPLICIT_BIT',
+      'GL_MAP_UNSYNCHRONIZED_BIT',
+    ],
+    'invalid': [
+      'GL_SYNC_FLUSH_COMMANDS_BIT',
+    ],
+  },
   'Bufferiv': {
     'type': 'GLenum',
     'valid': [
@@ -2502,6 +2516,16 @@ _FUNCTION_INFO = {
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
+  },
+  'MapBufferRange': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'cmd_args': 'GLenumBufferTarget target, GLintptrNotNegative offset, '
+                'GLsizeiptr size, GLbitfieldMapBufferAccess access, '
+                'uint32_t data_shm_id, uint32_t data_shm_offset, '
+                'uint32_t result_shm_id, uint32_t result_shm_offset',
+    'unsafe': True,
+    'result': ['uint32_t'],
   },
   'PauseTransformFeedback': {
     'unsafe': True,

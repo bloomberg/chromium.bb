@@ -218,6 +218,8 @@ TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): GetMaxValueInBufferCHROMIUM
 // TODO(gman): EnableFeatureCHROMIUM
 
+// TODO(gman): MapBufferRange
+
 // TODO(gman): ResizeCHROMIUM
 // TODO(gman): GetRequestableExtensionsCHROMIUM
 
