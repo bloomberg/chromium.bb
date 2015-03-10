@@ -31,6 +31,7 @@
 #ifndef OpenTypeSanitizer_h
 #define OpenTypeSanitizer_h
 
+#include "opentype-sanitiser.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -50,6 +51,33 @@ public:
 
 private:
     SharedBuffer* const m_buffer;
+};
+
+class BlinkOTSContext: public ots::OTSContext {
+public:
+        // TODO: Implement "Message" to support user friendly messages
+        virtual ots::TableAction GetTableAction(uint32_t tag)
+        {
+#define TABLE_TAG(c1, c2, c3, c4) ((uint32_t)((((uint8_t)(c1)) << 24) | (((uint8_t)(c2)) << 16) | (((uint8_t)(c3)) << 8) | ((uint8_t)(c4))))
+
+            const uint32_t cbdtTag = TABLE_TAG('C', 'B', 'D', 'T');
+            const uint32_t cblcTag = TABLE_TAG('C', 'B', 'L', 'C');
+            const uint32_t colrTag = TABLE_TAG('C', 'O', 'L', 'R');
+            const uint32_t cpalTag = TABLE_TAG('C', 'P', 'A', 'L');
+
+            switch (tag) {
+            // Google Color Emoji Tables
+            case cbdtTag:
+            case cblcTag:
+            // Windows Color Emoji Tables
+            case colrTag:
+            case cpalTag:
+                return ots::TABLE_ACTION_PASSTHRU;
+            default:
+                return ots::TABLE_ACTION_DEFAULT;
+            }
+#undef TABLE_TAG
+        }
 };
 
 } // namespace blink

@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/fonts/opentype/OpenTypeSanitizer.h"
 
-#include "opentype-sanitiser.h"
 #include "ots-memory-stream.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
@@ -67,8 +66,6 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
     if (m_buffer->size() > maxWebFontSize)
         return nullptr;
 
-    ots::EnableWOFF2();
-
     // A transcoded font is usually smaller than an original font.
     // However, it can be slightly bigger than the original one due to
     // name table replacement and/or padding for glyf table.
@@ -78,7 +75,8 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
 
     ots::ExpandingMemoryStream output(m_buffer->size(), maxWebFontSize);
     double start = currentTime();
-    ots::OTSContext otsContext;
+    BlinkOTSContext otsContext;
+
     if (!otsContext.Process(&output, reinterpret_cast<const uint8_t*>(m_buffer->data()), m_buffer->size()))
         return nullptr;
 
