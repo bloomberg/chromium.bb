@@ -43,7 +43,6 @@
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorCanvasAgent.h"
-#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
@@ -77,16 +76,22 @@
 
 namespace blink {
 
-InspectorController::InspectorController(Page* page, InspectorClient* inspectorClient)
+InspectorController::InspectorController(
+    Page* page,
+    InspectorStateClient* stateClient,
+    InspectorInputAgent::Client* inputClient,
+    InspectorOverlay::Client* overlayClient,
+    InspectorPageAgent::Client* pageClient,
+    InspectorTracingAgent::Client* tracingClient,
+    PageRuntimeAgent::Client* runtimeClient)
     : m_instrumentingAgents(page->instrumentingAgents())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
-    , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(inspectorClient)))
-    , m_overlay(InspectorOverlay::create(page, inspectorClient))
+    , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(stateClient)))
+    , m_overlay(InspectorOverlay::create(page, overlayClient))
     , m_cssAgent(nullptr)
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
     , m_animationAgent(nullptr)
-    , m_inspectorClient(inspectorClient)
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_isUnderTest(false)
     , m_deferredAgentsInitialized(false)
@@ -96,7 +101,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(InspectorInspectorAgent::create(injectedScriptManager));
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, inspectorClient, overlay));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, pageClient, overlay));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
@@ -112,20 +117,21 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
 
-    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, inspectorClient, pageScriptDebugServer, m_pageAgent));
+    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, runtimeClient, pageScriptDebugServer, m_pageAgent));
 
     OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_pageAgent);
     OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(pageConsoleAgentPtr.get());
 
-    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(inspectorClient, workerAgentPtr.get(), m_pageAgent);
+    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(tracingClient, workerAgentPtr.get(), m_pageAgent);
     m_tracingAgent = tracingAgentPtr.get();
     m_agents.append(tracingAgentPtr.release());
 
     m_agents.append(workerAgentPtr.release());
     m_agents.append(pageConsoleAgentPtr.release());
 
-    ASSERT_ARG(inspectorClient, inspectorClient);
     m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), pageScriptDebugServer);
+
+    m_agents.append(InspectorInputAgent::create(m_pageAgent, inputClient));
 
     m_agents.append(InspectorDatabaseAgent::create(page));
     m_agents.append(DeviceOrientationInspectorAgent::create(page));
@@ -157,9 +163,16 @@ DEFINE_TRACE(InspectorController)
     visitor->trace(m_agents);
 }
 
-PassOwnPtrWillBeRawPtr<InspectorController> InspectorController::create(Page* page, InspectorClient* client)
+PassOwnPtrWillBeRawPtr<InspectorController> InspectorController::create(
+    Page* page,
+    InspectorStateClient* stateClient,
+    InspectorInputAgent::Client* inputClient,
+    InspectorOverlay::Client* overlayClient,
+    InspectorPageAgent::Client* pageClient,
+    InspectorTracingAgent::Client* tracingClient,
+    PageRuntimeAgent::Client* runtimeClient)
 {
-    return adoptPtrWillBeNoop(new InspectorController(page, client));
+    return adoptPtrWillBeNoop(new InspectorController(page, stateClient, inputClient, overlayClient, pageClient, tracingClient, runtimeClient));
 }
 
 void InspectorController::setTextAutosizingEnabled(bool enabled)
@@ -222,8 +235,6 @@ void InspectorController::initializeDeferredAgents()
 
     m_agents.append(InspectorCanvasAgent::create(m_pageAgent, injectedScriptManager));
 
-    m_agents.append(InspectorInputAgent::create(m_pageAgent, m_inspectorClient));
-
     m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
 }
 
@@ -238,7 +249,6 @@ void InspectorController::willBeDestroyed()
 
     disconnectFrontend();
     m_injectedScriptManager->disconnect();
-    m_inspectorClient = 0;
     m_instrumentingAgents->reset();
     m_agents.discardAgents();
 }
@@ -265,7 +275,6 @@ void InspectorController::connectFrontend(const String& hostId, InspectorFronten
     InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
     InspectorInstrumentation::frontendCreated();
 
-    ASSERT(m_inspectorClient);
     m_inspectorBackendDispatcher = InspectorBackendDispatcher::create(frontendChannel);
 
     m_agents.registerInDispatcher(m_inspectorBackendDispatcher.get());

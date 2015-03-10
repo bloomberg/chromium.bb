@@ -32,6 +32,12 @@
 #define InspectorController_h
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/InspectorInputAgent.h"
+#include "core/inspector/InspectorOverlay.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorStateClient.h"
+#include "core/inspector/InspectorTracingAgent.h"
+#include "core/inspector/PageRuntimeAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -48,7 +54,6 @@ class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorAgent;
 class InspectorAnimationAgent;
-class InspectorClient;
 class InspectorCSSAgent;
 class InspectorDOMAgent;
 class InspectorFrontend;
@@ -73,7 +78,14 @@ public:
     ~InspectorController();
     DECLARE_TRACE();
 
-    static PassOwnPtrWillBeRawPtr<InspectorController> create(Page*, InspectorClient*);
+    static PassOwnPtrWillBeRawPtr<InspectorController> create(
+        Page*,
+        InspectorStateClient*,
+        InspectorInputAgent::Client*,
+        InspectorOverlay::Client*,
+        InspectorPageAgent::Client*,
+        InspectorTracingAgent::Client*,
+        PageRuntimeAgent::Client*);
 
     // Settings overrides.
     void setTextAutosizingEnabled(bool);
@@ -119,7 +131,14 @@ public:
     InstrumentingAgents* instrumentingAgents() { return m_instrumentingAgents.get(); }
 
 private:
-    InspectorController(Page*, InspectorClient*);
+    InspectorController(
+        Page*,
+        InspectorStateClient*,
+        InspectorInputAgent::Client*,
+        InspectorOverlay::Client*,
+        InspectorPageAgent::Client*,
+        InspectorTracingAgent::Client*,
+        PageRuntimeAgent::Client*);
 
     void initializeDeferredAgents();
 
@@ -139,7 +158,6 @@ private:
 
     RefPtrWillBeMember<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;
-    InspectorClient* m_inspectorClient;
     InspectorAgentRegistry m_agents;
     bool m_isUnderTest;
     bool m_deferredAgentsInitialized;

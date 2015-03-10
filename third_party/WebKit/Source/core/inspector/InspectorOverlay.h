@@ -45,7 +45,6 @@ namespace blink {
 class Color;
 class EmptyChromeClient;
 class GraphicsContext;
-class InspectorClient;
 class InspectorOverlayHost;
 class JSONValue;
 class Node;

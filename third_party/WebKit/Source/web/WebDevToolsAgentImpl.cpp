@@ -206,12 +206,11 @@ private:
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
-    WebDevToolsAgentClient* client,
-    InspectorClient* inspectorClient)
+    WebDevToolsAgentClient* client)
     : m_layerTreeId(0)
     , m_client(client)
     , m_webViewImpl(webViewImpl)
-    , m_inspectorController(InspectorController::create(webViewImpl->page(), inspectorClient))
+    , m_inspectorController(InspectorController::create(webViewImpl->page(), this, this, this, this, this, this))
     , m_attached(false)
     , m_generatingEvent(false)
     , m_deviceMetricsEnabled(false)
@@ -470,7 +469,6 @@ LocalFrame* WebDevToolsAgentImpl::mainFrame()
     return 0;
 }
 
-// WebPageOverlay
 void WebDevToolsAgentImpl::paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
 {
     if (InspectorController* ic = inspectorController())
@@ -485,6 +483,56 @@ void WebDevToolsAgentImpl::highlight()
 void WebDevToolsAgentImpl::hideHighlight()
 {
     m_webViewImpl->removePageOverlay(this);
+}
+
+void WebDevToolsAgentImpl::resetScrollAndPageScaleFactor()
+{
+    m_webViewImpl->resetScrollAndScaleState();
+}
+
+float WebDevToolsAgentImpl::minimumPageScaleFactor()
+{
+    return m_webViewImpl->minimumPageScaleFactor();
+}
+
+float WebDevToolsAgentImpl::maximumPageScaleFactor()
+{
+    return m_webViewImpl->maximumPageScaleFactor();
+}
+
+void WebDevToolsAgentImpl::setPageScaleFactor(float pageScaleFactor)
+{
+    m_webViewImpl->setPageScaleFactor(pageScaleFactor);
+}
+
+bool WebDevToolsAgentImpl::overridesShowPaintRects()
+{
+    return m_webViewImpl->isAcceleratedCompositingActive();
+}
+
+void WebDevToolsAgentImpl::setShowPaintRects(bool show)
+{
+    m_webViewImpl->setShowPaintRects(show);
+}
+
+void WebDevToolsAgentImpl::setShowDebugBorders(bool show)
+{
+    m_webViewImpl->setShowDebugBorders(show);
+}
+
+void WebDevToolsAgentImpl::setShowFPSCounter(bool show)
+{
+    m_webViewImpl->setShowFPSCounter(show);
+}
+
+void WebDevToolsAgentImpl::setContinuousPaintingEnabled(bool enabled)
+{
+    m_webViewImpl->setContinuousPaintingEnabled(enabled);
+}
+
+void WebDevToolsAgentImpl::setShowScrollBottleneckRects(bool show)
+{
+    m_webViewImpl->setShowScrollBottleneckRects(show);
 }
 
 void WebDevToolsAgentImpl::sendProtocolResponse(int callId, PassRefPtr<JSONObject> message)

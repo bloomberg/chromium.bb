@@ -31,9 +31,13 @@
 #ifndef WebDevToolsAgentImpl_h
 #define WebDevToolsAgentImpl_h
 
-#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorFrontendChannel.h"
-
+#include "core/inspector/InspectorInputAgent.h"
+#include "core/inspector/InspectorOverlay.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorStateClient.h"
+#include "core/inspector/InspectorTracingAgent.h"
+#include "core/inspector/PageRuntimeAgent.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebDevToolsAgent.h"
@@ -45,7 +49,6 @@
 namespace blink {
 
 class LocalFrame;
-class InspectorClient;
 class InspectorController;
 class IntPoint;
 class Page;
@@ -59,13 +62,18 @@ class DebuggerTask;
 
 class WebDevToolsAgentImpl final
     : public WebDevToolsAgent
-    , public InspectorClient
+    , public InspectorStateClient
+    , public InspectorInputAgent::Client
+    , public InspectorOverlay::Client
+    , public InspectorPageAgent::Client
+    , public InspectorTracingAgent::Client
+    , public PageRuntimeAgent::Client
     , public InspectorFrontendChannel
     , public WebPageOverlay
     , private WebThread::TaskObserver {
 public:
-    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*, InspectorClient*);
-    virtual ~WebDevToolsAgentImpl();
+    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*);
+    ~WebDevToolsAgentImpl() override;
 
     WebDevToolsAgentClient* client() { return m_client; }
     InspectorController* inspectorController() const { return m_inspectorController.get(); }
@@ -84,34 +92,53 @@ public:
     virtual void setLayerTreeId(int) override;
     virtual void processGPUEvent(const GPUEvent&) override;
 
-    // InspectorClient implementation.
-    virtual void highlight() override;
-    virtual void hideHighlight() override;
-    virtual void updateInspectorStateCookie(const WTF::String&) override;
-    virtual void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override;
-    virtual void sendProtocolNotification(PassRefPtr<JSONObject> message) override;
-    virtual void flush() override;
-    virtual void resumeStartup() override;
-
-    virtual void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY) override;
-    virtual void clearDeviceMetricsOverride() override;
-    virtual void setTouchEventEmulationEnabled(bool) override;
-
-    virtual void enableTracing(const WTF::String& categoryFilter) override;
-    virtual void disableTracing() override;
-
-    virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
-    virtual void dispatchMouseEvent(const PlatformMouseEvent&) override;
-
-    // WebPageOverlay
-    virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) override;
-
     void flushPendingProtocolNotifications();
 
 private:
-    // WebThread::TaskObserver
-    virtual void willProcessTask() override;
-    virtual void didProcessTask() override;
+    // InspectorStateClient implementation.
+    void updateInspectorStateCookie(const WTF::String&) override;
+
+    // InspectorInputAgent::Client implementation.
+    void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
+    void dispatchMouseEvent(const PlatformMouseEvent&) override;
+
+    // InspectorOverlay::Client implementation.
+    void highlight() override;
+    void hideHighlight() override;
+
+    // InspectorPageAgent::Client implementation.
+    void resetScrollAndPageScaleFactor() override;
+    float minimumPageScaleFactor() override;
+    float maximumPageScaleFactor() override;
+    void setPageScaleFactor(float) override;
+    bool overridesShowPaintRects() override;
+    void setShowPaintRects(bool) override;
+    void setShowDebugBorders(bool) override;
+    void setShowFPSCounter(bool) override;
+    void setContinuousPaintingEnabled(bool) override;
+    void setShowScrollBottleneckRects(bool) override;
+    void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY) override;
+    void clearDeviceMetricsOverride() override;
+    void setTouchEventEmulationEnabled(bool) override;
+
+    // InspectorTracingAgent::Client implementation.
+    void enableTracing(const WTF::String& categoryFilter) override;
+    void disableTracing() override;
+
+    // PageRuntimeAgent::Client implementation.
+    void resumeStartup() override;
+
+    // InspectorFrontendChannel implementation.
+    void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override;
+    void sendProtocolNotification(PassRefPtr<JSONObject> message) override;
+    void flush() override;
+
+    // WebPageOverlay implementation.
+    void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) override;
+
+    // WebThread::TaskObserver implementation.
+    void willProcessTask() override;
+    void didProcessTask() override;
 
     void enableMobileEmulation();
     void disableMobileEmulation();

@@ -37,7 +37,6 @@
 
 namespace blink {
 
-class InspectorClient;
 class InspectorPageAgent;
 class SecurityOrigin;
 

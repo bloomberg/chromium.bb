@@ -54,7 +54,6 @@ class EditorClient;
 class FocusController;
 class Frame;
 class FrameHost;
-class InspectorClient;
 class InstrumentingAgents;
 class PluginData;
 class PointerLockController;
@@ -86,7 +85,6 @@ public:
         ContextMenuClient* contextMenuClient;
         EditorClient* editorClient;
         DragClient* dragClient;
-        InspectorClient* inspectorClient;
         SpellCheckerClient* spellCheckerClient;
     };
 

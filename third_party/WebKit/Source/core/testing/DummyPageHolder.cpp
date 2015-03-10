@@ -59,7 +59,6 @@ DummyPageHolder::DummyPageHolder(
         m_pageClients.contextMenuClient = pageClients->contextMenuClient;
         m_pageClients.editorClient = pageClients->editorClient;
         m_pageClients.dragClient = pageClients->dragClient;
-        m_pageClients.inspectorClient = pageClients->inspectorClient;
         m_pageClients.spellCheckerClient = pageClients->spellCheckerClient;
     }
     m_page = adoptPtrWillBeNoop(new Page(m_pageClients));

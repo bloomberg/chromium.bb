@@ -30,7 +30,6 @@
 #define EmptyClients_h
 
 #include "core/editing/UndoStep.h"
-#include "core/inspector/InspectorClient.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
@@ -307,16 +306,6 @@ public:
     virtual ~EmptyDragClient() {}
     virtual DragDestinationAction actionMaskForDrag(DragData*) override { return DragDestinationActionNone; }
     virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, DataTransfer*, LocalFrame*, bool) override { }
-};
-
-class EmptyInspectorClient final : public InspectorClient {
-    WTF_MAKE_NONCOPYABLE(EmptyInspectorClient); WTF_MAKE_FAST_ALLOCATED;
-public:
-    EmptyInspectorClient() { }
-    virtual ~EmptyInspectorClient() { }
-
-    virtual void highlight() override { }
-    virtual void hideHighlight() override { }
 };
 
 void fillWithEmptyClients(Page::PageClients&);

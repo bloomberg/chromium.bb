@@ -612,7 +612,6 @@ Page::PageClients::PageClients()
     , contextMenuClient(nullptr)
     , editorClient(nullptr)
     , dragClient(nullptr)
-    , inspectorClient(nullptr)
     , spellCheckerClient(nullptr)
 {
 }

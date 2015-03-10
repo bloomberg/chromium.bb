@@ -91,8 +91,8 @@ private:
 class InspectorCompositeState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorCompositeState>, public InspectorStateUpdateListener {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCompositeState);
 public:
-    InspectorCompositeState(InspectorStateClient* inspectorClient)
-        : m_client(inspectorClient)
+    InspectorCompositeState(InspectorStateClient* inspectorStateClient)
+        : m_client(inspectorStateClient)
         , m_stateObject(JSONObject::create())
         , m_isMuted(false)
     {

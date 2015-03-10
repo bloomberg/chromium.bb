@@ -56,9 +56,6 @@ void fillWithEmptyClients(Page::PageClients& pageClients)
     static EditorClient* dummyEditorClient = adoptPtr(new EmptyEditorClient).leakPtr();
     pageClients.editorClient = dummyEditorClient;
 
-    static InspectorClient* dummyInspectorClient = adoptPtr(new EmptyInspectorClient).leakPtr();
-    pageClients.inspectorClient = dummyInspectorClient;
-
     static SpellCheckerClient* dummySpellCheckerClient = adoptPtr(new EmptySpellCheckerClient).leakPtr();
     pageClients.spellCheckerClient = dummySpellCheckerClient;
 }

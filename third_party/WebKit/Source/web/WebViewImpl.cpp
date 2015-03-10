@@ -365,7 +365,7 @@ void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCred
 void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
     if (devToolsClient)
-        m_devToolsAgent = adoptPtr(new WebDevToolsAgentImpl(this, devToolsClient, &m_inspectorClientImpl));
+        m_devToolsAgent = adoptPtr(new WebDevToolsAgentImpl(this, devToolsClient));
     else
         m_devToolsAgent.clear();
 }
@@ -388,7 +388,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_contextMenuClientImpl(this)
     , m_dragClientImpl(this)
     , m_editorClientImpl(this)
-    , m_inspectorClientImpl(this)
     , m_spellCheckerClientImpl(this)
     , m_storageClientImpl(this)
     , m_shouldAutoResize(false)
@@ -440,7 +439,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.contextMenuClient = &m_contextMenuClientImpl;
     pageClients.editorClient = &m_editorClientImpl;
     pageClients.dragClient = &m_dragClientImpl;
-    pageClients.inspectorClient = &m_inspectorClientImpl;
     pageClients.spellCheckerClient = &m_spellCheckerClientImpl;
 
     m_page = adoptPtrWillBeNoop(new Page(pageClients));

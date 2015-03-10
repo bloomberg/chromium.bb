@@ -41,8 +41,6 @@
       'GraphicsLayerFactoryChromium.h',
       'IndexedDBClientImpl.cpp',
       'IndexedDBClientImpl.h',
-      'InspectorClientImpl.cpp',
-      'InspectorClientImpl.h',
       'InspectorController.cpp',
       'InspectorController.h',
       'LinkHighlight.cpp',
