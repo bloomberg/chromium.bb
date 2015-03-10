@@ -22,8 +22,6 @@
       'sources': [
         'devtools_bridge/android/apiary_client_factory.cc',
         'devtools_bridge/android/apiary_client_factory.h',
-        'devtools_bridge/android/component_loader.cc',
-        'devtools_bridge/android/component_loader.h',
         'devtools_bridge/android/session_dependency_factory_android.cc',
         'devtools_bridge/android/session_dependency_factory_android.h',
         'devtools_bridge/session_dependency_factory.cc',
