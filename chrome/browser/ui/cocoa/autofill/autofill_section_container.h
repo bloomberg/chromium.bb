@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
+#include "components/autofill/core/browser/detail_input.h"
+#include "components/autofill/core/browser/dialog_section.h"
 
 namespace autofill {
 class AutofillDialogViewDelegate;

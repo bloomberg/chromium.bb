@@ -23,54 +23,6 @@ namespace autofill {
 
 class AutofillField;
 
-// This struct describes a single input control for the imperative autocomplete
-// dialog.
-struct DetailInput {
-  enum Length {
-    SHORT,      // Shares a line with other short inputs, like display: inline.
-    SHORT_EOL,  // Like SHORT but starts a new line directly afterward. Used to
-                // separate groups of short inputs into different lines.
-    LONG,       // Will be given its own full line, like display: block.
-    NONE,       // Input will not be shown.
-  };
-
-  // Returns whether this input can spread across multiple lines.
-  bool IsMultiline() const;
-
-  // Used to determine which inputs share lines when laying out.
-  Length length;
-
-  ServerFieldType type;
-
-  // Text shown when the input is at its default state (e.g. empty).
-  base::string16 placeholder_text;
-
-  // A number between 0 and 1.0 that describes how much of the horizontal space
-  // in the row should be allotted to this input. 0 is equivalent to 1.
-  float expand_weight;
-
-  // When non-empty, indicates the starting value for this input. This will be
-  // used when the user is editing existing data.
-  base::string16 initial_value;
-};
-
-// Sections of the dialog --- all fields that may be shown to the user fit under
-// one of these sections.
-enum DialogSection {
-  // Lower boundary value for looping over all sections.
-  SECTION_MIN,
-
-  // The Autofill-backed dialog uses separate CC and billing sections.
-  SECTION_CC = SECTION_MIN,
-  SECTION_BILLING,
-  // The wallet-backed dialog uses a combined CC and billing section.
-  SECTION_CC_BILLING,
-  SECTION_SHIPPING,
-
-  // Upper boundary value for looping over all sections.
-  SECTION_MAX = SECTION_SHIPPING,
-};
-
 // A notification to show in the autofill dialog. Ranges from information to
 // seriously scary security messages, and will give you the color it should be
 // displayed (if you ask it).
@@ -193,7 +145,6 @@ enum ValidationType {
   VALIDATE_FINAL,  // Full form validation. Required fields can't be empty.
 };
 
-typedef std::vector<DetailInput> DetailInputs;
 typedef std::map<ServerFieldType, base::string16> FieldValueMap;
 
 // A validity message for a single input field.

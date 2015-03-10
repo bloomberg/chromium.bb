@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_tester.h"
+#include "components/autofill/core/browser/dialog_section.h"
 
 namespace autofill {
 

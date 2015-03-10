@@ -54,8 +54,11 @@
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/detail_input.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/server_field_types_util.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
@@ -185,10 +188,9 @@ bool ServerTypeMatchesShippingField(ServerFieldType type,
                                     const AutofillField& field) {
   // Equivalent billing field type is used to support UseBillingAsShipping
   // usecase.
-  return common::ServerTypeEncompassesFieldType(
-      type,
-      AutofillType(AutofillType::GetEquivalentBillingFieldType(
-          field.Type().GetStorableType())));
+  return ServerTypeEncompassesFieldType(
+      type, AutofillType(AutofillType::GetEquivalentBillingFieldType(
+                field.Type().GetStorableType())));
 }
 
 // Initializes |form_group| from user-entered data.
@@ -222,7 +224,7 @@ void GetBillingInfoFromOutputs(const FieldValueMap& output,
     if (type == CREDIT_CARD_VERIFICATION_CODE) {
       if (cvc)
         cvc->assign(trimmed);
-    } else if (common::IsCreditCardType(type)) {
+    } else if (IsCreditCardType(type)) {
       card->SetRawInfo(type, trimmed);
     } else {
       // Copy the credit card name to |profile| in addition to |card| as
@@ -574,21 +576,20 @@ void BuildInputsForSection(DialogSection dialog_section,
 
   switch (dialog_section) {
     case SECTION_CC: {
-      common::BuildInputs(kCCInputs, arraysize(kCCInputs), inputs);
+      BuildInputs(kCCInputs, arraysize(kCCInputs), inputs);
       break;
     }
 
     case SECTION_BILLING: {
       i18ninput::BuildAddressInputs(common::ADDRESS_TYPE_BILLING,
                                     country_code, inputs, language_code);
-      common::BuildInputs(kBillingPhoneInputs, arraysize(kBillingPhoneInputs),
-                          inputs);
-      common::BuildInputs(kEmailInputs, arraysize(kEmailInputs), inputs);
+      BuildInputs(kBillingPhoneInputs, arraysize(kBillingPhoneInputs), inputs);
+      BuildInputs(kEmailInputs, arraysize(kEmailInputs), inputs);
       break;
     }
 
     case SECTION_CC_BILLING: {
-      common::BuildInputs(kCCInputs, arraysize(kCCInputs), inputs);
+      BuildInputs(kCCInputs, arraysize(kCCInputs), inputs);
 
       // Wallet only supports US billing addresses.
       const std::string hardcoded_country_code = "US";
@@ -603,16 +604,15 @@ void BuildInputsForSection(DialogSection dialog_section,
       inputs->back().initial_value =
           AutofillCountry(hardcoded_country_code, app_locale).name();
 
-      common::BuildInputs(kBillingPhoneInputs, arraysize(kBillingPhoneInputs),
-                          inputs);
+      BuildInputs(kBillingPhoneInputs, arraysize(kBillingPhoneInputs), inputs);
       break;
     }
 
     case SECTION_SHIPPING: {
       i18ninput::BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING,
                                     country_code, inputs, language_code);
-      common::BuildInputs(kShippingPhoneInputs, arraysize(kShippingPhoneInputs),
-                          inputs);
+      BuildInputs(kShippingPhoneInputs, arraysize(kShippingPhoneInputs),
+                  inputs);
       break;
     }
   }
@@ -812,9 +812,8 @@ void AutofillDialogControllerImpl::Show() {
   // would be a no-op, don't show it.
   cares_about_shipping_ = form_structure_.FillFields(
       RequestedTypesForSection(SECTION_SHIPPING),
-      base::Bind(common::ServerTypeMatchesField, SECTION_SHIPPING),
-      base::Bind(NullGetInfo),
-      std::string(),
+      base::Bind(ServerTypeMatchesField, SECTION_SHIPPING),
+      base::Bind(NullGetInfo), std::string(),
       g_browser_process->GetApplicationLocale());
 
   transaction_amount_ = form_structure_.GetUniqueValue(
@@ -2103,7 +2102,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
 
   std::vector<autofill::Suggestion> popup_suggestions;
   popup_suggestion_ids_.clear();
-  if (common::IsCreditCardType(type)) {
+  if (IsCreditCardType(type)) {
     popup_suggestions = GetManager()->GetCreditCardSuggestions(
         AutofillType(type), field_contents);
     for (const auto& suggestion : popup_suggestions)
@@ -2392,7 +2391,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
 
   if (static_cast<size_t>(identifier) < popup_suggestion_ids_.size()) {
     const SuggestionBackendID& sid = popup_suggestion_ids_[identifier];
-    if (common::IsCreditCardType(popup_input_type)) {
+    if (IsCreditCardType(popup_input_type)) {
       wrapper.reset(new AutofillCreditCardWrapper(
           GetManager()->GetCreditCardByGUID(sid.guid)));
     } else {
@@ -3164,7 +3163,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
   std::string country_code = CountryCodeForSection(section);
   BuildInputsForSection(section, country_code, &inputs,
                         MutableAddressLanguageCodeForSection(section));
-  std::vector<ServerFieldType> types = common::TypesFromInputs(inputs);
+  std::vector<ServerFieldType> types = TypesFromInputs(inputs);
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper) {
@@ -3235,7 +3234,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
 
 void AutofillDialogControllerImpl::FillOutputForSection(DialogSection section) {
   FillOutputForSectionWithComparator(
-      section, base::Bind(common::ServerTypeMatchesField, section));
+      section, base::Bind(ServerTypeMatchesField, section));
 }
 
 bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(
@@ -3422,7 +3421,7 @@ std::string AutofillDialogControllerImpl::AddressLanguageCodeForSection(
 
 std::vector<ServerFieldType> AutofillDialogControllerImpl::
     RequestedTypesForSection(DialogSection section) const {
-  return common::TypesFromInputs(RequestedFieldsForSection(section));
+  return TypesFromInputs(RequestedFieldsForSection(section));
 }
 
 std::string AutofillDialogControllerImpl::CountryCodeForSection(

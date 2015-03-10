@@ -20,14 +20,6 @@ namespace autofill {
 
 static const base::char16 kRangeSeparator = '|';
 
-// Street address is multi-line, except in countries where it shares a line
-// with other inputs (such as Coite d'Ivoire).
-bool DetailInput::IsMultiline() const {
-  return (type == ADDRESS_HOME_STREET_ADDRESS ||
-          type == ADDRESS_BILLING_STREET_ADDRESS) &&
-      length == DetailInput::LONG;
-}
-
 DialogNotification::DialogNotification() : type_(NONE) {}
 
 DialogNotification::DialogNotification(Type type,

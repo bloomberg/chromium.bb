@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
+#include "components/autofill/core/browser/dialog_section.h"
 
 @class AutofillDetailsContainer;
 @class AutofillDialogWindowController;

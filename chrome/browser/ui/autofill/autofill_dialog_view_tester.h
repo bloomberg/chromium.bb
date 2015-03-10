@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "components/autofill/core/browser/dialog_section.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "ui/gfx/geometry/size.h"
 
