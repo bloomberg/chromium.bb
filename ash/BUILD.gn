@@ -395,3 +395,5 @@ test("ash_shell_unittests") {
     deps += [ "//ui/display" ]
   }
 }
+# When adding support for isolates, please have a look at run-time dependencies
+# in the ash_unittests_run target in ash.gyp.

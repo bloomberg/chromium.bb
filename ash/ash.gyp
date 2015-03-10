@@ -1291,6 +1291,15 @@
           'sources': [
             'ash_unittests.isolate',
           ],
+          'conditions': [
+            ['use_x11==1',
+              {
+                'dependencies': [
+                  '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+                ],
+              }
+            ],
+          ],
         },
       ],
     }],
