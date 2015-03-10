@@ -286,12 +286,8 @@ void Dispatcher::DidCreateScriptContext(
       frame->document().securityOrigin());
 
   ScriptContext* context =
-      delegate_->CreateScriptContext(v8_context,
-                                     frame,
-                                     extension,
-                                     context_type,
-                                     effective_extension,
-                                     effective_context_type).release();
+      new ScriptContext(v8_context, frame, extension, context_type,
+                        effective_extension, effective_context_type);
   script_context_set_.Add(context);
 
   // Initialize origin permissions for content scripts, which can't be

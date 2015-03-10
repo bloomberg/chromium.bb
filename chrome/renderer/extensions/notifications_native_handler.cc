@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/child/v8_value_converter.h"
+#include "extensions/renderer/script_context.h"
 #include "ui/base/layout.h"
 
 namespace extensions {

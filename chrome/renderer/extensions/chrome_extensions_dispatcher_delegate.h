@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_CHROME_EXTENSIONS_DISPATCHER_DELEGATE_H_
 #define CHROME_RENDERER_EXTENSIONS_CHROME_EXTENSIONS_DISPATCHER_DELEGATE_H_
 
+#include "base/macros.h"
 #include "extensions/renderer/dispatcher_delegate.h"
 
 class ChromeExtensionsDispatcherDelegate
@@ -15,13 +16,6 @@ class ChromeExtensionsDispatcherDelegate
 
  private:
   // extensions::DispatcherDelegate implementation.
-  scoped_ptr<extensions::ScriptContext> CreateScriptContext(
-      const v8::Handle<v8::Context>& v8_context,
-      blink::WebFrame* frame,
-      const extensions::Extension* extension,
-      extensions::Feature::Context context_type,
-      const extensions::Extension* effective_extension,
-      extensions::Feature::Context effective_context_type) override;
   void InitOriginPermissions(const extensions::Extension* extension,
                              bool is_extension_active) override;
   void RegisterNativeHandlers(extensions::Dispatcher* dispatcher,

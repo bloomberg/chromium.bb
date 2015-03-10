@@ -15,7 +15,6 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
@@ -50,23 +49,6 @@ ChromeExtensionsDispatcherDelegate::ChromeExtensionsDispatcherDelegate() {
 }
 
 ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {
-}
-
-scoped_ptr<extensions::ScriptContext>
-ChromeExtensionsDispatcherDelegate::CreateScriptContext(
-    const v8::Handle<v8::Context>& v8_context,
-    blink::WebFrame* frame,
-    const extensions::Extension* extension,
-    extensions::Feature::Context context_type,
-    const extensions::Extension* effective_extension,
-    extensions::Feature::Context effective_context_type) {
-  return scoped_ptr<extensions::ScriptContext>(
-      new extensions::ChromeV8Context(v8_context,
-                                      frame,
-                                      extension,
-                                      context_type,
-                                      effective_extension,
-                                      effective_context_type));
 }
 
 void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(

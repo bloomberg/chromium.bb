@@ -8,10 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
-#include "extensions/common/features/feature.h"
-#include "v8/include/v8.h"
-
 namespace blink {
 class WebFrame;
 }
@@ -30,15 +26,6 @@ class URLPatternSet;
 class DispatcherDelegate {
  public:
   virtual ~DispatcherDelegate() {}
-
-  // Creates a new ScriptContext for a given v8 context.
-  virtual scoped_ptr<ScriptContext> CreateScriptContext(
-      const v8::Handle<v8::Context>& v8_context,
-      blink::WebFrame* frame,
-      const Extension* extension,
-      Feature::Context context_type,
-      const Extension* effective_extension,
-      Feature::Context effective_context_type) = 0;
 
   // Initializes origin permissions for a newly created extension context.
   virtual void InitOriginPermissions(const Extension* extension,

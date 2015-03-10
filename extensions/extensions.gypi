@@ -833,8 +833,6 @@
       'renderer/context_menus_custom_bindings.h',
       'renderer/css_native_handler.cc',
       'renderer/css_native_handler.h',
-      'renderer/default_dispatcher_delegate.cc',
-      'renderer/default_dispatcher_delegate.h',
       'renderer/dispatcher.cc',
       'renderer/dispatcher.h',
       'renderer/dispatcher_delegate.h',

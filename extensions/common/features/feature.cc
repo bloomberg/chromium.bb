@@ -30,12 +30,6 @@ Feature::Platform Feature::GetCurrentPlatform() {
 #endif
 }
 
-// static
-Feature::Availability Feature::CreateAvailability(AvailabilityResult result,
-                                                  const std::string& message) {
-  return Availability(result, message);
-}
-
 Feature::Availability Feature::IsAvailableToExtension(
     const Extension* extension) const {
   return IsAvailableToManifest(extension->id(),

@@ -87,16 +87,15 @@ Feature::Availability ChromeChannelFeatureFilter::IsAvailableToManifest(
     int manifest_version,
     Feature::Platform platfortm) const {
   if (channel_has_been_set_ && channel_ < GetCurrentChannel()) {
-    return Feature::CreateAvailability(
+    return Feature::Availability(
         Feature::UNSUPPORTED_CHANNEL,
         base::StringPrintf(
             "'%s' requires Google Chrome %s channel or newer, but this is the "
             "%s channel.",
-            feature()->name().c_str(),
-            GetChannelName(channel_).c_str(),
+            feature()->name().c_str(), GetChannelName(channel_).c_str(),
             GetChannelName(GetCurrentChannel()).c_str()));
   }
-  return Feature::CreateAvailability(Feature::IS_AVAILABLE, std::string());
+  return Feature::Availability(Feature::IS_AVAILABLE, std::string());
 }
 
 }  // namespace extensions

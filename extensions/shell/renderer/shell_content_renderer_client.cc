@@ -10,8 +10,8 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extensions_client.h"
-#include "extensions/renderer/default_dispatcher_delegate.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/dispatcher_delegate.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
@@ -49,7 +49,7 @@ void ShellContentRendererClient::RenderThreadStarted() {
   extensions_renderer_client_.reset(new ShellExtensionsRendererClient);
   ExtensionsRendererClient::Set(extensions_renderer_client_.get());
 
-  extension_dispatcher_delegate_.reset(new DefaultDispatcherDelegate());
+  extension_dispatcher_delegate_.reset(new DispatcherDelegate());
 
   // Must be initialized after ExtensionsRendererClient.
   extension_dispatcher_.reset(

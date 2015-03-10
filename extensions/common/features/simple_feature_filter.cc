@@ -22,7 +22,7 @@ Feature::Availability SimpleFeatureFilter::IsAvailableToContext(
     Feature::Context context,
     const GURL& url,
     Feature::Platform platform) const {
-  return Feature::CreateAvailability(Feature::IS_AVAILABLE, std::string());
+  return Feature::Availability(Feature::IS_AVAILABLE, std::string());
 }
 
 Feature::Availability SimpleFeatureFilter::IsAvailableToManifest(
@@ -31,7 +31,7 @@ Feature::Availability SimpleFeatureFilter::IsAvailableToManifest(
     Manifest::Location location,
     int manifest_version,
     Feature::Platform platform) const {
-  return Feature::CreateAvailability(Feature::IS_AVAILABLE, std::string());
+  return Feature::Availability(Feature::IS_AVAILABLE, std::string());
 }
 
 }  // namespace extensions

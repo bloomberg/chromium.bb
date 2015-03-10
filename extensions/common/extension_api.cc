@@ -290,8 +290,8 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
                                                 const GURL& url) {
   Feature* feature = GetFeatureDependency(full_name);
   if (!feature) {
-    return Feature::CreateAvailability(Feature::NOT_PRESENT,
-        std::string("Unknown feature: ") + full_name);
+    return Feature::Availability(Feature::NOT_PRESENT,
+                                 std::string("Unknown feature: ") + full_name);
   }
   return feature->IsAvailableToContext(extension, context, url);
 }

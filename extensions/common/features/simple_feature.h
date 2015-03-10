@@ -124,6 +124,7 @@ class SimpleFeature : public Feature {
                          const std::set<std::string>& list);
 
  protected:
+  // Handy utilities which construct the correct availability message.
   Availability CreateAvailability(AvailabilityResult result) const;
   Availability CreateAvailability(AvailabilityResult result,
                                   Manifest::Type type) const;
