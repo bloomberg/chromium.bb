@@ -222,8 +222,8 @@ const char kNameIgnoredRe[] =
     "|用户名"  // zh-CN
     "|(사용자.?)?아이디|사용자.?ID";  // ko-KR
 const char kNameRe[] =
-    "^name|full.?name|your.?name|customer.?name|firstandlastname|bill.?name"
-        "|ship.?name"
+    "^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name"
+    "|name.*first.*last|firstandlastname"
     "|nombre.*y.*apellidos"  // es
     "|^nom"  // fr-FR
     "|お名前|氏名"  // ja-JP
