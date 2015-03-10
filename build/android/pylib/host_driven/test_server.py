@@ -106,7 +106,8 @@ class TestServer(object):
     cmd = ['python', os.path.join(src_dir, test_server_path),
            '--log-to-console',
            ('--host=%s' % self.host),
-           ('--port=%d' % self.port)] + test_server_flags
+           ('--port=%d' % self.port),
+           '--on-remote-server'] + test_server_flags
     self._test_server_process = subprocess.Popen(
           cmd, env={'PYTHONPATH': python_path})
     test_url = 'http://%s:%d/%s' % (self.host, self.port,

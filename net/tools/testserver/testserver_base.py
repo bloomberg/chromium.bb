@@ -185,6 +185,16 @@ class TestServerRunner(object):
     self.options, self.args = self.option_parser.parse_args()
 
     logfile = open(self.options.log_file, 'w')
+
+    # http://crbug.com/248796 : Error logs streamed to normal sys.stderr will be
+    # written to HTTP response payload when remote test server is used.
+    # For this reason, some tests like ResourceFetcherTests.ResourceFetcher404
+    # were failing on Android because remote test server is being used there.
+    # To fix them, we need to use sys.stdout as sys.stderr if remote test server
+    # is used.
+    if self.options.on_remote_server:
+      sys.stderr = sys.stdout
+
     sys.stderr = MultiplexerHack(sys.stderr, logfile)
     if self.options.log_to_console:
       sys.stdout = MultiplexerHack(sys.stdout, logfile)
@@ -236,6 +246,11 @@ class TestServerRunner(object):
     self.option_parser.add_option('--data-dir', dest='data_dir',
                                   help='Directory from which to read the '
                                   'files.')
+    self.option_parser.add_option('--on-remote-server', action='store_const',
+                                  const=True, default=False,
+                                  dest='on_remote_server',
+                                  help='Whether remote server is being used or '
+                                  'not.')
 
   def _notify_startup_complete(self, server_data):
     # Notify the parent that we've started. (BaseServer subclasses

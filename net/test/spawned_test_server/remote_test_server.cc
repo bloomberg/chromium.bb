@@ -95,6 +95,8 @@ bool RemoteTestServer::Start() {
   if (!GenerateArguments(&arguments_dict))
     return false;
 
+  arguments_dict.Set("on-remote-server", base::Value::CreateNullValue());
+
   // Append the 'server-type' argument which is used by spawner server to
   // pass right server type to Python test server.
   arguments_dict.SetString("server-type", GetServerTypeString(type()));
