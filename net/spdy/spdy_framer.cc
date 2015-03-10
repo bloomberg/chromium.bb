@@ -1197,8 +1197,8 @@ void SpdyFramer::WriteHeaderBlock(SpdyFrameBuilder* frame,
   SpdyHeaderBlock::const_iterator it;
   for (it = headers->begin(); it != headers->end(); ++it) {
     if (spdy_version < SPDY3) {
-      frame->WriteString(it->first);
-      frame->WriteString(it->second);
+      frame->WriteStringPiece16(it->first);
+      frame->WriteStringPiece16(it->second);
     } else {
       frame->WriteStringPiece32(it->first);
       frame->WriteStringPiece32(it->second);
@@ -3216,8 +3216,8 @@ void SpdyFramer::SerializeNameValueBlockWithoutCompression(
        it != name_value_block.end();
        ++it) {
     if (protocol_version() <= SPDY2) {
-      builder->WriteString(it->first);
-      builder->WriteString(it->second);
+      builder->WriteStringPiece16(it->first);
+      builder->WriteStringPiece16(it->second);
     } else {
       builder->WriteStringPiece32(it->first);
       builder->WriteStringPiece32(it->second);
