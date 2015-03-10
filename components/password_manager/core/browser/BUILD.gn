@@ -17,6 +17,8 @@ config("password_manager_config") {
 
 static_library("browser") {
   sources = [
+    "affiliated_match_helper.cc",
+    "affiliated_match_helper.h",
     "affiliation_backend.cc",
     "affiliation_backend.h",
     "affiliation_database.cc",

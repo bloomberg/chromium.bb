@@ -302,6 +302,7 @@
     'password_manager_unittest_sources': [
       'password_manager/content/browser/credential_manager_dispatcher_unittest.cc',
       'password_manager/content/common/credential_manager_types_unittest.cc',
+      'password_manager/core/browser/affiliated_match_helper_unittest.cc',
       'password_manager/core/browser/affiliation_backend_unittest.cc',
       'password_manager/core/browser/affiliation_database_unittest.cc',
       'password_manager/core/browser/affiliation_fetch_throttler_unittest.cc',

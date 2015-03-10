@@ -107,9 +107,9 @@ class AffiliationService : public KeyedService {
   // |cached_only| is true, the results will be based solely on prefetched
   // information already stored in the cache. Otherwise, on-demand network
   // requests will be issued if there is no up-to-date data in the cache.
-  void GetAffiliations(const FacetURI& facet_uri,
-                       bool cached_only,
-                       const ResultCallback& result_callback);
+  virtual void GetAffiliations(const FacetURI& facet_uri,
+                               bool cached_only,
+                               const ResultCallback& result_callback);
 
   // Prefetches affiliation information for the facet identified by |facet_uri|,
   // and keeps the information fresh by periodic re-fetches (as needed) until
@@ -121,12 +121,13 @@ class AffiliationService : public KeyedService {
   // no longer wasted on repeatedly refreshing affiliation information. Note
   // that canceling will not blow away data already stored in the cache unless
   // it becomes stale.
-  void Prefetch(const FacetURI& facet_uri, const base::Time& keep_fresh_until);
+  virtual void Prefetch(const FacetURI& facet_uri,
+                        const base::Time& keep_fresh_until);
 
   // Cancels the corresponding prefetch command, i.e., the one issued for the
   // same |facet_uri| and with the same |keep_fresh_until|.
-  void CancelPrefetch(const FacetURI& facet_uri,
-                      const base::Time& keep_fresh_until);
+  virtual void CancelPrefetch(const FacetURI& facet_uri,
+                              const base::Time& keep_fresh_until);
 
   // Wipes results of on-demand fetches and expired prefetches from the cache,
   // but retains information corresponding to facets that are being kept fresh.

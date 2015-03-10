@@ -27,6 +27,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'password_manager/core/browser/affiliated_match_helper.cc',
+        'password_manager/core/browser/affiliated_match_helper.h',
         'password_manager/core/browser/affiliation_backend.cc',
         'password_manager/core/browser/affiliation_backend.h',
         'password_manager/core/browser/affiliation_database.cc',
