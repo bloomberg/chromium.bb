@@ -780,6 +780,10 @@ void QuicClientSession::StartReading() {
   if (read_pending_) {
     return;
   }
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/462789 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "462789 QuicClientSession::StartReading"));
   read_pending_ = true;
   int rv = socket_->Read(read_buffer_.get(),
                          read_buffer_->size(),
@@ -885,6 +889,11 @@ base::WeakPtr<QuicClientSession> QuicClientSession::GetWeakPtr() {
 }
 
 void QuicClientSession::OnReadComplete(int result) {
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/462789 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "462789 QuicClientSession::OnReadComplete"));
+
   read_pending_ = false;
   if (result == 0)
     result = ERR_CONNECTION_CLOSED;
@@ -903,6 +912,10 @@ void QuicClientSession::OnReadComplete(int result) {
   IPEndPoint peer_address;
   socket_->GetLocalAddress(&local_address);
   socket_->GetPeerAddress(&peer_address);
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/462789 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "462789 QuicClientSession::OnReadComplete2"));
   // ProcessUdpPacket might result in |this| being deleted, so we
   // use a weak pointer to be safe.
   connection()->ProcessUdpPacket(local_address, peer_address, packet);
