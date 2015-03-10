@@ -14,7 +14,6 @@
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_frame_pool.h"
 #include "media/base/video_util.h"
 #include "third_party/libjingle/source/talk/media/base/videoframe.h"
 
@@ -48,9 +47,6 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
-  // |frame_pool_| is only accessed on whatever
-  // thread webrtc::VideoRendererInterface::RenderFrame is called on.
-  media::VideoFramePool frame_pool_;
 
   // |frame_callback_| is accessed on the IO thread.
   VideoCaptureDeliverFrameCB frame_callback_;
@@ -87,21 +83,23 @@ RemoteVideoSourceDelegate::RenderFrame(
     video_frame->set_timestamp(timestamp);
   } else {
     gfx::Size size(frame->GetWidth(), frame->GetHeight());
-    video_frame = frame_pool_.CreateFrame(
-        media::VideoFrame::YV12, size, gfx::Rect(size), size, timestamp);
 
     // Non-square pixels are unsupported.
     DCHECK_EQ(frame->GetPixelWidth(), 1u);
     DCHECK_EQ(frame->GetPixelHeight(), 1u);
 
-    int y_rows = frame->GetHeight();
-    int uv_rows = frame->GetChromaHeight();
-    CopyYPlane(
-        frame->GetYPlane(), frame->GetYPitch(), y_rows, video_frame.get());
-    CopyUPlane(
-        frame->GetUPlane(), frame->GetUPitch(), uv_rows, video_frame.get());
-    CopyVPlane(
-        frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame.get());
+    // Make a shallow copy. Both |frame| and |video_frame| will share a single
+    // reference counted frame buffer. Const cast and hope no one will overwrite
+    // the data.
+    // TODO(magjed): Update media::VideoFrame to support const data so we don't
+    // need to const cast here.
+    video_frame = media::VideoFrame::WrapExternalYuvData(
+        media::VideoFrame::YV12, size, gfx::Rect(size), size,
+        frame->GetYPitch(), frame->GetUPitch(), frame->GetVPitch(),
+        const_cast<uint8_t*>(frame->GetYPlane()),
+        const_cast<uint8_t*>(frame->GetUPlane()),
+        const_cast<uint8_t*>(frame->GetVPlane()), timestamp,
+        base::Bind(&base::DeletePointer<cricket::VideoFrame>, frame->Copy()));
   }
 
   io_message_loop_->PostTask(
