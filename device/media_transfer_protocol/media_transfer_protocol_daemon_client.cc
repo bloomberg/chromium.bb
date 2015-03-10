@@ -193,6 +193,20 @@ class MediaTransferProtocolDaemonClientImpl
                    weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
   }
 
+  void DeleteObject(const std::string& handle,
+                    const uint32 object_id,
+                    const DeleteObjectCallback& callback,
+                    const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kDeleteObject);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(handle);
+    writer.AppendUint32(object_id);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnDeleteObject,
+                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+  }
+
   // MediaTransferProtocolDaemonClient override.
   void ListenForChanges(const MTPStorageEventHandler& handler) override {
     DCHECK(!listen_for_changes_called_);
@@ -374,6 +388,17 @@ class MediaTransferProtocolDaemonClientImpl
   void OnCopyFileFromLocal(const CopyFileFromLocalCallback& callback,
                            const ErrorCallback& error_callback,
                            dbus::Response* response) {
+    if (!response) {
+      error_callback.Run();
+      return;
+    }
+
+    callback.Run();
+  }
+
+  void OnDeleteObject(const DeleteObjectCallback& callback,
+                      const ErrorCallback& error_callback,
+                      dbus::Response* response) {
     if (!response) {
       error_callback.Run();
       return;

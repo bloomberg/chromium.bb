@@ -94,7 +94,8 @@ void MTPDeviceTaskHelper::GetFileInfo(
 }
 
 void MTPDeviceTaskHelper::ReadDirectory(
-    uint32 dir_id,
+    const uint32 directory_id,
+    const size_t max_size,
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -102,10 +103,9 @@ void MTPDeviceTaskHelper::ReadDirectory(
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
   GetMediaTransferProtocolManager()->ReadDirectory(
-      device_handle_, dir_id,
+      device_handle_, directory_id, max_size,
       base::Bind(&MTPDeviceTaskHelper::OnDidReadDirectory,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 success_callback,
+                 weak_ptr_factory_.GetWeakPtr(), success_callback,
                  error_callback));
 }
 
@@ -138,6 +138,7 @@ void MTPDeviceTaskHelper::ReadBytes(
                  weak_ptr_factory_.GetWeakPtr(), request));
 }
 
+// TODO(yawano) storage_name is not used, delete it.
 void MTPDeviceTaskHelper::CopyFileFromLocal(
     const std::string& storage_name,
     const int source_file_descriptor,
@@ -150,6 +151,19 @@ void MTPDeviceTaskHelper::CopyFileFromLocal(
   GetMediaTransferProtocolManager()->CopyFileFromLocal(
       device_handle_, source_file_descriptor, parent_id, file_name,
       base::Bind(&MTPDeviceTaskHelper::OnCopyFileFromLocal,
+                 weak_ptr_factory_.GetWeakPtr(), success_callback,
+                 error_callback));
+}
+
+void MTPDeviceTaskHelper::DeleteObject(
+    const uint32 object_id,
+    const DeleteObjectSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  GetMediaTransferProtocolManager()->DeleteObject(
+      device_handle_, object_id,
+      base::Bind(&MTPDeviceTaskHelper::OnDeleteObject,
                  weak_ptr_factory_.GetWeakPtr(), success_callback,
                  error_callback));
 }
@@ -286,6 +300,22 @@ void MTPDeviceTaskHelper::OnDidReadBytes(
 
 void MTPDeviceTaskHelper::OnCopyFileFromLocal(
     const CopyFileFromLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    const bool error) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (error) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(error_callback, base::File::FILE_ERROR_FAILED));
+    return;
+  }
+
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   base::Bind(success_callback));
+}
+
+void MTPDeviceTaskHelper::OnDeleteObject(
+    const DeleteObjectSuccessCallback& success_callback,
     const ErrorCallback& error_callback,
     const bool error) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

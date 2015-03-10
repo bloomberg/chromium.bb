@@ -64,6 +64,8 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Maps file paths to file info.
   typedef std::map<base::FilePath, storage::DirectoryEntry> FileInfoCache;
 
+  typedef base::Closure DeleteObjectSuccessCallback;
+
   // Should only be called by CreateMTPDeviceAsyncDelegate() factory call.
   // Defer the device initializations until the first file operation request.
   // Do all the initializations in EnsureInitAndRunTask() function.
@@ -92,12 +94,18 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
                  int buf_len,
                  const ReadBytesSuccessCallback& success_callback,
                  const ErrorCallback& error_callback) override;
-  bool IsReadOnly() override;
+  bool IsReadOnly() const override;
   void CopyFileFromLocal(
       const base::FilePath& source_file_path,
       const base::FilePath& device_file_path,
       const CopyFileFromLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback) override;
+  void DeleteFile(const base::FilePath& file_path,
+                  const DeleteFileSuccessCallback& success_callback,
+                  const ErrorCallback& error_callback) override;
+  void DeleteDirectory(const base::FilePath& file_path,
+                       const DeleteDirectorySuccessCallback& success_callback,
+                       const ErrorCallback& error_callback) override;
   void CancelPendingTasksAndDeleteDelegate() override;
 
   // The internal methods correspond to the similarly named methods above.
@@ -125,6 +133,30 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const CopyFileFromLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback,
       const int source_file_descriptor);
+  virtual void DeleteFileInternal(
+      const base::FilePath& file_path,
+      const DeleteFileSuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const base::File::Info& file_info);
+  virtual void DeleteDirectoryInternal(
+      const base::FilePath& file_path,
+      const DeleteDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const base::File::Info& file_info);
+
+  // Called when ReadDirectory succeeds.
+  virtual void OnDidReadDirectoryToDeleteDirectory(
+      const uint32 directory_id,
+      const DeleteDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const storage::AsyncFileUtil::EntryList& entries,
+      const bool has_more);
+
+  // Calls DeleteObjectOnUIThread on UI thread.
+  virtual void RunDeleteObjectOnUIThread(
+      const uint32 object_id,
+      const DeleteObjectSuccessCallback& success_callback,
+      const ErrorCallback& error_callback);
 
   // Ensures the device is initialized for communication.
   // If the device is already initialized, call RunTask().
@@ -245,6 +277,14 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
                                     const int source_file_descriptor,
                                     base::File::Error error);
 
+  // Called when DeleteObject() succeeds.
+  void OnDidDeleteObject(const uint32 object_id,
+                         const DeleteObjectSuccessCallback success_callback);
+
+  // Called when DeleteFileOrDirectory() fails.
+  void HandleDeleteFileOrDirectoryError(const ErrorCallback& error_callback,
+                                        base::File::Error error);
+
   // Handles the device file |error| while operating on |file_id|.
   // |error_callback| is invoked to notify the caller about the file error.
   void HandleDeviceFileError(const ErrorCallback& error_callback,
@@ -264,6 +304,9 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Given a full path, if it exists in the cache, writes the file's id to |id|
   // and return true.
   bool CachedPathToId(const base::FilePath& path, uint32* id) const;
+
+  // Evict the cache of |id|.
+  void EvictCachedPathToId(const uint32 id);
 
   // MTP device initialization state.
   InitializationState init_state_;

@@ -29,7 +29,8 @@ class TestMediaTransferProtocolManagerLinux
   void CloseStorage(const std::string& storage_handle,
                     const CloseStorageCallback& callback) override;
   void ReadDirectory(const std::string& storage_handle,
-                     uint32 file_id,
+                     const uint32 file_id,
+                     const size_t max_size,
                      const ReadDirectoryCallback& callback) override;
   void ReadFileChunk(const std::string& storage_handle,
                      uint32 file_id,
@@ -44,6 +45,9 @@ class TestMediaTransferProtocolManagerLinux
                          const uint32 parent_id,
                          const std::string& file_name,
                          const CopyFileFromLocalCallback& callback) override;
+  void DeleteObject(const std::string& storage_handle,
+                    const uint32 object_id,
+                    const DeleteObjectCallback& callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);
 };

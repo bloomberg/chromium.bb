@@ -38,6 +38,8 @@ class MTPDeviceTaskHelper {
 
   typedef base::Closure CopyFileFromLocalSuccessCallback;
 
+  typedef base::Closure DeleteObjectSuccessCallback;
+
   typedef MTPDeviceAsyncDelegate::ErrorCallback ErrorCallback;
 
   MTPDeviceTaskHelper();
@@ -78,7 +80,8 @@ class MTPDeviceTaskHelper {
   //
   // If there is an error, |error_callback| is invoked on the IO thread to
   // notify the caller about the file error.
-  void ReadDirectory(uint32 dir_id,
+  void ReadDirectory(const uint32 directory_id,
+                     const size_t max_size,
                      const ReadDirectorySuccessCallback& success_callback,
                      const ErrorCallback& error_callback);
 
@@ -106,6 +109,11 @@ class MTPDeviceTaskHelper {
       const std::string& file_name,
       const CopyFileFromLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback);
+
+  // Forwards DeleteObject request to the MediaTransferProtocolManager.
+  void DeleteObject(const uint32 object_id,
+                    const DeleteObjectSuccessCallback& success_callback,
+                    const ErrorCallback& error_callback);
 
   // Dispatches the CloseStorage request to the MediaTransferProtocolManager.
   void CloseStorage() const;
@@ -171,12 +179,16 @@ class MTPDeviceTaskHelper {
       const std::string& data,
       bool error) const;
 
-  // Called when CopyFileFromLocal completed no matter if it succeeded or
-  // failed.
+  // Called when CopyFileFromLocal completes.
   void OnCopyFileFromLocal(
       const CopyFileFromLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback,
       const bool error) const;
+
+  // Called when DeleteObject completes.
+  void OnDeleteObject(const DeleteObjectSuccessCallback& success_callback,
+                      const ErrorCallback& error_callback,
+                      const bool error) const;
 
   // Called when the device is uninitialized.
   //

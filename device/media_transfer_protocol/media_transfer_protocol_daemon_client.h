@@ -71,6 +71,9 @@ class MediaTransferProtocolDaemonClient {
   // A callback to handle the result of CopyFileFromLocal.
   typedef base::Closure CopyFileFromLocalCallback;
 
+  // A callback to handle the result of DeleteObject.
+  typedef base::Closure DeleteObjectCallback;
+
   // A callback to handle storage attach/detach events.
   // The first argument is true for attach, false for detach.
   // The second argument is the storage name.
@@ -151,6 +154,14 @@ class MediaTransferProtocolDaemonClient {
                                  const std::string& file_name,
                                  const CopyFileFromLocalCallback& callback,
                                  const ErrorCallback& error_callback) = 0;
+
+  // Calls DeleteObject method. |callback| is called after the method call
+  // succeeds, otherwise, |error_callback| is called.
+  // |object_id| is an object id of a file or directory which is deleted.
+  virtual void DeleteObject(const std::string& handle,
+                            const uint32 object_id,
+                            const DeleteObjectCallback& callback,
+                            const ErrorCallback& error_callback) = 0;
 
   // Registers given callback for events. Should only be called once.
   // |storage_event_handler| is called when a mtp storage attach or detach

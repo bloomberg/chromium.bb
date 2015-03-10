@@ -43,7 +43,8 @@ void TestMediaTransferProtocolManagerLinux::CloseStorage(
 
 void TestMediaTransferProtocolManagerLinux::ReadDirectory(
     const std::string& storage_handle,
-    uint32 file_id,
+    const uint32 file_id,
+    const size_t max_size,
     const ReadDirectoryCallback& callback) {
   callback.Run(std::vector<MtpFileEntry>(),
                false /* no more entries*/,
@@ -72,6 +73,13 @@ void TestMediaTransferProtocolManagerLinux::CopyFileFromLocal(
     const uint32 parent_id,
     const std::string& file_name,
     const CopyFileFromLocalCallback& callback) {
+  callback.Run(true /* error */);
+}
+
+void TestMediaTransferProtocolManagerLinux::DeleteObject(
+    const std::string& storage_handle,
+    const uint32 object_id,
+    const DeleteObjectCallback& callback) {
   callback.Run(true /* error */);
 }
 

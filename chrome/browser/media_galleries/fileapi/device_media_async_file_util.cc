@@ -86,6 +86,20 @@ void OnCopyInForeignFileError(const AsyncFileUtil::StatusCallback& callback,
   callback.Run(error);
 }
 
+// Called when DeleteFile method call failed.
+void OnDeleteFileError(const AsyncFileUtil::StatusCallback& callback,
+                       base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  callback.Run(error);
+}
+
+// Called when DeleteDirectory method call failed.
+void OnDeleteDirectoryError(const AsyncFileUtil::StatusCallback& callback,
+                            base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  callback.Run(error);
+}
+
 // Called on a blocking pool thread to create a snapshot file to hold the
 // contents of |device_file_path|. The snapshot file is created in the
 // "profile_path/kDeviceMediaAsyncFileUtilTempDir" directory. Return the
@@ -420,8 +434,21 @@ void DeviceMediaAsyncFileUtil::DeleteFile(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_SECURITY);
+
+  MTPDeviceAsyncDelegate* const delegate = GetMTPDeviceDelegate(url);
+  if (!delegate) {
+    OnDeleteFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  if (delegate->IsReadOnly()) {
+    OnDeleteFileError(callback, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  delegate->DeleteFile(url.path(),
+                       base::Bind(&DeviceMediaAsyncFileUtil::OnDidDeleteFile,
+                                  weak_ptr_factory_.GetWeakPtr(), callback),
+                       base::Bind(&OnDeleteFileError, callback));
 }
 
 void DeviceMediaAsyncFileUtil::DeleteDirectory(
@@ -429,8 +456,21 @@ void DeviceMediaAsyncFileUtil::DeleteDirectory(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_SECURITY);
+
+  MTPDeviceAsyncDelegate* const delegate = GetMTPDeviceDelegate(url);
+  if (!delegate) {
+    OnDeleteDirectoryError(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  if (delegate->IsReadOnly()) {
+    OnDeleteDirectoryError(callback, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  delegate->DeleteDirectory(
+      url.path(), base::Bind(&DeviceMediaAsyncFileUtil::OnDidDeleteDirectory,
+                             weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&OnDeleteDirectoryError, callback));
 }
 
 void DeviceMediaAsyncFileUtil::DeleteRecursively(
@@ -534,6 +574,19 @@ void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
 }
 
 void DeviceMediaAsyncFileUtil::OnDidCopyInForeignFile(
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  callback.Run(base::File::FILE_OK);
+}
+
+void DeviceMediaAsyncFileUtil::OnDidDeleteFile(const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  callback.Run(base::File::FILE_OK);
+}
+
+void DeviceMediaAsyncFileUtil::OnDidDeleteDirectory(
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 

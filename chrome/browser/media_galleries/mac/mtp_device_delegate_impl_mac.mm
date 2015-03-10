@@ -209,7 +209,7 @@ void MTPDeviceDelegateImplMac::ReadBytes(
   NOTREACHED();
 }
 
-bool MTPDeviceDelegateImplMac::IsReadOnly() {
+bool MTPDeviceDelegateImplMac::IsReadOnly() const {
   return true;
 }
 
@@ -217,6 +217,20 @@ void MTPDeviceDelegateImplMac::CopyFileFromLocal(
     const base::FilePath& source_file_path,
     const base::FilePath& device_file_path,
     const CopyFileFromLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void MTPDeviceDelegateImplMac::DeleteFile(
+    const base::FilePath& file_path,
+    const DeleteFileSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void MTPDeviceDelegateImplMac::DeleteDirectory(
+    const base::FilePath& file_path,
+    const DeleteDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   NOTREACHED();
 }

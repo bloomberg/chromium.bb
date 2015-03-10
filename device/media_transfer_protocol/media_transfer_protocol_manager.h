@@ -63,6 +63,10 @@ class MediaTransferProtocolManager {
   // The first argument is true if there was an error.
   typedef base::Callback<void(bool error)> CopyFileFromLocalCallback;
 
+  // A callback to handle the result of DeleteObject.
+  // The first argument is true if there was an error.
+  typedef base::Callback<void(bool error)> DeleteObjectCallback;
+
   // Implement this interface to be notified about MTP storage
   // attachment / detachment events.
   class Observer {
@@ -100,9 +104,10 @@ class MediaTransferProtocolManager {
                             const CloseStorageCallback& callback) = 0;
 
   // Reads directory entries from |file_id| on |storage_handle| and runs
-  // |callback|.
+  // |callback|. |max_size| is a maximum number of files to be read.
   virtual void ReadDirectory(const std::string& storage_handle,
-                             uint32 file_id,
+                             const uint32 file_id,
+                             const size_t max_size,
                              const ReadDirectoryCallback& callback) = 0;
 
   // Reads file data from |file_id| on |storage_handle| and runs |callback|.
@@ -126,6 +131,11 @@ class MediaTransferProtocolManager {
                                  const uint32 parent_id,
                                  const std::string& file_name,
                                  const CopyFileFromLocalCallback& callback) = 0;
+
+  // Deletes |object_id|.
+  virtual void DeleteObject(const std::string& storage_handle,
+                            const uint32 object_id,
+                            const DeleteObjectCallback& callback) = 0;
 
   // Creates and returns the global MediaTransferProtocolManager instance.
   // On Linux, |task_runner| specifies the task runner to process asynchronous

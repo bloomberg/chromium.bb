@@ -461,7 +461,7 @@ void MTPDeviceDelegateImplWin::ReadBytes(
   NOTREACHED();
 }
 
-bool MTPDeviceDelegateImplWin::IsReadOnly() {
+bool MTPDeviceDelegateImplWin::IsReadOnly() const {
   return true;
 }
 
@@ -469,6 +469,20 @@ void MTPDeviceDelegateImplWin::CopyFileFromLocal(
     const base::FilePath& source_file_path,
     const base::FilePath& device_file_path,
     const CopyFileFromLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void MTPDeviceDelegateImplWin::DeleteFile(
+    const base::FilePath& file_path,
+    const DeleteFileSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void MTPDeviceDelegateImplWin::DeleteDirectory(
+    const base::FilePath& file_path,
+    const DeleteDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   NOTREACHED();
 }

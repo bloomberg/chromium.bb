@@ -145,6 +145,14 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
   // to complete the CopyInForeignFile request.
   void OnDidCopyInForeignFile(const StatusCallback& callback);
 
+  // Called when DeleteFile method call succeeeds. |callback| is invoked to
+  // complete the DeleteFile request.
+  void OnDidDeleteFile(const StatusCallback& callback);
+
+  // Called when DeleteDirectory method call succeeds. |callback| is invoked to
+  // complete the DeleteDirectory request.
+  void OnDidDeleteDirectory(const StatusCallback& callback);
+
   bool validate_media_files() const;
 
   // Profile path.

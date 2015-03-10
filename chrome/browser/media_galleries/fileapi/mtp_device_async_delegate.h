@@ -66,6 +66,12 @@ class MTPDeviceAsyncDelegate {
   // A callback to be called when CopyFileFromLocal method call succeeds.
   typedef base::Closure CopyFileFromLocalSuccessCallback;
 
+  // A callback to be called when DeleteFile method call succeeds.
+  typedef base::Closure DeleteFileSuccessCallback;
+
+  // A callback to be called when DeleteDirectory method call succeeds.
+  typedef base::Closure DeleteDirectorySuccessCallback;
+
   // Gets information about the given |file_path| and invokes the appropriate
   // callback asynchronously when complete.
   virtual void GetFileInfo(
@@ -103,13 +109,24 @@ class MTPDeviceAsyncDelegate {
                          const ErrorCallback& error_callback) = 0;
 
   // Returns true if storage is opened for read only.
-  virtual bool IsReadOnly() = 0;
+  virtual bool IsReadOnly() const = 0;
 
   // Copies a file from |source_file_path| to |device_file_path|.
   virtual void CopyFileFromLocal(
       const base::FilePath& source_file_path,
       const base::FilePath& device_file_path,
       const CopyFileFromLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Deletes a file at |file_path|.
+  virtual void DeleteFile(const base::FilePath& file_path,
+                          const DeleteFileSuccessCallback& success_callback,
+                          const ErrorCallback& error_callback) = 0;
+
+  // Deletes a directory at |file_path|. The directory must be empty.
+  virtual void DeleteDirectory(
+      const base::FilePath& file_path,
+      const DeleteDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback) = 0;
 
   // Called when the
