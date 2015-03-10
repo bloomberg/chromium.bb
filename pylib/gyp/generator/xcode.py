@@ -590,7 +590,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
   parallel_builds = generator_flags.get('xcode_parallel_builds', True)
   serialize_all_tests = \
       generator_flags.get('xcode_serialize_all_test_runs', True)
-  project_version = generator_flags.get('xcode_project_version', None)
   skip_excluded_files = \
       not generator_flags.get('xcode_list_excluded_files', True)
   xcode_projects = {}
@@ -608,8 +607,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if parallel_builds:
       pbxp.SetProperty('attributes',
                        {'BuildIndependentTargetsInParallel': 'YES'})
-    if project_version:
-      xcp.project_file.SetXcodeVersion(project_version)
 
     # Add gyp/gypi files to project
     if not generator_flags.get('standalone'):
