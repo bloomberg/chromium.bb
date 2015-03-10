@@ -57415,7 +57415,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Pending - will retry network error"/>
   <int value="3" label="Service Worker not found"/>
   <int value="4" label="No push service"/>
-  <int value="5" label="Push service error"/>
+  <int value="5" label="Pending - will retry push service error"/>
   <int value="6" label="Storage error"/>
   <int value="7" label="Network error"/>
 </enum>

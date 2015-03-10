@@ -68,7 +68,6 @@ void LayoutTestPushMessagingService::Unregister(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
-    bool retry_on_failure,
     const UnregisterCallback& callback) {
   callback.Run(PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED);
 }

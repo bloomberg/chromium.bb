@@ -254,8 +254,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     case content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID:
     case content::PUSH_DELIVERY_STATUS_PERMISSION_DENIED:
     case content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER:
-      Unregister(app_id_guid, message.sender_id, true /* retry_on_failure */,
-                 UnregisterCallback());
+      Unregister(app_id_guid, message.sender_id, UnregisterCallback());
       break;
   }
   RecordDeliveryStatus(status);
@@ -608,7 +607,6 @@ void PushMessagingServiceImpl::Unregister(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
-    bool retry_on_failure,
     const content::PushMessagingService::UnregisterCallback& callback) {
   PushMessagingApplicationId application_id = PushMessagingApplicationId::Get(
       profile_, requesting_origin, service_worker_registration_id);
@@ -620,30 +618,27 @@ void PushMessagingServiceImpl::Unregister(
     return;
   }
 
-  Unregister(application_id.app_id_guid(), sender_id, retry_on_failure,
-             callback);
+  Unregister(application_id.app_id_guid(), sender_id, callback);
 }
 
 void PushMessagingServiceImpl::Unregister(
     const std::string& app_id_guid,
     const std::string& sender_id,
-    bool retry_on_failure,
     const content::PushMessagingService::UnregisterCallback& callback) {
-  if (retry_on_failure) {
-    // Delete the mapping for this app id, to guarantee that no messages get
-    // delivered in future (even if unregistration fails).
-    // TODO(johnme): Instead of deleting these app ids, store them elsewhere,
-    // and retry unregistration if it fails due to network errors.
-    PushMessagingApplicationId application_id =
-        PushMessagingApplicationId::Get(profile_, app_id_guid);
-    if (application_id.IsValid())
-      application_id.DeleteFromDisk(profile_);
-  }
+  // Delete the mapping for this app id, to guarantee that no messages get
+  // delivered in future (even if unregistration fails).
+  // TODO(johnme): Instead of deleting these app ids, store them elsewhere, and
+  // retry unregistration if it fails due to network errors (crbug.com/465399).
+  PushMessagingApplicationId application_id =
+      PushMessagingApplicationId::Get(profile_, app_id_guid);
+  bool was_registered = application_id.IsValid();
+  if (was_registered)
+    application_id.DeleteFromDisk(profile_);
 
   const auto& unregister_callback =
       base::Bind(&PushMessagingServiceImpl::DidUnregister,
                  weak_factory_.GetWeakPtr(),
-                 app_id_guid, retry_on_failure, callback);
+                 was_registered, callback);
 #if defined(OS_ANDROID)
   // On Android the backend is different, and requires the original sender_id.
   GetGCMDriver()->UnregisterWithSenderId(app_id_guid, sender_id,
@@ -654,47 +649,36 @@ void PushMessagingServiceImpl::Unregister(
 }
 
 void PushMessagingServiceImpl::DidUnregister(
-    const std::string& app_id_guid,
-    bool retry_on_failure,
+    bool was_registered,
     const content::PushMessagingService::UnregisterCallback& callback,
     gcm::GCMClient::Result result) {
-  if (result == gcm::GCMClient::SUCCESS) {
-    PushMessagingApplicationId application_id =
-        PushMessagingApplicationId::Get(profile_, app_id_guid);
-    if (!application_id.IsValid()) {
-      if (!callback.is_null()) {
-        callback.Run(
-            content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
-      }
-      return;
-    }
-
-    application_id.DeleteFromDisk(profile_);
+  if (was_registered)
     DecreasePushRegistrationCount(1, false /* was_pending */);
-  }
 
   // Internal calls pass a null callback.
-  if (!callback.is_null()) {
-    switch (result) {
-      case gcm::GCMClient::SUCCESS:
-        callback.Run(content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED);
-        break;
-      case gcm::GCMClient::INVALID_PARAMETER:
-      case gcm::GCMClient::GCM_DISABLED:
-      case gcm::GCMClient::ASYNC_OPERATION_PENDING:
-      case gcm::GCMClient::SERVER_ERROR:
-      case gcm::GCMClient::UNKNOWN_ERROR:
-        callback.Run(content::PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR);
-        break;
-      case gcm::GCMClient::NETWORK_ERROR:
-      case gcm::GCMClient::TTL_EXCEEDED:
-        callback.Run(
-            retry_on_failure
-            ? content::
-              PUSH_UNREGISTRATION_STATUS_PENDING_WILL_RETRY_NETWORK_ERROR
-            : content::PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR);
-        break;
-    }
+  if (callback.is_null())
+    return;
+
+  if (!was_registered) {
+    callback.Run(
+        content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
+    return;
+  }
+  switch (result) {
+    case gcm::GCMClient::SUCCESS:
+      callback.Run(content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED);
+      break;
+    case gcm::GCMClient::INVALID_PARAMETER:
+    case gcm::GCMClient::GCM_DISABLED:
+    case gcm::GCMClient::SERVER_ERROR:
+    case gcm::GCMClient::UNKNOWN_ERROR:
+      callback.Run(content::PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR);
+      break;
+    case gcm::GCMClient::ASYNC_OPERATION_PENDING:
+    case gcm::GCMClient::NETWORK_ERROR:
+    case gcm::GCMClient::TTL_EXCEEDED:
+      callback.Run(content::PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR);
+      break;
   }
 }
 
@@ -734,8 +718,7 @@ void PushMessagingServiceImpl::UnregisterBecausePermissionRevoked(
     const PushMessagingApplicationId& id,
     const std::string& sender_id, bool success, bool not_found) {
   // Unregister the PushMessagingApplicationId with the push service.
-  Unregister(id.app_id_guid(), sender_id, true /* retry_on_failure */,
-             UnregisterCallback());
+  Unregister(id.app_id_guid(), sender_id, UnregisterCallback());
 
   // Clear the associated service worker push registration id.
   PushMessagingService::ClearPushRegistrationID(

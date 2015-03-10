@@ -73,7 +73,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
       const std::string& sender_id,
-      bool retry_on_failure,
       const content::PushMessagingService::UnregisterCallback&) override;
   blink::WebPushPermissionStatus GetPermissionStatus(
       const GURL& requesting_origin,
@@ -139,11 +138,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void Unregister(const std::string& app_id_guid,
                   const std::string& sender_id,
-                  bool retry_on_failure,
                   const content::PushMessagingService::UnregisterCallback&);
 
-  void DidUnregister(const std::string& app_id_guid,
-                     bool retry_on_failure,
+  void DidUnregister(bool was_registered,
                      const content::PushMessagingService::UnregisterCallback&,
                      gcm::GCMClient::Result result);
 

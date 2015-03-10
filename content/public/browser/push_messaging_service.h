@@ -59,12 +59,12 @@ class CONTENT_EXPORT PushMessagingService {
                                   const std::string& sender_id,
                                   const RegisterCallback& callback) = 0;
 
-  // Unregister an origin and its associated service worker registration id from
-  // the push service.
+  // Unregister the given |sender_id| from the push messaging service. The
+  // registration will be synchronously deactivated locally, and asynchronously
+  // sent to the push service, with automatic retry.
   virtual void Unregister(const GURL& requesting_origin,
                           int64 service_worker_registration_id,
                           const std::string& sender_id,
-                          bool retry_on_failure,
                           const UnregisterCallback& callback) = 0;
 
   // Checks the permission status for the requesting origin. Permission is only

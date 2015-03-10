@@ -718,44 +718,43 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterSuccess) {
 
   std::string script_result;
 
+  EXPECT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  EXPECT_EQ("ok - service worker registered", script_result);
+
+  // Resolves true if there was a subscription.
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
-
   gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
-
   ASSERT_TRUE(RunScript("unregister()", &script_result));
   EXPECT_EQ("unregister result: true", script_result);
-}
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterNetworkError) {
-  if (!IsPushSupported())
-    return;
+  // Resolves false if there was no longer a subscription.
+  ASSERT_TRUE(RunScript("unregister()", &script_result));
+  EXPECT_EQ("unregister result: false", script_result);
 
-  std::string script_result;
-
-  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
-
+  // Doesn't reject if there was a network error (deactivates subscription
+  // locally anyway).
+  TryToRegisterSuccessfully("1-1" /* expected_push_registration_id */);
   gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::NETWORK_ERROR);
-
   ASSERT_TRUE(RunScript("unregister()", &script_result));
-  EXPECT_EQ("unregister error: NetworkError: "
-            "Unregistration failed - could not connect to push server",
-            script_result);
-}
+  EXPECT_EQ("unregister result: true", script_result);
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("false - not registered", script_result);
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterAbortError) {
-  if (!IsPushSupported())
-    return;
-
-  std::string script_result;
-
-  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
-
-  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::UNKNOWN_ERROR);
-
+  // Doesn't reject if there were other push service errors (deactivates
+  // subscription locally anyway).
+  TryToRegisterSuccessfully("1-2" /* expected_push_registration_id */);
+  gcm_service()->AddExpectedUnregisterResponse(
+      gcm::GCMClient::INVALID_PARAMETER);
   ASSERT_TRUE(RunScript("unregister()", &script_result));
-  EXPECT_EQ("unregister error: "
-            "AbortError: Unregistration failed - push service error",
-            script_result);
+  EXPECT_EQ("unregister result: true", script_result);
+
+  // Unsubscribing (with an existing reference to a PushSubscription), after
+  // unregistering the Service Worker, just means push subscription isn't found.
+  TryToRegisterSuccessfully("1-3" /* expected_push_registration_id */);
+  ASSERT_TRUE(RunScript("unregisterServiceWorker()", &script_result));
+  ASSERT_EQ("service worker unregistration status: true", script_result);
+  ASSERT_TRUE(RunScript("unregister()", &script_result));
+  EXPECT_EQ("unregister result: false", script_result);
 }
 
 #if defined(OS_ANDROID)

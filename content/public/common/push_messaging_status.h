@@ -68,7 +68,7 @@ enum PushUnregistrationStatus {
 
   // The unregistration did not happen because of a network error, but will be
   // retried until it succeeds.
-  PUSH_UNREGISTRATION_STATUS_PENDING_WILL_RETRY_NETWORK_ERROR = 2,
+  PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR = 2,
 
   // Unregistration failed because there is no Service Worker.
   PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER = 3,
@@ -76,8 +76,9 @@ enum PushUnregistrationStatus {
   // Unregistration failed because the push service is not available.
   PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE = 4,
 
-  // Unregistration failed in the push service implemented by the embedder.
-  PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR = 5,
+  // Unregistration failed in the push service implemented by the embedder, but
+  // will be retried until it succeeds.
+  PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR = 5,
 
   // Unregistration succeeded, but we failed to clear Service Worker storage.
   PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR = 6,

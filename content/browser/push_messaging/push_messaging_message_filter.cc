@@ -582,7 +582,6 @@ void PushMessagingMessageFilter::Core::UnregisterFromService(
 
   push_service->Unregister(
       requesting_origin, service_worker_registration_id, sender_id,
-      false /* retry_on_failure */,
       base::Bind(&Core::DidUnregisterFromService,
                  weak_factory_ui_to_ui_.GetWeakPtr(),
                  request_id, service_worker_registration_id));
@@ -597,7 +596,8 @@ void PushMessagingMessageFilter::Core::DidUnregisterFromService(
   switch (unregistration_status) {
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED:
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
-    case PUSH_UNREGISTRATION_STATUS_PENDING_WILL_RETRY_NETWORK_ERROR:
+    case PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR:
+    case PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR:
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&PushMessagingMessageFilter::ClearRegistrationData,
@@ -606,13 +606,9 @@ void PushMessagingMessageFilter::Core::DidUnregisterFromService(
       break;
     case PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER:
     case PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
-    case PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR:
     case PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR:
     case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&PushMessagingMessageFilter::DidUnregister, io_parent_,
-                     request_id, unregistration_status));
+      NOTREACHED();
       break;
   }
 }
@@ -652,32 +648,27 @@ void PushMessagingMessageFilter::DidUnregister(
     PushUnregistrationStatus unregistration_status) {
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  RecordUnregistrationStatus(unregistration_status);
-  blink::WebPushError::ErrorType blinkError =
-      blink::WebPushError::ErrorTypeUnknown;
   switch (unregistration_status) {
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED:
+    case PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR:
+    case PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR:
       Send(new PushMessagingMsg_UnregisterSuccess(request_id, true));
-      return;
+      break;
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
       Send(new PushMessagingMsg_UnregisterSuccess(request_id, false));
-      return;
-    case PUSH_UNREGISTRATION_STATUS_PENDING_WILL_RETRY_NETWORK_ERROR:
-      NOTREACHED();
-      return;
+      break;
     case PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER:
     case PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
-    case PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR:
     case PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR:
-      blinkError = blink::WebPushError::ErrorTypeAbort;
+      Send(new PushMessagingMsg_UnregisterError(
+        request_id, blink::WebPushError::ErrorTypeAbort,
+        PushUnregistrationStatusToString(unregistration_status)));
       break;
     case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
-      blinkError = blink::WebPushError::ErrorTypeNetwork;
+      NOTREACHED();
       break;
   }
-  Send(new PushMessagingMsg_UnregisterError(
-       request_id, blinkError,
-       PushUnregistrationStatusToString(unregistration_status)));
+  RecordUnregistrationStatus(unregistration_status);
 }
 
 // GetRegistration methods on both IO and UI threads, merged in order of use

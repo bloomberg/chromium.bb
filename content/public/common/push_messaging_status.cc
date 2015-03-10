@@ -57,8 +57,8 @@ const char* PushUnregistrationStatusToString(PushUnregistrationStatus status) {
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
       return "Unregistration successful - was not registered";
 
-    case PUSH_UNREGISTRATION_STATUS_PENDING_WILL_RETRY_NETWORK_ERROR:
-      return "Unregistration pending - a network error occurred, but it will"
+    case PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR:
+      return "Unregistration pending - a network error occurred, but it will "
              "be retried until it succeeds";
 
     case PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER:
@@ -67,8 +67,9 @@ const char* PushUnregistrationStatusToString(PushUnregistrationStatus status) {
     case PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
       return "Unregistration failed - push service not available";
 
-    case PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR:
-      return "Unregistration failed - push service error";
+    case PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR:
+      return "Unregistration pending - a push service error occurred, but it "
+             "will be retried until it succeeds";
 
     case PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR:
       return "Unregistration failed - storage error";

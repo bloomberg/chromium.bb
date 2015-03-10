@@ -43,7 +43,6 @@ class LayoutTestPushMessagingService : public PushMessagingService {
   void Unregister(const GURL& requesting_origin,
                   int64 service_worker_registration_id,
                   const std::string& sender_id,
-                  bool retry_on_failure,
                   const UnregisterCallback& callback) override;
 
  private:
