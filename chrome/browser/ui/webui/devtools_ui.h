@@ -18,6 +18,7 @@ class DevToolsUI : public content::WebUIController,
                    public content::WebContentsObserver {
  public:
   static GURL GetProxyURL(const std::string& frontend_url);
+  static GURL GetRemoteBaseURL();
 
   explicit DevToolsUI(content::WebUI* web_ui);
   ~DevToolsUI() override;

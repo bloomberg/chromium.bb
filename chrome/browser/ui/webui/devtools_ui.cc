@@ -24,6 +24,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/user_agent.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -42,6 +43,7 @@ std::string PathWithoutParams(const std::string& path) {
 const char kRemoteFrontendDomain[] = "chrome-devtools-frontend.appspot.com";
 const char kRemoteFrontendBase[] =
     "https://chrome-devtools-frontend.appspot.com/";
+const char kRemoteFrontendPath[] = "serve_file";
 const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 
 #if defined(DEBUG_DEVTOOLS)
@@ -351,6 +353,15 @@ GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
               chrome::kChromeUIDevToolsHost,
               chrome::kChromeUIDevToolsRemotePath,
               url.path().substr(1).c_str()));
+}
+
+// static
+GURL DevToolsUI::GetRemoteBaseURL() {
+  return GURL(base::StringPrintf(
+      "%s%s/%s/",
+      kRemoteFrontendBase,
+      kRemoteFrontendPath,
+      content::GetWebKitRevision().c_str()));
 }
 
 DevToolsUI::DevToolsUI(content::WebUI* web_ui)

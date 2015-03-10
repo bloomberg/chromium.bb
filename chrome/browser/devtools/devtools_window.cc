@@ -774,6 +774,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
   if (remote_frontend.size()) {
     url_string += "&remoteFrontend=true";
     url_string += "&remoteFrontendUrl=" + net::EscapePath(remote_frontend);
+  } else {
+    url_string += "&remoteBase=" + DevToolsUI::GetRemoteBaseURL().spec();
   }
   if (can_dock)
     url_string += "&can_dock=true";
