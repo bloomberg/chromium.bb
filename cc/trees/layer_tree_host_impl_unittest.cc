@@ -7524,7 +7524,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
   float offset = top_controls_height_ - residue;
   EXPECT_TRUE(
       host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
-  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(-offset,
+                  host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF().ToString(),
             scroll_layer->CurrentScrollOffset().ToString());
 
@@ -7583,7 +7584,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
   float offset = top_controls_height_ - residue;
   EXPECT_TRUE(
       host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
-  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(-offset,
+                  host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF().ToString(),
             scroll_layer->CurrentScrollOffset().ToString());
 
@@ -7653,7 +7655,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
   float offset = top_controls_height_ - residue;
   EXPECT_TRUE(
       host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
-  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(-offset,
+                  host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF(0, initial_scroll_offset).ToString(),
             scroll_layer->CurrentScrollOffset().ToString());
 
@@ -7716,7 +7719,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
   float offset = top_controls_height_ - residue;
   EXPECT_TRUE(
       host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
-  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(-offset,
+                  host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF(0, initial_scroll_offset).ToString(),
             scroll_layer->CurrentScrollOffset().ToString());
 
