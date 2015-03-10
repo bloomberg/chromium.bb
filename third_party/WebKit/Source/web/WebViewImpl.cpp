@@ -141,7 +141,6 @@
 #include "web/DatabaseClientImpl.h"
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
-#include "web/InspectorController.h"
 #include "web/LinkHighlight.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/PopupContainer.h"
@@ -365,7 +364,7 @@ void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCred
 void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
     if (devToolsClient)
-        m_devToolsAgent = adoptPtr(new WebDevToolsAgentImpl(this, devToolsClient));
+        m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient));
     else
         m_devToolsAgent.clear();
 }
@@ -765,7 +764,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Instead, assume that the page has been designed with big enough buttons and links.
         // Don't trigger a disambiguation popup when screencasting, since it's implemented outside of
         // compositor pipeline and is not being screencasted itself. This leads to bad user experience.
-        bool screencastEnabled = m_devToolsAgent && m_devToolsAgent->inspectorController()->screencastEnabled();
+        bool screencastEnabled = m_devToolsAgent && m_devToolsAgent->screencastEnabled();
         if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !screencastEnabled) {
             WebGestureEvent scaledEvent = event;
             scaledEvent.x = event.x / pageScaleFactor();
@@ -1667,7 +1666,7 @@ void WebViewImpl::close()
 {
     // Should happen before m_page.clear().
     if (m_devToolsAgent)
-        m_devToolsAgent->inspectorController()->willBeDestroyed();
+        m_devToolsAgent->willBeDestroyed();
 
     if (m_page) {
         // Initiate shutdown for the entire frameset.  This will cause a lot of
@@ -1737,7 +1736,7 @@ void WebViewImpl::performResize()
     // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
     // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
     // Therefore we should force explicit media queries invalidation here.
-    if (m_devToolsAgent && m_devToolsAgent->inspectorController()->deviceEmulationEnabled()) {
+    if (m_devToolsAgent && m_devToolsAgent->deviceEmulationEnabled()) {
         if (Document* document = mainFrameImpl()->frame()->document()) {
             document->styleResolverChanged();
             document->mediaQueryAffectingValueChanged();
@@ -3813,31 +3812,6 @@ unsigned long WebViewImpl::createUniqueIdentifierForRequest()
     return createUniqueIdentifier();
 }
 
-void WebViewImpl::inspectElementAt(const WebPoint& point)
-{
-    if (!m_page || !m_devToolsAgent)
-        return;
-
-    if (point.x == -1 || point.y == -1) {
-        m_devToolsAgent->inspectorController()->inspect(0);
-    } else {
-        HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
-        HitTestRequest request(hitType);
-
-        WebMouseEvent dummyEvent;
-        dummyEvent.type = WebInputEvent::MouseDown;
-        dummyEvent.x = point.x;
-        dummyEvent.y = point.y;
-        IntPoint transformedPoint = PlatformMouseEventBuilder(m_page->deprecatedLocalMainFrame()->view(), dummyEvent).position();
-        HitTestResult result(m_page->deprecatedLocalMainFrame()->view()->windowToContents(transformedPoint));
-        m_page->deprecatedLocalMainFrame()->contentRenderer()->hitTest(request, result);
-        Node* node = result.innerNode();
-        if (!node && m_page->deprecatedLocalMainFrame()->document())
-            node = m_page->deprecatedLocalMainFrame()->document()->documentElement();
-        m_devToolsAgent->inspectorController()->inspect(node);
-    }
-}
-
 void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor)
 {
     if (m_compositorDeviceScaleFactorOverride == deviceScaleFactor)
@@ -4130,7 +4104,7 @@ void WebViewImpl::pageScaleFactorChanged()
     m_pageScaleConstraintsSet.setNeedsReset(false);
     updateLayerTreeViewport();
     if (m_devToolsAgent)
-        m_devToolsAgent->inspectorController()->pageScaleFactorChanged();
+        m_devToolsAgent->pageScaleFactorChanged();
     m_client->pageScaleFactorChanged();
 }
 

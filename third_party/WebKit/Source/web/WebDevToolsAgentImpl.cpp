@@ -36,43 +36,64 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/AsyncCallTracker.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorAnimationAgent.h"
+#include "core/inspector/InspectorApplicationCacheAgent.h"
+#include "core/inspector/InspectorCSSAgent.h"
+#include "core/inspector/InspectorCanvasAgent.h"
+#include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorHeapProfilerAgent.h"
+#include "core/inspector/InspectorInputAgent.h"
+#include "core/inspector/InspectorInspectorAgent.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorLayerTreeAgent.h"
+#include "core/inspector/InspectorMemoryAgent.h"
+#include "core/inspector/InspectorOverlay.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorProfilerAgent.h"
+#include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorTimelineAgent.h"
+#include "core/inspector/InspectorTracingAgent.h"
+#include "core/inspector/InspectorWorkerAgent.h"
+#include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/PageConsoleAgent.h"
+#include "core/inspector/PageDebuggerAgent.h"
+#include "core/inspector/PageRuntimeAgent.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "modules/accessibility/InspectorAccessibilityAgent.h"
+#include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
+#include "modules/filesystem/InspectorFileSystemAgent.h"
+#include "modules/indexeddb/InspectorIndexedDBAgent.h"
+#include "modules/storage/InspectorDOMStorageAgent.h"
+#include "modules/webdatabase/InspectorDatabaseAgent.h"
 #include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/WebURLResponse.h"
-#include "public/web/WebDataSource.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebDeviceEmulationParams.h"
-#include "public/web/WebMemoryUsageInfo.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
-#include "web/InspectorController.h"
 #include "web/WebGraphicsContextImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/ProcessID.h"
@@ -197,7 +218,7 @@ public:
 
         WebDevToolsAgentImpl* agentImpl = static_cast<WebDevToolsAgentImpl*>(webagent);
         if (agentImpl->m_attached)
-            agentImpl->inspectorController()->dispatchMessageFromFrontend(m_descriptor->message());
+            agentImpl->dispatchMessageFromFrontend(m_descriptor->message());
     }
 
 private:
@@ -207,11 +228,18 @@ private:
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
     WebDevToolsAgentClient* client)
-    : m_layerTreeId(0)
-    , m_client(client)
+    : m_client(client)
     , m_webViewImpl(webViewImpl)
-    , m_inspectorController(InspectorController::create(webViewImpl->page(), this, this, this, this, this, this))
     , m_attached(false)
+    , m_instrumentingAgents(webViewImpl->page()->instrumentingAgents())
+    , m_injectedScriptManager(InjectedScriptManager::createForPage())
+    , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
+    , m_overlay(InspectorOverlay::create(webViewImpl->page(), this))
+    , m_cssAgent(nullptr)
+    , m_resourceAgent(nullptr)
+    , m_layerTreeAgent(nullptr)
+    , m_agents(m_instrumentingAgents.get(), m_state.get())
+    , m_deferredAgentsInitialized(false)
     , m_generatingEvent(false)
     , m_deviceMetricsEnabled(false)
     , m_emulateMobileEnabled(false)
@@ -225,7 +253,50 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
     long processId = WTF::getCurrentProcessID();
     ASSERT(processId > 0);
-    inspectorController()->setProcessId(processId);
+    IdentifiersFactory::setProcessId(processId);
+    Page* page = m_webViewImpl->page();
+
+    InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
+    InspectorOverlay* overlay = m_overlay.get();
+
+    m_agents.append(InspectorInspectorAgent::create(injectedScriptManager));
+
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, this, overlay));
+    m_pageAgent = pageAgentPtr.get();
+    m_agents.append(pageAgentPtr.release());
+
+    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, overlay));
+    m_domAgent = domAgentPtr.get();
+    m_agents.append(domAgentPtr.release());
+
+    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_pageAgent));
+    m_layerTreeAgent = layerTreeAgentPtr.get();
+    m_agents.append(layerTreeAgentPtr.release());
+
+    m_agents.append(InspectorTimelineAgent::create());
+
+    PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
+
+    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, this, pageScriptDebugServer, m_pageAgent));
+
+    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_pageAgent);
+    OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(pageConsoleAgentPtr.get());
+
+    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(this, workerAgentPtr.get(), m_pageAgent);
+    m_tracingAgent = tracingAgentPtr.get();
+    m_agents.append(tracingAgentPtr.release());
+
+    m_agents.append(workerAgentPtr.release());
+    m_agents.append(pageConsoleAgentPtr.release());
+
+    m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), pageScriptDebugServer);
+
+    m_agents.append(InspectorDatabaseAgent::create(page));
+    m_agents.append(DeviceOrientationInspectorAgent::create(page));
+    m_agents.append(InspectorFileSystemAgent::create(page));
+    m_agents.append(InspectorIndexedDBAgent::create(page));
+    m_agents.append(InspectorAccessibilityAgent::create(page));
+    m_agents.append(InspectorDOMStorageAgent::create(page));
 
     m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(this);
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
@@ -239,6 +310,80 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
         Platform::current()->currentThread()->removeTaskObserver(this);
 }
 
+DEFINE_TRACE(WebDevToolsAgentImpl)
+{
+    visitor->trace(m_instrumentingAgents);
+    visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_state);
+    visitor->trace(m_overlay);
+    visitor->trace(m_asyncCallTracker);
+    visitor->trace(m_domAgent);
+    visitor->trace(m_pageAgent);
+    visitor->trace(m_cssAgent);
+    visitor->trace(m_resourceAgent);
+    visitor->trace(m_layerTreeAgent);
+    visitor->trace(m_tracingAgent);
+    visitor->trace(m_inspectorBackendDispatcher);
+    visitor->trace(m_agents);
+}
+
+void WebDevToolsAgentImpl::willBeDestroyed()
+{
+#if ENABLE(ASSERT)
+    Frame* frame = m_webViewImpl->page()->mainFrame();
+    ASSERT(frame);
+    if (frame->isLocalFrame())
+        ASSERT(m_pageAgent->inspectedFrame()->view());
+#endif
+
+    detach();
+    m_injectedScriptManager->disconnect();
+    m_agents.discardAgents();
+}
+
+void WebDevToolsAgentImpl::initializeDeferredAgents()
+{
+    if (m_deferredAgentsInitialized)
+        return;
+    m_deferredAgentsInitialized = true;
+
+    InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
+    InspectorOverlay* overlay = m_overlay.get();
+
+    OwnPtrWillBeRawPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_pageAgent));
+    m_resourceAgent = resourceAgentPtr.get();
+    m_agents.append(resourceAgentPtr.release());
+
+    OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_pageAgent, m_resourceAgent));
+    m_cssAgent = cssAgentPtr.get();
+    m_agents.append(cssAgentPtr.release());
+
+    m_agents.append(InspectorAnimationAgent::create(m_pageAgent, m_domAgent));
+
+    m_agents.append(InspectorMemoryAgent::create());
+
+    m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
+
+    PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
+
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(pageScriptDebugServer, m_pageAgent, injectedScriptManager, overlay));
+    InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
+    m_agents.append(debuggerAgentPtr.release());
+    m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(debuggerAgent, m_instrumentingAgents.get()));
+
+    m_agents.append(InspectorDOMDebuggerAgent::create(m_domAgent, debuggerAgent));
+
+    m_agents.append(InspectorInputAgent::create(m_pageAgent, this));
+
+    m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, overlay));
+
+    m_agents.append(InspectorHeapProfilerAgent::create(injectedScriptManager));
+
+    m_agents.append(InspectorCanvasAgent::create(m_pageAgent, injectedScriptManager));
+
+    m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
+}
+
 void WebDevToolsAgentImpl::attach(const WebString& hostId)
 {
     if (m_attached)
@@ -246,7 +391,21 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId)
 
     // Set the attached bit first so that sync notifications were delivered.
     m_attached = true;
-    inspectorController()->connectFrontend(hostId, this);
+
+    initializeDeferredAgents();
+    m_resourceAgent->setHostId(hostId);
+
+    m_inspectorFrontend = adoptPtr(new InspectorFrontend(this));
+    // We can reconnect to existing front-end -> unmute state.
+    m_state->unmute();
+    m_agents.setFrontend(m_inspectorFrontend.get());
+
+    InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
+    InspectorInstrumentation::frontendCreated();
+
+    m_inspectorBackendDispatcher = InspectorBackendDispatcher::create(this);
+    m_agents.registerInDispatcher(m_inspectorBackendDispatcher.get());
+
     Platform::current()->currentThread()->addTaskObserver(this);
 }
 
@@ -255,19 +414,32 @@ void WebDevToolsAgentImpl::reattach(const WebString& hostId, const WebString& sa
     if (m_attached)
         return;
 
-    // Set the attached bit first so that sync notifications were delivered.
-    m_attached = true;
-    inspectorController()->reuseFrontend(hostId, this, savedState);
-    Platform::current()->currentThread()->addTaskObserver(this);
+    attach(hostId);
+    m_state->loadFromCookie(savedState);
+    m_agents.restore();
 }
 
 void WebDevToolsAgentImpl::detach()
 {
+    if (!m_attached)
+        return;
+
     Platform::current()->currentThread()->removeTaskObserver(this);
 
-    // Prevent controller from sending messages to the frontend.
-    InspectorController* ic = inspectorController();
-    ic->disconnectFrontend();
+    m_inspectorBackendDispatcher->clearFrontend();
+    m_inspectorBackendDispatcher.clear();
+
+    // Destroying agents would change the state, but we don't want that.
+    // Pre-disconnect state will be used to restore inspector agents.
+    m_state->mute();
+    m_agents.clearFrontend();
+    m_inspectorFrontend.clear();
+
+    // Release overlay page resources
+    m_overlay->freePage();
+    InspectorInstrumentation::frontendDeleted();
+    InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
+
     m_attached = false;
 }
 
@@ -307,35 +479,117 @@ bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inp
         return true;
     }
 
-    InspectorController* ic = inspectorController();
-    if (!ic)
-        return false;
-
     if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
         // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
         PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebGestureEvent&>(inputEvent));
-        return ic->handleGestureEvent(toLocalFrame(page->mainFrame()), gestureEvent);
+        return handleGestureEvent(toLocalFrame(page->mainFrame()), gestureEvent);
     }
     if (WebInputEvent::isMouseEventType(inputEvent.type) && inputEvent.type != WebInputEvent::MouseEnter) {
         // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
         PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebMouseEvent&>(inputEvent));
-        return ic->handleMouseEvent(toLocalFrame(page->mainFrame()), mouseEvent);
+        return handleMouseEvent(toLocalFrame(page->mainFrame()), mouseEvent);
     }
     if (WebInputEvent::isTouchEventType(inputEvent.type)) {
         PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebTouchEvent&>(inputEvent));
-        return ic->handleTouchEvent(toLocalFrame(page->mainFrame()), touchEvent);
+        return handleTouchEvent(toLocalFrame(page->mainFrame()), touchEvent);
     }
     if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
         PlatformKeyboardEvent keyboardEvent = PlatformKeyboardEventBuilder(static_cast<const WebKeyboardEvent&>(inputEvent));
-        return ic->handleKeyboardEvent(page->deprecatedLocalMainFrame(), keyboardEvent);
+        return handleKeyboardEvent(page->deprecatedLocalMainFrame(), keyboardEvent);
     }
+    return false;
+}
+
+bool WebDevToolsAgentImpl::handleGestureEvent(LocalFrame* frame, const PlatformGestureEvent& event)
+{
+    // Overlay should not consume events.
+    m_overlay->handleGestureEvent(event);
+    if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
+        return domAgent->handleGestureEvent(frame, event);
+    return false;
+}
+
+bool WebDevToolsAgentImpl::handleMouseEvent(LocalFrame* frame, const PlatformMouseEvent& event)
+{
+    // Overlay should not consume events.
+    m_overlay->handleMouseEvent(event);
+
+    if (event.type() == PlatformEvent::MouseMoved) {
+        if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
+            return domAgent->handleMouseMove(frame, event);
+        return false;
+    }
+    if (event.type() == PlatformEvent::MousePressed) {
+        if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
+            return domAgent->handleMousePress();
+    }
+    return false;
+}
+
+bool WebDevToolsAgentImpl::handleTouchEvent(LocalFrame* frame, const PlatformTouchEvent& event)
+{
+    // Overlay should not consume events.
+    m_overlay->handleTouchEvent(event);
+    if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
+        return domAgent->handleTouchEvent(frame, event);
+    return false;
+}
+
+bool WebDevToolsAgentImpl::handleKeyboardEvent(LocalFrame* frame, const PlatformKeyboardEvent& event)
+{
+    // Overlay should not consume events.
+    m_overlay->handleKeyboardEvent(event);
     return false;
 }
 
 void WebDevToolsAgentImpl::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    if (InspectorController* ic = inspectorController())
-        ic->didCommitLoadForLocalFrame(frame);
+    m_agents.didCommitLoadForLocalFrame(frame);
+}
+
+void WebDevToolsAgentImpl::pageScaleFactorChanged()
+{
+    m_pageAgent->pageScaleFactorChanged();
+}
+
+bool WebDevToolsAgentImpl::deviceEmulationEnabled()
+{
+    return m_pageAgent->deviceMetricsOverrideEnabled();
+}
+
+bool WebDevToolsAgentImpl::screencastEnabled()
+{
+    return m_pageAgent->screencastEnabled();
+}
+
+void WebDevToolsAgentImpl::willAddPageOverlay(const GraphicsLayer* layer)
+{
+    m_layerTreeAgent->willAddPageOverlay(layer);
+}
+
+void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
+{
+    m_layerTreeAgent->didRemovePageOverlay(layer);
+}
+
+void WebDevToolsAgentImpl::setTextAutosizingEnabled(bool enabled)
+{
+    m_pageAgent->setTextAutosizingEnabled(enabled);
+}
+
+void WebDevToolsAgentImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
+{
+    m_pageAgent->setDeviceScaleAdjustment(deviceScaleAdjustment);
+}
+
+void WebDevToolsAgentImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
+{
+    m_pageAgent->setPreferCompositingToLCDTextEnabled(enabled);
+}
+
+void WebDevToolsAgentImpl::setScriptEnabled(bool enabled)
+{
+    m_pageAgent->setScriptEnabled(enabled);
 }
 
 void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
@@ -419,10 +673,6 @@ void WebDevToolsAgentImpl::disableTracing()
     m_client->disableTracing();
 }
 
-void WebDevToolsAgentImpl::processGPUEvent(const GPUEvent& event)
-{
-}
-
 void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 {
     if (!m_webViewImpl->page()->focusController().isFocused())
@@ -454,25 +704,39 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
     if (WebDevToolsAgent::shouldInterruptForMessage(message))
         PageScriptDebugServer::shared().runPendingTasks();
     else
-        inspectorController()->dispatchMessageFromFrontend(message);
+        dispatchMessageFromFrontend(message);
+}
+
+void WebDevToolsAgentImpl::dispatchMessageFromFrontend(const String& message)
+{
+    if (m_inspectorBackendDispatcher)
+        m_inspectorBackendDispatcher->dispatch(message);
 }
 
 void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point)
 {
-    m_webViewImpl->inspectElementAt(point);
-}
+    Page* page = m_webViewImpl->page();
+    if (!page)
+        return;
 
-LocalFrame* WebDevToolsAgentImpl::mainFrame()
-{
-    if (Page* page = m_webViewImpl->page())
-        return page->deprecatedLocalMainFrame();
-    return 0;
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
+    HitTestRequest request(hitType);
+    WebMouseEvent dummyEvent;
+    dummyEvent.type = WebInputEvent::MouseDown;
+    dummyEvent.x = point.x;
+    dummyEvent.y = point.y;
+    IntPoint transformedPoint = PlatformMouseEventBuilder(page->deprecatedLocalMainFrame()->view(), dummyEvent).position();
+    HitTestResult result(page->deprecatedLocalMainFrame()->view()->windowToContents(transformedPoint));
+    page->deprecatedLocalMainFrame()->contentRenderer()->hitTest(request, result);
+    Node* node = result.innerNode();
+    if (!node && page->deprecatedLocalMainFrame()->document())
+        node = page->deprecatedLocalMainFrame()->document()->documentElement();
+    m_domAgent->inspect(node);
 }
 
 void WebDevToolsAgentImpl::paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
 {
-    if (InspectorController* ic = inspectorController())
-        ic->drawHighlight(toWebGraphicsContextImpl(context)->graphicsContext());
+    m_overlay->paint(toWebGraphicsContextImpl(context)->graphicsContext());
 }
 
 void WebDevToolsAgentImpl::highlight()
@@ -568,23 +832,21 @@ void WebDevToolsAgentImpl::resumeStartup()
 
 void WebDevToolsAgentImpl::setLayerTreeId(int layerTreeId)
 {
-    m_layerTreeId = layerTreeId;
-    inspectorController()->setLayerTreeId(layerTreeId);
+    m_tracingAgent->setLayerTreeId(layerTreeId);
 }
 
 void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& script)
 {
-    InspectorController* ic = inspectorController();
-    ic->evaluateForTestInFrontend(callId, script);
+    if (InspectorInspectorAgent* inspectorAgent = m_instrumentingAgents->inspectorInspectorAgent())
+        inspectorAgent->evaluateForTestInFrontend(callId, script);
 }
 
 void WebDevToolsAgentImpl::flushPendingProtocolNotifications()
 {
     if (!m_attached)
         return;
-    InspectorController* ic = inspectorController();
-    ic->flushPendingProtocolNotifications();
 
+    m_agents.flushPendingProtocolNotifications();
     for (size_t i = 0; i < m_notificationQueue.size(); ++i)
         m_client->sendProtocolMessage(0, m_notificationQueue[i]->toJSONString(), WebString());
     m_notificationQueue.clear();
@@ -594,8 +856,8 @@ void WebDevToolsAgentImpl::willProcessTask()
 {
     if (!m_attached)
         return;
-    if (InspectorController* ic = inspectorController())
-        ic->willProcessTask();
+    if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
+        profilerAgent->willProcessTask();
     TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Program");
 }
 
@@ -603,8 +865,10 @@ void WebDevToolsAgentImpl::didProcessTask()
 {
     if (!m_attached)
         return;
-    if (InspectorController* ic = inspectorController())
-        ic->didProcessTask();
+    if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
+        profilerAgent->didProcessTask();
+    if (InspectorCanvasAgent* canvasAgent = m_instrumentingAgents->inspectorCanvasAgent())
+        canvasAgent->didProcessTask();
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Program");
     flushPendingProtocolNotifications();
 }

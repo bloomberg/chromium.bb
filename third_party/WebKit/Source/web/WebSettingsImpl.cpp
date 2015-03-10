@@ -36,7 +36,6 @@
 
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "web/InspectorController.h"
 #include "web/WebDevToolsAgentImpl.h"
 
 namespace blink {
@@ -160,7 +159,7 @@ void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(bool autoZoomFocusedN
 void WebSettingsImpl::setTextAutosizingEnabled(bool enabled)
 {
     if (m_devToolsAgent)
-        m_devToolsAgent->inspectorController()->setTextAutosizingEnabled(enabled);
+        m_devToolsAgent->setTextAutosizingEnabled(enabled);
     else
         m_settings->setTextAutosizingEnabled(enabled);
 }
@@ -188,7 +187,7 @@ void WebSettingsImpl::setInlineTextBoxAccessibilityEnabled(bool enabled)
 void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
     if (m_devToolsAgent)
-        m_devToolsAgent->inspectorController()->setDeviceScaleAdjustment(deviceScaleAdjustment);
+        m_devToolsAgent->setDeviceScaleAdjustment(deviceScaleAdjustment);
     else
         m_settings->setDeviceScaleAdjustment(deviceScaleAdjustment);
 }
@@ -201,7 +200,7 @@ void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)
 void WebSettingsImpl::setJavaScriptEnabled(bool enabled)
 {
     if (m_devToolsAgent)
-        m_devToolsAgent->inspectorController()->setScriptEnabled(enabled);
+        m_devToolsAgent->setScriptEnabled(enabled);
     else
         m_settings->setScriptEnabled(enabled);
 }
@@ -539,7 +538,7 @@ void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
 void WebSettingsImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
 {
     if (m_devToolsAgent)
-        m_devToolsAgent->inspectorController()->setPreferCompositingToLCDTextEnabled(enabled);
+        m_devToolsAgent->setPreferCompositingToLCDTextEnabled(enabled);
     else
         m_settings->setPreferCompositingToLCDTextEnabled(enabled);
 }

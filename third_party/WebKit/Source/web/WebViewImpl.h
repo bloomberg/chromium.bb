@@ -257,7 +257,6 @@ public:
     virtual void spellingMarkers(WebVector<uint32_t>* markers) override;
     virtual void removeSpellingMarkersUnderWords(const WebVector<WebString>& words) override;
     virtual unsigned long createUniqueIdentifierForRequest() override;
-    virtual void inspectElementAt(const WebPoint&) override;
     virtual void setCompositorDeviceScaleFactorOverride(float) override;
     virtual void setRootLayerTransform(const WebSize& offset, float scale) override;
     virtual WebDevToolsAgent* devToolsAgent() override;
@@ -726,7 +725,7 @@ private:
     // The popup associated with an input element.
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
-    OwnPtr<WebDevToolsAgentImpl> m_devToolsAgent;
+    OwnPtrWillBePersistent<WebDevToolsAgentImpl> m_devToolsAgent;
     OwnPtr<PageOverlayList> m_pageOverlays;
 
     // Whether the webview is rendering transparently.

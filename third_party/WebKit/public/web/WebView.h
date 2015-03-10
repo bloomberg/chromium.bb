@@ -368,11 +368,6 @@ public:
 
     // Developer tools -----------------------------------------------------
 
-    // Inspect a particular point in the WebView.  (x = -1 || y = -1) is a
-    // special case, meaning inspect the current page and not a specific
-    // point.
-    virtual void inspectElementAt(const WebPoint&) = 0;
-
     // Set an override of device scale factor passed from WebView to
     // compositor. Pass zero to cancel override. This is used to implement
     // device metrics emulation.
