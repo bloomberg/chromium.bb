@@ -22,7 +22,7 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
   EXPECT_EQ(0u, heap.GetFreeListSize());
 
   // Free list is initially empty.
-  EXPECT_FALSE(heap.SearchFreeList(1));
+  EXPECT_FALSE(heap.SearchFreeList(1, 0));
 
   const size_t kBlocks = 10;
   size_t memory_size = block_size * kBlocks;
@@ -42,7 +42,7 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
   EXPECT_EQ(0u, heap.GetFreeListSize());
 
   // Free list should still be empty as |new_span| is currently in use.
-  EXPECT_FALSE(heap.SearchFreeList(1));
+  EXPECT_FALSE(heap.SearchFreeList(1, 0));
 
   // Done using |new_span|. Merge it into the free list.
   heap.MergeIntoFreeList(new_span.Pass());
@@ -51,15 +51,15 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
   EXPECT_EQ(memory_size, heap.GetFreeListSize());
 
   // Free list should not contain a span that is larger than kBlocks.
-  EXPECT_FALSE(heap.SearchFreeList(kBlocks + 1));
+  EXPECT_FALSE(heap.SearchFreeList(kBlocks + 1, 0));
 
   // Free list should contain a span that satisfies the request for kBlocks.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
-      heap.SearchFreeList(kBlocks);
+      heap.SearchFreeList(kBlocks, 0);
   ASSERT_TRUE(span);
 
   // Free list should be empty again.
-  EXPECT_FALSE(heap.SearchFreeList(1));
+  EXPECT_FALSE(heap.SearchFreeList(1, 0));
 
   // Merge it into the free list again.
   heap.MergeIntoFreeList(span.Pass());
@@ -87,31 +87,33 @@ TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
   heap.MergeIntoFreeList(leftover.Pass());
 
   // Some of the memory is still in use.
-  EXPECT_FALSE(heap.SearchFreeList(kBlocks));
+  EXPECT_FALSE(heap.SearchFreeList(kBlocks, 0));
 
   // Merge |span| into free list.
   heap.MergeIntoFreeList(new_span.Pass());
 
   // Remove a 2 page span from free list.
-  scoped_ptr<DiscardableSharedMemoryHeap::Span> span1 = heap.SearchFreeList(2);
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> span1 =
+      heap.SearchFreeList(2, kBlocks);
   ASSERT_TRUE(span1);
 
   // Remove another 2 page span from free list.
-  scoped_ptr<DiscardableSharedMemoryHeap::Span> span2 = heap.SearchFreeList(2);
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> span2 =
+      heap.SearchFreeList(2, kBlocks);
   ASSERT_TRUE(span2);
 
   // Merge |span1| back into free list.
   heap.MergeIntoFreeList(span1.Pass());
 
   // Some of the memory is still in use.
-  EXPECT_FALSE(heap.SearchFreeList(kBlocks));
+  EXPECT_FALSE(heap.SearchFreeList(kBlocks, 0));
 
   // Merge |span2| back into free list.
   heap.MergeIntoFreeList(span2.Pass());
 
   // All memory has been returned to the free list.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> large_span =
-      heap.SearchFreeList(kBlocks);
+      heap.SearchFreeList(kBlocks, 0);
   ASSERT_TRUE(large_span);
 
   // Merge it into the free list again.
@@ -153,11 +155,12 @@ TEST(DiscardableSharedMemoryHeapTest, Grow) {
   heap.MergeIntoFreeList(heap.Grow(memory1.Pass(), block_size).Pass());
 
   // Remove a span from free list.
-  scoped_ptr<DiscardableSharedMemoryHeap::Span> span1 = heap.SearchFreeList(1);
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> span1 =
+      heap.SearchFreeList(1, 0);
   EXPECT_TRUE(span1);
 
   // No more memory available.
-  EXPECT_FALSE(heap.SearchFreeList(1));
+  EXPECT_FALSE(heap.SearchFreeList(1, 0));
 
   // Grow free list using new memory.
   scoped_ptr<base::DiscardableSharedMemory> memory2(
@@ -166,7 +169,8 @@ TEST(DiscardableSharedMemoryHeapTest, Grow) {
   heap.MergeIntoFreeList(heap.Grow(memory2.Pass(), block_size).Pass());
 
   // Memory should now be available.
-  scoped_ptr<DiscardableSharedMemoryHeap::Span> span2 = heap.SearchFreeList(1);
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> span2 =
+      heap.SearchFreeList(1, 0);
   EXPECT_TRUE(span2);
 
   // Merge spans into the free list again.
@@ -223,6 +227,34 @@ TEST(DiscardableSharedMemoryHeapTest, ReleasePurgedMemory) {
 
   // Size should be 0.
   EXPECT_EQ(0u, heap.GetSize());
+}
+
+TEST(DiscardableSharedMemoryHeapTest, Slack) {
+  size_t block_size = base::GetPageSize();
+  DiscardableSharedMemoryHeap heap(block_size);
+
+  const size_t kBlocks = 6;
+  size_t memory_size = block_size * kBlocks;
+
+  scoped_ptr<base::DiscardableSharedMemory> memory(
+      new base::DiscardableSharedMemory);
+  ASSERT_TRUE(memory->CreateAndMap(memory_size));
+  heap.MergeIntoFreeList(heap.Grow(memory.Pass(), memory_size).Pass());
+
+  // No span in the free list that is less or equal to 3 + 1.
+  EXPECT_FALSE(heap.SearchFreeList(3, 1));
+
+  // No span in the free list that is less or equal to 3 + 2.
+  EXPECT_FALSE(heap.SearchFreeList(3, 2));
+
+  // No span in the free list that is less or equal to 1 + 4.
+  EXPECT_FALSE(heap.SearchFreeList(1, 4));
+
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
+      heap.SearchFreeList(1, 5);
+  EXPECT_TRUE(span);
+
+  heap.MergeIntoFreeList(span.Pass());
 }
 
 }  // namespace

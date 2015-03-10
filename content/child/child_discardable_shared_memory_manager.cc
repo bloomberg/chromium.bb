@@ -78,11 +78,23 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   // Round up to multiple of page size.
   size_t pages = (size + base::GetPageSize() - 1) / base::GetPageSize();
 
+  // Default allocation size in pages.
+  size_t allocation_pages = kAllocationSize / base::GetPageSize();
+
+  size_t slack = 0;
+  // When searching the free list, allow a slack between required size and
+  // free span size that is less or equal to kAllocationSize. This is to
+  // avoid segments larger then kAllocationSize unless they are a perfect
+  // fit. The result is that large allocations can be reused without reducing
+  // the ability to discard memory.
+  if (pages < allocation_pages)
+    slack = allocation_pages - pages;
+
   size_t heap_size_prior_to_releasing_purged_memory = heap_.GetSize();
   for (;;) {
     // Search free list for available space.
     scoped_ptr<DiscardableSharedMemoryHeap::Span> free_span =
-        heap_.SearchFreeList(pages);
+        heap_.SearchFreeList(pages, slack);
     if (!free_span.get())
       break;
 
@@ -202,11 +214,6 @@ void ChildDiscardableSharedMemoryManager::ReleaseSpan(
   // Delete span instead of merging it into free list if memory is gone.
   if (!span->shared_memory())
     return;
-
-  // Purge backing memory if span is greater than kAllocationSize. This will
-  // prevent it from being reused and associated resources will be released.
-  if (span->length() * base::GetPageSize() > kAllocationSize)
-    span->shared_memory()->Purge(base::Time::Now());
 
   heap_.MergeIntoFreeList(span.Pass());
 

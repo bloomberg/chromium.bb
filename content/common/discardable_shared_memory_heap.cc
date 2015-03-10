@@ -139,7 +139,7 @@ DiscardableSharedMemoryHeap::Split(Span* span, size_t blocks) {
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span>
-DiscardableSharedMemoryHeap::SearchFreeList(size_t blocks) {
+DiscardableSharedMemoryHeap::SearchFreeList(size_t blocks, size_t slack) {
   DCHECK(blocks);
 
   // Search through list to find best span.
@@ -150,6 +150,9 @@ DiscardableSharedMemoryHeap::SearchFreeList(size_t blocks) {
        span = span->next()->value()) {
     // Skip span if it's not large enough.
     if (span->length_ < blocks)
+      continue;
+    // Skip span if it's too large.
+    if (span->length_ - blocks > slack)
       continue;
 
     if (best) {

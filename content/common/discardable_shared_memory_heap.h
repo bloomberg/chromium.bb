@@ -63,7 +63,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
 
   // Search free list for span that satisfies the request for |blocks| of
   // memory. If found, the span is removed from the free list and returned.
-  scoped_ptr<Span> SearchFreeList(size_t blocks);
+  scoped_ptr<Span> SearchFreeList(size_t blocks, size_t slack);
 
   // Release free shared memory segments.
   void ReleaseFreeMemory();
