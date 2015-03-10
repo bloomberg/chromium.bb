@@ -183,28 +183,22 @@ NET_EXPORT_PRIVATE RequestPriority ConvertSpdyPriorityToRequestPriority(
 GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
                            SpdyMajorVersion protocol_version,
                            bool pushed) {
-  const char* scheme_header = protocol_version >= SPDY3 ? ":scheme" : "scheme";
-  const char* host_header = protocol_version >= SPDY4 ? ":authority" :
-      (protocol_version >= SPDY3 ? ":host" : "host");
-  const char* path_header = protocol_version >= SPDY3 ? ":path" : "url";
+  DCHECK_LE(SPDY3, protocol_version);
+  SpdyHeaderBlock::const_iterator it = headers.find(":scheme");
+  if (it == headers.end())
+    return GURL();
+  std::string url = it->second;
+  url.append("://");
 
-  std::string scheme;
-  std::string host_port;
-  std::string path;
-  SpdyHeaderBlock::const_iterator it;
-  it = headers.find(scheme_header);
-  if (it != headers.end())
-    scheme = it->second;
-  it = headers.find(host_header);
-  if (it != headers.end())
-    host_port = it->second;
-  it = headers.find(path_header);
-  if (it != headers.end())
-    path = it->second;
+  it = headers.find(protocol_version >= SPDY4 ? ":authority" : ":host");
+  if (it == headers.end())
+    return GURL();
+  url.append(it->second);
 
-  std::string url = (scheme.empty() || host_port.empty() || path.empty())
-                        ? std::string()
-                        : scheme + "://" + host_port + path;
+  it = headers.find(":path");
+  if (it == headers.end())
+    return GURL();
+  url.append(it->second);
   return GURL(url);
 }
 
