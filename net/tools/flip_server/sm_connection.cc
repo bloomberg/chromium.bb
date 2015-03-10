@@ -65,8 +65,8 @@ EpollServer* SMConnection::epoll_server() { return epoll_server_; }
 
 void SMConnection::ReadyToSend() {
   VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-          << "Setting ready to send: EPOLLIN | EPOLLOUT";
-  epoll_server_->SetFDReady(fd_, EPOLLIN | EPOLLOUT);
+          << "Setting ready to send: POLLIN | POLLOUT";
+  epoll_server_->SetFDReady(fd_, NET_POLLIN | NET_POLLOUT);
 }
 
 void SMConnection::EnqueueDataFrame(DataFrame* df) {
@@ -150,7 +150,8 @@ void SMConnection::InitSMConnection(SMConnectionPoolInterface* connection_pool,
 
   read_buffer_.Clear();
 
-  epoll_server_->RegisterFD(fd_, this, EPOLLIN | EPOLLOUT | EPOLLET);
+  epoll_server_->RegisterFD(fd_, this,
+                            PollBits(NET_POLLIN | NET_POLLOUT | NET_POLLET));
 
   if (use_ssl) {
     ssl_ = CreateSSLContext(ssl_state_->ssl_ctx);
@@ -256,14 +257,14 @@ void SMConnection::Cleanup(const char* cleanup) {
 
 void SMConnection::HandleEvents() {
   VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-          << "Received: " << EpollServer::EventMaskToString(events_).c_str();
+          << "Received: " << PollBits(events_).ToString();
 
-  if (events_ & EPOLLIN) {
+  if (events_ & NET_POLLIN) {
     if (!DoRead())
       goto handle_close_or_error;
   }
 
-  if (events_ & EPOLLOUT) {
+  if (events_ & NET_POLLOUT) {
     // Check if we have connected or not
     if (connection_complete_ == false) {
       int sock_error;
@@ -292,7 +293,7 @@ void SMConnection::HandleEvents() {
       goto handle_close_or_error;
   }
 
-  if (events_ & (EPOLLHUP | EPOLLERR)) {
+  if (events_ & (NET_POLLHUP | NET_POLLERR)) {
     VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT << "!!! Got HUP or ERR";
     goto handle_close_or_error;
   }
@@ -429,7 +430,7 @@ bool SMConnection::DoRead() {
           case SSL_ERROR_WANT_WRITE:
           case SSL_ERROR_WANT_ACCEPT:
           case SSL_ERROR_WANT_CONNECT:
-            events_ &= ~EPOLLIN;
+            events_ &= ~NET_POLLIN;
             VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
                     << "DoRead: SSL WANT_XXX: " << err;
             goto done;
@@ -445,7 +446,7 @@ bool SMConnection::DoRead() {
     if (bytes_read == -1) {
       switch (stored_errno) {
         case EAGAIN:
-          events_ &= ~EPOLLIN;
+          events_ &= ~NET_POLLIN;
           VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
                   << "Got EAGAIN while reading";
           goto done;
@@ -509,13 +510,13 @@ bool SMConnection::DoConsumeReadData() {
       VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
               << "HandleRequestFullyRead: Setting EPOLLOUT";
       HandleResponseFullyRead();
-      events_ |= EPOLLOUT;
+      events_ |= NET_POLLOUT;
     } else if (sm_interface_->Error()) {
       LOG(ERROR) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
                  << "Framer error detected: Setting EPOLLOUT: "
                  << sm_interface_->ErrorAsString();
       // this causes everything to be closed/cleaned up.
-      events_ |= EPOLLOUT;
+      events_ |= NET_POLLOUT;
       return false;
     }
     read_buffer_.GetReadablePtr(&bytes, &size);
@@ -539,7 +540,7 @@ bool SMConnection::DoWrite() {
       sm_interface_->GetOutput();
     }
     if (output_list_.empty()) {
-      events_ &= ~EPOLLOUT;
+      events_ &= ~NET_POLLOUT;
     }
   }
   while (!output_list_.empty()) {
@@ -549,7 +550,7 @@ bool SMConnection::DoWrite() {
       VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
               << " byte sent >= max bytes sent per write: Setting EPOLLOUT: "
               << bytes_sent;
-      events_ |= EPOLLOUT;
+      events_ |= NET_POLLOUT;
       break;
     }
     if (sm_interface_ && output_list_.size() < 2) {
@@ -581,7 +582,7 @@ bool SMConnection::DoWrite() {
     if (bytes_written == -1) {
       switch (stored_errno) {
         case EAGAIN:
-          events_ &= ~EPOLLOUT;
+          events_ &= ~NET_POLLOUT;
           VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
                   << "Got EAGAIN while writing";
           goto done;
@@ -603,7 +604,7 @@ bool SMConnection::DoWrite() {
       continue;
     } else if (bytes_written == -2) {
       // -2 handles SSL_ERROR_WANT_* errors
-      events_ &= ~EPOLLOUT;
+      events_ &= ~NET_POLLOUT;
       goto done;
     }
     VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT

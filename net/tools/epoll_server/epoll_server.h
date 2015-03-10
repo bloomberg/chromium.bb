@@ -36,13 +36,48 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include <sys/epoll.h>
 
 namespace net {
 
 class EpollServer;
 class EpollAlarmCallbackInterface;
 class ReadPipeCallback;
+
+enum {
+  // These are _deliberately_ not the same as the constants in the kernel.
+  // This allows detection of failure to properly call converters
+  // AbstractBitsToKernelBits() and v.v. when passing to/from the kernel.
+  // This avoids inclusion a kernel header from here, which I think
+  // we're trying to avoid.
+  //
+  // Additionall, RegisterFD requires that you wrap the bitmask in
+  // a constructor for a PollBits, so compile-time type-checking prevents
+  // most if not all runtime DCHECK failures.
+  // Assigning high to low in the word avoids crashing into the true values
+  // without having to know what they really are.
+  // 0x80000000 is not used because that is a legal value to the Linux kernel.
+  NET_POLLIN = 0x40000000,
+  NET_POLLPRI = 0x20000000,
+  NET_POLLOUT = 0x10000000,
+  NET_POLLET = 0x08000000,
+  NET_POLLHUP = 0x04000000,
+  NET_POLLERR = 0x02000000
+};
+
+// This struct acts as a compile-time enforcement that the bits given to
+// RegisterFD were gotten from the above enum, and not from EPOLLmumble
+// as defined by inclusion of <poll.h> or <sys/epoll.h> accidentally.
+// The struct adds no overhead since it is only an int.
+struct PollBits {
+  unsigned int bits_;      // The set of events of interest
+  std::string ToString();  // convert to a human-readable string
+
+  // It needs a constructor that can't be used for implicit conversion.
+  // Otherwise the type-checking benefit is lost.
+  inline explicit PollBits(int);
+};
+
+inline PollBits::PollBits(int bits) : bits_(bits){};
 
 struct EpollEvent {
   EpollEvent(int events, bool is_epoll_wait)
@@ -117,6 +152,34 @@ class EpollCallbackInterface {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+// This class is the delegate for all interactions with the OS kernel.
+// The basic EpollServer assumes that it has some kind of poll() or select()
+// capability from the OS, but does not care how it is implemented.
+// The operations that we require on a file-descriptor are adding to a set
+// of descriptors to watch (for I/O becoming possible), changing the set of
+// events to watch, and removing the fd.
+// As with 'libevent', this could, in theory, be backed by an implementation
+// that uses any of epoll(), poll(), kqueue(), /dev/poll etc.
+// In practice, we only have epoll() and poll(). It SHOULD NOT be inferred from
+// seeing "epoll" throughout this code that it assumes existence of epoll().
+class EpollServerImpl {
+ public:
+  // Indicate interest in |fd| for the set of events in |event_mask|.
+  virtual void AddFD(int fd, PollBits event_mask) const = 0;
+  // Change the set of events pertinent to |fd| that we care about to
+  // |event_mask|
+  virtual void SetInterestMask(int fd, PollBits event_mask) const = 0;
+  // Indicate that we no longer care about |fd|.
+  virtual void DeleteFD(int fd) const = 0;
+  // Do the kernel-level operation that asks for status on all the descriptors
+  // as efficiently as possible for the implementation.
+  virtual int KernelWait(int timeout_in_ms) = 0;
+  // Walk the returned list of kernel events and convert each into
+  // the EpollServer representation of it.
+  virtual void ScanKernelEvents(EpollServer*, int nfds) = 0;
+  virtual ~EpollServerImpl(){};
+};
+
 class EpollServer {
  public:
   typedef EpollAlarmCallbackInterface AlarmCB;
@@ -127,10 +190,15 @@ class EpollServer {
 
   // Summary:
   //   Constructor:
-  //    By default, we don't wait any amount of time for events, and
-  //    we suggest to the epoll-system that we're going to use on-the-order
-  //    of 1024 FDs.
+  //    By default, we don't wait any amount of time for events.
   EpollServer();
+
+  // The "server" has an implementation specific to the underlying OS.
+  // For linux, we suggest to the epoll mechanism that we're going
+  // to use approximately 1024 file descriptors.
+  // By the way, "server" is not the best name for this abstraction.
+  // It's just the I/O multiplexing part of a server.
+  static scoped_ptr<EpollServerImpl> CreateImplementation();
 
   ////////////////////////////////////////
 
@@ -159,10 +227,13 @@ class EpollServer {
   // Args:
   //   fd - a valid file-descriptor
   //   cb - an instance of a subclass of EpollCallbackInterface
-  //   event_mask - a combination of (EPOLLOUT, EPOLLIN.. etc) indicating
-  //                the events for which the callback would like to be
-  //                called.
-  virtual void RegisterFD(int fd, CB* cb, int event_mask);
+  //   event_mask - a PollBits structure indicating the events for which the
+  //                callback would like to be called.
+  //   CAUTION: if you specify NET_POLLET as a flag bit, but the underlying OS
+  //   does not support edge-triggering, you will not get edge-triggering.
+  //   For the most part this is not a problem, because level-trigger will
+  //   give you at *least* as many notifications as edge-trigger.
+  virtual void RegisterFD(int fd, CB* cb, PollBits event_mask);
 
   ////////////////////////////////////////
 
@@ -216,7 +287,8 @@ class EpollServer {
   // Args:
   //   fd - the fd whose event mask should be modified.
   //   event_mask - the new event mask.
-  virtual void ModifyCallback(int fd, int event_mask);
+  // NOTE: this seems never to be used.
+  virtual void ModifyCallback(int fd, PollBits event_mask);
 
   ////////////////////////////////////////
 
@@ -441,8 +513,6 @@ class EpollServer {
   //   epoch.
   virtual int64 ApproximateNowInUsec() const;
 
-  static std::string EventMaskToString(int event_mask);
-
   // Summary:
   //   Logs the state of the epoll server with LOG(ERROR).
   void LogStateOnCrash();
@@ -488,18 +558,14 @@ class EpollServer {
 
  protected:
   virtual int GetFlags(int fd);
-  inline int SetFlags(int fd, int flags) {
-    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-  }
+  inline int SetFlags(int fd, int flags) { return fcntl(fd, F_SETFL, flags); }
 
   virtual void SetNonblocking(int fd);
 
   // This exists here so that we can override this function in unittests
   // in order to make effective mock EpollServer objects.
-  virtual int epoll_wait_impl(int epfd,
-                              struct epoll_event* events,
-                              int max_events,
-                              int timeout_in_ms);
+  virtual int KernelWait(int timeout_in_ms);
+  virtual void ScanKernelEvents(int nfds);
 
   // this struct is used internally, and is never used by anything external
   // to this class. Some of its members are declared mutable to get around the
@@ -589,7 +655,7 @@ class EpollServer {
   //   event_mask - the event mask (consisting of EPOLLIN, EPOLLOUT, etc
   //                 OR'd together) which will be associated with this
   //                 FD initially.
-  virtual void AddFD(int fd, int event_mask) const;
+  virtual void AddFD(int fd, PollBits event_mask) const;
 
   ////////////////////////////////////////
 
@@ -600,10 +666,9 @@ class EpollServer {
   //   with the epoll call.
   // Args:
   //   fd - the file descriptor to-be-added to the monitoring set
-  //   event_mask - the event mask (consisting of EPOLLIN, EPOLLOUT, etc
-  //                 OR'd together) which will be associated with this
-  //                 FD after this call.
-  virtual void ModFD(int fd, int event_mask) const;
+  //   event_mask - a PollBits signifying the events which will be
+  //                 will be associated with this FD after this call.
+  virtual void ModFD(int fd, PollBits event_mask) const;
 
   ////////////////////////////////////////
 
@@ -633,11 +698,7 @@ class EpollServer {
   //   another callback (A) has closed a file-descriptor N, and
   //   the callback (B) has a newly opened file-descriptor, which
   //   also happens to be N.
-  virtual void WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
-                                                struct epoll_event events[],
-                                                int events_size);
-
-
+  virtual void WaitForEventsAndCallHandleEvents();
 
   // Summary:
   //   An internal function for implementing the ready list. It adds a fd's
@@ -656,8 +717,8 @@ class EpollServer {
   // were recurring.
   virtual void CallAndReregisterAlarmEvents();
 
-  // The file-descriptor created for epolling
-  int epoll_fd_;
+  // The architecture-specific implementation
+  scoped_ptr<EpollServerImpl> impl_;
 
   // The mapping of file-descriptor to CBAndEventMasks
   FDToCBMap cb_map_;
@@ -705,9 +766,6 @@ class EpollServer {
   LIST_HEAD(ReadyList, CBAndEventMask) ready_list_;
   LIST_HEAD(TmpList, CBAndEventMask) tmp_list_;
   int ready_list_size_;
-  // TODO(alyssar): make this into something that scales up.
-  static const int events_size_ = 256;
-  struct epoll_event events_[256];
 
 #ifdef EPOLL_SERVER_EVENT_TRACING
   struct EventRecorder {

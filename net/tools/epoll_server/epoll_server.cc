@@ -61,7 +61,7 @@ namespace net {
 class ReadPipeCallback : public EpollCallbackInterface {
  public:
   void OnEvent(int fd, EpollEvent* event) override {
-    DCHECK(event->in_events == EPOLLIN);
+    DCHECK(event->in_events == NET_POLLIN);
     int data;
     int data_read = 1;
     // Read until the pipe is empty.
@@ -79,17 +79,15 @@ class ReadPipeCallback : public EpollCallbackInterface {
 ////////////////////////////////////////////////////////////////////////////////
 
 EpollServer::EpollServer()
-  : epoll_fd_(epoll_create(1024)),
-    timeout_in_us_(0),
-    recorded_now_in_us_(0),
-    ready_list_size_(0),
-    wake_cb_(new ReadPipeCallback),
-    read_fd_(-1),
-    write_fd_(-1),
-    in_wait_for_events_and_execute_callbacks_(false),
-    in_shutdown_(false) {
-  // ensure that the epoll_fd_ is valid.
-  CHECK_NE(epoll_fd_, -1);
+    : timeout_in_us_(0),
+      recorded_now_in_us_(0),
+      ready_list_size_(0),
+      wake_cb_(new ReadPipeCallback),
+      read_fd_(-1),
+      write_fd_(-1),
+      in_wait_for_events_and_execute_callbacks_(false),
+      in_shutdown_(false) {
+  impl_ = CreateImplementation();
   LIST_INIT(&ready_list_);
   LIST_INIT(&tmp_list_);
 
@@ -106,7 +104,7 @@ EpollServer::EpollServer()
   }
   read_fd_ = pipe_fds[0];
   write_fd_ = pipe_fds[1];
-  RegisterFD(read_fd_, wake_cb_.get(), EPOLLIN);
+  RegisterFD(read_fd_, wake_cb_.get(), PollBits(NET_POLLIN));
 }
 
 void EpollServer::CleanupFDToCBMap() {
@@ -159,7 +157,6 @@ EpollServer::~EpollServer() {
 
   close(read_fd_);
   close(write_fd_);
-  close(epoll_fd_);
 }
 
 // Whether a CBAandEventMask is on the ready list is determined by a non-NULL
@@ -187,9 +184,9 @@ inline void EpollServer::RemoveFromReadyList(
   }
 }
 
-void EpollServer::RegisterFD(int fd, CB* cb, int event_mask) {
+void EpollServer::RegisterFD(int fd, CB* cb, PollBits event_mask) {
   CHECK(cb);
-  VLOG(3) << "RegisterFD fd=" << fd << " event_mask=" << event_mask;
+  VLOG(3) << "RegisterFD fd=" << fd << " event_mask=" << event_mask.bits_;
   FDToCBMap::iterator fd_i = cb_map_.find(CBAndEventMask(NULL, 0, fd));
   if (cb_map_.end() != fd_i) {
     // do we just abort, or do we just unregister the other guy?
@@ -207,18 +204,18 @@ void EpollServer::RegisterFD(int fd, CB* cb, int event_mask) {
       AddFD(fd, event_mask);
     }
     fd_i->cb = cb;
-    fd_i->event_mask = event_mask;
+    fd_i->event_mask = event_mask.bits_;
     fd_i->events_to_fake = 0;
   } else {
     AddFD(fd, event_mask);
-    cb_map_.insert(CBAndEventMask(cb, event_mask, fd));
+    cb_map_.insert(CBAndEventMask(cb, event_mask.bits_, fd));
   }
 
 
   // set the FD to be non-blocking.
   SetNonblocking(fd);
 
-  cb->OnRegistration(this, fd, event_mask);
+  cb->OnRegistration(this, fd, event_mask.bits_);
 }
 
 int EpollServer::GetFlags(int fd) {
@@ -248,23 +245,27 @@ void EpollServer::SetNonblocking(int fd) {
   }
 }
 
-int EpollServer::epoll_wait_impl(int epfd,
-                                 struct epoll_event* events,
-                                 int max_events,
-                                 int timeout_in_ms) {
-  return epoll_wait(epfd, events, max_events, timeout_in_ms);
+// Call the OS kernel in an architecture-specific fashion.
+// The mock epoll server overrides this method rather than providing
+// a mock of the |impl_| object.
+// (Maybe it would be better to do it that way?)
+int EpollServer::KernelWait(int timeout_in_ms) {
+  return impl_->KernelWait(timeout_in_ms);
+}
+void EpollServer::ScanKernelEvents(int nfds) {
+  return impl_->ScanKernelEvents(this, nfds);
 }
 
 void EpollServer::RegisterFDForWrite(int fd, CB* cb) {
-  RegisterFD(fd, cb, EPOLLOUT);
+  RegisterFD(fd, cb, PollBits(NET_POLLOUT));
 }
 
 void EpollServer::RegisterFDForReadWrite(int fd, CB* cb) {
-  RegisterFD(fd, cb, EPOLLIN | EPOLLOUT);
+  RegisterFD(fd, cb, PollBits(NET_POLLIN | NET_POLLOUT));
 }
 
 void EpollServer::RegisterFDForRead(int fd, CB* cb) {
-  RegisterFD(fd, cb, EPOLLIN);
+  RegisterFD(fd, cb, PollBits(NET_POLLIN));
 }
 
 void EpollServer::UnregisterFD(int fd) {
@@ -301,30 +302,33 @@ void EpollServer::UnregisterFD(int fd) {
   }
 }
 
-void EpollServer::ModifyCallback(int fd, int event_mask) {
-  ModifyFD(fd, ~0, event_mask);
+void EpollServer::ModifyCallback(int fd, PollBits event_mask) {
+  ModifyFD(fd, ~0, event_mask.bits_);
 }
 
 void EpollServer::StopRead(int fd) {
-  ModifyFD(fd, EPOLLIN, 0);
+  ModifyFD(fd, NET_POLLIN, 0);
 }
 
 void EpollServer::StartRead(int fd) {
-  ModifyFD(fd, 0, EPOLLIN);
+  ModifyFD(fd, 0, NET_POLLIN);
 }
 
 void EpollServer::StopWrite(int fd) {
-  ModifyFD(fd, EPOLLOUT, 0);
+  ModifyFD(fd, NET_POLLOUT, 0);
 }
 
 void EpollServer::StartWrite(int fd) {
-  ModifyFD(fd, 0, EPOLLOUT);
+  ModifyFD(fd, 0, NET_POLLOUT);
 }
 
 void EpollServer::HandleEvent(int fd, int event_mask) {
 #ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordEpollEvent(fd, event_mask);
 #endif
+  // This is quite a silly way to do this for epoll(), because the OS can give
+  // you back an opaque datum as part of the event. We don't use that feature
+  // (small miracle?) which is great because poll() doesn't have it.
   FDToCBMap::iterator fd_i = cb_map_.find(CBAndEventMask(NULL, 0, fd));
   if (fd_i == cb_map_.end() || fd_i->cb == NULL) {
     // Ignore the event.
@@ -365,9 +369,7 @@ void EpollServer::WaitForEventsAndExecuteCallbacks() {
   TrueFalseGuard recursion_guard(&in_wait_for_events_and_execute_callbacks_);
   if (alarm_map_.empty()) {
     // no alarms, this is business as usual.
-    WaitForEventsAndCallHandleEvents(timeout_in_us_,
-                                     events_,
-                                     events_size_);
+    WaitForEventsAndCallHandleEvents();
     recorded_now_in_us_ = 0;
     return;
   }
@@ -402,9 +404,7 @@ void EpollServer::WaitForEventsAndExecuteCallbacks() {
 
   // wait for events.
 
-  WaitForEventsAndCallHandleEvents(wait_time_in_us,
-                                   events_,
-                                   events_size_);
+  WaitForEventsAndCallHandleEvents();
   CallAndReregisterAlarmEvents();
   recorded_now_in_us_ = 0;
 }
@@ -503,26 +503,26 @@ int64 EpollServer::ApproximateNowInUsec() const {
   return this->NowInUsec();
 }
 
-std::string EpollServer::EventMaskToString(int event_mask) {
+std::string PollBits::ToString() {
   std::string s;
-  if (event_mask & EPOLLIN) s += "EPOLLIN ";
-  if (event_mask & EPOLLPRI) s += "EPOLLPRI ";
-  if (event_mask & EPOLLOUT) s += "EPOLLOUT ";
-  if (event_mask & EPOLLRDNORM) s += "EPOLLRDNORM ";
-  if (event_mask & EPOLLRDBAND) s += "EPOLLRDBAND ";
-  if (event_mask & EPOLLWRNORM) s += "EPOLLWRNORM ";
-  if (event_mask & EPOLLWRBAND) s += "EPOLLWRBAND ";
-  if (event_mask & EPOLLMSG) s += "EPOLLMSG ";
-  if (event_mask & EPOLLERR) s += "EPOLLERR ";
-  if (event_mask & EPOLLHUP) s += "EPOLLHUP ";
-  if (event_mask & EPOLLONESHOT) s += "EPOLLONESHOT ";
-  if (event_mask & EPOLLET) s += "EPOLLET ";
+  if (bits_ & NET_POLLIN)
+    s += "POLLIN ";
+  if (bits_ & NET_POLLPRI)
+    s += "POLLPRI ";
+  if (bits_ & NET_POLLOUT)
+    s += "POLLOUT ";
+  if (bits_ & NET_POLLERR)
+    s += "POLLERR ";
+  if (bits_ & NET_POLLHUP)
+    s += "POLLHUP ";
+  if (bits_ & NET_POLLET)
+    s += "NET_POLLET ";
   return s;
 }
 
 void EpollServer::LogStateOnCrash() {
   LOG(ERROR) << "----------------------Epoll Server---------------------------";
-  LOG(ERROR) << "Epoll server " << this << " polling on fd " << epoll_fd_;
+  LOG(ERROR) << "Epoll server " << this;
   LOG(ERROR) << "timeout_in_us_: " << timeout_in_us_;
 
   // Log sessions with alarms.
@@ -553,59 +553,35 @@ void EpollServer::LogStateOnCrash() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void EpollServer::DelFD(int fd) const {
-  struct epoll_event ee;
-  memset(&ee, 0, sizeof(ee));
 #ifdef EPOLL_SERVER_EVENT_TRACING
   event_recorder_.RecordFDMaskEvent(fd, 0, "DelFD");
 #endif
-  if (epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, fd, &ee)) {
-    int saved_errno = errno;
-    char buf[kErrorBufferSize];
-    LOG(FATAL) << "Epoll set removal error for fd " << fd << ": "
-               << strerror_r(saved_errno, buf, sizeof(buf));
-  }
+  impl_->DeleteFD(fd);
 }
 
 ////////////////////////////////////////
 
-void EpollServer::AddFD(int fd, int event_mask) const {
-  struct epoll_event ee;
-  memset(&ee, 0, sizeof(ee));
-  ee.events = event_mask | EPOLLERR | EPOLLHUP;
-  ee.data.fd = fd;
+void EpollServer::AddFD(int fd, PollBits event_mask) const {
 #ifdef EPOLL_SERVER_EVENT_TRACING
-  event_recorder_.RecordFDMaskEvent(fd, ee.events, "AddFD");
+  event_recorder_.RecordFDMaskEvent(fd, event_mask.bits_, "AddFD");
 #endif
-  if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, fd, &ee)) {
-    int saved_errno = errno;
-    char buf[kErrorBufferSize];
-    LOG(FATAL) << "Epoll set insertion error for fd " << fd << ": "
-               << strerror_r(saved_errno, buf, sizeof(buf));
-  }
+  impl_->AddFD(fd, event_mask);
 }
 
 ////////////////////////////////////////
 
-void EpollServer::ModFD(int fd, int event_mask) const {
-  struct epoll_event ee;
-  memset(&ee, 0, sizeof(ee));
-  ee.events = event_mask | EPOLLERR | EPOLLHUP;
-  ee.data.fd = fd;
+void EpollServer::ModFD(int fd, PollBits event_mask) const {
 #ifdef EPOLL_SERVER_EVENT_TRACING
-  event_recorder_.RecordFDMaskEvent(fd, ee.events, "ModFD");
+  event_recorder_.RecordFDMaskEvent(fd, event_mask.bits_, "ModFD");
 #endif
-  VLOG(3) <<  "modifying fd= " << fd << " "
-          << EventMaskToString(ee.events);
-  if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &ee)) {
-    int saved_errno = errno;
-    char buf[kErrorBufferSize];
-    LOG(FATAL) << "Epoll set modification error for fd " << fd << ": "
-               << strerror_r(saved_errno, buf, sizeof(buf));
-  }
+  VLOG(3) << "modifying fd= " << fd << " " << event_mask.ToString();
+  impl_->SetInterestMask(fd, event_mask);
 }
 
 ////////////////////////////////////////
 
+// This probably isn't the optimal name for this method,
+// but I don't have a better idea.
 void EpollServer::ModifyFD(int fd, int remove_event, int add_event) {
   FDToCBMap::iterator fd_i = cb_map_.find(CBAndEventMask(NULL, 0, fd));
   if (cb_map_.end() == fd_i) {
@@ -616,21 +592,20 @@ void EpollServer::ModifyFD(int fd, int remove_event, int add_event) {
   if (fd_i->cb != NULL) {
     int & event_mask = fd_i->event_mask;
     VLOG(3) << "fd= " << fd
-            << " event_mask before: " << EventMaskToString(event_mask);
+            << " event_mask before: " << PollBits(event_mask).ToString();
     event_mask &= ~remove_event;
     event_mask |= add_event;
 
-    VLOG(3) << " event_mask after: " << EventMaskToString(event_mask);
-
-    ModFD(fd, event_mask);
+    PollBits new_mask = PollBits(event_mask);
+    VLOG(3) << " event_mask after: " << new_mask.ToString();
+    ModFD(fd, new_mask);
 
     fd_i->cb->OnModification(fd, event_mask);
   }
 }
 
-void EpollServer::WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
-                                                   struct epoll_event events[],
-                                                   int events_size) {
+void EpollServer::WaitForEventsAndCallHandleEvents() {
+  int64 timeout_in_us = timeout_in_us_;
   if (timeout_in_us == 0 || ready_list_.lh_first != NULL) {
     // If ready list is not empty, then don't sleep at all.
     timeout_in_us = 0;
@@ -648,10 +623,7 @@ void EpollServer::WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
     }
   }
   const int timeout_in_ms = timeout_in_us / 1000;
-  int nfds = epoll_wait_impl(epoll_fd_,
-                             events,
-                             events_size,
-                             timeout_in_ms);
+  int nfds = KernelWait(timeout_in_ms);
   VLOG(3) << "nfds=" << nfds;
 
 #ifdef EPOLL_SERVER_EVENT_TRACING
@@ -667,11 +639,9 @@ void EpollServer::WaitForEventsAndCallHandleEvents(int64 timeout_in_us,
   // time it takes to process all the events generated by epoll_wait.
   recorded_now_in_us_ = NowInUsec();
   if (nfds > 0) {
-    for (int i = 0; i < nfds; ++i) {
-      int event_mask = events[i].events;
-      int fd = events[i].data.fd;
-      HandleEvent(fd, event_mask);
-    }
+    // tell the implementation to do whatever it needs to prepare for handling
+    // the result of the system call.
+    ScanKernelEvents(nfds);
   } else if (nfds < 0) {
     // Catch interrupted syscall and just ignore it and move on.
     if (errno != EINTR && errno != 0) {

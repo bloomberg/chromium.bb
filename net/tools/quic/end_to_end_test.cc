@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 #include <string>
-#include <sys/epoll.h>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -183,7 +182,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   ~ClientDelegate() override {}
   void OnPacketSent(WriteResult result) override {}
   void OnCanWrite() override {
-    EpollEvent event(EPOLLOUT, false);
+    EpollEvent event(NET_POLLOUT, false);
     client_->OnEvent(client_->fd(), &event);
   }
 
@@ -305,7 +304,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
       // Set FecPolicy to always protect data on all streams.
       client_->SetFecPolicy(FEC_PROTECT_ALWAYS);
     }
-    static EpollEvent event(EPOLLOUT, false);
+    static EpollEvent event(NET_POLLOUT, false);
     client_writer_->Initialize(
         reinterpret_cast<QuicEpollConnectionHelper*>(
             QuicConnectionPeer::GetHelper(
@@ -1217,7 +1216,8 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
 
   // Register the new FD for epoll events.
   int new_fd = client_->client()->fd();
-  eps->RegisterFD(new_fd, client_->client(), EPOLLIN | EPOLLOUT | EPOLLET);
+  eps->RegisterFD(new_fd, client_->client(),
+                  PollBits(NET_POLLIN | NET_POLLOUT | NET_POLLET));
 
   // Send a second request, using the new FD.
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));

@@ -991,6 +991,7 @@ if (is_linux) {
   static_library("epoll_server") {
     sources = [
       "tools/epoll_server/epoll_server.cc",
+      "tools/epoll_server/linux_epoll_server.cc",
       "tools/epoll_server/epoll_server.h",
     ]
     deps = [

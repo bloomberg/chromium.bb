@@ -24,11 +24,11 @@ MockEpollServer::MockEpollServer() : until_in_usec_(-1) {
 MockEpollServer::~MockEpollServer() {
 }
 
-int MockEpollServer::epoll_wait_impl(int epfd,
-                                     struct epoll_event* events,
-                                     int max_events,
-                                     int timeout_in_ms) {
+int MockEpollServer::KernelWait(int timeout_in_ms) {
   int num_events = 0;
+  int max_events = events_size_;
+  struct epoll_event* events = events_;
+
   while (!event_queue_.empty() &&
          num_events < max_events &&
          event_queue_.begin()->first <= NowInUsec() &&
@@ -61,6 +61,15 @@ int MockEpollServer::epoll_wait_impl(int epfd,
     CHECK(until_in_usec_ >= NowInUsec());
   }
   return num_events;
+}
+
+// this is nearly a cut-and-paste from 'linux_epoll_server'
+// except that since we never turned the abstract flag bits into
+// their kernel-equivalent bits, we don't need to undo that.
+void MockEpollServer::ScanKernelEvents(int nfds) {
+  for (int i = 0; i < nfds; ++i) {
+    HandleEvent(events_[i].data.fd, events_[i].events);
+  }
 }
 
 }  // namespace test

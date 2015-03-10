@@ -1515,6 +1515,7 @@
           ],
           'sources': [
             'tools/epoll_server/epoll_server.cc',
+            'tools/epoll_server/linux_epoll_server.cc',
             'tools/epoll_server/epoll_server.h',
           ],
         },

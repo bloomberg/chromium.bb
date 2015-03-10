@@ -5,6 +5,11 @@
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_
 
+// mock epoll server is only expected to work on Linux.
+// <sys/epoll> must be explicitly included because epoll_server.h no longer
+// includes either flavor of system <[e]poll.h> header
+#include <sys/epoll.h>
+
 #include "base/logging.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -53,7 +58,6 @@ class MockEpollServer : public FakeTimeEpollServer {
 
   MockEpollServer();
   ~MockEpollServer() override;
-
   // time_in_usec is the time at which the event specified
   // by 'ee' will be delivered. Note that it -is- possible
   // to add an event for a time which has already been passed..
@@ -83,22 +87,25 @@ class MockEpollServer : public FakeTimeEpollServer {
   }
 
  protected:  // functions
-  // These functions do nothing here, as we're not actually
-  // using the epoll_* syscalls.
+  // These functions do nothing, as we're not performing any system calls.
+  // Also note that they oerride methods in an EpollServer, not the methods
+  // in an EpollServerImpl (you wouldn't need to do that - you'd just create
+  // a different impl).
   void DelFD(int fd) const override {}
-  void AddFD(int fd, int event_mask) const override {}
-  void ModFD(int fd, int event_mask) const override {}
+  void AddFD(int fd, PollBits event_mask) const override {}
+  void ModFD(int fd, PollBits event_mask) const override {}
 
-  // Replaces the epoll_server's epoll_wait_impl.
-  int epoll_wait_impl(int epfd,
-                      struct epoll_event* events,
-                      int max_events,
-                      int timeout_in_ms) override;
+  // Replaces the epoll_server's KernelWait.
+  int KernelWait(int timeout_in_ms) override;
+  void ScanKernelEvents(int nfds) override;
   void SetNonblocking(int fd) override {}
 
  private:  // members
   EventQueue event_queue_;
   int64 until_in_usec_;
+
+  static const int events_size_ = 256;
+  struct epoll_event events_[256];
 
   DISALLOW_COPY_AND_ASSIGN(MockEpollServer);
 };

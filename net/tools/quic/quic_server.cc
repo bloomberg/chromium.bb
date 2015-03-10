@@ -8,7 +8,6 @@
 #include <features.h>
 #include <netinet/in.h>
 #include <string.h>
-#include <sys/epoll.h>
 #include <sys/socket.h>
 
 #include "net/base/ip_endpoint.h"
@@ -33,7 +32,7 @@ namespace tools {
 
 namespace {
 
-const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
+const PollBits kEpollFlags = PollBits(NET_POLLIN | NET_POLLOUT | NET_POLLET);
 const char kSourceAddressTokenSecret[] = "secret";
 
 }  // namespace
@@ -195,8 +194,8 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
   DCHECK_EQ(fd, fd_);
   event->out_ready_mask = 0;
 
-  if (event->in_events & EPOLLIN) {
-    DVLOG(1) << "EPOLLIN";
+  if (event->in_events & NET_POLLIN) {
+    DVLOG(1) << "NET_POLLIN";
     bool read = true;
     while (read) {
         read = ReadAndDispatchSinglePacket(
@@ -204,13 +203,13 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
             overflow_supported_ ? &packets_dropped_ : nullptr);
     }
   }
-  if (event->in_events & EPOLLOUT) {
+  if (event->in_events & NET_POLLOUT) {
     dispatcher_->OnCanWrite();
     if (dispatcher_->HasPendingWrites()) {
-      event->out_ready_mask |= EPOLLOUT;
+      event->out_ready_mask |= NET_POLLOUT;
     }
   }
-  if (event->in_events & EPOLLERR) {
+  if (event->in_events & NET_POLLERR) {
   }
 }
 
