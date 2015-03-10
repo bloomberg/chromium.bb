@@ -42,6 +42,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
         const ServiceWorkerRegistrationInfo& info) {}
     virtual void OnRegistrationFailed(
         ServiceWorkerRegistration* registration) {}
+    virtual void OnRegistrationFinishedUninstalling(
+        ServiceWorkerRegistration* registration) {}
     virtual void OnUpdateFound(
         ServiceWorkerRegistration* registration) {}
     virtual void OnSkippedWaiting(ServiceWorkerRegistration* registation) {}

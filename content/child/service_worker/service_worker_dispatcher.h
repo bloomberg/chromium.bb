@@ -51,6 +51,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   typedef
       blink::WebServiceWorkerProvider::WebServiceWorkerGetRegistrationCallbacks
       WebServiceWorkerGetRegistrationCallbacks;
+  typedef blink::WebServiceWorkerProvider::
+      WebServiceWorkerGetRegistrationForReadyCallbacks
+          WebServiceWorkerGetRegistrationForReadyCallbacks;
 
   explicit ServiceWorkerDispatcher(ThreadSafeSender* thread_safe_sender);
   ~ServiceWorkerDispatcher() override;
@@ -74,6 +77,10 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       int provider_id,
       const GURL& document_url,
       WebServiceWorkerRegistrationCallbacks* callbacks);
+
+  void GetRegistrationForReady(
+      int provider_id,
+      WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks);
 
   // Called when a new provider context for a document is created. Usually
   // this happens when a new document is being loaded, and is called much
@@ -137,6 +144,8 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       IDMapOwnPointer> UnregistrationCallbackMap;
   typedef IDMap<WebServiceWorkerGetRegistrationCallbacks,
       IDMapOwnPointer> GetRegistrationCallbackMap;
+  typedef IDMap<WebServiceWorkerGetRegistrationForReadyCallbacks,
+      IDMapOwnPointer> GetRegistrationForReadyCallbackMap;
 
   typedef std::map<int, blink::WebServiceWorkerProviderClient*>
       ProviderClientMap;
@@ -174,6 +183,11 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                             int request_id,
                             const ServiceWorkerRegistrationObjectInfo& info,
                             const ServiceWorkerVersionAttributes& attrs);
+  void OnDidGetRegistrationForReady(
+      int thread_id,
+      int request_id,
+      const ServiceWorkerRegistrationObjectInfo& info,
+      const ServiceWorkerVersionAttributes& attrs);
   void OnRegistrationError(int thread_id,
                            int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
@@ -208,10 +222,6 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const std::vector<int>& new_routing_ids);
 
-  void SetReadyRegistration(
-      int provider_id,
-      int registration_handle_id);
-
   // Keeps map from handle_id to ServiceWorker object.
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);
   void RemoveServiceWorker(int handle_id);
@@ -230,6 +240,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   RegistrationCallbackMap pending_registration_callbacks_;
   UnregistrationCallbackMap pending_unregistration_callbacks_;
   GetRegistrationCallbackMap pending_get_registration_callbacks_;
+  GetRegistrationForReadyCallbackMap get_for_ready_callbacks_;
 
   ProviderClientMap provider_clients_;
   ProviderContextMap provider_contexts_;

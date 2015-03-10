@@ -54,24 +54,6 @@ void WebServiceWorkerProviderImpl::setClient(
     // This provider is not associated with any registration.
     return;
   }
-
-  // Set .ready if the associated registration has the active service worker.
-  if (context_->active_handle_id() != kInvalidServiceWorkerHandleId) {
-    WebServiceWorkerRegistrationImpl* registration =
-        GetDispatcher()->FindServiceWorkerRegistration(info, false);
-    if (!registration) {
-      registration =
-          GetDispatcher()->CreateServiceWorkerRegistration(info, false);
-      registration->SetInstalling(
-          GetDispatcher()->GetServiceWorker(attrs.installing, false));
-      registration->SetWaiting(
-          GetDispatcher()->GetServiceWorker(attrs.waiting, false));
-      registration->SetActive(
-          GetDispatcher()->GetServiceWorker(attrs.active, false));
-    }
-    client->setReadyRegistration(registration);
-  }
-
   if (context_->controller_handle_id() != kInvalidServiceWorkerHandleId) {
     client->setController(GetDispatcher()->GetServiceWorker(
         context_->controller()->info(), false),
@@ -98,6 +80,11 @@ void WebServiceWorkerProviderImpl::getRegistration(
     const blink::WebURL& document_url,
     WebServiceWorkerRegistrationCallbacks* callbacks) {
   GetDispatcher()->GetRegistration(provider_id_, document_url, callbacks);
+}
+
+void WebServiceWorkerProviderImpl::getRegistrationForReady(
+    WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks) {
+  GetDispatcher()->GetRegistrationForReady(provider_id_, callbacks);
 }
 
 void WebServiceWorkerProviderImpl::RemoveProviderClient() {

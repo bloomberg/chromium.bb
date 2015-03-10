@@ -260,7 +260,7 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
 
   set_registration(new ServiceWorkerRegistration(
       pattern_, context_->storage()->NewRegistrationId(), context_));
-  AssociateProviderHostsToRegistration(registration());
+  AddRegistrationToMatchingProviderHosts(registration());
   UpdateAndContinue();
 }
 
@@ -548,18 +548,19 @@ void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(
   new_version()->embedded_worker()->RemoveListener(this);
 }
 
-void ServiceWorkerRegisterJob::AssociateProviderHostsToRegistration(
+void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration);
   for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetProviderHostIterator();
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (ServiceWorkerUtils::ScopeMatches(registration->pattern(),
-                                         host->document_url())) {
-      if (host->CanAssociateRegistration(registration))
-        host->AssociateRegistration(registration);
-    }
+    if (host->IsHostToRunningServiceWorker())
+      continue;
+    if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(),
+                                          host->document_url()))
+      continue;
+    host->AddMatchingRegistration(registration);
   }
 }
 

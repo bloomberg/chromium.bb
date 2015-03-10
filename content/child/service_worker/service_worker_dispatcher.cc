@@ -68,6 +68,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnUnregistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistration,
                         OnDidGetRegistration)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistrationForReady,
+                        OnDidGetRegistrationForReady)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                         OnRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
@@ -175,6 +177,17 @@ void ServiceWorkerDispatcher::GetRegistration(
                            "Document URL", document_url.spec());
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetRegistration(
       CurrentWorkerId(), request_id, provider_id, document_url));
+}
+
+void ServiceWorkerDispatcher::GetRegistrationForReady(
+    int provider_id,
+    WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks) {
+  int request_id = get_for_ready_callbacks_.Add(callbacks);
+  TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
+                           "ServiceWorkerDispatcher::GetRegistrationForReady",
+                           request_id);
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetRegistrationForReady(
+      CurrentWorkerId(), request_id, provider_id));
 }
 
 void ServiceWorkerDispatcher::AddProviderContext(
@@ -420,6 +433,32 @@ void ServiceWorkerDispatcher::OnDidGetRegistration(
   pending_get_registration_callbacks_.Remove(request_id);
 }
 
+void ServiceWorkerDispatcher::OnDidGetRegistrationForReady(
+    int thread_id,
+    int request_id,
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
+  TRACE_EVENT_ASYNC_STEP_INTO0(
+      "ServiceWorker",
+      "ServiceWorkerDispatcher::GetRegistrationForReady",
+      request_id,
+      "OnDidGetRegistrationForReady");
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::GetRegistrationForReady",
+                         request_id);
+  WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks =
+      get_for_ready_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  WebServiceWorkerRegistrationImpl* registration = NULL;
+  DCHECK(info.handle_id != kInvalidServiceWorkerHandleId);
+  registration = FindOrCreateRegistration(info, attrs);
+  callbacks->onSuccess(registration);
+  get_for_ready_callbacks_.Remove(request_id);
+}
+
 void ServiceWorkerDispatcher::OnRegistrationError(
     int thread_id,
     int request_id,
@@ -554,9 +593,6 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
     if (mask.active_changed())
       found->second->SetActive(GetServiceWorker(attrs.active, false));
   }
-
-  if (mask.active_changed())
-    SetReadyRegistration(provider_id, registration_handle_id);
 }
 
 void ServiceWorkerDispatcher::OnUpdateFound(
@@ -567,39 +603,6 @@ void ServiceWorkerDispatcher::OnUpdateFound(
   RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
   if (found != registrations_.end())
     found->second->OnUpdateFound();
-}
-
-void ServiceWorkerDispatcher::SetReadyRegistration(
-    int provider_id,
-    int registration_handle_id) {
-  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider == provider_contexts_.end() ||
-      provider->second->registration_handle_id() != registration_handle_id ||
-      provider->second->active_handle_id() == kInvalidServiceWorkerHandleId) {
-    return;
-  }
-
-  ProviderClientMap::iterator client = provider_clients_.find(provider_id);
-  if (client == provider_clients_.end())
-    return;
-
-  ServiceWorkerRegistrationObjectInfo info;
-  ServiceWorkerVersionAttributes attrs;
-  bool found =
-      provider->second->GetRegistrationInfoAndVersionAttributes(&info, &attrs);
-  DCHECK(found);
-
-  WebServiceWorkerRegistrationImpl* registration =
-      FindServiceWorkerRegistration(info, false);
-  if (!registration) {
-    registration = CreateServiceWorkerRegistration(info, false);
-    registration->SetInstalling(GetServiceWorker(attrs.installing, false));
-    registration->SetWaiting(GetServiceWorker(attrs.waiting, false));
-    registration->SetActive(GetServiceWorker(attrs.active, false));
-  }
-
-  // Resolve the .ready promise with the registration object.
-  client->second->setReadyRegistration(registration);
 }
 
 void ServiceWorkerDispatcher::OnSetControllerServiceWorker(

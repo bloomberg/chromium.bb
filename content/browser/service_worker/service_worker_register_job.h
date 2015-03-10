@@ -142,7 +142,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
       ServiceWorkerStatusCode status,
       bool are_equal);
 
-  void AssociateProviderHostsToRegistration(
+  void AddRegistrationToMatchingProviderHosts(
       ServiceWorkerRegistration* registration);
 
   // The ServiceWorkerContextCore object should always outlive this.

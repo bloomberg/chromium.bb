@@ -92,6 +92,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                          int request_id,
                          int provider_id,
                          const GURL& document_url);
+  void OnGetRegistrationForReady(int thread_id,
+                                 int request_id,
+                                 int provider_id);
   void OnProviderCreated(int provider_id,
                          int render_frame_id,
                          ServiceWorkerProviderType provider_type);
@@ -153,6 +156,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       int request_id,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
+
+  void GetRegistrationForReadyComplete(
+      int thread_id,
+      int request_id,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      ServiceWorkerRegistration* registration);
 
   void SendRegistrationError(int thread_id,
                              int request_id,

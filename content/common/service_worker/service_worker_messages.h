@@ -153,6 +153,11 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_GetRegistration,
                      int /* provider_id */,
                      GURL /* document_url */)
 
+IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_GetRegistrationForReady,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     int /* provider_id */)
+
 // Sends a 'message' event to a service worker (renderer->browser).
 IPC_MESSAGE_CONTROL3(
     ServiceWorkerHostMsg_PostMessageToWorker,
@@ -367,6 +372,13 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerUnregistered,
 
 // Response to ServiceWorkerHostMsg_GetRegistration.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistration,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     content::ServiceWorkerRegistrationObjectInfo,
+                     content::ServiceWorkerVersionAttributes)
+
+// Response to ServiceWorkerHostMsg_GetRegistrationForReady.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistrationForReady,
                      int /* thread_id */,
                      int /* request_id */,
                      content::ServiceWorkerRegistrationObjectInfo,

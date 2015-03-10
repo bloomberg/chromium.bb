@@ -303,10 +303,12 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
           id(), pattern().GetOrigin(),
           base::Bind(&ServiceWorkerRegistration::OnDeleteFinished, this));
       // But not from memory if there is a version in the pipeline.
-      if (installing_version())
+      if (installing_version()) {
         is_deleted_ = false;
-      else
+      } else {
         is_uninstalled_ = true;
+        FOR_EACH_OBSERVER(Listener, listeners_, OnRegistrationFailed(this));
+      }
     }
     return;
   }
@@ -355,6 +357,9 @@ void ServiceWorkerRegistration::Clear() {
     FOR_EACH_OBSERVER(Listener, listeners_,
                       OnVersionAttributesChanged(this, mask, info));
   }
+
+  FOR_EACH_OBSERVER(
+      Listener, listeners_, OnRegistrationFinishedUninstalling(this));
 }
 
 void ServiceWorkerRegistration::OnRestoreFinished(

@@ -56,6 +56,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
         context()->AsWeakPtr(),
         nullptr));
+    host->SetDocumentUrl(GURL("http://host/scope/"));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(host.Pass());
 

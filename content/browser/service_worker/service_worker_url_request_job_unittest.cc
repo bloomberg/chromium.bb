@@ -146,6 +146,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
             SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
             helper_->context()->AsWeakPtr(),
             nullptr));
+    provider_host->SetDocumentUrl(GURL("http://example.com/"));
     provider_host->AssociateRegistration(registration_.get());
     registration_->SetActiveVersion(version_.get());
 

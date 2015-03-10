@@ -47,6 +47,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
  public:
   using GetClientInfoCallback =
       base::Callback<void(const ServiceWorkerClientInfo&)>;
+  using GetRegistrationForReadyCallback =
+      base::Callback<void(ServiceWorkerRegistration* reigstration)>;
 
   // If |render_frame_id| is MSG_ROUTING_NONE, this provider host works for the
   // worker context, i.e. ServiceWorker or SharedWorker.
@@ -168,6 +170,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |registration| claims the document to be controlled.
   void ClaimedByRegistration(ServiceWorkerRegistration* registration);
 
+  // Called by dispatcher host to get the registration for the "ready" property.
+  // Returns false if there's a completed or ongoing request for the document.
+  // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#navigator-service-worker-ready
+  bool GetRegistrationForReady(const GetRegistrationForReadyCallback& callback);
+
   // Methods to support cross site navigations.
   void PrepareForCrossSiteTransfer();
   void CompleteCrossSiteTransfer(
@@ -197,6 +204,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Sets the worker thread id and flushes queued events.
   void SetReadyToSendMessagesToWorker(int render_thread_id);
 
+  void AddMatchingRegistration(ServiceWorkerRegistration* registration);
+  void RemoveMatchingRegistration(ServiceWorkerRegistration* registration);
+
+  // An optimized implementation of [[Match Service Worker Registration]]
+  // for current document.
+  ServiceWorkerRegistration* MatchRegistration() const;
+
  private:
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
@@ -205,8 +219,23 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateAfter24Hours);
 
+  struct OneShotGetReadyCallback {
+    GetRegistrationForReadyCallback callback;
+    bool called;
+
+    explicit OneShotGetReadyCallback(
+        const GetRegistrationForReadyCallback& callback);
+    ~OneShotGetReadyCallback();
+  };
+
   // ServiceWorkerRegistration::Listener overrides.
+  void OnVersionAttributesChanged(
+      ServiceWorkerRegistration* registration,
+      ChangedVersionAttributesMask changed_mask,
+      const ServiceWorkerRegistrationInfo& info) override;
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
+  void OnRegistrationFinishedUninstalling(
+      ServiceWorkerRegistration* registration) override;
   void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
 
   // Sets the controller version field to |version| or if |version| is NULL,
@@ -218,6 +247,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Increase/decrease this host's process reference for |pattern|.
   void IncreaseProcessReference(const GURL& pattern);
   void DecreaseProcessReference(const GURL& pattern);
+
+  void ReturnRegistrationForReadyIfNeeded();
 
   bool IsReadyToSendMessages() const;
   void Send(IPC::Message* message) const;
@@ -233,6 +264,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   std::vector<GURL> associated_patterns_;
   scoped_refptr<ServiceWorkerRegistration> associated_registration_;
 
+  // Keyed by registration scope URL length.
+  typedef std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>
+      ServiceWorkerRegistrationMap;
+  // Contains all living registrations which has pattern this document's
+  // URL starts with.
+  ServiceWorkerRegistrationMap matching_registrations_;
+
+  scoped_ptr<OneShotGetReadyCallback> get_ready_callback_;
   scoped_refptr<ServiceWorkerVersion> controlling_version_;
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;

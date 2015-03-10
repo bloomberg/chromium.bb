@@ -58,6 +58,15 @@ ServiceWorkerClientInfo FocusOnUIThread(
 
 }  // anonymous namespace
 
+ServiceWorkerProviderHost::OneShotGetReadyCallback::OneShotGetReadyCallback(
+    const GetRegistrationForReadyCallback& callback)
+    : callback(callback),
+      called(false) {
+}
+
+ServiceWorkerProviderHost::OneShotGetReadyCallback::~OneShotGetReadyCallback() {
+}
+
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int render_process_id,
     int render_frame_id,
@@ -88,24 +97,47 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   document_url_ = GURL();
   if (controlling_version_.get())
     controlling_version_->RemoveControllee(this);
-  if (associated_registration_.get()) {
-    DecreaseProcessReference(associated_registration_->pattern());
-    associated_registration_->RemoveListener(this);
+
+  for (auto& key_registration : matching_registrations_) {
+    DecreaseProcessReference(key_registration.second->pattern());
+    key_registration.second->RemoveListener(this);
   }
 
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
 }
 
+void ServiceWorkerProviderHost::OnVersionAttributesChanged(
+    ServiceWorkerRegistration* registration,
+    ChangedVersionAttributesMask changed_mask,
+    const ServiceWorkerRegistrationInfo& info) {
+  if (!get_ready_callback_ || get_ready_callback_->called)
+    return;
+  if (changed_mask.active_changed() && registration->active_version()) {
+    // Wait until the state change so we don't send the get for ready
+    // registration complete message before set version attributes message.
+    registration->active_version()->RegisterStatusChangeCallback(base::Bind(
+          &ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded,
+          AsWeakPtr()));
+  }
+}
+
 void ServiceWorkerProviderHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
-  DCHECK_EQ(associated_registration_.get(), registration);
-  DisassociateRegistration();
+  if (associated_registration_ == registration)
+    DisassociateRegistration();
+  RemoveMatchingRegistration(registration);
+}
+
+void ServiceWorkerProviderHost::OnRegistrationFinishedUninstalling(
+    ServiceWorkerRegistration* registration) {
+  RemoveMatchingRegistration(registration);
 }
 
 void ServiceWorkerProviderHost::OnSkippedWaiting(
     ServiceWorkerRegistration* registration) {
-  DCHECK_EQ(associated_registration_.get(), registration);
+  if (associated_registration_ != registration)
+    return;
   // A client is "using" a registration if it is controlled by the active
   // worker of the registration. skipWaiting doesn't cause a client to start
   // using the registration.
@@ -176,9 +208,8 @@ bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
 void ServiceWorkerProviderHost::AssociateRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(CanAssociateRegistration(registration));
-  IncreaseProcessReference(registration->pattern());
   associated_registration_ = registration;
-  associated_registration_->AddListener(this);
+  AddMatchingRegistration(registration);
   SendAssociateRegistrationMessage();
   SetControllerVersionAttribute(registration->active_version());
 }
@@ -187,8 +218,6 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
   queued_events_.clear();
   if (!associated_registration_.get())
     return;
-  DecreaseProcessReference(associated_registration_->pattern());
-  associated_registration_->RemoveListener(this);
   associated_registration_ = NULL;
   SetControllerVersionAttribute(NULL);
 
@@ -199,6 +228,42 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
   DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE, provider_type_);
   Send(new ServiceWorkerMsg_DisassociateRegistration(
       render_thread_id_, provider_id()));
+}
+
+void ServiceWorkerProviderHost::AddMatchingRegistration(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(ServiceWorkerUtils::ScopeMatches(
+        registration->pattern(), document_url_));
+  size_t key = registration->pattern().spec().size();
+  if (ContainsKey(matching_registrations_, key))
+    return;
+  IncreaseProcessReference(registration->pattern());
+  registration->AddListener(this);
+  matching_registrations_[key] = registration;
+  ReturnRegistrationForReadyIfNeeded();
+}
+
+void ServiceWorkerProviderHost::RemoveMatchingRegistration(
+    ServiceWorkerRegistration* registration) {
+  size_t key = registration->pattern().spec().size();
+  DCHECK(ContainsKey(matching_registrations_, key));
+  DecreaseProcessReference(registration->pattern());
+  registration->RemoveListener(this);
+  matching_registrations_.erase(key);
+}
+
+ServiceWorkerRegistration*
+ServiceWorkerProviderHost::MatchRegistration() const {
+  ServiceWorkerRegistrationMap::const_reverse_iterator it =
+      matching_registrations_.rbegin();
+  for (; it != matching_registrations_.rend(); ++it) {
+    if (it->second->is_uninstalled())
+      continue;
+    if (it->second->is_uninstalling())
+      return nullptr;
+    return it->second.get();
+  }
+  return nullptr;
 }
 
 scoped_ptr<ServiceWorkerRequestHandler>
@@ -332,6 +397,15 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
   is_claiming_ = false;
 }
 
+bool ServiceWorkerProviderHost::GetRegistrationForReady(
+    const GetRegistrationForReadyCallback& callback) {
+  if (get_ready_callback_)
+    return false;
+  get_ready_callback_.reset(new OneShotGetReadyCallback(callback));
+  ReturnRegistrationForReadyIfNeeded();
+  return true;
+}
+
 void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(MSG_ROUTING_NONE, render_frame_id_);
@@ -341,8 +415,10 @@ void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
 
+  for (auto& key_registration : matching_registrations_)
+    DecreaseProcessReference(key_registration.second->pattern());
+
   if (associated_registration_.get()) {
-    DecreaseProcessReference(associated_registration_->pattern());
     if (dispatcher_host_) {
       Send(new ServiceWorkerMsg_DisassociateRegistration(
           render_thread_id_, provider_id()));
@@ -377,8 +453,10 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
   for (const GURL& pattern : associated_patterns_)
     IncreaseProcessReference(pattern);
 
+  for (auto& key_registration : matching_registrations_)
+    IncreaseProcessReference(key_registration.second->pattern());
+
   if (associated_registration_.get()) {
-    IncreaseProcessReference(associated_registration_->pattern());
     SendAssociateRegistrationMessage();
     if (dispatcher_host_ && associated_registration_->active_version()) {
       Send(new ServiceWorkerMsg_SetControllerServiceWorker(
@@ -501,6 +579,20 @@ void ServiceWorkerProviderHost::DecreaseProcessReference(
   if (context_ && context_->process_manager()) {
     context_->process_manager()->RemoveProcessReferenceFromPattern(
         pattern, render_process_id_);
+  }
+}
+
+void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
+  if (!get_ready_callback_ || get_ready_callback_->called)
+    return;
+  ServiceWorkerRegistration* registration = MatchRegistration();
+  if (!registration)
+    return;
+  if (registration->active_version()) {
+    get_ready_callback_->callback.Run(registration);
+    get_ready_callback_->callback.Reset();
+    get_ready_callback_->called = true;
+    return;
   }
 }
 

@@ -27,22 +27,23 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
     context_ = helper_->context();
-    pattern_ = GURL("http://www.example.com/");
     script_url_ = GURL("http://www.example.com/service_worker.js");
-    registration_ = new ServiceWorkerRegistration(
-        pattern_, 1L, context_->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(
-        registration_.get(), script_url_, 1L, context_->AsWeakPtr());
+    registration1_ = new ServiceWorkerRegistration(
+        GURL("http://www.example.com/"), 1L, context_->AsWeakPtr());
+    registration2_ = new ServiceWorkerRegistration(
+        GURL("http://www.example.com/example"), 2L, context_->AsWeakPtr());
 
     // Prepare provider hosts (for the same process).
     scoped_ptr<ServiceWorkerProviderHost> host1(new ServiceWorkerProviderHost(
         kRenderProcessId, MSG_ROUTING_NONE, 1 /* provider_id */,
         SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
         context_->AsWeakPtr(), NULL));
+    host1->SetDocumentUrl(GURL("http://www.example.com/example1.html"));
     scoped_ptr<ServiceWorkerProviderHost> host2(new ServiceWorkerProviderHost(
         kRenderProcessId, MSG_ROUTING_NONE, 2 /* provider_id */,
         SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE,
         context_->AsWeakPtr(), NULL));
+    host2->SetDocumentUrl(GURL("http://www.example.com/example2.html"));
     provider_host1_ = host1->AsWeakPtr();
     provider_host2_ = host2->AsWeakPtr();
     context_->AddProviderHost(make_scoped_ptr(host1.release()));
@@ -50,105 +51,78 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   }
 
   void TearDown() override {
-    version_ = 0;
-    registration_ = 0;
+    registration1_ = 0;
+    registration2_ = 0;
     helper_.reset();
   }
 
-  bool HasProcessToRun() const {
-    return context_->process_manager()->PatternHasProcessToRun(pattern_);
+  bool PatternHasProcessToRun(const GURL& pattern) const {
+    return context_->process_manager()->PatternHasProcessToRun(pattern);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   ServiceWorkerContextCore* context_;
-  scoped_refptr<ServiceWorkerRegistration> registration_;
-  scoped_refptr<ServiceWorkerVersion> version_;
+  scoped_refptr<ServiceWorkerRegistration> registration1_;
+  scoped_refptr<ServiceWorkerRegistration> registration2_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host1_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host2_;
-  GURL pattern_;
   GURL script_url_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
 };
 
-TEST_F(ServiceWorkerProviderHostTest, SetActiveVersion_ProcessStatus) {
-  provider_host1_->AssociateRegistration(registration_.get());
-  ASSERT_TRUE(HasProcessToRun());
+TEST_F(ServiceWorkerProviderHostTest, PotentialRegistration_ProcessStatus) {
+  provider_host1_->AddMatchingRegistration(registration1_.get());
+  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
-  // Associating version_ to a provider_host's active version will internally
-  // add the provider_host's process ref to the version.
-  registration_->SetActiveVersion(version_.get());
-  ASSERT_TRUE(HasProcessToRun());
+  // Adding the same registration twice has no effect.
+  provider_host1_->AddMatchingRegistration(registration1_.get());
+  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
-  // Re-associating the same version and provider_host should just work too.
-  registration_->SetActiveVersion(version_.get());
-  ASSERT_TRUE(HasProcessToRun());
+  // Different matching registrations can be added.
+  provider_host1_->AddMatchingRegistration(registration2_.get());
+  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));
 
-  // Resetting the provider_host's active version should remove process refs
-  // from the version.
-  provider_host1_->DisassociateRegistration();
-  ASSERT_FALSE(HasProcessToRun());
+  // Removing a matching registration will decrease the process refs for its
+  // pattern.
+  provider_host1_->RemoveMatchingRegistration(registration1_.get());
+  ASSERT_FALSE(PatternHasProcessToRun(registration1_->pattern()));
+
+  // Multiple provider hosts could add the same matching registration.
+  // The process refs will become 0 after all provider hosts removed them.
+  provider_host2_->AddMatchingRegistration(registration2_.get());
+  provider_host1_->RemoveMatchingRegistration(registration2_.get());
+  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));
+  provider_host2_->RemoveMatchingRegistration(registration2_.get());
+  ASSERT_FALSE(PatternHasProcessToRun(registration2_->pattern()));
 }
 
-TEST_F(ServiceWorkerProviderHostTest,
-       SetActiveVersion_MultipleHostsForSameProcess) {
-  provider_host1_->AssociateRegistration(registration_.get());
-  provider_host2_->AssociateRegistration(registration_.get());
-  ASSERT_TRUE(HasProcessToRun());
+TEST_F(ServiceWorkerProviderHostTest, AssociatedRegistration_ProcessStatus) {
+  // Associating the registration will also increase the process refs for
+  // the registration's pattern.
+  provider_host1_->AssociateRegistration(registration1_.get());
+  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
-  // Associating version_ to two providers as active version.
-  registration_->SetActiveVersion(version_.get());
-  ASSERT_TRUE(HasProcessToRun());
-
-  // Disassociating one provider_host shouldn't remove all process refs
-  // from the version yet.
+  // Disassociating the registration shouldn't affect the process refs for
+  // the registration's pattern.
   provider_host1_->DisassociateRegistration();
-  ASSERT_TRUE(HasProcessToRun());
-
-  // Disassociating the other provider_host will remove all process refs.
-  provider_host2_->DisassociateRegistration();
-  ASSERT_FALSE(HasProcessToRun());
+  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 }
 
-TEST_F(ServiceWorkerProviderHostTest, SetWaitingVersion_ProcessStatus) {
-  provider_host1_->AssociateRegistration(registration_.get());
-  ASSERT_TRUE(HasProcessToRun());
+TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
+  provider_host1_->AddMatchingRegistration(registration1_.get());
+  provider_host1_->AddMatchingRegistration(registration2_.get());
 
-  // Associating version_ to a provider_host's waiting version will internally
-  // add the provider_host's process ref to the version.
-  registration_->SetWaitingVersion(version_.get());
-  ASSERT_TRUE(HasProcessToRun());
+  // Match registration should return the longest matching one.
+  ASSERT_EQ(provider_host1_->MatchRegistration(), registration2_);
+  provider_host1_->RemoveMatchingRegistration(registration2_.get());
+  ASSERT_EQ(provider_host1_->MatchRegistration(), registration1_);
 
-  // Re-associating the same version and provider_host should just work too.
-  registration_->SetWaitingVersion(version_.get());
-  ASSERT_TRUE(HasProcessToRun());
-
-  // Resetting the provider_host's waiting version should remove process refs
-  // from the version.
-  provider_host1_->DisassociateRegistration();
-  ASSERT_FALSE(HasProcessToRun());
-}
-
-TEST_F(ServiceWorkerProviderHostTest,
-       SetWaitingVersion_MultipleHostsForSameProcess) {
-  provider_host1_->AssociateRegistration(registration_.get());
-  provider_host2_->AssociateRegistration(registration_.get());
-  ASSERT_TRUE(HasProcessToRun());
-
-  // Associating version_ to two providers as waiting version.
-  registration_->SetWaitingVersion(version_.get());
-  ASSERT_TRUE(HasProcessToRun());
-
-  // Disassociating one provider_host shouldn't remove all process refs
-  // from the version yet.
-  provider_host1_->DisassociateRegistration();
-  ASSERT_TRUE(HasProcessToRun());
-
-  // Disassociating the other provider_host will remove all process refs.
-  provider_host2_->DisassociateRegistration();
-  ASSERT_FALSE(HasProcessToRun());
+  // Should return nullptr after removing all matching registrations.
+  provider_host1_->RemoveMatchingRegistration(registration1_.get());
+  ASSERT_EQ(provider_host1_->MatchRegistration(), nullptr);
 }
 
 }  // namespace content
