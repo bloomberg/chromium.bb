@@ -6237,6 +6237,46 @@ TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
     context->notifyContextDestroyed();
 }
 
+TEST_F(WebFrameTest, FullscreenWithTinyViewport)
+{
+    FakeCompositingWebViewClient client;
+    registerMockedHttpURLLoad("viewport-tiny.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "viewport-tiny.html", true, 0, &client, configurePinchVirtualViewport);
+    int viewportWidth = 384;
+    int viewportHeight = 640;
+    client.m_screenInfo.rect.width = viewportWidth;
+    client.m_screenInfo.rect.height = viewportHeight;
+    webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
+    webViewImpl->layout();
+
+    LayoutView* layoutView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutView();
+    EXPECT_EQ(320, layoutView->logicalWidth().floor());
+    EXPECT_EQ(533, layoutView->logicalHeight().floor());
+    EXPECT_FLOAT_EQ(1.2, webViewImpl->pageScaleFactor());
+    EXPECT_FLOAT_EQ(1.2, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
+
+    Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
+    UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
+    Fullscreen::from(*document).requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
+    webViewImpl->didEnterFullScreen();
+    webViewImpl->layout();
+    EXPECT_EQ(384, layoutView->logicalWidth().floor());
+    EXPECT_EQ(640, layoutView->logicalHeight().floor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->maximumPageScaleFactor());
+
+    webViewImpl->didExitFullScreen();
+    webViewImpl->layout();
+    EXPECT_EQ(320, layoutView->logicalWidth().floor());
+    EXPECT_EQ(533, layoutView->logicalHeight().floor());
+    EXPECT_FLOAT_EQ(1.2, webViewImpl->pageScaleFactor());
+    EXPECT_FLOAT_EQ(1.2, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
+}
+
 TEST_F(WebFrameTest, LayoutBlockPercentHeightDescendants)
 {
     registerMockedHttpURLLoad("percent-height-descendants.html");
