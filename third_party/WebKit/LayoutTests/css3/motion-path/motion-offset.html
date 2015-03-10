@@ -47,8 +47,8 @@ test(function() {
 }, 'motion-offset can be positive');
 
 test(function() {
-    assert_equals(getComputedStyle(div4, null).motionOffset, '0px');
-}, 'motion-offset does not allow negative values');
+    assert_equals(getComputedStyle(div4, null).motionOffset, '-200px');
+}, 'motion-offset allows negative values');
 
 test(function() {
     assert_equals(getComputedStyle(div5, null).motionOffset, '50%');

@@ -10,10 +10,16 @@
 namespace blink {
 
 PathStyleMotionPath::PathStyleMotionPath(const String& pathString)
-    : m_pathString(pathString)
+    : m_pathString(pathString.stripWhiteSpace())
 {
     buildPathFromString(pathString, m_path);
     m_length = m_path.length();
+}
+
+bool PathStyleMotionPath::isClosed() const
+{
+    bool caseSensitive = false;
+    return m_pathString.endsWith("Z", caseSensitive);
 }
 
 } // namespace blink

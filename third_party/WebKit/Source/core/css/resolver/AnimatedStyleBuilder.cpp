@@ -603,7 +603,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTransformOrigin(animatableValueToTransformOrigin(value, state));
         return;
     case CSSPropertyMotionOffset:
-        style->setMotionOffset(animatableValueToLength(value, state, ValueRangeNonNegative));
+        style->setMotionOffset(animatableValueToLength(value, state));
         return;
     case CSSPropertyMotionRotation:
         style->setMotionRotation(toAnimatableDoubleAndBool(value)->toDouble());

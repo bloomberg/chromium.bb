@@ -953,11 +953,19 @@ void LayoutStyle::applyMotionPathTransform(TransformationMatrix& transform) cons
     ASSERT(motionData.m_path && motionData.m_path->isPathStyleMotionPath());
     const PathStyleMotionPath& motionPath = toPathStyleMotionPath(*motionData.m_path);
     float pathLength = motionPath.length();
-    float length = clampTo<float>(floatValueForLength(motionData.m_offset, pathLength), 0, pathLength);
+    float distance = floatValueForLength(motionData.m_offset, pathLength);
+    float computedDistance;
+    if (motionPath.isClosed() && pathLength > 0) {
+        computedDistance = fmod(distance, pathLength);
+        if (computedDistance < 0)
+            computedDistance += pathLength;
+    } else {
+        computedDistance = clampTo<float>(distance, 0, pathLength);
+    }
 
     FloatPoint point;
     float angle;
-    if (!motionPath.path().pointAndNormalAtLength(length, point, angle))
+    if (!motionPath.path().pointAndNormalAtLength(computedDistance, point, angle))
         return;
     if (motionData.m_rotationType == MotionRotationFixed)
         angle = 0;

@@ -21,7 +21,7 @@ assertInterpolation({
   from: '10px',
   to: '50px'
 }, [
-  {at: -0.3, is: '0px'}, // CSS motion-offset can't be negative.
+  {at: -0.3, is: '-2px'},
   {at: 0, is: '10px'},
   {at: 0.3, is: '22px'},
   {at: 0.6, is: '34px'},

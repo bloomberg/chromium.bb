@@ -31,6 +31,8 @@ public:
 
     const String& pathString() const { return m_pathString; }
 
+    bool isClosed() const;
+
     float length() const { return m_length; }
 
 private:

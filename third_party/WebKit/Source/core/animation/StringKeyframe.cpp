@@ -163,7 +163,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyMinWidth:
-    case CSSPropertyMotionOffset:
     case CSSPropertyOutlineWidth:
     case CSSPropertyPaddingBottom:
     case CSSPropertyPaddingLeft:
@@ -187,6 +186,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyMarginLeft:
     case CSSPropertyMarginRight:
     case CSSPropertyMarginTop:
+    case CSSPropertyMotionOffset:
     case CSSPropertyOutlineOffset:
     case CSSPropertyRight:
     case CSSPropertyStrokeDashoffset:
