@@ -252,8 +252,22 @@ public class TestWebServer {
      */
     public String setResponseWithNotFoundStatus(
             String requestPath) {
-        return setResponseInternal(requestPath, "".getBytes(), null, null,
-                RESPONSE_STATUS_NOT_FOUND);
+        return setResponseWithNotFoundStatus(requestPath, null);
+    }
+
+    /**
+     * Sets a 404 (not found) response to be returned when a particular request path is passed in.
+     *
+     * @param requestPath The path to respond to.
+     * @param responseHeaders Any additional headers that should be returned along with the
+     *                        response (null is acceptable).
+     * @return The full URL including the path that should be requested to get the expected
+     *         response.
+     */
+    public String setResponseWithNotFoundStatus(
+            String requestPath, List<Pair<String, String>> responseHeaders) {
+        return setResponseInternal(
+                requestPath, "".getBytes(), responseHeaders, null, RESPONSE_STATUS_NOT_FOUND);
     }
 
     /**
@@ -468,6 +482,9 @@ public class TestWebServer {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
         } else if (response.mIsNotFound) {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
+            for (Pair<String, String> header : response.mResponseHeaders) {
+                httpResponse.addHeader(header.first, header.second);
+            }
             servedResponseFor(path, request);
         } else if (response.mIsNoContent) {
             httpResponse = createResponse(HttpStatus.SC_NO_CONTENT);
@@ -531,6 +548,7 @@ public class TestWebServer {
             ByteArrayEntity entity = createEntity(buf.toString().getBytes());
             response.setEntity(entity);
             response.setHeader("Content-Length", "" + entity.getContentLength());
+            response.setReasonPhrase(reason);
         }
         return response;
     }

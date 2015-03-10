@@ -12,6 +12,7 @@
 class GURL;
 
 namespace net {
+class HttpResponseHeaders;
 class URLRequest;
 }
 
@@ -102,6 +103,11 @@ class AwContentsIoThreadClient {
   virtual void NewLoginRequest(const std::string& realm,
                                const std::string& account,
                                const std::string& args) = 0;
+
+  // Called when a response from the server is received with status code >= 400.
+  virtual void OnReceivedHttpError(
+      const net::URLRequest* request,
+      const net::HttpResponseHeaders* response_headers) = 0;
 };
 
 } // namespace android_webview

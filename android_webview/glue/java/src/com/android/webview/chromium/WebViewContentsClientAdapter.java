@@ -574,6 +574,17 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
+    @Override
+    public void onReceivedHttpError(AwWebResourceRequest request, AwWebResourceResponse response) {
+        try {
+            TraceEvent.begin("WebViewContentsClientAdapter.onReceivedHttpError");
+            if (TRACE) Log.d(TAG, "onReceivedHttpError=" + request.url);
+            // TODO(mnaganov): Call mWebViewClient.onReceivedHttpError(mWebView, request, response);
+        } finally {
+            TraceEvent.end("WebViewContentsClientAdapter.onReceivedHttpError");
+        }
+    }
+
     /**
      * @see ContentViewClient#onReceivedTitle(String)
      */

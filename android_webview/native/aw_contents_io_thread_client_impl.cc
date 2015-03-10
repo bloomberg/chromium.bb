@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "jni/AwContentsIoThreadClient_jni.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
@@ -373,6 +374,85 @@ void AwContentsIoThreadClientImpl::NewLoginRequest(const string& realm,
 
   Java_AwContentsIoThreadClient_newLoginRequest(
       env, java_object_.obj(), jrealm.obj(), jaccount.obj(), jargs.obj());
+}
+
+void AwContentsIoThreadClientImpl::OnReceivedHttpError(
+    const net::URLRequest* request,
+    const net::HttpResponseHeaders* response_headers) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (java_object_.is_null())
+    return;
+
+  vector<string> request_header_names;
+  vector<string> request_header_values;
+  {
+    net::HttpRequestHeaders headers;
+    if (!request->GetFullRequestHeaders(&headers))
+      headers = request->extra_request_headers();
+    net::HttpRequestHeaders::Iterator headers_iterator(headers);
+    while (headers_iterator.GetNext()) {
+      request_header_names.push_back(headers_iterator.name());
+      request_header_values.push_back(headers_iterator.value());
+    }
+  }
+
+  vector<string> response_header_names;
+  vector<string> response_header_values;
+  {
+    void* headers_iterator = NULL;
+    string header_name, header_value;
+    while (response_headers->EnumerateHeaderLines(
+        &headers_iterator, &header_name, &header_value)) {
+      response_header_names.push_back(header_name);
+      response_header_values.push_back(header_value);
+    }
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jstring_url =
+      ConvertUTF8ToJavaString(env, request->url().spec());
+  ScopedJavaLocalRef<jstring> jstring_method =
+      ConvertUTF8ToJavaString(env, request->method());
+  ScopedJavaLocalRef<jobjectArray> jstringArray_request_header_names =
+      ToJavaArrayOfStrings(env, request_header_names);
+  ScopedJavaLocalRef<jobjectArray> jstringArray_request_header_values =
+      ToJavaArrayOfStrings(env, request_header_values);
+
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  bool is_main_frame = info &&
+      info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME;
+  bool has_user_gesture = info && info->HasUserGesture();
+
+  string mime_type, encoding;
+  response_headers->GetMimeTypeAndCharset(&mime_type, &encoding);
+  ScopedJavaLocalRef<jstring> jstring_mime_type =
+      ConvertUTF8ToJavaString(env, mime_type);
+  ScopedJavaLocalRef<jstring> jstring_encoding =
+      ConvertUTF8ToJavaString(env, encoding);
+  int status_code = response_headers->response_code();
+  ScopedJavaLocalRef<jstring> jstring_reason =
+      ConvertUTF8ToJavaString(env, response_headers->GetStatusText());
+  ScopedJavaLocalRef<jobjectArray> jstringArray_response_header_names =
+      ToJavaArrayOfStrings(env, response_header_names);
+  ScopedJavaLocalRef<jobjectArray> jstringArray_response_header_values =
+      ToJavaArrayOfStrings(env, response_header_values);
+
+  Java_AwContentsIoThreadClient_onReceivedHttpError(
+      env,
+      java_object_.obj(),
+      jstring_url.obj(),
+      is_main_frame,
+      has_user_gesture,
+      jstring_method.obj(),
+      jstringArray_request_header_names.obj(),
+      jstringArray_request_header_values.obj(),
+      jstring_mime_type.obj(),
+      jstring_encoding.obj(),
+      status_code,
+      jstring_reason.obj(),
+      jstringArray_response_header_names.obj(),
+      jstringArray_response_header_values.obj());
 }
 
 bool RegisterAwContentsIoThreadClientImpl(JNIEnv* env) {

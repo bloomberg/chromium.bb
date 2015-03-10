@@ -8,6 +8,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Delegate for handling callbacks. All methods are called on the IO thread.
@@ -42,6 +43,9 @@ public abstract class AwContentsIoThreadClient {
     public abstract AwWebResourceResponse shouldInterceptRequest(
             AwContentsClient.AwWebResourceRequest request);
 
+    public abstract void onReceivedHttpError(AwContentsClient.AwWebResourceRequest request,
+            AwWebResourceResponse response);
+
     // Protected methods ---------------------------------------------------------------------------
 
     @CalledByNative
@@ -59,5 +63,43 @@ public abstract class AwContentsIoThreadClient {
             request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
         }
         return shouldInterceptRequest(request);
+    }
+
+    @CalledByNative
+    protected void onReceivedHttpError(
+            // WebResourceRequest
+            String url, boolean isMainFrame, boolean hasUserGesture, String method,
+            String[] requestHeaderNames, String[] requestHeaderValues,
+            // WebResourceResponse
+            String mimeType, String encoding, int statusCode, String reasonPhrase,
+            String[] responseHeaderNames, String[] responseHeaderValues) {
+        AwContentsClient.AwWebResourceRequest request =
+                new AwContentsClient.AwWebResourceRequest();
+        request.url = url;
+        request.isMainFrame = isMainFrame;
+        request.hasUserGesture = hasUserGesture;
+        request.method = method;
+        request.requestHeaders = new HashMap<String, String>(requestHeaderNames.length);
+        for (int i = 0; i < requestHeaderNames.length; ++i) {
+            request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
+        }
+        Map<String, String> responseHeaders =
+                new HashMap<String, String>(responseHeaderNames.length);
+        // Note that we receive un-coalesced response header lines, thus we need to combine
+        // values for the same header.
+        for (int i = 0; i < responseHeaderNames.length; ++i) {
+            if (!responseHeaders.containsKey(responseHeaderNames[i])) {
+                responseHeaders.put(responseHeaderNames[i], responseHeaderValues[i]);
+            } else if (!responseHeaderValues[i].isEmpty()) {
+                String currentValue = responseHeaders.get(responseHeaderNames[i]);
+                if (!currentValue.isEmpty()) {
+                    currentValue += ", ";
+                }
+                responseHeaders.put(responseHeaderNames[i], currentValue + responseHeaderValues[i]);
+            }
+        }
+        AwWebResourceResponse response = new AwWebResourceResponse(
+                mimeType, encoding, null, statusCode, reasonPhrase, responseHeaders);
+        onReceivedHttpError(request, response);
     }
 }

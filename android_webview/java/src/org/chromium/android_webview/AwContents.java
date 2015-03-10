@@ -416,6 +416,12 @@ public class AwContents implements SmartClipProvider,
         public void newLoginRequest(String realm, String account, String args) {
             mContentsClient.getCallbackHelper().postOnReceivedLoginRequest(realm, account, args);
         }
+
+        @Override
+        public void onReceivedHttpError(AwContentsClient.AwWebResourceRequest request,
+                AwWebResourceResponse response) {
+            mContentsClient.getCallbackHelper().postOnReceivedHttpError(request, response);
+        }
     }
 
     //--------------------------------------------------------------------------------------------

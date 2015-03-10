@@ -69,6 +69,17 @@ public class AwContentsClientCallbackHelper {
         }
     }
 
+    private static class OnReceivedHttpErrorInfo {
+        final AwContentsClient.AwWebResourceRequest mRequest;
+        final AwWebResourceResponse mResponse;
+
+        OnReceivedHttpErrorInfo(
+                AwContentsClient.AwWebResourceRequest request, AwWebResourceResponse response) {
+            mRequest = request;
+            mResponse = response;
+        }
+    }
+
     private static final int MSG_ON_LOAD_RESOURCE = 1;
     private static final int MSG_ON_PAGE_STARTED = 2;
     private static final int MSG_ON_DOWNLOAD_START = 3;
@@ -76,6 +87,7 @@ public class AwContentsClientCallbackHelper {
     private static final int MSG_ON_RECEIVED_ERROR = 5;
     private static final int MSG_ON_NEW_PICTURE = 6;
     private static final int MSG_ON_SCALE_CHANGED_SCALED = 7;
+    private static final int MSG_ON_RECEIVED_HTTP_ERROR = 8;
 
     // Minimum period allowed between consecutive onNewPicture calls, to rate-limit the callbacks.
     private static final long ON_NEW_PICTURE_MIN_PERIOD_MILLIS = 500;
@@ -140,6 +152,11 @@ public class AwContentsClientCallbackHelper {
                     mContentsClient.onScaleChangedScaled(oldScale, newScale);
                     break;
                 }
+                case MSG_ON_RECEIVED_HTTP_ERROR: {
+                    OnReceivedHttpErrorInfo info = (OnReceivedHttpErrorInfo) msg.obj;
+                    mContentsClient.onReceivedHttpError(info.mRequest, info.mResponse);
+                    break;
+                }
                 default:
                     throw new IllegalStateException(
                             "AwContentsClientCallbackHelper: unhandled message " + msg.what);
@@ -194,5 +211,12 @@ public class AwContentsClientCallbackHelper {
         // that case).
         mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_SCALE_CHANGED_SCALED,
                     Float.floatToIntBits(oldScale), Float.floatToIntBits(newScale)));
+    }
+
+    public void postOnReceivedHttpError(AwContentsClient.AwWebResourceRequest request,
+            AwWebResourceResponse response) {
+        OnReceivedHttpErrorInfo info =
+                new OnReceivedHttpErrorInfo(request, response);
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_RECEIVED_HTTP_ERROR, info));
     }
 }

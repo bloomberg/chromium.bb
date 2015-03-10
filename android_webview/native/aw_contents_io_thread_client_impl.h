@@ -62,6 +62,9 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   void NewLoginRequest(const std::string& realm,
                        const std::string& account,
                        const std::string& args) override;
+  void OnReceivedHttpError(
+      const net::URLRequest* request,
+      const net::HttpResponseHeaders* response_headers) override;
 
  private:
   bool pending_association_;

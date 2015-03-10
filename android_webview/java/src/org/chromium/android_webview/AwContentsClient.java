@@ -297,6 +297,9 @@ public abstract class AwContentsClient {
     protected abstract void onReceivedError2(
             AwWebResourceRequest request, AwWebResourceError error);
 
+    public abstract void onReceivedHttpError(AwWebResourceRequest request,
+            AwWebResourceResponse response);
+
     // TODO (michaelbai): Remove this method once the same method remove from
     // WebViewContentsClientAdapter.
     public void onShowCustomView(View view, int requestedOrientation,

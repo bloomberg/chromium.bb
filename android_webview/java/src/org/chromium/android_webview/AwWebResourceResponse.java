@@ -6,7 +6,6 @@ package org.chromium.android_webview;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.VisibleForTesting;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -21,6 +20,7 @@ public class AwWebResourceResponse {
     private InputStream mData;
     private int mStatusCode;
     private String mReasonPhrase;
+    private Map<String, String> mResponseHeaders;
     private String[] mResponseHeaderNames;
     private String[] mResponseHeaderValues;
 
@@ -36,53 +36,59 @@ public class AwWebResourceResponse {
 
         mStatusCode = statusCode;
         mReasonPhrase = reasonPhrase;
+        mResponseHeaders = responseHeaders;
+    }
 
-        if (responseHeaders != null) {
-            mResponseHeaderNames = new String[responseHeaders.size()];
-            mResponseHeaderValues = new String[responseHeaders.size()];
-            int i = 0;
-            for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
-                mResponseHeaderNames[i] = entry.getKey();
-                mResponseHeaderValues[i] = entry.getValue();
-                i++;
-            }
+    private void fillInResponseHeaderNamesAndValuesIfNeeded() {
+        if (mResponseHeaders == null || mResponseHeaderNames != null) return;
+        mResponseHeaderNames = new String[mResponseHeaders.size()];
+        mResponseHeaderValues = new String[mResponseHeaders.size()];
+        int i = 0;
+        for (Map.Entry<String, String> entry : mResponseHeaders.entrySet()) {
+            mResponseHeaderNames[i] = entry.getKey();
+            mResponseHeaderValues[i] = entry.getValue();
+            i++;
         }
     }
 
-    @VisibleForTesting
     @CalledByNative
     public String getMimeType() {
         return mMimeType;
     }
 
     @CalledByNative
-    private String getCharset() {
+    public String getCharset() {
         return mCharset;
     }
 
-    @VisibleForTesting
     @CalledByNative
     public InputStream getData() {
         return mData;
     }
 
     @CalledByNative
-    private int getStatusCode() {
+    public int getStatusCode() {
         return mStatusCode;
     }
 
     @CalledByNative
-    private String getReasonPhrase() {
+    public String getReasonPhrase() {
         return mReasonPhrase;
+    }
+
+    public Map<String, String> getResponseHeaders() {
+        return mResponseHeaders;
     }
 
     @CalledByNative
     private String[] getResponseHeaderNames() {
+        fillInResponseHeaderNamesAndValuesIfNeeded();
         return mResponseHeaderNames;
     }
 
     @CalledByNative
     private String[] getResponseHeaderValues() {
+        fillInResponseHeaderNamesAndValuesIfNeeded();
         return mResponseHeaderValues;
     }
 }

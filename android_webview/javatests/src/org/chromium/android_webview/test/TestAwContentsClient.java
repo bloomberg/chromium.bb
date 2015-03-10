@@ -9,6 +9,8 @@ import android.net.http.SslError;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 
+import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
+import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
@@ -25,6 +27,7 @@ public class TestAwContentsClient extends NullContentsClient {
     private final OnPageStartedHelper mOnPageStartedHelper;
     private final OnPageFinishedHelper mOnPageFinishedHelper;
     private final OnReceivedErrorHelper mOnReceivedErrorHelper;
+    private final OnReceivedHttpErrorHelper mOnReceivedHttpErrorHelper;
     private final CallbackHelper mOnReceivedSslErrorHelper;
     private final OnDownloadStartHelper mOnDownloadStartHelper;
     private final OnReceivedLoginRequestHelper mOnReceivedLoginRequestHelper;
@@ -41,6 +44,7 @@ public class TestAwContentsClient extends NullContentsClient {
         mOnPageStartedHelper = new OnPageStartedHelper();
         mOnPageFinishedHelper = new OnPageFinishedHelper();
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
+        mOnReceivedHttpErrorHelper = new OnReceivedHttpErrorHelper();
         mOnReceivedSslErrorHelper = new CallbackHelper();
         mOnDownloadStartHelper = new OnDownloadStartHelper();
         mOnReceivedLoginRequestHelper = new OnReceivedLoginRequestHelper();
@@ -64,6 +68,10 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public OnReceivedErrorHelper getOnReceivedErrorHelper() {
         return mOnReceivedErrorHelper;
+    }
+
+    public OnReceivedHttpErrorHelper getOnReceivedHttpErrorHelper() {
+        return mOnReceivedHttpErrorHelper;
     }
 
     public CallbackHelper getOnReceivedSslErrorHelper() {
@@ -438,5 +446,33 @@ public class TestAwContentsClient extends NullContentsClient {
     @Override
     public void doUpdateVisitedHistory(String url, boolean isReload) {
         getDoUpdateVisitedHistoryHelper().notifyCalled(url, isReload);
+    }
+
+    /**
+     * CallbackHelper for OnReceivedHttpError.
+     */
+    public static class OnReceivedHttpErrorHelper extends CallbackHelper {
+        private AwWebResourceRequest mRequest;
+        private AwWebResourceResponse mResponse;
+
+        public void notifyCalled(AwWebResourceRequest request, AwWebResourceResponse response) {
+            mRequest = request;
+            mResponse = response;
+            notifyCalled();
+        }
+        public AwWebResourceRequest getRequest() {
+            assert getCallCount() > 0;
+            return mRequest;
+        }
+        public AwWebResourceResponse getResponse() {
+            assert getCallCount() > 0;
+            return mResponse;
+        }
+    }
+
+    @Override
+    public void onReceivedHttpError(AwWebResourceRequest request, AwWebResourceResponse response) {
+        super.onReceivedHttpError(request, response);
+        mOnReceivedHttpErrorHelper.notifyCalled(request, response);
     }
 }

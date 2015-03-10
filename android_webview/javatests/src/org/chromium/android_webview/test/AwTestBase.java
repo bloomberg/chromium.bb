@@ -273,6 +273,26 @@ public class AwTestBase
                 TimeUnit.MILLISECONDS);
     }
 
+    public void waitForVisualStateCallback(final AwContents awContents) throws Exception {
+        final CallbackHelper ch = new CallbackHelper();
+        final int chCount = ch.getCallCount();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                final long requestId = 666;
+                awContents.insertVisualStateCallback(requestId,
+                        new AwContents.VisualStateCallback() {
+                            @Override
+                            public void onComplete(long id) {
+                                assertEquals(requestId, id);
+                                ch.notifyCalled();
+                            }
+                        });
+            }
+        });
+        ch.waitForCallback(chCount);
+    }
+
     /**
      * Checks the current test has |clazz| annotation. Note this swallows NoSuchMethodException
      * and returns false in that case.
