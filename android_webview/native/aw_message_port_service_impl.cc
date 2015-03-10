@@ -84,17 +84,18 @@ void AwMessagePortServiceImpl::OnConvertedWebToAppMessage(
   if (jobj.is_null())
     return;
 
-  if (message.GetSize() != 1) {
-    NOTREACHED();
-    return;
-  }
-
   base::string16 value;
   if (!message.GetString(0, &value)) {
     LOG(WARNING) << "Converting post message to a string failed for port "
         << message_port_id;
     return;
   }
+
+  if (message.GetSize() != 1) {
+    NOTREACHED();
+    return;
+  }
+
   ScopedJavaLocalRef<jstring> jmsg = ConvertUTF16ToJavaString(env, value);
   ScopedJavaLocalRef<jintArray> jports =
       ToJavaIntArray(env, sent_message_port_ids);

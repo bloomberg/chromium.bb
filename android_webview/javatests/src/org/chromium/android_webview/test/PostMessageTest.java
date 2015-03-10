@@ -960,4 +960,45 @@ public class PostMessageTest extends AwTestBase {
         channelContainer.waitForMessage();
         assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
     }
+
+    private static final String TEST_PAGE_FOR_UNSUPPORTED_MESSAGES = "<!DOCTYPE html><html><body>"
+            + "    <script type=\"text/javascript\">"
+            + "        onmessage = function (e) {"
+            + "            if (e.ports != null && e.ports.length > 0) {"
+            + "                 e.ports[0].postMessage();"
+            + "                 e.ports[0].postMessage(null);"
+            + "                 e.ports[0].postMessage(undefined);"
+            + "                 e.ports[0].postMessage(NaN);"
+            + "                 e.ports[0].postMessage(0);"
+            + "                 e.ports[0].postMessage(new Set());"
+            + "                 e.ports[0].postMessage({});"
+            + "                 e.ports[0].postMessage(\"" + JS_MESSAGE + "\");"
+            + "            }"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testPostUnsupportedWebMessageToApp() throws Throwable {
+        loadPage(TEST_PAGE_FOR_UNSUPPORTED_MESSAGES);
+        final ChannelContainer channelContainer = new ChannelContainer();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                channelContainer.set(channel);
+                channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
+                    @Override
+                    public void onMessage(String message) {
+                        channelContainer.setMessage(message);
+                    }
+                }, null);
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
+                        new MessagePort[] {channel[1]});
+            }
+        });
+        channelContainer.waitForMessage();
+        assertEquals(JS_MESSAGE, channelContainer.getMessage());
+    }
 }

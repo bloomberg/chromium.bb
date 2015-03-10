@@ -62,10 +62,14 @@ void AwMessagePortClient::OnWebToAppMessage(
   converter->SetDateAllowed(true);
   converter->SetRegExpAllowed(true);
   base::ListValue result;
-  result.Append(converter->FromV8Value(v8value, context));
+  base::Value* value = converter->FromV8Value(v8value, context);
+  if (value) {
+    result.Append(value);
+  }
+
   Send(new AwMessagePortHostMsg_ConvertedWebToAppMessage(
-      render_frame()->GetRoutingID(), message_port_id,
-      result, sent_message_port_ids));
+      render_frame()->GetRoutingID(), message_port_id, result,
+      sent_message_port_ids));
 }
 
 void AwMessagePortClient::OnAppToWebMessage(
