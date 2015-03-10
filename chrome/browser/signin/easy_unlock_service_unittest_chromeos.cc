@@ -189,7 +189,7 @@ KeyedService* CreateEasyUnlockServiceForTest(content::BrowserContext* context) {
 class EasyUnlockServiceTest : public testing::Test {
  public:
   EasyUnlockServiceTest()
-      : mock_user_manager_(new chromeos::MockUserManager()),
+      : mock_user_manager_(new testing::NiceMock<chromeos::MockUserManager>()),
         scoped_user_manager_(mock_user_manager_),
         is_bluetooth_adapter_present_(true) {}
 
@@ -210,9 +210,11 @@ class EasyUnlockServiceTest : public testing::Test {
     dbus_setter->SetPowerManagerClient(
         scoped_ptr<PowerManagerClient>(power_manager_client_));
 
-    EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AnyNumber());
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsUserWithGaiaAccount())
-        .WillRepeatedly(Return(true));
+    ON_CALL(*mock_user_manager_, Shutdown()).WillByDefault(Return());
+    ON_CALL(*mock_user_manager_, IsLoggedInAsUserWithGaiaAccount())
+        .WillByDefault(Return(true));
+    ON_CALL(*mock_user_manager_, IsCurrentUserNonCryptohomeDataEphemeral())
+        .WillByDefault(Return(false));
 
     SetUpProfile(&profile_, kTestUserPrimary);
   }
@@ -284,11 +286,11 @@ class EasyUnlockServiceTest : public testing::Test {
  protected:
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<TestingProfile> secondary_profile_;
+  chromeos::MockUserManager* mock_user_manager_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  chromeos::MockUserManager* mock_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_;
 
   FakePowerManagerClient* power_manager_client_;
@@ -353,6 +355,16 @@ TEST_F(EasyUnlockServiceTest, NotAllowedForSecondaryProfile) {
   EXPECT_FALSE(secondary_service->IsAllowed());
   EXPECT_TRUE(EasyUnlockAppInState(secondary_profile_.get(),
                                    TestAppManager::STATE_NOT_LOADED));
+}
+
+TEST_F(EasyUnlockServiceTest, NotAllowedForEphemeralAccounts) {
+  ON_CALL(*mock_user_manager_, IsCurrentUserNonCryptohomeDataEphemeral())
+      .WillByDefault(Return(true));
+
+  SetAppManagerReady(profile_.get());
+  EXPECT_FALSE(EasyUnlockService::Get(profile_.get())->IsAllowed());
+  EXPECT_TRUE(
+      EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_NOT_LOADED));
 }
 
 }  // namespace

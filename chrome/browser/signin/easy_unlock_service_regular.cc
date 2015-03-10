@@ -294,19 +294,14 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() const {
 #if defined(OS_CHROMEOS)
-  if (!user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount())
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (!user_manager->IsLoggedInAsUserWithGaiaAccount())
     return false;
 
   // TODO(tengs): Ephemeral accounts generate a new enrollment every time they
   // are added, so disable Smart Lock to reduce enrollments on server. However,
   // ephemeral accounts can be locked, so we should revisit this use case.
-  // TODO(tengs): Remove this special case and test this code path after test
-  // refactoring is landed (crbug.com/414829).
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile());
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (user->email() != chromeos::login::kStubUser &&
-      user_manager->IsCurrentUserNonCryptohomeDataEphemeral())
+  if (user_manager->IsCurrentUserNonCryptohomeDataEphemeral())
     return false;
 
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile()))
