@@ -6926,6 +6926,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SYNC_SANDBOX_DESCRIPTION" desc="Description for the flag that causes Chrome to use the sandbox (testing) server for Sync.">
         Connects to the testing server for Chrome Sync.
       </message>
+      <if expr="chromeos">
+        <message name="IDS_FLAGS_OZONE_TEST_SINGLE_HARDWARE_OVERLAY" desc="Name of the 'Ozone hardware overlay' lab.">
+          Ozone hardware overlay
+        </message>
+        <message name="IDS_FLAGS_OZONE_TEST_SINGLE_HARDWARE_OVERLAY_DESCRIPTION" desc="Description of the 'Ozone hardware overlay' lab.">
+          Enables compositing with an addition of one hardware overlay when possible.
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
