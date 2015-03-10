@@ -67,13 +67,9 @@ chrome.test.runTests([
     assertEq('undefined', typeof(history.forward));
     assertEq('undefined', typeof(history.go));
     assertEq('undefined', typeof(history.length));
-
-    // These are part of the HTML5 History API that are feature detected, so we
-    // remove them altogether, allowing apps to have fallback behavior.
-    chrome.test.assertFalse('pushState' in history);
-    chrome.test.assertFalse('replaceState' in history);
-    chrome.test.assertFalse('state' in history);
-
+    assertEq('undefined', typeof(history.pushState));
+    assertEq('undefined', typeof(history.replaceState));
+    assertEq('undefined', typeof(history.state));
     succeed();
   },
 

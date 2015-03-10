@@ -454,10 +454,6 @@ bool ContentSettingsObserver::allowMutationEvents(bool default_value) {
   return IsPlatformApp() ? false : default_value;
 }
 
-bool ContentSettingsObserver::allowPushState() {
-  return !IsPlatformApp();
-}
-
 static void SendInsecureContentSignal(int signal) {
   UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent", signal,
                             INSECURE_CONTENT_NUM_EVENTS);

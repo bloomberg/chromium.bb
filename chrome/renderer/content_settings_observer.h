@@ -74,7 +74,6 @@ class ContentSettingsObserver
   virtual bool allowReadFromClipboard(bool default_value) override;
   virtual bool allowWriteToClipboard(bool default_value) override;
   virtual bool allowMutationEvents(bool default_value) override;
-  virtual bool allowPushState() override;
   virtual void didNotAllowPlugins() override;
   virtual void didNotAllowScript() override;
   virtual bool allowDisplayingInsecureContent(
