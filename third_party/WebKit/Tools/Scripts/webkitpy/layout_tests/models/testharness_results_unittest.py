@@ -44,3 +44,17 @@ class TestHarnessResultCheckerTest(unittest.TestCase):
 
         for data in test_data:
             self.assertEqual(data['result'], testharness_results.is_testharness_output_passing(data['content']))
+
+    def test_is_testharness_output_with_console_errors(self):
+        test_data = [
+            {'content': 'This is a testharness.js-based test.\nCONSOLE ERROR: This is an error.\nTest ran to completion.', 'result': True},
+            {'content': 'CONSOLE ERROR: This is an error.\nTest ran to completion.', 'result': True},
+            {'content': 'This is a testharness.js-based test.\nCONSOLE ERROR: This is an error.', 'result': True},
+            {'content': 'CONSOLE ERROR: This is an error.', 'result': True},
+            {'content': 'This is a testharness.js-based test.\nCONSOLE MESSAGE: This is not error.', 'result': False},
+            {'content': 'This is a testharness.js-based test.\nNo errors here.', 'result': False},
+            {'content': 'This is not a CONSOLE ERROR, sorry.', 'result': False},
+        ]
+
+        for data in test_data:
+            self.assertEqual(data['result'], testharness_results.is_testharness_output_with_console_errors(data['content']))

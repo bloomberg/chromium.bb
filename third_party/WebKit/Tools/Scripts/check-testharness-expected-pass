@@ -22,11 +22,12 @@ paths = []
 for path in sys.argv[1:]:
     content = open(path, 'r').read()
     if testharness_results.is_testharness_output(content) and \
-       testharness_results.is_testharness_output_passing(content):
+       testharness_results.is_testharness_output_passing(content) and \
+       not testharness_results.is_testharness_output_with_console_errors(content):
         paths.append(path)
 
 if len(paths) > 0:
-    sys.stderr.write('* The following files are passing testharness results, they should be removed:\n ')
+    sys.stderr.write('* The following files are passing testharness results without console error messages, they should be removed:\n ')
     sys.stderr.write('\n '.join(paths))
     sys.stderr.write('\n')
-    sys.exit("ERROR: found passing testharness results.")
+    sys.exit("ERROR: found passing testharness results without console error messages.")
