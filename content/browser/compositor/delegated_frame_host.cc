@@ -64,6 +64,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       skipped_frames_(false),
       current_scale_factor_(1.f),
       can_lock_compositor_(YES_CAN_LOCK),
+      frame_subscriber_copy_request_pending_(false),
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
   ImageTransportFactory::GetInstance()->AddObserver(this);
 }
@@ -267,13 +268,38 @@ void DelegatedFrameHost::DidReceiveFrameFromRenderer(
 
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-  if (frame_subscriber()->ShouldCaptureFrame(damage_rect, present_time,
-                                             &frame, &callback)) {
-    CopyFromCompositingSurfaceToVideoFrame(
-        gfx::Rect(current_frame_size_in_dip_),
-        frame,
-        base::Bind(callback, present_time));
+  if (!frame_subscriber()->ShouldCaptureFrame(damage_rect, present_time,
+                                              &frame, &callback))
+    return;
+
+  if (frame_subscriber_copy_request_pending_) {
+    // A copy request was made for the previous frame from the renderer, but
+    // drawing never started (which executes the request).  Therefore, the
+    // prior frame subscriber delivery callback is to be aborted and the current
+    // one will be run when the existing copy request completes.  This de-duping
+    // check must be done after the call to ShouldCaptureFrame() above, since
+    // the frame subscriber makes decisions based on the renderer's intentions,
+    // and not the performance of the browser compositor.
+    DCHECK(!frame_subscriber_callbacks_.empty());
+    frame_subscriber_callbacks_.back().Run(false);
+    frame_subscriber_callbacks_.back() = base::Bind(callback, present_time);
+    return;
   }
+
+  // Start a new copy request.
+  frame_subscriber_copy_request_pending_ = true;
+  frame_subscriber_callbacks_.push_back(base::Bind(callback, present_time));
+  CopyFromCompositingSurfaceToVideoFrame(
+      gfx::Rect(current_frame_size_in_dip_),
+      frame,
+      base::Bind(&DelegatedFrameHost::DeliverResultForFrameSubscriber,
+                 AsWeakPtr()));
+}
+
+void DelegatedFrameHost::DeliverResultForFrameSubscriber(bool success) {
+  DCHECK(!frame_subscriber_callbacks_.empty());
+  frame_subscriber_callbacks_.front().Run(success);
+  frame_subscriber_callbacks_.pop_front();
 }
 
 void DelegatedFrameHost::SwapDelegatedFrame(
@@ -854,6 +880,7 @@ void DelegatedFrameHost::OnCompositingDidCommit(
 void DelegatedFrameHost::OnCompositingStarted(
     ui::Compositor* compositor, base::TimeTicks start_time) {
   last_draw_ended_ = start_time;
+  frame_subscriber_copy_request_pending_ = false;
 }
 
 void DelegatedFrameHost::OnCompositingEnded(
@@ -903,6 +930,11 @@ void DelegatedFrameHost::OnLostResources() {
 // DelegatedFrameHost, private:
 
 DelegatedFrameHost::~DelegatedFrameHost() {
+  while (!frame_subscriber_callbacks_.empty()) {
+    frame_subscriber_callbacks_.front().Run(false);
+    frame_subscriber_callbacks_.pop_front();
+  }
+
   DCHECK(!compositor_);
   ImageTransportFactory::GetInstance()->RemoveObserver(this);
 

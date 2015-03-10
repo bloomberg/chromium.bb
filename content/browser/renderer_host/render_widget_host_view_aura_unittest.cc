@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -2058,22 +2059,155 @@ class RenderWidgetHostViewAuraCopyRequestTest
   RenderWidgetHostViewAuraCopyRequestTest()
       : callback_count_(0), result_(false) {}
 
-  void CallbackMethod(const base::Closure& quit_closure, bool result) {
+  void CallbackMethod(bool result) {
     result_ = result;
     callback_count_++;
-    quit_closure.Run();
+    quit_closure_.Run();
+  }
+
+  void RunLoopUntilCallback() {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   int callback_count_;
   bool result_;
 
  private:
+  base::Closure quit_closure_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraCopyRequestTest);
 };
 
-TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
-  base::RunLoop run_loop;
+// Tests that only one copy/readback request will be executed per one browser
+// composite operation, even when multiple render frame swaps occur in between
+// browser composites, and even if the frame subscriber desires more frames than
+// the number of browser composites.
+TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DedupeFrameSubscriberRequests) {
+  gfx::Rect view_rect(100, 100);
+  scoped_ptr<cc::CopyOutputRequest> request;
 
+  view_->InitAsChild(NULL);
+  view_->GetDelegatedFrameHost()->SetRequestCopyOfOutputCallbackForTesting(
+      base::Bind(&FakeRenderWidgetHostViewAura::InterceptCopyOfOutput,
+                 base::Unretained(view_)));
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(view_rect.size());
+  view_->Show();
+
+  view_->BeginFrameSubscription(make_scoped_ptr(new FakeFrameSubscriber(
+      view_rect.size(),
+      base::Bind(&RenderWidgetHostViewAuraCopyRequestTest::CallbackMethod,
+                 base::Unretained(this)))).Pass());
+  int expected_callback_count = 0;
+  ASSERT_EQ(expected_callback_count, callback_count_);
+  ASSERT_FALSE(view_->last_copy_request_);
+
+  // Normal case: A browser composite executes for each render frame swap.
+  for (int i = 0; i < 3; ++i) {
+    // Renderer provides another frame.
+    view_->OnSwapCompositorFrame(
+        1, MakeDelegatedFrame(1.f, view_rect.size(), gfx::Rect(view_rect)));
+    ASSERT_TRUE(view_->last_copy_request_);
+    request = view_->last_copy_request_.Pass();
+
+    // Browser composites with the frame, executing the copy request, and then
+    // the result is delivered.
+    view_->GetDelegatedFrameHost()->OnCompositingStarted(
+        nullptr, base::TimeTicks::Now());
+    request->SendTextureResult(view_rect.size(),
+                               request->texture_mailbox(),
+                               scoped_ptr<cc::SingleReleaseCallback>());
+    view_->GetDelegatedFrameHost()->OnCompositingEnded(nullptr);
+    RunLoopUntilCallback();
+
+    // The callback should be run with success status.
+    ++expected_callback_count;
+    ASSERT_EQ(expected_callback_count, callback_count_);
+    EXPECT_TRUE(result_);
+  }
+
+  // De-duping cases: One browser composite executes per varied number of render
+  // frame swaps.
+  for (int i = 0; i < 3; ++i) {
+    const int num_swaps = 1 + i % 3;
+
+    // The renderer provides |num_swaps| frames.
+    cc::CopyOutputRequest* the_only_request = nullptr;
+    for (int j = 0; j < num_swaps; ++j) {
+      view_->OnSwapCompositorFrame(
+          1, MakeDelegatedFrame(1.f, view_rect.size(), gfx::Rect(view_rect)));
+      ASSERT_TRUE(view_->last_copy_request_);
+      if (the_only_request)
+        ASSERT_EQ(the_only_request, view_->last_copy_request_.get());
+      else
+        the_only_request = view_->last_copy_request_.get();
+      if (j > 0) {
+        ++expected_callback_count;
+        ASSERT_EQ(expected_callback_count, callback_count_);
+        EXPECT_FALSE(result_);  // The prior copy request was aborted.
+      }
+      if (j == (num_swaps - 1))
+        request = view_->last_copy_request_.Pass();
+    }
+
+    // Browser composites with the frame, executing the de-duped copy request,
+    // and then the result is delivered.
+    view_->GetDelegatedFrameHost()->OnCompositingStarted(
+        nullptr, base::TimeTicks::Now());
+    request->SendTextureResult(view_rect.size(),
+                               request->texture_mailbox(),
+                               scoped_ptr<cc::SingleReleaseCallback>());
+    view_->GetDelegatedFrameHost()->OnCompositingEnded(nullptr);
+    RunLoopUntilCallback();
+
+    // The final callback should be run with success status.
+    ++expected_callback_count;
+    ASSERT_EQ(expected_callback_count, callback_count_);
+    EXPECT_TRUE(result_);
+  }
+
+  // Multiple de-duped copy requests in-flight.
+  for (int i = 0; i < 3; ++i) {
+    const int num_in_flight = 1 + i % 3;
+    ScopedVector<cc::CopyOutputRequest> requests;
+
+    for (int j = 0; j < num_in_flight; ++j) {
+      // Renderer provides another frame.
+      view_->OnSwapCompositorFrame(
+          1, MakeDelegatedFrame(1.f, view_rect.size(), gfx::Rect(view_rect)));
+      ASSERT_TRUE(view_->last_copy_request_);
+      requests.push_back(view_->last_copy_request_.Pass());
+
+      // Browser composites with the frame, but the response to the copy request
+      // is delayed.
+      view_->GetDelegatedFrameHost()->OnCompositingStarted(
+          nullptr, base::TimeTicks::Now());
+      view_->GetDelegatedFrameHost()->OnCompositingEnded(nullptr);
+      ASSERT_EQ(expected_callback_count, callback_count_);
+    }
+
+    // Deliver each response, and expect success.
+    for (cc::CopyOutputRequest* r : requests) {
+      r->SendTextureResult(view_rect.size(),
+                           request->texture_mailbox(),
+                           scoped_ptr<cc::SingleReleaseCallback>());
+      RunLoopUntilCallback();
+      ++expected_callback_count;
+      ASSERT_EQ(expected_callback_count, callback_count_);
+      EXPECT_TRUE(result_);
+    }
+  }
+
+  // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
+  TearDownEnvironment();
+}
+
+TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   gfx::Rect view_rect(100, 100);
   scoped_ptr<cc::CopyOutputRequest> request;
 
@@ -2091,8 +2225,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   scoped_ptr<FakeFrameSubscriber> frame_subscriber(new FakeFrameSubscriber(
       view_rect.size(),
       base::Bind(&RenderWidgetHostViewAuraCopyRequestTest::CallbackMethod,
-                 base::Unretained(this),
-                 run_loop.QuitClosure())));
+                 base::Unretained(this))));
 
   EXPECT_EQ(0, callback_count_);
   EXPECT_FALSE(view_->last_copy_request_);
@@ -2106,14 +2239,17 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   EXPECT_TRUE(view_->last_copy_request_->has_texture_mailbox());
   request = view_->last_copy_request_.Pass();
 
+  // Notify DelegatedFrameHost that the graphics commands were issued by calling
+  // OnCompositingStarted().  This clears the "frame subscriber de-duping" flag.
+  view_->GetDelegatedFrameHost()->OnCompositingStarted(nullptr,
+                                                       base::TimeTicks::Now());
   // Send back the mailbox included in the request. There's no release callback
   // since the mailbox came from the RWHVA originally.
   request->SendTextureResult(view_rect.size(),
                              request->texture_mailbox(),
                              scoped_ptr<cc::SingleReleaseCallback>());
-
-  // This runs until the callback happens.
-  run_loop.Run();
+  view_->GetDelegatedFrameHost()->OnCompositingEnded(nullptr);
+  RunLoopUntilCallback();
 
   // The callback should succeed.
   EXPECT_EQ(1, callback_count_);
@@ -2128,16 +2264,16 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
   TearDownEnvironment();
 
-  // Send back the mailbox included in the request. There's no release callback
-  // since the mailbox came from the RWHVA originally.
+  // The DelegatedFrameHost should have run all remaining callbacks from its
+  // destructor.
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_FALSE(result_);
+
+  // Send the result after-the-fact.  It goes nowhere since DelegatedFrameHost
+  // has been destroyed.
   request->SendTextureResult(view_rect.size(),
                              request->texture_mailbox(),
                              scoped_ptr<cc::SingleReleaseCallback>());
-
-  // Because the copy request callback may be holding state within it, that
-  // state must handle the RWHVA and ImageTransportFactory going away before the
-  // callback is called. This test passes if it does not crash as a result of
-  // these things being destroyed.
   EXPECT_EQ(2, callback_count_);
   EXPECT_FALSE(result_);
 }

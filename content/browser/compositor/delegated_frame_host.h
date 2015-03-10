@@ -137,6 +137,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFramesWithLocking);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraCopyRequestTest,
+                           DedupeFrameSubscriberRequests);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraCopyRequestTest,
                            DestroyedAfterCopyRequest);
 
   RenderWidgetHostViewFrameSubscriber* frame_subscriber() const {
@@ -228,7 +230,13 @@ class CONTENT_EXPORT DelegatedFrameHost
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
+  // Called to consult the current |frame_subscriber_|, to determine and maybe
+  // initiate a copy-into-video-frame request.
   void DidReceiveFrameFromRenderer(const gfx::Rect& damage_rect);
+
+  // Called when the next copy has completed for the |frame_subscriber_|, to run
+  // the next callback in the |frame_subscriber_callbacks_| queue.
+  void DeliverResultForFrameSubscriber(bool success);
 
   DelegatedFrameHostClient* const client_;
   ui::Compositor* compositor_;
@@ -307,6 +315,17 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
   std::vector<scoped_refptr<OwnedMailbox> > idle_frame_subscriber_textures_;
+
+  // Set to true if a frame was received from the renderer and a copy request
+  // was made for the frame subscriber, but drawing has not yet started.  This
+  // is used to prevent more than one copy request being executed per draw.
+  bool frame_subscriber_copy_request_pending_;
+
+  // Stores the delivery callbacks, in order, that will be executed as each of
+  // the frame subscriber's copy-into-video-frame requests completes.  The size
+  // of this queue is always equal to the number of oustanding, de-duped copy
+  // requests.
+  std::deque<base::Callback<void(bool)>> frame_subscriber_callbacks_;
 
   // Callback used to pass the output request to the layer or to a function
   // specified by a test.
