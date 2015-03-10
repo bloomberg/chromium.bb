@@ -128,9 +128,6 @@ config("skia_config") {
     "//third_party/skia/include/pipe",
     "//third_party/skia/include/ports",
     "//third_party/skia/include/utils",
-
-    # need to move this to internal. see crbug.com/457691
-    "//third_party/skia/src/core",
   ]
 
   defines = gypi_blink_skia_defines.blink_skia_defines
@@ -173,6 +170,7 @@ config("skia_library_config") {
   # exported to dependents. It's not clear if this is on purpose, but this
   # matches the GYP build.
   include_dirs = [
+    "//third_party/skia/src/core",
     "//third_party/skia/src/image",
     "//third_party/skia/src/opts",
     "//third_party/skia/src/pdf",

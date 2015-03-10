@@ -42,12 +42,6 @@
     '<(skia_src_path)/sfnt/SkOTTable_name.h',
     '<(skia_src_path)/sfnt/SkOTUtils.cpp',
     '<(skia_src_path)/sfnt/SkOTUtils.h',
-    '<(skia_src_path)/utils/debugger/SkDebugCanvas.cpp',
-    '<(skia_src_path)/utils/debugger/SkDebugCanvas.h',
-    '<(skia_src_path)/utils/debugger/SkDrawCommand.cpp',
-    '<(skia_src_path)/utils/debugger/SkDrawCommand.h',
-    '<(skia_src_path)/utils/debugger/SkObjectParser.cpp',
-    '<(skia_src_path)/utils/debugger/SkObjectParser.h',
 
     #mac
     '<(skia_src_path)/utils/mac/SkStream_mac.cpp',

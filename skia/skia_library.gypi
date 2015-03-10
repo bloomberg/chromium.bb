@@ -68,13 +68,6 @@
     '../third_party/skia/src/sfnt/SkOTUtils.cpp',
     '../third_party/skia/src/sfnt/SkOTUtils.h',
 
-    '../third_party/skia/src/utils/debugger/SkDebugCanvas.cpp',
-    '../third_party/skia/src/utils/debugger/SkDebugCanvas.h',
-    '../third_party/skia/src/utils/debugger/SkDrawCommand.cpp',
-    '../third_party/skia/src/utils/debugger/SkDrawCommand.h',
-    '../third_party/skia/src/utils/debugger/SkObjectParser.cpp',
-    '../third_party/skia/src/utils/debugger/SkObjectParser.h',
-
     '../third_party/skia/include/core/SkFontStyle.h',
 
     '../third_party/skia/include/images/SkMovie.h',
@@ -360,9 +353,6 @@
 
   'direct_dependent_settings': {
     'include_dirs': [
-      #temporary until we can hide SkFontHost
-      '../third_party/skia/src/core',
-
       '../third_party/skia/include/core',
       '../third_party/skia/include/effects',
       '../third_party/skia/include/pdf',
