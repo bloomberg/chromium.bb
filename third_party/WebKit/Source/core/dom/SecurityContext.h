@@ -28,10 +28,8 @@
 #define SecurityContext_h
 
 #include "core/dom/SandboxFlags.h"
-#include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -42,8 +40,6 @@ class KURL;
 
 class SecurityContext {
 public:
-    using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
-
     // The ordering here is important: 'Upgrade' overrides 'DoNotUpgrade'.
     enum InsecureRequestsPolicy {
         InsecureRequestsDoNotUpgrade = 0,
@@ -71,10 +67,6 @@ public:
     void setInsecureRequestsPolicy(InsecureRequestsPolicy policy) { m_insecureRequestsPolicy = policy; }
     InsecureRequestsPolicy insecureRequestsPolicy() const { return m_insecureRequestsPolicy; }
 
-    void addInsecureNavigationUpgrade(const String& host) { m_insecureNavigationsToUpgrade.add(host.impl()->hash()); }
-    void addInsecureNavigationUpgrade(unsigned hashedHost) { m_insecureNavigationsToUpgrade.add(hashedHost); }
-    InsecureNavigationsSet* insecureNavigationsToUpgrade() { return &m_insecureNavigationsToUpgrade; }
-
 protected:
     SecurityContext();
     virtual ~SecurityContext();
@@ -93,7 +85,6 @@ private:
 
     bool m_hostedInReservedIPRange;
     InsecureRequestsPolicy m_insecureRequestsPolicy;
-    InsecureNavigationsSet m_insecureNavigationsToUpgrade;
 };
 
 } // namespace blink

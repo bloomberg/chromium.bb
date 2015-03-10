@@ -1415,18 +1415,4 @@ SecurityContext::InsecureRequestsPolicy FrameLoader::insecureRequestsPolicy() co
     return toLocalFrame(parentFrame)->document()->insecureRequestsPolicy();
 }
 
-SecurityContext::InsecureNavigationsSet* FrameLoader::insecureNavigationsToUpgrade() const
-{
-    Frame* parentFrame = m_frame->tree().parent();
-    if (!parentFrame)
-        return nullptr;
-
-    // FIXME: We need a way to propagate insecure requests policy flags to
-    // out-of-process frames. For now, we'll always use default behavior.
-    if (!parentFrame->isLocalFrame())
-        return nullptr;
-
-    return toLocalFrame(parentFrame)->document()->insecureNavigationsToUpgrade();
-}
-
 } // namespace blink

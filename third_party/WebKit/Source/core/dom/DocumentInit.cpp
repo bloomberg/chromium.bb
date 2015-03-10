@@ -131,12 +131,6 @@ SecurityContext::InsecureRequestsPolicy DocumentInit::insecureRequestsPolicy() c
     return frameForSecurityContext()->loader().insecureRequestsPolicy();
 }
 
-SecurityContext::InsecureNavigationsSet* DocumentInit::insecureNavigationsToUpgrade() const
-{
-    ASSERT(frameForSecurityContext());
-    return frameForSecurityContext()->loader().insecureNavigationsToUpgrade();
-}
-
 bool DocumentInit::isHostedInReservedIPRange() const
 {
     if (LocalFrame* frame = frameForSecurityContext()) {

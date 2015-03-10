@@ -46,7 +46,6 @@ TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsDisabled)
 
     csp->bindToExecutionContext(document.get());
     EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
-    EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsEnabled)
@@ -57,7 +56,6 @@ TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsEnabled)
 
     csp->bindToExecutionContext(document.get());
     EXPECT_EQ(SecurityContext::InsecureRequestsUpgrade, document->insecureRequestsPolicy());
-    EXPECT_TRUE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsDisabled)
@@ -68,7 +66,6 @@ TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsDisabled)
 
     csp->bindToExecutionContext(document.get());
     EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
-    EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
@@ -79,7 +76,6 @@ TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
 
     csp->bindToExecutionContext(document.get());
     EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->insecureRequestsPolicy());
-    EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
 }
 
 TEST_F(ContentSecurityPolicyTest, CopyStateFrom)
