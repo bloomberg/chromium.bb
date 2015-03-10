@@ -6,11 +6,12 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/profiler/scoped_tracker.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/synchronization/waitable_event.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -94,6 +95,11 @@ bool Thread::Start() {
 }
 
 bool Thread::StartWithOptions(const Options& options) {
+  // TODO(eroman): Remove once crbug.com/465458 is solved.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+        "465458 base::Thread::StartWithOptions"));
+
   DCHECK(!message_loop_);
 #if defined(OS_WIN)
   DCHECK((com_status_ != STA) ||
@@ -110,6 +116,11 @@ bool Thread::StartWithOptions(const Options& options) {
     startup_data_ = NULL;
     return false;
   }
+
+  // TODO(eroman): Remove once crbug.com/465458 is solved.
+  tracked_objects::ScopedTracker tracking_profile_wait(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "465458 base::Thread::StartWithOptions (Wait)"));
 
   // Wait for the thread to start and initialize message_loop_
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
