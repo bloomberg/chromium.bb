@@ -75,6 +75,46 @@ using syncable::UNIQUE_POSITION;
 using syncable::UNIQUE_SERVER_TAG;
 using syncable::WriteTransaction;
 
+// TODO (stanisc): crbug.com/362467: remove this function once
+// issue 362467 is fixed.
+// Validates that the local ID picked by FindLocalIdToUpdate doesn't
+// conflict with already existing item with update_id.
+void VerifyLocalIdToUpdate(syncable::BaseTransaction* trans,
+                           const syncable::Id& local_id,
+                           const syncable::Id& update_id,
+                           bool local_deleted,
+                           bool deleted_in_update) {
+  if (local_id == update_id) {
+    // ID matches, everything is good.
+    return;
+  }
+
+  // If the ID doesn't match, it means that an entry with |local_id| has been
+  // picked and an entry with |update_id| isn't supposed to exist.
+  syncable::Entry update_entry(trans, GET_BY_ID, update_id);
+  if (!update_entry.good())
+    return;
+
+  // Fail early so that the crash dump indicates which of the cases below
+  // has triggered the issue.
+  // Crash dumps don't always preserve data. The 2 separate cases below are
+  // to make it easy to see the the state of item with |update_id| in the
+  // crash dump.
+  if (update_entry.GetIsDel()) {
+    LOG(FATAL) << "VerifyLocalIdToUpdate: existing deleted entry " << update_id
+               << " conflicts with local entry " << local_id
+               << " picked by an update.\n"
+               << "Local item deleted: " << local_deleted
+               << ", deleted flag in update: " << deleted_in_update;
+  } else {
+    LOG(FATAL) << "VerifyLocalIdToUpdate: existing entry " << update_id
+               << " conflicts with local entry " << local_id
+               << " picked by an update.\n"
+               << "Local item deleted: " << local_deleted
+               << ", deleted flag in update: " << deleted_in_update;
+  }
+}
+
 syncable::Id FindLocalIdToUpdate(
     syncable::BaseTransaction* trans,
     const sync_pb::SyncEntity& update) {
@@ -127,6 +167,8 @@ syncable::Id FindLocalIdToUpdate(
         // Target this change to the existing local entry; later,
         // we'll change the ID of the local entry to update_id
         // if needed.
+        VerifyLocalIdToUpdate(trans, local_entry.GetId(), update_id,
+                              local_entry.GetIsDel(), update.deleted());
         return local_entry.GetId();
       } else {
         // Case 3: We have a local entry with the same client tag.
@@ -136,6 +178,8 @@ syncable::Id FindLocalIdToUpdate(
         // update will now be applied to local_entry.
         DCHECK(0 == local_entry.GetBaseVersion() ||
                CHANGES_VERSION == local_entry.GetBaseVersion());
+        VerifyLocalIdToUpdate(trans, local_entry.GetId(), update_id,
+                              local_entry.GetIsDel(), update.deleted());
         return local_entry.GetId();
       }
     }
@@ -182,6 +226,8 @@ syncable::Id FindLocalIdToUpdate(
                << update_id << " local id: " << local_entry.GetId()
                << " new version: " << new_version;
 
+      VerifyLocalIdToUpdate(trans, local_entry.GetId(), update_id,
+                            local_entry.GetIsDel(), update.deleted());
       return local_entry.GetId();
     }
   } else if (update.has_server_defined_unique_tag() &&
@@ -197,6 +243,8 @@ syncable::Id FindLocalIdToUpdate(
                                 update.server_defined_unique_tag());
     if (local_entry.good() && !local_entry.GetId().ServerKnows()) {
       DCHECK(local_entry.GetId() != update_id);
+      VerifyLocalIdToUpdate(trans, local_entry.GetId(), update_id,
+                            local_entry.GetIsDel(), update.deleted());
       return local_entry.GetId();
     }
   }
