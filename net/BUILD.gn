@@ -798,12 +798,16 @@ if (use_v8_in_net && !is_android) {
     sources = [
       "dns/mojo_host_resolver_impl.cc",
       "dns/mojo_host_resolver_impl.h",
+      "proxy/mojo_proxy_resolver_factory.h",
+      "proxy/proxy_resolver_mojo.cc",
+      "proxy/proxy_resolver_mojo.h",
     ]
 
     public_deps = [
       ":mojo_type_converters",
       ":net",
       "//base",
+      "//mojo/common",
       "//net/interfaces",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
@@ -1405,6 +1409,7 @@ if (!is_android && !is_win && !is_mac) {
         "dns/mojo_host_resolver_impl_unittest.cc",
         "proxy/mojo_proxy_resolver_factory_impl_unittest.cc",
         "proxy/mojo_proxy_resolver_impl_unittest.cc",
+        "proxy/proxy_resolver_mojo_unittest.cc",
       ]
     }
 

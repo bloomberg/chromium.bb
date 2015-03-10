@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_server.h"
 
 namespace net {
@@ -78,6 +79,19 @@ TypeConverter<net::ProxyServer, net::interfaces::ProxyServerPtr>::Convert(
     const net::interfaces::ProxyServerPtr& obj) {
   return net::ProxyServer(net::ProxySchemeFromMojo(obj->scheme),
                           net::HostPortPair(obj->host, obj->port));
+}
+
+// static
+net::ProxyInfo
+TypeConverter<net::ProxyInfo, mojo::Array<net::interfaces::ProxyServerPtr>>::
+    Convert(const mojo::Array<net::interfaces::ProxyServerPtr>& obj) {
+  net::ProxyList proxy_list;
+  for (size_t i = 0; i < obj.size(); i++) {
+    proxy_list.AddProxyServer(obj[i].To<net::ProxyServer>());
+  }
+  net::ProxyInfo info;
+  info.UseProxyList(proxy_list);
+  return info;
 }
 
 }  // namespace mojo

@@ -9,6 +9,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 namespace net {
+class ProxyInfo;
 class ProxyServer;
 }
 
@@ -22,6 +23,13 @@ struct TypeConverter<net::interfaces::ProxyServerPtr, net::ProxyServer> {
 template <>
 struct TypeConverter<net::ProxyServer, net::interfaces::ProxyServerPtr> {
   static net::ProxyServer Convert(const net::interfaces::ProxyServerPtr& obj);
+};
+
+template <>
+struct TypeConverter<net::ProxyInfo,
+                     mojo::Array<net::interfaces::ProxyServerPtr>> {
+  static net::ProxyInfo Convert(
+      const mojo::Array<net::interfaces::ProxyServerPtr>& obj);
 };
 
 }  // namespace mojo
