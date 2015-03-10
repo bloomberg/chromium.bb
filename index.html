@@ -141,17 +141,6 @@ reach column boundaries.</p>
 before it can be sent upstream.</p>
 
 <h3>
-    <a name="bugfix-clearDragCaret">bugfix/clearDragCaret</a>
-    (Shezan Baig; D31916022)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FclearDragCaret">view changes</a>]</span>
-</h3>
-<p>Open <a href="repros/clearDragCaret.html">this link</a> in Chrome, then
-select some text from another tab, and try to drag it into the editable div.
-Before you drop, you will see a caret at the place where the text should go.
-When you drop however, <code>event.preventDefault()</code> is called, so the
-text does not get inserted. However, the drag caret remains visible.</p>
-
-<h3>
     <a name="bugfix-cleartypecanvas">bugfix/cleartypecanvas</a>
     (Shezan Baig; D32281407; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86776">86776</a>)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2Fcleartypecanvas">view changes</a>]</span>
@@ -623,6 +612,11 @@ text.</p>
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
+
+<h2><a name="retired-40.0.2214.115">Retired at 40.0.2214.115</a></h2>
+
+<h3><a name="bugfix-clearDragCaret">bugfix/clearDragCaret</a> (Shezan Baig; D31916022)</h3>
+<p>Retired because the issue is no longer reproducable (appears to be fixed upstream).</p>
 
 <h2><a name="retired-37.0.2062.124">Retired at 37.0.2062.124</a></h2>
 
