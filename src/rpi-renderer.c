@@ -1325,10 +1325,11 @@ output_compute_matrix(struct weston_output *base)
 {
 	struct rpir_output *output = to_rpir_output(base);
 	struct weston_matrix *matrix = &output->matrix;
+#ifdef SURFACE_TRANSFORM
 	const float half_w = 0.5f * base->width;
 	const float half_h = 0.5f * base->height;
+#endif
 	float mag;
-	float dx, dy;
 
 	weston_matrix_init(matrix);
 	weston_matrix_translate(matrix, -base->x, -base->y, 0.0f);
@@ -1370,13 +1371,10 @@ output_compute_matrix(struct weston_output *base)
 #endif
 
 	if (base->zoom.active) {
-		/* The base->zoom stuff is in GL coordinate system */
 		mag = 1.0f / (1.0f - base->zoom.spring_z.current);
-		dx = -(base->zoom.trans_x + 1.0f) * half_w;
-		dy = -(base->zoom.trans_y + 1.0f) * half_h;
-		weston_matrix_translate(matrix, dx, dy, 0.0f);
+		weston_matrix_translate(matrix, base->zoom.trans_x,
+					base->zoom.trans_y, 0.0f);
 		weston_matrix_scale(matrix, mag, mag, 1.0f);
-		weston_matrix_translate(matrix, half_w, half_h, 0.0f);
 	}
 }
 
