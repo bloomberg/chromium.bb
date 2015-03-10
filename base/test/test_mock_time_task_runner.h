@@ -61,6 +61,9 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner {
   // elapse.
   void RunUntilIdle();
 
+  // Clears the queue of pending tasks without running them.
+  void ClearPendingTasks();
+
   // Returns the current virtual time (initially starting at the Unix epoch).
   Time Now() const;
 

@@ -100,6 +100,13 @@ void TestMockTimeTaskRunner::FastForwardUntilNoTasksRemain() {
   ProcessAllTasksNoLaterThan(TimeDelta::Max());
 }
 
+void TestMockTimeTaskRunner::ClearPendingTasks() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  AutoLock scoped_lock(tasks_lock_);
+  while (!tasks_.empty())
+    tasks_.pop();
+}
+
 Time TestMockTimeTaskRunner::Now() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return now_;
