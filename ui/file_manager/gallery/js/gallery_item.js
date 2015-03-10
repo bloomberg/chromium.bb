@@ -260,38 +260,56 @@ Gallery.Item.prototype.saveToFile = function(
   };
 
   var doSave = function(newFile, fileEntry) {
-    var metadataPromise = metadataModel.get(
+    var blob;
+    var fileWriter;
+
+    metadataModel.get(
         [fileEntry],
-        ['mediaMimeType', 'contentMimeType', 'ifd', 'exifLittleEndian']);
-    metadataPromise.then(function(metadataItems) {
-      fileEntry.createWriter(function(fileWriter) {
-        var writeContent = function() {
-          fileWriter.onwriteend = onSuccess.bind(null, fileEntry);
-          var metadataItem = metadataItems[0];
-          metadataItem.modificationTime = new Date();
-          var metadataEncoder = ImageEncoder.encodeMetadata(
-              metadataItem, canvas, /* quality for thumbnail*/ 0.8);
-          // Contrary to what one might think 1.0 is not a good default. Opening
-          // and saving an typical photo taken with consumer camera increases
-          // its file size by 50-100%. Experiments show that 0.9 is much better.
-          // It shrinks some photos a bit, keeps others about the same size, but
-          // does not visibly lower the quality.
-          fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder, 0.9));
-        }.bind(this);
-        fileWriter.onerror = function(error) {
-          onError(error);
-          // Disable all callbacks on the first error.
-          fileWriter.onerror = null;
-          fileWriter.onwriteend = null;
-        };
-        if (newFile) {
-          writeContent();
-        } else {
-          fileWriter.onwriteend = writeContent;
+        ['mediaMimeType', 'contentMimeType', 'ifd', 'exifLittleEndian']
+    ).then(function(metadataItems) {
+      // Create the blob of new image.
+      var metadataItem = metadataItems[0];
+      metadataItem.modificationTime = new Date();
+      var metadataEncoder = ImageEncoder.encodeMetadata(
+          metadataItem, canvas, /* quality for thumbnail*/ 0.8);
+      // Contrary to what one might think 1.0 is not a good default. Opening
+      // and saving an typical photo taken with consumer camera increases
+      // its file size by 50-100%. Experiments show that 0.9 is much better.
+      // It shrinks some photos a bit, keeps others about the same size, but
+      // does not visibly lower the quality.
+      blob = ImageEncoder.getBlob(canvas, metadataEncoder, 0.9);
+    }).then(function() {
+      // Create writer.
+      return new Promise(function(fullfill, reject) {
+        fileEntry.createWriter(fullfill, reject);
+      });
+    }).then(function(writer) {
+      fileWriter = writer;
+
+      // Truncates the file to 0 byte if it overwrites.
+      return new Promise(function(fulfill, reject) {
+        if (!newFile) {
+          fileWriter.onerror = reject;
+          fileWriter.onwriteend = fulfill;
           fileWriter.truncate(0);
+        } else {
+          fulfill(null);
         }
-      }.bind(this), onError);
-    }.bind(this));
+      });
+    }).then(function() {
+      // Writes the blob of new image.
+      return new Promise(function(fulfill, reject) {
+        fileWriter.onerror = reject;
+        fileWriter.onwriteend = fulfill;
+        fileWriter.write(blob);
+      });
+    }).then(onSuccess.bind(null, fileEntry))
+    .catch(function(error) {
+      onError(error);
+      // Disable all callbacks on the first error.
+      fileWriter.onerror = null;
+      fileWriter.onwriteend = null;
+    });
   }.bind(this);
 
   var getFile = function(dir, newFile) {
