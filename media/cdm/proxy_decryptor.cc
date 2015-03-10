@@ -195,9 +195,16 @@ scoped_ptr<MediaKeys> ProxyDecryptor::CreateMediaKeys(
     CdmFactory* cdm_factory,
     const std::string& key_system,
     const GURL& security_origin) {
+  // TODO(sandersd): Trigger permissions check here and use it to determine
+  // distinctive identifier support, instead of always requiring the
+  // permission. http://crbug.com/455271
+  bool allow_distinctive_identifier = true;
+  bool allow_persistent_state = true;
   base::WeakPtr<ProxyDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   return cdm_factory->Create(
       key_system,
+      allow_distinctive_identifier,
+      allow_persistent_state,
       security_origin,
       base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionClosed, weak_this),

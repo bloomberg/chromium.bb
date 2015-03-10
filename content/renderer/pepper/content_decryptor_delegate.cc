@@ -352,9 +352,10 @@ ContentDecryptorDelegate::~ContentDecryptorDelegate() {
   SatisfyAllPendingCallbacksOnError();
 }
 
-// TODO(jrummell): Remove |session_ready_cb| and |session_keys_change_cb|.
 void ContentDecryptorDelegate::Initialize(
     const std::string& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb,
@@ -373,7 +374,9 @@ void ContentDecryptorDelegate::Initialize(
   fatal_plugin_error_cb_ = fatal_plugin_error_cb;
 
   plugin_decryption_interface_->Initialize(
-      pp_instance_, StringVar::StringToPPVar(key_system_));
+      pp_instance_, StringVar::StringToPPVar(key_system_),
+      PP_FromBool(allow_distinctive_identifier),
+      PP_FromBool(allow_persistent_state));
 }
 
 void ContentDecryptorDelegate::InstanceCrashed() {

@@ -36,6 +36,8 @@ RenderCdmFactory::~RenderCdmFactory() {
 
 scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
     const std::string& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
     const GURL& security_origin,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
@@ -48,6 +50,10 @@ scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
   // DCHECK(security_origin.is_valid());
 
   if (media::CanUseAesDecryptor(key_system)) {
+    // TODO(sandersd): Currently the prefixed API always allows distinctive
+    // identifiers and persistent state. Once that changes we can sanity check
+    // here that neither is allowed for AesDecryptor, since it does not support
+    // them and should never be configured that way. http://crbug.com/455271
     return scoped_ptr<media::MediaKeys>(new media::AesDecryptor(
         session_message_cb, session_closed_cb, session_keys_change_cb));
   }
@@ -55,6 +61,8 @@ scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
 #if defined(ENABLE_PEPPER_CDMS)
   return scoped_ptr<media::MediaKeys>(
       PpapiDecryptor::Create(key_system,
+                             allow_distinctive_identifier,
+                             allow_persistent_state,
                              security_origin,
                              create_pepper_cdm_cb_,
                              session_message_cb,
@@ -63,6 +71,8 @@ scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
                              session_keys_change_cb,
                              session_expiration_update_cb));
 #elif defined(ENABLE_BROWSER_CDMS)
+  DCHECK(allow_distinctive_identifier);
+  DCHECK(allow_persistent_state);
   return scoped_ptr<media::MediaKeys>(
       ProxyMediaKeys::Create(key_system,
                              security_origin,

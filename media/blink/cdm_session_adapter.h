@@ -33,6 +33,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // Returns true on success.
   bool Initialize(CdmFactory* cdm_factory,
                   const std::string& key_system,
+                  bool allow_distinctive_identifier,
+                  bool allow_persistent_state,
                   const GURL& security_origin);
 
   // Provides a server certificate to be used to encrypt messages to the

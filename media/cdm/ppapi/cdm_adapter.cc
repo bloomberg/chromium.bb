@@ -302,6 +302,8 @@ CdmAdapter::CdmAdapter(PP_Instance instance, pp::Module* module)
 #endif
       allocator_(this),
       cdm_(NULL),
+      allow_distinctive_identifier_(false),
+      allow_persistent_state_(false),
       deferred_initialize_audio_decoder_(false),
       deferred_audio_decoder_config_id_(0),
       deferred_initialize_video_decoder_(false),
@@ -334,7 +336,9 @@ bool CdmAdapter::CreateCdmInstance(const std::string& key_system) {
 // (CreateSession()) or session loading (LoadSession()).
 // TODO(xhwang): If necessary, we need to store the error here if we want to
 // support more specific error reporting (other than "Unknown").
-void CdmAdapter::Initialize(const std::string& key_system) {
+void CdmAdapter::Initialize(const std::string& key_system,
+                            bool allow_distinctive_identifier,
+                            bool allow_persistent_state) {
   PP_DCHECK(!key_system.empty());
   PP_DCHECK(key_system_.empty() || (key_system_ == key_system && cdm_));
 
@@ -362,6 +366,8 @@ void CdmAdapter::Initialize(const std::string& key_system) {
 
   PP_DCHECK(cdm_);
   key_system_ = key_system;
+  allow_distinctive_identifier_ = allow_distinctive_identifier;
+  allow_persistent_state_ = allow_persistent_state;
 }
 
 void CdmAdapter::SetServerCertificate(uint32_t promise_id,
@@ -1106,29 +1112,33 @@ void CdmAdapter::SendPlatformChallenge(const char* service_id,
                                        const char* challenge,
                                        uint32_t challenge_size) {
 #if defined(OS_CHROMEOS)
-  pp::VarArrayBuffer challenge_var(challenge_size);
-  uint8_t* var_data = static_cast<uint8_t*>(challenge_var.Map());
-  memcpy(var_data, challenge, challenge_size);
+  // If access to a distinctive identifier is not allowed, block platform
+  // verification to prevent access to such an identifier.
+  if (allow_distinctive_identifier_) {
+    pp::VarArrayBuffer challenge_var(challenge_size);
+    uint8_t* var_data = static_cast<uint8_t*>(challenge_var.Map());
+    memcpy(var_data, challenge, challenge_size);
 
-  std::string service_id_str(service_id, service_id_size);
+    std::string service_id_str(service_id, service_id_size);
 
-  linked_ptr<PepperPlatformChallengeResponse> response(
-      new PepperPlatformChallengeResponse());
+    linked_ptr<PepperPlatformChallengeResponse> response(
+        new PepperPlatformChallengeResponse());
 
-  int32_t result = platform_verification_.ChallengePlatform(
-      pp::Var(service_id_str),
-      challenge_var,
-      &response->signed_data,
-      &response->signed_data_signature,
-      &response->platform_key_certificate,
-      callback_factory_.NewCallback(&CdmAdapter::SendPlatformChallengeDone,
-                                    response));
-  challenge_var.Unmap();
-  if (result == PP_OK_COMPLETIONPENDING)
-    return;
+    int32_t result = platform_verification_.ChallengePlatform(
+        pp::Var(service_id_str),
+        challenge_var,
+        &response->signed_data,
+        &response->signed_data_signature,
+        &response->platform_key_certificate,
+        callback_factory_.NewCallback(&CdmAdapter::SendPlatformChallengeDone,
+                                      response));
+    challenge_var.Unmap();
+    if (result == PP_OK_COMPLETIONPENDING)
+      return;
 
-  // Fall through on error and issue an empty OnPlatformChallengeResponse().
-  PP_DCHECK(result != PP_OK);
+    // Fall through on error and issue an empty OnPlatformChallengeResponse().
+    PP_DCHECK(result != PP_OK);
+  }
 #endif
 
   cdm::PlatformChallengeResponse platform_challenge_response = {};
@@ -1200,10 +1210,14 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 
 // The CDM owns the returned object and must call FileIO::Close() to release it.
 cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
-  return new CdmFileIOImpl(
-      client,
-      pp_instance(),
-      callback_factory_.NewCallback(&CdmAdapter::OnFirstFileRead));
+  if (allow_persistent_state_) {
+    return new CdmFileIOImpl(
+        client,
+        pp_instance(),
+        callback_factory_.NewCallback(&CdmAdapter::OnFirstFileRead));
+  }
+
+  return nullptr;
 }
 
 #if defined(OS_CHROMEOS)

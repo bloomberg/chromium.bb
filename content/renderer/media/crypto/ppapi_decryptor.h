@@ -36,6 +36,8 @@ class PpapiDecryptor : public media::MediaKeys,
  public:
   static scoped_ptr<PpapiDecryptor> Create(
       const std::string& key_system,
+      bool allow_distinctive_identifier,
+      bool allow_persistent_state,
       const GURL& security_origin,
       const CreatePepperCdmCB& create_pepper_cdm_cb,
       const media::SessionMessageCB& session_message_cb,
@@ -96,6 +98,8 @@ class PpapiDecryptor : public media::MediaKeys,
  private:
   PpapiDecryptor(
       const std::string& key_system,
+      bool allow_distinctive_identifier,
+      bool allow_persistent_state,
       scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,

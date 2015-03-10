@@ -28,6 +28,8 @@ CdmSessionAdapter::~CdmSessionAdapter() {}
 
 bool CdmSessionAdapter::Initialize(CdmFactory* cdm_factory,
                                    const std::string& key_system,
+                                   bool allow_distinctive_identifier,
+                                   bool allow_persistent_state,
                                    const GURL& security_origin) {
   key_system_ = key_system;
   key_system_uma_prefix_ =
@@ -35,7 +37,8 @@ bool CdmSessionAdapter::Initialize(CdmFactory* cdm_factory,
 
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   media_keys_ = cdm_factory->Create(
-      key_system, security_origin,
+      key_system, allow_distinctive_identifier, allow_persistent_state,
+      security_origin,
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionError, weak_this),

@@ -48,6 +48,8 @@ class ContentDecryptorDelegate {
   // This object should not be accessed after |fatal_plugin_error_cb| is called.
   void Initialize(
       const std::string& key_system,
+      bool allow_distinctive_identifier,
+      bool allow_persistent_state,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::SessionErrorCB& session_error_cb,

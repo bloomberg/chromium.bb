@@ -25,7 +25,9 @@ static const char kPPPContentDecryptorInterface[] =
     PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE;
 
 void Initialize(PP_Instance instance,
-                PP_Var key_system_arg) {
+                PP_Var key_system_arg,
+                PP_Bool allow_distinctive_identifier,
+                PP_Bool allow_persistent_state) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
@@ -36,7 +38,9 @@ void Initialize(PP_Instance instance,
     return;
 
   static_cast<ContentDecryptor_Private*>(object)->Initialize(
-      key_system_var.AsString());
+      key_system_var.AsString(),
+      PP_ToBool(allow_distinctive_identifier),
+      PP_ToBool(allow_persistent_state));
 }
 
 void SetServerCertificate(PP_Instance instance,

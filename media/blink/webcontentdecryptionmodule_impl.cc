@@ -24,8 +24,10 @@ namespace media {
 
 void WebContentDecryptionModuleImpl::Create(
     media::CdmFactory* cdm_factory,
-    const blink::WebSecurityOrigin& security_origin,
     const base::string16& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
+    const blink::WebSecurityOrigin& security_origin,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!security_origin.isNull());
   DCHECK(!key_system.empty());
@@ -65,7 +67,8 @@ void WebContentDecryptionModuleImpl::Create(
   // TODO(jrummell): Pass WebContentDecryptionModuleResult (or similar) to
   // Initialize() so that more specific errors can be reported.
   if (!adapter->Initialize(cdm_factory, key_system_ascii,
-                           security_origin_as_gurl)) {
+                           allow_distinctive_identifier,
+                           allow_persistent_state, security_origin_as_gurl)) {
     result.completeWithError(
         blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
         "Failed to initialize CDM.");

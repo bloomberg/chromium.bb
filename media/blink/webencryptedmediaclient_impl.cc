@@ -508,10 +508,14 @@ void WebEncryptedMediaClientImpl::SelectSupportedConfiguration(
 
 void WebEncryptedMediaClientImpl::CreateCdm(
     const blink::WebString& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
     const blink::WebSecurityOrigin& security_origin,
     blink::WebContentDecryptionModuleResult result) {
-  WebContentDecryptionModuleImpl::Create(cdm_factory_.get(), security_origin,
-                                         key_system, result);
+  WebContentDecryptionModuleImpl::Create(cdm_factory_.get(), key_system,
+                                         allow_distinctive_identifier,
+                                         allow_persistent_state,
+                                         security_origin, result);
 }
 
 // Lazily create Reporters.

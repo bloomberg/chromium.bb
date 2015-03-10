@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Fri Dec 19 15:58:46 2014.
+ *   modified Fri Mar  6 14:26:54 2015.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_13 \
-    "PPP_ContentDecryptor_Private;0.13"
+#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_14 \
+    "PPP_ContentDecryptor_Private;0.14"
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_13
+    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_14
 
 /**
  * @file
@@ -42,14 +42,21 @@
  * Decryption Module (CDM) for Encrypted Media Extensions:
  * http://www.w3.org/TR/encrypted-media/
  */
-struct PPP_ContentDecryptor_Private_0_13 {
+struct PPP_ContentDecryptor_Private_0_14 {
   /**
    * Initialize for the specified key system.
    *
    * @param[in] key_system A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
+   * @param[in] allow_distinctive_identifier Inform the CDM that it may use a
+   * distinctive identifier.
+   * @param[in] allow_persistent_state Inform the CDM that it may use persistent
+   * state.
    */
-  void (*Initialize)(PP_Instance instance, struct PP_Var key_system);
+  void (*Initialize)(PP_Instance instance,
+                     struct PP_Var key_system,
+                     PP_Bool allow_distinctive_identifier,
+                     PP_Bool allow_persistent_state);
   /**
    * Provides a server certificate to be used to encrypt messages to the
    * license server.
@@ -294,7 +301,7 @@ struct PPP_ContentDecryptor_Private_0_13 {
       const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
-typedef struct PPP_ContentDecryptor_Private_0_13 PPP_ContentDecryptor_Private;
+typedef struct PPP_ContentDecryptor_Private_0_14 PPP_ContentDecryptor_Private;
 /**
  * @}
  */

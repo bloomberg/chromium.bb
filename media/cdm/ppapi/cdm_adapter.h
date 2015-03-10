@@ -51,7 +51,9 @@ class CdmAdapter : public pp::Instance,
   // PPP_ContentDecryptor_Private implementation.
   // Note: Results of calls to these methods must be reported through the
   // PPB_ContentDecryptor_Private interface.
-  void Initialize(const std::string& key_system) override;
+  void Initialize(const std::string& key_system,
+                  bool allow_distinctive_identifier,
+                  bool allow_persistent_state) override;
   void SetServerCertificate(uint32_t promise_id,
                             pp::VarArrayBuffer server_certificate) override;
   void CreateSessionAndGenerateRequest(uint32_t promise_id,
@@ -288,6 +290,8 @@ class CdmAdapter : public pp::Instance,
   pp::CompletionCallbackFactory<CdmAdapter> callback_factory_;
   linked_ptr<CdmWrapper> cdm_;
   std::string key_system_;
+  bool allow_distinctive_identifier_;
+  bool allow_persistent_state_;
 
   // If the CDM returned kDeferredInitialization during InitializeAudioDecoder()
   // or InitializeVideoDecoder(), the (Audio|Video)DecoderConfig.request_id is

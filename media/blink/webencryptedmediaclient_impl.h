@@ -34,6 +34,8 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   // Create the CDM for |key_system| and |security_origin|. The caller owns
   // the created cdm (passed back using |result|).
   void CreateCdm(const blink::WebString& key_system,
+                 bool allow_distinctive_identifier,
+                 bool allow_persistent_state,
                  const blink::WebSecurityOrigin& security_origin,
                  blink::WebContentDecryptionModuleResult result);
 

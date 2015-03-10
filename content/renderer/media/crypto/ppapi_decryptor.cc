@@ -24,6 +24,8 @@ namespace content {
 
 scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const std::string& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
     const GURL& security_origin,
     const CreatePepperCdmCB& create_pepper_cdm_cb,
     const media::SessionMessageCB& session_message_cb,
@@ -42,6 +44,8 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
 
   return scoped_ptr<PpapiDecryptor>(
       new PpapiDecryptor(key_system,
+                         allow_distinctive_identifier,
+                         allow_persistent_state,
                          pepper_cdm_wrapper.Pass(),
                          session_message_cb,
                          session_closed_cb,
@@ -52,6 +56,8 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
 
 PpapiDecryptor::PpapiDecryptor(
     const std::string& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
     scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
@@ -76,6 +82,8 @@ PpapiDecryptor::PpapiDecryptor(
   base::WeakPtr<PpapiDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   CdmDelegate()->Initialize(
       key_system,
+      allow_distinctive_identifier,
+      allow_persistent_state,
       base::Bind(&PpapiDecryptor::OnSessionMessage, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionClosed, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionError, weak_this),

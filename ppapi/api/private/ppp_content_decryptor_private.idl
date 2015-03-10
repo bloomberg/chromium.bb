@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M41 = 0.13
+  M43 = 0.14
 };
 
 /**
@@ -25,10 +25,16 @@ interface PPP_ContentDecryptor_Private {
    *
    * @param[in] key_system A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
+   * @param[in] allow_distinctive_identifier Inform the CDM that it may use a
+   * distinctive identifier.
+   * @param[in] allow_persistent_state Inform the CDM that it may use persistent
+   * state.
    */
   void Initialize(
       [in] PP_Instance instance,
-      [in] PP_Var key_system);
+      [in] PP_Var key_system,
+      [in] PP_Bool allow_distinctive_identifier,
+      [in] PP_Bool allow_persistent_state);
 
   /**
    * Provides a server certificate to be used to encrypt messages to the

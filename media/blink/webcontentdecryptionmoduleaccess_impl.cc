@@ -15,6 +15,8 @@ namespace media {
 // The caller owns the created cdm (passed back using |result|).
 static void CreateCdm(const base::WeakPtr<WebEncryptedMediaClientImpl>& client,
                       const blink::WebString& key_system,
+                      bool allow_distinctive_identifier,
+                      bool allow_persistent_state,
                       const blink::WebSecurityOrigin& security_origin,
                       blink::WebContentDecryptionModuleResult result) {
   // If |client| is gone (due to the frame getting destroyed), it is
@@ -26,7 +28,8 @@ static void CreateCdm(const base::WeakPtr<WebEncryptedMediaClientImpl>& client,
     return;
   }
 
-  client->CreateCdm(key_system, security_origin, result);
+  client->CreateCdm(key_system, allow_distinctive_identifier,
+                    allow_persistent_state, security_origin, result);
 }
 
 WebContentDecryptionModuleAccessImpl*
@@ -60,13 +63,27 @@ WebContentDecryptionModuleAccessImpl::getConfiguration() {
 
 void WebContentDecryptionModuleAccessImpl::createContentDecryptionModule(
     blink::WebContentDecryptionModuleResult result) {
+  // Convert the accumulated configuration requirements to bools. Accumulated
+  // configurations never have optional requirements.
+  DCHECK(configuration_.distinctiveIdentifier !=
+         blink::WebMediaKeySystemConfiguration::Requirement::Optional);
+  DCHECK(configuration_.persistentState !=
+         blink::WebMediaKeySystemConfiguration::Requirement::Optional);
+  bool allow_distinctive_identifier =
+      (configuration_.distinctiveIdentifier ==
+       blink::WebMediaKeySystemConfiguration::Requirement::Required);
+  bool allow_persistent_state =
+      (configuration_.persistentState ==
+       blink::WebMediaKeySystemConfiguration::Requirement::Required);
+
   // This method needs to run asynchronously, as it may need to load the CDM.
   // As this object's lifetime is controlled by MediaKeySystemAccess on the
   // blink side, copy all values needed by CreateCdm() in case the blink object
   // gets garbage-collected.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&CreateCdm, client_, key_system_, security_origin_, result));
+      base::Bind(&CreateCdm, client_, key_system_, allow_distinctive_identifier,
+                 allow_persistent_state, security_origin_, result));
 }
 
 }  // namespace media
