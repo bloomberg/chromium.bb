@@ -30,6 +30,8 @@ class IPEndPoint;
 
 namespace extensions {
 
+struct Event;
+
 namespace core_api {
 namespace cast_channel {
 class Logger;
@@ -38,7 +40,8 @@ class Logger;
 
 namespace cast_channel = core_api::cast_channel;
 
-class CastChannelAPI : public BrowserContextKeyedAPI {
+class CastChannelAPI : public BrowserContextKeyedAPI,
+                       public base::SupportsWeakPtr<CastChannelAPI> {
  public:
   explicit CastChannelAPI(content::BrowserContext* context);
 
@@ -71,6 +74,9 @@ class CastChannelAPI : public BrowserContextKeyedAPI {
   // Gets the injected ping timeout timer, if set.
   // Returns a null scoped ptr if there is no injected timer.
   scoped_ptr<base::Timer> GetInjectedTimeoutTimerForTest();
+
+  // Sends an event to the extension's EventRouter, if it exists.
+  void SendEvent(const std::string& extension_id, scoped_ptr<Event> event);
 
  private:
   friend class BrowserContextKeyedAPIFactory<CastChannelAPI>;
@@ -149,11 +155,19 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.open", CAST_CHANNEL_OPEN)
 
+  // Defines a callback used to send events to the extension's
+  // EventRouter.
+  //     Parameter #0 is the extension's ID.
+  //     Parameter #1 is a scoped pointer to the event payload.
+  using EventDispatchCallback =
+      base::Callback<void(const std::string&, scoped_ptr<Event>)>;
+
   // Receives incoming messages and errors and provides additional API and
   // origin socket context.
   class CastMessageHandler : public cast_channel::CastTransport::Delegate {
    public:
-    CastMessageHandler(CastChannelAPI* api, cast_channel::CastSocket* socket);
+    CastMessageHandler(const EventDispatchCallback& ui_dispatch_cb,
+                       cast_channel::CastSocket* socket);
     ~CastMessageHandler() override;
 
     // CastTransport::Delegate implementation.
@@ -163,8 +177,11 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
     void Start() override;
 
    private:
-    CastChannelAPI* const api;
-    cast_channel::CastSocket* const socket;
+    // Callback for sending events to the extension.
+    // Should be bound to a weak pointer, to prevent any use-after-free
+    // conditions.
+    EventDispatchCallback const ui_dispatch_cb_;
+    cast_channel::CastSocket* const socket_;
 
     DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
   };
