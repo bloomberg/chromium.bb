@@ -70,7 +70,6 @@ InspectorHeapProfilerAgent::InspectorHeapProfilerAgent(InjectedScriptManager* in
     : InspectorBaseAgent<InspectorHeapProfilerAgent>("HeapProfiler")
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
-    , m_nextUserInitiatedHeapSnapshotNumber(1)
 {
 }
 
@@ -87,7 +86,6 @@ void InspectorHeapProfilerAgent::clearFrontend()
 {
     m_frontend = 0;
 
-    m_nextUserInitiatedHeapSnapshotNumber = 1;
     stopTrackingHeapObjectsInternal();
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 
@@ -251,9 +249,8 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
         int m_totalWork;
     };
 
-    String title = "Snapshot " + String::number(m_nextUserInitiatedHeapSnapshotNumber++);
     HeapSnapshotProgress progress(asBool(reportProgress) ? m_frontend : 0);
-    RefPtr<ScriptHeapSnapshot> snapshot = ScriptProfiler::takeHeapSnapshot(title, &progress);
+    RefPtr<ScriptHeapSnapshot> snapshot = ScriptProfiler::takeHeapSnapshot(&progress);
     if (!snapshot) {
         *errorString = "Failed to take heap snapshot";
         return;

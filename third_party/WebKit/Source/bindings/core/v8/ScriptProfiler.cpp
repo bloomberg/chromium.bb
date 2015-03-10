@@ -229,7 +229,7 @@ void ScriptProfiler::stopTrackingHeapObjects()
 }
 
 // FIXME: This method should receive a ScriptState, from which we should retrieve an Isolate.
-PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(const String& title, HeapSnapshotProgress* control)
+PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(HeapSnapshotProgress* control)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
@@ -239,7 +239,7 @@ PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(const String& ti
     ASSERT(control);
     ActivityControlAdapter adapter(control);
     GlobalObjectNameResolver resolver;
-    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8String(isolate, title), &adapter, &resolver);
+    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8::String::Empty(isolate), &adapter, &resolver);
     return snapshot ? ScriptHeapSnapshot::create(snapshot) : nullptr;
 }
 

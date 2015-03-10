@@ -45,12 +45,6 @@ ScriptHeapSnapshot::~ScriptHeapSnapshot()
     const_cast<v8::HeapSnapshot*>(m_snapshot)->Delete();
 }
 
-String ScriptHeapSnapshot::title() const
-{
-    v8::HandleScope scope(v8::Isolate::GetCurrent());
-    return toCoreString(m_snapshot->GetTitle());
-}
-
 namespace {
 
 class OutputStreamAdapter final : public v8::OutputStream {

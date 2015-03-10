@@ -52,7 +52,6 @@ public:
     }
     ~ScriptHeapSnapshot();
 
-    String title() const;
     void writeJSON(OutputStream* stream);
 
 private:

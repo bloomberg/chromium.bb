@@ -86,7 +86,6 @@ private:
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::HeapProfiler* m_frontend;
-    unsigned m_nextUserInitiatedHeapSnapshotNumber;
     OwnPtrWillBeMember<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 
