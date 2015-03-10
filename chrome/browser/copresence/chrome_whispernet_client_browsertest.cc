@@ -238,12 +238,14 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
 #define MAYBE_EncodeAndDecode DISABLED_EncodeAndDecode
 #define MAYBE_TokenLengths DISABLED_TokenLengths
 #define MAYBE_Crc DISABLED_Crc
+#define MAYBE_Parity DISABLED_Parity
 #define MAYBE_MultipleClients DISABLED_MultipleClients
 #else
 #define MAYBE_Initialize Initialize
 #define MAYBE_EncodeAndDecode EncodeAndDecode
 #define MAYBE_TokenLengths TokenLengths
 #define MAYBE_Crc Crc
+#define MAYBE_Parity Parity
 #define MAYBE_MultipleClients MultipleClients
 #endif
 
@@ -294,6 +296,24 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Crc) {
   GetTokenParamsForLengths(kTokenLengths, token_params);
   token_params[0].crc = true;
   token_params[1].crc = true;
+
+  EncodeTokenAndSaveSamples(client.get(), true, kSixZeros, token_params);
+  DecodeSamplesAndVerifyToken(client.get(), true, kSixZeros, token_params);
+
+  EncodeTokenAndSaveSamples(client.get(), false, kSixZeros, token_params);
+  DecodeSamplesAndVerifyToken(client.get(), false, kSixZeros, token_params);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Parity) {
+  scoped_ptr<WhispernetClient> client(
+      new ChromeWhispernetClient(browser()->profile()));
+  client->Initialize(base::Bind(&IgnoreResult));
+  SetupDecode();
+
+  TokenParameters token_params[2];
+  GetTokenParamsForLengths(kTokenLengths, token_params);
+  token_params[0].parity = false;
+  token_params[1].parity = false;
 
   EncodeTokenAndSaveSamples(client.get(), true, kSixZeros, token_params);
   DecodeSamplesAndVerifyToken(client.get(), true, kSixZeros, token_params);
