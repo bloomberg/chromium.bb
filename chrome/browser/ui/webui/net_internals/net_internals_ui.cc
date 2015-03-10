@@ -585,14 +585,16 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(
 void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
     const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::Value* historic_network_info = NULL;
   Profile* profile = Profile::FromWebUI(web_ui());
   DataReductionProxyChromeSettings* data_reduction_proxy_settings =
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
-  data_reduction_proxy::DataReductionProxyStatisticsPrefs* statistics_prefs =
-      data_reduction_proxy_settings->data_reduction_proxy_service()->
-          statistics_prefs();
-  base::Value* historic_network_info =
-      statistics_prefs->HistoricNetworkStatsInfoToValue();
+  if (data_reduction_proxy_settings) {
+    data_reduction_proxy::DataReductionProxyStatisticsPrefs* statistics_prefs =
+        data_reduction_proxy_settings->data_reduction_proxy_service()->
+        statistics_prefs();
+    historic_network_info = statistics_prefs->HistoricNetworkStatsInfoToValue();
+  }
   SendJavascriptCommand("receivedHistoricNetworkStats", historic_network_info);
 }
 
