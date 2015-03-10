@@ -83,7 +83,7 @@ public:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
     bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
-    PassOwnPtr<Vector<double> > parseKeyframeKeyList(const String&);
+    PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
     bool parseAttributeMatchType(CSSSelector::AttributeMatchType&, const String&);
 
     bool parseValue(CSSPropertyID, bool important);
@@ -93,8 +93,8 @@ public:
     CSSParserSelector* createFloatingSelectorWithTagName(const QualifiedName&);
     PassOwnPtr<CSSParserSelector> sinkFloatingSelector(CSSParserSelector*);
 
-    Vector<OwnPtr<CSSParserSelector> >* createFloatingSelectorVector();
-    PassOwnPtr<Vector<OwnPtr<CSSParserSelector> > > sinkFloatingSelectorVector(Vector<OwnPtr<CSSParserSelector> >*);
+    Vector<OwnPtr<CSSParserSelector>>* createFloatingSelectorVector();
+    PassOwnPtr<Vector<OwnPtr<CSSParserSelector>>> sinkFloatingSelectorVector(Vector<OwnPtr<CSSParserSelector>>*);
 
     CSSParserValueList* createFloatingValueList();
     PassOwnPtr<CSSParserValueList> sinkFloatingValueList(CSSParserValueList*);
@@ -106,13 +106,13 @@ public:
     MediaQuerySet* createMediaQuerySet();
     StyleRuleBase* createImportRule(const CSSParserString&, MediaQuerySet*);
     StyleRuleKeyframe* createKeyframe(CSSParserValueList*);
-    StyleRuleKeyframes* createKeyframesRule(const String&, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > >, bool isPrefixed);
+    StyleRuleKeyframes* createKeyframesRule(const String&, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>>, bool isPrefixed);
 
-    typedef WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> > RuleList;
+    typedef WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> RuleList;
     StyleRuleBase* createMediaRule(MediaQuerySet*, RuleList*);
     RuleList* createRuleList();
     RuleList* appendRule(RuleList*, StyleRuleBase*);
-    StyleRuleBase* createStyleRule(Vector<OwnPtr<CSSParserSelector> >* selectors);
+    StyleRuleBase* createStyleRule(Vector<OwnPtr<CSSParserSelector>>* selectors);
     StyleRuleBase* createFontFaceRule();
     StyleRuleBase* createPageRule(PassOwnPtr<CSSParserSelector> pageSelector);
     StyleRuleBase* createMarginAtRule(CSSSelector::MarginBoxType);
@@ -130,15 +130,15 @@ public:
     void startMediaQuery();
     MediaQueryExp* createFloatingMediaQueryExp(const AtomicString&, CSSParserValueList*);
     PassOwnPtrWillBeRawPtr<MediaQueryExp> sinkFloatingMediaQueryExp(MediaQueryExp*);
-    WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* createFloatingMediaQueryExpList();
-    PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > sinkFloatingMediaQueryExpList(WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >*);
-    MediaQuery* createFloatingMediaQuery(MediaQuery::Restrictor, const AtomicString&, PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > >);
-    MediaQuery* createFloatingMediaQuery(PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > >);
+    WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>* createFloatingMediaQueryExpList();
+    PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>> sinkFloatingMediaQueryExpList(WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>*);
+    MediaQuery* createFloatingMediaQuery(MediaQuery::Restrictor, const AtomicString&, PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>>);
+    MediaQuery* createFloatingMediaQuery(PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>>);
     MediaQuery* createFloatingNotAllQuery();
     PassOwnPtrWillBeRawPtr<MediaQuery> sinkFloatingMediaQuery(MediaQuery*);
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >* createFloatingKeyframeVector();
-    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >*);
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>* createFloatingKeyframeVector();
+    PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>> sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>*);
 
     void addNamespace(const AtomicString& prefix, const AtomicString& uri);
     QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
@@ -152,7 +152,7 @@ public:
 
     void invalidBlockHit();
 
-    Vector<OwnPtr<CSSParserSelector> >* reusableSelectorVector() { return &m_reusableSelectorVector; }
+    Vector<OwnPtr<CSSParserSelector>>* reusableSelectorVector() { return &m_reusableSelectorVector; }
 
     void clearProperties();
 
@@ -256,7 +256,7 @@ private:
     StyleRule::Type m_ruleHeaderType;
     unsigned m_ruleHeaderStartOffset;
     int m_ruleHeaderStartLineNumber;
-    OwnPtr<Vector<unsigned> > m_lineEndings;
+    OwnPtr<Vector<unsigned>> m_lineEndings;
 
     bool m_ruleHasHeader;
 
@@ -267,12 +267,12 @@ private:
 
     CSSParserLocation m_locationLabel;
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> > m_parsedRules;
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > m_parsedKeyframes;
-    WillBeHeapVector<RefPtrWillBeMember<MediaQuerySet> > m_parsedMediaQuerySets;
-    WillBeHeapVector<OwnPtrWillBeMember<RuleList> > m_parsedRuleLists;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> m_parsedRules;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>> m_parsedKeyframes;
+    WillBeHeapVector<RefPtrWillBeMember<MediaQuerySet>> m_parsedMediaQuerySets;
+    WillBeHeapVector<OwnPtrWillBeMember<RuleList>> m_parsedRuleLists;
     Vector<CSSParserSelector*> m_floatingSelectors;
-    Vector<Vector<OwnPtr<CSSParserSelector> >*> m_floatingSelectorVectors;
+    Vector<Vector<OwnPtr<CSSParserSelector>>*> m_floatingSelectorVectors;
     Vector<CSSParserValueList*> m_floatingValueLists;
     Vector<CSSParserFunction*> m_floatingFunctions;
 
@@ -280,11 +280,11 @@ private:
     unsigned m_mediaQueryValueEndOffset;
     OwnPtrWillBeMember<MediaQuery> m_floatingMediaQuery;
     OwnPtrWillBeMember<MediaQueryExp> m_floatingMediaQueryExp;
-    OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > m_floatingMediaQueryExpList;
+    OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>> m_floatingMediaQueryExpList;
 
-    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > m_floatingKeyframeVector;
+    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>> m_floatingKeyframeVector;
 
-    Vector<OwnPtr<CSSParserSelector> > m_reusableSelectorVector;
+    Vector<OwnPtr<CSSParserSelector>> m_reusableSelectorVector;
 
     OwnPtrWillBeMember<RuleSourceDataList> m_supportsRuleDataStack;
 

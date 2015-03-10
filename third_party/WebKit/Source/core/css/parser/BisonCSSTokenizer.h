@@ -165,7 +165,7 @@ private:
     // identifiers and URIs containing such escape sequences are
     // stored in m_cssStrings16 so that we don't have to store the
     // whole stylesheet as UTF-16.
-    Vector<OwnPtr<UChar[]> > m_cssStrings16;
+    Vector<OwnPtr<UChar[]>> m_cssStrings16;
     union {
         LChar* ptr8;
         UChar* ptr16;

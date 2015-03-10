@@ -40,7 +40,7 @@ class StyleSheetContents;
 class StyleSheetInvalidationAnalysis {
     STACK_ALLOCATED();
 public:
-    StyleSheetInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >&);
+    StyleSheetInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>&);
 
     bool dirtiesAllStyle() const { return m_dirtiesAllStyle; }
     void invalidateStyle(Document&);

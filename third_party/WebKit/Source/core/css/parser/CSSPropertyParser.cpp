@@ -4035,7 +4035,7 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInset(CS
     RefPtrWillBeRawPtr<CSSBasicShapeInset> shape = CSSBasicShapeInset::create();
 
     CSSParserValue* argument = args->current();
-    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> > widthArguments;
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>> widthArguments;
     bool hasRoundedInset = false;
 
     while (argument) {

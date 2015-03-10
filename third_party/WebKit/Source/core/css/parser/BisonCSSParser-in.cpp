@@ -180,7 +180,7 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframe> BisonCSSParser::parseKeyframeRule(Styl
     return m_keyframe.release();
 }
 
-PassOwnPtr<Vector<double> > BisonCSSParser::parseKeyframeKeyList(const String& string)
+PassOwnPtr<Vector<double>> BisonCSSParser::parseKeyframeKeyList(const String& string)
 {
     setupParser("@-internal-keyframe-key-list ", string, "");
     cssyyparse(this);
@@ -392,14 +392,14 @@ PassOwnPtr<CSSParserSelector> BisonCSSParser::sinkFloatingSelector(CSSParserSele
     return adoptPtr(selector);
 }
 
-Vector<OwnPtr<CSSParserSelector> >* BisonCSSParser::createFloatingSelectorVector()
+Vector<OwnPtr<CSSParserSelector>>* BisonCSSParser::createFloatingSelectorVector()
 {
-    Vector<OwnPtr<CSSParserSelector> >* selectorVector = new Vector<OwnPtr<CSSParserSelector> >;
+    Vector<OwnPtr<CSSParserSelector>>* selectorVector = new Vector<OwnPtr<CSSParserSelector>>;
     m_floatingSelectorVectors.append(selectorVector);
     return selectorVector;
 }
 
-PassOwnPtr<Vector<OwnPtr<CSSParserSelector> > > BisonCSSParser::sinkFloatingSelectorVector(Vector<OwnPtr<CSSParserSelector> >* selectorVector)
+PassOwnPtr<Vector<OwnPtr<CSSParserSelector>>> BisonCSSParser::sinkFloatingSelectorVector(Vector<OwnPtr<CSSParserSelector>>* selectorVector)
 {
     if (selectorVector) {
         size_t index = m_floatingSelectorVectors.reverseFind(selectorVector);
@@ -482,19 +482,19 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> BisonCSSParser::sinkFloatingMediaQueryExp(
     return m_floatingMediaQueryExp.release();
 }
 
-WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* BisonCSSParser::createFloatingMediaQueryExpList()
+WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>* BisonCSSParser::createFloatingMediaQueryExpList()
 {
-    m_floatingMediaQueryExpList = adoptPtrWillBeNoop(new WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >);
+    m_floatingMediaQueryExpList = adoptPtrWillBeNoop(new WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>);
     return m_floatingMediaQueryExpList.get();
 }
 
-PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > BisonCSSParser::sinkFloatingMediaQueryExpList(WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* list)
+PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>> BisonCSSParser::sinkFloatingMediaQueryExpList(WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>* list)
 {
     ASSERT_UNUSED(list, list == m_floatingMediaQueryExpList);
     return m_floatingMediaQueryExpList.release();
 }
 
-MediaQuery* BisonCSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restrictor, const AtomicString& mediaType, PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > expressions)
+MediaQuery* BisonCSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restrictor, const AtomicString& mediaType, PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>> expressions)
 {
     m_floatingMediaQuery = adoptPtrWillBeNoop(new MediaQuery(restrictor, mediaType, expressions));
     if (m_observer)
@@ -502,7 +502,7 @@ MediaQuery* BisonCSSParser::createFloatingMediaQuery(MediaQuery::Restrictor rest
     return m_floatingMediaQuery.get();
 }
 
-MediaQuery* BisonCSSParser::createFloatingMediaQuery(PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > expressions)
+MediaQuery* BisonCSSParser::createFloatingMediaQuery(PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>> expressions)
 {
     return createFloatingMediaQuery(MediaQuery::None, MediaTypeNames::all, expressions);
 }
@@ -518,13 +518,13 @@ PassOwnPtrWillBeRawPtr<MediaQuery> BisonCSSParser::sinkFloatingMediaQuery(MediaQ
     return m_floatingMediaQuery.release();
 }
 
-WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >* BisonCSSParser::createFloatingKeyframeVector()
+WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>* BisonCSSParser::createFloatingKeyframeVector()
 {
-    m_floatingKeyframeVector = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >());
+    m_floatingKeyframeVector = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>());
     return m_floatingKeyframeVector.get();
 }
 
-PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > BisonCSSParser::sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >* keyframeVector)
+PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>> BisonCSSParser::sinkFloatingKeyframeVector(WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>* keyframeVector)
 {
     ASSERT_UNUSED(keyframeVector, m_floatingKeyframeVector == keyframeVector);
     return m_floatingKeyframeVector.release();
@@ -692,9 +692,9 @@ void BisonCSSParser::reportError(const CSSParserLocation&, CSSParserError)
     // FIXME: error reporting temporatily disabled.
 }
 
-StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > popKeyframes, bool isPrefixed)
+StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>> popKeyframes, bool isPrefixed)
 {
-    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > keyframes = popKeyframes;
+    OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>> keyframes = popKeyframes;
     m_allowImportRules = m_allowNamespaceDeclarations = false;
     RefPtrWillBeRawPtr<StyleRuleKeyframes> rule = StyleRuleKeyframes::create();
     for (size_t i = 0; i < keyframes->size(); ++i)
@@ -752,7 +752,7 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
     }
 }
 
-StyleRuleBase* BisonCSSParser::createStyleRule(Vector<OwnPtr<CSSParserSelector> >* selectors)
+StyleRuleBase* BisonCSSParser::createStyleRule(Vector<OwnPtr<CSSParserSelector>>* selectors)
 {
     StyleRule* result = 0;
     if (selectors) {
@@ -916,7 +916,7 @@ StyleRuleBase* BisonCSSParser::createPageRule(PassOwnPtr<CSSParserSelector> page
     StyleRulePage* pageRule = 0;
     if (pageSelector) {
         RefPtrWillBeRawPtr<StyleRulePage> rule = StyleRulePage::create();
-        Vector<OwnPtr<CSSParserSelector> > selectorVector;
+        Vector<OwnPtr<CSSParserSelector>> selectorVector;
         selectorVector.append(pageSelector);
         rule->parserAdoptSelectorVector(selectorVector);
         rule->setProperties(createStylePropertySet());
@@ -951,7 +951,7 @@ void BisonCSSParser::endDeclarationsForMarginBox()
 
 StyleRuleKeyframe* BisonCSSParser::createKeyframe(CSSParserValueList* keys)
 {
-    OwnPtr<Vector<double> > keyVector = StyleRuleKeyframe::createKeyList(keys);
+    OwnPtr<Vector<double>> keyVector = StyleRuleKeyframe::createKeyList(keys);
     if (keyVector->isEmpty())
         return 0;
 

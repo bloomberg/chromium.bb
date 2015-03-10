@@ -77,11 +77,11 @@ using namespace HTMLNames;
     // The content of the three below HeapVectors are guaranteed to be kept alive by
     // the corresponding m_parsedRules, m_floatingMediaQueryExpList, and m_parsedKeyFrames
     // lists in BisonCSSParser.h.
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >* ruleList;
-    WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* mediaQueryExpList;
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >* keyframeRuleList;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>* ruleList;
+    WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>* mediaQueryExpList;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>* keyframeRuleList;
     CSSParserSelector* selector;
-    Vector<OwnPtr<CSSParserSelector> >* selectorList;
+    Vector<OwnPtr<CSSParserSelector>>* selectorList;
     CSSSelector::MarginBoxType marginBox;
     CSSSelector::Relation relation;
     CSSSelector::AttributeMatchType attributeMatchType;
@@ -1442,7 +1442,7 @@ pseudo:
             $$ = parser->createFloatingSelector();
             $$->setMatch(CSSSelector::PseudoClass);
 
-            Vector<OwnPtr<CSSParserSelector> > selectorVector;
+            Vector<OwnPtr<CSSParserSelector>> selectorVector;
             selectorVector.append(parser->sinkFloatingSelector($4));
             $$->adoptSelectorVector(selectorVector);
 

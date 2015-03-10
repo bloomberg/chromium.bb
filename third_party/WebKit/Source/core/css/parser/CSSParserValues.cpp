@@ -308,7 +308,7 @@ CSSParserSelector::~CSSParserSelector()
     }
 }
 
-void CSSParserSelector::adoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectorVector)
+void CSSParserSelector::adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector)
 {
     CSSSelectorList* selectorList = new CSSSelectorList();
     selectorList->adoptSelectorVector(selectorVector);

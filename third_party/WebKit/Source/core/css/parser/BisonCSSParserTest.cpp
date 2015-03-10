@@ -16,7 +16,7 @@ namespace blink {
 
 static void testMediaQuery(const char* expected, MediaQuerySet& querySet)
 {
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queryVector = querySet.queryVector();
+    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery>>& queryVector = querySet.queryVector();
     size_t queryVectorSize = queryVector.size();
     StringBuilder output;
 

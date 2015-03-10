@@ -155,7 +155,7 @@ void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, StyleResolv
 template <CSSPropertyID property>
 void setOnFillLayers(FillLayer& fillLayers, const AnimatableValue* value, StyleResolverState& state)
 {
-    const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& values = toAnimatableRepeatable(value)->values();
+    const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>>& values = toAnimatableRepeatable(value)->values();
     ASSERT(!values.isEmpty());
     FillLayer* fillLayer = &fillLayers;
     FillLayer* prev = 0;

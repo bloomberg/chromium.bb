@@ -30,7 +30,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
 
-    static PassOwnPtr<Vector<double> > parseKeyframeKeyList(const String&);
+    static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
     static PassRefPtrWillBeRawPtr<StyleRuleKeyframe> parseKeyframeRule(const CSSParserContext&, StyleSheetContents*, const String&);
 
     static bool parseSupportsCondition(const String&);

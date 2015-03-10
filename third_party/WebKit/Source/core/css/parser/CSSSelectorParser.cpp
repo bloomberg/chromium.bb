@@ -51,7 +51,7 @@ void CSSSelectorParser::consumeComplexSelectorList(CSSParserTokenRange& range, C
 
 void CSSSelectorParser::consumeCompoundSelectorList(CSSParserTokenRange& range, CSSSelectorList& output)
 {
-    Vector<OwnPtr<CSSParserSelector> > selectorList;
+    Vector<OwnPtr<CSSParserSelector>> selectorList;
     OwnPtr<CSSParserSelector> selector = consumeCompoundSelector(range);
     range.consumeWhitespaceAndComments();
     if (!selector)
@@ -312,7 +312,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
         OwnPtr<CSSParserSelector> innerSelector = consumeCompoundSelector(block);
         if (!innerSelector || !innerSelector->isSimple() || !block.atEnd())
             return nullptr;
-        Vector<OwnPtr<CSSParserSelector> > selectorVector;
+        Vector<OwnPtr<CSSParserSelector>> selectorVector;
         selectorVector.append(innerSelector.release());
         selector->adoptSelectorVector(selectorVector);
         return selector.release();

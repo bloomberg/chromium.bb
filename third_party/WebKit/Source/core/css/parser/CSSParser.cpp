@@ -104,7 +104,7 @@ PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParser::parseInlineStyleDec
     return BisonCSSParser::parseInlineStyleDeclaration(styleString, element);
 }
 
-PassOwnPtr<Vector<double> > CSSParser::parseKeyframeKeyList(const String& keyList)
+PassOwnPtr<Vector<double>> CSSParser::parseKeyframeKeyList(const String& keyList)
 {
     if (RuntimeEnabledFeatures::newCSSParserEnabled())
         return CSSParserImpl::parseKeyframeKeyList(keyList);

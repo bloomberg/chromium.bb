@@ -52,7 +52,7 @@ public:
 // Specialize the HashTraits for CachedMatchedProperties to check for dead
 // entries in the MatchedPropertiesCache.
 #if ENABLE(OILPAN)
-struct CachedMatchedPropertiesHashTraits : HashTraits<Member<CachedMatchedProperties> > {
+struct CachedMatchedPropertiesHashTraits : HashTraits<Member<CachedMatchedProperties>> {
     static const WTF::WeakHandlingFlag weakHandlingFlag = WTF::WeakHandlingInCollections;
 
     template<typename VisitorDispatcher>
@@ -111,7 +111,7 @@ private:
 
     unsigned m_additionsSinceLastSweep;
 
-    typedef HashMap<unsigned, OwnPtr<CachedMatchedProperties> > Cache;
+    typedef HashMap<unsigned, OwnPtr<CachedMatchedProperties>> Cache;
     Timer<MatchedPropertiesCache> m_sweepTimer;
 #endif
     Cache m_cache;
