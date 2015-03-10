@@ -55,5 +55,7 @@ google.patch contains the following modifications. Apply with
    - https://code.google.com/p/chromium/issues/detail?id=443863
  - Add bgra (z,y,x) sampled transform lookup table api
    - https://code.google.com/p/chromium/issues/detail?id=443863
+ - Apply upstream fix reject invalid sizes from
+   - https://bugzilla.mozilla.org/show_bug.cgi?id=1132468
 To regenerate google.patch:
   git diff b8456f38 src > google.patch
