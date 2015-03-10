@@ -151,6 +151,22 @@ public class ChromeBrowserInitializer {
         initQueue.add(new NativeInitTask() {
             @Override
             public void initFunction() {
+                initNetworkChangeNotifier();
+            }
+        });
+
+        initQueue.add(new NativeInitTask() {
+            @Override
+            public void initFunction() {
+                // This is not broken down as a separate task, since this:
+                // 1. Should happen as early as possible
+                // 2. Only submits asynchronous work
+                // 3. Is thus very cheap (profiled at 0.18ms on a Nexus 5 with Lollipop)
+                // It should also be in a separate task (and after) initNetworkChangeNotifier, as
+                // this posts a task to the UI thread that would interfere with preconneciton
+                // otherwise. By preconnecting afterwards, we make sure that this task has run.
+                delegate.maybePreconnect();
+
                 onStartNativeInitialization();
             }
         });
@@ -214,15 +230,19 @@ public class ChromeBrowserInitializer {
         }
     }
 
-    private void onStartNativeInitialization() {
+    private void initNetworkChangeNotifier() {
         ThreadUtils.assertOnUiThread();
-        if (mNativeInitializationComplete) return;
-
-        SpeechRecognition.initialize(mApplication);
-
+        TraceEvent.begin("NetworkChangeNotifier.init");
         // Enable auto-detection of network connectivity state changes.
         NetworkChangeNotifier.init(mApplication);
         NetworkChangeNotifier.setAutoDetectConnectivityState(true);
+        TraceEvent.end("NetworkChangeNotifier.init");
+    }
+
+    private void onStartNativeInitialization() {
+        ThreadUtils.assertOnUiThread();
+        if (mNativeInitializationComplete) return;
+        SpeechRecognition.initialize(mApplication);
     }
 
     private void onFinishNativeInitialization() {
