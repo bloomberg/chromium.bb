@@ -68,6 +68,10 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 
     for (size_t i = 0; i < documents.size(); ++i)
         documents[i]->serviceScriptedAnimations(monotonicAnimationStartTime);
+
+#if ENABLE(OILPAN)
+    documents.clear();
+#endif
 }
 
 void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
