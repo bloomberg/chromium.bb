@@ -285,6 +285,14 @@ cr.define('extensions', function() {
       for (var i = 0; i < nodes.length; ++i) {
         var node = nodes[i];
         if (seenIds.indexOf(node.id) < 0) {
+          if (node.contains(document.activeElement)) {
+            var focusableNode = nodes[i + 1] || nodes[i - 1];
+            if (focusableNode) {
+              focusableNode.getEquivalentElement(
+                  document.activeElement).focus();
+            }
+          }
+
           node.parentElement.removeChild(node);
           // Unregister the removed node from events.
           assertInstanceof(node, ExtensionFocusRow).destroy();
