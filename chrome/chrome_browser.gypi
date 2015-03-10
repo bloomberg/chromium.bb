@@ -1677,6 +1677,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
       'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBarDelegate.java',
+      'android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java',
       'android/java/src/org/chromium/chrome/browser/metrics/LaunchMetrics.java',
       'android/java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java',

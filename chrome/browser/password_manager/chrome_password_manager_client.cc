@@ -190,7 +190,7 @@ bool ChromePasswordManagerClient::PromptUserToSavePassword(
             password_manager::metrics_util::MonitoredDomainGroupId(
                 form_to_save->realm(), GetPrefs())));
     SavePasswordInfoBarDelegate::Create(
-        web_contents(), form_to_save.Pass(), uma_histogram_suffix);
+        web_contents(), form_to_save.Pass(), uma_histogram_suffix, type);
   }
   return true;
 }

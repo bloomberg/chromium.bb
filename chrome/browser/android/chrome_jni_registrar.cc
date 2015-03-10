@@ -90,6 +90,7 @@
 #include "chrome/browser/ui/android/infobars/generated_password_saved_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
+#include "chrome/browser/ui/android/infobars/save_password_infobar.h"
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
@@ -219,6 +220,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ProfileDownloader", RegisterProfileDownloader},
     {"ProfileSyncService", ProfileSyncServiceAndroid::Register},
     {"RecentlyClosedBridge", RecentlyClosedTabsBridge::Register},
+    {"SavePasswordInfoBar", SavePasswordInfoBar::Register},
     {"SceneLayer", chrome::android::RegisterSceneLayer},
     {"ServiceTabLauncher", ServiceTabLauncher::RegisterServiceTabLauncher},
     {"SigninManager", SigninManagerAndroid::Register},
