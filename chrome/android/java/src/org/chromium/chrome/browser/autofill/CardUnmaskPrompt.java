@@ -7,23 +7,30 @@ package org.chromium.chrome.browser.autofill;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Build;
 import android.os.Handler;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -33,12 +40,14 @@ import java.util.Calendar;
 /**
  * A prompt that bugs users to enter their CVC when unmasking a Wallet instrument (credit card).
  */
-public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, TextWatcher {
+public class CardUnmaskPrompt
+        implements DialogInterface.OnDismissListener, TextWatcher, OnLongClickListener {
     private final CardUnmaskPromptDelegate mDelegate;
     private final AlertDialog mDialog;
     private final boolean mShouldRequestExpirationDate;
     private final int mThisYear;
 
+    private final View mMainView;
     private final TextView mNoRetryErrorMessage;
     private final EditText mCardUnmaskInput;
     private final EditText mMonthInput;
@@ -46,6 +55,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     private final View mExpirationContainer;
     private final TextView mErrorMessage;
     private final CheckBox mStoreLocallyCheckbox;
+    private final ImageView mStoreLocallyTooltipIcon;
+    private PopupWindow mStoreLocallyTooltipPopup;
     private final ViewGroup mMainContents;
     private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
@@ -85,6 +96,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         View v = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
         ((TextView) v.findViewById(R.id.instructions)).setText(instructions);
 
+        mMainView = v;
         mNoRetryErrorMessage = (TextView) v.findViewById(R.id.no_retry_error_message);
         mCardUnmaskInput = (EditText) v.findViewById(R.id.card_unmask_input);
         mMonthInput = (EditText) v.findViewById(R.id.expiration_month);
@@ -93,6 +105,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mErrorMessage = (TextView) v.findViewById(R.id.error_message);
         mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
         mStoreLocallyCheckbox.setChecked(defaultToStoringLocally);
+        mStoreLocallyTooltipIcon = (ImageView) v.findViewById(R.id.store_locally_tooltip_icon);
+        mStoreLocallyTooltipIcon.setOnLongClickListener(this);
         mMainContents = (ViewGroup) v.findViewById(R.id.main_contents);
         mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
@@ -200,6 +214,41 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+    @Override
+    public boolean onLongClick(View v) {
+        assert v == mStoreLocallyTooltipIcon;
+        if (mStoreLocallyTooltipPopup == null) {
+            mStoreLocallyTooltipPopup = new PopupWindow(mDialog.getContext());
+            TextView text = new TextView(mDialog.getContext());
+            text.setText(R.string.autofill_card_unmask_prompt_storage_tooltip);
+            // Width is the dialog's width less the margins and padding around the checkbox and
+            // icon.
+            text.setWidth(mMainView.getWidth() - ViewCompat.getPaddingStart(mStoreLocallyCheckbox)
+                    - ViewCompat.getPaddingEnd(mStoreLocallyTooltipIcon)
+                    - MarginLayoutParamsCompat.getMarginStart((RelativeLayout.LayoutParams)
+                            mStoreLocallyCheckbox.getLayoutParams())
+                    - MarginLayoutParamsCompat.getMarginEnd((RelativeLayout.LayoutParams)
+                            mStoreLocallyTooltipIcon.getLayoutParams()));
+            text.setTextColor(Color.WHITE);
+            Resources resources = mDialog.getContext().getResources();
+            int hPadding = resources.getDimensionPixelSize(
+                    R.dimen.autofill_card_unmask_tooltip_horizontal_padding);
+            int vPadding = resources.getDimensionPixelSize(
+                    R.dimen.autofill_card_unmask_tooltip_vertical_padding);
+            text.setPadding(hPadding, vPadding, hPadding, vPadding);
+
+            mStoreLocallyTooltipPopup.setContentView(text);
+            mStoreLocallyTooltipPopup.setWindowLayoutMode(
+                    LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            mStoreLocallyTooltipPopup.setOutsideTouchable(true);
+            mStoreLocallyTooltipPopup.setBackgroundDrawable(
+                    resources.getDrawable(R.drawable.store_locally_tooltip_background));
+        }
+        mStoreLocallyTooltipPopup.showAsDropDown(mStoreLocallyCheckbox,
+                ViewCompat.getPaddingStart(mStoreLocallyCheckbox), 0);
+        return true;
+    }
 
     private void setInitialFocus() {
         InputMethodManager imm = (InputMethodManager) mDialog.getContext().getSystemService(

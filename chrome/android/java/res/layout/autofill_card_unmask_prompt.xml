@@ -116,17 +116,38 @@
             android:textColor="@color/input_underline_error_color"
             android:visibility="gone" />
 
-        <CheckBox
-            android:id="@+id/store_locally_checkbox"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="17dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="16dp"
-            android:paddingStart="7dp"
-            android:textSize="14sp"
-            android:textColor="@color/explanation_text_color"
-            android:text="@string/autofill_card_unmask_prompt_storage_checkbox" />
+            android:layout_marginTop="16dp">
+
+            <!-- TODO(estade): Content description? -->
+            <ImageView
+                android:id="@+id/store_locally_tooltip_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:padding="12dp"
+                android:src="@drawable/help_outline"
+                android:contentDescription="@null" />
+
+           <CheckBox
+                android:id="@+id/store_locally_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/store_locally_tooltip_icon"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="17dp"
+                android:layout_marginEnd="10dp"
+                android:paddingStart="7dp"
+                android:textSize="14sp"
+                android:textColor="@color/explanation_text_color"
+                android:text="@string/autofill_card_unmask_prompt_storage_checkbox" />
+
+        </RelativeLayout>
     </LinearLayout>
 
     <LinearLayout

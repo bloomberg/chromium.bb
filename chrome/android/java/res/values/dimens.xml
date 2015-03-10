@@ -119,4 +119,8 @@
 
     <!-- Sign-in promo dimensions -->
     <dimen name="sign_in_promo_padding_bottom">16dp</dimen>
+
+    <!-- Autofill card unmasking prompt dimensions -->
+    <dimen name="autofill_card_unmask_tooltip_horizontal_padding">16dp</dimen>
+    <dimen name="autofill_card_unmask_tooltip_vertical_padding">4dp</dimen>
 </resources>
