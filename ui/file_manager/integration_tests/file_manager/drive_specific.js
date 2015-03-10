@@ -5,6 +5,88 @@
 'use strict';
 
 /**
+ * Expected autocomplete results for 'hello'.
+ * @type {Array<string>}
+ * @const
+ */
+var EXPECTED_AUTOCOMPLETE_LIST = [
+  '\'hello\' - search Drive',
+  'hello.txt'
+];
+
+/**
+ * Expected files shown in the search results for 'hello'
+ *
+ * @type {Array<TestEntryInfo>}
+ * @const
+ */
+var SEARCH_RESULTS_ENTRY_SET = [
+  ENTRIES.hello
+];
+
+/**
+ * Returns the steps to start a search for 'hello' and wait for the
+ * autocomplete results to appear.
+ */
+function getStepsForSearchResultsAutoComplete() {
+  var appId;
+  var steps =
+  [
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+    },
+    // Focus the search box.
+    function(inAppId, list) {
+      appId = inAppId;
+      remoteCall.callRemoteTestUtil('fakeEvent',
+                                    appId,
+                                    ['#search-box input', 'focus'],
+                                    this.next);
+    },
+    // Input a text.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.callRemoteTestUtil('inputText',
+                                    appId,
+                                    ['#search-box input', 'hello'],
+                                    this.next);
+    },
+    // Notify the element of the input.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeEvent',
+                                    appId,
+                                    ['#search-box input', 'input'],
+                                    this.next);
+    },
+    // Wait for the auto complete list getting the expected contents.
+    function(result) {
+      chrome.test.assertTrue(result);
+      repeatUntil(function() {
+        return remoteCall.callRemoteTestUtil('queryAllElements',
+                                             appId,
+                                             ['#autocomplete-list li']).
+            then(function(elements) {
+              var list = elements.map(
+                  function(element) { return element.text; });
+              return chrome.test.checkDeepEq(EXPECTED_AUTOCOMPLETE_LIST, list) ?
+                  undefined :
+                  pending('Current auto complete list: %j.', list);
+            });
+        }).
+        then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+    function()
+    {
+      this.next(appId);
+    }
+  ];
+  return steps;
+}
+
+/**
  * Tests opening the "Recent" on the sidebar navigation by clicking the icon,
  * and verifies the directory contents. We test if there are only files, since
  * directories are not allowed in "Recent". This test is only available for
@@ -112,60 +194,87 @@ testcase.openSidebarSharedWithMe = function() {
  * Drive.
  */
 testcase.autocomplete = function() {
-  var EXPECTED_AUTOCOMPLETE_LIST = [
-    '\'hello\' - search Drive',
-    'hello.txt',
-  ];
-  var appId;
+  StepsRunner.run(getStepsForSearchResultsAutoComplete());
+};
 
-  StepsRunner.run([
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+/**
+ * Tests that clicking the first option in the autocomplete box shows all of
+ * the results for that query.
+ */
+testcase.clickFirstSearchResult = function() {
+  var appId;
+  var steps = getStepsForSearchResultsAutoComplete();
+  steps.push(
+    function(id) {
+      appId = id;
+      remoteCall.callRemoteTestUtil('fakeKeyDown',
+                                   appId,
+                                   ['#autocomplete-list', 'Down', false],
+                                   this.next);
     },
-    // Focus the search box.
-    function(inAppId, list) {
-      appId = inAppId;
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId,
+                                ['#autocomplete-list li[selected]']).
+                                then(this.next);
+    },
+    function(result) {
+      remoteCall.callRemoteTestUtil('fakeMouseDown',
+                                    appId,
+                                    ['#autocomplete-list li[selected]'],
+                                    this.next);
+    },
+    function(result)
+    {
+      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
+      then(this.next);
+    },
+    function(actualFilesAfter)
+    {
+      chrome.test.assertEq(
+          TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET).sort(),
+          actualFilesAfter);
+      checkIfNoErrorsOccured(this.next);
+    }
+  );
+
+  StepsRunner.run(steps);
+};
+
+/**
+ * Tests that pressing enter after typing a search shows all of
+ * the results for that query.
+ */
+testcase.pressEnterToSearch = function() {
+  var appId;
+  var steps = getStepsForSearchResultsAutoComplete();
+  steps.push(
+    function(id) {
+      appId = id;
       remoteCall.callRemoteTestUtil('fakeEvent',
                                     appId,
                                     ['#search-box input', 'focus'],
                                     this.next);
     },
-    // Input a text.
     function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.callRemoteTestUtil('inputText',
+      remoteCall.callRemoteTestUtil('fakeKeyDown',
                                     appId,
-                                    ['#search-box input', 'hello'],
+                                    ['#search-box input', 'Enter', false],
                                     this.next);
     },
-    // Notify the element of the input.
-    function() {
-      remoteCall.callRemoteTestUtil('fakeEvent',
-                                    appId,
-                                    ['#search-box input', 'input'],
-                                    this.next);
-    },
-    // Wait for the auto complete list getting the expected contents.
     function(result) {
-      chrome.test.assertTrue(result);
-      repeatUntil(function() {
-        return remoteCall.callRemoteTestUtil('queryAllElements',
-                                             appId,
-                                             ['#autocomplete-list li']).
-            then(function(elements) {
-              var list = elements.map(
-                  function(element) { return element.text; });
-              return chrome.test.checkDeepEq(EXPECTED_AUTOCOMPLETE_LIST, list) ?
-                  undefined :
-                  pending('Current auto complete list: %j.', list);
-            });
-      }).
+      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
       then(this.next);
     },
-    function() {
+    function(actualFilesAfter) {
+      chrome.test.assertEq(
+          TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET).sort(),
+          actualFilesAfter);
       checkIfNoErrorsOccured(this.next);
     }
-  ]);
+  );
+
+  StepsRunner.run(steps);
 };
 
 /**

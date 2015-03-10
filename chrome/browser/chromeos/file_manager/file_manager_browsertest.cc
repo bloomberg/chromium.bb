@@ -927,7 +927,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarSharedWithMe"),
         TestParameter(NOT_IN_GUEST_MODE, "autocomplete"),
-        TestParameter(NOT_IN_GUEST_MODE, "pinFileOnMobileNetwork")));
+        TestParameter(NOT_IN_GUEST_MODE, "pinFileOnMobileNetwork"),
+        TestParameter(NOT_IN_GUEST_MODE, "clickFirstSearchResult"),
+        TestParameter(NOT_IN_GUEST_MODE, "pressEnterToSearch")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
