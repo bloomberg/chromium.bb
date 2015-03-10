@@ -48,6 +48,11 @@ int runHelper(TestSuite* testSuite, void (*preTestHook)(void), void (*postTestHo
     preTestHook();
     int result = testSuite->Run();
 
+    // Tickle EndOfTaskRunner which among other things will flush the queue
+    // of error messages via V8Initializer::reportRejectedPromisesOnMainThread.
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
+
     // Collect garbage in order to release mock objects referred from v8 or
     // Oilpan heap. Otherwise false mock leaks will be reported.
     v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
