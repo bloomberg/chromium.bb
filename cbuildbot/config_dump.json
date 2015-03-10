@@ -39325,7 +39325,7 @@
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
         "description": "Launcher for Pre-CQ builders",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com",
             "tree"

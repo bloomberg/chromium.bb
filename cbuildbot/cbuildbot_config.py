@@ -2429,6 +2429,7 @@ internal_paladin.add_config('pre-cq-launcher',
   health_threshold=1,
   health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
                            'tree'],
+  doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ',
 )
 
 
