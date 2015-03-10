@@ -3,9 +3,12 @@
 # can be found in the LICENSE file.
 
 import BaseHTTPServer
+import base64
 import hashlib
 import json
 import logging
+import re
+import sys
 import threading
 import urllib2
 import urlparse
@@ -15,6 +18,21 @@ ALGO = hashlib.sha1
 
 def hash_content(content):
   return ALGO(content).hexdigest()
+
+
+class FakeSigner(object):
+
+  @classmethod
+  def generate(cls, message, embedded):
+    return '%s_<<<%s>>>' % (repr(message), json.dumps(embedded))
+
+  @classmethod
+  def validate(cls, ticket, message):
+    a = re.match(r'^' + repr(message) + r'_<<<(.*)>>>$', ticket, re.DOTALL)
+    if not a:
+      raise ValueError('Message %s cannot validate ticket %s' % (
+          repr(message), ticket))
+    return json.loads(a.groups()[0])
 
 
 class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -51,48 +69,97 @@ class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if self.path in ('/on/load', '/on/quit'):
       self._octet_stream('')
     elif self.path == '/auth/api/v1/server/oauth_config':
-      self._json(
-          {
-            'client_id': 'c',
-            'client_not_so_secret': 's',
-            'primary_url': self.server.url,
-          })
+      self._json({
+          'client_id': 'c',
+          'client_not_so_secret': 's',
+          'primary_url': self.server.url})
     elif self.path == '/auth/api/v1/accounts/self':
       self._json({'identity': 'user:joe', 'xsrf_token': 'foo'})
-    elif self.path.startswith('/content-gs/retrieve/'):
-      namespace, h = self.path[len('/content-gs/retrieve/'):].split('/', 1)
+    elif self.path.startswith('/_ah/api/isolateservice/v1/retrieve'):
+      namespace, h = self.path[len(
+          '/_ah/api/isolateservice/v1/retrieve'):].split('/', 1)
       self._octet_stream(self.server.contents[namespace][h])
     else:
       raise NotImplementedError(self.path)
 
+  ### Utility Functions Adapted from endpoint_handlers_api
+  # TODO(cmassaro): inherit these directly?
+
+  def _should_push_to_gs(self, isolated, size):
+    max_memcache = 500 * 1024
+    min_direct_gs = 501
+    if isolated and size <= max_memcache:
+      return False
+    return size >= min_direct_gs
+
+  def _generate_signed_url(self, digest, namespace='default'):
+    return '%s/content-gs/%s/%s' % (self.server.url, namespace, digest)
+
+  def _generate_ticket(self, entry_dict):
+    embedded = dict(
+        entry_dict,
+        **{
+            'c': 'flate',
+            'h': 'SHA-1',
+        })
+    message = ['datastore', 'gs'][
+        self._should_push_to_gs(embedded['i'], embedded['s'])]
+    return FakeSigner.generate(message, embedded)
+
+  def _storage_helper(self, body, gs=False):
+    request = json.loads(body)
+    message = ['datastore', 'gs'][gs]
+    content = request['content'] if not gs else None
+    embedded = FakeSigner.validate(request['upload_ticket'], message)
+    namespace = embedded['n']
+    if namespace not in self.server.contents:
+      self.server.contents[namespace] = {}
+    self.server.contents[namespace][embedded['d']] = content
+    self._json({'ok': True})
+
+  ### Mocked HTTP Methods
+
   def do_POST(self):
     body = self._read_body()
-    if self.path == '/content-gs/handshake':
-      self._json(
-          {
-            'access_token': 'a',
-            'protocol_version': '1.0',
-            'server_app_version': '123-abc',
-          })
-    elif self.path.startswith('/content-gs/pre-upload/'):
-      parts = urlparse.urlparse(self.path)
-      namespace = parts.path[len('/content-gs/pre-upload/'):]
-      if parts.query != 'token=a':
-        raise ValueError('Bad token')
-      def process_entry(entry):
+    if self.path.startswith('/_ah/api/isolateservice/v1/preupload'):
+      response = {'items': []}
+      def append_entry(entry, index, li):
         """Converts a {'h', 's', 'i'} to ["<upload url>", "<finalize url>"] or
         None.
         """
-        if entry['h'] in self.server.contents.get(namespace, {}):
-          return None
+        if entry['d'] not in self.server.contents.get(entry['n'], {}):
+          status = {
+              'digest': entry['d'],
+              'index': str(index),
+              'upload_ticket': self._generate_ticket(entry),
+          }
+          if self._should_push_to_gs(entry['i'], entry['s']):
+            status['gs_upload_url'] = self._generate_signed_url(entry['d'])
+          li.append(status)
         # Don't use finalize url for the mock.
-        return [
-          '%s/mockimpl/push/%s/%s' % (self.server.url, namespace, entry['h']),
-          None,
-        ]
-      out = [process_entry(i) for i in json.loads(body)]
-      logging.info('Returning %s' % out)
-      self._json(out)
+
+      request = json.loads(body)
+      namespace = request['namespace']['namespace']
+      for index, i in enumerate(request['items']):
+        append_entry({
+            'd': i['digest'],
+            'i': i['is_isolated'],
+            'n': namespace,
+            's': i['size'],
+        }, index, response['items'])
+      logging.info('Returning %s' % response)
+      self._json(response)
+    elif self.path.startswith('/_ah/api/isolateservice/v1/store_inline'):
+      self._storage_helper(body)
+    elif self.path.startswith('/_ah/api/isolateservice/v1/finalize_gs_upload'):
+      self._storage_helper(body, True)
+    elif self.path.startswith('/_ah/api/isolateservice/v1/retrieve'):
+      request = json.loads(body)
+      namespace = request['namespace']['namespace']
+      data = self.server.contents[namespace][request['digest']]
+      self._json({'content': data})
+    elif self.path.startswith('/_ah/api/isolateservice/v1/server_details'):
+      self._json({'server_version': 'such a good version'})
     else:
       raise NotImplementedError(self.path)
 
@@ -102,8 +169,8 @@ class IsolateServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self._drop_body()
     else:
       body = self._read_body()
-    if self.path.startswith('/mockimpl/push/'):
-      namespace, h = self.path[len('/mockimpl/push/'):].split('/', 1)
+    if self.path.startswith('/content-gs/'):
+      namespace, h = self.path[len('/content-gs/'):].split('/', 1)
       self.server.contents.setdefault(namespace, {})[h] = body
       self._octet_stream('')
     else:
@@ -141,7 +208,8 @@ class MockIsolateServer(object):
     assert not self._server.discard_content
     h = hash_content(content)
     logging.info('add_content(%s, %s)', namespace, h)
-    self._server.contents.setdefault(namespace, {})[h] = content
+    self._server.contents.setdefault(namespace, {})[h] = base64.b64encode(
+        content)
     return h
 
   def close(self):

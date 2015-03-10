@@ -5,8 +5,9 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
+import base64
 import functools
 import logging
 import optparse
@@ -914,9 +915,15 @@ class _IsolateServerPushState(object):
   Note this needs to be a global class to support pickling.
   """
 
-  def __init__(self, upload_url, finalize_url, size):
-    self.upload_url = upload_url
-    self.finalize_url = finalize_url
+  def __init__(self, preupload_status, size):
+    self.preupload_status = preupload_status
+    gs_upload_url = preupload_status.get('gs_upload_url') or None
+    if gs_upload_url:
+      self.upload_url = gs_upload_url
+      self.finalize_url = '_ah/api/isolateservice/v1/finalize_gs_upload'
+    else:
+      self.upload_url = '_ah/api/isolateservice/v1/store_inline'
+      self.finalize_url = None
     self.uploaded = False
     self.finalized = False
     self.size = size
@@ -934,65 +941,34 @@ class IsolateServer(StorageApi):
     assert file_path.is_url(base_url), base_url
     self._base_url = base_url.rstrip('/')
     self._namespace = namespace
+    self._namespace_dict = {
+        'compression': 'flate' if namespace.endswith(
+            ('-gzip', '-flate')) else '',
+        'digest_hash': 'sha-1',
+        'namespace': namespace,
+    }
     self._lock = threading.Lock()
     self._server_caps = None
     self._memory_use = 0
 
-  @staticmethod
-  def _generate_handshake_request():
-    """Returns a dict to be sent as handshake request body."""
-    # TODO(vadimsh): Set 'pusher' and 'fetcher' according to intended usage.
-    return {
-        'client_app_version': __version__,
-        'fetcher': True,
-        'protocol_version': ISOLATE_PROTOCOL_VERSION,
-        'pusher': True,
-    }
-
-  @staticmethod
-  def _validate_handshake_response(caps):
-    """Validates and normalizes handshake response."""
-    logging.info('Protocol version: %s', caps['protocol_version'])
-    logging.info('Server version: %s', caps['server_app_version'])
-    if caps.get('error'):
-      raise isolated_format.MappingError(caps['error'])
-    if not caps['access_token']:
-      raise ValueError('access_token is missing')
-    return caps
-
   @property
   def _server_capabilities(self):
-    """Performs handshake with the server if not yet done.
+    """Gets server details.
 
     Returns:
-      Server capabilities dictionary as returned by /handshake endpoint.
-
-    Raises:
-      MappingError if server rejects the handshake.
+      Server capabilities dictionary as returned by /server_details endpoint.
     """
     # TODO(maruel): Make this request much earlier asynchronously while the
     # files are being enumerated.
 
     # TODO(vadimsh): Put |namespace| in the URL so that server can apply
     # namespace-level ACLs to this call.
+
     with self._lock:
       if self._server_caps is None:
-        try:
-          caps = net.url_read_json(
-              url=self._base_url + '/content-gs/handshake',
-              data=self._generate_handshake_request())
-          if caps is None:
-            raise isolated_format.MappingError('Failed to perform handshake.')
-          if not isinstance(caps, dict):
-            raise ValueError('Expecting JSON dict')
-          self._server_caps = self._validate_handshake_response(caps)
-        except (ValueError, KeyError, TypeError) as exc:
-          # KeyError exception has very confusing str conversion: it's just a
-          # missing key value and nothing else. So print exception class name
-          # as well.
-          raise isolated_format.MappingError(
-              'Invalid handshake response (%s): %s' % (
-              exc.__class__.__name__, exc))
+        self._server_caps = net.url_read_json(
+            url='%s/_ah/api/isolateservice/v1/server_details' % self._base_url,
+            data={})
       return self._server_caps
 
   @property
@@ -1009,14 +985,24 @@ class IsolateServer(StorageApi):
         self._base_url, self._namespace, digest)
 
   def fetch(self, digest, offset=0):
-    source_url = self.get_fetch_url(digest)
+    assert offset >= 0
+    source_url = '%s/_ah/api/isolateservice/v1/retrieve' % (
+        self._base_url)
     logging.debug('download_file(%s, %d)', source_url, offset)
+    response = self.do_fetch(source_url, digest, offset)
 
-    connection = self.do_fetch(source_url, offset)
-    if not connection:
-      raise IOError('Request failed - %s' % source_url)
+    if not response:
+      raise IOError('Attempted to fetch from %s; no data exist.' % source_url)
 
-    # If |offset| is used, verify server respects it by checking Content-Range.
+    # for DB uploads
+    content = response.get('content')
+    if content is not None:
+      return base64.b64decode(content)
+
+    # for GS entities
+    connection = net.url_open(response['url'])
+
+    # If |offset|, verify server respects it by checking Content-Range.
     if offset:
       content_range = connection.get_header('Content-Range')
       if not content_range:
@@ -1099,9 +1085,9 @@ class IsolateServer(StorageApi):
       # no need to reupload contents in that case.
       if not push_state.uploaded:
         # PUT file to |upload_url|.
-        success = self.do_push(push_state.upload_url, content)
+        success = self.do_push(push_state, content)
         if not success:
-          raise IOError('Failed to upload a file %s to %s' % (
+          raise IOError('Failed to upload file with hash %s to URL %s' % (
               item.digest, push_state.upload_url))
         push_state.uploaded = True
       else:
@@ -1117,13 +1103,13 @@ class IsolateServer(StorageApi):
         # stored files).
         # TODO(maruel): Fix the server to accept properly data={} so
         # url_read_json() can be used.
-        response = net.url_read(
-            url=push_state.finalize_url,
-            data='',
-            content_type='application/json',
-            method='POST')
-        if response is None:
-          raise IOError('Failed to finalize an upload of %s' % item.digest)
+        response = net.url_read_json(
+            url='%s/%s' % (self._base_url, push_state.finalize_url),
+            data={
+                'upload_ticket': push_state.preupload_status['upload_ticket'],
+            })
+        if not response or not response['ok']:
+          raise IOError('Failed to finalize file with hash %s.' % item.digest)
       push_state.finalized = True
     finally:
       with self._lock:
@@ -1134,18 +1120,18 @@ class IsolateServer(StorageApi):
     assert all(i.digest is not None and i.size is not None for i in items)
 
     # Request body is a json encoded list of dicts.
-    body = [
-        {
-          'h': item.digest,
-          's': item.size,
-          'i': int(item.high_priority),
-        } for item in items
-    ]
+    body = {
+        'items': [
+          {
+            'digest': item.digest,
+            'is_isolated': bool(item.high_priority),
+            'size': item.size,
+          } for item in items
+        ],
+        'namespace': self._namespace_dict,
+    }
 
-    query_url = '%s/content-gs/pre-upload/%s?token=%s' % (
-        self._base_url,
-        self._namespace,
-        urllib.quote(self._server_capabilities['access_token']))
+    query_url = '%s/_ah/api/isolateservice/v1/preupload' % self._base_url
 
     # Response body is a list of push_urls (or null if file is already present).
     response = None
@@ -1153,29 +1139,24 @@ class IsolateServer(StorageApi):
       response = net.url_read_json(url=query_url, data=body)
       if response is None:
         raise isolated_format.MappingError(
-            'Failed to execute /pre-upload query')
-      if not isinstance(response, list):
-        raise ValueError('Expecting response with json-encoded list')
-      if len(response) != len(items):
-        raise ValueError(
-            'Incorrect number of items in the list, expected %d, '
-            'but got %d' % (len(items), len(response)))
+            'Failed to execute preupload query')
     except ValueError as err:
       raise isolated_format.MappingError(
           'Invalid response from server: %s, body is %s' % (err, response))
 
     # Pick Items that are missing, attach _PushState to them.
     missing_items = {}
-    for i, push_urls in enumerate(response):
-      if push_urls:
-        assert len(push_urls) == 2, str(push_urls)
-        missing_items[items[i]] = _IsolateServerPushState(
-            push_urls[0], push_urls[1], items[i].size)
+    for preupload_status in response.get('items', []):
+      assert 'upload_ticket' in preupload_status, (
+          preupload_status, '/preupload did not generate an upload ticket')
+      index = int(preupload_status['index'])
+      missing_items[items[index]] = _IsolateServerPushState(
+          preupload_status, items[index].size)
     logging.info('Queried %d files, %d cache hit',
         len(items), len(items) - len(missing_items))
     return missing_items
 
-  def do_fetch(self, url, offset):
+  def do_fetch(self, url, digest, offset):
     """Fetches isolated data from the URL.
 
     Used only for fetching files, not for API calls. Can be overridden in
@@ -1188,12 +1169,18 @@ class IsolateServer(StorageApi):
     Returns:
       net.HttpResponse compatible object, with 'read' and 'get_header' calls.
     """
-    return net.url_open(
-        url,
-        read_timeout=DOWNLOAD_READ_TIMEOUT,
-        headers={'Range': 'bytes=%d-' % offset} if offset else None)
+    assert isinstance(offset, int)
+    data = {
+        'digest': digest.encode('utf-8'),
+        'namespace': self._namespace_dict,
+        'offset': offset,
+    }
+    return net.url_read_json(
+        url=url,
+        data=data,
+        read_timeout=DOWNLOAD_READ_TIMEOUT)
 
-  def do_push(self, url, content):
+  def do_push(self, push_state, content):
     """Uploads isolated file to the URL.
 
     Used only for storing files, not for API calls. Can be overridden in
@@ -1201,10 +1188,9 @@ class IsolateServer(StorageApi):
 
     Args:
       url: URL to upload the data to.
+      push_state: an _IsolateServicePushState instance
+      item: the original Item to be uploaded
       content: an iterable that yields 'str' chunks.
-
-    Returns:
-      True on success, False on failure.
     """
     # A cheezy way to avoid memcpy of (possibly huge) file, until streaming
     # upload support is implemented.
@@ -1212,11 +1198,25 @@ class IsolateServer(StorageApi):
       content = content[0]
     else:
       content = ''.join(content)
+
+    # DB upload
+    if not push_state.finalize_url:
+      url = '%s/%s' % (self._base_url, push_state.upload_url)
+      content = base64.b64encode(content)
+      data = {
+          'upload_ticket': push_state.preupload_status['upload_ticket'],
+          'content': content,
+      }
+      response = net.url_read_json(url=url, data=data)
+      return response is not None and response['ok']
+
+    # upload to GS
+    url = push_state.upload_url
     response = net.url_read(
-          url=url,
-          data=content,
-          content_type='application/octet-stream',
-          method='PUT')
+        content_type='application/octet-stream',
+        data=content,
+        method='PUT',
+        url=url)
     return response is not None
 
 
