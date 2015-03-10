@@ -601,7 +601,8 @@ def HostTools(host, options):
 
   # TODO(jfb) Windows currently uses MinGW's GCC 4.8.1 which generates warnings
   #           on upstream LLVM code. Turn on -Werror once these are fixed.
-  llvm_do_werror = not TripleIsWindows(host)
+  #           The same applies for the default GCC on current Ubuntu.
+  llvm_do_werror = not (TripleIsWindows(host) or options.gcc)
 
   llvm_cmake = {
       H('llvm'): {
