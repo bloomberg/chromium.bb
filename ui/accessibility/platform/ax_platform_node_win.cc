@@ -321,6 +321,8 @@ STDMETHODIMP AXPlatformNodeWin::get_accChild(VARIANT var_child,
     // Positive child ids are a 1-based child index, used by clients
     // that want to enumerate all immediate children.
     *disp_child = delegate_->ChildAtIndex(child_id - 1);
+    if (!(*disp_child))
+      return E_FAIL;
     (*disp_child)->AddRef();
     return S_OK;
   }
