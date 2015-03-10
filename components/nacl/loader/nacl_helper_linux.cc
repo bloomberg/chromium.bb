@@ -75,11 +75,7 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
                       const NaClLoaderSystemInfo& system_info,
                       bool uses_nonsfi_mode,
                       nacl::NaClSandbox* nacl_sandbox) {
-#if !defined(OS_NACL_NONSFI)
-  // Currently sandbox is disabled for nacl_helper_nonsfi.
-  // TODO(hidehiko): Enable sandbox.
   DCHECK(nacl_sandbox);
-#endif
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // Close or shutdown IPC channels that we don't need anymore.
   PCHECK(0 == IGNORE_EINTR(close(kNaClZygoteDescriptor)));
@@ -110,15 +106,15 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
   // We do this before seccomp-bpf is initialized.
   PCHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
 
-#if !defined(OS_NACL_NONSFI)
-  // Currently sandbox is disabled for nacl_helper_nonsfi.
-  // TODO(hidehiko): Enable sandbox.
   // Finish layer-1 sandbox initialization and initialize the layer-2 sandbox.
   CHECK(!nacl_sandbox->HasOpenDirectory());
+#if !defined(OS_NACL_NONSFI)
+  // Currently Layer-two sandbox is not yet supported on nacl_helper_nonsfi.
+  // TODO(hidehiko): Enable the sandbox.
   nacl_sandbox->InitializeLayerTwoSandbox(uses_nonsfi_mode);
+#endif
   nacl_sandbox->SealLayerOneSandbox();
   nacl_sandbox->CheckSandboxingStateWithPolicy();
-#endif
 
   base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
                                               browser_fd.release());
@@ -301,9 +297,6 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
   char buf[kNaClMaxIPCMessageLength];
   const ssize_t msglen = UnixDomainSocket::RecvMsg(zygote_ipc_fd,
       &buf, sizeof(buf), &fds);
-#if !defined(OS_NACL_NONSFI)
-  // Currently sandbox is disabled for nacl_helper_nonsfi.
-  // TODO(hidehiko): Enable sandbox.
   // If the Zygote has started handling requests, we should be sandboxed via
   // the setuid sandbox.
   if (!nacl_sandbox->layer_one_enabled()) {
@@ -311,7 +304,6 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
       << "Most likely you need to configure your SUID sandbox "
       << "correctly";
   }
-#endif
   if (msglen == 0 || (msglen == -1 && errno == ECONNRESET)) {
     // EOF from the browser. Goodbye!
     _exit(0);
@@ -465,11 +457,6 @@ int main(int argc, char* argv[]) {
   CheckRDebug(argv[0]);
 #endif
 
-#if defined(OS_NACL_NONSFI)
-  // Currently sandbox is disabled for nacl_helper_nonsfi.
-  // TODO(hidehiko): Enable sandbox.
-  scoped_ptr<nacl::NaClSandbox> nacl_sandbox;
-#else
   scoped_ptr<nacl::NaClSandbox> nacl_sandbox(new nacl::NaClSandbox);
   // Make sure that the early initialization did not start any spurious
   // threads.
@@ -480,7 +467,6 @@ int main(int argc, char* argv[]) {
   const bool is_init_process = 1 == getpid();
   nacl_sandbox->InitializeLayerOneSandbox();
   CHECK_EQ(is_init_process, nacl_sandbox->layer_one_enabled());
-#endif  // defined(OS_NACL_NONSFI)
 
   const std::vector<int> empty;
   // Send the zygote a message to let it know we are ready to help

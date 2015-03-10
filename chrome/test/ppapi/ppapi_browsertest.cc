@@ -19,6 +19,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/javascript_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
@@ -1349,6 +1350,9 @@ class TransitionalNonSfiPackagedAppTest : public NonSfiPackagedAppTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     NonSfiPackagedAppTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
+    // TODO(hidehiko): Remove this flag, when namespace sandbox is supported
+    // by nacl_helper_nonsfi. (cf. crbug.com/464663)
+    command_line->AppendSwitch(switches::kDisableNamespaceSandbox);
   }
 };
 

@@ -49,12 +49,14 @@
 
             'sources': [
               'nacl/common/nacl_messages.cc',
+              'nacl/common/nacl_switches.cc',
               'nacl/common/nacl_types.cc',
               'nacl/common/nacl_types_param_traits.cc',
               'nacl/loader/nacl_helper_linux.cc',
               'nacl/loader/nacl_trusted_listener.cc',
               'nacl/loader/nonsfi/nonsfi_listener.cc',
               'nacl/loader/nonsfi/nonsfi_main.cc',
+              'nacl/loader/sandbox_linux/nacl_sandbox_linux.cc',
             ],
 
             'link_flags': [
@@ -75,6 +77,7 @@
               '-lppapi_ipc_nacl',
               '-lppapi_proxy_nacl',
               '-lppapi_shared_nacl',
+              '-lsandbox_nacl_nonsfi',
               '-lshared_memory_support_nacl',
               '-ltracing_nacl',
             ],
@@ -99,6 +102,7 @@
                   '>(tc_lib_dir_nonsfi_helper32)/libppapi_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libppapi_proxy_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libppapi_shared_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libsandbox_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libshared_memory_support_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libtracing_nacl.a',
                 ],
@@ -122,6 +126,7 @@
                   '>(tc_lib_dir_nonsfi_helper_arm)/libppapi_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libppapi_proxy_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libppapi_shared_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper_arm)/libsandbox_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libshared_memory_support_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libtracing_nacl.a',
                 ],
@@ -137,6 +142,7 @@
             '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
             '../native_client/tools.gyp:prep_toolchain',
             '../ppapi/ppapi_proxy_nacl.gyp:ppapi_proxy_nacl',
+            '../sandbox/sandbox_nacl_nonsfi.gyp:sandbox_nacl_nonsfi',
           ],
         },
         # TODO(hidehiko): Add Non-SFI version of nacl_loader_unittests.

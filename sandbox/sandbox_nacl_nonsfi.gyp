@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,11 +13,11 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          'target_name': 'content_common_nacl_nonsfi',
+          'target_name': 'sandbox_nacl_nonsfi',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libcontent_common_nacl_nonsfi.a',
+            'nlib_target': 'libsandbox_nacl_nonsfi.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 0,
@@ -25,9 +25,13 @@
             'build_nonsfi_helper': 1,
 
             'sources': [
-              'common/send_zygote_child_ping_linux.cc',
-              'public/common/content_switches.cc',
-              # TODO(hidehiko): Add sandbox code.
+              # This is the subset of linux build target, needed for
+              # nacl_helper_nonsfi's sandbox implementation.
+              'linux/services/proc_util.cc',
+              'linux/services/thread_helpers.cc',
+              'linux/suid/client/setuid_sandbox_client.cc',
+              # TODO(hidehiko): Support namespace sandbox and seccomp-bpf
+              # sandbox.
             ],
           },
           'dependencies': [
