@@ -29,4 +29,4 @@ private:
 
 } // namespace blink
 
-#endif // SVGShapePainter_h
+#endif // SVGMaskPainter_h

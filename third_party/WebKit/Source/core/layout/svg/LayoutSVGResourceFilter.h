@@ -84,11 +84,6 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
-    // Returns the context that should be used to paint the filter contents, or
-    // null if the content should not be recorded.
-    GraphicsContext* prepareEffect(LayoutObject*, GraphicsContext*);
-    void finishEffect(LayoutObject*, GraphicsContext*);
-
     FloatRect resourceBoundingBox(const LayoutObject*);
 
     PassRefPtrWillBeRawPtr<SVGFilterBuilder> buildPrimitives(SVGFilter*);
@@ -100,6 +95,9 @@ public:
 
     static const LayoutSVGResourceType s_resourceType = FilterResourceType;
     virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+
+    FilterData* getFilterDataForLayoutObject(LayoutObject* object) { return m_filter.get(object); }
+    void setFilterDataForLayoutObject(LayoutObject* object, PassOwnPtrWillBeRawPtr<FilterData> filterData) { m_filter.set(object, filterData); }
 
 private:
     typedef WillBePersistentHeapHashMap<LayoutObject*, OwnPtrWillBeMember<FilterData>> FilterMap;

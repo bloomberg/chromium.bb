@@ -1876,6 +1876,8 @@
             'paint/SVGClipPainter.h',
             'paint/SVGContainerPainter.cpp',
             'paint/SVGContainerPainter.h',
+            'paint/SVGFilterPainter.cpp',
+            'paint/SVGFilterPainter.h',
             'paint/SVGForeignObjectPainter.cpp',
             'paint/SVGForeignObjectPainter.h',
             'paint/SVGImagePainter.cpp',

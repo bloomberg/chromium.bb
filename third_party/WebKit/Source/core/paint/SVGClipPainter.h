@@ -44,4 +44,4 @@ private:
 
 } // namespace blink
 
-#endif // SVGShapePainter_h
+#endif // SVGClipPainter_h
