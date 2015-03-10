@@ -9,11 +9,11 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_pool.h"
-#include "third_party/libjingle/source/talk/media/base/videoframe.h"
 #include "third_party/libjingle/source/talk/media/base/videoframefactory.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoframe.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
+#include "third_party/webrtc/common_video/interface/video_frame_buffer.h"
 
 namespace content {
 namespace {
@@ -23,181 +23,62 @@ namespace {
 void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {
 }
 
-// Thin map between an existing media::VideoFrame and cricket::VideoFrame to
-// avoid premature deep copies.
-// This implementation is only safe to use in a const context and should never
-// be written to.
-class VideoFrameWrapper : public cricket::VideoFrame {
+int WebRtcToMediaPlaneType(webrtc::PlaneType type) {
+  switch (type) {
+    case webrtc::kYPlane:
+      return media::VideoFrame::kYPlane;
+    case webrtc::kUPlane:
+      return media::VideoFrame::kUPlane;
+    case webrtc::kVPlane:
+      return media::VideoFrame::kVPlane;
+    default:
+      NOTREACHED();
+      return media::VideoFrame::kMaxPlanes;
+  }
+}
+
+// Thin adapter from media::VideoFrame to webrtc::VideoFrameBuffer.
+class VideoFrameWrapper : public webrtc::VideoFrameBuffer {
  public:
-  // Create a shallow cricket::VideoFrame wrapper around the
-  // media::VideoFrame. The caller has ownership of the returned frame.
-  VideoFrameWrapper(const scoped_refptr<media::VideoFrame>& frame,
-                    int64 elapsed_time)
-      : frame_(frame), elapsed_time_(elapsed_time) {}
+  VideoFrameWrapper(const scoped_refptr<media::VideoFrame>& frame)
+      : frame_(frame) {}
 
-  VideoFrame* Copy() const override {
+  int width() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return new VideoFrameWrapper(media::VideoFrame::WrapVideoFrame(
-                                     frame_,
-                                     frame_->visible_rect(),
-                                     frame_->natural_size(),
-                                     base::Bind(&ReleaseOriginalFrame, frame_)),
-                                 elapsed_time_);
+    return frame_->visible_rect().width();
   }
 
-  size_t GetWidth() const override {
+  int height() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return static_cast<size_t>(frame_->visible_rect().width());
+    return frame_->visible_rect().height();
   }
 
-  size_t GetHeight() const override {
+  const uint8_t* data(webrtc::PlaneType type) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return static_cast<size_t>(frame_->visible_rect().height());
+    return frame_->visible_data(WebRtcToMediaPlaneType(type));
   }
 
-  const uint8* GetYPlane() const override {
+  uint8_t* data(webrtc::PlaneType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->visible_data(media::VideoFrame::kYPlane);
+    DCHECK(frame_->HasOneRef());
+    return frame_->visible_data(WebRtcToMediaPlaneType(type));
   }
 
-  const uint8* GetUPlane() const override {
+  int stride(webrtc::PlaneType type) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->visible_data(media::VideoFrame::kUPlane);
+    return frame_->stride(WebRtcToMediaPlaneType(type));
   }
 
-  const uint8* GetVPlane() const override {
+  rtc::scoped_refptr<webrtc::NativeHandle> native_handle() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->visible_data(media::VideoFrame::kVPlane);
-  }
-
-  uint8* GetYPlane() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->visible_data(media::VideoFrame::kYPlane);
-  }
-
-  uint8* GetUPlane() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->visible_data(media::VideoFrame::kUPlane);
-  }
-
-  uint8* GetVPlane() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->visible_data(media::VideoFrame::kVPlane);
-  }
-
-  int32 GetYPitch() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->stride(media::VideoFrame::kYPlane);
-  }
-
-  int32 GetUPitch() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->stride(media::VideoFrame::kUPlane);
-  }
-
-  int32 GetVPitch() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->stride(media::VideoFrame::kVPlane);
-  }
-
-  void* GetNativeHandle() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return NULL;
-  }
-
-  size_t GetPixelWidth() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return 1;
-  }
-  size_t GetPixelHeight() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return 1;
-  }
-
-  int64 GetElapsedTime() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return elapsed_time_;
-  }
-
-  int64 GetTimeStamp() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->timestamp().InMicroseconds() *
-           base::Time::kNanosecondsPerMicrosecond;
-  }
-
-  void SetElapsedTime(int64 elapsed_time) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    elapsed_time_ = elapsed_time;
-  }
-
-  void SetTimeStamp(int64 time_stamp) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    // Round to closest microsecond.
-    frame_->set_timestamp(base::TimeDelta::FromMicroseconds(
-        (time_stamp + base::Time::kNanosecondsPerMicrosecond / 2) /
-        base::Time::kNanosecondsPerMicrosecond));
-  }
-
-  int GetRotation() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return 0;
-  }
-
-  // The rest of the public methods are NOTIMPLEMENTED.
-  bool InitToBlack(int w,
-                   int h,
-                   size_t pixel_width,
-                   size_t pixel_height,
-                   int64 elapsed_time,
-                   int64 time_stamp) override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  bool Reset(uint32 fourcc,
-             int w,
-             int h,
-             int dw,
-             int dh,
-             uint8* sample,
-             size_t sample_size,
-             size_t pixel_width,
-             size_t pixel_height,
-             int64 elapsed_time,
-             int64 time_stamp,
-             int rotation) override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  bool MakeExclusive() override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  size_t CopyToBuffer(uint8* buffer, size_t size) const override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-
- protected:
-  // TODO(magjed): Refactor as a static method in WebRtcVideoFrame.
-  VideoFrame* CreateEmptyFrame(int w,
-                               int h,
-                               size_t pixel_width,
-                               size_t pixel_height,
-                               int64 elapsed_time,
-                               int64 time_stamp) const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    VideoFrame* frame = new cricket::WebRtcVideoFrame();
-    frame->InitToBlack(
-        w, h, pixel_width, pixel_height, elapsed_time, time_stamp);
-    return frame;
+    return nullptr;
   }
 
  private:
+  ~VideoFrameWrapper() override {}
+  friend class rtc::RefCountedObject<VideoFrameWrapper>;
+
   scoped_refptr<media::VideoFrame> frame_;
-  int64 elapsed_time_;
   base::ThreadChecker thread_checker_;
 };
 
@@ -260,9 +141,15 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
             frame_, visible_rect, output_size,
             base::Bind(&ReleaseOriginalFrame, frame_));
 
+    const int64_t timestamp_ns = frame_->timestamp().InMicroseconds() *
+                                 base::Time::kNanosecondsPerMicrosecond;
+
     // If no scaling is needed, return a wrapped version of |frame_| directly.
-    if (video_frame->natural_size() == video_frame->visible_rect().size())
-      return new VideoFrameWrapper(video_frame, captured_frame_.elapsed_time);
+    if (video_frame->natural_size() == video_frame->visible_rect().size()) {
+      return new cricket::WebRtcVideoFrame(
+          new rtc::RefCountedObject<VideoFrameWrapper>(video_frame),
+          captured_frame_.elapsed_time, timestamp_ns);
+    }
 
     // We need to scale the frame before we hand it over to cricket.
     scoped_refptr<media::VideoFrame> scaled_frame =
@@ -284,7 +171,9 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
                       scaled_frame->data(media::VideoFrame::kVPlane),
                       scaled_frame->stride(media::VideoFrame::kVPlane),
                       output_width, output_height, libyuv::kFilterBilinear);
-    return new VideoFrameWrapper(scaled_frame, captured_frame_.elapsed_time);
+    return new cricket::WebRtcVideoFrame(
+        new rtc::RefCountedObject<VideoFrameWrapper>(scaled_frame),
+        captured_frame_.elapsed_time, timestamp_ns);
   }
 
   cricket::VideoFrame* CreateAliasedFrame(
