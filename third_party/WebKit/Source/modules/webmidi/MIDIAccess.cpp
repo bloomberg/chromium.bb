@@ -70,16 +70,16 @@ MIDIAccess::~MIDIAccess()
 
 MIDIInputMap* MIDIAccess::inputs() const
 {
-    HeapHashMap<String, Member<MIDIInput>> inputs;
-    size_t inactiveCount = 0;
+    HeapVector<Member<MIDIInput>> inputs;
+    HashSet<String> ids;
     for (size_t i = 0; i < m_inputs.size(); ++i) {
         MIDIInput* input = m_inputs[i];
-        if (input->getState() != PortState::MIDIPortStateDisconnected)
-            inputs.add(input->id(), input);
-        else
-            inactiveCount++;
+        if (input->getState() != PortState::MIDIPortStateDisconnected) {
+            inputs.append(input);
+            ids.add(input->id());
+        }
     }
-    if ((inputs.size() + inactiveCount) != m_inputs.size()) {
+    if (inputs.size() != ids.size()) {
         // There is id duplication that violates the spec.
         inputs.clear();
     }
@@ -88,16 +88,16 @@ MIDIInputMap* MIDIAccess::inputs() const
 
 MIDIOutputMap* MIDIAccess::outputs() const
 {
-    HeapHashMap<String, Member<MIDIOutput>> outputs;
-    size_t inactiveCount = 0;
+    HeapVector<Member<MIDIOutput>> outputs;
+    HashSet<String> ids;
     for (size_t i = 0; i < m_outputs.size(); ++i) {
         MIDIOutput* output = m_outputs[i];
-        if (output->getState() != PortState::MIDIPortStateDisconnected)
-            outputs.add(output->id(), output);
-        else
-            inactiveCount++;
+        if (output->getState() != PortState::MIDIPortStateDisconnected) {
+            outputs.append(output);
+            ids.add(output->id());
+        }
     }
-    if ((outputs.size() + inactiveCount) != m_outputs.size()) {
+    if (outputs.size() != ids.size()) {
         // There is id duplication that violates the spec.
         outputs.clear();
     }

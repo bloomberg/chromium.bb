@@ -9,8 +9,6 @@
 #include "bindings/core/v8/Maplike.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -18,7 +16,7 @@ namespace blink {
 template <typename T>
 class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>, public Maplike<String, T*> {
 public:
-    explicit MIDIPortMap(const HeapHashMap<String, Member<T>>& entries) : m_entries(entries) { }
+    explicit MIDIPortMap(const HeapVector<Member<T>>& entries) : m_entries(entries) { }
 
     // IDL attributes / methods
     size_t size() const { return m_entries.size(); }
@@ -29,8 +27,9 @@ public:
     }
 
 private:
-    typedef HeapHashMap<String, Member<T>> MapType;
-    typedef typename HeapHashMap<String, Member<T>>::const_iterator IteratorType;
+    // We use HeapVector here to keep the entry order.
+    using Entries = HeapVector<Member<T>>;
+    using IteratorType = typename Entries::const_iterator;
 
     typename PairIterable<String, T*>::IterationSource* startIteration(ScriptState*, ExceptionState&) override
     {
@@ -39,10 +38,15 @@ private:
 
     bool getMapEntry(ScriptState*, const String& key, T*& value, ExceptionState&) override
     {
-        if (!m_entries.contains(key))
-            return false;
-        value = m_entries.get(key);
-        return true;
+        // FIXME: This function is not O(1). Perhaps it's OK because in typical
+        // cases not so many ports are connected.
+        for (const auto& p : m_entries) {
+            if (key == p->id()) {
+                value = p;
+                return true;
+            }
+        }
+        return false;
     }
 
     // Note: This template class relies on the fact that m_map.m_entries will
@@ -60,8 +64,8 @@ private:
         {
             if (m_iterator == m_end)
                 return false;
-            key = m_iterator->key;
-            value = m_iterator->value;
+            key = (*m_iterator)->id();
+            value = *m_iterator;
             ++m_iterator;
             return true;
         }
@@ -80,7 +84,7 @@ private:
         const IteratorType m_end;
     };
 
-    const MapType m_entries;
+    const Entries m_entries;
 };
 
 } // namespace blink
