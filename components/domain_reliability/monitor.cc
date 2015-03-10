@@ -234,6 +234,11 @@ DomainReliabilityContext* DomainReliabilityMonitor::AddContext(
   DCHECK(config);
   DCHECK(config->IsValid());
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 DomainReliabilityConfig::AddContext"));
+
   // Grab a copy of the domain before transferring ownership of |config|.
   std::string domain = config->domain;
 
