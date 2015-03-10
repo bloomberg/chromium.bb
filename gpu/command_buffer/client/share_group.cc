@@ -60,9 +60,7 @@ class IdHandler : public IdHandlerInterface {
     (gl_impl->*delete_fn)(n, ids);
     // We need to ensure that the delete call is evaluated on the service side
     // before any other contexts issue commands using these client ids.
-    // TODO(vmiura): Can remove this by virtualizing internal ids, however
-    // this code only affects PPAPI for now.
-    gl_impl->helper()->CommandBufferHelper::Flush();
+    gl_impl->helper()->CommandBufferHelper::OrderingBarrier();
     return true;
   }
 
