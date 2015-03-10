@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_test_base.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -106,6 +107,27 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
                        CreateAndRemoveSupervisedUser) {
   RemoveSupervisedUser(3, 0, kTestSupervisedUserDisplayName);
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+                       PRE_PRE_CheckPodForSupervisedUser) {
+  PrepareUsers();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+                       PRE_CheckPodForSupervisedUser) {
+  StartFlowLoginAsManager();
+  FillNewUserData(kTestSupervisedUserDisplayName);
+  StartUserCreation("supervised-user-creation-next-button",
+                    kTestSupervisedUserDisplayName);
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest, CheckPodForSupervisedUser) {
+  OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+
+  // Open pod menu
+  JSEval("$('pod-row').pods[0].querySelector('.action-box-button').click()");
+  JSExpect("$('pod-row').pods[0].actionBoxMenuTitleEmailElement.hidden");
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
