@@ -100,13 +100,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     isWebviewSignin: false,
 
-    /**
-     * Whether screen is shown.
-     * @type {boolean}
-     * @private
-     */
-    isShown_: false,
-
     /** @override */
     decorate: function() {
       this.isWebviewSignin = loadTimeData.getValue('isWebviewSignin');
@@ -115,8 +108,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         var webview = this.ownerDocument.createElement('webview');
         webview.id = 'signin-frame';
         webview.name = 'signin-frame';
-        // TODO(dpolukhin): webview doesn't load page in hidden state,
-        // use curtain instead.
+        webview.hidden = true;
         $('signin-frame').parentNode.replaceChild(webview, $('signin-frame'));
         this.gaiaAuthHost_ = new cr.login.GaiaAuthHost(webview);
       } else {
@@ -184,10 +176,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
-      if (!this.isWebviewSignin) {
-        // TODO(dpolukhin): proper implement curtain for webview signin.
-        this.gaiaAuthHost_.frame.hidden = show;
-      }
+      $('signin-frame').hidden = show;
       $('signin-right').hidden = show;
       $('enterprise-info-container').hidden = show;
       $('gaia-signin-divider').hidden = show;
@@ -272,9 +261,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       // Button header is always visible when sign in is presented.
       // Header is hidden once GAIA reports on successful sign in.
       Oobe.getInstance().headerHidden = false;
-      this.isShown_ = true;
-      if (this.isWebviewSignin && !this.loading)
-        this.gaiaAuthHost_.sendFocusReady();
+    },
+
+    onAfterShow: function(data) {
+      if (!this.loading && this.isWebviewSignin)
+        $('signin-frame').focus();
     },
 
     /**
@@ -283,7 +274,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onBeforeHide: function() {
       chrome.send('loginUIStateChanged', ['gaia-signin', false]);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
-      this.isShown_ = false;
     },
 
     /**
@@ -327,7 +317,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         params.gaiaPath = data.gaiaEndpoint;
 
       $('login-header-bar').minuteMaid = this.isMinuteMaid;
-
 
       if (data.useEmbedded)
         params.gaiaPath = 'EmbeddedSignIn';
@@ -459,8 +448,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onAuthReady_: function() {
       this.loading = false;
-      if (this.isWebviewSignin && this.isShown_)
-        this.gaiaAuthHost_.sendFocusReady();
       this.clearLoadingTimer_();
 
       // Show deferred error bubble.
