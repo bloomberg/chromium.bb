@@ -464,9 +464,7 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapArea)
     std::string url = m_baseURL + "hit_test.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "hit_test.html");
     WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
-    webView->setDefaultPageScaleLimits(0.25f, 5);
     webView->resize(WebSize(100, 100));
-    webView->setPageScaleFactor(1);
     WebPoint hitPoint(55, 55);
 
     // Image is at top left quandrant, so should not hit it.
@@ -482,8 +480,8 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapArea)
     EXPECT_TRUE(positiveResult.node().to<WebElement>().hasHTMLTagName("img"));
     positiveResult.reset();
 
-    // Scale down page by half so the image is outside the tapped area now.
-    webView->setPageScaleFactor(0.5f);
+    // Move the hit point the image is just outside the tapped area now.
+    hitPoint = WebPoint(61, 61);
     WebHitTestResult negativeResult2 = webView->hitTestResultForTap(hitPoint, tapArea);
     ASSERT_EQ(WebNode::ElementNode, negativeResult2.node().nodeType());
     EXPECT_FALSE(negativeResult2.node().to<WebElement>().hasHTMLTagName("img"));
@@ -548,8 +546,12 @@ void WebViewTest::testAutoResize(const WebSize& minAutoResize, const WebSize& ma
 
     EXPECT_EQ(expectedWidth, client.testData().width());
     EXPECT_EQ(expectedHeight, client.testData().height());
+
+    // Android disables main frame scrollbars.
+#if !OS(ANDROID)
     EXPECT_EQ(expectedHorizontalState, client.testData().horizontalScrollbarState());
     EXPECT_EQ(expectedVerticalState, client.testData().verticalScrollbarState());
+#endif
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
@@ -944,24 +946,24 @@ TEST_F(WebViewTest, IsSelectionAnchorFirst)
 
 TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
 {
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("hello_world.html"));
-    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "hello_world.html");
-    webViewImpl->resize(WebSize(640, 480));
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("200-by-300.html"));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
+    webViewImpl->resize(WebSize(100, 150));
     webViewImpl->layout();
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
 
     // Make the page scale and scroll with the given paremeters.
     webViewImpl->setPageScaleFactor(2.0f);
-    webViewImpl->setMainFrameScrollOffset(WebPoint(116, 84));
+    webViewImpl->setMainFrameScrollOffset(WebPoint(94, 111));
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
-    EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
-    EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
+    EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
+    EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
     LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
     mainFrameLocal->loader().saveScrollState();
     EXPECT_EQ(2.0f, mainFrameLocal->loader().currentItem()->pageScaleFactor());
-    EXPECT_EQ(116, mainFrameLocal->loader().currentItem()->scrollPoint().x());
-    EXPECT_EQ(84, mainFrameLocal->loader().currentItem()->scrollPoint().y());
+    EXPECT_EQ(94, mainFrameLocal->loader().currentItem()->scrollPoint().x());
+    EXPECT_EQ(111, mainFrameLocal->loader().currentItem()->scrollPoint().y());
 
     // Confirm that resetting the page state resets the saved scroll position.
     // The HistoryController treats a page scale factor of 0.0f as special and avoids
@@ -1010,19 +1012,22 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
 TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
 {
     FrameTestHelpers::TestWebViewClient client;
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("hello_world.html"));
-    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "hello_world.html", true, 0, &client);
-    webViewImpl->resize(WebSize(640, 480));
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("200-by-300.html"));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html", true, 0, &client);
+    webViewImpl->resize(WebSize(100, 150));
     webViewImpl->layout();
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
 
     // Make the page scale and scroll with the given paremeters.
     webViewImpl->setPageScaleFactor(2.0f);
-    webViewImpl->setMainFrameScrollOffset(WebPoint(116, 84));
+    webViewImpl->setMainFrameScrollOffset(WebPoint(94, 111));
+    webViewImpl->setPinchViewportOffset(WebFloatPoint(12, 20));
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
-    EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
-    EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
+    EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
+    EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
+    EXPECT_EQ(12, webViewImpl->pinchViewportOffset().x);
+    EXPECT_EQ(20, webViewImpl->pinchViewportOffset().y);
 
     RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webViewImpl->mainFrame()->document().body());
     webViewImpl->enterFullScreenForElement(element.get());
@@ -1039,8 +1044,10 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     // Confirm that exiting fullscreen restores the parameters.
     webViewImpl->didExitFullScreen();
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
-    EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
-    EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
+    EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
+    EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
+    EXPECT_EQ(12, webViewImpl->pinchViewportOffset().x);
+    EXPECT_EQ(20, webViewImpl->pinchViewportOffset().y);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }

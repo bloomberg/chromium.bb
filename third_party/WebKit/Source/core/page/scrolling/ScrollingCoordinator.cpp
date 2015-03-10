@@ -171,21 +171,19 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
     if (WebLayer* scrollingWebLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : nullptr) {
         scrollingWebLayer->setBounds(frameView->contentsSize());
 
-        // If there is a non-root fullscreen element, prevent the main frame
-        // from scrolling.
+        // If there is a non-root fullscreen element, prevent the viewport from
+        // scrolling.
         Document* mainFrameDocument = m_page->deprecatedLocalMainFrame()->document();
         Element* fullscreenElement = Fullscreen::fullscreenElementFrom(*mainFrameDocument);
-        if (fullscreenElement && fullscreenElement != mainFrameDocument->documentElement()) {
-            if (m_page->settings().pinchVirtualViewportEnabled()) {
-                toWebLayer(m_page->frameHost().pinchViewport().scrollLayer())->setUserScrollable(false, false);
-            } else {
-                scrollingWebLayer->setBounds(IntSize());
-            }
-        } else {
-            if (m_page->settings().pinchVirtualViewportEnabled())
-                toWebLayer(m_page->frameHost().pinchViewport().scrollLayer())->setUserScrollable(true, true);
+        WebLayer* pinchViewportScrollLayer = toWebLayer(m_page->frameHost().pinchViewport().scrollLayer());
 
+        if (pinchViewportScrollLayer) {
+            if (fullscreenElement && fullscreenElement != mainFrameDocument->documentElement())
+                toWebLayer(m_page->frameHost().pinchViewport().scrollLayer())->setUserScrollable(false, false);
+            else
+                toWebLayer(m_page->frameHost().pinchViewport().scrollLayer())->setUserScrollable(true, true);
         }
+
         scrollingWebLayer->setUserScrollable(frameView->userInputScrollable(HorizontalScrollbar), frameView->userInputScrollable(VerticalScrollbar));
     }
 

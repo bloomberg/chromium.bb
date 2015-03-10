@@ -59,6 +59,7 @@ protected:
             false /* enableJavascript */, nullptr /* webFrameClient */, nullptr /* webViewClient */,
             compositingMode == AcceleratedCompositing ? enableAcceleratedCompositing : disableAcceleratedCompositing);
         webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
+        webViewImpl()->layout();
         ASSERT_EQ(compositingMode == AcceleratedCompositing, webViewImpl()->isAcceleratedCompositingActive());
         ASSERT_TRUE(!webViewImpl()->pageOverlays() || webViewImpl()->pageOverlays()->empty());
     }

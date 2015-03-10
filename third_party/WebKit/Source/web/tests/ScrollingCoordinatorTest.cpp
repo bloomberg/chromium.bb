@@ -56,6 +56,12 @@ public:
     {
         m_helper.initialize(true, 0, &m_mockWebViewClient, &configureSettings);
         webViewImpl()->resize(IntSize(320, 240));
+
+        // OSX attaches main frame scrollbars to the PinchViewport so the PinchViewport layers need
+        // to be initialized.
+        webViewImpl()->layout();
+        webViewImpl()->setRootGraphicsLayer(
+            webViewImpl()->mainFrameImpl()->frame()->view()->layoutView()->compositor()->rootGraphicsLayer());
     }
 
     virtual ~ScrollingCoordinatorTest()
@@ -553,7 +559,7 @@ TEST_F(ScrollingCoordinatorTest, scrollbarsForceMainThreadOrHaveWebScrollbarLaye
     ASSERT_TRUE(hasWebScrollbarLayer || scrollbarGraphicsLayer->platformLayer()->shouldScrollOnMainThread());
 }
 
-#if OS(MACOSX)
+#if OS(MACOSX) || OS(ANDROID)
 TEST_F(ScrollingCoordinatorTest, DISABLED_setupScrollbarLayerShouldSetScrollLayerOpaque)
 #else
 TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
