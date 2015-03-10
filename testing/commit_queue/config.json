@@ -8,7 +8,6 @@
                         "android_amp_rel_tests_recipe": ["defaulttests"],
                         "cast_shell": ["defaulttests"],
                         "cast_shell_apk": ["defaulttests"],
-                        "linux_android_rel_ng": ["defaulttests"],
                         "linux_arm_compile": ["defaulttests"],
                         "linux_chromium_asan_rel_ng": ["defaulttests"]
                     },
@@ -59,6 +58,7 @@
               "android_chromium_gn_compile_rel": ["defaulttests"],
               "android_compile_rel": ["defaulttests"],
               "chromium_presubmit": ["defaulttests"],
+              "linux_android_rel_ng": ["defaulttests"],
               "linux_chromium_asan_rel": ["defaulttests"],
               "linux_chromium_chromeos_compile_dbg_ng": ["defaulttests"],
               "linux_chromium_chromeos_rel_ng": ["defaulttests"],
@@ -67,7 +67,6 @@
               "linux_chromium_gn_dbg": ["defaulttests"],
               "linux_chromium_gn_rel": ["defaulttests"],
               "linux_chromium_rel_ng": ["defaulttests"],
-              "android_rel_tests_recipe": ["defaulttests"],
               "android_arm64_dbg_recipe": ["defaulttests"],
               "android_clang_dbg_recipe": ["defaulttests"],
               "android_aosp": ["compile"],
