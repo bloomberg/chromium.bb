@@ -405,6 +405,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Sets pointing_.
   void UpdatePointingFingers(const HardwareState& hwstate);
 
+  // Gets the hardware button type (RIGHT, LEFT) based on the
+  // first finger's position.
+  int GetButtonTypeFromPosition(const HardwareState& hwstate);
+
   // Returns the square of the distance that this contact has travelled since
   // fingers changed (origin=false) or since they touched down (origin=true).
   // If permit_warp is true, we ignore the GESTURES_FINGER_WARP_X/Y flags
@@ -769,6 +773,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Distance [mm] a finger can be away from it's expected location to be
   // considered part of the same finger group
   DoubleProperty button_max_dist_from_expected_;
+  // Flag to enable the right click on the right side of the hardware button
+  BoolProperty button_right_click_zone_enable_;
+  // The size of the right click zone on the right side of the hardware button
+  DoubleProperty button_right_click_zone_size_;
   // Timeval of time when keyboard was last touched. After the low one is set,
   // the two are converted into an stime_t and stored in keyboard_touched_.
   IntProperty keyboard_touched_timeval_high_;  // seconds
