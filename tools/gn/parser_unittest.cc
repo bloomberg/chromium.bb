@@ -677,3 +677,31 @@ TEST(Parser, HangingIf) {
 TEST(Parser, NegatingList) {
   DoParserErrorTest("executable(\"wee\") { sources =- [ \"foo.cc\" ] }", 1, 30);
 }
+
+TEST(Parser, ConditionNoBracesIf) {
+  DoParserErrorTest(
+      "if (true)\n"
+      "  foreach(foo, []) {}\n"
+      "else {\n"
+      "  foreach(bar, []) {}\n"
+      "}\n",
+      2, 3);
+}
+
+TEST(Parser, ConditionNoBracesElse) {
+  DoParserErrorTest(
+      "if (true) {\n"
+      "  foreach(foo, []) {}\n"
+      "} else\n"
+      "  foreach(bar, []) {}\n",
+      4, 3);
+}
+
+TEST(Parser, ConditionNoBracesElseIf) {
+  DoParserErrorTest(
+      "if (true) {\n"
+      "  foreach(foo, []) {}\n"
+      "} else if (true)\n"
+      "  foreach(bar, []) {}\n",
+      4, 3);
+}

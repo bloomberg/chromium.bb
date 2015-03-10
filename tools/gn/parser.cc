@@ -499,8 +499,13 @@ scoped_ptr<ParseNode> Parser::ParseCondition() {
     *err_ = Err(condition->condition(), "Assignment not allowed in 'if'.");
   Consume(Token::RIGHT_PAREN, "Expected ')' after condition of 'if'.");
   condition->set_if_true(ParseBlock().Pass());
-  if (Match(Token::ELSE))
+  if (Match(Token::ELSE)) {
+    if (!LookAhead(Token::LEFT_BRACE) && !LookAhead(Token::IF)) {
+      *err_ = Err(cur_token(), "Expected '{' or 'if' after 'else'.");
+      return scoped_ptr<ParseNode>();
+    }
     condition->set_if_false(ParseStatement().Pass());
+  }
   if (has_error())
     return scoped_ptr<ParseNode>();
   return condition.Pass();
