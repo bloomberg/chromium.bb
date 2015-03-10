@@ -2075,7 +2075,7 @@ function testResizeEvents() {
 
     console.log('Resizing <webview> width from 600px to 500px.');
     webview.style.width = '500px';
-  }
+  };
 
   webview.addEventListener('loadstop', loadstopListener);
   document.body.appendChild(webview);

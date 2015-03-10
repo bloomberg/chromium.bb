@@ -1957,6 +1957,41 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_Basic) {
   ASSERT_EQ(0u, items_after_all_removal.size());
 }
 
+// Called in the TestContextMenu test to cancel the context menu after its
+// shown notification is received.
+static bool ContextMenuNotificationCallback(
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  auto context_menu = content::Source<RenderViewContextMenu>(source).ptr();
+  context_menu->Cancel();
+  return true;
+}
+
+// Tests that a context menu is created when right-clicking in the webview. This
+// also tests that the 'contextmenu' event is handled correctly.
+IN_PROC_BROWSER_TEST_F(WebViewTest, TestContextMenu) {
+  LoadAppWithGuest("web_view/context_menus/basic");
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+
+  // Register an observer for the context menu.
+  content::WindowedNotificationObserver menu_observer(
+      chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
+      base::Bind(ContextMenuNotificationCallback));
+
+  // Open a context menu.
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebMouseEvent::ButtonRight;
+  mouse_event.x = 1;
+  mouse_event.y = 1;
+  guest_web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = blink::WebInputEvent::MouseUp;
+  guest_web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+
+  // Wait for the context menu to be visible.
+  menu_observer.Wait();
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllow) {
   MediaAccessAPIAllowTestHelper("testAllow");
 }
