@@ -46,6 +46,7 @@ public:
     ScriptPromise joinSession(ScriptState*, const String& presentationUrl, const String& presentationId);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(availablechange);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(defaultsessionstart);
 
     // The embedder needs to keep track if anything is listening to the event so it could stop the
     // might be expensive screen discovery process.
@@ -57,6 +58,10 @@ public:
     void didChangeAvailability(bool available);
     // Queried by the controller if |availablechange| event has any listeners.
     bool isAvailableChangeWatched() const;
+
+    // Called when the |defaultsessionstart| event needs to be fired.
+    void didStartDefaultSession(PresentationSession*);
+
     // Adds a session to the open sessions list.
     void registerSession(PresentationSession*);
 

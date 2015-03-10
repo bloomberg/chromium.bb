@@ -6,6 +6,7 @@
 #include "modules/presentation/PresentationController.h"
 
 #include "core/frame/LocalFrame.h"
+#include "modules/presentation/PresentationSession.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
 
 namespace blink {
@@ -72,6 +73,17 @@ void PresentationController::updateAvailableChangeWatched(bool watched)
 {
     if (m_client)
         m_client->updateAvailableChangeWatched(watched);
+}
+
+void PresentationController::didStartDefaultSession(WebPresentationSessionClient* sessionClient)
+{
+    if (!m_presentation) {
+        PresentationSession::dispose(sessionClient);
+        return;
+    }
+
+    PresentationSession* session = PresentationSession::take(sessionClient, m_presentation);
+    m_presentation->didStartDefaultSession(session);
 }
 
 void PresentationController::startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks* callbacks)

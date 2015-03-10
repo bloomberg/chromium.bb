@@ -64,6 +64,7 @@ cuechange
 cut
 datachannel
 dblclick
+defaultsessionstart
 devicelight
 devicemotion
 deviceorientation

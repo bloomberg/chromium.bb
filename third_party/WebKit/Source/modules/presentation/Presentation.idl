@@ -14,4 +14,5 @@
     [CallWith=ScriptState] Promise<PresentationSession> joinSession(DOMString presentationUrl, [Default=Undefined] optional DOMString presentationId);
 
     attribute EventHandler onavailablechange;
+    attribute EventHandler ondefaultsessionstart;
 };

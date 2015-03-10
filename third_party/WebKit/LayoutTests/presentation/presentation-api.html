@@ -11,6 +11,7 @@ test(function() {
     assert_true('startSession' in navigator.presentation);
     assert_true('joinSession' in navigator.presentation);
     assert_true('onavailablechange' in navigator.presentation);
+    assert_true('ondefaultsessionstart' in navigator.presentation);
 }, "Test that the Presentation API is present.")
 
 test(function() {
@@ -19,6 +20,7 @@ test(function() {
   assert_equals(typeof(navigator.presentation.startSession), "function");
   assert_equals(typeof(navigator.presentation.joinSession), "function");
   assert_equals(typeof(navigator.presentation.onavailablechange), "object");
+  assert_equals(typeof(navigator.presentation.ondefaultsessionstart), "object");
 }, "Test the Presentation API property types.");
 
 test(function() {

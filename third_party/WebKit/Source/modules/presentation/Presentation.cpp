@@ -14,6 +14,7 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/AvailableChangeEvent.h"
+#include "modules/presentation/DefaultSessionStartEvent.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationSessionClientCallbacks.h"
 
@@ -143,6 +144,11 @@ void Presentation::didChangeAvailability(bool available)
 bool Presentation::isAvailableChangeWatched() const
 {
     return hasEventListeners(EventTypeNames::availablechange);
+}
+
+void Presentation::didStartDefaultSession(PresentationSession* session)
+{
+    dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::defaultsessionstart, session));
 }
 
 void Presentation::registerSession(PresentationSession* session)
