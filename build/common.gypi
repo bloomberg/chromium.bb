@@ -1960,6 +1960,9 @@
           ['asan==1 or syzyasan==1', {
             'win_use_allocator_shim%': 0,
           }],
+          ['syzyasan==1', {
+            'kasko%': 1,
+          }],
           ['component=="shared_library" and "<(GENERATOR)"=="ninja"', {
             # Only enabled by default for ninja because it's buggy in VS.
             # Not enabled for component=static_library because some targets
