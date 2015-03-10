@@ -172,10 +172,16 @@ class GpuChannelManagerTest : public testing::Test {
 TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
   const int kClientId1 = 111;
   const int kClientId2 = 222;
-  ValueState kValueState1;
-  kValueState1.int_value[0] = 1111;
-  ValueState kValueState2;
-  kValueState2.int_value[0] = 3333;
+  ValueState value_state1;
+  value_state1.int_value[0] = 1111;
+  value_state1.int_value[1] = 0;
+  value_state1.int_value[2] = 0;
+  value_state1.int_value[3] = 0;
+  ValueState value_state2;
+  value_state2.int_value[0] = 3333;
+  value_state2.int_value[1] = 0;
+  value_state2.int_value[2] = 0;
+  value_state2.int_value[3] = 0;
 
   ASSERT_TRUE(simple_client_->gpu_channel_manager() != NULL);
 
@@ -195,10 +201,10 @@ TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
   // Make sure value states are only accessible by proper channels
   simple_client_->gpu_channel_manager()->OnMessageReceived(
       GpuMsg_UpdateValueState(
-          kClientId1, GL_MOUSE_POSITION_CHROMIUM, kValueState1));
+          kClientId1, GL_MOUSE_POSITION_CHROMIUM, value_state1));
   simple_client_->gpu_channel_manager()->OnMessageReceived(
       GpuMsg_UpdateValueState(
-          kClientId2, GL_MOUSE_POSITION_CHROMIUM, kValueState2));
+          kClientId2, GL_MOUSE_POSITION_CHROMIUM, value_state2));
 
   const gpu::ValueStateMap* pending_value_buffer_state1 =
       channel1->pending_valuebuffer_state();
@@ -212,8 +218,8 @@ TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
       pending_value_buffer_state2->GetState(GL_MOUSE_POSITION_CHROMIUM);
   ASSERT_NE(state1, state2);
 
-  ASSERT_EQ(state1->int_value[0], kValueState1.int_value[0]);
-  ASSERT_EQ(state2->int_value[0], kValueState2.int_value[0]);
+  ASSERT_EQ(state1->int_value[0], value_state1.int_value[0]);
+  ASSERT_EQ(state2->int_value[0], value_state2.int_value[0]);
   ASSERT_NE(state1->int_value[0], state2->int_value[0]);
 }
 
