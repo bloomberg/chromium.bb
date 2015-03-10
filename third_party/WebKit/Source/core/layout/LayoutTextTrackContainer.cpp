@@ -29,13 +29,13 @@
 #include "core/layout/LayoutTextTrackContainer.h"
 
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
-#include "core/html/HTMLMediaElement.h"
-#include "core/html/track/TextTrackContainer.h"
+#include "core/layout/LayoutVideo.h"
 
 namespace blink {
 
 LayoutTextTrackContainer::LayoutTextTrackContainer(Element* element)
     : LayoutBlockFlow(element)
+    , m_fontSize(0)
 {
 }
 
@@ -47,11 +47,32 @@ void LayoutTextTrackContainer::layout()
 
     DeprecatedScheduleStyleRecalcDuringLayout marker(node()->document().lifecycle());
 
-    TextTrackContainer* textTrackContainer = toTextTrackContainer(node());
-    ASSERT(textTrackContainer);
     // Overlay enclosure -> Media controls -> Media element
     LayoutObject* mediaElementLayoutObject = parent()->parent()->parent();
-    textTrackContainer->updateSizes(mediaElementLayoutObject);
+    if (!mediaElementLayoutObject || !mediaElementLayoutObject->isVideo())
+        return;
+    if (updateSizes(toLayoutVideo(*mediaElementLayoutObject)))
+        toElement(node())->setInlineStyleProperty(CSSPropertyFontSize, m_fontSize, CSSPrimitiveValue::CSS_PX);
+}
+
+bool LayoutTextTrackContainer::updateSizes(const LayoutVideo& videoLayoutObject)
+{
+    // FIXME: The video size is used to calculate the font size (a workaround
+    // for lack of per-spec vh/vw support) but the whole media element is used
+    // for cue rendering. This is inconsistent. See also the somewhat related
+    // spec bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28105
+    IntSize videoSize = videoLayoutObject.videoBox().size();
+    if (m_videoSize == videoSize)
+        return false;
+    m_videoSize = videoSize;
+
+    float smallestDimension = std::min(m_videoSize.height(), m_videoSize.width());
+
+    float fontSize = smallestDimension * 0.05f;
+    if (m_fontSize == fontSize)
+        return false;
+    m_fontSize = fontSize;
+    return true;
 }
 
 } // namespace blink

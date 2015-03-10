@@ -41,7 +41,6 @@ public:
     static PassRefPtrWillBeRawPtr<TextTrackContainer> create(Document&);
 
     void updateDisplay(HTMLMediaElement&);
-    void updateSizes(LayoutObject*);
 
 private:
     TextTrackContainer(Document&);
@@ -49,9 +48,6 @@ private:
     virtual bool isTextTrackContainer() const override { return true; }
 
     virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
-
-    IntSize m_videoSize;
-    float m_fontSize;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(TextTrackContainer, isTextTrackContainer());

@@ -33,13 +33,11 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/track/CueTimeline.h"
 #include "core/layout/LayoutTextTrackContainer.h"
-#include "core/layout/LayoutVideo.h"
 
 namespace blink {
 
 TextTrackContainer::TextTrackContainer(Document& document)
     : HTMLDivElement(document)
-    , m_fontSize(0)
 {
 }
 
@@ -121,33 +119,6 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
         removeInlineStyleProperty(CSSPropertyDisplay);
     else
         setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-}
-
-void TextTrackContainer::updateSizes(LayoutObject* mediaElementLayoutObject)
-{
-    if (!document().isActive())
-        return;
-
-    if (!mediaElementLayoutObject || !mediaElementLayoutObject->isVideo())
-        return;
-
-    // FIXME: The video size is used to calculate the font size (a workaround
-    // for lack of per-spec vh/vw support) but the whole media element is used
-    // for cue rendering. This is inconsistent. See also the somewhat related
-    // spec bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28105
-    IntSize videoSize = toLayoutVideo(mediaElementLayoutObject)->videoBox().size();
-
-    if (m_videoSize == videoSize)
-        return;
-    m_videoSize = videoSize;
-
-    float smallestDimension = std::min(m_videoSize.height(), m_videoSize.width());
-
-    float fontSize = smallestDimension * 0.05f;
-    if (fontSize != m_fontSize) {
-        m_fontSize = fontSize;
-        setInlineStyleProperty(CSSPropertyFontSize, fontSize, CSSPrimitiveValue::CSS_PX);
-    }
 }
 
 } // namespace blink

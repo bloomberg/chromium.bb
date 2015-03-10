@@ -29,10 +29,12 @@
 #define LayoutTextTrackContainer_h
 
 #include "core/layout/LayoutBlockFlow.h"
+#include "platform/geometry/IntSize.h"
 
 namespace blink {
 
 class Element;
+class LayoutVideo;
 
 class LayoutTextTrackContainer final : public LayoutBlockFlow {
 public:
@@ -40,6 +42,11 @@ public:
 
 private:
     virtual void layout() override;
+
+    bool updateSizes(const LayoutVideo&);
+
+    IntSize m_videoSize;
+    float m_fontSize;
 };
 
 } // namespace blink
