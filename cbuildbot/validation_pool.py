@@ -1685,7 +1685,8 @@ class ValidationPool(object):
   # Note: All submit code, all gerrit code, and basically everything other
   # than patch resolution/applying needs to use .change_id from patch objects.
   # Basically all code from this point forward.
-  def _SubmitChangeWithDeps(self, patch_series, change, errors, limit_to):
+  def _SubmitChangeWithDeps(self, patch_series, change, errors, limit_to,
+                            reason=None):
     """Submit |change| and its dependencies.
 
     If you call this function multiple times with the same PatchSeries, each
@@ -1698,6 +1699,7 @@ class ValidationPool(object):
         encountered errors, and map them to the associated exception object.
       limit_to: The list of patches that were approved by this CQ run. We will
         only consider submitting patches that are in this list.
+      reason: (Optional) string reason for submission to be recorded in cidb.
 
     Returns:
       A copy of the errors object. If new errors have occurred while submitting
@@ -1723,7 +1725,7 @@ class ValidationPool(object):
       # If there were no errors, submit the patch.
       if dep_error is None:
         try:
-          if self._SubmitChange(dep_change) or self.dryrun:
+          if self._SubmitChange(dep_change, reason=reason) or self.dryrun:
             submitted.append(dep_change)
           else:
             msg = self.INCONSISTENT_SUBMIT_MSG
@@ -1762,7 +1764,8 @@ class ValidationPool(object):
 
     return errors
 
-  def SubmitChanges(self, changes, check_tree_open=True, throttled_ok=True):
+  def SubmitChanges(self, changes, check_tree_open=True, throttled_ok=True,
+                    reason=None):
     """Submits the given changes to Gerrit.
 
     Args:
@@ -1770,6 +1773,7 @@ class ValidationPool(object):
       check_tree_open: Whether to check that the tree is open before submitting
         changes. If this is False, TreeIsClosedException will never be raised.
       throttled_ok: if |check_tree_open|, treat a throttled tree as open
+      reason: (Optional) string reason for submission to be recorded in cidb.
 
     Returns:
       (submitted, errors) where submitted is a set of changes that were
@@ -1815,7 +1819,7 @@ class ValidationPool(object):
       def _SubmitPlan(*plan):
         for change in plan:
           p_errors.update(self._SubmitChangeWithDeps(
-              patch_series, change, dict(p_errors), plan))
+              patch_series, change, dict(p_errors), plan, reason=reason))
       parallel.RunTasksInProcessPool(_SubmitPlan, plans, processes=4)
 
       for patch, error in p_errors.items():
@@ -1908,8 +1912,13 @@ class ValidationPool(object):
     """
     return gerrit.GetGerritPatchInfoWithPatchQueries(changes)
 
-  def _SubmitChange(self, change):
-    """Submits patch using Gerrit Review."""
+  def _SubmitChange(self, change, reason=None):
+    """Submits patch using Gerrit Review.
+
+    Args:
+      change: GerritPatch to submit.
+      reason: (Optional) string reason to be recorded in cidb.
+    """
     logging.info('Change %s will be submitted', change)
     was_change_submitted = False
     helper = self._helper_pool.ForChange(change)
@@ -1959,8 +1968,12 @@ class ValidationPool(object):
       timestamp = int(time.time())
       metadata.RecordCLAction(change, action, timestamp)
       _, db = self._run.GetCIDBHandle()
+      # NOTE(akeshet): The same |reason| will be recorded, regardless of whether
+      # the change was submitted successfully or unsuccessfully. This is
+      # probably what we want, because it gives us a way to determine why we
+      # tried to submit changes that failed to submit.
       if db:
-        self._InsertCLActionToDatabase(change, action)
+        self._InsertCLActionToDatabase(change, action, reason)
 
     return was_change_submitted
 
@@ -2001,26 +2014,29 @@ class ValidationPool(object):
           build_id,
           [clactions.CLAction.FromGerritPatchAndAction(change, action, reason)])
 
-  def SubmitNonManifestChanges(self, check_tree_open=True):
+  def SubmitNonManifestChanges(self, check_tree_open=True, reason=None):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.
 
     Args:
       check_tree_open: Whether to check that the tree is open before submitting
         changes. If this is False, TreeIsClosedException will never be raised.
+      reason: (Optional) string reason for submission to be recorded in cidb.
 
     Raises:
       TreeIsClosedException: if the tree is closed.
     """
     self.SubmitChanges(self.non_manifest_changes,
-                       check_tree_open=check_tree_open)
+                       check_tree_open=check_tree_open,
+                       reason=reason)
 
-  def SubmitPool(self, check_tree_open=True, throttled_ok=True):
+  def SubmitPool(self, check_tree_open=True, throttled_ok=True, reason=None):
     """Commits changes to Gerrit from Pool.  This is only called by a master.
 
     Args:
       check_tree_open: Whether to check that the tree is open before submitting
         changes. If this is False, TreeIsClosedException will never be raised.
       throttled_ok: if |check_tree_open|, treat a throttled tree as open
+      reason: (Optional) string reason for submission to be recorded in cidb.
 
     Raises:
       TreeIsClosedException: if the tree is closed.
@@ -2034,7 +2050,8 @@ class ValidationPool(object):
     # to minimize wasting the developers time.
     submitted, errors = self.SubmitChanges(self.changes,
                                            check_tree_open=check_tree_open,
-                                           throttled_ok=throttled_ok)
+                                           throttled_ok=throttled_ok,
+                                           reason=reason)
     if errors:
       raise FailedToSubmitAllChangesException(errors, len(submitted))
 
@@ -2042,7 +2059,7 @@ class ValidationPool(object):
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
   def SubmitPartialPool(self, changes, messages, changes_by_config, failing,
-                        inflight, no_stat):
+                        inflight, no_stat, reason=None):
     """If the build failed, push any CLs that don't care about the failure.
 
     In this function we calculate what CLs are definitely innocent and submit
@@ -2061,6 +2078,7 @@ class ValidationPool(object):
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
+      reason: (Optional) string reason for submission to be recorded in cidb.
 
     Returns:
       A set of the non-submittable changes.
@@ -2072,7 +2090,13 @@ class ValidationPool(object):
       logging.info('The following changes will be submitted using '
                    'board-aware submission logic: %s',
                    cros_patch.GetChangesAsString(fully_verified))
-    self.SubmitChanges(fully_verified)
+    # TODO(akeshet): We have no way to record different submission reasons for
+    # different CLs, if we had multiple different BAS strategies at work for
+    # them. If we add new strategies to GetFullyVerifiedChanges
+    # strategy above, we should move responsibility to determining |reason| from
+    # the caller of SubmitPartialPool to either SubmitPartialPool or
+    # GetFullyVerifiedChanges.
+    self.SubmitChanges(fully_verified, reason=reason)
 
     # Return the list of non-submittable changes.
     return set(changes) - set(fully_verified)

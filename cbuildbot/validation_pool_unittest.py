@@ -639,13 +639,14 @@ class TestSubmitChange(MoxBase):
     # Prepare replay script.
     pool._helper_pool.ForChange(change).AndReturn(helper)
     helper.SubmitChange(change, dryrun=False)
-    pool._InsertCLActionToDatabase(change, mox.IgnoreArg())
+    pool._InsertCLActionToDatabase(change, mox.IgnoreArg(), mox.IgnoreArg())
     for result in results:
       helper.QuerySingleRecord(change.gerrit_number).AndReturn(result)
     self.mox.ReplayAll()
 
     # Verify results.
-    retval = validation_pool.ValidationPool._SubmitChange(pool, change)
+    retval = validation_pool.ValidationPool._SubmitChange(
+        pool, change, reason=mox.IgnoreArg())
     self.mox.VerifyAll()
     return retval
 
@@ -906,8 +907,8 @@ class TestCoreLogic(MoxBase):
     pool, patches, _failed = self._setUpSubmit()
     patch1, patch2, patch3 = patches
 
-    pool._SubmitChange(patch1).AndReturn(True)
-    pool._SubmitChange(patch2).AndReturn(False)
+    pool._SubmitChange(patch1, reason=None).AndReturn(True)
+    pool._SubmitChange(patch2, reason=None).AndReturn(False)
 
     pool._HandleCouldNotSubmit(patch2, mox.IgnoreArg()).InAnyOrder()
     pool._HandleCouldNotSubmit(patch3, mox.IgnoreArg()).InAnyOrder()
@@ -920,26 +921,28 @@ class TestCoreLogic(MoxBase):
   def testSubmitPool(self):
     """Tests that we can submit a pool of patches."""
     pool, patches, failed = self._setUpSubmit()
+    reason = 'fake reason'
 
     for patch in patches:
-      pool._SubmitChange(patch).AndReturn(True)
+      pool._SubmitChange(patch, reason=reason).AndReturn(True)
 
     pool._HandleApplyFailure(failed)
 
     self.mox.ReplayAll()
-    pool.SubmitPool()
+    pool.SubmitPool(reason=reason)
     self.mox.VerifyAll()
 
   def testSubmitNonManifestChanges(self):
     """Simple test to make sure we can submit non-manifest changes."""
     pool, patches, _failed = self._setUpSubmit()
     pool.non_manifest_changes = patches[:]
+    reason = 'fake reason'
 
     for patch in patches:
-      pool._SubmitChange(patch).AndReturn(True)
+      pool._SubmitChange(patch, reason=reason).AndReturn(True)
 
     self.mox.ReplayAll()
-    pool.SubmitNonManifestChanges()
+    pool.SubmitNonManifestChanges(reason=reason)
     self.mox.VerifyAll()
 
   def testUnhandledExceptions(self):
@@ -1527,7 +1530,7 @@ class MockValidationPool(partial_mock.PartialMock):
   def GetSubmittedChanges(self):
     return list(self.submitted)
 
-  def _SubmitChange(self, _inst, change):
+  def _SubmitChange(self, _inst, change, reason=None):
     result = self.submit_results.get(change, True)
     self.submitted.append(change)
     if isinstance(result, Exception):
@@ -1567,21 +1570,22 @@ class BaseSubmitPoolTestCase(MoxBase):
       pool.changes_that_failed_to_apply_earlier = errors[:]
     return pool
 
-  def SubmitPool(self, submitted=(), rejected=(), **kwargs):
+  def SubmitPool(self, submitted=(), rejected=(), reason=None, **kwargs):
     """Helper function for testing that we can submit a pool successfully.
 
     Args:
       submitted: List of changes that we expect to be submitted.
       rejected: List of changes that we expect to be rejected.
+      reason: Expected reason for submitting changes.
       **kwargs: Keyword arguments for SetUpPatchPool.
     """
     # Set up our pool and submit the patches.
     pool = self.SetUpPatchPool(**kwargs)
     if not self.ALL_BUILDS_PASSED:
       actually_rejected = sorted(pool.SubmitPartialPool(
-          pool.changes, mock.ANY, dict(), [], [], []))
+          pool.changes, mock.ANY, dict(), [], [], [], reason=reason))
     else:
-      _, actually_rejected = pool.SubmitChanges(self.patches)
+      _, actually_rejected = pool.SubmitChanges(self.patches, reason=reason)
 
     # Check that the right patches were submitted and rejected.
     self.assertItemsEqual(list(rejected), list(actually_rejected))
