@@ -661,7 +661,7 @@ importer.RuntimeCommandWidget.prototype.update =
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
 
       this.mainButton_.setAttribute('title', strf(
-          'CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE'));
+          'CLOUD_IMPORT_TOOLTIP_INSUFFICIENT_SPACE'));
       this.statusContent_.innerHTML = strf(
           'CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE',
           opt_scan.getFileEntries().length);
@@ -678,7 +678,7 @@ importer.RuntimeCommandWidget.prototype.update =
 
     case importer.ActivityState.NO_MEDIA:
       this.mainButton_.setAttribute('title', str(
-          'CLOUD_IMPORT_STATUS_NO_MEDIA'));
+          'CLOUD_IMPORT_TOOLTIP_NO_MEDIA'));
       this.statusContent_.innerHTML = str(
           'CLOUD_IMPORT_STATUS_NO_MEDIA');
 
