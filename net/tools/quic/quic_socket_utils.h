@@ -7,6 +7,7 @@
 #ifndef NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_
 #define NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_
 
+#include <fcntl.h>
 #include <stddef.h>
 #include <sys/socket.h>
 #include <string>
@@ -30,6 +31,10 @@ class QuicSocketUtils {
   // to the correct value and return true. Otherwise it will return false.
   static bool GetOverflowFromMsghdr(struct msghdr* hdr,
                                     QuicPacketCount* dropped_packets);
+
+  // Compatibility wrapper for systems that do not support SOCK_NONBLOCK as
+  // a creation option, so resort to fcntl(). Also logs an error on failure.
+  static int CreateNonBlockingSocket(int domain, int type, int protocol);
 
   // Sets either IP_PKTINFO or IPV6_PKTINFO on the socket, based on
   // address_family.  Returns the return code from setsockopt.

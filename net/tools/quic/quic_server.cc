@@ -5,7 +5,10 @@
 #include "net/tools/quic/quic_server.h"
 
 #include <errno.h>
+#ifndef __APPLE__
+// This is a GNU header that is not present in /usr/include on MacOS
 #include <features.h>
+#endif
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -99,11 +102,10 @@ QuicServer::~QuicServer() {
 bool QuicServer::Listen(const IPEndPoint& address) {
   port_ = address.port();
   int address_family = address.GetSockAddrFamily();
-  fd_ = socket(address_family, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
-  if (fd_ < 0) {
-    LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);
-    return false;
-  }
+  fd_ = QuicSocketUtils::CreateNonBlockingSocket(address_family, SOCK_DGRAM,
+                                                 IPPROTO_UDP);
+  if (fd_ < 0)
+    return false;  // failure already logged
 
   // Enable the socket option that allows the local address to be
   // returned if the socket is bound to more than one address.

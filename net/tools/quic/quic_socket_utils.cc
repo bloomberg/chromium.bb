@@ -67,6 +67,30 @@ bool QuicSocketUtils::GetOverflowFromMsghdr(struct msghdr* hdr,
 }
 
 // static
+int QuicSocketUtils::CreateNonBlockingSocket(int domain,
+                                             int type,
+                                             int protocol) {
+  int fd;
+  int set_nonblocking = 1;
+#ifdef SOCK_NONBLOCK
+  fd = socket(domain, type | SOCK_NONBLOCK, protocol);
+  set_nonblocking = 0;
+#else
+  fd = socket(domain, type, protocol);
+#endif
+  if (fd < 0)
+    LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);
+  else if (set_nonblocking &&  // compiler will elide this code on Linux
+           fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) < 0) {
+    close(fd);
+    LOG(FATAL) << "fcntl(O_NONBLOCK) failed: " << strerror(errno);
+    fd = -1;
+  }
+
+  return fd;
+}
+
+// static
 int QuicSocketUtils::SetGetAddressInfo(int fd, int address_family) {
   int get_local_ip = 1;
   int rc = setsockopt(fd, IPPROTO_IP, IP_PKTINFO,
@@ -105,7 +129,7 @@ int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
   const int kSpaceForOverflowAndIp =
       CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(in6_pktinfo));
   char cbuf[kSpaceForOverflowAndIp];
-  memset(cbuf, 0, arraysize(cbuf));
+  memset(cbuf, 0, sizeof cbuf);
 
   iovec iov = {buffer, buf_len};
   struct sockaddr_storage raw_address;
@@ -118,9 +142,9 @@ int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
   hdr.msg_flags = 0;
 
   struct cmsghdr* cmsg = (struct cmsghdr*)cbuf;
-  cmsg->cmsg_len = arraysize(cbuf);
+  cmsg->cmsg_len = sizeof cbuf;
   hdr.msg_control = cmsg;
-  hdr.msg_controllen = arraysize(cbuf);
+  hdr.msg_controllen = sizeof cbuf;
 
   int bytes_read = recvmsg(fd, &hdr, 0);
 
