@@ -220,9 +220,15 @@ static jboolean GetSearchSuggestManaged(JNIEnv* env, jobject obj) {
 }
 
 static jboolean GetProtectedMediaIdentifierEnabled(JNIEnv* env, jobject obj) {
+  // Migrate Settings from Preferences to the Host Content Settings Map.
+  // TODO (knn): Remove this once users have migrated.
+  PrefService* prefs = GetPrefService();
+  if (!prefs->GetBoolean(prefs::kProtectedMediaIdentifierEnabled)) {
+    prefs->SetBoolean(prefs::kProtectedMediaIdentifierEnabled, true);
+    SetProtectedMediaIdentifierEnabled(env, obj, false);
+  }
   return GetBooleanForContentSetting(
-             CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) &&
-         GetPrefService()->GetBoolean(prefs::kProtectedMediaIdentifierEnabled);
+      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
 }
 
 static jboolean GetPushNotificationsEnabled(JNIEnv* env, jobject obj) {
@@ -230,14 +236,20 @@ static jboolean GetPushNotificationsEnabled(JNIEnv* env, jobject obj) {
 }
 
 static jboolean GetAllowLocationEnabled(JNIEnv* env, jobject obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION) &&
-         GetPrefService()->GetBoolean(prefs::kGeolocationEnabled);
+  // Migrate Settings from Preferences to the Host Content Settings Map.
+  // TODO (knn): Remove this once users have migrated.
+  PrefService* prefs = GetPrefService();
+  // Non-user-modifiable preference levels should have been migrated already.
+  DCHECK(prefs->IsUserModifiablePreference(prefs::kGeolocationEnabled));
+  if (!prefs->GetBoolean(prefs::kGeolocationEnabled)) {
+    prefs->SetBoolean(prefs::kGeolocationEnabled, true);
+    SetAllowLocationEnabled(env, obj, false);
+  }
+  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
 static jboolean GetAllowLocationUserModifiable(JNIEnv* env, jobject obj) {
-  return IsContentSettingUserModifiable(CONTENT_SETTINGS_TYPE_GEOLOCATION) &&
-         GetPrefService()->IsUserModifiablePreference(
-             prefs::kGeolocationEnabled);
+  return IsContentSettingUserModifiable(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
 static jboolean GetAllowLocationManagedByCustodian(JNIEnv* env, jobject obj) {
@@ -486,17 +498,11 @@ static void SetAllowPopupsEnabled(JNIEnv* env, jobject obj, jboolean allow) {
 }
 
 static jboolean GetCameraMicEnabled(JNIEnv* env, jobject obj) {
-  PrefService* prefs = GetPrefService();
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM) &&
-         prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
-         prefs->GetBoolean(prefs::kVideoCaptureAllowed);
+  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
 static jboolean GetCameraMicUserModifiable(JNIEnv* env, jobject obj) {
-  PrefService* prefs = GetPrefService();
-  return IsContentSettingUserModifiable(CONTENT_SETTINGS_TYPE_MEDIASTREAM) &&
-         prefs->IsUserModifiablePreference(prefs::kAudioCaptureAllowed) &&
-         prefs->IsUserModifiablePreference(prefs::kVideoCaptureAllowed);
+  return IsContentSettingUserModifiable(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
 static jboolean GetCameraMicManagedByCustodian(JNIEnv* env, jobject obj) {
