@@ -1,5 +1,5 @@
 diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
-index 36b7011..aca19d3 100644
+index 36b7011..6cec34a 100644
 --- a/third_party/qcms/src/iccread.c
 +++ b/third_party/qcms/src/iccread.c
 @@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
@@ -42,12 +42,13 @@ index 36b7011..aca19d3 100644
  
  static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
  {
-@@ -344,6 +354,47 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
+@@ -344,6 +354,152 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
  	return tag;
  }
  
 +#define DESC_TYPE 0x64657363 // 'desc'
 +#define MLUC_TYPE 0x6d6c7563 // 'mluc'
++#define MMOD_TYPE 0x6D6D6F64 // 'mmod'
 +
 +static bool read_tag_descType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
 +{
@@ -57,23 +58,31 @@ index 36b7011..aca19d3 100644
 +		uint32_t offset = tag->offset;
 +		uint32_t type = read_u32(src, offset);
 +		uint32_t length = read_u32(src, offset+8);
-+		uint32_t i, description;
++		uint32_t i, description_offset;
++		bool mluc = false;
 +		if (length && type == MLUC_TYPE) {
 +			length = read_u32(src, offset+20);
 +			if (!length || (length & 1) || (read_u32(src, offset+12) != 12))
 +				goto invalid_desc_tag;
-+			description = offset + read_u32(src, offset+24);
++			description_offset = offset + read_u32(src, offset+24);
 +			if (!src->valid)
 +				goto invalid_desc_tag;
++			mluc = true;
 +		} else if (length && type == DESC_TYPE) {
-+			description = offset + 12;
++			description_offset = offset + 12;
 +		} else {
 +			goto invalid_desc_tag;
 +		}
 +		if (length >= limit)
 +			length = limit - 1;
-+		for (i = 0; i < length; ++i)
-+			profile->description[i] = read_u8(src, description+i);
++		for (i = 0; i < length; ++i) {
++			uint8_t value = read_u8(src, description_offset + i);
++			if (!src->valid)
++				goto invalid_desc_tag;
++			if (mluc && !value)
++				value = '.';
++			profile->description[i] = value;
++		}
 +		profile->description[length] = 0;
 +	} else {
 +		goto invalid_desc_tag;
@@ -87,10 +96,106 @@ index 36b7011..aca19d3 100644
 +	return false;
 +}
 +
++#if defined(__APPLE__)
++
++// Use the dscm tag to change profile description "Display" to its more specific en-localized monitor name, if any.
++
++#define TAG_dscm  0x6473636D // 'dscm'
++
++static bool read_tag_dscmType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
++{
++	if (strcmp(profile->description, "Display") != 0)
++		return true;
++
++	struct tag *tag = find_tag(index, tag_id);
++	if (tag) {
++		uint32_t offset = tag->offset;
++		uint32_t type = read_u32(src, offset);
++		uint32_t records = read_u32(src, offset+8);
++
++		if (!src->valid || !records || type != MLUC_TYPE)
++			goto invalid_dscm_tag;
++		if (read_u32(src, offset+12) != 12) // MLUC record size: bytes
++			goto invalid_dscm_tag;
++
++		for (uint32_t i = 0; i < records; ++i) {
++			const uint32_t limit = sizeof profile->description;
++			const uint16_t isoen = 0x656E; // ISO-3166-1 language 'en'
++
++			uint16_t language = read_u16(src, offset + 16 + (i * 12) + 0);
++			uint32_t length = read_u32(src, offset + 16 + (i * 12) + 4);
++			uint32_t description_offset = read_u32(src, offset + 16 + (i * 12) + 8);
++
++			if (!src->valid || !length || (length & 1))
++				goto invalid_dscm_tag;
++			if (language != isoen)
++				continue;
++
++			// Use a prefix to identify the display description source
++			strcpy(profile->description, "dscm:");
++			length += 5;
++
++			if (length >= limit)
++				length = limit - 1;
++			for (uint32_t j = 5; j < length; ++j) {
++				uint8_t value = read_u8(src, offset + description_offset + j - 5);
++				if (!src->valid)
++					goto invalid_dscm_tag;
++				profile->description[j] = value ? value : '.';
++			}
++			profile->description[length] = 0;
++			break;
++		}
++	}
++
++	if (src->valid)
++		return true;
++
++invalid_dscm_tag:
++	invalid_source(src, "invalid dscm tag");
++	return false;
++}
++
++// Use the mmod tag to change profile description "Display" to its specific mmod maker model data, if any.
++
++#define TAG_mmod  0x6D6D6F64 // 'mmod'
++
++static bool read_tag_mmodType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
++{
++	if (strcmp(profile->description, "Display") != 0)
++		return true;
++
++	struct tag *tag = find_tag(index, tag_id);
++	if (tag) {
++		const uint8_t length = 4 * 4; // Four 4-byte fields: 'mmod', 0, maker, model.
++
++		uint32_t offset = tag->offset;
++		if (tag->size < 40 || read_u32(src, offset) != MMOD_TYPE)
++			goto invalid_mmod_tag;
++
++		for (uint8_t i = 0; i < length; ++i) {
++			uint8_t value = read_u8(src, offset + i);
++			if (!src->valid)
++				goto invalid_mmod_tag;
++			profile->description[i] = value ? value : '.';
++		}
++		profile->description[length] = 0;
++	}
++
++	if (src->valid)
++		return true;
++
++invalid_mmod_tag:
++	invalid_source(src, "invalid mmod tag");
++	return false;
++}
++
++#endif // __APPLE__
++
  #define XYZ_TYPE		0x58595a20 // 'XYZ '
  #define CURVE_TYPE		0x63757276 // 'curv'
  #define PARAMETRIC_CURVE_TYPE	0x70617261 // 'para'
-@@ -402,7 +453,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
+@@ -402,7 +558,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
  // present that are not part of the tag_index.
  static struct curveType *read_curveType(struct mem_source *src, uint32_t offset, uint32_t *len)
  {
@@ -99,7 +204,7 @@ index 36b7011..aca19d3 100644
  	struct curveType *curve = NULL;
  	uint32_t type = read_u32(src, offset);
  	uint32_t count;
-@@ -484,19 +535,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
+@@ -484,19 +640,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
  	uint32_t channel_offset = 0;
  	int i;
  	for (i = 0; i < num_channels; i++) {
@@ -125,7 +230,7 @@ index 36b7011..aca19d3 100644
  }
  
  static void mAB_release(struct lutmABType *lut)
-@@ -657,7 +712,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -657,7 +817,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  	uint16_t num_input_table_entries;
  	uint16_t num_output_table_entries;
  	uint8_t in_chan, grid_points, out_chan;
@@ -134,7 +239,7 @@ index 36b7011..aca19d3 100644
  	uint32_t clut_size;
  	size_t entry_size;
  	struct lutType *lut;
-@@ -979,6 +1034,9 @@ qcms_profile* qcms_profile_sRGB(void)
+@@ -979,6 +1139,9 @@ qcms_profile* qcms_profile_sRGB(void)
  		return NO_MEM_PROFILE;
  
  	profile = qcms_profile_create_rgb_with_table(D65, Rec709Primaries, table, 1024);
@@ -144,7 +249,7 @@ index 36b7011..aca19d3 100644
  	free(table);
  	return profile;
  }
-@@ -997,6 +1055,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+@@ -997,6 +1160,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  	source.size = size;
  	source.valid = true;
  
@@ -154,17 +259,23 @@ index 36b7011..aca19d3 100644
  	length = read_u32(src, 0);
  	if (length <= size) {
  		// shrink the area that we can read if appropriate
-@@ -1028,6 +1089,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+@@ -1028,6 +1194,15 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  	if (!src->valid || !index.tags)
  		goto invalid_tag_table;
  
 +	if (!read_tag_descType(profile, src, index, TAG_desc))
 +		goto invalid_tag_table;
++#if defined(__APPLE__)
++	if (!read_tag_dscmType(profile, src, index, TAG_dscm))
++		goto invalid_tag_table;
++	if (!read_tag_mmodType(profile, src, index, TAG_mmod))
++		goto invalid_tag_table;
++#endif // __APPLE__
 +
  	if (find_tag(index, TAG_CHAD)) {
  		profile->chromaticAdaption = read_tag_s15Fixed16ArrayType(src, index, TAG_CHAD);
  	} else {
-@@ -1098,6 +1162,16 @@ invalid_profile:
+@@ -1098,6 +1273,16 @@ invalid_profile:
  	return INVALID_PROFILE;
  }
  
@@ -182,7 +293,7 @@ index 36b7011..aca19d3 100644
  {
  	return profile->rendering_intent;
 diff --git a/third_party/qcms/src/qcms.h b/third_party/qcms/src/qcms.h
-index 7d83623..c69a772 100644
+index 7d83623..e9c0b09 100644
 --- a/third_party/qcms/src/qcms.h
 +++ b/third_party/qcms/src/qcms.h
 @@ -40,6 +40,12 @@ sale, use or other dealings in this Software without written
@@ -221,11 +332,19 @@ index 7d83623..c69a772 100644
  void qcms_profile_precache_output_transform(qcms_profile *profile);
  
  qcms_transform* qcms_transform_create(
-@@ -146,6 +161,7 @@ qcms_transform* qcms_transform_create(
- void qcms_transform_release(qcms_transform *);
+@@ -143,9 +158,14 @@ qcms_transform* qcms_transform_create(
+ 		qcms_profile* out, qcms_data_type out_type,
+ 		qcms_intent intent);
+ 
+-void qcms_transform_release(qcms_transform *);
++qcms_bool qcms_transform_create_LUT_zyx_bgra(
++		qcms_profile *in, qcms_profile* out, qcms_intent intent,
++		int samples, unsigned char* lut);
  
  void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length);
 +void qcms_transform_data_type(qcms_transform *transform, void *src, void *dest, size_t length, qcms_output_type type);
++
++void qcms_transform_release(qcms_transform *);
  
  void qcms_enable_iccv4();
  
@@ -565,7 +684,7 @@ index 6a5faf9..fa7f2d1 100644
 +    dest[b_out] = otdata_b[output[2]];
  }
 diff --git a/third_party/qcms/src/transform.c b/third_party/qcms/src/transform.c
-index 9a6562b..08db142 100644
+index 9a6562b..f669a6b 100644
 --- a/third_party/qcms/src/transform.c
 +++ b/third_party/qcms/src/transform.c
 @@ -181,11 +181,20 @@ compute_chromatic_adaption(struct CIE_XYZ source_white_point,
@@ -981,8 +1100,53 @@ index 9a6562b..08db142 100644
  
  	/* don't precache if we do not have the TRC curves */
  	if (!profile->redTRC || !profile->greenTRC || !profile->blueTRC)
-@@ -1078,7 +1153,8 @@ qcms_transform* qcms_transform_precacheLUT_float(qcms_transform *transform, qcms
- 	//XXX: qcms_modular_transform_data may return either the src or dest buffer. If so it must not be free-ed
+@@ -1043,28 +1118,31 @@ qcms_transform* qcms_transform_precacheLUT_float(qcms_transform *transform, qcms
+ 	float* src = NULL;
+ 	float* dest = NULL;
+ 	float* lut = NULL;
++	float inverse;
+ 
+ 	src = malloc(lutSize*sizeof(float));
+ 	dest = malloc(lutSize*sizeof(float));
+ 
+ 	if (src && dest) {
+-		/* Prepare a list of points we want to sample */
++		/* Prepare a list of points we want to sample: x, y, z order */
+ 		l = 0;
++		inverse = 1 / (float)(samples-1);
+ 		for (x = 0; x < samples; x++) {
+ 			for (y = 0; y < samples; y++) {
+ 				for (z = 0; z < samples; z++) {
+-					src[l++] = x / (float)(samples-1);
+-					src[l++] = y / (float)(samples-1);
+-					src[l++] = z / (float)(samples-1);
++					src[l++] = x * inverse; // r
++					src[l++] = y * inverse; // g
++					src[l++] = z * inverse; // b
+ 				}
+ 			}
+ 		}
+ 
+ 		lut = qcms_chain_transform(in, out, src, dest, lutSize);
++
+ 		if (lut) {
+-			transform->r_clut = &lut[0];
+-			transform->g_clut = &lut[1];
+-			transform->b_clut = &lut[2];
++			transform->r_clut = &lut[0]; // r
++			transform->g_clut = &lut[1]; // g
++			transform->b_clut = &lut[2]; // b
+ 			transform->grid_size = samples;
+ 			if (in_type == QCMS_DATA_RGBA_8) {
+ 				transform->transform_fn = qcms_transform_data_tetra_clut_rgba;
+@@ -1074,11 +1152,12 @@ qcms_transform* qcms_transform_precacheLUT_float(qcms_transform *transform, qcms
+ 		}
+ 	}
+ 
+-
+-	//XXX: qcms_modular_transform_data may return either the src or dest buffer. If so it must not be free-ed
++	// XXX: qcms_modular_transform_data may return the lut in either the src or the
++	// dest buffer. If so, it must not be free-ed.
  	if (src && lut != src) {
  		free(src);
 -	} else if (dest && lut != src) {
@@ -991,7 +1155,79 @@ index 9a6562b..08db142 100644
  		free(dest);
  	}
  
-@@ -1157,14 +1233,14 @@ qcms_transform* qcms_transform_create(
+@@ -1088,6 +1167,71 @@ qcms_transform* qcms_transform_precacheLUT_float(qcms_transform *transform, qcms
+ 	return transform;
+ }
+ 
++/* Create a transform LUT using the given number of sample points. The transform LUT data is stored
++   in the output (cube) in bgra format in zyx sample order. */
++qcms_bool qcms_transform_create_LUT_zyx_bgra(qcms_profile *in, qcms_profile *out, qcms_intent intent,
++                                             int samples, unsigned char* cube)
++{
++	uint16_t z,y,x;
++	uint32_t l,index;
++	uint32_t lutSize = 3 * samples * samples * samples;
++
++	float* src = NULL;
++	float* dest = NULL;
++	float* lut = NULL;
++	float inverse;
++
++	src = malloc(lutSize*sizeof(float));
++	dest = malloc(lutSize*sizeof(float));
++
++	if (src && dest) {
++		/* Prepare a list of points we want to sample: z, y, x order */
++		l = 0;
++		inverse = 1 / (float)(samples-1);
++		for (z = 0; z < samples; z++) {
++			for (y = 0; y < samples; y++) {
++				for (x = 0; x < samples; x++) {
++					src[l++] = x * inverse; // r
++					src[l++] = y * inverse; // g
++					src[l++] = z * inverse; // b
++				}
++			}
++		}
++
++		lut = qcms_chain_transform(in, out, src, dest, lutSize);
++
++		if (lut) {
++			index = l = 0;
++			for (z = 0; z < samples; z++) {
++				for (y = 0; y < samples; y++) {
++					for (x = 0; x < samples; x++) {
++						cube[index++] = (int)floorf(lut[l + 2] * 255.0f + 0.5f); // b
++						cube[index++] = (int)floorf(lut[l + 1] * 255.0f + 0.5f); // g
++						cube[index++] = (int)floorf(lut[l + 0] * 255.0f + 0.5f); // r
++						cube[index++] = 255;                                     // a
++						l += 3;
++					}
++				}
++			}
++		}
++	}
++
++	// XXX: qcms_modular_transform_data may return the lut data in either the src or
++	// dest buffer so free src, dest, and lut with care.
++
++	if (src && lut != src)
++		free(src);
++	if (dest && lut != dest)
++		free(dest);
++
++	if (lut) {
++		free(lut);
++		return true;
++	}
++
++	return false;
++}
++
+ #define NO_MEM_TRANSFORM NULL
+ 
+ qcms_transform* qcms_transform_create(
+@@ -1157,14 +1301,14 @@ qcms_transform* qcms_transform_create(
                  	return NULL;
              	}
  		if (precache) {
@@ -1008,7 +1244,7 @@ index 9a6562b..08db142 100644
                      /* Microsoft Compiler for x64 doesn't support MMX.
                       * SSE code uses MMX so that we disable on x64 */
  		    } else
-@@ -1256,13 +1332,34 @@ qcms_transform* qcms_transform_create(
+@@ -1256,13 +1400,34 @@ qcms_transform* qcms_transform_create(
  	return transform;
  }
  
