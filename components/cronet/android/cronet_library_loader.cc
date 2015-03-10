@@ -6,11 +6,12 @@
 
 #include <jni.h>
 
+#include "base/android/base_jni_onload.h"
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_utils.h"
-#include "base/at_exit.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "components/cronet/android/chromium_url_request.h"
@@ -48,43 +49,39 @@ const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
     {"UrlAndroid", url::android::RegisterJni},
 };
 
-base::AtExitManager* g_at_exit_manager = NULL;
 // MessageLoop on the main thread, which is where objects that receive Java
 // notifications generally live.
 base::MessageLoop* g_main_message_loop = nullptr;
 
 net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
 
+bool RegisterJNI(JNIEnv* env) {
+  return base::android::RegisterNativeMethods(
+      env, kCronetRegisteredMethods, arraysize(kCronetRegisteredMethods));
+}
+
+bool Init() {
+  url::Initialize();
+  return true;
+}
+
 }  // namespace
 
 // Checks the available version of JNI. Also, caches Java reflection artifacts.
 jint CronetOnLoad(JavaVM* vm, void* reserved) {
-  JNIEnv* env;
-  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+  std::vector<base::android::RegisterCallback> register_callbacks;
+  register_callbacks.push_back(base::Bind(&RegisterJNI));
+  std::vector<base::android::InitCallback> init_callbacks;
+  init_callbacks.push_back(base::Bind(&Init));
+  if (!base::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
+      !base::android::OnJNIOnLoadInit(init_callbacks)) {
     return -1;
   }
-
-  base::android::InitVM(vm);
-
-  if (!base::android::RegisterNativeMethods(
-          env, kCronetRegisteredMethods, arraysize(kCronetRegisteredMethods))) {
-    return -1;
-  }
-
-  g_at_exit_manager = new base::AtExitManager();
-
-  base::android::InitReplacementClassLoader(env,
-                                            base::android::GetClassLoader(env));
-  url::Initialize();
-
   return JNI_VERSION_1_6;
 }
 
 void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
-  if (g_at_exit_manager) {
-    delete g_at_exit_manager;
-    g_at_exit_manager = NULL;
-  }
+  base::android::LibraryLoaderExitHook();
 }
 
 void CronetInitApplicationContext(JNIEnv* env,
