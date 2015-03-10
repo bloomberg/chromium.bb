@@ -46,9 +46,10 @@ class FormField {
     MATCH_SELECT     = 1 << 5,
     MATCH_TEXT_AREA  = 1 << 6,
     MATCH_PASSWORD   = 1 << 7,
+    MATCH_NUMBER     = 1 << 8,
     MATCH_ALL_INPUTS =
         MATCH_TEXT | MATCH_EMAIL | MATCH_TELEPHONE | MATCH_SELECT |
-        MATCH_TEXT_AREA | MATCH_PASSWORD,
+        MATCH_TEXT_AREA | MATCH_PASSWORD | MATCH_NUMBER,
 
     // By default match label and name for input/text types.
     MATCH_DEFAULT    = MATCH_LABEL | MATCH_NAME | MATCH_TEXT,

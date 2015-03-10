@@ -73,11 +73,12 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     // names; we've seen "verification #", "verification number", "card
     // identification number", and others listed in the regex pattern used
     // below.
-    // Note: Some sites use type="tel" for numerical inputs.
+    // Note: Some sites use type="tel" or type="number" for numerical inputs.
+    const int kMatchNumAndTel = MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE;
     if (!credit_card_field->verification_ &&
         ParseFieldSpecifics(scanner,
                             base::UTF8ToUTF16(kCardCvcRe),
-                            MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_PASSWORD,
+                            kMatchNumAndTel | MATCH_PASSWORD,
                             &credit_card_field->verification_)) {
       continue;
     }
@@ -85,7 +86,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     AutofillField* current_number_field;
     if (ParseFieldSpecifics(scanner,
                             base::UTF8ToUTF16(kCardNumberRe),
-                            MATCH_DEFAULT | MATCH_TELEPHONE,
+                            kMatchNumAndTel,
                             &current_number_field)) {
       // Avoid autofilling any credit card number field having very low or high
       // |start_index| on the HTML form.
@@ -187,13 +188,13 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   // a strong enough signal that this is a credit card.  It is possible that
   // the number and name were parsed in a separate part of the form.  So if
   // the cvc and date were found independently they are returned.
-  if ((!credit_card_field->numbers_.empty() ||
-       credit_card_field->verification_) &&
-      (credit_card_field->expiration_date_ ||
-       (credit_card_field->expiration_month_ &&
-        credit_card_field->expiration_year_))) {
+  bool has_cc_number_or_verification = (credit_card_field->verification_ ||
+                                        !credit_card_field->numbers_.empty());
+  bool has_date_or_mm_yy = (credit_card_field->expiration_date_ ||
+                            (credit_card_field->expiration_month_ &&
+                             credit_card_field->expiration_year_));
+  if (has_cc_number_or_verification && has_date_or_mm_yy)
     return credit_card_field.Pass();
-  }
 
   scanner->RewindTo(saved_cursor);
   return NULL;
