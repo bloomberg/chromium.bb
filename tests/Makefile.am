@@ -1,5 +1,3 @@
-NULL:=#
-
 AM_CFLAGS = \
 	$(WARN_CFLAGS)\
 	-I $(top_srcdir)/include/drm \
@@ -54,10 +52,9 @@ TESTS =						\
 	getstats				\
 	setversion				\
 	updatedraw				\
-	name_from_fd				\
-	$(NULL)
+	name_from_fd
 
-SUBDIRS += vbltest $(NULL)
+SUBDIRS += vbltest
 
 check_PROGRAMS += $(TESTS)
 
