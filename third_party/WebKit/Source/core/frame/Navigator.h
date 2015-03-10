@@ -35,8 +35,6 @@
 
 namespace blink {
 
-class DOMMimeTypeArray;
-class DOMPluginArray;
 class LocalFrame;
 
 typedef int ExceptionCode;
@@ -60,10 +58,7 @@ public:
 
     virtual ~Navigator();
 
-    DOMPluginArray* plugins() const;
-    DOMMimeTypeArray* mimeTypes() const;
     bool cookieEnabled() const;
-    bool javaEnabled() const;
 
     String productSub() const;
     String vendor() const;
@@ -81,9 +76,6 @@ public:
 
 private:
     explicit Navigator(LocalFrame*);
-
-    mutable RefPtrWillBeMember<DOMPluginArray> m_plugins;
-    mutable RefPtrWillBeMember<DOMMimeTypeArray> m_mimeTypes;
 };
 
 } // namespace blink

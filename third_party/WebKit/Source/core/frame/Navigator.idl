@@ -22,10 +22,6 @@
 [
     WillBeGarbageCollected,
 ] interface Navigator {
-    // FIXME: move these 3 to NavigatorPlugins
-    readonly attribute PluginArray plugins;
-    readonly attribute MimeTypeArray mimeTypes;
-    boolean javaEnabled();
     readonly attribute boolean cookieEnabled; // FIXME: move to NavigatorStorageUtils
 
     void getStorageUpdates(); // FIXME: Remove this method or rename to yieldForStorageUpdates.

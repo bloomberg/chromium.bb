@@ -33,8 +33,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/plugins/DOMMimeTypeArray.h"
-#include "core/plugins/DOMPluginArray.h"
 #include "platform/Language.h"
 
 namespace blink {
@@ -76,20 +74,6 @@ String Navigator::userAgent() const
     return m_frame->loader().userAgent(m_frame->document()->url());
 }
 
-DOMPluginArray* Navigator::plugins() const
-{
-    if (!m_plugins)
-        m_plugins = DOMPluginArray::create(m_frame);
-    return m_plugins.get();
-}
-
-DOMMimeTypeArray* Navigator::mimeTypes() const
-{
-    if (!m_mimeTypes)
-        m_mimeTypes = DOMMimeTypeArray::create(m_frame);
-    return m_mimeTypes.get();
-}
-
 bool Navigator::cookieEnabled() const
 {
     if (!m_frame)
@@ -100,17 +84,6 @@ bool Navigator::cookieEnabled() const
         return false;
 
     return cookiesEnabled(m_frame->document());
-}
-
-bool Navigator::javaEnabled() const
-{
-    if (!m_frame || !m_frame->settings())
-        return false;
-
-    if (!m_frame->settings()->javaEnabled())
-        return false;
-
-    return true;
 }
 
 void Navigator::getStorageUpdates()
