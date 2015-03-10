@@ -238,6 +238,34 @@ const char* WebNavigationTypeToString(blink::WebNavigationType type) {
   return kIllegalString;
 }
 
+const char* kPolicyIgnore = "Ignore";
+const char* kPolicyDownload = "download";
+const char* kPolicyCurrentTab = "current tab";
+const char* kPolicyNewBackgroundTab = "new background tab";
+const char* kPolicyNewForegroundTab = "new foreground tab";
+const char* kPolicyNewWindow = "new window";
+const char* kPolicyNewPopup = "new popup";
+
+const char* WebNavigationPolicyToString(blink::WebNavigationPolicy policy) {
+  switch (policy) {
+    case blink::WebNavigationPolicyIgnore:
+      return kPolicyIgnore;
+    case blink::WebNavigationPolicyDownload:
+      return kPolicyDownload;
+    case blink::WebNavigationPolicyCurrentTab:
+      return kPolicyCurrentTab;
+    case blink::WebNavigationPolicyNewBackgroundTab:
+      return kPolicyNewBackgroundTab;
+    case blink::WebNavigationPolicyNewForegroundTab:
+      return kPolicyNewForegroundTab;
+    case blink::WebNavigationPolicyNewWindow:
+      return kPolicyNewWindow;
+    case blink::WebNavigationPolicyNewPopup:
+      return kPolicyNewPopup;
+  }
+  return kIllegalString;
+}
+
 std::string DumpFrameHeaderIfNeeded(blink::WebFrame* frame) {
   std::string result;
 
@@ -1293,6 +1321,13 @@ void WebTestProxyBase::CheckDone(blink::WebLocalFrame* frame,
 
 blink::WebNavigationPolicy WebTestProxyBase::DecidePolicyForNavigation(
     const blink::WebFrameClient::NavigationPolicyInfo& info) {
+  if (test_interfaces_->GetTestRunner()->shouldDumpNavigationPolicy()) {
+    delegate_->PrintMessage("Default policy for navigation to '" +
+                            URLDescription(info.urlRequest.url()) + "' is '" +
+                            WebNavigationPolicyToString(info.defaultPolicy) +
+                            "'\n");
+  }
+
   blink::WebNavigationPolicy result;
   if (!test_interfaces_->GetTestRunner()->policyDelegateEnabled())
     return info.defaultPolicy;

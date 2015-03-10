@@ -261,6 +261,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetUseMockTheme(bool use);
   void WaitUntilExternalURLLoad();
   void DumpDragImage();
+  void DumpNavigationPolicy();
   void ShowWebInspector(gin::Arguments* args);
   void CloseWebInspector();
   bool IsChooserShown();
@@ -500,6 +501,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("waitUntilExternalURLLoad",
                  &TestRunnerBindings::WaitUntilExternalURLLoad)
       .SetMethod("dumpDragImage", &TestRunnerBindings::DumpDragImage)
+      .SetMethod("dumpNavigationPolicy",
+                 &TestRunnerBindings::DumpNavigationPolicy)
       .SetMethod("showWebInspector", &TestRunnerBindings::ShowWebInspector)
       .SetMethod("closeWebInspector", &TestRunnerBindings::CloseWebInspector)
       .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
@@ -1237,6 +1240,11 @@ void TestRunnerBindings::DumpDragImage() {
     runner_->DumpDragImage();
 }
 
+void TestRunnerBindings::DumpNavigationPolicy() {
+  if (runner_)
+    runner_->DumpNavigationPolicy();
+}
+
 void TestRunnerBindings::ShowWebInspector(gin::Arguments* args) {
   if (runner_) {
     std::string settings;
@@ -1669,6 +1677,7 @@ void TestRunner::Reset() {
   dump_back_forward_list_ = false;
   dump_selection_rect_ = false;
   dump_drag_image_ = false;
+  dump_navigation_policy_ = false;
   test_repaint_ = false;
   sweep_horizontally_ = false;
   is_printing_ = false;
@@ -1941,6 +1950,10 @@ void TestRunner::setToolTipText(const WebString& text) {
 
 bool TestRunner::shouldDumpDragImage() {
   return dump_drag_image_;
+}
+
+bool TestRunner::shouldDumpNavigationPolicy() const {
+  return dump_navigation_policy_;
 }
 
 bool TestRunner::midiAccessorResult() {
@@ -2742,6 +2755,10 @@ void TestRunner::WaitUntilExternalURLLoad() {
 void TestRunner::DumpDragImage() {
   DumpAsTextWithPixelResults();
   dump_drag_image_ = true;
+}
+
+void TestRunner::DumpNavigationPolicy() {
+  dump_navigation_policy_ = true;
 }
 
 void TestRunner::CloseWebInspector() {

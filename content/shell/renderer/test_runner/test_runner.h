@@ -120,6 +120,7 @@ class TestRunner : public WebTestRunner,
   bool isPointerLocked();
   void setToolTipText(const blink::WebString&);
   bool shouldDumpDragImage();
+  bool shouldDumpNavigationPolicy() const;
 
   bool midiAccessorResult();
 
@@ -476,6 +477,10 @@ class TestRunner : public WebTestRunner,
   // instead of a snapshot of the page.
   void DumpDragImage();
 
+  // Sets a flag that tells the WebTestProxy to dump the default navigation
+  // policy passed to the decidePolicyForNavigation callback.
+  void DumpNavigationPolicy();
+
   ///////////////////////////////////////////////////////////////////////////
   // Methods interacting with the WebTestProxy
 
@@ -748,6 +753,10 @@ class TestRunner : public WebTestRunner,
 
   // If true, the test_shell will dump the drag image as pixel results.
   bool dump_drag_image_;
+
+  // If true, content_shell will dump the default navigation policy passed to
+  // WebFrameClient::decidePolicyForNavigation.
+  bool dump_navigation_policy_;
 
   // If true, pixel dump will be produced as a series of 1px-tall, view-wide
   // individual paints over the height of the view.
