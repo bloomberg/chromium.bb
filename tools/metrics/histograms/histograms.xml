@@ -3602,6 +3602,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Cookie.TimeKeyLoadTotalWait" units="ms">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    This histogram records the the total amount of time spent fetching the
+    cookies associated with an eTLD+1 from disk, including time spent waiting
+    in task queues.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.TimeLoad" units="ms">
   <owner>erikwright@chromium.org</owner>
   <summary>

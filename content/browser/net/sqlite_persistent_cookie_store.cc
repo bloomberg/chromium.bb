@@ -191,7 +191,8 @@ class SQLitePersistentCookieStore::Backend
   // Sends notification when a single priority load completes. Updates priority
   // load metric data. The data is sent only after the final load completes.
   void CompleteLoadForKeyInForeground(const LoadedCallback& loaded_callback,
-                                      bool load_success);
+                                      bool load_success,
+                                      const base::Time& requested_at);
 
   // Sends all metrics, including posting a ReportMetricsInBackground task.
   // Called after all priority and regular loading is complete.
@@ -504,13 +505,20 @@ void SQLitePersistentCookieStore::Backend::LoadKeyAndNotifyInBackground(
 
   PostClientTask(FROM_HERE, base::Bind(
       &SQLitePersistentCookieStore::Backend::CompleteLoadForKeyInForeground,
-      this, loaded_callback, success));
+      this, loaded_callback, success, posted_at));
 }
 
 void SQLitePersistentCookieStore::Backend::CompleteLoadForKeyInForeground(
     const LoadedCallback& loaded_callback,
-    bool load_success) {
+    bool load_success,
+    const::Time& requested_at) {
   DCHECK(client_task_runner_->RunsTasksOnCurrentThread());
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Cookie.TimeKeyLoadTotalWait",
+      base::Time::Now() - requested_at,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
+      50);
 
   Notify(loaded_callback, load_success);
 
