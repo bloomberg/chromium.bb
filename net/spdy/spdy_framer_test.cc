@@ -871,10 +871,10 @@ TEST_P(SpdyFramerTest, DuplicateHeader) {
 
   if (IsSpdy2()) {
     frame.WriteUInt16(2);  // Number of headers.
-    frame.WriteStringPiece16("name");
-    frame.WriteStringPiece16("value1");
-    frame.WriteStringPiece16("name");
-    frame.WriteStringPiece16("value2");
+    frame.WriteString("name");
+    frame.WriteString("value1");
+    frame.WriteString("name");
+    frame.WriteString("value2");
   } else {
     frame.WriteUInt32(2);  // Number of headers.
     frame.WriteStringPiece32("name");
@@ -917,8 +917,8 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
   string value("value1\0value2", 13);
   if (IsSpdy2()) {
     frame.WriteUInt16(1);  // Number of headers.
-    frame.WriteStringPiece16("name");
-    frame.WriteStringPiece16(value);
+    frame.WriteString("name");
+    frame.WriteString(value);
   } else if (spdy_version_ > SPDY3) {
     // TODO(jgraettinger): If this pattern appears again, move to test class.
     std::map<string, string> header_set;

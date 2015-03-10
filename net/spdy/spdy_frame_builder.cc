@@ -130,7 +130,7 @@ bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
   return success;
 }
 
-bool SpdyFrameBuilder::WriteStringPiece16(const base::StringPiece& value) {
+bool SpdyFrameBuilder::WriteString(const std::string& value) {
   if (value.size() > 0xffff) {
     DCHECK(false) << "Tried to write string with length > 16bit.";
     return false;
