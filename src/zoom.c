@@ -121,7 +121,7 @@ weston_output_update_zoom_transform(struct weston_output *output)
 }
 
 static void
-weston_zoom_transition(struct weston_output *output, wl_fixed_t x, wl_fixed_t y)
+weston_zoom_transition(struct weston_output *output)
 {
 	if (output->zoom.level != output->zoom.spring_z.current) {
 		output->zoom.spring_z.target = output->zoom.level;
@@ -140,15 +140,11 @@ WL_EXPORT void
 weston_output_update_zoom(struct weston_output *output)
 {
 	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
-	wl_fixed_t x = seat->pointer->x;
-	wl_fixed_t y = seat->pointer->y;
-
-	zoom_area_center_from_pointer(output, &x, &y);
 
 	output->zoom.current.x = seat->pointer->x;
 	output->zoom.current.y = seat->pointer->y;
 
-	weston_zoom_transition(output, x, y);
+	weston_zoom_transition(output);
 	weston_output_update_zoom_transform(output);
 }
 
