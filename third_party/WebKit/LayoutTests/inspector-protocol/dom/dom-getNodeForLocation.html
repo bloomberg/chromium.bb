@@ -7,6 +7,7 @@ function test()
 {
     var nodeInfo = {};
     InspectorTest.eventHandler["DOM.setChildNodes"] = setChildNodes;
+    InspectorTest.sendCommand("DOM.enable", {});
     InspectorTest.sendCommand("DOM.getNodeForLocation", { "x": 10, "y": 10 }, onGetNodeForLocation);
 
     function onGetNodeForLocation(message)
