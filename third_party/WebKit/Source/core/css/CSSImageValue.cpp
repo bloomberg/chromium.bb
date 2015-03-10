@@ -28,6 +28,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/layout/style/StyleFetchedImage.h"
 #include "core/layout/style/StylePendingImage.h"
+#include "core/loader/MixedContentChecker.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 

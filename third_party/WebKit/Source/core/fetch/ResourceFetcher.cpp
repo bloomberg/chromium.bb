@@ -56,6 +56,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -546,7 +547,8 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
     // Measure the number of legacy URL schemes ('ftp://') and the number of embedded-credential
     // ('http://user:password@...') resources embedded as subresources. in the hopes that we can
     // block them at some point in the future.
-    if (resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
+    if (frame() && resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
+        ASSERT(frame()->document());
         if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) && !SchemeRegistry::shouldTreatURLSchemeAsLegacy(frame()->document()->securityOrigin()->protocol()))
             UseCounter::count(frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
         if (!url.user().isEmpty() || !url.pass().isEmpty())
@@ -560,10 +562,12 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
     // If we're loading the main resource of a subframe, ensure that we check
     // against the parent of the active frame, rather than the frame itself.
     LocalFrame* effectiveFrame = frame();
-    if (resourceRequest.frameType() == WebURLRequest::FrameTypeNested) {
+    if (effectiveFrame && resourceRequest.frameType() == WebURLRequest::FrameTypeNested) {
         // FIXME: Deal with RemoteFrames.
-        if (frame()->tree().parent()->isLocalFrame())
-            effectiveFrame = toLocalFrame(frame()->tree().parent());
+        Frame* parentFrame = effectiveFrame->tree().parent();
+        ASSERT(parentFrame);
+        if (parentFrame->isLocalFrame())
+            effectiveFrame = toLocalFrame(parentFrame);
     }
 
     MixedContentChecker::ReportingStatus mixedContentReporting = forPreload ?
@@ -936,7 +940,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
     if (resource->type() == Resource::MainResource) {
         // <iframe>s should report the initial navigation requested by the parent document, but not subsequent navigations.
         // FIXME: Resource timing is broken when the parent is a remote frame.
-        if (frame()->deprecatedLocalOwner() && !frame()->deprecatedLocalOwner()->loadedNonEmptyDocument()) {
+        if (frame() && frame()->deprecatedLocalOwner() && !frame()->deprecatedLocalOwner()->loadedNonEmptyDocument()) {
             info->setInitiatorType(frame()->deprecatedLocalOwner()->localName());
             m_resourceTimingInfoMap.add(resource, info);
             frame()->deprecatedLocalOwner()->didLoadNonEmptyDocument();

@@ -43,6 +43,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/LinkLoader.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"

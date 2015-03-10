@@ -41,6 +41,7 @@
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/MixedContentChecker.h"
 #include "platform/JSONValues.h"
 #include "platform/network/FormData.h"
 #include "platform/text/DecodeEscapeSequences.h"

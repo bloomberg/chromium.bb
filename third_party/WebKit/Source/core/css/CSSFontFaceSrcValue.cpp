@@ -33,6 +33,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/loader/MixedContentChecker.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/weborigin/SecurityPolicy.h"
