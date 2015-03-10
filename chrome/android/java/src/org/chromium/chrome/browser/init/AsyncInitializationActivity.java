@@ -15,11 +15,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 
-import org.chromium.base.TraceEvent;
-import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.metrics.MemoryUma;
-import org.chromium.chrome.browser.profiles.Profile;
-
 
 /**
  * An activity that talks with application and activity level delegates for async initialization.
@@ -69,18 +65,6 @@ public abstract class AsyncInitializationActivity extends ActionBarActivity impl
 
     @Override
     public void postInflationStartup() { }
-
-    @Override
-    public void maybePreconnect() {
-        TraceEvent.begin("maybePreconnect");
-        Intent intent = getIntent();
-        if (intent != null && intent.ACTION_VIEW.equals(intent.getAction())) {
-            final String url = intent.getDataString();
-            WarmupManager.getInstance()
-                .maybePreconnectUrlAndSubResources(Profile.getLastUsedProfile(), url);
-        }
-        TraceEvent.end("maybePreconnect");
-    }
 
     @Override
     public void initializeCompositor() { }

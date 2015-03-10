@@ -33,13 +33,6 @@ public interface BrowserParts {
 
     /**
      * Called during {@link ChromeBrowserInitializer#handlePostNativeStartup(BrowserParts)}.
-     * Optionaly preconnect to the URL specified in the launch intent, if any. The
-     * preconnection is done asynchronously in the native library.
-     */
-    void maybePreconnect();
-
-    /**
-     * Called during {@link ChromeBrowserInitializer#handlePostNativeStartup(BrowserParts)}.
      * Initialize the compositor related classes.
      */
     void initializeCompositor();

@@ -22,22 +22,13 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * This class is a singleton that holds utilities for warming up Chrome and prerendering urls
  * without creating the Activity.
- *
- * This class is not thread-safe and must only be used on the UI thread.
  */
 public final class WarmupManager {
     private static WarmupManager sWarmupManager;
-
-    private final Set<String> mDnsRequestsInFlight;
-    private final Map<String, Profile> mPendingPreconnectWithProfile;
 
     private WebContents mPrerenderedWebContents;
     private boolean mPrerendered;
@@ -54,8 +45,6 @@ public final class WarmupManager {
     }
 
     private WarmupManager() {
-        mDnsRequestsInFlight = new HashSet<String>();
-        mPendingPreconnectWithProfile = new HashMap<String, Profile>();
     }
 
     /**
@@ -68,7 +57,6 @@ public final class WarmupManager {
      * @return Whether the given url has been prerendered.
      */
     public boolean hasPrerenderedUrl(String url) {
-        ThreadUtils.assertOnUiThread();
         return hasAnyPrerenderedUrl() && ExternalPrerenderHandler.hasPrerenderedUrl(
                 Profile.getLastUsedProfile(), url, mPrerenderedWebContents);
     }
@@ -77,7 +65,6 @@ public final class WarmupManager {
      * @return Whether any url has been prerendered.
      */
     public boolean hasAnyPrerenderedUrl() {
-        ThreadUtils.assertOnUiThread();
         return mPrerendered;
     }
 
@@ -85,7 +72,6 @@ public final class WarmupManager {
      * @return The prerendered {@link WebContents} clearing out the reference WarmupManager owns.
      */
     public WebContents takePrerenderedWebContents() {
-        ThreadUtils.assertOnUiThread();
         WebContents prerenderedWebContents = mPrerenderedWebContents;
         assert (mPrerenderedWebContents != null);
         mPrerenderedWebContents = null;
@@ -104,7 +90,6 @@ public final class WarmupManager {
      */
     public void prerenderUrl(final String url, final String referrer,
             final int widthPix, final int heightPix) {
-        ThreadUtils.assertOnUiThread();
         clearWebContentsIfNecessary();
         if (mExternalPrerenderHandler == null) {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
@@ -122,7 +107,6 @@ public final class WarmupManager {
      * @param layoutId Id of the layout to inflate.
      */
     public void initializeViewHierarchy(Context baseContext, int themeId, int layoutId) {
-        ThreadUtils.assertOnUiThread();
         ContextThemeWrapper context = new ContextThemeWrapper(baseContext, themeId);
         FrameLayout contentHolder = new FrameLayout(context);
         mMainView = (ViewGroup) LayoutInflater.from(context).inflate(layoutId, contentHolder);
@@ -133,7 +117,6 @@ public final class WarmupManager {
      * @param contentView The parent ViewGroup to use for the transfer.
      */
     public void transferViewHierarchyTo(ViewGroup contentView) {
-        ThreadUtils.assertOnUiThread();
         ViewGroup viewHierarchy = takeMainView();
         if (viewHierarchy == null) return;
         while (viewHierarchy.getChildCount() > 0) {
@@ -147,7 +130,6 @@ public final class WarmupManager {
      * Destroys the native WebContents instance the WarmupManager currently holds onto.
      */
     public void clearWebContentsIfNecessary() {
-        ThreadUtils.assertOnUiThread();
         mPrerendered = false;
         if (mPrerenderedWebContents == null) return;
 
@@ -159,7 +141,6 @@ public final class WarmupManager {
      * Cancel the current prerender.
      */
     public void cancelCurrentPrerender() {
-        ThreadUtils.assertOnUiThread();
         clearWebContentsIfNecessary();
         if (mExternalPrerenderHandler == null) return;
 
@@ -170,7 +151,6 @@ public final class WarmupManager {
      * @return Whether the view hierarchy has been prebuilt.
      */
     public boolean hasBuiltViewHierarchy() {
-        ThreadUtils.assertOnUiThread();
         return mMainView != null;
     }
 
@@ -186,35 +166,25 @@ public final class WarmupManager {
     /**
      * Launches a background DNS query for a given URL.
      *
-     * @param url URL from which the domain to query is extracted.
+     * @param urlString URL from which the domain to query is extracted.
      */
-    private void prefetchDnsForUrlInBackground(final String url) {
-        mDnsRequestsInFlight.add(url);
+    private static void prefetchDnsForUrlInBackground(String urlString) {
         new AsyncTask<String, Void, Void>() {
             @Override
             protected Void doInBackground(String... params) {
                 try {
-                    InetAddress.getByName(new URL(url).getHost());
+                    URL url = new URL(params[0]);
+                    InetAddress.getByName(url.getHost());
                 } catch (MalformedURLException e) {
-                    // We don't do anything with the result of the request, it
-                    // is only here to warm up the cache, thus ignoring the
-                    // exception is fine.
+                    // We don't do anything with the result of the resolution,
+                    // it is only here to warm the DNS cache. So ignoring all
+                    // exceptions is fine.
                 } catch (UnknownHostException e) {
-                    // As above.
+                    // Idem
                 }
                 return null;
             }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                mDnsRequestsInFlight.remove(url);
-                if (mPendingPreconnectWithProfile.containsKey(url)) {
-                    Profile profile = mPendingPreconnectWithProfile.get(url);
-                    mPendingPreconnectWithProfile.remove(url);
-                    maybePreconnectUrlAndSubResources(profile, url);
-                }
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, urlString);
     }
 
     /** Launches a background DNS query for a given URL if the data reduction proxy is not in use.
@@ -222,40 +192,9 @@ public final class WarmupManager {
      * @param context The Application context.
      * @param url URL from which the domain to query is extracted.
      */
-    public void maybePrefetchDnsForUrlInBackground(Context context, String url) {
-        ThreadUtils.assertOnUiThread();
-        if (!DataReductionProxySettings.getInstance().isEnabledBeforeNativeLoad(context)) {
+    public static void maybePrefetchDnsForUrlInBackground(Context context, String url) {
+        if (!DataReductionProxySettings.isEnabledBeforeNativeLoad(context)) {
             prefetchDnsForUrlInBackground(url);
         }
     }
-
-    /** Asynchronously preconnects to a given URL if the data reduction proxy is not in use.
-     *
-     * @param profile The profile to use for the preconnection.
-     * @param url The URL we want to preconnect to.
-     */
-    public void maybePreconnectUrlAndSubResources(Profile profile, String url) {
-        ThreadUtils.assertOnUiThread();
-        if (!DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
-            // If there is already a DNS request in flight for this URL, then
-            // the preconnection will start by issuing a DNS request for the
-            // same domain, as the result is not cached. However, such a DNS
-            // request has already been sent from this class, so it is better to
-            // wait for the answer to come back before preconnecting. Otherwise,
-            // the preconnection logic will wait for the result of the second
-            // DNS request, which should arrive after the result of the first
-            // one. Note that we however need to wait for the main thread to be
-            // available in this case, since the preconnection will be sent from
-            // AsyncTask.onPostExecute(), which may delay it.
-            if (mDnsRequestsInFlight.contains(url)) {
-                // Note that if two requests come for the same URL with two
-                // different profiles, the last one will win.
-                mPendingPreconnectWithProfile.put(url, profile);
-            } else {
-                nativePreconnectUrlAndSubresources(profile, url);
-            }
-        }
-    }
-
-    private static native void nativePreconnectUrlAndSubresources(Profile profile, String url);
 }
