@@ -262,6 +262,7 @@ test("gpu_perftests") {
     "//base",
     "//base/test:test_support",
     "//gpu/command_buffer/service",
+    "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
     "//ui/gfx/geometry",

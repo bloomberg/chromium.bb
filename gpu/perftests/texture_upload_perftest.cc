@@ -11,11 +11,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/perftests/measurements.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_timing.h"
 #include "ui/gl/scoped_make_current.h"
@@ -77,18 +79,55 @@ GLuint LoadShader(const GLenum type, const char* const src) {
 }
 
 void GenerateTextureData(const gfx::Size& size,
+                         int bytes_per_pixel,
                          const int seed,
                          std::vector<uint8>* const pixels) {
-  pixels->resize(size.GetArea() * 4);
-  for (int y = 0; y < size.height(); ++y) {
-    for (int x = 0; x < size.width(); ++x) {
-      const size_t offset = (y * size.width() + x) * 4;
-      pixels->at(offset) = (y + seed) % 64;
-      pixels->at(offset + 1) = (x + seed) % 128;
-      pixels->at(offset + 2) = (y + x + seed) % 256;
-      pixels->at(offset + 3) = 255;
+  int bytes = size.GetArea() * bytes_per_pixel;
+  pixels->resize(bytes);
+  for (int i = 0; i < bytes; ++i) {
+    int channel = i % bytes_per_pixel;
+    if (channel == 3) {  // Alpha channel.
+      pixels->at(i) = 255;
+    } else {
+      pixels->at(i) = (i + (seed << 2)) % (32 << channel);
     }
   }
+}
+
+// Compare a buffer containing pixels in a specified format to GL_RGBA buffer
+// where the former buffer have been uploaded as a texture and drawn on the
+// RGBA buffer.
+bool CompareBufferToRGBABuffer(GLenum format,
+                               const std::vector<uint8>& pixels,
+                               const std::vector<uint8>& pixels_rgba) {
+  for (size_t i = 0; i < pixels.size(); i += 4) {
+    switch (format) {
+      case GL_RED_EXT:  // (R_t, 0, 0, 1)
+        if (pixels_rgba[i] != pixels[i / 4] || pixels_rgba[i + 1] != 0 ||
+            pixels_rgba[i + 2] != 0 || pixels_rgba[i + 3] != 255) {
+          return false;
+        }
+        break;
+      case GL_LUMINANCE:  // (L_t, L_t, L_t, 1)
+        if (pixels_rgba[i] != pixels[i / 4] ||
+            pixels_rgba[i + 1] != pixels[i / 4] ||
+            pixels_rgba[i + 2] != pixels[i / 4] || pixels_rgba[i + 3] != 255) {
+          return false;
+        }
+        break;
+      case GL_RGBA:  // (R_t, G_t, B_t, A_t)
+        if (pixels_rgba[i] != pixels[i] ||
+            pixels_rgba[i + 1] != pixels[i + 1] ||
+            pixels_rgba[i + 2] != pixels[i + 2] ||
+            pixels_rgba[i + 3] != pixels[i + 3]) {
+          return false;
+        }
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  return true;
 }
 
 // PerfTest to check costs of texture upload at different stages
@@ -204,8 +243,7 @@ class TextureUploadPerfTest : public testing::Test {
   // time elapsed in milliseconds.
   std::vector<Measurement> UploadAndDraw(const gfx::Size& size,
                                          const std::vector<uint8>& pixels,
-                                         const GLenum format,
-                                         const GLenum type) {
+                                         const GLenum format) {
     MeasurementTimers total_timers(gpu_timing_client_.get());
     GLuint texture_id = 0;
 
@@ -215,7 +253,7 @@ class TextureUploadPerfTest : public testing::Test {
     glBindTexture(GL_TEXTURE_2D, texture_id);
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0,
-                 format, type, &pixels[0]);
+                 format, GL_UNSIGNED_BYTE, &pixels[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -247,14 +285,11 @@ class TextureUploadPerfTest : public testing::Test {
     glDeleteTextures(1, &texture_id);
 
     std::vector<uint8> pixels_rendered(size.GetArea() * 4);
-    glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, type,
+    glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                  &pixels_rendered[0]);
     CheckNoGlError();
-
-    // TODO(dcastagna): don't assume the format of the texture and do
-    // the appropriate format conversion.
-    EXPECT_EQ(static_cast<GLenum>(GL_RGBA), format);
-    EXPECT_EQ(pixels, pixels_rendered);
+    EXPECT_TRUE(CompareBufferToRGBABuffer(format, pixels, pixels_rendered))
+        << "Format is: " << gfx::GLEnums::GetStringEnum(format);
 
     std::vector<Measurement> measurements;
     bool gpu_timer_errors =
@@ -269,14 +304,16 @@ class TextureUploadPerfTest : public testing::Test {
     return measurements;
   }
 
-  void RunUploadAndDrawMultipleTimes(const gfx::Size& size) {
+  void RunUploadAndDrawMultipleTimes(const gfx::Size& size,
+                                     const GLenum format) {
     std::vector<uint8> pixels;
     base::SmallMap<std::map<std::string, Measurement>>
         aggregates;  // indexed by name
     int successful_runs = 0;
+    ASSERT_THAT(format, testing::AnyOf(GL_RGBA, GL_LUMINANCE, GL_RED_EXT));
     for (int i = 0; i < kUploadPerfWarmupRuns + kUploadPerfTestRuns; ++i) {
-      GenerateTextureData(size, i + 1, &pixels);
-      auto run = UploadAndDraw(size, pixels, GL_RGBA, GL_UNSIGNED_BYTE);
+      GenerateTextureData(size, format == GL_RGBA ? 4 : 1, i + 1, &pixels);
+      auto run = UploadAndDraw(size, pixels, format);
       if (i < kUploadPerfWarmupRuns || !run.size()) {
         continue;
       }
@@ -287,13 +324,15 @@ class TextureUploadPerfTest : public testing::Test {
         aggregate.Increment(measurement);
       }
     }
+    std::string suffix = base::StringPrintf(
+        "_%d_%s", size.width(), gfx::GLEnums::GetStringEnum(format).c_str());
     if (successful_runs) {
       for (const auto& entry : aggregates) {
         const auto m = entry.second.Divide(successful_runs);
-        m.PrintResult(base::StringPrintf("_%d", size.width()));
+        m.PrintResult(suffix);
       }
     }
-    perf_test::PrintResult("sample_runs", "", "",
+    perf_test::PrintResult("sample_runs", suffix, "",
                            static_cast<size_t>(successful_runs), "laps", true);
   }
 
@@ -315,18 +354,32 @@ class TextureUploadPerfTest : public testing::Test {
 // and prints out aggregated measurements for all the runs.
 TEST_F(TextureUploadPerfTest, glTexImage2d) {
   int sizes[] = {128, 256, 512, 1024};
+  std::vector<GLenum> formats;
+  formats.push_back(GL_RGBA);
+  // Used by default for ResourceProvider::yuv_resource_format_.
+  formats.push_back(GL_LUMINANCE);
+
+  ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
+  bool has_texture_rg = gl_context_->HasExtension("GL_EXT_texture_rg") ||
+                        gl_context_->HasExtension("GL_ARB_texture_rg");
+
+  if (has_texture_rg) {
+    // Used as ResourceProvider::yuv_resource_format_ if
+    // {ARB,EXT}_texture_rg is available.
+    formats.push_back(GL_RED_EXT);
+  }
   for (int side : sizes) {
     ASSERT_GE(fbo_size_.width(), side);
     ASSERT_GE(fbo_size_.height(), side);
-
     gfx::Size size(side, side);
-    ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
-    GenerateVertexBuffer(size);
 
-    DCHECK_NE(0u, framebuffer_object_);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_object_);
+    for (GLenum format : formats) {
+      GenerateVertexBuffer(size);
+      DCHECK_NE(0u, framebuffer_object_);
+      glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_object_);
 
-    RunUploadAndDrawMultipleTimes(size);
+      RunUploadAndDrawMultipleTimes(size, format);
+    }
   }
 }
 
