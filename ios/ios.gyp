@@ -13,6 +13,8 @@
         'chrome/ios_chrome_tests.gyp:*',
         'provider/ios_provider_chrome.gyp:*',
         'provider/ios_provider_web.gyp:*',
+        'net/ios_net.gyp:*',
+        'net/ios_net_unittests.gyp:*',
         'web/ios_web.gyp:*',
         'web/ios_web_unittests.gyp:*',
       ],
