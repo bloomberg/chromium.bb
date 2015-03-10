@@ -163,11 +163,6 @@ void InspectorWorkerAgent::disable(ErrorString*)
     destroyWorkerAgentClients();
 }
 
-void InspectorWorkerAgent::canInspectWorkers(ErrorString*, bool* result)
-{
-    *result = true;
-}
-
 void InspectorWorkerAgent::connectToWorker(ErrorString* error, const String& workerId)
 {
     WorkerAgentClient* client = m_idToClient.get(workerId);

@@ -61,7 +61,6 @@ public:
     // Called from InspectorBackendDispatcher
     virtual void enable(ErrorString*) override;
     virtual void disable(ErrorString*) override;
-    virtual void canInspectWorkers(ErrorString*, bool*) override;
     virtual void connectToWorker(ErrorString*, const String& workerId) override;
     virtual void disconnectFromWorker(ErrorString*, const String& workerId) override;
     virtual void sendMessageToWorker(ErrorString*, const String& workerId, const String& message) override;
