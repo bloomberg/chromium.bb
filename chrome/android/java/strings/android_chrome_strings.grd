@@ -358,7 +358,7 @@ For example, some websites may respond to this request by showing you ads that a
         Please wait…
       </message>
       <message name="IDS_CAN_NOT_CLEAR_BROWSING_HISTORY_TOAST" desc="Message on the toast explaining that child account users can not clear their browsing history.">
-        Browsing history can't be cleared with Accounts for Kids.
+        Browsing history can't be cleared with accounts for kids
       </message>
 
       <!-- Accessibility preferences -->
