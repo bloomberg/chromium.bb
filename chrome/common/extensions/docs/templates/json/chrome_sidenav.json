@@ -170,7 +170,7 @@
               },
               {
                 "title": "Tip-of-tree (Unstable)",
-                "href": "/devtools/docs/protocol/tot/index"
+                "href": "https://chromedevtools.github.io/debugger-protocol-viewer/"
               },
               {
                 "title": "Version 1.0",
