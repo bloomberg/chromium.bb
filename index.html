@@ -222,15 +222,6 @@ yet.</p>
 </ul>
 
 <h3>
-    <a name="bugfix-dontDeleteAfterPrune">bugfix/dontDeleteAfterPrune</a>
-    (Calum Robinson; D47079091)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FdontDeleteAfterPrune">view changes</a>]</span>
-</h3>
-<p>Open <a href="repros/dontDeleteAfterPrune.html">this link</a> in Chrome, and
-press Ctrl+X to Cut.  The renderer will crash because a node that gets pruned
-during merge paragraphs is being deleted again.</p>
-
-<h3>
     <a name="bugfix-doubleMouseWheel">bugfix/doubleMouseWheel</a>
     (Imran Haider)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FdoubleMouseWheel">view changes</a>]</span>
@@ -616,6 +607,9 @@ text.</p>
 <h2><a name="retired-40.0.2214.115">Retired at 40.0.2214.115</a></h2>
 
 <h3><a name="bugfix-clearDragCaret">bugfix/clearDragCaret</a> (Shezan Baig; D31916022)</h3>
+<p>Retired because the issue is no longer reproducable (appears to be fixed upstream).</p>
+
+<h3><a name="bugfix-dontDeleteAfterPrune">bugfix/dontDeleteAfterPrune</a> (Calum Robinson; D47079091)</h3>
 <p>Retired because the issue is no longer reproducable (appears to be fixed upstream).</p>
 
 <h2><a name="retired-37.0.2062.124">Retired at 37.0.2062.124</a></h2>
