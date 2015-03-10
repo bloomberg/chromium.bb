@@ -91,6 +91,7 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 ClipboardMessageFilter::~ClipboardMessageFilter() {
+  clipboard_writer_->Reset();
 }
 
 void ClipboardMessageFilter::OnGetSequenceNumber(ui::ClipboardType type,
