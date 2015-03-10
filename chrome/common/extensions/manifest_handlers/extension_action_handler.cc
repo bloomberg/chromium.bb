@@ -61,9 +61,8 @@ bool ExtensionActionHandler::Parse(Extension* extension,
   } else {  // No key, used for synthesizing an action for extensions with none.
     if (!FeatureSwitch::extension_action_redesign()->IsEnabled())
       return true;  // Do nothing if the switch is off.
-    if (Manifest::IsComponentLocation(extension->location()) ||
-        Manifest::IsPolicyLocation(extension->location()))
-      return true;  // Don't synthesize actions for component/policy extensions.
+    if (Manifest::IsComponentLocation(extension->location()))
+      return true;  // Don't synthesize actions for component extensions.
     if (extension->manifest()->HasKey(
             manifest_keys::kSynthesizeExtensionAction)) {
       *error = base::ASCIIToUTF16(base::StringPrintf(
