@@ -130,6 +130,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return *(gl_version_info_.get());
   }
 
+  bool IsES3Capable() const;
+  void EnableES3Validators();
+
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;

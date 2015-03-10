@@ -544,6 +544,7 @@ _STATES = {
 # named types are used in 'cmd_buffer_functions.txt'.
 # type: The actual GL type of the named type.
 # valid: The list of values that are valid for both the client and the service.
+# valid_es3: The list of values that are valid in OpenGL ES 3, but not ES 2.
 # invalid: Examples of invalid values for the type. At least these values
 #          should be tested to be invalid.
 # is_complete: The list of valid values of type are final and will not be
@@ -583,6 +584,14 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_ARRAY_BUFFER',
       'GL_ELEMENT_ARRAY_BUFFER',
+    ],
+    'valid_es3': [
+      'GL_COPY_READ_BUFFER',
+      'GL_COPY_WRITE_BUFFER',
+      'GL_PIXEL_PACK_BUFFER',
+      'GL_PIXEL_UNPACK_BUFFER',
+      'GL_TRANSFORM_FEEDBACK_BUFFER',
+      'GL_UNIFORM_BUFFER',
     ],
     'invalid': [
       'GL_RENDERBUFFER',
@@ -7507,6 +7516,10 @@ class NamedType(object):
       self.invalid = info['invalid']
     else:
       self.invalid = []
+    if 'valid_es3' in info:
+      self.valid_es3 = info['valid_es3']
+    else:
+      self.valid_es3 = []
 
   def GetType(self):
     return self.info['type']
@@ -7516,6 +7529,9 @@ class NamedType(object):
 
   def GetValidValues(self):
     return self.valid
+
+  def GetValidValuesES3(self):
+    return self.valid_es3
 
   def IsConstant(self):
     if not 'is_complete' in self.info:
@@ -9816,6 +9832,13 @@ extern const NameToFunc g_gles2_function_table[] = {
           file.Write("  %s,\n" % value)
         file.Write("};\n")
         file.Write("\n")
+      if named_type.GetValidValuesES3():
+        file.Write("static const %s valid_%s_table_es3[] = {\n" %
+                   (named_type.GetType(), ToUnderscore(name)))
+        for value in named_type.GetValidValuesES3():
+          file.Write("  %s,\n" % value)
+        file.Write("};\n")
+        file.Write("\n")
     file.Write("Validators::Validators()")
     pre = '    : '
     for count, name in enumerate(names):
@@ -9833,6 +9856,18 @@ extern const NameToFunc g_gles2_function_table[] = {
       })
       pre = ',\n    '
     file.Write(" {\n");
+    file.Write("}\n\n");
+
+    file.Write("void Validators::AddES3Values() {\n")
+    for name in names:
+      named_type = NamedType(_NAMED_TYPE_INFO[name])
+      if named_type.GetValidValuesES3():
+        code = """  %(name)s.AddValues(
+      valid_%(name)s_table_es3, arraysize(valid_%(name)s_table_es3));
+"""
+        file.Write(code % {
+          'name': ToUnderscore(name),
+        })
     file.Write("}\n\n");
     file.Close()
     self.generated_cpp_filenames.append(file.filename)
@@ -9892,9 +9927,13 @@ const size_t GLES2Util::enum_to_string_table_len_ =
       if _NAMED_TYPE_INFO[enum]['type'] == 'GLenum':
         file.Write("std::string GLES2Util::GetString%s(uint32_t value) {\n" %
                    enum)
-        if len(_NAMED_TYPE_INFO[enum]['valid']) > 0:
+        valid_list = _NAMED_TYPE_INFO[enum]['valid']
+        if 'valid_es3' in _NAMED_TYPE_INFO[enum]:
+          valid_list = valid_list + _NAMED_TYPE_INFO[enum]['valid_es3']
+        assert len(valid_list) == len(set(valid_list))
+        if len(valid_list) > 0:
           file.Write("  static const EnumToString string_table[] = {\n")
-          for value in _NAMED_TYPE_INFO[enum]['valid']:
+          for value in valid_list:
             file.Write('    { %s, "%s" },\n' % (value, value))
           file.Write("""  };
   return GLES2Util::GetQualifiedEnumString(

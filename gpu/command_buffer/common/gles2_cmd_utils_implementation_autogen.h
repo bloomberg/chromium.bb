@@ -4496,6 +4496,12 @@ std::string GLES2Util::GetStringBufferTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_ARRAY_BUFFER, "GL_ARRAY_BUFFER"},
       {GL_ELEMENT_ARRAY_BUFFER, "GL_ELEMENT_ARRAY_BUFFER"},
+      {GL_COPY_READ_BUFFER, "GL_COPY_READ_BUFFER"},
+      {GL_COPY_WRITE_BUFFER, "GL_COPY_WRITE_BUFFER"},
+      {GL_PIXEL_PACK_BUFFER, "GL_PIXEL_PACK_BUFFER"},
+      {GL_PIXEL_UNPACK_BUFFER, "GL_PIXEL_UNPACK_BUFFER"},
+      {GL_TRANSFORM_FEEDBACK_BUFFER, "GL_TRANSFORM_FEEDBACK_BUFFER"},
+      {GL_UNIFORM_BUFFER, "GL_UNIFORM_BUFFER"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

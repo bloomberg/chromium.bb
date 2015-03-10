@@ -2474,14 +2474,6 @@ bool GLES2DecoderImpl::Initialize(
     set_log_commands(true);
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnsafeES3APIs) &&
-      attrib_parser.es3_context_required) {
-    // TODO(zmo): We need to implement capabilities check to ensure we can
-    // actually create ES3 contexts.
-    set_unsafe_es3_apis_enabled(true);
-  }
-
   compile_shader_always_succeeds_ =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCompileShaderAlwaysSucceeds);
@@ -2515,6 +2507,14 @@ bool GLES2DecoderImpl::Initialize(
     return false;
   }
   CHECK_GL_ERROR();
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUnsafeES3APIs) &&
+      attrib_parser.es3_context_required &&
+      feature_info_->IsES3Capable()) {
+    feature_info_->EnableES3Validators();
+    set_unsafe_es3_apis_enabled(true);
+  }
 
   disallowed_features_ = disallowed_features;
 
