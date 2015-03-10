@@ -9,6 +9,10 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "jni/ChildAccountService_jni.h"
 
+jboolean IsChildAccountDetectionEnabled(JNIEnv* env, jobject obj) {
+  return ChildAccountService::IsChildAccountDetectionEnabled();
+}
+
 void OnChildAccountSigninComplete(JNIEnv* env, jobject obj) {
   VLOG(1) << "OnChildAccountSigninComplete";
 

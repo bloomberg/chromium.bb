@@ -36,6 +36,8 @@ class ChildAccountService : public KeyedService,
  public:
   ~ChildAccountService() override;
 
+  static bool IsChildAccountDetectionEnabled();
+
   void Init();
 
   // Sets whether the signed-in account is a child account.

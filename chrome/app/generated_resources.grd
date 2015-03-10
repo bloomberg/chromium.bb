@@ -6371,6 +6371,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Disables wallpaper boot animation (except for OOBE case).
         </message>
       </if>
+      <message name="IDS_FLAGS_CHILD_ACCOUNT_DETECTION_NAME" desc="Name of the flag to enable detection of child accounts.">
+        Enable child account detection.
+      </message>
+      <message name="IDS_FLAGS_CHILD_ACCOUNT_DETECTION_DESCRIPTION" desc="Description for the flag to enable detection of child accounts.">
+        Enable detection of child accounts on sign-in and startup, as well as periodically.
+      </message>
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag to disable accelerated video decode where available.">
         Disable hardware-accelerated video decode.
       </message>

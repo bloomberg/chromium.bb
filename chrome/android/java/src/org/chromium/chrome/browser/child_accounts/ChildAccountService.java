@@ -32,6 +32,10 @@ public class ChildAccountService {
 
     private static final String TAG = "ChildAccountService";
 
+    private static final int CHILD_ACCOUNT_DONT_FORCE = 0;
+    private static final int CHILD_ACCOUNT_FORCE_ON = 1;
+    private static final int CHILD_ACCOUNT_FORCE_OFF = 2;
+
     /**
      * An account feature (corresponding to a Gaia service flag) that specifies whether the account
      * is a child account.
@@ -111,9 +115,10 @@ public class ChildAccountService {
         }
         Account account = googleAccounts[0];
 
-        if (shouldForceChildAccount(account)) {
-            mHasChildAccount = true;
-            callback.onChildAccountChecked(true);
+        int forceChildAccount = shouldForceChildAccount(account);
+        if (forceChildAccount != CHILD_ACCOUNT_DONT_FORCE) {
+            mHasChildAccount = forceChildAccount == CHILD_ACCOUNT_FORCE_ON;
+            callback.onChildAccountChecked(mHasChildAccount);
             return;
         }
 
@@ -151,10 +156,14 @@ public class ChildAccountService {
             }}, CHILD_ACCOUNT_TIMEOUT_MS);
     }
 
-    private boolean shouldForceChildAccount(Account account) {
+    private int shouldForceChildAccount(Account account) {
         String childAccountName = CommandLine.getInstance().getSwitchValue(
                 ChromeSwitches.CHILD_ACCOUNT);
-        return childAccountName != null && account.name.equals(childAccountName);
+        if (childAccountName != null && account.name.equals(childAccountName)) {
+            return CHILD_ACCOUNT_FORCE_ON;
+        }
+        if (!isChildAccountDetectionEnabled()) return CHILD_ACCOUNT_FORCE_OFF;
+        return CHILD_ACCOUNT_DONT_FORCE;
     }
 
     private boolean getFutureResult() {
@@ -213,9 +222,14 @@ public class ChildAccountService {
         }
     }
 
+    private boolean isChildAccountDetectionEnabled() {
+        return nativeIsChildAccountDetectionEnabled();
+    }
+
     public void onChildAccountSigninComplete() {
         nativeOnChildAccountSigninComplete();
     }
 
+    private native boolean nativeIsChildAccountDetectionEnabled();
     private native void nativeOnChildAccountSigninComplete();
 }

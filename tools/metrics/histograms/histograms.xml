@@ -52529,6 +52529,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
+  <int value="-1409643943" label="enable-child-account-detection"/>
   <int value="-1408288176" label="enable-account-consistency"/>
   <int value="-1399753480" label="disable-harfbuzz-rendertext"/>
   <int value="-1399419572" label="enable-app-list"/>
@@ -52644,6 +52645,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-68225452" label="enable-translate-new-ux"/>
   <int value="-58242474" label="ash-disable-swipe-to-close-in-overview-mode"/>
+  <int value="-55944747" label="disable-child-account-detection"/>
   <int value="-52241456" label="enable-single-click-autofill"/>
   <int value="-48920737" label="enable-smooth-scrolling"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>

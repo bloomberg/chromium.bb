@@ -215,6 +215,10 @@ const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 const char kDisableCastStreamingHWEncoding[] =
     "disable-cast-streaming-hw-encoding";
 
+// Disables detection of child accounts.
+const char kDisableChildAccountDetection[] =
+    "disable-child-account-detection";
+
 // Disables the client-side phishing detection feature. Note that even if
 // client-side phishing detection is enabled, it will only be active if the
 // user has opted in to UMA stats and SafeBrowsing is enabled in the
@@ -398,6 +402,10 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // Enables the multi-level undo system for bookmarks.
 const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
+
+// Enables detection of child accounts.
+const char kEnableChildAccountDetection[] =
+    "enable-child-account-detection";
 
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.

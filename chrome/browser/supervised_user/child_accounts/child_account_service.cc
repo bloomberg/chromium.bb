@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
@@ -33,6 +34,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
 #endif
+
+const char kChildAccountDetectionFieldTrialName[] = "ChildAccountDetection";
 
 const char kIsChildAccountServiceFlagName[] = "uca";
 
@@ -74,6 +77,22 @@ ChildAccountService::ChildAccountService(Profile* profile)
       weak_ptr_factory_(this) {}
 
 ChildAccountService::~ChildAccountService() {}
+
+// static
+bool ChildAccountService::IsChildAccountDetectionEnabled() {
+  // Note: It's important to query the field trial state first, to ensure that
+  // UMA reports the correct group.
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kChildAccountDetectionFieldTrialName);
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableChildAccountDetection))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableChildAccountDetection))
+    return true;
+
+  return group_name == "Enabled";
+}
 
 void ChildAccountService::SetIsChildAccount(bool is_child_account) {
   PropagateChildStatusToUser(is_child_account);
@@ -259,8 +278,18 @@ void ChildAccountService::ScheduleNextFamilyInfoUpdate(base::TimeDelta delay) {
 }
 
 void ChildAccountService::StartFetchingServiceFlags() {
+  if (!IsChildAccountDetectionEnabled()) {
+    SetIsChildAccount(false);
+    return;
+  }
   account_id_ = SigninManagerFactory::GetForProfile(profile_)
       ->GetAuthenticatedAccountId();
+  flag_fetcher_.reset(new AccountServiceFlagFetcher(
+      account_id_,
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+      profile_->GetRequestContext(),
+      base::Bind(&ChildAccountService::OnFlagsFetched,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 void ChildAccountService::CancelFetchingServiceFlags() {

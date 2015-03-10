@@ -2200,6 +2200,14 @@ const Experiment kExperiments[] = {
         switches::kSyncServiceURL,
         "https://chrome-sync.sandbox.google.com/chrome-sync/alpha")
   },
+  {
+    "enable-child-account-detection",
+    IDS_FLAGS_CHILD_ACCOUNT_DETECTION_NAME,
+    IDS_FLAGS_CHILD_ACCOUNT_DETECTION_DESCRIPTION,
+    kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableChildAccountDetection,
+                              switches::kDisableChildAccountDetection)
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
