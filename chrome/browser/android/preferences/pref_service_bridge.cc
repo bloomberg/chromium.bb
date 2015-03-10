@@ -367,12 +367,21 @@ static void SetRememberPasswordsEnabled(JNIEnv* env, jobject obj,
 static void SetProtectedMediaIdentifierEnabled(JNIEnv* env,
                                                jobject obj,
                                                jboolean is_enabled) {
-  GetPrefService()->SetBoolean(prefs::kProtectedMediaIdentifierEnabled,
-                               is_enabled);
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+      is_enabled ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
-static void SetAllowLocationEnabled(JNIEnv* env, jobject obj, jboolean allow) {
-  GetPrefService()->SetBoolean(prefs::kGeolocationEnabled, allow);
+static void SetAllowLocationEnabled(JNIEnv* env,
+                                    jobject obj,
+                                    jboolean is_enabled) {
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      is_enabled ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void SetCameraMicEnabled(JNIEnv* env, jobject obj, jboolean allow) {
