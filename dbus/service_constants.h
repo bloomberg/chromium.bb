@@ -1846,6 +1846,7 @@ const char kSetOutputNodeVolume[] = "SetOutputNodeVolume";
 const char kSwapLeftRight[] = "SwapLeftRight";
 const char kSetOutputMute[] = "SetOutputMute";
 const char kSetOutputUserMute[] = "SetOutputUserMute";
+const char kSetSuspendAudio[] = "SetSuspendAudio";
 const char kSetInputGain[] = "SetInputGain";
 const char kSetInputNodeGain[] = "SetInputNodeGain";
 const char kSetInputMute[] = "SetInputMute";
