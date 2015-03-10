@@ -11213,8 +11213,14 @@ Chrome ran out of memory.
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP" desc="Text that provides further explanation for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device.">
         If checked, Chrome will stash a copy of your card on this device for faster form filling.
       </message>
-      <message name="IDS_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog." formatter_data="android_java">
+      <message name="IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog." formatter_data="android_java">
         Verify
+      </message>
+      <message name="IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS" desc="Message displayed while credit card is being verified." formatter_data="android_java">
+        Verifying card
+      </message>
+      <message name="IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS" desc="Message displayed after successful verification of credit card CVC." formatter_data="android_java">
+        Your card is verified
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN" desc="Error message that encourages the user to try to re-enter their credit card CVC after a previous failed attempt.">
         There was a problem verifying your card. Check your information and try again.

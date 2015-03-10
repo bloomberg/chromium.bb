@@ -103,7 +103,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
                           .setTitle(title)
                           .setView(v)
                           .setNegativeButton(R.string.cancel, null)
-                          .setPositiveButton(R.string.card_unmask_confirm_button, null)
+                          .setPositiveButton(R.string.autofill_card_unmask_confirm_button, null)
                           .create();
         mDialog.setOnDismissListener(this);
 
@@ -154,8 +154,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         setInputsEnabled(false);
         setOverlayVisibility(View.VISIBLE);
         mVerificationProgressBar.setVisibility(View.VISIBLE);
-        // TODO(estade): l10n
-        mVerificationView.setText("Verifying card");
+        mVerificationView.setText(mDialog.getContext().getResources().getString(
+                R.string.autofill_card_unmask_verification_in_progress));
         setInputError(null);
     }
 
@@ -173,7 +173,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         } else {
             mVerificationProgressBar.setVisibility(View.GONE);
             mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
-            mVerificationView.setText("Your card is verified");
+            mVerificationView.setText(mDialog.getContext().getResources().getString(
+                    R.string.autofill_card_unmask_verification_success));
             Handler h = new Handler();
             h.postDelayed(new Runnable() {
                 @Override

@@ -76,8 +76,9 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   void GotVerificationResult(const base::string16& error_message,
                              bool allow_retry) override {
-    if (!error_message.empty()) {
-      progress_label_->SetText(base::ASCIIToUTF16("Success!"));
+    if (error_message.empty()) {
+      progress_label_->SetText(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS));
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE, base::Bind(&CardUnmaskPromptViews::ClosePrompt,
                                 base::Unretained(this)),
@@ -173,9 +174,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   }
 
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
-    // TODO(estade): fix this.
     if (button == ui::DIALOG_BUTTON_OK)
-      return base::ASCIIToUTF16("Verify");
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON);
 
     return DialogDelegateView::GetDialogButtonLabel(button);
   }
@@ -314,7 +314,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     progress_overlay_->SetVisible(false);
     AddChildView(progress_overlay_);
 
-    progress_label_ = new views::Label(base::ASCIIToUTF16("Verifying..."));
+    progress_label_ = new views::Label(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS));
     progress_overlay_->AddChildView(progress_label_);
   }
 
