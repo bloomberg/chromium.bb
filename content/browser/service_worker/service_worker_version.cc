@@ -1554,14 +1554,21 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
 
 void ServiceWorkerVersion::RecordStartWorkerResult(
     ServiceWorkerStatusCode status) {
+  base::TimeTicks start_time = start_time_;
+  ClearTick(&start_time_);
+
+  // Failing to start a doomed worker isn't interesting and very common when
+  // update dooms because the script is byte-to-byte identical.
+  if (is_doomed_)
+    return;
+
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
                             SERVICE_WORKER_ERROR_MAX_VALUE);
-  if (status == SERVICE_WORKER_OK && !start_time_.is_null()) {
+  if (status == SERVICE_WORKER_OK && !start_time.is_null()) {
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartWorker.Time",
-                               GetTickDuration(start_time_));
+                               GetTickDuration(start_time));
   }
 
-  ClearTick(&start_time_);
   if (status != SERVICE_WORKER_ERROR_TIMEOUT)
     return;
   EmbeddedWorkerInstance::StartingPhase phase =
