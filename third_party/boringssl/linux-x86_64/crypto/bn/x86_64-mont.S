@@ -1,7 +1,8 @@
 #if defined(__x86_64__)
 .text	
 
-
+.extern	OPENSSL_ia32cap_P
+.hidden OPENSSL_ia32cap_P
 
 .globl	bn_mul_mont
 .hidden bn_mul_mont
@@ -610,7 +611,8 @@ bn_mul4x_mont:
 .Lmul4x_epilogue:
 	.byte	0xf3,0xc3
 .size	bn_mul4x_mont,.-bn_mul4x_mont
-
+.extern	bn_sqr8x_internal
+.hidden bn_sqr8x_internal
 
 .type	bn_sqr8x_mont,@function
 .align	32

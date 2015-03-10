@@ -7,6 +7,7 @@
 {
   'variables': {
     'boringssl_lib_sources': [
+      'err_data.c',
       'src/crypto/aes/aes.c',
       'src/crypto/aes/mode_wrappers.c',
       'src/crypto/asn1/a_bitstr.c',

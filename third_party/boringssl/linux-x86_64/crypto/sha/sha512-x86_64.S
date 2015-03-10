@@ -1,7 +1,8 @@
 #if defined(__x86_64__)
 .text	
 
-
+.extern	OPENSSL_ia32cap_P
+.hidden OPENSSL_ia32cap_P
 .globl	sha512_block_data_order
 .hidden sha512_block_data_order
 .type	sha512_block_data_order,@function

@@ -193,6 +193,13 @@ def main():
   crypto_c_files = FindCFiles(os.path.join('src', 'crypto'), NoTests)
   ssl_c_files = FindCFiles(os.path.join('src', 'ssl'), NoTests)
 
+  # Generate err_data.c
+  with open('err_data.c', 'w+') as err_data:
+    subprocess.check_call(['go', 'run', 'err_data_generate.go'],
+                          cwd=os.path.join('src', 'crypto', 'err'),
+                          stdout=err_data)
+  crypto_c_files.append('err_data.c')
+
   with open('boringssl.gypi', 'w+') as gypi:
     gypi.write(FILE_HEADER + '{\n  \'variables\': {\n')
 

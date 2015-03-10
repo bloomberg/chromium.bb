@@ -1,6 +1,7 @@
 #if defined(__x86_64__)
 .text	
-
+.extern	OPENSSL_ia32cap_P
+.hidden OPENSSL_ia32cap_P
 
 .globl	asm_RC4
 .hidden asm_RC4
