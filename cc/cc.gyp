@@ -419,6 +419,8 @@
         'resources/picture_pile_impl.h',
         'resources/pixel_buffer_tile_task_worker_pool.cc',
         'resources/pixel_buffer_tile_task_worker_pool.h',
+        'resources/pixel_ref_map.cc',
+        'resources/pixel_ref_map.h',
         'resources/platform_color.h',
         'resources/prioritized_resource.cc',
         'resources/prioritized_resource.h',

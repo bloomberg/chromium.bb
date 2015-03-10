@@ -455,7 +455,7 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
       continue;
 
     processed_pictures_.insert(picture);
-    pixel_ref_iterator_ = Picture::PixelRefIterator(layer_rect_, picture);
+    pixel_ref_iterator_ = picture->GetPixelRefMapIterator(layer_rect_);
     if (pixel_ref_iterator_)
       break;
   }

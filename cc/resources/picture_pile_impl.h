@@ -13,6 +13,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/picture_pile.h"
+#include "cc/resources/pixel_ref_map.h"
 #include "cc/resources/raster_source.h"
 #include "skia/ext/analysis_canvas.h"
 #include "skia/ext/refptr.h"
@@ -87,7 +88,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
     const PicturePileImpl* picture_pile_;
     gfx::Rect layer_rect_;
     TilingData::Iterator tile_iterator_;
-    Picture::PixelRefIterator pixel_ref_iterator_;
+    PixelRefMap::Iterator pixel_ref_iterator_;
     std::set<const void*> processed_pictures_;
   };
 

@@ -5,10 +5,6 @@
 #ifndef CC_RESOURCES_PICTURE_H_
 #define CC_RESOURCES_PICTURE_H_
 
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
@@ -18,6 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
+#include "cc/resources/pixel_ref_map.h"
 #include "cc/resources/recording_source.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -40,10 +37,6 @@ class ContentLayerClient;
 class CC_EXPORT Picture
     : public base::RefCountedThreadSafe<Picture> {
  public:
-  typedef std::pair<int, int> PixelRefMapKey;
-  typedef std::vector<SkPixelRef*> PixelRefs;
-  typedef base::hash_map<PixelRefMapKey, PixelRefs> PixelRefMap;
-
   static scoped_refptr<Picture> Create(
       const gfx::Rect& layer_rect,
       ContentLayerClient* client,
@@ -79,49 +72,16 @@ class CC_EXPORT Picture
 
   scoped_ptr<base::Value> AsValue() const;
 
-  // This iterator imprecisely returns the set of pixel refs that are needed to
-  // raster this layer rect from this picture.  Internally, pixel refs are
-  // clumped into tile grid buckets, so there may be false positives.
-  class CC_EXPORT PixelRefIterator {
-   public:
-    PixelRefIterator();
-    PixelRefIterator(const gfx::Rect& layer_rect, const Picture* picture);
-    ~PixelRefIterator();
-
-    SkPixelRef* operator->() const {
-      DCHECK_LT(current_index_, current_pixel_refs_->size());
-      return (*current_pixel_refs_)[current_index_];
-    }
-
-    SkPixelRef* operator*() const {
-      DCHECK_LT(current_index_, current_pixel_refs_->size());
-      return (*current_pixel_refs_)[current_index_];
-    }
-
-    PixelRefIterator& operator++();
-    operator bool() const {
-      return current_index_ < current_pixel_refs_->size();
-    }
-
-   private:
-    static base::LazyInstance<PixelRefs> empty_pixel_refs_;
-    const Picture* picture_;
-    const PixelRefs* current_pixel_refs_;
-    unsigned current_index_;
-
-    gfx::Point min_point_;
-    gfx::Point max_point_;
-    int current_x_;
-    int current_y_;
-  };
-
   void EmitTraceSnapshot() const;
   void EmitTraceSnapshotAlias(Picture* original) const;
 
   bool WillPlayBackBitmaps() const { return picture_->willPlayBackBitmaps(); }
 
+  PixelRefMap::Iterator GetPixelRefMapIterator(
+      const gfx::Rect& layer_rect) const;
+
  private:
-  explicit Picture(const gfx::Rect& layer_rect);
+  Picture(const gfx::Rect& layer_rect, const gfx::Size& tile_grid_size);
   // This constructor assumes SkPicture is already ref'd and transfers
   // ownership to this picture.
   Picture(const skia::RefPtr<SkPicture>&,
@@ -134,19 +94,15 @@ class CC_EXPORT Picture
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
   void Record(ContentLayerClient* client,
-              const gfx::Size& tile_grid_size,
               RecordingSource::RecordingMode recording_mode);
 
   // Gather pixel refs from recording.
-  void GatherPixelRefs(const gfx::Size& tile_grid_info);
+  void GatherPixelRefs();
 
   gfx::Rect layer_rect_;
   skia::RefPtr<SkPicture> picture_;
 
   PixelRefMap pixel_refs_;
-  gfx::Point min_pixel_cell_;
-  gfx::Point max_pixel_cell_;
-  gfx::Size cell_size_;
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
     AsTraceableRasterData(float scale) const;
@@ -154,7 +110,7 @@ class CC_EXPORT Picture
     AsTraceableRecordData() const;
 
   friend class base::RefCountedThreadSafe<Picture>;
-  friend class PixelRefIterator;
+  friend class PixelRefMap::Iterator;
   DISALLOW_COPY_AND_ASSIGN(Picture);
 };
 

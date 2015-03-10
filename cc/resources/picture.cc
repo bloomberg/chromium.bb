@@ -4,9 +4,8 @@
 
 #include "cc/resources/picture.h"
 
-#include <algorithm>
-#include <limits>
 #include <set>
+#include <string>
 
 #include "base/base64.h"
 #include "base/trace_event/trace_event.h"
@@ -59,18 +58,18 @@ scoped_refptr<Picture> Picture::Create(
     const gfx::Size& tile_grid_size,
     bool gather_pixel_refs,
     RecordingSource::RecordingMode recording_mode) {
-  scoped_refptr<Picture> picture = make_scoped_refptr(new Picture(layer_rect));
+  scoped_refptr<Picture> picture =
+      make_scoped_refptr(new Picture(layer_rect, tile_grid_size));
 
-  picture->Record(client, tile_grid_size, recording_mode);
+  picture->Record(client, recording_mode);
   if (gather_pixel_refs)
-    picture->GatherPixelRefs(tile_grid_size);
+    picture->GatherPixelRefs();
 
   return picture;
 }
 
-Picture::Picture(const gfx::Rect& layer_rect)
-  : layer_rect_(layer_rect),
-    cell_size_(layer_rect.size()) {
+Picture::Picture(const gfx::Rect& layer_rect, const gfx::Size& tile_grid_size)
+    : layer_rect_(layer_rect), pixel_refs_(tile_grid_size) {
   // Instead of recording a trace event for object creation here, we wait for
   // the picture to be recorded in Picture::Record.
 }
@@ -127,16 +126,13 @@ scoped_refptr<Picture> Picture::CreateFromValue(const base::Value* raw_value) {
 Picture::Picture(SkPicture* picture, const gfx::Rect& layer_rect)
     : layer_rect_(layer_rect),
       picture_(skia::AdoptRef(picture)),
-      cell_size_(layer_rect.size()) {
+      pixel_refs_(layer_rect.size()) {
 }
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
                  const gfx::Rect& layer_rect,
-                 const PixelRefMap& pixel_refs) :
-    layer_rect_(layer_rect),
-    picture_(picture),
-    pixel_refs_(pixel_refs),
-    cell_size_(layer_rect.size()) {
+                 const PixelRefMap& pixel_refs)
+    : layer_rect_(layer_rect), picture_(picture), pixel_refs_(pixel_refs) {
 }
 
 Picture::~Picture() {
@@ -169,7 +165,6 @@ bool Picture::HasText() const {
 }
 
 void Picture::Record(ContentLayerClient* painter,
-                     const gfx::Size& tile_grid_size,
                      RecordingSource::RecordingMode recording_mode) {
   TRACE_EVENT2("cc",
                "Picture::Record",
@@ -179,9 +174,7 @@ void Picture::Record(ContentLayerClient* painter,
                recording_mode);
 
   DCHECK(!picture_);
-  DCHECK(!tile_grid_size.IsEmpty());
 
-  // TODO(mtklein): If SkRTree sticks, clean up tile_grid_info.  skbug.com/3085
   SkRTreeFactory factory;
   SkPictureRecorder recorder;
 
@@ -235,7 +228,7 @@ void Picture::Record(ContentLayerClient* painter,
   EmitTraceSnapshot();
 }
 
-void Picture::GatherPixelRefs(const gfx::Size& tile_grid_size) {
+void Picture::GatherPixelRefs() {
   TRACE_EVENT2("cc", "Picture::GatherPixelRefs",
                "width", layer_rect_.width(),
                "height", layer_rect_.height());
@@ -244,46 +237,8 @@ void Picture::GatherPixelRefs(const gfx::Size& tile_grid_size) {
   DCHECK(pixel_refs_.empty());
   if (!WillPlayBackBitmaps())
     return;
-  cell_size_ = tile_grid_size;
-  DCHECK_GT(cell_size_.width(), 0);
-  DCHECK_GT(cell_size_.height(), 0);
 
-  int min_x = std::numeric_limits<int>::max();
-  int min_y = std::numeric_limits<int>::max();
-  int max_x = 0;
-  int max_y = 0;
-
-  skia::DiscardablePixelRefList pixel_refs;
-  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture_.get(), &pixel_refs);
-  for (skia::DiscardablePixelRefList::const_iterator it = pixel_refs.begin();
-       it != pixel_refs.end();
-       ++it) {
-    gfx::Point min(
-        RoundDown(static_cast<int>(it->pixel_ref_rect.x()),
-                  cell_size_.width()),
-        RoundDown(static_cast<int>(it->pixel_ref_rect.y()),
-                  cell_size_.height()));
-    gfx::Point max(
-        RoundDown(static_cast<int>(std::ceil(it->pixel_ref_rect.right())),
-                  cell_size_.width()),
-        RoundDown(static_cast<int>(std::ceil(it->pixel_ref_rect.bottom())),
-                  cell_size_.height()));
-
-    for (int y = min.y(); y <= max.y(); y += cell_size_.height()) {
-      for (int x = min.x(); x <= max.x(); x += cell_size_.width()) {
-        PixelRefMapKey key(x, y);
-        pixel_refs_[key].push_back(it->pixel_ref);
-      }
-    }
-
-    min_x = std::min(min_x, min.x());
-    min_y = std::min(min_y, min.y());
-    max_x = std::max(max_x, max.x());
-    max_y = std::max(max_y, max.y());
-  }
-
-  min_pixel_cell_ = gfx::Point(min_x, min_y);
-  max_pixel_cell_ = gfx::Point(max_x, max_y);
+  pixel_refs_.GatherPixelRefsFromPicture(picture_.get());
 }
 
 int Picture::Raster(SkCanvas* canvas,
@@ -361,104 +316,9 @@ void Picture::EmitTraceSnapshotAlias(Picture* original) const {
       TracedPicture::AsTraceablePictureAlias(original));
 }
 
-base::LazyInstance<Picture::PixelRefs>
-    Picture::PixelRefIterator::empty_pixel_refs_;
-
-Picture::PixelRefIterator::PixelRefIterator()
-    : picture_(NULL),
-      current_pixel_refs_(empty_pixel_refs_.Pointer()),
-      current_index_(0),
-      min_point_(-1, -1),
-      max_point_(-1, -1),
-      current_x_(0),
-      current_y_(0) {
-}
-
-Picture::PixelRefIterator::PixelRefIterator(
-    const gfx::Rect& rect,
-    const Picture* picture)
-    : picture_(picture),
-      current_pixel_refs_(empty_pixel_refs_.Pointer()),
-      current_index_(0) {
-  gfx::Rect layer_rect = picture->layer_rect_;
-  gfx::Size cell_size = picture->cell_size_;
-  DCHECK(!cell_size.IsEmpty());
-
-  gfx::Rect query_rect(rect);
-  // Early out if the query rect doesn't intersect this picture.
-  if (!query_rect.Intersects(layer_rect)) {
-    min_point_ = gfx::Point(0, 0);
-    max_point_ = gfx::Point(0, 0);
-    current_x_ = 1;
-    current_y_ = 1;
-    return;
-  }
-
-  // First, subtract the layer origin as cells are stored in layer space.
-  query_rect.Offset(-layer_rect.OffsetFromOrigin());
-
-  // We have to find a cell_size aligned point that corresponds to
-  // query_rect. Point is a multiple of cell_size.
-  min_point_ = gfx::Point(
-      RoundDown(query_rect.x(), cell_size.width()),
-      RoundDown(query_rect.y(), cell_size.height()));
-  max_point_ = gfx::Point(
-      RoundDown(query_rect.right() - 1, cell_size.width()),
-      RoundDown(query_rect.bottom() - 1, cell_size.height()));
-
-  // Limit the points to known pixel ref boundaries.
-  min_point_ = gfx::Point(
-      std::max(min_point_.x(), picture->min_pixel_cell_.x()),
-      std::max(min_point_.y(), picture->min_pixel_cell_.y()));
-  max_point_ = gfx::Point(
-      std::min(max_point_.x(), picture->max_pixel_cell_.x()),
-      std::min(max_point_.y(), picture->max_pixel_cell_.y()));
-
-  // Make the current x be cell_size.width() less than min point, so that
-  // the first increment will point at min_point_.
-  current_x_ = min_point_.x() - cell_size.width();
-  current_y_ = min_point_.y();
-  if (current_y_ <= max_point_.y())
-    ++(*this);
-}
-
-Picture::PixelRefIterator::~PixelRefIterator() {
-}
-
-Picture::PixelRefIterator& Picture::PixelRefIterator::operator++() {
-  ++current_index_;
-  // If we're not at the end of the list, then we have the next item.
-  if (current_index_ < current_pixel_refs_->size())
-    return *this;
-
-  DCHECK(current_y_ <= max_point_.y());
-  while (true) {
-    gfx::Size cell_size = picture_->cell_size_;
-
-    // Advance the current grid cell.
-    current_x_ += cell_size.width();
-    if (current_x_ > max_point_.x()) {
-      current_y_ += cell_size.height();
-      current_x_ = min_point_.x();
-      if (current_y_ > max_point_.y()) {
-        current_pixel_refs_ = empty_pixel_refs_.Pointer();
-        current_index_ = 0;
-        break;
-      }
-    }
-
-    // If there are no pixel refs at this grid cell, keep incrementing.
-    PixelRefMapKey key(current_x_, current_y_);
-    PixelRefMap::const_iterator iter = picture_->pixel_refs_.find(key);
-    if (iter == picture_->pixel_refs_.end())
-      continue;
-
-    // We found a non-empty list: store it and get the first pixel ref.
-    current_pixel_refs_ = &iter->second;
-    current_index_ = 0;
-    break;
-  }
-  return *this;
+PixelRefMap::Iterator Picture::GetPixelRefMapIterator(
+    const gfx::Rect& layer_rect) const {
+  return PixelRefMap::Iterator(layer_rect, this);
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>

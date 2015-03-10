@@ -83,6 +83,7 @@
       'resources/picture_pile_impl_unittest.cc',
       'resources/picture_pile_unittest.cc',
       'resources/picture_unittest.cc',
+      'resources/pixel_ref_map_unittest.cc',
       'resources/platform_color_unittest.cc',
       'resources/prioritized_resource_unittest.cc',
       'resources/resource_provider_unittest.cc',
