@@ -1644,7 +1644,7 @@ def _CheckForWindowsLineEndings(input_api, output_api):
   """Check source code and known ascii text files for Windows style line
   endings.
   """
-  known_text_files = r'.*\.(txt|html|htm|mhtml|py)$'
+  known_text_files = r'.*\.(txt|html|htm|mhtml|py|gyp|gypi|gn|isolate)$'
 
   file_inclusion_pattern = (
     known_text_files,
