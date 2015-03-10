@@ -2,7 +2,9 @@ brettw@chromium.org
 cpu@chromium.org
 darin@chromium.org
 jam@chromium.org
+
 per-file .gitignore=*
+per-file BUILD.gn=dpranke@chromium.org
 per-file DEPS=*
 per-file AUTHORS=*
 per-file WATCHLISTS=*
