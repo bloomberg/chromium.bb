@@ -152,6 +152,18 @@ bool PickleIterator::ReadString(std::string* result) {
   return true;
 }
 
+bool PickleIterator::ReadStringPiece(base::StringPiece* result) {
+  int len;
+  if (!ReadInt(&len))
+    return false;
+  const char* read_from = GetReadPointerAndAdvance(len);
+  if (!read_from)
+    return false;
+
+  *result = base::StringPiece(read_from, len);
+  return true;
+}
+
 bool PickleIterator::ReadWString(std::wstring* result) {
   int len;
   if (!ReadInt(&len))
@@ -173,6 +185,19 @@ bool PickleIterator::ReadString16(string16* result) {
     return false;
 
   result->assign(reinterpret_cast<const char16*>(read_from), len);
+  return true;
+}
+
+bool PickleIterator::ReadStringPiece16(base::StringPiece16* result) {
+  int len;
+  if (!ReadInt(&len))
+    return false;
+  const char* read_from = GetReadPointerAndAdvance(len, sizeof(char16));
+  if (!read_from)
+    return false;
+
+  *result = base::StringPiece16(reinterpret_cast<const char16*>(read_from),
+                                len);
   return true;
 }
 
@@ -271,7 +296,7 @@ Pickle& Pickle::operator=(const Pickle& other) {
   return *this;
 }
 
-bool Pickle::WriteString(const std::string& value) {
+bool Pickle::WriteString(const base::StringPiece& value) {
   if (!WriteInt(static_cast<int>(value.size())))
     return false;
 
@@ -286,7 +311,7 @@ bool Pickle::WriteWString(const std::wstring& value) {
                     static_cast<int>(value.size() * sizeof(wchar_t)));
 }
 
-bool Pickle::WriteString16(const string16& value) {
+bool Pickle::WriteString16(const base::StringPiece16& value) {
   if (!WriteInt(static_cast<int>(value.size())))
     return false;
 
