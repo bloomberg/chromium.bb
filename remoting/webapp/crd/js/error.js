@@ -17,7 +17,7 @@ var remoting = remoting || {};
  * @param {string=} opt_message
  */
 remoting.Error = function(tag, opt_message) {
-  /** @const */
+  /** @const {remoting.Error.Tag} */
   this.tag = tag;
 
   /** @const {?string} */

@@ -93,7 +93,7 @@ remoting.Application.prototype.start = function() {
   remoting.identity.getToken().then(
       this.delegate_.start.bind(this.delegate_, this.getSessionConnector())
   ).catch(remoting.Error.handler(
-      function(/** remoting.Error */ error) {
+      function(/** !remoting.Error */ error) {
         if (error == remoting.Error.CANCELLED) {
           that.exit();
         } else {

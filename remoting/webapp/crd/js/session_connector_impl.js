@@ -371,7 +371,7 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
 };
 
 /**
- * @param {remoting.Error} error
+ * @param {!remoting.Error} error
  * @private
  */
 remoting.SessionConnectorImpl.prototype.pluginError_ = function(error) {

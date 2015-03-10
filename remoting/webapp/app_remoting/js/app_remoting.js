@@ -328,15 +328,15 @@ remoting.AppRemoting.prototype.handleExtensionMessage = function(
 /**
  * Called when an error needs to be displayed to the user.
  *
- * @param {!remoting.Error} errorTag The error to be localized and displayed.
+ * @param {!remoting.Error} error The error to be localized and displayed.
  * @return {void} Nothing.
  */
-remoting.AppRemoting.prototype.handleError = function(errorTag) {
-  console.error('Connection failed: ' + errorTag);
+remoting.AppRemoting.prototype.handleError = function(error) {
+  console.error('Connection failed: ' + error.tag);
   remoting.LoadingWindow.close();
   remoting.MessageWindow.showErrorMessage(
       chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
-      chrome.i18n.getMessage(/** @type {string} */ (errorTag)));
+      chrome.i18n.getMessage(/** @type {string} */ (error.tag)));
 };
 
 /**
