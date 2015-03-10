@@ -409,7 +409,7 @@ net::HttpStatusCode RequestHandler::GetStatusCode() const {
 }
 
 TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_NoPath) {
-  AttachmentId id = AttachmentId::Create();
+  AttachmentId id = AttachmentId::Create(0, 0);
   std::string unique_id = id.GetProto().unique_id();
   GURL sync_service_url("https://example.com");
   EXPECT_EQ("https://example.com/attachments/" + unique_id,
@@ -418,7 +418,7 @@ TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_NoPath) {
 }
 
 TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_JustSlash) {
-  AttachmentId id = AttachmentId::Create();
+  AttachmentId id = AttachmentId::Create(0, 0);
   std::string unique_id = id.GetProto().unique_id();
   GURL sync_service_url("https://example.com/");
   EXPECT_EQ("https://example.com/attachments/" + unique_id,
@@ -427,7 +427,7 @@ TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_JustSlash) {
 }
 
 TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_Path) {
-  AttachmentId id = AttachmentId::Create();
+  AttachmentId id = AttachmentId::Create(0, 0);
   std::string unique_id = id.GetProto().unique_id();
   GURL sync_service_url("https://example.com/service");
   EXPECT_EQ("https://example.com/service/attachments/" + unique_id,
@@ -436,7 +436,7 @@ TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_Path) {
 }
 
 TEST_F(AttachmentUploaderImplTest, GetURLForAttachmentId_PathAndSlash) {
-  AttachmentId id = AttachmentId::Create();
+  AttachmentId id = AttachmentId::Create(0, 0);
   std::string unique_id = id.GetProto().unique_id();
   GURL sync_service_url("https://example.com/service/");
   EXPECT_EQ("https://example.com/service/attachments/" + unique_id,

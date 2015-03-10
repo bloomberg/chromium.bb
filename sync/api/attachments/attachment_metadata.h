@@ -30,6 +30,9 @@ class SYNC_EXPORT AttachmentMetadata {
   size_t GetSize() const;
 
  private:
+  // TODO(maniscalco): Reconcile AttachmentMetadata and
+  // AttachmentId. AttachmentId knows the size of the attachment so
+  // AttachmentMetadata may not be necessary (crbug/465375).
   AttachmentId id_;
   size_t size_;
 };

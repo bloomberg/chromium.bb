@@ -38,11 +38,11 @@ TEST_F(AttachmentTest, Create_WithEmptyData) {
 }
 
 TEST_F(AttachmentTest, CreateFromParts_HappyCase) {
-  AttachmentId id = AttachmentId::Create();
   scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
   some_data->data() = kAttachmentData;
   uint32_t crc32c = ComputeCrc32c(some_data);
-  Attachment a = Attachment::CreateFromParts(id, some_data, crc32c);
+  AttachmentId id = AttachmentId::Create(some_data->size(), crc32c);
+  Attachment a = Attachment::CreateFromParts(id, some_data);
   EXPECT_EQ(id, a.GetId());
   EXPECT_EQ(some_data, a.GetData());
 }

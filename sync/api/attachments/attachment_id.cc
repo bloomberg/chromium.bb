@@ -52,8 +52,8 @@ bool AttachmentId::operator<(const AttachmentId& other) const {
 }
 
 // Static.
-AttachmentId AttachmentId::Create() {
-  sync_pb::AttachmentIdProto proto = CreateAttachmentIdProto();
+AttachmentId AttachmentId::Create(size_t size, uint32_t crc32c) {
+  sync_pb::AttachmentIdProto proto = CreateAttachmentIdProto(size, crc32c);
   return AttachmentId(&proto);
 }
 
@@ -70,5 +70,13 @@ const sync_pb::AttachmentIdProto& AttachmentId::GetProto() const {
 
 AttachmentId::AttachmentId(sync_pb::AttachmentIdProto* proto)
     : proto_(proto) {}
+
+size_t AttachmentId::GetSize() const {
+  return proto_.Get().size_bytes();
+}
+
+uint32_t AttachmentId::GetCrc32c() const {
+  return proto_.Get().crc32c();
+}
 
 }  // namespace syncer

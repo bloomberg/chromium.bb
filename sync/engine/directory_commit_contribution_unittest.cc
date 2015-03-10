@@ -350,7 +350,7 @@ TEST_F(DirectoryCommitContributionTest, HierarchySupport_Preferences) {
 
 void AddAttachment(sync_pb::AttachmentMetadata* metadata, bool is_on_server) {
   sync_pb::AttachmentMetadataRecord record;
-  *record.mutable_id() = CreateAttachmentIdProto();
+  *record.mutable_id() = CreateAttachmentIdProto(0, 0);
   record.set_is_on_server(is_on_server);
   *metadata->add_record() = record;
 }

@@ -34,14 +34,13 @@ class SYNC_EXPORT Attachment {
   // Used when creating a brand new attachment.
   static Attachment Create(const scoped_refptr<base::RefCountedMemory>& data);
 
-  // Creates an attachment with the supplied id, data and crc32c.
+  // Creates an attachment with the supplied id and data.
   //
   // Used when you want to recreate a specific attachment. E.g. creating a local
   // copy of an attachment that already exists on the sync server.
   static Attachment CreateFromParts(
       const AttachmentId& id,
-      const scoped_refptr<base::RefCountedMemory>& data,
-      uint32_t crc32c);
+      const scoped_refptr<base::RefCountedMemory>& data);
 
   // Returns this attachment's id.
   const AttachmentId& GetId() const;
@@ -58,11 +57,9 @@ class SYNC_EXPORT Attachment {
  private:
   AttachmentId id_;
   scoped_refptr<base::RefCountedMemory> data_;
-  uint32_t crc32c_;
 
   Attachment(const AttachmentId& id,
-             const scoped_refptr<base::RefCountedMemory>& data,
-             uint32_t crc32c);
+             const scoped_refptr<base::RefCountedMemory>& data);
 };
 
 typedef std::vector<syncer::Attachment> AttachmentList;

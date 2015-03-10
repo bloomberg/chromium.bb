@@ -1639,7 +1639,7 @@ TEST_F(SyncableDirectoryTest, MutableEntry_PutAttachmentMetadata) {
   sync_pb::AttachmentMetadata attachment_metadata;
   sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
   sync_pb::AttachmentIdProto attachment_id_proto =
-      syncer::CreateAttachmentIdProto();
+      syncer::CreateAttachmentIdProto(0, 0);
   *record->mutable_id() = attachment_id_proto;
   ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
   {
@@ -1683,8 +1683,8 @@ TEST_F(SyncableDirectoryTest, MutableEntry_UpdateAttachmentId) {
   sync_pb::AttachmentMetadata attachment_metadata;
   sync_pb::AttachmentMetadataRecord* r1 = attachment_metadata.add_record();
   sync_pb::AttachmentMetadataRecord* r2 = attachment_metadata.add_record();
-  *r1->mutable_id() = syncer::CreateAttachmentIdProto();
-  *r2->mutable_id() = syncer::CreateAttachmentIdProto();
+  *r1->mutable_id() = syncer::CreateAttachmentIdProto(0, 0);
+  *r2->mutable_id() = syncer::CreateAttachmentIdProto(0, 0);
   sync_pb::AttachmentIdProto attachment_id_proto = r1->id();
 
   WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
@@ -1713,7 +1713,7 @@ TEST_F(SyncableDirectoryTest, Directory_DeleteDoesNotUnlinkAttachments) {
   sync_pb::AttachmentMetadata attachment_metadata;
   sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
   sync_pb::AttachmentIdProto attachment_id_proto =
-      syncer::CreateAttachmentIdProto();
+      syncer::CreateAttachmentIdProto(0, 0);
   *record->mutable_id() = attachment_id_proto;
   ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
   const Id id = TestIdFactory::FromNumber(-1);
@@ -1742,7 +1742,7 @@ TEST_F(SyncableDirectoryTest, Directory_LastReferenceUnlinksAttachments) {
   sync_pb::AttachmentMetadata attachment_metadata;
   sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
   sync_pb::AttachmentIdProto attachment_id_proto =
-      syncer::CreateAttachmentIdProto();
+      syncer::CreateAttachmentIdProto(0, 0);
   *record->mutable_id() = attachment_id_proto;
 
   // Create two entries, each referencing the attachment.
@@ -1771,7 +1771,7 @@ TEST_F(SyncableDirectoryTest, Directory_LastReferenceUnlinksAttachments) {
 
 TEST_F(SyncableDirectoryTest, Directory_GetAttachmentIdsToUpload) {
   // Create one attachment, referenced by two entries.
-  AttachmentId attachment_id = AttachmentId::Create();
+  AttachmentId attachment_id = AttachmentId::Create(0, 0);
   sync_pb::AttachmentIdProto attachment_id_proto = attachment_id.GetProto();
   sync_pb::AttachmentMetadata attachment_metadata;
   sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
