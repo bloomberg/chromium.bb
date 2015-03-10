@@ -1859,10 +1859,6 @@ crbug.com/462404 fast/js/mozilla/strict/function-name-arity.html [ Pass Failure 
 
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
-crbug.com/339857 fast/text/emoji-web-font.html [ NeedsRebaseline ]
-crbug.com/339857 [ Win Mac ] virtual/antialiasedtext/fast/text/emoji-web-font.html [ NeedsRebaseline ]
-crbug.com/339857 [ Win Mac ] virtual/slimmingpaint/fast/text/emoji-web-font.html [ NeedsRebaseline ]
-
 crbug.com/463892 inspector/agents-enable-disable.html [ Skip ]
 
 
