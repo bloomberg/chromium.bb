@@ -27,10 +27,10 @@ namespace {
 
 std::string RoleVariantToString(const base::win::ScopedVariant& role) {
   if (role.type() == VT_I4) {
-    return base::UTF16ToUTF8(IAccessibleRoleToString(V_I4(&role)));
+    return base::UTF16ToUTF8(IAccessibleRoleToString(V_I4(role.ptr())));
   } else if (role.type() == VT_BSTR) {
     return base::UTF16ToUTF8(
-        base::string16(V_BSTR(&role), SysStringLen(V_BSTR(&role))));
+        base::string16(V_BSTR(role.ptr()), SysStringLen(V_BSTR(role.ptr()))));
   }
   return std::string();
 }

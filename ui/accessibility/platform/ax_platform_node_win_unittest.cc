@@ -229,17 +229,17 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleRole) {
   child.role = AX_ROLE_ALERT;
   child_node->SetData(child);
   ASSERT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
-  EXPECT_EQ(ROLE_SYSTEM_ALERT, V_I4(&role));
+  EXPECT_EQ(ROLE_SYSTEM_ALERT, V_I4(role.ptr()));
 
   child.role = AX_ROLE_BUTTON;
   child_node->SetData(child);
   ASSERT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
-  EXPECT_EQ(ROLE_SYSTEM_PUSHBUTTON, V_I4(&role));
+  EXPECT_EQ(ROLE_SYSTEM_PUSHBUTTON, V_I4(role.ptr()));
 
   child.role = AX_ROLE_POP_UP_BUTTON;
   child_node->SetData(child);
   ASSERT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
-  EXPECT_EQ(ROLE_SYSTEM_BUTTONMENU, V_I4(&role));
+  EXPECT_EQ(ROLE_SYSTEM_BUTTONMENU, V_I4(role.ptr()));
 
   ASSERT_EQ(E_INVALIDARG, child_iaccessible->get_accRole(SELF, nullptr));
   ScopedVariant bad_id(999);

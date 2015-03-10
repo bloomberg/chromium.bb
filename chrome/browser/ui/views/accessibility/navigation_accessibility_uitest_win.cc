@@ -124,13 +124,13 @@ void WinAccessibilityEventMonitor::WaitForNextEvent(
 
   base::win::ScopedVariant role_variant;
   if (S_OK == acc_obj->get_accRole(child_variant, role_variant.Receive()))
-    *out_role = V_I4(&role_variant);
+    *out_role = V_I4(role_variant.ptr());
   else
     *out_role = 0;
 
   base::win::ScopedVariant state_variant;
   if (S_OK == acc_obj->get_accState(child_variant, state_variant.Receive()))
-    *out_state = V_I4(&state_variant);
+    *out_state = V_I4(state_variant.ptr());
   else
     *out_state = 0;
 

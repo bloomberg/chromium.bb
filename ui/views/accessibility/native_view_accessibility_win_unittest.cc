@@ -128,8 +128,8 @@ TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
   ScopedVariant result;
   ASSERT_EQ(S_OK, child_widget_accessible->accNavigate(
       NAVDIR_PREVIOUS, childid_self, result.Receive()));
-  ASSERT_EQ(VT_DISPATCH, V_VT(&result));
-  child_widget_sibling_dispatch = V_DISPATCH(&result);
+  ASSERT_EQ(VT_DISPATCH, V_VT(result.ptr()));
+  child_widget_sibling_dispatch = V_DISPATCH(result.ptr());
   ASSERT_EQ(S_OK, child_widget_sibling_dispatch.QueryInterface(
       child_widget_sibling_accessible.Receive()));
   ASSERT_EQ(child_view_accessible.get(), child_widget_sibling_accessible.get());

@@ -173,7 +173,7 @@ void AdvancedFirewallManager::GetAllRules(
       continue;
     }
     base::win::ScopedComPtr<INetFwRule> rule;
-    hr = rule.QueryFrom(V_DISPATCH(&rule_var));
+    hr = rule.QueryFrom(V_DISPATCH(rule_var.ptr()));
     if (FAILED(hr)) {
       DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
       continue;

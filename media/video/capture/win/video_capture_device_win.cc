@@ -93,7 +93,7 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
       prop_bag->Read(kPropertyNames[i], name.Receive(), 0);
     }
     if (name.type() == VT_BSTR) {
-      std::string device_path(base::SysWideToUTF8(V_BSTR(&name)));
+      std::string device_path(base::SysWideToUTF8(V_BSTR(name.ptr())));
       if (device_path.compare(device_id) == 0) {
         // We have found the requested device
         hr = moniker->BindToObject(0, 0, IID_IBaseFilter,

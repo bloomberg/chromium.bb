@@ -194,7 +194,8 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
     base::win::ScopedPropVariant pv_icon;
     if (FAILED(InitPropVariantFromString(favicon_url.c_str(),
                                          pv_icon.Receive())) ||
-        FAILED(property_storage->WriteMultiple(1, properties, &pv_icon, 0))) {
+        FAILED(
+            property_storage->WriteMultiple(1, properties, pv_icon.ptr(), 0))) {
       return false;
     }
   }

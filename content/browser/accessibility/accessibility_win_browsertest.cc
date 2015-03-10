@@ -279,10 +279,10 @@ void AccessibilityWinBrowserTest::FindNodeInAccessibilityTree(
   for (int i = 0; i < depth; i++)
     printf("  ");
   printf("role=%s name=%s\n",
-      base::WideToUTF8(IAccessibleRoleToString(V_I4(&role))).c_str(),
-      base::WideToUTF8(name).c_str());
+         base::WideToUTF8(IAccessibleRoleToString(V_I4(role.ptr()))).c_str(),
+         base::WideToUTF8(name).c_str());
 
-  if (expected_role == V_I4(&role) && expected_name == name) {
+  if (expected_role == V_I4(role.ptr()) && expected_name == name) {
     *found = true;
     return;
   }
@@ -528,7 +528,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleValue(
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   HRESULT hr = accessible->get_accRole(childid_self, role.Receive());
   ASSERT_EQ(S_OK, hr);
-  if (role.type() == VT_I4 && V_I4(&role) == ROLE_SYSTEM_DOCUMENT)
+  if (role.type() == VT_I4 && V_I4(role.ptr()) == ROLE_SYSTEM_DOCUMENT)
     return;
 
   // Get the value.
@@ -550,7 +550,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleState(
   HRESULT hr = accessible->get_accState(childid_self, state.Receive());
   EXPECT_EQ(S_OK, hr);
   ASSERT_EQ(VT_I4, state.type());
-  LONG obj_state = V_I4(&state);
+  LONG obj_state = V_I4(state.ptr());
   // Avoid flakiness. The "offscreen" state depends on whether the browser
   // window is frontmost or not, and "hottracked" depends on whether the
   // mouse cursor happens to be over the element.
@@ -585,9 +585,9 @@ base::string16
 AccessibilityWinBrowserTest::AccessibleChecker::RoleVariantToString(
     const base::win::ScopedVariant& role) {
   if (role.type() == VT_I4)
-    return IAccessibleRoleToString(V_I4(&role));
+    return IAccessibleRoleToString(V_I4(role.ptr()));
   if (role.type() == VT_BSTR)
-    return base::string16(V_BSTR(&role), SysStringLen(V_BSTR(&role)));
+    return base::string16(V_BSTR(role.ptr()), SysStringLen(V_BSTR(role.ptr())));
   return base::string16();
 }
 

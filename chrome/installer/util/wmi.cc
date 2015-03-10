@@ -159,12 +159,12 @@ base::string16 WMIComputerSystem::GetModel() {
 
   base::string16 model_string;
   if (manufacturer.type() == VT_BSTR) {
-    model_string = V_BSTR(&manufacturer);
+    model_string = V_BSTR(manufacturer.ptr());
     if (model.type() == VT_BSTR)
       model_string += L" ";
   }
   if (model.type() == VT_BSTR)
-    model_string += V_BSTR(&model);
+    model_string += V_BSTR(model.ptr());
 
   return model_string;
 }

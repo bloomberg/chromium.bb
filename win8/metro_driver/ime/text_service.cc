@@ -111,7 +111,7 @@ bool InitializeSentenceMode(ITfThreadMgr* thread_manager,
 
   base::win::ScopedVariant sentence_variant;
   sentence_variant.Set(TF_SENTENCEMODE_PHRASEPREDICT);
-  hr = sentence_compartment->SetValue(client_id, &sentence_variant);
+  hr = sentence_compartment->SetValue(client_id, sentence_variant.ptr());
   if (FAILED(hr)) {
     LOG(ERROR) << "ITfCompartment::SetValue failed. hr = " << hr;
     return false;
@@ -138,7 +138,7 @@ bool InitializeDisabledContext(ITfContext* context, TfClientId client_id) {
 
   base::win::ScopedVariant variant;
   variant.Set(1);
-  hr = disabled_compartment->SetValue(client_id, &variant);
+  hr = disabled_compartment->SetValue(client_id, variant.ptr());
   if (FAILED(hr)) {
     LOG(ERROR) << "ITfCompartment::SetValue failed. hr = " << hr;
     return false;
@@ -154,7 +154,7 @@ bool InitializeDisabledContext(ITfContext* context, TfClientId client_id) {
 
   base::win::ScopedVariant empty_context_variant;
   empty_context_variant.Set(static_cast<int32>(1));
-  hr = empty_context->SetValue(client_id, &empty_context_variant);
+  hr = empty_context->SetValue(client_id, empty_context_variant.ptr());
   if (FAILED(hr)) {
     LOG(ERROR) << "ITfCompartment::SetValue failed. hr = " << hr;
     return false;

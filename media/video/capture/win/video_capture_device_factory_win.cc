@@ -165,7 +165,7 @@ static void GetDeviceNamesDirectShow(
     if (FAILED(hr) || name.type() != VT_BSTR)
       continue;
 
-    const std::string device_name(base::SysWideToUTF8(V_BSTR(&name)));
+    const std::string device_name(base::SysWideToUTF8(V_BSTR(name.ptr())));
     if (IsDeviceBlackListed(device_name))
       continue;
 
@@ -176,7 +176,7 @@ static void GetDeviceNamesDirectShow(
       id = device_name;
     } else {
       DCHECK_EQ(name.type(), VT_BSTR);
-      id = base::SysWideToUTF8(V_BSTR(&name));
+      id = base::SysWideToUTF8(V_BSTR(name.ptr()));
     }
     device_names->push_back(Name(device_name, id, capture_api_type));
   }

@@ -41,8 +41,7 @@ class ScopedPropVariant {
   }
 
   const PROPVARIANT& get() const { return pv_; }
-
-  const PROPVARIANT* operator&() const { return &pv_; }
+  const PROPVARIANT* ptr() const { return &pv_; }
 
  private:
   PROPVARIANT pv_;

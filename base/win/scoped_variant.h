@@ -122,9 +122,7 @@ class BASE_EXPORT ScopedVariant {
   // This support is necessary for the V_XYZ (e.g. V_BSTR) set of macros to
   // work properly but still doesn't allow modifications since we want control
   // over that.
-  const VARIANT* operator&() const {
-    return &var_;
-  }
+  const VARIANT* ptr() const { return &var_; }
 
   // Like other scoped classes (e.g scoped_refptr, ScopedComPtr, ScopedBstr)
   // we support the assignment operator for the type we wrap.

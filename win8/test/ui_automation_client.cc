@@ -315,12 +315,13 @@ void UIAutomationClient::Context::HandleWindowOpen(
     return;
   }
 
-  if (V_VT(&var) != VT_BSTR) {
-    LOG(ERROR) << __FUNCTION__ << " class name is not a BSTR: " << V_VT(&var);
+  if (V_VT(var.ptr()) != VT_BSTR) {
+    LOG(ERROR) << __FUNCTION__
+               << " class name is not a BSTR: " << V_VT(var.ptr());
     return;
   }
 
-  base::string16 class_name(V_BSTR(&var));
+  base::string16 class_name(V_BSTR(var.ptr()));
 
   // Window class names are atoms, which are case-insensitive.
   if (class_name.size() == class_name_.size() &&
@@ -533,11 +534,11 @@ HRESULT UIAutomationClient::Context::GetInvokableItems(
       LOG(ERROR) << std::hex << result;
       continue;
     }
-    if (V_VT(&var) != VT_BSTR) {
-      LOG(ERROR) << __FUNCTION__ << " name is not a BSTR: " << V_VT(&var);
+    if (V_VT(var.ptr()) != VT_BSTR) {
+      LOG(ERROR) << __FUNCTION__ << " name is not a BSTR: " << V_VT(var.ptr());
       continue;
     }
-    choices->push_back(base::string16(V_BSTR(&var)));
+    choices->push_back(base::string16(V_BSTR(var.ptr())));
     var.Reset();
   }
 
@@ -564,13 +565,13 @@ void UIAutomationClient::Context::CloseWindow(
     return;
   }
 
-  if (V_VT(&var) != VT_I4) {
+  if (V_VT(var.ptr()) != VT_I4) {
     LOG(ERROR) << __FUNCTION__
-               << " window handle is not an int: " << V_VT(&var);
+               << " window handle is not an int: " << V_VT(var.ptr());
     return;
   }
 
-  HWND handle = reinterpret_cast<HWND>(V_I4(&var));
+  HWND handle = reinterpret_cast<HWND>(V_I4(var.ptr()));
 
   uint32 scan_code = MapVirtualKey(VK_ESCAPE, MAPVK_VK_TO_VSC);
   PostMessage(handle, WM_KEYDOWN, VK_ESCAPE,
