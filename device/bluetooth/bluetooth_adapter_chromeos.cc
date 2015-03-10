@@ -361,9 +361,9 @@ void BluetoothAdapterChromeOS::AdapterRemoved(
 void BluetoothAdapterChromeOS::AdapterPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  DCHECK(IsPresent());
   if (object_path != object_path_)
     return;
+  DCHECK(IsPresent());
 
   BluetoothAdapterClient::Properties* properties =
       DBusThreadManager::Get()->GetBluetoothAdapterClient()->
@@ -379,12 +379,13 @@ void BluetoothAdapterChromeOS::AdapterPropertyChanged(
 
 void BluetoothAdapterChromeOS::DeviceAdded(
   const dbus::ObjectPath& object_path) {
-  DCHECK(IsPresent());
+  DCHECK(DBusThreadManager::Get());
   BluetoothDeviceClient::Properties* properties =
       DBusThreadManager::Get()->GetBluetoothDeviceClient()->
           GetProperties(object_path);
-  if (properties->adapter.value() != object_path_)
+  if (!properties || properties->adapter.value() != object_path_)
     return;
+  DCHECK(IsPresent());
 
   BluetoothDeviceChromeOS* device_chromeos =
       new BluetoothDeviceChromeOS(this,
@@ -401,7 +402,6 @@ void BluetoothAdapterChromeOS::DeviceAdded(
 
 void BluetoothAdapterChromeOS::DeviceRemoved(
     const dbus::ObjectPath& object_path) {
-  DCHECK(IsPresent());
   for (DevicesMap::iterator iter = devices_.begin();
        iter != devices_.end(); ++iter) {
     BluetoothDeviceChromeOS* device_chromeos =
@@ -420,7 +420,6 @@ void BluetoothAdapterChromeOS::DeviceRemoved(
 void BluetoothAdapterChromeOS::DevicePropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  DCHECK(IsPresent());
   BluetoothDeviceChromeOS* device_chromeos = GetDeviceWithPath(object_path);
   if (!device_chromeos)
     return;
@@ -469,7 +468,6 @@ void BluetoothAdapterChromeOS::DevicePropertyChanged(
 void BluetoothAdapterChromeOS::InputPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  DCHECK(IsPresent());
   BluetoothDeviceChromeOS* device_chromeos = GetDeviceWithPath(object_path);
   if (!device_chromeos)
     return;

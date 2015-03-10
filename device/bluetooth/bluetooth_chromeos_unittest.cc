@@ -3208,10 +3208,13 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   // Protected and private methods:
 
   adapter_chrome_os->RemovePairingDelegateInternal(&pairing_delegate);
-
-  // BluetoothAdapterClient::Observer methods omitted, dbus will be shutdown.
-  // BluetoothDeviceClient::Observer methods omitted, dbus will be shutdown.
-  // BluetoothInputClient::Observer methods omitted, dbus will be shutdown.
+  // AdapterAdded() invalid post Shutdown because it calls SetAdapter.
+  adapter_chrome_os->AdapterRemoved(dbus::ObjectPath("x"));
+  adapter_chrome_os->AdapterPropertyChanged(dbus::ObjectPath("x"), "");
+  adapter_chrome_os->DeviceAdded(dbus::ObjectPath(""));
+  adapter_chrome_os->DeviceRemoved(dbus::ObjectPath(""));
+  adapter_chrome_os->DevicePropertyChanged(dbus::ObjectPath(""), "");
+  adapter_chrome_os->InputPropertyChanged(dbus::ObjectPath(""), "");
   // BluetoothAgentServiceProvider::Delegate omitted, dbus will be shutdown,
   //   with the exception of Released.
   adapter_chrome_os->Released();
