@@ -393,6 +393,10 @@
                 "href": "/apps/app_storage"
               },
               {
+                "title": "Managing Offline Storage",
+                "href": "/apps/offline_storage"
+              },
+              {
                 "title": "Keep Users Informed",
                 "href": "/apps/inform_users"
               },
