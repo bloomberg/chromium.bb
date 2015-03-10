@@ -62,10 +62,6 @@ void SuspendableTaskRunner::runAndDestroySelf()
 
 DEFINE_TRACE(SuspendableTaskRunner)
 {
-#if ENABLE(OILPAN)
-    visitor->trace(m_frame);
-    visitor->trace(m_sources);
-#endif
     SuspendableTimer::trace(visitor);
 }
 
