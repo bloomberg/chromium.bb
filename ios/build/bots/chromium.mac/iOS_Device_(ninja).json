@@ -5,14 +5,14 @@
   "comments": [
     "Builder for fat binaries using ninja."
   ],
-  "xcode version": "5.1.1",
+  "xcode version": "6.1.1",
   "GYP_DEFINES": {
     "chromium_ios_signing": "0",
     "target_subarch": "both"
   },
   "compiler": "ninja",
   "configuration": "Release",
-  "sdk": "iphoneos7.1",
+  "sdk": "iphoneos8.1",
   "tests": [
   ]
 }

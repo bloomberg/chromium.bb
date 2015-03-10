@@ -3,81 +3,81 @@
     "smut"
   ],
   "comments": [
-    "Tests for 32-bit iOS 7.1 iPhone simulator."
+    "Tests for 32-bit iOS 8.1 iPhone simulator."
   ],
-  "xcode version": "5.1",
+  "xcode version": "6.1.1",
   "GYP_DEFINES": {
     "chromium_ios_signing": "0",
     "target_subarch": "arm32"
   },
   "compiler": "ninja",
   "configuration": "Debug",
-  "sdk": "iphonesimulator7.1",
+  "sdk": "iphonesimulator8.1",
   "tests": [
     {
       "app": "ios_chrome_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "ios_web_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "base_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "components_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "crypto_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "gfx_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "url_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "content_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "net_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "ui_base_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "sync_unit_tests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "sql_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     },
     {
       "app": "skia_unittests",
-      "device type": "iPhone Retina (4-inch)",
-      "os": "7.1"
+      "device type": "iPhone 5",
+      "os": "8.1"
     }
   ]
 }
