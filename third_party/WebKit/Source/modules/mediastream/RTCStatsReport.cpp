@@ -49,16 +49,6 @@ Vector<String> RTCStatsReport::names() const
     return result;
 }
 
-RTCStatsReport* RTCStatsReport::local()
-{
-    return this;
-}
-
-RTCStatsReport* RTCStatsReport::remote()
-{
-    return this;
-}
-
 void RTCStatsReport::addStatistic(const String& name, const String& value)
 {
     m_stats.add(name, value);

@@ -10,8 +10,6 @@ description("Tests the RTCPeerConnection stats interface.");
 
 var pc = null;
 var result;
-var timestamp;
-var local;
 
 function getUserMedia(dictionary, callback) {
     try {
@@ -33,22 +31,13 @@ function verifyStats(status)
     status_g = status;
     result = status.result();
     shouldBeGreaterThanOrEqual('result.length', '2');
-    // The "local" interface is deprecated. Keep test until interface deleted.
-    local = result[0].local;
-    timestamp = local.timestamp;
     // Windows XP sometimes gives time that appears to go backwards.
     // This hack will make the tests non-flaky if it never goes backwards
     // by more than 20 milliseconds.
     // Up to 10 milliseconds has been observed on XP, 2 milliseconds on Win7.
     fudgeForXP = 20;
-    timediff = timestamp - startTime + fudgeForXP;
-    shouldBeGreaterThanOrEqual('timediff', '0');
-    shouldBeGreaterThanOrEqual('local.names().length', '1');
-    shouldBeGreaterThanOrEqual('local.names().indexOf("type")', '0');
-    shouldBe('local.stat("type")', '"audio"');
-    // Newer interface.
     res = result[0];
-    timediff = timestamp - startTime + fudgeForXP;
+    timediff = res.timestamp - startTime + fudgeForXP;
     shouldBeGreaterThanOrEqual('timediff', '0');
     shouldBeNonNull('res.id');
     shouldBeNonNull('res.type');

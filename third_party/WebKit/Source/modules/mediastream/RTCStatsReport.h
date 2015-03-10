@@ -44,11 +44,6 @@ public:
     String stat(const String& name) { return m_stats.get(name); }
     Vector<String> names() const;
 
-    // DEPRECATED
-    RTCStatsReport* local();
-    // DEPRECATED
-    RTCStatsReport* remote();
-
     void addStatistic(const String& name, const String& value);
 
     DEFINE_INLINE_TRACE() { }
