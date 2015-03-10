@@ -48,7 +48,6 @@ public:
     static void encrypted(HTMLMediaElement&, WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength);
     static void didBlockPlaybackWaitingForKey(HTMLMediaElement&);
     static void didResumePlaybackBlockedForKey(HTMLMediaElement&);
-    static void playerDestroyed(HTMLMediaElement&);
     static WebContentDecryptionModule* contentDecryptionModule(HTMLMediaElement&);
 
     static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);

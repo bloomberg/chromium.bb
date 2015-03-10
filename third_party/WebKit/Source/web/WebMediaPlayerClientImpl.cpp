@@ -68,8 +68,6 @@ WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl()
 {
     // Explicitly destroy the WebMediaPlayer to allow verification of tear down.
     m_webMediaPlayer.clear();
-
-    HTMLMediaElementEncryptedMedia::playerDestroyed(mediaElement());
 }
 
 void WebMediaPlayerClientImpl::networkStateChanged()

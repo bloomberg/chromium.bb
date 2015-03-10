@@ -266,8 +266,6 @@ public:
     double effectiveMediaVolume() const;
 
 #if ENABLE(OILPAN)
-    bool isFinalizing() const { return m_isFinalizing; }
-
     // Oilpan: finalization of the media element is observable from its
     // attached MediaSource; it entering a closed state.
     //

@@ -576,22 +576,6 @@ void HTMLMediaElementEncryptedMedia::didResumePlaybackBlockedForKey(HTMLMediaEle
     thisElement.m_isWaitingForKey = false;
 }
 
-void HTMLMediaElementEncryptedMedia::playerDestroyed(HTMLMediaElement& element)
-{
-#if ENABLE(OILPAN)
-    // FIXME: Oilpan: remove this once the media player is on the heap. crbug.com/378229
-    if (element.isFinalizing())
-        return;
-#endif
-
-    HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(element);
-    if (!thisElement.m_mediaKeys)
-        return;
-
-    ASSERT(thisElement.m_emeMode == EmeModeUnprefixed);
-    thisElement.m_mediaKeys.clear();
-}
-
 WebContentDecryptionModule* HTMLMediaElementEncryptedMedia::contentDecryptionModule(HTMLMediaElement& element)
 {
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(element);
