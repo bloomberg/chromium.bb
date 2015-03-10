@@ -6,6 +6,7 @@
 #define UI_VIEWS_TEST_TEST_VIEWS_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/events/event_constants.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -44,6 +45,21 @@ class ProportionallySizedView : public View {
   int preferred_width_;
 
   DISALLOW_COPY_AND_ASSIGN(ProportionallySizedView);
+};
+
+// Class that closes the widget (which ends up deleting it immediately) when the
+// appropriate event is received.
+class CloseWidgetView : public View {
+ public:
+  explicit CloseWidgetView(ui::EventType event_type);
+
+  // ui::EventHandler override:
+  void OnEvent(ui::Event* event) override;
+
+ private:
+  const ui::EventType event_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloseWidgetView);
 };
 
 }  // namespace views
