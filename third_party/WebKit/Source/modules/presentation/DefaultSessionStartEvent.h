@@ -38,12 +38,14 @@ public:
 
     virtual const AtomicString& interfaceName() const override;
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     DefaultSessionStartEvent();
     DefaultSessionStartEvent(const AtomicString& eventType, PresentationSession*);
     DefaultSessionStartEvent(const AtomicString& eventType, const DefaultSessionStartEventInit& initializer);
 
-    Persistent<PresentationSession> m_session;
+    PersistentWillBeMember<PresentationSession> m_session;
 };
 
 DEFINE_TYPE_CASTS(DefaultSessionStartEvent, Event, event, event->interfaceName() == EventNames::DefaultSessionStartEvent, event.interfaceName() == EventNames::DefaultSessionStartEvent);

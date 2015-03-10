@@ -34,4 +34,10 @@ const AtomicString& DefaultSessionStartEvent::interfaceName() const
     return EventNames::DefaultSessionStartEvent;
 }
 
+DEFINE_TRACE(DefaultSessionStartEvent)
+{
+    visitor->trace(m_session);
+    Event::trace(visitor);
+}
+
 } // namespace blink
