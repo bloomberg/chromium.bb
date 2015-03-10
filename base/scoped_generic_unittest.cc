@@ -85,7 +85,7 @@ TEST(ScopedGenericTest, ScopedGeneric) {
   EXPECT_EQ(kSecond, values_freed[1]);
   values_freed.clear();
 
-  // Pass.
+  // Pass constructor.
   {
     ScopedInt a(kFirst, traits);
     ScopedInt b(a.Pass());
@@ -93,8 +93,25 @@ TEST(ScopedGenericTest, ScopedGeneric) {
     ASSERT_EQ(IntTraits::InvalidValue(), a.get());
     ASSERT_EQ(kFirst, b.get());
   }
+
   ASSERT_EQ(1u, values_freed.size());
   ASSERT_EQ(kFirst, values_freed[0]);
+  values_freed.clear();
+
+  // Pass assign.
+  {
+    ScopedInt a(kFirst, traits);
+    ScopedInt b(kSecond, traits);
+    b = a.Pass();
+    ASSERT_EQ(1u, values_freed.size());
+    EXPECT_EQ(kSecond, values_freed[0]);
+    ASSERT_EQ(IntTraits::InvalidValue(), a.get());
+    ASSERT_EQ(kFirst, b.get());
+  }
+
+  ASSERT_EQ(2u, values_freed.size());
+  EXPECT_EQ(kFirst, values_freed[1]);
+  values_freed.clear();
 }
 
 TEST(ScopedGenericTest, Operators) {
