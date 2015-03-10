@@ -200,9 +200,7 @@ group("gn_all") {
     # The following are definitely linux-only.
     deps += [
       "//breakpad:breakpad_unittests",
-      "//breakpad:dump_syms",
       "//breakpad:generate_test_dump",
-      "//breakpad:minidump-2-core",
       "//dbus:dbus_test_server",
       "//dbus:dbus_unittests",
       "//net:disk_cache_memory_test",
@@ -226,7 +224,9 @@ group("gn_all") {
       "//base:protect_file_posix",
       "//base:build_utf8_validator_tables",
       "//breakpad:core-2-minidump",
+      "//breakpad:dump_syms",
       "//breakpad:microdump_stackwalk",
+      "//breakpad:minidump-2-core",
       "//breakpad:minidump_dump",
       "//breakpad:minidump_stackwalk",
       "//build/sanitizers:copy_llvm_symbolizer",
