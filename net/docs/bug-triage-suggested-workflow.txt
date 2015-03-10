@@ -1,3 +1,54 @@
+Look for new crashers:
+* Go to go/chromecrash.
+* For each platform, look through the releases for which releases to
+  investigate.  As per bug-triage.txt, this should be the
+  most recent canary, the previous canary (if the most recent is less
+  than a day old), and any of dev/beta/stable that were released in the
+  last couple of days.  
+* For each release, in the "Process Type" frame, click on "browser".
+* At the bottom of the "Magic Signature" frame,  click "limit 1000".
+  Reported crashers are sorted in decreasing order of the number of reports for
+  that crash signature.
+* Search the page for "net::".  
+* For each found signature:
+  * If there is a bug already filed, make sure it is correctly
+    describing the current bug (e.g. not closed, or not describing a
+    long-past issue), and make sure that if it is a net:: bug, that
+    it is labeled as such.  
+  * Ignore signatures that only occur once, as memory corruption can
+    easily cause one-off failures when the sample size is large
+    enough.
+  * Ignore signatures that only come from a single client ID, as
+    individual machine malware and breakage can also easily cause
+    one-off failures.  
+  * Click on the number of reports field to see details of
+    crash. Ignore it if it doesn't appear to be a network bug. 
+  * Otherwise, file a new bug directly from chromecrash.  Note that
+    this may result in filing bugs for low- and very-low- frequency
+    crashes.  That's ok; the bug tracker is a better tool to figure
+    out whether or not we put resources into those crashes than a snap
+    judgement when filing bugs.
+* For each bug you file, include the following information:
+  * The backtrace.  Note that the backtrace should not be added to the
+    bug if Restrict-View-Google isn't set on the bug as it may contain
+    PII.  Filing the bug from the crash reporter should do this
+    automatically, but check.
+  * The channel in which the bug is seen (canary/dev/beta/stable),
+    its frequency in that channel, and its rank among crashers in the channel.
+  * The frequency of this signature in recent releases.  This
+    information is available by:
+    * Clicking on the signature in the "Magic Signature" list
+    * Clicking "Edit" on the dremel query at the top of the page
+    * Removing the "product.version='X.Y.Z.W' AND" string and clicking
+      "Update".
+    * Clicking "Limit 1000" in the Product Version list in the
+      resulting page (without this, the listing will be restricted to
+      the releases in which the signature is most common, which will
+      often not include the canary/dev release being investigated).
+    * Choose some subset of that list, or all of it, to include in the
+      bug.  Make sure to indicate if there is a defined point in the
+      past before which the signature is not present.
+
 Identifying unlabeled network bugs on the tracker:
 * Look at new uncomfirmed bugs since noon PST on the last triager's rotation:
     https://code.google.com/p/chromium/issues/list?can=2&q=status%3Aunconfirmed&sort=-id&num=1000
@@ -28,6 +79,9 @@ Investigating Cr-Internals-Network bugs:
 * Look through uncomfirmed and untriaged Cr-Internals-Network bugs, prioritizing
     those updated within the last week:
     https://code.google.com/p/chromium/issues/list?can=2&q=Cr%3DInternals-Network+-status%3AAssigned+-status%3AStarted+-status%3AAvailable+&sort=-modified
+* If more information is needed from the reporter, ask for it and
+    add the 'Needs-Feedback' label.  If the reporter has answered an
+    earlier request for information, remove that label.
 * While investigating a new issue, change the status to Untriaged.
 * If a bug is a potential security issue (Allows for code execution from remote
     site, allows crossing security boundaries, unchecked array bounds, etc) mark
@@ -75,25 +129,22 @@ Investigating Cr-Internals-Network bugs:
     sublabel applies, or only the Cr-Internals-Network-HTTP sublabel applies,
     and there's no clear owner), try to figure out the exact cause.
 
-Look for new crashers:
-* Go to go/chromecrash.
-* For each platform, go to the latest canary.
-* In the "Process Type" frame, click on "browser".
-* At the bottom of the "Magic Signature" frame,  click "limit 1000".
-  Reported crashers are sorted in decreasing order of the number of reports for
-  that crash signature.
-* Search the page for "net::".  Ignore crashes that only occur once, as
-    memory corruption can easily cause one-off failures when the sample size is
-    large enough.
-* Click on the number of reports field to see details of crash. Look at the
-    stack trace to confirm it's a network bug.
-  * If it is, and there's no associated bug filed, file a new bug directly from
-      chromecrash, looking at earlier canaries to determine if it's a recent
-      regression.  Use the most specific label possible.
-* The most recent Canary may not yet have a full day of crashes, so it may be
-    worth looking at more than one version.
-* If there's been a dev, beta, or stable release in the last couple days, should
-    also look at those.
+Monitor UMA histograms and gasper alerts.  For each Gasper alert that
+fires, determine if it's a real alert and file a bug if so.  
+* Don't file if the alert is coincident with a major volume change.
+  The volume at a particular date can be determined by hovering the
+  mouse over the appropriate location on the alert line.
+* Don't file if the alert is on a graph with very low volume (< ~200
+  data points); it's probably noise, and we probably don't care even
+  if it isn't.
+* Don't file if the graph is really noisy (but eyeball it to decide if
+  there is an underlying important shift under the noise).
+* Don't file if the alert is in the "Known Ignorable" list:
+  * SimpleCache on Windows
+  * DiskCache on Android.
+For each Gasper alert, respond to chrome-network-debugging@ with a
+summary of the action you've taken and why, including issue link if an
+issue was filed.  
 
 Investigating crashers:
 * Only investigate crashers that are still occurring, as identified by above

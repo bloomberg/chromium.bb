@@ -4,15 +4,30 @@ label seems suitable.
 
 Responsibilities
 
-To be done on each rotation.  These responsibilities should be tracked, and
-anything left undone at the end of a rotation should be handed off to the next
-triager.  The downside to passing along bug investigations like this is each new
-triager has to get back up to speed on bugs the previous triager was
-investigating.  The upside is that triagers don't get stuck investigating issues
-after their time after their rotation, and it results in a uniform, predictable
-two day commitment for all triagers.
+Required:
+* Identify new crashers
+* Identify new network issues.
+* Request data about recent Cr-Internals-Network issue.
+* Investigate each recent Cr-Internals-Network issue.
+* Monitor UMA histograms and gasper alerts.
 
-Primary Responsibilities:
+Best effort:
+* Investigate unowned and owned-but-forgotten net/ crashers
+* Investigate old bugs
+* Close obsolete bugs.
+
+All of the above is to be done on each rotation.  These
+responsibilities should be tracked, and anything left undone at the
+end of a rotation should be handed off to the next triager.  The
+downside to passing along bug investigations like this is each new
+triager has to get back up to speed on bugs the previous triager was
+investigating.  The upside is that triagers don't get stuck
+investigating issues after their time after their rotation, and it
+results in a uniform, predictable two day commitment for all triagers.
+
+More detail:
+
+Required activities:
 * Identify new crashers that are potentially network related.  You should check
     the most recent canary, the previous canary (if the most recent less than a
     day old), and any of dev/beta/stable that were released in the last couple
@@ -24,10 +39,9 @@ Primary Responsibilities:
     responsible for looking at bugs reported from noon PST / 3:00 pm EST of the
     last day of the previous triager's rotation until the same time on the last
     day of their rotation.
-* Request data about recent unassigned Cr-Internals-Network bugs from reporters.
-    "Recent" means issues updated in the past week or so.
 * Investigate each recent (New comment within the past week or so)
-    Cr-Internals-Network issue until you can do one of the following:
+  Cr-Internals-Network issue, driving getting information from reporters as
+  needed, until you can do one of the following:
   * Mark it as WontFix (working as intended, obsolete issue) or a duplicate.
   * Mark it as a feature request.
   * Remove the Cr-Internals-Network label, replacing it with at least one more
@@ -43,9 +57,13 @@ Primary Responsibilities:
     Available.  Future triagers should ignore bugs with this status, unless
     investigating stale bugs.
 * Monitor UMA histograms and gasper alerts.
-    TODO (mmenke):  Add a suggested workflow.
+  * For each Gasper alert that fires, the triager should determine if
+    the alert is real (not due to noise), and file a bug with the
+    appropriate label if so.  Note that if no label more specific than
+    Cr-Internals-Network is appropriate, the responsibility remains
+    with the triager to continue investigating the bug, as above.
 
-Best Effort (As you time):
+Best Effort (As you have time):
 * Investigate unowned and owned but forgotten net/ crashers that are still
     occurring (As indicated by go/chromecrash), prioritizing frequent and long
     standing crashers.
