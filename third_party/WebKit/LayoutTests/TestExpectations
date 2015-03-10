@@ -530,8 +530,6 @@ crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
-crbug.com/464034 virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ NeedsRebaseline ]
-
 # Issues on the mac-antialiased fonts virtual test suite.
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
