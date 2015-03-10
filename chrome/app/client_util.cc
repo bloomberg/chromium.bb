@@ -291,7 +291,22 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
             base::Bind(&GenerateChromeWatcherCommandLine, exe_path)));
         if (chrome_watcher_client_->LaunchWatcher()) {
 #if defined(KASKO)
-          kasko_client_.reset(new KaskoClient(chrome_watcher_client_.get()));
+          kasko::api::MinidumpType minidump_type = kasko::api::SMALL_DUMP_TYPE;
+          if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kFullMemoryCrashReport)) {
+            minidump_type = kasko::api::FULL_DUMP_TYPE;
+          } else {
+            bool is_per_user_install =
+                g_chrome_crash_client.Get().GetIsPerUserInstall(
+                    base::FilePath(exe_path));
+            if (g_chrome_crash_client.Get().GetShouldDumpLargerDumps(
+                    is_per_user_install)){
+              minidump_type = kasko::api::LARGER_DUMP_TYPE;
+            }
+          }
+
+          kasko_client_.reset(
+              new KaskoClient(chrome_watcher_client_.get(), minidump_type));
 #endif  // KASKO
         }
       }

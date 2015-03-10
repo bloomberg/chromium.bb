@@ -24,11 +24,16 @@
 #include "syzygy/kasko/api/client.h"
 
 namespace {
+
 ChromeWatcherClient* g_chrome_watcher_client = nullptr;
+kasko::api::MinidumpType g_minidump_type = kasko::api::SMALL_DUMP_TYPE;
+
 }  // namespace
 
-KaskoClient::KaskoClient(ChromeWatcherClient* chrome_watcher_client) {
+KaskoClient::KaskoClient(ChromeWatcherClient* chrome_watcher_client,
+                         kasko::api::MinidumpType minidump_type) {
   DCHECK(!g_chrome_watcher_client);
+  g_minidump_type = minidump_type;
   g_chrome_watcher_client = chrome_watcher_client;
 
   kasko::api::InitializeClient(
@@ -74,8 +79,8 @@ extern "C" void __declspec(dllexport) ReportCrashWithProtobuf(
 
     if (g_chrome_watcher_client &&
         g_chrome_watcher_client->EnsureInitialized()) {
-      kasko::api::SendReport(info, protobuf, protobuf_length, crash_keys,
-                             crash_key_count);
+      kasko::api::SendReport(info, g_minidump_type, protobuf, protobuf_length,
+                             crash_keys, crash_key_count);
     }
   }
 

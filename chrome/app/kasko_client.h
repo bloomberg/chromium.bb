@@ -8,17 +8,20 @@
 #if defined(KASKO)
 
 #include "base/macros.h"
+#include "syzygy/kasko/api/minidump_type.h"
 
 class ChromeWatcherClient;
 
 // Manages the lifetime of Chrome's Kasko client, which permits crash reporting
 // via Kasko. Only a single instance of this class may be instantiated at any
-// time.
+// time, and it must only be destroyed when the process is single-threaded.
 class KaskoClient {
  public:
   // Initializes a Kasko client that will communicate with the Kasko reporter
   // hosted by the Chrome watcher process managed by |chrome_watcher_client|.
-  explicit KaskoClient(ChromeWatcherClient* chrome_watcher_client);
+  // All generated reports will use |minidump_type|.
+  KaskoClient(ChromeWatcherClient* chrome_watcher_client,
+              kasko::api::MinidumpType minidump_type);
   ~KaskoClient();
 
  private:
