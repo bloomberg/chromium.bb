@@ -11,6 +11,8 @@ InspectorTest.createWorkspace = function(ignoreEvents)
     InspectorTest.testTargetManager = new WebInspector.TargetManager();
     InspectorTest.testWorkspace = new WebInspector.Workspace(InspectorTest.testFileSystemMapping);
     InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
+    if (InspectorTest.testNetworkProject)
+        InspectorTest.testNetworkProject.dispose();
     InspectorTest.testNetworkProject = new WebInspector.NetworkProject(InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
     InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
     InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
@@ -72,7 +74,7 @@ InspectorTest._defaultWorkspaceEventHandler = function(event)
         return;
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Service)
         return;
-    throw new Error("Unexpected Workspace event: " + event.type + ": " + uiSourceCode.uri() + ".");
+    InspectorTest.addResult("Workspace event: " + event.type + ": " + uiSourceCode.uri() + ".");
 }
 
 InspectorTest.uiSourceCodeURL = function(uiSourceCode)

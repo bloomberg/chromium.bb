@@ -85,8 +85,6 @@ function test()
     InspectorTest.runTestSuite([
         function testAutomaticMapping(next)
         {
-            function uiSourceCodeAdded(uiSourceCode) { }
-
             function dumpFileSystemUISourceCodesMappings()
             {
                 var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
@@ -107,7 +105,6 @@ function test()
             createObjects(step1);
             function step1()
             {
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 4);
                 InspectorTest.addResult("Adding file system.");
                 manager.addMockFileSystem(fileSystemPath);
                 manager.addFiles(fileSystemPath, files);
@@ -129,7 +126,6 @@ function test()
             {
                 InspectorTest.testFileSystemMapping._fileSystemMappingSetting = setting;
                 InspectorTest.testFileSystemMapping._loadFromSettings();
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
                 manager.addMockFileSystem(fileSystemPath, true);
                 manager.addFiles(fileSystemPath, files);
                 dumpFileSystemUISourceCodesMappings();
@@ -143,7 +139,6 @@ function test()
 
             function step3()
             {
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
                 manager.addMockFileSystem(fileSystemPath);
                 manager.addFiles(fileSystemPath, files);
                 dumpFileSystemUISourceCodesMappings();
@@ -159,8 +154,6 @@ function test()
             var originalFileContent = "<foo content>";
             var scriptURL = "http://localhost/html/foo.js";
             var scriptContent = originalFileContent + "\n  //# sourceURL=" + scriptURL + "  \n ";
-            function uiSourceCodeAdded(uiSourceCode) { }
-
             function unloadScript()
             {
                 resourceScriptMapping._debuggerReset();
@@ -170,7 +163,6 @@ function test()
             function loadScript()
             {
                 script = InspectorTest.createScriptMock(scriptURL, 0, 0, false, scriptContent, InspectorTest.testTargetManager.targets()[0]);
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 1);
                 defaultScriptMapping.addScript(script);
                 resourceScriptMapping.addScript(script);
             }
@@ -193,7 +185,6 @@ function test()
                 manager.addMockFileSystem(fileSystemPath);
                 InspectorTest.addResult("Adding file system mapping.");
                 InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost/", "/");
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
                 manager.addFiles(fileSystemPath, files);
 
                 loadScript();
@@ -309,12 +300,14 @@ function test()
                 WebInspector.isolatedFileSystemManager.mapping().addMappingForResource(scriptURL, fileSystemPath, filePath.substr(1));
                 InspectorTest.addFilesToMockFileSystem(fileSystemPath, files);
                 // Now that we've set everything up, we need to reload a page to remove all network resources.
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function() {}, 7);
                 InspectorTest.reloadPage(pageReloaded);
             }
 
             function pageReloaded()
             {
                 // Now reload again as part of test.
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function() {}, 7);
                 InspectorTest.reloadPage(pageReloadedAgain);
             }
 
@@ -352,9 +345,6 @@ function test()
 
         function testExcludingFolders(next)
         {
-            function uiSourceCodeAdded(uiSourceCode) {}
-            function uiSourceCodeRemoved(uiSourceCode) {}
-
             function dumpWorkspaceUISourceCodes()
             {
                 InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
@@ -374,11 +364,9 @@ function test()
                 manager.addMockFileSystem(fileSystemPath);
                 InspectorTest.addResult("Adding exclusion pattern and excluded folder.");
                 InspectorTest.testExcludedFolderManager.addExcludedFolder(fileSystemPath, "/html/");
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
                 manager.addFiles(fileSystemPath, files);
                 dumpWorkspaceUISourceCodes();
                 InspectorTest.addResult("Excluding html2 folder:");
-                InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
                 InspectorTest.testWorkspace.uiSourceCodes()[0].project().excludeFolder("/html2/");
                 dumpWorkspaceUISourceCodes();
                 InspectorTest.testExcludedFolderManager.removeExcludedFolder(fileSystemPath, "/html/");
@@ -388,9 +376,6 @@ function test()
 
         function testRemoveProject(next)
         {
-            function uiSourceCodeAdded(uiSourceCode) {}
-            function uiSourceCodeRemoved(uiSourceCode) {}
-
             function dumpWorkspaceUISourceCodes()
             {
                 InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
@@ -408,7 +393,6 @@ function test()
             {
                 InspectorTest.addResult("Adding file system.");
                 manager.addMockFileSystem(fileSystemPath);
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
                 manager.addFiles(fileSystemPath, files);
                 dumpWorkspaceUISourceCodes();
                 InspectorTest.addResult("Removing project:");
@@ -426,8 +410,6 @@ function test()
 
         function testURLAfterRenaming(next)
         {
-            function uiSourceCodeAdded(uiSourceCode) { }
-
             var fileSystemPath = "/var/www";
             var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
             var files = {"/html/foo.js": "<foo content>", "/bar.js": "<bar content>", "/foo/bar/baz.js": "<baz content>"};
@@ -443,7 +425,6 @@ function test()
                 manager.addMockFileSystem(fileSystemPath);
                 InspectorTest.addResult("Adding file system mapping.");
                 InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost/", "/");
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 3);
                 manager.addFiles(fileSystemPath, files);
 
                 InspectorTest.addResult("Renaming files:");
