@@ -27,6 +27,7 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
                     int modifiers) override;
   bool ShowLanguageSettings() override;
   bool IsLanguageSettingsEnabled() override;
+  bool SetVirtualKeyboardMode(int mode_enum) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeVirtualKeyboardDelegate);

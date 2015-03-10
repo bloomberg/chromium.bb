@@ -34,6 +34,17 @@ class KeyboardControllerProxy;
 // Animation distance.
 const int kAnimationDistance = 30;
 
+enum KeyboardMode {
+  // Invalid mode.
+  NONE,
+  // Full width virtual keyboard. The virtual keyboard window has the same width
+  // as the display.
+  FULL_WIDTH,
+  // Floating virtual keyboard. The virtual keyboard window has customizable
+  // width and is draggable.
+  FLOATING,
+};
+
 // Provides control of the virtual keyboard, including providing a container
 // and controlling visibility.
 class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
@@ -80,6 +91,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   KeyboardControllerProxy* proxy() { return proxy_.get(); }
 
   void set_lock_keyboard(bool lock) { lock_keyboard_ = lock; }
+
+  void SetKeyboardMode(KeyboardMode mode);
 
   // Force the keyboard to show up if not showing and lock the keyboard if
   // |lock| is true.
@@ -157,6 +170,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   bool keyboard_visible_;
   bool show_on_resize_;
   bool lock_keyboard_;
+  KeyboardMode keyboard_mode_;
   ui::TextInputType type_;
 
   ObserverList<KeyboardControllerObserver> observer_list_;

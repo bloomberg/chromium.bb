@@ -244,6 +244,7 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
       keyboard_visible_(false),
       show_on_resize_(false),
       lock_keyboard_(false),
+      keyboard_mode_(FULL_WIDTH),
       type_(ui::TEXT_INPUT_TYPE_NONE),
       weak_factory_(this) {
   CHECK(proxy);
@@ -370,6 +371,10 @@ void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
 
 void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+void KeyboardController::SetKeyboardMode(KeyboardMode mode) {
+  keyboard_mode_ = mode;
 }
 
 void KeyboardController::ShowKeyboard(bool lock) {

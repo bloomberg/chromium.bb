@@ -161,7 +161,21 @@
         "description": "Opens chrome://settings/languages page.",
         "parameters": [
         ]
+      },
+      {
+        "name": "setMode",
+        "type": "function",
+        "description": "Sets the virtual keyboard mode.",
+        "parameters": [
+          {
+            "type": "string",
+            "enum": [ "FULL_WIDTH", "FLOATING" ],
+            "name": "mode",
+            "description": "The value of the virtual keyboard mode to set to."
+          }
+        ]
       }
+
     ],
     "events": [
       {

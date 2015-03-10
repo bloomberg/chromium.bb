@@ -9,7 +9,10 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "extensions/common/api/virtual_keyboard_private.h"
 #include "ui/events/event.h"
+
+namespace SetMode = extensions::core_api::virtual_keyboard_private::SetMode;
 
 namespace extensions {
 
@@ -17,6 +20,8 @@ namespace {
 
 const char kNotYetImplementedError[] =
     "API is not implemented on this platform.";
+const char kVirtualKeyboardNotEnabled[] =
+    "The virtual keyboard is not enabled.";
 
 typedef BrowserContextKeyedAPIFactory<VirtualKeyboardAPI> factory;
 
@@ -122,6 +127,22 @@ bool VirtualKeyboardPrivateOpenSettingsFunction::RunSync() {
     if (delegate->IsLanguageSettingsEnabled())
       return delegate->ShowLanguageSettings();
     return false;
+  }
+  error_ = kNotYetImplementedError;
+  return false;
+}
+
+bool VirtualKeyboardPrivateSetModeFunction::RunSync() {
+  VirtualKeyboardDelegate* delegate = GetDelegate(this);
+  if (delegate) {
+    scoped_ptr<SetMode::Params> params = SetMode::Params::Create(*args_);
+    EXTENSION_FUNCTION_VALIDATE(params);
+    if (!delegate->SetVirtualKeyboardMode(params->mode)) {
+      error_ = kVirtualKeyboardNotEnabled;
+      return false;
+    } else {
+      return true;
+    }
   }
   error_ = kNotYetImplementedError;
   return false;

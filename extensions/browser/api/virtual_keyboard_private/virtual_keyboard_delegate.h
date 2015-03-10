@@ -61,6 +61,9 @@ class VirtualKeyboardDelegate {
 
   // Launches the settings app. Returns true if successful.
   virtual bool ShowLanguageSettings() = 0;
+
+  // Sets virtual keyboard window mode.
+  virtual bool SetVirtualKeyboardMode(int mode_enum) = 0;
 };
 
 }  // namespace extensions
