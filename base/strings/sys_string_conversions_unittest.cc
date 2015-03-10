@@ -75,7 +75,9 @@ TEST(SysStrings, SysUTF8ToWide) {
 #if defined(OS_LINUX)  // Tests depend on setting a specific Linux locale.
 
 TEST(SysStrings, SysWideToNativeMB) {
+#if !defined(SYSTEM_NATIVE_UTF8)
   ScopedLocale locale("en_US.utf-8");
+#endif
   EXPECT_EQ("Hello, world", SysWideToNativeMB(L"Hello, world"));
   EXPECT_EQ("\xe4\xbd\xa0\xe5\xa5\xbd", SysWideToNativeMB(L"\x4f60\x597d"));
 
@@ -105,7 +107,9 @@ TEST(SysStrings, SysWideToNativeMB) {
 
 // We assume the test is running in a UTF8 locale.
 TEST(SysStrings, SysNativeMBToWide) {
+#if !defined(SYSTEM_NATIVE_UTF8)
   ScopedLocale locale("en_US.utf-8");
+#endif
   EXPECT_EQ(L"Hello, world", SysNativeMBToWide("Hello, world"));
   EXPECT_EQ(L"\x4f60\x597d", SysNativeMBToWide("\xe4\xbd\xa0\xe5\xa5\xbd"));
   // >16 bits
@@ -159,7 +163,9 @@ static const wchar_t* const kConvertRoundtripCases[] = {
 
 
 TEST(SysStrings, SysNativeMBAndWide) {
+#if !defined(SYSTEM_NATIVE_UTF8)
   ScopedLocale locale("en_US.utf-8");
+#endif
   for (size_t i = 0; i < arraysize(kConvertRoundtripCases); ++i) {
     std::wstring wide = kConvertRoundtripCases[i];
     std::wstring trip = SysNativeMBToWide(SysWideToNativeMB(wide));

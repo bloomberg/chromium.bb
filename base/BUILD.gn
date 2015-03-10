@@ -1476,6 +1476,8 @@ test("base_unittests") {
     "win/wrapped_window_proc_unittest.cc",
   ]
 
+  defines = []
+
   deps = [
     ":base",
     ":i18n",
@@ -1491,6 +1493,12 @@ test("base_unittests") {
     "//testing/gtest",
     "//third_party/icu",
   ]
+
+  # Allow more direct string conversions on platforms with native utf8
+  # strings
+  if (is_mac || is_ios || is_chromeos) {
+    defines += [ "SYSTEM_NATIVE_UTF8" ]
+  }
 
   if (is_android) {
     apk_deps = [
@@ -1526,7 +1534,7 @@ test("base_unittests") {
   if (is_linux) {
     sources -= [ "file_version_info_unittest.cc" ]
     sources += [ "nix/xdg_util_unittest.cc" ]
-    defines = [ "USE_SYMBOLIZE" ]
+    defines += [ "USE_SYMBOLIZE" ]
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
     }

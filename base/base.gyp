@@ -843,6 +843,11 @@
             ['include', '^debug/proc_maps_linux_unittest\\.cc$'],
           ],
         }],
+        # Enable more direct string conversions on platforms with native utf8
+        # strings
+        ['OS=="mac" or OS=="ios" or <(chromeos)==1 or <(chromecast)==1', {
+          'defines': ['SYSTEM_NATIVE_UTF8'],
+        }],
       ],  # target_conditions
     },
     {
