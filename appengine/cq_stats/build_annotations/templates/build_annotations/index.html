@@ -39,7 +39,9 @@
     <th class="build_list">Summary</th>
     <th class="build_list">Start Time</th>
     <th class="build_list">Runtime</th>
-    <th class="build_list">Weekday?</th>
+    <th class="build_list">CLs Picked Up</th>
+    <th class="build_list">Rejected</th>
+    <th class="build_list">Submitted</th>
     <th class="build_list">Annotation Summary</th>
   </tr>
 {% for build_row in builds_list %}
@@ -50,7 +52,9 @@
     <td class="build_list">{{ build_row.summary|truncatechars:50|cut:'\n\r' }}</td>
     <td class="build_list" name="date.datetz">{{ build_row.start_time|date:"D, d M H:i" }} UTC</td>
     <td class="build_list">{{ build_row.run_time }}</td>
-    <td class="build_list">{{ build_row.weekday|yesno }}</td>
+    <td class="build_list">{{ build_row.picked_up_count }}</td>
+    <td class="build_list">{{ build_row.submitted_count }}</td>
+    <td class="build_list">{{ build_row.kicked_out_count }}</td>
     <td class="build_list">{{ build_row.annotation_summary|truncatechars:150 }}</td>
   </tr>
 {% endfor %}
