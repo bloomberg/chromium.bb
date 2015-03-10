@@ -141,6 +141,7 @@ test("wm_unittests") {
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/base:test_support",
+    "//ui/base/ime",
     "//ui/compositor:test_support",
     "//ui/events:test_support",
     "//ui/events/platform",

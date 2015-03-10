@@ -18,6 +18,7 @@ component("util") {
 
   deps = [
     "//base",
+    "//ui/display/types",
     "//ui/gfx/geometry",
   ]
 

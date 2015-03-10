@@ -18,6 +18,7 @@ component("aura_extra") {
     "//skia",
     "//ui/aura",
     "//ui/base",
+    "//ui/compositor",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",

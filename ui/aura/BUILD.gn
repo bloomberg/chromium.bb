@@ -186,6 +186,7 @@ source_set("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",
+    "//ui/base/ime",
     "//ui/compositor:test_support",
     "//ui/events",
     "//ui/events:events_base",
