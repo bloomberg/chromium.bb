@@ -226,7 +226,7 @@ class SpdyNetworkTransactionTest
     void FinishDefaultTest() {
       output_.rv = callback_.WaitForResult();
       if (output_.rv != OK) {
-        session_->spdy_session_pool()->CloseCurrentSessions(net::ERR_ABORTED);
+        session_->spdy_session_pool()->CloseCurrentSessions(ERR_ABORTED);
         return;
       }
 
@@ -266,7 +266,7 @@ class SpdyNetworkTransactionTest
     void FinishDefaultTestWithoutVerification() {
       output_.rv = callback_.WaitForResult();
       if (output_.rv != OK)
-        session_->spdy_session_pool()->CloseCurrentSessions(net::ERR_ABORTED);
+        session_->spdy_session_pool()->CloseCurrentSessions(ERR_ABORTED);
     }
 
     // Most tests will want to call this function. In particular, the MockReads
@@ -581,7 +581,7 @@ class SpdyNetworkTransactionTest
     const int kSize = 3000;
 
     int bytes_read = 0;
-    scoped_refptr<net::IOBufferWithSize> buf(new net::IOBufferWithSize(kSize));
+    scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(kSize));
     TestCompletionCallback callback;
     while (true) {
       int rv = trans->Read(buf.get(), kSize, callback.callback());
@@ -2378,7 +2378,7 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
   rv = callback.WaitForResult();
 
   const int kSize = 3000;
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kSize));
+  scoped_refptr<IOBuffer> buf(new IOBuffer(kSize));
   rv = trans->Read(
       buf.get(),
       kSize,
@@ -2426,7 +2426,7 @@ TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   // Setup a user callback which will delete the session, and clear out the
   // memory holding the stream object. Note that the callback deletes trans.
   const int kSize = 3000;
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kSize));
+  scoped_refptr<IOBuffer> buf(new IOBuffer(kSize));
   rv = trans->Read(
       buf.get(),
       kSize,
@@ -2508,7 +2508,7 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
     base::RunLoop().Run();
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r->status().status());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
     std::string contents("hello!");
     EXPECT_EQ(contents, d.data_received());
   }
@@ -2616,7 +2616,7 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
     base::RunLoop().Run();
     EXPECT_EQ(1, d2.response_started_count());
     EXPECT_FALSE(d2.received_data_before_response());
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r2->status().status());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r2->status().status());
     std::string contents2("hello!");
     EXPECT_EQ(contents2, d2.data_received());
   }
@@ -3757,37 +3757,35 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
   // This test is intentionally non-specific about the exact ordering of the
   // log; instead we just check to make sure that certain events exist, and that
   // they are in the right order.
-  net::CapturingNetLog::CapturedEntryList entries;
+  CapturingNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_LT(0u, entries.size());
   int pos = 0;
-  pos = net::ExpectLogContainsSomewhere(entries, 0,
-      net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST,
-      net::NetLog::PHASE_BEGIN);
-  pos = net::ExpectLogContainsSomewhere(entries, pos + 1,
-      net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST,
-      net::NetLog::PHASE_END);
-  pos = net::ExpectLogContainsSomewhere(entries, pos + 1,
-      net::NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS,
-      net::NetLog::PHASE_BEGIN);
-  pos = net::ExpectLogContainsSomewhere(entries, pos + 1,
-      net::NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS,
-      net::NetLog::PHASE_END);
-  pos = net::ExpectLogContainsSomewhere(entries, pos + 1,
-      net::NetLog::TYPE_HTTP_TRANSACTION_READ_BODY,
-      net::NetLog::PHASE_BEGIN);
-  pos = net::ExpectLogContainsSomewhere(entries, pos + 1,
-      net::NetLog::TYPE_HTTP_TRANSACTION_READ_BODY,
-      net::NetLog::PHASE_END);
+  pos = ExpectLogContainsSomewhere(entries, 0,
+                                   NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST,
+                                   NetLog::PHASE_BEGIN);
+  pos = ExpectLogContainsSomewhere(entries, pos + 1,
+                                   NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST,
+                                   NetLog::PHASE_END);
+  pos = ExpectLogContainsSomewhere(entries, pos + 1,
+                                   NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS,
+                                   NetLog::PHASE_BEGIN);
+  pos = ExpectLogContainsSomewhere(entries, pos + 1,
+                                   NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS,
+                                   NetLog::PHASE_END);
+  pos = ExpectLogContainsSomewhere(entries, pos + 1,
+                                   NetLog::TYPE_HTTP_TRANSACTION_READ_BODY,
+                                   NetLog::PHASE_BEGIN);
+  pos = ExpectLogContainsSomewhere(entries, pos + 1,
+                                   NetLog::TYPE_HTTP_TRANSACTION_READ_BODY,
+                                   NetLog::PHASE_END);
 
   // Check that we logged all the headers correctly
-  const NetLog::EventType type =
-      (GetParam().protocol <= kProtoSPDY31)
-          ? net::NetLog::TYPE_HTTP2_SESSION_SYN_STREAM
-          : net::NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS;
-  pos = net::ExpectLogContainsSomewhere(entries, 0, type,
-                                        net::NetLog::PHASE_NONE);
+  const NetLog::EventType type = (GetParam().protocol <= kProtoSPDY31)
+                                     ? NetLog::TYPE_HTTP2_SESSION_SYN_STREAM
+                                     : NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS;
+  pos = ExpectLogContainsSomewhere(entries, 0, type, NetLog::PHASE_NONE);
 
   base::ListValue* header_list;
   ASSERT_TRUE(entries[pos].params.get());
@@ -3881,9 +3879,9 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
   do {
     // Read small chunks at a time.
     const int kSmallReadSize = 3;
-    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kSmallReadSize));
+    scoped_refptr<IOBuffer> buf(new IOBuffer(kSmallReadSize));
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
-    if (rv == net::ERR_IO_PENDING) {
+    if (rv == ERR_IO_PENDING) {
       data.CompleteRead();
       rv = read_callback.WaitForResult();
     }
@@ -3974,9 +3972,9 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
   do {
     // Read small chunks at a time.
     const int kSmallReadSize = 14;
-    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kSmallReadSize));
+    scoped_refptr<IOBuffer> buf(new IOBuffer(kSmallReadSize));
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
-    if (rv == net::ERR_IO_PENDING) {
+    if (rv == ERR_IO_PENDING) {
       data.CompleteRead();
       rv = read_callback.WaitForResult();
     }
@@ -4063,7 +4061,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
   do {
     // Read small chunks at a time.
     const int kSmallReadSize = 14;
-    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kSmallReadSize));
+    scoped_refptr<IOBuffer> buf(new IOBuffer(kSmallReadSize));
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
     if (rv > 0) {
       EXPECT_EQ(kSmallReadSize, rv);
@@ -4153,9 +4151,9 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
   do {
     // Read small chunks at a time.
     const int kSmallReadSize = 14;
-    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kSmallReadSize));
+    scoped_refptr<IOBuffer> buf(new IOBuffer(kSmallReadSize));
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
-    if (rv == net::ERR_IO_PENDING) {
+    if (rv == ERR_IO_PENDING) {
       data.CompleteRead();
       rv = read_callback.WaitForResult();
     }
@@ -4231,9 +4229,9 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
   TestCompletionCallback read_callback;
 
   const int kReadSize = 256;
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kReadSize));
+  scoped_refptr<IOBuffer> buf(new IOBuffer(kReadSize));
   rv = trans->Read(buf.get(), kReadSize, read_callback.callback());
-  ASSERT_EQ(net::ERR_IO_PENDING, rv) << "Unexpected read: " << rv;
+  ASSERT_EQ(ERR_IO_PENDING, rv) << "Unexpected read: " << rv;
 
   // Complete the read now, which causes buffering to start.
   data.CompleteRead();
@@ -5039,8 +5037,8 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   NormalSpdyTransactionHelper helper_proxy(request_proxy, DEFAULT_PRIORITY,
                                            BoundNetLog(), GetParam(), NULL);
   HttpNetworkSessionPeer session_peer(session_proxy);
-  scoped_ptr<net::ProxyService> proxy_service(
-          ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
+  scoped_ptr<ProxyService> proxy_service(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
   session_peer.SetProxyService(proxy_service.get());
   helper_proxy.session_deps().swap(ssd_proxy);
   helper_proxy.SetSession(session_proxy);
@@ -5173,7 +5171,7 @@ TEST_P(SpdyNetworkTransactionTest, SpdyOnOffToggle) {
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 
-  net::HttpStreamFactory::set_spdy_enabled(false);
+  HttpStreamFactory::set_spdy_enabled(false);
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n\r\n"),
     MockRead("hello from http"),
@@ -5189,12 +5187,12 @@ TEST_P(SpdyNetworkTransactionTest, SpdyOnOffToggle) {
   EXPECT_EQ("HTTP/1.1 200 OK", out2.status_line);
   EXPECT_EQ("hello from http", out2.response_data);
 
-  net::HttpStreamFactory::set_spdy_enabled(true);
+  HttpStreamFactory::set_spdy_enabled(true);
 }
 
 // Tests that Basic authentication works over SPDY
 TEST_P(SpdyNetworkTransactionTest, SpdyBasicAuth) {
-  net::HttpStreamFactory::set_spdy_enabled(true);
+  HttpStreamFactory::set_spdy_enabled(true);
 
   // The first request will be a bare GET, the second request will be a
   // GET with an Authorization header.
@@ -6229,7 +6227,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
 
   // Issue a read which will cause a WINDOW_UPDATE to be sent and window
   // size increased to default.
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kTargetSize));
+  scoped_refptr<IOBuffer> buf(new IOBuffer(kTargetSize));
   EXPECT_EQ(static_cast<int>(kTargetSize),
             trans->Read(buf.get(), kTargetSize, CompletionCallback()));
   EXPECT_EQ(static_cast<int>(initial_window_size),
