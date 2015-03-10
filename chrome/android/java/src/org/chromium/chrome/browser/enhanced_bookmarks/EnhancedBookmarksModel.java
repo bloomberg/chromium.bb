@@ -19,7 +19,6 @@ import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.WebContents;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -162,13 +161,6 @@ public class EnhancedBookmarksModel {
      */
     public List<BookmarkId> getTopLevelFolderIDs(boolean getSpecial, boolean getNormal) {
         return mBookmarksBridge.getTopLevelFolderIDs(getSpecial, getNormal);
-    }
-
-    /**
-     * @see BookmarksBridge#getUncategorizedBookmarkIDs()
-     */
-    public List<BookmarkId> getUncategorizedBookmarkIDs() {
-        return Collections.emptyList();
     }
 
     /**
