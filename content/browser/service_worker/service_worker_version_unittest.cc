@@ -464,8 +464,12 @@ TEST_F(ServiceWorkerFailToStartTest, Timeout) {
   EXPECT_EQ(ServiceWorkerVersion::STARTING, version_->running_status());
 
   // Simulate timeout.
-  EXPECT_TRUE(version_->start_worker_timeout_timer_.IsRunning());
-  version_->start_worker_timeout_timer_.user_task().Run();
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  version_->start_time_ =
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromMinutes(
+          ServiceWorkerVersion::kStartWorkerTimeoutMinutes + 1);
+  version_->timeout_timer_.user_task().Run();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
