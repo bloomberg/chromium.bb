@@ -469,14 +469,12 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTrayMultiDisplay) {
   EXPECT_EQ(bottom_second, GetPopupWorkAreaBottomForTray(GetSecondaryTray()));
 }
 
-// TODO(jonross): This test is failing on ASAN bots, fix the failure and
-// re-enable. (crbug.com/411881)
 // TODO(jonross): Replace manually creating TouchEvent with
 // EventGenerator.PressTouch/ReleaseTouch. Currently they set a width on the
 // touch event causing the gesture recognizer to target a different view.
 #if defined(OS_CHROMEOS)
 // Tests that there is visual feedback for touch presses.
-TEST_F(WebNotificationTrayTest, DISABLED_TouchFeedback) {
+TEST_F(WebNotificationTrayTest, TouchFeedback) {
   AddNotification("test_id");
   RunAllPendingInMessageLoop();
   WebNotificationTray* tray = GetTray();
@@ -489,27 +487,22 @@ TEST_F(WebNotificationTrayTest, DISABLED_TouchFeedback) {
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, center_point, touch_id,
                        generator.Now());
   generator.Dispatch(&press);
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(tray->draw_background_as_active());
 
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, center_point, touch_id,
       press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
   generator.Dispatch(&release);
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(tray->draw_background_as_active());
   EXPECT_TRUE(tray->IsMessageCenterBubbleVisible());
 
   generator.GestureTapAt(center_point);
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(tray->draw_background_as_active());
   EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());
 }
 
-// TODO(jonross): This test is failing on ASAN bots, fix the failure and
-// re-enable. (crbug.com/411881)
 // Tests that while touch presses trigger visual feedback, that subsequent non
 // tap gestures cancel the feedback without triggering the message center.
-TEST_F(WebNotificationTrayTest, DISABLED_TouchFeedbackCancellation) {
+TEST_F(WebNotificationTrayTest, TouchFeedbackCancellation) {
   AddNotification("test_id");
   RunAllPendingInMessageLoop();
   WebNotificationTray* tray = GetTray();
@@ -523,20 +516,17 @@ TEST_F(WebNotificationTrayTest, DISABLED_TouchFeedbackCancellation) {
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, center_point, touch_id,
                        generator.Now());
   generator.Dispatch(&press);
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(tray->draw_background_as_active());
 
   gfx::Point out_of_bounds(bounds.x() - 1, center_point.y());
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, out_of_bounds, touch_id,
                       press.time_stamp()+base::TimeDelta::FromMilliseconds(50));
   generator.Dispatch(&move);
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(tray->draw_background_as_active());
 
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, out_of_bounds, touch_id,
       move.time_stamp()+base::TimeDelta::FromMilliseconds(50));
   generator.Dispatch(&release);
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(tray->draw_background_as_active());
   EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());
 }

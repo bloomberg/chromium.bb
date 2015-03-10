@@ -134,9 +134,14 @@ void AshTestBase::SetUp() {
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
   ash::Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
 
-  // Changing GestureConfiguration shouldn't make tests fail.
-  ui::GestureConfiguration::GetInstance()
-      ->set_max_touch_move_in_pixels_for_click(5);
+  // Changing GestureConfiguration shouldn't make tests fail. These values
+  // prevent unexpected events from being generated during tests. Such as
+  // delayed events which create race conditions on slower tests.
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  gesture_config->set_max_touch_down_duration_for_click_in_ms(800);
+  gesture_config->set_long_press_time_in_ms(1000);
+  gesture_config->set_max_touch_move_in_pixels_for_click(5);
 
 #if defined(OS_WIN)
   if (!command_line->HasSwitch(ash::switches::kForceAshToDesktop)) {

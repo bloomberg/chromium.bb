@@ -507,11 +507,9 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.set_current_location(view->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(view->active());
 
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(view->active());
 }
 
@@ -530,17 +528,14 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.set_current_location(view_bounds.CenterPoint());
   generator.PressTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(view->active());
 
   gfx::Point move_point(view_bounds.x(), view_bounds.CenterPoint().y());
   generator.MoveTouch(move_point);
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(view->active());
 
   generator.set_current_location(move_point);
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(view->active());
 }
 #endif  // OS_CHROMEOS

@@ -201,11 +201,9 @@ TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedback) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.set_current_location(view->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(view->hover());
 
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(view->hover());
 }
 
@@ -218,17 +216,14 @@ TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedbackCancellation) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.set_current_location(view_bounds.CenterPoint());
   generator.PressTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(view->hover());
 
   gfx::Point move_point(view_bounds.x(), view_bounds.CenterPoint().y());
   generator.MoveTouch(move_point);
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(view->hover());
 
   generator.set_current_location(move_point);
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(view->hover());
 }
 
@@ -240,11 +235,9 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedback) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.set_current_location(button->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(button->background());
 
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(button->background());
 }
 
@@ -258,17 +251,14 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedbackCancellation) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.set_current_location(view_bounds.CenterPoint());
   generator.PressTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(button->background());
 
   gfx::Point move_point(view_bounds.x(), view_bounds.CenterPoint().y());
   generator.MoveTouch(move_point);
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(button->background());
 
   generator.set_current_location(move_point);
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(button->background());
 }
 

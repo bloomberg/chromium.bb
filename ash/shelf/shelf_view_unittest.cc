@@ -1663,7 +1663,7 @@ TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
 }
 
 // Tests that the AppListButton renders as active in response to touches.
-TEST_F(ShelfViewTest, DISABLED_AppListButtonTouchFeedback) {
+TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
   AppListButton* app_list_button =
       static_cast<AppListButton*>(shelf_view_->GetAppListButtonView());
   EXPECT_FALSE(app_list_button->draw_background_as_active());
@@ -1672,18 +1672,16 @@ TEST_F(ShelfViewTest, DISABLED_AppListButtonTouchFeedback) {
   generator.set_current_location(app_list_button->
       GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(app_list_button->draw_background_as_active());
 
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 }
 
 // Tests that a touch that slides out of the bounds of the AppListButton leads
 // to the end of rendering an active state.
-TEST_F(ShelfViewTest, DISABLED_AppListButtonTouchFeedbackCancellation) {
+TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
   AppListButton* app_list_button =
       static_cast<AppListButton*>(shelf_view_->GetAppListButtonView());
   EXPECT_FALSE(app_list_button->draw_background_as_active());
@@ -1692,19 +1690,16 @@ TEST_F(ShelfViewTest, DISABLED_AppListButtonTouchFeedbackCancellation) {
   generator.set_current_location(app_list_button->
       GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_TRUE(app_list_button->draw_background_as_active());
 
   gfx::Point moved_point(app_list_button->GetBoundsInScreen().right() + 1,
                          app_list_button->
                              GetBoundsInScreen().CenterPoint().y());
   generator.MoveTouch(moved_point);
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
 
   generator.set_current_location(moved_point);
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
   EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
 }
