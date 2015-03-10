@@ -128,8 +128,8 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* scriptState, const S
         return promise;
     }
 
-    if (!context->securityOrigin()->canRequest(parsedUrl)) {
-        resolver->reject(DOMException::create(SecurityError, "'" + parsedUrl.elidedString() + "' is not same-origin with the Worker."));
+    if (!context->securityOrigin()->canDisplay(parsedUrl)) {
+        resolver->reject(DOMException::create(SecurityError, "'" + parsedUrl.elidedString() + "' cannot be opened."));
         return promise;
     }
 

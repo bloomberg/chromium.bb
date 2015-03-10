@@ -29,8 +29,8 @@ t.step(function() {
     var result = [];
     var expected = ['openWindow() can\'t open a window without a user interaction',
                     'openWindow() error is InvalidAccessError',
-                    'openWindow() can\'t open cross origin windows',
-                    'openWindow() error is SecurityError',
+                    'openWindow() can open cross origin windows',
+                    'openWindow() result: null',
                     'openWindow() can open not controlled windows',
                     'openWindow() result: null',
                     'openWindow() can open controlled windows',
@@ -38,7 +38,15 @@ t.step(function() {
                     ' url: ' + location.origin + '/serviceworker/chromium/resources/blank.html',
                     ' visibilityState: visible',
                     ' focused: true',
-                    ' frameType: top-level'];
+                    ' frameType: top-level',
+                    'openWindow() can open about:blank',
+                    'openWindow() result: null',
+                    'openWindow() can open about:crash',
+                    'openWindow() result: null',
+                    'openWindow() can not open view-source scheme',
+                    'openWindow() can not open file scheme',
+                    'openWindow() error is: SecurityError',
+                    ];
 
     // LayoutTests on Mac do not open focused windows.
     var isMac = navigator.platform.indexOf('Mac') == 0;

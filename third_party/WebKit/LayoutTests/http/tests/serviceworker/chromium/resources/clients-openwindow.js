@@ -14,9 +14,9 @@ var TESTS = [
 
     function testOpenCrossOriginWindow() {
         synthesizeNotificationClick().then(function(e) {
-            clients.openWindow('https://test.com/').catch(function(e) {
-                self.postMessage('openWindow() can\'t open cross origin windows');
-                self.postMessage('openWindow() error is ' + e.name);
+            clients.openWindow('https://test.com/').then(function(c) {
+                self.postMessage('openWindow() can open cross origin windows');
+                self.postMessage('openWindow() result: ' + c);
             }).then(runNextTestOrQuit);
         });
     },
@@ -41,7 +41,42 @@ var TESTS = [
                 self.postMessage(' frameType: ' + c.frameType);
             }).then(runNextTestOrQuit);
         });
-    }
+    },
+
+    function testOpenAboutBlank() {
+        synthesizeNotificationClick().then(function(e) {
+            clients.openWindow('about:blank').then(function(c) {
+                self.postMessage('openWindow() can open about:blank');
+                self.postMessage('openWindow() result: ' + c);
+            }).then(runNextTestOrQuit);
+        });
+    },
+
+    function testOpenAboutCrash() {
+        synthesizeNotificationClick().then(function(e) {
+            clients.openWindow('about:crash').then(function(c) {
+                self.postMessage('openWindow() can open about:crash');
+                self.postMessage('openWindow() result: ' + c);
+            }).then(runNextTestOrQuit);
+        });
+    },
+
+    function testOpenViewSource() {
+        synthesizeNotificationClick().then(function(e) {
+            clients.openWindow('view-source://http://test.com').catch(function(c) {
+                self.postMessage('openWindow() can not open view-source scheme');
+            }).then(runNextTestOrQuit);
+        });
+    },
+
+    function testOpenFileScheme() {
+        synthesizeNotificationClick().then(function(e) {
+            clients.openWindow('file:///').catch(function(error) {
+                self.postMessage('openWindow() can not open file scheme');
+                self.postMessage('openWindow() error is: ' + error.name);
+            }).then(runNextTestOrQuit);
+        });
+    },
 ];
 
 self.onmessage = function(e) {
