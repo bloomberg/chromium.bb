@@ -45,6 +45,7 @@
 #include "core/layout/LayoutPart.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "platform/Task.h"
 #include "platform/Widget.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebAXObject.h"
@@ -55,10 +56,38 @@
 #include "public/web/WebNodeList.h"
 #include "public/web/WebPluginContainer.h"
 #include "web/FrameLoaderClientImpl.h"
+#include "web/SuspendableTaskRunner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
 namespace blink {
+
+namespace {
+
+class NodeDispatchEventTask: public WebThread::Task {
+    WTF_MAKE_NONCOPYABLE(NodeDispatchEventTask);
+public:
+    NodeDispatchEventTask(const WebPrivatePtr<Node>& node, WebDOMEvent event)
+        : m_event(event)
+    {
+        m_node = node;
+    }
+
+    ~NodeDispatchEventTask()
+    {
+        m_node.reset();
+    }
+
+    void run() override
+    {
+        m_node->dispatchEvent(m_event);
+    }
+private:
+    WebPrivatePtr<Node> m_node;
+    WebDOMEvent m_event;
+};
+
+} // namespace
 
 void WebNode::reset()
 {
@@ -176,12 +205,12 @@ bool WebNode::isElementNode() const
 void WebNode::dispatchEvent(const WebDOMEvent& event)
 {
     if (!event.isNull())
-        m_private->dispatchEvent(event);
+        SuspendableTaskRunner::createAndRun(m_private->executionContext(), adoptPtr(new NodeDispatchEventTask(m_private, event)));
 }
 
 void WebNode::simulateClick()
 {
-    m_private->dispatchSimulatedClick(0);
+    SuspendableTaskRunner::createAndRun(m_private->executionContext(), adoptPtr(new blink::Task(WTF::bind(&Node::dispatchSimulatedClick, m_private.get(), nullptr, SendNoEvents))));
 }
 
 WebElementCollection WebNode::getElementsByHTMLTagName(const WebString& tag) const
