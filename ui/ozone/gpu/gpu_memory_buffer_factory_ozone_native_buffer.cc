@@ -17,6 +17,11 @@ class GLImageOzoneNativePixmap : public gfx::GLImageEGL {
  public:
   explicit GLImageOzoneNativePixmap(const gfx::Size& size) : GLImageEGL(size) {}
 
+  void Destroy(bool have_context) override {
+    gfx::GLImageEGL::Destroy(have_context);
+    pixmap_ = nullptr;
+  }
+
   bool Initialize(NativePixmap* pixmap) {
     EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
     if (!Initialize(EGL_NATIVE_PIXMAP_KHR, pixmap->GetEGLClientBuffer(), attrs))
@@ -47,6 +52,11 @@ class GLImageOzoneNativePixmapDmaBuf : public gfx::GLImageLinuxDMABuffer {
   explicit GLImageOzoneNativePixmapDmaBuf(const gfx::Size& size,
                                           unsigned internalformat)
       : GLImageLinuxDMABuffer(size, internalformat) {}
+
+  void Destroy(bool have_context) override {
+    gfx::GLImageLinuxDMABuffer::Destroy(have_context);
+    pixmap_ = nullptr;
+  }
 
   bool Initialize(NativePixmap* pixmap, gfx::GpuMemoryBuffer::Format format) {
     base::FileDescriptor handle(pixmap->GetDmaBufFd(), false);
