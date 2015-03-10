@@ -56,8 +56,7 @@ public:
     // DOM methods
     void importStylesheet(PassRefPtrWillBeRawPtr<Node> style)
     {
-        if (style)
-            m_stylesheetRootNode = style;
+        m_stylesheetRootNode = style;
     }
     PassRefPtrWillBeRawPtr<DocumentFragment> transformToFragment(Node* source, Document* ouputDoc);
     PassRefPtrWillBeRawPtr<Document> transformToDocument(Node* source);

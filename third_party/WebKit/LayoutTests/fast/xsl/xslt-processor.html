@@ -148,8 +148,8 @@ addResultExpectException(testname, function () { return processor.transformToFra
 // 2.2 fragment with undefined output document
 
 ownerDocument = document.implementation.createDocument("", "test", null);
-newFragment = processor.transformToFragment(xml, undefined);
-addResultExpectValueWhenSerialized("fragment with undefined output document", newFragment, undefined);
+var testname = "fragment with undefined output document";
+addResultExpectException(testname, function () { return processor.transformToFragment(xml, undefined); });
 
 // 2.3 use non-DOMDocument output parameter
 
@@ -268,7 +268,7 @@ addResultExpectValue(testname, processor.getParameter("foo", "foo"), "Success");
 
 processor.setParameter(undefined, "test", "testValue");
 processor.removeParameter(undefined, "test");
-var testname = "verify removeParameter actually removes using undefined namespace";	
+var testname = "verify removeParameter actually removes using undefined namespace";
 addResultExpectValue(testname, processor.getParameter(null, "test"), undefined);
 
 // 6.3 pass removeParameter undefined name

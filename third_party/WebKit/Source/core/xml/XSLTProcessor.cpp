@@ -106,9 +106,6 @@ PassRefPtrWillBeRawPtr<Document> XSLTProcessor::createDocumentFromSource(const S
 
 PassRefPtrWillBeRawPtr<Document> XSLTProcessor::transformToDocument(Node* sourceNode)
 {
-    if (!sourceNode)
-        return nullptr;
-
     String resultMIMEType;
     String resultString;
     String resultEncoding;
@@ -119,9 +116,6 @@ PassRefPtrWillBeRawPtr<Document> XSLTProcessor::transformToDocument(Node* source
 
 PassRefPtrWillBeRawPtr<DocumentFragment> XSLTProcessor::transformToFragment(Node* sourceNode, Document* outputDoc)
 {
-    if (!sourceNode || !outputDoc)
-        return nullptr;
-
     String resultMIMEType;
     String resultString;
     String resultEncoding;

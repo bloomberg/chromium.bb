@@ -35,12 +35,14 @@
     Constructor,
     ConstructorCallWith=Document,
     RuntimeEnabled=XSLT,
-    MeasureAs=XSLTProcessor
+    MeasureAs=XSLTProcessor,
+    TypeChecking=Interface,
 ] interface XSLTProcessor {
 
-    void importStylesheet([Default=Undefined] optional Node stylesheet);
-    [CustomElementCallbacks] DocumentFragment transformToFragment([Default=Undefined] optional Node source, [Default=Undefined] optional Document docVal);
-    [CustomElementCallbacks] Document transformToDocument([Default=Undefined] optional Node source);
+    void importStylesheet(Node stylesheet);
+    // FIXME: These return null on failure; should throw exceptions instead.
+    [CustomElementCallbacks] DocumentFragment? transformToFragment(Node source, Document docVal);
+    [CustomElementCallbacks] Document? transformToDocument(Node source);
 
     void setParameter(DOMString? namespaceURI, DOMString localName, DOMString value);
     [TreatReturnedNullStringAs=Undefined] DOMString getParameter(DOMString? namespaceURI, DOMString localName);
