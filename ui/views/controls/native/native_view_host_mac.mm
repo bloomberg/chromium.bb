@@ -66,7 +66,9 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   // are reference counted so there isn't a reliable signal. Instead, a
   // reference is retained until the NativeViewHost is detached.
   DCHECK(!destroyed);
-  DCHECK_EQ(native_view_, host_->native_view());
+  // |native_view_| can be nil here if RemovedFromWidget() is called before
+  // NativeViewHost::Detach().
+  DCHECK(!native_view_ || native_view_ == host_->native_view());
   [host_->native_view() setHidden:YES];
   ReparentNSView(host_->native_view(), NULL);
   native_view_.reset();
