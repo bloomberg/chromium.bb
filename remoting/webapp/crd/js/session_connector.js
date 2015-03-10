@@ -114,11 +114,11 @@ remoting.SessionConnectorFactory = function() {};
  * @param {HTMLElement} clientContainer Container element for the client view.
  * @param {function(remoting.ClientSession):void} onConnected Callback on
  *     success.
- * @param {function(remoting.Error):void} onError Callback on error.
+ * @param {function(!remoting.Error):void} onError Callback on error.
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
- * @param {function(remoting.Error):void} onConnectionFailed Callback for when
+ * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.

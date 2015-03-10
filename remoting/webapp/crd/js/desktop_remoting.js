@@ -137,7 +137,7 @@ remoting.DesktopRemoting.prototype.start = function(connector, token) {
  * Report an authentication error to the user. This is called in lieu of start()
  * if the user cannot be authenticated or if they decline the app permissions.
  *
- * @param {remoting.Error} error The failure reason.
+ * @param {!remoting.Error} error The failure reason.
  */
 remoting.DesktopRemoting.prototype.signInFailed = function(error) {
   remoting.showErrorMessage(error);
@@ -246,7 +246,7 @@ remoting.DesktopRemoting.prototype.handleDisconnected = function() {
  * Called when the current session's connection has failed.
  *
  * @param {remoting.SessionConnector} connector
- * @param {remoting.Error} error
+ * @param {!remoting.Error} error
  * @return {void} Nothing.
  */
 remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
@@ -266,7 +266,7 @@ remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
     that.handleError(error);
   };
 
-  if (error == remoting.Error.HOST_IS_OFFLINE &&
+  if (error.tag == remoting.Error.Tag.HOST_IS_OFFLINE &&
       that.refreshHostJidIfOffline_) {
     that.refreshHostJidIfOffline_ = false;
     // The plugin will be re-created when the host finished refreshing
@@ -298,14 +298,14 @@ remoting.DesktopRemoting.prototype.handleExtensionMessage = function(
 /**
  * Called when an error needs to be displayed to the user.
  *
- * @param {remoting.Error} errorTag The error to be localized and displayed.
+ * @param {!remoting.Error} error The error to be localized and displayed.
  * @return {void} Nothing.
  */
-remoting.DesktopRemoting.prototype.handleError = function(errorTag) {
-  console.error('Connection failed: ' + errorTag);
+remoting.DesktopRemoting.prototype.handleError = function(error) {
+  console.error('Connection failed:', error.tag);
   remoting.accessCode = '';
 
-  if (errorTag === remoting.Error.AUTHENTICATION_FAILED) {
+  if (error.tag === remoting.Error.Tag.AUTHENTICATION_FAILED) {
     remoting.setMode(remoting.AppMode.HOME);
     remoting.handleAuthFailureAndRelaunch();
     return;
@@ -315,7 +315,7 @@ remoting.DesktopRemoting.prototype.handleError = function(errorTag) {
   this.refreshHostJidIfOffline_ = true;
 
   var errorDiv = document.getElementById('connect-error-message');
-  l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
+  l10n.localizeElementFromTag(errorDiv, error.tag);
 
   var mode = remoting.clientSession ? remoting.desktopConnectedView.getMode()
       : this.app_.getSessionConnector().getConnectionMode();

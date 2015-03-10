@@ -39,13 +39,13 @@ remoting.OAuth2ApiImpl.prototype.getOAuth2ApiUserInfoEndpoint_ = function() {
  *
  * @private
  * @param {number} xhrStatus Status (HTTP response code) of the XMLHttpRequest.
- * @return {remoting.Error} An error code to be raised.
+ * @return {!remoting.Error} An error code to be raised.
  */
 remoting.OAuth2ApiImpl.prototype.interpretXhrStatus_ =
     function(xhrStatus) {
   // Return AUTHENTICATION_FAILED by default, so that the user can try to
   // recover from an unexpected failure by signing in again.
-  /** @type {remoting.Error} */
+  /** @type {!remoting.Error} */
   var error = remoting.Error.AUTHENTICATION_FAILED;
   if (xhrStatus == 400 || xhrStatus == 401 || xhrStatus == 403) {
     error = remoting.Error.AUTHENTICATION_FAILED;
@@ -64,7 +64,7 @@ remoting.OAuth2ApiImpl.prototype.interpretXhrStatus_ =
  *
  * @param {function(string, number): void} onDone Callback to invoke when
  *     the access token and expiration time are successfully fetched.
- * @param {function(remoting.Error):void} onError Callback invoked if an
+ * @param {function(!remoting.Error):void} onError Callback invoked if an
  *     error occurs.
  * @param {string} clientId OAuth2 client ID.
  * @param {string} clientSecret OAuth2 client secret.
@@ -112,7 +112,7 @@ remoting.OAuth2ApiImpl.prototype.refreshAccessToken = function(
  * @param {function(string, string, number): void} onDone Callback to
  *     invoke when the refresh token, access token and access token expiration
  *     time are successfully fetched.
- * @param {function(remoting.Error):void} onError Callback invoked if an
+ * @param {function(!remoting.Error):void} onError Callback invoked if an
  *     error occurs.
  * @param {string} clientId OAuth2 client ID.
  * @param {string} clientSecret OAuth2 client secret.
@@ -162,7 +162,7 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
  *
  * @param {function(string):void} onDone Callback invoked when the email
  *     address is available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
+ * @param {function(!remoting.Error):void} onError Callback invoked if an
  *     error occurs.
  * @param {string} token Access token.
  * @return {void} Nothing.
@@ -197,7 +197,7 @@ remoting.OAuth2ApiImpl.prototype.getEmail = function(onDone, onError, token) {
  *
  * @param {function(string, string):void} onDone Callback invoked when the email
  *     address and full name are available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
+ * @param {function(!remoting.Error):void} onError Callback invoked if an
  *     error occurs.
  * @param {string} token Access token.
  * @return {void} Nothing.

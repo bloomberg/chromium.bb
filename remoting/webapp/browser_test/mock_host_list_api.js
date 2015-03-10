@@ -42,7 +42,7 @@ remoting.MockHostListApi = function() {
 
 /**
  * @param {function(Array<remoting.Host>):void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  */
 remoting.MockHostListApi.prototype.get = function(onDone, onError) {
   remoting.mockIdentity.validateTokenAndCall(onDone, onError, [this.hosts]);
@@ -53,7 +53,7 @@ remoting.MockHostListApi.prototype.get = function(onDone, onError) {
  * @param {string} hostName
  * @param {string} hostPublicKey
  * @param {function():void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  */
 remoting.MockHostListApi.prototype.put =
     function(hostId, hostName, hostPublicKey, onDone, onError) {
@@ -79,7 +79,7 @@ remoting.MockHostListApi.prototype.put =
 /**
  * @param {string} hostId
  * @param {function():void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  */
 remoting.MockHostListApi.prototype.remove =
     function(hostId, onDone, onError) {

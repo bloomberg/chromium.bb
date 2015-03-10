@@ -66,16 +66,16 @@ remoting.HostSetupFlow.prototype.switchToNextStep = function() {
 };
 
 /**
- * @param {remoting.Error} error
+ * @param {!remoting.Error} error
  */
 remoting.HostSetupFlow.prototype.switchToErrorState = function(error) {
-  if (error == remoting.Error.CANCELLED) {
+  if (error.tag == remoting.Error.Tag.CANCELLED) {
     // Stop the setup flow if user rejected one of the actions.
     this.state_ = remoting.HostSetupFlow.State.NONE;
   } else {
     // Current step failed, so switch to corresponding error state.
     if (this.state_ == remoting.HostSetupFlow.State.STARTING_HOST) {
-      if (error == remoting.Error.REGISTRATION_FAILED) {
+      if (error.tag == remoting.Error.Tag.REGISTRATION_FAILED) {
         this.state_ = remoting.HostSetupFlow.State.REGISTRATION_FAILED;
       } else {
         this.state_ = remoting.HostSetupFlow.State.START_HOST_FAILED;
@@ -207,7 +207,7 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
     }
   }
 
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   function onError(error) {
     console.error('Error getting consent status: ' + error);
   }
@@ -359,7 +359,7 @@ remoting.HostSetupDialog.prototype.installHost_ = function() {
   /** @type {remoting.HostSetupFlow} */
   var flow = this.flow_;
 
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   var onError = function(error) {
     flow.switchToErrorState(error);
     that.updateState_();
@@ -415,7 +415,7 @@ remoting.HostSetupDialog.prototype.startHost_ = function() {
     }
   }
 
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   function onError(error) {
     if (isFlowActive()) {
       flow.switchToErrorState(error);
@@ -450,7 +450,7 @@ remoting.HostSetupDialog.prototype.updatePin_ = function() {
     }
   }
 
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   function onError(error) {
     if (isFlowActive()) {
       flow.switchToErrorState(error);
@@ -487,7 +487,7 @@ remoting.HostSetupDialog.prototype.stopHost_ = function() {
     }
   }
 
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   function onError(error) {
     if (isFlowActive()) {
       flow.switchToErrorState(error);

@@ -41,7 +41,7 @@ remoting.HostDaemonFacade = function() {
    */
   this.initializingPromise_ = null;
 
-  /** @private {remoting.Error} */
+  /** @private {!remoting.Error} */
   this.error_ = remoting.Error.NONE;
 
   /** @private */
@@ -111,7 +111,7 @@ remoting.HostDaemonFacade.prototype.connectNative_ = function() {
  * @param {string} type Type of the originating request.
  * @param {function(...):void} onDone Response callback. Parameters depend on
  *     the request type.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @constructor
  */
 remoting.HostDaemonFacade.PendingReply = function(type, onDone, onError) {
@@ -141,7 +141,7 @@ remoting.HostDaemonFacade.prototype.hasFeature = function(feature, onDone) {
  * @param {{type: string}} message The message to post.
  * @param {function(...):void} onDone The callback, if any, to be triggered
  *     on response.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @private
  */
 remoting.HostDaemonFacade.prototype.postMessage_ =
@@ -164,7 +164,7 @@ remoting.HostDaemonFacade.prototype.postMessage_ =
  * @param {{type: string}} message The message to post.
  * @param {function(...):void} onDone The callback, if any, to be triggered
  *     on response.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  * @private
  */
@@ -340,7 +340,7 @@ remoting.HostDaemonFacade.prototype.onDisconnect_ = function() {
  * Gets local hostname.
  *
  * @param {function(string):void} onDone Callback to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.getHostName =
@@ -355,7 +355,7 @@ remoting.HostDaemonFacade.prototype.getHostName =
  * @param {string} hostId The host ID.
  * @param {string} pin The PIN.
  * @param {function(string):void} onDone Callback to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.getPinHash =
@@ -373,7 +373,7 @@ remoting.HostDaemonFacade.prototype.getPinHash =
  * host (PublicKeyInfo structure encoded with ASN.1 DER, and then BASE64).
  *
  * @param {function(string, string):void} onDone Callback to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.generateKeyPair =
@@ -392,7 +392,7 @@ remoting.HostDaemonFacade.prototype.generateKeyPair =
  * @param {Object} config The new config parameters.
  * @param {function(remoting.HostController.AsyncResult):void} onDone
  *     Callback to be called when finished.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.updateDaemonConfig =
@@ -408,7 +408,7 @@ remoting.HostDaemonFacade.prototype.updateDaemonConfig =
  * callback.
  *
  * @param {function(Object):void} onDone Callback to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.getDaemonConfig =
@@ -421,7 +421,7 @@ remoting.HostDaemonFacade.prototype.getDaemonConfig =
  * string of the form major.minor.build.patch.
  *
  * @param {function(string):void} onDone Callback to be called to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void}
  */
 remoting.HostDaemonFacade.prototype.getDaemonVersion =
@@ -441,7 +441,7 @@ remoting.HostDaemonFacade.prototype.getDaemonVersion =
  *
  * @param {function(boolean, boolean, boolean):void} onDone Callback to return
  *     result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.getUsageStatsConsent =
@@ -456,7 +456,7 @@ remoting.HostDaemonFacade.prototype.getUsageStatsConsent =
  * @param {boolean} consent Consent to report crash dumps.
  * @param {function(remoting.HostController.AsyncResult):void} onDone
  *     Callback to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.startDaemon =
@@ -473,7 +473,7 @@ remoting.HostDaemonFacade.prototype.startDaemon =
  *
  * @param {function(remoting.HostController.AsyncResult):void} onDone
  *     Callback to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.stopDaemon =
@@ -486,7 +486,7 @@ remoting.HostDaemonFacade.prototype.stopDaemon =
  *
  * @param {function(remoting.HostController.State):void} onDone Callback to
 *      return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.getDaemonState =
@@ -499,7 +499,7 @@ remoting.HostDaemonFacade.prototype.getDaemonState =
  *
  * @param {function(Array<remoting.PairedClient>):void} onDone Callback to
  *     return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  */
 remoting.HostDaemonFacade.prototype.getPairedClients =
     function(onDone, onError) {
@@ -510,7 +510,7 @@ remoting.HostDaemonFacade.prototype.getPairedClients =
  * Clears all paired clients from the registry.
  *
  * @param {function(boolean):void} onDone Callback to be called when finished.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  */
 remoting.HostDaemonFacade.prototype.clearPairedClients =
     function(onDone, onError) {
@@ -522,7 +522,7 @@ remoting.HostDaemonFacade.prototype.clearPairedClients =
  *
  * @param {string} client Client to delete.
  * @param {function(boolean):void} onDone Callback to be called when finished.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  */
 remoting.HostDaemonFacade.prototype.deletePairedClient =
     function(client, onDone, onError) {
@@ -536,7 +536,7 @@ remoting.HostDaemonFacade.prototype.deletePairedClient =
  * Gets the API keys to obtain/use service account credentials.
  *
  * @param {function(string):void} onDone Callback to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.getHostClientId =
@@ -548,7 +548,7 @@ remoting.HostDaemonFacade.prototype.getHostClientId =
  *
  * @param {string} authorizationCode OAuth authorization code.
  * @param {function(string, string):void} onDone Callback to return result.
- * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @param {function(!remoting.Error):void} onError Callback to call on error.
  * @return {void} Nothing.
  */
 remoting.HostDaemonFacade.prototype.getCredentialsFromAuthCode =

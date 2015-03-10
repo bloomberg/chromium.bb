@@ -57,9 +57,9 @@ remoting.tryShare = function() {
     }
   };
 
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   var onInstallError = function(error) {
-    if (error == remoting.Error.CANCELLED) {
+    if (error.tag == remoting.Error.Tag.CANCELLED) {
       remoting.setMode(remoting.AppMode.HOME);
     } else {
       showShareError_(error);
@@ -190,13 +190,13 @@ function logDebugInfo_(msg) {
 /**
  * Show a host-side error message.
  *
- * @param {string} errorTag The error message to be localized and displayed.
+ * @param {!remoting.Error} error The error to be localized and displayed.
  * @return {void} Nothing.
  */
-function showShareError_(errorTag) {
+function showShareError_(error) {
   var errorDiv = document.getElementById('host-plugin-error');
-  l10n.localizeElementFromTag(errorDiv, errorTag);
-  console.error('Sharing error: ' + errorTag);
+  l10n.localizeElementFromTag(errorDiv, error.tag);
+  console.error('Sharing error:', error.tag);
   remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
   cleanUp();
 }

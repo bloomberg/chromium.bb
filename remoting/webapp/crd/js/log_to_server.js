@@ -55,7 +55,7 @@ remoting.LogToServer.CONNECTION_STATS_ACCUMULATE_TIME = 60 * 1000;
  * Logs a client session state change.
  *
  * @param {remoting.ClientSession.State} state
- * @param {remoting.Error} connectionError
+ * @param {!remoting.Error} connectionError
  */
 remoting.LogToServer.prototype.logClientSessionStateChange =
     function(state, connectionError) {

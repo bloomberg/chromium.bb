@@ -174,14 +174,14 @@ remoting.timestamp = function() {
  * Show an error message, optionally including a short-cut for signing in to
  * Chromoting again.
  *
- * @param {remoting.Error} error
+ * @param {!remoting.Error} error
  * @return {void} Nothing.
  */
 remoting.showErrorMessage = function(error) {
   l10n.localizeElementFromTag(
       document.getElementById('token-refresh-error-message'),
-      error);
-  var auth_failed = (error == remoting.Error.AUTHENTICATION_FAILED);
+      error.tag);
+  var auth_failed = (error.tag == remoting.Error.Tag.AUTHENTICATION_FAILED);
   if (auth_failed && base.isAppsV2()) {
     remoting.handleAuthFailureAndRelaunch();
   } else {

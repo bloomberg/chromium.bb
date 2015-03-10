@@ -89,7 +89,7 @@ remoting.SignalStrategy.prototype.sendConnectionSetupResults =
 /** @return {remoting.SignalStrategy.State} Current state */
 remoting.SignalStrategy.prototype.getState = function() {};
 
-/** @return {remoting.Error} Error when in FAILED state. */
+/** @return {!remoting.Error} Error when in FAILED state. */
 remoting.SignalStrategy.prototype.getError = function() {};
 
 /** @return {string} Current JID when in CONNECTED state. */

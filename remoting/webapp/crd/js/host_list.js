@@ -47,8 +47,8 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   this.hostTableEntries_ = [];
   /** @private {Array<remoting.Host>} */
   this.hosts_ = [];
-  /** @private {string} */
-  this.lastError_ = '';
+  /** @private {!remoting.Error} */
+  this.lastError_ = remoting.Error.NONE;
   /** @private {remoting.LocalHostSection} */
   this.localHostSection_ = new remoting.LocalHostSection(
       /** @type {HTMLElement} */ (document.querySelector('.daemon-control')),
@@ -137,7 +137,7 @@ remoting.HostList.prototype.refresh = function(onDone) {
   this.loadingIndicator_.classList.add('loading');
   /** @type {remoting.HostList} */
   var that = this;
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   var onError = function(error) {
     that.lastError_ = error;
     onDone(false);
@@ -157,12 +157,12 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * @private
  */
 remoting.HostList.prototype.onHostListResponse_ = function(onDone, hosts) {
-  this.lastError_ = '';
+  this.lastError_ = remoting.Error.NONE;
   this.hosts_ = hosts;
   this.sortHosts_();
   this.save_();
   this.loadingIndicator_.classList.remove('loading');
-  onDone(this.lastError_ == '');
+  onDone(true);
 };
 
 /**
@@ -212,8 +212,8 @@ remoting.HostList.prototype.display = function() {
   this.noHosts_.hidden = !noHostsRegistered;
 
   if (this.lastError_ != '') {
-    l10n.localizeElementFromTag(this.errorMsg_, this.lastError_);
-    if (this.lastError_ == remoting.Error.AUTHENTICATION_FAILED) {
+    l10n.localizeElementFromTag(this.errorMsg_, this.lastError_.tag);
+    if (this.lastError_.tag == remoting.Error.Tag.AUTHENTICATION_FAILED) {
       l10n.localizeElementFromTag(this.errorButton_,
                                   /*i18n-content*/'SIGN_IN_BUTTON');
     } else {
@@ -241,7 +241,7 @@ remoting.HostList.prototype.display = function() {
     }
   }
 
-  this.errorMsg_.parentNode.hidden = (this.lastError_ == '');
+  this.errorMsg_.parentNode.hidden = !this.lastError_.isError();
   if (noHostsRegistered) {
     this.showHostListEmptyMessage_(this.localHostSection_.canChangeState());
   }
@@ -336,7 +336,7 @@ remoting.HostList.unregisterHostById = function(hostId) {
  */
 remoting.HostList.prototype.setLocalHostStateAndId = function(state, hostId) {
   var host = hostId ? this.getHostForId(hostId) : null;
-  this.localHostSection_.setModel(host, state, this.lastError_ !== '');
+  this.localHostSection_.setModel(host, state, this.lastError_.isError());
 };
 
 /**
@@ -367,7 +367,7 @@ remoting.HostList.prototype.onLocalHostStarted = function(
   this.save_();
   this.localHostSection_.setModel(localHost,
                                   remoting.HostController.State.STARTED,
-                                  this.lastError_ !== '');
+                                  this.lastError_.isError());
 };
 
 /**
@@ -377,7 +377,7 @@ remoting.HostList.prototype.onLocalHostStarted = function(
  * @private
  */
 remoting.HostList.prototype.onErrorClick_ = function() {
-  if (this.lastError_ == remoting.Error.AUTHENTICATION_FAILED) {
+  if (this.lastError_.tag == remoting.Error.Tag.AUTHENTICATION_FAILED) {
     remoting.handleAuthFailureAndRelaunch();
   } else {
     this.refresh(remoting.updateLocalHostState);

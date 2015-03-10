@@ -181,7 +181,7 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
  * Report an authentication error to the user. This is called in lieu of start()
  * if the user cannot be authenticated or if they decline the app permissions.
  *
- * @param {remoting.Error} error The failure reason.
+ * @param {!remoting.Error} error The failure reason.
  */
 remoting.AppRemoting.prototype.signInFailed = function(error) {
   this.handleError(error);
@@ -252,7 +252,7 @@ remoting.AppRemoting.prototype.handleDisconnected = function() {
  * Called when the current session's connection has failed.
  *
  * @param {remoting.SessionConnector} connector
- * @param {remoting.Error} error
+ * @param {!remoting.Error} error
  * @return {void} Nothing.
  */
 remoting.AppRemoting.prototype.handleConnectionFailed = function(
@@ -328,7 +328,7 @@ remoting.AppRemoting.prototype.handleExtensionMessage = function(
 /**
  * Called when an error needs to be displayed to the user.
  *
- * @param {remoting.Error} errorTag The error to be localized and displayed.
+ * @param {!remoting.Error} errorTag The error to be localized and displayed.
  * @return {void} Nothing.
  */
 remoting.AppRemoting.prototype.handleError = function(errorTag) {

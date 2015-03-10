@@ -188,7 +188,7 @@ remoting.Identity.prototype.onAuthComplete_ = function(token) {
                                  : 'Unknown error.';
     console.error(error_message);
     var error = (error_message == USER_CANCELLED) ?
-        remoting.Error.CANCELLED : remoting.Error.NOT_AUTHENTICATED;
+        remoting.Error.Tag.CANCELLED : remoting.Error.Tag.NOT_AUTHENTICATED;
     authTokenDeferred.reject(error);
     this.authTokenDeferred_ = null;
     return;

@@ -249,7 +249,7 @@ browserTest.enterPIN = function(pin, opt_expectError) {
     if (opt_expectError) {
       return browserTest.expectConnectionError(
           remoting.DesktopConnectedView.Mode.ME2ME,
-          remoting.Error.INVALID_ACCESS_CODE);
+          remoting.Error.Tag.INVALID_ACCESS_CODE);
     } else {
       return browserTest.expectConnected();
     }

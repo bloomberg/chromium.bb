@@ -23,7 +23,7 @@ remoting.HostListApiImpl = function() {
  * Fetch the list of hosts for a user.
  *
  * @param {function(Array<remoting.Host>):void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  */
 remoting.HostListApiImpl.prototype.get = function(onDone, onError) {
   /** @type {function(XMLHttpRequest):void} */
@@ -45,7 +45,7 @@ remoting.HostListApiImpl.prototype.get = function(onDone, onError) {
  * Update the information for a host.
  *
  * @param {function():void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  * @param {string} hostId
  * @param {string} hostName
  * @param {string} hostPublicKey
@@ -76,7 +76,7 @@ remoting.HostListApiImpl.prototype.put =
  * Delete a host.
  *
  * @param {function():void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  * @param {string} hostId
  */
 remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
@@ -98,7 +98,7 @@ remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
  * passed to the callback.
  *
  * @param {function(Array<remoting.Host>):void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  * @param {XMLHttpRequest} xhr
  * @private
  */

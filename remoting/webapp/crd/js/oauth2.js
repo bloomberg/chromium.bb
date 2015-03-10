@@ -321,7 +321,7 @@ remoting.OAuth2.prototype.doAuthRedirect = function(onDone) {
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   var onError = function(error) {
     console.error('Unable to exchange code for token: ', error);
   };

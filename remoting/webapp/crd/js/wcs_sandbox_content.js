@@ -131,7 +131,7 @@ remoting.WcsSandboxContent.prototype.onLocalJid_ = function(localJid) {
 /**
  * Callback method to indicate that something went wrong loading the WCS driver.
  *
- * @param {remoting.Error} error Details of the error.
+ * @param {!remoting.Error} error Details of the error.
  * @private
  */
 remoting.WcsSandboxContent.prototype.onError_ = function(error) {

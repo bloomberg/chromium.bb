@@ -127,7 +127,7 @@ remoting.XmppConnection.prototype.getState = function() {
   return this.state_;
 };
 
-/** @return {remoting.Error} Error when in FAILED state. */
+/** @return {!remoting.Error} Error when in FAILED state. */
 remoting.XmppConnection.prototype.getError = function() {
   return this.error_;
 };
@@ -361,7 +361,7 @@ remoting.XmppConnection.prototype.onParserError_ = function(text) {
 }
 
 /**
- * @param {remoting.Error} error
+ * @param {!remoting.Error} error
  * @param {string} text
  * @private
  */

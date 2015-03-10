@@ -63,7 +63,7 @@ test('should go to FAILED state when failed to connect', function() {
       chrome.socket.connect, socketId, "xmpp.example.com", 123);
   chrome.socket.connect.$testStub.getCall(0).args[3](-1);
 
-  QUnit.equal(connection.getError(), remoting.Error.NETWORK_FAILURE);
+  QUnit.equal(connection.getError().tag, remoting.Error.Tag.NETWORK_FAILURE);
 });
 
 test('should use XmppLoginHandler to complete handshake and read data',

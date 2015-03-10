@@ -52,7 +52,7 @@ remoting.It2MeHostFacade = function() {
   /**
    * Called if the It2Me Native Messaging host sends a malformed message:
    * missing required attributes, attributes with incorrect types, etc.
-   * @private {?function(remoting.Error):void}
+   * @private {?function(!remoting.Error):void}
    */
   this.onError_ = function(error) {};
 
@@ -121,7 +121,7 @@ remoting.It2MeHostFacade.prototype.initialize =
  *     XMPP server
  * @param {string} directoryBotJid XMPP JID for the remoting directory server
  *     bot.
- * @param {function(remoting.Error):void} onError Callback to invoke in case of
+ * @param {function(!remoting.Error):void} onError Callback to invoke in case of
  *     an error.
  * @return {void}
  */

@@ -226,12 +226,12 @@ remoting.PairedClientManager.prototype.setWorking_ = function(working) {
 /**
  * Error callback for delete operations.
  *
- * @param {remoting.Error} error The error message.
+ * @param {!remoting.Error} error The error message.
  * @private
  */
 remoting.PairedClientManager.prototype.onError_ = function(error) {
   this.setWorking_(false);
-  l10n.localizeElementFromTag(this.errorDiv_, error);
+  l10n.localizeElementFromTag(this.errorDiv_, error.tag);
   this.errorDiv_.hidden = false;
 };
 

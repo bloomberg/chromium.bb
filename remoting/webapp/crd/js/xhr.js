@@ -199,16 +199,15 @@ remoting.xhr.startInternal_ = function(
  * Generic success/failure response proxy.
  *
  * @param {function():void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  * @return {function(XMLHttpRequest):void}
  */
 remoting.xhr.defaultResponse = function(onDone, onError) {
   /** @param {XMLHttpRequest} xhr */
   var result = function(xhr) {
-    /** @type {remoting.Error} */
     var error =
         remoting.Error.fromHttpStatus(/** @type {number} */ (xhr.status));
-    if (error == remoting.Error.NONE) {
+    if (!error.isError()) {
       onDone();
     } else {
       onError(error);

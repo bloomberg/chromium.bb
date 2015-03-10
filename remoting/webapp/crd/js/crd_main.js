@@ -136,7 +136,7 @@ remoting.updateLocalHostState = function() {
    */
   var onHasFeatureResponse = function(response) {
     /**
-     * @param {remoting.Error} error
+     * @param {!remoting.Error} error
      */
     var onError = function(error) {
       console.error('Failed to get pairing status: ' + error);

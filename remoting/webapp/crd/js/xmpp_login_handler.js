@@ -27,7 +27,7 @@ var remoting = remoting || {};
  * @param {function(string, remoting.XmppStreamParser):void}
  *     onHandshakeDoneCallback Callback to call after authentication is
  *     completed successfully
- * @param {function(remoting.Error, string):void} onErrorCallback Callback to
+ * @param {function(!remoting.Error, string):void} onErrorCallback Callback to
  *     call on error. Can be called at any point during lifetime of connection.
  * @constructor
  */
@@ -281,7 +281,7 @@ remoting.XmppLoginHandler.prototype.startStream_ = function(firstMessage) {
 }
 
 /**
- * @param {remoting.Error} error
+ * @param {!remoting.Error} error
  * @param {string} text
  * @private
  */

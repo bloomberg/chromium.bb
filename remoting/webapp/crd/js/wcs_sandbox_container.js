@@ -24,7 +24,7 @@ remoting.WcsSandboxContainer = function(sandbox) {
   this.sandbox_ = sandbox;
   /** @private {?function(string):void} */
   this.onConnected_ = null;
-  /** @private {function(remoting.Error):void} */
+  /** @private {function(!remoting.Error):void} */
   this.onError_ = function(error) {};
   /** @private {?function(string):void} */
   this.onIq_ = null;
@@ -49,7 +49,7 @@ remoting.WcsSandboxContainer = function(sandbox) {
 /**
  * @param {function(string):void} onConnected Callback to be called when WCS is
  *     connected. May be called synchronously if WCS is already connected.
- * @param {function(remoting.Error):void} onError called in case of an error.
+ * @param {function(!remoting.Error):void} onError called in case of an error.
  * @return {void} Nothing.
  */
 remoting.WcsSandboxContainer.prototype.connect = function(
@@ -147,7 +147,7 @@ remoting.WcsSandboxContainer.prototype.onMessage_ = function(event) {
       break;
 
     case 'onError':
-      /** @type {remoting.Error} */
+      /** @type {!remoting.Error} */
       var error = event.data['error'];
       if (error === undefined) {
         console.error('onError: missing error code');

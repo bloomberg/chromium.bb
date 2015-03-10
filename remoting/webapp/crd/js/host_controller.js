@@ -103,7 +103,7 @@ remoting.HostController.prototype.hasFeature = function(feature, callback) {
 /**
  * @param {function(boolean, boolean, boolean):void} onDone Callback to be
  *     called when done.
- * @param {function(remoting.Error):void} onError Callback to be called on
+ * @param {function(!remoting.Error):void} onError Callback to be called on
  *     error.
  */
 remoting.HostController.prototype.getConsent = function(onDone, onError) {
@@ -116,7 +116,7 @@ remoting.HostController.prototype.getConsent = function(onDone, onError) {
  * @param {string} hostPin Host PIN.
  * @param {boolean} consent The user's consent to crash dump reporting.
  * @param {function():void} onDone Callback to be called when done.
- * @param {function(remoting.Error):void} onError Callback to be called on
+ * @param {function(!remoting.Error):void} onError Callback to be called on
  *     error.
  * @return {void} Nothing.
  */
@@ -141,7 +141,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
 
   var newHostId = generateUuid();
 
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   function onStartError(error) {
     // Unregister the host if we failed to start it.
     remoting.HostList.unregisterHostById(newHostId);
@@ -352,7 +352,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
 /**
  * Stop the daemon process.
  * @param {function():void} onDone Callback to be called when done.
- * @param {function(remoting.Error):void} onError Callback to be called on
+ * @param {function(!remoting.Error):void} onError Callback to be called on
  *     error.
  * @return {void} Nothing.
  */
@@ -396,7 +396,7 @@ function isHostConfigValid_(config) {
 /**
  * @param {string} newPin The new PIN to set
  * @param {function():void} onDone Callback to be called when done.
- * @param {function(remoting.Error):void} onError Callback to be called on
+ * @param {function(!remoting.Error):void} onError Callback to be called on
  *     error.
  * @return {void} Nothing.
  */
@@ -449,9 +449,9 @@ remoting.HostController.prototype.updatePin = function(newPin, onDone,
  *     callback.
  */
 remoting.HostController.prototype.getLocalHostState = function(onDone) {
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   function onError(error) {
-    onDone((error == remoting.Error.MISSING_PLUGIN) ?
+    onDone((error.tag == remoting.Error.Tag.MISSING_PLUGIN) ?
                remoting.HostController.State.NOT_INSTALLED :
                remoting.HostController.State.UNKNOWN);
   }
@@ -484,7 +484,7 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
  * Fetch the list of paired clients for this host.
  *
  * @param {function(Array<remoting.PairedClient>):void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  * @return {void}
  */
 remoting.HostController.prototype.getPairedClients = function(onDone,
@@ -497,7 +497,7 @@ remoting.HostController.prototype.getPairedClients = function(onDone,
  *
  * @param {string} client The client id of the pairing to delete.
  * @param {function():void} onDone Completion callback.
- * @param {function(remoting.Error):void} onError Error callback.
+ * @param {function(!remoting.Error):void} onError Error callback.
  * @return {void}
  */
 remoting.HostController.prototype.deletePairedClient = function(
@@ -509,7 +509,7 @@ remoting.HostController.prototype.deletePairedClient = function(
  * Delete all paired clients.
  *
  * @param {function():void} onDone Completion callback.
- * @param {function(remoting.Error):void} onError Error callback.
+ * @param {function(!remoting.Error):void} onError Error callback.
  * @return {void}
  */
 remoting.HostController.prototype.clearPairedClients = function(
@@ -524,7 +524,7 @@ remoting.HostController.prototype.clearPairedClients = function(
  *
  * @private
  * @param {function(string): void} onSuccess
- * @param {function(remoting.Error): void} onError
+ * @param {function(!remoting.Error): void} onError
  */
 remoting.HostController.prototype.getClientBaseJid_ = function(
     onSuccess, onError) {

@@ -182,7 +182,7 @@ remoting.FallbackSignalStrategy.prototype.getState = function() {
       : this.externalState_;
 };
 
-/** @return {remoting.Error} Error when in FAILED state. */
+/** @return {!remoting.Error} Error when in FAILED state. */
 remoting.FallbackSignalStrategy.prototype.getError = function() {
   base.debug.assert(this.state_ == this.State.SECONDARY_FAILED);
   base.debug.assert(

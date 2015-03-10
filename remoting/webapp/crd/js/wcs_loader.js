@@ -45,7 +45,7 @@ remoting.WcsLoader.prototype.SCRIPT_NODE_ID_ = 'wcs-script-node';
  * @param {string} token An OAuth2 access token.
  * @param {function(string): void} onReady The callback function, called with
  *     a client JID when WCS has been loaded.
- * @param {function(remoting.Error):void} onError Function to invoke with an
+ * @param {function(!remoting.Error):void} onError Function to invoke with an
  *     error code on failure.
  * @return {void} Nothing.
  */
@@ -72,7 +72,7 @@ remoting.WcsLoader.prototype.start = function(token, onReady, onError) {
   var onLoadError = function(event) {
     // The DOM Event object has no detail on the nature of the error, so try to
     // validate the token to get a better idea.
-    /** @param {remoting.Error} error Error code. */
+    /** @param {!remoting.Error} error Error code. */
     var onValidateError = function(error) {
       var typedNode = /** @type {Element} */ (node);
       typedNode.parentNode.removeChild(node);
@@ -110,7 +110,7 @@ remoting.WcsLoader.prototype.constructWcs_ = function(token, onReady) {
  *
  * @param {string} token The access token.
  * @param {function():void} onOk Callback to invoke if the token is valid.
- * @param {function(remoting.Error):void} onError Function to invoke with an
+ * @param {function(!remoting.Error):void} onError Function to invoke with an
  *     error code on failure.
  * @return {void} Nothing.
  */

@@ -8,9 +8,34 @@
 var remoting = remoting || {};
 
 /**
+ * A wrapper for remoting.Error.Tag.  Having a wrapper makes it
+ * possible to use instanceof checks on caught exceptions.  It also
+ * allows adding more detailed error information if desired.
+ *
+ * @constructor
+ * @param {remoting.Error.Tag} tag
+ * @param {string=} opt_message
+ */
+remoting.Error = function(tag, opt_message) {
+  /** @const */
+  this.tag = tag;
+
+  /** @const {?string} */
+  this.message = opt_message || null;
+};
+
+/**
+ * @return {boolean} True if this object represents an error
+ *     condition.
+ */
+remoting.Error.prototype.isError = function() {
+  return this.tag != remoting.Error.Tag.NONE;
+};
+
+/**
  * @enum {string} All error messages from messages.json
  */
-remoting.Error = {
+remoting.Error.Tag = {
   NONE: '',
 
   // Used to signify that an operation was cancelled by the user. This should
@@ -38,9 +63,86 @@ remoting.Error = {
   APP_NOT_AUTHORIZED: /*i18n-content*/'ERROR_APP_NOT_AUTHORIZED'
 };
 
+// A whole bunch of semi-redundant constants, mostly to reduce to size
+// of the diff that introduced the remoting.Error class.
+//
+// Please don't add any more constants here; just call the
+// remoting.Error constructor directly
+
+/** @const */
+remoting.Error.NONE = new remoting.Error(remoting.Error.Tag.NONE);
+
+/** @const */
+remoting.Error.CANCELLED =
+  new remoting.Error(remoting.Error.Tag.CANCELLED);
+
+/** @const */
+remoting.Error.INVALID_ACCESS_CODE =
+  new remoting.Error(remoting.Error.Tag.INVALID_ACCESS_CODE);
+
+/** @const */
+remoting.Error.MISSING_PLUGIN =
+  new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN);
+
+/** @const */
+remoting.Error.AUTHENTICATION_FAILED =
+  new remoting.Error(remoting.Error.Tag.AUTHENTICATION_FAILED);
+
+/** @const */
+remoting.Error.HOST_IS_OFFLINE =
+  new remoting.Error(remoting.Error.Tag.HOST_IS_OFFLINE);
+
+/** @const */
+remoting.Error.INCOMPATIBLE_PROTOCOL =
+  new remoting.Error(remoting.Error.Tag.INCOMPATIBLE_PROTOCOL);
+
+/** @const */
+remoting.Error.BAD_PLUGIN_VERSION =
+  new remoting.Error(remoting.Error.Tag.BAD_PLUGIN_VERSION);
+
+/** @const */
+remoting.Error.NETWORK_FAILURE =
+  new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE);
+
+/** @const */
+remoting.Error.HOST_OVERLOAD =
+  new remoting.Error(remoting.Error.Tag.HOST_OVERLOAD);
+
+/** @const */
+remoting.Error.UNEXPECTED =
+  new remoting.Error(remoting.Error.Tag.UNEXPECTED);
+
+/** @const */
+remoting.Error.SERVICE_UNAVAILABLE =
+  new remoting.Error(remoting.Error.Tag.SERVICE_UNAVAILABLE);
+
+/** @const */
+remoting.Error.NOT_AUTHENTICATED =
+  new remoting.Error(remoting.Error.Tag.NOT_AUTHENTICATED);
+
+/** @const */
+remoting.Error.INVALID_HOST_DOMAIN =
+  new remoting.Error(remoting.Error.Tag.INVALID_HOST_DOMAIN);
+
+/** @const */
+remoting.Error.P2P_FAILURE =
+  new remoting.Error(remoting.Error.Tag.P2P_FAILURE);
+
+/** @const */
+remoting.Error.REGISTRATION_FAILED =
+  new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED);
+
+/** @const */
+remoting.Error.NOT_AUTHORIZED =
+  new remoting.Error(remoting.Error.Tag.NOT_AUTHORIZED);
+
+/** @const */
+remoting.Error.APP_NOT_AUTHORIZED =
+  new remoting.Error(remoting.Error.Tag.APP_NOT_AUTHORIZED);
+
 /**
  * @param {number} httpStatus An HTTP status code.
- * @return {remoting.Error} The remoting.Error enum corresponding to the
+ * @return {!remoting.Error} The remoting.Error enum corresponding to the
  *     specified HTTP status code.
  */
 remoting.Error.fromHttpStatus = function(httpStatus) {
@@ -54,9 +156,10 @@ remoting.Error.fromHttpStatus = function(httpStatus) {
     return remoting.Error.SERVICE_UNAVAILABLE;
   } else {
     console.warn('Unexpected HTTP error code: ' + httpStatus);
+
     // Return AUTHENTICATION_FAILED by default, so that the user can try to
     // recover from an unexpected failure by signing in again.
-    // TODO(jamiewalch): Return UNEXPECTED here and let calling code treat that
+    // TODO(jamiewalch): Tag = UNEXPECTED here and let calling tag treat that
     // as "sign-in required" if necessary.
     return remoting.Error.AUTHENTICATION_FAILED;
   }
@@ -66,60 +169,16 @@ remoting.Error.fromHttpStatus = function(httpStatus) {
  * Create an error-handling function suitable for passing to a
  * Promise's "catch" method.
  *
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  * @return {function(*):void}
  */
 remoting.Error.handler = function(onError) {
   return function(/** * */ error) {
-    if (typeof error == 'string') {
-      onError(/** @type {remoting.Error} */ (error));
+    if (error instanceof remoting.Error) {
+      onError(/** @type {!remoting.Error} */ (error));
     } else {
       console.error('Unexpected error: %o', error);
       onError(remoting.Error.UNEXPECTED);
     }
   };
 };
-
-// /**
-//  * @param {(!Promise<T>|
-//  *     function(function(T):void,function(remoting.Error):void))} arg
-//  * @constructor
-//  * @template T
-//  */
-// remoting.Promise = function(arg) {
-//   var promise;
-//   if (typeof arg == 'function') {
-//     promise = new Promise(arg);
-//   } else {
-//     promise = arg;
-//   }
-
-//   /** @const */
-//   this.promise = promise;
-// };
-
-// /**
-//  * @param {?function(T)} onResolve
-//  * @param {?function(remoting.Error)=} opt_onReject
-//  * @return {!remoting.Promise}
-//  */
-// remoting.Promise.prototype.then = function(onResolve, opt_onReject) {
-//   return new remoting.Promise(this.promise.then(
-//       onResolve,
-//       opt_onReject && function(/** * */ error) {
-//         if (typeof error == 'string') {
-//           opt_onReject(/** @type {remoting.Error} */ (error));
-//         } else {
-//           console.error('Unexpected error: %o', error);
-//           opt_onReject(remoting.Error.UNEXPECTED);
-//         }
-//       }));
-// };
-
-// /**
-//  * @param {?function(remoting.Error)} onReject
-//  * @return {!remoting.Promise<T>}
-//  */
-// remoting.Promise.prototype.catch = function(onReject) {
-//   return this.then(null, onReject);
-// };

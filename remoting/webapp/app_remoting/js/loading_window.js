@@ -26,7 +26,7 @@ remoting.LoadingWindow = function() {};
 remoting.LoadingWindow.onTimeout_ = function() {
   remoting.MessageWindow.showErrorMessage(
       remoting.app.getApplicationName(),
-      chrome.i18n.getMessage(remoting.Error.SERVICE_UNAVAILABLE));
+      chrome.i18n.getMessage(remoting.Error.Tag.SERVICE_UNAVAILABLE));
 };
 
 /**

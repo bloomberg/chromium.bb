@@ -21,7 +21,7 @@ remoting.OAuth2Api = function() {
  *
  * @param {function(string, number): void} onDone Callback to invoke when
  *     the access token and expiration time are successfully fetched.
- * @param {function(remoting.Error):void} onError Callback invoked if an
+ * @param {function(!remoting.Error):void} onError Callback invoked if an
  *     error occurs.
  * @param {string} clientId OAuth2 client ID.
  * @param {string} clientSecret OAuth2 client secret.
@@ -38,7 +38,7 @@ remoting.OAuth2Api.prototype.refreshAccessToken = function(
  * @param {function(string, string, number): void} onDone Callback to
  *     invoke when the refresh token, access token and access token expiration
  *     time are successfully fetched.
- * @param {function(remoting.Error):void} onError Callback invoked if an
+ * @param {function(!remoting.Error):void} onError Callback invoked if an
  *     error occurs.
  * @param {string} clientId OAuth2 client ID.
  * @param {string} clientSecret OAuth2 client secret.
@@ -59,7 +59,7 @@ remoting.OAuth2Api.prototype.exchangeCodeForTokens = function(
  *
  * @param {function(string):void} onDone Callback invoked when the email
  *     address is available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
+ * @param {function(!remoting.Error):void} onError Callback invoked if an
  *     error occurs.
  * @param {string} token Access token.
  * @return {void} Nothing.
@@ -72,7 +72,7 @@ remoting.OAuth2Api.prototype.getEmail = function(onDone, onError, token) {
  *
  * @param {function(string, string):void} onDone Callback invoked when the email
  *     address and full name are available.
- * @param {function(remoting.Error):void} onError Callback invoked if an
+ * @param {function(!remoting.Error):void} onError Callback invoked if an
  *     error occurs.
  * @param {string} token Access token.
  * @return {void} Nothing.

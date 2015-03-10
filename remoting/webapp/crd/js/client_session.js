@@ -44,7 +44,7 @@ remoting.ClientSession = function(plugin, host, signalStrategy, mode) {
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
 
-  /** @private */
+  /** @private {!remoting.Error} */
   this.error_ = remoting.Error.NONE;
 
   /** @private */
@@ -259,14 +259,14 @@ remoting.ClientSession.prototype.removePlugin = function() {
  * raise a |stateChanged| event in response to it.  The caller should then call
  * dispose() to remove and destroy the <embed> element.
  *
- * @param {remoting.Error} error The reason for the disconnection.  Use
+ * @param {!remoting.Error} error The reason for the disconnection.  Use
  *    remoting.Error.NONE if there is no error.
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.disconnect = function(error) {
-  var state = (error == remoting.Error.NONE) ?
-                  remoting.ClientSession.State.CLOSED :
-                  remoting.ClientSession.State.FAILED;
+  var state = error.isError() ?
+                  remoting.ClientSession.State.FAILED :
+                  remoting.ClientSession.State.CLOSED;
 
   // The plugin won't send a state change notification, so we explicitly log
   // the fact that the connection has closed.
@@ -305,7 +305,7 @@ remoting.ClientSession.prototype.getState = function() {
 };
 
 /**
- * @return {remoting.Error} The current error code.
+ * @return {!remoting.Error} The current error code.
  */
 remoting.ClientSession.prototype.getError = function() {
   return this.error_;
@@ -492,7 +492,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
     if (this.state_ == remoting.ClientSession.State.CLOSED) {
       state = remoting.ClientSession.State.CONNECTION_CANCELED;
     } else if (this.state_ == remoting.ClientSession.State.FAILED &&
-        this.error_ == remoting.Error.HOST_IS_OFFLINE &&
+        this.error_.tag == remoting.Error.Tag.HOST_IS_OFFLINE &&
         !this.logHostOfflineErrors_) {
       // The application requested host-offline errors to be suppressed, for
       // example, because this connection attempt is using a cached host JID.
@@ -637,7 +637,7 @@ remoting.ClientSession.prototype.sendGoogleDriveAccessToken_ = function() {
   var sendToken = function(token) {
     remoting.clientSession.sendClientMessage('accessToken', token);
   };
-  /** @param {remoting.Error} error */
+  /** @param {!remoting.Error} error */
   var sendError = function(error) {
     console.log('Failed to refresh access token: ' + error);
   };

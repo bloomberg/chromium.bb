@@ -85,34 +85,34 @@ remoting.ServerLogEntry.KEY_CONNECTION_ERROR_ = 'connection-error';
 
 /**
  * @private
- * @param {remoting.Error} connectionError
+ * @param {!remoting.Error} connectionError
  * @return {string}
  */
 remoting.ServerLogEntry.getValueForError_ = function(connectionError) {
   // Directory service should be updated if a new string is added here as
   // otherwise the error code will be ignored (i.e. recorded as 0 instead).
-  switch(connectionError) {
-    case remoting.Error.NONE:
+  switch (connectionError.tag) {
+    case remoting.Error.Tag.NONE:
       return 'none';
-    case remoting.Error.INVALID_ACCESS_CODE:
+    case remoting.Error.Tag.INVALID_ACCESS_CODE:
       return 'invalid-access-code';
-    case remoting.Error.MISSING_PLUGIN:
+    case remoting.Error.Tag.MISSING_PLUGIN:
       return 'missing_plugin';
-    case remoting.Error.AUTHENTICATION_FAILED:
+    case remoting.Error.Tag.AUTHENTICATION_FAILED:
       return 'authentication-failed';
-    case remoting.Error.HOST_IS_OFFLINE:
+    case remoting.Error.Tag.HOST_IS_OFFLINE:
       return 'host-is-offline';
-    case remoting.Error.INCOMPATIBLE_PROTOCOL:
+    case remoting.Error.Tag.INCOMPATIBLE_PROTOCOL:
       return 'incompatible-protocol';
-    case remoting.Error.BAD_PLUGIN_VERSION:
+    case remoting.Error.Tag.BAD_PLUGIN_VERSION:
       return 'bad-plugin-version';
-    case remoting.Error.NETWORK_FAILURE:
+    case remoting.Error.Tag.NETWORK_FAILURE:
       return 'network-failure';
-    case remoting.Error.HOST_OVERLOAD:
+    case remoting.Error.Tag.HOST_OVERLOAD:
       return 'host-overload';
-    case remoting.Error.P2P_FAILURE:
+    case remoting.Error.Tag.P2P_FAILURE:
       return 'p2p-failure';
-    case remoting.Error.UNEXPECTED:
+    case remoting.Error.Tag.UNEXPECTED:
       return 'unexpected';
     default:
       return 'unknown-' + connectionError;
@@ -218,7 +218,7 @@ remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
  * Makes a log entry for a change of client session state.
  *
  * @param {remoting.ClientSession.State} state
- * @param {remoting.Error} connectionError
+ * @param {!remoting.Error} connectionError
  * @param {remoting.DesktopConnectedView.Mode} mode
  * @return {remoting.ServerLogEntry}
  */
@@ -231,7 +231,7 @@ remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
              remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_);
   entry.set_(remoting.ServerLogEntry.KEY_SESSION_STATE_,
              remoting.ServerLogEntry.getValueForSessionState_(state));
-  if (connectionError != remoting.Error.NONE) {
+  if (connectionError.tag != remoting.Error.NONE) {
     entry.set_(remoting.ServerLogEntry.KEY_CONNECTION_ERROR_,
                remoting.ServerLogEntry.getValueForError_(connectionError));
   }

@@ -32,7 +32,7 @@ remoting.MockOAuth2Api = function() {
 
 /**
  * @param {function(string, number): void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  * @param {string} clientId
  * @param {string} clientSecret
  * @param {string} refreshToken
@@ -47,7 +47,7 @@ remoting.MockOAuth2Api.prototype.refreshAccessToken = function(
 
 /**
  * @param {function(string, string, number): void} onDone
- * @param {function(remoting.Error):void} onError
+ * @param {function(!remoting.Error):void} onError
  * @param {string} clientId
  * @param {string} clientSecret
  * @param {string} code
@@ -63,7 +63,7 @@ remoting.MockOAuth2Api.prototype.exchangeCodeForTokens = function(
 
 /**
  * @param {function(string,string)} onDone
- * @param {function(remoting.Error)} onError
+ * @param {function(!remoting.Error)} onError
  * @param {string} token
  */
 remoting.MockOAuth2Api.prototype.getEmail = function(onDone, onError, token) {
@@ -73,7 +73,7 @@ remoting.MockOAuth2Api.prototype.getEmail = function(onDone, onError, token) {
 
 /**
  * @param {function(string,string)} onDone
- * @param {function(remoting.Error)} onError
+ * @param {function(!remoting.Error)} onError
  * @param {string} token
  */
 remoting.MockOAuth2Api.prototype.getUserInfo =

@@ -62,7 +62,7 @@ remoting.WcsAdapter.prototype.getState = function() {
   return this.state_;
 };
 
-/** @return {remoting.Error} Error when in FAILED state. */
+/** @return {!remoting.Error} Error when in FAILED state. */
 remoting.WcsAdapter.prototype.getError = function() {
   return this.error_;
 };
@@ -137,7 +137,7 @@ remoting.WcsAdapter.prototype.onIncomingStanza_ = function(stanza) {
   }
 };
 
-/** @param {remoting.Error} error */
+/** @param {!remoting.Error} error */
 remoting.WcsAdapter.prototype.onError_ = function(error) {
   this.error_ = error;
   this.setState_(remoting.SignalStrategy.State.FAILED);
