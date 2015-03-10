@@ -251,24 +251,15 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd,
   result.windowX = result.x;
   result.windowY = result.y;
 
-  // The mouse coordinates received here are device independent (DIPs). We need
-  // to convert them to physical coordinates before calling Windows APIs like
-  // ClientToScreen, etc.
-  gfx::Point scaled_screen_point(result.x, result.y);
-  scaled_screen_point = gfx::win::DIPToScreenPoint(scaled_screen_point);
-
-  POINT global_point = { scaled_screen_point.x(), scaled_screen_point.y() };
+  POINT global_point = { result.x, result.y };
   ClientToScreen(hwnd, &global_point);
 
-  scaled_screen_point.set_x(global_point.x);
-  scaled_screen_point.set_y(global_point.y);
+  // We need to convert the global point back to DIP before using it.
+  gfx::Point dip_global_point = gfx::win::ScreenToDIPPoint(
+      gfx::Point(global_point.x, global_point.y));
 
-  // We need to convert the point back to DIP before using it.
-  gfx::Point dip_screen_point = gfx::win::ScreenToDIPPoint(
-      scaled_screen_point);
-
-  result.globalX = dip_screen_point.x();
-  result.globalY = dip_screen_point.y();
+  result.globalX = dip_global_point.x();
+  result.globalY = dip_global_point.y();
 
   // calculate number of clicks:
 

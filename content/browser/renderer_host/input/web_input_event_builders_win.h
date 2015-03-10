@@ -7,11 +7,12 @@
 
 #include <windows.h>
 
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 
-class WebKeyboardEventBuilder {
+class CONTENT_EXPORT WebKeyboardEventBuilder {
  public:
   static blink::WebKeyboardEvent Build(HWND hwnd,
                                        UINT message,
@@ -20,7 +21,7 @@ class WebKeyboardEventBuilder {
                                        DWORD time_ms);
 };
 
-class WebMouseEventBuilder {
+class CONTENT_EXPORT WebMouseEventBuilder {
  public:
   static blink::WebMouseEvent Build(HWND hwnd,
                                     UINT message,
@@ -29,7 +30,7 @@ class WebMouseEventBuilder {
                                     DWORD time_ms);
 };
 
-class WebMouseWheelEventBuilder {
+class CONTENT_EXPORT WebMouseWheelEventBuilder {
  public:
   static blink::WebMouseWheelEvent Build(HWND hwnd,
                                          UINT message,

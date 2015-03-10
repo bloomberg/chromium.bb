@@ -231,8 +231,11 @@ BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
 }
 #endif
 
-bool CanRendererHandleEvent(const ui::MouseEvent* event) {
+bool CanRendererHandleEvent(const ui::MouseEvent* event, bool mouse_locked) {
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+    return false;
+
+  if (mouse_locked && (event->type() == ui::ET_MOUSE_EXITED))
     return false;
 
 #if defined(OS_WIN)
@@ -1040,7 +1043,8 @@ void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
 void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
   // Clip the cursor if chrome is running on regular desktop.
   if (gfx::Screen::GetScreenFor(window_) == gfx::Screen::GetNativeScreen()) {
-    RECT window_rect = window_->GetBoundsInScreen().ToRECT();
+    RECT window_rect =
+        gfx::win::DIPToScreenRect(window_->GetBoundsInScreen()).ToRECT();
     ::ClipCursor(&window_rect);
   }
 }
@@ -1932,7 +1936,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         window_->MoveCursorTo(center);
       }
       // Forward event to renderer.
-      if (CanRendererHandleEvent(event) &&
+      if (CanRendererHandleEvent(event, mouse_locked_) &&
           !(event->flags() & ui::EF_FROM_TOUCH)) {
         host_->ForwardMouseEvent(mouse_event);
         // Ensure that we get keyboard focus on mouse down as a plugin window
@@ -1982,7 +1986,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent&>(*event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
-  } else if (CanRendererHandleEvent(event) &&
+  } else if (CanRendererHandleEvent(event, mouse_locked_) &&
              !(event->flags() & ui::EF_FROM_TOUCH)) {
     // Confirm existing composition text on mouse press, to make sure
     // the input caret won't be moved with an ongoing composition text.
