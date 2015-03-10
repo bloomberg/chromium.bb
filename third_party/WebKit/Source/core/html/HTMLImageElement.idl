@@ -18,36 +18,45 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// FIXME: NamedConstructor does not support optional without Default. Fortunately using Undefined makes
-// us use 0 which happens to be the default width and height anyway.
+// https://html.spec.whatwg.org/#htmlimageelement
+
+// FIXME: Most long types in this interfaces should be unsigned long.
 [
     NamedConstructor=Image(optional long width, optional long height),
     ConstructorCallWith=Document
 ] interface HTMLImageElement : HTMLElement {
-    [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString alt;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString border;
-    readonly attribute boolean complete;
-    [Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString? crossOrigin;
-    attribute long height;
-    [Reflect] attribute long hspace;
-    [Reflect] attribute boolean isMap;
-    [Reflect, URL] attribute DOMString longDesc;
-    [Reflect, URL] attribute DOMString lowsrc;
-    [Reflect] attribute DOMString name;
-    readonly attribute long naturalHeight;
-    readonly attribute long naturalWidth;
     [Reflect, URL] attribute DOMString src;
     [Reflect] attribute DOMString srcset;
     [Reflect] attribute DOMString sizes;
-    readonly attribute DOMString currentSrc;
+    [Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString? crossOrigin;
     [Reflect] attribute DOMString useMap;
-    [Reflect] attribute long vspace;
+    [Reflect] attribute boolean isMap;
     attribute long width;
+    attribute long height;
+    readonly attribute long naturalWidth;
+    readonly attribute long naturalHeight;
+    readonly attribute boolean complete;
+    readonly attribute DOMString currentSrc;
 
-    // Extensions
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLImageElement-partial
+    [Reflect] attribute DOMString name;
+    [Reflect, URL] attribute DOMString lowsrc;
+    [Reflect] attribute DOMString align;
+    [Reflect] attribute long hspace;
+    [Reflect] attribute long vspace;
+    [Reflect, URL] attribute DOMString longDesc;
+
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString border;
+
+    // CSSOM View Module
+    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlimageelement-interface
     [MeasureAs=HTMLImageElementX] readonly attribute long x;
     [MeasureAs=HTMLImageElementY] readonly attribute long y;
 
+    // Subresource Integrity
+    // https://w3c.github.io/webappsec/specs/subresourceintegrity/
+    // FIXME: The spec does not extend HTMLImageElement.
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

@@ -17,7 +17,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
+
+// https://html.spec.whatwg.org/#htmlhrelement
+
 interface HTMLHRElement : HTMLElement {
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLHRElement-partial
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString color;
     [Reflect] attribute boolean noShade;

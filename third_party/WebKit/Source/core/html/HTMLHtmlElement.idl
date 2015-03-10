@@ -17,6 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlhtmlelement
+
 interface HTMLHtmlElement : HTMLElement {
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLHtmlElement-partial
     [Reflect] attribute DOMString version;
 };

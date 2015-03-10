@@ -28,11 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#htmlkeygenelement
+
 interface HTMLKeygenElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
     [Reflect] attribute DOMString challenge;
     [Reflect] attribute boolean disabled;
-    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     [Reflect, ReflectOnly="rsa", ReflectMissing="rsa"] attribute DOMString keytype;
     [Reflect] attribute DOMString name;
 
@@ -43,6 +45,7 @@ interface HTMLKeygenElement : HTMLElement {
     readonly attribute DOMString validationMessage;
     boolean checkValidity();
     boolean reportValidity();
+    // FIXME: The error argument should not be nullable.
     void setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
 
     readonly attribute NodeList labels;
