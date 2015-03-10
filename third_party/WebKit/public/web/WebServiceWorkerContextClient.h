@@ -153,17 +153,11 @@ public:
     // This is called on the main thread.
     virtual WebServiceWorkerProvider* createServiceWorkerProvider() { return nullptr; }
 
-    // FIXME: Deprecate this version once the other getClients is implemented
-    // in the embedder.
-    virtual void getClients(WebServiceWorkerClientsCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
-
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callbacks after calling either onSuccess or onError.
     // WebServiceWorkerClientsInfo and WebServiceWorkerError ownerships are
     // passed to the WebServiceWorkerClientsCallbacks implementation.
-    // FIXME: Remove the default implementation once this is implemented
-    // in the embedder.
-    virtual void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks* callbacks) { getClients(callbacks); }
+    virtual void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks* callbacks) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callbacks after calling either onSuccess or onError.
@@ -179,7 +173,9 @@ public:
 
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
+    // FIXME: Deprecate the one that takes integer clientID once we switch to uuid.
     virtual void postMessageToClient(int clientID, const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void postMessageToClient(const WebString& uuid, const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
@@ -195,7 +191,9 @@ public:
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callback after calling either onSuccess or onError.
+    // FIXME: Deprecate the one that takes integer clientID once we switch to uuid.
     virtual void focus(int cliendID, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void focus(const WebString& uuid, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

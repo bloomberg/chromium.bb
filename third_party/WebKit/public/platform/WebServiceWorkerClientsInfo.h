@@ -26,7 +26,8 @@ struct WebServiceWorkerClientInfo {
     {
     }
 
-    int clientID;
+    int clientID; // FIXME: Deprecate this when we switch to UUID.
+    WebString uuid;
 
     WebPageVisibilityState pageVisibilityState;
     bool isFocused;

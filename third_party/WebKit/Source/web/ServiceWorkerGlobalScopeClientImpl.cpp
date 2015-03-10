@@ -123,6 +123,11 @@ void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(int clientID, const
     m_client.postMessageToClient(clientID, message, webChannels.leakPtr());
 }
 
+void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(const WebString& clientUUID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray> webChannels)
+{
+    m_client.postMessageToClient(clientUUID, message, webChannels.leakPtr());
+}
+
 void ServiceWorkerGlobalScopeClientImpl::postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient& client, const WebString& message, PassOwnPtr<WebMessagePortChannelArray> webChannels)
 {
     m_client.postMessageToCrossOriginClient(client, message, webChannels.leakPtr());
@@ -141,6 +146,11 @@ void ServiceWorkerGlobalScopeClientImpl::claim(WebServiceWorkerClientsClaimCallb
 void ServiceWorkerGlobalScopeClientImpl::focus(int clientID, WebServiceWorkerClientCallbacks* callback)
 {
     m_client.focus(clientID, callback);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks* callback)
+{
+    m_client.focus(clientUUID, callback);
 }
 
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient& client)

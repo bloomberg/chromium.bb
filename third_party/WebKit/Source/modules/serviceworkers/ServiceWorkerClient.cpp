@@ -21,6 +21,7 @@ ServiceWorkerClient* ServiceWorkerClient::create(const WebServiceWorkerClientInf
 
 ServiceWorkerClient::ServiceWorkerClient(const WebServiceWorkerClientInfo& info)
     : m_id(info.clientID)
+    , m_uuid(info.uuid)
     , m_url(info.url.string())
 {
 }
@@ -38,7 +39,12 @@ void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<Seri
 
     WebString messageString = message->toWireString();
     OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
-    ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(m_id, messageString, webChannels.release());
+    if (!m_uuid.isEmpty()) {
+        ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(m_uuid, messageString, webChannels.release());
+    } else {
+        // FIXME: Deprecate this when we switch to uuid.
+        ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(m_id, messageString, webChannels.release());
+    }
 }
 
 } // namespace blink
