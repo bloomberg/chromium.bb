@@ -111,7 +111,7 @@ class ChromeVersion {
   static ChromeVersion FromString(const std::string& version_string) {
     Version version(version_string);
     DCHECK(version.IsValid());
-    const std::vector<uint16>& c(version.components());
+    const std::vector<uint32_t>& c(version.components());
     return ChromeVersion(static_cast<ULONGLONG>(c[0]) << 48 |
                          static_cast<ULONGLONG>(c[1]) << 32 |
                          static_cast<ULONGLONG>(c[2]) << 16 |

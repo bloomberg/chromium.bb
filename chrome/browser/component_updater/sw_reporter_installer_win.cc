@@ -121,14 +121,14 @@ void ReportVersionWithUma(const base::Version& version) {
   // The major version for X.Y.Z is X*256^3+Y*256+Z. If there are additional
   // components, only the first three count, and if there are less than 3, the
   // missing values are just replaced by zero. So 1 is equivalent 1.0.0.
-  DCHECK_LT(version.components()[0], 0x100);
+  DCHECK_LT(version.components()[0], 0x100U);
   uint32_t major_version = 0x1000000 * version.components()[0];
   if (version.components().size() >= 2) {
-    DCHECK_LT(version.components()[1], 0x10000);
+    DCHECK_LT(version.components()[1], 0x10000U);
     major_version += 0x100 * version.components()[1];
   }
   if (version.components().size() >= 3) {
-    DCHECK_LT(version.components()[2], 0x100);
+    DCHECK_LT(version.components()[2], 0x100U);
     major_version += version.components()[2];
   }
   UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MajorVersion", major_version);

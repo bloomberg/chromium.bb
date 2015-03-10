@@ -669,7 +669,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          InstallUtil::GetCurrentDate(),
                                          false);
 
-    const std::vector<uint16>& version_components = new_version.components();
+    const std::vector<uint32_t>& version_components = new_version.components();
     if (version_components.size() == 4) {
       // Our version should be in major.minor.build.rev.
       install_list->AddSetRegValueWorkItem(

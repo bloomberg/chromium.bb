@@ -107,7 +107,7 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
                                content::PepperPluginInfo* plugin_info) {
   if (!flash_version.IsValid())
     return false;
-  const std::vector<uint16_t> ver_nums = flash_version.components();
+  const std::vector<uint32_t> ver_nums = flash_version.components();
   if (ver_nums.size() < 3)
     return false;
 

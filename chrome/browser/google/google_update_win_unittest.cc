@@ -344,7 +344,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
 
     // Compute a newer version.
     base::Version current_version(CHROME_VERSION_STRING);
-    new_version_ = base::StringPrintf(L"%hu.%hu.%hu.%hu",
+    new_version_ = base::StringPrintf(L"%u.%u.%u.%u",
                                       current_version.components()[0],
                                       current_version.components()[1],
                                       current_version.components()[2] + 1,
