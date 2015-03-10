@@ -64,10 +64,11 @@ class WebDevToolsAgentImpl final
     , public WebPageOverlay
     , private WebThread::TaskObserver {
 public:
-    WebDevToolsAgentImpl(WebViewImpl* webViewImpl, WebDevToolsAgentClient* client);
+    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*, InspectorClient*);
     virtual ~WebDevToolsAgentImpl();
 
     WebDevToolsAgentClient* client() { return m_client; }
+    InspectorController* inspectorController() const { return m_inspectorController.get(); }
 
     bool handleInputEvent(Page*, const WebInputEvent&);
     void didCommitLoadForLocalFrame(LocalFrame*);
@@ -115,12 +116,12 @@ private:
     void enableMobileEmulation();
     void disableMobileEmulation();
 
-    InspectorController* inspectorController();
     LocalFrame* mainFrame();
 
     int m_layerTreeId;
     WebDevToolsAgentClient* m_client;
     WebViewImpl* m_webViewImpl;
+    OwnPtrWillBeMember<InspectorController> m_inspectorController;
     bool m_attached;
     bool m_generatingEvent;
 

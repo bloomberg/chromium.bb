@@ -34,7 +34,6 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/TopControls.h"
 #include "core/inspector/ConsoleMessageStorage.h"
-#include "core/inspector/InspectorController.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -78,7 +77,7 @@ UseCounter& FrameHost::useCounter() const
 
 InstrumentingAgents* FrameHost::instrumentingAgents() const
 {
-    return m_page->inspectorController().instrumentingAgents();
+    return m_page->instrumentingAgents();
 }
 
 float FrameHost::deviceScaleFactor() const

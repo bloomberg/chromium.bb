@@ -32,17 +32,18 @@
 #include "web/WebSettingsImpl.h"
 
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorController.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "web/InspectorController.h"
+#include "web/WebDevToolsAgentImpl.h"
 
 namespace blink {
 
-WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspectorController)
+WebSettingsImpl::WebSettingsImpl(Settings* settings)
     : m_settings(settings)
-    , m_inspectorController(inspectorController)
+    , m_devToolsAgent(nullptr)
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
     , m_renderVSyncNotificationEnabled(false)
@@ -57,6 +58,11 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspec
     , m_mainFrameResizesAreOrientationChanges(false)
 {
     ASSERT(settings);
+}
+
+void WebSettingsImpl::setWebDevToolsAgentImpl(WebDevToolsAgentImpl* devToolsAgent)
+{
+    m_devToolsAgent = devToolsAgent;
 }
 
 void WebSettingsImpl::setStandardFontFamily(const WebString& font, UScriptCode script)
@@ -153,7 +159,10 @@ void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(bool autoZoomFocusedN
 
 void WebSettingsImpl::setTextAutosizingEnabled(bool enabled)
 {
-    m_inspectorController->setTextAutosizingEnabled(enabled);
+    if (m_devToolsAgent)
+        m_devToolsAgent->inspectorController()->setTextAutosizingEnabled(enabled);
+    else
+        m_settings->setTextAutosizingEnabled(enabled);
 }
 
 void WebSettingsImpl::setAccessibilityFontScaleFactor(float fontScaleFactor)
@@ -178,7 +187,10 @@ void WebSettingsImpl::setInlineTextBoxAccessibilityEnabled(bool enabled)
 
 void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
-    m_inspectorController->setDeviceScaleAdjustment(deviceScaleAdjustment);
+    if (m_devToolsAgent)
+        m_devToolsAgent->inspectorController()->setDeviceScaleAdjustment(deviceScaleAdjustment);
+    else
+        m_settings->setDeviceScaleAdjustment(deviceScaleAdjustment);
 }
 
 void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)
@@ -188,7 +200,10 @@ void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)
 
 void WebSettingsImpl::setJavaScriptEnabled(bool enabled)
 {
-    m_inspectorController->setScriptEnabled(enabled);
+    if (m_devToolsAgent)
+        m_devToolsAgent->inspectorController()->setScriptEnabled(enabled);
+    else
+        m_settings->setScriptEnabled(enabled);
 }
 
 void WebSettingsImpl::setWebSecurityEnabled(bool enabled)
@@ -523,7 +538,10 @@ void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
 
 void WebSettingsImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
 {
-    m_inspectorController->setPreferCompositingToLCDTextEnabled(enabled);
+    if (m_devToolsAgent)
+        m_devToolsAgent->inspectorController()->setPreferCompositingToLCDTextEnabled(enabled);
+    else
+        m_settings->setPreferCompositingToLCDTextEnabled(enabled);
 }
 
 void WebSettingsImpl::setMinimumAccelerated2dCanvasSize(int numPixels)

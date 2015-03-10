@@ -42,7 +42,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InspectorController.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -67,9 +66,11 @@
 #include "public/web/WebMemoryUsageInfo.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
+#include "web/InspectorController.h"
 #include "web/WebGraphicsContextImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
+#include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
@@ -205,10 +206,12 @@ private:
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
-    WebDevToolsAgentClient* client)
+    WebDevToolsAgentClient* client,
+    InspectorClient* inspectorClient)
     : m_layerTreeId(0)
     , m_client(client)
     , m_webViewImpl(webViewImpl)
+    , m_inspectorController(InspectorController::create(webViewImpl->page(), inspectorClient))
     , m_attached(false)
     , m_generatingEvent(false)
     , m_deviceMetricsEnabled(false)
@@ -225,12 +228,14 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     ASSERT(processId > 0);
     inspectorController()->setProcessId(processId);
 
+    m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(this);
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
 {
     ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
+    m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(nullptr);
     if (m_attached)
         Platform::current()->currentThread()->removeTaskObserver(this);
 }
@@ -456,13 +461,6 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
 void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point)
 {
     m_webViewImpl->inspectElementAt(point);
-}
-
-InspectorController* WebDevToolsAgentImpl::inspectorController()
-{
-    if (Page* page = m_webViewImpl->page())
-        return &page->inspectorController();
-    return 0;
 }
 
 LocalFrame* WebDevToolsAgentImpl::mainFrame()

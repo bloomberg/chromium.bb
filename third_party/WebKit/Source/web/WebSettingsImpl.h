@@ -35,13 +35,15 @@
 
 namespace blink {
 
-class InspectorController;
 class Settings;
+class WebDevToolsAgentImpl;
 
 class WebSettingsImpl final : public WebSettings {
 public:
-    explicit WebSettingsImpl(Settings*, InspectorController*);
+    explicit WebSettingsImpl(Settings*);
     virtual ~WebSettingsImpl() { }
+
+    void setWebDevToolsAgentImpl(WebDevToolsAgentImpl*);
 
     virtual bool mainFrameResizesAreOrientationChanges() const override;
     virtual bool shrinksViewportContentToFit() const override;
@@ -197,7 +199,7 @@ public:
 
 private:
     Settings* m_settings;
-    InspectorController* m_inspectorController;
+    WebDevToolsAgentImpl* m_devToolsAgent;
     bool m_showFPSCounter;
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;

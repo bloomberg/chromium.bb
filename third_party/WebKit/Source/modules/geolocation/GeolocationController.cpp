@@ -27,7 +27,6 @@
 
 #include "modules/geolocation/GeolocationController.h"
 
-#include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
 #include "modules/geolocation/GeolocationClient.h"
 #include "modules/geolocation/GeolocationError.h"

@@ -127,7 +127,6 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"

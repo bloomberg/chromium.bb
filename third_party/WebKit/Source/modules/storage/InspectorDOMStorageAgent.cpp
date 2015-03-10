@@ -37,7 +37,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 #include "modules/storage/Storage.h"

@@ -43,6 +43,8 @@
       'IndexedDBClientImpl.h',
       'InspectorClientImpl.cpp',
       'InspectorClientImpl.h',
+      'InspectorController.cpp',
+      'InspectorController.h',
       'LinkHighlight.cpp',
       'LinkHighlight.h',
       'LocalFileSystemClient.cpp',

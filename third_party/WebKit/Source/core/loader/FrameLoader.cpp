@@ -60,7 +60,6 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"

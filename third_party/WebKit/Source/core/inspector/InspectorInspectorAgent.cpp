@@ -38,7 +38,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
@@ -52,13 +51,11 @@ namespace InspectorAgentState {
 static const char inspectorAgentEnabled[] = "inspectorAgentEnabled";
 }
 
-InspectorInspectorAgent::InspectorInspectorAgent(InspectorController* inspectorController, InjectedScriptManager* injectedScriptManager)
+InspectorInspectorAgent::InspectorInspectorAgent(InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorInspectorAgent>("Inspector")
-    , m_inspectorController(inspectorController)
     , m_frontend(nullptr)
     , m_injectedScriptManager(injectedScriptManager)
 {
-    ASSERT_ARG(inspectorController, inspectorController);
 }
 
 InspectorInspectorAgent::~InspectorInspectorAgent()
@@ -70,7 +67,6 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
 
 DEFINE_TRACE(InspectorInspectorAgent)
 {
-    visitor->trace(m_inspectorController);
     visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);
 }

@@ -31,7 +31,6 @@
 #include "core/css/PointerProperties.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Supplementable.h"

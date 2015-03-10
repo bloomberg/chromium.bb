@@ -65,7 +65,6 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/html/ime/InputMethodContext.h"
-#include "core/inspector/InspectorController.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
@@ -89,15 +88,9 @@
 #include "core/page/TouchDisambiguation.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/InspectorAccessibilityAgent.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
-#include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
-#include "modules/filesystem/InspectorFileSystemAgent.h"
-#include "modules/indexeddb/InspectorIndexedDBAgent.h"
-#include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/storage/StorageNamespaceController.h"
-#include "modules/webdatabase/InspectorDatabaseAgent.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/Cursor.h"
@@ -148,6 +141,7 @@
 #include "web/DatabaseClientImpl.h"
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
+#include "web/InspectorController.h"
 #include "web/LinkHighlight.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/PopupContainer.h"
@@ -371,7 +365,7 @@ void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCred
 void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
     if (devToolsClient)
-        m_devToolsAgent = adoptPtr(new WebDevToolsAgentImpl(this, devToolsClient));
+        m_devToolsAgent = adoptPtr(new WebDevToolsAgentImpl(this, devToolsClient, &m_inspectorClientImpl));
     else
         m_devToolsAgent.clear();
 }
@@ -455,13 +449,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideNavigatorContentUtilsTo(*m_page, NavigatorContentUtilsClientImpl::create(this));
     provideContextFeaturesTo(*m_page, ContextFeaturesClientImpl::create());
     provideDatabaseClientTo(*m_page, DatabaseClientImpl::create());
-
-    m_page->inspectorController().registerModuleAgent(InspectorDatabaseAgent::create(m_page.get()));
-    m_page->inspectorController().registerModuleAgent(DeviceOrientationInspectorAgent::create(m_page.get()));
-    m_page->inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(m_page.get()));
-    m_page->inspectorController().registerModuleAgent(InspectorIndexedDBAgent::create(m_page.get()));
-    m_page->inspectorController().registerModuleAgent(InspectorAccessibilityAgent::create(m_page.get()));
-    m_page->inspectorController().registerModuleAgent(InspectorDOMStorageAgent::create(m_page.get()));
 
     provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
     m_page->setValidationMessageClient(ValidationMessageClientImpl::create(*this));
@@ -780,7 +767,8 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Instead, assume that the page has been designed with big enough buttons and links.
         // Don't trigger a disambiguation popup when screencasting, since it's implemented outside of
         // compositor pipeline and is not being screencasted itself. This leads to bad user experience.
-        if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !page()->inspectorController().screencastEnabled()) {
+        bool screencastEnabled = m_devToolsAgent && m_devToolsAgent->inspectorController()->screencastEnabled();
+        if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !screencastEnabled) {
             WebGestureEvent scaledEvent = event;
             scaledEvent.x = event.x / pageScaleFactor();
             scaledEvent.y = event.y / pageScaleFactor();
@@ -1679,6 +1667,10 @@ WebViewImpl* WebViewImpl::fromPage(Page* page)
 
 void WebViewImpl::close()
 {
+    // Should happen before m_page.clear().
+    if (m_devToolsAgent)
+        m_devToolsAgent->inspectorController()->willBeDestroyed();
+
     if (m_page) {
         // Initiate shutdown for the entire frameset.  This will cause a lot of
         // notifications to be sent.
@@ -1747,7 +1739,7 @@ void WebViewImpl::performResize()
     // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
     // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
     // Therefore we should force explicit media queries invalidation here.
-    if (page()->inspectorController().deviceEmulationEnabled()) {
+    if (m_devToolsAgent && m_devToolsAgent->inspectorController()->deviceEmulationEnabled()) {
         if (Document* document = mainFrameImpl()->frame()->document()) {
             document->styleResolverChanged();
             document->mediaQueryAffectingValueChanged();
@@ -2786,7 +2778,7 @@ void WebViewImpl::didChangeWindowResizerRect()
 WebSettingsImpl* WebViewImpl::settingsImpl()
 {
     if (!m_webSettings)
-        m_webSettings = adoptPtr(new WebSettingsImpl(&m_page->settings(), &m_page->inspectorController()));
+        m_webSettings = adoptPtr(new WebSettingsImpl(&m_page->settings()));
     ASSERT(m_webSettings);
     return m_webSettings.get();
 }
@@ -3825,11 +3817,11 @@ unsigned long WebViewImpl::createUniqueIdentifierForRequest()
 
 void WebViewImpl::inspectElementAt(const WebPoint& point)
 {
-    if (!m_page)
+    if (!m_page || !m_devToolsAgent)
         return;
 
     if (point.x == -1 || point.y == -1) {
-        m_page->inspectorController().inspect(0);
+        m_devToolsAgent->inspectorController()->inspect(0);
     } else {
         HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
         HitTestRequest request(hitType);
@@ -3844,7 +3836,7 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
         Node* node = result.innerNode();
         if (!node && m_page->deprecatedLocalMainFrame()->document())
             node = m_page->deprecatedLocalMainFrame()->document()->documentElement();
-        m_page->inspectorController().inspect(node);
+        m_devToolsAgent->inspectorController()->inspect(node);
     }
 }
 
@@ -4139,7 +4131,8 @@ void WebViewImpl::pageScaleFactorChanged()
 {
     m_pageScaleConstraintsSet.setNeedsReset(false);
     updateLayerTreeViewport();
-    m_page->inspectorController().pageScaleFactorChanged();
+    if (m_devToolsAgent)
+        m_devToolsAgent->inspectorController()->pageScaleFactorChanged();
     m_client->pageScaleFactorChanged();
 }
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/inspector/InspectorController.h"
+#include "web/InspectorController.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/InspectorBackendDispatcher.h"
@@ -67,12 +67,18 @@
 #include "core/inspector/PageRuntimeAgent.h"
 #include "core/layout/Layer.h"
 #include "core/page/Page.h"
+#include "modules/accessibility/InspectorAccessibilityAgent.h"
+#include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
+#include "modules/filesystem/InspectorFileSystemAgent.h"
+#include "modules/indexeddb/InspectorIndexedDBAgent.h"
+#include "modules/storage/InspectorDOMStorageAgent.h"
+#include "modules/webdatabase/InspectorDatabaseAgent.h"
 #include "platform/PlatformMouseEvent.h"
 
 namespace blink {
 
 InspectorController::InspectorController(Page* page, InspectorClient* inspectorClient)
-    : m_instrumentingAgents(InstrumentingAgents::create())
+    : m_instrumentingAgents(page->instrumentingAgents())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(inspectorClient)))
     , m_overlay(InspectorOverlay::create(page, inspectorClient))
@@ -88,7 +94,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
     InspectorOverlay* overlay = m_overlay.get();
 
-    m_agents.append(InspectorInspectorAgent::create(this, injectedScriptManager));
+    m_agents.append(InspectorInspectorAgent::create(injectedScriptManager));
 
     OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, inspectorClient, overlay));
     m_pageAgent = pageAgentPtr.get();
@@ -120,6 +126,13 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     ASSERT_ARG(inspectorClient, inspectorClient);
     m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), pageScriptDebugServer);
+
+    m_agents.append(InspectorDatabaseAgent::create(page));
+    m_agents.append(DeviceOrientationInspectorAgent::create(page));
+    m_agents.append(InspectorFileSystemAgent::create(page));
+    m_agents.append(InspectorIndexedDBAgent::create(page));
+    m_agents.append(InspectorAccessibilityAgent::create(page));
+    m_agents.append(InspectorDOMStorageAgent::create(page));
 }
 
 InspectorController::~InspectorController()

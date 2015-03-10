@@ -38,7 +38,6 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/DevToolsHost.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "platform/ContextMenu.h"
 #include "public/platform/Platform.h"

@@ -55,7 +55,7 @@ class FocusController;
 class Frame;
 class FrameHost;
 class InspectorClient;
-class InspectorController;
+class InstrumentingAgents;
 class PluginData;
 class PointerLockController;
 class ScrollingCoordinator;
@@ -136,10 +136,11 @@ public:
     DragController& dragController() const { return *m_dragController; }
     FocusController& focusController() const { return *m_focusController; }
     ContextMenuController& contextMenuController() const { return *m_contextMenuController; }
-    InspectorController& inspectorController() const { return *m_inspectorController; }
     PointerLockController& pointerLockController() const { return *m_pointerLockController; }
     ValidationMessageClient& validationMessageClient() const { return *m_validationMessageClient; }
     void setValidationMessageClient(PassOwnPtrWillBeRawPtr<ValidationMessageClient>);
+
+    InstrumentingAgents* instrumentingAgents() const { return m_instrumentingAgents.get(); }
 
     ScrollingCoordinator* scrollingCoordinator();
 
@@ -219,10 +220,11 @@ private:
     const OwnPtrWillBeMember<DragController> m_dragController;
     const OwnPtrWillBeMember<FocusController> m_focusController;
     const OwnPtrWillBeMember<ContextMenuController> m_contextMenuController;
-    const OwnPtrWillBeMember<InspectorController> m_inspectorController;
     const OwnPtrWillBeMember<PointerLockController> m_pointerLockController;
     OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
     const OwnPtrWillBeMember<UndoStack> m_undoStack;
+
+    RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
 
     // Typically, the main frame and Page should both be owned by the embedder,
     // which must call Page::willBeDestroyed() prior to destroying Page. This

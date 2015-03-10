@@ -32,7 +32,6 @@
 #include "modules/webdatabase/DatabaseClient.h"
 
 #include "core/dom/Document.h"
-#include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"

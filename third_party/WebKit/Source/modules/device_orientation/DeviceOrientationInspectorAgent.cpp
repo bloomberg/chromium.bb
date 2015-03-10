@@ -6,7 +6,6 @@
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 

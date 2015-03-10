@@ -337,6 +337,11 @@ public:
         return m_page.get();
     }
 
+    WebDevToolsAgentImpl* devToolsAgentImpl() const
+    {
+        return m_devToolsAgent.get();
+    }
+
     // Returns the main frame associated with this view. This may be null when
     // the page is shutting down, but will be valid at all other times.
     WebLocalFrameImpl* mainFrameImpl();

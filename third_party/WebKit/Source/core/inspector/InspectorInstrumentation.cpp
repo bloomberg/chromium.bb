@@ -36,7 +36,6 @@
 #include "core/frame/FrameHost.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorInspectorAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"

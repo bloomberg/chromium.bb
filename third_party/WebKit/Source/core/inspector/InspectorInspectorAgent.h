@@ -39,7 +39,6 @@ namespace blink {
 
 class LocalFrame;
 class InjectedScriptManager;
-class InspectorController;
 class JSONObject;
 
 typedef String ErrorString;
@@ -47,9 +46,9 @@ typedef String ErrorString;
 class InspectorInspectorAgent final : public InspectorBaseAgent<InspectorInspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInspectorAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorInspectorAgent> create(InspectorController* inspectorController, InjectedScriptManager* injectedScriptManager)
+    static PassOwnPtrWillBeRawPtr<InspectorInspectorAgent> create(InjectedScriptManager* injectedScriptManager)
     {
-        return adoptPtrWillBeNoop(new InspectorInspectorAgent(inspectorController, injectedScriptManager));
+        return adoptPtrWillBeNoop(new InspectorInspectorAgent(injectedScriptManager));
     }
 
     virtual ~InspectorInspectorAgent();
@@ -73,9 +72,8 @@ public:
     void inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints);
 
 private:
-    InspectorInspectorAgent(InspectorController*, InjectedScriptManager*);
+    explicit InspectorInspectorAgent(InjectedScriptManager*);
 
-    RawPtrWillBeMember<InspectorController> m_inspectorController;
     InspectorFrontend::Inspector* m_frontend;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
 

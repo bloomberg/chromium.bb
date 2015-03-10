@@ -38,8 +38,8 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
@@ -121,9 +121,9 @@ Page::Page(PageClients& pageClients)
     , m_dragController(DragController::create(this, pageClients.dragClient))
     , m_focusController(FocusController::create(this))
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
-    , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
     , m_pointerLockController(PointerLockController::create(this))
     , m_undoStack(UndoStack::create())
+    , m_instrumentingAgents(InstrumentingAgents::create())
     , m_mainFrame(nullptr)
     , m_editorClient(pageClients.editorClient)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
@@ -561,9 +561,9 @@ DEFINE_TRACE(Page)
     visitor->trace(m_dragController);
     visitor->trace(m_focusController);
     visitor->trace(m_contextMenuController);
-    visitor->trace(m_inspectorController);
     visitor->trace(m_pointerLockController);
     visitor->trace(m_undoStack);
+    visitor->trace(m_instrumentingAgents);
     visitor->trace(m_mainFrame);
     visitor->trace(m_validationMessageClient);
     visitor->trace(m_multisamplingChangedObservers);
@@ -575,8 +575,7 @@ DEFINE_TRACE(Page)
 
 void Page::willBeDestroyed()
 {
-    // Destroy inspector first, since it uses frame and view during destruction.
-    m_inspectorController->willBeDestroyed();
+    m_instrumentingAgents->reset();
 
     RefPtrWillBeRawPtr<Frame> mainFrame = m_mainFrame;
 

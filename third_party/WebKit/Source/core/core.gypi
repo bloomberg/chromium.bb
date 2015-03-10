@@ -1595,8 +1595,6 @@
             'inspector/InspectorConsoleAgent.cpp',
             'inspector/InspectorConsoleAgent.h',
             'inspector/InspectorConsoleInstrumentation.h',
-            'inspector/InspectorController.cpp',
-            'inspector/InspectorController.h',
             'inspector/InspectorCounters.cpp',
             'inspector/InspectorCounters.h',
             'inspector/InspectorDOMAgent.cpp',
