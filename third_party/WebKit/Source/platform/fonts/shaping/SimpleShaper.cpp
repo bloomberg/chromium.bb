@@ -132,8 +132,7 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
 
     const SimpleFontData* lastFontData = m_font->primaryFont();
     bool normalizeSpace = m_run.normalizeSpace();
-    FloatPoint glyphOrigin;
-    FloatRect glyphBounds;
+    const float initialRunWidth = m_runWidthSoFar;
 
     CharacterData charData;
     while (textIterator.consume(charData.character, charData.clusterLength)) {
@@ -168,8 +167,12 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
 
         if (m_glyphBoundingBox) {
             ASSERT(glyphData.fontData);
-            glyphBounds = glyphData.fontData->boundsForGlyph(glyphData.glyph);
-            glyphBounds.move(glyphOrigin.x(), glyphOrigin.y());
+            FloatRect glyphBounds = glyphData.fontData->boundsForGlyph(glyphData.glyph);
+            // We are handling simple text run here, so Y-Offset will be zero.
+            // FIXME: Computing bounds relative to the initial advance seems odd. Are we adjusting
+            // these someplace else? If not, we'll end up with different bounds depending on how
+            // we segment our advance() calls.
+            glyphBounds.move(m_runWidthSoFar - initialRunWidth, 0);
             m_glyphBoundingBox->unite(glyphBounds);
         }
 
@@ -184,8 +187,6 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         // Advance past the character we just dealt with.
         textIterator.advance(charData.clusterLength);
         m_runWidthSoFar += width;
-        // We are handling simple text run here, so Y-Offset will be zero.
-        glyphOrigin += FloatSize(width, 0);
     }
 
     unsigned consumedCharacters = textIterator.currentCharacter() - m_currentCharacter;
