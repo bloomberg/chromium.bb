@@ -1,6 +1,6 @@
-CONSOLE WARNING: Failed to decode downloaded font: data:application/x-truetype-font,
-CONSOLE WARNING: Failed to decode downloaded font: data:application/x-truetype-font,
 CONSOLE WARNING: Failed to decode downloaded font: invalidfont.png
+CONSOLE WARNING: Failed to decode downloaded font: data:application/x-truetype-font,
+CONSOLE WARNING: Failed to decode downloaded font: data:application/x-truetype-font,
 Test download error cases.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -14,8 +14,4 @@ PASS firedEvents is ['loading', 'loadingdone', 'loadingerror']
 PASS successfullyParsed is true
 
 TEST COMPLETE
-font1
-font2
-font3
-font4
-font5
+

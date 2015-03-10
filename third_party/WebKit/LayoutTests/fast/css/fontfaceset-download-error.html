@@ -41,6 +41,10 @@ function runTests() {
     document.fonts.addEventListener('loading', onLoading);
     document.fonts.addEventListener('loadingdone', onLoadingDone);
     document.fonts.addEventListener('loadingerror', onLoadingError);
+
+    document.fonts.load('10px myfont1').catch(function() {
+        document.fonts.load('10px myfont2, myfont3, myfont4, myfont5').catch(function(){});
+      });
     document.fonts.ready.then(finish);
 }
 
@@ -79,11 +83,4 @@ else {
 }
 </script>
 </head>
-<body>
-  <div style="font-family: myfont1">font1</div>
-  <div style="font-family: myfont2">font2</div>
-  <div style="font-family: myfont3">font3</div>
-  <div style="font-family: myfont4">font4</div>
-  <div style="font-family: myfont5">font5</div>
-</body>
 </html>
