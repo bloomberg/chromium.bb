@@ -26,7 +26,7 @@
     [RaisesException] Text splitText(unsigned long offset);
     [MeasureAs=TextWholeText] readonly attribute DOMString wholeText;
 
-    // FIXME: Text.getDestinationInsertionPoints() is not in the Shadow DOM spec.
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28069
+    // Shadow DOM
+    // http://w3c.github.io/webcomponents/spec/shadow/#extensions-to-text-interface
     NodeList getDestinationInsertionPoints();
 };
