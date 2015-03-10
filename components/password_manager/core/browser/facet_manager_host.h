@@ -15,16 +15,6 @@ class FacetManagerHost {
  public:
   virtual ~FacetManagerHost() {}
 
-  // Gets the current time. The returned time will always be strictly greater
-  // than the NULL time.
-  virtual base::Time GetCurrentTime() = 0;
-
-  // Reads and returns the last update time of the equivalence class containing
-  // |facet_uri| from the database, or, if no such equivalence class is stored,
-  // returns the NULL time.
-  virtual base::Time ReadLastUpdateTimeFromDatabase(
-      const FacetURI& facet_uri) = 0;
-
   // Reads the equivalence class containing |facet_uri| from the database and
   // returns true if found; returns false otherwise.
   virtual bool ReadAffiliationsFromDatabase(
@@ -34,6 +24,11 @@ class FacetManagerHost {
   // Signals the fetching logic that affiliation information for a facet needs
   // to be fetched immediately.
   virtual void SignalNeedNetworkRequest() = 0;
+
+  // Requests that the FacetManager corresponding to |facet_uri| be notified at
+  // the specified |time| so it can perform delayed administrative tasks.
+  virtual void RequestNotificationAtTime(const FacetURI& facet_uri,
+                                         base::Time time) = 0;
 };
 
 }  // namespace password_manager

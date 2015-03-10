@@ -41,20 +41,20 @@ class FacetManager;
 //
 // This class is not thread-safe, but it is fine to construct it on one thread
 // and then transfer it to the background thread for the rest of its life.
-// Initialize() must be called already on the background thread.
+// Initialize() must be called already on the final (background) thread.
 class AffiliationBackend : public FacetManagerHost,
                            public AffiliationFetcherDelegate {
  public:
   // Constructs an instance that will use |request_context_getter| for all
   // network requests, and will rely on |time_source| to tell the current time,
-  // which is expected to always be strictly greater than the NULL time.
+  // which is expected to always be no less than the Unix epoch.
   // Construction is very cheap, expensive steps are deferred to Initialize().
   AffiliationBackend(
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       scoped_ptr<base::Clock> time_source);
   ~AffiliationBackend() override;
 
-  // Performs the I/O-heavy part of initialization. The database to cache
+  // Performs the I/O-heavy part of initialization. The database used to cache
   // affiliation information locally will be opened/created at |db_path|.
   void Initialize(const base::FilePath& db_path);
 
@@ -71,23 +71,36 @@ class AffiliationBackend : public FacetManagerHost,
   void TrimCache();
 
  private:
+  friend class AffiliationBackendTest;
+
+  // Retrieves the FacetManager corresponding to |facet_uri|, creating it and
+  // storing it into |facet_managers_| if it did not exist.
+  FacetManager* GetOrCreateFacetManager(const FacetURI& facet_uri);
+
   // Collects facet URIs that require fetching and issues a network request
   // against the Affiliation API to fetch corresponding affiliation information.
   void SendNetworkRequest();
 
+  // Scheduled by RequestNotificationAtTime() to be called back at times when a
+  // FacetManager needs to be notified.
+  void OnSendNotification(const FacetURI& facet_uri);
+
   // FacetManagerHost:
-  base::Time GetCurrentTime() override;
-  base::Time ReadLastUpdateTimeFromDatabase(const FacetURI& facet_uri) override;
   bool ReadAffiliationsFromDatabase(
       const FacetURI& facet_uri,
       AffiliatedFacetsWithUpdateTime* affiliations) override;
   void SignalNeedNetworkRequest() override;
+  void RequestNotificationAtTime(const FacetURI& facet_uri,
+                                 base::Time time) override;
 
   // AffiliationFetcherDelegate:
   void OnFetchSucceeded(
       scoped_ptr<AffiliationFetcherDelegate::Result> result) override;
   void OnFetchFailed() override;
   void OnMalformedResponse() override;
+
+  // Used only for testing.
+  size_t facet_manager_count_for_testing() { return facet_managers_.size(); }
 
   // Created in Initialize(), and ensures that all subsequent methods are called
   // on the same thread.

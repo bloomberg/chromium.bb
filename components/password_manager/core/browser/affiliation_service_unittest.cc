@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/password_manager/core/browser/fake_affiliation_api.h"
@@ -42,7 +43,7 @@ class AffiliationServiceTest : public testing::Test {
  public:
   AffiliationServiceTest()
       : main_task_runner_(new base::TestSimpleTaskRunner),
-        background_task_runner_(new base::TestSimpleTaskRunner),
+        background_task_runner_(new base::TestMockTimeTaskRunner),
         main_task_runner_handle_(main_task_runner_) {}
   ~AffiliationServiceTest() override {}
 
@@ -56,7 +57,7 @@ class AffiliationServiceTest : public testing::Test {
     return main_task_runner_.get();
   }
 
-  base::TestSimpleTaskRunner* background_task_runner() {
+  base::TestMockTimeTaskRunner* background_task_runner() {
     return background_task_runner_.get();
   }
 
@@ -88,7 +89,7 @@ class AffiliationServiceTest : public testing::Test {
   ScopedFakeAffiliationAPI fake_affiliation_api_;
   MockAffiliationConsumer mock_consumer_;
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
-  scoped_refptr<base::TestSimpleTaskRunner> background_task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> background_task_runner_;
   base::ThreadTaskRunnerHandle main_task_runner_handle_;
 
   scoped_ptr<AffiliationService> service_;

@@ -56,18 +56,14 @@ void AffiliationService::GetAffiliations(
                  result_callback, base::ThreadTaskRunnerHandle::Get()));
 }
 
-AffiliationService::CancelPrefetchingHandle AffiliationService::Prefetch(
-    const FacetURI& facet_uri,
-    const base::Time& keep_fresh_until) {
+void AffiliationService::Prefetch(const FacetURI& facet_uri,
+                                  const base::Time& keep_fresh_until) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AffiliationBackend::Prefetch, base::Unretained(backend_),
                  facet_uri, keep_fresh_until));
-  return base::Bind(&AffiliationService::CancelPrefetch,
-                    weak_ptr_factory_.GetWeakPtr(), facet_uri,
-                    keep_fresh_until);
 }
 
 void AffiliationService::CancelPrefetch(const FacetURI& facet_uri,

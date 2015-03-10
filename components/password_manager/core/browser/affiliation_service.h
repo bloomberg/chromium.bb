@@ -92,8 +92,6 @@ class AffiliationService : public KeyedService {
   typedef base::Callback<void(const AffiliatedFacets& /* results */,
                               bool /* success */)> ResultCallback;
 
-  typedef base::Closure CancelPrefetchingHandle;
-
   // The |backend_task_runner| should be a task runner corresponding to a thread
   // that can take blocking I/O, and is normally Chrome's DB thread.
   AffiliationService(
@@ -114,17 +112,21 @@ class AffiliationService : public KeyedService {
                        const ResultCallback& result_callback);
 
   // Prefetches affiliation information for the facet identified by |facet_uri|,
-  // and keeps the information fresh by periodic re-fetches (as needed) until at
-  // least |keep_fresh_until|, the returned cancel handle is called, or until
-  // Chrome is shut down, whichever is sooner. It is a supported use-case to
-  // pass base::Time::Max() as |keep_fresh_until|.
+  // and keeps the information fresh by periodic re-fetches (as needed) until
+  // the clock strikes |keep_fresh_until| (exclusive), until a matching call to
+  // CancelPrefetch(), or until Chrome is shut down, whichever is sooner. It is
+  // a supported use-case to pass base::Time::Max() as |keep_fresh_until|.
   //
   // Canceling can be useful when a password is deleted, so that resources are
   // no longer wasted on repeatedly refreshing affiliation information. Note
   // that canceling will not blow away data already stored in the cache unless
   // it becomes stale.
-  CancelPrefetchingHandle Prefetch(const FacetURI& facet_uri,
-                                   const base::Time& keep_fresh_until);
+  void Prefetch(const FacetURI& facet_uri, const base::Time& keep_fresh_until);
+
+  // Cancels the corresponding prefetch command, i.e., the one issued for the
+  // same |facet_uri| and with the same |keep_fresh_until|.
+  void CancelPrefetch(const FacetURI& facet_uri,
+                      const base::Time& keep_fresh_until);
 
   // Wipes results of on-demand fetches and expired prefetches from the cache,
   // but retains information corresponding to facets that are being kept fresh.
@@ -133,10 +135,6 @@ class AffiliationService : public KeyedService {
   void TrimCache();
 
  private:
-  // Cancels the corresponding prefetch command, i.e., the one issued for the
-  // same |facet_uri| and with the same |keep_fresh_until|.
-  void CancelPrefetch(const FacetURI& facet_uri, const base::Time&);
-
   // The backend, owned by this AffiliationService instance, but living on the
   // DB thread. It will be deleted asynchronously during shutdown on the DB
   // thread, so it will outlive |this| along with all its in-flight tasks.

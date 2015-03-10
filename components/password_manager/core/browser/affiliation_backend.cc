@@ -6,7 +6,11 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -44,12 +48,8 @@ void AffiliationBackend::GetAffiliations(
     const AffiliationService::ResultCallback& callback,
     const scoped_refptr<base::TaskRunner>& callback_task_runner) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
-  if (!facet_managers_.contains(facet_uri)) {
-    scoped_ptr<FacetManager> new_manager(new FacetManager(this, facet_uri));
-    facet_managers_.add(facet_uri, new_manager.Pass());
-  }
 
-  FacetManager* facet_manager = facet_managers_.get(facet_uri);
+  FacetManager* facet_manager = GetOrCreateFacetManager(facet_uri);
   DCHECK(facet_manager);
   facet_manager->GetAffiliations(cached_only, callback, callback_task_runner);
 
@@ -61,16 +61,25 @@ void AffiliationBackend::Prefetch(const FacetURI& facet_uri,
                                   const base::Time& keep_fresh_until) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 
-  // TODO(engedy): Implement this. crbug.com/437865.
-  NOTIMPLEMENTED();
+  FacetManager* facet_manager = GetOrCreateFacetManager(facet_uri);
+  DCHECK(facet_manager);
+  facet_manager->Prefetch(keep_fresh_until);
+
+  if (facet_manager->CanBeDiscarded())
+    facet_managers_.erase(facet_uri);
 }
 
 void AffiliationBackend::CancelPrefetch(const FacetURI& facet_uri,
                                         const base::Time& keep_fresh_until) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 
-  // TODO(engedy): Implement this. crbug.com/437865.
-  NOTIMPLEMENTED();
+  FacetManager* facet_manager = facet_managers_.get(facet_uri);
+  if (!facet_manager)
+    return;
+  facet_manager->CancelPrefetch(keep_fresh_until);
+
+  if (facet_manager->CanBeDiscarded())
+    facet_managers_.erase(facet_uri);
 }
 
 void AffiliationBackend::TrimCache() {
@@ -78,6 +87,16 @@ void AffiliationBackend::TrimCache() {
 
   // TODO(engedy): Implement this. crbug.com/437865.
   NOTIMPLEMENTED();
+}
+
+FacetManager* AffiliationBackend::GetOrCreateFacetManager(
+    const FacetURI& facet_uri) {
+  if (!facet_managers_.contains(facet_uri)) {
+    scoped_ptr<FacetManager> new_manager(
+        new FacetManager(facet_uri, this, clock_.get()));
+    facet_managers_.add(facet_uri, new_manager.Pass());
+  }
+  return facet_managers_.get(facet_uri);
 }
 
 void AffiliationBackend::SendNetworkRequest() {
@@ -94,16 +113,16 @@ void AffiliationBackend::SendNetworkRequest() {
   fetcher_->StartRequest();
 }
 
-base::Time AffiliationBackend::GetCurrentTime() {
-  return clock_->Now();
-}
+void AffiliationBackend::OnSendNotification(const FacetURI& facet_uri) {
+  DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 
-base::Time AffiliationBackend::ReadLastUpdateTimeFromDatabase(
-    const FacetURI& facet_uri) {
-  AffiliatedFacetsWithUpdateTime affiliation;
-  return ReadAffiliationsFromDatabase(facet_uri, &affiliation)
-             ? affiliation.last_update_time
-             : base::Time();
+  FacetManager* facet_manager = facet_managers_.get(facet_uri);
+  if (!facet_manager)
+    return;
+  facet_manager->NotifyAtRequestedTime();
+
+  if (facet_manager->CanBeDiscarded())
+    facet_managers_.erase(facet_uri);
 }
 
 bool AffiliationBackend::ReadAffiliationsFromDatabase(
@@ -117,6 +136,16 @@ void AffiliationBackend::SignalNeedNetworkRequest() {
   if (fetcher_)
     return;
   SendNetworkRequest();
+}
+
+void AffiliationBackend::RequestNotificationAtTime(const FacetURI& facet_uri,
+                                                   base::Time time) {
+  // TODO(engedy): Avoid spamming the task runner; only ever schedule the first
+  // callback. crbug.com/437865.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&AffiliationBackend::OnSendNotification,
+                            weak_ptr_factory_.GetWeakPtr(), facet_uri),
+      time - clock_->Now());
 }
 
 void AffiliationBackend::OnFetchSucceeded(
