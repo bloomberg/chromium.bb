@@ -1794,7 +1794,8 @@ TEST_F(AutofillTableTest, SetServerProfile) {
 
 // Tests that deleting time ranges re-masks server credit cards that were
 // unmasked in that time.
-TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
+// TODO(brettw) fix flakiness and re-enable: crbug.com/465882
+TEST_F(AutofillTableTest, DISABLED_DeleteUnmaskedCard) {
   // This isn't the exact unmasked time, since the database will use the
   // current time that it is called. The code below has to be approximate.
   base::Time unmasked_time = base::Time::Now();
