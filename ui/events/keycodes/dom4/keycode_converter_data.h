@@ -391,7 +391,7 @@ USB_KEYMAP_DECLARATION {
   // http://www.usb.org/developers/hidpage/HUTRR41.pdf
   //            USB      XKB     Win     Mac
   USB_KEYMAP(0x0c006f, 0x00e9, 0x0000, 0xffff, "BrightnessUp", BRIGHTNESS_UP),
-  USB_KEYMAP(0x0c0070, 0x00ea, 0x0000, 0xffff, "BrightnessDown",
+  USB_KEYMAP(0x0c0070, 0x00e8, 0x0000, 0xffff, "BrightnessDown",
              BRIGHTNESS_DOWN),  // Display Brightness Decrement
   USB_KEYMAP(0x0c0072, 0x01b7, 0x0000, 0xffff, NULL, BRIGHTNESS_TOGGLE),
   USB_KEYMAP(0x0c0073, 0x0258, 0x0000, 0xffff, NULL, BRIGHTNESS_MINIMIUM),
