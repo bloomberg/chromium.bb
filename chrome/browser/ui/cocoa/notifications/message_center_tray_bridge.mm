@@ -8,6 +8,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -164,11 +165,39 @@ void MessageCenterTrayBridge::HideStatusItem() {
 }
 
 void MessageCenterTrayBridge::HandleMessageCenterTrayChanged() {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465858
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "465858 "
+          "MessageCenterTrayBridge::HandleMessageCenterTrayChanged::Start"));
   status_item_update_pending_ = false;
   if (CanShowStatusItem() && NeedsStatusItem()) {
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465858
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "465858 "
+            "MessageCenterTrayBridge::HandleMessageCenterTrayChanged::"
+            "ShowStatusItem"));
     ShowStatusItem();
+
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465858
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "465858 "
+            "MessageCenterTrayBridge::HandleMessageCenterTrayChanged::"
+            "UpdateStatusItem"));
     UpdateStatusItem();
   } else {
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465858
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "465858 "
+            "MessageCenterTrayBridge::HandleMessageCenterTrayChanged::"
+            "HideStatusItem"));
     HideStatusItem();
   }
 }
