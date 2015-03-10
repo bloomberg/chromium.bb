@@ -28,6 +28,7 @@ int vaMaxNumEntrypoints (VADisplay dpy);
 int vaMaxNumProfiles(VADisplay dpy);
 VAStatus vaQueryConfigEntrypoints (VADisplay dpy, VAProfile profile, VAEntrypoint *entrypoint_list, int *num_entrypoints);
 VAStatus vaQueryConfigProfiles(VADisplay dpy, VAProfile *profile_list, int *num_profiles);
+VAStatus vaQuerySurfaceAttributes(VADisplay dpy, VAConfigID config, VASurfaceAttrib *attrib_list, unsigned int *num_attribs);
 VAStatus vaRenderPicture(VADisplay dpy, VAContextID context, VABufferID *buffers, int num_buffers);
 VAStatus vaSetDisplayAttributes(VADisplay dpy, VADisplayAttribute *attr_list, int num_attributes);
 VAStatus vaSyncSurface(VADisplay dpy, VASurfaceID render_target);

@@ -6,12 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/common/gpu/media/h264_dpb.h"
-#include "content/public/common/content_switches.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/libva/va/va_enc_h264.h"
 
@@ -107,24 +105,8 @@ struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
 
 std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
-  std::vector<SupportedProfile> profiles;
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode))
-    return profiles;
-
-  std::vector<media::VideoCodecProfile> hw_profiles =
-      VaapiWrapper::GetSupportedEncodeProfiles(base::Bind(&base::DoNothing));
-
-  media::VideoEncodeAccelerator::SupportedProfile profile;
-  profile.max_resolution.SetSize(1920, 1088);
-  profile.max_framerate_numerator = kDefaultFramerate;
-  profile.max_framerate_denominator = 1;
-  for (size_t i = 0; i < hw_profiles.size(); i++) {
-    profile.profile = hw_profiles[i];
-    profiles.push_back(profile);
-  }
-  return profiles;
+  return VaapiWrapper::GetSupportedEncodeProfiles();
 }
 
 static unsigned int Log2OfPowerOf2(unsigned int x) {
