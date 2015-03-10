@@ -70,6 +70,53 @@ bool IsKeyboardPresentOnSlate() {
     return true;
   }
 
+  // If the device is docked, the user is treating the device as a PC.
+  if (GetSystemMetrics(SM_SYSTEMDOCKED) != 0)
+    return true;
+
+  // To determine whether a keyboard is present on the device, we do the
+  // following:-
+  // 1. Check whether the device supports auto rotation. If it does then
+  //    it possibly supports flipping from laptop to slate mode. If it
+  //    does not support auto rotation, then we assume it is a desktop
+  //    or a normal laptop and assume that there is a keyboard.
+
+  // 2. If the device supports auto rotation, then we get its platform role
+  //    and check the system metric SM_CONVERTIBLESLATEMODE to see if it is
+  //    being used in slate mode. If yes then we return false here to ensure
+  //    that the OSK is displayed.
+
+  // 3. If step 1 and 2 fail then we check attached keyboards and return true
+  //    if we find ACPI\* or HID\VID* keyboards.
+
+  typedef BOOL (WINAPI* GetAutoRotationState)(PAR_STATE state);
+
+  GetAutoRotationState get_rotation_state =
+      reinterpret_cast<GetAutoRotationState>(::GetProcAddress(
+          GetModuleHandle(L"user32.dll"), "GetAutoRotationState"));
+
+  if (get_rotation_state) {
+    AR_STATE auto_rotation_state = AR_ENABLED;
+    get_rotation_state(&auto_rotation_state);
+    if ((auto_rotation_state & AR_NOSENSOR) ||
+        (auto_rotation_state & AR_NOT_SUPPORTED)) {
+      // If there is no auto rotation sensor or rotation is not supported in
+      // the current configuration, then we can assume that this is a desktop
+      // or a traditional laptop.
+      return true;
+    }
+  }
+
+  // Check if the device is being used as a laptop or a tablet. This can be
+  // checked by first checking the role of the device and then the
+  // corresponding system metric (SM_CONVERTIBLESLATEMODE). If it is being used
+  // as a tablet then we want the OSK to show up.
+  POWER_PLATFORM_ROLE role = PowerDeterminePlatformRole();
+
+  if (((role == PlatformRoleMobile) || (role == PlatformRoleSlate)) &&
+       (GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0))
+    return false;
+
   const GUID KEYBOARD_CLASS_GUID =
       { 0x4D36E96B, 0xE325,  0x11CE,
           { 0xBF, 0xC1, 0x08, 0x00, 0x2B, 0xE1, 0x03, 0x18 } };
@@ -97,10 +144,9 @@ bool IsKeyboardPresentOnSlate() {
                                         MAX_DEVICE_ID_LEN,
                                         0);
     if (status == CR_SUCCESS) {
-      // To reduce the scope of the hack we only look for PNP, MSF and HID
-      // keyboards.
-      if (StartsWith(device_id, L"ACPI\\PNP", false) ||
-          StartsWith(device_id, L"ACPI\\MSF", false) ||
+      // To reduce the scope of the hack we only look for ACPI and HID\\VID
+      // prefixes in the keyboard device ids.
+      if (StartsWith(device_id, L"ACPI", false) ||
           StartsWith(device_id, L"HID\\VID", false)) {
         keyboard_count++;
       }
