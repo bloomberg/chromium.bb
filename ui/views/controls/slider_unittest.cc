@@ -282,6 +282,9 @@ TEST_F(HorizontalSliderTest, UpdateFromClickRTLHorizontal) {
   EXPECT_EQ(0.0f, slider()->value());
 }
 
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX) || defined(USE_AURA)
+
 // Test the slider location after a tap gesture.
 TEST_F(HorizontalSliderTest, SliderValueForTapGesture) {
   // Tap below the minimum.
@@ -378,5 +381,7 @@ TEST_F(HorizontalSliderTest, SliderListenerEventsForMultiFingerScrollGesture) {
   EXPECT_EQ(slider(), slider_listener().last_drag_started_sender());
   EXPECT_EQ(slider(), slider_listener().last_drag_ended_sender());
 }
+
+#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
 }  // namespace views

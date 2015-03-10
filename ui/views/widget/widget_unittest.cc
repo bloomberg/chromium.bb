@@ -1742,15 +1742,15 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
   EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
 }
 
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX) || defined(USE_AURA)
+
 namespace {
 
 // ui::EventHandler which handles all mouse press events.
 class MousePressEventConsumer : public ui::EventHandler {
  public:
-  explicit MousePressEventConsumer() {
-  }
-
-  ~MousePressEventConsumer() override {}
+  MousePressEventConsumer() {}
 
  private:
   // ui::EventHandler:
@@ -1787,6 +1787,8 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
 
   widget->CloseNow();
 }
+
+#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
 // Used by SingleWindowClosing to count number of times WindowClosing() has
 // been invoked.
@@ -1905,6 +1907,9 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
   // Yay we did not crash!
 }
 
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX) || defined(USE_AURA)
+
 TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
   Widget* widget = new Widget;
   Widget::InitParams params =
@@ -1924,6 +1929,8 @@ TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
 
   // Yay we did not crash!
 }
+
+#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
 // See description of RunGetNativeThemeFromDestructor() for details.
 class GetNativeThemeFromDestructorView : public WidgetDelegateView {
@@ -2107,7 +2114,13 @@ TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
 
   ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
   generator.MoveMouseTo(10, 10);
+
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+  generator.ClickLeftButton();
+#else
   generator.PressTouch();
+#endif
   widget.reset();
 }
 

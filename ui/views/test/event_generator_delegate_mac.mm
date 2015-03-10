@@ -243,6 +243,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   // Overridden from ui::EventHandler (via ui::EventTarget):
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Overridden from ui::EventSource:
   ui::EventProcessor* GetEventProcessor() override { return this; }
@@ -352,6 +353,10 @@ void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   EmulateSendEvent(window_, ns_event);
+}
+
+void EventGeneratorDelegateMac::OnTouchEvent(ui::TouchEvent* event) {
+  NOTREACHED() << "Touchscreen events not supported on Chrome Mac.";
 }
 
 void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,

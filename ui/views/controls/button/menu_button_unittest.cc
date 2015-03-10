@@ -266,22 +266,6 @@ TEST_F(MenuButtonTest, ActivateNonDropDownOnMouseClick) {
   EXPECT_EQ(Button::STATE_HOVERED, button_listener.last_sender_state());
 }
 
-// Tests if the listener is notified correctly when a gesture tap happens on a
-// MenuButton that has a regular ButtonListener.
-TEST_F(MenuButtonTest, ActivateNonDropDownOnGestureTap) {
-  TestButtonListener button_listener;
-  CreateMenuButtonWithButtonListener(&button_listener);
-
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-  generator.GestureTapAt(gfx::Point(10, 10));
-
-  // Check that MenuButton has notified the listener on gesture tap event, while
-  // it was in hovered state.
-  EXPECT_EQ(button(), button_listener.last_sender());
-  EXPECT_EQ(ui::ET_GESTURE_TAP, button_listener.last_event_type());
-  EXPECT_EQ(Button::STATE_HOVERED, button_listener.last_sender_state());
-}
-
 // Tests if the listener is notified correctly when a mouse click happens on a
 // MenuButton that has a MenuButtonListener.
 TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
@@ -292,21 +276,6 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
 
   generator.set_current_location(gfx::Point(10, 10));
   generator.ClickLeftButton();
-
-  // Check that MenuButton has notified the listener, while it was in pressed
-  // state.
-  EXPECT_EQ(button(), menu_button_listener.last_source());
-  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
-}
-
-// Tests if the listener is notified correctly when a gesture tap happens on a
-// MenuButton that has a MenuButtonListener.
-TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
-  TestMenuButtonListener menu_button_listener;
-  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
-
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-  generator.GestureTapAt(gfx::Point(10, 10));
 
   // Check that MenuButton has notified the listener, while it was in pressed
   // state.
@@ -395,6 +364,7 @@ TEST_F(MenuButtonTest, DraggableMenuButtonActivatesOnRelease) {
 }
 
 #if defined(USE_AURA)
+
 // Tests that the MenuButton does not become pressed if it can be dragged, and a
 // DragDropClient is processing the events.
 TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
@@ -413,7 +383,42 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
   EXPECT_EQ(nullptr, menu_button_listener.last_source());
   EXPECT_EQ(Button::STATE_NORMAL, menu_button_listener.last_source_state());
 }
-#endif
+
+#endif  // USE_AURA
+
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX) || defined(USE_AURA)
+
+// Tests if the listener is notified correctly when a gesture tap happens on a
+// MenuButton that has a regular ButtonListener.
+TEST_F(MenuButtonTest, ActivateNonDropDownOnGestureTap) {
+  TestButtonListener button_listener;
+  CreateMenuButtonWithButtonListener(&button_listener);
+
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  generator.GestureTapAt(gfx::Point(10, 10));
+
+  // Check that MenuButton has notified the listener on gesture tap event, while
+  // it was in hovered state.
+  EXPECT_EQ(button(), button_listener.last_sender());
+  EXPECT_EQ(ui::ET_GESTURE_TAP, button_listener.last_event_type());
+  EXPECT_EQ(Button::STATE_HOVERED, button_listener.last_sender_state());
+}
+
+// Tests if the listener is notified correctly when a gesture tap happens on a
+// MenuButton that has a MenuButtonListener.
+TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  generator.GestureTapAt(gfx::Point(10, 10));
+
+  // Check that MenuButton has notified the listener, while it was in pressed
+  // state.
+  EXPECT_EQ(button(), menu_button_listener.last_source());
+  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
+}
 
 // Tests that the button enters a hovered state upon a tap down, before becoming
 // pressed at activation.
@@ -444,5 +449,7 @@ TEST_F(MenuButtonTest, TouchFeedbackDuringTapCancel) {
   EXPECT_EQ(Button::STATE_NORMAL, button()->state());
   EXPECT_EQ(nullptr, menu_button_listener.last_source());
 }
+
+#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
 }  // namespace views
