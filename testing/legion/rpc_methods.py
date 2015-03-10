@@ -41,6 +41,10 @@ class RPCMethods(object):
     logging.info('Echoing %s', message)
     return 'echo %s' % str(message)
 
+  def AbsPath(self, path):
+    """Returns the absolute path."""
+    return os.path.abspath(path)
+
   def Quit(self):
     """Call _server.shutdown in another thread.
 
@@ -58,6 +62,10 @@ class Subprocess(object):
   This non-blocking subprocess allows the caller to continue operating while
   also able to interact with this subprocess based on a key returned to
   the caller at the time of creation.
+
+  Creation args are set via Set* methods called after calling Process but
+  before calling Start. This is due to a limitation of the XML-RPC
+  implementation not supporting keyword arguments.
   """
 
   _processes = {}
@@ -65,23 +73,38 @@ class Subprocess(object):
   _creation_lock = threading.Lock()
 
   def __init__(self, cmd):
-    self.proc = subprocess42.Popen(cmd, stdout=subprocess42.PIPE,
-                                   stderr=subprocess42.PIPE)
     self.stdout = ''
     self.stderr = ''
+    self.cmd = cmd
+    self.proc = None
+    self.cwd = None
+    self.verbose = False
+    self.detached = False
     self.data_lock = threading.Lock()
-    threading.Thread(target=self._run).start()
 
-  def _run(self):
+  def __str__(self):
+    return '%r, cwd=%r, verbose=%r, detached=%r' % (
+        self.cmd, self.cwd, self.verbose, self.detached)
+
+  def _reader(self):
     for pipe, data in self.proc.yield_any():
       with self.data_lock:
         if pipe == 'stdout':
           self.stdout += data
+          if self.verbose:
+            sys.stdout.write(data)
         else:
           self.stderr += data
+          if self.verbose:
+            sys.stderr.write(data)
 
   @classmethod
-  def Popen(cls, cmd):
+  def KillAll(cls):
+    for key in cls._processes:
+      cls.Kill(key)
+
+  @classmethod
+  def Process(cls, cmd):
     with cls._creation_lock:
       key = 'Process%d' % cls._process_next_id
       cls._process_next_id += 1
@@ -90,18 +113,50 @@ class Subprocess(object):
     cls._processes[key] = process
     return key
 
+  def _Start(self):
+    logging.info('Starting process %s', self)
+    self.proc = subprocess42.Popen(self.cmd, stdout=subprocess42.PIPE,
+                                   stderr=subprocess42.PIPE,
+                                   detached=self.detached, cwd=self.cwd)
+    threading.Thread(target=self._reader).start()
+
+  @classmethod
+  def Start(cls, key):
+    cls._processes[key]._Start()
+
+  @classmethod
+  def SetCwd(cls, key, cwd):
+    """Sets the process's cwd."""
+    logging.debug('Setting %s cwd to %s', key, cwd)
+    cls._processes[key].cwd = cwd
+
+  @classmethod
+  def SetDetached(cls, key):
+    """Creates a detached process."""
+    logging.debug('Setting %s to run detached', key)
+    cls._processes[key].detached = True
+
+  @classmethod
+  def SetVerbose(cls, key):
+    """Sets the stdout and stderr to be emitted locally."""
+    logging.debug('Setting %s to be verbose', key)
+    cls._processes[key].verbose = True
+
   @classmethod
   def Terminate(cls, key):
-    logging.debug('Terminating and deleting process %s', key)
-    return cls._processes.pop(key).proc.terminate()
+    logging.debug('Terminating process %s', key)
+    cls._processes[key].proc.terminate()
 
   @classmethod
   def Kill(cls, key):
-    logging.debug('Killing and deleting process %s', key)
-    return cls._processes.pop(key).proc.kill()
+    logging.debug('Killing process %s', key)
+    cls._processes[key].proc.kill()
 
   @classmethod
   def Delete(cls, key):
+    if cls.GetReturncode(key) is None:
+      logging.warning('Killing %s before deleting it', key)
+      cls.Kill(key)
     logging.debug('Deleting process %s', key)
     cls._processes.pop(key)
 
@@ -137,6 +192,14 @@ class Subprocess(object):
       stderr = proc.stderr
       proc.stderr = ''
     return stderr
+
+  @classmethod
+  def ReadOutput(cls, key):
+    """Returns the (stdout, stderr) since the last Read* call.
+
+    See ReadStdout for additional details.
+    """
+    return cls.ReadStdout(key), cls.ReadStderr(key)
 
   @classmethod
   def Wait(cls, key):

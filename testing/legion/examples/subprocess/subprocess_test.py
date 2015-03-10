@@ -32,7 +32,7 @@ class ExampleTestController(test_controller.TestController):
 
     self.task = self.CreateNewTask(
         isolated_hash=args.task_hash,
-        dimensions={'os': 'Ubuntu-14.04', 'pool': 'Legion'},
+        dimensions={'os': 'Ubuntu-14.04', 'pool': 'Chromoting'},
         idle_timeout_secs=90, connection_timeout_secs=90,
         verbosity=logging.DEBUG)
     self.task.Create()
@@ -47,8 +47,10 @@ class ExampleTestController(test_controller.TestController):
   def TestMultipleProcesses(self):
     start = time.time()
 
-    sleep20 = self.task.rpc.subprocess.Popen(['sleep', '20'])
-    sleep10 = self.task.rpc.subprocess.Popen(['sleep', '10'])
+    sleep20 = self.task.rpc.subprocess.Process(['sleep', '20'])
+    self.task.rpc.subprocess.Start(sleep20)
+    sleep10 = self.task.rpc.subprocess.Process(['sleep', '10'])
+    self.task.rpc.subprocess.Start(sleep10)
 
     self.task.rpc.subprocess.Wait(sleep10)
     elapsed = time.time() - start
@@ -63,16 +65,20 @@ class ExampleTestController(test_controller.TestController):
 
   def TestTerminate(self):
     start = time.time()
-    proc = self.task.rpc.subprocess.Popen(['sleep', '20'])
-    self.task.rpc.subprocess.Terminate(proc)  # Implicitly deleted
+    proc = self.task.rpc.subprocess.Process(['sleep', '20'])
+    self.task.rpc.subprocess.Start(proc)
+    self.task.rpc.subprocess.Terminate(proc)
     try:
       self.task.rpc.subprocess.Wait(proc)
     except xmlrpclib.Fault:
       pass
+    finally:
+      self.task.rpc.subprocess.Delete(proc)
     assert time.time() - start < 20
 
   def TestLs(self):
-    proc = self.task.rpc.subprocess.Popen(['ls'])
+    proc = self.task.rpc.subprocess.Process(['ls'])
+    self.task.rpc.subprocess.Start(proc)
     self.task.rpc.subprocess.Wait(proc)
     assert self.task.rpc.subprocess.GetReturncode(proc) == 0
     assert 'task.isolate' in self.task.rpc.subprocess.ReadStdout(proc)
