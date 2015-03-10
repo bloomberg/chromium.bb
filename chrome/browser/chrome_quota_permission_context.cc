@@ -281,6 +281,16 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     return;
   }
 
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (!infobar_service) {
+    // The tab has no infobar service.
+    LOG(WARNING) << "Attempt to request quota from a background page: "
+                 << render_process_id << "," << params.render_view_id;
+    DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
+    return;
+  }
+
   if (PermissionBubbleManager::Enabled()) {
     PermissionBubbleManager* bubble_manager =
         PermissionBubbleManager::FromWebContents(web_contents);
@@ -294,15 +304,6 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     return;
   }
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (!infobar_service) {
-    // The tab has no infobar service.
-    LOG(WARNING) << "Attempt to request quota from a background page: "
-                 << render_process_id << "," << params.render_view_id;
-    DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
-    return;
-  }
   RequestQuotaInfoBarDelegate::Create(
       infobar_service, this, params.origin_url, params.requested_size,
       Profile::FromBrowserContext(web_contents->GetBrowserContext())->
