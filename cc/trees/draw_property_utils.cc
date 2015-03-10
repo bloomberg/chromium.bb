@@ -38,7 +38,7 @@ void CalculateVisibleRects(
       const TransformNode* clip_transform_node =
           transform_tree.Node(clip_node->data.transform_id);
       const TransformNode* target_node =
-          transform_tree.Node(transform_node->data.target_id);
+          transform_tree.Node(transform_node->data.content_target_id);
 
       gfx::Transform clip_to_target;
       gfx::Transform content_to_target;

@@ -8850,5 +8850,59 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
             grandchild->visible_rect_from_property_trees());
 }
 
+TEST_F(LayerTreeHostCommonTest, CombineClipsUsingContentTarget) {
+  // In the following layer tree, the layer |box|'s render target is |surface|.
+  // |surface| also creates a transform node. We want to combine clips for |box|
+  // in the space of its target (i.e., |surface|), not its target's target. This
+  // test ensures that happens.
+
+  gfx::Transform rotate;
+  rotate.Rotate(5);
+  gfx::Transform identity;
+
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(2500, 1500), true,
+                               false);
+
+  scoped_refptr<Layer> frame_clip = Layer::Create();
+  SetLayerPropertiesForTesting(frame_clip.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(2500, 1500), true,
+                               false);
+  frame_clip->SetMasksToBounds(true);
+
+  scoped_refptr<Layer> rotated = Layer::Create();
+  SetLayerPropertiesForTesting(rotated.get(), rotate,
+                               gfx::Point3F(1250, 250, 0), gfx::PointF(),
+                               gfx::Size(2500, 500), true, false);
+
+  scoped_refptr<Layer> surface = Layer::Create();
+  SetLayerPropertiesForTesting(surface.get(), rotate, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(2500, 500), true,
+                               false);
+  surface->SetOpacity(0.5);
+
+  scoped_refptr<LayerWithForcedDrawsContent> container =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  SetLayerPropertiesForTesting(container.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(300, 300), true, false);
+
+  scoped_refptr<LayerWithForcedDrawsContent> box =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  SetLayerPropertiesForTesting(box.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+
+  root->AddChild(frame_clip);
+  frame_clip->AddChild(rotated);
+  rotated->AddChild(surface);
+  surface->AddChild(container);
+  surface->AddChild(box);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+}
+
 }  // namespace
 }  // namespace cc
