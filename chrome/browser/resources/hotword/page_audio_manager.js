@@ -36,6 +36,7 @@ cr.define('hotword', function() {
     this.tabUpdatedListener_ = this.handleUpdatedTab_.bind(this);
     this.tabActivatedListener_ = this.handleActivatedTab_.bind(this);
     this.windowFocusChangedListener_ = this.handleChangedWindow_.bind(this);
+    this.messageListener_ = this.handleMessageFromPage_.bind(this);
 
     // Need to setup listeners on startup, otherwise events that caused the
     // event page to start up, will be lost.
@@ -43,6 +44,7 @@ cr.define('hotword', function() {
 
     this.stateManager_.onStatusChanged.addListener(function() {
       this.updateListeners_();
+      this.updateTabState_();
     }.bind(this));
   };
 
@@ -227,7 +229,7 @@ cr.define('hotword', function() {
     },
 
     /**
-     * Handles a tab that was just became active.
+     * Handles a tab that has just become active.
      * @param {{tabId: number}} info Information about the activated tab.
      * @private
      */
@@ -348,7 +350,7 @@ cr.define('hotword', function() {
 
     /**
      * Starts hotwording if the currently active tab is eligible for hotwording
-     * (i.e. google.com).
+     * (e.g. google.com).
      * @private
      */
     startHotwordingIfEligible_: function() {
@@ -408,6 +410,71 @@ cr.define('hotword', function() {
       }
     },
 
+
+    /**
+     * Handles a message directly from the NTP/HP/SERP.
+     * @param {!Object} request Message from the sender.
+     * @param {!MessageSender} sender Information about the sender.
+     * @param {!function(HotwordStatus)} sendResponse Callback to respond
+     *     to sender.
+     * @return {boolean} Whether to maintain the port open to call sendResponse.
+     * @private
+     */
+    handleMessageFromPage_: function(request, sender, sendResponse) {
+      switch (request.type) {
+        case CommandFromPage.PAGE_WAKEUP:
+          if (sender.tab && this.isEligibleUrl_(sender.tab.url)) {
+            chrome.hotwordPrivate.getStatus(
+                this.statusDone_.bind(
+                    this,
+                    request.tab || sender.tab || {incognito: true},
+                    sendResponse));
+            return true;
+          }
+          break;
+        case CommandFromPage.CLICKED_OPTIN:
+          chrome.hotwordPrivate.setEnabled(true);
+          break;
+        // User has explicitly clicked 'no thanks'.
+        case CommandFromPage.CLICKED_NO_OPTIN:
+          chrome.hotwordPrivate.setEnabled(false);
+          break;
+      }
+      return false;
+    },
+
+    /**
+     * Sends the response to the tab.
+     * @param {Tab} tab The tab that the request was sent from.
+     * @param {function(HotwordStatus)} sendResponse Callback function to
+     *     respond to sender.
+     * @param {HotwordStatus} hotwordStatus Status of the hotword extension.
+     * @private
+     */
+    statusDone_: function(tab, sendResponse, hotwordStatus) {
+      var response = {'doNotShowOptinMessage': true};
+
+      if (!tab.incognito && hotwordStatus.available &&
+          !hotwordStatus.enabledSet) {
+        response = hotwordStatus;
+      }
+
+      try {
+        sendResponse(response);
+      } catch (err) {
+        // Suppress the exception thrown by sendResponse() when the page doesn't
+        // specify a response callback in the call to
+        // chrome.runtime.sendMessage().
+        // Unfortunately, there doesn't appear to be a way to detect one-way
+        // messages without explicitly saying in the message itself. This
+        // message is defined as a constant in
+        // extensions/renderer/messaging_bindings.cc
+        if (err.message == 'Attempting to use a disconnected port object')
+          return;
+        throw err;
+      }
+    },
+
     /**
      * Set up event listeners.
      * @private
@@ -422,6 +489,10 @@ cr.define('hotword', function() {
       chrome.tabs.onActivated.addListener(this.tabActivatedListener_);
       chrome.windows.onFocusChanged.addListener(
           this.windowFocusChangedListener_);
+      if (chrome.runtime.onMessage.hasListener(this.messageListener_))
+        return;
+      chrome.runtime.onMessageExternal.addListener(
+          this.messageListener_);
     },
 
     /**
@@ -435,6 +506,8 @@ cr.define('hotword', function() {
       chrome.tabs.onActivated.removeListener(this.tabActivatedListener_);
       chrome.windows.onFocusChanged.removeListener(
           this.windowFocusChangedListener_);
+      // Don't remove the Message listener, as we want them listening all
+      // the time,
     },
 
     /**

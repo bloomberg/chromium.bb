@@ -55,6 +55,28 @@
     "unlimitedStorage"
   ],
 
+  "externally_connectable": {
+    "matches": [
+      "*://*.google.at/*",
+      "*://*.google.ca/*",
+      "*://*.google.com/*",
+      "*://*.google.com.au/*",
+      "*://*.google.com.mx/*",
+      "*://*.google.com.br/*",
+      "*://*.google.co.jp/*",
+      "*://*.google.co.kr/*",
+      "*://*.google.co.nz/*",
+      "*://*.google.co.uk/*",
+      "*://*.google.co.za/*",
+      "*://*.google.de/*",
+      "*://*.google.es/*",
+      "*://*.google.fr/*",
+      "*://*.google.it/*",
+      "*://*.google.ru/*",
+      "chrome://newtab/"
+    ]
+  },
+
   "import": [
     {
       "id": "lccekmodgklaepjeofjdjpbminllajkg"

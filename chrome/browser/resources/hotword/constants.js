@@ -141,8 +141,8 @@ var CommandToPage = {
 };
 
 /**
- * Messages sent from the Google page to the injected scripts
- * and then passed to the extension.
+ * Messages sent from the Google page to the extension or to the
+ * injected script and then passed to the extension.
  * @enum {string}
  */
 var CommandFromPage = {
@@ -155,7 +155,14 @@ var CommandFromPage = {
   CLICKED_RESUME: 'hcc',
   CLICKED_RESTART: 'hcr',
   CLICKED_DEBUG: 'hcd',
-  WAKE_UP_HELPER: 'wuh'
+  WAKE_UP_HELPER: 'wuh',
+  // Command specifically for the opt-in promo below this line.
+  // User has explicitly clicked 'no'.
+  CLICKED_NO_OPTIN: 'hcno',
+  // User has opted in.
+  CLICKED_OPTIN: 'hco',
+  // User clicked on the microphone.
+  PAGE_WAKEUP: 'wu'
 };
 
 /**
