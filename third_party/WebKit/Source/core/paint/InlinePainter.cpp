@@ -31,21 +31,20 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!styleToUse.hasOutline())
         return;
 
-    LayoutRect bounds;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        // FIXME: Use tighter bounds.
-        LayoutBlock* cb = m_layoutInline.containingBlock();
-        bounds = cb->visualOverflowRect();
-        bounds.moveBy(paintOffset);
-    }
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
-    if (recorder.canUseCachedDrawing())
-        return;
-
     if (styleToUse.outlineStyleIsAuto()) {
         if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutInline)) {
+            Vector<LayoutRect> focusRingRects;
+            m_layoutInline.addFocusRingRects(focusRingRects, paintOffset);
+            LayoutRect focusRingBoundingRect;
+            for (const auto& rect : focusRingRects)
+                focusRingBoundingRect.unite(rect);
+
+            LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, focusRingBoundingRect);
+            if (recorder.canUseCachedDrawing())
+                return;
+
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
-            ObjectPainter(m_layoutInline).paintFocusRing(paintInfo, paintOffset, styleToUse);
+            ObjectPainter(m_layoutInline).paintFocusRing(paintInfo, styleToUse, focusRingRects);
         }
         return;
     }
@@ -66,6 +65,15 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
 
     Color outlineColor = m_layoutInline.resolveColor(styleToUse, CSSPropertyOutlineColor);
     bool useTransparencyLayer = outlineColor.hasAlpha();
+
+    LayoutRect bounds;
+    for (const auto& rect : rects)
+        bounds.unite(rect);
+    bounds.moveBy(paintOffset);
+
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
+    if (recorder.canUseCachedDrawing())
+        return;
 
     GraphicsContext* graphicsContext = paintInfo.context;
     if (useTransparencyLayer) {

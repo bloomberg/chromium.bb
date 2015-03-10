@@ -15,10 +15,8 @@
 
 namespace blink {
 
-void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutStyle& style)
+void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const LayoutStyle& style, const Vector<LayoutRect>& focusRingRects)
 {
-    Vector<LayoutRect> focusRingRects;
-    m_layoutObject.addFocusRingRects(focusRingRects, paintOffset);
     ASSERT(style.outlineStyleIsAuto());
     Vector<IntRect> focusRingIntRects;
     for (size_t i = 0; i < focusRingRects.size(); ++i)
@@ -39,7 +37,9 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
     if (styleToUse.outlineStyleIsAuto()) {
         if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
-            paintFocusRing(paintInfo, objectBounds.location(), styleToUse);
+            Vector<LayoutRect> focusRingRects;
+            m_layoutObject.addFocusRingRects(focusRingRects, objectBounds.location());
+            paintFocusRing(paintInfo, styleToUse, focusRingRects);
         }
         return;
     }

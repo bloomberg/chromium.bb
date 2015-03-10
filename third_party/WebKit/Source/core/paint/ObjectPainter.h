@@ -6,6 +6,7 @@
 #define ObjectPainter_h
 
 #include "core/layout/style/LayoutStyleConstants.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -22,7 +23,7 @@ public:
     ObjectPainter(LayoutObject& layoutObject) : m_layoutObject(layoutObject) { }
 
     void paintOutline(const PaintInfo&, const LayoutRect& objectBounds, const LayoutRect& visualOverflowBounds);
-    void paintFocusRing(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutStyle&);
+    void paintFocusRing(const PaintInfo&, const LayoutStyle&, const Vector<LayoutRect>& focusRingRects);
 
     static void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
 private:
