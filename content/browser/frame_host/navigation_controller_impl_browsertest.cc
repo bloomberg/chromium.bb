@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "window.open('" + page_url + "', '_blank')"));
   Shell* shell2 = observer.GetShell();
-  WaitForLoadStop(shell2->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(shell2->web_contents()));
 
   EXPECT_EQ(1, shell2->web_contents()->GetController().GetEntryCount());
   EXPECT_EQ(1, RendererHistoryLength(shell2));
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 namespace {
 
-struct FrameNavigateParamsCapturer : public WebContentsObserver {
+class FrameNavigateParamsCapturer : public WebContentsObserver {
  public:
   // Observes navigation for the specified |node|.
   explicit FrameNavigateParamsCapturer(FrameTreeNode* node)
@@ -202,6 +202,11 @@ struct FrameNavigateParamsCapturer : public WebContentsObserver {
 
     params_ = params;
     details_ = details;
+    if (!web_contents()->IsLoading())
+      message_loop_runner_->Quit();
+  }
+
+  void DidStopLoading(RenderViewHost* render_view_host) override {
     message_loop_runner_->Quit();
   }
 
@@ -218,7 +223,7 @@ struct FrameNavigateParamsCapturer : public WebContentsObserver {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
-struct LoadCommittedCapturer : public WebContentsObserver {
+class LoadCommittedCapturer : public WebContentsObserver {
  public:
   // Observes the load commit for the specified |node|.
   explicit LoadCommittedCapturer(FrameTreeNode* node)
@@ -263,6 +268,11 @@ struct LoadCommittedCapturer : public WebContentsObserver {
       return;
 
     transition_type_ = transition_type;
+    if (!web_contents()->IsLoading())
+      message_loop_runner_->Quit();
+  }
+
+  void DidStopLoading(RenderViewHost* render_view_host) override {
     message_loop_runner_->Quit();
   }
 
@@ -278,9 +288,261 @@ struct LoadCommittedCapturer : public WebContentsObserver {
 
 }  // namespace
 
-// Verify that the distinction between manual and auto subframes is properly set
-// for subframe navigations. TODO(avi): It's rather bogus that the same info is
-// in two different enums; http://crbug.com/453555.
+// Various tests for navigation type classifications. TODO(avi): It's rather
+// bogus that the same info is in two different enums; http://crbug.com/453555.
+
+// Verify that navigations for NAVIGATION_TYPE_NEW_PAGE are correctly
+// classified.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_NewPage) {
+  NavigateToURL(shell(), GURL("about:blank"));
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  {
+    // Simple load.
+    FrameNavigateParamsCapturer capturer(root);
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/page_with_links.html"));
+    NavigateFrameToURL(root, frame_url);
+    capturer.Wait();
+    // TODO(avi,creis): Why is this (and quite a few others below) a "link"
+    // transition? Lots of these transitions should be cleaned up.
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+  }
+
+  {
+    // Load via a fragment link click.
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script = "document.getElementById('fraglink').click()";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+  }
+
+  {
+    // Load via link click.
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script = "document.getElementById('thelink').click()";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+  }
+
+  {
+    // location.assign().
+    FrameNavigateParamsCapturer capturer(root);
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_2.html"));
+    std::string script = "location.assign('" + frame_url.spec() + "')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+  }
+
+  {
+    // history.pushState().
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script =
+        "history.pushState({}, 'page 1', 'simple_page_1.html')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+  }
+}
+
+// Verify that navigations for NAVIGATION_TYPE_EXISTING_PAGE are correctly
+// classified.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_ExistingPage) {
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  NavigateToURL(shell(), url1);
+  GURL url2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  NavigateToURL(shell(), url2);
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  {
+    // Back.
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->web_contents()->GetController().GoBack();
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
+              | ui::PAGE_TRANSITION_FORWARD_BACK
+              | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  {
+    // Forward.
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->web_contents()->GetController().GoForward();
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
+              | ui::PAGE_TRANSITION_FORWARD_BACK
+              | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  {
+    // Reload from the browser side.
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->web_contents()->GetController().Reload(false);
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  {
+    // Reload from the renderer side.
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(),
+                                       "location.reload()"));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  {
+    // location.replace().
+    FrameNavigateParamsCapturer capturer(root);
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_1.html"));
+    std::string script = "location.replace('" + frame_url.spec() + "')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+}
+
+// Verify that navigations for NAVIGATION_TYPE_SAME_PAGE are correctly
+// classified.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_SamePage) {
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  NavigateToURL(shell(), url1);
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  {
+    // Simple load.
+    FrameNavigateParamsCapturer capturer(root);
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_1.html"));
+    NavigateFrameToURL(root, frame_url);
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_SAME_PAGE, capturer.details().type);
+  }
+}
+
+// Verify that navigations for NAVIGATION_TYPE_IN_PAGE are correctly
+// classified.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_InPage) {
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  NavigateToURL(shell(), url1);
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  {
+    // history.replaceState().
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script =
+        "history.replaceState({}, 'page 1', 'simple_page_2.html')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+  }
+
+  // Back and forward across a fragment navigation.
+
+  GURL url2(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_links.html"));
+  NavigateToURL(shell(), url2);
+  std::string script = "document.getElementById('fraglink').click()";
+  EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  {
+    // Back.
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->web_contents()->GetController().GoBack();
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
+              | ui::PAGE_TRANSITION_FORWARD_BACK
+              | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+  }
+
+  {
+    // Forward.
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->web_contents()->GetController().GoForward();
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FORWARD_BACK,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+  }
+
+  // Back and forward across a pushState-created navigation.
+
+  NavigateToURL(shell(), url1);
+  script = "history.pushState({}, 'page 2', 'simple_page_2.html')";
+  EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  {
+    // Back.
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->web_contents()->GetController().GoBack();
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
+              | ui::PAGE_TRANSITION_FORWARD_BACK
+              | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+  }
+
+  {
+    // Forward.
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->web_contents()->GetController().GoForward();
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FORWARD_BACK,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+  }
+}
+
+// Verify that navigations for NAVIGATION_TYPE_NEW_SUBFRAME and
+// NAVIGATION_TYPE_AUTO_SUBFRAME are properly classified.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NavigationTypeClassification_NewAndAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -296,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_NE(nullptr, root->child_at(0));
 
   {
-    // Navigate the iframe to a new URL; expect a manual subframe transition.
+    // Simple load.
     FrameNavigateParamsCapturer capturer(root->child_at(0));
     GURL frame_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_1.html"));
@@ -308,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Do a history navigation; expect an auto subframe transition.
+    // Back.
     FrameNavigateParamsCapturer capturer(root->child_at(0));
     shell()->web_contents()->GetController().GoBack();
     capturer.Wait();
@@ -317,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Do a history navigation; expect an auto subframe transition.
+    // Forward.
     FrameNavigateParamsCapturer capturer(root->child_at(0));
     shell()->web_contents()->GetController().GoForward();
     capturer.Wait();
@@ -326,10 +588,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Navigate the iframe to a new URL; expect a manual subframe transition.
+    // Simple load.
     FrameNavigateParamsCapturer capturer(root->child_at(0));
     GURL frame_url(embedded_test_server()->GetURL(
-        "/navigation_controller/simple_page_2.html"));
+        "/navigation_controller/page_with_links.html"));
     NavigateFrameToURL(root->child_at(0), frame_url);
     capturer.Wait();
     EXPECT_EQ(ui::PAGE_TRANSITION_MANUAL_SUBFRAME,
@@ -338,7 +600,19 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Use location.assign(); expect a manual subframe transition.
+    // Load via a fragment link click.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    std::string script = "document.getElementById('fraglink').click()";
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                                       script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_MANUAL_SUBFRAME,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.details().type);
+  }
+
+  {
+    // location.assign().
     FrameNavigateParamsCapturer capturer(root->child_at(0));
     GURL frame_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_1.html"));
@@ -352,8 +626,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Use location.replace(); expect an auto subframe transition. (Replacements
-    // aren't "navigation" so we only see the frame load committing.)
+    // location.replace().
     LoadCommittedCapturer capturer(root->child_at(0));
     GURL frame_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_2.html"));
@@ -365,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Use history.pushState(); expect a manual subframe transition.
+    // history.pushState().
     FrameNavigateParamsCapturer capturer(root->child_at(0));
     std::string script =
         "history.pushState({}, 'page 1', 'simple_page_1.html')";
@@ -378,9 +651,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Use history.replaceState(); expect an auto subframe transition.
-    // (Replacements aren't "navigation" so we only see the frame load
-    // committing.)
+    // history.replaceState().
     LoadCommittedCapturer capturer(root->child_at(0));
     std::string script =
         "history.replaceState({}, 'page 2', 'simple_page_2.html')";
@@ -391,8 +662,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Reload the subframe; expect an auto subframe transition. (Reloads aren't
-    // "navigation" so we only see the frame load committing.)
+    // Reload.
     LoadCommittedCapturer capturer(root->child_at(0));
     EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
                                        "location.reload()"));
@@ -401,8 +671,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Create an iframe; expect an auto subframe transition. (Initial frame
-    // creation isn't "navigation" so we only see the frame load committing.)
+    // Create an iframe.
     LoadCommittedCapturer capturer(shell()->web_contents());
     GURL frame_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_1.html"));

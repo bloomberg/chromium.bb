@@ -13,11 +13,15 @@ enum NavigationType {
   // Unknown type.
   NAVIGATION_TYPE_UNKNOWN,
 
-  // A new page was navigated in the main frame.
+  // A new page was navigated to in the main frame. This covers all cases where
+  // the main frame navigated and a new navigation entry was created. This means
+  // cases like navigations to a hash on the same page are NEW_PAGE, not
+  // IN_PAGE. (Navigation entries created by subframe navigations are
+  // NEW_SUBFRAME.)
   NAVIGATION_TYPE_NEW_PAGE,
 
-  // Renavigating to an existing navigation entry. The entry is guaranteed to
-  // exist in the list, or else it would be a new page or IGNORE navigation.
+  // Renavigating to an existing navigation entry. This is the case for history
+  // navigation, reloads, and location.replace().
   NAVIGATION_TYPE_EXISTING_PAGE,
 
   // The same page has been reloaded as a result of the user requesting
@@ -26,10 +30,10 @@ enum NavigationType {
   // pending entry for the load, which is then meaningless.
   NAVIGATION_TYPE_SAME_PAGE,
 
-  // In page navigations are when the reference fragment changes. This will
-  // be in the main frame only (we won't even get notified of in-page
-  // subframe navigations). It may be for any page, not necessarily the last
-  // committed one (for example, whey going back to a page with a ref).
+  // The navigation was in the main frame, to a different navigation entry, but
+  // appearing to the user to be a navigation within the same page. This is the
+  // case for history.replaceState(), as well as back and forward across
+  // fragment entries and history.pushState() entries.
   NAVIGATION_TYPE_IN_PAGE,
 
   // A new subframe was manually navigated by the user. We will create a new
