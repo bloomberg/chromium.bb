@@ -237,14 +237,14 @@ domAttributesWithObservableSideEffectOnGet["Response"]["body"] = true;
 
 /**
  * @param {!Object} object
- * @param {!string} attribute
+ * @param {string} attribute
  * @return {boolean}
  */
 function doesAttributeHaveObservableSideEffectOnGet(object, attribute)
 {
     for (var interfaceName in domAttributesWithObservableSideEffectOnGet) {
         var isInstance = InjectedScriptHost.suppressWarningsAndCallFunction(function(object, interfaceName) {
-            return typeof window[interfaceName] === "function" && object instanceof window[interfaceName];
+            return /* suppressBlacklist */ typeof inspectedWindow[interfaceName] === "function" && object instanceof inspectedWindow[interfaceName];
         }, null, [object, interfaceName]);
         if (isInstance) {
             return attribute in domAttributesWithObservableSideEffectOnGet[interfaceName];
