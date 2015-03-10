@@ -330,7 +330,8 @@ class RendererSandboxedProcessLauncherDelegate
                               bool* success) {
     AddBaseHandleClosePolicy(policy);
 
-    if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    if (base::win::GetVersion() == base::win::VERSION_WIN8 ||
+        base::win::GetVersion() == base::win::VERSION_WIN8_1) {
       // TODO(shrikant): Check if these constants should be different across
       // various versions of Chromium code base or could be same.
       // If there should be different SID per channel then move this code
