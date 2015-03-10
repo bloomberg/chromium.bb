@@ -9,6 +9,16 @@ mojo_sdk_root = "//third_party/mojo/src"
 # producer of the network service.
 build_network_service_from_source = true
 
-# TODO(blundell): Remove the below line once
-# https://codereview.chromium.org/939753003/ rolls into Chromium.
-use_prebuilt_network_service = false
+declare_args() {
+  # Specify prebuilt network service mojo file location rather than download
+  # from gs://mojo.
+  #
+  # This variable only used when build_network_service_from_source is false.
+  #
+  # Currently only android_arm and linux_64 available on gs://mojo, and no plan
+  # to support more(https://codereview.chromium.org/921873003).
+  # It is needed for developers works on other platforms like android_x86 and
+  # android_x64. And it is also useful for supportted platform as well when
+  # developer want to try its own version of network service files.
+  prebuilt_network_service_location = ""
+}
