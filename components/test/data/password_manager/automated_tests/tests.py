@@ -28,6 +28,15 @@ class TypeOfTestedWebsites:
     pass
 
 
+class Alexa(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://www.alexa.com/secure/login")
+    self.FillUsernameInto("#email")
+    self.FillPasswordInto("#pwd")
+    self.Submit("#pwd")
+
+
 class Facebook(WebsiteTest):
 
   def Login(self):
@@ -268,6 +277,7 @@ class Vube(WebsiteTest):
 def Tests(environment, tests_to_run=None):
 
   working_tests = {
+    "alexa": Alexa("alexa"),
     "facebook": Facebook("facebook"),
     "google": Google("google"),
     "linkedin": Linkedin("linkedin"),
