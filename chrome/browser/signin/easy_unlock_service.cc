@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/easy_unlock_service.h"
 
+#include "apps/app_lifetime_monitor.h"
+#include "apps/app_lifetime_monitor_factory.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/guid.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/switches.h"
@@ -81,7 +84,8 @@ bool EasyUnlockService::IsSignInEnabled() {
 }
 
 class EasyUnlockService::BluetoothDetector
-    : public device::BluetoothAdapter::Observer {
+    : public device::BluetoothAdapter::Observer,
+      public apps::AppLifetimeMonitor::Observer {
  public:
   explicit BluetoothDetector(EasyUnlockService* service)
       : service_(service),
@@ -115,6 +119,32 @@ class EasyUnlockService::BluetoothDetector
     adapter_ = adapter;
     adapter_->AddObserver(this);
     service_->OnBluetoothAdapterPresentChanged();
+
+    // TODO(tengs): At the moment, there is no way for Bluetooth discoverability
+    // to be turned on except through the Easy Unlock setup. If we step on any
+    // toes in the future then we need to revisit this guard.
+    if (adapter_->IsDiscoverable())
+      TurnOffBluetoothDiscoverability();
+  }
+
+  // apps::AppLifetimeMonitor::Observer:
+  void OnAppDeactivated(Profile* profile, const std::string& app_id) override {
+    // TODO(tengs): Refactor the lifetime management to EasyUnlockAppManager.
+    if (app_id == extension_misc::kEasyUnlockAppId)
+      TurnOffBluetoothDiscoverability();
+  }
+
+  void OnAppStop(Profile* profile, const std::string& app_id) override {
+    // TODO(tengs): Refactor the lifetime management to EasyUnlockAppManager.
+    if (app_id == extension_misc::kEasyUnlockAppId)
+      TurnOffBluetoothDiscoverability();
+  }
+
+  void TurnOffBluetoothDiscoverability() {
+    if (adapter_) {
+      adapter_->SetDiscoverable(
+          false, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+    }
   }
 
   // Owner of this class and should out-live this class.
