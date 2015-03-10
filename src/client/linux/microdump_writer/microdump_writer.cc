@@ -41,7 +41,6 @@
 #include "client/linux/log/log.h"
 #include "client/linux/minidump_writer/linux_ptrace_dumper.h"
 #include "common/linux/linux_libc_support.h"
-#include "common/scoped_ptr.h"
 
 namespace {
 
@@ -51,7 +50,6 @@ using google_breakpad::LinuxPtraceDumper;
 using google_breakpad::MappingInfo;
 using google_breakpad::MappingList;
 using google_breakpad::RawContextCPU;
-using google_breakpad::scoped_array;
 using google_breakpad::SeccompUnwinder;
 using google_breakpad::ThreadInfo;
 using google_breakpad::UContextReader;
@@ -69,14 +67,20 @@ class MicrodumpWriter {
 #endif
         dumper_(dumper),
         mapping_list_(mappings),
-        log_line_(new char[kLineBufferSize]) {
-    log_line_.get()[0] = '\0';  // Clear out the log line buffer.
+        log_line_(NULL) {
+    log_line_ = reinterpret_cast<char*>(Alloc(kLineBufferSize));
+    if (log_line_)
+      log_line_[0] = '\0';  // Clear out the log line buffer.
   }
 
   ~MicrodumpWriter() { dumper_->ThreadsResume(); }
 
   bool Init() {
-    if (!dumper_->Init())
+    // In the exceptional case where the system was out of memory and there
+    // wasn't even room to allocate the line buffer, bail out. There is nothing
+    // useful we can possibly achieve without the ability to Log. At least let's
+    // try to not crash.
+    if (!dumper_->Init() || !log_line_)
       return false;
     return dumper_->ThreadsSuspend();
   }
@@ -105,7 +109,7 @@ class MicrodumpWriter {
 
   // Stages the given string in the current line buffer.
   void LogAppend(const char* str) {
-    my_strlcat(log_line_.get(), str, kLineBufferSize);
+    my_strlcat(log_line_, str, kLineBufferSize);
   }
 
   // As above (required to take precedence over template specialization below).
@@ -135,8 +139,8 @@ class MicrodumpWriter {
 
   // Writes out the current line buffer on the system log.
   void LogCommitLine() {
-    LogLine(log_line_.get());
-    my_strlcpy(log_line_.get(), "", kLineBufferSize);
+    LogLine(log_line_);
+    my_strlcpy(log_line_, "", kLineBufferSize);
   }
 
   bool DumpOSInformation() {
@@ -363,7 +367,7 @@ class MicrodumpWriter {
 #endif
   LinuxDumper* dumper_;
   const MappingList& mapping_list_;
-  scoped_array<char> log_line_;
+  char* log_line_;
 };
 }  // namespace
 
