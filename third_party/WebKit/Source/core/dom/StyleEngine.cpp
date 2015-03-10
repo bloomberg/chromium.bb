@@ -488,8 +488,13 @@ void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot)
 
 void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot)
 {
-    if (resolver())
-        resolver()->resetAuthorStyle(*shadowRoot);
+    if (StyleResolver* styleResolver = resolver()) {
+        styleResolver->resetAuthorStyle(*shadowRoot);
+
+        if (TreeScopeStyleSheetCollection* collection = styleSheetCollectionFor(*shadowRoot))
+            styleResolver->removePendingAuthorStyleSheets(collection->activeAuthorStyleSheets());
+    }
+    m_styleSheetCollectionMap.remove(shadowRoot);
     m_activeTreeScopes.remove(shadowRoot);
     m_dirtyTreeScopes.remove(shadowRoot);
 }

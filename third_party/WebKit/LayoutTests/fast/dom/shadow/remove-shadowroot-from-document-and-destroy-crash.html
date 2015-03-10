@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<meta content="style-src 'sha1-eYyYGmKWdhpUewohaXk9o8IaLSw='" http-equiv="Content-Security-Policy"/>
+<head>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+onload = function() {
+    div1.createShadowRoot().innerHTML="<style>";
+    var svgDoc = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg", null);
+    var doc = document.implementation.createDocument("", null);
+    doc.appendChild(svgDoc.documentElement);
+    svgDoc.appendChild(div1);
+    svgDoc.replaceChild(doc.documentElement, svgDoc.childNodes[0]);
+    gc();
+    document.write("PASS");
+}
+</script>
+</haed>
+<body>
+<div id="div1"></div>
+<embed type="application/x-fake-plugin"</embed>
+<script>
+var embed = document.querySelector("embed");
+if (window.internals)
+    internals.forcePluginPlaceholder(embed, {});
+</script>
+</body>
