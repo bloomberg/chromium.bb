@@ -1,14 +1,3 @@
-AM_CFLAGS = \
-	$(WARN_CFLAGS)\
-	-I $(top_srcdir)/include/drm \
-	-I $(top_srcdir)
-
-LDADD = $(top_builddir)/libdrm.la
-
-check_PROGRAMS = \
-	dristat \
-	drmstat
-
 SUBDIRS = modeprint proptest
 
 if HAVE_LIBKMS
@@ -26,6 +15,21 @@ endif
 if HAVE_TEGRA
 SUBDIRS += tegra
 endif
+
+if HAVE_LIBUDEV
+SUBDIRS += vbltest
+endif
+
+AM_CFLAGS = \
+	$(WARN_CFLAGS)\
+	-I $(top_srcdir)/include/drm \
+	-I $(top_srcdir)
+
+LDADD = $(top_builddir)/libdrm.la
+
+check_PROGRAMS = \
+	dristat \
+	drmstat
 
 if HAVE_LIBUDEV
 
@@ -53,8 +57,6 @@ TESTS =						\
 	setversion				\
 	updatedraw				\
 	name_from_fd
-
-SUBDIRS += vbltest
 
 check_PROGRAMS += $(TESTS)
 
