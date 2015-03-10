@@ -144,9 +144,9 @@ FloatRect PinchViewport::visibleRectInDocument() const
     if (!mainFrame() || !mainFrame()->view())
         return FloatRect();
 
-    FloatRect viewRect = mainFrame()->view()->scrollableArea()->visibleContentRect();
+    FloatPoint viewLocation = FloatPoint(mainFrame()->view()->scrollableArea()->scrollPositionDouble());
     FloatRect pinchRect = visibleRect();
-    pinchRect.moveBy(viewRect.location());
+    pinchRect.moveBy(viewLocation);
     return pinchRect;
 }
 

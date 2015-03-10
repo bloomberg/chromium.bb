@@ -1060,6 +1060,63 @@ TEST_F(PinchViewportTest, TestScrollingDocumentRegionIntoView)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 10), pinchViewport.visibleRect().location());
 }
 
+// Tests that calling scroll into view on a visible element doesn cause
+// a scroll due to a fractional offset. Bug crbug.com/463356.
+TEST_F(PinchViewportTest, ScrollIntoViewFractionalOffset)
+{
+    initializeWithAndroidSettings();
+
+    webViewImpl()->resize(IntSize(1000, 1000));
+
+    registerMockedHttpURLLoad("scroll-into-view.html");
+    navigateTo(m_baseURL + "scroll-into-view.html");
+
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    Element* inputBox = frame()->document()->getElementById("box");
+
+    webViewImpl()->setPageScaleFactor(2);
+
+    // The element is already in the view so the scrollIntoView shouldn't move
+    // the viewport at all.
+    webViewImpl()->setPinchViewportOffset(WebFloatPoint(250.25f, 100.25f));
+    frameView.setScrollPosition(DoublePoint(0, 900.75));
+    inputBox->scrollIntoViewIfNeeded(false);
+
+    EXPECT_POINT_EQ(DoublePoint(0, 900.75), frameView.scrollPositionDouble());
+    EXPECT_POINT_EQ(FloatPoint(250.25f, 100.25f), pinchViewport.location());
+
+    // Change the fractional part of the frameview to one that would round down.
+    frameView.setScrollPosition(DoublePoint(0, 900.125));
+    inputBox->scrollIntoViewIfNeeded(false);
+
+    EXPECT_POINT_EQ(DoublePoint(0, 900.125), frameView.scrollPositionDouble());
+    EXPECT_POINT_EQ(FloatPoint(250.25f, 100.25f), pinchViewport.location());
+
+    // Repeat both tests above with the pinch viewport at a high fractional.
+    webViewImpl()->setPinchViewportOffset(WebFloatPoint(250.875f, 100.875f));
+    frameView.setScrollPosition(DoublePoint(0, 900.75));
+    inputBox->scrollIntoViewIfNeeded(false);
+
+    EXPECT_POINT_EQ(DoublePoint(0, 900.75), frameView.scrollPositionDouble());
+    EXPECT_POINT_EQ(FloatPoint(250.875f, 100.875f), pinchViewport.location());
+
+    // Change the fractional part of the frameview to one that would round down.
+    frameView.setScrollPosition(DoublePoint(0, 900.125));
+    inputBox->scrollIntoViewIfNeeded(false);
+
+    EXPECT_POINT_EQ(DoublePoint(0, 900.125), frameView.scrollPositionDouble());
+    EXPECT_POINT_EQ(FloatPoint(250.875f, 100.875f), pinchViewport.location());
+
+    // Both viewports with a 0.5 fraction.
+    webViewImpl()->setPinchViewportOffset(WebFloatPoint(250.5f, 100.5f));
+    frameView.setScrollPosition(DoublePoint(0, 900.5));
+    inputBox->scrollIntoViewIfNeeded(false);
+
+    EXPECT_POINT_EQ(DoublePoint(0, 900.5), frameView.scrollPositionDouble());
+    EXPECT_POINT_EQ(FloatPoint(250.5f, 100.5f), pinchViewport.location());
+}
+
 // Top controls can make an unscrollable page temporarily scrollable, causing
 // a scroll clamp when the page is resized. Make sure this bug is fixed.
 // crbug.com/437620

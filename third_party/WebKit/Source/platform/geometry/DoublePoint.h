@@ -9,9 +9,10 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
-#include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
+
+class LayoutPoint;
 
 class PLATFORM_EXPORT DoublePoint {
 public:

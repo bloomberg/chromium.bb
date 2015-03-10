@@ -524,9 +524,15 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
                     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
 
                     // We want to move the rect into the viewport that excludes the scrollbars so we intersect
-                    // the pinch viewport with the scrollbar-excluded frameView content rect.
+                    // the pinch viewport with the scrollbar-excluded frameView content rect. However, we don't
+                    // use visibleContentRect directly since it floors the scroll position. Instead, we use
+                    // FrameView::scrollPositionDouble and construct a LayoutRect from that (the FrameView size
+                    // is always integer sized.
+                    LayoutRect frameRect = LayoutRect(
+                        frameView->scrollPositionDouble(),
+                        frameView->visibleContentRect().size());
                     LayoutRect viewRect = intersection(
-                        LayoutRect(pinchViewport.visibleRectInDocument()), LayoutRect(frameView->visibleContentRect()));
+                        LayoutRect(pinchViewport.visibleRectInDocument()), frameRect);
                     LayoutRect r = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
 
                     // pinchViewport.scrollIntoView will attempt to center the given rect within the viewport
