@@ -40,13 +40,6 @@ std::string GetKey(const std::string& extension_id, const std::string& name) {
   return base::HexEncode(key.data(), key.size());
 }
 
-std::string GetCombinedName(const std::string& extension_name,
-                            const std::string& configuration_name) {
-  // TODO(kaliamoorthi): (crbug.com/434711) Sort out the dependencies and
-  // replace the string concatenation with internationalized version.
-  return extension_name + ": " + configuration_name;
-}
-
 void DoNothingFailureCallback(const std::string& error_name,
                               const std::string& error_message) {
   LOG(ERROR) << error_name << ": " << error_message;
@@ -217,19 +210,14 @@ void VpnService::OnGetPropertiesSuccess(
       service_path_to_configuration_map_.end()) {
     return;
   }
-  const base::DictionaryValue* provider = nullptr;
   std::string vpn_type;
   std::string extension_id;
   std::string type;
-  std::string name;
   std::string configuration_name;
-  if (!dictionary.GetDictionary(shill::kProviderProperty, &provider) ||
-      !dictionary.GetString(shill::kProviderTypeProperty, &vpn_type) ||
+  if (!dictionary.GetString(shill::kProviderTypeProperty, &vpn_type) ||
       !dictionary.GetString(shill::kProviderHostProperty, &extension_id) ||
       !dictionary.GetString(shill::kTypeProperty, &type) ||
-      !dictionary.GetString(shill::kNameProperty, &name) ||
-      !provider->GetString(shill::kConfigurationNameProperty,
-                           &configuration_name) ||
+      !dictionary.GetString(shill::kNameProperty, &configuration_name) ||
       vpn_type != shill::kProviderThirdPartyVpn || type != shill::kTypeVPN) {
     return;
   }
@@ -303,9 +291,8 @@ void VpnService::CreateConfiguration(const std::string& extension_id,
   base::DictionaryValue properties;
   properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
                                            shill::kTypeVPN);
-  properties.SetStringWithoutPathExpansion(
-      shill::kNameProperty,  // This value is shown to the user in native UI.
-      GetCombinedName(extension_name, configuration_name));
+  properties.SetStringWithoutPathExpansion(shill::kNameProperty,
+                                           configuration_name);
   properties.SetStringWithoutPathExpansion(shill::kProviderHostProperty,
                                            extension_id);
   properties.SetStringWithoutPathExpansion(shill::kObjectPathSuffixProperty,
@@ -314,8 +301,6 @@ void VpnService::CreateConfiguration(const std::string& extension_id,
                                            shill::kProviderThirdPartyVpn);
   properties.SetStringWithoutPathExpansion(shill::kProfileProperty,
                                            profile->path);
-  properties.SetStringWithoutPathExpansion(shill::kConfigurationNameProperty,
-                                           configuration_name);
 
   // Note: This will not create an entry in |policy_util|. TODO(pneubeck):
   // Determine the correct thing to do here, crbug.com/459278.
