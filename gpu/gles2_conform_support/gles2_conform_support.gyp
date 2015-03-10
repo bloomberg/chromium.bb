@@ -79,6 +79,7 @@
       ],
     },
     {
+      # GN version: //gpu/gles2_conform_support/native:windowless
       'target_name': 'egl_main_windowless',
       'type': 'static_library',
       'dependencies': [
