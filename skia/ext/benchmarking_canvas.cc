@@ -624,7 +624,7 @@ void BenchmarkingCanvas::onDrawPicture(const SkPicture* picture,
   if (matrix)
     op.addParam("matrix", AsValue(*matrix));
 
-  INHERITED::drawPicture(picture, matrix, paint);
+  INHERITED::onDrawPicture(picture, matrix, paint);
 }
 
 void BenchmarkingCanvas::onDrawBitmap(const SkBitmap& bitmap,
