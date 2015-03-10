@@ -116,12 +116,12 @@ TEST_F(AffiliationFetcherTest, BasicReqestAndResponse) {
 
   affiliation_pb::LookupAffiliationResponse test_response;
   affiliation_pb::Affiliation* eq_class1 = test_response.add_affiliation();
-  eq_class1->add_facet(kExampleWebFacet1URI);
-  eq_class1->add_facet(kExampleWebFacet2URI);
-  eq_class1->add_facet(kExampleAndroidFacetURI);
+  eq_class1->add_facet()->set_id(kExampleWebFacet1URI);
+  eq_class1->add_facet()->set_id(kExampleWebFacet2URI);
+  eq_class1->add_facet()->set_id(kExampleAndroidFacetURI);
   affiliation_pb::Affiliation* eq_class2 = test_response.add_affiliation();
-  eq_class2->add_facet(kNotExampleWebFacetURI);
-  eq_class2->add_facet(kNotExampleAndroidFacetURI);
+  eq_class2->add_facet()->set_id(kNotExampleWebFacetURI);
+  eq_class2->add_facet()->set_id(kNotExampleAndroidFacetURI);
 
   std::vector<FacetURI> requested_uris;
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
@@ -180,13 +180,13 @@ TEST_F(AffiliationFetcherTest, MissingEquivalenceClassesAreCreated) {
 TEST_F(AffiliationFetcherTest, DuplicateEquivalenceClassesAreIgnored) {
   affiliation_pb::LookupAffiliationResponse test_response;
   affiliation_pb::Affiliation* eq_class1 = test_response.add_affiliation();
-  eq_class1->add_facet(kExampleWebFacet1URI);
-  eq_class1->add_facet(kExampleWebFacet2URI);
-  eq_class1->add_facet(kExampleAndroidFacetURI);
+  eq_class1->add_facet()->set_id(kExampleWebFacet1URI);
+  eq_class1->add_facet()->set_id(kExampleWebFacet2URI);
+  eq_class1->add_facet()->set_id(kExampleAndroidFacetURI);
   affiliation_pb::Affiliation* eq_class2 = test_response.add_affiliation();
-  eq_class2->add_facet(kExampleWebFacet2URI);
-  eq_class2->add_facet(kExampleAndroidFacetURI);
-  eq_class2->add_facet(kExampleWebFacet1URI);
+  eq_class2->add_facet()->set_id(kExampleWebFacet2URI);
+  eq_class2->add_facet()->set_id(kExampleAndroidFacetURI);
+  eq_class2->add_facet()->set_id(kExampleWebFacet1URI);
 
   std::vector<FacetURI> requested_uris;
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
@@ -211,7 +211,7 @@ TEST_F(AffiliationFetcherTest, DuplicateEquivalenceClassesAreIgnored) {
 TEST_F(AffiliationFetcherTest, EmptyEquivalenceClassesAreIgnored) {
   affiliation_pb::LookupAffiliationResponse test_response;
   affiliation_pb::Affiliation* eq_class1 = test_response.add_affiliation();
-  eq_class1->add_facet(kExampleWebFacet1URI);
+  eq_class1->add_facet()->set_id(kExampleWebFacet1URI);
   // Empty class.
   test_response.add_affiliation();
 
@@ -238,13 +238,13 @@ TEST_F(AffiliationFetcherTest, UnrecognizedFacetURIsAreIgnored) {
   // Equivalence class having, alongside known facet URIs, a facet URI that
   // corresponds to new platform unknown to this version.
   affiliation_pb::Affiliation* eq_class1 = test_response.add_affiliation();
-  eq_class1->add_facet(kExampleWebFacet1URI);
-  eq_class1->add_facet(kExampleWebFacet2URI);
-  eq_class1->add_facet(kExampleAndroidFacetURI);
-  eq_class1->add_facet("new-platform://app-id-on-new-platform");
+  eq_class1->add_facet()->set_id(kExampleWebFacet1URI);
+  eq_class1->add_facet()->set_id(kExampleWebFacet2URI);
+  eq_class1->add_facet()->set_id(kExampleAndroidFacetURI);
+  eq_class1->add_facet()->set_id("new-platform://app-id-on-new-platform");
   // Equivalence class consisting solely of an unknown facet URI.
   affiliation_pb::Affiliation* eq_class2 = test_response.add_affiliation();
-  eq_class2->add_facet("new-platform2://app2-id-on-new-platform2");
+  eq_class2->add_facet()->set_id("new-platform2://app2-id-on-new-platform2");
 
   std::vector<FacetURI> requested_uris;
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
@@ -287,11 +287,11 @@ TEST_F(AffiliationFetcherTest,
        FailureBecausePartiallyOverlappingEquivalenceClasses) {
   affiliation_pb::LookupAffiliationResponse test_response;
   affiliation_pb::Affiliation* eq_class1 = test_response.add_affiliation();
-  eq_class1->add_facet(kExampleWebFacet1URI);
-  eq_class1->add_facet(kExampleWebFacet2URI);
+  eq_class1->add_facet()->set_id(kExampleWebFacet1URI);
+  eq_class1->add_facet()->set_id(kExampleWebFacet2URI);
   affiliation_pb::Affiliation* eq_class2 = test_response.add_affiliation();
-  eq_class2->add_facet(kExampleWebFacet1URI);
-  eq_class2->add_facet(kExampleAndroidFacetURI);
+  eq_class2->add_facet()->set_id(kExampleWebFacet1URI);
+  eq_class2->add_facet()->set_id(kExampleAndroidFacetURI);
 
   std::vector<FacetURI> uris;
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));

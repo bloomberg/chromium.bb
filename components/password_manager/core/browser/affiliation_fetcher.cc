@@ -119,7 +119,7 @@ bool AffiliationFetcher::ParseResponse(
 
     AffiliatedFacets affiliated_uris;
     for (int j = 0; j < equivalence_class.facet_size(); ++j) {
-      const std::string& uri_spec(equivalence_class.facet(j));
+      const std::string& uri_spec(equivalence_class.facet(j).id());
       FacetURI uri = FacetURI::FromPotentiallyInvalidSpec(uri_spec);
       // Ignore potential future kinds of facet URIs (e.g. for new platforms).
       if (!uri.is_valid())
