@@ -92,6 +92,14 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceType resource_type,
       ScopedVector<content::ResourceThrottle>* throttles);
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  // Append headers required to tell Gaia whether the sync interstitial
+  // should be shown or not.  This header is only added for valid Gaia URLs.
+  void AppendChromeSyncGaiaHeader(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context);
+#endif
+
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
 #if defined(ENABLE_EXTENSIONS)

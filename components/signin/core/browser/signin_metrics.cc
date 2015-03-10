@@ -102,9 +102,4 @@ void LogAuthError(GoogleServiceAuthError::State auth_error) {
       GoogleServiceAuthError::State::NUM_STATES);
 }
 
-void LogSigninConfirmHistogramValue(int action) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.OneClickConfirmation", action,
-                            signin_metrics::HISTOGRAM_CONFIRM_MAX);
-}
-
 }  // namespace signin_metrics

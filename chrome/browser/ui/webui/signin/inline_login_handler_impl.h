@@ -37,26 +37,6 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
   void HandleLoginError(const std::string& error_msg);
 
  private:
-  friend class InlineLoginUIBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(InlineLoginUIBrowserTest, CanOfferNoProfile);
-  FRIEND_TEST_ALL_PREFIXES(InlineLoginUIBrowserTest, CanOffer);
-  FRIEND_TEST_ALL_PREFIXES(InlineLoginUIBrowserTest, CanOfferProfileConnected);
-  FRIEND_TEST_ALL_PREFIXES(InlineLoginUIBrowserTest,
-                           CanOfferUsernameNotAllowed);
-  FRIEND_TEST_ALL_PREFIXES(InlineLoginUIBrowserTest, CanOfferWithRejectedEmail);
-  FRIEND_TEST_ALL_PREFIXES(InlineLoginUIBrowserTest, CanOfferNoSigninCookies);
-
-  // Argument to CanOffer().
-  enum CanOfferFor {
-    CAN_OFFER_FOR_ALL,
-    CAN_OFFER_FOR_SECONDARY_ACCOUNT
-  };
-
-  static bool CanOffer(Profile* profile,
-                       CanOfferFor can_offer_for,
-                       const std::string& email,
-                       std::string* error_message);
-
   // InlineLoginHandler overrides:
   void SetExtraInitParams(base::DictionaryValue& params) override;
   void CompleteLogin(const base::ListValue* args) override;

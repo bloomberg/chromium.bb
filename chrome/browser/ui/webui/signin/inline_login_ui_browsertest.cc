@@ -3,31 +3,21 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -46,13 +36,10 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using ::testing::_;
-using ::testing::AtLeast;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
-using ::testing::Return;
 
 using login_ui_test_utils::ExecuteJsToSigninInSigninFrame;
 using login_ui_test_utils::WaitUntilUIReady;
@@ -119,57 +106,7 @@ bool AddToSet(std::set<content::WebContents*>* set,
 class InlineLoginUIBrowserTest : public InProcessBrowserTest {
  public:
   InlineLoginUIBrowserTest() {}
-
-  void SetUpSigninManager(const std::string& username);
-  void EnableSigninAllowed(bool enable);
-  void EnableOneClick(bool enable);
-  void AddEmailToOneClickRejectedList(const std::string& email);
-  void AllowSigninCookies(bool enable);
-  void SetAllowedUsernamePattern(const std::string& pattern);
-
- protected:
-  content::WebContents* web_contents() { return nullptr; }
 };
-
-void InlineLoginUIBrowserTest::SetUpSigninManager(const std::string& username) {
-  if (username.empty())
-    return;
-
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(browser()->profile());
-  signin_manager->SetAuthenticatedUsername(username);
-}
-
-void InlineLoginUIBrowserTest::EnableSigninAllowed(bool enable) {
-  PrefService* pref_service = browser()->profile()->GetPrefs();
-  pref_service->SetBoolean(prefs::kSigninAllowed, enable);
-}
-
-void InlineLoginUIBrowserTest::EnableOneClick(bool enable) {
-  PrefService* pref_service = browser()->profile()->GetPrefs();
-  pref_service->SetBoolean(prefs::kReverseAutologinEnabled, enable);
-}
-
-void InlineLoginUIBrowserTest::AddEmailToOneClickRejectedList(
-    const std::string& email) {
-  PrefService* pref_service = browser()->profile()->GetPrefs();
-  ListPrefUpdate updater(pref_service,
-                         prefs::kReverseAutologinRejectedEmailList);
-  updater->AppendIfNotPresent(new base::StringValue(email));
-}
-
-void InlineLoginUIBrowserTest::AllowSigninCookies(bool enable) {
-  CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
-  cookie_settings->SetDefaultCookieSetting(enable ? CONTENT_SETTING_ALLOW
-                                                  : CONTENT_SETTING_BLOCK);
-}
-
-void InlineLoginUIBrowserTest::SetAllowedUsernamePattern(
-    const std::string& pattern) {
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetString(prefs::kGoogleServicesUsernamePattern, pattern);
-}
 
 #if defined(OS_LINUX) || defined(OS_WIN)
 // crbug.com/422868
@@ -246,90 +183,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, OneProcessLimit) {
   ASSERT_EQ(info1.pid, info2.pid);
   ASSERT_NE(info1.pid, info3.pid);
 }
-
-#if !defined(OS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoProfile) {
-  std::string error_message;
-  EXPECT_FALSE(InlineLoginHandlerImpl::CanOffer(
-      NULL, InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
-  EXPECT_EQ("", error_message);
-}
-
-IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
-  EnableOneClick(true);
-  EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", NULL));
-
-  EnableOneClick(false);
-
-  std::string error_message;
-
-  EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
-}
-
-IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferProfileConnected) {
-  SetUpSigninManager("foo@gmail.com");
-  EnableSigninAllowed(true);
-
-  std::string error_message;
-
-  EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "foo@gmail.com", &error_message));
-  EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "foo", &error_message));
-  EXPECT_FALSE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
-  EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
-                                      base::UTF8ToUTF16("foo@gmail.com")),
-            error_message);
-}
-
-IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferUsernameNotAllowed) {
-  SetAllowedUsernamePattern("*.google.com");
-
-  std::string error_message;
-  EXPECT_FALSE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "foo@gmail.com", &error_message));
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SYNC_LOGIN_NAME_PROHIBITED),
-            error_message);
-}
-
-IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferWithRejectedEmail) {
-  EnableSigninAllowed(true);
-
-  AddEmailToOneClickRejectedList("foo@gmail.com");
-  AddEmailToOneClickRejectedList("user@gmail.com");
-
-  std::string error_message;
-  EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "foo@gmail.com", &error_message));
-  EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
-}
-
-IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoSigninCookies) {
-  AllowSigninCookies(false);
-  EnableSigninAllowed(true);
-
-  std::string error_message;
-  EXPECT_FALSE(InlineLoginHandlerImpl::CanOffer(
-      browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
-  EXPECT_EQ("", error_message);
-}
-
-#endif  // OS_CHROMEOS
 
 class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
  public:

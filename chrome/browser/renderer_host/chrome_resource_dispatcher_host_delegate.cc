@@ -79,6 +79,10 @@
 #include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
 #endif
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#endif
+
 #if defined(USE_SYSTEM_PROTOBUF)
 #include <google/protobuf/repeated_field.h>
 #else
@@ -435,6 +439,10 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     request->SetExtraRequestHeaders(headers);
   }
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  AppendChromeSyncGaiaHeader(request, resource_context);
+#endif
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (io_data->policy_header_helper())
     io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
@@ -585,6 +593,28 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   }
 }
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+void ChromeResourceDispatcherHostDelegate::AppendChromeSyncGaiaHeader(
+    net::URLRequest* request,
+    content::ResourceContext* resource_context) {
+  static const char kAllowChromeSignIn[] = "Allow-Chrome-SignIn";
+
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  OneClickSigninHelper::Offer offer =
+      OneClickSigninHelper::CanOfferOnIOThread(request, io_data);
+  switch (offer) {
+    case OneClickSigninHelper::CAN_OFFER:
+      request->SetExtraRequestHeaderByName(kAllowChromeSignIn, "1", false);
+      break;
+    case OneClickSigninHelper::DONT_OFFER:
+      request->RemoveRequestHeaderByName(kAllowChromeSignIn);
+      break;
+    case OneClickSigninHelper::IGNORE_REQUEST:
+      break;
+  }
+}
+#endif
+
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {
 #if defined(ENABLE_EXTENSIONS)
@@ -673,6 +703,15 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  // See if the response contains the Google-Accounts-SignIn header.  If so,
+  // then the user has just finished signing in, and the server is allowing the
+  // browser to suggest connecting the user's profile to the account.
+  OneClickSigninHelper::ShowInfoBarIfPossible(request, io_data,
+                                              info->GetChildID(),
+                                              info->GetRouteID());
+#endif
+
   // See if the response contains the X-Chrome-Manage-Accounts header. If so
   // show the profile avatar bubble so that user can complete signin/out action
   // the native UI.
@@ -721,6 +760,16 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  // See if the response contains the Google-Accounts-SignIn header.  If so,
+  // then the user has just finished signing in, and the server is allowing the
+  // browser to suggest connecting the user's profile to the account.
+  OneClickSigninHelper::ShowInfoBarIfPossible(request, io_data,
+                                              info->GetChildID(),
+                                              info->GetRouteID());
+  AppendChromeSyncGaiaHeader(request, resource_context);
+#endif
 
   // In the Mirror world, Chrome should append a X-Chrome-Connected header to
   // all Gaia requests from a connected profile so Gaia could return a 204

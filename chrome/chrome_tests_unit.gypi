@@ -609,6 +609,7 @@
     ],
     'chrome_unit_tests_one_click_signin_sources': [
       'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
+      'browser/ui/sync/one_click_signin_helper_unittest.cc',
       'browser/ui/sync/one_click_signin_sync_observer_unittest.cc',
       'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
       'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
@@ -2162,6 +2163,7 @@
           'conditions': [
             ['chromeos == 1', {
               'sources!': [
+                'browser/ui/sync/one_click_signin_helper_unittest.cc',
                 'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
               ],
             }],

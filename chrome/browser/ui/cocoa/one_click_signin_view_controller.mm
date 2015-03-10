@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #import "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -77,7 +78,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 - (IBAction)ok:(id)sender {
   if (isSyncDialog_) {
-    signin_metrics::LogSigninConfirmHistogramValue(
+    OneClickSigninHelper::LogConfirmHistogramValue(
         clickedLearnMore_ ?
             signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_OK :
             signin_metrics::HISTOGRAM_CONFIRM_OK);
@@ -90,7 +91,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 - (IBAction)onClickUndo:(id)sender {
   if (isSyncDialog_) {
-    signin_metrics::LogSigninConfirmHistogramValue(
+    OneClickSigninHelper::LogConfirmHistogramValue(
         clickedLearnMore_ ?
             signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_UNDO :
             signin_metrics::HISTOGRAM_CONFIRM_UNDO);
@@ -103,7 +104,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 - (IBAction)onClickAdvancedLink:(id)sender {
   if (isSyncDialog_) {
-    signin_metrics::LogSigninConfirmHistogramValue(
+    OneClickSigninHelper::LogConfirmHistogramValue(
         clickedLearnMore_ ?
             signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_ADVANCED :
             signin_metrics::HISTOGRAM_CONFIRM_ADVANCED);
@@ -122,7 +123,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 - (IBAction)onClickClose:(id)sender {
   if (isSyncDialog_) {
-    signin_metrics::LogSigninConfirmHistogramValue(
+    OneClickSigninHelper::LogConfirmHistogramValue(
         clickedLearnMore_ ?
             signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE :
             signin_metrics::HISTOGRAM_CONFIRM_CLOSE);
@@ -210,7 +211,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
                                       delta:delta];
 
   if (isSyncDialog_) {
-    signin_metrics::LogSigninConfirmHistogramValue(
+    OneClickSigninHelper::LogConfirmHistogramValue(
         signin_metrics::HISTOGRAM_CONFIRM_SHOWN);
   }
 }
@@ -286,7 +287,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   if (isSyncDialog_ && !clickedLearnMore_) {
     clickedLearnMore_ = YES;
 
-    signin_metrics::LogSigninConfirmHistogramValue(
+    OneClickSigninHelper::LogConfirmHistogramValue(
         signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE);
   }
   WindowOpenDisposition location = isSyncDialog_ ?

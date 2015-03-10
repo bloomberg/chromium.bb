@@ -2600,6 +2600,8 @@
       'browser/ui/sync/one_click_signin_bubble_delegate.h',
       'browser/ui/sync/one_click_signin_bubble_links_delegate.cc',
       'browser/ui/sync/one_click_signin_bubble_links_delegate.h',
+      'browser/ui/sync/one_click_signin_helper.cc',
+      'browser/ui/sync/one_click_signin_helper.h',
       'browser/ui/sync/one_click_signin_sync_observer.cc',
       'browser/ui/sync/one_click_signin_sync_observer.h',
       'browser/ui/sync/one_click_signin_sync_starter.cc',
