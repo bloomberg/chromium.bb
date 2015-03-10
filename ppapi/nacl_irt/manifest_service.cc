@@ -13,6 +13,12 @@
 #include "ppapi/nacl_irt/plugin_startup.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
+#if !defined(OS_NACL_SFI)
+#include <pthread.h>
+#include <map>
+#include <string>
+#endif
+
 namespace ppapi {
 
 const char kFilePrefix[] = "files/";
@@ -120,10 +126,42 @@ bool ManifestService::OpenResource(const char* file, int* fd) {
   return true;
 }
 
+#if !defined(OS_NACL_SFI)
+namespace {
+
+pthread_mutex_t g_mu = PTHREAD_MUTEX_INITIALIZER;
+std::map<std::string, int>* g_prefetched_fds;
+
+}  // namespace
+
+void RegisterPreopenedDescriptorsNonSfi(
+    std::map<std::string, int>* key_fd_map) {
+  pthread_mutex_lock(&g_mu);
+  DCHECK(!g_prefetched_fds);
+  g_prefetched_fds = key_fd_map;
+  pthread_mutex_unlock(&g_mu);
+}
+#endif
+
 int IrtOpenResource(const char* file, int* fd) {
   // Remove leading '/' character.
   if (file[0] == '/')
     ++file;
+
+#if !defined(OS_NACL_SFI)
+  // Fast path for prefetched FDs.
+  pthread_mutex_lock(&g_mu);
+  if (g_prefetched_fds) {
+    std::map<std::string, int>::iterator it = g_prefetched_fds->find(file);
+    if (it != g_prefetched_fds->end()) {
+      *fd = it->second;
+      g_prefetched_fds->erase(it);
+      pthread_mutex_unlock(&g_mu);
+      return 0;
+    }
+  }
+  pthread_mutex_unlock(&g_mu);
+#endif
 
   ManifestService* manifest_service = GetManifestService();
   if (manifest_service == NULL ||

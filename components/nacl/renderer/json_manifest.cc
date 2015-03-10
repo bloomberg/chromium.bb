@@ -442,6 +442,24 @@ bool JsonManifest::GetProgramURL(std::string* full_url,
   return true;
 }
 
+void JsonManifest::GetPrefetchableFiles(
+    std::vector<std::pair<std::string, std::string> >* out_files) const {
+  const Json::Value& files = dictionary_[kFilesKey];
+  if (!files.isObject())
+    return;
+
+  Json::Value::Members keys = files.getMemberNames();
+  for (size_t i = 0; i < keys.size(); ++i) {
+    std::string full_url;
+    PP_PNaClOptions unused_pnacl_options;  // pnacl does not support "files".
+    // We skip invalid entries in "files".
+    if (GetKeyUrl(files, keys[i], &full_url, &unused_pnacl_options)) {
+      if (GURL(full_url).SchemeIs("chrome-extension"))
+        out_files->push_back(std::make_pair(keys[i], full_url));
+    }
+  }
+}
+
 bool JsonManifest::ResolveKey(const std::string& key,
                               std::string* full_url,
                               PP_PNaClOptions* pnacl_options) const {

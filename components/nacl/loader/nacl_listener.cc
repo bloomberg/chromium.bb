@@ -448,6 +448,8 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #else
   InjectDisabledMojo(nap);
 #endif
+  // TODO(yusukes): Support pre-opening resource files.
+  CHECK(params.prefetched_resource_files.empty());
 
   int exit_status;
   if (!NaClChromeMainStart(nap, args, &exit_status))

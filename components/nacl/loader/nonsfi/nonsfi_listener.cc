@@ -18,6 +18,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ppapi/nacl_irt/irt_manifest.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
 
 #if defined(OS_NACL_NONSFI)
@@ -155,6 +156,16 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
 
   CHECK(params.nexe_file != IPC::InvalidPlatformFileForTransit());
   CHECK(params.nexe_file_path_metadata.empty());
+
+  std::map<std::string, int>* key_fd_map = new std::map<std::string, int>;
+  for (size_t i = 0; i < params.prefetched_resource_files.size(); ++i) {
+    CHECK(params.prefetched_resource_files[i].file_path_metadata.empty());
+    key_fd_map->insert(std::make_pair(
+        params.prefetched_resource_files[i].file_key,
+        IPC::PlatformFileForTransitToPlatformFile(
+            params.prefetched_resource_files[i].file)));
+  }
+  ppapi::RegisterPreopenedDescriptorsNonSfi(key_fd_map);
 
   MainStart(IPC::PlatformFileForTransitToPlatformFile(params.nexe_file));
 }

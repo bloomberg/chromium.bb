@@ -89,6 +89,21 @@ bool InitializePnaclResourceHost() {
   return true;
 }
 
+bool CanOpenViaFastPath(content::PepperPluginInstance* plugin_instance,
+                        const GURL& gurl) {
+  // Fast path only works for installed file URLs.
+  if (!gurl.SchemeIs("chrome-extension"))
+    return PP_kInvalidFileHandle;
+
+  // IMPORTANT: Make sure the document can request the given URL. If we don't
+  // check, a malicious app could probe the extension system. This enforces a
+  // same-origin policy which prevents the app from requesting resources from
+  // another app.
+  blink::WebSecurityOrigin security_origin =
+      plugin_instance->GetContainer()->element().document().securityOrigin();
+  return security_origin.canRequest(gurl);
+}
+
 // This contains state that is produced by LaunchSelLdr() and consumed
 // by StartPpapiProxy().
 struct InstanceInfo {
@@ -375,7 +390,10 @@ void LaunchSelLdr(PP_Instance instance,
   int routing_id = GetRoutingID(instance);
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
-  if (!routing_id || !load_manager) {
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  DCHECK(plugin_instance);
+  if (!routing_id || !load_manager || !plugin_instance) {
     if (nexe_file_info->handle != PP_kInvalidFileHandle) {
       base::File closer(nexe_file_info->handle);
     }
@@ -401,6 +419,23 @@ void LaunchSelLdr(PP_Instance instance,
 
   IPC::PlatformFileForTransit nexe_for_transit =
       IPC::InvalidPlatformFileForTransit();
+
+  std::vector<std::pair<
+    std::string /*key*/, std::string /*url*/> > resource_files_to_prefetch;
+  if (process_type == kNativeNaClProcessType && uses_nonsfi_mode) {
+    JsonManifest* manifest = GetJsonManifest(instance);
+    if (manifest)
+      manifest->GetPrefetchableFiles(&resource_files_to_prefetch);
+    for (size_t i = 0; i < resource_files_to_prefetch.size(); ++i) {
+      const GURL gurl(resource_files_to_prefetch[i].second);
+      // Important security check. Do not remove.
+      if (!CanOpenViaFastPath(plugin_instance, gurl)) {
+        resource_files_to_prefetch.clear();
+        break;
+      }
+    }
+  }
+
 #if defined(OS_POSIX)
   if (nexe_file_info->handle != PP_kInvalidFileHandle)
     nexe_for_transit = base::FileDescriptor(nexe_file_info->handle, true);
@@ -418,6 +453,7 @@ void LaunchSelLdr(PP_Instance instance,
               nexe_for_transit,
               nexe_file_info->token_lo,
               nexe_file_info->token_hi,
+              resource_files_to_prefetch,
               routing_id,
               perm_bits,
               PP_ToBool(uses_nonsfi_mode),
@@ -711,11 +747,6 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
                                  const char* file_url,
                                  uint64_t* nonce_lo,
                                  uint64_t* nonce_hi) {
-  // Fast path only works for installed file URLs.
-  GURL gurl(file_url);
-  if (!gurl.SchemeIs("chrome-extension"))
-    return PP_kInvalidFileHandle;
-
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (!load_manager)
@@ -725,13 +756,10 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
       content::PepperPluginInstance::Get(instance);
   if (!plugin_instance)
     return PP_kInvalidFileHandle;
-  // IMPORTANT: Make sure the document can request the given URL. If we don't
-  // check, a malicious app could probe the extension system. This enforces a
-  // same-origin policy which prevents the app from requesting resources from
-  // another app.
-  blink::WebSecurityOrigin security_origin =
-      plugin_instance->GetContainer()->element().document().securityOrigin();
-  if (!security_origin.canRequest(gurl))
+
+  GURL gurl(file_url);
+  // Important security check. Do not remove.
+  if (!CanOpenViaFastPath(plugin_instance, gurl))
     return PP_kInvalidFileHandle;
 
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();

@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "ppapi/c/pp_array_output.h"
@@ -38,6 +39,11 @@ class JsonManifest {
                      PP_PNaClOptions* pnacl_options,
                      bool* uses_nonsfi_mode,
                      ErrorInfo* error_info) const;
+
+  // Gets all the keys and their URLs in the "files" section that are
+  // prefetchable.
+  void GetPrefetchableFiles(
+      std::vector<std::pair<std::string, std::string> >* out_files) const;
 
   // Resolves a key from the "files" section to a fully resolved URL,
   // i.e., relative URL values are fully expanded relative to the

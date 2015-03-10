@@ -17,6 +17,7 @@
 IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(nexe_file)
   IPC_STRUCT_TRAITS_MEMBER(nexe_file_path_metadata)
+  IPC_STRUCT_TRAITS_MEMBER(prefetched_resource_files)
   IPC_STRUCT_TRAITS_MEMBER(handles)
   IPC_STRUCT_TRAITS_MEMBER(debug_stub_server_bound_socket)
   IPC_STRUCT_TRAITS_MEMBER(validation_cache_enabled)
@@ -27,6 +28,12 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(enable_mojo)
   IPC_STRUCT_TRAITS_MEMBER(process_type)
   IPC_STRUCT_TRAITS_MEMBER(crash_info_shmem_handle)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(nacl::NaClResourceFileInfo)
+  IPC_STRUCT_TRAITS_MEMBER(file)
+  IPC_STRUCT_TRAITS_MEMBER(file_path_metadata)
+  IPC_STRUCT_TRAITS_MEMBER(file_key)
 IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------

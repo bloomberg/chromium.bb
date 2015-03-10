@@ -20,6 +20,20 @@ NaClStartParams::NaClStartParams()
 NaClStartParams::~NaClStartParams() {
 }
 
+NaClResourceFileInfo::NaClResourceFileInfo()
+    : file(IPC::InvalidPlatformFileForTransit()) {
+}
+
+NaClResourceFileInfo::NaClResourceFileInfo(
+    IPC::PlatformFileForTransit file,
+    const base::FilePath& file_path_metadata,
+    const std::string& file_key)
+    : file(file), file_path_metadata(file_path_metadata), file_key(file_key) {
+}
+
+NaClResourceFileInfo::~NaClResourceFileInfo() {
+}
+
 NaClLaunchParams::NaClLaunchParams()
     : nexe_file(IPC::InvalidPlatformFileForTransit()),
       nexe_token_lo(0),
@@ -34,6 +48,8 @@ NaClLaunchParams::NaClLaunchParams(
     const IPC::PlatformFileForTransit& nexe_file,
     uint64_t nexe_token_lo,
     uint64_t nexe_token_hi,
+    const std::vector<
+      std::pair<std::string, std::string> >& resource_files_to_prefetch,
     int render_view_id,
     uint32 permission_bits,
     bool uses_nonsfi_mode,
@@ -42,6 +58,7 @@ NaClLaunchParams::NaClLaunchParams(
       nexe_file(nexe_file),
       nexe_token_lo(nexe_token_lo),
       nexe_token_hi(nexe_token_hi),
+      resource_files_to_prefetch(resource_files_to_prefetch),
       render_view_id(render_view_id),
       permission_bits(permission_bits),
       uses_nonsfi_mode(uses_nonsfi_mode),

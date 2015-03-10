@@ -234,19 +234,23 @@ void CloseFile(base::File file) {
 unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
     ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds;
 
-NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
-                                 base::File nexe_file,
-                                 const NaClFileToken& nexe_token,
-                                 ppapi::PpapiPermissions permissions,
-                                 int render_view_id,
-                                 uint32 permission_bits,
-                                 bool uses_nonsfi_mode,
-                                 bool off_the_record,
-                                 NaClAppProcessType process_type,
-                                 const base::FilePath& profile_directory)
+NaClProcessHost::NaClProcessHost(
+    const GURL& manifest_url,
+    base::File nexe_file,
+    const NaClFileToken& nexe_token,
+    const std::vector<
+      nacl::NaClResourceFileInfo>& prefetched_resource_files_info,
+    ppapi::PpapiPermissions permissions,
+    int render_view_id,
+    uint32 permission_bits,
+    bool uses_nonsfi_mode,
+    bool off_the_record,
+    NaClAppProcessType process_type,
+    const base::FilePath& profile_directory)
     : manifest_url_(manifest_url),
       nexe_file_(nexe_file.Pass()),
       nexe_token_(nexe_token),
+      prefetched_resource_files_info_(prefetched_resource_files_info),
       permissions_(permissions),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
@@ -292,6 +296,16 @@ NaClProcessHost::~NaClProcessHost() {
       LOG(ERROR) << message;
     }
     NaClBrowser::GetInstance()->OnProcessEnd(process_->GetData().id);
+  }
+
+  for (size_t i = 0; i < prefetched_resource_files_info_.size(); ++i) {
+    // The process failed to launch for some reason. Close resource file
+    // handles.
+    base::File file(IPC::PlatformFileForTransitToFile(
+        prefetched_resource_files_info_[i].file));
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE,
+        base::Bind(&CloseFile, base::Passed(file.Pass())));
   }
 
   if (reply_msg_) {
@@ -885,28 +899,42 @@ bool NaClProcessHost::StartNaClExecution() {
   }
 
   base::FilePath file_path;
-  // Don't retrieve the file path when using nonsfi mode; there's no validation
-  // caching in that case, so it's unnecessary work, and would expose the file
-  // path to the plugin.
-  if (!uses_nonsfi_mode_ &&
-      NaClBrowser::GetInstance()->GetFilePath(nexe_token_.lo,
-                                              nexe_token_.hi,
-                                              &file_path)) {
-    // We have to reopen the file in the browser process; we don't want a
-    // compromised renderer to pass an arbitrary fd that could get loaded
-    // into the plugin process.
-    if (base::PostTaskAndReplyWithResult(
-           content::BrowserThread::GetBlockingPool(),
-           FROM_HERE,
-           base::Bind(OpenNaClReadExecImpl,
-                      file_path,
-                      true /* is_executable */),
-           base::Bind(&NaClProcessHost::StartNaClFileResolved,
-                      weak_factory_.GetWeakPtr(),
-                      params,
-                      file_path))) {
-      return true;
+  if (uses_nonsfi_mode_) {
+    // Don't retrieve the file path when using nonsfi mode; there's no
+    // validation caching in that case, so it's unnecessary work, and would
+    // expose the file path to the plugin.
+
+    // Pass the pre-opened resource files to the loader. For the same reason
+    // as above, use an empty base::FilePath.
+    for (size_t i = 0; i < prefetched_resource_files_info_.size(); ++i) {
+      params.prefetched_resource_files.push_back(
+          NaClResourceFileInfo(prefetched_resource_files_info_[i].file,
+                               base::FilePath(),
+                               prefetched_resource_files_info_[i].file_key));
     }
+    prefetched_resource_files_info_.clear();
+  } else {
+    if (NaClBrowser::GetInstance()->GetFilePath(nexe_token_.lo,
+                                                nexe_token_.hi,
+                                                &file_path)) {
+      // We have to reopen the file in the browser process; we don't want a
+      // compromised renderer to pass an arbitrary fd that could get loaded
+      // into the plugin process.
+      if (base::PostTaskAndReplyWithResult(
+              content::BrowserThread::GetBlockingPool(),
+              FROM_HERE,
+              base::Bind(OpenNaClReadExecImpl,
+                         file_path,
+                         true /* is_executable */),
+              base::Bind(&NaClProcessHost::StartNaClFileResolved,
+                         weak_factory_.GetWeakPtr(),
+                         params,
+                         file_path))) {
+        return true;
+      }
+    }
+    // TODO(yusukes): Handle |prefetched_resource_files_info_| for SFI-NaCl.
+    DCHECK(prefetched_resource_files_info_.empty());
   }
 
   params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),

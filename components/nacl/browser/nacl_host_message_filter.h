@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_NACL_BROWSER_NACL_HOST_MESSAGE_FILTER_H_
 #define COMPONENTS_NACL_BROWSER_NACL_HOST_MESSAGE_FILTER_H_
 
+#include <vector>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -15,6 +17,7 @@ class GURL;
 
 namespace nacl {
 struct NaClLaunchParams;
+struct NaClResourceFileInfo;
 struct PnaclCacheInfo;
 }
 
@@ -51,9 +54,18 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
 
   void OnLaunchNaCl(const NaClLaunchParams& launch_params,
                     IPC::Message* reply_msg);
-  void LaunchNaClContinuation(const nacl::NaClLaunchParams& launch_params,
+  void BatchOpenResourceFiles(const nacl::NaClLaunchParams& launch_params,
                               IPC::Message* reply_msg,
                               ppapi::PpapiPermissions permissions);
+  void LaunchNaClContinuation(
+      const nacl::NaClLaunchParams& launch_params,
+      IPC::Message* reply_msg);
+  void LaunchNaClContinuationOnIOThread(
+      const nacl::NaClLaunchParams& launch_params,
+      IPC::Message* reply_msg,
+      const std::vector<
+        nacl::NaClResourceFileInfo>& prefetched_resource_files_info,
+      ppapi::PpapiPermissions permissions);
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             bool is_executable,
                             IPC::Message* reply_msg);

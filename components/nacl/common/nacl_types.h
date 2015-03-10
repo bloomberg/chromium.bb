@@ -6,6 +6,7 @@
 #define COMPONENTS_NACL_COMMON_NACL_TYPES_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -57,6 +58,20 @@ enum NaClAppProcessType {
   kNumNaClProcessTypes
 };
 
+// Represents a single prefetched file that's listed in the "files" section of
+// a NaCl manifest file.
+struct NaClResourceFileInfo {
+  NaClResourceFileInfo();
+  NaClResourceFileInfo(IPC::PlatformFileForTransit file,
+                       const base::FilePath& file_path,
+                       const std::string& file_key);
+  ~NaClResourceFileInfo();
+
+  IPC::PlatformFileForTransit file;
+  base::FilePath file_path_metadata;  // a key for validation caching
+  std::string file_key;  // a key for open_resource
+};
+
 // Parameters sent to the NaCl process when we start it.
 struct NaClStartParams {
   NaClStartParams();
@@ -66,6 +81,7 @@ struct NaClStartParams {
   // Used only as a key for validation caching.
   base::FilePath nexe_file_path_metadata;
 
+  std::vector<NaClResourceFileInfo> prefetched_resource_files;
   std::vector<FileDescriptor> handles;
   FileDescriptor debug_stub_server_bound_socket;
 
@@ -98,14 +114,18 @@ struct NaClStartParams {
 // nacl_host_messages.h.
 struct NaClLaunchParams {
   NaClLaunchParams();
-  NaClLaunchParams(const std::string& manifest_url,
-                   const IPC::PlatformFileForTransit& nexe_file,
-                   uint64_t nexe_token_lo,
-                   uint64_t nexe_token_hi,
-                   int render_view_id,
-                   uint32 permission_bits,
-                   bool uses_nonsfi_mode,
-                   NaClAppProcessType process_type);
+  NaClLaunchParams(
+      const std::string& manifest_url,
+      const IPC::PlatformFileForTransit& nexe_file,
+      uint64_t nexe_token_lo,
+      uint64_t nexe_token_hi,
+      // A pair of a manifest key and its resource URL.
+      const std::vector<
+        std::pair<std::string, std::string> >& resource_files_to_prefetch,
+      int render_view_id,
+      uint32 permission_bits,
+      bool uses_nonsfi_mode,
+      NaClAppProcessType process_type);
   ~NaClLaunchParams();
 
   std::string manifest_url;
@@ -115,6 +135,7 @@ struct NaClLaunchParams {
   IPC::PlatformFileForTransit nexe_file;
   uint64_t nexe_token_lo;
   uint64_t nexe_token_hi;
+  std::vector<std::pair<std::string, std::string> > resource_files_to_prefetch;
 
   int render_view_id;
   uint32 permission_bits;
