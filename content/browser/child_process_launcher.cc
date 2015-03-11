@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
@@ -458,6 +459,12 @@ void ChildProcessLauncher::Context::Notify(
     bool zygote,
 #endif
     base::Process process) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "465841 ChildProcessLauncher::Context::Notify::Start"));
+
 #if defined(OS_ANDROID)
   // Finally close the ipcfd
   base::ScopedFD ipcfd_closer = ipcfd_.Pass();
@@ -472,11 +479,26 @@ void ChildProcessLauncher::Context::Notify(
 #endif
   if (client_) {
     if (process_.IsValid()) {
+      // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "465841 ChildProcessLauncher::Context::Notify::ProcessLaunched"));
       client_->OnProcessLaunched();
     } else {
+      // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile3(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "465841 ChildProcessLauncher::Context::Notify::ProcessFailed"));
       client_->OnProcessLaunchFailed();
     }
   } else {
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "465841 ChildProcessLauncher::Context::Notify::ProcessTerminate"));
     Terminate();
   }
 }
