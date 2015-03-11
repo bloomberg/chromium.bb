@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/modules/v8/V8SQLError.h"
 #include "bindings/modules/v8/V8SQLStatementErrorCallback.h"
 #include "bindings/modules/v8/V8SQLTransaction.h"
@@ -76,7 +77,11 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     // statement, if any, or onto the next overall step otherwise. Otherwise,
     // the error callback did not return false, or there was no error callback.
     // Jump to the last step in the overall steps.
-    return exceptionCatcher.HasCaught() || (!result.IsEmpty() && result->BooleanValue());
+    if (exceptionCatcher.HasCaught())
+        return true;
+    bool value;
+    V8_CALL(value, result, BooleanValue(isolate->GetCurrentContext()), return true);
+    return value;
 }
 
 } // namespace blink

@@ -77,6 +77,21 @@ namespace blink {
     if (UNLIKELY(!var.prepare()))                  \
         return retVal;
 
+template <typename T>
+inline bool getValueFromMaybe(v8::Maybe<T> maybe, T& outVariable)
+{
+    if (maybe.IsNothing())
+        return false;
+    outVariable = maybe.FromJust();
+    return true;
+}
+
+// The last "else" is to avoid dangling else problem.
+#define V8_CALL(outVariable, handle, methodCall, failureExpression)                \
+    if (handle.IsEmpty() || !getValueFromMaybe(handle->methodCall, outVariable)) { \
+        failureExpression;                                                         \
+    } else
+
 } // namespace blink
 
 #endif // V8BindingMacros_h

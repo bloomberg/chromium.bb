@@ -39,8 +39,11 @@ void V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::
     V8StringResource<> type(info[0]);
     if (!type.prepare())
         return;
-    bool bubbles = info[1]->BooleanValue();
-    bool cancelable = info[2]->BooleanValue();
+    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+    bool bubbles;
+    V8_CALL(bubbles, info[1], BooleanValue(context), return);
+    bool cancelable;
+    V8_CALL(cancelable, info[2], BooleanValue(context), return);
     // If alpha, beta, gamma or absolute are null or undefined, mark them as not provided.
     // Otherwise, use the standard JavaScript conversion.
     bool alphaProvided = !isUndefinedOrNull(info[3]);
