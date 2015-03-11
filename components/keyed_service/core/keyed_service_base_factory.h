@@ -90,8 +90,8 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory
   virtual bool ServiceIsCreatedWithContext() const;
 
   // By default, testing contexts will be treated like normal contexts. If this
-  // method is overriden to return false, then the service associated with the
-  // testing context will be NULL.
+  // method is overriden to return true, then the service associated with the
+  // testing context will be null.
   virtual bool ServiceIsNULLWhileTesting() const;
 
   // The service build by the factories goes through a two phase shutdown.
