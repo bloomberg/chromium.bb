@@ -920,6 +920,14 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
   ASSERT_TRUE(grand_child1);
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
 
+  RenderSurfaceImpl* root_render_surface =
+      host_impl().active_tree()->root_layer()->render_surface();
+  ASSERT_EQ(4u, root_render_surface->layer_list().size());
+  ASSERT_EQ(3, root_render_surface->layer_list().at(0)->id());
+  ASSERT_EQ(1, root_render_surface->layer_list().at(1)->id());
+  ASSERT_EQ(2, root_render_surface->layer_list().at(2)->id());
+  ASSERT_EQ(4, root_render_surface->layer_list().at(3)->id());
+
   // Nothing overlaps the root_layer at (1, 1), so hit testing there should find
   // the root layer.
   gfx::Point test_point = gfx::Point(1, 1);

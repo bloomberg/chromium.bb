@@ -10,7 +10,6 @@
 #include <iosfwd>
 #include <string>
 
-#include "base/logging.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/gfx_export.h"
@@ -66,18 +65,6 @@ class GFX_EXPORT QuadF {
     float rt = std::min(std::min(p1_.y(), p2_.y()), std::min(p3_.y(), p4_.y()));
     float rb = std::max(std::max(p1_.y(), p2_.y()), std::max(p3_.y(), p4_.y()));
     return RectF(rl, rt, rr - rl, rb - rt);
-  }
-
-  // Realigns the corners in the quad by rotating them n corners to the right.
-  void Realign(size_t times) {
-    DCHECK_LE(times, 4u);
-    for (size_t i = 0; i < times; ++i) {
-      PointF temp = p1_;
-      p1_ = p2_;
-      p2_ = p3_;
-      p3_ = p4_;
-      p4_ = temp;
-    }
   }
 
   // Add a vector to the quad, offseting each point in the quad by the vector.

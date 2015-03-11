@@ -39,8 +39,7 @@ class ScopedResource;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 class TextureMailboxDeleter;
-class StaticGeometryBinding;
-class DynamicGeometryBinding;
+class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 
 // Class that handles drawing of composited render layers using GL.
@@ -86,7 +85,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
 
   const gfx::QuadF& SharedGeometryQuad() const { return shared_geometry_quad_; }
-  const StaticGeometryBinding* SharedGeometry() const {
+  const GeometryBinding* SharedGeometry() const {
     return shared_geometry_.get();
   }
 
@@ -97,8 +96,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                              ResourceFormat texture_format,
                              const gfx::Rect& device_rect);
   void ReleaseRenderPassTextures();
-  enum BoundGeometry { NO_BINDING, SHARED_BINDING, CLIPPED_BINDING };
-  void PrepareGeometry(BoundGeometry geometry_to_bind);
+
   void SetStencilEnabled(bool enabled);
   bool stencil_enabled() const { return stencil_shadow_; }
   void SetBlendEnabled(bool enabled);
@@ -114,9 +112,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                      bool draw_rect_covers_full_surface) override;
   void ClearFramebuffer(DrawingFrame* frame,
                         bool has_external_stencil_test) override;
-  void DoDrawQuad(DrawingFrame* frame,
-                  const class DrawQuad*,
-                  const gfx::QuadF* draw_region) override;
+  void DoDrawQuad(DrawingFrame* frame, const class DrawQuad*) override;
   void BeginDrawingFrame(DrawingFrame* frame) override;
   void FinishDrawingFrame(DrawingFrame* frame) override;
   bool FlippedFramebuffer(const DrawingFrame* frame) const override;
@@ -136,13 +132,10 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // Inflate the quad and fill edge array for fragment shader.
   // |local_quad| is set to inflated quad. |edge| array is filled with
   // inflated quad's edge data.
-  static void SetupQuadForClippingAndAntialiasing(
-      const gfx::Transform& device_transform,
-      const DrawQuad* quad,
-      bool use_aa,
-      const gfx::QuadF* clip_region,
-      gfx::QuadF* local_quad,
-      float edge[24]);
+  static void SetupQuadForAntialiasing(const gfx::Transform& device_transform,
+                                       const DrawQuad* quad,
+                                       gfx::QuadF* local_quad,
+                                       float edge[24]);
 
  private:
   friend class GLRendererShaderPixelTest;
@@ -151,8 +144,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   static void ToGLMatrix(float* gl_matrix, const gfx::Transform& transform);
 
   void DrawCheckerboardQuad(const DrawingFrame* frame,
-                            const CheckerboardDrawQuad* quad,
-                            const gfx::QuadF* clip_region);
+                            const CheckerboardDrawQuad* quad);
   void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
   static bool IsDefaultBlendMode(SkXfermode::Mode blend_mode) {
@@ -166,7 +158,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
-      const gfx::QuadF* clip_region,
       bool use_aa);
   scoped_ptr<ScopedResource> GetBackdropTexture(const gfx::Rect& bounding_rect);
 
@@ -177,56 +168,34 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       const RenderPassDrawQuad* quad,
       ScopedResource* background_texture);
 
-  void DrawRenderPassQuad(DrawingFrame* frame,
-                          const RenderPassDrawQuad* quadi,
-                          const gfx::QuadF* clip_region);
+  void DrawRenderPassQuad(DrawingFrame* frame, const RenderPassDrawQuad* quad);
   void DrawSolidColorQuad(const DrawingFrame* frame,
-                          const SolidColorDrawQuad* quad,
-                          const gfx::QuadF* clip_region);
+                          const SolidColorDrawQuad* quad);
   void DrawStreamVideoQuad(const DrawingFrame* frame,
-                           const StreamVideoDrawQuad* quad,
-                           const gfx::QuadF* clip_region);
-  void DrawTextureQuad(const DrawingFrame* frame,
-                       const TextureDrawQuad* quad,
-                       const gfx::QuadF* clip_region);
+                           const StreamVideoDrawQuad* quad);
   void EnqueueTextureQuad(const DrawingFrame* frame,
-                          const TextureDrawQuad* quad,
-                          const gfx::QuadF* clip_region);
-  void FlushTextureQuadCache(BoundGeometry flush_binding);
+                          const TextureDrawQuad* quad);
+  void FlushTextureQuadCache();
   void DrawIOSurfaceQuad(const DrawingFrame* frame,
-                         const IOSurfaceDrawQuad* quad,
-                         const gfx::QuadF* clip_region);
-  void DrawTileQuad(const DrawingFrame* frame,
-                    const TileDrawQuad* quad,
-                    const gfx::QuadF* clip_region);
+                         const IOSurfaceDrawQuad* quad);
+  void DrawTileQuad(const DrawingFrame* frame, const TileDrawQuad* quad);
   void DrawContentQuad(const DrawingFrame* frame,
                        const ContentDrawQuadBase* quad,
-                       ResourceProvider::ResourceId resource_id,
-                       const gfx::QuadF* clip_region);
+                       ResourceProvider::ResourceId resource_id);
   void DrawContentQuadAA(const DrawingFrame* frame,
                          const ContentDrawQuadBase* quad,
                          ResourceProvider::ResourceId resource_id,
-                         const gfx::Transform& device_transform,
-                         const gfx::QuadF* clip_region);
+                         const gfx::Transform& device_transform);
   void DrawContentQuadNoAA(const DrawingFrame* frame,
                            const ContentDrawQuadBase* quad,
-                           ResourceProvider::ResourceId resource_id,
-                           const gfx::QuadF* clip_region);
+                           ResourceProvider::ResourceId resource_id);
   void DrawYUVVideoQuad(const DrawingFrame* frame,
-                        const YUVVideoDrawQuad* quad,
-                        const gfx::QuadF* clip_region);
+                        const YUVVideoDrawQuad* quad);
   void DrawPictureQuad(const DrawingFrame* frame,
-                       const PictureDrawQuad* quad,
-                       const gfx::QuadF* clip_region);
+                       const PictureDrawQuad* quad);
 
   void SetShaderOpacity(float opacity, int alpha_location);
   void SetShaderQuadF(const gfx::QuadF& quad, int quad_location);
-  void DrawQuadGeometryClippedByQuadF(const DrawingFrame* frame,
-                                      const gfx::Transform& draw_transform,
-                                      const gfx::RectF& quad_rect,
-                                      const gfx::QuadF& clipping_region_quad,
-                                      int matrix_location,
-                                      const float uv[8]);
   void DrawQuadGeometry(const DrawingFrame* frame,
                         const gfx::Transform& draw_transform,
                         const gfx::RectF& quad_rect,
@@ -268,8 +237,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   unsigned offscreen_framebuffer_id_;
 
-  scoped_ptr<StaticGeometryBinding> shared_geometry_;
-  scoped_ptr<DynamicGeometryBinding> clipped_geometry_;
+  scoped_ptr<GeometryBinding> shared_geometry_;
   gfx::QuadF shared_geometry_quad_;
 
   // This block of bindings defines all of the programs used by the compositor
@@ -512,7 +480,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   SkBitmap on_demand_tile_raster_bitmap_;
   ResourceProvider::ResourceId on_demand_tile_raster_resource_id_;
-  BoundGeometry bound_geometry_;
+
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };
 

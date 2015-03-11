@@ -20,22 +20,6 @@ class CC_EXPORT BspWalkAction {
 
 // The BspTree class takes ownership of all the DrawPolygons returned in list_
 // so the BspTree must be preserved while elements in that vector are in use.
-class CC_EXPORT BspWalkActionDrawPolygon : public BspWalkAction {
- public:
-  void operator()(DrawPolygon* item) override;
-
-  BspWalkActionDrawPolygon(DirectRenderer* renderer,
-                           DirectRenderer::DrawingFrame* frame,
-                           const gfx::Rect& render_pass_scissor,
-                           bool using_scissor_as_optimization);
-
- private:
-  DirectRenderer* renderer_;
-  DirectRenderer::DrawingFrame* frame_;
-  const gfx::Rect& render_pass_scissor_;
-  bool using_scissor_as_optimization_;
-};
-
 class CC_EXPORT BspWalkActionToVector : public BspWalkAction {
  public:
   explicit BspWalkActionToVector(std::vector<DrawPolygon*>* in_list);

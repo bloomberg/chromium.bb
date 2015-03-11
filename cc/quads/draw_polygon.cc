@@ -12,7 +12,7 @@
 namespace {
 // This allows for some imperfection in the normal comparison when checking if
 // two pieces of geometry are coplanar.
-static const float coplanar_dot_epsilon = 0.001f;
+static const float coplanar_dot_epsilon = 0.01f;
 // This threshold controls how "thick" a plane is. If a point's distance is
 // <= |compare_threshold|, then it is considered on the plane. Only when this
 // boundary is crossed do we consider doing splitting.
@@ -25,25 +25,21 @@ static const float compare_threshold = 1.0f;
 // points that SHOULD be intersecting the "thick plane", but actually fail to
 // test positively for it because |split_threshold| allowed them to be outside
 // this range.
-// This is really supposd to be compare_threshold / 2.0f, but that would
-// create another static initializer.
 static const float split_threshold = 0.5f;
-
-static const float normalized_threshold = 0.001f;
 }  // namespace
 
 namespace cc {
 
-gfx::Vector3dF DrawPolygon::default_normal = gfx::Vector3dF(0.0f, 0.0f, 1.0f);
+gfx::Vector3dF DrawPolygon::default_normal = gfx::Vector3dF(0.0f, 0.0f, -1.0f);
 
 DrawPolygon::DrawPolygon() {
 }
 
-DrawPolygon::DrawPolygon(const DrawQuad* original,
+DrawPolygon::DrawPolygon(DrawQuad* original,
                          const std::vector<gfx::Point3F>& in_points,
                          const gfx::Vector3dF& normal,
                          int draw_order_index)
-    : order_index_(draw_order_index), original_ref_(original), is_split_(true) {
+    : order_index_(draw_order_index), original_ref_(original) {
   for (size_t i = 0; i < in_points.size(); i++) {
     points_.push_back(in_points[i]);
   }
@@ -53,14 +49,12 @@ DrawPolygon::DrawPolygon(const DrawQuad* original,
 // This takes the original DrawQuad that this polygon should be based on,
 // a visible content rect to make the 4 corner points from, and a transformation
 // to move it and its normal into screen space.
-DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
+DrawPolygon::DrawPolygon(DrawQuad* original_ref,
                          const gfx::RectF& visible_content_rect,
                          const gfx::Transform& transform,
                          int draw_order_index)
-    : normal_(default_normal),
-      order_index_(draw_order_index),
-      original_ref_(original_ref),
-      is_split_(false) {
+    : order_index_(draw_order_index), original_ref_(original_ref) {
+  normal_ = default_normal;
   gfx::Point3F points[8];
   int num_vertices_in_clipped_quad;
   gfx::QuadF send_quad(visible_content_rect);
@@ -103,9 +97,6 @@ float DrawPolygon::SignedPointDistance(const gfx::Point3F& point) const {
 // Assumes that layers are split and there are no intersecting planes.
 BspCompareResult DrawPolygon::SideCompare(const DrawPolygon& a,
                                           const DrawPolygon& b) {
-  // Let's make sure that both of these are normalized.
-  DCHECK_GE(normalized_threshold, std::abs(a.normal_.LengthSquared() - 1.0f));
-  DCHECK_GE(normalized_threshold, std::abs(b.normal_.LengthSquared() - 1.0f));
   // Right away let's check if they're coplanar
   double dot = gfx::DotProduct(a.normal_, b.normal_);
   float sign = 0.0f;
@@ -114,7 +105,7 @@ BspCompareResult DrawPolygon::SideCompare(const DrawPolygon& a,
   if (std::abs(dot) >= 1.0f - coplanar_dot_epsilon) {
     normal_match = true;
     // The normals are matching enough that we only have to test one point.
-    sign = b.SignedPointDistance(a.points_[0]);
+    sign = gfx::DotProduct(a.points_[0] - b.points_[0], b.normal_);
     // Is it on either side of the splitter?
     if (sign < -compare_threshold) {
       return BSP_BACK;
@@ -177,7 +168,7 @@ static bool LineIntersectPlane(const gfx::Point3F& line_start,
 
   // The case where one vertex lies on the thick-plane and the other
   // is outside of it.
-  if (std::abs(start_distance) <= distance_threshold &&
+  if (std::abs(start_distance) < distance_threshold &&
       std::abs(end_distance) > distance_threshold) {
     intersection->SetPoint(line_start.x(), line_start.y(), line_start.z());
     return true;
@@ -279,7 +270,7 @@ bool DrawPolygon::Split(const DrawPolygon& splitter,
         break;
       }
     }
-    if (current_vertex++ > (points_size)) {
+    if (current_vertex++ > points_size) {
       break;
     }
   }
@@ -293,7 +284,6 @@ bool DrawPolygon::Split(const DrawPolygon& splitter,
 
   // First polygon.
   out_points[0].push_back(intersections[0]);
-  DCHECK_GE(vertex_before[1], start1);
   for (size_t i = start1; i <= vertex_before[1]; i++) {
     out_points[0].push_back(points_[i]);
     --points_remaining;
@@ -315,9 +305,6 @@ bool DrawPolygon::Split(const DrawPolygon& splitter,
       new DrawPolygon(original_ref_, out_points[0], normal_, order_index_));
   scoped_ptr<DrawPolygon> poly2(
       new DrawPolygon(original_ref_, out_points[1], normal_, order_index_));
-
-  DCHECK_GE(poly1->points().size(), 3u);
-  DCHECK_GE(poly2->points().size(), 3u);
 
   if (SideCompare(*poly1, splitter) == BSP_FRONT) {
     *front = poly1.Pass();

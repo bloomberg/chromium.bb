@@ -25,7 +25,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
-#include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkLayerRasterizer.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -236,13 +235,7 @@ bool SoftwareRenderer::IsSoftwareResource(
   return false;
 }
 
-void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
-                                  const DrawQuad* quad,
-                                  const gfx::QuadF* draw_region) {
-  if (draw_region) {
-    current_canvas_->save();
-  }
-
+void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
   TRACE_EVENT0("cc", "SoftwareRenderer::DoDrawQuad");
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, quad->quadTransform(), quad->rect);
@@ -277,31 +270,9 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
     current_paint_.setXfermodeMode(SkXfermode::kSrc_Mode);
   }
 
-  if (draw_region) {
-    gfx::QuadF local_draw_region(*draw_region);
-    SkPath draw_region_clip_path;
-    local_draw_region -=
-        gfx::Vector2dF(quad->visible_rect.x(), quad->visible_rect.y());
-    local_draw_region.Scale(1.0f / quad->visible_rect.width(),
-                            1.0f / quad->visible_rect.height());
-    local_draw_region -= gfx::Vector2dF(0.5f, 0.5f);
-
-    SkPoint clip_points[4];
-    QuadFToSkPoints(local_draw_region, clip_points);
-    draw_region_clip_path.addPoly(clip_points, 4, true);
-
-    current_canvas_->clipPath(draw_region_clip_path, SkRegion::kIntersect_Op,
-                              false);
-  }
-
   switch (quad->material) {
     case DrawQuad::CHECKERBOARD:
-      // TODO(enne) For now since checkerboards shouldn't be part of a 3D
-      // context, clipping regions aren't supported so we skip drawing them
-      // if this becomes the case.
-      if (!draw_region) {
-        DrawCheckerboardQuad(frame, CheckerboardDrawQuad::MaterialCast(quad));
-      }
+      DrawCheckerboardQuad(frame, CheckerboardDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(frame, DebugBorderDrawQuad::MaterialCast(quad));
@@ -336,9 +307,6 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
   }
 
   current_canvas_->resetMatrix();
-  if (draw_region) {
-    current_canvas_->restore();
-  }
 }
 
 void SoftwareRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,

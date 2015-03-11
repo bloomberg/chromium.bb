@@ -15,6 +15,7 @@
 #include "cc/layers/render_surface.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/trees/draw_property_utils.h"
+#include "cc/trees/layer_sorter.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -29,6 +30,20 @@ ScrollAndScaleSet::ScrollAndScaleSet()
 }
 
 ScrollAndScaleSet::~ScrollAndScaleSet() {}
+
+static void SortLayers(LayerList::iterator first,
+                       LayerList::iterator end,
+                       void* layer_sorter) {
+  NOTREACHED();
+}
+
+static void SortLayers(LayerImplList::iterator first,
+                       LayerImplList::iterator end,
+                       LayerSorter* layer_sorter) {
+  DCHECK(layer_sorter);
+  TRACE_EVENT0("cc", "LayerTreeHostCommon::SortLayers");
+  layer_sorter->Sort(first, end);
+}
 
 template <typename LayerType>
 static gfx::Vector2dF GetEffectiveScrollDelta(LayerType* layer) {
@@ -1266,6 +1281,7 @@ static void PreCalculateMetaInformation(
 
 template <typename LayerType>
 struct SubtreeGlobals {
+  LayerSorter* layer_sorter;
   int max_texture_size;
   float device_scale_factor;
   float page_scale_factor;
@@ -2353,6 +2369,17 @@ static void CalculateDrawPropertiesInternal(
     return;
   }
 
+  // If preserves-3d then sort all the descendants in 3D so that they can be
+  // drawn from back to front. If the preserves-3d property is also set on the
+  // parent then skip the sorting as the parent will sort all the descendants
+  // anyway.
+  if (globals.layer_sorter && descendants.size() && layer->Is3dSorted() &&
+      !LayerIsInExisting3DRenderingContext(layer)) {
+    SortLayers(descendants.begin() + sorting_start_index,
+               descendants.end(),
+               globals.layer_sorter);
+  }
+
   UpdateAccumulatedSurfaceState<LayerType>(
       layer, local_drawable_content_rect_of_subtree, accumulated_surface_state);
 
@@ -2390,6 +2417,7 @@ static void ProcessCalcDrawPropsInputs(
   scaled_device_transform.Scale(inputs.device_scale_factor,
                                 inputs.device_scale_factor);
 
+  globals->layer_sorter = NULL;
   globals->max_texture_size = inputs.max_texture_size;
   globals->device_scale_factor =
       inputs.device_scale_factor * device_transform_scale;
@@ -2552,6 +2580,9 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   SubtreeGlobals<LayerImpl> globals;
   DataForRecursion<LayerImpl> data_for_recursion;
   ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
+
+  LayerSorter layer_sorter;
+  globals.layer_sorter = &layer_sorter;
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
