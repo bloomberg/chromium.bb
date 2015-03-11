@@ -132,8 +132,7 @@ class NET_EXPORT SdchOwner : public net::SdchObserver,
   unsigned int destroyed_;
 #endif
 
-  // TODO(rmcilroy) Add back memory_pressure_listener_ when
-  // http://crbug.com/447208 is fixed
+  base::MemoryPressureListener memory_pressure_listener_;
 
   // Dictionary persistence machinery.
   // * |in_memory_pref_store_| is created on construction and used in
