@@ -1,0 +1,5 @@
+CONSOLE ERROR: The computed SHA-256 integrity 'mk_DwEwGGoyrh4sgi9t0nYTO1Lrft3w6vzaNuMaZrtQ=' does not match the 'integrity' attribute 'deadbeef' for resource 'http://localhost:8000/security/resources/cors-script.php?value=ran'.
+This is a testharness.js-based test.
+PASS SRI on cross origin CORS enabled script, with bad integrity 
+Harness: the test ran to completion.
+
