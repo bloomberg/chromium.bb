@@ -358,6 +358,7 @@ void MetricsLog::RecordEnvironment(
   SystemProfileProto::Hardware::CPU* cpu = hardware->mutable_cpu();
   cpu->set_vendor_name(cpu_info.vendor_name());
   cpu->set_signature(cpu_info.signature());
+  cpu->set_num_cores(base::SysInfo::NumberOfProcessors());
 
   std::vector<ActiveGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);

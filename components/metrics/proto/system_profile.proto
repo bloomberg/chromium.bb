@@ -137,6 +137,9 @@ message SystemProfileProto {
 
       // The signature reported by CPUID (from EAX).
       optional uint32 signature = 2;
+
+      // Number of logical processors/cores on the current machine.
+      optional uint32 num_cores = 3;
     }
     optional CPU cpu = 13;
 

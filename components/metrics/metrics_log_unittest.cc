@@ -127,6 +127,7 @@ class MetricsLogTest : public testing::Test {
     EXPECT_TRUE(hardware.has_cpu());
     EXPECT_TRUE(hardware.cpu().has_vendor_name());
     EXPECT_TRUE(hardware.cpu().has_signature());
+    EXPECT_TRUE(hardware.cpu().has_num_cores());
 
     // TODO(isherman): Verify other data written into the protobuf as a result
     // of this call.
