@@ -110,13 +110,13 @@ AttachmentServiceImpl::GetOrDownloadState::PostResultIfAllRequestsCompleted() {
 }
 
 AttachmentServiceImpl::AttachmentServiceImpl(
-    scoped_refptr<AttachmentStore> attachment_store,
+    scoped_ptr<AttachmentStore> attachment_store,
     scoped_ptr<AttachmentUploader> attachment_uploader,
     scoped_ptr<AttachmentDownloader> attachment_downloader,
     Delegate* delegate,
     const base::TimeDelta& initial_backoff_delay,
     const base::TimeDelta& max_backoff_delay)
-    : attachment_store_(attachment_store),
+    : attachment_store_(attachment_store.Pass()),
       attachment_uploader_(attachment_uploader.Pass()),
       attachment_downloader_(attachment_downloader.Pass()),
       delegate_(delegate),
@@ -144,24 +144,20 @@ AttachmentServiceImpl::~AttachmentServiceImpl() {
 
 // Static.
 scoped_ptr<syncer::AttachmentService> AttachmentServiceImpl::CreateForTest() {
-  scoped_refptr<syncer::AttachmentStore> attachment_store =
+  scoped_ptr<syncer::AttachmentStore> attachment_store =
       AttachmentStore::CreateInMemoryStore();
   scoped_ptr<AttachmentUploader> attachment_uploader(
       new FakeAttachmentUploader);
   scoped_ptr<AttachmentDownloader> attachment_downloader(
       new FakeAttachmentDownloader());
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(attachment_store,
+      new syncer::AttachmentServiceImpl(attachment_store.Pass(),
                                         attachment_uploader.Pass(),
                                         attachment_downloader.Pass(),
                                         NULL,
                                         base::TimeDelta(),
                                         base::TimeDelta()));
   return attachment_service.Pass();
-}
-
-AttachmentStore* AttachmentServiceImpl::GetStore() {
-  return attachment_store_.get();
 }
 
 void AttachmentServiceImpl::GetOrDownloadAttachments(
@@ -172,8 +168,7 @@ void AttachmentServiceImpl::GetOrDownloadAttachments(
       new GetOrDownloadState(attachment_ids, callback));
   attachment_store_->Read(attachment_ids,
                           base::Bind(&AttachmentServiceImpl::ReadDone,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     state));
+                                     weak_ptr_factory_.GetWeakPtr(), state));
 }
 
 void AttachmentServiceImpl::ReadDone(

@@ -134,6 +134,7 @@ void OnDiskAttachmentStore::Read(
 }
 
 void OnDiskAttachmentStore::Write(
+    AttachmentStore::AttachmentReferrer referrer,
     const AttachmentList& attachments,
     const AttachmentStore::WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -153,6 +154,7 @@ void OnDiskAttachmentStore::Write(
 }
 
 void OnDiskAttachmentStore::Drop(
+    AttachmentStore::AttachmentReferrer referrer,
     const AttachmentIdList& ids,
     const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -206,6 +208,7 @@ void OnDiskAttachmentStore::ReadMetadata(
 }
 
 void OnDiskAttachmentStore::ReadAllMetadata(
+    AttachmentStore::AttachmentReferrer referrer,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code =

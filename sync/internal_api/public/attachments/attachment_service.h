@@ -52,11 +52,6 @@ class SYNC_EXPORT AttachmentService {
   AttachmentService();
   virtual ~AttachmentService();
 
-  // Return a pointer to the AttachmentStore owned by this object.
-  //
-  // May return NULL.
-  virtual AttachmentStore* GetStore() = 0;
-
   // See SyncData::GetOrDownloadAttachments.
   virtual void GetOrDownloadAttachments(
       const AttachmentIdList& attachment_ids,

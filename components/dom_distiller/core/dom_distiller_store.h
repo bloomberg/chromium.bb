@@ -199,7 +199,7 @@ class DomDistillerStore : public syncer::SyncableService,
   scoped_ptr<syncer::SyncErrorFactory> error_factory_;
   scoped_ptr<leveldb_proto::ProtoDatabase<ArticleEntry> > database_;
   bool database_loaded_;
-  scoped_refptr<syncer::AttachmentStore> attachment_store_;
+  scoped_ptr<syncer::AttachmentStore> attachment_store_;
   ObserverList<DomDistillerObserver> observers_;
 
   DomDistillerModel model_;

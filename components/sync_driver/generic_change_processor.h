@@ -54,7 +54,7 @@ class GenericChangeProcessor : public ChangeProcessor,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       syncer::UserShare* user_share,
       SyncApiComponentFactory* sync_factory,
-      const scoped_refptr<syncer::AttachmentStore>& attachment_store);
+      scoped_ptr<syncer::AttachmentStore> attachment_store);
   ~GenericChangeProcessor() override;
 
   // ChangeProcessor interface.
