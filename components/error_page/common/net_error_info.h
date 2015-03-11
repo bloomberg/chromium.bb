@@ -17,9 +17,10 @@ enum NetworkErrorPageEvent {
   NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR,        // Reload button clicked
                                                  // -> error.
 
-  NETWORK_ERROR_PAGE_LOAD_STALE_BUTTON_SHOWN,    // Load stale buttons shown.
-  NETWORK_ERROR_PAGE_LOAD_STALE_BUTTON_CLICKED,  // Load stale button clicked.
-  NETWORK_ERROR_PAGE_LOAD_STALE_BUTTON_ERROR,    // Load stale buttons -> error.
+  // Same for the "Show saved copy" button.
+  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_SHOWN,
+  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED,
+  NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_ERROR,
 
   NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED,        // More button clicked.
 

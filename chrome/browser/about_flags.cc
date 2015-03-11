@@ -214,6 +214,16 @@ const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
     cc::switches::kMaxTilesForInterestArea, "512"}
 };
 
+const Experiment::Choice kShowSavedCopyChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_PRIMARY,
+    switches::kShowSavedCopy, switches::kEnableShowSavedCopyPrimary },
+  { IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_SECONDARY,
+    switches::kShowSavedCopy, switches::kEnableShowSavedCopySecondary },
+  { IDS_FLAGS_DISABLE_SHOW_SAVED_COPY,
+    switches::kShowSavedCopy, switches::kDisableShowSavedCopy }
+};
+
 const Experiment::Choice kDefaultTileWidthChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_DEFAULT_TILE_WIDTH_SHORT,
@@ -1221,12 +1231,11 @@ const Experiment kExperiments[] = {
                               switches::kDisableOfflineAutoReloadVisibleOnly)
   },
   {
-    "enable-offline-load-stale-cache",
-    IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_NAME,
-    IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_DESCRIPTION,
+    "show-saved-copy",
+    IDS_FLAGS_SHOW_SAVED_COPY_NAME,
+    IDS_FLAGS_SHOW_SAVED_COPY_DESCRIPTION,
     kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflineLoadStaleCache,
-                              switches::kDisableOfflineLoadStaleCache)
+    MULTI_VALUE_TYPE(kShowSavedCopyChoices)
   },
   {
     "default-tile-width",

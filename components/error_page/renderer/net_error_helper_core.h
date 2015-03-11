@@ -45,7 +45,7 @@ class NetErrorHelperCore {
   enum Button {
     NO_BUTTON,
     RELOAD_BUTTON,
-    LOAD_STALE_BUTTON,
+    SHOW_SAVED_COPY_BUTTON,
     MORE_BUTTON,
   };
 
@@ -59,7 +59,7 @@ class NetErrorHelperCore {
         bool is_failed_post,
         scoped_ptr<error_page::ErrorPageParams> params,
         bool* reload_button_shown,
-        bool* load_stale_button_shown,
+        bool* show_saved_copy_button_shown,
         std::string* html) const = 0;
 
     // Loads the given HTML in the main frame for use as an error page.

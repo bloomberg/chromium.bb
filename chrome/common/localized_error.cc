@@ -4,6 +4,7 @@
 
 #include "chrome/common/localized_error.h"
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -11,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/error_page/common/error_page_params.h"
@@ -508,7 +510,7 @@ void LocalizedError::GetStrings(int error_code,
                                 const std::string& error_domain,
                                 const GURL& failed_url,
                                 bool is_post,
-                                bool show_stale_load_button,
+                                bool stale_copy_in_cache,
                                 const std::string& locale,
                                 const std::string& accept_languages,
                                 scoped_ptr<error_page::ErrorPageParams> params,
@@ -688,14 +690,28 @@ void LocalizedError::GetStrings(int error_code,
   if (!use_default_suggestions)
     return;
 
-  if (show_stale_load_button) {
-    base::DictionaryValue* stale_load_button = new base::DictionaryValue;
-    stale_load_button->SetString(
-        "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LOAD_STALE));
-    stale_load_button->SetString(
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  const std::string& show_saved_copy_value =
+      command_line->GetSwitchValueASCII(switches::kShowSavedCopy);
+  bool show_saved_copy_primary = (show_saved_copy_value ==
+      switches::kEnableShowSavedCopyPrimary);
+  bool show_saved_copy_secondary = (show_saved_copy_value ==
+      switches::kEnableShowSavedCopySecondary);
+  bool show_saved_copy_visible =
+      (stale_copy_in_cache && !is_post &&
+      (show_saved_copy_primary || show_saved_copy_secondary));
+
+  if (show_saved_copy_visible) {
+    base::DictionaryValue* show_saved_copy_button = new base::DictionaryValue;
+    show_saved_copy_button->SetString(
+        "msg", l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY));
+    show_saved_copy_button->SetString(
         "title",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LOAD_STALE_HELP));
-    error_strings->Set("staleLoadButton", stale_load_button);
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY_HELP));
+    if (show_saved_copy_primary)
+      show_saved_copy_button->SetString("primary", "true");
+    error_strings->Set("showSavedCopyButton", show_saved_copy_button);
   }
 
 #if defined(OS_CHROMEOS)

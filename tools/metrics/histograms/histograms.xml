@@ -52508,6 +52508,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1838482444" label="disable-settings-window"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
+  <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
   <int value="-1746767834" label="ssl-interstitial-v2-gray"/>
@@ -54322,9 +54323,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Reload Button Shown"/>
   <int value="2" label="Reload Button Clicked"/>
   <int value="3" label="Reload Button Click Load Error"/>
-  <int value="4" label="Load Stale Button Shown"/>
-  <int value="5" label="Load Stale Button Clicked"/>
-  <int value="6" label="Load Stale Button Click Load Error"/>
+  <int value="4" label="Show Saved Copy Button Shown"/>
+  <int value="5" label="Show Saved Copy Button Clicked"/>
+  <int value="6" label="Show Saved Copy Button Click Load Error"/>
   <int value="7" label="More Button Clicked"/>
   <int value="8" label="Browser Initiated Reload"/>
 </enum>

@@ -30,8 +30,8 @@ class NetErrorPageController
   explicit NetErrorPageController(content::RenderFrame* render_frame);
   ~NetErrorPageController() override;
 
-  // Execute a "Load Stale" button click.
-  bool LoadStaleButtonClick();
+  // Execute a "Show saved copy" button click.
+  bool ShowSavedCopyButtonClick();
 
   // Execute a "Reload" button click.
   bool ReloadButtonClick();

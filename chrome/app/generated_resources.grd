@@ -9082,11 +9082,11 @@ I don't think this site should be blocked!
       <message name="IDS_ERRORPAGES_BUTTON_RELOAD" desc="Label for the button on an error page to reload the page">
         Reload
       </message>
-      <message name="IDS_ERRORPAGES_BUTTON_LOAD_STALE" desc="Label for the button on an error page to load a stale entry from the cache">
+      <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY" desc="Label for the button on an error page to show a saved entry from the cache">
         Show saved copy
       </message>
-      <message name="IDS_ERRORPAGES_BUTTON_LOAD_STALE_HELP" desc="Explanation for the BUTTON_LOAD_STALE button">
-        Load a stale (i.e. known to be out of date) copy of this page.
+      <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY_HELP" desc="Explanation for the BUTTON_SHOW_SAVED button">
+        Show a saved (i.e. known to be out of date) copy of this page.
       </message>
       <if expr="chromeos">
         <message name="IDS_ERRORPAGES_BUTTON_DIAGNOSE" desc="Label for the button that invokes the connection diagnostic tool on the error page">
@@ -14383,11 +14383,20 @@ Do you accept?
       <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_DESCRIPTION" desc="Description of the flag to only auto-reload visible tabs">
         Pages that fail to load while the browser is offline will only be auto-reloaded if their tab is visible.
       </message>
-      <message name="IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_NAME" desc="Name of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
-        Enable Offline Load Stale Button
+      <message name="IDS_FLAGS_SHOW_SAVED_COPY_NAME" desc="Name of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
+        Enable Show Saved Copy Button
       </message>
-      <message name="IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_DESCRIPTION" desc="Description of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
-        When a page fails to load, if a stale copy of the page exists in the browser, a button will be presented to allow the user to load that stale copy.
+      <message name="IDS_FLAGS_SHOW_SAVED_COPY_DESCRIPTION" desc="Description of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
+        When a page fails to load, if a stale copy of the page exists in the browser cache, a button will be presented to allow the user to load that stale copy.  The primary enabling choice puts the button in the most salient position on the error page; the secondary enabling choice puts it secondary to the reload button.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_PRIMARY" desc="Option for IDS_FLAGS_SHOW_SAVED_NAME to use the show saved copy as the primary button.">
+        Enable: Primary
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_SECONDARY" desc="Option for IDS_FLAGS_SHOW_SAVED_COPY_NAME to use the reload as the primary button (in contrast to the show saved button).">
+        Enable: Secondary
+      </message>
+      <message name="IDS_FLAGS_DISABLE_SHOW_SAVED_COPY" desc="Option to disable IDS_FLAGS_SHOW_SAVED_COPY_NAME.">
+        Disable
       </message>
 
       <if expr="chromeos">

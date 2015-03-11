@@ -31,11 +31,12 @@
             jsselect="reloadButton"
             jsvalues=".url:reloadUrl; .trackingId:reloadTrackingId"
             jscontent="msg"></button>
-        <button id="stale-load-button"
+        <button id="show-saved-copy-button"
             class="blue-button text-button"
-            onclick="loadStaleButtonClick()"
-            jsselect="staleLoadButton"
-            jscontent="msg" jsvalues="title:title"></button>
+            onclick="showSavedCopyButtonClick()"
+            jsselect="showSavedCopyButton"
+            jscontent="msg" jsvalues="title:title; .primary:primary">
+        </button>
       </div>
       <button id="details-button" class="text-button small-link"
          onclick="detailsButtonClick(); toggleHelpBox()"

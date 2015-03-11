@@ -96,8 +96,8 @@ void NetErrorHelper::ReloadButtonPressed() {
   core_->ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
 }
 
-void NetErrorHelper::LoadStaleButtonPressed() {
-  core_->ExecuteButtonPress(NetErrorHelperCore::LOAD_STALE_BUTTON);
+void NetErrorHelper::ShowSavedCopyButtonPressed() {
+  core_->ExecuteButtonPress(NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
 }
 
 void NetErrorHelper::MoreButtonPressed() {
@@ -171,7 +171,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     bool is_failed_post,
     scoped_ptr<ErrorPageParams> params,
     bool* reload_button_shown,
-    bool* load_stale_button_shown,
+    bool* show_saved_copy_button_shown,
     std::string* error_html) const {
   error_html->clear();
 
@@ -181,21 +181,17 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
   if (template_html.empty()) {
     NOTREACHED() << "unable to load template.";
   } else {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    bool load_stale_cache_enabled =
-        command_line->HasSwitch(switches::kEnableOfflineLoadStaleCache);
-
     base::DictionaryValue error_strings;
     LocalizedError::GetStrings(error.reason, error.domain.utf8(),
                                error.unreachableURL, is_failed_post,
-                               (load_stale_cache_enabled &&
-                                error.staleCopyInCache && !is_failed_post),
+                               error.staleCopyInCache,
                                RenderThread::Get()->GetLocale(),
                                render_frame()->GetRenderView()->
                                    GetAcceptLanguages(),
                                params.Pass(), &error_strings);
     *reload_button_shown = error_strings.Get("reloadButton", NULL);
-    *load_stale_button_shown = error_strings.Get("staleLoadButton", NULL);
+    *show_saved_copy_button_shown =
+        error_strings.Get("showSavedCopyButton", NULL);
 
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
@@ -217,17 +213,12 @@ void NetErrorHelper::EnablePageHelperFunctions() {
 
 void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                                      bool is_failed_post) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    bool load_stale_cache_enabled =
-        command_line->HasSwitch(switches::kEnableOfflineLoadStaleCache);
-
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(error.reason,
                              error.domain.utf8(),
                              error.unreachableURL,
                              is_failed_post,
-                             (load_stale_cache_enabled &&
-                              error.staleCopyInCache && !is_failed_post),
+                             error.staleCopyInCache,
                              RenderThread::Get()->GetLocale(),
                              render_frame()->GetRenderView()->
                                  GetAcceptLanguages(),

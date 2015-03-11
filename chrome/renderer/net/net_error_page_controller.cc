@@ -36,14 +36,14 @@ void NetErrorPageController::Install(content::RenderFrame* render_frame) {
               controller.ToV8());
 }
 
-bool NetErrorPageController::LoadStaleButtonClick() {
+bool NetErrorPageController::ShowSavedCopyButtonClick() {
   if (!render_frame())
     return false;
 
   NetErrorHelper* net_error_helper =
       content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
   DCHECK(net_error_helper);
-  net_error_helper->LoadStaleButtonPressed();
+  net_error_helper->ShowSavedCopyButtonPressed();
 
   return true;
 }
@@ -95,8 +95,8 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<NetErrorPageController>::GetObjectTemplateBuilder(
              isolate)
-      .SetMethod("loadStaleButtonClick",
-                 &NetErrorPageController::LoadStaleButtonClick)
+      .SetMethod("showSavedCopyButtonClick",
+                 &NetErrorPageController::ShowSavedCopyButtonClick)
       .SetMethod("reloadButtonClick",
                  &NetErrorPageController::ReloadButtonClick)
       .SetMethod("detailsButtonClick",

@@ -1422,24 +1422,33 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     }
 
     {
-      // Enable load stale cache if this session is in the field trial or
-      // the user explicitly enabled it.  Note that as far as the renderer
-      // is concerned, the feature is enabled if-and-only-if the
-      // kEnableOfflineLoadStaleCache flag is on the command line;
-      // the yes/no/default behavior is only at the browser command line
-      // level.
+      // Enable showing a saved copy if this session is in the field trial
+      // or the user explicitly enabled it.  Note that as far as the
+      // renderer is concerned, the feature is enabled if-and-only-if
+      // one of the kEnableShowSavedCopy* switches is on the command
+      // line; the yes/no/default behavior is only at the browser
+      // command line level.
 
       // Command line switches override
-      if (browser_command_line.HasSwitch(
-              switches::kEnableOfflineLoadStaleCache)) {
-        command_line->AppendSwitch(switches::kEnableOfflineLoadStaleCache);
-      } else if (!browser_command_line.HasSwitch(
-          switches::kDisableOfflineLoadStaleCache)) {
+      const std::string& show_saved_copy_value =
+          browser_command_line.GetSwitchValueASCII(switches::kShowSavedCopy);
+      if (show_saved_copy_value == switches::kEnableShowSavedCopyPrimary ||
+          show_saved_copy_value == switches::kEnableShowSavedCopySecondary ||
+          show_saved_copy_value == switches::kDisableShowSavedCopy) {
+        command_line->AppendSwitchASCII(switches::kShowSavedCopy,
+                                        show_saved_copy_value);
+      } else {
         std::string group =
             base::FieldTrialList::FindFullName("LoadStaleCacheExperiment");
 
-        if (group == "Enabled")
-          command_line->AppendSwitch(switches::kEnableOfflineLoadStaleCache);
+        if (group == "Primary") {
+          command_line->AppendSwitchASCII(
+              switches::kShowSavedCopy, switches::kEnableShowSavedCopyPrimary);
+        } else if (group == "Secondary") {
+          command_line->AppendSwitchASCII(
+              switches::kShowSavedCopy,
+              switches::kEnableShowSavedCopySecondary);
+        }
       }
     }
 

@@ -37,7 +37,7 @@ class LocalizedError {
                          const std::string& error_domain,
                          const GURL& failed_url,
                          bool is_post,
-                         bool show_stale_load_button,
+                         bool stale_copy_in_cache,
                          const std::string& locale,
                          const std::string& accept_languages,
                          scoped_ptr<error_page::ErrorPageParams> params,

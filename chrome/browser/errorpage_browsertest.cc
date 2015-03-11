@@ -136,8 +136,8 @@ void ExpectDisplayingNavigationCorrections(Browser* browser,
   EXPECT_TRUE(search_box_populated);
 }
 
-std::string GetLoadStaleButtonLabel() {
-  return l10n_util::GetStringUTF8(IDS_ERRORPAGES_BUTTON_LOAD_STALE);
+std::string GetShowSavedButtonLabel() {
+  return l10n_util::GetStringUTF8(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY);
 }
 
 void AddInterceptorForURL(
@@ -299,7 +299,8 @@ class ErrorPageTest : public InProcessBrowserTest {
   // Navigates the active tab to a mock url created for the file at |file_path|.
   // Needed for StaleCacheStatus and StaleCacheStatusFailedCorrections tests.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableOfflineLoadStaleCache);
+    command_line->AppendSwitchASCII(switches::kShowSavedCopy,
+                                    switches::kEnableShowSavedCopyPrimary);
   }
 
   // Navigates the active tab to a mock url created for the file at |file_path|.
@@ -358,7 +359,8 @@ class ErrorPageTest : public InProcessBrowserTest {
     const char* js_cache_probe =
         "try {\n"
         "    domAutomationController.send(\n"
-        "        loadTimeData.valueExists('staleLoadButton') ? 'yes' : 'no');\n"
+        "        loadTimeData.valueExists('showSavedCopyButton') ?"
+        "            'yes' : 'no');\n"
         "} catch (e) {\n"
         "    domAutomationController.send(e.message);\n"
         "}\n";
@@ -383,7 +385,7 @@ class ErrorPageTest : public InProcessBrowserTest {
   testing::AssertionResult ReloadStaleCopyFromCache() {
     const char* js_reload_script =
         "try {\n"
-        "    document.getElementById('stale-load-button').click();\n"
+        "    document.getElementById('show-saved-copy-button').click();\n"
         "    domAutomationController.send('success');\n"
         "} catch (e) {\n"
         "    domAutomationController.send(e.message);\n"
@@ -845,10 +847,10 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
       base::Bind(&InterceptNetworkTransactions, url_request_context_getter,
                  net::ERR_FAILED));
 
-      // With no navigation corrections to load, there's only one navigation.
+  // With no navigation corrections to load, there's only one navigation.
   ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(ProbeStaleCopyValue(true));
-  EXPECT_TRUE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
+  EXPECT_TRUE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
   EXPECT_NE(base::ASCIIToUTF16("Nocache Test Page"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
@@ -860,6 +862,13 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   EXPECT_EQ(base::ASCIIToUTF16("Nocache Test Page"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
+  // Reload the same URL with a post request; confirm the error page is told
+  // that there is no cached copy.
+  ui_test_utils::NavigateToURLWithPost(browser(), test_url);
+  EXPECT_TRUE(ProbeStaleCopyValue(false));
+  EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
+  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+
   // Clear the cache and reload the same URL; confirm the error page is told
   // that there is no cached copy.
   BrowsingDataRemover* remover =
@@ -868,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
                   BrowsingDataHelper::UNPROTECTED_WEB);
   ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(ProbeStaleCopyValue(false));
-  EXPECT_FALSE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
+  EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
 }
 
@@ -1047,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);
-  EXPECT_TRUE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
+  EXPECT_TRUE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
   EXPECT_TRUE(ProbeStaleCopyValue(true));
 
   // Confirm that loading the stale copy from the cache works.
@@ -1067,7 +1076,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);
   EXPECT_TRUE(ProbeStaleCopyValue(false));
-  EXPECT_FALSE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
+  EXPECT_FALSE(IsDisplayingText(browser(), GetShowSavedButtonLabel()));
 }
 
 // A test fixture that simulates failing requests for an IDN domain name.

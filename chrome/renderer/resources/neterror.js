@@ -102,9 +102,9 @@ function reloadButtonClick(url) {
   }
 }
 
-function loadStaleButtonClick() {
+function showSavedCopyButtonClick() {
   if (window.errorPageController) {
-    errorPageController.loadStaleButtonClick();
+    errorPageController.showSavedCopyButtonClick();
   }
 }
 
@@ -123,22 +123,28 @@ function onDocumentLoad() {
   var controlButtonDiv = document.getElementById('control-buttons');
   var reloadButton = document.getElementById('reload-button');
   var detailsButton = document.getElementById('details-button');
-  var staleLoadButton = document.getElementById('stale-load-button');
+  var showSavedCopyButton = document.getElementById('show-saved-copy-button');
 
-  var primaryButton = reloadButton;
-  var secondaryButton = staleLoadButton;
+  var primaryButton, secondaryButton;
+  if (showSavedCopyButton.primary) {
+    primaryButton = showSavedCopyButton;
+    secondaryButton = reloadButton;
+  } else {
+    primaryButton = reloadButton;
+    secondaryButton = showSavedCopyButton;
+  }
 
   // Sets up the proper button layout for the current platform.
   if (primaryControlOnLeft) {
     buttons.classList.add('suggested-left');
-    controlButtonDiv.insertBefore(primaryButton, secondaryButton);
+    controlButtonDiv.insertBefore(secondaryButton, primaryButton);
   } else {
     buttons.classList.add('suggested-right');
-    controlButtonDiv.insertBefore(secondaryButton, primaryButton);
+    controlButtonDiv.insertBefore(primaryButton, secondaryButton);
   }
 
   if (reloadButton.style.display == 'none' &&
-      staleLoadButton.style.display == 'none') {
+      showSavedCopyButton.style.display == 'none') {
     detailsButton.classList.add('singular');
   }
 
@@ -153,15 +159,16 @@ function onDocumentLoad() {
   // Show control buttons.
   if (loadTimeData.valueExists('reloadButton') &&
           loadTimeData.getValue('reloadButton').msg ||
-      loadTimeData.valueExists('staleLoadButton') &&
-          loadTimeData.getValue('staleLoadButton').msg) {
+      loadTimeData.valueExists('showSavedCopyButton') &&
+          loadTimeData.getValue('showSavedCopyButton').msg) {
     controlButtonDiv.hidden = false;
 
     // Set the secondary button state in the cases of two call to actions.
-    // Reload is secondary to stale load.
-    if (loadTimeData.valueExists('staleLoadButton') &&
-            loadTimeData.getValue('staleLoadButton').msg) {
-      reloadButton.classList.add('secondary-button');
+    if (loadTimeData.valueExists('reloadButton') &&
+            loadTimeData.getValue('reloadButton').msg &&
+        loadTimeData.valueExists('showSavedCopyButton') &&
+            loadTimeData.getValue('showSavedCopyButton').msg) {
+      secondaryButton.classList.add('secondary-button');
     }
   }
 

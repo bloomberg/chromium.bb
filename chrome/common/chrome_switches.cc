@@ -492,11 +492,6 @@ const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
 const char kEnableOfflineAutoReloadVisibleOnly[] =
     "enable-offline-auto-reload-visible-only";
 
-// Enable/Disable offering a "Load stale copy" option to the user if offline.
-const char kEnableOfflineLoadStaleCache[]   = "enable-offline-load-stale-cache";
-const char kDisableOfflineLoadStaleCache[]  =
-    "disable-offline-load-stale-cache";
-
 // Enable the out of process PDF plugin.
 const char kEnableOutOfProcessPdf[]         = "enable-out-of-process-pdf";
 
@@ -1051,6 +1046,16 @@ const char kShowAppList[]                   = "show-app-list";
 
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
+
+// Command line flag offering a "Show saved copy" option to the user if offline.
+// The various modes are disabled, primary, or secondary. Primary/secondary
+// refers to button placement (for experiment).
+const char kShowSavedCopy[]                 = "show-saved-copy";
+
+// Values for the kShowSavedCopy flag.
+const char kEnableShowSavedCopyPrimary[]    = "primary";
+const char kEnableShowSavedCopySecondary[]  = "secondary";
+const char kDisableShowSavedCopy[]          = "disable";
 
 // Marks a renderer as the signin process.
 const char kSigninProcess[]                 = "signin-process";
