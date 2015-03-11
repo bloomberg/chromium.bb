@@ -32,7 +32,7 @@ class UserScriptInjector : public ScriptInjector,
 
  private:
   // UserScriptSet::Observer implementation.
-  void OnUserScriptsUpdated(const std::set<std::string>& changed_extensions,
+  void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
                             const std::vector<UserScript*>& scripts) override;
 
   // ScriptInjector implementation.
@@ -67,8 +67,8 @@ class UserScriptInjector : public ScriptInjector,
   // deleted.
   int script_id_;
 
-  // The associated extension id, preserved for the same reason as |script_id|.
-  std::string extension_id_;
+  // The associated host id, preserved for the same reason as |script_id|.
+  HostID host_id_;
 
   // Indicates whether or not this script is declarative. This influences which
   // script permissions are checked before injection.

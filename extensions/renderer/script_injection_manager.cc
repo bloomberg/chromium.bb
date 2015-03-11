@@ -266,12 +266,12 @@ void ScriptInjectionManager::OnInjectionFinished(
 }
 
 void ScriptInjectionManager::OnUserScriptsUpdated(
-    const std::set<std::string>& changed_extensions,
+    const std::set<HostID>& changed_hosts,
     const std::vector<UserScript*>& scripts) {
   for (ScopedVector<ScriptInjection>::iterator iter =
            pending_injections_.begin();
        iter != pending_injections_.end();) {
-    if (changed_extensions.count((*iter)->host_id().id()) > 0)
+    if (changed_hosts.count((*iter)->host_id()) > 0)
       iter = pending_injections_.erase(iter);
     else
       ++iter;

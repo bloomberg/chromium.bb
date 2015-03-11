@@ -1151,9 +1151,8 @@ void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {
   webrequest_used_ = webrequest_used;
 }
 
-void Dispatcher::OnUserScriptsUpdated(
-      const std::set<std::string>& changed_extensions,
-      const std::vector<UserScript*>& scripts) {
+void Dispatcher::OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
+                                      const std::vector<UserScript*>& scripts) {
   UpdateActiveExtensions();
 }
 

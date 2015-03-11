@@ -494,15 +494,9 @@ void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
   if (!shared_memory->ShareToProcess(handle, &handle_for_process))
     return;  // This can legitimately fail if the renderer asserts at startup.
 
-  // TODO(hanxi): update the IPC message to send a set of HostIDs to render.
-  // Also, remove this function when the refactor is done on render side.
-  std::set<std::string> changed_ids_set;
-  for (const HostID& id : changed_hosts)
-    changed_ids_set.insert(id.id());
-
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    process->Send(new ExtensionMsg_UpdateUserScripts(
-        handle_for_process, host_id().id(), changed_ids_set));
+    process->Send(new ExtensionMsg_UpdateUserScripts(handle_for_process,
+                                                     host_id(), changed_hosts));
   }
 }
 

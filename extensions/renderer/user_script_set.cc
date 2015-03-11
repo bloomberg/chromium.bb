@@ -85,9 +85,8 @@ void UserScriptSet::GetInjections(
   }
 }
 
-bool UserScriptSet::UpdateUserScripts(
-    base::SharedMemoryHandle shared_memory,
-    const std::set<std::string>& changed_extensions) {
+bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
+                                      const std::set<HostID>& changed_hosts) {
   bool only_inject_incognito =
       ExtensionsRendererClient::Get()->IsIncognitoProcess();
 
@@ -146,7 +145,7 @@ bool UserScriptSet::UpdateUserScripts(
 
   FOR_EACH_OBSERVER(Observer,
                     observers_,
-                    OnUserScriptsUpdated(changed_extensions, scripts_.get()));
+                    OnUserScriptsUpdated(changed_hosts, scripts_.get()));
   return true;
 }
 

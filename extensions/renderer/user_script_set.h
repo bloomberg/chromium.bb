@@ -35,7 +35,7 @@ class UserScriptSet {
   class Observer {
    public:
     virtual void OnUserScriptsUpdated(
-        const std::set<std::string>& changed_extensions,
+        const std::set<HostID>& changed_hosts,
         const std::vector<UserScript*>& scripts) = 0;
   };
 
@@ -68,7 +68,7 @@ class UserScriptSet {
   // Updates scripts given the shared memory region containing user scripts.
   // Returns true if the scripts were successfully updated.
   bool UpdateUserScripts(base::SharedMemoryHandle shared_memory,
-                         const std::set<std::string>& changed_extensions);
+                         const std::set<HostID>& changed_hosts);
 
   const std::vector<UserScript*>& scripts() const { return scripts_.get(); }
 

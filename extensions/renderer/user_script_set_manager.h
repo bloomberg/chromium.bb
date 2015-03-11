@@ -34,8 +34,8 @@ class ScriptInjection;
 // Regions are organized as follows:
 // static_scripts -- contains all extensions' scripts that are statically
 //                   declared in the extension manifest.
-// programmatic_scripts -- one region per extension containing only
-//                         programmatically-declared scripts, instantiated
+// programmatic_scripts -- one region per host (extension or WebUI) containing
+//                         only programmatically-declared scripts, instantiated
 //                         when an extension first creates a declarative rule
 //                         that would, if triggered, request a script injection.
 class UserScriptSetManager : public content::RenderProcessObserver {
@@ -45,7 +45,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   class Observer {
    public:
     virtual void OnUserScriptsUpdated(
-        const std::set<std::string>& changed_extensions,
+        const std::set<HostID>& changed_hosts,
         const std::vector<UserScript*>& scripts) = 0;
   };
 
@@ -81,18 +81,17 @@ class UserScriptSetManager : public content::RenderProcessObserver {
 
  private:
   // Map for per-extension sets that may be defined programmatically.
-  typedef std::map<ExtensionId, linked_ptr<UserScriptSet> > UserScriptSetMap;
+  typedef std::map<HostID, linked_ptr<UserScriptSet> > UserScriptSetMap;
 
   // content::RenderProcessObserver implementation.
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
-  UserScriptSet* GetProgrammaticScriptsByExtension(
-      const ExtensionId& extensionId);
+  UserScriptSet* GetProgrammaticScriptsByHostID(const HostID& host_id);
 
   // Handle the UpdateUserScripts extension message.
   void OnUpdateUserScripts(base::SharedMemoryHandle shared_memory,
-                           const ExtensionId& extension_id,
-                           const std::set<std::string>& changed_extensions);
+                           const HostID& host_id,
+                           const std::set<HostID>& changed_hosts);
 
   // Scripts statically defined in extension manifests.
   UserScriptSet static_scripts_;

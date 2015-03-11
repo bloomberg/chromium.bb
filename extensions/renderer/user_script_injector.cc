@@ -56,13 +56,12 @@ base::LazyInstance<GreasemonkeyApiJsString> g_greasemonkey_api =
 
 }  // namespace
 
-UserScriptInjector::UserScriptInjector(
-    const UserScript* script,
-    UserScriptSet* script_list,
-    bool is_declarative)
+UserScriptInjector::UserScriptInjector(const UserScript* script,
+                                       UserScriptSet* script_list,
+                                       bool is_declarative)
     : script_(script),
       script_id_(script_->id()),
-      extension_id_(script_->extension_id()),
+      host_id_(script_->host_id()),
       is_declarative_(is_declarative),
       user_script_set_observer_(this) {
   user_script_set_observer_.Add(script_list);
@@ -72,11 +71,11 @@ UserScriptInjector::~UserScriptInjector() {
 }
 
 void UserScriptInjector::OnUserScriptsUpdated(
-    const std::set<std::string>& changed_extensions,
+    const std::set<HostID>& changed_hosts,
     const std::vector<UserScript*>& scripts) {
-  // If the extension causing this injection changed, then this injection
+  // If the host causing this injection changed, then this injection
   // will be removed, and there's no guarantee the backing script still exists.
-  if (changed_extensions.count(extension_id_) > 0)
+  if (changed_hosts.count(host_id_) > 0)
     return;
 
   for (std::vector<UserScript*>::const_iterator iter = scripts.begin();
@@ -202,7 +201,7 @@ void UserScriptInjector::GetRunInfo(
     for (UserScript::FileList::const_iterator iter = js_scripts.begin();
          iter != js_scripts.end();
          ++iter) {
-      scripts_run_info->executing_scripts[extension_id_].insert(
+      scripts_run_info->executing_scripts[host_id_.id()].insert(
           iter->url().path());
     }
   }

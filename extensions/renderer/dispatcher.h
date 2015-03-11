@@ -200,7 +200,7 @@ class Dispatcher : public content::RenderProcessObserver,
   void OnUsingWebRequestAPI(bool webrequest_used);
 
   // UserScriptSetManager::Observer implementation.
-  void OnUserScriptsUpdated(const std::set<std::string>& changed_extensions,
+  void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
                             const std::vector<UserScript*>& scripts) override;
 
   void UpdateActiveExtensions();
