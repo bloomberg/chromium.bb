@@ -260,6 +260,12 @@ class GFX_EXPORT RenderText {
   bool multiline() const { return multiline_; }
   void SetMultiline(bool multiline);
 
+  // Set whether newline characters should be replaced with newline symbols.
+  void SetReplaceNewlineCharsWithSymbols(bool replace);
+
+  // Returns true if this instance supports multiline rendering.
+  virtual bool MultilineSupported() const = 0;
+
   // TODO(ckocagil): Add vertical alignment and line spacing support instead.
   int min_line_height() const { return min_line_height_; }
   void SetMinLineHeight(int line_height);
@@ -270,7 +276,7 @@ class GFX_EXPORT RenderText {
   // WARNING: Only use this for system limits, it lacks complex text support.
   void set_truncate_length(size_t length) { truncate_length_ = length; }
 
-  // The layout text will be elided to fit |display_rect| using this behavior.
+  // The display text will be elided to fit |display_rect| using this behavior.
   void SetElideBehavior(ElideBehavior elide_behavior);
   ElideBehavior elide_behavior() const { return elide_behavior_; }
 
@@ -437,7 +443,7 @@ class GFX_EXPORT RenderText {
 
   // Sets shadows to drawn with text.
   void set_shadows(const ShadowValues& shadows) { shadows_ = shadows; }
-  const ShadowValues& shadows() { return shadows_; }
+  const ShadowValues& shadows() const { return shadows_; }
 
   typedef std::pair<Font, Range> FontSpan;
   // For testing purposes, returns which fonts were chosen for which parts of
@@ -750,6 +756,9 @@ class GFX_EXPORT RenderText {
   // Whether the text should be broken into multiple lines. Uses the width of
   // |display_rect_| as the width cap.
   bool multiline_;
+
+  // Whether newline characters should be replaced with newline symbols.
+  bool replace_newline_chars_with_symbols_;
 
   // Set to true to suppress subpixel rendering due to non-font reasons (eg.
   // if the background is transparent). The default value is false.

@@ -28,6 +28,10 @@ scoped_ptr<RenderText> RenderTextMac::CreateInstanceOfSameType() const {
   return make_scoped_ptr(new RenderTextMac);
 }
 
+bool RenderTextMac::MultilineSupported() const {
+  return false;
+}
+
 const base::string16& RenderTextMac::GetDisplayText() {
   return text_elided() ? display_text() : layout_text();
 }

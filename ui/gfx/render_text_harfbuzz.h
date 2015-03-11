@@ -137,6 +137,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // RenderText:
   scoped_ptr<RenderText> CreateInstanceOfSameType() const override;
+  bool MultilineSupported() const override;
   const base::string16& GetDisplayText() override;
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;

@@ -639,6 +639,10 @@ scoped_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType() const {
   return make_scoped_ptr(new RenderTextHarfBuzz);
 }
 
+bool RenderTextHarfBuzz::MultilineSupported() const {
+  return true;
+}
+
 const base::string16& RenderTextHarfBuzz::GetDisplayText() {
   // TODO(oshima): Consider supporting eliding multi-line text.
   // This requires max_line support first.

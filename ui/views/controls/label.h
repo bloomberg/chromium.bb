@@ -5,16 +5,10 @@
 #ifndef UI_VIEWS_CONTROLS_LABEL_H_
 #define UI_VIEWS_CONTROLS_LABEL_H_
 
-#include <string>
-#include <vector>
-
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/strings/string16.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/font_list.h"
-#include "ui/gfx/shadow_value.h"
-#include "ui/gfx/text_constants.h"
+#include "base/memory/scoped_vector.h"
+#include "ui/gfx/render_text.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -34,11 +28,12 @@ class VIEWS_EXPORT Label : public View {
   ~Label() override;
 
   // Gets or sets the fonts used by this label.
-  const gfx::FontList& font_list() const { return font_list_; }
+  const gfx::FontList& font_list() const { return render_text_->font_list(); }
+
   virtual void SetFontList(const gfx::FontList& font_list);
 
   // Get or set the label text.
-  const base::string16& text() const { return text_; }
+  const base::string16& text() const { return render_text_->text(); }
   virtual void SetText(const base::string16& text);
 
   // Enables or disables auto-color-readability (enabled by default).  If this
@@ -61,20 +56,24 @@ class VIEWS_EXPORT Label : public View {
 
   // Set drop shadows underneath the text.
   void SetShadows(const gfx::ShadowValues& shadows);
-  const gfx::ShadowValues& shadows() const { return shadows_; }
+  const gfx::ShadowValues& shadows() const { return render_text_->shadows(); }
 
   // Sets whether subpixel rendering is used; the default is true, but this
   // feature also requires an opaque background color.
+  // TODO(mukai): rename this as SetSubpixelRenderingSuppressed() to keep the
+  // consistency with RenderText field name.
   void SetSubpixelRenderingEnabled(bool subpixel_rendering_enabled);
 
   // Sets the horizontal alignment; the argument value is mirrored in RTL UI.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
-  gfx::HorizontalAlignment GetHorizontalAlignment() const;
+  gfx::HorizontalAlignment horizontal_alignment() const {
+    return render_text_->horizontal_alignment();
+  }
 
   // Get or set the distance in pixels between baselines of multi-line text.
   // Default is 0, indicating the distance between lines should be the standard
   // one for the label's text, font list, and platform.
-  int line_height() const { return line_height_; }
+  int line_height() const { return render_text_->min_line_height(); }
   void SetLineHeight(int height);
 
   // Get or set if the label text can wrap on multiple lines; default is false.
@@ -83,15 +82,16 @@ class VIEWS_EXPORT Label : public View {
 
   // Get or set if the label text should be obscured before rendering (e.g.
   // should "Password!" display as "*********"); default is false.
-  bool obscured() const { return obscured_; }
+  bool obscured() const { return render_text_->obscured(); }
   void SetObscured(bool obscured);
 
   // Sets whether multi-line text can wrap mid-word; the default is false.
   void SetAllowCharacterBreak(bool allow_character_break);
 
   // Sets the eliding or fading behavior, applied as necessary. The default is
-  // to elide at the end. Eliding is not well supported for multi-line labels.
+  // to elide at the end. Eliding is not well-supported for multi-line labels.
   void SetElideBehavior(gfx::ElideBehavior elide_behavior);
+  gfx::ElideBehavior elide_behavior() const { return elide_behavior_; }
 
   // Sets the tooltip text.  Default behavior for a label (single-line) is to
   // show the full text if it is wider than its bounds.  Calling this overrides
@@ -117,7 +117,7 @@ class VIEWS_EXPORT Label : public View {
   void set_collapse_when_hidden(bool value) { collapse_when_hidden_ = value; }
 
   // Get the text as displayed to the user, respecting the obscured flag.
-  const base::string16& GetLayoutTextForTesting() const;
+  base::string16 GetDisplayTextForTesting();
 
   // View:
   gfx::Insets GetInsets() const override;
@@ -125,79 +125,64 @@ class VIEWS_EXPORT Label : public View {
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   int GetHeightForWidth(int w) const override;
+  void Layout() override;
   const char* GetClassName() const override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool CanProcessEventsWithinSubtree() const override;
   void GetAccessibleState(ui::AXViewState* state) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
+  void OnEnabledChanged() override;
 
  protected:
-  // Called by Paint to paint the text.
-  void PaintText(gfx::Canvas* canvas,
-                 const base::string16& text,
-                 const gfx::Rect& text_bounds,
-                 int flags);
-
-  virtual gfx::Size GetTextSize() const;
+  void PaintText(gfx::Canvas* canvas);
 
   SkColor disabled_color() const { return actual_disabled_color_; }
 
   // View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
-  struct DrawStringParams {
-    DrawStringParams() : flags(0) {}
-
-    base::string16 text;
-    gfx::Rect bounds;
-    int flags;
-  };
-
-  // These tests call CalculateDrawStringParams in order to verify the
-  // calculations done for drawing text.
-  FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawSingleLineString);
-  FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawMultiLineString);
-  FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawSingleLineStringInRTL);
-  FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawMultiLineStringInRTL);
-  FRIEND_TEST_ALL_PREFIXES(LabelTest, DirectionalityFromText);
-  FRIEND_TEST_ALL_PREFIXES(LabelTest, DisableSubpixelRendering);
-
-  // Sets both |text_| and |layout_text_| to appropriate values, taking
-  // the label's 'obscured' status into account.
-  void SetTextInternal(const base::string16& text);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, ResetRenderTextData);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, MultilineSupportedRenderText);
 
   void Init(const base::string16& text, const gfx::FontList& font_list);
 
+  void ResetLayout();
+
+  // Create a single RenderText instance to actually be painted.
+  scoped_ptr<gfx::RenderText> CreateRenderText(
+      const base::string16& text,
+      gfx::HorizontalAlignment alignment,
+      gfx::DirectionalityMode directionality,
+      gfx::ElideBehavior elide_behavior);
+
+  // Set up |lines_| to actually be painted.
+  void MaybeBuildRenderTextLines();
+
+  // Get the text broken into lines as needed to fit the given |width|.
+  std::vector<base::string16> GetLinesForWidth(int width) const;
+
+  // Get the natural text size, unelided and only wrapped on newlines.
+  gfx::Size GetTextSize() const;
+
   void RecalculateColors();
-
-  // Returns where the text is drawn, in the receivers coordinate system.
-  gfx::Rect GetTextBounds() const;
-
-  int ComputeDrawStringFlags() const;
-
-  gfx::Rect GetAvailableRect() const;
-
-  // Returns parameters to be used for the DrawString call. Returned value is a
-  // weak pointer, owned by and scoped to the label.
-  const DrawStringParams* CalculateDrawStringParams() const;
 
   // Updates any colors that have not been explicitly set from the theme.
   void UpdateColorsFromTheme(const ui::NativeTheme* theme);
 
-  // Resets |cached_heights_|, |cached_heights_cursor_|, |cached_draw_params_|
-  // and mark |text_size_valid_| as false.
-  void ResetLayoutCache();
-
   bool ShouldShowDefaultTooltip() const;
 
-  base::string16 text_;
-  base::string16 layout_text_;
-  gfx::FontList font_list_;
+  // An un-elided and single-line RenderText object used for preferred sizing.
+  scoped_ptr<gfx::RenderText> render_text_;
+
+  // The RenderText instances used to display elided and multi-line text.
+  ScopedVector<gfx::RenderText> lines_;
+
   SkColor requested_enabled_color_;
   SkColor actual_enabled_color_;
   SkColor requested_disabled_color_;
@@ -209,28 +194,18 @@ class VIEWS_EXPORT Label : public View {
   bool disabled_color_set_;
   bool background_color_set_;
 
+  gfx::ElideBehavior elide_behavior_;
+
   bool subpixel_rendering_enabled_;
   bool auto_color_readability_;
-  mutable gfx::Size text_size_;
-  mutable bool text_size_valid_;
-  int line_height_;
+  // TODO(mukai): remove |multi_line_| when all RenderText can render multiline.
   bool multi_line_;
-  bool obscured_;
-  bool allow_character_break_;
-  gfx::ElideBehavior elide_behavior_;
-  gfx::HorizontalAlignment horizontal_alignment_;
   base::string16 tooltip_text_;
   bool handles_tooltips_;
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_;
-  gfx::ShadowValues shadows_;
-
-  // The cached heights to avoid recalculation in GetHeightForWidth().
-  mutable std::vector<gfx::Size> cached_heights_;
-  mutable int cached_heights_cursor_;
-
-  // The cached results of CalculateDrawStringParams().
-  mutable DrawStringParams cached_draw_params_;
+  bool allow_character_break_;
+  int max_width_;
 
   // TODO(vadimt): Remove is_first_paint_text_ before crbug.com/431326 is
   // closed.

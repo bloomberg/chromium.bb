@@ -424,6 +424,7 @@ void ApplyRenderParams(const FontRenderParams& params,
 RenderText::~RenderText() {
 }
 
+// static
 RenderText* RenderText::CreateInstance() {
 #if defined(OS_MACOSX)
   static const bool use_native =
@@ -435,6 +436,7 @@ RenderText* RenderText::CreateInstance() {
   return new RenderTextHarfBuzz;
 }
 
+// static
 RenderText* RenderText::CreateInstanceForEditing() {
   return new RenderTextHarfBuzz;
 }
@@ -525,6 +527,14 @@ void RenderText::SetMultiline(bool multiline) {
     lines_.clear();
     OnTextAttributeChanged();
   }
+}
+
+void RenderText::SetReplaceNewlineCharsWithSymbols(bool replace) {
+  if (replace_newline_chars_with_symbols_ == replace)
+    return;
+  replace_newline_chars_with_symbols_ = replace;
+  cached_bounds_and_offset_valid_ = false;
+  OnTextAttributeChanged();
 }
 
 void RenderText::SetMinLineHeight(int line_height) {
@@ -952,6 +962,7 @@ RenderText::RenderText()
       text_elided_(false),
       min_line_height_(0),
       multiline_(false),
+      replace_newline_chars_with_symbols_(true),
       subpixel_rendering_suppressed_(false),
       clip_to_display_rect_(true),
       baseline_(kInvalidBaseline),
@@ -1126,7 +1137,7 @@ HorizontalAlignment RenderText::GetCurrentHorizontalAlignment() {
 
 Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
   // TODO(ckocagil): Enable |lines_| usage on RenderTextMac.
-  if (multiline_)
+  if (MultilineSupported() && multiline_)
     DCHECK_LT(line_number, lines_.size());
   Vector2d offset;
   HorizontalAlignment horizontal_alignment = GetCurrentHorizontalAlignment();
@@ -1301,7 +1312,7 @@ void RenderText::OnTextAttributeChanged() {
   }
   static const base::char16 kNewline[] = { '\n', 0 };
   static const base::char16 kNewlineSymbol[] = { 0x2424, 0 };
-  if (!multiline_)
+  if (!multiline_ && replace_newline_chars_with_symbols_)
     base::ReplaceChars(layout_text_, kNewline, kNewlineSymbol, &layout_text_);
 
   OnLayoutTextAttributeChanged(true);

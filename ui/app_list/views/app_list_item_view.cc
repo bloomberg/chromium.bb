@@ -187,6 +187,7 @@ void AppListItemView::SetUIState(UIState state) {
   }
 #endif  // !OS_WIN
 
+  SetTitleSubpixelAA();
   SchedulePaint();
 }
 
@@ -211,10 +212,7 @@ void AppListItemView::SetTitleSubpixelAA() {
                    !is_highlighted_ && !apps_grid_view_->IsSelectedView(this) &&
                    !apps_grid_view_->IsAnimatingView(this);
 
-  bool currently_enabled = title_->background() != NULL;
-  if (currently_enabled == enable_aa)
-    return;
-
+  title_->SetSubpixelRenderingEnabled(enable_aa);
   if (enable_aa) {
     title_->SetBackgroundColor(app_list::kLabelBackgroundColor);
     title_->set_background(views::Background::CreateSolidBackground(
@@ -276,6 +274,7 @@ void AppListItemView::SetItemName(const base::string16& display_name,
 
 void AppListItemView::SetItemIsHighlighted(bool is_highlighted) {
   is_highlighted_ = is_highlighted;
+  SetTitleSubpixelAA();
   SchedulePaint();
 }
 
@@ -285,6 +284,7 @@ void AppListItemView::SetItemIsInstalling(bool is_installing) {
     title_->SetVisible(!is_installing);
     progress_bar_->SetVisible(is_installing);
   }
+  SetTitleSubpixelAA();
   SchedulePaint();
 }
 
@@ -331,17 +331,13 @@ void AppListItemView::Layout() {
                          title_size.height());
   title_bounds.Intersect(rect);
   title_->SetBoundsRect(title_bounds);
+  SetTitleSubpixelAA();
 
   gfx::Rect progress_bar_bounds(progress_bar_->GetPreferredSize());
   progress_bar_bounds.set_x(GetContentsBounds().x() +
                             kProgressBarHorizontalPadding);
   progress_bar_bounds.set_y(title_bounds.y());
   progress_bar_->SetBoundsRect(progress_bar_bounds);
-}
-
-void AppListItemView::SchedulePaintInRect(const gfx::Rect& r) {
-  SetTitleSubpixelAA();
-  views::CustomButton::SchedulePaintInRect(r);
 }
 
 void AppListItemView::OnPaint(gfx::Canvas* canvas) {
@@ -405,7 +401,7 @@ void AppListItemView::StateChanged() {
       item_weak_->set_highlighted(false);
     title_->SetEnabledColor(kGridTitleColor);
   }
-  title_->Invalidate();
+  SetTitleSubpixelAA();
 }
 
 bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {

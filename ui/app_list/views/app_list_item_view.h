@@ -116,7 +116,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // views::View overrides:
   const char* GetClassName() const override;
   void Layout() override;
-  void SchedulePaintInRect(const gfx::Rect& r) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   // views::ContextMenuController overrides:
