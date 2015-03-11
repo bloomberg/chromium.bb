@@ -1506,7 +1506,6 @@ _x86_external_boards = frozenset([
   'gizmo',
   'x32-generic',
   'x86-generic',
-  'x86-pineview',
 ])
 
 _mips_internal_release_boards = frozenset([
