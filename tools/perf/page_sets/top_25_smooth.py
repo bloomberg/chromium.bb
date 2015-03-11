@@ -163,8 +163,7 @@ class Top25SmoothPageSet(page_set_module.PageSet):
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GoogleWebSearchPage)(self))
     self.AddUserStory(GmailSmoothPage(self))
-    # crbug.com/465446
-    # self.AddUserStory(GmailMouseScrollPage(self))
+    self.AddUserStory(GmailMouseScrollPage(self))
     self.AddUserStory(GoogleCalendarSmoothPage(self))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GoogleImageSearchPage)(self))

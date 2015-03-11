@@ -54,6 +54,9 @@ class GmailPage(TopPages):
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'
         'document.getElementById("gb") !== null')
+    # This check is needed for gmonkey to load completely.
+    action_runner.WaitForJavaScriptCondition(
+        'document.readyState == "complete"')
 
 
 class GoogleCalendarPage(TopPages):
