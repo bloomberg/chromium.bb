@@ -150,18 +150,29 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
   // Never expect the proxy to be restricted for pref change tests.
 }
 
-void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
+void DataReductionProxySettingsTestBase::InitDataReductionProxy(
     bool enabled_at_startup) {
   settings_->InitDataReductionProxySettings(
       test_context_->pref_service(), test_context_->io_data(),
       test_context_->CreateDataReductionProxyService());
-  settings_->SetOnDataReductionEnabledCallback(
+  settings_->SetCallbackToRegisterSyntheticFieldTrial(
       base::Bind(&DataReductionProxySettingsTestBase::
-                 RegisterSyntheticFieldTrialCallback,
+                 SyntheticFieldTrialRegistrationCallback,
                  base::Unretained(this)));
 
   test_context_->RunUntilIdle();
-  EXPECT_EQ(enabled_at_startup, proxy_enabled_);
+}
+
+void DataReductionProxySettingsTestBase::CheckDataReductionProxySyntheticTrial(
+    bool enabled) {
+  EXPECT_EQ(enabled ? "Enabled" : "Disabled",
+      synthetic_field_trials_["SyntheticDataReductionProxySetting"]);
+}
+
+void DataReductionProxySettingsTestBase::
+CheckDataReductionProxyLoFiSyntheticTrial(bool enabled) {
+  EXPECT_EQ(enabled ? "Enabled" : "Disabled",
+      synthetic_field_trials_["SyntheticDataReductionProxyLoFiSetting"]);
 }
 
 }  // namespace data_reduction_proxy

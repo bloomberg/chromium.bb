@@ -105,22 +105,14 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       data_reduction_proxy_service()->GetWeakPtr());
 
   data_reduction_proxy::DataReductionProxySettings::
-      SetOnDataReductionEnabledCallback(
+      SetCallbackToRegisterSyntheticFieldTrial(
           base::Bind(
-              &DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial,
-              base::Unretained(this)));
+              &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
   SetDataReductionProxyAlternativeEnabled(
       data_reduction_proxy::DataReductionProxyParams::
           IsIncludedInAlternativeFieldTrial());
   // TODO(bengr): Remove after M46. See http://crbug.com/445599.
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
-}
-
-void DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial(
-    bool data_reduction_proxy_enabled) {
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      "DataReductionProxyEnabled",
-      data_reduction_proxy_enabled ? "true" : "false");
 }
 
 // static

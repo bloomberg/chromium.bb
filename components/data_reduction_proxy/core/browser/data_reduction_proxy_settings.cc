@@ -43,6 +43,13 @@ bool IsEnabledOnCommandLine() {
       data_reduction_proxy::switches::kEnableDataReductionProxy);
 }
 
+bool IsLoFiEnabledOnCommandLine() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -106,10 +113,12 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   RecordDataReductionInit();
 }
 
-void DataReductionProxySettings::SetOnDataReductionEnabledCallback(
-    const base::Callback<void(bool)>& on_data_reduction_proxy_enabled) {
-  on_data_reduction_proxy_enabled_ = on_data_reduction_proxy_enabled;
-  on_data_reduction_proxy_enabled_.Run(IsDataReductionProxyEnabled());
+void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
+    const SyntheticFieldTrialRegistrationCallback&
+        on_data_reduction_proxy_enabled) {
+  register_synthetic_field_trial_ = on_data_reduction_proxy_enabled;
+  RegisterDataReductionProxyFieldTrial();
+  RegisterLoFiFieldTrial();
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
@@ -191,10 +200,28 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
   return prefs_;
 }
 
+bool DataReductionProxySettings::IsLoFiEnabled() const {
+  return IsDataReductionProxyEnabled() && IsLoFiEnabledOnCommandLine();
+}
+
+void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
+  register_synthetic_field_trial_.Run(
+      "SyntheticDataReductionProxySetting",
+      IsDataReductionProxyEnabled() ? "Enabled" : "Disabled");
+}
+
+void DataReductionProxySettings::RegisterLoFiFieldTrial() {
+  register_synthetic_field_trial_.Run(
+      "SyntheticDataReductionProxyLoFiSetting",
+      IsLoFiEnabled() ? "Enabled" : "Disabled");
+}
+
 void DataReductionProxySettings::OnProxyEnabledPrefChange() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!on_data_reduction_proxy_enabled_.is_null())
-    on_data_reduction_proxy_enabled_.Run(IsDataReductionProxyEnabled());
+  if (!register_synthetic_field_trial_.is_null()) {
+    RegisterDataReductionProxyFieldTrial();
+    RegisterLoFiFieldTrial();
+  }
   if (!allowed_)
     return;
   MaybeActivateDataReductionProxy(false);

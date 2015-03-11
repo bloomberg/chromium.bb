@@ -287,7 +287,8 @@ TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOn) {
 
   test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
                                             true);
-  CheckInitDataReductionProxy(true);
+  InitDataReductionProxy(true);
+  CheckDataReductionProxySyntheticTrial(true);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOff) {
@@ -298,7 +299,8 @@ TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOff) {
 
   test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
                                             false);
-  CheckInitDataReductionProxy(false);
+  InitDataReductionProxy(false);
+  CheckDataReductionProxySyntheticTrial(false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestEnableProxyFromCommandLine) {
@@ -307,7 +309,51 @@ TEST_F(DataReductionProxySettingsTest, TestEnableProxyFromCommandLine) {
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDataReductionProxy);
-  CheckInitDataReductionProxy(true);
+  InitDataReductionProxy(true);
+  CheckDataReductionProxySyntheticTrial(true);
+}
+
+TEST_F(DataReductionProxySettingsTest, TestSetDataReductionProxyEnabled) {
+  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
+  EXPECT_CALL(*settings, RecordStartupState(PROXY_ENABLED));
+  test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                            true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLoFi);
+  InitDataReductionProxy(true);
+
+  ExpectSetProxyPrefs(false, false, false);
+  settings_->SetDataReductionProxyEnabled(false);
+  test_context_->RunUntilIdle();
+  CheckDataReductionProxySyntheticTrial(false);
+  CheckDataReductionProxyLoFiSyntheticTrial(false);
+
+  ExpectSetProxyPrefs(true, false, false);
+  settings->SetDataReductionProxyEnabled(true);
+  CheckDataReductionProxySyntheticTrial(true);
+  CheckDataReductionProxyLoFiSyntheticTrial(true);
+}
+
+TEST_F(DataReductionProxySettingsTest, TestEnableLoFiFromCommandLineProxyOn) {
+  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
+  EXPECT_CALL(*settings, RecordStartupState(PROXY_ENABLED));
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLoFi);
+  test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                            true);
+  InitDataReductionProxy(true);
+  CheckDataReductionProxyLoFiSyntheticTrial(true);
+}
+
+TEST_F(DataReductionProxySettingsTest, TestEnableLoFiFromCommandLineProxyOff) {
+  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
+  EXPECT_CALL(*settings, RecordStartupState(PROXY_DISABLED));
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataReductionProxyLoFi);
+  test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                            false);
+  InitDataReductionProxy(false);
+  CheckDataReductionProxyLoFiSyntheticTrial(false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
@@ -338,9 +384,9 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   settings_->InitDataReductionProxySettings(
       test_context_->pref_service(), test_context_->io_data(),
       test_context_->CreateDataReductionProxyService());
-  settings_->SetOnDataReductionEnabledCallback(
+  settings_->SetCallbackToRegisterSyntheticFieldTrial(
       base::Bind(&DataReductionProxySettingsTestBase::
-                 RegisterSyntheticFieldTrialCallback,
+                 SyntheticFieldTrialRegistrationCallback,
                  base::Unretained(this)));
 
   test_context_->RunUntilIdle();
@@ -375,9 +421,9 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
     }
     test_context_->config()->EnableQuic(enable_quic);
 
-    settings_->SetOnDataReductionEnabledCallback(
+    settings_->SetCallbackToRegisterSyntheticFieldTrial(
         base::Bind(&DataReductionProxySettingsTestBase::
-                   RegisterSyntheticFieldTrialCallback,
+                   SyntheticFieldTrialRegistrationCallback,
                    base::Unretained(this)));
 
     EXPECT_EQ(enable_quic,

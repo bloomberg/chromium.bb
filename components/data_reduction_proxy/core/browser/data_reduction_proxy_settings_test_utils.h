@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_TEST_UTILS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_TEST_UTILS_H_
 
+#include <map>
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -73,15 +76,19 @@ class DataReductionProxySettingsTestBase : public testing::Test {
                                             bool expected_fallback_restricted);
   void CheckOnPrefChange(bool enabled, bool expected_enabled, bool managed);
   void InitWithStatisticsPrefs();
-  void CheckInitDataReductionProxy(bool enabled_at_startup);
-  void RegisterSyntheticFieldTrialCallback(bool proxy_enabled) {
-    proxy_enabled_ = proxy_enabled;
+  void InitDataReductionProxy(bool enabled_at_startup);
+  void CheckDataReductionProxySyntheticTrial(bool enabled);
+  void CheckDataReductionProxyLoFiSyntheticTrial(bool enabled);
+  bool SyntheticFieldTrialRegistrationCallback(const std::string& trial_name,
+                                               const std::string& group_name) {
+    synthetic_field_trials_[trial_name] = group_name;
+    return true;
   }
 
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxySettings> settings_;
   base::Time last_update_time_;
-  bool proxy_enabled_;
+  std::map<std::string, std::string> synthetic_field_trials_;
 };
 
 // Test implementations should be subclasses of an instantiation of this
