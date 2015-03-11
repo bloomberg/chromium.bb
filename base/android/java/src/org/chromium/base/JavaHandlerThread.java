@@ -4,6 +4,8 @@
 
 package org.chromium.base;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 
@@ -35,15 +37,18 @@ class JavaHandlerThread {
         });
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @CalledByNative
     private void stop(final long nativeThread, final long nativeEvent) {
+        final boolean quitSafely = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
         new Handler(mThread.getLooper()).post(new Runnable() {
             @Override
             public void run() {
                 nativeStopThread(nativeThread, nativeEvent);
+                if (!quitSafely) mThread.quit();
             }
         });
-        mThread.quitSafely();
+        if (quitSafely) mThread.quitSafely();
     }
 
     private native void nativeInitializeThread(long nativeJavaHandlerThread, long nativeEvent);

@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Build;
@@ -19,10 +20,6 @@ import java.util.regex.Pattern;
  * Exposes system related information about the current device.
  */
 public class SysUtils {
-    // Any device that runs this or an older version of the system cannot be considered 'low-end'
-    private static final int ANDROID_LOW_MEMORY_ANDROID_SDK_THRESHOLD =
-            Build.VERSION_CODES.JELLY_BEAN_MR2;
-
     // A device reporting strictly more total memory in megabytes cannot be considered 'low-end'.
     private static final int ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB = 512;
 
@@ -107,6 +104,7 @@ public class SysUtils {
         return sLowEndDevice.booleanValue();
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private static boolean detectLowEndDevice() {
         assert CommandLine.isInitialized();
         if (CommandLine.getInstance().hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)) {
@@ -115,7 +113,8 @@ public class SysUtils {
         if (CommandLine.getInstance().hasSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)) {
             return false;
         }
-        if (Build.VERSION.SDK_INT <= ANDROID_LOW_MEMORY_ANDROID_SDK_THRESHOLD) {
+        // Any pre-KitKat device cannot be considered 'low-end'.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             return false;
         }
 
