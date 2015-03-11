@@ -736,11 +736,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [controller_
         postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME];
     [profileNameTextField_ setHidden:YES];
-    // This needs to be called async as the firstResponder is reset
-    // at the same time that controlTextDidEndEditing happens.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [[self window] makeFirstResponder:nil];
-    });
   }
 }
 
@@ -753,8 +748,15 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return false;
 }
 
-- (void)controlTextDidEndEditing:(NSNotification*)notification {
-  [self saveProfileName];
+- (BOOL)control:(NSControl*)control
+               textView:(NSTextView*)textView
+    doCommandBySelector:(SEL)commandSelector {
+  if (commandSelector == @selector(insertTab:) ||
+      commandSelector == @selector(insertNewline:)) {
+    [self saveProfileName];
+    return YES;
+  }
+  return NO;
 }
 
 @end
