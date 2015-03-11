@@ -47,6 +47,8 @@ class CONTENT_EXPORT PresentationDispatcher
     blink::WebPresentationSessionClientCallbacks* callback,
     presentation::PresentationSessionInfoPtr session_info,
     presentation::PresentationErrorPtr error);
+  void OnDefaultSessionStarted(
+      presentation::PresentationSessionInfoPtr session_info);
 
   void ConnectToPresentationServiceIfNeeded();
 

@@ -99,6 +99,11 @@ void PresentationServiceImpl::OnScreenAvailabilityListenerRemoved() {
   NOTIMPLEMENTED();
 }
 
+void PresentationServiceImpl::ListenForDefaultSessionStart(
+    const DefaultSessionMojoCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 void PresentationServiceImpl::StartSession(
     const mojo::String& presentation_url,
     const mojo::String& presentation_id,

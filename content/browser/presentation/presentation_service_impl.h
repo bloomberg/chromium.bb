@@ -54,6 +54,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   using NewSessionMojoCallback =
       mojo::Callback<void(presentation::PresentationSessionInfoPtr,
           presentation::PresentationErrorPtr)>;
+  using DefaultSessionMojoCallback =
+      mojo::Callback<void(presentation::PresentationSessionInfoPtr)>;
 
   friend class PresentationServiceImplTest;
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest, RemoveAllListeners);
@@ -80,6 +82,8 @@ class CONTENT_EXPORT PresentationServiceImpl
       const mojo::String& presentation_url,
       const ScreenAvailabilityMojoCallback& callback) override;
   void OnScreenAvailabilityListenerRemoved() override;
+  void ListenForDefaultSessionStart(
+      const DefaultSessionMojoCallback& callback) override;
   void StartSession(
       const mojo::String& presentation_url,
       const mojo::String& presentation_id,

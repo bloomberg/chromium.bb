@@ -113,6 +113,24 @@ void PresentationDispatcher::OnScreenAvailabilityChanged(bool available) {
   controller_->didChangeAvailability(available);
 }
 
+void PresentationDispatcher::OnDefaultSessionStarted(
+    presentation::PresentationSessionInfoPtr session_info) {
+  if (!controller_)
+    return;
+
+  // Reset the callback to get the next event.
+  presentation_service_->ListenForDefaultSessionStart(base::Bind(
+      &PresentationDispatcher::OnDefaultSessionStarted,
+      base::Unretained(this)));
+
+  DCHECK(!session_info.is_null());
+  PresentationSessionDispatcher* session_dispatcher =
+      new PresentationSessionDispatcher(session_info.Pass());
+  presentation_session_dispatchers_.push_back(session_dispatcher);
+  controller_->didStartDefaultSession(
+      new PresentationSessionClient(session_dispatcher));
+}
+
 void PresentationDispatcher::OnSessionCreated(
     blink::WebPresentationSessionClientCallbacks* callback,
     presentation::PresentationSessionInfoPtr session_info,
@@ -139,6 +157,9 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
 
   render_frame()->GetServiceRegistry()->ConnectToRemoteService(
       &presentation_service_);
+  presentation_service_->ListenForDefaultSessionStart(base::Bind(
+      &PresentationDispatcher::OnDefaultSessionStarted,
+      base::Unretained(this)));
 }
 
 }  // namespace content

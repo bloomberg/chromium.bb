@@ -39,6 +39,13 @@ interface PresentationService {
     // |availablechange| event.
     OnScreenAvailabilityListenerRemoved();
 
+    // Called when the renderer is ready to receive the browser initiated
+    // session. If the default session is started by the embedder before this
+    // call, the embedder may queue it and run the callback when the call is
+    // performed.
+    ListenForDefaultSessionStart()
+        => (PresentationSessionInfo defaultSessionInfo);
+
     // Called when startSession() is called by the frame. The result callback
     // will return a non-null and valid PresentationSessionInfo if starting the
     // session succeeded, or null with a PresentationError if starting the
