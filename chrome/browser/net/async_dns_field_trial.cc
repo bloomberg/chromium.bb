@@ -67,7 +67,7 @@ bool ConfigureAsyncDnsFieldTrial() {
   return false;
 #endif
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
   const bool kDefault = true;
 #else
   const bool kDefault = false;
