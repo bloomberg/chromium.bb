@@ -177,17 +177,32 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
       : WebContentsObserver(
             node->current_frame_host()->delegate()->GetAsWebContents()),
         frame_tree_node_id_(node->frame_tree_node_id()),
+        navigations_remaining_(1),
         message_loop_runner_(new MessageLoopRunner) {}
+
+  void set_navigations_remaining(int count) {
+    navigations_remaining_ = count;
+  }
 
   void Wait() {
     message_loop_runner_->Run();
   }
 
   const FrameNavigateParams& params() const {
+    EXPECT_EQ(1U, params_.size());
+    return params_[0];
+  }
+
+  const std::vector<FrameNavigateParams>& all_params() const {
     return params_;
   }
 
   const LoadCommittedDetails& details() const {
+    EXPECT_EQ(1U, details_.size());
+    return details_[0];
+  }
+
+  const std::vector<LoadCommittedDetails>& all_details() const {
     return details_;
   }
 
@@ -200,24 +215,29 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
     if (rfh->frame_tree_node()->frame_tree_node_id() != frame_tree_node_id_)
       return;
 
-    params_ = params;
-    details_ = details;
-    if (!web_contents()->IsLoading())
+    --navigations_remaining_;
+    params_.push_back(params);
+    details_.push_back(details);
+    if (!web_contents()->IsLoading() && !navigations_remaining_)
       message_loop_runner_->Quit();
   }
 
   void DidStopLoading(RenderViewHost* render_view_host) override {
-    message_loop_runner_->Quit();
+    if (!navigations_remaining_)
+      message_loop_runner_->Quit();
   }
 
   // The id of the FrameTreeNode whose navigations to observe.
   int frame_tree_node_id_;
 
-  // The params of the last navigation.
-  FrameNavigateParams params_;
+  // How many navigations remain to capture.
+  int navigations_remaining_;
 
-  // The details of the last navigation.
-  LoadCommittedDetails details_;
+  // The params of the navigations.
+  std::vector<FrameNavigateParams> params_;
+
+  // The details of the navigations.
+  std::vector<LoadCommittedDetails> details_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
@@ -681,6 +701,38 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
     capturer.Wait();
     EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+}
+
+// Verify that navigations caused by client-side redirects are correctly
+// classified.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_ClientSideRedirect) {
+  NavigateToURL(shell(), GURL("about:blank"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  {
+    // Load the redirecting page.
+    FrameNavigateParamsCapturer capturer(root);
+    capturer.set_navigations_remaining(2);
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/client_redirect.html"));
+    NavigateFrameToURL(root, frame_url);
+    capturer.Wait();
+
+    std::vector<FrameNavigateParams> params = capturer.all_params();
+    std::vector<LoadCommittedDetails> details = capturer.all_details();
+    ASSERT_EQ(2U, params.size());
+    ASSERT_EQ(2U, details.size());
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, params[0].transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, details[0].type);
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+              params[1].transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, details[1].type);
   }
 }
 
