@@ -128,6 +128,7 @@ protected:
     String valueWithHardLineBreaks() const;
 
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
+    virtual void copyNonAttributePropertiesFromElement(const Element&) override;
 
 private:
     int computeSelectionStart() const;

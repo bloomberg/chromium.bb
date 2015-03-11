@@ -976,4 +976,11 @@ Position HTMLTextFormControlElement::endOfSentence(const Position& position)
     return endOfInnerText(textFormControl);
 }
 
+void HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(const Element& source)
+{
+    const HTMLTextFormControlElement& sourceElement = static_cast<const HTMLTextFormControlElement&>(source);
+    m_lastChangeWasUserEdit = sourceElement.m_lastChangeWasUserEdit;
+    HTMLFormControlElement::copyNonAttributePropertiesFromElement(source);
+}
+
 } // namespace blink

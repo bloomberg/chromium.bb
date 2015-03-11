@@ -126,6 +126,7 @@ private:
 
     virtual bool matchesReadOnlyPseudoClass() const override;
     virtual bool matchesReadWritePseudoClass() const override;
+    virtual void copyNonAttributePropertiesFromElement(const Element&) override final;
 
     // If the String* argument is 0, apply this->value().
     bool valueMissing(const String*) const;
