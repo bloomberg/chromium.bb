@@ -30,6 +30,7 @@ PASS
 Sending beacon with type: [object Blob]
 PASS navigator.sendBeacon("resources/save-beacon.php?name=same-origin", payload); is true
 PASS Beacon sent successfully
+PASS Content-Type: text/plain;from-beacon=true
 PASS Origin: http://127.0.0.1:8000
 PASS Referer: http://127.0.0.1:8000/navigation/beacon-same-origin.html
 PASS Request-Method: POST

@@ -12,7 +12,7 @@ for (var i = 0; i < binary_array.length; i++) {
     binary_array[i] = 64 + i;
 }
 
-var blob = new Blob(["hello", " ", "world"]);
+var blob = new Blob(["hello", " ", "world"], {type: "text/plain;from-beacon=true"});
 var form = new FormData();
 form.append("key", "value");
 

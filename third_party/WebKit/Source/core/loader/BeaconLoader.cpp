@@ -147,10 +147,9 @@ bool Beacon::serialize(Blob* data, ResourceRequest& request, int, int&)
 
     request.setHTTPBody(entityBody.release());
 
-    AtomicString contentType;
     const String& blobType = data->type();
     if (!blobType.isEmpty() && isValidContentType(blobType))
-        request.setHTTPContentType(AtomicString(contentType));
+        request.setHTTPContentType(AtomicString(blobType));
 
     return true;
 }
