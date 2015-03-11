@@ -45,19 +45,6 @@ crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-chang
 crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-row-border-color.html [ ImageOnlyFailure ]
 crbug.com/450725 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-color.html [ ImageOnlyFailure ]
 
-crbug.com/460198 virtual/slimmingpaint/fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/css/ignore-empty-focus-ring-rects.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/inline/25277-2.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/inline/25277.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/inline/continuation-outlines-with-layers.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/inline/continuation-outlines.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/repaint/layer-outline-horizontal.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/repaint/layer-outline.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/table/border-collapsing/adjacent-row-groups-multi.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/text/emphasis-vertical.html [ Pass ImageOnlyFailure ]
-crbug.com/460198 virtual/slimmingpaint/fast/text/text-transform-upper-lithuanian.html [ Pass ImageOnlyFailure ]
-
-
 # Some slimming paint reftest fail when the reference is run with slimming paint disabled.
 crbug.com/454866 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ ImageOnlyFailure ]
 crbug.com/454866 virtual/slimmingpaint/fast/block/float/float-mark-descendants-for-layout-crash.html [ ImageOnlyFailure Crash ]
