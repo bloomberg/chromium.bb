@@ -54,6 +54,7 @@ public:
 
     String type() const;
     bool extractable() const;
+    ScriptValue algorithm(ScriptState*);
     Vector<String> usages() const;
 
     const WebCryptoKey& key() const { return m_key; }

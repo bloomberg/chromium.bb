@@ -32,6 +32,7 @@
 #include "modules/crypto/CryptoKey.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Uint8Array.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
@@ -96,6 +97,45 @@ WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
     return 0;
 }
 
+class DictionaryBuilder : public blink::WebCryptoKeyAlgorithmDictionary {
+public:
+    explicit DictionaryBuilder(ScriptState* scriptState)
+        : m_scriptState(scriptState)
+        , m_dictionary(Dictionary::createEmpty(scriptState->isolate()))
+    {
+    }
+
+    virtual void setString(const char* propertyName, const char* value)
+    {
+        m_dictionary.set(propertyName, value);
+    }
+
+    virtual void setUint(const char* propertyName, unsigned value)
+    {
+        m_dictionary.set(propertyName, value);
+    }
+
+    virtual void setAlgorithm(const char* propertyName, const blink::WebCryptoAlgorithm& algorithm)
+    {
+        ASSERT(algorithm.paramsType() == blink::WebCryptoAlgorithmParamsTypeNone);
+
+        Dictionary algorithmValue = Dictionary::createEmpty(m_scriptState->isolate());
+        algorithmValue.set("name", blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id())->name);
+        m_dictionary.set(propertyName, algorithmValue);
+    }
+
+    virtual void setUint8Array(const char* propertyName, const blink::WebVector<unsigned char>& vector)
+    {
+        m_dictionary.set(propertyName, toV8(DOMUint8Array::create(vector.data(), vector.size()), m_scriptState->context()->Global(), m_scriptState->isolate()));
+    }
+
+    const Dictionary& dictionary() const { return m_dictionary; }
+
+private:
+    RefPtr<ScriptState> m_scriptState;
+    Dictionary m_dictionary;
+};
+
 } // namespace
 
 CryptoKey::~CryptoKey()
@@ -115,6 +155,13 @@ String CryptoKey::type() const
 bool CryptoKey::extractable() const
 {
     return m_key.extractable();
+}
+
+ScriptValue CryptoKey::algorithm(ScriptState* scriptState)
+{
+    DictionaryBuilder builder(scriptState);
+    m_key.algorithm().writeToDictionary(&builder);
+    return ScriptValue(scriptState, builder.dictionary().v8Value());
 }
 
 // FIXME: This creates a new javascript array each time. What should happen
