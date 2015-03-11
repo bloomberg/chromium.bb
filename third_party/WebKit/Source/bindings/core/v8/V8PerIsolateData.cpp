@@ -264,7 +264,7 @@ void V8PerIsolateData::clearEndOfScopeTasks()
     m_endOfScopeTasks.clear();
 }
 
-void V8PerIsolateData::setScriptDebugServer(PassOwnPtr<ScriptDebugServer> server)
+void V8PerIsolateData::setScriptDebugServer(PassOwnPtrWillBeRawPtr<ScriptDebugServer> server)
 {
     ASSERT(!m_debugServer);
     m_debugServer = server;

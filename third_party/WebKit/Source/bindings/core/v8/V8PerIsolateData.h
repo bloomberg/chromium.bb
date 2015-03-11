@@ -114,7 +114,7 @@ public:
     void runEndOfScopeTasks();
     void clearEndOfScopeTasks();
 
-    void setScriptDebugServer(PassOwnPtr<ScriptDebugServer>);
+    void setScriptDebugServer(PassOwnPtrWillBeRawPtr<ScriptDebugServer>);
 
 private:
     V8PerIsolateData();
@@ -150,7 +150,7 @@ private:
     bool m_performingMicrotaskCheckpoint;
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
-    OwnPtr<ScriptDebugServer> m_debugServer;
+    OwnPtrWillBePersistent<ScriptDebugServer> m_debugServer;
 };
 
 } // namespace blink
