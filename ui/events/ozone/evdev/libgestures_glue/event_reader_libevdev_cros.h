@@ -37,12 +37,6 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
 
     // Notifier for stop. This is called with the final event state.
     virtual void OnLibEvdevCrosStopped(Evdev* evdev, EventStateRec* state) = 0;
-
-    // Sets which keyboard keys should be processed.
-    virtual void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) = 0;
-
-    // Allows all keys to be processed.
-    virtual void AllowAllKeys() = 0;
   };
 
   EventReaderLibevdevCros(int fd,
@@ -59,8 +53,6 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
   bool HasMouse() const override;
   bool HasTouchpad() const override;
   bool HasCapsLockLed() const override;
-  void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) override;
-  void AllowAllKeys() override;
   void OnStopped() override;
 
  private:
