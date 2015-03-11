@@ -271,9 +271,6 @@ function fillMostVisited(location, fill) {
       domain: params.dom || '',
       provider: params.pr || SERVER_PROVIDER_NAME
     };
-    // Log the fact that suggestion was obtained from the server.
-    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
-    ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION);
   } else {
     var apiHandle = chrome.embeddedSearch.searchBox;
     data = apiHandle.getMostVisitedItemData(params.rid);
