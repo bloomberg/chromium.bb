@@ -101,10 +101,8 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
 }
 
 std::string AlternateProtocolInfo::ToString() const {
-  return base::StringPrintf("%d:%s p=%f%s", port,
-                            AlternateProtocolToString(protocol),
-                            probability,
-                            is_broken ? " (broken)" : "");
+  return base::StringPrintf("%d:%s p=%f", port,
+                            AlternateProtocolToString(protocol), probability);
 }
 
 // static

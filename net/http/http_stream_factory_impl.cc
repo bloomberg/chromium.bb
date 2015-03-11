@@ -190,7 +190,9 @@ AlternateProtocolInfo HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
 
   if (alternate.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
     return kNoAlternateProtocol;
-  if (alternate.is_broken) {
+  const AlternativeService alternative_service(alternate.protocol,
+                                               origin.host(), alternate.port);
+  if (http_server_properties.IsAlternativeServiceBroken(alternative_service)) {
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
     return kNoAlternateProtocol;
   }

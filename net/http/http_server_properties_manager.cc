@@ -204,6 +204,13 @@ void HttpServerPropertiesManager::SetBrokenAlternateProtocol(
   ScheduleUpdatePrefsOnNetworkThread();
 }
 
+bool HttpServerPropertiesManager::IsAlternativeServiceBroken(
+    const AlternativeService& alternative_service) {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  return http_server_properties_impl_->IsAlternativeServiceBroken(
+      alternative_service);
+}
+
 bool HttpServerPropertiesManager::WasAlternateProtocolRecentlyBroken(
     const HostPortPair& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
@@ -457,7 +464,7 @@ AlternateProtocolInfo HttpServerPropertiesManager::ParseAlternateProtocolDict(
   int port = 0;
   if (!alternate_protocol_dict.GetInteger(kPortKey, &port) ||
       !IsPortValid(port)) {
-    DVLOG(1) << "Malformed AltSvc port for server: " << server_str;
+    DVLOG(1) << "Malformed alternative service port for server: " << server_str;
     return alternate_protocol;
   }
   alternate_protocol.port = static_cast<uint16>(port);
@@ -466,7 +473,8 @@ AlternateProtocolInfo HttpServerPropertiesManager::ParseAlternateProtocolDict(
   if (alternate_protocol_dict.HasKey(kProbabilityKey) &&
       !alternate_protocol_dict.GetDoubleWithoutPathExpansion(kProbabilityKey,
                                                              &probability)) {
-    DVLOG(1) << "Malformed AltSvc probability for server: " << server_str;
+    DVLOG(1) << "Malformed alternative service probability for server: "
+             << server_str;
     return alternate_protocol;
   }
   alternate_protocol.probability = probability;
@@ -474,12 +482,14 @@ AlternateProtocolInfo HttpServerPropertiesManager::ParseAlternateProtocolDict(
   std::string protocol_str;
   if (!alternate_protocol_dict.GetStringWithoutPathExpansion(kProtocolKey,
                                                              &protocol_str)) {
-    DVLOG(1) << "Malformed AltSvc protocol string for server: " << server_str;
+    DVLOG(1) << "Malformed alternative service protocol string for server: "
+             << server_str;
     return alternate_protocol;
   }
   AlternateProtocol protocol = AlternateProtocolFromString(protocol_str);
   if (!IsAlternateProtocolValid(protocol)) {
-    DVLOG(1) << "Invalid AltSvc protocol string for server: " << server_str;
+    DVLOG(1) << "Invalid alternative service protocol string for server: "
+             << server_str;
     return alternate_protocol;
   }
   alternate_protocol.protocol = protocol;
@@ -749,6 +759,13 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     if (!IsAlternateProtocolValid(port_alternate_protocol.protocol)) {
       continue;
     }
+    const AlternativeService alternative_service(
+        port_alternate_protocol.protocol, server.host(),
+        port_alternate_protocol.port);
+    if (IsAlternativeServiceBroken(alternative_service)) {
+      continue;
+    }
+
     server_pref_map[server].alternate_protocol = &map_it->second;
   }
 
@@ -821,7 +838,7 @@ void HttpServerPropertiesManager::SaveSpdySettingsToServerPrefs(
 void HttpServerPropertiesManager::SaveAlternateProtocolToServerPrefs(
     const AlternateProtocolInfo* port_alternate_protocol,
     base::DictionaryValue* server_pref_dict) {
-  if (!port_alternate_protocol || port_alternate_protocol->is_broken)
+  if (!port_alternate_protocol)
     return;
 
   base::DictionaryValue* port_alternate_protocol_dict =
