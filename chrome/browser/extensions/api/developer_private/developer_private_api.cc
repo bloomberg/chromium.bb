@@ -861,7 +861,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateInspectFunction::Run() {
       !base::StringToInt(*options.render_process_id.as_string,
                          &render_process_id)) {
     return RespondNow(Error(kNoSuchRendererError));
-  } else {
+  } else if (options.render_process_id.as_integer) {
     render_process_id = *options.render_process_id.as_integer;
   }
 
@@ -869,7 +869,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateInspectFunction::Run() {
   if (options.render_view_id.as_string &&
       !base::StringToInt(*options.render_view_id.as_string, &render_view_id)) {
     return RespondNow(Error(kNoSuchRendererError));
-  } else {
+  } else if (options.render_view_id.as_integer) {
     render_view_id = *options.render_view_id.as_integer;
   }
 
