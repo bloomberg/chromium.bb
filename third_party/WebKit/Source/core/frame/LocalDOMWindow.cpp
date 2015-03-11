@@ -513,9 +513,6 @@ void LocalDOMWindow::enqueueHashchangeEvent(const String& oldURL, const String& 
 
 void LocalDOMWindow::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject)
 {
-    if (!ContextFeatures::pushStateEnabled(document()))
-        return;
-
     // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs to fire asynchronously
     dispatchEvent(PopStateEvent::create(stateObject, history()));
 }

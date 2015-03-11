@@ -78,9 +78,6 @@ public:
     // but it's been named for consistency with the rest of the interface.
     virtual bool allowMutationEvents(bool defaultValue) { return defaultValue; }
 
-    // Controls whether pushState and related History APIs are enabled for this frame.
-    virtual bool allowPushState() { return true; }
-
     // Notifies the client that the frame would have instantiated a plug-in if plug-ins were enabled.
     virtual void didNotAllowPlugins() { }
 

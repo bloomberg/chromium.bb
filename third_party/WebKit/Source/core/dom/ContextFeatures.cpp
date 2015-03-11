@@ -64,11 +64,6 @@ bool ContextFeatures::mutationEventsEnabled(Document* document)
     return document->contextFeatures().isEnabled(document, MutationEvents, true);
 }
 
-bool ContextFeatures::pushStateEnabled(Document* document)
-{
-    return document->contextFeatures().isEnabled(document, PushState, true);
-}
-
 void provideContextFeaturesTo(Page& page, PassOwnPtr<ContextFeaturesClient> client)
 {
     ContextFeatures::SupplementType::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(client));
@@ -82,4 +77,4 @@ void provideContextFeaturesToDocumentFrom(Document& document, Page& page)
     document.setContextFeatures(*provided);
 }
 
-}
+} // namespace blink

@@ -149,8 +149,6 @@ bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatur
     switch (type) {
     case ContextFeatures::MutationEvents:
         return frame->contentSettingsClient()->allowMutationEvents(defaultValue);
-    case ContextFeatures::PushState:
-        return frame->contentSettingsClient()->allowPushState();
     default:
         return defaultValue;
     }

@@ -48,7 +48,6 @@ public:
     enum FeatureType {
         PagePopup = 0,
         MutationEvents,
-        PushState,
         FeatureTypeSize // Should be the last entry.
     };
 
@@ -58,7 +57,6 @@ public:
 
     static bool pagePopupEnabled(Document*);
     static bool mutationEventsEnabled(Document*);
-    static bool pushStateEnabled(Document*);
 
     bool isEnabled(Document*, FeatureType, bool) const;
     void urlDidChange(Document*);
