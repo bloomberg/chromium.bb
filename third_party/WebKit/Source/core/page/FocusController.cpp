@@ -73,11 +73,11 @@ class FocusNavigationScope {
 public:
     Node* rootNode() const;
     Element* owner() const;
-    static FocusNavigationScope focusNavigationScopeOf(Node&);
+    static FocusNavigationScope focusNavigationScopeOf(const Node&);
     static FocusNavigationScope ownedByNonFocusableFocusScopeOwner(Node&);
-    static FocusNavigationScope ownedByShadowHost(Node&);
+    static FocusNavigationScope ownedByShadowHost(const Node&);
     static FocusNavigationScope ownedByShadowInsertionPoint(HTMLShadowElement&);
-    static FocusNavigationScope ownedByIFrame(HTMLFrameOwnerElement&);
+    static FocusNavigationScope ownedByIFrame(const HTMLFrameOwnerElement&);
 
 private:
     explicit FocusNavigationScope(TreeScope*);
@@ -110,10 +110,10 @@ Element* FocusNavigationScope::owner() const
     return nullptr;
 }
 
-FocusNavigationScope FocusNavigationScope::focusNavigationScopeOf(Node& node)
+FocusNavigationScope FocusNavigationScope::focusNavigationScopeOf(const Node& node)
 {
-    Node* root = &node;
-    for (Node* n = &node; n; n = n->parentNode())
+    const Node* root = &node;
+    for (const Node* n = &node; n; n = n->parentNode())
         root = n;
     // The result is not always a ShadowRoot nor a DocumentNode since
     // a starting node is in an orphaned tree in composed shadow tree.
@@ -128,13 +128,13 @@ FocusNavigationScope FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(No
     return FocusNavigationScope::ownedByShadowInsertionPoint(toHTMLShadowElement(node));
 }
 
-FocusNavigationScope FocusNavigationScope::ownedByShadowHost(Node& node)
+FocusNavigationScope FocusNavigationScope::ownedByShadowHost(const Node& node)
 {
     ASSERT(isShadowHost(node));
     return FocusNavigationScope(toElement(node).shadow()->youngestShadowRoot());
 }
 
-FocusNavigationScope FocusNavigationScope::ownedByIFrame(HTMLFrameOwnerElement& frame)
+FocusNavigationScope FocusNavigationScope::ownedByIFrame(const HTMLFrameOwnerElement& frame)
 {
     ASSERT(frame.contentFrame());
     ASSERT(frame.contentFrame()->isLocalFrame());
