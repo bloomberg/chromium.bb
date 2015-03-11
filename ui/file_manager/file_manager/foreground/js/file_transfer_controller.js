@@ -211,6 +211,21 @@ function FileTransferController(doc,
 FileTransferController.DRAG_THUMBNAIL_SIZE_ = 64;
 
 /**
+ * Converts list of urls to list of Entries with granting R/W permissions to
+ * them, which is essential when pasting files from a different profile.
+ *
+ * @param {!Array<string>} urls Urls to be converted.
+ * @return {Promise<!Array<string>>}
+ */
+FileTransferController.URLsToEntriesWithAccess = function(urls) {
+  return new Promise(function(resolve, reject) {
+    chrome.fileManagerPrivate.grantAccess(urls, resolve.bind(null, undefined));
+  }).then(function() {
+    return util.URLsToEntries(urls);
+  });
+};
+
+/**
  * @param {!cr.ui.List} list Items in the list will be draggable.
  * @private
  */
@@ -469,83 +484,116 @@ FileTransferController.prototype.paste =
   var failureUrls;
   var taskId = this.fileOperationManager_.generateTaskId();
 
-  util.URLsToEntries(sourceURLs).then(function(result) {
-    failureUrls = result.failureUrls;
-    return this.fileOperationManager_.filterSameDirectoryEntry(
-        result.entries, destinationEntry, toMove);
-  }.bind(this)).then(function(filteredEntries) {
-    entries = filteredEntries;
-    if (entries.length === 0)
-      return Promise.reject('ABORT');
+  FileTransferController.URLsToEntriesWithAccess(sourceURLs)
+      .then(
+          /**
+           * @param {Object} result
+           * @this {FileTransferController}
+           */
+          function(result) {
+            failureUrls = result.failureUrls;
+            return this.fileOperationManager_.filterSameDirectoryEntry(
+                result.entries, destinationEntry, toMove);
+          }.bind(this))
+      .then(
+          /**
+           * @param {!Array<Entry>} filteredEntries
+           * @this {FileTransferController}
+           * @return {!Promise<Array<Entry>>}
+           */
+          function(filteredEntries) {
+            entries = filteredEntries;
+            if (entries.length === 0)
+              return Promise.reject('ABORT');
 
-    this.pendingTaskIds.push(taskId);
-    var item = new ProgressCenterItem();
-    item.id = taskId;
-    if (toMove) {
-      item.type = ProgressItemType.MOVE;
-      if (entries.length === 1)
-        item.message = strf('MOVE_FILE_NAME', entries[0].name);
-      else
-        item.message = strf('MOVE_ITEMS_REMAINING', entries.length);
-    } else {
-      item.type = ProgressItemType.COPY;
-      if (entries.length === 1)
-        item.message = strf('COPY_FILE_NAME', entries[0].name);
-      else
-        item.message = strf('COPY_ITEMS_REMAINING', entries.length);
-    }
-    this.progressCenter_.updateItem(item);
-    // Check if cross share is needed or not.
-    return this.getMultiProfileShareEntries_(entries);
-  }.bind(this)).then(function(shareEntries) {
-    if (shareEntries.length === 0)
-      return;
-    return this.multiProfileShareDialog_.
-        showMultiProfileShareDialog(shareEntries.length > 1).
-        then(function(dialogResult) {
-          if (dialogResult === 'cancel')
-            return Promise.reject('ABORT');
-          // Do cross share.
-          // TODO(hirono): Make the loop cancellable.
-          var requestDriveShare = function(index) {
-            if (index >= shareEntries.length)
+            this.pendingTaskIds.push(taskId);
+            var item = new ProgressCenterItem();
+            item.id = taskId;
+            if (toMove) {
+              item.type = ProgressItemType.MOVE;
+              if (entries.length === 1)
+                item.message = strf('MOVE_FILE_NAME', entries[0].name);
+              else
+                item.message = strf('MOVE_ITEMS_REMAINING', entries.length);
+            } else {
+              item.type = ProgressItemType.COPY;
+              if (entries.length === 1)
+                item.message = strf('COPY_FILE_NAME', entries[0].name);
+              else
+                item.message = strf('COPY_ITEMS_REMAINING', entries.length);
+            }
+            this.progressCenter_.updateItem(item);
+            // Check if cross share is needed or not.
+            return this.getMultiProfileShareEntries_(entries);
+          }.bind(this))
+      .then(
+          /**
+           * @param {!Array<Entry>} shareEntries
+           * @this {FileTransferController}
+           * @return {!Promise<Array<Entry>>|undefined}
+           */
+          function(shareEntries) {
+            if (shareEntries.length === 0)
               return;
-            return new Promise(function(fulfill) {
-              chrome.fileManagerPrivate.requestDriveShare(
-                  shareEntries[index].toURL(),
-                  dialogResult,
-                  function() {
-                    // TODO(hirono): Check chrome.runtime.lastError here.
-                    fulfill(null);
-                  });
-            }).then(requestDriveShare.bind(null, index + 1));
-          };
-          return requestDriveShare(0);
-        });
-  }.bind(this)).then(function() {
-    // Start the pasting operation.
-    this.fileOperationManager_.paste(
-        entries, destinationEntry, toMove, taskId);
-    this.pendingTaskIds.splice(this.pendingTaskIds.indexOf(taskId), 1);
+            return this.multiProfileShareDialog_.
+                showMultiProfileShareDialog(shareEntries.length > 1).then(
+                    /**
+                     * @param {string} dialogResult
+                     * @this {FileTransferController}
+                     * @return {!Promise<undefined>|undefined}
+                     */
+                    function(dialogResult) {
+                      if (dialogResult === 'cancel')
+                        return Promise.reject('ABORT');
+                      // Do cross share.
+                      // TODO(hirono): Make the loop cancellable.
+                      var requestDriveShare = function(index) {
+                        if (index >= shareEntries.length)
+                          return;
+                        return new Promise(function(fulfill) {
+                          chrome.fileManagerPrivate.requestDriveShare(
+                              shareEntries[index].toURL(),
+                              dialogResult,
+                              function() {
+                                // TODO(hirono): Check chrome.runtime.lastError
+                                // here.
+                                fulfill(undefined);
+                              });
+                        }).then(requestDriveShare.bind(null, index + 1));
+                      };
+                      return requestDriveShare(0);
+                    });
+          }.bind(this))
+      .then(
+          /**
+           * @this {FileTransferController}
+           */
+          function() {
+            // Start the pasting operation.
+            this.fileOperationManager_.paste(
+                entries, destinationEntry, toMove, taskId);
+            this.pendingTaskIds.splice(this.pendingTaskIds.indexOf(taskId), 1);
 
-    // Publish source not found error item.
-    for (var i = 0; i < failureUrls.length; i++) {
-      var fileName =
-          decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
-      var item = new ProgressCenterItem();
-      item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
-      if (toMove)
-        item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', fileName);
-      else
-        item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', fileName);
-      item.state = ProgressItemState.ERROR;
-      this.progressCenter_.updateItem(item);
-      this.sourceNotFoundErrorCount_++;
-    }
-  }.bind(this)).catch(function(error) {
-    if (error !== 'ABORT')
-      console.error(error.stack ? error.stack : error);
-  });
+            // Publish source not found error item.
+            for (var i = 0; i < failureUrls.length; i++) {
+              var fileName =
+                  decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
+              var item = new ProgressCenterItem();
+              item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
+              if (toMove)
+                item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', fileName);
+              else
+                item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', fileName);
+              item.state = ProgressItemState.ERROR;
+              this.progressCenter_.updateItem(item);
+              this.sourceNotFoundErrorCount_++;
+            }
+          }.bind(this))
+      .catch(
+          function(error) {
+            if (error !== 'ABORT')
+              console.error(error.stack ? error.stack : error);
+          });
   return toMove ? 'move' : 'copy';
 };
 

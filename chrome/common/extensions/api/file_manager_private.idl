@@ -654,18 +654,17 @@ interface Functions {
 
   // Requests access to a file system volume.
   // |volumeId| The ID of the file system volume to request. The volume ID is
-  //     delivered to JavaScript as part of VolumeMetadata. By specifying
-  //     "compatible", this function behaves in the compatible mode, where the
-  //     returned FileSystem object gives access to all file system volumes such
-  //     as Downloads folder and removal media like SD cards (i.e. all volumes
-  //     are provided inside the single FileSystem object). In the new
-  //     "per-volume FileSystem object model" crbug.com/322305, a separate
-  //     FileSystem object is created for each volume. "compatible" parameter
-  //     will be removed once Files.app is switched to the per-volume FileSystem
-  //     object model.
+  //     delivered to JavaScript as part of VolumeMetadata.
   // |callback|
   static void requestFileSystem(DOMString volumeId,
                                 RequestFileSystemCallback callback);
+
+  // Requests granting R/W permissions for the passed entries. It's a best
+  // effort operation. Some files may not be granted access if the url is
+  // invalid or not backed by the external file system.
+  // |entryUrls| Urls for the entries to be accessed.
+  // |callback|
+  static void grantAccess(DOMString[] entryUrls, SimpleCallback callback);
 
   // Selects multiple files.
   // |selectedPaths| Array of selected paths

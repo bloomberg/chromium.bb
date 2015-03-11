@@ -48853,6 +48853,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="974" label="PRINTERPROVIDERINTERNAL_GETPRINTDATA"/>
   <int value="975" label="VIRTUALKEYBOARDPRIVATE_SETMODE"/>
   <int value="976" label="NETWORKINGPRIVATE_STARTACTIVATE"/>
+  <int value="977" label="FILEMANAGERPRIVATE_GRANTACCESS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

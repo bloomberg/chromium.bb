@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/event_logger.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,6 +36,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
@@ -273,19 +275,6 @@ FileManagerPrivateRequestFileSystemFunction::SetupFileSystemAccessPermissions(
         child_id, root_dirs[i]);
   }
 
-  // Grant R/W permissions to profile-specific directories (Drive, Downloads)
-  // from other profiles. Those directories may not be mounted at this moment
-  // yet, so we need to do this separately from the above loop over
-  // GetRootDirectories().
-  const std::vector<Profile*>& profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    if (!profiles[i]->IsOffTheRecord()) {
-      file_manager::util::SetupProfileFileAccessPermissions(child_id,
-                                                            profiles[i]);
-    }
-  }
-
   // Grant permission to request externalfile scheme. The permission is needed
   // to start drag for external file URL.
   ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
@@ -370,6 +359,37 @@ void FileManagerPrivateRequestFileSystemFunction::OnEntryDefinition(
   dict->SetString("root_url", entry_definition.file_system_root_url);
   dict->SetInteger("error", drive::FILE_ERROR_OK);
   SendResponse(true);
+}
+
+ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
+  using extensions::api::file_manager_private::GrantAccess::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const std::vector<Profile*>& profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (const auto& profile : profiles) {
+    if (profile->IsOffTheRecord())
+      continue;
+    const GURL site = util::GetSiteForExtensionId(extension_id(), profile);
+    storage::FileSystemContext* const context =
+        content::BrowserContext::GetStoragePartitionForSite(profile, site)
+            ->GetFileSystemContext();
+    for (const auto& url : params->entry_urls) {
+      const storage::FileSystemURL file_system_url =
+          context->CrackURL(GURL(url));
+      // Grant permissions only to valid urls backed by the external file system
+      // backend.
+      if (!file_system_url.is_valid() ||
+          file_system_url.mount_type() != storage::kFileSystemTypeExternal) {
+        continue;
+      }
+      content::ChildProcessSecurityPolicy::GetInstance()
+          ->GrantCreateReadWriteFile(render_view_host()->GetProcess()->GetID(),
+                                     file_system_url.path());
+    }
+  }
+  return RespondNow(NoArguments());
 }
 
 void FileWatchFunctionBase::Respond(bool success) {

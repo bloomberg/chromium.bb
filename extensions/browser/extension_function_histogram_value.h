@@ -1035,6 +1035,7 @@ enum HistogramValue {
   PRINTERPROVIDERINTERNAL_GETPRINTDATA,
   VIRTUALKEYBOARDPRIVATE_SETMODE,
   NETWORKINGPRIVATE_STARTACTIVATE,
+  FILEMANAGERPRIVATE_GRANTACCESS,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

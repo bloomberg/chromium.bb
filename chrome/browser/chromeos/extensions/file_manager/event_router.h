@@ -55,8 +55,7 @@ class EventRouter : public KeyedService,
                     public drive::FileSystemObserver,
                     public drive::JobListObserver,
                     public drive::DriveServiceObserver,
-                    public VolumeManagerObserver,
-                    public content::NotificationObserver {
+                    public VolumeManagerObserver {
  public:
   typedef base::Callback<void(const base::FilePath& virtual_path,
                               const drive::FileChange* list,
@@ -142,11 +141,6 @@ class EventRouter : public KeyedService,
                          const VolumeInfo& volume_info) override;
   void OnFormatStarted(const std::string& device_path, bool success) override;
   void OnFormatCompleted(const std::string& device_path, bool success) override;
-
-  // content::NotificationObserver overrides.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Set custom dispatch directory change event implementation for testing.
   void SetDispatchDirectoryChangeEventImplForTesting(
@@ -235,8 +229,6 @@ class EventRouter : public KeyedService,
   WatcherMap file_watchers_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   Profile* profile_;
-
-  content::NotificationRegistrar notification_registrar_;
 
   scoped_ptr<DeviceEventRouter> device_event_router_;
 

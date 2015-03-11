@@ -271,20 +271,22 @@ chrome.fileManagerPrivate.removeFileWatch = function(fileUrl, callback) {};
 
 /**
  * Requests access to a file system volume. |volumeId| The ID of the file
- * system volume to request. The volume ID is     delivered to JavaScript as
- * part of VolumeMetadata. By specifying     "compatible", this function
- * behaves in the compatible mode, where the     returned FileSystem object
- * gives access to all file system volumes such     as Downloads folder and
- * removal media like SD cards (i.e. all volumes     are provided inside the
- * single FileSystem object). In the new     "per-volume FileSystem object
- * model" crbug.com/322305, a separate     FileSystem object is created for
- * each volume. "compatible" parameter     will be removed once Files.app is
- * switched to the per-volume FileSystem     object model. |callback|
+ * system volume to request. The volume ID is delivered to JavaScript as
+ * part of VolumeMetadata.
  * @param {string} volumeId
- * @param {Function} callback |fileSystem| A DOMFileSystem instance for local
- * file system access. null if the caller has no appropriate permissions.
+ * @param {function(FileSystem)} callback Returns a DOMFileSystem instance
+ *     for the requested volume. Null if the caller has no appropriate
+ *     permissions.
  */
 chrome.fileManagerPrivate.requestFileSystem = function(volumeId, callback) {};
+
+/**
+ * Requests R/W access to the specified entries as |entryUrls|. Note, that only
+ * files backed by external file system backend will be granted the access.
+ * @param {!Array<string>} entryUrls
+ * @param {function()} callback Completion callback.
+ */
+chrome.fileManagerPrivate.grantAccess = function(entryUrls, callback) {};
 
 /**
  * Selects multiple files. |selectedPaths| Array of selected paths

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
+#include "extensions/browser/extension_function.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 class GURL;
@@ -75,6 +76,20 @@ class FileManagerPrivateRequestFileSystemFunction
   // Called when the entry definition is computed.
   void OnEntryDefinition(
       const file_manager::util::EntryDefinition& entry_definition);
+};
+
+// Grants R/W permissions to profile-specific directories (Drive, Downloads)
+// from other profiles.
+class FileManagerPrivateGrantAccessFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.grantAccess",
+                             FILEMANAGERPRIVATE_GRANTACCESS)
+
+ protected:
+  ~FileManagerPrivateGrantAccessFunction() override {}
+
+ private:
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 // Base class for FileManagerPrivateAddFileWatchFunction and
