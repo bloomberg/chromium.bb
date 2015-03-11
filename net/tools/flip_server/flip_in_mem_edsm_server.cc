@@ -13,6 +13,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 #include "base/synchronization/lock.h"
 #include "net/tools/balsa/split.h"
 #include "net/tools/flip_server/acceptor_thread.h"
@@ -50,22 +51,6 @@ bool FLAGS_force_spdy = false;
 double FLAGS_server_think_time_in_s = 0;
 
 net::FlipConfig g_proxy_config;
-
-std::vector<std::string>& split(const std::string& s,
-                                char delim,
-                                std::vector<std::string>& elems) {
-  std::stringstream ss(s);
-  std::string item;
-  while (std::getline(ss, item, delim)) {
-    elems.push_back(item);
-  }
-  return elems;
-}
-
-std::vector<std::string> split(const std::string& s, char delim) {
-  std::vector<std::string> elems;
-  return split(s, delim, elems);
-}
 
 bool GotQuitFromStdin() {
   // Make stdin nonblocking. Yes this is done each time. Oh well.
@@ -301,7 +286,8 @@ int main(int argc, char** argv) {
       break;
     }
     std::string value = cl.GetSwitchValueASCII(name.str());
-    std::vector<std::string> valueArgs = split(value, ',');
+    std::vector<std::string> valueArgs;
+    base::SplitString(value, ',', &valueArgs);
     CHECK_EQ((unsigned int)9, valueArgs.size());
     int spdy_only = atoi(valueArgs[8].c_str());
     // If wait_for_iface is enabled, then this call will block
@@ -329,7 +315,8 @@ int main(int argc, char** argv) {
   if (cl.HasSwitch("spdy-server")) {
     spdy_memory_cache.AddFiles();
     std::string value = cl.GetSwitchValueASCII("spdy-server");
-    std::vector<std::string> valueArgs = split(value, ',');
+    std::vector<std::string> valueArgs;
+    base::SplitString(value, ',', &valueArgs);
     while (valueArgs.size() < 4)
       valueArgs.push_back(std::string());
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_SPDY_SERVER,
@@ -355,7 +342,8 @@ int main(int argc, char** argv) {
   if (cl.HasSwitch("http-server")) {
     http_memory_cache.AddFiles();
     std::string value = cl.GetSwitchValueASCII("http-server");
-    std::vector<std::string> valueArgs = split(value, ',');
+    std::vector<std::string> valueArgs;
+    base::SplitString(value, ',', &valueArgs);
     while (valueArgs.size() < 4)
       valueArgs.push_back(std::string());
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_HTTP_SERVER,
