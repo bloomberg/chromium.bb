@@ -186,8 +186,6 @@
         }],
         ['OS=="win"', {
           'sources': [
-            'angle_platform_impl.cc',
-            'angle_platform_impl.h',
             'gl_bindings_autogen_wgl.cc',
             'gl_bindings_autogen_wgl.h',
             'gl_context_wgl.cc',
@@ -198,11 +196,6 @@
             'gl_surface_wgl.h',
             'gl_wgl_api_implementation.cc',
             'gl_wgl_api_implementation.h',
-          ],
-          'dependencies': [
-            # TODO(jmadill): Use ANGLE on other platforms.
-            '<(angle_path)/src/angle.gyp:libEGL',
-            '<(angle_path)/src/angle.gyp:libGLESv2',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

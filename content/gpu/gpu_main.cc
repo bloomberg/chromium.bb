@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -215,13 +214,13 @@ int GpuMain(const MainFunctionParams& parameters) {
     watchdog_thread->StartWithOptions(options);
   }
 
-  // Initializes StatisticsRecorder which tracks UMA histograms.
-  base::StatisticsRecorder::Initialize();
-
   gpu::GPUInfo gpu_info;
   // Get vendor_id, device_id, driver_version from browser process through
   // commandline switches.
   GetGpuInfoFromCommandLine(gpu_info, command_line);
+
+  base::TimeDelta collect_context_time;
+  base::TimeDelta initialize_one_off_time;
 
   // Warm up resources that don't need access to GPUInfo.
   if (WarmUpSandbox(command_line)) {
@@ -294,18 +293,15 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif  // !defined(OS_CHROMEOS)
 #endif  // defined(OS_LINUX)
 #endif  // !defined(OS_MACOSX)
-      base::TimeDelta collect_context_time =
+      collect_context_time =
           base::TimeTicks::Now() - before_collect_context_graphics_info;
-      UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo",
-                          collect_context_time);
     } else {  // gl_initialized
       VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
       dead_on_arrival = true;
     }
 
-    base::TimeDelta initialize_one_off_time =
+    initialize_one_off_time =
         base::TimeTicks::Now() - before_initialize_one_off;
-    UMA_HISTOGRAM_TIMES("GPU.InitializeOneOffTime", initialize_one_off_time);
 
     if (enable_watchdog && delayed_watchdog_enable) {
       watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
@@ -345,6 +341,11 @@ int GpuMain(const MainFunctionParams& parameters) {
   logging::SetLogMessageHandler(NULL);
 
   GpuProcess gpu_process;
+
+  // These UMA must be stored after GpuProcess is constructed as it
+  // initializes StatisticsRecorder which tracks the histograms.
+  UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
+  UMA_HISTOGRAM_TIMES("GPU.InitializeOneOffTime", initialize_one_off_time);
 
   GpuChildThread* child_thread = new GpuChildThread(watchdog_thread.get(),
                                                     dead_on_arrival,
