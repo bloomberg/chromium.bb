@@ -129,6 +129,9 @@ AppLaunchController::~AppLaunchController() {
 void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
   DVLOG(1) << "Starting kiosk mode...";
 
+  // Ensure WebUILoginView is enabled so that bailout shortcut key works.
+  host_->GetWebUILoginView()->SetUIEnabled(true);
+
   webui_visible_ = host_->GetWebUILoginView()->webui_visible();
   if (!webui_visible_) {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
