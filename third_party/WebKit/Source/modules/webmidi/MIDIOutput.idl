@@ -32,7 +32,7 @@
 // http://cwilso.github.io/web-midi-api/#idl-def-MIDIOutput
 
 [
-    NoInterfaceObject,
+    RuntimeEnabled=WebMIDI,
     SetWrapperReferenceTo(MIDIAccess midiAccess),
 ] interface MIDIOutput : MIDIPort {
     [RaisesException] void send(Uint8Array data, optional double timestamp);

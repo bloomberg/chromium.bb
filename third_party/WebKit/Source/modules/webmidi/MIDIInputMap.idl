@@ -6,8 +6,8 @@
 // callback ForEachCallback = void(DOMString id, MIDIInput port);
 
 [
-    NoInterfaceObject,
     GarbageCollected,
+    RuntimeEnabled=WebMIDI,
 ] interface MIDIInputMap {
     readonly attribute unsigned long size;
     readonly maplike<DOMString, MIDIInput>;

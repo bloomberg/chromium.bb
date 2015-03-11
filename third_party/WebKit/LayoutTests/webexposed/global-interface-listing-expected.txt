@@ -1159,10 +1159,37 @@ interface LocalCredential
     method constructor
 interface Location
     method constructor
+interface MIDIAccess
+    method constructor
 interface MIDIConnectionEvent
     method constructor
+interface MIDIInput
+    method constructor
+interface MIDIInputMap
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
 interface MIDIMessageEvent
     method constructor
+interface MIDIOutput
+    method constructor
+    method send
+interface MIDIOutputMap
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
+interface MIDIPort
+    method close
+    method constructor
+    method open
 interface Map
     getter size
     method clear

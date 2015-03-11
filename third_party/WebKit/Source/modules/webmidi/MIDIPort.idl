@@ -40,8 +40,8 @@ enum MIDIPortType {
 };
 
 [
-    NoInterfaceObject,
-    GarbageCollected
+    GarbageCollected,
+    RuntimeEnabled=WebMIDI,
 ] interface MIDIPort : EventTarget {
     readonly attribute DOMString id;
     readonly attribute DOMString manufacturer;
