@@ -11,6 +11,8 @@ Dumping 'red' in different formats:
  - #F00
  - red
  - default: red
+ - inverse color: rgba(0, 255, 255, 1)
+ - setAlpha(0.42): rgba(255, 0, 0, 0.42)
 Dumping 'green' in different formats:
  - rgb(0, 128, 0)
  - rgba(0, 128, 0, 1)
@@ -22,6 +24,8 @@ Dumping 'green' in different formats:
  - null
  - green
  - default: green
+ - inverse color: rgba(255, 127, 255, 1)
+ - setAlpha(0.42): rgba(0, 128, 0, 0.42)
 Dumping 'blue' in different formats:
  - rgb(0, 0, 255)
  - rgba(0, 0, 255, 1)
@@ -33,6 +37,8 @@ Dumping 'blue' in different formats:
  - #00F
  - blue
  - default: blue
+ - inverse color: rgba(255, 255, 0, 1)
+ - setAlpha(0.42): rgba(0, 0, 255, 0.42)
 Dumping 'cyan' in different formats:
  - rgb(0, 255, 255)
  - rgba(0, 255, 255, 1)
@@ -44,6 +50,8 @@ Dumping 'cyan' in different formats:
  - #0FF
  - cyan
  - default: cyan
+ - inverse color: rgba(255, 0, 0, 1)
+ - setAlpha(0.42): rgba(0, 255, 255, 0.42)
 Dumping 'magenta' in different formats:
  - rgb(255, 0, 255)
  - rgba(255, 0, 255, 1)
@@ -55,6 +63,8 @@ Dumping 'magenta' in different formats:
  - #F0F
  - magenta
  - default: magenta
+ - inverse color: rgba(0, 255, 0, 1)
+ - setAlpha(0.42): rgba(255, 0, 255, 0.42)
 Dumping 'yellow' in different formats:
  - rgb(255, 255, 0)
  - rgba(255, 255, 0, 1)
@@ -66,6 +76,8 @@ Dumping 'yellow' in different formats:
  - #FF0
  - yellow
  - default: yellow
+ - inverse color: rgba(0, 0, 255, 1)
+ - setAlpha(0.42): rgba(255, 255, 0, 0.42)
 Dumping 'white' in different formats:
  - rgb(255, 255, 255)
  - rgba(255, 255, 255, 1)
@@ -77,6 +89,8 @@ Dumping 'white' in different formats:
  - #FFF
  - white
  - default: white
+ - inverse color: rgba(0, 0, 0, 1)
+ - setAlpha(0.42): rgba(255, 255, 255, 0.42)
 Dumping 'black' in different formats:
  - rgb(0, 0, 0)
  - rgba(0, 0, 0, 1)
@@ -88,6 +102,8 @@ Dumping 'black' in different formats:
  - #000
  - black
  - default: black
+ - inverse color: rgba(255, 255, 255, 1)
+ - setAlpha(0.42): rgba(0, 0, 0, 0.42)
 Dumping 'rgb(94, 126, 91)' in different formats:
  - rgb(94, 126, 91)
  - rgba(94, 126, 91, 1)
@@ -99,6 +115,8 @@ Dumping 'rgb(94, 126, 91)' in different formats:
  - null
  - null
  - default: rgb(94, 126, 91)
+ - inverse color: rgba(161, 129, 164, 1)
+ - setAlpha(0.42): rgba(94, 126, 91, 0.42)
 Dumping 'rgba(94, 126, 91, 0.5)' in different formats:
  - null
  - rgba(94, 126, 91, 0.5)
@@ -110,6 +128,8 @@ Dumping 'rgba(94, 126, 91, 0.5)' in different formats:
  - null
  - null
  - default: rgba(94, 126, 91, 0.5)
+ - inverse color: rgba(161, 129, 164, 0.5)
+ - setAlpha(0.42): rgba(94, 126, 91, 0.42)
 Dumping 'hsl(212, 55%, 32%)' in different formats:
  - rgb(37, 79, 126)
  - rgba(37, 79, 126, 1)
@@ -121,6 +141,8 @@ Dumping 'hsl(212, 55%, 32%)' in different formats:
  - null
  - null
  - default: hsl(212, 55%, 32%)
+ - inverse color: rgba(218, 176, 129, 1)
+ - setAlpha(0.42): rgba(37, 79, 126, 0.42)
 Dumping 'hsla(212, 55%, 32%, 0.5)' in different formats:
  - null
  - rgba(37, 79, 126, 0.5)
@@ -132,6 +154,8 @@ Dumping 'hsla(212, 55%, 32%, 0.5)' in different formats:
  - null
  - null
  - default: hsla(212, 55%, 32%, 0.5)
+ - inverse color: rgba(218, 176, 129, 0.5)
+ - setAlpha(0.42): rgba(37, 79, 126, 0.42)
 Dumping '#00FFFF' in different formats:
  - rgb(0, 255, 255)
  - rgba(0, 255, 255, 1)
@@ -143,6 +167,8 @@ Dumping '#00FFFF' in different formats:
  - #0FF
  - cyan
  - default: #00FFFF
+ - inverse color: rgba(255, 0, 0, 1)
+ - setAlpha(0.42): rgba(0, 255, 255, 0.42)
 Dumping '#0FF' in different formats:
  - rgb(0, 255, 255)
  - rgba(0, 255, 255, 1)
@@ -154,4 +180,6 @@ Dumping '#0FF' in different formats:
  - #0FF
  - cyan
  - default: #0FF
+ - inverse color: rgba(255, 0, 0, 1)
+ - setAlpha(0.42): rgba(0, 255, 255, 0.42)
 

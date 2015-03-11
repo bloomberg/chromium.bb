@@ -25,6 +25,9 @@ var test = function()
         InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.ShortHEX));
         InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.Nickname));
         InspectorTest.addResult(" - default: " + color.asString());
+
+        InspectorTest.addResult(" - inverse color: " + color.invert().asString());
+        InspectorTest.addResult(" - setAlpha(0.42): " + color.setAlpha(0.42).asString());
     }
 
     dumpColor("red");
