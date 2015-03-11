@@ -570,7 +570,16 @@ crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolu
 
 crbug.com/443242 http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-dedicated-basic.html [ Failure Pass ]
 
-crbug.com/316148 [ Win ] http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Crash ]
+crbug.com/465864 fast/js/mozilla/strict/15.3.5.1.html [ Pass Failure ]
+crbug.com/465864 http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ Pass Failure ]
+crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-186.html [ Pass Failure ]
+crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-187.html [ Pass Failure ]
+crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-191.html [ Pass Failure ]
+crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-194.html [ Pass Failure ]
+crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-201.html [ Pass Failure ]
+crbug.com/465864 ietestcenter/Javascript/15.3.3.2-1.html [ Pass Failure ]
+
+crbug.com/316148 crbug.com/465864 http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Failure Crash ]
 crbug.com/398295 [ Debug ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]
 crbug.com/398295 [ Win Release ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]
 crbug.com/398295 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure Pass ]
