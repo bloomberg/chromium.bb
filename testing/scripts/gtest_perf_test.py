@@ -31,6 +31,7 @@ def main_run(args):
           '--builder-name', args.properties.get('buildername'),
           '--build-number', str(args.properties.get('buildnumber')),
           '--log-processor-output-file', tempfile_path,
+          '--test-type', test_suite,
     ]
 
     if 'android' == args.properties.get('target_platform'):
@@ -43,7 +44,7 @@ def main_run(args):
           '--verbose',
       ])
     else:
-      gtest_args.extend(['--xvfb', '--test-type', test_suite])
+      gtest_args.extend(['--xvfb'])
       gtest_args.extend(script_args)
 
     rc = common.run_runtest(args, gtest_args + filter_tests)
