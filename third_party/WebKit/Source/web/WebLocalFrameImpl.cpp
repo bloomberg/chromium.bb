@@ -209,6 +209,7 @@
 #include "web/RemoteBridgeFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/SuspendableScriptExecutor.h"
+#include "web/SuspendableTaskRunner.h"
 #include "web/TextFinder.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
@@ -1953,6 +1954,13 @@ void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebString& platform, W
         return;
 
     AppBannerController::willShowInstallBannerPrompt(frame(), platform, reply);
+}
+
+void WebLocalFrameImpl::requestRunTask(WebThread::Task* task) const
+{
+    ASSERT(frame());
+
+    SuspendableTaskRunner::createAndRun(frame()->document(), adoptPtr(task));
 }
 
 void WebLocalFrameImpl::willDetachParent()
