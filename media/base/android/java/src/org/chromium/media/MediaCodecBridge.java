@@ -508,6 +508,7 @@ class MediaCodecBridge {
         mMediaCodec.setParameters(b);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @CalledByNative
     private void requestKeyFrameSoon() {
         Bundle b = new Bundle();
