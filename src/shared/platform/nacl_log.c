@@ -352,8 +352,9 @@ void NaClLogUnlock(void) {
 #ifdef __COVERITY__
         NaClAbort();  /* help coverity figure out that this is the default */
 #else
-        (*gNaClLogAbortBehavior)();
+        NaClLogRunAbortBehavior();
 #endif
+        /* The abort behavior hook may not abort, so abort here in case. */
         NaClAbort();
       }
       break;
@@ -715,4 +716,8 @@ void NaClLogSetAbortBehavior(void (*fn)(void)) {
   NaClXMutexLock(&log_mu);
   gNaClLogAbortBehavior = fn;
   NaClXMutexUnlock(&log_mu);
+}
+
+void NaClLogRunAbortBehavior(void) {
+  (*gNaClLogAbortBehavior)();
 }

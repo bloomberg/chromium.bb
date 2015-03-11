@@ -34,7 +34,6 @@ static void NaClReportLogMessages(void) {
     (*g_NaCl_log_abort_fn)(g_NaCl_log_abort_state,
                            log_data, log_data_bytes);
   }
-  NaClAbort();
 }
 
 void NaClErrorLogHookInit(void (*hook)(void *state,

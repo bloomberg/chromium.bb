@@ -370,6 +370,11 @@ void NaClLogTagNext_mu(void);
  */
 void NaClLogSetAbortBehavior(void (*fn)(void));
 
+/*
+ * Run the current abort behavior hook.
+ */
+void NaClLogRunAbortBehavior(void);
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_LOG_H__ */
