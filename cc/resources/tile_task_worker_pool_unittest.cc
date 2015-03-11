@@ -28,6 +28,7 @@
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -275,6 +276,14 @@ class TileTaskWorkerPoolTest
     return completed_tasks_;
   }
 
+  void LoseContext(ContextProvider* context_provider) {
+    if (!context_provider)
+      return;
+    context_provider->ContextGL()->LoseContextCHROMIUM(
+        GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+    context_provider->ContextGL()->Flush();
+  }
+
  private:
   void Create3dOutputSurfaceAndResourceProvider() {
     output_surface_ = FakeOutputSurface::Create3d(
@@ -402,6 +411,21 @@ TEST_P(TileTaskWorkerPoolTest, LargeResources) {
   // This will time out if a resource that is larger than the throttle limit
   // never gets scheduled.
   RunMessageLoopUntilAllTasksHaveCompleted();
+}
+
+TEST_P(TileTaskWorkerPoolTest, LostContext) {
+  LoseContext(output_surface_->context_provider());
+  LoseContext(output_surface_->worker_context_provider());
+
+  AppendTask(0u);
+  AppendTask(1u);
+  ScheduleTasks();
+
+  RunMessageLoopUntilAllTasksHaveCompleted();
+
+  ASSERT_EQ(2u, completed_tasks().size());
+  EXPECT_FALSE(completed_tasks()[0].canceled);
+  EXPECT_FALSE(completed_tasks()[1].canceled);
 }
 
 INSTANTIATE_TEST_CASE_P(

@@ -120,9 +120,16 @@ void GpuRasterizer::RasterizeSource(
     write_lock->InitSkSurface(use_worker_context, use_distance_field_text,
                               raster_source->CanUseLCDText(),
                               msaa_sample_count_);
+
+    SkSurface* sk_surface = write_lock->sk_surface();
+
+    // Allocating an SkSurface will fail after a lost context.  Pretend we
+    // rasterized, as the contents of the resource don't matter anymore.
+    if (!sk_surface)
+      return;
+
     SkMultiPictureDraw multi_picture_draw;
-    multi_picture_draw.add(write_lock->sk_surface()->getCanvas(),
-                           picture.get());
+    multi_picture_draw.add(sk_surface->getCanvas(), picture.get());
     multi_picture_draw.draw(msaa_sample_count_ > 0);
     write_lock->ReleaseSkSurface();
   }
@@ -169,6 +176,9 @@ void GpuRasterizer::AddToMultiPictureDraw(const Tile* tile,
                       msaa_sample_count_);
 
   SkSurface* sk_surface = lock->sk_surface();
+
+  // Allocating an SkSurface will fail after a lost context.  Pretend we
+  // rasterized, as the contents of the resource don't matter anymore.
   if (!sk_surface)
     return;
 

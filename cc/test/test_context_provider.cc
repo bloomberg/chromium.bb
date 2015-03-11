@@ -104,6 +104,11 @@ class GrContext* TestContextProvider::GrContext() {
   gl_context->makeCurrent();
   gr_context_ = skia::AdoptRef(GrContext::Create(
       kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(gl_context->gl())));
+
+  // If GlContext is already lost, also abandon the new GrContext.
+  if (IsContextLost())
+    gr_context_->abandonContext();
+
   return gr_context_.get();
 }
 
@@ -151,6 +156,8 @@ void TestContextProvider::OnLostContext() {
   }
   if (!lost_context_callback_.is_null())
     base::ResetAndReturn(&lost_context_callback_).Run();
+  if (gr_context_)
+    gr_context_->abandonContext();
 }
 
 TestWebGraphicsContext3D* TestContextProvider::TestContext3d() {
