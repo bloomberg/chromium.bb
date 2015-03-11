@@ -69,7 +69,7 @@ const char kLearnMorePhishingUrlV2[] =
     "https://www.google.com/transparencyreport/safebrowsing/";
 
 const char kPrivacyLinkHtml[] =
-    "<a id=\"privacy-link\" href=\"\" onclick=\"sendCommand('showPrivacy'); "
+    "<a id=\"privacy-link\" href=\"\" onclick=\"sendCommand(%d); "
     "return false;\" onmousedown=\"return false;\">%s</a>";
 
 // After a malware interstitial where the user opted-in to the report
@@ -77,16 +77,6 @@ const char kPrivacyLinkHtml[] =
 // MalwareDetails::FinishCollection() by this much time (in
 // milliseconds).
 const int64 kMalwareDetailsProceedDelayMilliSeconds = 3000;
-
-// The commands returned by the page when the user performs an action.
-const char kDoReportCommand[] = "doReport";
-const char kDontReportCommand[] = "dontReport";
-const char kExpandedSeeMoreCommand[] = "expandedSeeMore";
-const char kLearnMoreCommand[] = "learnMore2";
-const char kProceedCommand[] = "proceed";
-const char kShowDiagnosticCommand[] = "showDiagnostic";
-const char kShowPrivacyCommand[] = "showPrivacy";
-const char kTakeMeBackCommand[] = "takeMeBack";
 
 // Other constants used to communicate with the JavaScript.
 const char kBoxChecked[] = "boxchecked";
@@ -217,154 +207,128 @@ bool SafeBrowsingBlockingPage::CanShowMalwareDetailsOption() {
 SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {
 }
 
-void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
-  std::string command(cmd);  // Make a local copy so we can modify it.
-  // The Jasonified response has quotes, remove them.
-  if (command.length() > 1 && command[0] == '"') {
-    command = command.substr(1, command.length() - 2);
-  }
-
-  if (command == "pageLoadComplete") {
+void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
+  if (page_cmd == "\"pageLoadComplete\"") {
     // content::WaitForRenderFrameReady sends this message when the page
     // load completes. Ignore it.
     return;
   }
 
-  if (command == kDoReportCommand) {
-    SetReportingPreference(true);
-    return;
-  }
+  int command = 0;
+  bool retval = base::StringToInt(page_cmd, &command);
+  DCHECK(retval) << page_cmd;
 
-  if (command == kDontReportCommand) {
-    SetReportingPreference(false);
-    return;
-  }
+  switch (command) {
+    case CMD_DO_REPORT: {
+      // User enabled SB Extended Reporting via the checkbox.
+      SetReportingPreference(true);
+      break;
+    }
+    case CMD_DONT_REPORT: {
+      // User disabled SB Extended Reporting via the checkbox.
+      SetReportingPreference(false);
+      break;
+    }
+    case CMD_OPEN_HELP_CENTER: {
+      // User pressed "Learn more".
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
+      GURL learn_more_url(
+          interstitial_reason_ == SB_REASON_PHISHING ?
+          kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
+      learn_more_url = google_util::AppendGoogleLocaleParam(
+          learn_more_url, g_browser_process->GetApplicationLocale());
+      OpenURLParams params(learn_more_url,
+                           Referrer(),
+                           CURRENT_TAB,
+                           ui::PAGE_TRANSITION_LINK,
+                           false);
+      web_contents()->OpenURL(params);
+      break;
+    }
+    case CMD_OPEN_REPORTING_PRIVACY: {
+      // User pressed on the SB Extended Reporting "privacy policy" link.
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::SHOW_PRIVACY_POLICY);
+      GURL privacy_url(
+          l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
+      privacy_url = google_util::AppendGoogleLocaleParam(
+          privacy_url, g_browser_process->GetApplicationLocale());
+      OpenURLParams params(privacy_url,
+                           Referrer(),
+                           CURRENT_TAB,
+                           ui::PAGE_TRANSITION_LINK,
+                           false);
+      web_contents()->OpenURL(params);
+      break;
+    }
+    case CMD_PROCEED: {
+      // User pressed on the button to proceed.
+      if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
+        metrics_helper_->RecordUserDecision(
+            SecurityInterstitialMetricsHelper::PROCEED);
+        interstitial_page()->Proceed();
+        // |this| has been deleted after Proceed() returns.
+        break;
+      }
+      // If the user can't proceed, fall through to CMD_DONT_PROCEED.
+    }
+    case CMD_DONT_PROCEED: {
+      // User pressed on the button to return to safety.
+      // Don't record the user action here because there are other ways of
+      // triggering DontProceed, like clicking the back button.
+      if (is_main_frame_load_blocked_) {
+        // If the load is blocked, we want to close the interstitial and discard
+        // the pending entry.
+        interstitial_page()->DontProceed();
+        // |this| has been deleted after DontProceed() returns.
+        break;
+      }
 
-  if (command == kLearnMoreCommand) {
-    // User pressed "Learn more".
-    metrics_helper_->RecordUserInteraction(
-        SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
-    GURL learn_more_url(
-        interstitial_reason_ == SB_REASON_PHISHING ?
-        kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
-    learn_more_url = google_util::AppendGoogleLocaleParam(
-        learn_more_url, g_browser_process->GetApplicationLocale());
-    OpenURLParams params(learn_more_url,
-                         Referrer(),
-                         CURRENT_TAB,
-                         ui::PAGE_TRANSITION_LINK,
-                         false);
-    web_contents()->OpenURL(params);
-    return;
-  }
-
-  if (command == kShowPrivacyCommand) {
-    // User pressed "Safe Browsing privacy policy".
-    metrics_helper_->RecordUserInteraction(
-        SecurityInterstitialMetricsHelper::SHOW_PRIVACY_POLICY);
-    GURL privacy_url(
-        l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
-    privacy_url = google_util::AppendGoogleLocaleParam(
-        privacy_url, g_browser_process->GetApplicationLocale());
-    OpenURLParams params(privacy_url,
-                         Referrer(),
-                         CURRENT_TAB,
-                         ui::PAGE_TRANSITION_LINK,
-                         false);
-    web_contents()->OpenURL(params);
-    return;
-  }
-
-  bool proceed_blocked = false;
-  if (command == kProceedCommand) {
-    if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
-      proceed_blocked = true;
-    } else {
-      metrics_helper_->RecordUserDecision(
-          SecurityInterstitialMetricsHelper::PROCEED);
-      interstitial_page()->Proceed();
-      // |this| has been deleted after Proceed() returns.
-      return;
+      // Otherwise the offending entry has committed, and we need to go back or
+      // to a safe page.  We will close the interstitial when that page commits.
+      if (web_contents()->GetController().CanGoBack()) {
+        web_contents()->GetController().GoBack();
+      } else {
+        web_contents()->GetController().LoadURL(
+            GURL(chrome::kChromeUINewTabURL),
+            content::Referrer(),
+            ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+            std::string());
+      }
+      break;
+    }
+    case CMD_OPEN_DIAGNOSTIC: {
+      // User wants to see why this page is blocked.
+      // TODO(felt): element_index will always be 0. See crbug.com/464732
+      size_t element_index = 0;
+      const UnsafeResource& unsafe_resource = unsafe_resources_[element_index];
+      std::string bad_url_spec = unsafe_resource.url.spec();
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::SHOW_DIAGNOSTIC);
+      std::string diagnostic =
+          base::StringPrintf(kSbDiagnosticUrl,
+              net::EscapeQueryParamValue(bad_url_spec, true).c_str());
+      GURL diagnostic_url(diagnostic);
+      diagnostic_url = google_util::AppendGoogleLocaleParam(
+          diagnostic_url, g_browser_process->GetApplicationLocale());
+      DCHECK(unsafe_resource.threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+             unsafe_resource.threat_type ==
+                 SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
+             unsafe_resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED);
+      OpenURLParams params(
+          diagnostic_url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
+          false);
+      web_contents()->OpenURL(params);
+      break;
+    }
+    case CMD_SHOW_MORE_SECTION: {
+      // User has opened up the hidden text.
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
+      break;
     }
   }
-
-  if (command == kTakeMeBackCommand || proceed_blocked) {
-    // Don't record the user action here because there are other ways of
-    // triggering DontProceed, like clicking the back button.
-    if (is_main_frame_load_blocked_) {
-      // If the load is blocked, we want to close the interstitial and discard
-      // the pending entry.
-      interstitial_page()->DontProceed();
-      // |this| has been deleted after DontProceed() returns.
-      return;
-    }
-
-    // Otherwise the offending entry has committed, and we need to go back or
-    // to a safe page.  We will close the interstitial when that page commits.
-    if (web_contents()->GetController().CanGoBack()) {
-      web_contents()->GetController().GoBack();
-    } else {
-      web_contents()->GetController().LoadURL(
-          GURL(chrome::kChromeUINewTabURL),
-          content::Referrer(),
-          ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-          std::string());
-    }
-    return;
-  }
-
-  // The "report error" and "show diagnostic" commands can have a number
-  // appended to them, which is the index of the element they apply to.
-  size_t element_index = 0;
-  size_t colon_index = command.find(':');
-  if (colon_index != std::string::npos) {
-    DCHECK(colon_index < command.size() - 1);
-    int result_int = 0;
-    bool result = base::StringToInt(base::StringPiece(command.begin() +
-                                                      colon_index + 1,
-                                                      command.end()),
-                                    &result_int);
-    command = command.substr(0, colon_index);
-    if (result)
-      element_index = static_cast<size_t>(result_int);
-  }
-
-  if (element_index >= unsafe_resources_.size()) {
-    NOTREACHED();
-    return;
-  }
-
-  std::string bad_url_spec = unsafe_resources_[element_index].url.spec();
-  if (command == kShowDiagnosticCommand) {
-    // We're going to take the user to Google's SafeBrowsing diagnostic page.
-    metrics_helper_->RecordUserInteraction(
-        SecurityInterstitialMetricsHelper::SHOW_DIAGNOSTIC);
-    std::string diagnostic =
-        base::StringPrintf(kSbDiagnosticUrl,
-            net::EscapeQueryParamValue(bad_url_spec, true).c_str());
-    GURL diagnostic_url(diagnostic);
-    diagnostic_url = google_util::AppendGoogleLocaleParam(
-        diagnostic_url, g_browser_process->GetApplicationLocale());
-    DCHECK(unsafe_resources_[element_index].threat_type ==
-               SB_THREAT_TYPE_URL_MALWARE ||
-           unsafe_resources_[element_index].threat_type ==
-               SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
-           unsafe_resources_[element_index].threat_type ==
-               SB_THREAT_TYPE_URL_UNWANTED);
-    OpenURLParams params(
-        diagnostic_url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
-        false);
-    web_contents()->OpenURL(params);
-    return;
-  }
-
-  if (command == kExpandedSeeMoreCommand) {
-    metrics_helper_->RecordUserInteraction(
-        SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
-    return;
-  }
-
-  NOTREACHED() << "Unexpected command: " << command;
 }
 
 void SafeBrowsingBlockingPage::OverrideRendererPrefs(
@@ -630,6 +594,7 @@ void SafeBrowsingBlockingPage::PopulateExtendedReportingOption(
 
   const std::string privacy_link = base::StringPrintf(
       kPrivacyLinkHtml,
+      CMD_OPEN_REPORTING_PRIVACY,
       l10n_util::GetStringUTF8(
           IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
   load_time_data->SetString(

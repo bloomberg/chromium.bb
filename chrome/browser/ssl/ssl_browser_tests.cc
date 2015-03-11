@@ -1860,7 +1860,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestInterstitialJavaScriptProceeds) {
   int result = -1;
   std::string javascript = base::StringPrintf(
       "window.domAutomationController.send(%d);",
-      SSLBlockingPage::CMD_PROCEED);
+      SecurityInterstitialPage::CMD_PROCEED);
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
               interstitial_rvh, javascript, &result));
   // The above will hang without the fix.
@@ -1894,7 +1894,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
   int result = -1;
   std::string javascript = base::StringPrintf(
       "window.domAutomationController.send(%d);",
-      SSLBlockingPage::CMD_DONT_PROCEED);
+      SecurityInterstitialPage::CMD_DONT_PROCEED);
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
       interstitial_rvh, javascript, &result));
   // The above will hang without the fix.

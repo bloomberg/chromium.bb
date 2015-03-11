@@ -39,12 +39,12 @@ bool IsInterstitialDisplayingText(content::InterstitialPage* interstitial,
   DCHECK(text.find("\'") == std::string::npos);
   std::string command = base::StringPrintf(
       "var hasText = document.body.textContent.indexOf('%s') >= 0;"
-      "window.domAutomationController.send(hasText);",
+      "window.domAutomationController.send(hasText ? 1 : 0);",
       text.c_str());
-  bool result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+  int result = 0;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
       interstitial->GetMainFrame(), command, &result));
-  return result;
+  return result == 1;
 }
 
 enum ExpectWiFi {

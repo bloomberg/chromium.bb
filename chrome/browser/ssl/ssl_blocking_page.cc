@@ -451,8 +451,7 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
   entry->GetSSL().security_bits = ssl_info_.security_bits;
 }
 
-// This handles the commands sent from the interstitial JavaScript. They are
-// defined in chrome/browser/resources/ssl/ssl_errors_common.js.
+// This handles the commands sent from the interstitial JavaScript.
 // DO NOT reorder or change this logic without also changing the JavaScript!
 void SSLBlockingPage::CommandReceived(const std::string& command) {
   int cmd = 0;
@@ -469,9 +468,18 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       }
       break;
     }
-    case CMD_MORE: {
+    case CMD_SHOW_MORE_SECTION: {
       metrics_helper_->RecordUserInteraction(
           SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
+      break;
+    }
+    case CMD_OPEN_HELP_CENTER: {
+      metrics_helper_->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
+      content::NavigationController::LoadURLParams help_page_params(
+          google_util::AppendGoogleLocaleParam(
+              GURL(kHelpURL), g_browser_process->GetApplicationLocale()));
+      web_contents()->GetController().LoadURLWithParams(help_page_params);
       break;
     }
     case CMD_RELOAD: {
@@ -481,24 +489,19 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       web_contents()->GetController().Reload(true);
       break;
     }
-    case CMD_HELP: {
-      metrics_helper_->RecordUserInteraction(
-          SecurityInterstitialMetricsHelper::SHOW_LEARN_MORE);
-      content::NavigationController::LoadURLParams help_page_params(
-          google_util::AppendGoogleLocaleParam(
-              GURL(kHelpURL), g_browser_process->GetApplicationLocale()));
-      web_contents()->GetController().LoadURLWithParams(help_page_params);
-      break;
-    }
-    case CMD_CLOCK: {
+    case CMD_OPEN_DATE_SETTINGS: {
       metrics_helper_->RecordUserInteraction(
           SecurityInterstitialMetricsHelper::OPEN_TIME_SETTINGS);
       LaunchDateAndTimeSettings();
       break;
     }
-    default: {
-      NOTREACHED();
-    }
+    case CMD_OPEN_DIAGNOSTIC:
+      // Google doesn't currently have a transparency report for SSL.
+    case CMD_DO_REPORT:
+    case CMD_DONT_REPORT:
+    case CMD_OPEN_REPORTING_PRIVACY:
+      // Chrome doesn't currently do Extended Reporting for SSL.
+      NOTREACHED() << "Unexpected command: " << command;
   }
 }
 

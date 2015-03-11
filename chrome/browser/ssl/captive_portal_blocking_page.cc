@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -33,8 +34,6 @@ enum CaptivePortalBlockingPageEvent {
   OPEN_LOGIN_PAGE,
   CAPTIVE_PORTAL_BLOCKING_PAGE_EVENT_COUNT
 };
-
-const char kOpenLoginPageCommand[] = "openLoginPage";
 
 void RecordUMA(CaptivePortalBlockingPageEvent event) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.captive_portal",
@@ -192,8 +191,17 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
 }
 
 void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
-  // The response has quotes around it.
-  if (command == std::string("\"") + kOpenLoginPageCommand + "\"") {
+  if (command == "\"pageLoadComplete\"") {
+    // content::WaitForRenderFrameReady sends this message when the page
+    // load completes. Ignore it.
+    return;
+  }
+
+  int cmd = 0;
+  bool retval = base::StringToInt(command, &cmd);
+  DCHECK(retval) << command;
+
+  if (cmd == CMD_OPEN_LOGIN) {
     RecordUMA(OPEN_LOGIN_PAGE);
     CaptivePortalTabHelper::OpenLoginTabForWebContents(web_contents(), true);
   }

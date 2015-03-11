@@ -30,18 +30,6 @@ class SSLErrorClassification;
 // It deletes itself when the interstitial page is closed.
 class SSLBlockingPage : public SecurityInterstitialPage {
  public:
-  // These represent the commands sent from the interstitial JavaScript. They
-  // are defined in chrome/browser/resources/ssl/ssl_errors_common.js.
-  // DO NOT reorder or change these without also changing the JavaScript!
-  enum SSLBlockingPageCommands {
-    CMD_DONT_PROCEED = 0,
-    CMD_PROCEED = 1,
-    CMD_MORE = 2,
-    CMD_RELOAD = 3,
-    CMD_HELP = 4,
-    CMD_CLOCK = 5
-  };
-
   enum SSLBlockingPageOptionsMask {
     // Indicates whether or not the user could (assuming perfect knowledge)
     // successfully override the error and still get the security guarantees

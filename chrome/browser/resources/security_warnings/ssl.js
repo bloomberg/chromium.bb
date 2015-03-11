@@ -2,14 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Should match SSLBlockingPageCommands in ssl_blocking_page.cc.
-var SSL_CMD_DONT_PROCEED = 0;
-var SSL_CMD_PROCEED = 1;
-var SSL_CMD_MORE = 2;
-var SSL_CMD_RELOAD = 3;
-var SSL_CMD_HELP = 4;
-var SSL_CMD_CLOCK = 5;
-
 function setupSSLDebuggingInfo() {
   if (loadTimeData.getString('type') != 'SSL')
     return;

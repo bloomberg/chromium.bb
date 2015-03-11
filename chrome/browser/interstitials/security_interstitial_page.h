@@ -20,6 +20,27 @@ class WebContents;
 
 class SecurityInterstitialPage : public content::InterstitialPageDelegate {
  public:
+  // These represent the commands sent from the interstitial JavaScript.
+  // DO NOT reorder or change these without also changing the JavaScript!
+  // See chrome/browser/resources/security_warnings/interstitial_v2.js
+  enum SecurityInterstitialCommands {
+    // Decisions
+    CMD_DONT_PROCEED = 0,
+    CMD_PROCEED = 1,
+    // Ways for user to get more information
+    CMD_SHOW_MORE_SECTION = 2,
+    CMD_OPEN_HELP_CENTER = 3,
+    CMD_OPEN_DIAGNOSTIC = 4,
+    // Primary button actions
+    CMD_RELOAD = 5,
+    CMD_OPEN_DATE_SETTINGS = 6,
+    CMD_OPEN_LOGIN = 7,
+    // Safe Browsing Extended Reporting
+    CMD_DO_REPORT = 8,
+    CMD_DONT_REPORT = 9,
+    CMD_OPEN_REPORTING_PRIVACY = 10,
+  };
+
   SecurityInterstitialPage(content::WebContents* web_contents,
                            const GURL& url);
   ~SecurityInterstitialPage() override;

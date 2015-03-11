@@ -8,6 +8,22 @@
 var expandedDetails = false;
 var keyPressState = 0;
 
+// Should match SecurityInterstitialCommands in security_interstitial_page.h
+var CMD_DONT_PROCEED = 0;
+var CMD_PROCEED = 1;
+// Ways for user to get more information
+var CMD_SHOW_MORE_SECTION = 2;
+var CMD_OPEN_HELP_CENTER = 3;
+var CMD_OPEN_DIAGNOSTIC = 4;
+// Primary button actions
+var CMD_RELOAD = 5;
+var CMD_OPEN_DATE_SETTINGS = 6;
+var CMD_OPEN_LOGIN = 7;
+// Safe Browsing Extended Reporting
+var CMD_DO_REPORT = 8;
+var CMD_DONT_REPORT = 9;
+var CMD_OPEN_REPORTING_PRIVACY = 10;
+
 /**
  * A convenience method for sending commands to the parent page.
  * @param {string} cmd  The command to send.
@@ -26,7 +42,7 @@ function handleKeypress(e) {
   if (BYPASS_SEQUENCE.charCodeAt(keyPressState) == e.keyCode) {
     keyPressState++;
     if (keyPressState == BYPASS_SEQUENCE.length) {
-      sendCommand(SSL_CMD_PROCEED);
+      sendCommand(CMD_PROCEED);
       keyPressState = 0;
     }
   } else {
@@ -88,20 +104,20 @@ function setupEvents() {
     $('primary-button').addEventListener('click', function() {
       switch (interstitialType) {
         case 'CAPTIVE_PORTAL':
-          sendCommand(CAPTIVEPORTAL_CMD_OPEN_LOGIN_PAGE);
+          sendCommand(CMD_OPEN_LOGIN);
           break;
 
         case 'SSL':
           if (badClock)
-            sendCommand(SSL_CMD_CLOCK);
+            sendCommand(CMD_OPEN_DATE_SETTINGS);
           else if (overridable)
-            sendCommand(SSL_CMD_DONT_PROCEED);
+            sendCommand(CMD_DONT_PROCEED);
           else
-            sendCommand(SSL_CMD_RELOAD);
+            sendCommand(CMD_RELOAD);
           break;
 
         case 'SAFEBROWSING':
-          sendCommand(SB_CMD_TAKE_ME_BACK);
+          sendCommand(CMD_DONT_PROCEED);
           break;
 
         default:
@@ -113,7 +129,7 @@ function setupEvents() {
   if (overridable) {
     // Captive portal page isn't overridable.
     $('proceed-link').addEventListener('click', function(event) {
-      sendCommand(ssl ? SSL_CMD_PROCEED : SB_CMD_PROCEED);
+      sendCommand(CMD_PROCEED);
     });
   } else if (!ssl) {
     $('final-paragraph').classList.add('hidden');
@@ -124,12 +140,10 @@ function setupEvents() {
   } else if ($('help-link')) {
     // Overridable SSL page doesn't have this link.
     $('help-link').addEventListener('click', function(event) {
-      if (ssl)
-        sendCommand(SSL_CMD_HELP);
-      else if (loadTimeData.getBoolean('phishing'))
-        sendCommand(SB_CMD_LEARN_MORE_2);
+      if (ssl || loadTimeData.getBoolean('phishing'))
+        sendCommand(CMD_OPEN_HELP_CENTER);
       else
-        sendCommand(SB_CMD_SHOW_DIAGNOSTIC);
+        sendCommand(CMD_OPEN_DIAGNOSTIC);
     });
   }
 
@@ -152,7 +166,7 @@ function setupEvents() {
           loadTimeData.getString('closeDetails');
       if (!expandedDetails) {
         // Record a histogram entry only the first time that details is opened.
-        sendCommand(ssl ? SSL_CMD_MORE : SB_CMD_EXPANDED_SEE_MORE);
+        sendCommand(CMD_SHOW_MORE_SECTION);
         expandedDetails = true;
       }
     });
