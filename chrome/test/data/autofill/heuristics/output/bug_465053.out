@@ -1,0 +1,12 @@
+CREDIT_CARD_NUMBER |  | Card number |  | _1-cc
+CREDIT_CARD_EXP_MONTH |  | MM |  | _1-cc
+CREDIT_CARD_EXP_2_DIGIT_YEAR |  | YY |  | _1-cc
+CREDIT_CARD_VERIFICATION_CODE |  | CVC |  | _1-cc
+CREDIT_CARD_NAME |  | Cardholder name |  | _1-cc
+COMPANY_NAME | ORGANIZATION | Business name |  | _1-default
+NAME_FULL | RECIPIENT | Name |  | _1-default
+ADDRESS_HOME_LINE1 | ADDRESS_LINE_1 | Street address |  | _1-default
+ADDRESS_HOME_LINE2 | ADDRESS_LINE_2 | Apt./Suite |  | _1-default
+ADDRESS_HOME_CITY | LOCALITY | City |  | _1-default
+ADDRESS_HOME_ZIP | POSTAL_CODE | ZIP code |  | _1-default
+ADDRESS_HOME_COUNTRY | COUNTRY | Country | US | _1-default
