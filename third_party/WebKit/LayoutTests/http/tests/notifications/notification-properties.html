@@ -19,7 +19,8 @@
                 lang: "nl-NL",
                 body: "Hallo, wereld!",
                 tag: "notification",
-                icon: "http://localhost/my_icon.png"
+                icon: "http://localhost/my_icon.png",
+                silent: true
             };
 
             var notification = new Notification("My Notification", options);
@@ -30,6 +31,7 @@
             assert_equals(notification.body, options.body);
             assert_equals(notification.tag, options.tag);
             assert_equals(notification.icon, options.icon);
+            assert_true(notification.silent);
 
             var emptyNotification = new Notification("My Notification");
 
@@ -39,6 +41,7 @@
             assert_equals(emptyNotification.body, "");
             assert_equals(emptyNotification.tag, "");
             assert_equals(emptyNotification.icon, "");
+            assert_false(emptyNotification.silent);
 
             var invalidIconNotification = new Notification("My Notification", {
                 icon: "http://test:test/"

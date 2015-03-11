@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: Property reflection in the "notificationclick" event.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+    <script src="resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the notification available in the "notificationclick" event in the
+      // Service Worker accurately reflects the attributes with which the notification
+      // was created (for this test --) in the document.
+
+      async_test(function(test) {
+          var scope = 'resources/scope/' + location.pathname,
+              script = 'resources/instrumentation-service-worker.js';
+
+          var options = {
+              title: scope,
+              dir: 'rtl',
+              lang: 'nl-NL',
+              body: 'Hello, world!',
+              tag: 'tag',
+              // FIXME: Relative URLs for the icon attribute currently get reflected as
+              // an absolute URL, which should probably be the given relative URL.
+              icon: 'https://example/icon.png',
+              silent: true
+          };
+
+          testRunner.grantWebNotificationPermission(location.origin, true);
+          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
+              // (1) Tell the Service Worker to display a Web Notification.
+              workerInfo.port.postMessage({
+                  command: 'show',
+
+                  title: scope,
+                  options: options
+              });
+
+              workerInfo.port.addEventListener('message', function(event) {
+                  if (typeof event.data != 'object' || !event.data.command) {
+                      assert_unreached('Invalid message from the Service Worker.');
+                      return;
+                  }
+
+                  // (2) Listen for confirmation from the Service Worker that the
+                  // notification's display promise has been resolved.
+                  if (event.data.command == 'show') {
+                      assert_true(event.data.success, 'The notification must have been displayed.');
+                      testRunner.simulateWebNotificationClick(scope);
+                      return;
+                  }
+
+                  // (3) Listen for confirmation from the Service Worker that the
+                  // notification has been clicked on. Make sure that all properties
+                  // set on the Notification object are as expected.
+                  assert_equals(event.data.command, 'click', 'The notification was expected to be clicked.');
+
+                  Object.keys(options).forEach(function(key) {
+                      assert_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
+                  });
+
+                  test.done();
+              });
+          }).catch(unreached_rejection(test));
+
+      }, 'Clicking on a notification displayed by a Service Worker the notificationclick event.');
+    </script>
+  </body>
+</html>
