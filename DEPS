@@ -181,6 +181,41 @@ hooks = [
     "pattern": ".",
     "action": ["python", "native_client/build/gyp_nacl"],
   },
+  # Pull clang-format binaries. Note that we currently do not support
+  # clang-format on linux32
+  {
+    "name": "clang-format_win",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=win32",
+                "--no_auth",
+                "--bucket", "chromium-clang-format",
+                "-s", "buildtools/win/clang-format.exe.sha1",
+    ],
+  },
+  {
+    "name": "clang-format_mac",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=darwin",
+                "--no_auth",
+                "--bucket", "chromium-clang-format",
+                "-s", "buildtools/mac/clang-format.sha1",
+    ],
+  },
+  {
+    "name": "clang-format_linux64",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=linux*",
+                "--no_auth",
+                "--bucket", "chromium-clang-format",
+                "-s", "buildtools/linux64/clang-format.sha1",
+    ],
+  },
 ]
 
 include_rules = [
