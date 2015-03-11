@@ -112,6 +112,8 @@ void Shader::DoCompile() {
     // We cannot reach here if we are using the shader translator.
     // All invalid shaders must be rejected by the translator.
     // All translated shaders must compile.
+    std::string translator_log = log_info_;
+
     GLint max_len = 0;
     glGetShaderiv(service_id_, GL_INFO_LOG_LENGTH, &max_len);
     log_info_.resize(max_len);
@@ -122,9 +124,11 @@ void Shader::DoCompile() {
       DCHECK(len == 0 || log_info_[len] == '\0');
       log_info_.resize(len);
     }
+
     LOG_IF(ERROR, translator)
         << "Shader translator allowed/produced an invalid shader "
         << "unless the driver is buggy:"
+        << "\n--Log from shader translator--\n" << translator_log
         << "\n--original-shader--\n" << last_compiled_source_
         << "\n--translated-shader--\n" << source_for_driver
         << "\n--info-log--\n" << log_info_;
