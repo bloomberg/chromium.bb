@@ -76,7 +76,6 @@ public:
 
     // WebServiceWorkerProviderClient overrides.
     virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) override;
-    virtual void setReadyRegistration(WebServiceWorkerRegistration*) override;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
     virtual bool getClientInfo(WebServiceWorkerClientInfo*);
 
@@ -95,7 +94,6 @@ private:
 
     WebServiceWorkerProvider* m_provider;
     RefPtrWillBeMember<ServiceWorker> m_controller;
-    Member<ServiceWorkerRegistration> m_readyRegistration;
     Member<ReadyProperty> m_ready;
 };
 

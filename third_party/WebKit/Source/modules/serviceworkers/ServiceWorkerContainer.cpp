@@ -119,7 +119,6 @@ void ServiceWorkerContainer::willBeDetachedFromFrame()
 DEFINE_TRACE(ServiceWorkerContainer)
 {
     visitor->trace(m_controller);
-    visitor->trace(m_readyRegistration);
     visitor->trace(m_ready);
     RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerContainer>::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
@@ -279,27 +278,6 @@ void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker, bool
         dispatchEvent(Event::create(EventTypeNames::controllerchange));
 }
 
-// FIXME: Remove this after Chrome side CL landed.
-void ServiceWorkerContainer::setReadyRegistration(WebServiceWorkerRegistration* registration)
-{
-    if (!executionContext()) {
-        ServiceWorkerRegistration::dispose(registration);
-        return;
-    }
-
-    ServiceWorkerRegistration* readyRegistration = ServiceWorkerRegistration::from(executionContext(), registration);
-    ASSERT(readyRegistration->active());
-
-    if (m_readyRegistration) {
-        ASSERT(m_readyRegistration == readyRegistration);
-        ASSERT(m_ready->state() == ReadyProperty::Resolved);
-        return;
-    }
-
-    m_readyRegistration = readyRegistration;
-    m_ready->resolve(readyRegistration);
-}
-
 void ServiceWorkerContainer::dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& webChannels)
 {
     if (!executionContext() || !executionContext()->executingWindow())
@@ -341,9 +319,6 @@ ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContex
 
     if (!executionContext)
         return;
-
-    // FIXME: Remove this after Chrome side CL landed.
-    m_ready = createReadyProperty();
 
     if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext)) {
         m_provider = client->provider();
