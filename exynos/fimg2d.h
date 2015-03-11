@@ -314,4 +314,9 @@ int g2d_blend(struct g2d_context *ctx, struct g2d_image *src,
 		struct g2d_image *dst, unsigned int src_x,
 		unsigned int src_y, unsigned int dst_x, unsigned int dst_y,
 		unsigned int w, unsigned int h, enum e_g2d_op op);
+int g2d_scale_and_blend(struct g2d_context *ctx, struct g2d_image *src,
+		struct g2d_image *dst, unsigned int src_x, unsigned int src_y,
+		unsigned int src_w, unsigned int src_h, unsigned int dst_x,
+		unsigned int dst_y, unsigned int dst_w, unsigned int dst_h,
+		enum e_g2d_op op);
 #endif /* _FIMG2D_H_ */
