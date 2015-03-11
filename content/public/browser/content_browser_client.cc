@@ -5,6 +5,7 @@
 #include "content/public/browser/content_browser_client.h"
 
 #include "base/files/file_path.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -177,11 +178,9 @@ QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
 }
 
 void ContentBrowserClient::SelectClientCertificate(
-    int render_process_id,
-    int render_frame_id,
+    WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback) {
-  callback.Run(nullptr);
+    scoped_ptr<ClientCertificateDelegate> delegate) {
 }
 
 net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(

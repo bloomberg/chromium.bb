@@ -10,7 +10,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -58,11 +60,18 @@ AwContentsClientBridge::~AwContentsClientBridge() {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  // Clear the weak reference from the java peer to the native object since
-  // it is possible that java object lifetime can exceed the AwContens.
-  Java_AwContentsClientBridge_setNativeContentsClientBridge(env, obj.obj(), 0);
+  if (!obj.is_null()) {
+    // Clear the weak reference from the java peer to the native object since
+    // it is possible that java object lifetime can exceed the AwContens.
+    Java_AwContentsClientBridge_setNativeContentsClientBridge(env, obj.obj(),
+                                                              0);
+  }
+
+  for (IDMap<content::ClientCertificateDelegate>::iterator iter(
+           &pending_client_cert_request_delegates_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    delete iter.GetCurrentValue();
+  }
 }
 
 void AwContentsClientBridge::AllowCertificateError(
@@ -114,13 +123,13 @@ void AwContentsClientBridge::ProceedSslError(JNIEnv* env, jobject obj,
 // This method is inspired by SelectClientCertificate() in
 // chrome/browser/ui/android/ssl_client_certificate_request.cc
 void AwContentsClientBridge::SelectClientCertificate(
-      net::SSLCertRequestInfo* cert_request_info,
-      const SelectCertificateCallback& callback) {
+    net::SSLCertRequestInfo* cert_request_info,
+    scoped_ptr<content::ClientCertificateDelegate> delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Add the callback to id map.
-  int request_id = pending_client_cert_request_callbacks_.Add(
-      new SelectCertificateCallback(callback));
+  int request_id =
+      pending_client_cert_request_delegates_.Add(delegate.release());
   // Make sure callback is run on error.
   base::ScopedClosureRunner guard(base::Bind(
       &AwContentsClientBridge::HandleErrorInClientCertificateResponse,
@@ -196,19 +205,24 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
     jobject private_key_ref) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  SelectCertificateCallback* callback =
-      pending_client_cert_request_callbacks_.Lookup(request_id);
-  DCHECK(callback);
+  content::ClientCertificateDelegate* delegate =
+      pending_client_cert_request_delegates_.Lookup(request_id);
+  DCHECK(delegate);
+
+  if (encoded_chain_ref == NULL || private_key_ref == NULL) {
+    LOG(ERROR) << "No client certificate selected";
+    pending_client_cert_request_delegates_.Remove(request_id);
+    delegate->ContinueWithCertificate(nullptr);
+    delete delegate;
+    return;
+  }
 
   // Make sure callback is run on error.
   base::ScopedClosureRunner guard(base::Bind(
       &AwContentsClientBridge::HandleErrorInClientCertificateResponse,
       base::Unretained(this),
       request_id));
-  if (encoded_chain_ref == NULL || private_key_ref == NULL) {
-    LOG(ERROR) << "Client certificate request cancelled";
-    return;
-  }
+
   // Convert the encoded chain to a vector of strings.
   std::vector<std::string> encoded_chain_strings;
   if (encoded_chain_ref) {
@@ -236,20 +250,20 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
     return;
   }
 
+  // Release the guard and |pending_client_cert_request_delegates_| references
+  // to |delegate|.
+  pending_client_cert_request_delegates_.Remove(request_id);
+  ignore_result(guard.Release());
+
   // RecordClientCertificateKey() must be called on the I/O thread,
-  // before the callback is called with the selected certificate on
+  // before the delegate is called with the selected certificate on
   // the UI thread.
   content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&RecordClientCertificateKey,
-                 client_cert,
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&RecordClientCertificateKey, client_cert,
                  base::Passed(&private_key)),
-      base::Bind(*callback, client_cert));
-  pending_client_cert_request_callbacks_.Remove(request_id);
-
-  // Release the guard.
-  ignore_result(guard.Release());
+      base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
+                 base::Owned(delegate), client_cert));
 }
 
 void AwContentsClientBridge::RunJavaScriptDialog(
@@ -377,10 +391,11 @@ void AwContentsClientBridge::CancelJsResult(JNIEnv*, jobject, int id) {
 // Use to cleanup if there is an error in client certificate response.
 void AwContentsClientBridge::HandleErrorInClientCertificateResponse(
     int request_id) {
-  SelectCertificateCallback* callback =
-      pending_client_cert_request_callbacks_.Lookup(request_id);
-  callback->Run(nullptr);
-  pending_client_cert_request_callbacks_.Remove(request_id);
+  content::ClientCertificateDelegate* delegate =
+      pending_client_cert_request_delegates_.Lookup(request_id);
+  pending_client_cert_request_delegates_.Remove(request_id);
+
+  delete delegate;
 }
 
 bool RegisterAwContentsClientBridge(JNIEnv* env) {

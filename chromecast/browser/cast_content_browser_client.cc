@@ -29,6 +29,7 @@
 #include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/content_descriptors.h"
@@ -194,16 +195,15 @@ void CastContentBrowserClient::AllowCertificateError(
 }
 
 void CastContentBrowserClient::SelectClientCertificate(
-    int render_process_id,
-    int render_view_id,
+    WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback) {
+    scoped_ptr<content::ClientCertificateDelegate> delegate) {
   GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
 
   if (!requesting_url.is_valid()) {
     LOG(ERROR) << "Invalid URL string: "
                << requesting_url.possibly_invalid_spec();
-    callback.Run(NULL);
+    delegate->SelectClientCertificate(nullptr);
     return;
   }
 
@@ -214,16 +214,16 @@ void CastContentBrowserClient::SelectClientCertificate(
   // it, because CastNetworkDelegate is bound to the IO thread.
   // Subsequently, the callback must then itself be performed back here
   // on the UI thread.
+  //
+  // TODO(davidben): Stop using child ID to identify an app.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &CastContentBrowserClient::SelectClientCertificateOnIOThread,
-          base::Unretained(this),
-          requesting_url,
-          render_process_id),
-      callback);
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&CastContentBrowserClient::SelectClientCertificateOnIOThread,
+                 base::Unretained(this), requesting_url,
+                 web_contents->GetRenderProcessHost()->GetID()),
+      base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
+                 delegate.Pass()));
 }
 
 net::X509Certificate*

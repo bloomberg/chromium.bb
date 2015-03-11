@@ -11,6 +11,7 @@
 #include "base/sys_info.h"
 #include "base/test/test_timeouts.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -19,15 +20,45 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
+#include "net/base/escape.h"
 #include "net/base/test_data_directory.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "url/gurl.h"
 
 namespace content {
 
+namespace {
+
+bool SupportsSharedWorker() {
+#if defined(OS_ANDROID)
+  // SharedWorkers are not enabled on Android. https://crbug.com/154571
+  //
+  // TODO(davidben): Move other SharedWorker exclusions from
+  // build/android/pylib/gtest/filter/ inline.
+  return false;
+#else
+  return true;
+#endif
+}
+
+}  // namespace
+
 class WorkerTest : public ContentBrowserTest {
  public:
-  WorkerTest() {}
+  WorkerTest() : select_certificate_count_(0) {}
+
+  void SetUpOnMainThread() override {
+    ShellContentBrowserClient::Get()->set_select_client_certificate_callback(
+        base::Bind(&WorkerTest::OnSelectClientCertificate,
+                   base::Unretained(this)));
+  }
+
+  void TearDownOnMainThread() override {
+    ShellContentBrowserClient::Get()->set_select_client_certificate_callback(
+        base::Closure());
+  }
+
+  int select_certificate_count() const { return select_certificate_count_; }
 
   GURL GetTestURL(const std::string& test_case, const std::string& query) {
     base::FilePath test_file_path = GetTestFilePath(
@@ -64,6 +95,11 @@ class WorkerTest : public ContentBrowserTest {
     shell()->LoadURL(url);
     runner->Run();
   }
+
+ private:
+  void OnSelectClientCertificate() { select_certificate_count_++; }
+
+  int select_certificate_count_;
 };
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, SingleWorker) {
@@ -102,12 +138,53 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerHttpAuth) {
   NavigateAndWaitForAuth(url);
 }
 
-// Make sure that auth dialog is displayed from shared worker context.
+// Make sure that HTTP auth dialog is displayed from shared worker context.
 // http://crbug.com/33344
+//
+// TODO(davidben): HTTP auth dialogs are no longer displayed on shared workers,
+// but this test only tests that the delegate is called. Move handling the
+// WebContentsless case from chrome/ to content/ and adjust the test
+// accordingly.
 IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/workers/shared_worker_auth.html");
   NavigateAndWaitForAuth(url);
+}
+
+// Tests that TLS client auth prompts for normal workers.
+IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerTlsClientAuth) {
+  // Launch HTTPS server.
+  net::SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  RunTest("worker_tls_client_auth.html",
+          "url=" +
+              net::EscapeQueryParamValue(https_server.GetURL("").spec(), true));
+  EXPECT_EQ(1, select_certificate_count());
+}
+
+// Tests that TLS client auth does not prompt for a shared worker; shared
+// workers are not associated with a WebContents.
+IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerTlsClientAuth) {
+  if (!SupportsSharedWorker())
+    return;
+
+  // Launch HTTPS server.
+  net::SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  RunTest("worker_tls_client_auth.html",
+          "shared=true&url=" +
+              net::EscapeQueryParamValue(https_server.GetURL("").spec(), true));
+  EXPECT_EQ(0, select_certificate_count());
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {

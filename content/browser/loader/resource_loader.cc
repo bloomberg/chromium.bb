@@ -311,8 +311,7 @@ void ResourceLoader::OnCertificateRequested(
       << "OnCertificateRequested called with ssl_client_auth_handler pending";
   ssl_client_auth_handler_.reset(new SSLClientAuthHandler(
       GetRequestInfo()->GetContext()->CreateClientCertStore(), request_.get(),
-      cert_info, base::Bind(&ResourceLoader::ContinueWithCertificate,
-                            weak_ptr_factory_.GetWeakPtr())));
+      cert_info, this));
   ssl_client_auth_handler_->SelectCertificate();
 }
 
@@ -501,6 +500,18 @@ void ResourceLoader::ContinueSSLRequest() {
   DVLOG(1) << "ContinueSSLRequest() url: " << request_->url().spec();
 
   request_->ContinueDespiteLastError();
+}
+
+void ResourceLoader::ContinueWithCertificate(net::X509Certificate* cert) {
+  DCHECK(ssl_client_auth_handler_);
+  ssl_client_auth_handler_.reset();
+  request_->ContinueWithCertificate(cert);
+}
+
+void ResourceLoader::CancelCertificateSelection() {
+  DCHECK(ssl_client_auth_handler_);
+  ssl_client_auth_handler_.reset();
+  request_->CancelWithError(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 }
 
 void ResourceLoader::Resume() {
@@ -849,11 +860,6 @@ void ResourceLoader::RecordHistograms() {
 
     UMA_HISTOGRAM_ENUMERATION("Net.Prefetch.Pattern", status, STATUS_MAX);
   }
-}
-
-void ResourceLoader::ContinueWithCertificate(net::X509Certificate* cert) {
-  ssl_client_auth_handler_.reset();
-  request_->ContinueWithCertificate(cert);
 }
 
 }  // namespace content

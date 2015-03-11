@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -21,10 +22,10 @@ typedef std::pair<net::SSLCertRequestInfo*, net::X509Certificate*> CertDetails;
 SSLClientAuthObserver::SSLClientAuthObserver(
     const content::BrowserContext* browser_context,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback)
+    scoped_ptr<content::ClientCertificateDelegate> delegate)
     : browser_context_(browser_context),
       cert_request_info_(cert_request_info),
-      callback_(callback) {
+      delegate_(delegate.Pass()) {
 }
 
 SSLClientAuthObserver::~SSLClientAuthObserver() {
@@ -32,10 +33,11 @@ SSLClientAuthObserver::~SSLClientAuthObserver() {
 
 void SSLClientAuthObserver::CertificateSelected(
     net::X509Certificate* certificate) {
-  if (callback_.is_null())
+  if (!delegate_)
     return;
 
-  // Stop listening right away so we don't get our own notification.
+  // Stop listening now that the delegate has been resolved. This is also to
+  // avoid getting a self-notification.
   StopObserving();
 
   CertDetails details;
@@ -47,8 +49,17 @@ void SSLClientAuthObserver::CertificateSelected(
                   content::Source<content::BrowserContext>(browser_context_),
                   content::Details<CertDetails>(&details));
 
-  callback_.Run(certificate);
-  callback_.Reset();
+  delegate_->ContinueWithCertificate(certificate);
+  delegate_.reset();
+}
+
+void SSLClientAuthObserver::CancelCertificateSelection() {
+  if (!delegate_)
+    return;
+
+  // Stop observing now that the delegate has been resolved.
+  StopObserving();
+  delegate_.reset();
 }
 
 void SSLClientAuthObserver::Observe(
@@ -67,8 +78,8 @@ void SSLClientAuthObserver::Observe(
   DVLOG(1) << this << " got matching notification and selecting cert "
            << cert_details->second;
   StopObserving();
-  callback_.Run(cert_details->second);
-  callback_.Reset();
+  delegate_->ContinueWithCertificate(cert_details->second);
+  delegate_.reset();
   OnCertSelectedByNotification();
 }
 

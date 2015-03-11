@@ -29,7 +29,7 @@ class SSLClientCertificateSelector : public chrome::CertificateSelector,
   SSLClientCertificateSelector(
       content::WebContents* web_contents,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
-      const chrome::SelectCertificateCallback& callback);
+      scoped_ptr<content::ClientCertificateDelegate> delegate);
   ~SSLClientCertificateSelector() override;
 
   void Init();
@@ -40,6 +40,7 @@ class SSLClientCertificateSelector : public chrome::CertificateSelector,
   // chrome::CertificateSelector:
   bool Cancel() override;
   bool Accept() override;
+  bool Close() override;
 
  private:
   // Callback after unlocking certificate slot.

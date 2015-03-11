@@ -157,7 +157,7 @@ void URLRequest::Delegate::OnAuthRequired(URLRequest* request,
 void URLRequest::Delegate::OnCertificateRequested(
     URLRequest* request,
     SSLCertRequestInfo* cert_request_info) {
-  request->Cancel();
+  request->CancelWithError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 }
 
 void URLRequest::Delegate::OnSSLCertificateError(URLRequest* request,

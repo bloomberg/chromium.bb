@@ -54,6 +54,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) override;
   QuotaPermissionContext* CreateQuotaPermissionContext() override;
+  void SelectClientCertificate(
+      WebContents* web_contents,
+      net::SSLCertRequestInfo* cert_request_info,
+      scoped_ptr<ClientCertificateDelegate> delegate) override;
   void RequestPermission(
       PermissionType permission,
       WebContents* web_contents,
@@ -94,6 +98,12 @@ class ShellContentBrowserClient : public ContentBrowserClient {
     return shell_browser_main_parts_;
   }
 
+  // Used for content_browsertests.
+  void set_select_client_certificate_callback(
+      base::Closure select_client_certificate_callback) {
+    select_client_certificate_callback_ = select_client_certificate_callback;
+  }
+
  private:
   ShellBrowserContext* ShellBrowserContextForBrowserContext(
       BrowserContext* content_browser_context);
@@ -105,6 +115,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   base::ScopedFD v8_natives_fd_;
   base::ScopedFD v8_snapshot_fd_;
 #endif
+
+  base::Closure select_client_certificate_callback_;
 
   ShellBrowserMainParts* shell_browser_main_parts_;
 };

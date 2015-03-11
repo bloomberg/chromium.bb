@@ -92,6 +92,7 @@
       'public/browser/certificate_request_result_type.h',
       'public/browser/child_process_data.h',
       'public/browser/child_process_security_policy.h',
+      'public/browser/client_certificate_delegate.h',
       'public/browser/color_chooser.h',
       'public/browser/content_browser_client.cc',
       'public/browser/content_browser_client.h',

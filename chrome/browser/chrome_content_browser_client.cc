@@ -116,6 +116,7 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -1861,21 +1862,11 @@ void ChromeContentBrowserClient::AllowCertificateError(
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(
-    int render_process_id,
-    int render_frame_id,
+    content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback) {
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      render_process_id, render_frame_id);
-  WebContents* tab = WebContents::FromRenderFrameHost(rfh);
-  if (!tab) {
-    // TODO(davidben): This makes the request hang, but returning no certificate
-    // also breaks. It should abort the request. See https://crbug.com/417092
-    return;
-  }
-
+    scoped_ptr<content::ClientCertificateDelegate> delegate) {
   prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(tab);
+      prerender::PrerenderContents::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(
         prerender::FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED);
@@ -1887,7 +1878,8 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       << "Invalid URL string: https://"
       << cert_request_info->host_and_port.ToString();
 
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   scoped_ptr<base::Value> filter =
       profile->GetHostContentSettingsMap()->GetWebsiteSetting(
           requesting_url,
@@ -1907,7 +1899,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       for (size_t i = 0; i < all_client_certs.size(); ++i) {
         if (CertMatchesFilter(*all_client_certs[i].get(), *filter_dict)) {
           // Use the first certificate that is matched by the filter.
-          callback.Run(all_client_certs[i].get());
+          delegate->ContinueWithCertificate(all_client_certs[i].get());
           return;
         }
       }
@@ -1916,7 +1908,8 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     }
   }
 
-  chrome::ShowSSLClientCertificateSelector(tab, cert_request_info, callback);
+  chrome::ShowSSLClientCertificateSelector(web_contents, cert_request_info,
+                                           delegate.Pass());
 }
 
 void ChromeContentBrowserClient::AddCertificate(

@@ -89,6 +89,7 @@ class BrowserMainParts;
 class BrowserPluginGuestDelegate;
 class BrowserPpapiHost;
 class BrowserURLHandler;
+class ClientCertificateDelegate;
 class DevToolsManagerDelegate;
 class ExternalVideoSurfaceContainer;
 class LocationProvider;
@@ -400,14 +401,14 @@ class CONTENT_EXPORT ContentBrowserClient {
                                      const base::Callback<void(bool)>& callback,
                                      CertificateRequestResultType* result) {}
 
-  // Selects a SSL client certificate and returns it to the |callback|. If no
-  // certificate was selected nullptr is returned to the |callback|. Note:
-  // |callback| may be called synchronously or asynchronously.
+  // Selects a SSL client certificate and returns it to the |delegate|. Note:
+  // |delegate| may be called synchronously or asynchronously.
+  //
+  // TODO(davidben): Move this hook to WebContentsDelegate.
   virtual void SelectClientCertificate(
-      int render_process_id,
-      int render_frame_id,
+      WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback);
+      scoped_ptr<ClientCertificateDelegate> delegate);
 
   // Adds a new installable certificate or private key.
   // Typically used to install an X.509 user certificate.

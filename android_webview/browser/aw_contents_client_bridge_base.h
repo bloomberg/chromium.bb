@@ -5,13 +5,14 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_CLIENT_BRIDGE_BASE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_CLIENT_BRIDGE_BASE_H_
 
-#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
 class GURL;
 
 namespace content {
+class ClientCertificateDelegate;
 class WebContents;
 }
 
@@ -29,8 +30,6 @@ namespace android_webview {
 // native/ from browser/ layer.
 class AwContentsClientBridgeBase {
  public:
-  typedef base::Callback<void(net::X509Certificate*)> SelectCertificateCallback;
-
   // Adds the handler to the UserData registry.
   static void Associate(content::WebContents* web_contents,
                         AwContentsClientBridgeBase* handler);
@@ -48,7 +47,7 @@ class AwContentsClientBridgeBase {
                                      bool* cancel_request) = 0;
   virtual void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
-      const SelectCertificateCallback& callback) = 0;
+      scoped_ptr<content::ClientCertificateDelegate> delegate) = 0;
 
   virtual void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,

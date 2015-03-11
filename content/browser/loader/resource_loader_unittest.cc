@@ -6,24 +6,31 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/test/test_content_browser_client.h"
+#include "content/test/test_web_contents.h"
 #include "ipc/ipc_message.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mock_file_stream.h"
+#include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -53,7 +60,6 @@ class ClientCertStoreStub : public net::ClientCertStore {
                       int* request_count,
                       std::vector<std::string>* requested_authorities)
       : response_(response),
-        async_(false),
         requested_authorities_(requested_authorities),
         request_count_(request_count) {
     requested_authorities_->clear();
@@ -61,9 +67,6 @@ class ClientCertStoreStub : public net::ClientCertStore {
   }
 
   ~ClientCertStoreStub() override {}
-
-  // Configures whether the certificates are returned asynchronously or not.
-  void set_async(bool async) { async_ = async; }
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
@@ -73,18 +76,86 @@ class ClientCertStoreStub : public net::ClientCertStore {
     ++(*request_count_);
 
     *selected_certs = response_;
-    if (async_) {
-      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
-    } else {
-      callback.Run();
-    }
+    callback.Run();
   }
 
  private:
   const net::CertificateList response_;
-  bool async_;
   std::vector<std::string>* requested_authorities_;
   int* request_count_;
+};
+
+// Client certificate store which destroys its resource loader before the
+// asynchronous GetClientCerts callback is called.
+class LoaderDestroyingCertStore : public net::ClientCertStore {
+ public:
+  // Creates a client certificate store which, when looked up, posts a task to
+  // reset |loader| and then call the callback. The caller is responsible for
+  // ensuring the pointers remain valid until the process is complete.
+  explicit LoaderDestroyingCertStore(scoped_ptr<ResourceLoader>* loader)
+      : loader_(loader) {}
+
+  // net::ClientCertStore:
+  void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
+                      net::CertificateList* selected_certs,
+                      const base::Closure& callback) override {
+    // Don't destroy |loader_| while it's on the stack.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&LoaderDestroyingCertStore::DoCallback,
+                              base::Unretained(loader_), callback));
+  }
+
+ private:
+  static void DoCallback(scoped_ptr<ResourceLoader>* loader,
+                         const base::Closure& callback) {
+    loader->reset();
+    callback.Run();
+  }
+
+  scoped_ptr<ResourceLoader>* loader_;
+};
+
+// A mock URLRequestJob which simulates an SSL client auth request.
+class MockClientCertURLRequestJob : public net::URLRequestTestJob {
+ public:
+  MockClientCertURLRequestJob(net::URLRequest* request,
+                              net::NetworkDelegate* network_delegate)
+      : net::URLRequestTestJob(request, network_delegate) {}
+
+  static std::vector<std::string> test_authorities() {
+    return std::vector<std::string>(1, "dummy");
+  }
+
+  // net::URLRequestTestJob:
+  void Start() override {
+    scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
+        new net::SSLCertRequestInfo);
+    cert_request_info->cert_authorities = test_authorities();
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&MockClientCertURLRequestJob::NotifyCertificateRequested,
+                   this, cert_request_info));
+  }
+
+  void ContinueWithCertificate(net::X509Certificate* cert) override {
+    net::URLRequestTestJob::Start();
+  }
+
+ private:
+  ~MockClientCertURLRequestJob() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(MockClientCertURLRequestJob);
+};
+
+class MockClientCertJobProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  // URLRequestJobFactory::ProtocolHandler implementation:
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new MockClientCertURLRequestJob(request, network_delegate);
+  }
 };
 
 // Arbitrary read buffer size.
@@ -239,25 +310,28 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
   SelectCertificateBrowserClient() : call_count_(0) {}
 
   void SelectClientCertificate(
-      int render_process_id,
-      int render_view_id,
+      WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback) override {
+      scoped_ptr<ClientCertificateDelegate> delegate) override {
     ++call_count_;
     passed_certs_ = cert_request_info->client_certs;
+    delegate_ = delegate.Pass();
   }
 
-  int call_count() {
-    return call_count_;
+  int call_count() { return call_count_; }
+  net::CertificateList passed_certs() { return passed_certs_; }
+
+  void ContinueWithCertificate(net::X509Certificate* cert) {
+    delegate_->ContinueWithCertificate(cert);
+    delegate_.reset();
   }
 
-  net::CertificateList passed_certs() {
-    return passed_certs_;
-  }
+  void CancelCertificateSelection() { delegate_.reset(); }
 
  private:
   net::CertificateList passed_certs_;
   int call_count_;
+  scoped_ptr<ClientCertificateDelegate> delegate_;
 };
 
 class ResourceContextStub : public MockResourceContext {
@@ -297,17 +371,17 @@ class ResourceLoaderTest : public testing::Test,
       resource_context_(&test_url_request_context_),
       raw_ptr_resource_handler_(NULL),
       raw_ptr_to_request_(NULL) {
-    job_factory_.SetProtocolHandler(
-        "test", net::URLRequestTestJob::CreateProtocolHandler());
     test_url_request_context_.set_job_factory(&job_factory_);
   }
 
-  GURL test_url() const {
-    return net::URLRequestTestJob::test_url_1();
-  }
+  GURL test_url() const { return net::URLRequestTestJob::test_url_1(); }
 
   std::string test_data() const {
     return net::URLRequestTestJob::test_data_1();
+  }
+
+  virtual net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler() {
+    return net::URLRequestTestJob::CreateProtocolHandler();
   }
 
   virtual scoped_ptr<ResourceHandler> WrapResourceHandler(
@@ -317,8 +391,14 @@ class ResourceLoaderTest : public testing::Test,
   }
 
   void SetUp() override {
-    const int kRenderProcessId = 1;
-    const int kRenderViewId = 2;
+    job_factory_.SetProtocolHandler("test", CreateProtocolHandler());
+
+    browser_context_.reset(new TestBrowserContext());
+    scoped_refptr<SiteInstance> site_instance =
+        SiteInstance::Create(browser_context_.get());
+    web_contents_.reset(
+        TestWebContents::Create(browser_context_.get(), site_instance.get()));
+    RenderFrameHost* rfh = web_contents_->GetMainFrame();
 
     scoped_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
@@ -327,16 +407,12 @@ class ResourceLoaderTest : public testing::Test,
             NULL /* delegate */,
             NULL /* cookie_store */));
     raw_ptr_to_request_ = request.get();
-    ResourceRequestInfo::AllocateForTesting(request.get(),
-                                            RESOURCE_TYPE_MAIN_FRAME,
-                                            &resource_context_,
-                                            kRenderProcessId,
-                                            kRenderViewId,
-                                            MSG_ROUTING_NONE,
-                                            true,    // is_main_frame
-                                            false,   // parent_is_main_frame
-                                            true,    // allow_download
-                                            false);  // is_async
+    ResourceRequestInfo::AllocateForTesting(
+        request.get(), RESOURCE_TYPE_MAIN_FRAME, &resource_context_,
+        rfh->GetProcess()->GetID(), rfh->GetRenderViewHost()->GetRoutingID(),
+        rfh->GetRoutingID(), true /* is_main_frame */,
+        false /* parent_is_main_frame */, true /* allow_download */,
+        false /* is_async */);
     scoped_ptr<ResourceHandlerStub> resource_handler(
         new ResourceHandlerStub(request.get()));
     raw_ptr_resource_handler_ = resource_handler.get();
@@ -344,6 +420,14 @@ class ResourceLoaderTest : public testing::Test,
         request.Pass(),
         WrapResourceHandler(resource_handler.Pass(), raw_ptr_to_request_),
         this));
+  }
+
+  void TearDown() override {
+    // Destroy the WebContents and pump the event loop before destroying
+    // |rvh_test_enabler_| and |thread_bundle_|. This lets asynchronous cleanup
+    // tasks complete.
+    web_contents_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   // ResourceLoaderDelegate:
@@ -362,11 +446,14 @@ class ResourceLoaderTest : public testing::Test,
   void DidReceiveResponse(ResourceLoader* loader) override {}
   void DidFinishLoading(ResourceLoader* loader) override {}
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  TestBrowserThreadBundle thread_bundle_;
+  RenderViewHostTestEnabler rvh_test_enabler_;
 
   net::URLRequestJobFactoryImpl job_factory_;
   net::TestURLRequestContext test_url_request_context_;
   ResourceContextStub resource_context_;
+  scoped_ptr<TestBrowserContext> browser_context_;
+  scoped_ptr<TestWebContents> web_contents_;
 
   // The ResourceLoader owns the URLRequest and the ResourceHandler.
   ResourceHandlerStub* raw_ptr_resource_handler_;
@@ -374,11 +461,15 @@ class ResourceLoaderTest : public testing::Test,
   scoped_ptr<ResourceLoader> loader_;
 };
 
-// Verifies if a call to net::UrlRequest::Delegate::OnCertificateRequested()
-// causes client cert store to be queried for certificates and if the returned
-// certificates are correctly passed to the content browser client for
-// selection.
-TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
+class ClientCertResourceLoaderTest : public ResourceLoaderTest {
+ protected:
+  net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler() override {
+    return new MockClientCertJobProtocolHandler;
+  }
+};
+
+// Tests that client certificates are requested with ClientCertStore lookup.
+TEST_F(ClientCertResourceLoaderTest, WithStoreLookup) {
   // Set up the test client cert store.
   int store_request_count;
   std::vector<std::string> store_requested_authorities;
@@ -388,91 +479,125 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
       dummy_certs, &store_request_count, &store_requested_authorities));
   resource_context_.SetClientCertStore(test_store.Pass());
 
-  // Prepare a dummy certificate request.
-  scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
-      new net::SSLCertRequestInfo());
-  std::vector<std::string> dummy_authority(1, "dummy");
-  cert_request_info->cert_authorities = dummy_authority;
-
   // Plug in test content browser client.
   SelectCertificateBrowserClient test_client;
   ContentBrowserClient* old_client = SetBrowserClientForTesting(&test_client);
 
-  // Everything is set up. Trigger the resource loader certificate request event
-  // and run the message loop.
-  loader_->OnCertificateRequested(raw_ptr_to_request_, cert_request_info.get());
+  // Start the request and wait for it to pause.
+  loader_->StartRequest();
   base::RunLoop().RunUntilIdle();
 
-  // Restore the original content browser client.
-  SetBrowserClientForTesting(old_client);
+  EXPECT_FALSE(raw_ptr_resource_handler_->received_response_completed());
 
   // Check if the test store was queried against correct |cert_authorities|.
   EXPECT_EQ(1, store_request_count);
-  EXPECT_EQ(dummy_authority, store_requested_authorities);
+  EXPECT_EQ(MockClientCertURLRequestJob::test_authorities(),
+            store_requested_authorities);
 
   // Check if the retrieved certificates were passed to the content browser
   // client.
   EXPECT_EQ(1, test_client.call_count());
   EXPECT_EQ(dummy_certs, test_client.passed_certs());
+
+  // Continue the request.
+  test_client.ContinueWithCertificate(dummy_certs[0].get());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(raw_ptr_resource_handler_->received_response_completed());
+  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->status().error());
+
+  // Restore the original content browser client.
+  SetBrowserClientForTesting(old_client);
 }
 
-// Verifies if a call to net::URLRequest::Delegate::OnCertificateRequested()
-// on a platform with a NULL client cert store still calls the content browser
-// client for selection.
-TEST_F(ResourceLoaderTest, ClientCertStoreNull) {
-  // Prepare a dummy certificate request.
-  scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
-      new net::SSLCertRequestInfo());
-  std::vector<std::string> dummy_authority(1, "dummy");
-  cert_request_info->cert_authorities = dummy_authority;
-
+// Tests that client certificates are requested on a platform with NULL
+// ClientCertStore.
+TEST_F(ClientCertResourceLoaderTest, WithNullStore) {
   // Plug in test content browser client.
   SelectCertificateBrowserClient test_client;
   ContentBrowserClient* old_client = SetBrowserClientForTesting(&test_client);
 
-  // Everything is set up. Trigger the resource loader certificate request event
-  // and run the message loop.
-  loader_->OnCertificateRequested(raw_ptr_to_request_, cert_request_info.get());
+  // Start the request and wait for it to pause.
+  loader_->StartRequest();
   base::RunLoop().RunUntilIdle();
-
-  // Restore the original content browser client.
-  SetBrowserClientForTesting(old_client);
 
   // Check if the SelectClientCertificate was called on the content browser
   // client.
   EXPECT_EQ(1, test_client.call_count());
   EXPECT_EQ(net::CertificateList(), test_client.passed_certs());
+
+  // Continue the request.
+  scoped_refptr<net::X509Certificate> cert(
+      new net::X509Certificate("test", "test", base::Time(), base::Time()));
+  test_client.ContinueWithCertificate(cert.get());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(raw_ptr_resource_handler_->received_response_completed());
+  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->status().error());
+
+  // Restore the original content browser client.
+  SetBrowserClientForTesting(old_client);
 }
 
-TEST_F(ResourceLoaderTest, ClientCertStoreAsyncCancel) {
-  // Set up the test client cert store.
-  int store_request_count;
-  std::vector<std::string> store_requested_authorities;
-  scoped_ptr<ClientCertStoreStub> test_store(
-      new ClientCertStoreStub(net::CertificateList(), &store_request_count,
-                              &store_requested_authorities));
-  test_store->set_async(true);
-  EXPECT_EQ(0, store_request_count);
+// Tests that the ContentBrowserClient may cancel a certificate request.
+TEST_F(ClientCertResourceLoaderTest, CancelSelection) {
+  // Plug in test content browser client.
+  SelectCertificateBrowserClient test_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&test_client);
+
+  // Start the request and wait for it to pause.
+  loader_->StartRequest();
+  base::RunLoop().RunUntilIdle();
+
+  // Check if the SelectClientCertificate was called on the content browser
+  // client.
+  EXPECT_EQ(1, test_client.call_count());
+  EXPECT_EQ(net::CertificateList(), test_client.passed_certs());
+
+  // Cancel the request.
+  test_client.CancelCertificateSelection();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(raw_ptr_resource_handler_->received_response_completed());
+  EXPECT_EQ(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED,
+            raw_ptr_resource_handler_->status().error());
+
+  // Restore the original content browser client.
+  SetBrowserClientForTesting(old_client);
+}
+
+// Verifies that requests without WebContents attached abort.
+TEST_F(ClientCertResourceLoaderTest, NoWebContents) {
+  // Destroy the WebContents before starting the request.
+  web_contents_.reset();
+
+  // Plug in test content browser client.
+  SelectCertificateBrowserClient test_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&test_client);
+
+  // Start the request and wait for it to pause.
+  loader_->StartRequest();
+  base::RunLoop().RunUntilIdle();
+
+  // Check that SelectClientCertificate wasn't called and the request aborted.
+  EXPECT_EQ(0, test_client.call_count());
+  EXPECT_TRUE(raw_ptr_resource_handler_->received_response_completed());
+  EXPECT_EQ(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED,
+            raw_ptr_resource_handler_->status().error());
+
+  // Restore the original content browser client.
+  SetBrowserClientForTesting(old_client);
+}
+
+// Verifies that ClientCertStore's callback doesn't crash if called after the
+// loader is destroyed.
+TEST_F(ClientCertResourceLoaderTest, StoreAsyncCancel) {
+  scoped_ptr<LoaderDestroyingCertStore> test_store(
+      new LoaderDestroyingCertStore(&loader_));
   resource_context_.SetClientCertStore(test_store.Pass());
 
-  // Prepare a dummy certificate request.
-  scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
-      new net::SSLCertRequestInfo());
-  std::vector<std::string> dummy_authority(1, "dummy");
-  cert_request_info->cert_authorities = dummy_authority;
+  loader_->StartRequest();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(loader_);
 
-  // Everything is set up. Trigger the resource loader certificate request
-  // event.
-  loader_->OnCertificateRequested(raw_ptr_to_request_, cert_request_info.get());
-
-  // Check if the test store was queried against correct |cert_authorities|.
-  EXPECT_EQ(1, store_request_count);
-  EXPECT_EQ(dummy_authority, store_requested_authorities);
-
-  // Cancel the request before the store calls the callback.
-  loader_.reset();
-
-  // Pump the event loop. There shouldn't be a crash when the callback is run.
+  // Pump the event loop to ensure nothing asynchronous crashes either.
   base::RunLoop().RunUntilIdle();
 }
 

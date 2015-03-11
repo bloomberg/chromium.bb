@@ -1,0 +1,25 @@
+<html>
+
+<head>
+<title>Worker TLS Client Auth Test</title>
+
+<script src="worker_utils.js"></script>
+
+<script>
+
+// TODO(davidben): When URLSearchParams is stable and implemented, switch this
+// (and a lot of other test code) to it. https://crbug.com/303152
+var url = decodeURIComponent(/url=([^&]*)/.exec(location.search)[1]);
+var worker = getWorker("worker_common.js");
+worker.onmessage = function(ev) {
+  if (ev.data == "done")
+    onSuccess();
+};
+worker.postMessage("tls-client-auth " + url);
+</script>
+</head>
+
+<body>
+<div id=statusPanel></div>
+</body>
+</html>

@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -285,6 +286,14 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
 QuotaPermissionContext*
 ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return new ShellQuotaPermissionContext();
+}
+
+void ShellContentBrowserClient::SelectClientCertificate(
+    WebContents* web_contents,
+    net::SSLCertRequestInfo* cert_request_info,
+    scoped_ptr<ClientCertificateDelegate> delegate) {
+  if (!select_client_certificate_callback_.is_null())
+    select_client_certificate_callback_.Run();
 }
 
 void ShellContentBrowserClient::RequestPermission(

@@ -13,6 +13,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/request_priority.h"
@@ -86,9 +87,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents());
     selector_ = new SSLClientCertificateSelector(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        auth_requestor_->cert_request_info_,
-        base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
-                   auth_requestor_));
+        auth_requestor_->cert_request_info_, auth_requestor_->CreateDelegate());
     selector_->Init();
     selector_->Show();
 
@@ -178,15 +177,13 @@ class SSLClientCertificateSelectorMultiTabTest
     selector_1_ = new SSLClientCertificateSelector(
         browser()->tab_strip_model()->GetWebContentsAt(1),
         auth_requestor_1_->cert_request_info_,
-        base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
-                   auth_requestor_1_));
+        auth_requestor_1_->CreateDelegate());
     selector_1_->Init();
     selector_1_->Show();
     selector_2_ = new SSLClientCertificateSelector(
         browser()->tab_strip_model()->GetWebContentsAt(2),
         auth_requestor_2_->cert_request_info_,
-        base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
-                   auth_requestor_2_));
+        auth_requestor_2_->CreateDelegate());
     selector_2_->Init();
     selector_2_->Show();
 
@@ -256,8 +253,7 @@ class SSLClientCertificateSelectorMultiProfileTest
     selector_1_ = new SSLClientCertificateSelector(
         browser_1_->tab_strip_model()->GetActiveWebContents(),
         auth_requestor_1_->cert_request_info_,
-        base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
-                   auth_requestor_1_));
+        auth_requestor_1_->CreateDelegate());
     selector_1_->Init();
     selector_1_->Show();
 
@@ -303,7 +299,7 @@ class SSLClientCertificateSelectorMultiProfileTest
 
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, MAYBE_SelectNone) {
-  EXPECT_CALL(*auth_requestor_.get(), CertificateSelected(NULL));
+  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 
   // Let the mock get checked on destruction.
 }
@@ -343,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, Escape) {
 
   // Now let the default selection for auth_requestor_ mock get checked on
   // destruction.
-  EXPECT_CALL(*auth_requestor_.get(), CertificateSelected(NULL));
+  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
@@ -371,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
 
   // Now let the default selection for auth_requestor_ mock get checked on
   // destruction.
-  EXPECT_CALL(*auth_requestor_.get(), CertificateSelected(NULL));
+  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
@@ -385,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
 
   // Now let the default selection for auth_requestor_ mock get checked on
   // destruction.
-  EXPECT_CALL(*auth_requestor_.get(), CertificateSelected(NULL));
+  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
@@ -401,5 +397,5 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
 
   // Now let the default selection for auth_requestor_ mock get checked on
   // destruction.
-  EXPECT_CALL(*auth_requestor_.get(), CertificateSelected(NULL));
+  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 }

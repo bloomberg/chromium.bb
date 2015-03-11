@@ -40,7 +40,7 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
                              bool* cancel_request) override;
   void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
-      const SelectCertificateCallback& callback) override;
+      scoped_ptr<content::ClientCertificateDelegate> delegate) override;
 
   void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,
@@ -73,8 +73,10 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
   IDMap<CertErrorCallback, IDMapOwnPointer> pending_cert_error_callbacks_;
   IDMap<content::JavaScriptDialogManager::DialogClosedCallback, IDMapOwnPointer>
       pending_js_dialog_callbacks_;
-  IDMap<SelectCertificateCallback, IDMapOwnPointer>
-      pending_client_cert_request_callbacks_;
+  // |pending_client_cert_request_delegates_| owns its pointers, but IDMap
+  // doesn't provide Release, so ownership is managed manually.
+  IDMap<content::ClientCertificateDelegate>
+      pending_client_cert_request_delegates_;
 };
 
 bool RegisterAwContentsClientBridge(JNIEnv* env);

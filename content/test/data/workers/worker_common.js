@@ -1,3 +1,7 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Track the number of clients for this worker - tests can use this to ensure
 // that shared workers are actually shared, not distinct.
 var num_clients = 0;
@@ -29,5 +33,11 @@ onmessage = function(evt) {
     } catch (ex) {
       postMessage(ex);
     }
+  } else if (/tls-client-auth.+/.test(evt.data)) {
+    try {
+      importScripts(evt.data.substr(16));
+    } catch (ex) {
+    }
+    postMessage("done");
   }
 }

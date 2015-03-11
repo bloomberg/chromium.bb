@@ -9,12 +9,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "crypto/scoped_openssl_types.h"
 #include "jni/SSLClientCertificateRequest_jni.h"
 #include "net/android/keystore_openssl.h"
@@ -43,18 +43,8 @@ void RecordClientCertificateKey(
 void StartClientCertificateRequest(
     const net::SSLCertRequestInfo* cert_request_info,
     ui::WindowAndroid* window,
-    const chrome::SelectCertificateCallback& callback) {
+    scoped_ptr<content::ClientCertificateDelegate> delegate) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Ensure that callback(NULL) is posted as a task on the UI thread
-  // in case of an error.
-  base::Closure post_task_closure = base::Bind(
-      base::IgnoreResult(&content::BrowserThread::PostTask),
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, scoped_refptr<net::X509Certificate>()));
-
-  base::ScopedClosureRunner guard(post_task_closure);
 
   // Build the |key_types| JNI parameter, as a String[]
   std::vector<std::string> key_types;
@@ -98,12 +88,8 @@ void StartClientCertificateRequest(
       base::android::ConvertUTF8ToJavaString(
           env, cert_request_info->host_and_port.host());
 
-  // Create a copy of the callback on the heap so that its address
-  // and ownership can be passed through and returned from Java via JNI.
-  scoped_ptr<chrome::SelectCertificateCallback> request(
-      new chrome::SelectCertificateCallback(callback));
-
-  jlong request_id = reinterpret_cast<intptr_t>(request.get());
+  // Pass the address of the delegate through to Java.
+  jlong request_id = reinterpret_cast<intptr_t>(delegate.get());
 
   if (!chrome::android::
       Java_SSLClientCertificateRequest_selectClientCertificate(
@@ -117,10 +103,8 @@ void StartClientCertificateRequest(
     return;
   }
 
-  ignore_result(guard.Release());
-
   // Ownership was transferred to Java.
-  ignore_result(request.release());
+  ignore_result(delegate.release());
 }
 
 }  // namespace
@@ -146,18 +130,13 @@ static void OnSystemRequestCompletion(
     jobject private_key_ref) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Take back ownership of the request object.
-  scoped_ptr<chrome::SelectCertificateCallback> callback(
-      reinterpret_cast<chrome::SelectCertificateCallback*>(request_id));
-
-  // Ensure that callback(NULL) is called in case of an error.
-  base::Closure null_closure =
-      base::Bind(*callback, scoped_refptr<net::X509Certificate>());
-
-  base::ScopedClosureRunner guard(null_closure);
+  // Take back ownership of the delegate object.
+  scoped_ptr<content::ClientCertificateDelegate> delegate(
+      reinterpret_cast<content::ClientCertificateDelegate*>(request_id));
 
   if (encoded_chain_ref == NULL || private_key_ref == NULL) {
-    LOG(ERROR) << "Client certificate request cancelled";
+    LOG(ERROR) << "No client certificate selected";
+    delegate->ContinueWithCertificate(nullptr);
     return;
   }
 
@@ -188,18 +167,15 @@ static void OnSystemRequestCompletion(
     return;
   }
 
-  ignore_result(guard.Release());
-
   // RecordClientCertificateKey() must be called on the I/O thread,
   // before the callback is called with the selected certificate on
   // the UI thread.
   content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&RecordClientCertificateKey,
-                 client_cert,
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&RecordClientCertificateKey, client_cert,
                  base::Passed(&private_key)),
-      base::Bind(*callback, client_cert));
+      base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
+                 base::Owned(delegate.release()), client_cert));
 }
 
 static void NotifyClientCertificatesChanged() {
@@ -226,12 +202,12 @@ bool RegisterSSLClientCertificateRequestAndroid(JNIEnv* env) {
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
-    const chrome::SelectCertificateCallback& callback) {
+    scoped_ptr<content::ClientCertificateDelegate> delegate) {
   ui::WindowAndroid* window =
       WindowAndroidHelper::FromWebContents(contents)->GetWindowAndroid();
   DCHECK(window);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  StartClientCertificateRequest(cert_request_info, window, callback);
+  StartClientCertificateRequest(cert_request_info, window, delegate.Pass());
 }
 
 }  // namespace chrome

@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -368,17 +369,13 @@ void AwContentBrowserClient::AllowCertificateError(
 }
 
 void AwContentBrowserClient::SelectClientCertificate(
-      int render_process_id,
-      int render_frame_id,
-      net::SSLCertRequestInfo* cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback) {
+    content::WebContents* web_contents,
+    net::SSLCertRequestInfo* cert_request_info,
+    scoped_ptr<content::ClientCertificateDelegate> delegate) {
   AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromID(render_process_id, render_frame_id);
-  if (client) {
-    client->SelectClientCertificate(cert_request_info, callback);
-  } else {
-    callback.Run(NULL);
-  }
+      AwContentsClientBridgeBase::FromWebContents(web_contents);
+  if (client)
+    client->SelectClientCertificate(cert_request_info, delegate.Pass());
 }
 
 void AwContentBrowserClient::RequestPermission(

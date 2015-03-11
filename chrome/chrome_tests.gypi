@@ -218,6 +218,7 @@
       'browser/extensions/background_app_browsertest.cc',
       'browser/extensions/background_page_apitest.cc',
       'browser/extensions/background_scripts_apitest.cc',
+      'browser/extensions/background_xhr_browsertest.cc',
       'browser/extensions/browsertest_util_browsertest.cc',
       'browser/extensions/chrome_app_api_browsertest.cc',
       'browser/extensions/chrome_ui_overrides_browsertest.cc',

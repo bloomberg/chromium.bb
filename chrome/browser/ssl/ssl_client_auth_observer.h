@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -17,23 +18,31 @@ class X509Certificate;
 
 namespace content {
 class BrowserContext;
+class ClientCertificateDelegate;
 }
 
+// SSLClientAuthObserver is a base class that wraps a
+// ClientCertificateDelegate. It links client certificate selection dialogs
+// attached to the same BrowserContext. When CertificateSelected is called via
+// one of them, the rest simulate the same action.
 class SSLClientAuthObserver : public content::NotificationObserver {
  public:
   SSLClientAuthObserver(
       const content::BrowserContext* browser_context,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
-      const base::Callback<void(net::X509Certificate*)>& callback);
+      scoped_ptr<content::ClientCertificateDelegate> delegate);
   ~SSLClientAuthObserver() override;
 
   // UI should implement this to close the dialog.
   virtual void OnCertSelectedByNotification() = 0;
 
-  // Send content the certificate. Can also call with NULL if the user
-  // cancelled. Derived classes must use this instead of caching the callback
-  // and calling it directly.
+  // Continues the request with a certificate. Can also call with NULL to
+  // continue with no certificate. Derived classes must use this instead of
+  // caching the delegate and calling it directly.
   void CertificateSelected(net::X509Certificate* cert);
+
+  // Cancels the certificate selection and aborts the request.
+  void CancelCertificateSelection();
 
   // Begins observing notifications from other SSLClientAuthHandler instances.
   // If another instance chooses a cert for a matching SSLCertRequestInfo, we
@@ -57,7 +66,7 @@ class SSLClientAuthObserver : public content::NotificationObserver {
 
   const content::BrowserContext* browser_context_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
-  base::Callback<void(net::X509Certificate*)> callback_;
+  scoped_ptr<content::ClientCertificateDelegate> delegate_;
   content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthObserver);

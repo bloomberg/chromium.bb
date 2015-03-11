@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_LOADER_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_LOADER_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/resource_handler.h"
+#include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_controller.h"
@@ -23,13 +23,13 @@ namespace content {
 class ResourceDispatcherHostLoginDelegate;
 class ResourceLoaderDelegate;
 class ResourceRequestInfoImpl;
-class SSLClientAuthHandler;
 
 // This class is responsible for driving the URLRequest (i.e., calling Start,
 // Read, and servicing events).  It has a ResourceHandler, which is typically a
 // chain of ResourceHandlers, and is the ResourceController for its handler.
 class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
                                       public SSLErrorHandler::Delegate,
+                                      public SSLClientAuthHandler::Delegate,
                                       public ResourceController {
  public:
   ResourceLoader(scoped_ptr<net::URLRequest> request,
@@ -55,10 +55,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void OnUploadProgressACK();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, ClientCertStoreLookup);
-  FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, ClientCertStoreNull);
-  FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, ClientCertStoreAsyncCancel);
-
   // net::URLRequest::Delegate implementation:
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,
@@ -77,6 +73,10 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // SSLErrorHandler::Delegate implementation:
   void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override;
   void ContinueSSLRequest() override;
+
+  // SSLClientAuthHandler::Delegate implementation.
+  void ContinueWithCertificate(net::X509Certificate* cert) override;
+  void CancelCertificateSelection() override;
 
   // ResourceController implementation:
   void Resume() override;
@@ -103,7 +103,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void ResponseCompleted();
   void CallDidFinishLoading();
   void RecordHistograms();
-  void ContinueWithCertificate(net::X509Certificate* cert);
 
   bool is_deferred() const { return deferred_stage_ != DEFERRED_NONE; }
 

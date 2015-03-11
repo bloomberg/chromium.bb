@@ -18,6 +18,7 @@
 
 namespace content {
 class BrowserContext;
+class ClientCertificateDelegate;
 }
 
 class ConstrainedWindowMac;
@@ -41,13 +42,18 @@ class SSLClientAuthObserverCocoaBridge;
   NSRect oldSheetFrame_;
   // A copy of the sheet's |autoresizesSubviews| flag to restore on show.
   BOOL oldResizesSubviews_;
+  // True if the user dismissed the dialog directly, either via the OK (continue
+  // the request with a certificate) or Cancel (continue the request with no
+  // certificate) buttons.
+  BOOL userResponded_;
 }
 
 @property (readonly, nonatomic) SFChooseIdentityPanel* panel;
 
 - (id)initWithBrowserContext:(const content::BrowserContext*)browserContext
              certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
-                    callback:(const chrome::SelectCertificateCallback&)callback;
+                    delegate:(scoped_ptr<content::ClientCertificateDelegate>)
+                                 delegate;
 - (void)displayForWebContents:(content::WebContents*)webContents;
 - (void)closeWebContentsModalDialog;
 

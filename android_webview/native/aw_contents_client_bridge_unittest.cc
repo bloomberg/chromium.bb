@@ -8,8 +8,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "jni/MockAwContentsClientBridge_jni.h"
 #include "net/android/net_jni_registrar.h"
@@ -33,9 +35,6 @@ namespace {
 // Tests the android_webview contents client bridge.
 class AwContentsClientBridgeTest : public Test {
  public:
-  typedef AwContentsClientBridge::SelectCertificateCallback
-      SelectCertificateCallback;
-
   AwContentsClientBridgeTest() { }
 
   // Callback method called when a cert is selected.
@@ -51,6 +50,24 @@ class AwContentsClientBridgeTest : public Test {
   X509Certificate* selected_cert_;
   int cert_selected_callbacks_;
   JNIEnv* env_;
+};
+
+class TestClientCertificateDelegate
+    : public content::ClientCertificateDelegate {
+ public:
+  explicit TestClientCertificateDelegate(AwContentsClientBridgeTest* test)
+      : test_(test) {}
+
+  // content::ClientCertificateDelegate.
+  void ContinueWithCertificate(net::X509Certificate* cert) override {
+    test_->CertSelected(cert);
+    test_ = nullptr;
+  }
+
+ private:
+  AwContentsClientBridgeTest* test_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestClientCertificateDelegate);
 };
 
 }   // namespace
@@ -90,9 +107,7 @@ void AwContentsClientBridgeTest::TestCertType(SSLClientCertType type,
   cert_request_info_->cert_key_types.push_back(type);
   bridge_->SelectClientCertificate(
       cert_request_info_.get(),
-      base::Bind(
-          &AwContentsClientBridgeTest::CertSelected,
-          base::Unretained(static_cast<AwContentsClientBridgeTest*>(this))));
+      make_scoped_ptr(new TestClientCertificateDelegate(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, cert_selected_callbacks_);
   ScopedJavaLocalRef<jobjectArray> key_types =
@@ -112,10 +127,8 @@ TEST_F(AwContentsClientBridgeTest,
   // Call SelectClientCertificate to create a callback id that mock java object
   // can call on.
   bridge_->SelectClientCertificate(
-    cert_request_info_.get(),
-    base::Bind(
-        &AwContentsClientBridgeTest::CertSelected,
-        base::Unretained(static_cast<AwContentsClientBridgeTest*>(this))));
+      cert_request_info_.get(),
+      make_scoped_ptr(new TestClientCertificateDelegate(this)));
   bridge_->ProvideClientCertificateResponse(env_, jbridge_.obj(),
       Java_MockAwContentsClientBridge_getRequestId(env_, jbridge_.obj()),
       Java_MockAwContentsClientBridge_createTestCertChain(
@@ -133,10 +146,8 @@ TEST_F(AwContentsClientBridgeTest,
   // Call SelectClientCertificate to create a callback id that mock java object
   // can call on.
   bridge_->SelectClientCertificate(
-    cert_request_info_.get(),
-    base::Bind(
-        &AwContentsClientBridgeTest::CertSelected,
-        base::Unretained(static_cast<AwContentsClientBridgeTest*>(this))));
+      cert_request_info_.get(),
+      make_scoped_ptr(new TestClientCertificateDelegate(this)));
   int requestId =
     Java_MockAwContentsClientBridge_getRequestId(env_, jbridge_.obj());
   bridge_->ProvideClientCertificateResponse(env_, jbridge_.obj(),
