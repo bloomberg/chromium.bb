@@ -19,6 +19,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/process_info.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -1388,10 +1389,20 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
 
 void Browser::NavigationStateChanged(WebContents* source,
                                      content::InvalidateTypes changed_flags) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466285
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466285 Browser::NavigationStateChanged::ScheduleUIUpdate"));
   // Only update the UI when something visible has changed.
   if (changed_flags)
     ScheduleUIUpdate(source, changed_flags);
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466285
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466285 Browser::NavigationStateChanged::TabStateChanged"));
   // We can synchronously update commands since they will only change once per
   // navigation, so we don't have to worry about flickering. We do, however,
   // need to update the command state early on load to always present usable
@@ -2107,6 +2118,11 @@ void Browser::ScheduleUIUpdate(WebContents* source,
   int index = tab_strip_model_->GetIndexOfWebContents(source);
   DCHECK_NE(TabStripModel::kNoTab, index);
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466285
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466285 Browser::ScheduleUIUpdate::Toolbar"));
   // Do some synchronous updates.
   if (changed_flags & content::INVALIDATE_TYPE_URL) {
     if (source == tab_strip_model_->GetActiveWebContents()) {
@@ -2122,6 +2138,12 @@ void Browser::ScheduleUIUpdate(WebContents* source,
     }
     changed_flags &= ~content::INVALIDATE_TYPE_URL;
   }
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466285
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466285 Browser::ScheduleUIUpdate::TabStripModel"));
   if (changed_flags & content::INVALIDATE_TYPE_LOAD) {
     // Update the loading state synchronously. This is so the throbber will
     // immediately start/stop, which gives a more snappy feel. We want to do

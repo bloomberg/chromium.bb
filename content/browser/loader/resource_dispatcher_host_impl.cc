@@ -2130,6 +2130,11 @@ bool ResourceDispatcherHostImpl::LoadInfoIsMoreInteresting(const LoadInfo& a,
 // static
 void ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread(
     scoped_ptr<LoadInfoMap> info_map) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466285
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466285 ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread"));
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (const auto& load_info : *info_map) {
     RenderViewHostImpl* view = RenderViewHostImpl::FromID(

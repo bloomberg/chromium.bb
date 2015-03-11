@@ -1053,6 +1053,11 @@ bool WebContentsImpl::IsBeingDestroyed() const {
 
 void WebContentsImpl::NotifyNavigationStateChanged(
     InvalidateTypes changed_flags) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466285
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466285 WebContentsImpl::NotifyNavigationStateChanged"));
   // Create and release the audio power save blocker depending on whether the
   // tab is actively producing audio or not.
   if ((changed_flags & INVALIDATE_TYPE_TAB) &&
@@ -4214,6 +4219,11 @@ void WebContentsImpl::LoadStateChanged(
     const net::LoadStateWithParam& load_state,
     uint64 upload_position,
     uint64 upload_size) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466285
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466285 WebContentsImpl::LoadStateChanged::Start"));
   load_state_ = load_state;
   upload_position_ = upload_position;
   upload_size_ = upload_size;
