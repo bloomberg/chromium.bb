@@ -223,13 +223,14 @@ void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptSta
     m_scriptStateToId.set(scriptState, executionContextId);
     DOMWrapperWorld& world = scriptState->world();
     String humanReadableName = world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "";
-    m_frontend->executionContextCreated(ExecutionContextDescription::create()
+    RefPtr<ExecutionContextDescription> description = ExecutionContextDescription::create()
         .setId(executionContextId)
-        .setIsPageContext(isPageContext)
         .setName(humanReadableName)
         .setOrigin(origin)
-        .setFrameId(frameId)
-        .release());
+        .setFrameId(frameId);
+    if (isPageContext)
+        description->setIsPageContext(isPageContext);
+    m_frontend->executionContextCreated(description.release());
 }
 
 } // namespace blink
