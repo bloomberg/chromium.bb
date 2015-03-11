@@ -6,7 +6,7 @@ var goog = {};
 goog.async = {};
 
 /**
- * @interface
+ * @constructor
  * @template VALUE
  */
 goog.async.Deferred;
@@ -19,20 +19,15 @@ goog.async.Deferred;
  */
 goog.async.Deferred.prototype.addCallback;
 
-/**
- * @param {!function(this:T,VALUE):?} cb
- * @param {T=} opt_scope
- * @return {!goog.async.Deferred}
- * @template T
- */
+/** @param {VALUE=} opt_result */
 goog.async.Deferred.prototype.callback;
 
 /**
- * @param {?(function(this:THIS, TYPE):
+ * @param {?(function(this:THIS, VALUE):
  *             (RESULT|IThenable<RESULT>|Thenable))=} opt_onFulfilled
  * @param {?(function(this:THIS, *): *)=} opt_onRejected
  * @param {THIS=} opt_context
- * @return {!goog.Promise<RESULT>}
+ * @return {!Promise<RESULT>}
  * @template RESULT,THIS
  */
 goog.async.Deferred.prototype.then;
