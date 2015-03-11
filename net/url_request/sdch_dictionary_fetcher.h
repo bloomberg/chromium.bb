@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/sdch_manager.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -113,8 +112,6 @@ class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
   // Store the URLRequestContext associated with the owning SdchManager for
   // use while fetching.
   URLRequestContext* const context_;
-
-  base::WeakPtrFactory<SdchDictionaryFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SdchDictionaryFetcher);
 };

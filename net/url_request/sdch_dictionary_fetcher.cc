@@ -114,8 +114,7 @@ SdchDictionaryFetcher::SdchDictionaryFetcher(URLRequestContext* context)
     : next_state_(STATE_NONE),
       in_loop_(false),
       fetch_queue_(new UniqueFetchQueue()),
-      context_(context),
-      weak_factory_(this) {
+      context_(context) {
   DCHECK(CalledOnValidThread());
   DCHECK(context);
 }
@@ -142,7 +141,6 @@ void SdchDictionaryFetcher::Cancel() {
   next_state_ = STATE_NONE;
 
   fetch_queue_->Clear();
-  weak_factory_.InvalidateWeakPtrs();
 }
 
 void SdchDictionaryFetcher::OnResponseStarted(URLRequest* request) {
