@@ -8,7 +8,6 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/fetch/Resource.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -83,7 +82,7 @@ static String digestToString(const DigestValue& digest)
     return base64URLEncode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
 }
 
-bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const String& resourceType, const Resource& resource)
+bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const String& resourceType)
 {
     if (!RuntimeEnabledFeatures::subresourceIntegrityEnabled())
         return true;
@@ -92,11 +91,6 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
         return true;
 
     Document& document = element.document();
-
-    if (!resource.isEligibleForIntegrityCheck(&document)) {
-        logErrorToConsole("Subresource Integrity: The resource '" + resourceUrl.elidedString() + "' has an integrity attribute, but the resource requires CORS to be enabled to check the integrity, and it is not. The resource has been blocked.", document);
-        return false;
-    }
 
     String integrity;
     HashAlgorithm algorithm;

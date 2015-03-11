@@ -309,21 +309,15 @@ void Resource::finish()
         m_status = Cached;
 }
 
-bool Resource::passesAccessControlCheck(ExecutionContext* context, SecurityOrigin* securityOrigin) const
+bool Resource::passesAccessControlCheck(ExecutionContext* context, SecurityOrigin* securityOrigin)
 {
     String ignoredErrorDescription;
     return passesAccessControlCheck(context, securityOrigin, ignoredErrorDescription);
 }
 
-bool Resource::passesAccessControlCheck(ExecutionContext* context, SecurityOrigin* securityOrigin, String& errorDescription) const
+bool Resource::passesAccessControlCheck(ExecutionContext* context, SecurityOrigin* securityOrigin, String& errorDescription)
 {
     return blink::passesAccessControlCheck(context, m_response, resourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials, securityOrigin, errorDescription);
-}
-
-bool Resource::isEligibleForIntegrityCheck(ExecutionContext* source) const
-{
-    String errorDescription;
-    return source->securityOrigin()->canRequest(resourceRequest().url()) || passesAccessControlCheck(source, source->securityContext().securityOrigin(), errorDescription);
 }
 
 static double currentAge(const ResourceResponse& response, double responseTimestamp)

@@ -351,6 +351,9 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
             UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
             return;
         }
+
+        if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url(), sourceCode.resource()->mimeType()))
+            return;
     }
 
     // FIXME: Can this be moved earlier in the function?
@@ -369,13 +372,6 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     AccessControlStatus corsCheck = NotSharableCrossOrigin;
     if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(&m_element->document(), m_element->document().securityOrigin())))
         corsCheck = SharableCrossOrigin;
-
-    if (m_isExternalScript) {
-        const KURL resourceUrl = sourceCode.resource()->resourceRequest().url();
-        if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url(), sourceCode.resource()->mimeType(), *sourceCode.resource())) {
-            return;
-        }
-    }
 
     // Create a script from the script element node, using the script
     // block's source and the script block's type.

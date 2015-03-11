@@ -1,5 +1,0 @@
-CONSOLE ERROR: Subresource Integrity: The resource 'http://localhost:8000/security/resources/cors-script.php?value=ran' has an integrity attribute, but the resource requires CORS to be enabled to check the integrity, and it is not. The resource has been blocked.
-This is a testharness.js-based test.
-PASS SRI on cross origin CORS enabled script, without CORS fetch 
-Harness: the test ran to completion.
-

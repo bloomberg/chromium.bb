@@ -7,8 +7,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/fetch/Resource.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLScriptElement.h"
 #include "platform/Crypto.h"
 #include "platform/weborigin/KURL.h"
@@ -138,35 +136,16 @@ protected:
         EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
     }
 
-    enum CorsStatus {
-        WithCors,
-        NoCors
-    };
-
-    void expectIntegrity(const char* integrity, const char* script, const KURL& url, const KURL& requestorUrl, const String& mimeType = String(), CorsStatus corsStatus = WithCors)
+    void expectIntegrity(const char* integrity, const char* script, const KURL& url, const String& mimeType = String())
     {
         scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
-        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url, mimeType, *createTestResource(url, requestorUrl, corsStatus).get()));
+        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url, mimeType));
     }
 
-    void expectIntegrityFailure(const char* integrity, const char* script, const KURL& url, const KURL& requestorUrl, const String& mimeType = String(), CorsStatus corsStatus = WithCors)
+    void expectIntegrityFailure(const char* integrity, const char* script, const KURL& url, const String& mimeType = String())
     {
         scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
-        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url, mimeType, *createTestResource(url, requestorUrl, corsStatus).get()));
-    }
-
-    ResourcePtr<Resource> createTestResource(const KURL& url, const KURL& allowOriginUrl, CorsStatus corsStatus)
-    {
-        OwnPtr<ResourceResponse> response = adoptPtr(new ResourceResponse);
-        response->setURL(url);
-        response->setHTTPStatusCode(200);
-        if (corsStatus == WithCors) {
-            response->setHTTPHeaderField("access-control-allow-origin", SecurityOrigin::create(allowOriginUrl)->toAtomicString());
-            response->setHTTPHeaderField("access-control-allow-credentials", "true");
-        }
-        ResourcePtr<Resource> resource = new Resource(ResourceRequest(response->url()), Resource::Raw);
-        resource->setResponse(*response);
-        return resource;
+        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url, mimeType));
     }
 
     KURL secureURL;
@@ -294,37 +273,27 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
     document->updateSecurityOrigin(secureOrigin->isolatedCopy());
 
     // Verify basic sha256, sha384, and sha512 integrity checks.
-    expectIntegrity(kSha256Integrity, kBasicScript, secureURL, secureURL);
-    expectIntegrity(kSha384Integrity, kBasicScript, secureURL, secureURL);
-    expectIntegrity(kSha512Integrity, kBasicScript, secureURL, secureURL);
+    expectIntegrity(kSha256Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha384Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha512Integrity, kBasicScript, secureURL);
 
     // The hash label must match the hash value.
-    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, secureURL);
+    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL);
 
     // Unsupported hash functions should fail.
-    expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, secureURL);
-
-    // All parameters are fine, and because this is not cross origin, CORS is
-    // not needed.
-    expectIntegrity(kSha256Integrity, kBasicScript, secureURL, secureURL, String(), NoCors);
+    expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL);
 }
 
 TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
 {
-    // The same checks as CheckSubresourceIntegrityInSecureOrigin should pass
-    // here, with the expection of the NoCors check at the end.
+    // The same checks as CheckSubresourceIntegrityInSecureOrigin should pass here.
     document->updateSecurityOrigin(insecureOrigin->isolatedCopy());
 
-    expectIntegrity(kSha256Integrity, kBasicScript, secureURL, insecureURL);
-    expectIntegrity(kSha384Integrity, kBasicScript, secureURL, insecureURL);
-    expectIntegrity(kSha512Integrity, kBasicScript, secureURL, insecureURL);
-    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, insecureURL);
-    expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, insecureURL);
-
-    // This check should fail because, unlike in the
-    // CheckSubresourceIntegirtyInSecureOrigin case, this is cross origin
-    // (secure origin requesting a resource on an insecure origin)
-    expectIntegrityFailure(kSha256Integrity, kBasicScript, secureURL, insecureURL, String(), NoCors);
+    expectIntegrity(kSha256Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha384Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha512Integrity, kBasicScript, secureURL);
+    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL);
+    expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL);
 }
 
 } // namespace blink

@@ -62,11 +62,7 @@ public:
     virtual void willStartLoadingResource(Resource*, ResourceRequest&) = 0;
 
     virtual bool canAccessRedirect(Resource*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&) = 0;
-    enum AccessControlLoggingDecision {
-        ShouldLogAccessControlErrors,
-        ShouldNotLogAccessControlErrors
-    };
-    virtual bool canAccessResource(Resource*, SecurityOrigin* sourceOrigin, const KURL&, AccessControlLoggingDecision) const = 0;
+    virtual bool canAccessResource(Resource*, SecurityOrigin* sourceOrigin, const KURL&) const = 0;
     virtual bool isControlledByServiceWorker() const = 0;
     virtual bool defersLoading() const = 0;
     virtual bool isLoadedBy(ResourceLoaderHost*) const = 0;

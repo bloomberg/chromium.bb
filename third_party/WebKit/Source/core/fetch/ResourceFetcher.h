@@ -153,7 +153,7 @@ public:
     virtual bool defersLoading() const override;
     virtual bool isLoadedBy(ResourceLoaderHost*) const override;
     virtual bool canAccessRedirect(Resource*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&) override;
-    virtual bool canAccessResource(Resource*, SecurityOrigin*, const KURL&, AccessControlLoggingDecision) const override;
+    virtual bool canAccessResource(Resource*, SecurityOrigin*, const KURL&) const override;
     virtual bool isControlledByServiceWorker() const override;
 
 #if !ENABLE(OILPAN)

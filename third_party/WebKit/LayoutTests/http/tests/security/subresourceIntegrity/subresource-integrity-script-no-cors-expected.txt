@@ -1,5 +1,0 @@
-CONSOLE ERROR: Script from origin 'http://localhost:8000' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
-This is a testharness.js-based test.
-PASS SRI on cross origin CORS disabled script 
-Harness: the test ran to completion.
-
