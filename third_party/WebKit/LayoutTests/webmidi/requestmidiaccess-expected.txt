@@ -58,7 +58,7 @@ PASS a note on message is sent without timestamp
 PASS a note on message is sent with timestamp
 PASS output.send([0xfff, 0x45, 0x7f]) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The value at index 0 (4095) is greater than 0xFF..
 PASS output.send([0xf0, 0x45, 0xf7]) threw exception InvalidAccessError: Failed to execute 'send' on 'MIDIOutput': System exclusive message is not allowed at index 0 (240)..
-PASS requestMIDIAccess() was correctly blocked for System Exclusive access with error [object DOMError].
+PASS requestMIDIAccess() was correctly blocked for System Exclusive access with error SecurityError: An attempt was made to break through the security policy of the user agent..
 PASS successfullyParsed is true
 
 TEST COMPLETE

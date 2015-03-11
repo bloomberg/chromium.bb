@@ -33,8 +33,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8DOMError.h"
-#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
@@ -79,7 +78,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, Navi
 ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, const MIDIOptions& options)
 {
     if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
-        return ScriptPromise::reject(scriptState, toV8(DOMError::create("AbortError"), scriptState->context()->Global(), scriptState->isolate()));
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "The frame is not working."));
     }
 
     return MIDIAccessInitializer::start(scriptState, options);

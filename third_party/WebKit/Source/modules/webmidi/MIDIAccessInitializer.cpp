@@ -7,8 +7,9 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/frame/Navigator.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIController.h"
@@ -90,7 +91,7 @@ ScriptPromise MIDIAccessInitializer::start()
     if (MIDIController* controller = MIDIController::from(document->frame()))
         controller->requestSysexPermission(this);
     else
-        reject(DOMError::create("SecurityError"));
+        reject(DOMException::create(SecurityError));
 
     return promise;
 }
@@ -127,7 +128,24 @@ void MIDIAccessInitializer::didStartSession(bool success, const String& error, c
     if (success) {
         resolve(MIDIAccess::create(m_accessor.release(), m_requestSysex, m_portDescriptors, executionContext()));
     } else {
-        reject(DOMError::create(error, message));
+        // The spec says the name is one of
+        //  - SecurityError
+        //  - AbortError
+        //  - InvalidStateError
+        //  - NotSupportedError
+        // FIXME: Do not rely on |error| string. Instead an enum representing
+        // an ExceptionCode should be defined and deliverred.
+        ExceptionCode ec = InvalidStateError;
+        if (error == DOMException::getErrorName(SecurityError)) {
+            ec = SecurityError;
+        } else if (error == DOMException::getErrorName(AbortError)) {
+            ec = AbortError;
+        } else if (error == DOMException::getErrorName(InvalidStateError)) {
+            ec = InvalidStateError;
+        } else if (error == DOMException::getErrorName(NotSupportedError)) {
+            ec = NotSupportedError;
+        }
+        reject(DOMException::create(ec, message));
     }
 }
 
@@ -137,7 +155,7 @@ void MIDIAccessInitializer::resolveSysexPermission(bool allowed)
     if (allowed)
         m_accessor->startSession();
     else
-        reject(DOMError::create("SecurityError"));
+        reject(DOMException::create(SecurityError));
 }
 
 SecurityOrigin* MIDIAccessInitializer::securityOrigin() const

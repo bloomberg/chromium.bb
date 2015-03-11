@@ -32,6 +32,7 @@
 #define MIDIPort_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "platform/heap/Handle.h"
@@ -78,7 +79,7 @@ protected:
 
 private:
     ScriptPromise accept(ScriptState*);
-    ScriptPromise reject(ScriptState*, const String& name, const String& message);
+    ScriptPromise reject(ScriptState*, ExceptionCode, const String& message);
 
     String m_id;
     String m_manufacturer;

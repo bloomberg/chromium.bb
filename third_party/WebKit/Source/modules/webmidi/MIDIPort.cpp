@@ -32,7 +32,7 @@
 #include "modules/webmidi/MIDIPort.h"
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 
@@ -92,7 +92,7 @@ ScriptPromise MIDIPort::open(ScriptState* scriptState)
 {
     switch (m_state) {
     case PortState::MIDIPortStateDisconnected:
-        return reject(scriptState, "InvalidStateError", "The port has been disconnected.");
+        return reject(scriptState, InvalidStateError, "The port has been disconnected.");
     case PortState::MIDIPortStateConnected:
         // FIXME: Add blink API to perform a real open operation.
         setState(PortState::MIDIPortStateOpened);
@@ -102,14 +102,14 @@ ScriptPromise MIDIPort::open(ScriptState* scriptState)
     default:
         ASSERT_NOT_REACHED();
     }
-    return reject(scriptState, "InvalidStateError", "The port is in unknown state.");
+    return reject(scriptState, InvalidStateError, "The port is in unknown state.");
 }
 
 ScriptPromise MIDIPort::close(ScriptState* scriptState)
 {
     switch (m_state) {
     case PortState::MIDIPortStateDisconnected:
-        return reject(scriptState, "InvalidStateError", "The port has been disconnected.");
+        return reject(scriptState, InvalidStateError, "The port has been disconnected.");
     case PortState::MIDIPortStateOpened:
         // FIXME: Add blink API to perform a real close operation.
         setState(PortState::MIDIPortStateConnected);
@@ -119,7 +119,7 @@ ScriptPromise MIDIPort::close(ScriptState* scriptState)
     default:
         ASSERT_NOT_REACHED();
     }
-    return reject(scriptState, "InvalidStateError", "The port is in unknown state.");
+    return reject(scriptState, InvalidStateError, "The port is in unknown state.");
 }
 
 void MIDIPort::setState(PortState state)
@@ -146,10 +146,9 @@ ScriptPromise MIDIPort::accept(ScriptState* scriptState)
     return ScriptPromise::cast(scriptState, toV8(this, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-ScriptPromise MIDIPort::reject(ScriptState* scriptState, const String& name, const String& message)
+ScriptPromise MIDIPort::reject(ScriptState* scriptState, ExceptionCode ec, const String& message)
 {
-    return ScriptPromise::reject(scriptState, toV8(DOMError::create(name, message), scriptState->context()->Global(), scriptState->isolate()));
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(ec, message));
 }
-
 
 } // namespace blink
