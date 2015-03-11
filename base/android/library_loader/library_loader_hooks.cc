@@ -123,9 +123,6 @@ void LibraryLoaderExitHook() {
 }
 
 bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {
-  // We need the AtExitManager to be created at the very beginning.
-  g_at_exit_manager = new base::AtExitManager();
-
   return RegisterNativesImpl(env);
 }
 
@@ -140,6 +137,10 @@ jstring GetVersionNumber(JNIEnv* env, jobject jcaller) {
 LibraryProcessType GetLibraryProcessType(JNIEnv* env) {
   return static_cast<LibraryProcessType>(
       Java_LibraryLoader_getLibraryProcessType(env));
+}
+
+void InitAtExitManager() {
+  g_at_exit_manager = new base::AtExitManager();
 }
 
 }  // namespace android

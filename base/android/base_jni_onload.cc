@@ -19,6 +19,7 @@ bool RegisterJNI(JNIEnv* env) {
 }
 
 bool Init() {
+  InitAtExitManager();
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::InitReplacementClassLoader(env,
                                             base::android::GetClassLoader(env));
