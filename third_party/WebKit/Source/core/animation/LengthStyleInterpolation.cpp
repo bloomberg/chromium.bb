@@ -207,7 +207,7 @@ static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(con
 {
     const InterpolableList* listOfValues = toInterpolableList(list->get(0));
     const InterpolableList* listOfTypes = toInterpolableList(list->get(1));
-    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expression;
+    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expression = nullptr;
     for (size_t position = 0; position < CSSPrimitiveValue::LengthUnitTypeCount; position++) {
         const InterpolableNumber *subValueType = toInterpolableNumber(listOfTypes->get(position));
         if (!subValueType->value())
