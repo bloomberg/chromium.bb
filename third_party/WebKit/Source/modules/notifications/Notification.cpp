@@ -169,7 +169,11 @@ void Notification::close()
         notificationManager()->close(this);
     } else {
         m_state = NotificationStateClosed;
-        notificationManager()->closePersistent(m_persistentId);
+
+        SecurityOrigin* origin = executionContext()->securityOrigin();
+        ASSERT(origin);
+
+        notificationManager()->closePersistent(WebSerializedOrigin(*origin), m_persistentId);
     }
 }
 

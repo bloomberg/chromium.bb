@@ -30,13 +30,13 @@ public:
     // Shows a persistent notification on the user's system. These notifications will have
     // their events delivered to a Service Worker rather than the object's delegate. Will
     // take ownership of the WebNotificationShowCallbacks object.
-    virtual void showPersistent(const WebSerializedOrigin&, const WebNotificationData&, WebServiceWorkerRegistration*, WebNotificationShowCallbacks*) { }
+    virtual void showPersistent(const WebSerializedOrigin&, const WebNotificationData&, WebServiceWorkerRegistration*, WebNotificationShowCallbacks*) = 0;
 
     // Closes a notification previously shown, and removes it if being shown.
     virtual void close(WebNotificationDelegate*) = 0;
 
     // Closes a persistent notification identified by its persistent notification Id.
-    virtual void closePersistent(const WebString& persistentNotificationId) { }
+    virtual void closePersistent(const WebSerializedOrigin&, const WebString& persistentNotificationId) = 0;
 
     // Indicates that the delegate object is being destroyed, and must no longer
     // be used by the embedder to dispatch events.
