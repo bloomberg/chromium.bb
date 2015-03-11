@@ -430,7 +430,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
 
   def testGetCommitPositionForSkia(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
-    skia_rev = 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61'
+    skia_rev = 'a94d028eCheckAbortsEarly0f2c77f159b3dac95eb90c3b4cf48c61'
     depot_path = os.path.join(bisect_instance.src_cwd, 'third_party', 'skia')
     # Skia doesn't use commit positions, and GetCommitPosition should
     # return None for repos that don't use commit positions.
@@ -480,6 +480,48 @@ class BisectPerfRegressionTest(unittest.TestCase):
         'webkit', 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61' , None)
     expected_params = ['checkout', 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61']
     mock_RunGit.assert_called_with(expected_params)
+
+  def testTryJobSvnRepo_PerfBuilderType_ReturnsRepoUrl(self):
+    self.assertEqual(bisect_perf_regression.PERF_SVN_REPO_URL,
+        bisect_perf_regression._TryJobSvnRepo(fetch_build.PERF_BUILDER))
+
+  def testTryJobSvnRepo_FullBuilderType_ReturnsRepoUrl(self):
+    self.assertEqual(bisect_perf_regression.FULL_SVN_REPO_URL,
+        bisect_perf_regression._TryJobSvnRepo(fetch_build.FULL_BUILDER))
+
+  def testTryJobSvnRepo_WithUnknownBuilderType_ThrowsError(self):
+    with self.assertRaises(NotImplementedError):
+      bisect_perf_regression._TryJobSvnRepo('foo')
+
+  def _CheckIsDownloadable(self, depot, target_platform='chromium',
+                           builder_type='perf'):
+    opts = dict(DEFAULT_OPTIONS)
+    opts.update({'target_platform': target_platform,
+                 'builder_type': builder_type})
+    bisect_instance = _GetBisectPerformanceMetricsInstance(opts)
+    return bisect_instance.IsDownloadable(depot)
+
+  def testIsDownloadable_ChromiumDepot_ReturnsTrue(self):
+    self.assertTrue(self._CheckIsDownloadable(depot='chromium'))
+
+  def testIsDownloadable_DEPSDepot_ReturnsTrue(self):
+    self.assertTrue(self._CheckIsDownloadable(depot='v8'))
+
+  def testIsDownloadable_AndroidChromeDepot_ReturnsTrue(self):
+    self.assertTrue(self._CheckIsDownloadable(
+        depot='android-chrome', target_platform='android-chrome'))
+
+  def testIsDownloadable_AndroidChromeWithDEPSChromium_ReturnsFalse(self):
+    self.assertFalse(self._CheckIsDownloadable(
+        depot='chromium', target_platform='android-chrome'))
+
+  def testIsDownloadable_AndroidChromeWithDEPSV8_ReturnsFalse(self):
+    self.assertFalse(self._CheckIsDownloadable(
+        depot='v8', target_platform='android-chrome'))
+
+  def testIsDownloadable_NoBuilderType_ReturnsFalse(self):
+    self.assertFalse(
+        self._CheckIsDownloadable(depot='chromium', builder_type=''))
 
 
 class DepotDirectoryRegistryTest(unittest.TestCase):

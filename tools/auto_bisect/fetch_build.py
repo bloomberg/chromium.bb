@@ -37,6 +37,10 @@ MAX_MAC_BUILD_TIME = 14400
 MAX_WIN_BUILD_TIME = 14400
 MAX_LINUX_BUILD_TIME = 14400
 
+# Try server status page URLs, used to get build status.
+PERF_TRY_SERVER_URL = 'http://build.chromium.org/p/tryserver.chromium.perf'
+LINUX_TRY_SERVER_URL = 'http://build.chromium.org/p/tryserver.chromium.linux'
+
 
 def GetBucketAndRemotePath(revision, builder_type=PERF_BUILDER,
                            target_arch='ia32', target_platform='chromium',
@@ -77,6 +81,17 @@ def GetBuilderNameAndBuildTime(builder_type=PERF_BUILDER, target_arch='ia32',
   return build_archive.GetBuilderName(), build_archive.GetBuilderBuildTime()
 
 
+def GetBuildBotUrl(builder_type=PERF_BUILDER, target_arch='ia32',
+                   target_platform='chromium', extra_src=None):
+  """Gets buildbot URL for a given builder type."""
+  logging.info('Getting buildbot URL for "%s", "%s", "%s".',
+               builder_type, target_arch, target_platform)
+  build_archive = BuildArchive.Create(
+      builder_type, target_arch=target_arch, target_platform=target_platform,
+      extra_src=extra_src)
+  return build_archive.GetBuildBotUrl()
+
+
 class BuildArchive(object):
   """Represents a place where builds of some type are stored.
 
@@ -109,6 +124,8 @@ class BuildArchive(object):
     self._extra_src = extra_src
     if bisect_utils.IsLinuxHost() and target_platform == 'android':
       self._platform = 'android'
+    elif bisect_utils.IsLinuxHost() and target_platform == 'android-chrome':
+      self._platform = 'android-chrome'
     elif bisect_utils.IsLinuxHost():
       self._platform = 'linux'
     elif bisect_utils.IsMacHost():
@@ -175,11 +192,14 @@ class BuildArchive(object):
     """Returns the time to wait for a build after requesting one."""
     if self._platform in ('win', 'win64'):
       return MAX_WIN_BUILD_TIME
-    if self._platform in ('linux', 'android'):
+    if self._platform in ('linux', 'android', 'android-chrome'):
       return MAX_LINUX_BUILD_TIME
     if self._platform == 'mac':
       return MAX_MAC_BUILD_TIME
     raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
+
+  def GetBuildBotUrl(self):
+    raise NotImplementedError()
 
 
 class PerfBuildArchive(BuildArchive):
@@ -217,6 +237,10 @@ class PerfBuildArchive(BuildArchive):
       return 'mac_perf_bisect_builder'
     raise NotImplementedError('Unsupported platform "%s".' % sys.platform)
 
+  def GetBuildBotUrl(self):
+    """Returns buildbot URL for fetching build info."""
+    return PERF_TRY_SERVER_URL
+
 
 class FullBuildArchive(BuildArchive):
 
@@ -252,6 +276,11 @@ class FullBuildArchive(BuildArchive):
     if self._platform == 'linux':
       return 'linux_full_bisect_builder'
     raise NotImplementedError('Unsupported platform "%s".' % sys.platform)
+
+  def GetBuildBotUrl(self):
+    """Returns buildbot URL for fetching build info."""
+    return LINUX_TRY_SERVER_URL
+
 
 class AndroidChromeBuildArchive(BuildArchive):
   """Represents a place where builds of android-chrome type are stored.
@@ -292,6 +321,10 @@ class AndroidChromeBuildArchive(BuildArchive):
   def GetBuilderName(self):
     """Returns the builder name extra source."""
     return self._extra_src.GetBuilderName()
+
+  def GetBuildBotUrl(self):
+    """Returns buildbot URL for fetching build info."""
+    return self._extra_src.GetBuildBotUrl()
 
 
 def BuildIsAvailable(bucket_name, remote_path):

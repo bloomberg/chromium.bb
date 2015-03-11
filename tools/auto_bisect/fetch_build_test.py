@@ -166,6 +166,13 @@ class BuildArchiveTest(unittest.TestCase):
     archive._platform = 'mac'
     self.assertEqual(14400, archive.GetBuilderBuildTime())
 
+  def test_GetBuildBotUrl_Perf(self):
+    self.assertEqual(fetch_build.PERF_TRY_SERVER_URL,
+        fetch_build.GetBuildBotUrl(fetch_build.PERF_BUILDER))
+
+  def test_GetBuildBotUrl_full(self):
+    self.assertEqual(fetch_build.LINUX_TRY_SERVER_URL,
+        fetch_build.GetBuildBotUrl(fetch_build.FULL_BUILDER))
 
 class UnzipTest(unittest.TestCase):
 

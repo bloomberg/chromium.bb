@@ -125,7 +125,8 @@ BISECT_PATCH_FILE = 'deps_patch.txt'
 # SVN repo where the bisect try jobs are submitted.
 PERF_SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try-perf'
 FULL_SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try'
-
+ANDROID_CHROME_SVN_REPO_URL = ('svn://svn.chromium.org/chrome-try-internal/'
+                               'try-perf')
 
 class RunGitError(Exception):
 
@@ -195,17 +196,16 @@ def _ParseRevisionsFromDEPSFileManually(deps_file_contents):
   return dict(re_results)
 
 
-def _WaitUntilBuildIsReady(fetch_build_func, builder_name, builder_type,
-                           build_request_id, max_timeout):
+def _WaitUntilBuildIsReady(fetch_build_func, builder_name, build_request_id,
+                           max_timeout, buildbot_server_url):
   """Waits until build is produced by bisect builder on try server.
 
   Args:
     fetch_build_func: Function to check and download build from cloud storage.
     builder_name: Builder bot name on try server.
-    builder_type: Builder type, e.g. "perf" or "full". Refer to the constants
-        |fetch_build| which determine the valid values that can be passed.
     build_request_id: A unique ID of the build request posted to try server.
     max_timeout: Maximum time to wait for the build.
+    buildbot_server_url: Buildbot url to check build status.
 
   Returns:
      Downloaded archive file path if exists, otherwise None.
@@ -218,6 +218,7 @@ def _WaitUntilBuildIsReady(fetch_build_func, builder_name, builder_type,
   status_check_interval = 600
   last_status_check = time.time()
   start_time = time.time()
+
   while True:
     # Checks for build on gs://chrome-perf and download if exists.
     res = fetch_build_func()
@@ -231,12 +232,12 @@ def _WaitUntilBuildIsReady(fetch_build_func, builder_name, builder_type,
       if not build_num:
         # Get the build number on try server for the current build.
         build_num = request_build.GetBuildNumFromBuilder(
-            build_request_id, builder_name, builder_type)
+            build_request_id, builder_name, buildbot_server_url)
       # Check the status of build using the build number.
       # Note: Build is treated as PENDING if build number is not found
       # on the the try server.
       build_status, status_link = request_build.GetBuildStatus(
-          build_num, builder_name, builder_type)
+          build_num, builder_name, buildbot_server_url)
       if build_status == request_build.FAILED:
         return (None, 'Failed to produce build, log: %s' % status_link)
     elapsed_time = time.time() - start_time
@@ -647,6 +648,8 @@ def _TryJobSvnRepo(builder_type):
     return PERF_SVN_REPO_URL
   if builder_type == fetch_build.FULL_BUILDER:
     return FULL_SVN_REPO_URL
+  if builder_type == fetch_build.ANDROID_CHROME_PERF_BUILDER:
+    return ANDROID_CHROME_SVN_REPO_URL
   raise NotImplementedError('Unknown builder type "%s".' % builder_type)
 
 
@@ -814,7 +817,7 @@ class BisectPerformanceMetrics(object):
     """
     patch = None
     patch_sha = None
-    if depot != 'chromium':
+    if depot not in ('chromium', 'android-chrome'):
       # Create a DEPS patch with new revision for dependency repository.
       self._CreateDEPSPatch(depot, revision)
       create_patch = True
@@ -859,7 +862,8 @@ class BisectPerformanceMetrics(object):
         revision, builder_type=self.opts.builder_type,
         target_arch=self.opts.target_arch,
         target_platform=self.opts.target_platform,
-        deps_patch_sha=deps_patch_sha)
+        deps_patch_sha=deps_patch_sha,
+        extra_src=self.opts.extra_src)
     output_dir = os.path.abspath(build_dir)
     fetch_build_func = lambda: fetch_build.FetchFromCloudStorage(
         bucket_name, remote_path, output_dir)
@@ -908,7 +912,8 @@ class BisectPerformanceMetrics(object):
     builder_name, build_timeout = fetch_build.GetBuilderNameAndBuildTime(
         builder_type=self.opts.builder_type,
         target_arch=self.opts.target_arch,
-        target_platform=self.opts.target_platform)
+        target_platform=self.opts.target_platform,
+        extra_src=self.opts.extra_src)
 
     try:
       _StartBuilderTryJob(self.opts.builder_type, git_revision, builder_name,
@@ -918,9 +923,16 @@ class BisectPerformanceMetrics(object):
                    'Error: %s', git_revision, e)
       return None
 
+    # Get the buildbot master url to monitor build status.
+    buildbot_server_url = fetch_build.GetBuildBotUrl(
+        builder_type=self.opts.builder_type,
+        target_arch=self.opts.target_arch,
+        target_platform=self.opts.target_platform,
+        extra_src=self.opts.extra_src)
+
     archive_filename, error_msg = _WaitUntilBuildIsReady(
-        fetch_build_func, builder_name, self.opts.builder_type,
-        build_request_id, build_timeout)
+        fetch_build_func, builder_name, build_request_id, build_timeout,
+        buildbot_server_url)
     if not archive_filename:
       logging.warn('%s [revision: %s]', error_msg, git_revision)
     return archive_filename
@@ -1006,9 +1018,15 @@ class BisectPerformanceMetrics(object):
 
   def IsDownloadable(self, depot):
     """Checks if build can be downloaded based on target platform and depot."""
-    if (self.opts.target_platform in ['chromium', 'android']
+    if (self.opts.target_platform in ['chromium', 'android', 'android-chrome']
         and self.opts.builder_type):
-      return (depot == 'chromium' or
+      # In case of android-chrome platform, download archives only for
+      # android-chrome depot; for other depots such as chromium, v8, skia
+      # etc., build the binary locally.
+      if self.opts.target_platform == 'android-chrome':
+        return depot == 'android-chrome'
+      else:
+        return (depot == 'chromium' or
               'chromium' in bisect_utils.DEPOT_DEPS_NAME[depot]['from'] or
               'v8' in bisect_utils.DEPOT_DEPS_NAME[depot]['from'])
     return False
