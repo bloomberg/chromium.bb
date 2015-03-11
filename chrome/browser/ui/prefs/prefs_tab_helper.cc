@@ -352,6 +352,11 @@ class PrefWatcher : public KeyedService {
     pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
 
+#if defined(ENABLE_WEBRTC)
+    pref_change_registrar_.Add(prefs::kWebRTCMultipleRoutesEnabled,
+                               renderer_callback);
+#endif
+
 #if !defined(OS_MACOSX)
     pref_change_registrar_.Add(prefs::kFullscreenAllowed, renderer_callback);
 #endif
