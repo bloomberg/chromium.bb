@@ -251,6 +251,17 @@ if not env.Bit('coverage_enabled'):
                          ['small_tests', 'sel_ldr_tests'],
                          'run_sysconf_nprocessors_test')
 
+if not env.Bit('nacl_glibc'):
+  sysconf_cpu_feature_nexe = env.ComponentProgram('sysconf_cpu_feature_test',
+                                                  ['sysconf_cpu_feature.c'],
+                                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+  node = env.CommandSelLdrTestNacl('sysconf_cpu_feature_test.out',
+                                   sysconf_cpu_feature_nexe)
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_sysconf_cpu_feature_test')
+
 filepos_nexe = env.ComponentProgram('filepos_test',
                                     ['filepos_test.c'],
                                     EXTRA_LIBS=['imc_syscalls',

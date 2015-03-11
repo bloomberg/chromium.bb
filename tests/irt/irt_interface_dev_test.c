@@ -8,18 +8,10 @@
 #include <errno.h>
 #include <stdio.h>
 
+#include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
-
-/*
- * TODO(phosek): remove the following definition once the
- * native_client/src/trusted/service_runtime/include/sys/unistd.h
- * header file is cleaned up cleaned up to not conflict with glibc's
- * header.
- */
-#define _SC_NACL_FILE_ACCESS_ENABLED    1000
-#define _SC_NACL_LIST_MAPPINGS_ENABLED  1001
 
 /*
  * Check that the dev interfaces are not available when running in
@@ -37,7 +29,7 @@ void test_dev_interfaces(void) {
    * uknown sysconf values and always returns -1.
    */
 
-  rc = NACL_SYSCALL(sysconf)(_SC_NACL_FILE_ACCESS_ENABLED,
+  rc = NACL_SYSCALL(sysconf)(NACL_ABI__SC_NACL_FILE_ACCESS_ENABLED,
                              &nacl_file_access_enabled);
   assert(rc == 0);
 
@@ -45,7 +37,7 @@ void test_dev_interfaces(void) {
                             &filename, sizeof filename);
   assert(rc == (nacl_file_access_enabled ? sizeof filename : 0));
 
-  rc = NACL_SYSCALL(sysconf)(_SC_NACL_LIST_MAPPINGS_ENABLED,
+  rc = NACL_SYSCALL(sysconf)(NACL_ABI__SC_NACL_LIST_MAPPINGS_ENABLED,
                              &nacl_list_mappings_enabled);
   assert(rc == 0);
 

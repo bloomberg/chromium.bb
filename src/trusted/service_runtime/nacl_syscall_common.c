@@ -31,6 +31,8 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
@@ -714,6 +716,22 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
       result_value = nap->pnacl_mode;
       break;
     }
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+    case NACL_ABI__SC_NACL_CPU_FEATURE_X86: {
+      NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) nap->cpu_features;
+      if (nap->pnacl_mode) {
+        goto cleanup;
+      }
+      /*
+       * The result value is modelled after the first three bits of XCR0.
+       */
+      result_value =
+        (NaClGetCPUFeatureX86(features, NaClCPUFeatureX86_x87) << 0) |
+        (NaClGetCPUFeatureX86(features, NaClCPUFeatureX86_SSE) << 1) |
+        (NaClGetCPUFeatureX86(features, NaClCPUFeatureX86_AVX) << 2);
+      break;
+    }
+#endif
     default: {
       retval = -NACL_ABI_EINVAL;
       goto cleanup;
