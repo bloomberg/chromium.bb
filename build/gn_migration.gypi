@@ -62,7 +62,6 @@
         '../chrome/chrome.gyp:unit_tests',
         '../chrome/tools/profile_reset/jtl_compiler.gyp:jtl_compiler',
         '../components/components.gyp:network_hints_browser',
-        '../components/components.gyp:session_manager_component',
         '../components/components.gyp:webui_generator',
         '../components/components_tests.gyp:components_perftests',
         '../components/components_tests.gyp:components_unittests',

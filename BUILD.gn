@@ -212,6 +212,10 @@ group("gn_all") {
       "//sandbox/linux:sandbox_linux_unittests",
       "//sandbox/linux:sandbox_linux_jni_unittests",
     ]
+
+    if (is_chromeos || use_ash) {
+      deps += [ "//components/session_manager/core" ]
+    }
   }
 
   if (is_linux && !is_chromeos) {
@@ -240,7 +244,6 @@ group("gn_all") {
       "//chrome/tools/profile_reset:jtl_compiler",
       "//components:components_perftests",
       "//components/network_hints/browser",
-      "//components/session_manager/core",
       "//components/webui_generator",
       "//content/public/app:browser",
       "//content/public/app:child",
