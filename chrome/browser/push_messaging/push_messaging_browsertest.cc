@@ -575,9 +575,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->OnMessage(app_id.app_id_guid(), message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
+
   EXPECT_EQ(1u, notification_manager()->GetNotificationCount());
-  EXPECT_EQ(kPushMessagingForcedNotificationTag,
-            notification_manager()->GetNotificationAt(0).tag());
+  const Notification& forced_notification =
+      notification_manager()->GetNotificationAt(0);
+
+  EXPECT_EQ(kPushMessagingForcedNotificationTag, forced_notification.tag());
+  EXPECT_TRUE(forced_notification.silent());
 
   // Currently, this notification will stick around until the user or webapp
   // explicitly dismisses it (though we may change this later).

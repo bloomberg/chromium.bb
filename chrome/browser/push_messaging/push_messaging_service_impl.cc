@@ -400,6 +400,7 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
         l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
     notification_data.tag = kPushMessagingForcedNotificationTag;
     notification_data.icon = GURL();  // TODO(johnme): Better icon?
+    notification_data.silent = true;
     PlatformNotificationServiceImpl* notification_service =
         PlatformNotificationServiceImpl::GetInstance();
     notification_service->DisplayPersistentNotification(
