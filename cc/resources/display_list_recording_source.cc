@@ -112,9 +112,6 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
 
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
-
-  display_list_->CreateAndCacheSkPicture();
-
   return true;
 }
 
