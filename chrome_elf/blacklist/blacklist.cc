@@ -58,9 +58,9 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"windowsapihookdll32.dll",           // Lenovo One Key Theater.
                                         // See crbug.com/379218.
   L"windowsapihookdll64.dll",           // Lenovo One Key Theater.
-  L"virtualCamera.ax",                  // %PROGRAMFILES%\ASUS\VirtualCamera.
+  L"virtualcamera.ax",                  // %PROGRAMFILES%\ASUS\VirtualCamera.
                                         // See crbug.com/422522.
-  L"YCWebCameraSource.ax",              // CyberLink Youcam, crbug.com/424159
+  L"ycwebcamerasource.ax",              // CyberLink Youcam, crbug.com/424159
   // Keep this null pointer here to mark the end of the list.
   NULL,
 };
