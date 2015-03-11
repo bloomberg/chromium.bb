@@ -142,6 +142,7 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
   DCHECK_NE(result, net::ERR_IO_PENDING);
 
   if (result != net::OK) {
+    LOG(WARNING) << "Error from connecting socket, result=" << result;
     OnError();
     return;
   }
@@ -206,6 +207,7 @@ void P2PSocketHostTcpBase::StartTls() {
   int status = socket_->Connect(
       base::Bind(&P2PSocketHostTcpBase::ProcessTlsSslConnectDone,
                  base::Unretained(this)));
+
   if (status != net::ERR_IO_PENDING) {
     ProcessTlsSslConnectDone(status);
   }
@@ -215,6 +217,7 @@ void P2PSocketHostTcpBase::ProcessTlsSslConnectDone(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
   DCHECK_EQ(state_, STATE_TLS_CONNECTING);
   if (status != net::OK) {
+    LOG(WARNING) << "Error from connecting TLS socket, status=" << status;
     OnError();
     return;
   }
@@ -257,19 +260,24 @@ bool P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
 
   net::IPEndPoint remote_address;
 
-  // |remote_address| could be empty if it is connected through a proxy.
+  // GetPeerAddress returns ERR_NAME_NOT_RESOLVED if the socket is connected
+  // through a proxy.
   result = socket_->GetPeerAddress(&remote_address);
-  if (result < 0) {
+  if (result < 0 && result != net::ERR_NAME_NOT_RESOLVED) {
     LOG(ERROR) << "P2PSocketHostTcpBase::OnConnected: unable to get peer"
                << " address: " << result;
     OnError();
     return false;
   }
-  VLOG(1) << "Remote address: " << remote_address.ToString();
-  if (remote_address_.ip_address.address().empty() &&
-      !remote_address.address().empty()) {
-    // Save |remote_address| if address is empty.
-    remote_address_.ip_address = remote_address;
+
+  if (!remote_address.address().empty()) {
+    VLOG(1) << "Remote address: " << remote_address.ToString();
+    if (remote_address_.ip_address.address().empty()) {
+      // Save |remote_address| if address is empty.
+      remote_address_.ip_address = remote_address;
+    }
+  } else {
+    VLOG(1) << "Remote address is unknown since connection is proxied";
   }
 
   // If we are not doing TLS, we are ready to send data now.

@@ -350,17 +350,17 @@ int ProxyResolvingClientSocket::GetPeerAddress(
     NOTREACHED();
     return net::ERR_SOCKET_NOT_CONNECTED;
   }
+
   if (proxy_info_.is_direct())
     return transport_->socket()->GetPeerAddress(address);
 
   net::IPAddressNumber ip_number;
-  if (net::ParseIPLiteralToNumber(dest_host_port_pair_.host(), &ip_number)) {
-    *address = net::IPEndPoint(ip_number, dest_host_port_pair_.port());
-  } else {
-    *address =
-        net::IPEndPoint(net::IPAddressNumber(), dest_host_port_pair_.port());
+  if (!net::ParseIPLiteralToNumber(dest_host_port_pair_.host(), &ip_number)) {
+    // Do not expose the proxy IP address to the caller.
+    return net::ERR_NAME_NOT_RESOLVED;
   }
 
+  *address = net::IPEndPoint(ip_number, dest_host_port_pair_.port());
   return net::OK;
 }
 
