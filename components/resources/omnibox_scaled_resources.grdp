@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit-part>
+  <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CALCULATOR" file="omnibox/omnibox_calculator.png" />
   <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP" file="omnibox/omnibox_extension_app.png" />
   <if expr="is_ios">
     <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HISTORY" file="omnibox/ios/omnibox_history.png" />

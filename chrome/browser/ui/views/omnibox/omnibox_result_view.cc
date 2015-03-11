@@ -500,6 +500,9 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
   if (GetState() == SELECTED) {
     switch (icon) {
+      case IDR_OMNIBOX_CALCULATOR:
+        icon = IDR_OMNIBOX_CALCULATOR_SELECTED;
+        break;
       case IDR_OMNIBOX_EXTENSION_APP:
         icon = IDR_OMNIBOX_EXTENSION_APP_SELECTED;
         break;

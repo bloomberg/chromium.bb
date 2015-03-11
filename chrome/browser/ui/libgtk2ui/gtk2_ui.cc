@@ -161,6 +161,7 @@ const int kThemeImages[] = {
 // TODO(erg): Decide what to do about other icons that appear in the omnibox,
 // e.g. content settings icons.
 const int kAutocompleteImages[] = {
+  IDR_OMNIBOX_CALCULATOR,
   IDR_OMNIBOX_EXTENSION_APP,
   IDR_OMNIBOX_HTTP,
   IDR_OMNIBOX_HTTP_DARK,
@@ -1092,6 +1093,7 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     // different colors between the omnibox and the normal background area.
     // TODO(erg): Decide what to do about other icons that appear in the
     // omnibox, e.g. content settings icons.
+    case IDR_OMNIBOX_CALCULATOR:
     case IDR_OMNIBOX_EXTENSION_APP:
     case IDR_OMNIBOX_HTTP:
     case IDR_OMNIBOX_SEARCH:

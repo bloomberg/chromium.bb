@@ -42,6 +42,7 @@ struct AutocompleteMatchType {
     BOOKMARK_TITLE              = 16,  // A bookmark whose title contains the
                                        // input.
     NAVSUGGEST_PERSONALIZED     = 17,  // A personalized suggestion URL.
+    CALCULATOR                  = 18,  // A calculator result
     NUM_TYPES,
   };
 

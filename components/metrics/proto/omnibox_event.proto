@@ -220,6 +220,7 @@ message OmniboxEventProto {
       SEARCH_SUGGEST_ANSWER   = 22; // DEPRECATED. Answers no longer have their
                                     // own type but instead can be attached to
                                     // suggestions of any type.
+      CALCULATOR              = 23; // A calculator answer.
     }
     optional ResultType result_type = 2;
 
