@@ -13,9 +13,11 @@
 #include "jni/FakeServerHelper_jni.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/network_resources.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/test/fake_server/fake_server.h"
 #include "sync/test/fake_server/fake_server_network_resources.h"
 #include "sync/test/fake_server/fake_server_verifier.h"
+#include "sync/test/fake_server/unique_client_entity.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 FakeServerHelperAndroid::FakeServerHelperAndroid(JNIEnv* env, jobject obj) {
@@ -76,6 +78,32 @@ jboolean FakeServerHelperAndroid::VerifyEntityCountByTypeAndName(
     LOG(WARNING) << result.message();
 
   return result;
+}
+
+void FakeServerHelperAndroid::InjectTypedUrl(JNIEnv* env,
+                                             jobject obj,
+                                             jlong fake_server,
+                                             jstring url) {
+  fake_server::FakeServer* fake_server_ptr =
+      reinterpret_cast<fake_server::FakeServer*>(fake_server);
+
+  // TODO(pvalenzuela): Move this proto creation and serialization to the Java
+  // code once the appropriate Java objects are generated.
+  std::string native_url = base::android::ConvertJavaStringToUTF8(env, url);
+  sync_pb::EntitySpecifics entity_specifics;
+  sync_pb::TypedUrlSpecifics* typed_url_specifics =
+      entity_specifics.mutable_typed_url();
+  typed_url_specifics->set_url(native_url);
+  typed_url_specifics->set_title(native_url);
+  typed_url_specifics->add_visits(1L);
+  typed_url_specifics->add_visit_transitions(
+      sync_pb::SyncEnums_PageTransition_TYPED);
+
+  fake_server_ptr->InjectEntity(
+      fake_server::UniqueClientEntity::CreateForInjection(
+          syncer::ModelType::TYPED_URLS,
+          native_url,
+          entity_specifics));
 }
 
 // static

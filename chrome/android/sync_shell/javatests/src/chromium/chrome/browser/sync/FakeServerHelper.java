@@ -132,6 +132,21 @@ public class FakeServerHelper {
             sNativeFakeServer, count, modelType.toString(), name);
     }
 
+    /**
+     * Injects a typed URL entity into the fake Sync server.
+     *
+     * @param url the URL of the entity. This will also be used as the entity's name.
+     */
+    // TODO(pvalenzuela): Generalize this method to injectEntity by serializing an EntitySpecifics
+    // protocol buffer and passing that to the native code.
+    public void injectTypedUrl(String url) {
+        if (sNativeFakeServer == 0L) {
+            throw new IllegalStateException(
+                "useFakeServer must be called before data injection.");
+        }
+        nativeInjectTypedUrl(mNativeFakeServerHelperAndroid, sNativeFakeServer, url);
+    }
+
     // Native methods.
     private native long nativeInit();
     private native long nativeCreateFakeServer(long nativeFakeServerHelperAndroid);
@@ -142,4 +157,6 @@ public class FakeServerHelper {
     private native boolean nativeVerifyEntityCountByTypeAndName(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, int count, String modelType,
             String name);
+    private native void nativeInjectTypedUrl(
+            long nativeFakeServerHelperAndroid, long nativeFakeServer, String url);
 }

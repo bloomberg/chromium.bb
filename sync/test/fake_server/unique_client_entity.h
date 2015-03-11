@@ -8,19 +8,40 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/protocol/sync.pb.h"
 #include "sync/test/fake_server/fake_server_entity.h"
+
+namespace sync_pb {
+class EntitySpecifics;
+class SyncEntity;
+}  // namespace sync_pb
 
 namespace fake_server {
 
 // An entity that is unique per client account.
 class UniqueClientEntity : public FakeServerEntity {
  public:
+  UniqueClientEntity(const std::string& id,
+                     syncer::ModelType model_type,
+                     int64 version,
+                     const std::string& name,
+                     const std::string& client_defined_unique_tag,
+                     const sync_pb::EntitySpecifics& specifics,
+                     int64 creation_time,
+                     int64 last_modified_time);
+
   ~UniqueClientEntity() override;
 
   // Factory function for creating a UniqueClientEntity.
   static FakeServerEntity* Create(const sync_pb::SyncEntity& client_entity);
+
+  // Factory function for creating a UniqueClientEntity for use in the
+  // FakeServer injection API.
+  static scoped_ptr<FakeServerEntity> CreateForInjection(
+      syncer::ModelType model_type,
+      const std::string& name,
+      const sync_pb::EntitySpecifics& entity_specifics);
 
   // Derives an ID from a unique client tagged entity.
   static std::string EffectiveIdForClientTaggedEntity(
@@ -33,15 +54,6 @@ class UniqueClientEntity : public FakeServerEntity {
   bool IsFolder() const override;
 
  private:
-  UniqueClientEntity(const std::string& id,
-                     const syncer::ModelType& model_type,
-                     int64 version,
-                     const std::string& name,
-                     const std::string& client_defined_unique_tag,
-                     const sync_pb::EntitySpecifics& specifics,
-                     int64 creation_time,
-                     int64 last_modified_time);
-
   // These member values have equivalent fields in SyncEntity.
   std::string client_defined_unique_tag_;
   sync_pb::EntitySpecifics specifics_;

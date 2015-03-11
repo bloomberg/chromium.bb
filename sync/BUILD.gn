@@ -812,6 +812,7 @@ if (is_android) {
       ":sync_core",
       ":test_support_sync_fake_server",
       "//base",
+      "//sync/protocol:protocol",
       "//testing/gtest",
     ]
   }

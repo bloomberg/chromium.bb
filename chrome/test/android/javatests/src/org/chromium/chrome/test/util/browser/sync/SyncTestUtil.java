@@ -78,6 +78,28 @@ public final class SyncTestUtil {
     }
 
     /**
+     * Creates a {@link Map} containing the counts of each entity by model type.
+     */
+    private static Map<String, Integer> createModelTypeCount(String rawJson) throws JSONException {
+        Map<String, Integer> modelTypeCount = new HashMap<String, Integer>();
+        JSONObject aboutInfo = new JSONObject(rawJson);
+
+        JSONArray typeStatusArray = aboutInfo.getJSONArray("type_status");
+        for (int i = 0; i < typeStatusArray.length(); i++) {
+            JSONObject typeInfo = typeStatusArray.getJSONObject(i);
+            String name = typeInfo.getString("name");
+            try {
+                int total = typeInfo.getInt("num_entries");
+                modelTypeCount.put(name, total);
+            } catch (JSONException e) {
+                // This is the header entry which does not have a valid count. Don't include it in
+                // the map.
+            }
+        }
+        return modelTypeCount;
+    }
+
+    /**
      * Parses raw JSON into a map with keys Pair<String, String>. The first string in each Pair
      * corresponds to the title under which a given stat_name/stat_value is situated, and the second
      * contains the name of the actual stat. For example, a stat named "Syncing" which falls under
@@ -356,10 +378,12 @@ public final class SyncTestUtil {
         private static final String TAG = "AboutSyncInfoGetter";
         final Context mContext;
         Map<Pair<String, String>, String> mAboutInfo;
+        Map<String, Integer> mModelTypeCount;
 
         public AboutSyncInfoGetter(Context context) {
             mContext = context.getApplicationContext();
             mAboutInfo = new HashMap<Pair<String, String>, String>();
+            mModelTypeCount = new HashMap<String, Integer>();
         }
 
         @Override
@@ -367,6 +391,7 @@ public final class SyncTestUtil {
             String info = ProfileSyncService.get(mContext).getSyncInternalsInfoForTest();
             try {
                 mAboutInfo = getAboutInfoStats(info);
+                mModelTypeCount = createModelTypeCount(info);
             } catch (JSONException e) {
                 Log.w(TAG, "Unable to parse JSON message: " + info, e);
             }
@@ -374,6 +399,10 @@ public final class SyncTestUtil {
 
         public Map<Pair<String, String>, String> getAboutInfo() {
             return mAboutInfo;
+        }
+
+        public Map<String, Integer> getModelTypeCount() {
+            return mModelTypeCount;
         }
     }
 

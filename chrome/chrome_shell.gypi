@@ -72,6 +72,7 @@
       ],
       'dependencies': [
         'libchromeshell_base',
+        '../sync/sync.gyp:sync_core',
         '../sync/sync.gyp:test_support_sync_fake_server_android',
       ],
     },
