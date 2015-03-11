@@ -39,24 +39,25 @@ DeviceMotionData::Acceleration* readAccelerationArgument(v8::Local<v8::Value> va
     if (isUndefinedOrNull(value))
         return nullptr;
 
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Local<v8::Object> object;
-    if (!value->ToObject(isolate->GetCurrentContext()).ToLocal(&object))
+    if (!value->ToObject(context).ToLocal(&object))
         return nullptr;
 
-    v8::Local<v8::Value> xValue = object->Get(v8AtomicString(isolate, "x"));
-    if (xValue.IsEmpty())
+    v8::Local<v8::Value> xValue;
+    if (!object->Get(context, v8AtomicString(isolate, "x")).ToLocal(&xValue))
         return nullptr;
     bool canProvideX = !isUndefinedOrNull(xValue);
     double x = xValue->NumberValue();
 
-    v8::Local<v8::Value> yValue = object->Get(v8AtomicString(isolate, "y"));
-    if (yValue.IsEmpty())
+    v8::Local<v8::Value> yValue;
+    if (!object->Get(context, v8AtomicString(isolate, "y")).ToLocal(&yValue))
         return nullptr;
     bool canProvideY = !isUndefinedOrNull(yValue);
     double y = yValue->NumberValue();
 
-    v8::Local<v8::Value> zValue = object->Get(v8AtomicString(isolate, "z"));
-    if (zValue.IsEmpty())
+    v8::Local<v8::Value> zValue;
+    if (!object->Get(context, v8AtomicString(isolate, "z")).ToLocal(&zValue))
         return nullptr;
     bool canProvideZ = !isUndefinedOrNull(zValue);
     double z = zValue->NumberValue();
@@ -72,24 +73,25 @@ DeviceMotionData::RotationRate* readRotationRateArgument(v8::Local<v8::Value> va
     if (isUndefinedOrNull(value))
         return nullptr;
 
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Local<v8::Object> object;
-    if (!value->ToObject(isolate->GetCurrentContext()).ToLocal(&object))
+    if (!value->ToObject(context).ToLocal(&object))
         return nullptr;
 
-    v8::Local<v8::Value> alphaValue = object->Get(v8AtomicString(isolate, "alpha"));
-    if (alphaValue.IsEmpty())
+    v8::Local<v8::Value> alphaValue;
+    if (!object->Get(context, v8AtomicString(isolate, "alpha")).ToLocal(&alphaValue))
         return nullptr;
     bool canProvideAlpha = !isUndefinedOrNull(alphaValue);
     double alpha = alphaValue->NumberValue();
 
-    v8::Local<v8::Value> betaValue = object->Get(v8AtomicString(isolate, "beta"));
-    if (betaValue.IsEmpty())
+    v8::Local<v8::Value> betaValue;
+    if (!object->Get(context, v8AtomicString(isolate, "beta")).ToLocal(&betaValue))
         return nullptr;
     bool canProvideBeta = !isUndefinedOrNull(betaValue);
     double beta = betaValue->NumberValue();
 
-    v8::Local<v8::Value> gammaValue = object->Get(v8AtomicString(isolate, "gamma"));
-    if (gammaValue.IsEmpty())
+    v8::Local<v8::Value> gammaValue;
+    if (!object->Get(context, v8AtomicString(isolate, "gamma")).ToLocal(&gammaValue))
         return nullptr;
     bool canProvideGamma = !isUndefinedOrNull(gammaValue);
     double gamma = gammaValue->NumberValue();
