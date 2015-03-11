@@ -632,13 +632,6 @@ class PatchSeries(object):
         self._AddChangeToPlanWithDeps(dep, plan, gerrit_deps_seen, cq_deps_seen,
                                       limit_to=limit_to, include_cq_deps=False)
 
-    # If there are cyclic dependencies, we might have already applied this
-    # patch as part of dependency resolution. If not, apply this patch.
-    if change not in plan:
-      plan.append(change)
-
-    # Process CQ deps last, so as to avoid circular dependencies between
-    # Gerrit dependencies and CQ dependencies.
     if include_cq_deps and change not in cq_deps_seen:
       cq_deps = self._LookupUncommittedChanges(
           cq_deps, limit_to=limit_to)
@@ -649,6 +642,11 @@ class PatchSeries(object):
         if dep not in cq_deps_seen:
           self._AddChangeToPlanWithDeps(dep, plan, gerrit_deps_seen,
                                         cq_deps_seen, limit_to=limit_to)
+
+    # If there are cyclic dependencies, we might have already applied this
+    # patch as part of dependency resolution. If not, apply this patch.
+    if change not in plan:
+      plan.append(change)
 
   @_PatchWrapException
   def GetDepChangesForChange(self, change):

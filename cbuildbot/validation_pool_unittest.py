@@ -289,26 +289,21 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.mox.VerifyAll()
 
   def testGerritNumberDeps(self):
-    """Test that we can apply changes correctly and respect gerrit number deps.
-
-    This tests a simple out-of-order change where change1 depends on change2
-    but tries to get applied before change2.  What should happen is that
-    we should notice change2 is a dep of change1 and apply it first.
-    """
+    """Test that we can apply CQ-DEPEND changes in the right order."""
     series = self.GetPatchSeries()
 
     patch1, patch2, patch3 = patches = self.GetPatches(3)
 
-    self.SetPatchDeps(patch3, cq=[patch1.gerrit_number])
-    self.SetPatchDeps(patch2, cq=[patch3.gerrit_number])
     self.SetPatchDeps(patch1, cq=[patch2.id])
+    self.SetPatchDeps(patch2, cq=[patch3.gerrit_number])
+    self.SetPatchDeps(patch3, cq=[patch1.gerrit_number])
 
-    self.SetPatchApply(patch3)
-    self.SetPatchApply(patch2)
     self.SetPatchApply(patch1)
+    self.SetPatchApply(patch2)
+    self.SetPatchApply(patch3)
 
     self.mox.ReplayAll()
-    self.assertResults(series, patches, patches)
+    self.assertResults(series, patches, patches[::-1])
     self.mox.VerifyAll()
 
   def testGerritLazyMapping(self):
@@ -335,17 +330,17 @@ class TestPatchSeries(PatchSeriesTestCase):
     self._SetQuery(series, patch2, query=patch2.gerrit_number).AndReturn(patch2)
 
     self.mox.ReplayAll()
-    applied = self.assertResults(series, [patch1, patch3], [patch3, patch1])[0]
-    self.assertTrue(applied[0] is patch3)
-    self.assertTrue(applied[1] is patch1)
+    applied = self.assertResults(series, [patch1, patch3], [patch1, patch3])[0]
+    self.assertTrue(applied[0] is patch1)
+    self.assertTrue(applied[1] is patch3)
     self.mox.VerifyAll()
 
   def testCrosGerritDeps(self, cros_internal=True):
     """Test that we can apply changes correctly and respect deps.
 
     This tests a simple out-of-order change where change1 depends on change3
-    but tries to get applied before change2.  What should happen is that
-    we should notice change2 is a dep of change1 and apply it first.
+    but tries to get applied before it.  What should happen is that
+    we should notice the dependency and apply change3 first.
     """
     helper_pool = self.MakeHelper(cros_internal=cros_internal, cros=True)
     series = self.GetPatchSeries(helper_pool=helper_pool)
@@ -355,7 +350,7 @@ class TestPatchSeries(PatchSeriesTestCase):
     patch3 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
     patches = [patch1, patch2, patch3]
     if cros_internal:
-      applied_patches = [patch3, patch1, patch2]
+      applied_patches = [patch3, patch2, patch1]
     else:
       applied_patches = [patch3, patch1]
 
@@ -462,21 +457,21 @@ class TestPatchSeries(PatchSeriesTestCase):
     # will be pulled in via the CQ-DEPEND on the other patch chain.
     to_apply = [chain1[-2]] + [x for x in (chain1 + chain2) if x != chain1[-2]]
 
-    # All of the patches but chain[-1] were applied successfully.
-    for patch in chain1[:-1] + chain2:
+    # Mark all the patches but the last ones as applied successfully.
+    for patch in chain1 + chain2[:-1]:
       self.SetPatchApply(patch)
 
     if fail:
-      # Pretend that chain[-1] failed to apply.
-      res = self.SetPatchApply(chain1[-1])
+      # Pretend that chain2[-1] failed to apply.
+      res = self.SetPatchApply(chain2[-1])
       res.AndRaise(cros_patch.ApplyPatchException(chain1[-1]))
       applied = []
       failed_tot = to_apply
     else:
       # We apply the patches in this order since the last patch in chain1
       # is pulled in via CQ-DEPEND.
-      self.SetPatchApply(chain1[-1])
-      applied = chain1[:-1] + chain2 + [chain1[-1]]
+      self.SetPatchApply(chain2[-1])
+      applied = chain1[:2] + chain2[:-1] + chain1[2:] + chain2[-1:]
       failed_tot = []
 
     self.mox.ReplayAll()
@@ -544,7 +539,7 @@ class TestPatchSeries(PatchSeriesTestCase):
 
     self.mox.ReplayAll()
     self.assertResults(
-        series, patches, [patch2, patch1, patch3, patch4, patch5])
+        series, patches, [patch2, patch1, patch3, patch5, patch4])
     self.mox.VerifyAll()
 
   def testApplyStandalonePatches(self):
