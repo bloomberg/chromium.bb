@@ -787,14 +787,14 @@
             }],
             ['OS=="mac"', {
               'sources!': [
-                # LayoutThemeChromiumSkia is not used on mac since LayoutThemeChromiumMac
+                # LayoutThemeSkia is not used on mac since LayoutThemeMac
                 # does not reference the Skia code that is used by Windows, Linux and Android.
-                'layout/LayoutThemeChromiumSkia.cpp',
-                'layout/LayoutThemeChromiumSkia.h',
+                'layout/LayoutThemeSkia.cpp',
+                'layout/LayoutThemeSkia.h',
 
-                # LayoutThemeChromiumFontProvider is used by LayoutThemeChromiumSkia.
-                'layout/LayoutThemeChromiumFontProvider.cpp',
-                'layout/LayoutThemeChromiumFontProvider.h',
+                # LayoutThemeFontProvider is used by LayoutThemeSkia.
+                'layout/LayoutThemeFontProvider.cpp',
+                'layout/LayoutThemeFontProvider.h',
               ],
               'link_settings': {
                 'libraries': [
@@ -804,8 +804,8 @@
             },{ # OS!="mac"
               'sources!': [
                 'editing/SmartReplaceCF.cpp',
-                'layout/LayoutThemeChromiumMac.h',
-                'layout/LayoutThemeChromiumMac.mm',
+                'layout/LayoutThemeMac.h',
+                'layout/LayoutThemeMac.mm',
               ],
             }],
             ['OS == "android" and target_arch == "ia32" and gcc_version == 46', {
@@ -814,13 +814,13 @@
             }],
             ['OS != "linux"', {
               'sources!': [
-                'layout/LayoutThemeChromiumLinux.cpp',
-                'layout/LayoutThemeChromiumLinux.h',
+                'layout/LayoutThemeLinux.cpp',
+                'layout/LayoutThemeLinux.h',
               ],
             }],
             ['OS != "linux" and OS != "android"', {
               'sources!': [
-                'layout/LayoutThemeChromiumFontProviderLinux.cpp',
+                'layout/LayoutThemeFontProviderLinux.cpp',
               ],
             }],
             ['OS=="android"', {
@@ -831,8 +831,8 @@
               ],
             }, {
               'sources!': [
-                'layout/LayoutThemeChromiumAndroid.cpp',
-                'layout/LayoutThemeChromiumAndroid.h',
+                'layout/LayoutThemeAndroid.cpp',
+                'layout/LayoutThemeAndroid.h',
               ],
             }],
           ],
