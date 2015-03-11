@@ -447,17 +447,11 @@ chrome.sockets.tcp.CreateInfo = function() {
 chrome.sockets.tcp.create = function(properties, callback) {};
 
 
-/** @constructor */
-chrome.sockets.tcp.ConnectInfo = function() {
-  /** @type {number} */
-  this.result = 0;
-}
-
 /**
  * @param {number} socketId
  * @param {string} peerAddress
  * @param {number} peerPort
- * @param {function(chrome.sockets.tcp.ConnectInfo):void} callback
+ * @param {function(number):void} callback
  */
 chrome.sockets.tcp.connect =
     function(socketId, peerAddress, peerPort, callback) {};
@@ -484,6 +478,13 @@ chrome.sockets.tcp.send = function(socketId, data, callback) {};
  * @param {number} socketId
  */
 chrome.sockets.tcp.close = function(socketId) {};
+
+/**
+ * @param {number} socketId
+ * @param {boolean} paused
+ * @param {function(number):void=} callback
+ */
+chrome.sockets.tcp.setPaused = function(socketId, paused, callback) {};
 
 /**
  * @param {number} socketId

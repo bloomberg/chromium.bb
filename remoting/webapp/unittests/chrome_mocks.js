@@ -23,6 +23,7 @@ chrome.Event.prototype.removeListener = function(callback) {};
 
 /**
  * @constructor
+ * @extends {chrome.Event}
  */
 chromeMocks.Event = function() {
   this.listeners_ = [];

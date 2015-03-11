@@ -110,5 +110,11 @@ sinon.TestStub.prototype.restore = function() {};
 /** @param {*} a */
 sinon.TestStub.prototype.returns = function(a) {};
 
-/** @type {function(string, (string|Array<string>)=):sinon.Expectation} */
-sinon.TestStub.prototype.withArgs = function(messageName, opt_args) {};
+/** @type {function(...):sinon.Expectation} */
+sinon.TestStub.prototype.withArgs = function() {};
+
+/** @type {function(...):sinon.Expectation} */
+sinon.TestStub.prototype.onFirstCall = function() {};
+
+/** @returns {Object}  */
+sinon.createStubInstance = function (/** * */ constructor) {};

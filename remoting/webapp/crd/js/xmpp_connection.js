@@ -10,11 +10,6 @@ var remoting = remoting || {};
 /**
  * A connection to an XMPP server.
  *
- * TODO(sergeyu): Chrome provides two APIs for TCP sockets: chrome.socket and
- * chrome.sockets.tcp . chrome.socket is deprecated but it's still used here
- * because TLS support in chrome.sockets.tcp is currently broken, see
- * crbug.com/403076 .
- *
  * @constructor
  * @implements {remoting.SignalStrategy}
  */
@@ -27,12 +22,10 @@ remoting.XmppConnection = function() {
   this.onStateChangedCallback_ = null;
   /** @private {?function(Element):void} */
   this.onIncomingStanzaCallback_ = null;
-  /** @private */
-  this.socketId_ = -1;
+  /** @type {?remoting.TcpSocket} @private */
+  this.socket_ = null;
   /** @private */
   this.state_ = remoting.SignalStrategy.State.NOT_CONNECTED;
-  /** @private */
-  this.readPending_ = false;
   /** @private */
   this.sendPending_ = false;
   /** @private */
@@ -55,6 +48,11 @@ remoting.XmppConnection = function() {
 remoting.XmppConnection.prototype.setStateChangedCallback = function(
     onStateChangedCallback) {
   this.onStateChangedCallback_ = onStateChangedCallback;
+};
+
+remoting.XmppConnection.prototype.setSocketForTests = function(
+    /** remoting.TcpSocket */ socket) {
+  this.socket_ = socket;
 };
 
 /**
@@ -104,8 +102,18 @@ remoting.XmppConnection.prototype.connect =
       xmppServer, username, authToken, needHandshakeBeforeTls,
       this.sendString_.bind(this), this.startTls_.bind(this),
       this.onHandshakeDone_.bind(this), this.onError_.bind(this));
-  chrome.socket.create("tcp", {}, this.onSocketCreated_.bind(this));
   this.setState_(remoting.SignalStrategy.State.CONNECTING);
+
+  if (!this.socket_) {
+    this.socket_ = new remoting.TcpSocket();
+  }
+  var that = this;
+  this.socket_.connect(this.server_, this.port_)
+      .then(this.onSocketConnected_.bind(this))
+      .catch(function(error) {
+        that.onError_(remoting.Error.NETWORK_FAILURE,
+                      'Failed to connect to ' + that.server_ + ': ' + error);
+      });
 };
 
 /** @param {string} message */
@@ -143,42 +151,15 @@ remoting.XmppConnection.prototype.getType = function() {
 };
 
 remoting.XmppConnection.prototype.dispose = function() {
-  this.closeSocket_();
+  base.dispose(this.socket_);
+  this.socket_ = null;
   this.setState_(remoting.SignalStrategy.State.CLOSED);
 };
 
-/**
- * @param {chrome.socket.CreateInfo} createInfo
- * @private
- */
-remoting.XmppConnection.prototype.onSocketCreated_ = function(createInfo) {
+/** @private */
+remoting.XmppConnection.prototype.onSocketConnected_ = function() {
   // Check if connection was destroyed.
   if (this.state_ != remoting.SignalStrategy.State.CONNECTING) {
-    chrome.socket.destroy(createInfo.socketId);
-    return;
-  }
-
-  this.socketId_ = createInfo.socketId;
-
-  chrome.socket.connect(this.socketId_,
-                        this.server_,
-                        this.port_,
-                        this.onSocketConnected_.bind(this));
-};
-
-/**
- * @param {number} result
- * @private
- */
-remoting.XmppConnection.prototype.onSocketConnected_ = function(result) {
-  // Check if connection was destroyed.
-  if (this.state_ != remoting.SignalStrategy.State.CONNECTING) {
-    return;
-  }
-
-  if (result != 0) {
-    this.onError_(remoting.Error.NETWORK_FAILURE,
-                  'Failed to connect to ' + this.server_ + ': ' +  result);
     return;
   }
 
@@ -186,53 +167,33 @@ remoting.XmppConnection.prototype.onSocketConnected_ = function(result) {
   this.loginHandler_.start();
 
   if (!this.startTlsPending_) {
-    this.tryRead_();
+    this.socket_.startReceiving(this.onReceive_.bind(this),
+                                this.onReceiveError_.bind(this));
   }
 };
 
 /**
+ * @param {ArrayBuffer} data
  * @private
  */
-remoting.XmppConnection.prototype.tryRead_ = function() {
-  base.debug.assert(!this.readPending_);
+remoting.XmppConnection.prototype.onReceive_ = function(data) {
   base.debug.assert(this.state_ == remoting.SignalStrategy.State.HANDSHAKE ||
                     this.state_ == remoting.SignalStrategy.State.CONNECTED);
-  base.debug.assert(!this.startTlsPending_);
 
-  this.readPending_ = true;
-  chrome.socket.read(this.socketId_, this.onRead_.bind(this));
+  if (this.state_ == remoting.SignalStrategy.State.HANDSHAKE) {
+    this.loginHandler_.onDataReceived(data);
+  } else if (this.state_ == remoting.SignalStrategy.State.CONNECTED) {
+    this.streamParser_.appendData(data);
+  }
 };
 
 /**
- * @param {chrome.socket.ReadInfo} readInfo
+ * @param {number} errorCode
  * @private
  */
-remoting.XmppConnection.prototype.onRead_ = function(readInfo) {
-  base.debug.assert(this.readPending_);
-  this.readPending_ = false;
-
-  // Check if the socket was closed while reading.
-  if (this.state_ != remoting.SignalStrategy.State.HANDSHAKE &&
-      this.state_ != remoting.SignalStrategy.State.CONNECTED) {
-    return;
-  }
-
-  if (readInfo.resultCode < 0) {
-    this.onError_(remoting.Error.NETWORK_FAILURE,
-                  'Failed to receive from XMPP socket: ' + readInfo.resultCode);
-    return;
-  }
-
-  if (this.state_ == remoting.SignalStrategy.State.HANDSHAKE) {
-    this.loginHandler_.onDataReceived(readInfo.data);
-  } else if (this.state_ == remoting.SignalStrategy.State.CONNECTED) {
-    this.streamParser_.appendData(readInfo.data);
-  }
-
-  if (!this.startTlsPending_ &&
-      this.state_ != remoting.SignalStrategy.State.CLOSED) {
-    this.tryRead_();
-  }
+remoting.XmppConnection.prototype.onReceiveError_ = function(errorCode) {
+  this.onError_(remoting.Error.NETWORK_FAILURE,
+                'Failed to receive from XMPP socket: ' + errorCode);
 };
 
 /**
@@ -260,39 +221,40 @@ remoting.XmppConnection.prototype.flushSendQueue_ = function() {
     return;
   }
 
-  var data = this.sendQueue_[0]
+  var that = this;
+
   this.sendPending_ = true;
-  chrome.socket.write(this.socketId_, data, this.onWrite_.bind(this));
+  this.socket_.send(this.sendQueue_[0])
+      .then(function(/** number */ bytesSent) {
+        that.sendPending_ = false;
+        that.onSent_(bytesSent);
+      })
+      .catch(function(/** number */ error) {
+        that.sendPending_ = false;
+        that.onError_(remoting.Error.NETWORK_FAILURE,
+                      'TCP write failed with error ' + error);
+      });
 };
 
 /**
- * @param {chrome.socket.WriteInfo} writeInfo
+ * @param {number} bytesSent
  * @private
  */
-remoting.XmppConnection.prototype.onWrite_ = function(writeInfo) {
-  base.debug.assert(this.sendPending_);
-  this.sendPending_ = false;
-
-  // Ignore write() result if the socket was closed.
+remoting.XmppConnection.prototype.onSent_ = function(bytesSent) {
+  // Ignore send() result if the socket was closed.
   if (this.state_ != remoting.SignalStrategy.State.HANDSHAKE &&
       this.state_ != remoting.SignalStrategy.State.CONNECTED) {
     return;
   }
 
-  if (writeInfo.bytesWritten < 0) {
-    this.onError_(remoting.Error.NETWORK_FAILURE,
-                  'TCP write failed with error ' + writeInfo.bytesWritten);
-    return;
-  }
-
   base.debug.assert(this.sendQueue_.length > 0);
 
-  var data = this.sendQueue_[0]
-  base.debug.assert(writeInfo.bytesWritten <= data.byteLength);
-  if (writeInfo.bytesWritten == data.byteLength) {
+  var data = this.sendQueue_[0];
+  base.debug.assert(bytesSent <= data.byteLength);
+  if (bytesSent == data.byteLength) {
     this.sendQueue_.shift();
   } else {
-    this.sendQueue_[0] = data.slice(data.byteLength - writeInfo.bytesWritten);
+    this.sendQueue_[0] = data.slice(data.byteLength - bytesSent);
   }
 
   this.flushSendQueue_();
@@ -302,31 +264,25 @@ remoting.XmppConnection.prototype.onWrite_ = function(writeInfo) {
  * @private
  */
 remoting.XmppConnection.prototype.startTls_ = function() {
-  base.debug.assert(!this.readPending_);
   base.debug.assert(!this.startTlsPending_);
 
+  var that = this;
+
   this.startTlsPending_ = true;
-  chrome.socket.secure(
-      this.socketId_, {}, this.onTlsStarted_.bind(this));
+  this.socket_.startTls()
+      .then(function() {
+        that.startTlsPending_ = false;
+        that.socket_.startReceiving(that.onReceive_.bind(that),
+                                    that.onReceiveError_.bind(that));
+
+        that.loginHandler_.onTlsStarted();
+      })
+      .catch(function(/** number */ error) {
+        that.startTlsPending_ = false;
+        that.onError_(remoting.Error.NETWORK_FAILURE,
+                      'Failed to start TLS: ' + error);
+      });
 }
-
-/**
- * @param {number} resultCode
- * @private
- */
-remoting.XmppConnection.prototype.onTlsStarted_ = function(resultCode) {
-  base.debug.assert(this.startTlsPending_);
-  this.startTlsPending_ = false;
-
-  if (resultCode < 0) {
-    this.onError_(remoting.Error.NETWORK_FAILURE,
-                  'Failed to start TLS: ' + resultCode);
-    return;
-  }
-
-  this.tryRead_();
-  this.loginHandler_.onTlsStarted();
-};
 
 /**
  * @param {string} jid
@@ -368,18 +324,9 @@ remoting.XmppConnection.prototype.onParserError_ = function(text) {
 remoting.XmppConnection.prototype.onError_ = function(error, text) {
   console.error(text);
   this.error_ = error;
-  this.closeSocket_();
+  base.dispose(this.socket_);
+  this.socket_ = null;
   this.setState_(remoting.SignalStrategy.State.FAILED);
-};
-
-/**
- * @private
- */
-remoting.XmppConnection.prototype.closeSocket_ = function() {
-  if (this.socketId_ != -1) {
-    chrome.socket.destroy(this.socketId_);
-    this.socketId_ = -1;
-  }
 };
 
 /**

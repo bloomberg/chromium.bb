@@ -92,4 +92,11 @@
     }
 {% endif %}
   ]
+{% if webapp_type != 'v1' %}
+  ,"sockets": {
+    "tcp": {
+      "connect": "*"
+    }
+  }
+{% endif %}
 }

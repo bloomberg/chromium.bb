@@ -206,6 +206,7 @@
       'webapp/crd/js/dns_blackhole_checker.js',
       'webapp/crd/js/fallback_signal_strategy.js',
       'webapp/crd/js/signal_strategy.js',
+      'webapp/crd/js/tcp_socket.js',
       'webapp/crd/js/wcs_adapter.js',
       'webapp/crd/js/wcs_sandbox_container.js',
       'webapp/crd/js/xmpp_connection.js',
