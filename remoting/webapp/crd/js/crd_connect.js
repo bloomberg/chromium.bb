@@ -20,9 +20,9 @@ remoting.connectIT2Me = function() {
   var accessCode = document.getElementById('access-code-entry').value;
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   remoting.It2MeConnectFlow.start(connector, accessCode).
-    catch(function(reason){
+    catch(function(/** remoting.Error */ reason){
       var errorDiv = document.getElementById('connect-error-message');
-      l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (reason));
+      l10n.localizeElementFromTag(errorDiv, reason.tag);
       remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
   });
 };
