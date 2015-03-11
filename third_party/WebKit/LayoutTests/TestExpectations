@@ -599,16 +599,6 @@ crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyo
 # Pixel captures are currently totally broken on Android Nexus4's at the moment.
 crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure Timeout Pass ]
 
-crbug.com/464332 fast/forms/select/popup-menu-appearance-many.html [ NeedsRebaseline ]
-crbug.com/464332 fast/forms/select/popup-menu-appearance-rtl.html [ NeedsRebaseline ]
-crbug.com/464332 fast/forms/select/popup-menu-appearance-single-option.html [ NeedsRebaseline ]
-crbug.com/464332 fast/forms/select/popup-menu-appearance-styled.html [ NeedsRebaseline ]
-crbug.com/464332 fast/forms/select/popup-menu-appearance-transform.html [ NeedsRebaseline ]
-crbug.com/464332 fast/forms/select/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
-crbug.com/464332 fast/forms/select/popup-menu-appearance.html [ NeedsRebaseline ]
-crbug.com/464332 compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ NeedsRebaseline ]
-crbug.com/464332 virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ NeedsRebaseline ]
-
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/backing/no-backing-foreground-layer.html [ Timeout Pass ]
