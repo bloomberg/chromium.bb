@@ -822,6 +822,87 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SIGN_IN_SYNC" desc="Sync preference title in signed-in prefs and prefix for notification related to sync [CHAR-LIMIT=32]">
         Sync
       </message>
+      <message name="IDS_SYNC_DATA_TYPES" desc="Preference category name for customization of synced data types. [CHAR-LIMT=32]">
+        Data types
+      </message>
+      <message name="IDS_SYNC_EVERYTHING_PREF" desc="Title for preference which enables sync'ing of all data types. [CHAR-LIMT=32]">
+        Sync everything
+      </message>
+      <message name="IDS_SYNC_AUTOFILL" desc="Title for preference which enables sync'ing of autofill. [CHAR-LIMT=32]">
+        Autofill
+      </message>
+      <message name="IDS_SYNC_BOOKMARKS" desc="Title for preference which enables sync'ing of bookmarks. [CHAR-LIMT=32]">
+        Bookmarks
+      </message>
+      <message name="IDS_SYNC_HISTORY" desc="Title for preference which enables sync'ing of history data. [CHAR-LIMT=32]">
+        History
+      </message>
+      <message name="IDS_SYNC_PASSWORDS" desc="Title for preference which enables sync'ing of passwords. [CHAR-LIMT=32]">
+        Passwords
+      </message>
+      <message name="IDS_SYNC_RECENT_TABS" desc="Title for preference which enables sync'ing of open tabs. [CHAR-LIMT=32]">
+        Open tabs
+      </message>
+      <message name="IDS_SYNC_ENCRYPTION" desc="Preference category name for sync encryption. [CHAR-LIMT=32]">
+        Encryption
+      </message>
+      <message name="IDS_SYNC_MANAGE_DATA" desc="Title for link to Google Dashboard to manage sync data.">
+        Manage synced data
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_TYPE_TITLE" desc="Title of sync passphrase type dialog. [CHAR-LIMIT=24]">
+        Encryption
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_TYPE_NONE" desc="Option to encrypt sync data with no passphrase.">
+        Don’t encrypt
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_TYPE_KEYSTORE" desc="Option to encrypt only passwords, using your Google credentials.">
+        Encrypt passwords with Google credentials
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_TYPE_FROZEN" desc="Option to encrypt all data, using your Google password frozen on the substituted date.">
+        Encrypt all with Google password as of <ph name="TIME">%1$s<ex>Oct 3, 2014</ex></ph>
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_TYPE_CUSTOM" desc="Option to encrypt all sync data with a custom passphrase.">
+        Encrypt all with passphrase
+      </message>
+      <message name="IDS_SIGN_IN_GOOGLE_ACCOUNT" desc="Title of sign in account selection dialog. [CHAR-LIMIT=32]">
+        Google Account
+      </message>
+      <message name="IDS_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
+        Only someone with your passphrase can read your encrypted data. This passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to reset sync.
+      </message>
+      <message name="IDS_SYNC_DASHBOARD_URL" desc="URL for the sync dashboard." translateable="false">
+        https://www.google.com/settings/chrome/sync
+      </message>
+      <message name="IDS_SYNC_ENTER_CUSTOM_PASSPHRASE_HINT" desc="Hint for the passphrase field when user is to type in a passphrase. [CHAR-LIMIT=30]">
+        Passphrase
+      </message>
+      <message name="IDS_SYNC_ENTER_CUSTOM_PASSPHRASE_HINT_CONFIRM" desc="Hint for the passphrase confirmation field when user is to type in a passphrase. [CHAR-LIMIT=30]">
+        Confirm passphrase
+      </message>
+      <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE" desc="Prompt user to enter their custom sync password.">
+        Sign in with your Google Account:
+      </message>
+      <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_HINT" desc="Hint for the password field when user is to type in a Google Account password. [CHAR-LIMIT=30]">
+        Password
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_CANNOT_BE_BLANK" desc="Inform user that they cannot use a blank password [CHAR-LIMIT=40]">
+        This field cannot be blank
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_RESET_INSTRUCTIONS" desc="Inform the user how they can reset their passphrase if they have forgotten it.">
+        If you've forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_SYNC_PASSPHRASES_DO_NOT_MATCH" desc="Inform user that their sync password does not match.">
+        Passphrases do not match
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_INCORRECT" desc="Inform the user that the passphrase they entered for sync is incorrect. [CHAR-LIMIT=40]">
+        Incorrect passphrase
+      </message>
+      <message name="IDS_SYNC_VERIFYING" desc="Inform the user that their sync encryption information is being verified. [CHAR-LIMIT=20]">
+        Verifying…
+      </message>
+      <message name="IDS_SYNC_LOADING" desc="Preference title to let the user change their encryption password. [CHAR-LIMIT=20]">
+        Loading…
+      </message>
 
       <!-- Sync error strings -->
       <message desc="Sync error string for generic error. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GENERIC">
