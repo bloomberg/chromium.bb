@@ -184,8 +184,10 @@ void FramePainter::paintScrollCorner(GraphicsContext* context, const IntRect& co
 {
     if (m_frameView.scrollCorner()) {
         bool needsBackground = m_frameView.frame().isMainFrame();
-        if (needsBackground)
+        if (needsBackground) {
+            DrawingRecorder drawingRecorder(context, m_frameView.layoutView()->displayItemClient(), DisplayItem::ScrollbarCorner, cornerRect);
             context->fillRect(cornerRect, m_frameView.baseBackgroundColor());
+        }
         ScrollbarPainter::paintIntoRect(m_frameView.scrollCorner(), context, cornerRect.location(), LayoutRect(cornerRect));
         return;
     }
