@@ -99,78 +99,27 @@
           ],
         },
         {
-          'target_name': 'cronet_static',
-          'type': 'static_library',
+          # cronet_static_small target has reduced binary size through using
+	  # ICU alternatives which requires file and ftp support be disabled.
+          'target_name': 'cronet_static_small',
+          'defines': [
+            'USE_ICU_ALTERNATIVES_ON_ANDROID=1',
+            'DISABLE_FILE_SUPPORT=1',
+            'DISABLE_FTP_SUPPORT=1',
+          ],
           'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../third_party/icu/icu.gyp:icui18n',
-            '../third_party/icu/icu.gyp:icuuc',
-            'cronet_jni_headers',
-            'cronet_url_request_context_config_list',
-            'cronet_url_request_java',
-            'cronet_version',
-            'metrics',
+            '../net/net.gyp:net_small',
+          ],
+          'includes': [ 'cronet/cronet_static.gypi' ],
+        },
+        {
+          # cronet_static target depends on ICU and includes file and ftp support.
+          'target_name': 'cronet_static',
+          'dependencies': [
+	    '../base/base.gyp:base_i18n',
             '../net/net.gyp:net',
           ],
-          'sources': [
-            'cronet/android/chromium_url_request.cc',
-            'cronet/android/chromium_url_request.h',
-            'cronet/android/chromium_url_request_context.cc',
-            'cronet/android/chromium_url_request_context.h',
-            'cronet/android/chromium_url_request_error_list.h',
-            'cronet/android/chromium_url_request_priority_list.h',
-            'cronet/android/cronet_histogram_manager.cc',
-            'cronet/android/cronet_histogram_manager.h',
-            'cronet/android/cronet_library_loader.cc',
-            'cronet/android/cronet_library_loader.h',
-            'cronet/android/cronet_upload_data_stream_adapter.cc',
-            'cronet/android/cronet_upload_data_stream_adapter.h',
-            'cronet/android/cronet_upload_data_stream_delegate.cc',
-            'cronet/android/cronet_upload_data_stream_delegate.h',
-            'cronet/android/cronet_url_request.cc',
-            'cronet/android/cronet_url_request.h',
-            'cronet/android/cronet_url_request_adapter.cc',
-            'cronet/android/cronet_url_request_adapter.h',
-            'cronet/android/cronet_url_request_context_adapter.cc',
-            'cronet/android/cronet_url_request_context_adapter.h',
-            'cronet/android/url_request_adapter.cc',
-            'cronet/android/url_request_adapter.h',
-            'cronet/android/url_request_context_adapter.cc',
-            'cronet/android/url_request_context_adapter.h',
-            'cronet/android/wrapped_channel_upload_element_reader.cc',
-            'cronet/android/wrapped_channel_upload_element_reader.h',
-            'cronet/url_request_context_config.cc',
-            'cronet/url_request_context_config.h',
-            'cronet/url_request_context_config_list.h',
-          ],
-          'cflags': [
-            '-DLOGGING=1',
-            '-fdata-sections',
-            '-ffunction-sections',
-            '-fno-rtti',
-            '-fvisibility=hidden',
-            '-fvisibility-inlines-hidden',
-            '-Wno-sign-promo',
-            '-Wno-missing-field-initializers',
-          ],
-          'ldflags': [
-            '-llog',
-            '-landroid',
-            '-Wl,--gc-sections',
-            '-Wl,--exclude-libs,ALL'
-          ],
-          'conditions': [
-            [ 'use_icu_alternatives_on_android == 1', {
-                'dependencies!': [
-                  '../base/base.gyp:base_i18n',
-                  '../third_party/icu/icu.gyp:icui18n',
-                  '../third_party/icu/icu.gyp:icuuc',
-                ]
-              },
-            ],
-          ],
+          'includes': [ 'cronet/cronet_static.gypi' ],
         },
         {
           'target_name': 'libcronet',
@@ -179,10 +128,10 @@
             'cronet/android/cronet_jni.cc',
           ],
           'dependencies': [
-            'cronet_static',
+            'cronet_static_small',
             '../base/base.gyp:base',
-            '../net/net.gyp:net',
-            '../url/url.gyp:url_lib',
+            '../net/net.gyp:net_small',
+            '../url/url.gyp:url_lib_use_icu_alternatives_on_android',
           ],
         },
         { # cronet_stub.jar defines HttpUrlRequest interface and provides its
@@ -401,10 +350,6 @@
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
-      ],
-    }],  # OS=="android"
-    ['OS=="android" and use_icu_alternatives_on_android==1', {
-      'targets': [
         {
           'target_name': 'cronet_package',
           'type': 'none',
@@ -533,6 +478,6 @@
           ],
         },
       ],
-    }],  # OS=="android" and use_icu_alternatives_on_android==1
+    }],  # OS=="android"
   ],
 }

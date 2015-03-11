@@ -1,0 +1,64 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+{
+  # This target is included into both 'cronet_static' and 'cronet_static_small'.
+  'type': 'static_library',
+  'dependencies': [
+    '../base/base.gyp:base',
+    '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+    'cronet_jni_headers',
+    'cronet_url_request_context_config_list',
+    'cronet_url_request_java',
+    'cronet_version',
+    'metrics',
+  ],
+  'sources': [
+    'android/chromium_url_request.cc',
+    'android/chromium_url_request.h',
+    'android/chromium_url_request_context.cc',
+    'android/chromium_url_request_context.h',
+    'android/chromium_url_request_error_list.h',
+    'android/chromium_url_request_priority_list.h',
+    'android/cronet_histogram_manager.cc',
+    'android/cronet_histogram_manager.h',
+    'android/cronet_library_loader.cc',
+    'android/cronet_library_loader.h',
+    'android/cronet_upload_data_stream_adapter.cc',
+    'android/cronet_upload_data_stream_adapter.h',
+    'android/cronet_upload_data_stream_delegate.cc',
+    'android/cronet_upload_data_stream_delegate.h',
+    'android/cronet_url_request.cc',
+    'android/cronet_url_request.h',
+    'android/cronet_url_request_adapter.cc',
+    'android/cronet_url_request_adapter.h',
+    'android/cronet_url_request_context_adapter.cc',
+    'android/cronet_url_request_context_adapter.h',
+    'android/url_request_adapter.cc',
+    'android/url_request_adapter.h',
+    'android/url_request_context_adapter.cc',
+    'android/url_request_context_adapter.h',
+    'android/wrapped_channel_upload_element_reader.cc',
+    'android/wrapped_channel_upload_element_reader.h',
+    'url_request_context_config.cc',
+    'url_request_context_config.h',
+    'url_request_context_config_list.h',
+  ],
+  'cflags': [
+    '-DLOGGING=1',
+    '-fdata-sections',
+    '-ffunction-sections',
+    '-fno-rtti',
+    '-fvisibility=hidden',
+    '-fvisibility-inlines-hidden',
+    '-Wno-sign-promo',
+    '-Wno-missing-field-initializers',
+  ],
+  'ldflags': [
+    '-llog',
+    '-landroid',
+    '-Wl,--gc-sections',
+    '-Wl,--exclude-libs,ALL'
+  ],
+}
