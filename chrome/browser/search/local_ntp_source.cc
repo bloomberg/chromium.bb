@@ -184,9 +184,12 @@ void LocalNtpSource::StartDataRequest(
 
 std::string LocalNtpSource::GetMimeType(
     const std::string& path) const {
-  const std::string stripped_path = StripParameters(path);
+  const std::string& stripped_path = StripParameters(path);
+  std::string filename;
+  webui::ParsePathAndScale(GURL(GetLocalNtpPath() + stripped_path), &filename,
+                           NULL);
   for (size_t i = 0; i < arraysize(kResources); ++i) {
-    if (stripped_path == kResources[i].filename)
+    if (filename == kResources[i].filename)
       return kResources[i].mime_type;
   }
   return std::string();
