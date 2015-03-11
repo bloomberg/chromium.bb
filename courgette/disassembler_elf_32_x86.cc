@@ -157,6 +157,7 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
       TypedRVAX86* rel32_rva = new TypedRVAX86(rva);
 
       if (!rel32_rva->ComputeRelativeTarget(rel32)) {
+        delete rel32_rva;
         return false;
       }
 
