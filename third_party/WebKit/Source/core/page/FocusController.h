@@ -85,15 +85,19 @@ private:
 
     Node* findFocusableNodeDecendingDownIntoFrameDocument(WebFocusType, Node*);
 
-    // Searches through the given tree scope, starting from start node, for the next/previous selectable element that comes after/before start node.
-    // The order followed is as specified in section 17.11.1 of the HTML4 spec, which is elements with tab indexes
+    // Searches through the given tree scope, starting from start node, for the next/previous
+    // selectable element that comes after/before start node.
+    // The order followed is as specified in the HTML spec[1], which is elements with tab indexes
     // first (from lowest to highest), and then elements without tab indexes (in document order).
+    // The search algorithm also conforms the Shadow DOM spec[2], which inserts sequence in a shadow
+    // tree into its host.
     //
-    // @param start The node from which to start searching. The node after this will be focused. May be null.
-    //
+    // @param start The node from which to start searching. The node after this will be focused.
+    //        May be null.
     // @return The focus node that comes after/before start node.
     //
-    // See http://www.w3.org/TR/html4/interact/forms.html#h-17.11.1
+    // [1] https://html.spec.whatwg.org/multipage/interaction.html#sequential-focus-navigation
+    // [2] https://w3c.github.io/webcomponents/spec/shadow/#focus-navigation
     inline Node* findFocusableNode(WebFocusType, const FocusNavigationScope&, Node* start);
 
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType);
