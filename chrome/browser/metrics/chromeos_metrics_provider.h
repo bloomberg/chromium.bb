@@ -61,6 +61,9 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Writes info about paired Bluetooth devices on this system.
   void WriteBluetoothProto(metrics::SystemProfileProto* system_profile_proto);
 
+  // Record the device enrollment status.
+  void RecordEnrollmentStatus();
+
   metrics::PerfProvider perf_provider_;
 
   // Bluetooth Adapter instance for collecting information about paired devices.

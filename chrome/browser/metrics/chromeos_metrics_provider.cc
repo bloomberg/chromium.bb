@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/metrics/metrics_service.h"
@@ -90,6 +91,34 @@ void IncrementPrefValue(const char* path) {
   DCHECK(pref);
   int value = pref->GetInteger(path);
   pref->SetInteger(path, value + 1);
+}
+
+const char kEduDomain[] = ".edu";
+
+// Possible device enrollment status for a Chrome OS device.
+enum EnrollmentStatus {
+  NON_MANAGED,
+  MANAGED_EDU,
+  MANAGED_NON_EDU,
+  ERROR_GETTING_ENROLLMENT_STATUS,
+  ENROLLMENT_STATUS_MAX,
+};
+
+// Get the enrollment status.
+EnrollmentStatus GetEnrollmentStatus() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector)
+    return ERROR_GETTING_ENROLLMENT_STATUS;
+
+  if (!connector->IsEnterpriseManaged())
+    return NON_MANAGED;
+
+  std::string domain = connector->GetEnterpriseDomain();
+  if (EndsWith(domain, kEduDomain, false /* case insensitive */))
+    return MANAGED_EDU;
+
+  return MANAGED_NON_EDU;
 }
 
 }  // namespace
@@ -203,6 +232,7 @@ void ChromeOSMetricsProvider::ProvideGeneralMetrics(
       uma_proto->add_sampled_profile()->Swap(&(*iter));
     }
   }
+  RecordEnrollmentStatus();
 }
 
 void ChromeOSMetricsProvider::WriteBluetoothProto(
@@ -286,4 +316,9 @@ void ChromeOSMetricsProvider::UpdateMultiProfileUserCount(
 void ChromeOSMetricsProvider::SetBluetoothAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   adapter_ = adapter;
+}
+
+void ChromeOSMetricsProvider::RecordEnrollmentStatus() {
+  UMA_HISTOGRAM_ENUMERATION(
+      "UMA.EnrollmentStatus", GetEnrollmentStatus(), ENROLLMENT_STATUS_MAX);
 }
