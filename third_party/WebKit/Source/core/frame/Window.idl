@@ -38,7 +38,7 @@
     [Unforgeable, DoNotCheckSecurity] readonly attribute Window window;
     [Replaceable, DoNotCheckSecurity] readonly attribute Window self;
     // FIXME: document should be [Unforgeable].
-    readonly attribute Document document;
+    [Unforgeable] readonly attribute Document document;
     attribute DOMString name;
     [PutForwards=href, Unforgeable, DoNotCheckSecurity] readonly attribute Location location;
     readonly attribute History history;
