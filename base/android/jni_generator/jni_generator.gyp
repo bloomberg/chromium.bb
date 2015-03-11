@@ -7,6 +7,9 @@
     {
       'target_name': 'jni_generator_py_tests',
       'type': 'none',
+      'variables': {
+        'stamp': '<(INTERMEDIATE_DIR)/jni_generator_py_tests.stamp',
+      },
       'actions': [
         {
           'action_name': 'run_jni_generator_py_tests',
@@ -17,10 +20,11 @@
             'golden_sample_for_tests_jni.h',
           ],
           'outputs': [
-            '',
+            '<(stamp)',
           ],
           'action': [
             'python', 'jni_generator_tests.py',
+            '--stamp=<(stamp)',
           ],
         },
       ],
