@@ -2,6 +2,7 @@
 *.mk
 *.ncb
 *.opensdf
+*.orig
 *.props
 *.pyc
 *.rules
