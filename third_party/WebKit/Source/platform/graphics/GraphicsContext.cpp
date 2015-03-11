@@ -984,17 +984,6 @@ void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, s
     m_canvas->writePixels(info, pixels, rowBytes, x, y);
 }
 
-void GraphicsContext::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
-{
-    ASSERT(m_canvas);
-    // Textures are bound to the blink main-thread GrContext, which can not be
-    // used on the compositor raster thread.
-    // FIXME: Mailbox support would make this possible in the GPU-raster case.
-    ASSERT(!isRecording() || !bitmap.getTexture());
-
-    m_canvas->drawBitmap(bitmap, left, top, paint);
-}
-
 void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
     const SkRect& dst, const SkPaint* paint)
 {

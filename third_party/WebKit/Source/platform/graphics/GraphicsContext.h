@@ -258,7 +258,6 @@ public:
     // These methods write to the canvas.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
     void writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
-    void drawBitmap(const SkBitmap&, SkScalar, SkScalar, const SkPaint* = 0);
     void drawBitmapRect(const SkBitmap&, const SkRect*, const SkRect&, const SkPaint* = 0);
     void drawImage(const SkImage*, SkScalar, SkScalar, const SkPaint* = 0);
     void drawImageRect(const SkImage*, const SkRect*, const SkRect&, const SkPaint* = 0);
@@ -481,7 +480,7 @@ private:
     // Tracks the region where text is painted via the GraphicsContext.
     SkRect m_textRegion;
 
-    unsigned m_disabledState;
+    const DisabledMode m_disabledState;
 
     float m_deviceScaleFactor;
 
