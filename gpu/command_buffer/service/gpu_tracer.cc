@@ -90,7 +90,8 @@ GPUTrace::GPUTrace(scoped_refptr<Outputter> outputter,
       name_(name),
       outputter_(outputter),
       enabled_(enabled) {
-  if (gpu_timing_client->IsAvailable()) {
+  if (gpu_timing_client->IsAvailable() &&
+      gpu_timing_client->IsTimerOffsetAvailable()) {
     gpu_timer_ = gpu_timing_client->CreateGPUTimer();
   }
 }

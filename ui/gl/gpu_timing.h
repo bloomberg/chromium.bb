@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_TIMING_H_
-#define GPU_COMMAND_BUFFER_SERVICE_GPU_TIMING_H_
+#ifndef UI_GL_GPU_TIMING_H_
+#define UI_GL_GPU_TIMING_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gl/gl_export.h"
 
 // The gpu_timing classes handles the abstraction of GL GPU Timing extensions
-// into a common set of functions. Currently the different timer extensions
-// that are supported are ARB_timer_query and EXT_disjoint_timer_query.
+// into a common set of functions. Currently the different timer extensions that
+// are supported are EXT_timer_query, ARB_timer_query and
+// EXT_disjoint_timer_query.
 //
 // Explanation of Classes:
 //   GPUTiming - GPU Timing is a private class which is only owned by the
@@ -28,11 +29,11 @@
 //     obtain various GPU times they would access CreateGPUTimingClient() from
 //     their GLContext and use the returned object for their timing calls.
 //     Each virtual context as well as any other classes which need GPU times
-//     will hold one of these. When they want to time a GPU trace they will
-//     create GPUTimer objects.
-//   GPUTimer - Once a user decides to trace something, the user creates a new
+//     will hold one of these. When they want to time a set of GL commands they
+//     will create GPUTimer objects.
+//   GPUTimer - Once a user decides to time something, the user creates a new
 //     GPUTimer object from a GPUTimingClient and issue Start() and Stop() calls
-//     around various GL Calls. Once IsAvailable() returns true, the GPU times
+//     around various GL calls. Once IsAvailable() returns true, the GPU times
 //     will be available through the various time stamp related functions.
 //     The constructor and destructor of this object handles the actual
 //     creation and deletion of the GL Queries within GL.
@@ -47,6 +48,7 @@ class GPUTiming {
   enum TimerType {
     kTimerTypeInvalid = -1,
 
+    kTimerTypeEXT,      // EXT_timer_query
     kTimerTypeARB,      // ARB_timer_query
     kTimerTypeDisjoint  // EXT_disjoint_timer_query
   };
@@ -57,6 +59,7 @@ class GPUTiming {
  private:
   friend struct base::DefaultDeleter<GPUTiming>;
   friend class GLContextReal;
+  friend class GPUTimer;
   explicit GPUTiming(GLContextReal* context);
   ~GPUTiming();
 
@@ -102,6 +105,8 @@ class GL_EXPORT GPUTimingClient
 
   scoped_ptr<GPUTimer> CreateGPUTimer();
   bool IsAvailable();
+  bool IsTimerOffsetAvailable();
+
   const char* GetTimerTypeName() const;
 
   // CheckAndResetTimerErrors has to be called before reading timestamps
@@ -136,4 +141,4 @@ class GL_EXPORT GPUTimingClient
 
 }  // namespace gfx
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_TIMING_H_
+#endif  // UI_GL_GPU_TIMING_H_

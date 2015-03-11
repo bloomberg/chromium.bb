@@ -20,6 +20,8 @@ GPUTiming::GPUTiming(GLContextReal* context) {
     timer_type_ = kTimerTypeDisjoint;
   } else if (context->HasExtension("GL_ARB_timer_query")) {
     timer_type_ = kTimerTypeARB;
+  } else if (context->HasExtension("GL_EXT_timer_query")) {
+    timer_type_ = kTimerTypeEXT;
   }
 }
 
@@ -46,14 +48,35 @@ GPUTimer::~GPUTimer() {
 }
 
 void GPUTimer::Start() {
-  // GL_TIMESTAMP and GL_TIMESTAMP_EXT both have the same value.
-  glQueryCounter(queries_[0], GL_TIMESTAMP);
+  switch (gpu_timing_client_->gpu_timing_->timer_type_) {
+    case GPUTiming::kTimerTypeARB:
+    case GPUTiming::kTimerTypeDisjoint:
+      // GL_TIMESTAMP and GL_TIMESTAMP_EXT both have the same value.
+      glQueryCounter(queries_[0], GL_TIMESTAMP);
+      break;
+    case GPUTiming::kTimerTypeEXT:
+      glBeginQuery(GL_TIME_ELAPSED_EXT, queries_[0]);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void GPUTimer::End() {
   end_requested_ = true;
-  offset_ = gpu_timing_client_->CalculateTimerOffset();
-  glQueryCounter(queries_[1], GL_TIMESTAMP);
+  DCHECK(gpu_timing_client_->gpu_timing_);
+  switch (gpu_timing_client_->gpu_timing_->timer_type_) {
+    case GPUTiming::kTimerTypeARB:
+    case GPUTiming::kTimerTypeDisjoint:
+      offset_ = gpu_timing_client_->CalculateTimerOffset();
+      glQueryCounter(queries_[1], GL_TIMESTAMP);
+      break;
+    case GPUTiming::kTimerTypeEXT:
+      glEndQuery(GL_TIME_ELAPSED_EXT);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 bool GPUTimer::IsAvailable() {
@@ -61,13 +84,17 @@ bool GPUTimer::IsAvailable() {
     return false;
   }
   GLint done = 0;
-  glGetQueryObjectivARB(queries_[1], GL_QUERY_RESULT_AVAILABLE, &done);
+  glGetQueryObjectivARB(queries_[1] ? queries_[1] : queries_[0],
+                        GL_QUERY_RESULT_AVAILABLE, &done);
   return done != 0;
 }
 
 void GPUTimer::GetStartEndTimestamps(int64* start, int64* end) {
   DCHECK(start && end);
   DCHECK(IsAvailable());
+  DCHECK(gpu_timing_client_->gpu_timing_);
+  DCHECK(gpu_timing_client_->gpu_timing_->timer_type_ !=
+         GPUTiming::kTimerTypeEXT);
   GLuint64 begin_stamp = 0;
   GLuint64 end_stamp = 0;
   // TODO(dsinclair): It's possible for the timer to wrap during the start/end.
@@ -81,17 +108,44 @@ void GPUTimer::GetStartEndTimestamps(int64* start, int64* end) {
 }
 
 int64 GPUTimer::GetDeltaElapsed() {
-  int64 start = 0;
-  int64 end = 0;
-  GetStartEndTimestamps(&start, &end);
-  return end - start;
+  DCHECK(gpu_timing_client_->gpu_timing_);
+  switch (gpu_timing_client_->gpu_timing_->timer_type_) {
+    case GPUTiming::kTimerTypeARB:
+    case GPUTiming::kTimerTypeDisjoint: {
+      int64 start = 0;
+      int64 end = 0;
+      GetStartEndTimestamps(&start, &end);
+      return end - start;
+    } break;
+    case GPUTiming::kTimerTypeEXT: {
+      GLuint64 delta = 0;
+      glGetQueryObjectui64v(queries_[0], GL_QUERY_RESULT, &delta);
+      return static_cast<int64>(delta / base::Time::kNanosecondsPerMicrosecond);
+    } break;
+    default:
+      NOTREACHED();
+  }
+  return 0;
 }
 
 GPUTimer::GPUTimer(scoped_refptr<GPUTimingClient> gpu_timing_client)
     : gpu_timing_client_(gpu_timing_client) {
   DCHECK(gpu_timing_client_);
   memset(queries_, 0, sizeof(queries_));
-  glGenQueriesARB(2, queries_);
+  int queries = 0;
+  DCHECK(gpu_timing_client_->gpu_timing_);
+  switch (gpu_timing_client_->gpu_timing_->timer_type_) {
+    case GPUTiming::kTimerTypeARB:
+    case GPUTiming::kTimerTypeDisjoint:
+      queries = 2;
+      break;
+    case GPUTiming::kTimerTypeEXT:
+      queries = 1;
+      break;
+    default:
+      NOTREACHED();
+  }
+  glGenQueriesARB(queries, queries_);
 }
 
 GPUTimingClient::GPUTimingClient(GPUTiming* gpu_timing)
@@ -110,12 +164,19 @@ bool GPUTimingClient::IsAvailable() {
   return timer_type_ != GPUTiming::kTimerTypeInvalid;
 }
 
+bool GPUTimingClient::IsTimerOffsetAvailable() {
+  return timer_type_ == GPUTiming::kTimerTypeARB ||
+         timer_type_ == GPUTiming::kTimerTypeDisjoint;
+}
+
 const char* GPUTimingClient::GetTimerTypeName() const {
   switch (timer_type_) {
     case GPUTiming::kTimerTypeDisjoint:
       return "GL_EXT_disjoint_timer_query";
     case GPUTiming::kTimerTypeARB:
       return "GL_ARB_timer_query";
+    case GPUTiming::kTimerTypeEXT:
+      return "GL_EXT_timer_query";
     default:
       return "Unknown";
   }
@@ -133,6 +194,7 @@ bool GPUTimingClient::CheckAndResetTimerErrors() {
 }
 
 int64 GPUTimingClient::CalculateTimerOffset() {
+  DCHECK(IsTimerOffsetAvailable());
   if (!offset_valid_) {
     GLint64 gl_now = 0;
     glGetInteger64v(GL_TIMESTAMP, &gl_now);

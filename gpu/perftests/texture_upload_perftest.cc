@@ -244,10 +244,9 @@ class TextureUploadPerfTest : public testing::Test {
   std::vector<Measurement> UploadAndDraw(const gfx::Size& size,
                                          const std::vector<uint8>& pixels,
                                          const GLenum format) {
-    MeasurementTimers total_timers(gpu_timing_client_.get());
     GLuint texture_id = 0;
-
     MeasurementTimers tex_timers(gpu_timing_client_.get());
+    CheckNoGlError();
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -280,7 +279,6 @@ class TextureUploadPerfTest : public testing::Test {
     glFinish();
     CheckNoGlError();
     finish_timers.Record();
-    total_timers.Record();
 
     glDeleteTextures(1, &texture_id);
 
@@ -296,7 +294,6 @@ class TextureUploadPerfTest : public testing::Test {
         gpu_timing_client_->IsAvailable() &&
         gpu_timing_client_->CheckAndResetTimerErrors();
     if (!gpu_timer_errors) {
-      measurements.push_back(total_timers.GetAsMeasurement("total"));
       measurements.push_back(tex_timers.GetAsMeasurement("teximage2d"));
       measurements.push_back(draw_timers.GetAsMeasurement("drawarrays"));
       measurements.push_back(finish_timers.GetAsMeasurement("finish"));

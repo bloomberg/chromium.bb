@@ -198,7 +198,10 @@ class BaseGpuTest : public GpuServiceTest {
     g_fakeCPUTime = 0;
     const char* gl_version = "3.2";
     const char* extensions = "";
-    if (GetTimerType() == gfx::GPUTiming::kTimerTypeDisjoint) {
+    if (GetTimerType() == gfx::GPUTiming::kTimerTypeEXT) {
+      gl_version = "opengl 2.1";
+      extensions = "GL_EXT_timer_query";
+    } else if (GetTimerType() == gfx::GPUTiming::kTimerTypeDisjoint) {
       gl_version = "opengl es 3.0";
       extensions = "GL_EXT_disjoint_timer_query";
     } else if (GetTimerType() == gfx::GPUTiming::kTimerTypeARB) {
@@ -231,7 +234,8 @@ class BaseGpuTest : public GpuServiceTest {
   }
 
   void ExpectTraceQueryMocks() {
-    if (GetTimerType() != gfx::GPUTiming::kTimerTypeInvalid) {
+    if (gpu_timing_client_->IsAvailable() &&
+        gpu_timing_client_->IsTimerOffsetAvailable()) {
       // Delegate query APIs used by GPUTrace to a GlFakeQueries
       EXPECT_CALL(*gl_, GenQueriesARB(2, NotNull())).Times(AtLeast(1))
           .WillRepeatedly(
@@ -293,7 +297,8 @@ class BaseGpuTest : public GpuServiceTest {
                             const std::string& name, int64 expect_start_time,
                             int64 expect_end_time) {
     ExpectOutputterBeginMocks(outputter, category, name);
-    bool valid_timer = GetTimerType() != gfx::GPUTiming::kTimerTypeInvalid;
+    bool valid_timer = gpu_timing_client_->IsAvailable() &&
+                       gpu_timing_client_->IsTimerOffsetAvailable();
     ExpectOutputterEndMocks(outputter, category, name, expect_start_time,
                             expect_end_time, valid_timer);
   }
@@ -478,7 +483,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
       std::string source_category = category_name + num_char;
       std::string source_trace_name = trace_name + num_char;
 
-      bool valid_timer = GetTimerType() != gfx::GPUTiming::kTimerTypeInvalid;
+      bool valid_timer = gpu_timing_client_->IsAvailable() &&
+                         gpu_timing_client_->IsTimerOffsetAvailable();
       ExpectOutputterEndMocks(outputter_ref_.get(), source_category,
                               source_trace_name, expect_start_time + i,
                               expect_end_time + i, valid_timer);
@@ -565,6 +571,11 @@ class InvalidTimerTracerTest : public BaseGpuTracerTest {
       : BaseGpuTracerTest(gfx::GPUTiming::kTimerTypeInvalid) {}
 };
 
+class GpuEXTTimerTracerTest : public BaseGpuTracerTest {
+ public:
+  GpuEXTTimerTracerTest() : BaseGpuTracerTest(gfx::GPUTiming::kTimerTypeEXT) {}
+};
+
 class GpuARBTimerTracerTest : public BaseGpuTracerTest {
  public:
   GpuARBTimerTracerTest()
@@ -581,6 +592,10 @@ TEST_F(InvalidTimerTracerTest, InvalidTimerBasicTracerTest) {
   DoBasicTracerTest();
 }
 
+TEST_F(GpuEXTTimerTracerTest, EXTTimerBasicTracerTest) {
+  DoBasicTracerTest();
+}
+
 TEST_F(GpuARBTimerTracerTest, ARBTimerBasicTracerTest) {
   DoBasicTracerTest();
 }
@@ -590,6 +605,10 @@ TEST_F(GpuDisjointTimerTracerTest, DisjointTimerBasicTracerTest) {
 }
 
 TEST_F(InvalidTimerTracerTest, InvalidTimerTracerMarkersTest) {
+  DoTracerMarkersTest();
+}
+
+TEST_F(GpuEXTTimerTracerTest, EXTTimerTracerMarkersTest) {
   DoTracerMarkersTest();
 }
 
