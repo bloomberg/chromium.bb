@@ -8,8 +8,10 @@
 #include "skia/ext/benchmarking_canvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
+#include "third_party/skia/include/core/SkTLazy.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
@@ -406,6 +408,47 @@ scoped_ptr<base::Value> AsListValue(const T array[], size_t count) {
   return val.Pass();
 }
 
+class OverdrawXfermode : public SkXfermode {
+public:
+  SkPMColor xferColor(SkPMColor src, SkPMColor dst) const override {
+    // This table encodes the color progression of the overdraw visualization
+    static const SkPMColor gTable[] = {
+      SkPackARGB32(0x00, 0x00, 0x00, 0x00),
+      SkPackARGB32(0xFF, 128, 158, 255),
+      SkPackARGB32(0xFF, 170, 185, 212),
+      SkPackARGB32(0xFF, 213, 195, 170),
+      SkPackARGB32(0xFF, 255, 192, 127),
+      SkPackARGB32(0xFF, 255, 185, 85),
+      SkPackARGB32(0xFF, 255, 165, 42),
+      SkPackARGB32(0xFF, 255, 135, 0),
+      SkPackARGB32(0xFF, 255,  95, 0),
+      SkPackARGB32(0xFF, 255,  50, 0),
+      SkPackARGB32(0xFF, 255,  0, 0)
+    };
+
+    size_t idx;
+    if (SkColorGetR(dst) < 64) { // 0
+      idx = 0;
+    } else if (SkColorGetG(dst) < 25) { // 10
+      idx = 9;  // cap at 9 for upcoming increment
+    } else if ((SkColorGetB(dst) + 21) / 42 > 0) { // 1-6
+      idx = 7 - (SkColorGetB(dst) + 21) / 42;
+    } else { // 7-9
+      idx = 10 - (SkColorGetG(dst) + 22) / 45;
+    }
+
+    ++idx;
+    SkASSERT(idx < SK_ARRAY_COUNT(gTable));
+
+    return gTable[idx];
+  }
+
+  Factory getFactory() const override { return NULL; }
+#ifndef SK_IGNORE_TO_STRING
+  void toString(SkString* str) const override { str->set("OverdrawXfermode"); }
+#endif
+};
+
 } // namespace
 
 namespace skia {
@@ -416,7 +459,10 @@ public:
          const SkPaint* paint = nullptr)
       : canvas_(canvas)
       , op_record_(new base::DictionaryValue())
-      , op_params_(new base::ListValue()) {
+      , op_params_(new base::ListValue())
+      // AutoOp objects are always scoped within draw call frames,
+      // so the paint is guaranteed to be valid for their lifetime.
+      , paint_(paint) {
 
     DCHECK(canvas);
     DCHECK(op_name);
@@ -426,6 +472,14 @@ public:
 
     if (paint)
       this->addParam("paint", AsValue(*paint));
+
+    if (canvas->flags_ & kOverdrawVisualization_Flag) {
+      DCHECK(canvas->overdraw_xfermode_);
+
+      paint_ = paint ? filtered_paint_.set(*paint) : filtered_paint_.init();
+      filtered_paint_.get()->setXfermode(canvas->overdraw_xfermode_.get());
+      filtered_paint_.get()->setAntiAlias(false);
+    }
 
     start_ticks_ = base::TimeTicks::Now();
   }
@@ -444,11 +498,16 @@ public:
     op_params_->Append(param.release());
   }
 
+  const SkPaint* paint() const { return paint_; }
+
 private:
   BenchmarkingCanvas* canvas_;
   base::DictionaryValue* op_record_;
   base::ListValue* op_params_;
   base::TimeTicks start_ticks_;
+
+  const SkPaint* paint_;
+  SkTLazy<SkPaint> filtered_paint_;
 };
 
 BenchmarkingCanvas::BenchmarkingCanvas(SkCanvas* canvas, unsigned flags)
@@ -456,6 +515,9 @@ BenchmarkingCanvas::BenchmarkingCanvas(SkCanvas* canvas, unsigned flags)
                 canvas->imageInfo().height())
     , flags_(flags) {
   addCanvas(canvas);
+
+  if (flags & kOverdrawVisualization_Flag)
+    overdraw_xfermode_ = AdoptRef(new OverdrawXfermode);
 }
 
 BenchmarkingCanvas::~BenchmarkingCanvas() {
@@ -493,12 +555,10 @@ SkCanvas::SaveLayerStrategy BenchmarkingCanvas::willSaveLayer(const SkRect* rect
   AutoOp op(this, "SaveLayer", paint);
   if (rect)
     op.addParam("bounds", AsValue(*rect));
-  if (paint)
-    op.addParam("paint", AsValue(*paint));
   if (flags)
     op.addParam("flags", AsValue(flags));
 
-  return INHERITED::willSaveLayer(rect, paint, flags);
+  return INHERITED::willSaveLayer(rect, op.paint(), flags);
 }
 
 void BenchmarkingCanvas::willRestore() {
@@ -566,7 +626,7 @@ void BenchmarkingCanvas::onClipRegion(const SkRegion& region,
 void BenchmarkingCanvas::onDrawPaint(const SkPaint& paint) {
   AutoOp op(this, "DrawPaint", &paint);
 
-  INHERITED::onDrawPaint(paint);
+  INHERITED::onDrawPaint(*op.paint());
 }
 
 void BenchmarkingCanvas::onDrawPoints(PointMode mode, size_t count,
@@ -575,28 +635,28 @@ void BenchmarkingCanvas::onDrawPoints(PointMode mode, size_t count,
   op.addParam("mode", AsValue(mode));
   op.addParam("points", AsListValue(pts, count));
 
-  INHERITED::onDrawPoints(mode, count, pts, paint);
+  INHERITED::onDrawPoints(mode, count, pts, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint) {
   AutoOp op(this, "DrawRect", &paint);
   op.addParam("rect", AsValue(rect));
 
-  INHERITED::onDrawRect(rect, paint);
+  INHERITED::onDrawRect(rect, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawOval(const SkRect& rect, const SkPaint& paint) {
   AutoOp op(this, "DrawOval", &paint);
   op.addParam("rect", AsValue(rect));
 
-  INHERITED::onDrawOval(rect, paint);
+  INHERITED::onDrawOval(rect, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawRRect(const SkRRect& rrect, const SkPaint& paint) {
   AutoOp op(this, "DrawRRect", &paint);
   op.addParam("rrect", AsValue(rrect));
 
-  INHERITED::onDrawRRect(rrect, paint);
+  INHERITED::onDrawRRect(rrect, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawDRRect(const SkRRect& outer, const SkRRect& inner,
@@ -605,14 +665,14 @@ void BenchmarkingCanvas::onDrawDRRect(const SkRRect& outer, const SkRRect& inner
   op.addParam("outer", AsValue(outer));
   op.addParam("inner", AsValue(inner));
 
-  INHERITED::onDrawDRRect(outer, inner, paint);
+  INHERITED::onDrawDRRect(outer, inner, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
   AutoOp op(this, "DrawPath", &paint);
   op.addParam("path", AsValue(path));
 
-  INHERITED::onDrawPath(path, paint);
+  INHERITED::onDrawPath(path, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawPicture(const SkPicture* picture,
@@ -624,7 +684,7 @@ void BenchmarkingCanvas::onDrawPicture(const SkPicture* picture,
   if (matrix)
     op.addParam("matrix", AsValue(*matrix));
 
-  INHERITED::onDrawPicture(picture, matrix, paint);
+  INHERITED::onDrawPicture(picture, matrix, op.paint());
 }
 
 void BenchmarkingCanvas::onDrawBitmap(const SkBitmap& bitmap,
@@ -636,7 +696,7 @@ void BenchmarkingCanvas::onDrawBitmap(const SkBitmap& bitmap,
   op.addParam("left", AsValue(left));
   op.addParam("top", AsValue(top));
 
-  INHERITED::onDrawBitmap(bitmap, left, top, paint);
+  INHERITED::onDrawBitmap(bitmap, left, top, op.paint());
 }
 
 void BenchmarkingCanvas::onDrawBitmapRect(const SkBitmap& bitmap,
@@ -650,7 +710,7 @@ void BenchmarkingCanvas::onDrawBitmapRect(const SkBitmap& bitmap,
     op.addParam("src", AsValue(*src));
   op.addParam("dst", AsValue(dst));
 
-  INHERITED::onDrawBitmapRect(bitmap, src, dst, paint, flags);
+  INHERITED::onDrawBitmapRect(bitmap, src, dst, op.paint(), flags);
 }
 
 void BenchmarkingCanvas::onDrawImage(const SkImage* image,
@@ -663,7 +723,7 @@ void BenchmarkingCanvas::onDrawImage(const SkImage* image,
   op.addParam("left", AsValue(left));
   op.addParam("top", AsValue(top));
 
-  INHERITED::onDrawImage(image, left, top, paint);
+  INHERITED::onDrawImage(image, left, top, op.paint());
 }
 
 void BenchmarkingCanvas::onDrawImageRect(const SkImage* image, const SkRect* src,
@@ -675,7 +735,7 @@ void BenchmarkingCanvas::onDrawImageRect(const SkImage* image, const SkRect* src
     op.addParam("src", AsValue(*src));
   op.addParam("dst", AsValue(dst));
 
-  INHERITED::onDrawImageRect(image, src, dst, paint);
+  INHERITED::onDrawImageRect(image, src, dst, op.paint());
 }
 
 void BenchmarkingCanvas::onDrawBitmapNine(const SkBitmap& bitmap,
@@ -687,7 +747,7 @@ void BenchmarkingCanvas::onDrawBitmapNine(const SkBitmap& bitmap,
   op.addParam("center", AsValue(SkRect::Make(center)));
   op.addParam("dst", AsValue(dst));
 
-  INHERITED::onDrawBitmapNine(bitmap, center, dst, paint);
+  INHERITED::onDrawBitmapNine(bitmap, center, dst, op.paint());
 }
 
 void BenchmarkingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top,
@@ -697,7 +757,7 @@ void BenchmarkingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top,
   op.addParam("left", AsValue(SkIntToScalar(left)));
   op.addParam("top", AsValue(SkIntToScalar(top)));
 
-  INHERITED::onDrawSprite(bitmap, left, top, paint);
+  INHERITED::onDrawSprite(bitmap, left, top, op.paint());
 }
 
 void BenchmarkingCanvas::onDrawText(const void* text, size_t byteLength,
@@ -708,7 +768,7 @@ void BenchmarkingCanvas::onDrawText(const void* text, size_t byteLength,
   op.addParam("x", AsValue(x));
   op.addParam("y", AsValue(y));
 
-  INHERITED::onDrawText(text, byteLength, x, y, paint);
+  INHERITED::onDrawText(text, byteLength, x, y, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawPosText(const void* text, size_t byteLength,
@@ -719,7 +779,7 @@ void BenchmarkingCanvas::onDrawPosText(const void* text, size_t byteLength,
   op.addParam("count", AsValue(SkIntToScalar(count)));
   op.addParam("pos", AsListValue(pos, count));
 
-  INHERITED::onDrawPosText(text, byteLength, pos, paint);
+  INHERITED::onDrawPosText(text, byteLength, pos, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawPosTextH(const void* text, size_t byteLength,
@@ -732,7 +792,7 @@ void BenchmarkingCanvas::onDrawPosTextH(const void* text, size_t byteLength,
   op.addParam("count", AsValue(SkIntToScalar(count)));
   op.addParam("pos", AsListValue(xpos, count));
 
-  INHERITED::onDrawPosTextH(text, byteLength, xpos, constY, paint);
+  INHERITED::onDrawPosTextH(text, byteLength, xpos, constY, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawTextOnPath(const void* text, size_t byteLength,
@@ -744,7 +804,7 @@ void BenchmarkingCanvas::onDrawTextOnPath(const void* text, size_t byteLength,
   if (matrix)
     op.addParam("matrix", AsValue(*matrix));
 
-  INHERITED::onDrawTextOnPath(text, byteLength, path, matrix, paint);
+  INHERITED::onDrawTextOnPath(text, byteLength, path, matrix, *op.paint());
 }
 
 void BenchmarkingCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
@@ -755,7 +815,7 @@ void BenchmarkingCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkSc
   op.addParam("x", AsValue(x));
   op.addParam("y", AsValue(y));
 
-  INHERITED::onDrawTextBlob(blob, x, y, paint);
+  INHERITED::onDrawTextBlob(blob, x, y, *op.paint());
 }
 
 } // namespace skia

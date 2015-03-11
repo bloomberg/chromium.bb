@@ -6,7 +6,10 @@
 #define SKIA_EXT_BENCHMARKING_CANVAS_H_
 
 #include "base/values.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
+
+class SkXfermode;
 
 namespace skia {
 
@@ -16,8 +19,6 @@ public:
   ~BenchmarkingCanvas() override;
 
   enum Flags {
-      // TODO(fmalita): add overdraw visualization support
-      // (http://crbug.com/461534)
       kOverdrawVisualization_Flag = 0x01,
   };
 
@@ -85,6 +86,7 @@ private:
 
   base::ListValue op_records_;
   unsigned flags_;
+  RefPtr<SkXfermode> overdraw_xfermode_;
 };
 
 }
