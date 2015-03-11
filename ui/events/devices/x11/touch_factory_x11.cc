@@ -160,7 +160,22 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   if (event->evtype == XI_TouchBegin ||
       event->evtype == XI_TouchUpdate ||
       event->evtype == XI_TouchEnd) {
-    return !touch_events_disabled_ && IsTouchDevice(xiev->deviceid);
+    // Since SetupXI2ForXWindow() selects events from all devices, for a
+    // touchscreen attached to a master pointer device, X11 sends two
+    // events for each touch: one from the slave (deviceid == the id of
+    // the touchscreen device), and one from the master (deviceid == the
+    // id of the master pointer device). Instead of processing both
+    // events, discard the event that comes from the slave, and only
+    // allow processing the event coming from the master.
+    // For a 'floating' touchscreen device, X11 sends only one event for
+    // each touch, with both deviceid and sourceid set to the id of the
+    // touchscreen device.
+    bool is_from_master_or_float = touch_device_list_[xiev->deviceid];
+    bool is_from_slave_device = !is_from_master_or_float
+        && xiev->sourceid == xiev->deviceid;
+    return !touch_events_disabled_ &&
+           IsTouchDevice(xiev->deviceid) &&
+           !is_from_slave_device;
   }
 
   // Make sure only key-events from the virtual core keyboard are processed.

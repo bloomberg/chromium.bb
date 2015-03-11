@@ -32,6 +32,9 @@ int GrabPointer(XID window, bool owner_events, ::Cursor cursor) {
     XISetMask(mask, XI_ButtonPress);
     XISetMask(mask, XI_ButtonRelease);
     XISetMask(mask, XI_Motion);
+    XISetMask(mask, XI_TouchBegin);
+    XISetMask(mask, XI_TouchUpdate);
+    XISetMask(mask, XI_TouchEnd);
     XIEventMask evmask;
     evmask.mask_len = sizeof(mask);
     evmask.mask = mask;
