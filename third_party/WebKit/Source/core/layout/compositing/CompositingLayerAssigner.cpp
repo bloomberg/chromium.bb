@@ -169,6 +169,9 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     if (layer->hasFilter() || compositingInputs.filterAncestor != squashingLayerCompositingInputs.filterAncestor)
         return CompositingReasonSquashingFilterMismatch;
 
+    if (layer->layoutObject()->style()->position() == FixedPosition)
+        return CompositingReasonSquashingPositionFixedIsDisallowed;
+
     return CompositingReasonNone;
 }
 

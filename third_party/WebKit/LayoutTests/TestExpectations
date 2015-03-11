@@ -193,6 +193,10 @@ crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
+crbug.com/462523 compositing/layer-creation/fixed-position-and-transform.html [ NeedsRebaseline ]
+crbug.com/462523 virtual/slimmingpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ NeedsRebaseline ]
+crbug.com/462523 fast/repaint/fixed-element-repaint-after-compositing-update.html [ NeedsRebaseline ]
+
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
 crbug.com/442632 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
