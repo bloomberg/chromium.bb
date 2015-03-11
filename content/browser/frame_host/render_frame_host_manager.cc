@@ -1288,23 +1288,27 @@ int RenderFrameHostManager::CreateOpenerRenderViewsIfNeeded(
     SiteInstance* new_instance,
     int* create_render_frame_flags) {
   int opener_route_id = MSG_ROUTING_NONE;
+  // Only create opener proxies if they are in the same BrowsingInstance.
   if (new_instance->IsRelatedSiteInstance(old_instance)) {
     opener_route_id =
         delegate_->CreateOpenerRenderViewsForRenderManager(new_instance);
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSitePerProcess)) {
-      // Ensure that the frame tree has RenderFrameProxyHosts for the new
-      // SiteInstance in all nodes except the current one.
-      frame_tree_node_->frame_tree()->CreateProxiesForSiteInstance(
-          frame_tree_node_, new_instance);
-      // RenderFrames in different processes from their parent RenderFrames
-      // in the frame tree require RenderWidgets for rendering and processing
-      // input events.
-      if (frame_tree_node_->parent() &&
-          frame_tree_node_->parent()->current_frame_host()->GetSiteInstance() !=
-              new_instance)
-        *create_render_frame_flags |= CREATE_RF_NEEDS_RENDER_WIDGET_HOST;
-    }
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // Ensure that the frame tree has RenderFrameProxyHosts for the new
+    // SiteInstance in all nodes except the current one.  We do this for all
+    // frames in the tree, whether they are in the same BrowsingInstance or not.
+    // We will still check whether two frames are in the same BrowsingInstance
+    // before we allow them to interact (e.g., postMessage).
+    frame_tree_node_->frame_tree()->CreateProxiesForSiteInstance(
+        frame_tree_node_, new_instance);
+    // RenderFrames in different processes from their parent RenderFrames
+    // in the frame tree require RenderWidgets for rendering and processing
+    // input events.
+    if (frame_tree_node_->parent() &&
+        frame_tree_node_->parent()->current_frame_host()->GetSiteInstance() !=
+            new_instance)
+      *create_render_frame_flags |= CREATE_RF_NEEDS_RENDER_WIDGET_HOST;
   }
   return opener_route_id;
 }
