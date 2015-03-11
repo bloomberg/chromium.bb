@@ -103,6 +103,7 @@ table_files = \
 	fi2.ctb \
 	fi-fi-8dot.ctb \
 	fi-fi.ctb \
+	fi.utb \
 	fr-2007.ctb \
 	fr-bfu-comp6.utb \
 	fr-bfu-comp8.utb \
