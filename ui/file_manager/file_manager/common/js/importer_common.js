@@ -60,16 +60,15 @@ importer.Destination = {
 };
 
 /**
- * Returns true if the entry is a media file (and a descendant of a DCIM dir).
+ * Returns true if the entry is a media file type.
  *
  * @param {Entry} entry
  * @return {boolean}
  */
-importer.isMediaEntry = function(entry) {
+importer.isEligibleType = function(entry) {
   return !!entry &&
       entry.isFile &&
-      FileType.isImageOrVideo(entry) &&
-      importer.isBeneathMediaDir(entry);
+      FileType.isType(entry, ['image', 'raw', 'video']);
 };
 
 /**
@@ -104,13 +103,13 @@ importer.isEligibleVolume = function(volumeInfo) {
  */
 importer.isEligibleEntry = function(volumeInfoProvider, entry) {
   console.assert(volumeInfoProvider !== null);
-  if (importer.isMediaEntry(entry)) {
+  if (importer.isEligibleType(entry)) {
     // MissingNo knows no bounds....like volume type checks.
     if (entry.fullPath.toUpperCase().indexOf('/MISSINGNO/') >= 0) {
       return true;
     } else {
-      var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
-      return importer.isEligibleVolume(volumeInfo);
+      return importer.isBeneathMediaDir(entry) &&
+          importer.isEligibleVolume(volumeInfoProvider.getVolumeInfo(entry));
     }
   }
   return false;

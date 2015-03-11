@@ -241,7 +241,7 @@ importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
 importer.DefaultMediaScanner.prototype.onUniqueFileFound_ =
     function(scan, entry) {
 
-  if (!FileType.isImageOrVideo(entry)) {
+  if (!importer.isEligibleType(entry)) {
     return Promise.resolve();
   }
 

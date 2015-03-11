@@ -42,6 +42,40 @@ FileType.types = [
     pattern: /\.tiff?$/i
   },
 
+  // Raw
+  {
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'ARW',
+    pattern: /\.arw?$/i
+  },
+  {
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'CR2',
+    pattern: /\.cr2?$/i
+  },
+  {
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'DNG',
+    pattern: /\.dng?$/i
+  },
+  {
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'NEF',
+    pattern: /\.nef?$/i
+  },
+  {
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'NRW',
+    pattern: /\.nrw?$/i
+  },
+  {
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'ORW',
+    pattern: /\.orf?$/i
+  },
+  {
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'RAF',
+    pattern: /\.raf?$/i
+  },
+  {
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'RW2',
+    pattern: /\.rw2?$/i
+  },
+
   // Video
   {
     type: 'video', name: 'VIDEO_FILE_TYPE', subtype: '3GP',
@@ -310,6 +344,13 @@ FileType.isVideo = function(entry) {
   return FileType.getMediaType(entry) === 'video';
 };
 
+/**
+ * @param {Entry} entry Reference to the file.
+ * @return {boolean} True if raw file.
+ */
+FileType.isRaw = function(entry) {
+  return FileType.getMediaType(entry) === 'raw';
+};
 
 /**
  * Files with more pixels won't have preview.
@@ -317,8 +358,18 @@ FileType.isVideo = function(entry) {
  * @return {boolean} True if image or video.
  */
 FileType.isImageOrVideo = function(entry) {
+  return FileType.isType(entry, ['image', 'video']);
+};
+
+/**
+ * Files with more pixels won't have preview.
+ * @param {Entry} entry Reference to the file.
+ * @param {!Array<string>} types
+ * @return {boolean} True if type is in specified set
+ */
+FileType.isType = function(entry, types) {
   var type = FileType.getMediaType(entry);
-  return type === 'image' || type === 'video';
+  return !!type && types.indexOf(type) !== -1;
 };
 
 /**

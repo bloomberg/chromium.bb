@@ -18,6 +18,9 @@ var driveVolume;
 var cameraFileEntry;
 
 /** @type {!MockFileEntry} */
+var rawFileEntry;
+
+/** @type {!MockFileEntry} */
 var sdFileEntry;
 
 /** @type {!MockFileEntry} */
@@ -33,6 +36,7 @@ loadTimeData.data = {
 function setUp() {
 
   new MockChromeStorageAPI();
+  importer.setupTestLogger();
 
   var cameraFileSystem = new MockFileSystem(
       'camera-fs', 'filesystem:camera-123');
@@ -52,13 +56,17 @@ function setUp() {
   driveVolume = volumeManager.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DRIVE);
   cameraFileEntry = createFileEntry(cameraVolume, '/DCIM/poodles.jpg');
+  rawFileEntry = createFileEntry(cameraVolume, '/DCIM/poodles.nef');
   sdFileEntry = createFileEntry(sdVolume, '/dcim/a-z/IMG1234.jpg');
   driveFileEntry = createFileEntry(driveVolume, '/someotherfile.jpg');
 }
 
-function testIsMediaEntry() {
-  assertTrue(importer.isMediaEntry(cameraFileEntry));
-  assertFalse(importer.isMediaEntry(driveFileEntry));
+function testIsEligibleType() {
+  assertTrue(importer.isEligibleType(cameraFileEntry));
+  assertTrue(importer.isEligibleType(rawFileEntry));
+
+  // Agnostic to the location of the entry.
+  assertTrue(importer.isEligibleType(driveFileEntry));
 }
 
 function testIsEligibleVolume() {
@@ -70,6 +78,7 @@ function testIsEligibleVolume() {
 function testIsEligibleEntry() {
   assertTrue(importer.isEligibleEntry(volumeManager, cameraFileEntry));
   assertTrue(importer.isEligibleEntry(volumeManager, sdFileEntry));
+  assertTrue(importer.isEligibleEntry(volumeManager, rawFileEntry));
   assertFalse(importer.isEligibleEntry(volumeManager, driveFileEntry));
 }
 
@@ -288,3 +297,4 @@ function createDirectoryEntry(volume, path) {
   entry.volumeId = volume.volumeId;
   return entry;
 }
+
