@@ -495,7 +495,7 @@ class IsolateTempdirBase(unittest.TestCase):
   def setUp(self):
     super(IsolateTempdirBase, self).setUp()
     self.tempdir = file_path.get_native_path_case(
-        unicode(tempfile.mkdtemp(prefix='isolate_smoke_')))
+        unicode(tempfile.mkdtemp(prefix=u'isolate_smoke_')))
     self.isolated = os.path.join(self.tempdir, 'isolate_smoke_test.isolated')
     self.isolate_dir = os.path.join(self.tempdir, 'isolate')
 

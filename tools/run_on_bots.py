@@ -52,7 +52,7 @@ def archive(isolate_server, script):
       'files': [base_script],
     },
   }
-  tempdir = tempfile.mkdtemp(prefix='run_on_bots')
+  tempdir = tempfile.mkdtemp(prefix=u'run_on_bots')
   try:
     isolate_file = os.path.join(tempdir, 'tool.isolate')
     isolated_file = os.path.join(tempdir, 'tool.isolated')

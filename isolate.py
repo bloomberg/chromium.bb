@@ -1004,7 +1004,7 @@ def CMDrun(parser, args):
   cmd = tools.fix_python_path(cmd)
 
   outdir = run_isolated.make_temp_dir(
-      'isolate-%s' % datetime.date.today(),
+      u'isolate-%s' % datetime.date.today(),
       os.path.dirname(complete_state.root_dir))
   try:
     # TODO(maruel): Use run_isolated.run_tha_test().

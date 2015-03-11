@@ -1946,8 +1946,8 @@ def archive_files_to_storage(storage, files, blacklist):
 
           # Create the .isolated file.
           if not tempdir:
-            tempdir = tempfile.mkdtemp(prefix='isolateserver')
-          handle, isolated = tempfile.mkstemp(dir=tempdir, suffix='.isolated')
+            tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
+          handle, isolated = tempfile.mkstemp(dir=tempdir, suffix=u'.isolated')
           os.close(handle)
           data = {
               'algo':
@@ -2166,7 +2166,7 @@ def process_cache_options(options):
 
     # |options.cache| path may not exist until DiskCache() instance is created.
     return DiskCache(
-        os.path.abspath(options.cache),
+        unicode(os.path.abspath(options.cache)),
         policies,
         isolated_format.get_hash_algo(options.namespace))
   else:

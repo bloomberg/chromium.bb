@@ -640,7 +640,7 @@ class IsolateFormatTest(auto_stub.TestCase):
 class IsolateFormatTmpDirTest(unittest.TestCase):
   def setUp(self):
     super(IsolateFormatTmpDirTest, self).setUp()
-    self.tempdir = tempfile.mkdtemp(prefix='isolate_')
+    self.tempdir = tempfile.mkdtemp(prefix=u'isolate_')
 
   def tearDown(self):
     try:

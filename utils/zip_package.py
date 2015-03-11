@@ -296,7 +296,9 @@ def extract_resource(package, resource, temp_dir=None):
       return filepath
 
   fd, filepath = tempfile.mkstemp(
-      suffix='-' + os.path.basename(resource), prefix='.zip_pkg-', dir=temp_dir)
+      prefix=u'.zip_pkg-',
+      suffix=u'-' + os.path.basename(resource),
+      dir=temp_dir)
   with os.fdopen(fd, 'wb') as stream:
     stream.write(data)
 

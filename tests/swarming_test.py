@@ -196,7 +196,7 @@ class NetTestCase(net_utils.TestCase):
   def tempdir(self):
     """Creates the directory on first reference."""
     if not self._tempdir:
-      self._tempdir = tempfile.mkdtemp(prefix='swarming_test')
+      self._tempdir = tempfile.mkdtemp(prefix=u'swarming_test')
     return self._tempdir
 
   def _check_output(self, out, err):
@@ -393,7 +393,7 @@ class TestSwarmingTrigger(NetTestCase):
     content = '{}'
     expected_hash = hashlib.sha1(content).hexdigest()
     handle, isolated = tempfile.mkstemp(
-        prefix='swarming_test_', suffix='.isolated')
+        prefix=u'swarming_test_', suffix=u'.isolated')
     os.close(handle)
     try:
       with open(isolated, 'w') as f:

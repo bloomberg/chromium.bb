@@ -64,7 +64,7 @@ def archive_isolated_triggers(isolate_server, tree_isolated, tests):
     list of (test, sha1) tuples.
   """
   logging.info('archive_isolated_triggers(%s, %s)', tree_isolated, tests)
-  tempdir = tempfile.mkdtemp(prefix='run_swarming_tests_on_swarming_')
+  tempdir = tempfile.mkdtemp(prefix=u'run_swarming_tests_on_swarming_')
   try:
     isolateds = []
     for test in tests:

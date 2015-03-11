@@ -88,7 +88,7 @@ class TraceInputsBase(unittest.TestCase):
     self.real_executable = file_path.get_native_path_case(
         unicode(self.executable))
     self.tempdir = file_path.get_native_path_case(
-        unicode(tempfile.mkdtemp(prefix='trace_smoke_test')))
+        unicode(tempfile.mkdtemp(prefix=u'trace_smoke_test')))
     self.log = os.path.join(self.tempdir, 'log')
 
     # self.naked_executable will only be naked on Windows.

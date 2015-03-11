@@ -147,8 +147,8 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
     extra_args: optional arguments to add to the command stated in the .isolate
                 file.
   """
-  run_dir = make_temp_dir('run_tha_test', cache.cache_dir)
-  out_dir = unicode(make_temp_dir('isolated_out', cache.cache_dir))
+  run_dir = make_temp_dir(u'run_tha_test', cache.cache_dir)
+  out_dir = unicode(make_temp_dir(u'isolated_out', cache.cache_dir))
   result = 0
   try:
     try:

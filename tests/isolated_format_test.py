@@ -37,7 +37,7 @@ class SymlinkTest(unittest.TestCase):
   def setUp(self):
     super(SymlinkTest, self).setUp()
     self.old_cwd = os.getcwd()
-    self.cwd = tempfile.mkdtemp(prefix='isolate_')
+    self.cwd = tempfile.mkdtemp(prefix=u'isolate_')
     # Everything should work even from another directory.
     os.chdir(self.cwd)
 

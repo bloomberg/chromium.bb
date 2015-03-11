@@ -49,7 +49,7 @@ class FilePathTest(auto_stub.TestCase):
   @property
   def tempdir(self):
     if not self._tempdir:
-      self._tempdir = tempfile.mkdtemp(prefix='run_isolated_test')
+      self._tempdir = tempfile.mkdtemp(prefix=u'run_isolated_test')
     return self._tempdir
 
   def assertFileMode(self, filepath, mode, umask=None):
@@ -229,7 +229,7 @@ class FilePathTest(auto_stub.TestCase):
   if sys.platform == 'win32':
     def test_native_case_alternate_datastream(self):
       # Create the file manually, since tempfile doesn't support ADS.
-      tempdir = unicode(tempfile.mkdtemp(prefix='trace_inputs'))
+      tempdir = unicode(tempfile.mkdtemp(prefix=u'trace_inputs'))
       try:
         tempdir = file_path.get_native_path_case(tempdir)
         basename = 'foo.txt'

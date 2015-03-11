@@ -23,7 +23,7 @@ import common
 
 def main():
   options = common.parse_args(use_isolate_server=True, use_swarming=False)
-  tempdir = tempfile.mkdtemp(prefix='hello_world')
+  tempdir = tempfile.mkdtemp(prefix=u'hello_world')
   try:
     # All the files are put in a temporary directory. This is optional and
     # simply done so the current directory doesn't have the following files

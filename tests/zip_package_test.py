@@ -26,7 +26,7 @@ def check_output(*args, **kwargs):
 class ZipPackageTest(unittest.TestCase):
   def setUp(self):
     super(ZipPackageTest, self).setUp()
-    self.temp_dir = tempfile.mkdtemp(prefix='zip_package_test')
+    self.temp_dir = tempfile.mkdtemp(prefix=u'zip_package_test')
 
   def tearDown(self):
     shutil.rmtree(self.temp_dir)

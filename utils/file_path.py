@@ -640,6 +640,8 @@ def hardlink(source, link_name):
 
   Add support for os.link() on Windows.
   """
+  assert isinstance(source, unicode), source
+  assert isinstance(link_name, unicode), link_name
   if sys.platform == 'win32':
     if not ctypes.windll.kernel32.CreateHardLinkW(
         unicode(link_name), unicode(source), 0):
@@ -650,6 +652,8 @@ def hardlink(source, link_name):
 
 def readable_copy(outfile, infile):
   """Makes a copy of the file that is readable by everyone."""
+  assert isinstance(outfile, unicode), outfile
+  assert isinstance(infile, unicode), infile
   shutil.copy2(infile, outfile)
   read_enabled_mode = (os.stat(outfile).st_mode | stat.S_IRUSR |
                        stat.S_IRGRP | stat.S_IROTH)
@@ -661,6 +665,7 @@ def set_read_only(path, read_only):
 
   Zaps out access to 'group' and 'others'.
   """
+  assert isinstance(path, unicode), path
   assert isinstance(read_only, bool), read_only
   mode = os.lstat(path).st_mode
   # TODO(maruel): Stop removing GO bits.
@@ -684,6 +689,7 @@ def set_read_only(path, read_only):
 
 def try_remove(filepath):
   """Removes a file without crashing even if it doesn't exist."""
+  assert isinstance(filepath, unicode), filepath
   try:
     # TODO(maruel): Not do it unless necessary since it slows this function
     # down.
@@ -700,6 +706,8 @@ def try_remove(filepath):
 
 def link_file(outfile, infile, action):
   """Links a file. The type of link depends on |action|."""
+  assert isinstance(outfile, unicode), outfile
+  assert isinstance(infile, unicode), infile
   if action not in (HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY):
     raise ValueError('Unknown mapping action %s' % action)
   if not os.path.isfile(infile):
@@ -739,6 +747,7 @@ def make_tree_read_only(root):
   This means no file can be created or deleted.
   """
   logging.debug('make_tree_read_only(%s)', root)
+  assert isinstance(root, unicode), root
   assert os.path.isabs(root), root
   for dirpath, dirnames, filenames in os.walk(root, topdown=True):
     for filename in filenames:
@@ -758,6 +767,7 @@ def make_tree_files_read_only(root):
   This means files can be created or deleted.
   """
   logging.debug('make_tree_files_read_only(%s)', root)
+  assert isinstance(root, unicode), root
   assert os.path.isabs(root), root
   if sys.platform != 'win32':
     set_read_only(root, False)
@@ -779,6 +789,7 @@ def make_tree_writeable(root):
   the files.
   """
   logging.debug('make_tree_writeable(%s)', root)
+  assert isinstance(root, unicode), root
   assert os.path.isabs(root), root
   if sys.platform != 'win32':
     set_read_only(root, False)
@@ -803,6 +814,7 @@ def make_tree_deleteable(root):
   file node has its file permission modified.
   """
   logging.debug('make_tree_deleteable(%s)', root)
+  assert isinstance(root, unicode), root
   assert os.path.isabs(root), root
   if sys.platform != 'win32':
     set_read_only(root, False)
@@ -824,6 +836,7 @@ def change_acl_for_delete_win(path):
 
   Used as last resort.
   """
+  assert isinstance(path, unicode), path
   STANDARD_RIGHTS_REQUIRED = 0xf0000
   SYNCHRONIZE = 0x100000
   FILE_ALL_ACCESS = STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x3ff
@@ -851,6 +864,7 @@ def rmtree(root):
     True on normal execution, False if berserk techniques (like killing
     processes) had to be used.
   """
+  # Do not assert here yet because this would break too much code.
   root = unicode(root)
   make_tree_deleteable(root)
   logging.info('rmtree(%s)', root)

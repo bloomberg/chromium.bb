@@ -115,7 +115,7 @@ def create_subprocess_thunk():
   This thunk doesn't block, its unique name is used to identify it as the
   parent.
   """
-  handle, name = tempfile.mkstemp(prefix='trace_inputs_thunk', suffix='.py')
+  handle, name = tempfile.mkstemp(prefix=u'trace_inputs_thunk', suffix='.py')
   try:
     os.write(
         handle,
@@ -134,7 +134,7 @@ def create_exec_thunk():
   Reads from the file handle provided as the fisrt argument to block, then
   execv() the command to be traced.
   """
-  handle, name = tempfile.mkstemp(prefix='trace_inputs_thunk', suffix='.py')
+  handle, name = tempfile.mkstemp(prefix=u'trace_inputs_thunk', suffix='.py')
   try:
     os.write(
         handle,
@@ -2121,7 +2121,7 @@ class Dtrace(ApiBase):
       # should stop as soon as all the child processes are done. A bit hackish
       # but works fine enough.
       self._dummy_file_id, self._dummy_file_name = tempfile.mkstemp(
-          prefix='trace_signal_file')
+          prefix=u'trace_signal_file')
 
       dtrace_path = '/usr/sbin/dtrace'
       if not os.path.isfile(dtrace_path):

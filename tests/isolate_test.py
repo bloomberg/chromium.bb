@@ -100,7 +100,7 @@ class IsolateBase(auto_stub.TestCase):
     self.mock(auth, 'ensure_logged_in', lambda _: None)
     self.old_cwd = os.getcwd()
     self.cwd = file_path.get_native_path_case(
-        unicode(tempfile.mkdtemp(prefix='isolate_')))
+        unicode(tempfile.mkdtemp(prefix=u'isolate_')))
     # Everything should work even from another directory.
     os.chdir(self.cwd)
 
@@ -258,7 +258,7 @@ class IsolateTest(IsolateBase):
 class IsolateLoad(IsolateBase):
   def setUp(self):
     super(IsolateLoad, self).setUp()
-    self.directory = tempfile.mkdtemp(prefix='isolate_')
+    self.directory = tempfile.mkdtemp(prefix=u'isolate_')
     self.isolate_dir = os.path.join(self.directory, u'isolate')
     self.isolated_dir = os.path.join(self.directory, u'isolated')
     os.mkdir(self.isolated_dir, 0700)

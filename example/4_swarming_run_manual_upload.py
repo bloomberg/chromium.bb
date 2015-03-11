@@ -41,7 +41,7 @@ def main():
     common.note(
         'Archiving custom .isolated file to %s' % options.isolate_server)
     handle, isolated = tempfile.mkstemp(
-        prefix='hello_world', suffix='.isolated')
+        prefix=u'hello_world', suffix=u'.isolated')
     os.close(handle)
     try:
       data = {

@@ -62,7 +62,7 @@ class TestCase(net_utils.TestCase):
   @property
   def tempdir(self):
     if not self._tempdir:
-      self._tempdir = tempfile.mkdtemp(prefix='isolateserver')
+      self._tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
     return self._tempdir
 
   def make_tree(self, contents):
@@ -634,7 +634,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 
   def setUp(self):
     super(IsolateServerStorageSmokeTest, self).setUp()
-    self.tempdir = tempfile.mkdtemp(prefix='isolateserver')
+    self.tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
     self.server = isolateserver_mock.MockIsolateServer()
 
   def tearDown(self):

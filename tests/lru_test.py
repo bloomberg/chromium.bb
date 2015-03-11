@@ -143,7 +143,7 @@ class LRUDictTest(unittest.TestCase):
 
   def test_load_save(self):
     def save_and_load(lru_dict):
-      handle, tmp_name = tempfile.mkstemp(prefix='lru_test')
+      handle, tmp_name = tempfile.mkstemp(prefix=u'lru_test')
       os.close(handle)
       try:
         lru_dict.save(tmp_name)
@@ -185,7 +185,7 @@ class LRUDictTest(unittest.TestCase):
 
   def test_corrupted_state_file(self):
     def load_from_state(state_text):
-      handle, tmp_name = tempfile.mkstemp(prefix='lru_test')
+      handle, tmp_name = tempfile.mkstemp(prefix=u'lru_test')
       os.close(handle)
       try:
         with open(tmp_name, 'w') as f:

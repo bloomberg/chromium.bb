@@ -42,7 +42,7 @@ def capture(cmd):
 
 def trigger(swarming_server, isolate_server, task_name, isolated_hash, args):
   """Triggers a specified .isolated file."""
-  fd, jsonfile = tempfile.mkstemp(prefix='swarming')
+  fd, jsonfile = tempfile.mkstemp(prefix=u'swarming')
   os.close(fd)
   try:
     cmd = [

@@ -40,7 +40,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     # transport/storage detail.
     self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
                       + '-gzip')
-    self.tempdir = tempfile.mkdtemp(prefix='isolateserver')
+    self.tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
     self.rootdir = os.path.join(self.tempdir, 'rootdir')
     self.test_data = os.path.join(self.tempdir, 'test_data')
     test_utils.make_tree(self.test_data, CONTENTS)
