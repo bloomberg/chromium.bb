@@ -1862,10 +1862,6 @@ crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-
 crbug.com/461371 [ Mac ] virtual/antialiasedtext/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
 crbug.com/461371 [ Mac ] virtual/slimmingpaint/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
 
-crbug.com/462404 fast/js/function-name.html [ Pass Failure ]
-crbug.com/462404 fast/js/getOwnPropertyDescriptor.html [ Pass Failure ]
-crbug.com/462404 fast/js/mozilla/strict/function-name-arity.html [ Pass Failure ]
-
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463892 inspector/agents-enable-disable.html [ Skip ]

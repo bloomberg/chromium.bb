@@ -37,7 +37,7 @@ descriptorShouldBe("/(a)*/g.exec('a')", "0", {writable: true, enumerable: true, 
 descriptorShouldBe("/(a)*/g.exec('a')", "'length'", {writable: true, enumerable: false, configurable: false, value:2});
 descriptorShouldBe("function(){}", "'length'", {writable: false, enumerable: false, configurable: false, value:0});
 descriptorShouldBe("Math.sin", "'length'", {writable: false, enumerable: false, configurable: false, value:1});
-descriptorShouldBe("Math.sin", "'name'", {writable: false, enumerable: false, configurable: false, value:"'sin'"});
+descriptorShouldBe("Math.sin", "'name'", {writable: false, enumerable: false, configurable: true, value:"'sin'"});
 var global = this;
 descriptorShouldBe("global", "'global'", {writable: true, enumerable: true, configurable: false, value:"global"});
 descriptorShouldBe("global", "'undefined'", {writable: false, enumerable: false, configurable: false, value:"undefined"});
