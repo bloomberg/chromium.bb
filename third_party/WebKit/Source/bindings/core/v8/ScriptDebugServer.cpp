@@ -31,12 +31,9 @@
 #include "config.h"
 #include "bindings/core/v8/ScriptDebugServer.h"
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8JavaScriptCallFrame.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/JavaScriptCallFrame.h"
