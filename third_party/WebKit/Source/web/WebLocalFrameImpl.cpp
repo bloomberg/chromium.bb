@@ -152,6 +152,7 @@
 #include "modules/app_banner/AppBannerController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/notifications/NotificationPermissionClient.h"
+#include "modules/permissions/PermissionController.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
@@ -1609,6 +1610,8 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
             ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : nullptr);
         if (RuntimeEnabledFeatures::presentationEnabled())
             PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
+        if (RuntimeEnabledFeatures::permissionsEnabled())
+            PermissionController::provideTo(*m_frame, m_client ? m_client->permissionClient() : nullptr);
     }
 }
 

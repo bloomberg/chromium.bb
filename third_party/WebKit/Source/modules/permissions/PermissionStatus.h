@@ -8,12 +8,15 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/permissions/WebPermissionStatus.h"
+#include "public/platform/modules/permissions/WebPermissionType.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class ExecutionContext;
+class ScriptPromiseResolver;
 
 class PermissionStatus final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PermissionStatus>
@@ -22,7 +25,9 @@ class PermissionStatus final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PermissionStatus* create(ExecutionContext*);
+    static PermissionStatus* take(ScriptPromiseResolver*, WebPermissionStatus*, WebPermissionType);
+    static void dispose(WebPermissionStatus*);
+
     ~PermissionStatus() override;
 
     // EventTarget implementation.
@@ -32,11 +37,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     String status() const;
+    // TODO: needs to be used by the IDL
+    WebPermissionType type() const { return m_type; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
 private:
-    explicit PermissionStatus(ExecutionContext*);
+    explicit PermissionStatus(ExecutionContext*, WebPermissionType, WebPermissionStatus);
+
+    WebPermissionType m_type;
+    WebPermissionStatus m_status;
 };
 
 } // namespace blink

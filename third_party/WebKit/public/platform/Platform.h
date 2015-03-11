@@ -86,6 +86,7 @@ class WebMessagePortChannel;
 class WebMimeRegistry;
 class WebNavigatorConnectProvider;
 class WebNotificationManager;
+class WebPermissionClient;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
@@ -658,6 +659,11 @@ public:
     // navigator.connect --------------------------------------------------
 
     virtual WebNavigatorConnectProvider* navigatorConnectProvider() { return 0; }
+
+    // Permissions --------------------------------------------------------
+
+    virtual WebPermissionClient* permissionClient() { return 0; }
+
 
 protected:
     BLINK_PLATFORM_EXPORT Platform();

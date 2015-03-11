@@ -5,18 +5,29 @@
 #include "config.h"
 #include "modules/permissions/PermissionStatus.h"
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/EventTargetModulesNames.h"
 
 namespace blink {
 
 // static
-PermissionStatus* PermissionStatus::create(ExecutionContext* executionContext)
+PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, WebPermissionStatus* status, WebPermissionType type)
 {
-    return new PermissionStatus(executionContext);
+    PermissionStatus* permissionStatus = new PermissionStatus(resolver->executionContext(), type, *status);
+    delete status;
+    return permissionStatus;
 }
 
-PermissionStatus::PermissionStatus(ExecutionContext* executionContext)
+// static
+void PermissionStatus::dispose(WebPermissionStatus* status)
+{
+    delete status;
+}
+
+PermissionStatus::PermissionStatus(ExecutionContext* executionContext, WebPermissionType permissionType, WebPermissionStatus permissionStatus)
     : ContextLifecycleObserver(executionContext)
+    , m_type(permissionType)
+    , m_status(permissionStatus)
 {
 }
 
@@ -42,8 +53,17 @@ DEFINE_TRACE(PermissionStatus)
 
 String PermissionStatus::status() const
 {
-    // FIXME: implement.
-    return String();
+    switch (m_status) {
+    case WebPermissionStatusGranted:
+        return "granted";
+    case WebPermissionStatusDenied:
+        return "denied";
+    case WebPermissionStatusPrompt:
+        return "prompt";
+    }
+
+    ASSERT_NOT_REACHED();
+    return "denied";
 }
 
 } // namespace blink

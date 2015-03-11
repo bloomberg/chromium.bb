@@ -72,6 +72,7 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMIDIClient;
 class WebNotificationPermissionCallback;
+class WebPermissionClient;
 class WebServiceWorkerProvider;
 class WebSocketHandle;
 class WebPlugin;
@@ -628,6 +629,12 @@ public:
         UnloadHandler,
     };
     virtual void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) { }
+
+
+    // Permissions ---------------------------------------------------------
+
+    // Access the embedder API for permission client.
+    virtual WebPermissionClient* permissionClient() { return 0; }
 
 protected:
     virtual ~WebFrameClient() { }
