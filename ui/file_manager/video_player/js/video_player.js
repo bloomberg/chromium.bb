@@ -671,7 +671,7 @@ function initStrings(callback) {
 
 function initVolumeManager(callback) {
   var volumeManager = new VolumeManagerWrapper(
-      VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
+      VolumeManagerWrapper.NonNativeVolumeStatus.ENABLED);
   volumeManager.ensureInitialized(callback);
 }
 

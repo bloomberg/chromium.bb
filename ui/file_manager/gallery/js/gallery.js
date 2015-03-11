@@ -947,7 +947,7 @@ var loadTimeDataPromise = new Promise(function(fulfill, reject) {
  */
 var volumeManagerPromise = new Promise(function(fulfill, reject) {
   var volumeManager = new VolumeManagerWrapper(
-      VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
+      VolumeManagerWrapper.NonNativeVolumeStatus.ENABLED);
   volumeManager.ensureInitialized(fulfill.bind(null, volumeManager));
 });
 

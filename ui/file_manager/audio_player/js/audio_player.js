@@ -16,7 +16,7 @@ ContentMetadataProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
 function AudioPlayer(container) {
   this.container_ = container;
   this.volumeManager_ = new VolumeManagerWrapper(
-      VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
+      VolumeManagerWrapper.NonNativeVolumeStatus.ENABLED);
   this.metadataModel_ = new MetadataModel.create(this.volumeManager_);
   this.selectedEntry_ = null;
 

@@ -127,6 +127,19 @@ VolumeManagerCommon.VolumeType = {
   MTP: 'mtp',
   PROVIDED: 'provided'
 };
+
+/**
+ * Returns if the volume is linux native file system or not. Non-native file
+ * system does not support few operations (e.g. load unpacked extension).
+ * @param {VolumeManagerCommon.VolumeType} type
+ * @return {boolean}
+ */
+VolumeManagerCommon.VolumeType.isNative = function(type) {
+  return type === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+      type === VolumeManagerCommon.VolumeType.REMOVABLE ||
+      type === VolumeManagerCommon.VolumeType.ARCHIVE;
+};
+
 Object.freeze(VolumeManagerCommon.VolumeType);
 
 /**

@@ -658,10 +658,11 @@ FileManager.prototype = /** @struct */ {
     // true.
     // Note that the Drive enabling preference change is listened by
     // DriveIntegrationService, so here we don't need to take care about it.
-    var driveEnabled =
+    var nonNativeEnabled =
         !noLocalPathResolution || !this.launchParams_.shouldReturnLocalPath;
     this.volumeManager_ = new VolumeManagerWrapper(
-        /** @type {VolumeManagerWrapper.DriveEnabledStatus} */ (driveEnabled),
+        /** @type {VolumeManagerWrapper.NonNativeVolumeStatus} */
+        (nonNativeEnabled),
         this.backgroundPage_);
     callback();
   };
