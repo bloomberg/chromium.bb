@@ -65,41 +65,23 @@ TEST_F(SQLiteFeaturesTest, NoFTS1) {
       "CREATE VIRTUAL TABLE foo USING fts1(x)"));
 }
 
-#if defined(SQLITE_ENABLE_FTS2)
-// fts2 is used for older history files, so we're signed on for keeping our
-// version up-to-date.
-// TODO(shess): Think up a crazy way to get out from having to support
-// this forever.
-TEST_F(SQLiteFeaturesTest, FTS2) {
-  ASSERT_TRUE(db().Execute("CREATE VIRTUAL TABLE foo USING fts2(x)"));
+// Do not include fts2 support, it is not useful, and nobody is
+// looking at it.
+TEST_F(SQLiteFeaturesTest, NoFTS2) {
+  ASSERT_EQ(SQLITE_ERROR, db().ExecuteAndReturnErrorCode(
+      "CREATE VIRTUAL TABLE foo USING fts2(x)"));
 }
 
-// A standard SQLite will not include our patch.  This includes iOS.
-#if !defined(USE_SYSTEM_SQLITE)
-// Chromium fts2 was patched to treat "foo*" as a prefix search, though the icu
-// tokenizer will return it as two tokens {"foo", "*"}.
-TEST_F(SQLiteFeaturesTest, FTS2_Prefix) {
-  const char kCreateSql[] =
-      "CREATE VIRTUAL TABLE foo USING fts2(x, tokenize icu)";
-  ASSERT_TRUE(db().Execute(kCreateSql));
-
-  ASSERT_TRUE(db().Execute("INSERT INTO foo (x) VALUES ('test')"));
-
-  sql::Statement s(db().GetUniqueStatement(
-      "SELECT x FROM foo WHERE x MATCH 'te*'"));
-  ASSERT_TRUE(s.Step());
-  EXPECT_EQ("test", s.ColumnString(0));
-}
-#endif
-#endif
-
-// fts3 is used for current history files, and also for WebDatabase.
+// fts3 used to be used for history files, and may also be used by WebDatabase
+// clients.
 TEST_F(SQLiteFeaturesTest, FTS3) {
   ASSERT_TRUE(db().Execute("CREATE VIRTUAL TABLE foo USING fts3(x)"));
 }
 
 #if !defined(USE_SYSTEM_SQLITE)
-// Test that fts3 doesn't need fts2's patch (see above).
+// Originally history used fts2, which Chromium patched to treat "foo*" as a
+// prefix search, though the icu tokenizer would return it as two tokens {"foo",
+// "*"}.  Test that fts3 works correctly.
 TEST_F(SQLiteFeaturesTest, FTS3_Prefix) {
   const char kCreateSql[] =
       "CREATE VIRTUAL TABLE foo USING fts3(x, tokenize icu)";

@@ -116,11 +116,6 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
-        ['sqlite_enable_fts2', {
-          'defines': [
-            'SQLITE_ENABLE_FTS2',
-          ],
-        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],

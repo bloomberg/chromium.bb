@@ -10,25 +10,11 @@ source_set("sqlite") {
   sources = [
     "amalgamation/sqlite3.c",
     "amalgamation/sqlite3.h",
-
-    # fts2.c currently has a lot of conflicts when added to
-    # the amalgamation.  It is probably not worth fixing that.
-    "src/ext/fts2/fts2.c",
-    "src/ext/fts2/fts2.h",
-    "src/ext/fts2/fts2_hash.c",
-    "src/ext/fts2/fts2_hash.h",
-    "src/ext/fts2/fts2_icu.c",
-    "src/ext/fts2/fts2_porter.c",
-    "src/ext/fts2/fts2_tokenizer.c",
-    "src/ext/fts2/fts2_tokenizer.h",
-    "src/ext/fts2/fts2_tokenizer1.c",
   ]
 
   cflags = []
   defines = [
     "SQLITE_CORE",
-    "SQLITE_ENABLE_BROKEN_FTS2",
-    "SQLITE_ENABLE_FTS2",
     "SQLITE_ENABLE_FTS3",
     "SQLITE_DISABLE_FTS3_UNICODE",
     "SQLITE_DISABLE_FTS4_DEFERRED",
@@ -57,10 +43,7 @@ source_set("sqlite") {
     ]
   }
 
-  include_dirs = [
-    "amalgamation",
-    "src/src",  # Needed for fts2 to build.
-  ]
+  include_dirs = [ "amalgamation" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]

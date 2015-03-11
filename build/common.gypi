@@ -815,7 +815,6 @@
           'enable_supervised_users%': 0,
           'enable_task_manager%': 0,
           'use_system_libcxx%': 1,
-          'support_pre_M6_history_database%': 0,
         }],
 
         # Use GPU accelerated cross process image transport by default
@@ -1070,9 +1069,6 @@
       'google_default_client_secret%': '',
       # Native Client is enabled by default.
       'disable_nacl%': '0',
-
-      # Set to 1 to support old history files
-      'support_pre_M6_history_database%': '1',
     },
 
     # Copy conditionally-set variables out one scope.
@@ -1222,7 +1218,6 @@
     'use_lto_o2%': '<(use_lto_o2)',
     'gold_icf_level%': '<(gold_icf_level)',
     'video_hole%': '<(video_hole)',
-    'support_pre_M6_history_database%': '<(support_pre_M6_history_database)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
     'cfi_vptr%': '<(cfi_vptr)',
 
@@ -2404,9 +2399,6 @@
         'use_lto%': 1,
       }],
     ],
-
-    # older history files use fts2 instead of fts3
-    'sqlite_enable_fts2%': '<(support_pre_M6_history_database)',
 
     # The path to the ANGLE library.
     'angle_path': '<(DEPTH)/third_party/angle',
