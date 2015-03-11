@@ -82,16 +82,19 @@ TEST_F(ShaderManagerTest, DeleteBug) {
   ASSERT_TRUE(shader1.get());
   ASSERT_TRUE(shader2.get());
   manager_.UseShader(shader1.get());
-  EXPECT_CALL(*gl_, DeleteShader(kService1Id))
-      .Times(1)
-      .RetiresOnSaturation();
   manager_.Delete(shader1.get());
+
   EXPECT_CALL(*gl_, DeleteShader(kService2Id))
       .Times(1)
       .RetiresOnSaturation();
   manager_.Delete(shader2.get());
   EXPECT_TRUE(manager_.IsOwned(shader1.get()));
   EXPECT_FALSE(manager_.IsOwned(shader2.get()));
+
+  EXPECT_CALL(*gl_, DeleteShader(kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.UnuseShader(shader1.get());
 }
 
 TEST_F(ShaderManagerTest, DoCompile) {

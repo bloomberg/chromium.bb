@@ -45,7 +45,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   }
 
   GLuint service_id() const {
-    return service_id_;
+    return marked_for_deletion_ ? 0 : service_id_;
   }
 
   GLenum shader_type() const {
@@ -97,7 +97,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   }
 
   bool IsDeleted() const {
-    return service_id_ == 0;
+    return marked_for_deletion_;
   }
 
   bool InUse() const {
@@ -145,14 +145,22 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   Shader(GLuint service_id, GLenum shader_type);
   ~Shader();
 
+  // Must be called only if we currently own the context. Forces the deletion
+  // of the underlying shader service id.
+  void Destroy();
+
   void IncUseCount();
   void DecUseCount();
-  void Delete();
+  void MarkForDeletion();
+  void DeleteServiceID();
 
   int use_count_;
 
   // The current state of the shader.
   ShaderState shader_state_;
+
+  // The shader has been marked for deletion.
+  bool marked_for_deletion_;
 
   // The shader this Shader is tracking.
   GLuint service_id_;

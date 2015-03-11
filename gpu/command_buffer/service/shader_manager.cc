@@ -27,6 +27,7 @@ std::string GetTopVariableName(const std::string& fullname) {
 Shader::Shader(GLuint service_id, GLenum shader_type)
       : use_count_(0),
         shader_state_(kShaderStateWaiting),
+        marked_for_deletion_(false),
         service_id_(service_id),
         shader_type_(shader_type),
         source_type_(kANGLE),
@@ -34,6 +35,12 @@ Shader::Shader(GLuint service_id, GLenum shader_type)
 }
 
 Shader::~Shader() {
+}
+
+void Shader::Destroy() {
+  if (service_id_) {
+    DeleteServiceID();
+  }
 }
 
 void Shader::RequestCompile(scoped_refptr<ShaderTranslatorInterface> translator,
@@ -131,13 +138,22 @@ void Shader::IncUseCount() {
 void Shader::DecUseCount() {
   --use_count_;
   DCHECK_GE(use_count_, 0);
+  if (service_id_ && use_count_ == 0 && marked_for_deletion_) {
+    DeleteServiceID();
+  }
 }
 
-void Shader::Delete() {
-  if (use_count_ > 0) {
-    // If attached, compile the shader before we delete it.
-    DoCompile();
+void Shader::MarkForDeletion() {
+  DCHECK(!marked_for_deletion_);
+  DCHECK_NE(service_id_, 0u);
+
+  marked_for_deletion_ = true;
+  if (use_count_ == 0) {
+    DeleteServiceID();
   }
+}
+
+void Shader::DeleteServiceID() {
   DCHECK_NE(service_id_, 0u);
   glDeleteShader(service_id_);
   service_id_ = 0;
@@ -189,9 +205,7 @@ void ShaderManager::Destroy(bool have_context) {
   while (!shaders_.empty()) {
     if (have_context) {
       Shader* shader = shaders_.begin()->second.get();
-      if (!shader->IsDeleted()) {
-        shader->Delete();
-      }
+      shader->Destroy();
     }
     shaders_.erase(shaders_.begin());
   }
@@ -254,7 +268,7 @@ void ShaderManager::RemoveShader(Shader* shader) {
 void ShaderManager::Delete(Shader* shader) {
   DCHECK(shader);
   DCHECK(IsOwned(shader));
-  shader->Delete();
+  shader->MarkForDeletion();
   RemoveShader(shader);
 }
 
