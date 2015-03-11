@@ -21,12 +21,13 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
 
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      // TODO(jonross): Implement Device Motion API. (crbug.com/427662)
-      NOTIMPLEMENTED();
-      return false;
+      sensor_manager_->StartFetchingDeviceMotionData(
+          static_cast<DeviceMotionHardwareBuffer*>(buffer));
+      return true;
     case CONSUMER_TYPE_ORIENTATION:
-      return sensor_manager_->StartFetchingDeviceOrientationData(
+      sensor_manager_->StartFetchingDeviceOrientationData(
           static_cast<DeviceOrientationHardwareBuffer*>(buffer));
+      return true;
     case CONSUMER_TYPE_LIGHT:
       NOTIMPLEMENTED();
       return false;
@@ -38,8 +39,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
 bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
-      NOTIMPLEMENTED();
-      return false;
+      return sensor_manager_->StopFetchingDeviceMotionData();
     case CONSUMER_TYPE_ORIENTATION:
       return sensor_manager_->StopFetchingDeviceOrientationData();
     case CONSUMER_TYPE_LIGHT:

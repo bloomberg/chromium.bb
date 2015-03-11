@@ -151,23 +151,23 @@ void MaximizeModeController::AddWindow(aura::Window* window) {
 
 #if defined(OS_CHROMEOS)
 void MaximizeModeController::OnAccelerometerUpdated(
-    const chromeos::AccelerometerUpdate& update) {
+    scoped_refptr<const chromeos::AccelerometerUpdate> update) {
   bool first_accelerometer_update = !have_seen_accelerometer_data_;
   have_seen_accelerometer_data_ = true;
 
-  if (!update.has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
+  if (!update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
     return;
 
   // Whether or not we enter maximize mode affects whether we handle screen
   // rotation, so determine whether to enter maximize mode first.
-  if (!update.has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
+  if (!update->has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
     if (first_accelerometer_update)
       EnterMaximizeMode();
   } else if (ui::IsAccelerometerReadingStable(
-                 update, chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
+                 *update, chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
              ui::IsAccelerometerReadingStable(
-                 update, chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) &&
-             IsAngleBetweenAccelerometerReadingsStable(update)) {
+                 *update, chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) &&
+             IsAngleBetweenAccelerometerReadingsStable(*update)) {
     // update.has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)
     // Ignore the reading if it appears unstable. The reading is considered
     // unstable if it deviates too much from gravity and/or the magnitude of the
@@ -197,14 +197,14 @@ void MaximizeModeController::SuspendDone(
 }
 
 void MaximizeModeController::HandleHingeRotation(
-    const chromeos::AccelerometerUpdate& update) {
+    scoped_refptr<const chromeos::AccelerometerUpdate> update) {
   static const gfx::Vector3dF hinge_vector(1.0f, 0.0f, 0.0f);
   // Ignore the component of acceleration parallel to the hinge for the purposes
   // of hinge angle calculation.
   gfx::Vector3dF base_flattened(ui::ConvertAccelerometerReadingToVector3dF(
-      update.get(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)));
+      update->get(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)));
   gfx::Vector3dF lid_flattened(ui::ConvertAccelerometerReadingToVector3dF(
-      update.get(chromeos::ACCELEROMETER_SOURCE_SCREEN)));
+      update->get(chromeos::ACCELEROMETER_SOURCE_SCREEN)));
   base_flattened.set_x(0.0f);
   lid_flattened.set_x(0.0f);
 

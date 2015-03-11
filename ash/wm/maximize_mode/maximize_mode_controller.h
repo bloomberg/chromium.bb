@@ -83,7 +83,7 @@ class ASH_EXPORT MaximizeModeController :
 #if defined(OS_CHROMEOS)
   // chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
-      const chromeos::AccelerometerUpdate& update) override;
+      scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
   // PowerManagerClient::Observer:
   void LidEventReceived(bool open, const base::TimeTicks& time) override;
@@ -111,7 +111,8 @@ class ASH_EXPORT MaximizeModeController :
 #if defined(OS_CHROMEOS)
   // Detect hinge rotation from base and lid accelerometers and automatically
   // start / stop maximize mode.
-  void HandleHingeRotation(const chromeos::AccelerometerUpdate& update);
+  void HandleHingeRotation(
+      scoped_refptr<const chromeos::AccelerometerUpdate> update);
 #endif
 
   // Returns true if the lid was recently opened.

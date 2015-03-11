@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
+#include "base/observer_list_threadsafe.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/chromeos_export.h"
 
@@ -24,6 +24,9 @@ namespace chromeos {
 // AccelerometerDelegate.
 class CHROMEOS_EXPORT AccelerometerReader {
  public:
+  // The time to wait between reading the accelerometer.
+  static const int kDelayBetweenReadsMs;
+
   // Configuration structure for accelerometer device.
   struct ConfigurationData {
     ConfigurationData();
@@ -50,7 +53,8 @@ class CHROMEOS_EXPORT AccelerometerReader {
   // An interface to receive data from the AccelerometerReader.
   class Observer {
    public:
-    virtual void OnAccelerometerUpdated(const AccelerometerUpdate& update) = 0;
+    virtual void OnAccelerometerUpdated(
+        scoped_refptr<const AccelerometerUpdate> update) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -88,15 +92,12 @@ class CHROMEOS_EXPORT AccelerometerReader {
   scoped_refptr<base::TaskRunner> task_runner_;
 
   // The last seen accelerometer data.
-  AccelerometerUpdate update_;
-
-  // True if a valid accelerometer update is available.
-  bool has_update_;
+  scoped_refptr<AccelerometerUpdate> update_;
 
   // The accelerometer configuration.
   scoped_refptr<Configuration> configuration_;
 
-  ObserverList<Observer, true> observers_;
+  scoped_refptr<ObserverListThreadSafe<Observer>> observers_;
 
   base::WeakPtrFactory<AccelerometerReader> weak_factory_;
 

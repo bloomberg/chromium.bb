@@ -52,9 +52,6 @@ const size_t kMaxAsciiUintLength = 21;
 // The size of individual values.
 const size_t kDataSize = 2;
 
-// The time to wait between reading the accelerometer.
-const int kDelayBetweenReadsMs = 100;
-
 // The mean acceleration due to gravity on Earth in m/s^2.
 const float kMeanGravity = 9.80665f;
 
@@ -169,6 +166,8 @@ bool ReadAccelerometer(
 
 }  // namespace
 
+const int AccelerometerReader::kDelayBetweenReadsMs = 100;
+
 AccelerometerReader::ConfigurationData::ConfigurationData()
     : count(0) {
   for (int i = 0; i < ACCELEROMETER_SOURCE_COUNT; ++i) {
@@ -202,18 +201,18 @@ void AccelerometerReader::Initialize(
 }
 
 void AccelerometerReader::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-  if (has_update_)
-    observer->OnAccelerometerUpdated(update_);
+  observers_->AddObserver(observer);
+  if (update_)
+    observer->OnAccelerometerUpdated(update_.get());
 }
 
 void AccelerometerReader::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+  observers_->RemoveObserver(observer);
 }
 
 AccelerometerReader::AccelerometerReader()
-    : has_update_(false),
-      configuration_(new AccelerometerReader::Configuration()),
+    : configuration_(new AccelerometerReader::Configuration()),
+      observers_(new ObserverListThreadSafe<Observer>()),
       weak_factory_(this) {
 }
 
@@ -247,21 +246,22 @@ void AccelerometerReader::OnDataRead(
   DCHECK(!task_runner_->RunsTasksOnCurrentThread());
 
   if (success) {
-    has_update_ = true;
+    update_ = new AccelerometerUpdate();
     for (int i = 0; i < ACCELEROMETER_SOURCE_COUNT; ++i) {
       if (!configuration_->data.has[i])
         continue;
 
       int16* values = reinterpret_cast<int16*>(reading->data);
-      update_.Set(static_cast<AccelerometerSource>(i),
-                  values[configuration_->data.index[i][0]] *
-                      configuration_->data.scale[i][0],
-                  values[configuration_->data.index[i][1]] *
-                      configuration_->data.scale[i][1],
-                  values[configuration_->data.index[i][2]] *
-                      configuration_->data.scale[i][2]);
+      update_->Set(static_cast<AccelerometerSource>(i),
+                   values[configuration_->data.index[i][0]] *
+                       configuration_->data.scale[i][0],
+                   values[configuration_->data.index[i][1]] *
+                       configuration_->data.scale[i][1],
+                   values[configuration_->data.index[i][2]] *
+                       configuration_->data.scale[i][2]);
     }
-    FOR_EACH_OBSERVER(Observer, observers_, OnAccelerometerUpdated(update_));
+    // TODO(jonross): move this to the blocking thread (crbug.com/461433)
+    observers_->Notify(FROM_HERE, &Observer::OnAccelerometerUpdated, update_);
   }
 
   // Trigger another read after the current sampling delay.

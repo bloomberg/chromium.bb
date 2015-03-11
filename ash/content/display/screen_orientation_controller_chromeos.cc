@@ -147,16 +147,16 @@ void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
 }
 
 void ScreenOrientationController::OnAccelerometerUpdated(
-    const chromeos::AccelerometerUpdate& update) {
+    scoped_refptr<const chromeos::AccelerometerUpdate> update) {
   if (rotation_locked_ && !CanRotateInLockedState())
     return;
-  if (!update.has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
+  if (!update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
     return;
   // Ignore the reading if it appears unstable. The reading is considered
   // unstable if it deviates too much from gravity
-  if (ui::IsAccelerometerReadingStable(update,
+  if (ui::IsAccelerometerReadingStable(*update,
                                        chromeos::ACCELEROMETER_SOURCE_SCREEN)) {
-    HandleScreenRotation(update.get(chromeos::ACCELEROMETER_SOURCE_SCREEN));
+    HandleScreenRotation(update->get(chromeos::ACCELEROMETER_SOURCE_SCREEN));
   }
 }
 

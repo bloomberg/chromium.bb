@@ -6,10 +6,11 @@
 #define CONTENT_BROWSER_DEVICE_SENSORS_SENSOR_MANAGER_CHROMEOS_H_
 
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "content/common/content_export.h"
+#include "content/common/device_sensors/device_motion_hardware_buffer.h"
 #include "content/common/device_sensors/device_orientation_hardware_buffer.h"
 
 namespace content {
@@ -22,9 +23,17 @@ class CONTENT_EXPORT SensorManagerChromeOS
   SensorManagerChromeOS();
   ~SensorManagerChromeOS() override;
 
+  // Begins monitoring of motion events, the shared memory of |buffer| will be
+  // updated upon subsequent events.
+  void StartFetchingDeviceMotionData(DeviceMotionHardwareBuffer* buffer);
+
+  // Stops monitoring motion events. Returns true if there is an active
+  // |motion_buffer_| and fetching stops. Otherwise returns false.
+  bool StopFetchingDeviceMotionData();
+
   // Begins monitoring of orientation events, the shared memory of |buffer| will
   // be updated upon subsequent events.
-  bool StartFetchingDeviceOrientationData(
+  void StartFetchingDeviceOrientationData(
       DeviceOrientationHardwareBuffer* buffer);
 
   // Stops monitoring orientation events. Returns true if there is an active
@@ -33,7 +42,7 @@ class CONTENT_EXPORT SensorManagerChromeOS
 
   // chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
-      const chromeos::AccelerometerUpdate& update) override;
+      scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
  protected:
   // Begins/ends the observation of accelerometer events.
@@ -41,11 +50,16 @@ class CONTENT_EXPORT SensorManagerChromeOS
   virtual void StopObservingAccelerometer();
 
  private:
+  // Updates |motion_buffer_| or |orientation_buffer_| accordingly.
+  void GenerateMotionEvent(double x, double y, double z);
+  void GenerateOrientationEvent(double x, double y, double z);
+
   // Shared memory to update.
+  DeviceMotionHardwareBuffer* motion_buffer_;
   DeviceOrientationHardwareBuffer* orientation_buffer_;
 
-  // Synchronize orientation_buffer_ across threads.
-  base::Lock orientation_buffer_lock_;
+  // Verify all work is done on the same thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorManagerChromeOS);
 };

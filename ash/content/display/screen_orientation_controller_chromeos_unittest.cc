@@ -72,8 +72,9 @@ void SetRotationLocked(bool rotation_locked) {
 }
 
 void TriggerLidUpdate(const gfx::Vector3dF& lid) {
-  chromeos::AccelerometerUpdate update;
-  update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
+  scoped_refptr<chromeos::AccelerometerUpdate> update(
+      new chromeos::AccelerometerUpdate());
+  update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
   Shell::GetInstance()->screen_orientation_controller()->OnAccelerometerUpdated(
       update);
 }

@@ -6,6 +6,7 @@
 #define CHROMEOS_ACCELEROMETER_ACCELEROMETER_TYPES_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -44,10 +45,10 @@ struct CHROMEOS_EXPORT AccelerometerReading {
 
 // An accelerometer update contains the last known value for each of the
 // accelerometers present on the device.
-class CHROMEOS_EXPORT AccelerometerUpdate {
+class CHROMEOS_EXPORT AccelerometerUpdate
+    : public base::RefCountedThreadSafe<AccelerometerUpdate> {
  public:
   AccelerometerUpdate();
-  ~AccelerometerUpdate();
 
   // Returns true if |source| has a valid value in this update.
   bool has(AccelerometerSource source) const { return data_[source].present; }
@@ -68,6 +69,10 @@ class CHROMEOS_EXPORT AccelerometerUpdate {
   AccelerometerReading data_[ACCELEROMETER_SOURCE_COUNT];
 
  private:
+  friend class base::RefCountedThreadSafe<AccelerometerUpdate>;
+
+  virtual ~AccelerometerUpdate();
+
   DISALLOW_COPY_AND_ASSIGN(AccelerometerUpdate);
 };
 

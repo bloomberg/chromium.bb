@@ -78,19 +78,21 @@ class MaximizeModeControllerTest : public test::AshTestBase {
   }
 
   void TriggerLidUpdate(const gfx::Vector3dF& lid) {
-    chromeos::AccelerometerUpdate update;
-    update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
-               lid.z());
+    scoped_refptr<chromeos::AccelerometerUpdate> update(
+        new chromeos::AccelerometerUpdate());
+    update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
+                lid.z());
     maximize_mode_controller()->OnAccelerometerUpdated(update);
   }
 
   void TriggerBaseAndLidUpdate(const gfx::Vector3dF& base,
                                const gfx::Vector3dF& lid) {
-    chromeos::AccelerometerUpdate update;
-    update.Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, base.x(),
-               base.y(), base.z());
-    update.Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
-               lid.z());
+    scoped_refptr<chromeos::AccelerometerUpdate> update(
+        new chromeos::AccelerometerUpdate());
+    update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, base.x(),
+                base.y(), base.z());
+    update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(),
+                lid.z());
     maximize_mode_controller()->OnAccelerometerUpdated(update);
   }
 

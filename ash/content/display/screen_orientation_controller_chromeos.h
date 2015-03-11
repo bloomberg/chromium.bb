@@ -82,7 +82,7 @@ class ASH_EXPORT ScreenOrientationController
 
   // chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
-      const chromeos::AccelerometerUpdate& update) override;
+      scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
   // content::ScreenOrientationDelegate:
   bool FullScreenRequired(content::WebContents* web_contents) override;
