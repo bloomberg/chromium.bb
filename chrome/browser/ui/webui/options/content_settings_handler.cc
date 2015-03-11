@@ -87,15 +87,15 @@ typedef bool (*AppFilter)(const extensions::Extension& app,
 const char kExceptionsLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=settings_manage_exceptions";
 
-const char* kSetting = "setting";
-const char* kOrigin = "origin";
-const char* kSource = "source";
-const char* kAppName = "appName";
-const char* kAppId = "appId";
-const char* kEmbeddingOrigin = "embeddingOrigin";
-const char* kPreferencesSource = "preference";
-const char* kVideoSetting = "video";
-const char* kZoom = "zoom";
+const char kSetting[] = "setting";
+const char kOrigin[] = "origin";
+const char kSource[] = "source";
+const char kAppName[] = "appName";
+const char kAppId[] = "appId";
+const char kEmbeddingOrigin[] = "embeddingOrigin";
+const char kPreferencesSource[] = "preference";
+const char kVideoSetting[] = "video";
+const char kZoom[] = "zoom";
 
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
@@ -124,7 +124,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
 
 // A pseudo content type. We use it to display data like a content setting even
 // though it is not a real content setting.
-const char* kZoomContentType = "zoomlevels";
+const char kZoomContentType[] = "zoomlevels";
 
 content::BrowserContext* GetBrowserContext(content::WebUI* web_ui) {
   return web_ui->GetWebContents()->GetBrowserContext();
