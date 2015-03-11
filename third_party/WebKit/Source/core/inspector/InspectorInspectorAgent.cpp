@@ -83,9 +83,7 @@ void InspectorInspectorAgent::setFrontend(InspectorFrontend* inspectorFrontend)
 
 void InspectorInspectorAgent::clearFrontend()
 {
-    m_pendingEvaluateTestCommands.clear();
     m_frontend = nullptr;
-    m_injectedScriptManager->discardInjectedScripts();
     ErrorString error;
     disable(&error);
 }
@@ -102,6 +100,9 @@ void InspectorInspectorAgent::enable(ErrorString*)
 void InspectorInspectorAgent::disable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, false);
+    m_pendingEvaluateTestCommands.clear();
+    m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
+    m_injectedScriptManager->discardInjectedScripts();
 }
 
 void InspectorInspectorAgent::domContentLoadedEventFired(LocalFrame* frame)

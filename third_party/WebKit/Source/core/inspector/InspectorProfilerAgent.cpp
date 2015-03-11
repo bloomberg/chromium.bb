@@ -162,8 +162,7 @@ void InspectorProfilerAgent::disable(ErrorString*)
         ScriptProfiler::stop(it->m_id);
     m_startedProfiles.clear();
     stop(0, 0);
-
-    m_instrumentingAgents->setInspectorProfilerAgent(0);
+    m_instrumentingAgents->setInspectorProfilerAgent(nullptr);
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, false);
 }
 
@@ -192,7 +191,6 @@ void InspectorProfilerAgent::clearFrontend()
     m_frontend = 0;
     ErrorString error;
     disable(&error);
-    m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 
 void InspectorProfilerAgent::restore()

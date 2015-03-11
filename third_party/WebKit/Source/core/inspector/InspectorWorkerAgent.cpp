@@ -142,7 +142,6 @@ void InspectorWorkerAgent::restore()
 
 void InspectorWorkerAgent::clearFrontend()
 {
-    m_state->setBoolean(WorkerAgentState::autoconnectToWorkers, false);
     disable(0);
     m_frontend = 0;
 }
@@ -158,6 +157,7 @@ void InspectorWorkerAgent::enable(ErrorString*)
 void InspectorWorkerAgent::disable(ErrorString*)
 {
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, false);
+    m_state->setBoolean(WorkerAgentState::autoconnectToWorkers, false);
     if (!m_frontend)
         return;
     destroyWorkerAgentClients();

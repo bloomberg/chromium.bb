@@ -334,22 +334,12 @@ InspectorDOMAgent::~InspectorDOMAgent()
 void InspectorDOMAgent::setFrontend(InspectorFrontend* frontend)
 {
     ASSERT(!m_frontend);
-    m_history = adoptPtrWillBeNoop(new InspectorHistory());
-    m_domEditor = adoptPtrWillBeNoop(new DOMEditor(m_history.get()));
     m_frontend = frontend->dom();
 }
 
 void InspectorDOMAgent::clearFrontend()
 {
     ASSERT(m_frontend);
-
-    m_history.clear();
-    m_domEditor.clear();
-
-    ErrorString error;
-    setSearchingForNode(&error, NotSearching, 0);
-    hideHighlight(&error);
-
     m_frontend = nullptr;
     disable(0);
 }
@@ -575,6 +565,8 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
 void InspectorDOMAgent::innerEnable()
 {
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
+    m_history = adoptPtrWillBeNoop(new InspectorHistory());
+    m_domEditor = adoptPtrWillBeNoop(new DOMEditor(m_history.get()));
     m_document = m_pageAgent->inspectedFrame()->document();
     m_instrumentingAgents->setInspectorDOMAgent(this);
     if (m_listener)
@@ -604,7 +596,11 @@ void InspectorDOMAgent::disable(ErrorString* errorString)
         return;
     }
     m_state->setBoolean(DOMAgentState::domAgentEnabled, false);
-    m_instrumentingAgents->setInspectorDOMAgent(0);
+    setSearchingForNode(errorString, NotSearching, nullptr);
+    hideHighlight(errorString);
+    m_instrumentingAgents->setInspectorDOMAgent(nullptr);
+    m_history.clear();
+    m_domEditor.clear();
     setDocument(nullptr);
     if (m_listener)
         m_listener->domAgentWasDisabled();

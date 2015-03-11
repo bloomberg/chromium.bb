@@ -293,16 +293,8 @@ void InspectorDebuggerAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorDebuggerAgent::clearFrontend()
 {
     m_frontend = nullptr;
-
-    if (!enabled())
-        return;
-
-    disable();
-
-    // FIXME: due to m_state->mute() hack in InspectorController, debuggerEnabled is actually set to false only
-    // in InspectorState, but not in cookie. That's why after navigation debuggerEnabled will be true,
-    // but after front-end re-open it will still be false.
-    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, false);
+    ErrorString error;
+    disable(&error);
 }
 
 void InspectorDebuggerAgent::setBreakpointsActive(ErrorString*, bool active)

@@ -85,10 +85,6 @@ void InspectorHeapProfilerAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorHeapProfilerAgent::clearFrontend()
 {
     m_frontend = 0;
-
-    stopTrackingHeapObjectsInternal();
-    m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
-
     ErrorString error;
     disable(&error);
 }
