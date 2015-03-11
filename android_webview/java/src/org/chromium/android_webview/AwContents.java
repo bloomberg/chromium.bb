@@ -792,6 +792,7 @@ public class AwContents implements SmartClipProvider,
     /**
      * Reconciles the state of this AwContents object with the state of the new container view.
      */
+    @SuppressLint("NewApi") // ViewGroup#isAttachedToWindow requires API level 19.
     private void onContainerViewChanged() {
         // NOTE: mAwViewMethods is used by the old container view, the WebView, so it might refer
         // to a NullAwViewMethods when in fullscreen. To ensure that the state is reconciled with
@@ -2129,6 +2130,7 @@ public class AwContents implements SmartClipProvider,
     /**
      * @see ContentViewCore#addPossiblyUnsafeJavascriptInterface(Object, String, Class)
      */
+    @SuppressLint("NewApi")  // JavascriptInterface requires API level 17.
     public void addJavascriptInterface(Object object, String name) {
         if (isDestroyed()) return;
         Class<? extends Annotation> requiredAnnotation = null;

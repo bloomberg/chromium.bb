@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
@@ -80,6 +81,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         mContentsClient.onUnhandledKeyEvent(event);
     }
 
+    @SuppressLint("NewApi")  // View#getLayoutDirection requires API level 17.
     @Override
     public boolean takeFocus(boolean reverse) {
         int direction =

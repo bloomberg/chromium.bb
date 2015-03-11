@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
@@ -19,6 +20,7 @@ import android.webkit.ValueCallback;
  * system class PrintDocumentAdapter and hides all printing details from
  * the developer.
  */
+@SuppressLint("NewApi")  // Printing requires API level 19.
 public class AwPrintDocumentAdapter extends PrintDocumentAdapter {
 
     private AwPdfExporter mPdfExporter;

@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Handler;
@@ -1206,6 +1207,7 @@ public class AwSettings {
      *
      * @return true if Text Auto-sizing layout algorithm is enabled
      */
+    @SuppressLint("NewApi")  // WebSettings.LayoutAlgorithm#TEXT_AUTOSIZING requires API level 19.
     @CalledByNative
     private boolean getTextAutosizingEnabledLocked() {
         assert Thread.holdsLock(mAwSettingsLock);

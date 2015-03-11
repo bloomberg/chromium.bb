@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -46,6 +47,7 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
         mAwContentsClient.onBackgroundColorChanged(color);
     }
 
+    @SuppressLint("NewApi")  // Intent#getSelector requires API 15.
     @Override
     public void onStartContentIntent(Context context, String contentUrl) {
         if (mAwContentsClient.hasWebViewClient()) {
