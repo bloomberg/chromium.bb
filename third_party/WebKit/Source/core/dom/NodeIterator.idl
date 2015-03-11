@@ -24,7 +24,7 @@
     SetWrapperReferenceTo(NodeFilter filter),
     WillBeGarbageCollected,
 ] interface NodeIterator {
-    readonly attribute Node root;
+    [SameObject] readonly attribute Node root;
     readonly attribute Node referenceNode;
     readonly attribute boolean pointerBeforeReferenceNode;
     readonly attribute unsigned long whatToShow;

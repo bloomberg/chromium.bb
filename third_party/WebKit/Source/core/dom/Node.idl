@@ -47,7 +47,7 @@
     [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? parentNode;
     [PerWorldBindings] readonly attribute Element? parentElement;
     [ImplementedAs=hasChildren] boolean hasChildNodes();
-    [PerWorldBindings, ExposeJSAccessors] readonly attribute NodeList childNodes;
+    [SameObject, PerWorldBindings, ExposeJSAccessors] readonly attribute NodeList childNodes;
     [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? firstChild;
     [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? lastChild;
     [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? previousSibling;
@@ -59,7 +59,7 @@
     [CustomElementCallbacks] void normalize();
 
     // FIXME: The deep argument should have a default value false.
-    [CustomElementCallbacks] Node cloneNode(optional boolean deep);
+    [NewObject, CustomElementCallbacks] Node cloneNode(optional boolean deep);
     boolean isEqualNode(Node? node);
 
     const unsigned short DOCUMENT_POSITION_DISCONNECTED = 0x01;

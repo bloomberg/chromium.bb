@@ -35,8 +35,8 @@
 ] interface MutationRecord {
     readonly attribute DOMString type;
     readonly attribute Node target;
-    readonly attribute NodeList addedNodes;
-    readonly attribute NodeList removedNodes;
+    [SameObject] readonly attribute NodeList addedNodes;
+    [SameObject] readonly attribute NodeList removedNodes;
     readonly attribute Node? previousSibling;
     readonly attribute Node? nextSibling;
     readonly attribute DOMString? attributeName;

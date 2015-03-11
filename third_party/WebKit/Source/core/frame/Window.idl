@@ -95,7 +95,7 @@
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#extensions-to-the-window-interface
     // FIXME: The optional pseudoElt argument should have no default.
-    [TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt = null);
+    [NewObject, TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt = null);
     // http://dev.w3.org/csswg/cssom/#utility-apis
     // FIXME: CSS should be an interface with static members, in which
     // case this getter would not be needed.
@@ -103,8 +103,8 @@
 
     // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-window-interface
-    MediaQueryList matchMedia(DOMString query);
-    readonly attribute Screen screen;
+    [NewObject] MediaQueryList matchMedia(DOMString query);
+    [SameObject] readonly attribute Screen screen;
 
     // browsing context
     // FIXME: The x and y arguments should not be optional. crbug.com/453421

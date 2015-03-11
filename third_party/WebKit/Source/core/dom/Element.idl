@@ -31,10 +31,10 @@
 
     [Reflect, ExposeJSAccessors] attribute DOMString id;
     [Reflect=class] attribute DOMString className;
-    [PerWorldBindings] readonly attribute DOMTokenList classList;
+    [SameObject, PerWorldBindings] readonly attribute DOMTokenList classList;
 
     [MeasureAs=HasAttributes] boolean hasAttributes();
-    [PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;
+    [SameObject, PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;
     DOMString? getAttribute(DOMString name);
     DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
     [RaisesException, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
@@ -107,12 +107,12 @@
     // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
     // FIXME: style should be on HTMLElement and SVGElement.
     // FIXME: style should have [PutForwards=cssText].
-    [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
+    [SameObject, PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
     // HTML
     // https://html.spec.whatwg.org/#htmlelement
     // FIXME: dataset, focus() and blur() should be on HTMLElement.
-    [PerWorldBindings] readonly attribute DOMStringMap dataset;
+    [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
     void focus();
     void blur();
 

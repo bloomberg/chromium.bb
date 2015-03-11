@@ -51,12 +51,12 @@
     [RaisesException] short compareBoundaryPoints(unsigned short how, Range sourceRange);
 
     [RaisesException, CustomElementCallbacks] void deleteContents();
-    [RaisesException, CustomElementCallbacks] DocumentFragment extractContents();
-    [RaisesException, CustomElementCallbacks] DocumentFragment cloneContents();
+    [NewObject, RaisesException, CustomElementCallbacks] DocumentFragment extractContents();
+    [NewObject, RaisesException, CustomElementCallbacks] DocumentFragment cloneContents();
     [RaisesException, CustomElementCallbacks] void insertNode(Node node);
     [RaisesException, CustomElementCallbacks] void surroundContents(Node newParent);
 
-    Range cloneRange();
+    [NewObject] Range cloneRange();
     [DeprecateAs=RangeDetach] void detach();
 
     [RaisesException] boolean isPointInRange(Node node, long offset);
@@ -75,7 +75,7 @@
 
     // DOM Parsing and Serialization
     // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-range-interface
-    [RaisesException, CustomElementCallbacks] DocumentFragment createContextualFragment(DOMString fragment);
+    [NewObject, RaisesException, CustomElementCallbacks] DocumentFragment createContextualFragment(DOMString fragment);
 
     // Non-standard APIs
     const unsigned short NODE_BEFORE           = 0;
