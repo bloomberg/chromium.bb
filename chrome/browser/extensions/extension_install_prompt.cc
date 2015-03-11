@@ -381,11 +381,6 @@ int ExtensionInstallPrompt::Prompt::GetDialogButtons() const {
   return kButtons[type_];
 }
 
-bool ExtensionInstallPrompt::Prompt::ShouldShowExplanationText() const {
-  return type_ == INSTALL_PROMPT && extension_->is_extension() &&
-         experiment_.get() && experiment_->text_only();
-}
-
 bool ExtensionInstallPrompt::Prompt::HasAcceptButtonLabel() const {
   if (type_ == POST_INSTALL_PERMISSIONS_PROMPT)
     return ShouldDisplayRevokeButton();
@@ -419,21 +414,15 @@ base::string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
     }
     return l10n_util::GetStringUTF16(id);
   }
-  if (ShouldShowExplanationText())
-    return experiment_->GetOkButtonText();
   return l10n_util::GetStringUTF16(kAcceptButtonIds[type_]);
 }
 
 bool ExtensionInstallPrompt::Prompt::HasAbortButtonLabel() const {
-  if (ShouldShowExplanationText())
-    return true;
   return kAbortButtonIds[type_] > 0;
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetAbortButtonLabel() const {
   CHECK(HasAbortButtonLabel());
-  if (ShouldShowExplanationText())
-    return experiment_->GetCancelButtonText();
   return l10n_util::GetStringUTF16(kAbortButtonIds[type_]);
 }
 
@@ -909,11 +898,6 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {
-  if (prompt_->type() == INSTALL_PROMPT)
-    prompt_->set_experiment(ExtensionInstallPromptExperiment::Find());
-  else
-    prompt_->set_experiment(ExtensionInstallPromptExperiment::ControlGroup());
-
   scoped_refptr<const PermissionSet> permissions_to_display;
   if (custom_permissions_.get()) {
     permissions_to_display = custom_permissions_;

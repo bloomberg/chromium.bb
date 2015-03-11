@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_install_prompt_experiment.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
@@ -114,7 +113,6 @@ void ExtensionInstallDialogViewTestBase::SetUpOnMainThread() {
 
   install_prompt_ = new MockExtensionInstallPrompt(web_contents_);
   install_prompt_->set_prompt(prompt_.get());
-  prompt_->set_experiment(ExtensionInstallPromptExperiment::ControlGroup());
   prompt_->set_extension(extension_);
 
   scoped_ptr<ExtensionIconManager> icon_manager(new ExtensionIconManager());

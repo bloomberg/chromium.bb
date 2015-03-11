@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/extensions/extension_install_prompt_experiment.h"
 #include "extensions/common/url_pattern.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -141,7 +140,6 @@ class ExtensionInstallPrompt
     base::string16 GetRetainedDevicesHeading() const;
 
     bool ShouldShowPermissions() const;
-    bool ShouldShowExplanationText() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT.
@@ -199,13 +197,6 @@ class ExtensionInstallPrompt
     void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
     bool has_webstore_data() const { return has_webstore_data_; }
-
-    const ExtensionInstallPromptExperiment* experiment() const {
-      return experiment_.get();
-    }
-    void set_experiment(ExtensionInstallPromptExperiment* experiment) {
-      experiment_ = experiment;
-    }
 
    private:
     friend class base::RefCountedThreadSafe<Prompt>;
@@ -270,8 +261,6 @@ class ExtensionInstallPrompt
 
     std::vector<base::FilePath> retained_files_;
     std::vector<base::string16> retained_device_messages_;
-
-    scoped_refptr<ExtensionInstallPromptExperiment> experiment_;
 
     DISALLOW_COPY_AND_ASSIGN(Prompt);
   };

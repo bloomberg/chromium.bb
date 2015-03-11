@@ -582,8 +582,6 @@
       'browser/extensions/extension_install_checker.h',
       'browser/extensions/extension_install_prompt.cc',
       'browser/extensions/extension_install_prompt.h',
-      'browser/extensions/extension_install_prompt_experiment.cc',
-      'browser/extensions/extension_install_prompt_experiment.h',
       'browser/extensions/extension_install_prompt_show_params.cc',
       'browser/extensions/extension_install_prompt_show_params.h',
       'browser/extensions/extension_install_ui_util.cc',

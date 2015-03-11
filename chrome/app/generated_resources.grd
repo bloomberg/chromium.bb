@@ -5254,56 +5254,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Hide Details
       </message>
 
-      <!-- Strings for the extensions permission dialog experiment -->
-      <!-- TODO(meacer): Remove these once the experiments are completed. -->
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_EXPLANATION1">
-        Do you trust this extension to use these privileges safely?
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_EXPLANATION2">
-        Once installed, this extension could potentially use these privileges to do malicious things to your web browsing experience. Are you sure you want to install this extension?
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_EXPLANATION3">
-        Are you sure you want to install this extension given that it requires these privileges?
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_EXPLANATION4">
-        Make sure that these privileges make sense for what you think the extension needs to do. If they do not, click Cancel.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_EXPLANATION5">
-        Do you trust this extension to perform these actions?
-      </message>
-
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_INSTALL_BUTTON_TRUST" desc="Text for the install button on the extension install prompt (for experiment group 1)">
-        Yes, I trust this extension!
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_INSTALL_BUTTON_YES" desc="Text for the install button on the extension install prompt (for experiment group 2)">
-        Yes, install
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_INSTALL_BUTTON_SURE" desc="Text for the install button on the extension install prompt (for experiment group 3)">
-        Yes, I'm sure
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_INSTALL_BUTTON_TRUST2" desc="Text for the install button on the extension install prompt (for experiment group 4)">
-        Yes, I trust it
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_INSTALL_BUTTON_NOPE" desc="Text for the cancel button on the extension install prompt">
-        Nope, cancel
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_SHOW_DETAILS" desc="The label of the button which displays permission info when clicked">
-        Show details
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_SHOW_PERMISSIONS" desc="The label of the button which displays permission list when clicked">
-        Show permissions
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_CHECKBOX_INFO" desc="Text for the label that explains that user should check all checkboxes to process for installation.">
-        Please check all boxes to proceed.
-      </message>
-
-      <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS_EXPLANATION" desc="Extra explanation text for full access permission">
-        This extension can read and change all data on your computer and all websites including Google, Facebook, Yahoo, etc.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_EXPLANATION" desc="Extra explanation text for all sites permission">
-        This extension can read and change your information on all websites including Google, Facebook, Yahoo, etc.
-      </message>
-
       <!-- Global error messages for extensions -->
       <message name="IDS_EXTENSION_WARNINGS_WRENCH_MENU_ITEM" desc="The wrench menu item indicating that extensions caused problems.">
         Extension error
