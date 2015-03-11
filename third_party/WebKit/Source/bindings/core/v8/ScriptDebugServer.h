@@ -90,7 +90,9 @@ public:
         virtual ~Task() { }
         virtual void run() = 0;
     };
-    static void interruptAndRun(v8::Isolate*, PassOwnPtr<Task>);
+    // This method can be called on any thread. It is caller's responsibility to make sure that
+    // this ScriptDebugServer and corresponding v8::Isolate exist while this method is running.
+    void interruptAndRun(PassOwnPtr<Task>);
     void runPendingTasks();
 
     bool isPaused();

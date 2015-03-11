@@ -425,9 +425,9 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::callFrameNoScopes
     return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Handle<v8::Object>::Cast(currentCallFrameV8));
 }
 
-void ScriptDebugServer::interruptAndRun(v8::Isolate* isolate, PassOwnPtr<Task> task)
+void ScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task)
 {
-    v8::Debug::DebugBreakForCommand(isolate, new ClientDataImpl(task));
+    v8::Debug::DebugBreakForCommand(m_isolate, new ClientDataImpl(task));
 }
 
 void ScriptDebugServer::runPendingTasks()

@@ -34,6 +34,10 @@
 #include "bindings/core/v8/ScriptDebugServer.h"
 #include <v8.h>
 
+namespace WTF {
+class Mutex;
+}
+
 namespace blink {
 
 class Page;
@@ -41,25 +45,22 @@ class Page;
 class PageScriptDebugServer final : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
 public:
-    static PageScriptDebugServer& shared();
-
-    ~PageScriptDebugServer() override;
-    DECLARE_VIRTUAL_TRACE();
-
-    static void setMainThreadIsolate(v8::Isolate*);
-
-    void addListener(ScriptDebugListener*, LocalFrame*);
-    void removeListener(ScriptDebugListener*, LocalFrame*);
-
-    static void interruptAndRun(PassOwnPtr<Task>);
-
     class ClientMessageLoop {
     public:
         virtual ~ClientMessageLoop() { }
         virtual void run(LocalFrame*) = 0;
         virtual void quitNow() = 0;
     };
-    void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
+
+    PageScriptDebugServer(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
+    ~PageScriptDebugServer() override;
+    DECLARE_VIRTUAL_TRACE();
+
+    void addListener(ScriptDebugListener*, LocalFrame*);
+    void removeListener(ScriptDebugListener*, LocalFrame*);
+
+    static PageScriptDebugServer* instance();
+    static void interruptMainThreadAndRun(PassOwnPtr<Task>);
 
     void compileScript(ScriptState*, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
     void clearCompiledScripts() override;
@@ -69,11 +70,10 @@ public:
     void unmuteWarningsAndDeprecations() override;
 
 private:
-    PageScriptDebugServer();
-
     ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) override;
     void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
     void quitMessageLoopOnPause() override;
+    static WTF::Mutex& creationMutex();
 
     using ListenersMap = WillBeHeapHashMap<RawPtrWillBeMember<LocalFrame>, ScriptDebugListener*>;
     ListenersMap m_listenersMap;
@@ -81,7 +81,7 @@ private:
     RawPtrWillBeMember<LocalFrame> m_pausedFrame;
     HashMap<String, String> m_compiledScriptURLs;
 
-    static v8::Isolate* s_mainThreadIsolate;
+    static PageScriptDebugServer* s_instance;
 };
 
 } // namespace blink

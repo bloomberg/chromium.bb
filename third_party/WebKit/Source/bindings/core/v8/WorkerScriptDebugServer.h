@@ -52,8 +52,6 @@ public:
     void addListener(ScriptDebugListener*);
     void removeListener(ScriptDebugListener*);
 
-    void interruptAndRunTask(PassOwnPtr<Task>);
-
 private:
     explicit WorkerScriptDebugServer(WorkerGlobalScope*);
 

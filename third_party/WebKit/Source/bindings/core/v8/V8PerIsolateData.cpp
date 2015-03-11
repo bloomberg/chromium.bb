@@ -27,8 +27,7 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 
 #include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/PageScriptDebugServer.h"
-#include "bindings/core/v8/ScriptProfiler.h"
+#include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HiddenValue.h"
@@ -86,10 +85,8 @@ V8PerIsolateData::V8PerIsolateData()
     if (blink::Platform::current()->currentThread())
         isolate()->AddCallCompletedCallback(&assertV8RecursionScope);
 #endif
-    if (isMainThread()) {
+    if (isMainThread())
         mainThreadPerIsolateData = this;
-        PageScriptDebugServer::setMainThreadIsolate(isolate());
-    }
     isolate()->SetUseCounterCallback(&useCounterCallback);
 }
 
@@ -265,6 +262,12 @@ void V8PerIsolateData::runEndOfScopeTasks()
 void V8PerIsolateData::clearEndOfScopeTasks()
 {
     m_endOfScopeTasks.clear();
+}
+
+void V8PerIsolateData::setScriptDebugServer(PassOwnPtr<ScriptDebugServer> server)
+{
+    ASSERT(!m_debugServer);
+    m_debugServer = server;
 }
 
 } // namespace blink

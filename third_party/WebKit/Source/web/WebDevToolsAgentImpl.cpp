@@ -108,13 +108,20 @@ namespace blink {
 
 class ClientMessageLoopAdapter : public PageScriptDebugServer::ClientMessageLoop {
 public:
-    static void ensureClientMessageLoopCreated(WebDevToolsAgentClient* client)
+    ~ClientMessageLoopAdapter() override
+    {
+        s_instance = nullptr;
+    }
+
+    static void ensurePageScriptDebugServerCreated(WebDevToolsAgentClient* client)
     {
         if (s_instance)
             return;
         OwnPtr<ClientMessageLoopAdapter> instance = adoptPtr(new ClientMessageLoopAdapter(adoptPtr(client->createClientMessageLoop())));
         s_instance = instance.get();
-        PageScriptDebugServer::shared().setClientMessageLoop(instance.release());
+        v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+        V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+        data->setScriptDebugServer(adoptPtr(new PageScriptDebugServer(instance.release(), isolate)));
     }
 
     static void inspectedViewClosed(WebViewImpl* view)
@@ -127,7 +134,7 @@ public:
     {
         // Release render thread if necessary.
         if (s_instance && s_instance->m_running)
-            PageScriptDebugServer::shared().continueProgram();
+            PageScriptDebugServer::instance()->continueProgram();
     }
 
 private:
@@ -135,8 +142,7 @@ private:
         : m_running(false)
         , m_messageLoop(messageLoop) { }
 
-
-    virtual void run(LocalFrame* frame)
+    void run(LocalFrame* frame) override
     {
         if (m_running)
             return;
@@ -187,7 +193,7 @@ private:
         m_running = false;
     }
 
-    virtual void quitNow()
+    void quitNow() override
     {
         m_messageLoop->quitNow();
     }
@@ -196,11 +202,10 @@ private:
     OwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
     typedef HashSet<WebViewImpl*> FrozenViewsSet;
     FrozenViewsSet m_frozenViews;
-    // FIXME: The ownership model for s_instance is somewhat complicated. Can we make this simpler?
     static ClientMessageLoopAdapter* s_instance;
 };
 
-ClientMessageLoopAdapter* ClientMessageLoopAdapter::s_instance = 0;
+ClientMessageLoopAdapter* ClientMessageLoopAdapter::s_instance = nullptr;
 
 class DebuggerTask : public PageScriptDebugServer::Task {
 public:
@@ -278,9 +283,10 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
     m_agents.append(InspectorTimelineAgent::create());
 
-    PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
+    ClientMessageLoopAdapter::ensurePageScriptDebugServerCreated(m_client);
+    PageScriptDebugServer* scriptDebugServer = PageScriptDebugServer::instance();
 
-    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, this, pageScriptDebugServer, m_pageAgent));
+    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, this, scriptDebugServer, m_pageAgent));
 
     OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_pageAgent);
     OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(pageConsoleAgentPtr.get());
@@ -292,7 +298,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_agents.append(workerAgentPtr.release());
     m_agents.append(pageConsoleAgentPtr.release());
 
-    m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), pageScriptDebugServer);
+    m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), scriptDebugServer);
 
     m_agents.append(InspectorDatabaseAgent::create(page));
     m_agents.append(DeviceOrientationInspectorAgent::create(page));
@@ -302,7 +308,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_agents.append(InspectorDOMStorageAgent::create(page));
 
     m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(this);
-    ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -378,9 +383,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
 
-    PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
-
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(pageScriptDebugServer, m_pageAgent, injectedScriptManager, overlay));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(PageScriptDebugServer::instance(), m_pageAgent, injectedScriptManager, overlay));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(debuggerAgent, m_instrumentingAgents.get()));
@@ -716,7 +719,7 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
     if (!m_attached)
         return;
     if (WebDevToolsAgent::shouldInterruptForMessage(message))
-        PageScriptDebugServer::shared().runPendingTasks();
+        PageScriptDebugServer::instance()->runPendingTasks();
     else
         dispatchMessageFromFrontend(message);
 }
@@ -892,7 +895,7 @@ void WebDevToolsAgent::interruptAndDispatch(MessageDescriptor* rawDescriptor)
     // rawDescriptor can't be a PassOwnPtr because interruptAndDispatch is a WebKit API function.
     OwnPtr<MessageDescriptor> descriptor = adoptPtr(rawDescriptor);
     OwnPtr<DebuggerTask> task = adoptPtr(new DebuggerTask(descriptor.release()));
-    PageScriptDebugServer::interruptAndRun(task.release());
+    PageScriptDebugServer::interruptMainThreadAndRun(task.release());
 }
 
 bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)

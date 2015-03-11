@@ -89,11 +89,6 @@ void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
     v8::Debug::SetDebugEventListener(0);
 }
 
-void WorkerScriptDebugServer::interruptAndRunTask(PassOwnPtr<Task> task)
-{
-    interruptAndRun(m_isolate, task);
-}
-
 ScriptDebugListener* WorkerScriptDebugServer::getDebugListenerForContext(v8::Handle<v8::Context>)
 {
     // There is only one worker context in isolate.

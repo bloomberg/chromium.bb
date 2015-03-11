@@ -86,7 +86,7 @@ DEFINE_TRACE(WorkerDebuggerAgent)
 
 void WorkerDebuggerAgent::interruptAndDispatchInspectorCommands()
 {
-    scriptDebugServer().interruptAndRunTask(adoptPtr(new RunInspectorCommandsTask(m_inspectedWorkerGlobalScope->thread())));
+    scriptDebugServer().interruptAndRun(adoptPtr(new RunInspectorCommandsTask(m_inspectedWorkerGlobalScope->thread())));
 }
 
 void WorkerDebuggerAgent::startListeningScriptDebugServer()

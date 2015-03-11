@@ -39,6 +39,7 @@
 namespace blink {
 
 class DOMDataStore;
+class ScriptDebugServer;
 class StringCache;
 struct WrapperTypeInfo;
 
@@ -113,6 +114,8 @@ public:
     void runEndOfScopeTasks();
     void clearEndOfScopeTasks();
 
+    void setScriptDebugServer(PassOwnPtr<ScriptDebugServer>);
+
 private:
     V8PerIsolateData();
     ~V8PerIsolateData();
@@ -147,6 +150,7 @@ private:
     bool m_performingMicrotaskCheckpoint;
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
+    OwnPtr<ScriptDebugServer> m_debugServer;
 };
 
 } // namespace blink

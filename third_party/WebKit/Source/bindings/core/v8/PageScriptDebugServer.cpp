@@ -50,6 +50,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -74,27 +75,29 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> co
     return toLocalFrame(toFrameIfNotDetached(context));
 }
 
-PageScriptDebugServer& PageScriptDebugServer::shared()
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<PageScriptDebugServer>, server, (adoptPtrWillBeNoop(new PageScriptDebugServer())));
-    return *server;
-}
+PageScriptDebugServer* PageScriptDebugServer::s_instance = nullptr;
 
-v8::Isolate* PageScriptDebugServer::s_mainThreadIsolate = 0;
-
-void PageScriptDebugServer::setMainThreadIsolate(v8::Isolate* isolate)
-{
-    s_mainThreadIsolate = isolate;
-}
-
-PageScriptDebugServer::PageScriptDebugServer()
-    : ScriptDebugServer(s_mainThreadIsolate)
+PageScriptDebugServer::PageScriptDebugServer(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
+    : ScriptDebugServer(isolate)
+    , m_clientMessageLoop(clientMessageLoop)
     , m_pausedFrame(nullptr)
 {
+    MutexLocker locker(creationMutex());
+    ASSERT(!s_instance);
+    s_instance = this;
 }
 
 PageScriptDebugServer::~PageScriptDebugServer()
 {
+    MutexLocker locker(creationMutex());
+    ASSERT(s_instance == this);
+    s_instance = nullptr;
+}
+
+Mutex& PageScriptDebugServer::creationMutex()
+{
+    AtomicallyInitializedStaticReference(Mutex, mutex, (new Mutex));
+    return mutex;
 }
 
 DEFINE_TRACE(PageScriptDebugServer)
@@ -160,14 +163,17 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalF
     }
 }
 
-void PageScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task)
+PageScriptDebugServer* PageScriptDebugServer::instance()
 {
-    ScriptDebugServer::interruptAndRun(s_mainThreadIsolate, task);
+    ASSERT(isMainThread());
+    return s_instance;
 }
 
-void PageScriptDebugServer::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> clientMessageLoop)
+void PageScriptDebugServer::interruptMainThreadAndRun(PassOwnPtr<Task> task)
 {
-    m_clientMessageLoop = clientMessageLoop;
+    MutexLocker locker(creationMutex());
+    if (s_instance)
+        s_instance->interruptAndRun(task);
 }
 
 void PageScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
