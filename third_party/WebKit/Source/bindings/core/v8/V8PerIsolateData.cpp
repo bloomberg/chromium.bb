@@ -77,6 +77,7 @@ V8PerIsolateData::V8PerIsolateData()
     , m_internalScriptRecursionLevel(0)
 #endif
     , m_performingMicrotaskCheckpoint(false)
+    , m_debugServer(nullptr)
 {
     // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
     isolate()->Enter();
@@ -141,6 +142,7 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
     V8PerIsolateData* data = from(isolate);
     // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
     isolate->Exit();
+    data->m_debugServer.clear();
     delete data;
 }
 

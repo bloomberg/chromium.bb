@@ -150,7 +150,11 @@ private:
     bool m_performingMicrotaskCheckpoint;
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
-    OwnPtrWillBePersistent<ScriptDebugServer> m_debugServer;
+#if ENABLE(OILPAN)
+    CrossThreadPersistent<ScriptDebugServer> m_debugServer;
+#else
+    OwnPtr<ScriptDebugServer> m_debugServer;
+#endif
 };
 
 } // namespace blink
