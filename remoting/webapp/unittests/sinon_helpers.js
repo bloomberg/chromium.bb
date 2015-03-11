@@ -2,21 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var sinonHelpers = {};
-
-sinonHelpers.reset = function() {
-
 /**
- * @param {Object} obj
- * @param {string} method
- * @param {Function=} opt_stubFunction
+ * Casts an |object| to sinon.TestStub verifying that it's really a stub.
  * @return {sinon.TestStub}
- * @suppress {reportUnknownTypes}
  */
-sinon.$setupStub = function(obj, method, opt_stubFunction) {
-  sinon.stub(obj, method, opt_stubFunction);
-  obj[method].$testStub = /** @type {sinon.TestStub} */ (obj[method]);
-  return obj[method].$testStub;
-};
-
+function $testStub(/** Object */ object) {
+  base.debug.assert(object.hasOwnProperty("getCall"));
+  return /** @type {sinon.TestStub} */ (object);
 };

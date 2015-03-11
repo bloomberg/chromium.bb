@@ -8,10 +8,10 @@
 
 module('l10n', {
   setup: function() {
-    sinon.$setupStub(chrome.i18n, 'getMessage');
+    sinon.stub(chrome.i18n, 'getMessage');
   },
   teardown: function() {
-    chrome.i18n.getMessage.$testStub.restore();
+    $testStub(chrome.i18n.getMessage).restore();
   }
 });
 
@@ -23,7 +23,7 @@ test('getTranslationOrError(tag) should return tag on error', function() {
 test('localizeElementFromTag() should replace innerText by default',
   function() {
     var element = document.createElement('div');
-    chrome.i18n.getMessage.$testStub.withArgs('tag')
+    $testStub(chrome.i18n.getMessage).withArgs('tag')
           .returns('<b>Hello World</b>');
 
     l10n.localizeElementFromTag(element, 'tag');
@@ -34,7 +34,7 @@ test('localizeElementFromTag() should replace innerText by default',
 test('localizeElementFromTag() should replace innerHTML if flag is set',
   function() {
     var element = document.createElement('div');
-    chrome.i18n.getMessage.$testStub.withArgs('tag')
+    $testStub(chrome.i18n.getMessage).withArgs('tag')
           .returns('<b>Hello World</b>');
 
     l10n.localizeElementFromTag(element, 'tag', null, true);
@@ -48,7 +48,7 @@ test(
   function() {
     var element = document.createElement('div');
     element.setAttribute('i18n-content', 'tag');
-    chrome.i18n.getMessage.$testStub.withArgs('tag')
+    $testStub(chrome.i18n.getMessage).withArgs('tag')
           .returns('<b>Hello World</b>');
 
     l10n.localizeElement(element);
@@ -62,7 +62,9 @@ test(
   function() {
     var fixture = document.getElementById('qunit-fixture');
     fixture.innerHTML = '<div class="target" i18n-title="tag"></div>';
-    chrome.i18n.getMessage.$testStub.withArgs('tag').returns('localized title');
+    $testStub(chrome.i18n.getMessage)
+        .withArgs('tag')
+        .returns('localized title');
 
     l10n.localize();
 
@@ -79,7 +81,7 @@ test('localize() should support string substitutions', function() {
       'i18n-value-2="param2">' +
   '</div>';
 
-  chrome.i18n.getMessage.$testStub.withArgs('tag', ['param1', 'param2'])
+  $testStub(chrome.i18n.getMessage).withArgs('tag', ['param1', 'param2'])
       .returns('localized');
 
   l10n.localize();
@@ -94,10 +96,11 @@ test('localize() should support tag substitutions', function() {
       '<div class="target" i18n-content="tag"' +
       ' i18n-value-name-1="tag1" i18n-value-name-2="tag2"></div>';
 
-  var getMessage = chrome.i18n.getMessage.$testStub;
-  getMessage.withArgs('tag1').returns('param1');
-  getMessage.withArgs('tag2').returns('param2');
-  getMessage.withArgs('tag', ['param1', 'param2']).returns('localized');
+  $testStub(chrome.i18n.getMessage).withArgs('tag1').returns('param1');
+  $testStub(chrome.i18n.getMessage).withArgs('tag2').returns('param2');
+  $testStub(chrome.i18n.getMessage)
+      .withArgs('tag', ['param1', 'param2'])
+      .returns('localized');
 
   l10n.localize();
 

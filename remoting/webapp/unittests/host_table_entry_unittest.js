@@ -28,14 +28,14 @@ module('HostTableEntry', {
                         '<div id="cancel-host-delete"></div>';
     setHost('LocalHost', 'ONLINE');
     fixture.appendChild(hostTableEntry_.element());
-    sinon.$setupStub(chrome.i18n, 'getMessage', function(/** string */ tag){
+    sinon.stub(chrome.i18n, 'getMessage', function(/** string */ tag){
       return tag;
     });
   },
   teardown: function() {
     hostTableEntry_.dispose();
     hostTableEntry_ = null;
-    chrome.i18n.getMessage.$testStub.restore();
+    $testStub(chrome.i18n.getMessage).restore();
   }
 });
 
@@ -77,7 +77,7 @@ function verifyVisible(
 test('Clicking on the confirm button in the confirm dialog deletes the host',
   function() {
   // Setup.
-  sinon.$setupStub(remoting, 'setMode', function(/** remoting.AppMode */ mode) {
+  sinon.stub(remoting, 'setMode', function(/** remoting.AppMode */ mode) {
     if (mode === remoting.AppMode.CONFIRM_HOST_DELETE) {
       document.getElementById('confirm-host-delete').click();
     }
@@ -90,14 +90,14 @@ test('Clicking on the confirm button in the confirm dialog deletes the host',
   sinon.assert.calledWith(onDelete_, hostTableEntry_);
 
   // Cleanup.
-  remoting.setMode.$testStub.restore();
+  $testStub(remoting.setMode).restore();
 });
 
 test(
   'Clicking on the cancel button in the confirm dialog cancels host deletion',
   function() {
   // Setup.
-  sinon.$setupStub(remoting, 'setMode', function(/** remoting.AppMode */ mode) {
+  sinon.stub(remoting, 'setMode', function(/** remoting.AppMode */ mode) {
     if (mode === remoting.AppMode.CONFIRM_HOST_DELETE) {
       document.getElementById('cancel-host-delete').click();
     }
@@ -110,7 +110,7 @@ test(
   sinon.assert.notCalled(onDelete_);
 
   // Cleanup.
-  remoting.setMode.$testStub.restore();
+  $testStub(remoting.setMode).restore();
 });
 
 test('Clicking on the rename button shows the input field.', function() {
@@ -168,7 +168,7 @@ test('HostTableEntry renders an offline host correctly.', function() {
 });
 
 test('HostTableEntry renders an out-of-date host correctly', function() {
-  sinon.$setupStub(remoting.Host, 'needsUpdate').returns(true);
+  sinon.stub(remoting.Host, 'needsUpdate').returns(true);
   setHost('LocalHost', 'ONLINE');
   var warningOverlay =
       hostTableEntry_.element().querySelector('.warning-overlay');

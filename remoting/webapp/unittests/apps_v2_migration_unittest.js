@@ -59,7 +59,7 @@ function setMigrationData_(v1UserName, v1UserEmail, v1HasHosts) {
 module('AppsV2Migration', {
   setup: function() {
     chromeMocks.activate(['storage']);
-    mockIsAppsV2 = sinon.$setupStub(base, 'isAppsV2');
+    mockIsAppsV2 = sinon.stub(base, 'isAppsV2');
     remoting.identity = new remoting.Identity();
   },
   teardown: function() {

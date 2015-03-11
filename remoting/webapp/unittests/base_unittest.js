@@ -22,14 +22,14 @@ test('mix(dest, src) should assert if properties are overwritten',
     var src = { a: 'a', b: 'b'};
     var dest = { a: 'a'};
 
-    sinon.$setupStub(base.debug, 'assert');
+    sinon.stub(base.debug, 'assert');
 
     try {
       base.mix(dest, src);
     } catch (e) {
     } finally {
       sinon.assert.called(base.debug.assert);
-      base.debug.assert.$testStub.restore();
+      $testStub(base.debug.assert).restore();
     }
 });
 
@@ -244,13 +244,13 @@ test('raiseEvent() should not invoke listeners of a different event',
 
 test('raiseEvent() should assert when undeclared events are raised',
   function() {
-    sinon.$setupStub(base.debug, 'assert');
+    sinon.stub(base.debug, 'assert');
     try {
       source.raiseEvent('undefined');
     } catch (e) {
     } finally {
       sinon.assert.called(base.debug.assert);
-      base.debug.assert.$testStub.restore();
+      $testStub(base.debug.assert).restore();
     }
 });
 

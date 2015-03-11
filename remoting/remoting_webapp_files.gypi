@@ -84,7 +84,6 @@
       'webapp/unittests/chrome_mocks.js',
       'webapp/unittests/mock_signal_strategy.js',
       'webapp/unittests/sinon_helpers.js',
-      'webapp/unittests/test_start.js',
     ],
     # Prototypes for objects that are not mocked.
     'remoting_webapp_unittest_js_proto_files': [
@@ -93,7 +92,6 @@
       'webapp/js_proto/remoting_proto.js',
       'webapp/js_proto/qunit_proto.js',
       'webapp/js_proto/sinon_proto.js',
-      'webapp/js_proto/sinon_stub_proto.js',
     ],
     'remoting_webapp_unittest_all_js_files': [
       '<@(remoting_webapp_unittest_js_files)',
