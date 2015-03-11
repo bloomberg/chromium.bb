@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_paths.h"
@@ -876,5 +877,40 @@ class ExtensionPrefsBlacklistState : public ExtensionPrefsTest {
   scoped_refptr<const Extension> extension_a_;
 };
 TEST_F(ExtensionPrefsBlacklistState, ExtensionPrefsBlacklistState) {}
+
+// Tests clearing the last launched preference.
+class ExtensionPrefsClearLastLaunched : public ExtensionPrefsTest {
+ public:
+  ~ExtensionPrefsClearLastLaunched() override {}
+
+  void Initialize() override {
+    extension_a_ = prefs_.AddExtension("a");
+    extension_b_ = prefs_.AddExtension("b");
+  }
+
+  void Verify() override {
+    // Set last launched times for each extension.
+    prefs()->SetLastLaunchTime(extension_a_->id(), base::Time::Now());
+    prefs()->SetLastLaunchTime(extension_b_->id(), base::Time::Now());
+
+    // Also set some other preference for one of the extensions.
+    prefs()->SetAllowFileAccess(extension_a_->id(), true);
+
+    // Now clear the launch times.
+    prefs()->ClearLastLaunchTimes();
+
+    // All launch times should be gone.
+    EXPECT_EQ(base::Time(), prefs()->GetLastLaunchTime(extension_a_->id()));
+    EXPECT_EQ(base::Time(), prefs()->GetLastLaunchTime(extension_b_->id()));
+
+    // Other preferences should be untouched.
+    EXPECT_TRUE(prefs()->AllowFileAccess(extension_a_->id()));
+  }
+
+ private:
+  scoped_refptr<const Extension> extension_a_;
+  scoped_refptr<const Extension> extension_b_;
+};
+TEST_F(ExtensionPrefsClearLastLaunched, ExtensionPrefsClearLastLaunched) {}
 
 }  // namespace extensions

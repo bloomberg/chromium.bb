@@ -493,6 +493,10 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   void SetLastLaunchTime(const std::string& extension_id,
                          const base::Time& time);
 
+  // Clear any launch times. This is called by the browsing data remover when
+  // history is cleared.
+  void ClearLastLaunchTimes();
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   bool extensions_disabled() const { return extensions_disabled_; }

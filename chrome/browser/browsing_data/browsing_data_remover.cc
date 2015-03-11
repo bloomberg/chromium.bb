@@ -90,6 +90,7 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "extensions/browser/extension_prefs.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -322,6 +323,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       extensions::ActivityLog::GetInstance(profile_)->RemoveURLs(restrict_urls);
 #endif
     }
+
+#if defined(ENABLE_EXTENSIONS)
+    // Clear launch times as they are a form of history.
+    extensions::ExtensionPrefs* extension_prefs =
+        extensions::ExtensionPrefs::Get(profile_);
+    extension_prefs->ClearLastLaunchTimes();
+#endif
 
     // The power consumption history by origin contains details of websites
     // that were visited.

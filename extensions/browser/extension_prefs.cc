@@ -1659,6 +1659,26 @@ void ExtensionPrefs::SetLastLaunchTime(const std::string& extension_id,
   SaveTime(update.Get(), kPrefLastLaunchTime, time);
 }
 
+void ExtensionPrefs::ClearLastLaunchTimes() {
+  const base::DictionaryValue* dict =
+      prefs_->GetDictionary(pref_names::kExtensions);
+  if (!dict || dict->empty())
+    return;
+
+  // Collect all the keys to remove the last launched preference from.
+  DictionaryPrefUpdate update(prefs_, pref_names::kExtensions);
+  base::DictionaryValue* update_dict = update.Get();
+  for (base::DictionaryValue::Iterator i(*update_dict); !i.IsAtEnd();
+       i.Advance()) {
+    base::DictionaryValue* extension_dict = NULL;
+    if (!update_dict->GetDictionary(i.key(), &extension_dict))
+      continue;
+
+    if (extension_dict->HasKey(kPrefLastLaunchTime))
+      extension_dict->Remove(kPrefLastLaunchTime, NULL);
+  }
+}
+
 void ExtensionPrefs::GetExtensions(ExtensionIdList* out) {
   CHECK(out);
 
