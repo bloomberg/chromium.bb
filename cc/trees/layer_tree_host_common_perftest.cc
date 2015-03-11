@@ -25,7 +25,6 @@
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/paths.h"
-#include "cc/trees/layer_sorter.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/perf/perf_test.h"
 
@@ -162,55 +161,7 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
   }
 };
 
-class LayerSorterMainTest : public CalcDrawPropsImplTest {
- public:
-  void RunSortLayers() { RunTest(false, false, false); }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    LayerTreeImpl* active_tree = host_impl->active_tree();
-    // First build the tree and then we'll start running tests on layersorter
-    // itself
-    bool can_render_to_separate_surface = true;
-    int max_texture_size = 8096;
-    DoCalcDrawPropertiesImpl(can_render_to_separate_surface,
-                             max_texture_size,
-                             active_tree,
-                             host_impl);
-
-    // Behaviour of this test is different from that of sorting in practice.
-    // In this case, all layers that exist in any 3D context are put into a list
-    // and are sorted as one big 3D context instead of several smaller ones.
-    BuildLayerImplList(active_tree->root_layer(), &base_list_);
-    timer_.Reset();
-    do {
-      // Here we'll move the layers into a LayerImpl list of their own to be
-      // sorted so we don't have a sorted list for every run after the first
-      LayerImplList test_list = base_list_;
-      layer_sorter_.Sort(test_list.begin(), test_list.end());
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-
-    EndTest();
-  }
-
-  void BuildLayerImplList(LayerImpl* layer, LayerImplList* list) {
-    if (layer->Is3dSorted()) {
-      list->push_back(layer);
-    }
-
-    for (size_t i = 0; i < layer->children().size(); i++) {
-      BuildLayerImplList(layer->children()[i], list);
-    }
-  }
-
- private:
-  LayerImplList base_list_;
-  LayerSorter layer_sorter_;
-};
-
-class BspTreePerfTest : public LayerSorterMainTest {
+class BspTreePerfTest : public CalcDrawPropsImplTest {
  public:
   void RunSortLayers() { RunTest(false, false, false); }
 
@@ -261,7 +212,18 @@ class BspTreePerfTest : public LayerSorterMainTest {
     EndTest();
   }
 
+  void BuildLayerImplList(LayerImpl* layer, LayerImplList* list) {
+    if (layer->Is3dSorted()) {
+      list->push_back(layer);
+    }
+
+    for (size_t i = 0; i < layer->children().size(); i++) {
+      BuildLayerImplList(layer->children()[i], list);
+    }
+  }
+
  private:
+  LayerImplList base_list_;
   int num_duplicates_;
 };
 
@@ -313,13 +275,13 @@ TEST_F(CalcDrawPropsImplTest, TouchRegionHeavy) {
   RunCalcDrawProps();
 }
 
-TEST_F(LayerSorterMainTest, LayerSorterCubes) {
+TEST_F(BspTreePerfTest, LayerSorterCubes) {
   SetTestName("layer_sort_cubes");
   ReadTestFile("layer_sort_cubes");
   RunSortLayers();
 }
 
-TEST_F(LayerSorterMainTest, LayerSorterRubik) {
+TEST_F(BspTreePerfTest, LayerSorterRubik) {
   SetTestName("layer_sort_rubik");
   ReadTestFile("layer_sort_rubik");
   // TODO(vollick): Remove verify_property_trees setting after

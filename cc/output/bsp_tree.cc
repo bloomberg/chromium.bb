@@ -62,10 +62,9 @@ void BspTree::BuildTree(BspNode* node,
         scoped_ptr<DrawPolygon> polygon;
         scoped_ptr<DrawPolygon> new_front;
         scoped_ptr<DrawPolygon> new_back;
-        bool split_result = false;
         // Time to split this geometry, *it needs to be split by node_data.
         polygon = polygon_list->take_front();
-        split_result =
+        bool split_result =
             polygon->Split(*(node->node_data), &new_front, &new_back);
         DCHECK(split_result);
         if (!split_result) {
