@@ -313,9 +313,9 @@ bool IsCertificateTransparencyRequiredForEV(
     const base::CommandLine& command_line) {
   const std::string group_name =
       base::FieldTrialList::FindFullName("CTRequiredForEVTrial");
-
-  if (command_line.HasSwitch(switches::kRequireCTForEV))
-    return true;
+  if (command_line.HasSwitch(
+        switches::kDisableCertificateTransparencyRequirementForEV))
+    return false;
 
   return group_name == "RequirementEnforced";
 }

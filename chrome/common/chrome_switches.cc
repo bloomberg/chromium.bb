@@ -215,6 +215,11 @@ const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 const char kDisableCastStreamingHWEncoding[] =
     "disable-cast-streaming-hw-encoding";
 
+// Disable the requirement of Certificate Transparency presence for EV
+// certificate. This flag only affects the EV indicator.
+const char kDisableCertificateTransparencyRequirementForEV[] =
+  "disable-ct-for-ev";
+
 // Disables detection of child accounts.
 const char kDisableChildAccountDetection[] =
     "disable-child-account-detection";
@@ -997,11 +1002,6 @@ const char kRecordMode[]                    = "record-mode";
 // time. In particular, remember these decisions through session restart. The
 // time delta to remember certificates should be specified in seconds.
 const char kRememberCertErrorDecisions[]    = "remember-cert-error-decisions";
-
-// Requires presence of Certificate Transparency for Extended Validation
-// certificates. Enforce the policy detailed at:
-// http://dev.chromium.org/Home/chromium-security/certificate-transparency
-const char kRequireCTForEV[] = "require-ct-for-ev";
 
 // If set, the app list will forget it has been installed on startup. Note this
 // doesn't prevent the app list from running, it just makes Chrome think the app
