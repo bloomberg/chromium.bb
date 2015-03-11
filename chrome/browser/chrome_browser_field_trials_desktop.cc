@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/variations/variations_util.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/common/content_constants.h"
 #include "net/spdy/spdy_session.h"
 #include "ui/base/layout.h"
@@ -63,6 +64,13 @@ void DisableShowProfileSwitcherTrialIfNecessary() {
     trial->Disable();
 }
 
+void SetupLightSpeedTrials() {
+  if (!variations::GetVariationParamValue("LightSpeed", "NoGpu").empty()) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableGpu);
+  }
+}
+
 }  // namespace
 
 void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line,
@@ -71,6 +79,7 @@ void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line,
   AutoLaunchChromeFieldTrial();
   SetupInfiniteCacheFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
+  SetupLightSpeedTrials();
   SetupShowAppLauncherPromoFieldTrial(local_state);
 }
 
