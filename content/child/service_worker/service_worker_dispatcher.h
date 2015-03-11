@@ -210,7 +210,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                               int changed_mask,
                               const ServiceWorkerVersionAttributes& attributes);
   void OnUpdateFound(int thread_id,
-                     const ServiceWorkerRegistrationObjectInfo& info);
+                     int registration_handle_id);
   void OnSetControllerServiceWorker(int thread_id,
                                     int provider_id,
                                     const ServiceWorkerObjectInfo& info,

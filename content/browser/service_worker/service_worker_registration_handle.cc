@@ -87,7 +87,7 @@ void ServiceWorkerRegistrationHandle::OnUpdateFound(
     ServiceWorkerRegistration* registration) {
   if (!provider_host_)
     return;  // Could be nullptr in some tests.
-  provider_host_->SendUpdateFoundMessage(GetObjectInfo());
+  provider_host_->SendUpdateFoundMessage(handle_id_);
 }
 
 void ServiceWorkerRegistrationHandle::SetVersionAttributes(

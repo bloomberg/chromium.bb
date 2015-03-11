@@ -469,18 +469,19 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
 }
 
 void ServiceWorkerProviderHost::SendUpdateFoundMessage(
-    const ServiceWorkerRegistrationObjectInfo& object_info) {
+    int registration_handle_id) {
   if (!dispatcher_host_)
     return;  // Could be nullptr in some tests.
 
   if (!IsReadyToSendMessages()) {
     queued_events_.push_back(
         base::Bind(&ServiceWorkerProviderHost::SendUpdateFoundMessage,
-                   AsWeakPtr(), object_info));
+                   AsWeakPtr(), registration_handle_id));
     return;
   }
 
-  Send(new ServiceWorkerMsg_UpdateFound(render_thread_id_, object_info));
+  Send(new ServiceWorkerMsg_UpdateFound(
+      render_thread_id_, registration_handle_id));
 }
 
 void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(

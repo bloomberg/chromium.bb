@@ -190,7 +190,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Sends event messages to the renderer. Events for the worker are queued up
   // until the worker thread id is known via SetReadyToSendMessagesToWorker().
   void SendUpdateFoundMessage(
-      const ServiceWorkerRegistrationObjectInfo& object_info);
+      int registration_handle_id);
   void SendSetVersionAttributesMessage(
       int registration_handle_id,
       ChangedVersionAttributesMask changed_mask,

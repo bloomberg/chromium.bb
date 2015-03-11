@@ -426,7 +426,7 @@ IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_SetVersionAttributes,
 // phase.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_UpdateFound,
                      int /* thread_id */,
-                     content::ServiceWorkerRegistrationObjectInfo)
+                     int /* registration_handle_id */)
 
 // Tells the child process to set the controller ServiceWorker for the given
 // provider.

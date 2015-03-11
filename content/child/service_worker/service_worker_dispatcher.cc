@@ -597,10 +597,11 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
 
 void ServiceWorkerDispatcher::OnUpdateFound(
     int thread_id,
-    const ServiceWorkerRegistrationObjectInfo& info) {
+    int registration_handle_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcher::OnUpdateFound");
-  RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
+  RegistrationObjectMap::iterator found =
+      registrations_.find(registration_handle_id);
   if (found != registrations_.end())
     found->second->OnUpdateFound();
 }
