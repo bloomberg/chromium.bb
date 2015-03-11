@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/dom/Document.h"
 
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -56,6 +57,8 @@ protected:
     Document& document() const { return m_dummyPageHolder->document(); }
     Page& page() const { return m_dummyPageHolder->page(); }
 
+    void setHtmlInnerHTML(const char*);
+
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
@@ -63,6 +66,12 @@ private:
 void DocumentTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+}
+
+void DocumentTest::setHtmlInnerHTML(const char* htmlContent)
+{
+    document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
+    document().view()->updateLayoutAndStyleIfNeededRecursive();
 }
 
 class MockDocumentVisibilityObserver
@@ -138,6 +147,38 @@ TEST_F(DocumentTest, VisibilityOberver)
     EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
     EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(1);
     page().setVisibilityState(PageVisibilityStateVisible, false);
+}
+
+// This tests that we properly resize and re-layout pages for printing in the presence of
+// media queries effecting elements in a subtree layout boundary
+TEST_F(DocumentTest, PrintRelayout)
+{
+    setHtmlInnerHTML(
+        "<style>"
+        "    div {"
+        "        width: 100px;"
+        "        height: 100px;"
+        "        overflow: hidden;"
+        "    }"
+        "    span {"
+        "        width: 50px;"
+        "        height: 50px;"
+        "    }"
+        "    @media screen {"
+        "        span {"
+        "            width: 20px;"
+        "        }"
+        "    }"
+        "</style>"
+        "<p><div><span></span></div></p>");
+    FloatSize pageSize(400, 400);
+    float maximumShrinkRatio = 1.6;
+
+    document().frame()->setPrinting(true, pageSize, pageSize, maximumShrinkRatio);
+    EXPECT_EQ(document().documentElement()->offsetWidth(), 400);
+    document().frame()->setPrinting(false, FloatSize(), FloatSize(), 0);
+    EXPECT_EQ(document().documentElement()->offsetWidth(), 800);
+
 }
 
 // This test checks that Documunt::linkManifest() returns a value conform to the specification.

@@ -488,6 +488,8 @@ void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const Flo
     if (shouldUsePrintingLayout()) {
         view()->forceLayoutForPagination(pageSize, originalPageSize, maximumShrinkRatio);
     } else {
+        if (LayoutView* layoutView = view()->layoutView())
+            layoutView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
         view()->layout();
         view()->adjustViewSize();
     }
