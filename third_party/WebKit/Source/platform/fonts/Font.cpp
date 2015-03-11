@@ -291,11 +291,12 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer) const
         if (fontData->platformData().orientation() == Vertical)
             return nullptr;
 
+        SkPaint paint;
         // FIXME: FontPlatformData makes some decisions on the device scale
         // factor, which is found via the GraphicsContext. This should be fixed
         // to avoid correctness problems here.
-        SkPaint paint;
-        fontData->platformData().setupPaint(&paint, 0, this);
+        float deviceScaleFactor = 1.0f;
+        fontData->platformData().setupPaint(&paint, deviceScaleFactor, this);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
         unsigned start = i++;
@@ -668,7 +669,7 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
 SkPaint Font::textFillPaint(GraphicsContext* gc, const SimpleFontData* font) const
 {
     SkPaint paint = gc->fillPaint();
-    font->platformData().setupPaint(&paint, gc, this);
+    font->platformData().setupPaint(&paint, gc->deviceScaleFactor(), this);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     return paint;
 }
@@ -676,7 +677,7 @@ SkPaint Font::textFillPaint(GraphicsContext* gc, const SimpleFontData* font) con
 SkPaint Font::textStrokePaint(GraphicsContext* gc, const SimpleFontData* font, bool isFilling) const
 {
     SkPaint paint = gc->strokePaint();
-    font->platformData().setupPaint(&paint, gc, this);
+    font->platformData().setupPaint(&paint, gc->deviceScaleFactor(), this);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     if (isFilling) {
         // If there is a shadow and we filled above, there will already be

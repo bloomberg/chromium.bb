@@ -37,7 +37,7 @@
 
 namespace blink {
 
-void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*, const Font* font) const
+void FontPlatformData::setupPaint(SkPaint* paint, float, const Font* font) const
 {
     bool shouldSmoothFonts = true;
     bool shouldAntialias = true;

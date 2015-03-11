@@ -72,7 +72,7 @@ void FontPlatformData::setSubpixelRendering(bool useSubpixelRendering)
     useSkiaSubpixelRendering = useSubpixelRendering;
 }
 
-void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context, const Font*) const
+void FontPlatformData::setupPaint(SkPaint* paint, float deviceScaleFactor, const Font*) const
 {
     paint->setAntiAlias(m_style.useAntiAlias);
     paint->setHinting(static_cast<SkPaint::Hinting>(m_style.hintStyle));
@@ -82,8 +82,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context, cons
         paint->setLCDRenderText(m_style.useSubpixelRendering);
 
     // Do not enable subpixel text on low-dpi if full hinting is requested.
-    bool useSubpixelText = (paint->getHinting() != SkPaint::kFull_Hinting
-        || (context && context->deviceScaleFactor() > 1.0f));
+    bool useSubpixelText = (paint->getHinting() != SkPaint::kFull_Hinting || deviceScaleFactor > 1.0f);
 
     // TestRunner specifically toggles the subpixel positioning flag.
     if (useSubpixelText && !LayoutTestSupport::isRunningLayoutTest())
