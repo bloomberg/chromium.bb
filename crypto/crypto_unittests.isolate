@@ -3,7 +3,20 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="linux"', {
+    ['use_x11==0', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/crypto_unittests<(EXECUTABLE_SUFFIX)',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
+        ],
+      },
+    }],
+    ['use_x11==1', {
       'variables': {
         'command': [
           '../testing/xvfb.py',
@@ -34,19 +47,6 @@
           '<(PRODUCT_DIR)/crypto_unittests<(EXECUTABLE_SUFFIX)',
         ],
         'read_only': 1,
-      },
-    }],
-    ['OS=="mac" or OS=="win"', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/crypto_unittests<(EXECUTABLE_SUFFIX)',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--msan=<(msan)',
-          '--tsan=<(tsan)',
-        ],
       },
     }],
     ['OS=="mac" and asan==1 and fastbuild==0', {

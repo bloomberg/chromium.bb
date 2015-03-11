@@ -3,15 +3,20 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="linux" or OS=="mac" or OS=="win"', {
+    ['use_x11==0', {
       'variables': {
-        'files': [
+        'command': [
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/gpu_unittests<(EXECUTABLE_SUFFIX)',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
         ],
       },
     }],
-    ['OS=="linux"', {
+    ['use_x11==1', {
       'variables': {
         'command': [
           '../testing/xvfb.py',
@@ -29,29 +34,11 @@
         ],
       },
     }],
-    ['OS=="mac"', {
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'command': [
+        'files': [
           '../testing/test_env.py',
-          '<(PRODUCT_DIR)/gpu_unittests',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--msan=<(msan)',
-          '--tsan=<(tsan)',
-        ],
-      },
-    }],
-    ['OS=="win"', {
-      'variables': {
-        'command': [
-          '../testing/test_env.py',
-          '<(PRODUCT_DIR)/gpu_unittests.exe',
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=<(asan)',
-          '--msan=<(msan)',
-          '--tsan=<(tsan)',
+          '<(PRODUCT_DIR)/gpu_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
