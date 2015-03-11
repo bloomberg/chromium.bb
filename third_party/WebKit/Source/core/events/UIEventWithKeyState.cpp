@@ -23,6 +23,18 @@
 
 namespace blink {
 
+bool UIEventWithKeyState::s_newTabModifierSetFromIsolatedWorld = false;
+
+void UIEventWithKeyState::didCreateEventInIsolatedWorld(bool ctrlKey, bool shiftKey, bool altKey, bool metaKey)
+{
+#if OS(MACOSX)
+    const bool newTabModifierSet = metaKey;
+#else
+    const bool newTabModifierSet = ctrlKey;
+#endif
+    s_newTabModifierSetFromIsolatedWorld |= newTabModifierSet;
+}
+
 UIEventWithKeyState* findEventWithKeyState(Event* event)
 {
     for (Event* e = event; e; e = e->underlyingEvent())

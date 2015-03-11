@@ -21,6 +21,7 @@
 
 [
     Constructor(DOMString type, optional MouseEventInit eventInitDict),
+    ConstructorCallWith=ScriptState,
 ] interface MouseEvent : UIEvent {
     readonly attribute long             screenX;
     readonly attribute long             screenY;
@@ -38,7 +39,7 @@
     [MeasureAs=PrefixedMouseEventMovementX, ImplementedAs=movementX] readonly attribute long webkitMovementX;
     [MeasureAs=PrefixedMouseEventMovementY, ImplementedAs=movementY] readonly attribute long webkitMovementY;
 
-     void initMouseEvent([Default=Undefined] optional DOMString type,
+     [CallWith=ScriptState] void initMouseEvent([Default=Undefined] optional DOMString type,
                                        [Default=Undefined] optional boolean canBubble,
                                        [Default=Undefined] optional boolean cancelable,
                                        [Default=Undefined] optional Window view,

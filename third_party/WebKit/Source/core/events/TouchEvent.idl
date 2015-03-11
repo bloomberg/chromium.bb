@@ -35,7 +35,7 @@ interface TouchEvent : UIEvent {
     readonly attribute boolean shiftKey;
 
     // FIXME: initTouch() is not yet standardized.
-    void initTouchEvent([Default=Undefined] optional TouchList touches,
+    [CallWith=ScriptState] void initTouchEvent([Default=Undefined] optional TouchList touches,
                         [Default=Undefined] optional TouchList targetTouches,
                         [Default=Undefined] optional TouchList changedTouches,
                         [Default=Undefined] optional DOMString type,

@@ -53,10 +53,7 @@ public:
         return adoptRefWillBeNoop(new KeyboardEvent(platformEvent, view));
     }
 
-    static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, const KeyboardEventInit& initializer)
-    {
-        return adoptRefWillBeNoop(new KeyboardEvent(type, initializer));
-    }
+    static PassRefPtrWillBeRawPtr<KeyboardEvent> create(ScriptState*, const AtomicString& type, const KeyboardEventInit&);
 
     static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
         const String& keyIdentifier, const String& code, unsigned location,
@@ -68,7 +65,7 @@ public:
 
     virtual ~KeyboardEvent();
 
-    void initKeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
+    void initKeyboardEvent(ScriptState*, const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         const String& keyIdentifier, unsigned location,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 

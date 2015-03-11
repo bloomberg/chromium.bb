@@ -38,6 +38,7 @@
 #include "core/dom/Fullscreen.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/events/UIEventWithKeyState.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAppletElement.h"
@@ -517,7 +518,7 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
     if (!m_webFrame->client())
         return NavigationPolicyIgnore;
 
-    if (policy == NavigationPolicyNewBackgroundTab && !allowCreatingBackgroundTabs())
+    if (policy == NavigationPolicyNewBackgroundTab && !allowCreatingBackgroundTabs() && !UIEventWithKeyState::newTabModifierSetFromIsolatedWorld())
         policy = NavigationPolicyNewForegroundTab;
 
     WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(loader);

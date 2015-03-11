@@ -28,6 +28,8 @@
 
 #include "core/events/TouchEvent.h"
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/events/EventDispatcher.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -58,7 +60,7 @@ TouchEvent::~TouchEvent()
 {
 }
 
-void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,
+void TouchEvent::initTouchEvent(ScriptState* scriptState, TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
         PassRefPtrWillBeRawPtr<AbstractView> view,
         int, int, int, int,
@@ -66,6 +68,9 @@ void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,
 {
     if (dispatched())
         return;
+
+    if (scriptState->world().isIsolatedWorld())
+        UIEventWithKeyState::didCreateEventInIsolatedWorld(ctrlKey, altKey, shiftKey, metaKey);
 
     bool cancelable = true;
     if (type == EventTypeNames::touchcancel)

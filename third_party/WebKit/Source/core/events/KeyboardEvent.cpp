@@ -23,6 +23,8 @@
 #include "config.h"
 #include "core/events/KeyboardEvent.h"
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/WindowsKeyboardCodes.h"
 
@@ -85,6 +87,13 @@ static inline KeyboardEvent::KeyLocationCode keyLocationCode(const PlatformKeybo
     }
 }
 
+PassRefPtrWillBeRawPtr<KeyboardEvent> KeyboardEvent::create(ScriptState* scriptState, const AtomicString& type, const KeyboardEventInit& initializer)
+{
+    if (scriptState->world().isIsolatedWorld())
+        UIEventWithKeyState::didCreateEventInIsolatedWorld(initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey());
+    return adoptRefWillBeNoop(new KeyboardEvent(type, initializer));
+}
+
 KeyboardEvent::KeyboardEvent()
     : m_location(DOM_KEY_LOCATION_STANDARD)
     , m_isAutoRepeat(false)
@@ -125,11 +134,14 @@ KeyboardEvent::~KeyboardEvent()
 {
 }
 
-void KeyboardEvent::initKeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
+void KeyboardEvent::initKeyboardEvent(ScriptState* scriptState, const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
     const String& keyIdentifier, unsigned location, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
 {
     if (dispatched())
         return;
+
+    if (scriptState->world().isIsolatedWorld())
+        UIEventWithKeyState::didCreateEventInIsolatedWorld(ctrlKey, altKey, shiftKey, metaKey);
 
     initUIEvent(type, canBubble, cancelable, view, 0);
 

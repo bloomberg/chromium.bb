@@ -19,7 +19,8 @@
  */
 
 [
-    Constructor(DOMString type, optional KeyboardEventInit eventInitDict)
+    Constructor(DOMString type, optional KeyboardEventInit eventInitDict),
+    ConstructorCallWith=ScriptState,
 ] interface KeyboardEvent : UIEvent {
     const unsigned long DOM_KEY_LOCATION_STANDARD = 0x00;
     const unsigned long DOM_KEY_LOCATION_LEFT     = 0x01;
@@ -39,7 +40,7 @@
     boolean getModifierState(DOMString keyArgument);
 
     // FIXME: this does not match the version in the DOM spec.
-    void initKeyboardEvent([Default=Undefined] optional DOMString type,
+    [CallWith=ScriptState] void initKeyboardEvent([Default=Undefined] optional DOMString type,
                            [Default=Undefined] optional boolean canBubble,
                            [Default=Undefined] optional boolean cancelable,
                            [Default=Undefined] optional Window view,

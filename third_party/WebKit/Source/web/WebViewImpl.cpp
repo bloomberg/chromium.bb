@@ -47,6 +47,7 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markup.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/events/UIEventWithKeyState.h"
 #include "core/events/WheelEvent.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -2116,6 +2117,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         return false;
 
     TemporaryChange<const WebInputEvent*> currentEventChange(m_currentInputEvent, &inputEvent);
+    UIEventWithKeyState::clearNewTabModifierSetFromIsolatedWorld();
 
     if (isPointerLocked() && WebInputEvent::isMouseEventType(inputEvent.type)) {
         pointerLockMouseEvent(inputEvent);
