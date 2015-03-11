@@ -708,10 +708,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     return DRAW_SUCCESS;
   }
 
-  TRACE_EVENT1("cc",
-               "LayerTreeHostImpl::CalculateRenderPasses",
-               "render_surface_layer_list.size()",
-               static_cast<uint64>(frame->render_surface_layer_list->size()));
+  TRACE_EVENT_BEGIN2(
+      "cc", "LayerTreeHostImpl::CalculateRenderPasses",
+      "render_surface_layer_list.size()",
+      static_cast<uint64>(frame->render_surface_layer_list->size()),
+      "RequiresHighResToDraw", RequiresHighResToDraw());
 
   // Create the render passes in dependency order.
   for (int surface_index = frame->render_surface_layer_list->size() - 1;
@@ -754,9 +755,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   // due to an impl-animation, we drop the frame to avoid flashing due to the
   // texture suddenly appearing in the future.
   DrawResult draw_result = DRAW_SUCCESS;
-  // When we have a copy request for a layer, we need to draw no matter
-  // what, as the layer may disappear after this frame.
-  bool have_copy_request = false;
 
   int layers_drawn = 0;
 
@@ -764,6 +762,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   int num_missing_tiles = 0;
   int num_incomplete_tiles = 0;
+  bool have_copy_request = false;
+  bool have_missing_animated_tiles = false;
 
   auto end = LayerIterator<LayerImpl>::End(frame->render_surface_layer_list);
   for (auto it =
@@ -848,18 +848,34 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
           it->screen_space_transform_is_animating() ||
           it->draw_transform_is_animating();
       if (layer_has_animating_transform)
-        draw_result = DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
-    }
-
-    if (append_quads_data.num_incomplete_tiles ||
-        append_quads_data.num_missing_tiles) {
-      if (RequiresHighResToDraw())
-        draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
+        have_missing_animated_tiles = true;
     }
   }
 
-  if (have_copy_request ||
-      output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
+  if (have_missing_animated_tiles)
+    draw_result = DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+
+  // When we have a copy request for a layer, we need to draw even if there
+  // would be animating checkerboards, because failing under those conditions
+  // triggers a new main frame, which may cause the copy request layer to be
+  // destroyed.
+  // TODO(danakj): Leaking scheduler internals into LayerTreeHostImpl here.
+  if (have_copy_request)
+    draw_result = DRAW_SUCCESS;
+
+  // When we require high res to draw, abort the draw (almost) always. This does
+  // not cause the scheduler to do a main frame, instead it will continue to try
+  // drawing until we finally complete, so the copy request will not be lost.
+  if (num_incomplete_tiles || num_missing_tiles) {
+    if (RequiresHighResToDraw())
+      draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
+  }
+
+  // When this capability is set we don't have control over the surface the
+  // compositor draws to, so even though the frame may not be complete, the
+  // previous frame has already been potentially lost, so an incomplete frame is
+  // better than nothing, so this takes highest precidence.
+  if (output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
     draw_result = DRAW_SUCCESS;
 
 #if DCHECK_IS_ON()
@@ -909,6 +925,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   DCHECK(draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE ||
          frame->render_passes.size() == 1u)
       << frame->render_passes.size();
+
+  TRACE_EVENT_END2("cc", "LayerTreeHostImpl::CalculateRenderPasses",
+                   "draw_result", draw_result, "missing tiles",
+                   num_missing_tiles);
 
   return draw_result;
 }

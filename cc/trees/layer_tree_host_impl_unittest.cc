@@ -1933,6 +1933,16 @@ class DidDrawCheckLayer : public LayerImpl {
     did_draw_called_ = false;
   }
 
+  static void IgnoreResult(scoped_ptr<CopyOutputResult> result) {}
+
+  void AddCopyRequest() {
+    ScopedPtrVector<CopyOutputRequest> requests;
+    requests.push_back(
+        CopyOutputRequest::CreateRequest(base::Bind(&IgnoreResult)));
+    SetHasRenderSurface(true);
+    PassCopyRequests(&requests);
+  }
+
  protected:
   DidDrawCheckLayer(LayerTreeImpl* tree_impl, int id)
       : LayerImpl(tree_impl, id),
@@ -2162,60 +2172,219 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
   bool had_incomplete_tile_;
 };
 
-TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsOnDefault) {
+struct PrepareToDrawSuccessTestCase {
+  struct State {
+    bool has_missing_tile = false;
+    bool has_incomplete_tile = false;
+    bool is_animating = false;
+    bool has_copy_request = false;
+  };
+  bool high_res_required = false;
+  State layer_before;
+  State layer_between;
+  State layer_after;
+  DrawResult expected_result;
+
+  explicit PrepareToDrawSuccessTestCase(DrawResult result)
+      : expected_result(result) {}
+};
+
+TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
+  std::vector<PrepareToDrawSuccessTestCase> cases;
+
+  // 0. Default case.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  // 1. Animated layer first.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_before.is_animating = true;
+  // 2. Animated layer between.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_between.is_animating = true;
+  // 3. Animated layer last.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_after.is_animating = true;
+  // 4. Missing tile first.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_before.has_missing_tile = true;
+  // 5. Missing tile between.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_between.has_missing_tile = true;
+  // 6. Missing tile last.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_after.has_missing_tile = true;
+  // 7. Incomplete tile first.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_before.has_incomplete_tile = true;
+  // 8. Incomplete tile between.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_between.has_incomplete_tile = true;
+  // 9. Incomplete tile last.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_after.has_incomplete_tile = true;
+  // 10. Animation with missing tile.
+  cases.push_back(
+      PrepareToDrawSuccessTestCase(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS));
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_between.is_animating = true;
+  // 11. Animation with missing tile and copy request after. Must succeed
+  // because the animation checkerboard means we'll get a new frame and the copy
+  // request's layer may be destroyed.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_between.is_animating = true;
+  cases.back().layer_after.has_copy_request = true;
+  // 12. Animation with missing tile and copy request before. Must succeed
+  // because the animation checkerboard means we'll get a new frame and the copy
+  // request's layer may be destroyed.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_between.is_animating = true;
+  cases.back().layer_before.has_copy_request = true;
+  // 13. Animation with incomplete tile.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_between.has_incomplete_tile = true;
+  cases.back().layer_between.is_animating = true;
+
+  // 14. High res required.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().high_res_required = true;
+  // 15. High res required with incomplete tile.
+  cases.push_back(
+      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_incomplete_tile = true;
+  // 16. High res required with missing tile.
+  cases.push_back(
+      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_missing_tile = true;
+
+  // 17. High res required is higher priority than animating missing tiles.
+  cases.push_back(
+      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_after.has_missing_tile = true;
+  cases.back().layer_after.is_animating = true;
+  // 18. High res required is higher priority than animating missing tiles.
+  cases.push_back(
+      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_before.has_missing_tile = true;
+  cases.back().layer_before.is_animating = true;
+
+  // 19. High res required is higher priority than copy requests.
+  cases.push_back(
+      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_after.has_copy_request = true;
+  // 20. High res required is higher priority than copy requests.
+  cases.push_back(
+      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_before.has_copy_request = true;
+  // 21. High res required is higher priority than copy requests.
+  cases.push_back(
+      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_between.has_copy_request = true;
+
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 1));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
   root->SetHasRenderSurface(true);
-  bool tile_missing = false;
-  bool had_incomplete_tile = false;
-  bool is_animating = false;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           2,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
 
   LayerTreeHostImpl::FrameData frame;
-
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
+  host_impl_->SwapBuffers(frame);
+
+  for (size_t i = 0; i < cases.size(); ++i) {
+    const auto& testcase = cases[i];
+    std::vector<LayerImpl*> to_remove;
+    for (auto* child : root->children())
+      to_remove.push_back(child);
+    for (auto* child : to_remove)
+      root->RemoveChild(child);
+
+    std::ostringstream scope;
+    scope << "Test case: " << i;
+    SCOPED_TRACE(scope.str());
+
+    root->AddChild(MissingTextureAnimatingLayer::Create(
+        host_impl_->active_tree(), 2, testcase.layer_before.has_missing_tile,
+        testcase.layer_before.has_incomplete_tile,
+        testcase.layer_before.is_animating, host_impl_->resource_provider()));
+    DidDrawCheckLayer* before =
+        static_cast<DidDrawCheckLayer*>(root->children().back());
+    if (testcase.layer_before.has_copy_request)
+      before->AddCopyRequest();
+
+    root->AddChild(MissingTextureAnimatingLayer::Create(
+        host_impl_->active_tree(), 3, testcase.layer_between.has_missing_tile,
+        testcase.layer_between.has_incomplete_tile,
+        testcase.layer_between.is_animating, host_impl_->resource_provider()));
+    DidDrawCheckLayer* between =
+        static_cast<DidDrawCheckLayer*>(root->children().back());
+    if (testcase.layer_between.has_copy_request)
+      between->AddCopyRequest();
+
+    root->AddChild(MissingTextureAnimatingLayer::Create(
+        host_impl_->active_tree(), 4, testcase.layer_after.has_missing_tile,
+        testcase.layer_after.has_incomplete_tile,
+        testcase.layer_after.is_animating, host_impl_->resource_provider()));
+    DidDrawCheckLayer* after =
+        static_cast<DidDrawCheckLayer*>(root->children().back());
+    if (testcase.layer_after.has_copy_request)
+      after->AddCopyRequest();
+
+    if (testcase.high_res_required)
+      host_impl_->SetRequiresHighResToDraw();
+
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(testcase.expected_result, host_impl_->PrepareToDraw(&frame));
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+    host_impl_->DidDrawAllLayers(frame);
+    host_impl_->SwapBuffers(frame);
+  }
 }
 
-TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithAnimatedLayer) {
+TEST_F(LayerTreeHostImplTest,
+       PrepareToDrawWhenDrawAndSwapFullViewportEveryFrame) {
+  CreateHostImpl(DefaultSettings(),
+                 FakeOutputSurface::CreateAlwaysDrawAndSwap3d());
+  EXPECT_TRUE(host_impl_->output_surface()
+                  ->capabilities()
+                  .draw_and_swap_full_viewport_every_frame);
+
+  std::vector<PrepareToDrawSuccessTestCase> cases;
+
+  // 0. Default case.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  // 1. Animation with missing tile.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().layer_between.has_missing_tile = true;
+  cases.back().layer_between.is_animating = true;
+  // 2. High res required with incomplete tile.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_incomplete_tile = true;
+  // 3. High res required with missing tile.
+  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
+  cases.back().high_res_required = true;
+  cases.back().layer_between.has_missing_tile = true;
+
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 1));
   DidDrawCheckLayer* root =
       static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
   root->SetHasRenderSurface(true);
-  bool tile_missing = false;
-  bool had_incomplete_tile = false;
-  bool is_animating = true;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           2,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
-
-  LayerTreeHostImpl::FrameData frame;
-
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-}
-
-TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithMissingTiles) {
-  host_impl_->active_tree()->SetRootLayer(
-      DidDrawCheckLayer::Create(host_impl_->active_tree(), 3));
-  DidDrawCheckLayer* root =
-      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
-  root->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
@@ -2223,204 +2392,54 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithMissingTiles) {
   host_impl_->DidDrawAllLayers(frame);
   host_impl_->SwapBuffers(frame);
 
-  bool tile_missing = true;
-  bool had_incomplete_tile = false;
-  bool is_animating = false;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           4,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
-  LayerTreeHostImpl::FrameData frame2;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
-  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame2);
-}
+  for (size_t i = 0; i < cases.size(); ++i) {
+    const auto& testcase = cases[i];
+    std::vector<LayerImpl*> to_remove;
+    for (auto* child : root->children())
+      to_remove.push_back(child);
+    for (auto* child : to_remove)
+      root->RemoveChild(child);
 
-TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWithIncompleteTile) {
-  host_impl_->active_tree()->SetRootLayer(
-      DidDrawCheckLayer::Create(host_impl_->active_tree(), 3));
-  DidDrawCheckLayer* root =
-      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
-  root->SetHasRenderSurface(true);
+    std::ostringstream scope;
+    scope << "Test case: " << i;
+    SCOPED_TRACE(scope.str());
 
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
+    root->AddChild(MissingTextureAnimatingLayer::Create(
+        host_impl_->active_tree(), 2, testcase.layer_before.has_missing_tile,
+        testcase.layer_before.has_incomplete_tile,
+        testcase.layer_before.is_animating, host_impl_->resource_provider()));
+    DidDrawCheckLayer* before =
+        static_cast<DidDrawCheckLayer*>(root->children().back());
+    if (testcase.layer_before.has_copy_request)
+      before->AddCopyRequest();
 
-  bool tile_missing = false;
-  bool had_incomplete_tile = true;
-  bool is_animating = false;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           4,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
-  LayerTreeHostImpl::FrameData frame2;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
-  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame2);
-}
+    root->AddChild(MissingTextureAnimatingLayer::Create(
+        host_impl_->active_tree(), 3, testcase.layer_between.has_missing_tile,
+        testcase.layer_between.has_incomplete_tile,
+        testcase.layer_between.is_animating, host_impl_->resource_provider()));
+    DidDrawCheckLayer* between =
+        static_cast<DidDrawCheckLayer*>(root->children().back());
+    if (testcase.layer_between.has_copy_request)
+      between->AddCopyRequest();
 
-TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawFailsWithAnimationAndMissingTilesUsesCheckerboard) {
-  host_impl_->active_tree()->SetRootLayer(
-      DidDrawCheckLayer::Create(host_impl_->active_tree(), 5));
-  DidDrawCheckLayer* root =
-      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
-  root->SetHasRenderSurface(true);
+    root->AddChild(MissingTextureAnimatingLayer::Create(
+        host_impl_->active_tree(), 4, testcase.layer_after.has_missing_tile,
+        testcase.layer_after.has_incomplete_tile,
+        testcase.layer_after.is_animating, host_impl_->resource_provider()));
+    DidDrawCheckLayer* after =
+        static_cast<DidDrawCheckLayer*>(root->children().back());
+    if (testcase.layer_after.has_copy_request)
+      after->AddCopyRequest();
 
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
+    if (testcase.high_res_required)
+      host_impl_->SetRequiresHighResToDraw();
 
-  bool tile_missing = true;
-  bool had_incomplete_tile = false;
-  bool is_animating = true;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           6,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
-  LayerTreeHostImpl::FrameData frame2;
-  EXPECT_EQ(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS,
-            host_impl_->PrepareToDraw(&frame2));
-  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame2);
-}
-
-TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawSucceedsWithAnimationAndIncompleteTiles) {
-  host_impl_->active_tree()->SetRootLayer(
-      DidDrawCheckLayer::Create(host_impl_->active_tree(), 5));
-  DidDrawCheckLayer* root =
-      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
-  root->SetHasRenderSurface(true);
-
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
-
-  bool tile_missing = false;
-  bool had_incomplete_tile = true;
-  bool is_animating = true;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           6,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
-  LayerTreeHostImpl::FrameData frame2;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
-  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame2);
-}
-
-TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsWhenHighResRequired) {
-  host_impl_->active_tree()->SetRootLayer(
-      DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
-  DidDrawCheckLayer* root =
-      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
-  root->SetHasRenderSurface(true);
-
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
-
-  bool tile_missing = false;
-  bool had_incomplete_tile = false;
-  bool is_animating = false;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           8,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
-  host_impl_->SetRequiresHighResToDraw();
-  LayerTreeHostImpl::FrameData frame2;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame2));
-  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame2);
-}
-
-TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawFailsWhenHighResRequiredAndIncompleteTiles) {
-  host_impl_->active_tree()->SetRootLayer(
-      DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
-  DidDrawCheckLayer* root =
-      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
-  root->SetHasRenderSurface(true);
-
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
-
-  bool tile_missing = false;
-  bool had_incomplete_tile = true;
-  bool is_animating = false;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           8,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
-  host_impl_->SetRequiresHighResToDraw();
-  LayerTreeHostImpl::FrameData frame2;
-  EXPECT_EQ(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
-            host_impl_->PrepareToDraw(&frame2));
-  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame2);
-}
-
-TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawFailsWhenHighResRequiredAndMissingTile) {
-  host_impl_->active_tree()->SetRootLayer(
-      DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
-  DidDrawCheckLayer* root =
-      static_cast<DidDrawCheckLayer*>(host_impl_->active_tree()->root_layer());
-  root->SetHasRenderSurface(true);
-
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-  host_impl_->SwapBuffers(frame);
-
-  bool tile_missing = true;
-  bool had_incomplete_tile = false;
-  bool is_animating = false;
-  root->AddChild(
-      MissingTextureAnimatingLayer::Create(host_impl_->active_tree(),
-                                           8,
-                                           tile_missing,
-                                           had_incomplete_tile,
-                                           is_animating,
-                                           host_impl_->resource_provider()));
-  host_impl_->SetRequiresHighResToDraw();
-  LayerTreeHostImpl::FrameData frame2;
-  EXPECT_EQ(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
-            host_impl_->PrepareToDraw(&frame2));
-  host_impl_->DrawLayers(&frame2, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame2);
+    LayerTreeHostImpl::FrameData frame;
+    EXPECT_EQ(testcase.expected_result, host_impl_->PrepareToDraw(&frame));
+    host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+    host_impl_->DidDrawAllLayers(frame);
+    host_impl_->SwapBuffers(frame);
+  }
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollRootIgnored) {
