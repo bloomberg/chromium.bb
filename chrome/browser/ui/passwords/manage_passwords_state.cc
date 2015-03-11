@@ -54,7 +54,8 @@ bool IsEqualUniqueKey(const autofill::PasswordForm& left,
       left.password_element == right.password_element;
 }
 
-// Updates a form in |forms| that has the same unique key as |updated_form|.
+// Updates one form in |forms| that has the same unique key as |updated_form|.
+// Returns true if the form was found and updated.
 bool UpdateFormInVector(const autofill::PasswordForm& updated_form,
                         ScopedVector<const autofill::PasswordForm>* forms) {
   ScopedVector<const autofill::PasswordForm>::iterator it = std::find_if(

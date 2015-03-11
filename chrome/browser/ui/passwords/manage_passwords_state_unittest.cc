@@ -43,7 +43,15 @@ class ManagePasswordsStateTest : public testing::Test {
   autofill::PasswordForm& test_federated_form() { return test_federated_form_; }
   ManagePasswordsState& passwords_data() { return passwords_data_; }
 
+  // Returns a PasswordFormManager containing test_local_form() as a best match.
   scoped_ptr<password_manager::PasswordFormManager> CreateFormManager();
+
+  // Pushes irrelevant updates to |passwords_data_| and checks that they don't
+  // affect the state.
+  void TestNoisyUpdates();
+
+  // Pushes both relevant and irrelevant updates to |passwords_data_|.
+  void TestAllUpdates();
 
   MOCK_METHOD1(OnChooseCredential,
                void(const password_manager::CredentialInfo&));
@@ -76,12 +84,101 @@ ManagePasswordsStateTest::CreateFormManager() {
   return test_form_manager.Pass();
 }
 
+void ManagePasswordsStateTest::TestNoisyUpdates() {
+  const std::vector<const autofill::PasswordForm*> forms =
+      passwords_data_.GetCurrentForms();
+  const std::vector<const autofill::PasswordForm*> federated_forms =
+      passwords_data_.federated_credentials_forms();
+  const password_manager::ui::State state = passwords_data_.state();
+  const GURL origin = passwords_data_.origin();
+
+  // Push "Add".
+  autofill::PasswordForm form;
+  form.origin = GURL("http://3rdparty.com");
+  form.username_value = base::ASCIIToUTF16("username");
+  form.password_value = base::ASCIIToUTF16("12345");
+  password_manager::PasswordStoreChange change(
+      password_manager::PasswordStoreChange::ADD, form);
+  password_manager::PasswordStoreChangeList list(1, change);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(forms, passwords_data().GetCurrentForms());
+  EXPECT_EQ(federated_forms, passwords_data().federated_credentials_forms());
+  EXPECT_EQ(state, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+
+  // Update the form.
+  form.password_value = base::ASCIIToUTF16("password");
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::UPDATE, form);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(forms, passwords_data().GetCurrentForms());
+  EXPECT_EQ(federated_forms, passwords_data().federated_credentials_forms());
+  EXPECT_EQ(state, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+
+  // Delete the form.
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, form);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(forms, passwords_data().GetCurrentForms());
+  EXPECT_EQ(federated_forms, passwords_data().federated_credentials_forms());
+  EXPECT_EQ(state, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+}
+
+void ManagePasswordsStateTest::TestAllUpdates() {
+  const std::vector<const autofill::PasswordForm*> forms =
+      passwords_data_.GetCurrentForms();
+  const std::vector<const autofill::PasswordForm*> federated_forms =
+      passwords_data_.federated_credentials_forms();
+  const password_manager::ui::State state = passwords_data_.state();
+  const GURL origin = passwords_data_.origin();
+  EXPECT_NE(GURL::EmptyGURL(), origin);
+
+  // Push "Add".
+  autofill::PasswordForm form;
+  form.origin = origin;
+  form.username_value = base::ASCIIToUTF16("user15");
+  form.password_value = base::ASCIIToUTF16("12345");
+  password_manager::PasswordStoreChange change(
+      password_manager::PasswordStoreChange::ADD, form);
+  password_manager::PasswordStoreChangeList list(1, change);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_THAT(passwords_data().GetCurrentForms(), Contains(Pointee(form)));
+  EXPECT_EQ(federated_forms, passwords_data().federated_credentials_forms());
+  EXPECT_EQ(state, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+
+  // Update the form.
+  form.password_value = base::ASCIIToUTF16("password");
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::UPDATE, form);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_THAT(passwords_data().GetCurrentForms(), Contains(Pointee(form)));
+  EXPECT_EQ(federated_forms, passwords_data().federated_credentials_forms());
+  EXPECT_EQ(state, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+
+  // Delete the form.
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, form);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(forms, passwords_data().GetCurrentForms());
+  EXPECT_EQ(federated_forms, passwords_data().federated_credentials_forms());
+  EXPECT_EQ(state, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+
+  TestNoisyUpdates();
+}
+
 TEST_F(ManagePasswordsStateTest, DefaultState) {
   EXPECT_THAT(passwords_data().GetCurrentForms(), IsEmpty());
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, passwords_data().state());
   EXPECT_EQ(GURL::EmptyGURL(), passwords_data().origin());
   EXPECT_FALSE(passwords_data().form_manager());
+
+  TestNoisyUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordSubmitted) {
@@ -101,6 +198,7 @@ TEST_F(ManagePasswordsStateTest, PasswordSubmitted) {
   ASSERT_TRUE(passwords_data().form_manager());
   EXPECT_EQ(test_submitted_form(),
             passwords_data().form_manager()->pending_credentials());
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordSaved) {
@@ -120,6 +218,7 @@ TEST_F(ManagePasswordsStateTest, PasswordSaved) {
   EXPECT_EQ(password_manager::ui::MANAGE_STATE,
             passwords_data().state());
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, OnRequestCredentials) {
@@ -141,6 +240,7 @@ TEST_F(ManagePasswordsStateTest, OnRequestCredentials) {
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
             passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
+  TestAllUpdates();
 
   password_manager::CredentialInfo credential_info(
       test_local_form(),
@@ -157,6 +257,7 @@ TEST_F(ManagePasswordsStateTest, OnRequestCredentials) {
               ElementsAre(Pointee(test_federated_form())));
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, AutoSignin) {
@@ -168,6 +269,7 @@ TEST_F(ManagePasswordsStateTest, AutoSignin) {
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, passwords_data().state());
   EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+  TestAllUpdates();
 
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
   EXPECT_THAT(passwords_data().GetCurrentForms(),
@@ -175,6 +277,7 @@ TEST_F(ManagePasswordsStateTest, AutoSignin) {
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
   EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
@@ -190,6 +293,7 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
   ASSERT_TRUE(passwords_data().form_manager());
   EXPECT_EQ(test_submitted_form(),
             passwords_data().form_manager()->pending_credentials());
+  TestAllUpdates();
 
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
   EXPECT_THAT(passwords_data().GetCurrentForms(),
@@ -198,6 +302,7 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordBlacklisted) {
@@ -213,6 +318,7 @@ TEST_F(ManagePasswordsStateTest, PasswordBlacklisted) {
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
@@ -229,6 +335,7 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
   // |passwords_data| should hold a separate copy of test_local_form().
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               Not(Contains(&test_local_form())));
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
@@ -261,6 +368,7 @@ TEST_F(ManagePasswordsStateTest, BlacklistBlockedAutofill) {
   // |passwords_data| should hold a separate copy of test_local_form().
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               Not(Contains(&test_local_form())));
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, Unblacklist) {
@@ -275,6 +383,7 @@ TEST_F(ManagePasswordsStateTest, Unblacklist) {
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
   EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+  TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, OnInactive) {
@@ -292,6 +401,145 @@ TEST_F(ManagePasswordsStateTest, OnInactive) {
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, passwords_data().state());
   EXPECT_EQ(GURL::EmptyGURL(), passwords_data().origin());
   EXPECT_FALSE(passwords_data().form_manager());
+  TestNoisyUpdates();
+}
+
+TEST_F(ManagePasswordsStateTest, PendingPasswordToBlacklisted) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_submitted_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  passwords_data().OnPendingPassword(test_form_manager.Pass());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            passwords_data().state());
+
+  // Process the blacklisted form.
+  autofill::PasswordForm blacklisted = test_local_form();
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.username_value = base::string16();
+  password_manager::PasswordStoreChangeList list;
+  list.push_back(password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::ADD, blacklisted));
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
+  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+
+  // Delete the blacklisted form.
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, blacklisted);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
+  EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
+}
+
+TEST_F(ManagePasswordsStateTest, RequestCredentialsToBlacklisted) {
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  ScopedVector<autofill::PasswordForm> federated_credentials;
+  federated_credentials.push_back(
+      new autofill::PasswordForm(test_federated_form()));
+  const GURL origin = test_local_form().origin;
+  passwords_data().OnRequestCredentials(local_credentials.Pass(),
+                                        federated_credentials.Pass(), origin);
+  passwords_data().set_credentials_callback(
+      base::Bind(&ManagePasswordsStateTest::OnChooseCredential,
+                 base::Unretained(this)));
+  EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
+            passwords_data().state());
+
+  // Process the blacklisted form.
+  autofill::PasswordForm blacklisted = test_local_form();
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.username_value = base::string16();
+  password_manager::PasswordStoreChangeList list;
+  list.push_back(password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::ADD, blacklisted));
+  password_manager::CredentialInfo credential_info(
+      test_local_form(),
+      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+  EXPECT_CALL(*this, OnChooseCredential(_))
+      .WillOnce(testing::SaveArg<0>(&credential_info));
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
+  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+  EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY,
+            credential_info.type);
+  EXPECT_TRUE(passwords_data().credentials_callback().is_null());
+
+  // Delete the blacklisted form.
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, blacklisted);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(),
+              ElementsAre(Pointee(test_federated_form())));
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
+  EXPECT_EQ(origin, passwords_data().origin());
+}
+
+TEST_F(ManagePasswordsStateTest, AutoSigninToBlacklisted) {
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  passwords_data().OnAutoSignin(local_credentials.Pass());
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, passwords_data().state());
+
+  // Process the blacklisted form.
+  autofill::PasswordForm blacklisted = test_local_form();
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.username_value = base::string16();
+  password_manager::PasswordStoreChange change(
+      password_manager::PasswordStoreChange::ADD, blacklisted);
+  password_manager::PasswordStoreChangeList list(1, change);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
+  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+
+  // Delete the blacklisted form.
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, blacklisted);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
+  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+}
+
+TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveToBlacklisted) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_submitted_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  passwords_data().OnAutomaticPasswordSave(test_form_manager.Pass());
+  EXPECT_EQ(password_manager::ui::CONFIRMATION_STATE, passwords_data().state());
+
+  // Process the blacklisted form.
+  autofill::PasswordForm blacklisted = test_local_form();
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.username_value = base::string16();
+  password_manager::PasswordStoreChange change(
+      password_manager::PasswordStoreChange::ADD, blacklisted);
+  password_manager::PasswordStoreChangeList list(1, change);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
+  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+
+  // Delete the blacklisted form.
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, blacklisted);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              UnorderedElementsAre(Pointee(test_local_form()),
+                                   Pointee(test_submitted_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
+  EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
 }
 
 TEST_F(ManagePasswordsStateTest, BackgroundAutofilledToBlacklisted) {
@@ -300,6 +548,7 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledToBlacklisted) {
   passwords_data().OnPasswordAutofilled(password_form_map);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
 
+  // Process the blacklisted form.
   autofill::PasswordForm blacklisted = test_local_form();
   blacklisted.blacklisted_by_user = true;
   blacklisted.username_value = base::string16();
@@ -312,6 +561,38 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledToBlacklisted) {
                                    Pointee(blacklisted)));
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
+  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+
+  // Delete the blacklisted form.
+  list[0] = password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, blacklisted);
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
+  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+}
+
+TEST_F(ManagePasswordsStateTest, BlacklistedToAutofilled) {
+  autofill::PasswordFormMap password_form_map;
+  password_form_map[test_local_form().username_value] = &test_local_form();
+  passwords_data().OnBlacklistBlockedAutofill(password_form_map);
+  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
+  EXPECT_EQ(test_local_form().origin, passwords_data().origin());
+
+  // Delete the blacklisted form.
+  autofill::PasswordForm blacklisted = test_local_form();
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.username_value = base::string16();
+  password_manager::PasswordStoreChangeList list;
+  list.push_back(password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, blacklisted));
+  passwords_data().ProcessLoginsChanged(list);
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
   EXPECT_EQ(test_local_form().origin, passwords_data().origin());
 }
 
