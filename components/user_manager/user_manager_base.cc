@@ -70,6 +70,16 @@ const char kLastLoggedInGaiaUser[] = "LastLoggedInRegularUser";
 // session restore.
 const char kLastActiveUser[] = "LastActiveUser";
 
+// A vector pref of preferences of known users. All new preferences should be
+// placed in this list.
+const char kKnownUsers[] = "KnownUsers";
+
+// Key of obfuscated GAIA id value.
+const char kGAIAIdKey[] = "gaia_id";
+
+// Key of canonical e-mail value.
+const char kCanonicalEmail[] = "email";
+
 // Upper bound for a histogram metric reporting the amount of time between
 // one regular user logging out and a different regular user logging in.
 const int kLogoutToLoginDelayMaxSec = 1800;
@@ -91,11 +101,33 @@ void ResolveLocale(const std::string& raw_locale,
   ignore_result(l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale));
 }
 
+// Checks if values in |dict| correspond with |user_id| identity.
+bool UserMatches(const UserID& user_id, const base::DictionaryValue& dict) {
+  std::string value;
+
+  bool has_email = dict.GetString(kCanonicalEmail, &value);
+  if (has_email && user_id == value)
+    return true;
+
+  // TODO(antrim): update code once user id is really a struct.
+  bool has_gaia_id = dict.GetString(kGAIAIdKey, &value);
+  if (has_gaia_id && user_id == value)
+    return true;
+
+  return false;
+}
+
+// Fills relevant |dict| values based on |user_id|.
+void UpdateIdentity(const UserID& user_id, base::DictionaryValue& dict) {
+  dict.SetString(kCanonicalEmail, user_id);
+}
+
 }  // namespace
 
 // static
 void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kRegularUsers);
+  registry->RegisterListPref(kKnownUsers);
   registry->RegisterStringPref(kLastLoggedInGaiaUser, std::string());
   registry->RegisterDictionaryPref(kUserDisplayName);
   registry->RegisterDictionaryPref(kUserGivenName);
@@ -939,9 +971,50 @@ void UserManagerBase::RemoveNonCryptohomeData(const std::string& user_id) {
   DictionaryPrefUpdate prefs_force_online_update(prefs, kUserForceOnlineSignin);
   prefs_force_online_update->RemoveWithoutPathExpansion(user_id, NULL);
 
+  RemoveKnowUserPrefs(user_id);
+
   std::string last_active_user = GetLocalState()->GetString(kLastActiveUser);
   if (user_id == last_active_user)
     GetLocalState()->SetString(kLastActiveUser, std::string());
+}
+
+bool UserManagerBase::FindKnowUserPrefs(
+    const UserID& user_id,
+    const base::DictionaryValue** out_value) {
+  PrefService* local_state = GetLocalState();
+  const base::ListValue* known_users = local_state->GetList(kKnownUsers);
+  for (size_t i = 0; i < known_users->GetSize(); ++i) {
+    const base::DictionaryValue* element = nullptr;
+    if (known_users->GetDictionary(i, &element)) {
+      if (UserMatches(user_id, *element)) {
+        known_users->GetDictionary(i, out_value);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void UserManagerBase::UpdateKnowUserPrefs(const UserID& user_id,
+                                          const base::DictionaryValue& values,
+                                          bool clear) {
+  ListPrefUpdate update(GetLocalState(), kKnownUsers);
+  for (size_t i = 0; i < update->GetSize(); ++i) {
+    base::DictionaryValue* element = nullptr;
+    if (update->GetDictionary(i, &element)) {
+      if (UserMatches(user_id, *element)) {
+        if (clear)
+          element->Clear();
+        element->MergeDictionary(&values);
+        UpdateIdentity(user_id, *element);
+        return;
+      }
+    }
+  }
+  scoped_ptr<base::DictionaryValue> new_value(new base::DictionaryValue());
+  new_value->MergeDictionary(&values);
+  UpdateIdentity(user_id, *new_value);
+  update->Append(new_value.release());
 }
 
 User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
@@ -961,6 +1034,19 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
     }
   }
   return user;
+}
+
+void UserManagerBase::RemoveKnowUserPrefs(const UserID& user_id) {
+  ListPrefUpdate update(GetLocalState(), kKnownUsers);
+  for (size_t i = 0; i < update->GetSize(); ++i) {
+    base::DictionaryValue* element = nullptr;
+    if (update->GetDictionary(i, &element)) {
+      if (UserMatches(user_id, *element)) {
+        update->Remove(i, nullptr);
+        break;
+      }
+    }
+  }
 }
 
 void UserManagerBase::NotifyActiveUserChanged(const User* active_user) {

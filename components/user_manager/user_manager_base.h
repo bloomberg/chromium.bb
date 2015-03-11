@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_manager_export.h"
 #include "components/user_manager/user_type.h"
@@ -23,6 +24,7 @@ class PrefService;
 class PrefRegistrySimple;
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 class TaskRunner;
 }
@@ -200,6 +202,21 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // avatar, OAuth token status, display name, display email).
   virtual void RemoveNonCryptohomeData(const std::string& user_id);
 
+  // Methods for storage/retrieval of per-user properties in Local State.
+
+  // Performs a lookup of properties associated with |user_id|. If found,
+  // returns |true| and fills |out_value|. |out_value| can be NULL, if
+  // only existence check is required.
+  bool FindKnowUserPrefs(const UserID& user_id,
+                         const base::DictionaryValue** out_value);
+
+  // Updates (or creates) properties associated with |user_id| based
+  // on |values|. |clear| defines if existing properties are cleared (|true|)
+  // or if it is just a incremental update (|false|).
+  void UpdateKnowUserPrefs(const UserID& user_id,
+                           const base::DictionaryValue& values,
+                           bool clear);
+
   // Check for a particular user type.
 
   // Returns true if |user_id| represents demo app.
@@ -324,6 +341,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Updates user account after locale was resolved.
   void DoUpdateAccountLocale(const std::string& user_id,
                              scoped_ptr<std::string> resolved_locale);
+
+  // Removes all user preferences associated with |user_id|.
+  void RemoveKnowUserPrefs(const UserID& user_id);
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_;
