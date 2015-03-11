@@ -207,10 +207,6 @@ ContentMetadataProvider.prototype.onResult_ = function(url, metadataItem) {
  */
 ContentMetadataProvider.prototype.onError_ = function(
     url, step, errorDescription, metadata) {
-  console.error(
-      'ContentMetadataProvider failed to obtain metadata: '+
-      url + ': ' + step + ': ' + errorDescription);
-
   // For error case, fill all fields with error object.
   var error = new ContentMetadataProvider.Error(url, step, errorDescription);
   var item = new MetadataItem();
