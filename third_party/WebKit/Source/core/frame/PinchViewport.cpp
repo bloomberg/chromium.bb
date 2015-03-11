@@ -85,6 +85,10 @@ DEFINE_TRACE(PinchViewport)
 
 void PinchViewport::setSize(const IntSize& size)
 {
+    // When the main frame is remote, we won't have an associated frame.
+    if (!mainFrame())
+        return;
+
     if (m_size == size)
         return;
 
