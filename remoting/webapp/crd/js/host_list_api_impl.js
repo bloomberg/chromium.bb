@@ -7,10 +7,12 @@
  * REST API for host-list management.
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+(function() {
+
+'use strict';
 
 /**
  * @constructor
@@ -85,7 +87,8 @@ remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
     remoting.xhr.start({
       method: 'DELETE',
       url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-      onDone: remoting.xhr.defaultResponse(onDone, onError),
+      onDone: remoting.xhr.defaultResponse(onDone, onError,
+                                           [remoting.Error.Tag.NOT_FOUND]),
       oauthToken: token
     });
   };
@@ -135,3 +138,6 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
 
 /** @type {remoting.HostListApi} */
 remoting.hostListApi = new remoting.HostListApiImpl();
+
+})();
+

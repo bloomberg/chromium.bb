@@ -7,10 +7,12 @@
  * OAuth2 API flow implementations.
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+(function() {
+
+'use strict';
 
 /**
  * @constructor
@@ -89,7 +91,7 @@ remoting.OAuth2ApiImpl.prototype.refreshAccessToken = function(
     } else {
       console.error('Failed to refresh token. Status: ' + xhr.status +
                     ' response: ' + xhr.responseText);
-      onError(remoting.Error.fromHttpStatus(xhr.status));
+      onError(fromHttpStatus(xhr.status));
     }
   };
 
@@ -139,7 +141,7 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
     } else {
       console.error('Failed to exchange code for token. Status: ' + xhr.status +
                     ' response: ' + xhr.responseText);
-      onError(remoting.Error.fromHttpStatus(xhr.status));
+      onError(fromHttpStatus(xhr.status));
     }
   };
 
@@ -181,7 +183,7 @@ remoting.OAuth2ApiImpl.prototype.getEmail = function(onDone, onError, token) {
     } else {
       console.error('Failed to get email. Status: ' + xhr.status +
                     ' response: ' + xhr.responseText);
-      onError(remoting.Error.fromHttpStatus(xhr.status));
+      onError(fromHttpStatus(xhr.status));
     }
   };
   remoting.xhr.start({
@@ -217,7 +219,7 @@ remoting.OAuth2ApiImpl.prototype.getUserInfo =
     } else {
       console.error('Failed to get user info. Status: ' + xhr.status +
                     ' response: ' + xhr.responseText);
-      onError(remoting.Error.fromHttpStatus(xhr.status));
+      onError(fromHttpStatus(xhr.status));
     }
   };
   remoting.xhr.start({
@@ -228,5 +230,18 @@ remoting.OAuth2ApiImpl.prototype.getUserInfo =
   });
 };
 
+/** @returns {!remoting.Error} */
+function fromHttpStatus(/** number */ status) {
+  var error = remoting.Error.fromHttpStatus(status);
+  if (error === remoting.Error.UNEXPECTED) {
+    // Return AUTHENTICATION_FAILED by default, so that the user can try to
+    // recover from an unexpected failure by signing in again.
+    return remoting.Error.AUTHENTICATION_FAILED;
+  }
+  return error;
+}
+
 /** @type {remoting.OAuth2Api} */
 remoting.oauth2Api = new remoting.OAuth2ApiImpl();
+
+})();

@@ -469,7 +469,9 @@
       <message desc="Message shown if the user is not authorized to perform the requested action." name="IDS_ERROR_NOT_AUTHORIZED">
         You do not have permission to perform that action.
       </message>
-
+      <message desc="Message shown if the user is is trying to modify an object that does not exist." name="IDS_ERROR_NOT_FOUND">
+        The requested object does not exist.
+      </message>
       <!-- The following strings are AppRemoting-specific -->
       <message desc="Message shown if the user is not authorized to run the app." name="IDS_ERROR_APP_NOT_AUTHORIZED">
         You do not have permission to run this application.

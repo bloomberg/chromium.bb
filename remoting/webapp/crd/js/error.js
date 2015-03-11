@@ -54,6 +54,7 @@ remoting.Error.Tag = {
   UNEXPECTED: /*i18n-content*/'ERROR_UNEXPECTED',
   SERVICE_UNAVAILABLE: /*i18n-content*/'ERROR_SERVICE_UNAVAILABLE',
   NOT_AUTHENTICATED: /*i18n-content*/'ERROR_NOT_AUTHENTICATED',
+  NOT_FOUND: /*i18n-content*/'ERROR_NOT_FOUND',
   INVALID_HOST_DOMAIN: /*i18n-content*/'ERROR_INVALID_HOST_DOMAIN',
   P2P_FAILURE: /*i18n-content*/'ERROR_P2P_FAILURE',
   REGISTRATION_FAILED: /*i18n-content*/'ERROR_HOST_REGISTRATION_FAILED',
@@ -121,6 +122,10 @@ remoting.Error.NOT_AUTHENTICATED =
   new remoting.Error(remoting.Error.Tag.NOT_AUTHENTICATED);
 
 /** @const */
+remoting.Error.NOT_FOUND =
+  new remoting.Error(remoting.Error.Tag.NOT_FOUND);
+
+/** @const */
 remoting.Error.INVALID_HOST_DOMAIN =
   new remoting.Error(remoting.Error.Tag.INVALID_HOST_DOMAIN);
 
@@ -152,16 +157,15 @@ remoting.Error.fromHttpStatus = function(httpStatus) {
     return remoting.Error.NONE;
   } else if (httpStatus == 400 || httpStatus == 401) {
     return remoting.Error.AUTHENTICATION_FAILED;
+  } else if (httpStatus == 403) {
+    return remoting.Error.NOT_AUTHORIZED;
+  } else if (httpStatus == 404) {
+    return remoting.Error.NOT_FOUND;
   } else if (httpStatus >= 500 && httpStatus < 600) {
     return remoting.Error.SERVICE_UNAVAILABLE;
   } else {
     console.warn('Unexpected HTTP error code: ' + httpStatus);
-
-    // Return AUTHENTICATION_FAILED by default, so that the user can try to
-    // recover from an unexpected failure by signing in again.
-    // TODO(jamiewalch): Tag = UNEXPECTED here and let calling tag treat that
-    // as "sign-in required" if necessary.
-    return remoting.Error.AUTHENTICATION_FAILED;
+    return remoting.Error.UNEXPECTED;
   }
 };
 

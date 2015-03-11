@@ -200,18 +200,25 @@ remoting.xhr.startInternal_ = function(
  *
  * @param {function():void} onDone
  * @param {function(!remoting.Error):void} onError
+ * @param {Array<remoting.Error.Tag>=} opt_ignoreErrors
  * @return {function(XMLHttpRequest):void}
  */
-remoting.xhr.defaultResponse = function(onDone, onError) {
+remoting.xhr.defaultResponse = function(onDone, onError, opt_ignoreErrors) {
   /** @param {XMLHttpRequest} xhr */
   var result = function(xhr) {
     var error =
         remoting.Error.fromHttpStatus(/** @type {number} */ (xhr.status));
     if (!error.isError()) {
       onDone();
-    } else {
-      onError(error);
+      return;
     }
+
+    if (opt_ignoreErrors && opt_ignoreErrors.indexOf(error.tag) !== -1) {
+      onDone();
+      return;
+    }
+
+    onError(error);
   };
   return result;
 };

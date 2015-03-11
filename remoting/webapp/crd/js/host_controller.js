@@ -144,7 +144,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
   /** @param {!remoting.Error} error */
   function onStartError(error) {
     // Unregister the host if we failed to start it.
-    remoting.HostList.unregisterHostById(newHostId);
+    remoting.hostList.unregisterHostById(newHostId);
     onError(error);
   }
 
@@ -363,7 +363,8 @@ remoting.HostController.prototype.stop = function(onDone, onError) {
   /** @param {string?} hostId The host id of the local host. */
   function unregisterHost(hostId) {
     if (hostId) {
-      remoting.HostList.unregisterHostById(hostId);
+      remoting.hostList.unregisterHostById(hostId, onDone);
+      return;
     }
     onDone();
   }

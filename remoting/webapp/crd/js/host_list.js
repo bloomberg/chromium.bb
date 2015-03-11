@@ -211,7 +211,7 @@ remoting.HostList.prototype.display = function() {
   this.table_.hidden = noHostsRegistered;
   this.noHosts_.hidden = !noHostsRegistered;
 
-  if (this.lastError_ != '') {
+  if (this.lastError_.isError()) {
     l10n.localizeElementFromTag(this.errorMsg_, this.lastError_.tag);
     if (this.lastError_.tag == remoting.Error.Tag.AUTHENTICATION_FAILED) {
       l10n.localizeElementFromTag(this.errorButton_,
@@ -294,7 +294,8 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
   if (index != -1) {
     this.hostTableEntries_.splice(index, 1);
   }
-  remoting.HostList.unregisterHostById(hostTableEntry.host.hostId);
+  remoting.hostListApi.remove(hostTableEntry.host.hostId, base.doNothing,
+                              remoting.showErrorMessage);
 };
 
 /**
@@ -321,10 +322,28 @@ remoting.HostList.prototype.renameHost = function(hostTableEntry) {
 /**
  * Unregister a host.
  * @param {string} hostId The id of the host to be removed.
+ * @param {function(void)=} opt_onDone
  * @return {void} Nothing.
  */
-remoting.HostList.unregisterHostById = function(hostId) {
-  remoting.hostListApi.remove(hostId, function() {}, remoting.showErrorMessage);
+remoting.HostList.prototype.unregisterHostById = function(hostId, opt_onDone) {
+  var that = this;
+  var onDone = opt_onDone || base.doNothing;
+
+  var host = this.getHostForId(hostId);
+  if (!host) {
+    console.log('Skipping host un-registration as the host is not registered ' +
+                'under the current account');
+    onDone();
+    return;
+  }
+
+  var onRemoved = function() {
+    that.refresh(function() {
+      that.display();
+      onDone();
+    });
+  };
+  remoting.hostListApi.remove(hostId, onRemoved, remoting.showErrorMessage);
 };
 
 /**
