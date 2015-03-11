@@ -610,6 +610,10 @@ bool DevToolsAndroidBridge::RemoteBrowser::IsWebView() {
   return type_ == AndroidDeviceManager::BrowserInfo::kTypeWebView;
 }
 
+std::string DevToolsAndroidBridge::RemoteBrowser::GetId() {
+  return serial() + ":" + socket();
+}
+
 DevToolsAndroidBridge::RemoteBrowser::ParsedVersion
 DevToolsAndroidBridge::RemoteBrowser::GetParsedVersion() {
   ParsedVersion result;

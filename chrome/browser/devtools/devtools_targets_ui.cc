@@ -62,16 +62,6 @@ const char kAdbAttachedForeignField[]  = "adbAttachedForeign";
 const char kPortForwardingPorts[] = "ports";
 const char kPortForwardingBrowserId[] = "browserId";
 
-std::string SerializeBrowserId(
-    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser) {
-  return base::StringPrintf(
-      "browser:%s:%s:%s:%s",
-      browser->serial().c_str(), // Ensure uniqueness across devices.
-      browser->display_name().c_str(),  // Sort by display name.
-      browser->version().c_str(),  // Then by version.
-      browser->socket().c_str());  // Ensure uniqueness on the device.
-}
-
 // CancelableTimer ------------------------------------------------------------
 
 class CancelableTimer {
@@ -379,7 +369,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
       browser_data->SetInteger(
           kAdbBrowserChromeVersionField,
           browser->IsChrome() && !parsed.empty() ? parsed[0] : 0);
-      std::string browser_id = SerializeBrowserId(browser);
+      std::string browser_id = browser->GetId();
       browser_data->SetString(kTargetIdField, browser_id);
       browser_data->SetString(kTargetSourceField, source_id());
 
@@ -517,7 +507,7 @@ void PortForwardingStatusSerializer::PortStatusChanged(
     base::DictionaryValue* device_status_dict = new base::DictionaryValue();
     device_status_dict->Set(kPortForwardingPorts, port_status_dict);
     device_status_dict->SetString(kPortForwardingBrowserId,
-                                  SerializeBrowserId(sit->first));
+                                  sit->first->GetId());
 
     std::string device_id = base::StringPrintf(
         kAdbDeviceIdFormat,

@@ -103,6 +103,7 @@ class DevToolsAndroidBridge : public KeyedService {
 
     bool IsChrome();
     bool IsWebView();
+    std::string GetId();
 
     typedef std::vector<int> ParsedVersion;
     ParsedVersion GetParsedVersion();

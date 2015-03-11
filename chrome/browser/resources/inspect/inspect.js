@@ -179,16 +179,23 @@ function populateRemoteTargets(devices) {
     return;
   }
 
-  function insertChildSortedById(parent, child) {
-    for (var sibling = parent.firstElementChild;
-                     sibling;
-                     sibling = sibling.nextElementSibling) {
-      if (sibling.id > child.id) {
-        parent.insertBefore(child, sibling);
+  function browserCompare(a, b) {
+    if (a.adbBrowserName != b.adbBrowserName)
+      return a.adbBrowserName < b.adbBrowserName;
+    if (a.adbBrowserVersion != b.adbBrowserVersion)
+      return a.adbBrowserVersion < b.adbBrowserVersion;
+    return a.id < b.id;
+  }
+
+  function insertBrowser(browserList, browser) {
+    for (var sibling = browserList.firstElementChild; sibling;
+        sibling = sibling.nextElementSibling) {
+      if (browserCompare(browser, sibling)) {
+        browserList.insertBefore(browser, sibling);
         return;
       }
     }
-    parent.appendChild(child);
+    browserList.appendChild(browser);
   }
 
   var deviceList = $('devices-list');
@@ -273,7 +280,7 @@ function populateRemoteTargets(devices) {
         browserSection = document.createElement('div');
         browserSection.id = browser.id;
         browserSection.className = 'browser';
-        insertChildSortedById(browserList, browserSection);
+        insertBrowser(browserList, browserSection);
 
         var browserHeader = document.createElement('div');
         browserHeader.className = 'browser-header';
