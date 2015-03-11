@@ -4,22 +4,23 @@
 
 #include "android_webview/lib/main/webview_jni_onload.h"
 #include "base/android/jni_android.h"
-#include "base/bind.h"
-#include "content/public/app/content_jni_onload.h"
 
 // This is called by the VM when the shared library is first loaded.
 // Most of the initialization is done in LibraryLoadedOnMainThread(), not here.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  // WebView uses native JNI exports; disable manual JNI registration to
-  // improve startup peformance.
+  // WebView uses native JNI exports; disable manual JNI registration because
+  // we don't have a good way to detect the JNI registrations which is called,
+  // outside of OnJNIOnLoadRegisterJNI code path.
   base::android::DisableManualJniRegistration();
 
-  std::vector<base::android::RegisterCallback> register_callbacks;
-  register_callbacks.push_back(base::Bind(&android_webview::RegisterJNI));
-  std::vector<base::android::InitCallback> init_callbacks;
-  init_callbacks.push_back(base::Bind(&android_webview::Init));
-  if (!content::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
-      !content::android::OnJNIOnLoadInit(init_callbacks)) {
+  if (base::android::IsManualJniRegistrationDisabled()) {
+    base::android::InitVM(vm);
+  } else {
+    if (android_webview::OnJNIOnLoadRegisterJNI(vm))
+      return -1;
+  }
+
+  if (!android_webview::OnJNIOnLoadInit()) {
     return -1;
   }
   return JNI_VERSION_1_4;

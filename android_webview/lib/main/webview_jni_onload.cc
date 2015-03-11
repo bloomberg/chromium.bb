@@ -8,8 +8,10 @@
 #include "android_webview/native/android_webview_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/bind.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
+#include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
 #include "url/url_util.h"
 
@@ -24,8 +26,6 @@ static base::android::RegistrationMethod
     { "WebContentsDelegateAndroid",
         web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni },
 };
-
-}  // namespace
 
 bool RegisterJNI(JNIEnv* env) {
   // Register JNI for components we depend on.
@@ -47,6 +47,20 @@ bool Init() {
   // this). It's safe to call this multiple times.
   url::Initialize();
   return true;
+}
+
+}  // namespace
+
+bool OnJNIOnLoadRegisterJNI(JavaVM* vm) {
+  std::vector<base::android::RegisterCallback> register_callbacks;
+  register_callbacks.push_back(base::Bind(&RegisterJNI));
+  return content::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks);
+}
+
+bool OnJNIOnLoadInit() {
+  std::vector<base::android::InitCallback> init_callbacks;
+  init_callbacks.push_back(base::Bind(&Init));
+  return content::android::OnJNIOnLoadInit(init_callbacks);
 }
 
 }  // android_webview

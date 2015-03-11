@@ -9,8 +9,11 @@
 
 namespace android_webview {
 
-bool RegisterJNI(JNIEnv* env);
-bool Init();
+// TODO(michaelbai): remove this once we no longer need to be able to run
+// webview with manual JNI registration
+bool OnJNIOnLoadRegisterJNI(JavaVM* vm);
+
+bool OnJNIOnLoadInit();
 
 }  // android_webview
 
