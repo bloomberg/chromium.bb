@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/rappor/rappor_utils.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "crypto/hmac.h"
@@ -41,8 +41,10 @@ void SampleNewTabPageURL(Profile* profile) {
       &ntp_url,
       profile,
       &reverse_on_redirect);
-  if (ntp_url.is_valid())
-    rappor::SampleDomainAndRegistryFromGURL("Settings.NewTabPage", ntp_url);
+  if (ntp_url.is_valid()) {
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "Settings.NewTabPage", ntp_url);
+  }
 }
 
 }  // namespace
@@ -95,8 +97,9 @@ void PrefMetricsService::RecordLaunchPrefs() {
           "Settings.HomePageEngineType",
           TemplateURLPrepopulateData::GetEngineType(homepage_url),
           SEARCH_ENGINE_MAX);
-      rappor::SampleDomainAndRegistryFromGURL("Settings.HomePage2",
-                                              homepage_url);
+      rappor::SampleDomainAndRegistryFromGURL(
+          g_browser_process->rappor_service(), "Settings.HomePage2",
+          homepage_url);
     }
   }
 
@@ -121,8 +124,9 @@ void PrefMetricsService::RecordLaunchPrefs() {
               TemplateURLPrepopulateData::GetEngineType(start_url),
               SEARCH_ENGINE_MAX);
           if (i == 0) {
-            rappor::SampleDomainAndRegistryFromGURL("Settings.FirstStartupPage",
-                                                    start_url);
+            rappor::SampleDomainAndRegistryFromGURL(
+                g_browser_process->rappor_service(),
+                "Settings.FirstStartupPage", start_url);
           }
         }
       }

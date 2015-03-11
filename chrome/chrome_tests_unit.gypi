@@ -136,7 +136,6 @@
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/cloned_install_detector_unittest.cc',
       'browser/metrics/metrics_services_manager_unittest.cc',
-      'browser/metrics/rappor/sampling_unittest.cc',
       'browser/metrics/signin_status_metrics_provider_chromeos_unittest.cc',
       'browser/metrics/signin_status_metrics_provider_unittest.cc',
       'browser/metrics/thread_watcher_android_unittest.cc',

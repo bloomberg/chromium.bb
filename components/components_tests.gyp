@@ -402,6 +402,7 @@
       'rappor/rappor_metric_unittest.cc',
       'rappor/rappor_prefs_unittest.cc',
       'rappor/rappor_service_unittest.cc',
+      'rappor/rappor_utils_unittest.cc',
     ],
     'search_unittest_sources': [
       'search/search_android_unittest.cc',

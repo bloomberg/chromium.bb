@@ -16,12 +16,13 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/rappor/rappor_utils.h"
 #include "content/public/common/manifest.h"
 #include "jni/AppBannerInfoBarDelegate_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -110,7 +111,8 @@ void AppBannerInfoBarDelegate::OnInstallIntentReturned(
         AppBannerManager::GetCurrentTime());
 
     TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_STARTED);
-    rappor::SampleDomainAndRegistryFromGURL("AppBanner.NativeApp.Installed",
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "AppBanner.NativeApp.Installed",
                                             web_contents->GetURL());
   }
 
@@ -169,7 +171,8 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
         AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
         AppBannerManager::GetCurrentTime());
 
-    rappor::SampleDomainAndRegistryFromGURL("AppBanner.NativeApp.Dismissed",
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "AppBanner.NativeApp.Dismissed",
                                             web_contents->GetURL());
   } else if (!web_app_data_.IsEmpty()) {
     AppBannerSettingsHelper::RecordBannerEvent(
@@ -178,7 +181,8 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
         AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
         AppBannerManager::GetCurrentTime());
 
-    rappor::SampleDomainAndRegistryFromGURL("AppBanner.WebApp.Dismissed",
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "AppBanner.WebApp.Dismissed",
                                             web_contents->GetURL());
   }
 }
@@ -238,7 +242,8 @@ bool AppBannerInfoBarDelegate::Accept() {
         true);
 
     TrackInstallEvent(INSTALL_EVENT_WEB_APP_INSTALLED);
-    rappor::SampleDomainAndRegistryFromGURL("AppBanner.WebApp.Installed",
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "AppBanner.WebApp.Installed",
                                             web_contents->GetURL());
     return true;
   }

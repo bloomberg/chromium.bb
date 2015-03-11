@@ -7,7 +7,8 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "chrome/browser/metrics/rappor/sampling.h"
+#include "chrome/browser/browser_process.h"
+#include "components/rappor/rappor_utils.h"
 #include "jni/LaunchMetrics_jni.h"
 #include "url/gurl.h"
 
@@ -34,7 +35,8 @@ static void RecordLaunch(JNIEnv* env, jclass caller, jboolean standalone,
                             HOME_SCREEN_LAUNCH_COUNT);
 
   std::string url = base::android::ConvertJavaStringToUTF8(env, jurl);
-  rappor::SampleDomainAndRegistryFromGURL(rappor_metric, GURL(url));
+  rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                          rappor_metric, GURL(url));
 }
 
 };  // namespace metrics

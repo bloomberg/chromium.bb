@@ -10,10 +10,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 

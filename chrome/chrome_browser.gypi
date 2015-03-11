@@ -1725,8 +1725,6 @@
       'browser/metrics/omnibox_metrics_provider.h',
       'browser/metrics/perf_provider_chromeos.cc',
       'browser/metrics/perf_provider_chromeos.h',
-      'browser/metrics/rappor/sampling.cc',
-      'browser/metrics/rappor/sampling.h',
       'browser/metrics/signin_status_metrics_provider.cc',
       'browser/metrics/signin_status_metrics_provider.h',
       'browser/metrics/signin_status_metrics_provider_base.cc',

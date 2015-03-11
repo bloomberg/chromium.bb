@@ -18,12 +18,13 @@
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -307,7 +308,8 @@ void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
         native_app_data_,
         native_app_package_);
 
-    rappor::SampleDomainAndRegistryFromGURL("AppBanner.NativeApp.Shown",
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "AppBanner.NativeApp.Shown",
                                             web_contents()->GetURL());
   } else if (!web_app_data_.IsEmpty()){
     RecordCouldShowBanner(web_app_data_.start_url.spec());
@@ -320,7 +322,8 @@ void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
         new SkBitmap(*bitmap),
         web_app_data_);
 
-    rappor::SampleDomainAndRegistryFromGURL("AppBanner.WebApp.Shown",
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "AppBanner.WebApp.Shown",
                                             web_contents()->GetURL());
   }
 
