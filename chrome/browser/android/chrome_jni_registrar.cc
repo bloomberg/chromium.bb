@@ -54,6 +54,7 @@
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_state.h"
+#include "chrome/browser/android/transition_page_helper.h"
 #include "chrome/browser/android/url_utilities.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -234,6 +235,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"TabState", RegisterTabState},
     {"TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register},
     {"ToolbarModelAndroid", ToolbarModelAndroid::RegisterToolbarModelAndroid},
+    {"TransitionPageHelper", TransitionPageHelper::Register},
     {"TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},
     {"UmaBridge", RegisterUmaBridge},
