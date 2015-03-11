@@ -58,14 +58,19 @@ void ContentLayerDelegate::paintContents(
     if (UNLIKELY(!annotationsEnabled))
         annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
 
-    GraphicsContext context(canvas, m_painter->displayItemList(),
+    DisplayItemList* displayItemList = m_painter->displayItemList();
+
+    if (displayItemList && paintingControl == WebContentLayerClient::DisplayListCachingDisabled)
+        displayItemList->invalidateAll();
+
+    GraphicsContext context(canvas, displayItemList,
         paintingControl == WebContentLayerClient::DisplayListConstructionDisabled ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
     if (*annotationsEnabled)
         context.setAnnotationMode(AnnotateAll);
 
     m_painter->paint(context, clip);
 
-    if (DisplayItemList* displayItemList = m_painter->displayItemList())
+    if (displayItemList)
         displayItemList->endNewPaints();
 }
 
