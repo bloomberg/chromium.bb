@@ -302,21 +302,11 @@ namespace WTF {
 
 namespace blink {
 
-class JSONValue;
 class Visitor;
 
 } // namespace blink
 
 namespace WTF {
-
-    // FIXME: Disable pointer conversion checking against JSONValue.
-    // The current CodeGeneratorInspector.py generates code which upcasts to JSONValue from undefined types.
-    template<typename From> class IsPointerConvertible<From, blink::JSONValue> {
-    public:
-        enum {
-            Value = true
-        };
-    };
 
 template<typename T>
 class NeedsTracing {

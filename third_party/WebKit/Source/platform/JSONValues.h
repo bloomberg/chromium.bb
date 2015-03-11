@@ -35,9 +35,39 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
+#include "wtf/TypeTraits.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
+
+namespace blink {
+
+class JSONValue;
+
+} // namespace blink
+
+namespace WTF {
+
+// FIXME: Avoid the need for this global upcasting to JSONValue (for PassRefPtr<T>.)
+// The current CodeGeneratorInspector.py generates code which order sorts its input
+// types and generates forward declarations where needed. But with inline uses
+// of setValue(PassRefPtr<JSONValue>) this is not quite sufficient for the
+// implicit conversion of PassRefPtr<T> to PassRefPtr<JSONValue> for a T that
+// has only been forward declared -- IsPointerConvertible<> doesn't have
+// complete types to work with.
+//
+// Work around that problem here by hackily declaring this global & unsafe
+// specialization.
+//
+// (InspectorTypeBuilder.h is the only piece of code that relies on this specialization.)
+template<typename From> class IsPointerConvertible<From, blink::JSONValue> {
+public:
+    enum {
+        Value = true
+    };
+};
+
+} // namespace WTF
 
 namespace blink {
 
@@ -316,4 +346,4 @@ public:
 
 } // namespace blink
 
-#endif // !defined(JSONValues_h)
+#endif // JSONValues_h
