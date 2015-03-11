@@ -48,12 +48,6 @@ namespace cast.streaming.rtpStream {
     // The maximum frame rate.
     double? maxFrameRate;
 
-    // Video width in pixels.
-    long? width;
-
-    // Video height in pixels.
-    long? height;
-
     // 32 bytes hex-encoded AES key.
     DOMString? aesKey;
 

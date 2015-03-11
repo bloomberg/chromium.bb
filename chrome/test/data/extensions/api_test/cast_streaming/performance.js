@@ -46,8 +46,6 @@ chrome.test.runTests([
                 rtpStream.start(audioId,
                                 rtpStream.getSupportedParams(audioId)[0]);
                 var videoParams = rtpStream.getSupportedParams(videoId)[0];
-                videoParams.payload.width = width;
-                videoParams.payload.height = height;
                 videoParams.payload.clockRate = frameRate;
                 rtpStream.start(videoId, videoParams);
                 setTimeout(function () {

@@ -98,8 +98,6 @@ bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
   cast_params->channels = ext_params.channels ? *ext_params.channels : 0;
   cast_params->max_frame_rate =
       ext_params.max_frame_rate ? *ext_params.max_frame_rate : 0.0;
-  cast_params->width = ext_params.width ? *ext_params.width : 0;
-  cast_params->height = ext_params.height ? *ext_params.height : 0;
   if (ext_params.aes_key &&
       !HexDecode(*ext_params.aes_key, &cast_params->aes_key)) {
     isolate->ThrowException(v8::Exception::Error(
@@ -139,10 +137,6 @@ void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
     ext_params->channels.reset(new int(cast_params.channels));
   if (cast_params.max_frame_rate > 0.0)
     ext_params->max_frame_rate.reset(new double(cast_params.max_frame_rate));
-  if (cast_params.width)
-    ext_params->width.reset(new int(cast_params.width));
-  if (cast_params.height)
-    ext_params->height.reset(new int(cast_params.height));
   for (size_t i = 0; i < cast_params.codec_specific_params.size(); ++i) {
     linked_ptr<CodecSpecificParams> ext_codec_params(
         new CodecSpecificParams());

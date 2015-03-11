@@ -155,8 +155,6 @@ chrome.test.runTests([
                 audioParams.payload.aesIvMask = aesIvMask;
                 rtpStream.start(audioId, audioParams);
                 var videoParams = rtpStream.getSupportedParams(videoId)[0];
-                videoParams.payload.width = width;
-                videoParams.payload.height = height;
                 videoParams.payload.maxFrameRate = frameRate;
                 videoParams.payload.aesKey = aesKey;
                 videoParams.payload.aesIvMask = aesIvMask;

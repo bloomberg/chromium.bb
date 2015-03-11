@@ -70,8 +70,6 @@ CastRtpPayloadParams DefaultVp8Payload() {
   payload.min_bitrate = 50;
   payload.channels = 1;
   payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
-  payload.width = 1280;
-  payload.height = 720;
   payload.codec_name = kCodecNameVp8;
   return payload;
 }
@@ -89,8 +87,6 @@ CastRtpPayloadParams DefaultH264Payload() {
   payload.min_bitrate = 50;
   payload.channels = 1;
   payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
-  payload.width = 1280;
-  payload.height = 720;
   payload.codec_name = kCodecNameH264;
   return payload;
 }
@@ -460,9 +456,8 @@ CastRtpPayloadParams::CastRtpPayloadParams()
       max_bitrate(0),
       min_bitrate(0),
       channels(0),
-      max_frame_rate(0.0),
-      width(0),
-      height(0) {}
+      max_frame_rate(0.0) {
+}
 
 CastRtpPayloadParams::~CastRtpPayloadParams() {}
 
