@@ -669,7 +669,6 @@ SkPaint Font::textFillPaint(GraphicsContext* gc, const SimpleFontData* font) con
 {
     SkPaint paint = gc->fillPaint();
     font->platformData().setupPaint(&paint, gc, this);
-    gc->adjustTextRenderMode(&paint);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     return paint;
 }
@@ -678,7 +677,6 @@ SkPaint Font::textStrokePaint(GraphicsContext* gc, const SimpleFontData* font, b
 {
     SkPaint paint = gc->strokePaint();
     font->platformData().setupPaint(&paint, gc, this);
-    gc->adjustTextRenderMode(&paint);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     if (isFilling) {
         // If there is a shadow and we filled above, there will already be

@@ -60,19 +60,7 @@ public:
     // Draws the text run to the given canvas. The text is positioned at the
     // given left-hand point at the baseline.
     //
-    // The text will be clipped to the given clip rect. |canvasIsOpaque| is
-    // used to control whether subpixel antialiasing is possible. If there is a
-    // possibility the area drawn could be semi-transparent, subpixel
-    // antialiasing will be disabled.
-    //
-    // |from| and |to| allow the caller to specify a subrange of the given text
-    // run to draw. If |to| is -1, the entire run will be drawn.
-    //
-    // Deprecated, pending clients migration to the simplified version below.
-    virtual void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
-                          const WebRect& clip, bool canvasIsOpaque,
-                          int from = 0, int to = -1) const = 0;
-
+    // The text will be clipped to the given clip rect.
     virtual void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
                           const WebRect& clip) const = 0;
 

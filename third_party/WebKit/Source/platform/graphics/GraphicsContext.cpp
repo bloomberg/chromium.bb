@@ -106,7 +106,6 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
     , m_deviceScaleFactor(1.0f)
     , m_trackTextRegion(false)
     , m_accelerated(false)
-    , m_isCertainlyOpaque(true)
     , m_printing(false)
     , m_antialiasHairlineImages(false)
 {
@@ -354,21 +353,6 @@ SkMatrix GraphicsContext::getTotalMatrix() const
     totalMatrix.preConcat(m_canvas->getTotalMatrix());
 
     return totalMatrix;
-}
-
-void GraphicsContext::adjustTextRenderMode(SkPaint* paint) const
-{
-    if (!paint->isLCDRenderText())
-        return;
-
-    paint->setLCDRenderText(couldUseLCDRenderedText());
-}
-
-bool GraphicsContext::couldUseLCDRenderedText() const
-{
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return true;
-    return m_isCertainlyOpaque;
 }
 
 void GraphicsContext::setCompositeOperation(SkXfermode::Mode xferMode)

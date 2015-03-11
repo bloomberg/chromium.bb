@@ -51,9 +51,6 @@ public:
     virtual float xHeight() const override;
 
     virtual void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
-        const WebRect& clip, bool canvasIsOpaque, int from = 0, int to = -1) const override;
-
-    virtual void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
         const WebRect& clip) const override;
 
     virtual int calculateWidth(const WebTextRun&) const override;

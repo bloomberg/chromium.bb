@@ -156,10 +156,6 @@ public:
     void setShouldClampToSourceRect(bool clampToSourceRect) { mutableState()->setShouldClampToSourceRect(clampToSourceRect); }
     bool shouldClampToSourceRect() const { return immutableState()->shouldClampToSourceRect(); }
 
-    // Turn off LCD text for the paint if not supported on this context.
-    void adjustTextRenderMode(SkPaint*) const;
-    bool couldUseLCDRenderedText() const;
-
     void setTextDrawingMode(TextDrawingModeFlags mode) { mutableState()->setTextDrawingMode(mode); }
     TextDrawingModeFlags textDrawingMode() const { return immutableState()->textDrawingMode(); }
 
@@ -182,12 +178,6 @@ public:
     // and fonts are rendered.
     void setDeviceScaleFactor(float factor) { m_deviceScaleFactor = factor; }
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
-
-    // If true we are (most likely) rendering to a web page and the
-    // canvas has been prepared with an opaque background. If false,
-    // the canvas may have transparency (as is the case when rendering
-    // to a canvas object).
-    void setCertainlyOpaque(bool isOpaque) { m_isCertainlyOpaque = isOpaque; }
 
     // Returns if the context is a printing context instead of a display
     // context. Bitmap shouldn't be resampled when printing to keep the best
@@ -498,7 +488,6 @@ private:
     unsigned m_trackTextRegion : 1;
 
     unsigned m_accelerated : 1;
-    unsigned m_isCertainlyOpaque : 1;
     unsigned m_printing : 1;
     unsigned m_antialiasHairlineImages : 1;
 };
