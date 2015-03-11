@@ -370,8 +370,8 @@ TEST_F(SyncGenericChangeProcessorTest,
   pref_specifics->set_name("test");
 
   syncer::AttachmentIdList attachment_ids;
-  attachment_ids.push_back(syncer::AttachmentId::Create());
-  attachment_ids.push_back(syncer::AttachmentId::Create());
+  attachment_ids.push_back(syncer::AttachmentId::Create(0, 0));
+  attachment_ids.push_back(syncer::AttachmentId::Create(0, 0));
 
   // Add a SyncData with two attachments.
   syncer::SyncChangeList change_list;
@@ -394,7 +394,7 @@ TEST_F(SyncGenericChangeProcessorTest,
 
   // Update the SyncData, replacing its two attachments with one new attachment.
   syncer::AttachmentIdList new_attachment_ids;
-  new_attachment_ids.push_back(syncer::AttachmentId::Create());
+  new_attachment_ids.push_back(syncer::AttachmentId::Create(0, 0));
   mock_attachment_service()->attachment_id_sets()->clear();
   change_list.clear();
   change_list.push_back(
@@ -424,7 +424,7 @@ TEST_F(SyncGenericChangeProcessorTest, AttachmentUploaded) {
   pref_specifics->set_name("test");
 
   syncer::AttachmentIdList attachment_ids;
-  attachment_ids.push_back(syncer::AttachmentId::Create());
+  attachment_ids.push_back(syncer::AttachmentId::Create(0, 0));
 
   // Add a SyncData with two attachments.
   syncer::SyncChangeList change_list;
@@ -452,8 +452,8 @@ TEST_F(SyncGenericChangeProcessorTest, AttachmentUploaded) {
 // scheduled for upload.
 TEST_F(SyncGenericChangeProcessorTest, UploadAllAttachmentsNotOnServer) {
   // Create two attachment ids.  id2 will be marked as "on server".
-  syncer::AttachmentId id1 = syncer::AttachmentId::Create();
-  syncer::AttachmentId id2 = syncer::AttachmentId::Create();
+  syncer::AttachmentId id1 = syncer::AttachmentId::Create(0, 0);
+  syncer::AttachmentId id2 = syncer::AttachmentId::Create(0, 0);
   {
     // Write an entry containing these two attachment ids.
     syncer::WriteTransaction trans(FROM_HERE, user_share());

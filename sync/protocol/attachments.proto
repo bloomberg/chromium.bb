@@ -19,6 +19,10 @@ message AttachmentIdProto {
   // Uniquely identifies the attachment. Two attachments with the same unique_id
   // are considered equivalent.
   optional string unique_id = 1;
+  // Size of the attachment data in bytes.
+  optional uint64 size_bytes = 2;
+  // Crc32c of the attachment data.
+  optional uint32 crc32c = 3;
 }
 
 // Metadata for a single attachment.

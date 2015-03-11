@@ -88,8 +88,7 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   void ReportResult(
       const DownloadState& download_state,
       const DownloadResult& result,
-      const scoped_refptr<base::RefCountedString>& attachment_data,
-      uint32_t attachment_crc32c);
+      const scoped_refptr<base::RefCountedString>& attachment_data);
 
   // Extract the crc32c from an X-Goog-Hash header in |headers|.
   //

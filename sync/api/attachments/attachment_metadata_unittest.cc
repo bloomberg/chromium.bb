@@ -11,8 +11,9 @@ namespace syncer {
 class AttachmentMetadataTest : public testing::Test {};
 
 TEST_F(AttachmentMetadataTest, Create) {
-  AttachmentId id = AttachmentId::Create();
   size_t size = 42;
+  uint32_t crc32c = 2349829;
+  AttachmentId id = AttachmentId::Create(size, crc32c);
   AttachmentMetadata metadata(id, size);
   EXPECT_EQ(metadata.GetId(), id);
   EXPECT_EQ(metadata.GetSize(), size);

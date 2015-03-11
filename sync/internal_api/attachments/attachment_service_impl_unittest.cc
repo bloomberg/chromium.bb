@@ -79,9 +79,7 @@ class MockAttachmentStoreBackend
     for (AttachmentIdList::const_iterator iter = ids.begin(); iter != ids.end();
          ++iter) {
       if (local_attachments.find(*iter) != local_attachments.end()) {
-        uint32_t crc32c = ComputeCrc32c(data);
-        Attachment attachment =
-            Attachment::CreateFromParts(*iter, data, crc32c);
+        Attachment attachment = Attachment::CreateFromParts(*iter, data);
         attachments->insert(std::make_pair(*iter, attachment));
       } else {
         unavailable_attachments->push_back(*iter);
@@ -137,9 +135,7 @@ class MockAttachmentDownloader
     scoped_ptr<Attachment> attachment;
     if (result == DOWNLOAD_SUCCESS) {
       scoped_refptr<base::RefCountedString> data = new base::RefCountedString();
-      uint32_t crc32c = ComputeCrc32c(data);
-      attachment.reset(
-          new Attachment(Attachment::CreateFromParts(id, data, crc32c)));
+      attachment.reset(new Attachment(Attachment::CreateFromParts(id, data)));
     }
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -321,7 +317,7 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_EmptyAttachmentList) {
 
 TEST_F(AttachmentServiceImplTest, GetOrDownload_Local) {
   AttachmentIdList attachment_ids;
-  attachment_ids.push_back(AttachmentId::Create());
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
   attachment_service()->GetOrDownloadAttachments(attachment_ids,
                                                  download_callback());
   AttachmentIdSet local_attachments;
@@ -339,10 +335,10 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_Local) {
 TEST_F(AttachmentServiceImplTest, GetOrDownload_LocalRemoteUnavailable) {
   // Create attachment list with 4 ids.
   AttachmentIdList attachment_ids;
-  attachment_ids.push_back(AttachmentId::Create());
-  attachment_ids.push_back(AttachmentId::Create());
-  attachment_ids.push_back(AttachmentId::Create());
-  attachment_ids.push_back(AttachmentId::Create());
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
   // Call attachment service.
   attachment_service()->GetOrDownloadAttachments(attachment_ids,
                                                  download_callback());
@@ -409,7 +405,7 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_NoDownloader) {
       this);
 
   AttachmentIdList attachment_ids;
-  attachment_ids.push_back(AttachmentId::Create());
+  attachment_ids.push_back(AttachmentId::Create(0, 0));
   attachment_service()->GetOrDownloadAttachments(attachment_ids,
                                                  download_callback());
   RunLoop();
@@ -427,7 +423,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
   AttachmentIdSet attachment_ids;
   const unsigned num_attachments = 3;
   for (unsigned i = 0; i < num_attachments; ++i) {
-    attachment_ids.insert(AttachmentId::Create());
+    attachment_ids.insert(AttachmentId::Create(0, 0));
   }
   attachment_service()->UploadAttachments(attachment_ids);
 
@@ -461,7 +457,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
                               NULL);  // No delegate.
 
   AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create());
+  attachment_ids.insert(AttachmentId::Create(0, 0));
   attachment_service()->UploadAttachments(attachment_ids);
   RunLoopAndFireTimer();
   ASSERT_EQ(1U, store()->read_ids.size());
@@ -478,8 +474,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_SomeMissingFromStore) {
   AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create());
-  attachment_ids.insert(AttachmentId::Create());
+  attachment_ids.insert(AttachmentId::Create(0, 0));
+  attachment_ids.insert(AttachmentId::Create(0, 0));
   attachment_service()->UploadAttachments(attachment_ids);
   RunLoopAndFireTimer();
   ASSERT_GE(store()->read_ids.size(), 1U);
@@ -505,7 +501,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
   AttachmentIdSet attachment_ids;
   const unsigned num_attachments = 2;
   for (unsigned i = 0; i < num_attachments; ++i) {
-    attachment_ids.insert(AttachmentId::Create());
+    attachment_ids.insert(AttachmentId::Create(0, 0));
   }
   attachment_service()->UploadAttachments(attachment_ids);
 
@@ -529,7 +525,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
                               this);
 
   AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create());
+  attachment_ids.insert(AttachmentId::Create(0, 0));
   attachment_service()->UploadAttachments(attachment_ids);
   RunLoop();
   EXPECT_EQ(0U, store()->read_ids.size());
@@ -541,7 +537,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_OneUploadFails) {
   AttachmentIdSet attachment_ids;
   const unsigned num_attachments = 3;
   for (unsigned i = 0; i < num_attachments; ++i) {
-    attachment_ids.insert(AttachmentId::Create());
+    attachment_ids.insert(AttachmentId::Create(0, 0));
   }
   attachment_service()->UploadAttachments(attachment_ids);
 
@@ -571,7 +567,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_OneUploadFails) {
 TEST_F(AttachmentServiceImplTest,
        UploadAttachments_ResetBackoffAfterNetworkChange) {
   AttachmentIdSet attachment_ids;
-  attachment_ids.insert(AttachmentId::Create());
+  attachment_ids.insert(AttachmentId::Create(0, 0));
   attachment_service()->UploadAttachments(attachment_ids);
 
   RunLoopAndFireTimer();

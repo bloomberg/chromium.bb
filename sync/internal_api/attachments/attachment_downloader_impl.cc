@@ -132,7 +132,7 @@ void AttachmentDownloaderImpl::OnGetTokenFailure(
     DownloadState* download_state = *iter;
     scoped_refptr<base::RefCountedString> null_attachment_data;
     ReportResult(*download_state, DOWNLOAD_TRANSIENT_ERROR,
-                 null_attachment_data, 0);
+                 null_attachment_data);
     DCHECK(state_map_.find(download_state->attachment_url) != state_map_.end());
     state_map_.erase(download_state->attachment_url);
   }
@@ -175,7 +175,13 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
       // locally calculated one will be stored and used for further checks.
       result = DOWNLOAD_TRANSIENT_ERROR;
     } else {
-      result = DOWNLOAD_SUCCESS;
+      // If the id's crc32c doesn't match that of the downloaded attachment,
+      // then we're stuck and retrying is unlikely to help.
+      if (attachment_crc32c != download_state.attachment_id.GetCrc32c()) {
+        result = DOWNLOAD_UNSPECIFIED_ERROR;
+      } else {
+        result = DOWNLOAD_SUCCESS;
+      }
     }
     UMA_HISTOGRAM_BOOLEAN("Sync.Attachments.DownloadChecksumResult",
                           result == DOWNLOAD_SUCCESS);
@@ -193,7 +199,7 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
   } else if (response_code == net::URLFetcher::RESPONSE_CODE_INVALID) {
     result = DOWNLOAD_TRANSIENT_ERROR;
   }
-  ReportResult(download_state, result, attachment_data, attachment_crc32c);
+  ReportResult(download_state, result, attachment_data);
   state_map_.erase(iter);
 }
 
@@ -221,8 +227,7 @@ void AttachmentDownloaderImpl::RequestAccessToken(
 void AttachmentDownloaderImpl::ReportResult(
     const DownloadState& download_state,
     const DownloadResult& result,
-    const scoped_refptr<base::RefCountedString>& attachment_data,
-    uint32_t attachment_crc32c) {
+    const scoped_refptr<base::RefCountedString>& attachment_data) {
   std::vector<DownloadCallback>::const_iterator iter;
   for (iter = download_state.user_callbacks.begin();
        iter != download_state.user_callbacks.end();
@@ -230,7 +235,7 @@ void AttachmentDownloaderImpl::ReportResult(
     scoped_ptr<Attachment> attachment;
     if (result == DOWNLOAD_SUCCESS) {
       attachment.reset(new Attachment(Attachment::CreateFromParts(
-          download_state.attachment_id, attachment_data, attachment_crc32c)));
+          download_state.attachment_id, attachment_data)));
     }
 
     base::MessageLoop::current()->PostTask(
