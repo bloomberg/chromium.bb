@@ -1,8 +1,12 @@
-# This should match chrome/browser/extensions/OWNERS
-asargent@chromium.org
+reillyg@chromium.org
+rdevlin.cronin@chromium.org
+miket@chromium.org
+mek@chromium.org
+yoz@chromium.org
 benwells@chromium.org
-finnur@chromium.org
+scheib@chromium.org
 jyasskin@chromium.org
 kalman@chromium.org
-miket@chromium.org
-yoz@chromium.org
+rockot@chromium.org
+asargent@chromium.org
+finnur@chromium.org
