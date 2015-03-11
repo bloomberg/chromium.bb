@@ -51,6 +51,11 @@ class GFX_EXPORT Display {
   // command line via "--force-device-scale-factor".
   static bool HasForceDeviceScaleFactor();
 
+  // Resets the caches used to determine if a device scale factor is being
+  // forced from the command line via "--force-device-scale-factor", and thus
+  // ensures that the command line is reevaluated.
+  static void ResetForceDeviceScaleFactorForTesting();
+
   // Sets/Gets unique identifier associated with the display.
   // -1 means invalid display and it doesn't not exit.
   int64 id() const { return id_; }

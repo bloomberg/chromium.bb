@@ -19,6 +19,16 @@
 namespace gfx {
 namespace {
 
+// This variable tracks whether the forced device scale factor switch needs to
+// be read from the command line, i.e. if it is set to -1 then the command line
+// is checked.
+int g_has_forced_device_scale_factor = -1;
+
+// This variable caches the forced device scale factor value which is read off
+// the command line. If the cache is invalidated by setting this variable to
+// -1.0, we read the forced device scale factor again.
+float g_forced_device_scale_factor = -1.0;
+
 bool HasForceDeviceScaleFactorImpl() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceDeviceScaleFactor);
@@ -44,16 +54,22 @@ const int64 Display::kInvalidDisplayID = -1;
 
 // static
 float Display::GetForcedDeviceScaleFactor() {
-  static const float kForcedDeviceScaleFactor =
-      GetForcedDeviceScaleFactorImpl();
-  return kForcedDeviceScaleFactor;
+  if (g_forced_device_scale_factor < 0)
+    g_forced_device_scale_factor = GetForcedDeviceScaleFactorImpl();
+  return g_forced_device_scale_factor;
 }
 
 //static
 bool Display::HasForceDeviceScaleFactor() {
-  static const bool kHasForceDeviceScaleFactor =
-      HasForceDeviceScaleFactorImpl();
-  return kHasForceDeviceScaleFactor;
+  if (g_has_forced_device_scale_factor == -1)
+    g_has_forced_device_scale_factor = HasForceDeviceScaleFactorImpl();
+  return !!g_has_forced_device_scale_factor;
+}
+
+// static
+void Display::ResetForceDeviceScaleFactorForTesting() {
+  g_has_forced_device_scale_factor = -1;
+  g_forced_device_scale_factor = -1.0;
 }
 
 Display::Display()
