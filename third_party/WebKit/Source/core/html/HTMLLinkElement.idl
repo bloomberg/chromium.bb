@@ -19,23 +19,36 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmllinkelement
+
 interface HTMLLinkElement : HTMLElement {
+    // FIXME: The disabled attribute has been removed from the spec:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=14703
     [Reflect] attribute boolean disabled;
-    [Reflect] attribute DOMString charset;
     [Reflect, URL] attribute DOMString href;
     [Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString? crossOrigin;
-    [Reflect] attribute DOMString hreflang;
-    [Reflect] attribute DOMString media;
     [Reflect] attribute DOMString rel;
-    [Reflect] attribute DOMString rev;
-    [PutForwards=value] readonly attribute DOMSettableTokenList sizes;
-    [Reflect] attribute DOMString target;
+    // FIXME: readonly attribute DOMTokenList relList;
+    [Reflect] attribute DOMString media;
+    [Reflect] attribute DOMString hreflang;
     [Reflect] attribute DOMString type;
+    [PutForwards=value] readonly attribute DOMSettableTokenList sizes;
 
-    // DOM Level 2 Style
-    readonly attribute StyleSheet sheet;
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLLinkElement-partial
+    [Reflect] attribute DOMString charset;
+    [Reflect] attribute DOMString rev;
+    [Reflect] attribute DOMString target;
 
-    readonly attribute Document import;
+    // HTMLLinkElement implements LinkStyle
+    // http://dev.w3.org/csswg/cssom/#the-linkstyle-interface
+    readonly attribute StyleSheet? sheet;
 
+    // HTML Imports
+    // https://w3c.github.io/webcomponents/spec/imports/#interface-import
+    readonly attribute Document? import;
+
+    // Subresource Integrity
+    // http://w3c.github.io/webappsec/specs/subresourceintegrity/#htmllinkelement-1
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };
