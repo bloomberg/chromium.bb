@@ -13,9 +13,11 @@ namespace blink {
 class WebPermissionClient;
 
 class PermissionController final
-    : public WillBeHeapSupplement<LocalFrame>
+    : public NoBaseWillBeGarbageCollectedFinalized<PermissionController>
+    , public WillBeHeapSupplement<LocalFrame>
     , public FrameDestructionObserver {
     WTF_MAKE_NONCOPYABLE(PermissionController);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PermissionController);
 public:
     virtual ~PermissionController();
 
