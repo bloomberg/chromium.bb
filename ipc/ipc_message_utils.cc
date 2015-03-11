@@ -343,15 +343,9 @@ void ParamTraits<std::string>::Log(const param_type& p, std::string* l) {
   l->append(p);
 }
 
-void ParamTraits<std::wstring>::Log(const param_type& p, std::string* l) {
-  l->append(base::WideToUTF8(p));
-}
-
-#if !defined(WCHAR_T_IS_UTF16)
 void ParamTraits<base::string16>::Log(const param_type& p, std::string* l) {
   l->append(base::UTF16ToUTF8(p));
 }
-#endif
 
 void ParamTraits<std::vector<char> >::Write(Message* m, const param_type& p) {
   if (p.empty()) {

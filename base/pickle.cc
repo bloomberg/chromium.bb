@@ -164,18 +164,6 @@ bool PickleIterator::ReadStringPiece(base::StringPiece* result) {
   return true;
 }
 
-bool PickleIterator::ReadWString(std::wstring* result) {
-  int len;
-  if (!ReadInt(&len))
-    return false;
-  const char* read_from = GetReadPointerAndAdvance(len, sizeof(wchar_t));
-  if (!read_from)
-    return false;
-
-  result->assign(reinterpret_cast<const wchar_t*>(read_from), len);
-  return true;
-}
-
 bool PickleIterator::ReadString16(string16* result) {
   int len;
   if (!ReadInt(&len))
@@ -301,14 +289,6 @@ bool Pickle::WriteString(const base::StringPiece& value) {
     return false;
 
   return WriteBytes(value.data(), static_cast<int>(value.size()));
-}
-
-bool Pickle::WriteWString(const std::wstring& value) {
-  if (!WriteInt(static_cast<int>(value.size())))
-    return false;
-
-  return WriteBytes(value.data(),
-                    static_cast<int>(value.size() * sizeof(wchar_t)));
 }
 
 bool Pickle::WriteString16(const base::StringPiece16& value) {

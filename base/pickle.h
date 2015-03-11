@@ -42,7 +42,6 @@ class BASE_EXPORT PickleIterator {
   bool ReadString(std::string* result) WARN_UNUSED_RESULT;
   // The StringPiece data will only be valid for the lifetime of the message.
   bool ReadStringPiece(base::StringPiece* result) WARN_UNUSED_RESULT;
-  bool ReadWString(std::wstring* result) WARN_UNUSED_RESULT;
   bool ReadString16(base::string16* result) WARN_UNUSED_RESULT;
   // The StringPiece16 data will only be valid for the lifetime of the message.
   bool ReadStringPiece16(base::StringPiece16* result) WARN_UNUSED_RESULT;
@@ -201,7 +200,6 @@ class BASE_EXPORT Pickle {
     return WritePOD(value);
   }
   bool WriteString(const base::StringPiece& value);
-  bool WriteWString(const std::wstring& value);
   bool WriteString16(const base::StringPiece16& value);
   // "Data" is a blob with a length. When you read it out you will be given the
   // length. See also WriteBytes.
