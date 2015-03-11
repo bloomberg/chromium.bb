@@ -161,6 +161,7 @@ ListPicker.prototype._listItemCount = function() {
 ListPicker.prototype._layout = function() {
     if (this._config.isRTL)
         this._element.classList.add("rtl");
+    this._selectElement.style.backgroundColor = this._config.backgroundColor;
     this._updateChildren(this._selectElement, this._config);
     this._selectElement.value = this._config.selectedIndex;
 };

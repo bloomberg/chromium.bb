@@ -14,6 +14,7 @@
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/PagePopup.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/text/PlatformLocale.h"
@@ -101,7 +102,18 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     }
     PagePopupClient::addString("],\n", data);
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
-    bool isRTL = !ownerElement().layoutStyle()->isLeftToRightDirection();
+    const LayoutStyle* ownerStyle = ownerElement().layoutStyle();
+    Color backgroundColor = ownerStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+#if OS(LINUX)
+    // On other platforms, the <option> background color is the same as the
+    // <select> background color. On Linux, that makes the <option>
+    // background color very dark, so by default, try to use a lighter
+    // background color for <option>s.
+    if (LayoutTheme::theme().systemColor(CSSValueButtonface) == backgroundColor)
+        backgroundColor = LayoutTheme::theme().systemColor(CSSValueMenu);
+#endif
+    addProperty("backgroundColor", backgroundColor.serialized(), data);
+    bool isRTL = !ownerStyle->isLeftToRightDirection();
     addProperty("isRTL", isRTL, data);
     addProperty("paddingStart", isRTL ? m_client->clientPaddingRight().toDouble() : m_client->clientPaddingLeft().toDouble(), data);
     addProperty("paddingEnd", isRTL ? m_client->clientPaddingLeft().toDouble() : m_client->clientPaddingRight().toDouble(), data);
