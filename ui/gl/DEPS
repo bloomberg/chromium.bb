@@ -12,5 +12,9 @@ specific_include_rules = {
 # get access to desktop OpenGL.
   "gl_surface_osmesa.cc": [
     "+third_party/mesa/src/include/GL/osmesa.h",
-  ]
+  ],
+# Allow us to include ANGLE's base platform implementation.
+  "angle_platform_impl.h": [
+    "+third_party/angle/include/platform/Platform.h",
+  ],
 }

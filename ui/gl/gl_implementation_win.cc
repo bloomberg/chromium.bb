@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
@@ -16,6 +17,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
+// TODO(jmadill): Apply to all platforms eventually
+#include "ui/gl/angle_platform_impl.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_egl_api_implementation.h"
@@ -97,6 +100,10 @@ typedef void (__stdcall *SetTraceFunctionPointersFunc)(
     GetCategoryEnabledFlagFunc get_category_enabled_flag,
     AddTraceEventFunc add_trace_event_func);
 
+// TODO(jmadill): Apply to all platforms eventually
+base::LazyInstance<ANGLEPlatformImpl> g_angle_platform_impl =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
@@ -110,6 +117,10 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
+
+  // Init ANGLE platform here, before we call GetPlatformDisplay().
+  // TODO(jmadill): Apply to all platforms eventually
+  angle::Platform::initialize(&g_angle_platform_impl.Get());
 
   // Allow the main thread or another to initialize these bindings
   // after instituting restrictions on I/O. Going forward they will
@@ -348,6 +359,9 @@ void InitializeDebugGLBindings() {
 }
 
 void ClearGLBindings() {
+  // TODO(jmadill): Apply to all platforms eventually
+  angle::Platform::shutdown();
+
   ClearGLBindingsEGL();
   ClearGLBindingsGL();
   ClearGLBindingsOSMESA();
