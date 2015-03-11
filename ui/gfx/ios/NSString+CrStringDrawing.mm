@@ -42,7 +42,7 @@
     return @"";
   if (index >= [self length])
     return [[self retain] autorelease];
-  return [[self substringToIndex:index - 1] stringByAppendingString:@"…"];
+  return [[self substringToIndex:(index - 1)] stringByAppendingString:@"…"];
 }
 
 - (NSString*)cr_stringByElidingToFitSize:(CGSize)bounds {
