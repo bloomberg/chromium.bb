@@ -42,7 +42,4 @@ bool FakeProxy::MainFrameWillHappenForTesting() {
   return false;
 }
 
-void FakeProxy::AsValueInto(base::trace_event::TracedValue*) const {
-}
-
 }  // namespace cc

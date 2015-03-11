@@ -3235,21 +3235,11 @@ BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-LayerTreeHostImpl::AsValue() const {
-  return AsValueWithFrame(NULL);
-}
-
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 LayerTreeHostImpl::AsValueWithFrame(FrameData* frame) const {
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
   AsValueWithFrameInto(frame, state.get());
   return state;
-}
-
-void LayerTreeHostImpl::AsValueInto(
-    base::trace_event::TracedValue* value) const {
-  return AsValueWithFrameInto(NULL, value);
 }
 
 void LayerTreeHostImpl::AsValueWithFrameInto(
@@ -3298,14 +3288,6 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
     frame->AsValueInto(state);
     state->EndDictionary();
   }
-}
-
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-LayerTreeHostImpl::ActivationStateAsValue() const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
-  ActivationStateAsValueInto(state.get());
-  return state;
 }
 
 void LayerTreeHostImpl::ActivationStateAsValueInto(

@@ -59,7 +59,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   size_t MaxPartialTextureUpdates() const override;
   void ForceSerializeOnSwapBuffers() override;
   bool SupportsImplScrolling() const override;
-  void AsValueInto(base::trace_event::TracedValue* state) const override;
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
 

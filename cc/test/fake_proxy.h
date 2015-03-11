@@ -46,7 +46,6 @@ class FakeProxy : public Proxy {
   bool SupportsImplScrolling() const override;
   void SetDebugState(const LayerTreeDebugState& debug_state) override {}
   bool MainFrameWillHappenForTesting() override;
-  void AsValueInto(base::trace_event::TracedValue* state) const override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override {}
 
   virtual RendererCapabilities& GetRendererCapabilities();

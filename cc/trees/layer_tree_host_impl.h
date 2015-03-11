@@ -450,14 +450,10 @@ class CC_EXPORT LayerTreeHostImpl
     return begin_impl_frame_interval_;
   }
 
-  void AsValueInto(base::trace_event::TracedValue* value) const;
   void AsValueWithFrameInto(FrameData* frame,
                             base::trace_event::TracedValue* value) const;
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueWithFrame(
       FrameData* frame) const;
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-  ActivationStateAsValue() const;
   void ActivationStateAsValueInto(base::trace_event::TracedValue* value) const;
 
   bool page_scale_animation_active() const { return !!page_scale_animation_; }

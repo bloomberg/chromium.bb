@@ -1138,12 +1138,6 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                  animate));
 }
 
-void LayerTreeHost::AsValueInto(base::trace_event::TracedValue* state) const {
-  state->BeginDictionary("proxy");
-  proxy_->AsValueInto(state);
-  state->EndDictionary();
-}
-
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled)
     return;

@@ -549,18 +549,6 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   }
 }
 
-void SingleThreadProxy::AsValueInto(
-    base::trace_event::TracedValue* state) const {
-  // The following line casts away const modifiers because it is just
-  // setting debug state. We still want the AsValue() function and its
-  // call chain to be const throughout.
-  DebugScopedSetImplThread impl(const_cast<SingleThreadProxy*>(this));
-
-  state->BeginDictionary("layer_tree_host_impl");
-  layer_tree_host_impl_->AsValueInto(state);
-  state->EndDictionary();
-}
-
 void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
   {
     DebugScopedSetImplThread impl(this);

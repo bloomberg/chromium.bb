@@ -6515,9 +6515,10 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
   EXPECT_EQ(1, software_device->frames_began_);
   EXPECT_EQ(1, software_device->frames_ended_);
 
-  // Call other API methods that are likely to hit NULL pointer in this mode.
-  EXPECT_TRUE(host_impl_->AsValue().get());
-  EXPECT_TRUE(host_impl_->ActivationStateAsValue().get());
+  // Call another API method that is likely to hit nullptr in this mode.
+  scoped_refptr<base::trace_event::TracedValue> state =
+      make_scoped_refptr(new base::trace_event::TracedValue());
+  host_impl_->ActivationStateAsValueInto(state.get());
 }
 
 TEST_F(LayerTreeHostImplTest,
