@@ -10,6 +10,7 @@
 
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_store.h"
 #include "net/base/sdch_observer.h"
 #include "net/url_request/sdch_dictionary_fetcher.h"
@@ -115,7 +116,8 @@ class NET_EXPORT SdchOwner : public net::SdchObserver,
 
   bool IsPersistingDictionaries() const;
 
-  net::SdchManager* manager_;
+  // For investigation of http://crbug.com/454198; remove when resolved.
+  base::WeakPtr<net::SdchManager> manager_;
   scoped_ptr<net::SdchDictionaryFetcher> fetcher_;
 
   size_t total_dictionary_bytes_;

@@ -267,7 +267,7 @@ const size_t SdchOwner::kMaxTotalDictionarySize = 20 * 1000 * 1000;
 const size_t SdchOwner::kMinSpaceForDictionaryFetch = 50 * 1000;
 
 SdchOwner::SdchOwner(SdchManager* sdch_manager, URLRequestContext* context)
-    : manager_(sdch_manager),
+    : manager_(sdch_manager->GetWeakPtr()),
       fetcher_(new SdchDictionaryFetcher(context)),
       total_dictionary_bytes_(0),
       clock_(new base::DefaultClock),
@@ -296,6 +296,7 @@ SdchOwner::~SdchOwner() {
   CHECK_EQ(0u, destroyed_);
   CHECK(clock_.get());
   clock_.reset();
+  CHECK(manager_.get());
 #endif
 
   for (DictionaryPreferenceIterator it(pref_store_); !it.IsAtEnd();

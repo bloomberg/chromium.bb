@@ -31,7 +31,9 @@ URLRequestContext::URLRequestContext()
       http_transaction_factory_(NULL),
       job_factory_(NULL),
       throttler_manager_(NULL),
-      sdch_manager_(NULL),
+      // For investigation of http://crbug.com/454198; restore when resolved.
+      // sdch_manager_(NULL),
+      have_sdch_manager_(false),
       url_requests_(new std::set<const URLRequest*>) {
 }
 
@@ -57,7 +59,9 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_http_transaction_factory(other->http_transaction_factory_);
   set_job_factory(other->job_factory_);
   set_throttler_manager(other->throttler_manager_);
-  set_sdch_manager(other->sdch_manager_);
+  // For investigation of http://crbug.com/454198; remove when resolved.
+  CHECK(!other->have_sdch_manager_ || other->sdch_manager_.get());
+  set_sdch_manager(other->sdch_manager_.get());
   set_http_user_agent_settings(other->http_user_agent_settings_);
 }
 
