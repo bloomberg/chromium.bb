@@ -1,4 +1,5 @@
 namespace="InputType"
+export="CORE_EXPORT"
 
 button
 checkbox

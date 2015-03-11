@@ -4,13 +4,18 @@
 #ifndef {{namespace}}{{suffix}}Names_h
 #define {{namespace}}{{suffix}}Names_h
 
+{% set symbol_export = '%s ' % export if export else '' %}
 {% if suffix %}
 #include "core/{{namespace}}Names.h"
 {% else %}
-{% if export %}
-#include "platform/PlatformExport.h"
-{% endif %}
 #include "wtf/text/AtomicString.h"
+{% endif %}
+{% if export == 'CORE_EXPORT' %}
+#include "core/CoreExport.h"
+{% elif export == 'MODULES_EXPORT' %}
+#include "modules/ModulesExport.h"
+{% else %}
+#include "platform/PlatformExport.h"
 {% endif %}
 
 // Generated from:
@@ -23,15 +28,11 @@ namespace {{namespace}}Names {
 
 {% for entry in entries|sort %}
 {% filter enable_conditional(entry.Conditional) %}
-{% if export %}
-{{export}} extern const WTF::AtomicString& {{entry|symbol}};
-{% else %}
-extern const WTF::AtomicString& {{entry|symbol}};
-{% endif %}
+{{symbol_export}} extern const WTF::AtomicString& {{entry|symbol}};
 {% endfilter %}
 {% endfor %}
 
-{{export}} void init{{suffix}}();
+{{symbol_export}}void init{{suffix}}();
 
 } // {{namespace}}Names
 } // namespace blink

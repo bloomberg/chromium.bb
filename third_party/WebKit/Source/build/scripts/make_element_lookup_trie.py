@@ -98,11 +98,12 @@ class ElementLookupTrieWriter(in_generator.Writer):
     }
     default_parameters = {
         'attrsNullNamespace': None,
+        'export': '',
+        'fallbackInterfaceName': '',
+        'fallbackJSInterfaceName': '',
         'namespace': '',
         'namespacePrefix': '',
         'namespaceURI': '',
-        'fallbackInterfaceName': '',
-        'fallbackJSInterfaceName': '',
     }
 
     def __init__(self, in_file_paths):

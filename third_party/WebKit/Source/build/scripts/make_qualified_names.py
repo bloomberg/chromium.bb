@@ -49,6 +49,7 @@ class MakeQualifiedNamesWriter(in_generator.Writer):
     }
     default_parameters = {
         'attrsNullNamespace': None,
+        'export': '',
         'namespace': '',
         'namespacePrefix': '',
         'namespaceURI': '',
@@ -83,12 +84,13 @@ class MakeQualifiedNamesWriter(in_generator.Writer):
             (self.namespace + "Names.cpp"): self.generate_implementation,
         }
         self._template_context = {
+            'attrs': self.attrs_in_file.name_dictionaries,
+            'export': self._parameter('export'),
             'namespace': self.namespace,
             'namespace_prefix': namespace_prefix,
             'namespace_uri': namespace_uri,
-            'use_namespace_for_attrs': use_namespace_for_attrs,
             'tags': self.tags_in_file.name_dictionaries if self.tags_in_file else [],
-            'attrs': self.attrs_in_file.name_dictionaries,
+            'use_namespace_for_attrs': use_namespace_for_attrs,
         }
 
     def _parameter(self, name):

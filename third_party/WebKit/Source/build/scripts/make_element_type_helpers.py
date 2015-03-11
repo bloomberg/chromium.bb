@@ -34,11 +34,12 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
     }
     default_parameters = {
         'attrsNullNamespace': None,
+        'export': '',
         'fallbackInterfaceName': '',
+        'fallbackJSInterfaceName': '',
         'namespace': '',
         'namespacePrefix': '',
         'namespaceURI': '',
-        'fallbackJSInterfaceName': '',
     }
     filters = {
         'enable_conditional': name_utilities.enable_conditional_if_endif,

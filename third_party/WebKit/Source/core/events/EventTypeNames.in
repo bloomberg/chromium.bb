@@ -1,4 +1,5 @@
 namespace="EventType"
+export="CORE_EXPORT"
 
 DOMActivate
 DOMCharacterDataModified
