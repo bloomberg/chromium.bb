@@ -1816,8 +1816,6 @@ static void CalculateDrawPropertiesInternal(
   // layer's "screen space" and local content space.
   layer_draw_properties.screen_space_transform =
       data_from_ancestor.full_hierarchy_matrix;
-  if (layer->should_flatten_transform())
-    layer_draw_properties.screen_space_transform.FlattenTo2d();
   layer_draw_properties.screen_space_transform.PreconcatTransform
       (layer_draw_properties.target_space_transform);
 
@@ -1935,6 +1933,10 @@ static void CalculateDrawPropertiesInternal(
     // newly created RenderSurfaceImpl.
     data_for_children.full_hierarchy_matrix.PreconcatTransform(
         render_surface->draw_transform());
+
+    // A render surface inherently acts as a flattening point for the content of
+    // its descendants.
+    data_for_children.full_hierarchy_matrix.FlattenTo2d();
 
     if (layer->mask_layer()) {
       DrawProperties<LayerType>& mask_layer_draw_properties =

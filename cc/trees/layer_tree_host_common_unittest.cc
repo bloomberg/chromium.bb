@@ -1478,6 +1478,74 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   }
 }
 
+TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
+  // Render surfaces act as a flattening point for their subtree, so should
+  // always flatten the target-to-screen space transform seen by descendants.
+
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  scoped_refptr<LayerWithForcedDrawsContent> grand_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+
+  gfx::Transform rotation_about_y_axis;
+  rotation_about_y_axis.RotateAboutYAxis(30.0);
+  // Make |parent| have a render surface.
+  parent->SetOpacity(0.9f);
+
+  const gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(parent.get(), rotation_about_y_axis,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+  SetLayerPropertiesForTesting(grand_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false);
+
+  root->AddChild(parent);
+  parent->AddChild(child);
+  child->AddChild(grand_child);
+
+  grand_child->SetShouldFlattenTransform(false);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  // Only grand_child should preserve 3d.
+  EXPECT_TRUE(root->should_flatten_transform());
+  EXPECT_TRUE(parent->should_flatten_transform());
+  EXPECT_TRUE(child->should_flatten_transform());
+  EXPECT_FALSE(grand_child->should_flatten_transform());
+
+  gfx::Transform expected_child_draw_transform = identity_matrix;
+  gfx::Transform expected_grand_child_draw_transform = identity_matrix;
+
+  gfx::Transform flattened_rotation_about_y = rotation_about_y_axis;
+  flattened_rotation_about_y.FlattenTo2d();
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_TRUE(parent->render_surface());
+  EXPECT_FALSE(child->render_surface());
+  EXPECT_FALSE(grand_child->render_surface());
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+                                  grand_child->draw_transform());
+
+  // The screen-space transform inherited by |child| and |grand_child| should
+  // have been flattened at their render target. In particular, the fact that
+  // |grand_child| happens to preserve 3d shouldn't affect this flattening.
+  EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_y,
+                                  child->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_y,
+                                  grand_child->screen_space_transform());
+}
+
 TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   // The entire subtree of layers that are outside the clip rect should be
   // culled away, and should not affect the render_surface_layer_list.
