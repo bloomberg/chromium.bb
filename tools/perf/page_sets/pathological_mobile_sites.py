@@ -36,6 +36,8 @@ class PathologicalMobileSitesPageSet(page_set_module.PageSet):
              'http://www.latimes.com',
              ('http://www.pbs.org/newshour/bb/'
               'much-really-cost-live-city-like-seattle/#the-rundown'),
+             ('http://www.theguardian.com/politics/2015/mar/09/'
+              'ed-balls-tory-spending-plans-nhs-charging'),
              'http://www.zdnet.com',
              'http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria',
              'https://www.linkedin.com/in/linustorvalds']
