@@ -138,7 +138,8 @@ public:
     // a regular trace method. Instead, we use a traceInCollection method. If
     // the entry should be deleted from the collection we return true and don't
     // trace the strong pointer.
-    bool traceInCollection(Visitor* visitor, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
+    template<typename VisitorDispatcher>
+    bool traceInCollection(VisitorDispatcher visitor, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
     {
         visitor->traceInCollection(second, strongify);
         if (!visitor->isAlive(second))
@@ -4458,12 +4459,12 @@ TEST(HeapTest, RegressNullIsStrongified)
 
 TEST(HeapTest, Bind)
 {
-    OwnPtr<Closure> closure = bind(&Bar::trace, Bar::create(), static_cast<Visitor*>(0));
+    OwnPtr<Closure> closure = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), Bar::create(), static_cast<Visitor*>(0));
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGCForTesting);
     // The closure should have a persistent handle to the Bar.
     EXPECT_EQ(1u, Bar::s_live);
 
-    OwnPtr<Closure> closure2 = bind(&Bar::trace, RawPtr<Bar>(Bar::create()), static_cast<Visitor*>(0));
+    OwnPtr<Closure> closure2 = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), RawPtr<Bar>(Bar::create()), static_cast<Visitor*>(0));
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGCForTesting);
     // The closure should have a persistent handle to the Bar.
     EXPECT_EQ(2u, Bar::s_live);
@@ -4472,7 +4473,7 @@ TEST(HeapTest, Bind)
 
     UseMixin::s_traceCount = 0;
     Mixin* mixin = UseMixin::create();
-    OwnPtr<Closure> mixinClosure = bind(&Mixin::trace, mixin, static_cast<Visitor*>(0));
+    OwnPtr<Closure> mixinClosure = bind(static_cast<void (Mixin::*)(Visitor*)>(&Mixin::trace), mixin, static_cast<Visitor*>(0));
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGCForTesting);
     // The closure should have a persistent handle to the mixin.
     EXPECT_EQ(1, UseMixin::s_traceCount);
@@ -4483,7 +4484,8 @@ typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
 // These special traits will remove a set from a map when the set is empty.
 struct EmptyClearingHashSetTraits : HashTraits<WeakSet> {
     static const WTF::WeakHandlingFlag weakHandlingFlag = WTF::WeakHandlingInCollections;
-    static bool traceInCollection(Visitor* visitor, WeakSet& set, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
+    template<typename VisitorDispatcher>
+    static bool traceInCollection(VisitorDispatcher visitor, WeakSet& set, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
     {
         bool liveEntriesFound = false;
         WeakSet::iterator end = set.end();

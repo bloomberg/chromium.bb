@@ -89,7 +89,7 @@ public:
     Property* property() { return m_property; }
     GarbageCollectedScriptWrappable* toGarbageCollectedScriptWrappable() { return this; }
 
-    virtual void trace(Visitor *visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         GarbageCollectedScriptWrappable::trace(visitor);
         visitor->trace(m_property);
