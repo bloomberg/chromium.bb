@@ -11178,10 +11178,10 @@ Chrome ran out of memory.
         Enter the expiration date and 4-digit CVC from the front of your card
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX" desc="Text for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device. If checked, the dialog won't show up again for the given credit card." formatter_data="android_java">
-        Don't ask again for this card
+        Keep a copy of this card on this device
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP" desc="Text that provides further explanation for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device." formatter_data="android_java">
-        If checked, Chrome will stash a copy of your card on this device for faster form filling.
+        If checked, Chrome will store a copy of your card on this device for faster form filling.
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog." formatter_data="android_java">
         Verify
