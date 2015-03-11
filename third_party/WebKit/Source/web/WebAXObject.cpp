@@ -36,10 +36,13 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/PinchViewport.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/page/EventHandler.h"
+#include "core/page/Page.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXTable.h"
 #include "modules/accessibility/AXTableCell.h"
@@ -696,12 +699,23 @@ int WebAXObject::hierarchicalLevel() const
     return m_private->hierarchicalLevel();
 }
 
+// FIXME: This method passes in a point that has page scale applied but assumes that (0, 0)
+// is the top left of the visual viewport. In other words, the point has the PinchViewport
+// scale applied, but not the PinchViewport offset. crbug.com/459591.
 WebAXObject WebAXObject::hitTest(const WebPoint& point) const
 {
     if (isDetached())
         return WebAXObject();
 
-    IntPoint contentsPoint = m_private->documentFrameView()->windowToContents(point);
+    // FIXME: This is being cleaned up in https://codereview.chromium.org/967213004/ to use
+    // centralized methods to convert between coordinate spaces. However, this is a bug that needs
+    // to be merged back to M42 so it needs an isolated, low-impact fix. This hack will be removed
+    // in the above CL.
+    PinchViewport& pinchViewport = m_private->documentFrameView()->page()->frameHost().pinchViewport();
+    FloatPoint pointInRootFrame(point.x, point.y);
+    pointInRootFrame.moveBy(pinchViewport.location());
+
+    IntPoint contentsPoint = m_private->documentFrameView()->windowToContents(flooredIntPoint(pointInRootFrame));
     RefPtr<AXObject> hit = m_private->accessibilityHitTest(contentsPoint);
 
     if (hit)
