@@ -82,12 +82,29 @@ bool EventConverterEvdevImpl::HasCapsLockLed() const {
 void EventConverterEvdevImpl::SetAllowedKeys(
     scoped_ptr<std::set<DomCode>> allowed_keys) {
   DCHECK(HasKeyboard());
-  allowed_keys_ = allowed_keys.Pass();
+  if (!allowed_keys) {
+    blocked_keys_.reset();
+    return;
+  }
+
+  blocked_keys_.set();
+  for (const DomCode& it : *allowed_keys) {
+    int evdev_code =
+        NativeCodeToEvdevCode(KeycodeConverter::DomCodeToNativeKeycode(it));
+    blocked_keys_.reset(evdev_code);
+  }
+
+  // Release any pressed blocked keys.
+  base::TimeDelta timestamp = ui::EventTimeForNow();
+  for (int key = 0; key < KEY_CNT; ++key) {
+    if (blocked_keys_.test(key))
+      OnKeyChange(key, false /* down */, timestamp);
+  }
 }
 
 void EventConverterEvdevImpl::AllowAllKeys() {
   DCHECK(HasKeyboard());
-  allowed_keys_.reset();
+  blocked_keys_.reset();
 }
 
 void EventConverterEvdevImpl::OnStopped() {
@@ -154,9 +171,7 @@ void EventConverterEvdevImpl::OnKeyChange(unsigned int key,
     return;
 
   // Apply key filter (releases for previously pressed keys are excepted).
-  DomCode key_code =
-      KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
-  if (down && allowed_keys_ && allowed_keys_->count(key_code))
+  if (down && blocked_keys_.test(key))
     return;
 
   // State transition: !(down) -> (down)

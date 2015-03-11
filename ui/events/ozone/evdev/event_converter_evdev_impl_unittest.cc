@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <linux/input.h>
-
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
@@ -18,6 +17,8 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+
+#include <linux/input.h>
 
 namespace ui {
 
@@ -125,6 +126,10 @@ class EventConverterEvdevImplTest : public testing::Test {
     ui::Event* ev = dispatched_events_[index];
     DCHECK(ev->IsMouseEvent());
     return static_cast<ui::MouseEvent*>(ev);
+  }
+
+  void ClearDispatchedEvents() {
+    dispatched_events_.clear();
   }
 
   void DestroyDevice() { device_.reset(); }
@@ -466,4 +471,103 @@ TEST_F(EventConverterEvdevImplTest, ShouldReleaseKeysOnSynDropped) {
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_A, event->key_code());
+}
+
+// Test that SetAllowedKeys() causes events for non-allowed keys to be dropped.
+TEST_F(EventConverterEvdevImplTest, SetAllowedKeys) {
+  ui::MockEventConverterEvdevImpl* dev = device();
+  struct input_event mock_kernel_queue[] = {
+    {{0, 0}, EV_KEY, KEY_A, 1},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+    {{0, 0}, EV_KEY, KEY_A, 0},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+    {{0, 0}, EV_KEY, KEY_POWER, 1},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+    {{0, 0}, EV_KEY, KEY_POWER, 0},
+    {{0, 0}, EV_KEY, SYN_REPORT, 0},
+  };
+
+  dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
+
+  ASSERT_EQ(4u, size());
+  ui::KeyEvent* event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+  event = dispatched_event(2);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::VKEY_POWER, event->key_code());
+  event = dispatched_event(3);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_POWER, event->key_code());
+
+  ClearDispatchedEvents();
+  scoped_ptr<std::set<ui::DomCode>> allowed_keys(new std::set<ui::DomCode>);
+  allowed_keys->insert(ui::DomCode::POWER);
+  dev->SetAllowedKeys(allowed_keys.Pass());
+  dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
+
+  ASSERT_EQ(2u, size());
+  event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::VKEY_POWER, event->key_code());
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_POWER, event->key_code());
+
+  ClearDispatchedEvents();
+  dev->AllowAllKeys();
+  dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
+
+  event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+  event = dispatched_event(2);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::VKEY_POWER, event->key_code());
+  event = dispatched_event(3);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_POWER, event->key_code());
+}
+
+// Test that if a non-allowed key is pressed when SetAllowedKeys() is called
+// that the non-allowed key is released.
+TEST_F(EventConverterEvdevImplTest, SetAllowedKeysBlockedKeyPressed) {
+  ui::MockEventConverterEvdevImpl* dev = device();
+
+  struct input_event key_press[] = {
+    {{0, 0}, EV_KEY, KEY_A, 1},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+  struct input_event key_release[] = {
+    {{0, 0}, EV_KEY, KEY_A, 0},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ProcessEvents(key_press, arraysize(key_press));
+  ASSERT_EQ(1u, size());
+  ui::KeyEvent* event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+
+  // Block all key events. Calling SetAllowKeys() should dispatch a synthetic
+  // key release for VKEY_A.
+  ClearDispatchedEvents();
+  scoped_ptr<std::set<ui::DomCode>> allowed_keys(new std::set<ui::DomCode>);
+  dev->SetAllowedKeys(allowed_keys.Pass());
+  ASSERT_EQ(1u, size());
+  event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+
+  // The real key release should be dropped, whenever it comes.
+  ClearDispatchedEvents();
+  dev->ProcessEvents(key_release, arraysize(key_release));
+  ASSERT_EQ(0u, size());
 }

@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_IMPL_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_IMPL_H_
 
-#include <set>
+#include <bitset>
 
 #include "base/files/file_path.h"
 #include "base/message_loop/message_pump_libevent.h"
@@ -78,9 +78,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
-  // The keys which should be processed. nullptr if all keys should be
-  // processed.
-  scoped_ptr<std::set<DomCode>> allowed_keys_;
+  // The evdev codes of the keys which should be blocked.
+  std::bitset<KEY_CNT> blocked_keys_;
 
   // Pressed keys bitset.
   std::bitset<KEY_CNT> key_state_;
