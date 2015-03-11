@@ -68,6 +68,7 @@
         'files': [
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
+          '<(PRODUCT_DIR)/libglesv2.dll',
         ],
       },
     }],
