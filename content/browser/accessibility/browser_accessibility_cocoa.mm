@@ -1007,6 +1007,9 @@ NSDictionary* attributeToMethodNameMap = nil;
   BrowserAccessibilityManagerMac* manager =
       static_cast<BrowserAccessibilityManagerMac*>(
           browserAccessibility_->manager());
+  if (!manager || !manager->parent_view())
+    return nil;
+
   return [manager->parent_view() window];
 }
 
