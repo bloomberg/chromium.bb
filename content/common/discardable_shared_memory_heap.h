@@ -17,8 +17,8 @@ class DiscardableSharedMemory;
 
 namespace content {
 
-// Implements a heap of discardable shared memory. A free list is used to keep
-// track of free blocks.
+// Implements a heap of discardable shared memory. An array of free lists
+// is used to keep track of free blocks.
 class CONTENT_EXPORT DiscardableSharedMemoryHeap {
  public:
   class CONTENT_EXPORT Span : public base::LinkNode<Span> {
@@ -52,18 +52,21 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   scoped_ptr<Span> Grow(scoped_ptr<base::DiscardableSharedMemory> shared_memory,
                         size_t size);
 
-  // Merge |span| into the free list. This will coalesce |span| with
-  // neighboring spans in free list when possible.
-  void MergeIntoFreeList(scoped_ptr<Span> span);
+  // Merge |span| into the free lists. This will coalesce |span| with
+  // neighboring free spans when possible.
+  void MergeIntoFreeLists(scoped_ptr<Span> span);
 
   // Split an allocated span into two spans, one of length |blocks| followed
   // by another span of length "span->length - blocks" blocks. Modifies |span|
   // to point to the first span of length |blocks|. Return second span.
   scoped_ptr<Span> Split(Span* span, size_t blocks);
 
-  // Search free list for span that satisfies the request for |blocks| of
+  // Search free lists for span that satisfies the request for |blocks| of
   // memory. If found, the span is removed from the free list and returned.
-  scoped_ptr<Span> SearchFreeList(size_t blocks, size_t slack);
+  // |slack| determines the fitness requirement. Only spans that are less
+  // or equal to |blocks| + |slack| are considered, worse fitting spans are
+  // ignored.
+  scoped_ptr<Span> SearchFreeLists(size_t blocks, size_t slack);
 
   // Release free shared memory segments.
   void ReleaseFreeMemory();
@@ -74,8 +77,8 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // Returns total bytes of memory in heap.
   size_t GetSize() const;
 
-  // Returns bytes of memory currently in the free list.
-  size_t GetFreeListSize() const;
+  // Returns bytes of memory currently in the free lists.
+  size_t GetSizeOfFreeLists() const;
 
  private:
   class ScopedMemorySegment {
@@ -96,6 +99,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
     DISALLOW_COPY_AND_ASSIGN(ScopedMemorySegment);
   };
 
+  void InsertIntoFreeList(scoped_ptr<Span> span);
   scoped_ptr<Span> RemoveFromFreeList(Span* span);
   scoped_ptr<Span> Carve(Span* span, size_t blocks);
   void RegisterSpan(Span* span);
@@ -117,8 +121,11 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   typedef base::hash_map<size_t, Span*> SpanMap;
   SpanMap spans_;
 
-  // Linked-list of free discardable memory regions.
-  base::LinkedList<Span> free_spans_;
+  // Array of linked-lists with free discardable memory regions. For i < 256,
+  // where the 1st entry is located at index 0 of the array, the kth entry
+  // is a free list of runs that consist of k blocks. The 256th entry is a
+  // free list of runs that have length >= 256 blocks.
+  base::LinkedList<Span> free_spans_[256];
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableSharedMemoryHeap);
 };

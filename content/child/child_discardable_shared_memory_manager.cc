@@ -57,7 +57,7 @@ ChildDiscardableSharedMemoryManager::ChildDiscardableSharedMemoryManager(
 
 ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {
   // TODO(reveman): Determine if this DCHECK can be enabled. crbug.com/430533
-  // DCHECK_EQ(heap_.GetSize(), heap_.GetFreeListSize());
+  // DCHECK_EQ(heap_.GetSize(), heap_.GetSizeOfFreeLists());
   if (heap_.GetSize())
     MemoryUsageChanged(0, 0);
 }
@@ -82,7 +82,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   size_t allocation_pages = kAllocationSize / base::GetPageSize();
 
   size_t slack = 0;
-  // When searching the free list, allow a slack between required size and
+  // When searching the free lists, allow a slack between required size and
   // free span size that is less or equal to kAllocationSize. This is to
   // avoid segments larger then kAllocationSize unless they are a perfect
   // fit. The result is that large allocations can be reused without reducing
@@ -92,13 +92,13 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
   size_t heap_size_prior_to_releasing_purged_memory = heap_.GetSize();
   for (;;) {
-    // Search free list for available space.
+    // Search free lists for suitable span.
     scoped_ptr<DiscardableSharedMemoryHeap::Span> free_span =
-        heap_.SearchFreeList(pages, slack);
+        heap_.SearchFreeLists(pages, slack);
     if (!free_span.get())
       break;
 
-    // Attempt to lock |free_span|. Delete span and search free list again
+    // Attempt to lock |free_span|. Delete span and search free lists again
     // if locking failed.
     if (free_span->shared_memory()->Lock(
             free_span->start() * base::GetPageSize() -
@@ -113,8 +113,8 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     }
 
     // Memory usage is guaranteed to have changed after having removed
-    // at least one span from the free list.
-    MemoryUsageChanged(heap_.GetSize(), heap_.GetFreeListSize());
+    // at least one span from the free lists.
+    MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
     return make_scoped_ptr(
         new DiscardableMemoryShmemChunkImpl(this, free_span.Pass()));
@@ -126,7 +126,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
   // Make sure crash keys are up to date in case allocation fails.
   if (heap_.GetSize() != heap_size_prior_to_releasing_purged_memory)
-    MemoryUsageChanged(heap_.GetSize(), heap_.GetFreeListSize());
+    MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
   size_t pages_to_allocate =
       std::max(kAllocationSize / base::GetPageSize(), pages);
@@ -140,7 +140,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
       heap_.Grow(shared_memory.Pass(), allocation_size_in_bytes));
 
-  // Unlock and insert any left over memory into free list.
+  // Unlock and insert any left over memory into free lists.
   if (pages < pages_to_allocate) {
     scoped_ptr<DiscardableSharedMemoryHeap::Span> leftover =
         heap_.Split(new_span.get(), pages);
@@ -148,10 +148,10 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
         leftover->start() * base::GetPageSize() -
             reinterpret_cast<size_t>(leftover->shared_memory()->memory()),
         leftover->length() * base::GetPageSize());
-    heap_.MergeIntoFreeList(leftover.Pass());
+    heap_.MergeIntoFreeLists(leftover.Pass());
   }
 
-  MemoryUsageChanged(heap_.GetSize(), heap_.GetFreeListSize());
+  MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
   return make_scoped_ptr(
       new DiscardableMemoryShmemChunkImpl(this, new_span.Pass()));
@@ -167,7 +167,7 @@ void ChildDiscardableSharedMemoryManager::ReleaseFreeMemory() {
   heap_.ReleaseFreeMemory();
 
   if (heap_.GetSize() != heap_size_prior_to_releasing_memory)
-    MemoryUsageChanged(heap_.GetSize(), heap_.GetFreeListSize());
+    MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 }
 
 bool ChildDiscardableSharedMemoryManager::LockSpan(
@@ -211,14 +211,14 @@ void ChildDiscardableSharedMemoryManager::ReleaseSpan(
     scoped_ptr<DiscardableSharedMemoryHeap::Span> span) {
   base::AutoLock lock(lock_);
 
-  // Delete span instead of merging it into free list if memory is gone.
+  // Delete span instead of merging it into free lists if memory is gone.
   if (!span->shared_memory())
     return;
 
-  heap_.MergeIntoFreeList(span.Pass());
+  heap_.MergeIntoFreeLists(span.Pass());
 
   // Bytes of free memory changed.
-  MemoryUsageChanged(heap_.GetSize(), heap_.GetFreeListSize());
+  MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 }
 
 scoped_ptr<base::DiscardableSharedMemory>

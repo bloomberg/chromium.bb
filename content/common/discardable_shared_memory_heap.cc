@@ -4,6 +4,8 @@
 
 #include "content/common/discardable_shared_memory_heap.h"
 
+#include <algorithm>
+
 #include "base/memory/discardable_shared_memory.h"
 
 namespace content {
@@ -60,7 +62,11 @@ DiscardableSharedMemoryHeap::~DiscardableSharedMemoryHeap() {
   memory_segments_.clear();
   DCHECK_EQ(num_blocks_, 0u);
   DCHECK_EQ(num_free_blocks_, 0u);
-  DCHECK(free_spans_.empty());
+  DCHECK_EQ(std::count_if(free_spans_, free_spans_ + arraysize(free_spans_),
+                          [](const base::LinkedList<Span>& free_spans) {
+                            return !free_spans.empty();
+                          }),
+            0);
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
@@ -89,7 +95,7 @@ scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
   return span.Pass();
 }
 
-void DiscardableSharedMemoryHeap::MergeIntoFreeList(scoped_ptr<Span> span) {
+void DiscardableSharedMemoryHeap::MergeIntoFreeLists(scoped_ptr<Span> span) {
   DCHECK(span->shared_memory_);
 
   // First add length of |span| to |num_free_blocks_|.
@@ -120,7 +126,7 @@ void DiscardableSharedMemoryHeap::MergeIntoFreeList(scoped_ptr<Span> span) {
     spans_[span->start_ + span->length_ - 1] = span.get();
   }
 
-  free_spans_.Append(span.release());
+  InsertIntoFreeList(span.Pass());
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span>
@@ -139,36 +145,38 @@ DiscardableSharedMemoryHeap::Split(Span* span, size_t blocks) {
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span>
-DiscardableSharedMemoryHeap::SearchFreeList(size_t blocks, size_t slack) {
+DiscardableSharedMemoryHeap::SearchFreeLists(size_t blocks, size_t slack) {
   DCHECK(blocks);
 
-  // Search through list to find best span.
-  Span* best = nullptr;
+  size_t length = blocks;
+  size_t max_length = blocks + slack;
 
-  // This implements address-ordered best-fit.
-  for (Span* span = free_spans_.head()->value(); span != free_spans_.end();
-       span = span->next()->value()) {
-    // Skip span if it's not large enough.
-    if (span->length_ < blocks)
-      continue;
-    // Skip span if it's too large.
-    if (span->length_ - blocks > slack)
-      continue;
-
-    if (best) {
-      // Skip span if |best| is a better fit.
-      if (span->length_ > best->length_)
-        continue;
-
-      // Skip span if |best| starts at a lower address.
-      if ((span->length_ == best->length_) && (span->start_ > best->start_))
-        continue;
+  // Search array of free lists for a suitable span.
+  while (length - 1 < arraysize(free_spans_) - 1) {
+    const base::LinkedList<Span>& free_spans = free_spans_[length - 1];
+    if (!free_spans.empty()) {
+      // Return the most recently used span located in tail.
+      return Carve(free_spans.tail()->value(), blocks);
     }
 
-    best = span;
+    // Return early after surpassing |max_length|.
+    if (++length > max_length)
+      return nullptr;
   }
 
-  return best ? Carve(best, blocks) : nullptr;
+  const base::LinkedList<Span>& overflow_free_spans =
+      free_spans_[arraysize(free_spans_) - 1];
+
+  // Search overflow free list for a suitable span. Starting with the most
+  // recently used span located in tail and moving towards head.
+  for (base::LinkNode<Span>* node = overflow_free_spans.tail();
+       node != overflow_free_spans.end(); node = node->previous()) {
+    Span* span = node->value();
+    if (span->length_ >= blocks && span->length_ <= max_length)
+      return Carve(span, blocks);
+  }
+
+  return nullptr;
 }
 
 void DiscardableSharedMemoryHeap::ReleaseFreeMemory() {
@@ -196,12 +204,20 @@ size_t DiscardableSharedMemoryHeap::GetSize() const {
   return num_blocks_ * block_size_;
 }
 
-size_t DiscardableSharedMemoryHeap::GetFreeListSize() const {
+size_t DiscardableSharedMemoryHeap::GetSizeOfFreeLists() const {
   return num_free_blocks_ * block_size_;
+}
+
+void DiscardableSharedMemoryHeap::InsertIntoFreeList(
+    scoped_ptr<DiscardableSharedMemoryHeap::Span> span) {
+  DCHECK(!IsInFreeList(span.get()));
+  size_t index = std::min(span->length_, arraysize(free_spans_)) - 1;
+  free_spans_[index].Append(span.release());
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span>
 DiscardableSharedMemoryHeap::RemoveFromFreeList(Span* span) {
+  DCHECK(IsInFreeList(span));
   span->RemoveFromList();
   return make_scoped_ptr(span);
 }
@@ -220,7 +236,7 @@ DiscardableSharedMemoryHeap::Carve(Span* span, size_t blocks) {
     // No need to coalesce as the previous span of |leftover| was just split
     // and the next span of |leftover| was not previously coalesced with
     // |span|.
-    free_spans_.Append(leftover.release());
+    InsertIntoFreeList(leftover.Pass());
 
     serving->length_ = blocks;
     spans_[serving->start_ + blocks - 1] = serving.get();
