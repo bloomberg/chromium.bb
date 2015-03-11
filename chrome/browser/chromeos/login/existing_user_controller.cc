@@ -848,9 +848,6 @@ void ExistingUserController::LoginAsPublicSession(
 
 void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
                                              bool diagnostic_mode) {
-  // Reenable login display so that bailout shortcut key works.
-  login_display_->SetUIEnabled(true);
-
   const bool auto_start = false;
   host_->StartAppLaunch(app_id, diagnostic_mode, auto_start);
 }
