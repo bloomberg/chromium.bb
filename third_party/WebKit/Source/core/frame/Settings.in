@@ -179,6 +179,9 @@ smartInsertDeleteEnabled initial=defaultSmartInsertDeleteEnabled
 selectTrailingWhitespaceEnabled initial=defaultSelectTrailingWhitespaceEnabled
 
 selectionIncludesAltImageText initial=false
+
+######## Settings used by Android WebView below ########
+
 useLegacyBackgroundSizeShorthandBehavior initial=false
 
 # This quirk is to maintain compatibility with Android apps built on
@@ -209,6 +212,19 @@ wideViewportQuirkEnabled initial=false
 # mode.
 forceZeroLayoutHeight initial=false, invalidate=ViewportDescription
 
+mainFrameClipsContent initial=true
+
+# For android.webkit.WebSettings.setUseWideViewport()
+# http://developer.android.com/reference/android/webkit/WebSettings.html#setUseWideViewPort(boolean)
+useWideViewport initial=true, invalidate=ViewportDescription
+
+# For android.webkit.WebSettings.setLoadWithOverviewMode()
+# http://developer.android.com/reference/android/webkit/WebSettings.html#setLoadWithOverviewMode(boolean)
+loadWithOverviewMode initial=true, invalidate=ViewportDescription
+
+######## End of settings used by Android WebView ########
+
+
 # Touch based text selection and editing on desktop.
 # crbug.com/304873 tracks removal once it's been enabled on all platforms.
 touchEditingEnabled initial=false
@@ -227,14 +243,6 @@ pinchOverlayScrollbarThickness type=int, initial=0
 # to the compositor thread. This will be set to true and eventually removed.
 # crbug.com/133097
 rubberBandingOnCompositorThread initial=false
-
-mainFrameClipsContent initial=true
-
-
-# Presumably used by LayoutTests?  Unclear.
-useWideViewport initial=true, invalidate=ViewportDescription
-loadWithOverviewMode initial=true, invalidate=ViewportDescription
-
 
 # Font scale factor for accessibility, applied as part of text autosizing.
 accessibilityFontScaleFactor type=double, initial=1.0, invalidate=TextAutosizing
