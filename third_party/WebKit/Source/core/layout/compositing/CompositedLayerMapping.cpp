@@ -2246,13 +2246,11 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         paintScrollbar(m_owningLayer.scrollableArea()->verticalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForScrollCorner()) {
         const IntRect& scrollCornerAndResizer = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect();
-        context.save();
-        context.translate(-scrollCornerAndResizer.x(), -scrollCornerAndResizer.y());
+        TransformRecorder transformRecorder(context, m_owningLayer.scrollableArea()->displayItemClient(), AffineTransform::translation(-scrollCornerAndResizer.x(), -scrollCornerAndResizer.y()));
         IntRect transformedClip = clip;
         transformedClip.moveBy(scrollCornerAndResizer.location());
         ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, IntPoint(), transformedClip);
         ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, IntPoint(), transformedClip);
-        context.restore();
     }
     InspectorInstrumentation::didPaint(m_owningLayer.layoutObject(), graphicsLayer, &context, LayoutRect(clip));
 #if ENABLE(ASSERT)
