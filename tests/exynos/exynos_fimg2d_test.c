@@ -57,6 +57,9 @@ struct fimg2d_test_case {
 	int (*blend)(struct exynos_device *dev,
 				struct exynos_bo *src, struct exynos_bo *dst,
 				enum e_g2d_buf_type);
+	int (*checkerboard)(struct exynos_device *dev,
+				struct exynos_bo *src, struct exynos_bo *dst,
+				enum e_g2d_buf_type);
 };
 
 struct connector {
@@ -207,6 +210,33 @@ static struct exynos_bo *exynos_create_buffer(struct exynos_device *dev,
 	}
 
 	return bo;
+}
+
+/* Allocate buffer and fill it with checkerboard pattern, where the tiles *
+ * have a random color. The caller has to free the buffer.                */
+void *create_checkerboard_pattern(unsigned int num_tiles_x,
+						unsigned int num_tiles_y, unsigned int tile_size)
+{
+	unsigned int *buf;
+	unsigned int x, y, i, j;
+	const unsigned int stride = num_tiles_x * tile_size;
+
+	if (posix_memalign((void*)&buf, 64, num_tiles_y * tile_size * stride * 4) != 0)
+		return NULL;
+
+	for (x = 0; x < num_tiles_x; ++x) {
+		for (y = 0; y < num_tiles_y; ++y) {
+			const unsigned int color = 0xff000000 + (random() & 0xffffff);
+
+			for (i = 0; i < tile_size; ++i) {
+				for (j = 0; j < tile_size; ++j) {
+					buf[x * tile_size + y * stride * tile_size + i + j * stride] = color;
+				}
+			}
+		}
+	}
+
+	return buf;
 }
 
 static void exynos_destroy_buffer(struct exynos_bo *bo)
@@ -538,11 +568,90 @@ err_free_userptr:
 	return 0;
 }
 
+static int g2d_checkerboard_test(struct exynos_device *dev,
+					struct exynos_bo *src,
+					struct exynos_bo *dst,
+					enum e_g2d_buf_type type)
+{
+	struct g2d_context *ctx;
+	struct g2d_image src_img = {0}, dst_img = {0};
+	unsigned int src_x, src_y, dst_x, dst_y, img_w, img_h;
+	void *checkerboard = NULL;
+	int ret;
+
+	ctx = g2d_init(dev->fd);
+	if (!ctx)
+		return -EFAULT;
+
+	dst_img.bo[0] = dst->handle;
+
+	src_x = 0;
+	src_y = 0;
+	dst_x = 0;
+	dst_y = 0;
+
+	checkerboard = create_checkerboard_pattern(screen_width / 32, screen_height / 32, 32);
+	if (checkerboard == NULL) {
+		ret = -1;
+		goto fail;
+	}
+
+	img_w = screen_width - (screen_width % 32);
+	img_h = screen_height - (screen_height % 32);
+
+	switch (type) {
+	case G2D_IMGBUF_GEM:
+		memcpy(src->vaddr, checkerboard, img_w * img_h * 4);
+		src_img.bo[0] = src->handle;
+		break;
+	case G2D_IMGBUF_USERPTR:
+		src_img.user_ptr[0].userptr = (unsigned long)checkerboard;
+		src_img.user_ptr[0].size = img_w * img_h * 4;
+		break;
+	default:
+		ret = -EFAULT;
+		goto fail;
+	}
+
+	printf("checkerboard test with %s.\n",
+			type == G2D_IMGBUF_GEM ? "gem" : "userptr");
+
+	src_img.width = img_w;
+	src_img.height = img_h;
+	src_img.stride = src_img.width * 4;
+	src_img.buf_type = type;
+	src_img.color_mode = G2D_COLOR_FMT_ARGB8888 | G2D_ORDER_AXRGB;
+
+	dst_img.width = screen_width;
+	dst_img.height = screen_height;
+	dst_img.stride = dst_img.width * 4;
+	dst_img.buf_type = G2D_IMGBUF_GEM;
+	dst_img.color_mode = G2D_COLOR_FMT_ARGB8888 | G2D_ORDER_AXRGB;
+	src_img.color = 0xff000000;
+	ret = g2d_solid_fill(ctx, &dst_img, src_x, src_y, screen_width, screen_height);
+	if (ret < 0)
+		goto fail;
+
+	ret = g2d_copy(ctx, &src_img, &dst_img, src_x, src_y, dst_x, dst_y,
+			img_w, img_h);
+	if (ret < 0)
+		goto fail;
+
+	g2d_exec(ctx);
+
+fail:
+	free(checkerboard);
+	g2d_fini(ctx);
+
+	return ret;
+}
+
 static struct fimg2d_test_case test_case = {
 	.solid_fill = &g2d_solid_fill_test,
 	.copy = &g2d_copy_test,
 	.copy_with_scale = &g2d_copy_with_scale_test,
 	.blend = &g2d_blend_test,
+	.checkerboard = &g2d_checkerboard_test,
 };
 
 static void usage(char *name)
@@ -681,6 +790,14 @@ int main(int argc, char **argv)
 	ret = test_case.copy_with_scale(dev, src, bo, G2D_IMGBUF_GEM);
 	if (ret < 0) {
 		fprintf(stderr, "failed to test copy and scale operation.\n");
+		goto err_free_src;
+	}
+
+	wait_for_user_input(0);
+
+	ret = test_case.checkerboard(dev, src, bo, G2D_IMGBUF_GEM);
+	if (ret < 0) {
+		fprintf(stderr, "failed to issue checkerboard test.\n");
 		goto err_free_src;
 	}
 
