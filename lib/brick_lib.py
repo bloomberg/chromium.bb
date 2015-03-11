@@ -24,6 +24,8 @@ _CONFIG_JSON = 'config.json'
 _BOARD_PREFIX = 'board:'
 _WORKSPACE_PREFIX = '//'
 
+_IGNORED_OVERLAYS = ('portage-stable', 'chromiumos', 'eclass-overlay')
+
 
 class BrickCreationFailed(Exception):
   """The brick creation failed."""
@@ -92,8 +94,13 @@ class Brick(object):
         try:
           masters = self._ReadLayoutConf().get('masters')
           masters_list = masters.split() if masters else []
+
+          # Keep general Chromium OS overlays out of this list as they are
+          # handled separately by the build system.
+          deps = ['board:' + d for d in masters_list
+                  if d not in _IGNORED_OVERLAYS]
           self.config = {'name': self._ReadLayoutConf()['repo-name'],
-                         'dependencies': ['board:' + d for d in masters_list]}
+                         'dependencies': deps}
         except (IOError, KeyError):
           pass
 
