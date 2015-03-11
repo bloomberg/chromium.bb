@@ -128,6 +128,14 @@ class GaiaOAuthClient {
                     int max_retries,
                     Delegate* delegate);
 
+  // Call the tokeninfo API for given |token_handle|, returning a dictionary of
+  // response values. Basic results will be returned via
+  // |OnGetTokenInfoResponse| call: audience, expires_in, user_id. See
+  // |max_retries| docs above.
+  void GetTokenHandleInfo(const std::string& token_handle,
+                          int max_retries,
+                          Delegate* delegate);
+
  private:
   // The guts of the implementation live in this class.
   class Core;

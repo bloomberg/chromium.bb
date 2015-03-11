@@ -127,6 +127,7 @@ class MockOAuthFetcherFactory : public net::URLFetcherFactory,
 };
 
 const std::string kTestAccessToken = "1/fFAGRNJru1FTz70BzhT3Zg";
+const std::string kTestAccessTokenHandle = "1/kjhH87dfgkj87Hhj5KJkjZ";
 const std::string kTestRefreshToken =
     "1/6BMfW9j53gdGImsixUH6kU5RsR4zwI9lUVX-tqf8JXQ";
 const std::string kTestUserEmail = "a_user@gmail.com";
@@ -165,7 +166,12 @@ const std::string kDummyTokenInfoResult =
   "\"audience\": \"1234567890.apps.googleusercontent.com\","
   "\"scope\": \"https://googleapis.com/oauth2/v2/tokeninfo\","
   "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
-}
+
+const std::string kDummyTokenHandleInfoResult =
+    "{\"audience\": \"1234567890.apps.googleusercontent.com\","
+    "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
+
+}  // namespace
 
 namespace gaia {
 
@@ -381,11 +387,29 @@ TEST_F(GaiaOAuthClientTest, GetTokenInfo) {
   factory.set_results(kDummyTokenInfoResult);
 
   GaiaOAuthClient auth(GetRequestContext());
-  auth.GetTokenInfo("access_token", 1, &delegate);
+  auth.GetTokenInfo("some_token", 1, &delegate);
 
   std::string issued_to;
-  ASSERT_TRUE(captured_result->GetString("issued_to",  &issued_to));
+  ASSERT_TRUE(captured_result->GetString("issued_to", &issued_to));
   ASSERT_EQ("1234567890.apps.googleusercontent.com", issued_to);
+}
+
+TEST_F(GaiaOAuthClientTest, GetTokenHandleInfo) {
+  const base::DictionaryValue* captured_result;
+
+  MockGaiaOAuthClientDelegate delegate;
+  EXPECT_CALL(delegate, OnGetTokenInfoResponsePtr(_))
+      .WillOnce(SaveArg<0>(&captured_result));
+
+  MockOAuthFetcherFactory factory;
+  factory.set_results(kDummyTokenHandleInfoResult);
+
+  GaiaOAuthClient auth(GetRequestContext());
+  auth.GetTokenHandleInfo("some_handle", 1, &delegate);
+
+  std::string audience;
+  ASSERT_TRUE(captured_result->GetString("audience", &audience));
+  ASSERT_EQ("1234567890.apps.googleusercontent.com", audience);
 }
 
 }  // namespace gaia
