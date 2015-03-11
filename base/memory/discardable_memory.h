@@ -17,7 +17,6 @@ namespace base {
 
 enum DiscardableMemoryType {
   DISCARDABLE_MEMORY_TYPE_NONE,
-  DISCARDABLE_MEMORY_TYPE_MACH,
   DISCARDABLE_MEMORY_TYPE_SHMEM
 };
 

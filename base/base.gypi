@@ -969,10 +969,6 @@
             ],
           }],
           ['(OS == "mac" or OS == "ios") and >(nacl_untrusted_build)==0', {
-            'sources': [
-              'memory/discardable_memory_mach.cc',
-              'memory/discardable_memory_mach.h',
-            ],
             'sources/': [
               ['exclude', '^files/file_path_watcher_stub\\.cc$'],
               ['exclude', '^base_paths_posix\\.cc$'],

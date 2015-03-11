@@ -778,7 +778,6 @@
         }],
 
         ['OS=="mac" or OS=="ios"', {
-          'native_discardable_memory%': 1,
           'native_memory_pressure_signals%': 1,
         }],
 

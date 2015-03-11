@@ -5,8 +5,6 @@
 #include "base/memory/discardable_memory.h"
 
 #include "base/logging.h"
-#include "base/memory/discardable_memory_mach.h"
-#include "base/memory/discardable_memory_manager.h"
 #include "base/memory/discardable_memory_shmem.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -16,8 +14,7 @@ namespace base {
 void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {
-    DISCARDABLE_MEMORY_TYPE_SHMEM,
-    DISCARDABLE_MEMORY_TYPE_MACH
+    DISCARDABLE_MEMORY_TYPE_SHMEM
   };
   types->assign(supported_types, supported_types + arraysize(supported_types));
 }
@@ -26,14 +23,6 @@ void DiscardableMemory::GetSupportedTypes(
 scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
     DiscardableMemoryType type, size_t size) {
   switch (type) {
-    case DISCARDABLE_MEMORY_TYPE_MACH: {
-      scoped_ptr<internal::DiscardableMemoryMach> memory(
-          new internal::DiscardableMemoryMach(size));
-      if (!memory->Initialize())
-        return nullptr;
-
-      return memory.Pass();
-    }
     case DISCARDABLE_MEMORY_TYPE_SHMEM: {
       scoped_ptr<internal::DiscardableMemoryShmem> memory(
           new internal::DiscardableMemoryShmem(size));

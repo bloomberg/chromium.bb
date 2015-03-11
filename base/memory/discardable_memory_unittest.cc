@@ -38,12 +38,12 @@ TEST_P(DiscardableMemoryTest, IsNamed) {
 }
 
 bool IsNativeType(DiscardableMemoryType type) {
-  return
 #if defined(OS_ANDROID)
     // SHMEM is backed by native discardable memory on Android.
-    type == DISCARDABLE_MEMORY_TYPE_SHMEM ||
+  return type == DISCARDABLE_MEMORY_TYPE_SHMEM;
+#else
+  return false;
 #endif
-    type == DISCARDABLE_MEMORY_TYPE_MACH;
 }
 
 TEST_P(DiscardableMemoryTest, SupportedNatively) {

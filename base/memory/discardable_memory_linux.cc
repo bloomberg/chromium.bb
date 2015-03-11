@@ -31,7 +31,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
       return memory.Pass();
     }
     case DISCARDABLE_MEMORY_TYPE_NONE:
-    case DISCARDABLE_MEMORY_TYPE_MACH:
       NOTREACHED();
       return nullptr;
   }
