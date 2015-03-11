@@ -31,7 +31,7 @@
 
 #include "exynos_drm.h"
 #include "exynos_drmif.h"
-#include "fimg2d.h"
+#include "exynos_fimg2d.h"
 
 #define DRM_MODULE_NAME		"exynos"
 #define MAX_TEST_CASE		8

@@ -27,7 +27,7 @@
 #include "libdrm.h"
 #include "exynos_drm.h"
 #include "fimg2d_reg.h"
-#include "fimg2d.h"
+#include "exynos_fimg2d.h"
 
 #define		SET_BF(val, sc, si, scsa, scda, dc, di, dcsa, dcda) \
 			val.data.src_coeff = sc;		\

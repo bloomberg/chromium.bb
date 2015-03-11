@@ -14,7 +14,7 @@ libdrm_exynos_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@
 libdrm_exynos_la_SOURCES = \
 	exynos_drm.c \
 	exynos_fimg2d.c \
-	fimg2d.h \
+	exynos_fimg2d.h \
 	fimg2d_reg.h
 
 libdrm_exynoscommonincludedir = ${includedir}/exynos
