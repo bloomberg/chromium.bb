@@ -4,6 +4,7 @@
 
 #include "remoting/client/client_status_logger.h"
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "remoting/client/chromoting_stats.h"

@@ -24,28 +24,33 @@ namespace remoting {
 
 using protocol::AuthenticationMethod;
 
-ChromotingClient::ChromotingClient(
-    ClientContext* client_context,
-    ClientUserInterface* user_interface,
-    VideoRenderer* video_renderer,
-    scoped_ptr<AudioPlayer> audio_player)
+ChromotingClient::ChromotingClient(ClientContext* client_context,
+                                   ClientUserInterface* user_interface,
+                                   VideoRenderer* video_renderer,
+                                   scoped_ptr<AudioPlayer> audio_player)
     : task_runner_(client_context->main_task_runner()),
       user_interface_(user_interface),
       video_renderer_(video_renderer),
+      connection_(new protocol::ConnectionToHostImpl()),
       host_capabilities_received_(false) {
   if (audio_player) {
     audio_decode_scheduler_.reset(new AudioDecodeScheduler(
         client_context->main_task_runner(),
-        client_context->audio_decode_task_runner(),
-        audio_player.Pass()));
+        client_context->audio_decode_task_runner(), audio_player.Pass()));
   }
 }
 
-ChromotingClient::~ChromotingClient() {}
+ChromotingClient::~ChromotingClient() {
+}
 
 void ChromotingClient::SetProtocolConfigForTests(
     scoped_ptr<protocol::CandidateSessionConfig> config) {
-  connection_.set_candidate_config(config.Pass());
+  connection_->set_candidate_config(config.Pass());
+}
+
+void ChromotingClient::SetConnectionToHostForTests(
+    scoped_ptr<protocol::ConnectionToHost> connection_to_host) {
+  connection_ = connection_to_host.Pass();
 }
 
 void ChromotingClient::Start(
@@ -58,12 +63,12 @@ void ChromotingClient::Start(
 
   local_capabilities_ = capabilities;
 
-  connection_.set_client_stub(this);
-  connection_.set_clipboard_stub(this);
-  connection_.set_video_stub(video_renderer_->GetVideoStub());
-  connection_.set_audio_stub(audio_decode_scheduler_.get());
+  connection_->set_client_stub(this);
+  connection_->set_clipboard_stub(this);
+  connection_->set_video_stub(video_renderer_->GetVideoStub());
+  connection_->set_audio_stub(audio_decode_scheduler_.get());
 
-  connection_.Connect(signal_strategy, transport_factory.Pass(),
+  connection_->Connect(signal_strategy, transport_factory.Pass(),
                        authenticator.Pass(), host_jid, this);
 }
 
@@ -147,10 +152,9 @@ void ChromotingClient::OnAuthenticated() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Initialize the decoder.
-  video_renderer_->OnSessionConfig(connection_.config());
-  if (connection_.config().is_audio_enabled())
-    audio_decode_scheduler_->Initialize(connection_.config());
-
+  video_renderer_->OnSessionConfig(connection_->config());
+  if (connection_->config().is_audio_enabled())
+    audio_decode_scheduler_->Initialize(connection_->config());
 }
 
 void ChromotingClient::OnChannelsConnected() {
@@ -161,7 +165,7 @@ void ChromotingClient::OnChannelsConnected() {
 
   protocol::Capabilities capabilities;
   capabilities.set_capabilities(local_capabilities_);
-  connection_.host_stub()->SetCapabilities(capabilities);
+  connection_->host_stub()->SetCapabilities(capabilities);
 }
 
 }  // namespace remoting

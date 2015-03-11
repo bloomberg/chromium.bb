@@ -4,6 +4,7 @@
 
 #include "remoting/client/server_log_entry_client.h"
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"

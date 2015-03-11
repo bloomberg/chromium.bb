@@ -35,6 +35,8 @@ source_set("test_support") {
   sources = [
     "fake_authenticator.cc",
     "fake_authenticator.h",
+    "fake_connection_to_host.cc",
+    "fake_connection_to_host.h",
     "fake_datagram_socket.cc",
     "fake_datagram_socket.h",
     "fake_session.cc",

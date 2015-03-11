@@ -25,8 +25,11 @@ source_set("test_support") {
     "signaling/mock_signal_strategy.cc",
     "signaling/mock_signal_strategy.h",
     "test/access_token_fetcher.cc",
+    "test/access_token_fetcher.h",
     "test/app_remoting_test_driver_environment.cc",
+    "test/app_remoting_test_driver_environment.h",
     "test/fake_access_token_fetcher.cc",
+    "test/fake_access_token_fetcher.h",
     "test/fake_network_dispatcher.cc",
     "test/fake_network_dispatcher.h",
     "test/fake_network_manager.cc",
@@ -34,14 +37,24 @@ source_set("test_support") {
     "test/fake_port_allocator.cc",
     "test/fake_port_allocator.h",
     "test/fake_remote_host_info_fetcher.cc",
+    "test/fake_remote_host_info_fetcher.h",
     "test/fake_socket_factory.cc",
     "test/fake_socket_factory.h",
     "test/leaky_bucket.cc",
     "test/leaky_bucket.h",
     "test/mock_access_token_fetcher.cc",
+    "test/mock_access_token_fetcher.h",
     "test/refresh_token_store.cc",
+    "test/refresh_token_store.h",
+    "test/remote_connection_observer.h",
     "test/remote_host_info.cc",
+    "test/remote_host_info.h",
     "test/remote_host_info_fetcher.cc",
+    "test/remote_host_info_fetcher.h",
+    "test/test_chromoting_client.cc",
+    "test/test_chromoting_client.h",
+    "test/test_video_renderer.cc",
+    "test/test_video_renderer.h",
   ]
 
   deps = [
@@ -76,6 +89,7 @@ if (!is_win && !is_mac) {
       "test/access_token_fetcher_unittest.cc",
       "test/app_remoting_test_driver_environment_unittest.cc",
       "test/remote_host_info_fetcher_unittest.cc",
+      "test/test_chromoting_client_unittest.cc",
     ]
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -87,6 +101,7 @@ if (!is_win && !is_mac) {
       "//google_apis",
       "//remoting/base:unit_tests",
       "//remoting/client:unit_tests",
+      "//remoting/protocol:test_support",
       "//remoting/protocol:unit_tests",
       "//testing/gmock",
       "//testing/gtest",

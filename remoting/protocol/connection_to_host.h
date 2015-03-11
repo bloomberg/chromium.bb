@@ -5,51 +5,33 @@
 #ifndef REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_
 #define REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_
 
-#include <set>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
-#include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/channel_dispatcher_base.h"
-#include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/errors.h"
-#include "remoting/protocol/input_filter.h"
-#include "remoting/protocol/message_reader.h"
-#include "remoting/protocol/monitored_video_stub.h"
-#include "remoting/protocol/session.h"
-#include "remoting/protocol/session_config.h"
-#include "remoting/protocol/session_manager.h"
-#include "remoting/signaling/signal_strategy.h"
 
 namespace remoting {
 
-class XmppProxy;
-class VideoPacket;
+class SignalStrategy;
 
 namespace protocol {
 
-class AudioReader;
 class AudioStub;
 class Authenticator;
-class ClientControlDispatcher;
-class ClientEventDispatcher;
+class CandidateSessionConfig;
 class ClientStub;
 class ClipboardStub;
+class ExtensionMessage;
 class HostStub;
 class InputStub;
 class SessionConfig;
 class TransportFactory;
-class ClientVideoDispatcher;
+struct TransportRoute;
 class VideoStub;
 
-class ConnectionToHost : public SignalStrategy::Listener,
-                         public SessionManager::Listener,
-                         public Session::EventHandler,
-                         public ChannelDispatcherBase::EventHandler,
-                         public base::NonThreadSafe {
+class ConnectionToHost {
  public:
   // The UI implementations maintain corresponding definitions of this
   // enumeration in webapp/client_session.js and
@@ -82,22 +64,22 @@ class ConnectionToHost : public SignalStrategy::Listener,
                                 const protocol::TransportRoute& route) = 0;
   };
 
-  ConnectionToHost();
-  ~ConnectionToHost() override;
+  virtual ~ConnectionToHost() {}
 
   // Allows to set a custom protocol configuration (e.g. for tests). Cannot be
   // called after Connect().
-  void set_candidate_config(scoped_ptr<CandidateSessionConfig> config);
+  virtual void set_candidate_config(
+      scoped_ptr<CandidateSessionConfig> config) = 0;
 
   // Set the stubs which will handle messages from the host.
   // The caller must ensure that stubs out-live the connection.
   // Unless otherwise specified, all stubs must be set before Connect()
   // is called.
-  void set_client_stub(ClientStub* client_stub);
-  void set_clipboard_stub(ClipboardStub* clipboard_stub);
-  void set_video_stub(VideoStub* video_stub);
+  virtual void set_client_stub(ClientStub* client_stub) = 0;
+  virtual void set_clipboard_stub(ClipboardStub* clipboard_stub) = 0;
+  virtual void set_video_stub(VideoStub* video_stub) = 0;
   // If no audio stub is specified then audio will not be requested.
-  void set_audio_stub(AudioStub* audio_stub);
+  virtual void set_audio_stub(AudioStub* audio_stub) = 0;
 
   // Initiates a connection to the host specified by |host_jid|.
   // |signal_strategy| is used to signal to the host, and must outlive the
@@ -110,83 +92,18 @@ class ConnectionToHost : public SignalStrategy::Listener,
                        scoped_ptr<TransportFactory> transport_factory,
                        scoped_ptr<Authenticator> authenticator,
                        const std::string& host_jid,
-                       HostEventCallback* event_callback);
+                       HostEventCallback* event_callback) = 0;
 
   // Returns the session configuration that was negotiated with the host.
-  virtual const SessionConfig& config();
+  virtual const SessionConfig& config() = 0;
 
   // Stubs for sending data to the host.
-  virtual ClipboardStub* clipboard_forwarder();
-  virtual HostStub* host_stub();
-  virtual InputStub* input_stub();
-
-  // SignalStrategy::StatusObserver interface.
-  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
-
-  // SessionManager::Listener interface.
-  void OnSessionManagerReady() override;
-  void OnIncomingSession(
-      Session* session,
-      SessionManager::IncomingSessionResponse* response) override;
-
-  // Session::EventHandler interface.
-  void OnSessionStateChange(Session::State state) override;
-  void OnSessionRouteChange(const std::string& channel_name,
-                            const TransportRoute& route) override;
-
-  // ChannelDispatcherBase::EventHandler interface.
-  void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
-  void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
-                      ErrorCode error) override;
-
-  // MonitoredVideoStub::EventHandler interface.
-  virtual void OnVideoChannelStatus(bool active);
+  virtual ClipboardStub* clipboard_forwarder() = 0;
+  virtual HostStub* host_stub() = 0;
+  virtual InputStub* input_stub() = 0;
 
   // Return the current state of ConnectionToHost.
-  State state() const;
-
- private:
-  void NotifyIfChannelsReady();
-
-  void CloseOnError(ErrorCode error);
-
-  // Stops writing in the channels.
-  void CloseChannels();
-
-  void SetState(State state, ErrorCode error);
-
-  std::string host_jid_;
-  std::string host_public_key_;
-  scoped_ptr<Authenticator> authenticator_;
-
-  HostEventCallback* event_callback_;
-
-  scoped_ptr<CandidateSessionConfig> candidate_config_;
-
-  // Stub for incoming messages.
-  ClientStub* client_stub_;
-  ClipboardStub* clipboard_stub_;
-  AudioStub* audio_stub_;
-
-  SignalStrategy* signal_strategy_;
-  scoped_ptr<SessionManager> session_manager_;
-  scoped_ptr<Session> session_;
-  scoped_ptr<MonitoredVideoStub> monitored_video_stub_;
-
-  scoped_ptr<ClientVideoDispatcher> video_dispatcher_;
-  scoped_ptr<AudioReader> audio_reader_;
-  scoped_ptr<ClientControlDispatcher> control_dispatcher_;
-  scoped_ptr<ClientEventDispatcher> event_dispatcher_;
-  ClipboardFilter clipboard_forwarder_;
-  InputFilter event_forwarder_;
-
-  // Internal state of the connection.
-  State state_;
-  ErrorCode error_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ConnectionToHost);
+  virtual State state() const = 0;
 };
 
 }  // namespace protocol

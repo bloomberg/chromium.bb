@@ -32,9 +32,8 @@ namespace protocol {
 
 class MockConnectionToClient : public ConnectionToClient {
  public:
-  MockConnectionToClient(Session* session,
-                         HostStub* host_stub);
-  virtual ~MockConnectionToClient();
+  MockConnectionToClient(Session* session, HostStub* host_stub);
+  ~MockConnectionToClient() override;
 
   MOCK_METHOD1(Init, void(Session* session));
   MOCK_METHOD0(video_stub, VideoStub*());
@@ -69,24 +68,25 @@ class MockConnectionToClient : public ConnectionToClient {
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClient);
 };
 
-class MockConnectionToClientEventHandler :
-      public ConnectionToClient::EventHandler {
+class MockConnectionToClientEventHandler
+    : public ConnectionToClient::EventHandler {
  public:
   MockConnectionToClientEventHandler();
-  virtual ~MockConnectionToClientEventHandler();
+  ~MockConnectionToClientEventHandler() override;
 
   MOCK_METHOD1(OnConnectionAuthenticating,
                void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionAuthenticated, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionChannelsConnected,
                void(ConnectionToClient* connection));
-  MOCK_METHOD2(OnConnectionClosed, void(ConnectionToClient* connection,
-                                        ErrorCode error));
+  MOCK_METHOD2(OnConnectionClosed,
+               void(ConnectionToClient* connection, ErrorCode error));
   MOCK_METHOD2(OnEventTimestamp,
                void(ConnectionToClient* connection, int64 timestamp));
-  MOCK_METHOD3(OnRouteChange, void(ConnectionToClient* connection,
-                                   const std::string& channel_name,
-                                   const TransportRoute& route));
+  MOCK_METHOD3(OnRouteChange,
+               void(ConnectionToClient* connection,
+                    const std::string& channel_name,
+                    const TransportRoute& route));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClientEventHandler);
@@ -95,7 +95,7 @@ class MockConnectionToClientEventHandler :
 class MockClipboardStub : public ClipboardStub {
  public:
   MockClipboardStub();
-  virtual ~MockClipboardStub();
+  ~MockClipboardStub() override;
 
   MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));
 
@@ -118,7 +118,7 @@ class MockCursorShapeChangeCallback {
 class MockInputStub : public InputStub {
  public:
   MockInputStub();
-  virtual ~MockInputStub();
+  ~MockInputStub() override;
 
   MOCK_METHOD1(InjectKeyEvent, void(const KeyEvent& event));
   MOCK_METHOD1(InjectTextEvent, void(const TextEvent& event));
@@ -132,15 +132,14 @@ class MockInputStub : public InputStub {
 class MockHostStub : public HostStub {
  public:
   MockHostStub();
-  virtual ~MockHostStub();
+  ~MockHostStub() override;
 
   MOCK_METHOD1(NotifyClientResolution,
                void(const ClientResolution& resolution));
   MOCK_METHOD1(ControlVideo, void(const VideoControl& video_control));
   MOCK_METHOD1(ControlAudio, void(const AudioControl& audio_control));
   MOCK_METHOD1(SetCapabilities, void(const Capabilities& capabilities));
-  MOCK_METHOD1(RequestPairing,
-               void(const PairingRequest& pairing_request));
+  MOCK_METHOD1(RequestPairing, void(const PairingRequest& pairing_request));
   MOCK_METHOD1(DeliverClientMessage, void(const ExtensionMessage& message));
 
  private:
@@ -150,7 +149,7 @@ class MockHostStub : public HostStub {
 class MockClientStub : public ClientStub {
  public:
   MockClientStub();
-  virtual ~MockClientStub();
+  ~MockClientStub() override;
 
   // ClientStub mock implementation.
   MOCK_METHOD1(SetCapabilities, void(const Capabilities& capabilities));
@@ -171,7 +170,7 @@ class MockClientStub : public ClientStub {
 class MockCursorShapeStub : public CursorShapeStub {
  public:
   MockCursorShapeStub();
-  virtual ~MockCursorShapeStub();
+  ~MockCursorShapeStub() override;
 
   MOCK_METHOD1(SetCursorShape, void(const CursorShapeInfo& cursor_shape));
 
@@ -182,12 +181,13 @@ class MockCursorShapeStub : public CursorShapeStub {
 class MockVideoStub : public VideoStub {
  public:
   MockVideoStub();
-  virtual ~MockVideoStub();
+  ~MockVideoStub() override;
 
-  MOCK_METHOD2(ProcessVideoPacketPtr, void(const VideoPacket* video_packet,
-                                           const base::Closure& done));
-  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
-                                  const base::Closure& done) {
+  MOCK_METHOD2(ProcessVideoPacketPtr,
+               void(const VideoPacket* video_packet,
+                    const base::Closure& done));
+  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+                          const base::Closure& done) override {
     ProcessVideoPacketPtr(video_packet.get(), done);
   }
 
@@ -198,7 +198,7 @@ class MockVideoStub : public VideoStub {
 class MockSession : public Session {
  public:
   MockSession();
-  virtual ~MockSession();
+  ~MockSession() override;
 
   MOCK_METHOD1(SetEventHandler, void(Session::EventHandler* event_handler));
   MOCK_METHOD0(error, ErrorCode());
@@ -223,25 +223,25 @@ class MockSession : public Session {
 class MockSessionManager : public SessionManager {
  public:
   MockSessionManager();
-  virtual ~MockSessionManager();
+  ~MockSessionManager() override;
 
   MOCK_METHOD2(Init, void(SignalStrategy*, Listener*));
-  MOCK_METHOD3(ConnectPtr, Session*(
-      const std::string& host_jid,
-      Authenticator* authenticator,
-      CandidateSessionConfig* config));
+  MOCK_METHOD3(ConnectPtr,
+               Session*(const std::string& host_jid,
+                        Authenticator* authenticator,
+                        CandidateSessionConfig* config));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(set_authenticator_factory_ptr,
                void(AuthenticatorFactory* factory));
-  virtual scoped_ptr<Session> Connect(
+  scoped_ptr<Session> Connect(
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator,
-      scoped_ptr<CandidateSessionConfig> config) {
+      scoped_ptr<CandidateSessionConfig> config) override {
     return make_scoped_ptr(
         ConnectPtr(host_jid, authenticator.get(), config.get()));
   }
-  virtual void set_authenticator_factory(
-      scoped_ptr<AuthenticatorFactory> authenticator_factory) {
+  void set_authenticator_factory(
+      scoped_ptr<AuthenticatorFactory> authenticator_factory) override {
     set_authenticator_factory_ptr(authenticator_factory.release());
   }
 

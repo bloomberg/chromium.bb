@@ -56,36 +56,21 @@ namespace test {
 // necessary, for use by the AccessTokenFetcher.
 class AccessTokenFetcherTest : public ::testing::Test {
  public:
-  AccessTokenFetcherTest() :
-    url_fetcher_factory_(nullptr) {}
-  ~AccessTokenFetcherTest() override {}
+  AccessTokenFetcherTest();
+  ~AccessTokenFetcherTest() override;
 
-  void OnAccessTokenRetrieved(
-      base::Closure done_closure,
-      const std::string& access_token,
-      const std::string& refresh_token) {
-    access_token_retrieved_ = access_token;
-    refresh_token_retrieved_ = refresh_token;
-
-    done_closure.Run();
-  }
+  void OnAccessTokenRetrieved(base::Closure done_closure,
+                              const std::string& access_token,
+                              const std::string& refresh_token);
 
  protected:
   // Test interface.
-  void SetUp() override {
-    if (!base::MessageLoop::current()) {
-      // Create a temporary message loop if the current thread does not already
-      // have one so we can use its task runner to create a request object.
-      message_loop_.reset(new base::MessageLoopForIO);
-    }
-  }
+  void SetUp() override;
 
   void SetFakeResponse(const GURL& url,
                        const std::string& data,
                        net::HttpStatusCode code,
-                       net::URLRequestStatus::Status status) {
-    url_fetcher_factory_.SetFakeResponse(url, data, code, status);
-  }
+                       net::URLRequestStatus::Status status);
 
   // Used for result verification
   std::string access_token_retrieved_;
@@ -98,29 +83,56 @@ class AccessTokenFetcherTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcherTest);
 };
 
-TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken) {
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kAuthCodeExchangeValidResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+AccessTokenFetcherTest::AccessTokenFetcherTest()
+    : url_fetcher_factory_(nullptr) {
+}
 
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_info_url(),
-      kValidTokenInfoResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+AccessTokenFetcherTest::~AccessTokenFetcherTest() {
+}
+
+void AccessTokenFetcherTest::OnAccessTokenRetrieved(
+    base::Closure done_closure,
+    const std::string& access_token,
+    const std::string& refresh_token) {
+  access_token_retrieved_ = access_token;
+  refresh_token_retrieved_ = refresh_token;
+
+  done_closure.Run();
+}
+
+void AccessTokenFetcherTest::SetUp() {
+  if (!base::MessageLoop::current()) {
+    // Create a temporary message loop if the current thread does not already
+    // have one so we can use its task runner to create a request object.
+    message_loop_.reset(new base::MessageLoopForIO);
+  }
+}
+
+void AccessTokenFetcherTest::SetFakeResponse(
+    const GURL& url,
+    const std::string& data,
+    net::HttpStatusCode code,
+    net::URLRequestStatus::Status status) {
+  url_fetcher_factory_.SetFakeResponse(url, data, code, status);
+}
+
+TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken) {
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kAuthCodeExchangeValidResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
+                  kValidTokenInfoResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromAuthCode(
-      kAuthCodeValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
+                                                  access_token_callback);
 
   run_loop.Run();
 
@@ -129,28 +141,22 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken) {
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken) {
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kRefreshTokenExchangeValidResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kRefreshTokenExchangeValidResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_info_url(),
-      kValidTokenInfoResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
+                  kValidTokenInfoResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromRefreshToken(
-      kRefreshTokenValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
+                                                      access_token_callback);
 
   run_loop.Run();
 
@@ -159,29 +165,23 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken) {
 }
 
 TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kAuthCodeExchangeValidResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kAuthCodeExchangeValidResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_info_url(),
-      kValidTokenInfoResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
+                  kValidTokenInfoResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
   scoped_ptr<base::RunLoop> run_loop;
   run_loop.reset(new base::RunLoop());
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop->QuitClosure());
+                 base::Unretained(this), run_loop->QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromAuthCode(
-      kAuthCodeValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
+                                                  access_token_callback);
 
   run_loop->Run();
 
@@ -193,21 +193,17 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
   refresh_token_retrieved_.clear();
 
   // Update the response since we will call the refresh token method next.
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kRefreshTokenExchangeValidResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kRefreshTokenExchangeValidResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
   run_loop.reset(new base::RunLoop());
   access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop->QuitClosure());
+                 base::Unretained(this), run_loop->QuitClosure());
 
-  access_token_fetcher.GetAccessTokenFromRefreshToken(
-      kRefreshTokenValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
+                                                      access_token_callback);
 
   run_loop->Run();
 
@@ -217,16 +213,14 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
   run_loop.reset(new base::RunLoop());
   access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop->QuitClosure());
+                 base::Unretained(this), run_loop->QuitClosure());
 
   // Reset our token data for the next iteration.
   access_token_retrieved_.clear();
   refresh_token_retrieved_.clear();
 
-  access_token_fetcher.GetAccessTokenFromRefreshToken(
-      kRefreshTokenValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
+                                                      access_token_callback);
 
   run_loop->Run();
 
@@ -235,22 +229,18 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_Unauthorized_Error) {
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kAuthCodeExchangeValidResponse,
-      net::HTTP_UNAUTHORIZED,
-      net::URLRequestStatus::FAILED);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kAuthCodeExchangeValidResponse, net::HTTP_UNAUTHORIZED,
+                  net::URLRequestStatus::FAILED);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromAuthCode(
-      kAuthCodeValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
+                                                  access_token_callback);
 
   run_loop.Run();
 
@@ -260,22 +250,18 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_Unauthorized_Error) {
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_Unauthorized_Error) {
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kRefreshTokenExchangeValidResponse,
-      net::HTTP_UNAUTHORIZED,
-      net::URLRequestStatus::FAILED);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kRefreshTokenExchangeValidResponse, net::HTTP_UNAUTHORIZED,
+                  net::URLRequestStatus::FAILED);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromRefreshToken(
-      kRefreshTokenValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
+                                                      access_token_callback);
 
   run_loop.Run();
 
@@ -285,22 +271,18 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_Unauthorized_Error) {
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_NetworkError) {
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kAuthCodeExchangeValidResponse,
-      net::HTTP_NOT_FOUND,
-      net::URLRequestStatus::FAILED);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kAuthCodeExchangeValidResponse, net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromAuthCode(
-      kAuthCodeValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
+                                                  access_token_callback);
 
   run_loop.Run();
 
@@ -310,22 +292,18 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_NetworkError) {
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_NetworkError) {
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kRefreshTokenExchangeValidResponse,
-      net::HTTP_NOT_FOUND,
-      net::URLRequestStatus::FAILED);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kRefreshTokenExchangeValidResponse, net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromRefreshToken(
-      kRefreshTokenValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
+                                                      access_token_callback);
 
   run_loop.Run();
 
@@ -335,28 +313,22 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_NetworkError) {
 }
 
 TEST_F(AccessTokenFetcherTest, AuthCode_GetTokenInfoResponse_InvalidToken) {
-    SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kAuthCodeExchangeValidResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kAuthCodeExchangeValidResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_info_url(),
-      kInvalidTokenInfoResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
+                  kInvalidTokenInfoResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromAuthCode(
-      kAuthCodeValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
+                                                  access_token_callback);
 
   run_loop.Run();
 
@@ -366,22 +338,18 @@ TEST_F(AccessTokenFetcherTest, AuthCode_GetTokenInfoResponse_InvalidToken) {
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken_EmptyToken) {
-    SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kAuthCodeExchangeEmptyResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kAuthCodeExchangeEmptyResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromAuthCode(
-      kAuthCodeValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
+                                                  access_token_callback);
 
   run_loop.Run();
 
@@ -391,28 +359,22 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken_EmptyToken) {
 }
 
 TEST_F(AccessTokenFetcherTest, RefreshToken_GetTokenInfoResponse_InvalidToken) {
-    SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kRefreshTokenExchangeValidResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kRefreshTokenExchangeValidResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
-  SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_info_url(),
-      kInvalidTokenInfoResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
+                  kInvalidTokenInfoResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromRefreshToken(
-      kRefreshTokenValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
+                                                      access_token_callback);
 
   run_loop.Run();
 
@@ -422,22 +384,18 @@ TEST_F(AccessTokenFetcherTest, RefreshToken_GetTokenInfoResponse_InvalidToken) {
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken_EmptyToken) {
-    SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      kRefreshTokenExchangeEmptyResponse,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                  kRefreshTokenExchangeEmptyResponse, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
       base::Bind(&AccessTokenFetcherTest::OnAccessTokenRetrieved,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+                 base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
-  access_token_fetcher.GetAccessTokenFromRefreshToken(
-      kRefreshTokenValue,
-      access_token_callback);
+  access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
+                                                      access_token_callback);
 
   run_loop.Run();
 
