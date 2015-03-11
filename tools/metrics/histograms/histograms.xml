@@ -14680,6 +14680,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="MobileFre.SignInChoice" enum="MobileFreSignInChoice">
+  <owner>aruslan@chromium.org</owner>
+  <summary>
+    Android: How the user left the sign-in part of the &quot;first run
+    experience&quot; activity (M-38+).
+  </summary>
+</histogram>
+
 <histogram name="MobileFullscreenVideo.DurationAfterPotraitRotation"
     units="milliseconds">
   <owner>qinmin@chromium.org</owner>
@@ -53806,6 +53814,19 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MistSwitchResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
+</enum>
+
+<enum name="MobileFreSignInChoice" type="int">
+  <summary>
+    These values are defined inside the MobileFreSignInChoice enum
+    chrome/browser/android/metrics/uma_bridge.cc and reference possible ways of
+    completing the sign-in part of the First Run Experience.
+  </summary>
+  <int value="0" label="Accept default account"/>
+  <int value="1" label="Accept another account"/>
+  <int value="2" label="Settings default account"/>
+  <int value="3" label="Settings another account"/>
+  <int value="4" label="No thanks"/>
 </enum>
 
 <enum name="MobileSessionCallerApp" type="int">

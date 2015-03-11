@@ -8,4 +8,5 @@
 
 <resources>
     <item name="menu_item_enter_anim_id" type="id" />
+    <item name="fre_pager" type="id"/>
 </resources>

@@ -93,6 +93,10 @@ public class UmaBridge {
                 statusChange, BandwidthReductionPreferences.DATA_REDUCTION_INDEX_BOUNDARY);
     }
 
+    public static void freSignInShown() {
+        nativeRecordFreSignInShown();
+    }
+
     private static native void nativeRecordMenuShow();
     private static native void nativeRecordUsingMenu(boolean isByHwButton, boolean isDragging);
     private static native void nativeRecordBeamInvalidAppState();
@@ -104,4 +108,7 @@ public class UmaBridge {
     private static native void nativeRecordDataReductionProxyPromoDisplayed();
     private static native void nativeRecordDataReductionProxySettings(int statusChange,
             int boundary);
+
+    // First Run Experience
+    private static native void nativeRecordFreSignInShown();
 }

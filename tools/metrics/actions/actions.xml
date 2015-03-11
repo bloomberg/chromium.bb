@@ -7419,6 +7419,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileFre.SignInShown">
+  <owner>aruslan@chromium.org</owner>
+  <description>
+    User was presented with the sign-in dialog during the First Run Experience.
+    This metric is specific to Android.
+  </description>
+</action>
+
 <action name="MobileFreAttemptSignIn">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

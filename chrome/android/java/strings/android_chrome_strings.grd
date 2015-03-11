@@ -1288,6 +1288,9 @@ Drag from top to exit.
       <message name="IDS_CHOOSE_ACCOUNT_SIGN_IN" desc="Sign in button for choose google account dialog [CHAR-LIMIT=20]">
         Sign in
       </message>
+      <message name="IDS_FRE_NEXT" desc="Button that advances the First Run Experience forward">
+        Next
+      </message>
       <message name="IDS_FRE_DONE" desc="Button to dismiss the sign-in screen once the user is done">
         Done
       </message>
@@ -1318,8 +1321,28 @@ Drag from top to exit.
       <message name="IDS_FRE_SIGNED_IN_DESCRIPTION_UCA_ADDENDUM" desc="Additional explanation for child accounts that synced settings are managed by parents.">
         Your parents help manage these settings.
       </message>
+      <message name="IDS_FRE_TOS_AND_PRIVACY" desc="Message explaining that use of Chrome is governed by Chrome's terms of service and privacy notice.">
+        By using this application, you agree to Chrome's <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Terms of Service<ph name="END_LINK1">&lt;/LINK1&gt;</ph> and <ph name="BEGIN_LINK2">&lt;LINK2&gt;</ph>Privacy Notice<ph name="END_LINK2">&lt;/LINK2&gt;</ph>.
+      </message>
+      <message name="IDS_FRE_SEND_REPORT_CHECK" desc="Text for asking the user to allow sending stats and crash reports">
+        Help make Chrome better by sending usage statistics and crash reports to Google.
+      </message>
+      <message name="IDS_FRE_ACCEPT_CONTINUE" desc="Text for first page accept and continue button [CHAR-LIMIT=20]">
+        Accept &amp; continue
+      </message>
+      <message name="IDS_FRE_WELCOME" desc="Text for greeting the user on Chrome First Run">
+        Welcome to Chrome
+      </message>
       <message name="IDS_ACCESSIBILITY_FRE_ACCOUNT_SPINNER" desc="Content description for the first run account drop down spinner.">
         Choose account
+      </message>
+
+      <!-- First Run Experience: What's New screens -->
+      <message name="IDS_FRE_NEW_RECENTS_MENU_TITLE" desc="Title for the Recents Menu what's-new-screen">
+        Find your tabs here
+      </message>
+      <message name="IDS_FRE_NEW_RECENTS_MENU_TEXT" desc="Text for the Recents Menu what's-new-screen">
+        Your tabs and apps are now in the same place for easier access.  You can turn this feature off in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
 
     </messages>

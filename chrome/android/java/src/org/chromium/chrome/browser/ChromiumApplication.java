@@ -20,12 +20,14 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
+import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -36,6 +38,7 @@ import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
 import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 
@@ -57,9 +60,31 @@ public abstract class ChromiumApplication extends ContentApplication {
     }
 
     /**
+     * Initiate AndroidEdu device check.
+     * @param callback Callback that should receive the results of the AndroidEdu device check.
+     */
+    public void checkIsAndroidEduDevice(AndroidEduOwnerCheckCallback callback) {
+    }
+
+    /**
      * Returns the class name of the Settings activity.
      */
     public abstract String getSettingsActivityName();
+
+    /**
+     * Returns the class name of the FirstRun activity.
+     */
+    public String getFirstRunActivityName() {
+        return FirstRunActivity.class.getName();
+    }
+
+    /**
+     * Open Chrome Sync settings page.
+     * @param accountName the name of the account that is being synced.
+     */
+    public void openSyncSettings(String accountName) {
+        // TODO(aurimas): implement this once SyncCustomizationFragment is upstreamed.
+    }
 
     /**
      * Opens a protected content settings page, if available.
@@ -291,5 +316,20 @@ public abstract class ChromiumApplication extends ContentApplication {
         return nativeGetBrowserUserAgent();
     }
 
+    /**
+     * The host activity should call this during its onPause() handler to ensure
+     * all state is saved when the app is suspended.  Calling ChromiumApplication.onStop() does
+     * this for you.
+     */
+    public static void flushPersistentData() {
+        try {
+            TraceEvent.begin("ChromiumApplication.flushPersistentData");
+            nativeFlushPersistentData();
+        } finally {
+            TraceEvent.end("ChromiumApplication.flushPersistentData");
+        }
+    }
+
     private static native String nativeGetBrowserUserAgent();
+    private static native void nativeFlushPersistentData();
 }

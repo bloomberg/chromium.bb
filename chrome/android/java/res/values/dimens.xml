@@ -116,6 +116,9 @@
     <dimen name="fre_image_carousel_width">260dp</dimen>
     <dimen name="fre_image_carousel_height">130dp</dimen>
     <dimen name="fre_checkmark_size">38dp</dimen>
+    <dimen name="fre_recents_loupe_margin_left">204dp</dimen>
+    <dimen name="fre_recents_loupe_margin_top">214dp</dimen>
+    <dimen name="fre_tos_checkbox_padding">12dp</dimen>
 
     <!-- Sign-in promo dimensions -->
     <dimen name="sign_in_promo_padding_bottom">16dp</dimen>

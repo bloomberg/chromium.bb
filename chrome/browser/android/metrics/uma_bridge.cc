@@ -12,7 +12,6 @@
 
 using base::UserMetricsAction;
 using content::RecordAction;
-using content::RecordComputedAction;
 
 static void RecordMenuShow(JNIEnv*, jclass) {
   RecordAction(UserMetricsAction("MobileMenuShow"));
@@ -77,6 +76,11 @@ static void RecordDataReductionProxySettings(
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.SettingsConversion",
                             notification,
                             boundary);
+}
+
+// First Run Experience
+static void RecordFreSignInShown(JNIEnv*, jclass) {
+  RecordAction(UserMetricsAction("MobileFre.SignInShown"));
 }
 
 namespace chrome {
