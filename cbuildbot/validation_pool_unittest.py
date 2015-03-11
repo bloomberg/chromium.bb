@@ -1584,9 +1584,9 @@ class BaseSubmitPoolTestCase(MoxBase):
       _, actually_rejected = pool.SubmitChanges(self.patches, reason=reason)
 
     # Check that the right patches were submitted and rejected.
-    self.assertItemsEqual(list(rejected), list(actually_rejected))
+    self.assertItemsEqual(map(str, rejected), map(str, actually_rejected))
     actually_submitted = self.pool_mock.GetSubmittedChanges()
-    self.assertEqual(list(submitted), actually_submitted)
+    self.assertEqual(map(str, submitted), map(str, actually_submitted))
 
   def GetNotifyArg(self, change, key):
     """Look up a call to notify about |change| and grab |key| from it.
@@ -1636,6 +1636,27 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     self.patch_mock.SetGerritDependencies(self.patches[0], [self.patches[1]])
     self.SubmitPool(submitted=self.patches[::-1])
 
+  def testSubmitEmptyDeps(self):
+    """Submit when one patch depends directly on many independent patches."""
+    # patches[4] depends on patches[0:3], but there are no other dependencies.
+    self.patches = self.GetPatches(5)
+    for p in self.patches[:-1]:
+      self.patch_mock.SetGerritDependencies(p, [])
+    self.patch_mock.SetGerritDependencies(self.patches[4], self.patches[::-1])
+    self.pool_mock.max_submits.value = 1
+    submitted = [self.patches[2], self.patches[1], self.patches[3],
+                 self.patches[0]]
+    rejected = self.patches[:2] + self.patches[3:]
+    self.SubmitPool(submitted=submitted, rejected=rejected)
+    for p in rejected[:-1]:
+      p_failed_submit = validation_pool.PatchFailedToSubmit(
+          p, validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
+      self.assertEqualNotifyArg(p_failed_submit, p, 'error')
+    failed_submit = validation_pool.PatchFailedToSubmit(
+        self.patches[1], validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
+    dep_failed = cros_patch.DependencyError(self.patches[4], failed_submit)
+    self.assertEqualNotifyArg(dep_failed, self.patches[4], 'error')
+
   def testRedundantCQDepend(self):
     """Submit a cycle with redundant CQ-DEPEND specifications."""
     self.patches = self.GetPatches(4)
@@ -1646,7 +1667,7 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
   def testSubmitPartialCycle(self):
     """Submit a failed cyclic set of dependencies"""
     self.pool_mock.max_submits.value = 1
-    self.patch_mock.SetCQDependencies(self.patches[0], [self.patches[1]])
+    self.patch_mock.SetCQDependencies(self.patches[0], self.patches)
     self.SubmitPool(submitted=self.patches, rejected=[self.patches[1]])
     (submitted, rejected) = self.pool_mock.GetSubmittedChanges()
     failed_submit = validation_pool.PatchFailedToSubmit(

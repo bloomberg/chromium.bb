@@ -1712,34 +1712,39 @@ class ValidationPool(object):
       errors[change] = e
       return errors
 
-    error_stack, submitted = [], []
+    submitted = []
+    dep_error = None
     for dep_change in plan:
       # Has this change failed to submit before?
       dep_error = errors.get(dep_change)
-      if dep_error is None and error_stack:
-        # One of the dependencies failed to submit. Report an error.
-        dep_error = cros_patch.DependencyError(dep_change, error_stack[-1])
+      if dep_error is not None:
+        break
 
-      # If there were no errors, submit the patch.
-      if dep_error is None:
+    if dep_error is None:
+      for dep_change in plan:
         try:
           if self._SubmitChange(dep_change, reason=reason) or self.dryrun:
             submitted.append(dep_change)
-          else:
-            msg = self.INCONSISTENT_SUBMIT_MSG
-            dep_error = PatchFailedToSubmit(dep_change, msg)
         except (gob_util.GOBError, gerrit.GerritException) as e:
           if getattr(e, 'http_status', None) == httplib.CONFLICT:
             dep_error = PatchConflict(dep_change)
           else:
             dep_error = PatchFailedToSubmit(dep_change, str(e))
-          logging.error('%s', dep_error)
 
-      # Add any error we saw to the stack.
-      if dep_error is not None:
-        logging.info('%s', dep_error)
-        errors[dep_change] = dep_error
-        error_stack.append(dep_error)
+        if dep_change not in submitted:
+          if dep_error is None:
+            msg = self.INCONSISTENT_SUBMIT_MSG
+            dep_error = PatchFailedToSubmit(dep_change, msg)
+
+          # Log any errors we saw.
+          logging.error('%s', dep_error)
+          errors[dep_change] = dep_error
+          break
+
+    if (dep_error is not None and change not in errors and
+        change not in submitted):
+      # One of the dependencies failed to submit. Report an error.
+      errors[change] = cros_patch.DependencyError(change, dep_error)
 
     # Track submitted patches so that we don't submit them again.
     patch_series.InjectCommittedPatches(submitted)
@@ -1759,6 +1764,7 @@ class ValidationPool(object):
           error = PatchSubmittedWithoutDeps(submitted_change, dep_error)
           self._HandleIncorrectSubmission(error)
           logging.error('%s was erroneously submitted.', submitted_change)
+          break
 
     return errors
 
