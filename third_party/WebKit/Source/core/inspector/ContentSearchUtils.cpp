@@ -80,9 +80,9 @@ static Vector<pair<int, String> > getScriptRegexpMatchesByLines(const ScriptRege
     return result;
 }
 
-static PassRefPtr<TypeBuilder::Page::SearchMatch> buildObjectForSearchMatch(int lineNumber, const String& lineContent)
+static PassRefPtr<TypeBuilder::Debugger::SearchMatch> buildObjectForSearchMatch(int lineNumber, const String& lineContent)
 {
-    return TypeBuilder::Page::SearchMatch::create()
+    return TypeBuilder::Debugger::SearchMatch::create()
         .setLineNumber(lineNumber)
         .setLineContent(lineContent)
         .release();
@@ -94,9 +94,9 @@ PassOwnPtr<ScriptRegexp> createSearchRegex(const String& query, bool caseSensiti
     return adoptPtr(new ScriptRegexp(regexSource, caseSensitive ? TextCaseSensitive : TextCaseInsensitive));
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLines(const String& text, const String& query, const bool caseSensitive, const bool isRegex)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> searchInTextByLines(const String& text, const String& query, const bool caseSensitive, const bool isRegex)
 {
-    RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > result = TypeBuilder::Array<TypeBuilder::Page::SearchMatch>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> result = TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>::create();
 
     OwnPtr<ScriptRegexp> regex = ContentSearchUtils::createSearchRegex(query, caseSensitive, isRegex);
     Vector<pair<int, String> > matches = getScriptRegexpMatchesByLines(regex.get(), text);
