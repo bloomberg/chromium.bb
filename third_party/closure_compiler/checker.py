@@ -44,7 +44,7 @@ class Checker(object):
     "--jscomp_error=visibility",
     "--language_in=ECMASCRIPT5_STRICT",
     "--summary_detail_level=3",
-    "--compilation_level=WHITESPACE_ONLY",
+    "--compilation_level=SIMPLE_OPTIMIZATIONS",
     "--source_map_format=V3",
   ]
 
