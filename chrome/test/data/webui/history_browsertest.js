@@ -366,7 +366,8 @@ function ensureTimeWidthsEqual() {
   }
 }
 
-TEST_F('HistoryWebUIFakeBackendTest', 'emptyHistory', function() {
+// Times out on Mac: http://crbug.com/336845
+TEST_F('HistoryWebUIFakeBackendTest', 'DISABLED_emptyHistory', function() {
   expectTrue($('newest-button').hidden);
   expectTrue($('newer-button').hidden);
   expectTrue($('older-button').hidden);
@@ -703,7 +704,8 @@ function checkGroupedVisits(element) {
   }
 }
 
-TEST_F('RangeHistoryWebUITest', 'weekViewGrouped', function() {
+// Times out on Mac and Win: http://crbug.com/336845
+TEST_F('RangeHistoryWebUITest', 'DISABLED_weekViewGrouped', function() {
   // Change to weekly view.
   setPageState('', 0, HistoryModel.Range.WEEK, 0);
   waitForCallback('historyResult', function() {
@@ -721,7 +723,8 @@ TEST_F('RangeHistoryWebUITest', 'weekViewGrouped', function() {
   });
 });
 
-TEST_F('RangeHistoryWebUITest', 'monthViewGrouped', function() {
+// Times out on Mac and Win: http://crbug.com/336845
+TEST_F('RangeHistoryWebUITest', 'DISABLED_monthViewGrouped', function() {
   // Change to monthly view.
   setPageState('', 0, HistoryModel.Range.MONTH, 0);
   waitForCallback('historyResult', function() {
@@ -736,7 +739,8 @@ TEST_F('RangeHistoryWebUITest', 'monthViewGrouped', function() {
   });
 });
 
-TEST_F('RangeHistoryWebUITest', 'monthViewEmptyMonth', function() {
+// Times out on Mac: http://crbug.com/336845
+TEST_F('RangeHistoryWebUITest', 'DISABLED_monthViewEmptyMonth', function() {
   // Change to monthly view.
   setPageState('', 0, HistoryModel.Range.MONTH, 2);
 
@@ -777,7 +781,8 @@ HistoryWebUIRealBackendTest.prototype = {
  * Simple test that verifies that the correct entries are retrieved from the
  * history database and displayed in the UI.
  */
-TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
+// Times out on Mac and Win: http://crbug.com/336845
+TEST_F('HistoryWebUIRealBackendTest', 'DISABLED_basic', function() {
   // Check that there are two days of entries, and three entries in total.
   assertEquals(2, document.querySelectorAll('.day').length);
   assertEquals(3, document.querySelectorAll('.entry').length);
@@ -785,13 +790,17 @@ TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
   testDone();
 });
 
-TEST_F('HistoryWebUIRealBackendTest', 'atLeastOneFocusable', function() {
+// Times out on Mac: http://crbug.com/336845
+TEST_F('HistoryWebUIRealBackendTest',
+    'DISABLED_atLeastOneFocusable', function() {
   var results = document.querySelectorAll('#results-display [tabindex="0"]');
   expectGE(results.length, 1);
   testDone();
 });
 
-TEST_F('HistoryWebUIRealBackendTest', 'deleteRemovesEntry', function() {
+// Times out on Mac: http://crbug.com/336845
+TEST_F('HistoryWebUIRealBackendTest',
+    'DISABLED_deleteRemovesEntry', function() {
   assertTrue(historyModel.deletingHistoryAllowed);
 
   var visit = document.querySelector('.entry').visit;
@@ -914,7 +923,9 @@ TEST_F('HistoryWebUIRealBackendTest', 'showConfirmDialogAndRemove', function() {
   assertFalse($('alertOverlay').classList.contains('showing'));
 });
 
-TEST_F('HistoryWebUIRealBackendTest', 'menuButtonActivatesOneRow', function() {
+// Times out on Mac: http://crbug.com/336845
+TEST_F('HistoryWebUIRealBackendTest',
+    'DISABLED_menuButtonActivatesOneRow', function() {
   var entries = document.querySelectorAll('.entry');
   assertEquals(3, entries.length);
   assertTrue(entries[0].classList.contains('active'));
@@ -985,7 +996,9 @@ HistoryWebUIDeleteProhibitedTest.prototype = {
 };
 
 // Test UI when removing entries is prohibited.
-TEST_F('HistoryWebUIDeleteProhibitedTest', 'deleteProhibited', function() {
+// Times out on Mac: http://crbug.com/336845
+TEST_F('HistoryWebUIDeleteProhibitedTest',
+    'DISABLED_deleteProhibited', function() {
   // No checkboxes should be created.
   var checkboxes = document.querySelectorAll(
       '#results-display input[type=checkbox]');
@@ -1073,7 +1086,8 @@ HistoryWebUIIDNTest.prototype = {
  * Simple test that verifies that the correct entries are retrieved from the
  * history database and displayed in the UI.
  */
-TEST_F('HistoryWebUIIDNTest', 'basic', function() {
+// Times out on Mac: http://crbug.com/336845
+TEST_F('HistoryWebUIIDNTest', 'DISABLED_basic', function() {
   // Check that there is only one entry and domain is in unicode.
   assertEquals(1, document.querySelectorAll('.domain').length);
   assertEquals("\u043f\u0440\u0435\u0437\u0438\u0434\u0435\u043d\u0442." +
