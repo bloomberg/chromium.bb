@@ -649,6 +649,71 @@ class SilkFinance(KeySilkCasesPage):
     interaction.End()
 
 
+class PolymerTopeka(KeySilkCasesPage):
+
+  """ Why: Sample Polymer app. """
+
+  def __init__(self, page_set, run_no_page_interactions):
+    super(PolymerTopeka, self).__init__(
+      url='https://polymer-topeka.appspot.com/',
+      page_set=page_set, run_no_page_interactions=run_no_page_interactions)
+
+  def PerformPageInteractions(self, action_runner):
+    profile = 'html /deep/ topeka-profile /deep/ '
+    first_name = profile + 'paper-input#first /deep/ input'
+    action_runner.WaitForElement(selector=first_name)
+    # Input First Name:
+    action_runner.ExecuteJavaScript('''
+        var fn = document.querySelector('%s');
+        fn.value = 'Chrome';
+        fn.fire('input');''' % first_name)
+    # Input Last Initial:
+    action_runner.ExecuteJavaScript('''
+        var li = document.querySelector('%s paper-input#last /deep/ input');
+        li.value = 'E';
+        li.fire('input');''' % profile)
+    interaction = action_runner.BeginInteraction('animation_interaction')
+    # Click the check-mark to login:
+    action_runner.ExecuteJavaScript('''
+        window.topeka_page_transitions = 0;
+        [].forEach.call(document.querySelectorAll(
+            'html /deep/ core-animated-pages'), function(p){
+                p.addEventListener(
+                    'core-animated-pages-transition-end', function(e) {
+                        window.topeka_page_transitions++;
+                    });
+            });
+        document.querySelector('%s paper-fab').fire('tap')''' % profile)
+    # Wait for category list to animate in:
+    action_runner.WaitForJavaScriptCondition('''
+        window.topeka_page_transitions === 1''')
+    # Click a category to start a quiz:
+    action_runner.ExecuteJavaScript('''
+        document.querySelector('html /deep/ core-selector.category-list').fire(
+            'tap',1,document.querySelector('html /deep/ \
+                    div.category-item.red-theme'));''')
+    # Wait for the category splash to animate in:
+    action_runner.WaitForJavaScriptCondition('''
+        window.topeka_page_transitions === 2''')
+    # Click to start the quiz:
+    action_runner.ExecuteJavaScript('''
+        document.querySelector('html /deep/ topeka-category-front-page /deep/\
+            paper-fab').fire('tap');''')
+    action_runner.WaitForJavaScriptCondition('''
+        window.topeka_page_transitions === 4''')
+    # Input a mostly correct answer:
+    action_runner.ExecuteJavaScript('''
+        document.querySelector('html /deep/ topeka-quiz-fill-blank /deep/\
+            input').value = 'arkinsaw';
+        document.querySelector('html /deep/ topeka-quiz-fill-blank /deep/\
+            input').fire('input');
+        document.querySelector('html /deep/ topeka-quizzes /deep/ \
+            paper-fab').fire('tap');''')
+    action_runner.WaitForJavaScriptCondition('''
+        window.topeka_page_transitions === 6''')
+    interaction.End()
+
+
 class KeySilkCasesPageSet(page_set_module.PageSet):
 
   """ Pages hand-picked for project Silk. """
@@ -691,6 +756,7 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     self.AddUserStory(SVGIconRaster(self, run_no_page_interactions))
     self.AddUserStory(UpdateHistoryState(self, run_no_page_interactions))
     self.AddUserStory(SilkFinance(self, run_no_page_interactions))
+    self.AddUserStory(PolymerTopeka(self, run_no_page_interactions))
 
     for page in self:
       assert (page.__class__.RunPageInteractions ==
