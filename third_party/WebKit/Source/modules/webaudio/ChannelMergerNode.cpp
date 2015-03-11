@@ -30,11 +30,14 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/ChannelMergerNode.h"
 
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 
-const unsigned DefaultNumberOfOutputChannels = 1;
 
 namespace blink {
 
@@ -48,13 +51,18 @@ ChannelMergerNode* ChannelMergerNode::create(AudioContext* context, float sample
 
 ChannelMergerNode::ChannelMergerNode(AudioContext* context, float sampleRate, unsigned numberOfInputs)
     : AudioNode(NodeTypeChannelMerger, context, sampleRate)
-    , m_desiredNumberOfOutputChannels(DefaultNumberOfOutputChannels)
 {
+    // These properties are fixed for the node and cannot be changed by user.
+    m_channelCount = 1;
+    m_channelCountMode = Explicit;
+
     // Create the requested number of inputs.
     for (unsigned i = 0; i < numberOfInputs; ++i)
         addInput();
 
-    addOutput(AudioNodeOutput::create(this, 1));
+    // Create the output with the requested number of channels.
+    addOutput(AudioNodeOutput::create(this, numberOfInputs));
+
     initialize();
 }
 
@@ -64,69 +72,62 @@ void ChannelMergerNode::process(size_t framesToProcess)
     ASSERT(output);
     ASSERT_UNUSED(framesToProcess, framesToProcess == output->bus()->length());
 
-    // Output bus not updated yet, so just output silence.
-    if (m_desiredNumberOfOutputChannels != output->numberOfChannels()) {
-        output->bus()->zero();
-        return;
-    }
+    unsigned numberOfOutputChannels = output->numberOfChannels();
+    ASSERT(numberOfInputs() == numberOfOutputChannels);
 
-    // Merge all the channels from all the inputs into one output.
-    unsigned outputChannelIndex = 0;
-    unsigned maxAllowedOutputChannels = output->numberOfChannels();
-
-    for (unsigned i = 0; i < numberOfInputs(); ++i) {
+    // Merge multiple inputs into one output.
+    for (unsigned i = 0; i < numberOfOutputChannels; ++i) {
         AudioNodeInput* input = this->input(i);
+        ASSERT(input->numberOfChannels() == 1);
+        AudioChannel* outputChannel = output->bus()->channel(i);
         if (input->isConnected()) {
-            unsigned numberOfInputChannels = input->bus()->numberOfChannels();
 
-            // Merge channels from this particular input, but be careful not to exceed the number of
-            // output channels.  (This can happen if there are many inputs with each input
-            // containing many channels.)
-            for (unsigned j = 0; j < numberOfInputChannels; ++j) {
-                if (outputChannelIndex < maxAllowedOutputChannels) {
-                    AudioChannel* inputChannel = input->bus()->channel(j);
-                    AudioChannel* outputChannel = output->bus()->channel(outputChannelIndex);
-                    outputChannel->copyFrom(inputChannel);
+            // The mixing rules will be applied so multiple channels are down-
+            // mixed to mono (when the mixing rule is defined). Note that only
+            // the first channel will be taken for the undefined input channel
+            // layout.
+            //
+            // See: http://webaudio.github.io/web-audio-api/#channel-up-mixing-and-down-mixing
+            AudioChannel* inputChannel = input->bus()->channel(0);
+            outputChannel->copyFrom(inputChannel);
 
-                    ++outputChannelIndex;
-                }
-            }
+        } else {
+            // If input is unconnected, fill zeros in the channel.
+            outputChannel->zero();
         }
-        if (outputChannelIndex >= maxAllowedOutputChannels)
-            break;
     }
-
-    ASSERT(outputChannelIndex == output->numberOfChannels());
 }
 
-// Any time a connection or disconnection happens on any of our inputs, we potentially need to change the
-// number of channels of our output.
-void ChannelMergerNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
+void ChannelMergerNode::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
-    ASSERT(context()->isAudioThread());
-    ASSERT(context()->isGraphOwner());
+    ASSERT(isMainThread());
+    AudioContext::AutoLocker locker(context());
 
-    // Count how many channels we have all together from all of the inputs.
-    unsigned numberOfOutputChannels = 0;
-    for (unsigned i = 0; i < numberOfInputs(); ++i) {
-        AudioNodeInput* input = this->input(i);
-        if (input->isConnected())
-            numberOfOutputChannels += input->numberOfChannels();
+    // channelCount must be 1.
+    if (channelCount != 1) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::failedToSet(
+                "channelCount",
+                "ChannelMergerNode",
+                "channelCount cannot be changed"));
     }
+}
 
-    // If the actual number of channels exceeds the max allowed, just drop the excess.
-    numberOfOutputChannels = std::min(numberOfOutputChannels, AudioContext::maxNumberOfChannels());
+void ChannelMergerNode::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
+{
+    ASSERT(isMainThread());
+    AudioContext::AutoLocker locker(context());
 
-    // Set the correct number of channels on the output
-    AudioNodeOutput* output = this->output(0);
-    ASSERT(output);
-    output->setNumberOfChannels(numberOfOutputChannels);
-    // There can in rare cases be a slight delay before the output bus is updated to the new number of
-    // channels because of tryLocks() in the context's updating system. So record the new number of
-    // output channels here.
-    m_desiredNumberOfOutputChannels = numberOfOutputChannels;
-
-    AudioNode::checkNumberOfChannelsForInput(input);
+    // channcelCountMode must be 'explicit'.
+    if (mode != "explicit") {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::failedToSet(
+                "channelCountMode",
+                "ChannelMergerNode",
+                "channelCountMode cannot be changed"));
+    }
 }
 
 } // namespace blink

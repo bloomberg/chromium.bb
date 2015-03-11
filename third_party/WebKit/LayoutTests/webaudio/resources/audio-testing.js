@@ -9,7 +9,7 @@ function writeString(s, a, offset) {
 
 function writeInt16(n, a, offset) {
     n = Math.floor(n);
-    
+
     var b1 = n & 255;
     var b2 = (n >> 8) & 255;
 
@@ -33,7 +33,7 @@ function writeInt32(n, a, offset) {
 function writeAudioBuffer(audioBuffer, a, offset) {
     var n = audioBuffer.length;
     var channels = audioBuffer.numberOfChannels;
-    
+
     for (var i = 0; i < n; ++i) {
         for (var k = 0; k < channels; ++k) {
             var buffer = audioBuffer.getChannelData(k);
@@ -64,7 +64,7 @@ function createWaveFileData(audioBuffer) {
     var totalLength = headerByteLength + wavDataByteLength;
 
     var waveFileData = new Uint8Array(totalLength);
-    
+
     var subChunk1Size = 16; // for linear PCM
     var subChunk2Size = wavDataByteLength;
     var chunkSize = 4 + (8 + subChunk1Size) + (8 + subChunk2Size);
@@ -73,7 +73,7 @@ function createWaveFileData(audioBuffer) {
     writeInt32(chunkSize, waveFileData, 4);
     writeString("WAVE", waveFileData, 8);
     writeString("fmt ", waveFileData, 12);
-    
+
     writeInt32(subChunk1Size, waveFileData, 16);      // SubChunk1Size (4)
     writeInt16(1, waveFileData, 20);                  // AudioFormat (2)
     writeInt16(numberOfChannels, waveFileData, 22);   // NumChannels (2)
@@ -81,13 +81,13 @@ function createWaveFileData(audioBuffer) {
     writeInt32(byteRate, waveFileData, 28);           // ByteRate (4)
     writeInt16(blockAlign, waveFileData, 32);         // BlockAlign (2)
     writeInt32(bitsPerSample, waveFileData, 34);      // BitsPerSample (4)
-                                                      
-    writeString("data", waveFileData, 36);            
+
+    writeString("data", waveFileData, 36);
     writeInt32(subChunk2Size, waveFileData, 40);      // SubChunk2Size (4)
-    
+
     // Write actual audio data starting at offset 44.
     writeAudioBuffer(audioBuffer, waveFileData, 44);
-    
+
     return waveFileData;
 }
 
@@ -268,9 +268,19 @@ function getTaskSummary(func) {
     return '"' + lines + '"';
 }
 
+
 // The name space for |Should| test utility. Dependencies: testPassed(),
 // testFailed() from resources/js-test.js
 var Should = {};
+
+// The evaluation of |target| should be equal to |value|. |description| should
+// explain what the |target| is.
+Should.beEqualTo = function (description, target, value) {
+    if (target === value)
+        testPassed(description + ' is equal to ' + value + '.');
+    else
+        testFailed(description  + ' is ' + target + ' and not equal to ' + value + '.');
+};
 
 // Expect an exception to be thrown with a certain type.
 Should.throwWithType = function (type, func) {
@@ -297,7 +307,6 @@ Should.notThrow = function (func) {
     }
 };
 
-
 // Verify if the channelData array contains a single constant |value|.
 Should.haveValueInChannel = function (value, channelData) {
     var mismatch = {};
@@ -315,5 +324,29 @@ Should.haveValueInChannel = function (value, channelData) {
         for (var index in mismatch) {
             console.log('[' + index + '] : ' + mismatch[index]);
         }
+    }
+};
+
+// The |actual| array should contain a set of values in the order of appearance
+// specified in the |expected| array.
+Should.containValuesInChannel = function (expected, actual) {
+  var indexExpected = 0, indexActual = 0;
+    while (indexExpected < expected.length && indexActual < actual.length) {
+        if (expected[indexExpected] === actual[indexActual])
+            indexActual++;
+        else
+            indexExpected++;
+    }
+
+    if (indexExpected < expected.length-1 || indexActual < actual.length-1) {
+
+        var error = 'The value ' + actual[indexActual] + ' at index ' +
+            indexActual + ' was not found in expected values';
+        testFailed(error);
+        return false;
+    } else {
+        testPassed('The channel contains all the expected values in the correct order: [' +
+            expected + '].');
+        return true;
     }
 };

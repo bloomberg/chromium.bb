@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+</head>
+
+<body>
+  <script>
+    description('Test ChannelMergerNode behavior on dynamic input change.');
+    window.jsTestIsAsync = true;
+
+    var sampleRate = 44100;
+    var numberOfChannels = 2;
+
+    // The test needs the long render length (10 seconds) to capture the
+    // disconnection which happens after starting the rendering. 
+    var renderLength = sampleRate * 10;
+
+    var audit = Audit.createTaskRunner();
+
+    // Task: Check if the merger outputs a silent channel when an input is
+    // disconnected.
+    audit.defineTask('silent-disconnect', function (done) {
+      var context = new OfflineAudioContext(
+        numberOfChannels, renderLength, sampleRate
+      );
+      var merger = context.createChannelMerger();
+      var source1 = context.createBufferSource();
+      var source2 = context.createBufferSource();
+
+      // Create and assign a mono testing buffer.
+      var bufferDCOffset = createTestingAudioBuffer(context, 1, renderLength);
+      source1.buffer = bufferDCOffset;
+      source2.buffer = bufferDCOffset;
+
+      // Connect the output of source into the 4th input of merger. The merger
+      // should produce 6 channel output.
+      source1.connect(merger, 0, 0);
+      source2.connect(merger, 0, 1);
+      merger.connect(context.destination);
+      source1.start();
+      source2.start();
+
+      // When the rendering begins, disconnect |source2| as soon as possible.
+      context.onstatechange = function () {
+        if (context.state === 'running')
+          source2.disconnect();
+      };
+
+      context.startRendering().then(function (buffer) {
+
+        // The entire first channel of the output should be 1.
+        Should.haveValueInChannel(1, buffer.getChannelData(0));
+
+        // The second channel should contain 1, and 0 after the disconnection.
+        Should.containValuesInChannel([1, 0], buffer.getChannelData(1));
+
+        done();
+      });
+    });
+
+    audit.defineTask('finish', function (done) {
+      finishJSTest();
+      done();
+    });
+
+    audit.runTasks(
+      'silent-disconnect',
+      'finish'
+    );
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

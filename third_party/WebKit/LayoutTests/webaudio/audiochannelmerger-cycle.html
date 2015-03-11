@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+</head>
+
+<body>
+  <script>
+    description("Test if ChannelMergerNode runs correctly in a cycle.");
+    window.jsTestIsAsync = true;
+
+    // This specific sample rate is chosen to avoid the round/truncation error
+    // in delay time. See: crbug.com/448801
+    var sampleRate = 32768;
+
+    // Web Audio API's rendering quantum.
+    var renderingQuantum = 128;
+
+    // 4x of rendering quantum. This is to make the rendered result long enough
+    // so that we can observe the delayed output.
+    var renderLength = renderingQuantum * 4;
+
+    // 1x rendering quantum of delay.
+    var delayTime = renderingQuantum / sampleRate;
+
+    // Use 2 channels as a test case.
+    var numberOfChannels = 2;
+
+    var audit = Audit.createTaskRunner();
+
+    audit.defineTask('merger-cyclic-graph', function (done) {
+
+      var context = new OfflineAudioContext(
+        numberOfChannels, renderLength, sampleRate
+      );
+      var merger = context.createChannelMerger(2);
+      var delay = context.createDelay();
+      var source = context.createBufferSource();
+
+      // Create a mono source buffer filled with '1'.
+      source.buffer = createTestingAudioBuffer(context, 1, renderLength);
+
+      delay.delayTime.value = delayTime;
+
+      // Connect the source to input 0 of the merger. Connect the output of
+      // the merger to a delay node whose output is then connected to input 1
+      // of the merger. See: crbug.com/442925
+      source.connect(merger, 0, 0);
+      delay.connect(merger, 0, 1);
+      merger.connect(delay);
+      merger.connect(context.destination);
+      source.start();
+
+      context.startRendering().then(function (buffer) {
+        // Expected output values: the output of delay node will be a stereo
+        // signal of [1, 0]. When it feeds back to the 2nd input of merger node,
+        // the stereo channel will be summed to mono resulting in 0.5.
+        var expected_left = [];
+        var expected_right = [];
+
+        for (var i = 0; i < renderLength; i++) {
+          // Note that the delayed channel will be zero for the first 128 samples
+          // due to the cyclic audio graph, the second 128 sample will be also
+          // zero because of 128 samples delay.
+          expected_left[i] = 1.0;
+          expected_right[i] = (i < renderingQuantum * 2) ? 0.0 : 0.5;
+        }
+
+        for (i = 0; i < buffer.numberOfChannels; i++) {
+          var actual_left = buffer.getChannelData(0);
+          var actual_right = buffer.getChannelData(1);
+          for (var j = 0; j < renderLength; j++) {
+            if (expected_left[j] !== actual_left[j]) {
+              testFailed('The value ' + actual_left[j] + 
+                'in the left channel did not match the expected value ' + 
+                expected_left[j] + ' at the index ' + j + '.');
+              done();
+              return;
+            }
+            if (expected_right[j] !== actual_right[j]) {
+              testFailed('The value ' + actual_left[j] + 
+                'in the right channel did not match the expected value ' + 
+                expected_left[j] + ' at the index ' + j + '.');
+              done();
+              return;
+            }
+          }
+        }
+
+        testPassed("ChannerMergerNode passed cyclic audio graph test.");
+        done();
+      });
+
+    });
+
+    audit.defineTask('finish', function (done) {
+      finishJSTest();
+      done();
+    });
+
+    audit.runTasks(
+      'merger-cyclic-graph',
+      'finish'
+    );
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

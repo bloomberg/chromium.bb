@@ -1,0 +1,29 @@
+Test input handling behavior of ChannelMergerNode.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (1).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (1.5).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (1).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (0).
+PASS ChannelData has expected values (1).
+PASS ChannelData has expected values (-1).
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

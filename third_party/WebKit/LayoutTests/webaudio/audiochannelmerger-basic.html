@@ -1,68 +1,81 @@
 <!DOCTYPE html>
-
 <html>
+
 <head>
-<script src="../resources/js-test.js"></script>
-<script src="resources/compatibility.js"></script>
-<script src="resources/audio-testing.js"></script>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
 </head>
 
 <body>
-
-<div id="description"></div>
-<div id="console"></div>
-
-<script>
-description("Basic tests for AudioChannelMerger.");
-
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-
+  <script>
+    description("Basic tests for ChannelMerger.");
     window.jsTestIsAsync = true;
 
-    var context = new AudioContext();
+    var audit = Audit.createTaskRunner();
 
-    try {
-        var mergernode = context.createChannelMerger(0);
-        testFailed("Exception should be thrown for numberOfInputs <= 0.");
-    } catch(e) {
-        testPassed("Exception was thrown for numberOfInputs <= 0.");
-    }
+    // Task: Checking constraints in ChannelMergerNode.
+    audit.defineTask('exceptions-channels', function (done) {
+      var context = new OfflineAudioContext(2, 128, 44100);
+      var merger;
 
-    try {
-        var mergernode = context.createChannelMerger(33);
-        testFailed("Exception should be thrown for numberOfInputs >= 32.");
-    } catch(e) {
-        testPassed("Exception was thrown for numberOfInputs >= 32.");
-    }
+      Should.notThrow(function () {
+        merger = context.createChannelMerger();
+      });
 
-    try {
-        var mergernode = context.createChannelMerger(32);
-        testPassed("AudioChannelMerger created successfully with numberOfInputs = 32.");
-    } catch(e) {
-        testFailed("Failed to create AudioChannelMerger with numberOfInputs = 32.");
-    }
+      Should.throwWithType('IndexSizeError', function () {
+        merger = context.createChannelMerger(0);
+      });
 
-    try {
-        var mergernode = context.createChannelMerger();
-        testPassed("AudioChannelMerger created successfully with empty parameter.");
-        if (mergernode.toString().indexOf("ChannelMergerNode") > -1)
-            testPassed("ChannelMergerNode Object is available.");
-        else
-            testFailed("ChannelMergerNode Object is not available.");
-    } catch(e) {
-        testFailed("Failed to create AudioChannelMerger with empty parameter.");
-    }
+      Should.notThrow(function () {
+        merger = context.createChannelMerger(32);
+      });
 
-    finishJSTest();
-}
+      // Can't create a channel merger with 33 channels because the audio
+      // context has a 32-channel-limit in Chrome.
+      Should.throwWithType('IndexSizeError', function () {
+        merger = context.createChannelMerger(33);
+      });
 
-runTest();
+      done();
+    });
 
-</script>
+    // Task: checking the channel-related properties have the correct value and 
+    // can't be changed.
+    audit.defineTask('exceptions-properties', function (done) {
+      var context = new OfflineAudioContext(2, 128, 44100);
+      var merger = context.createChannelMerger();
 
+      Should.beEqualTo('merger.channelCount', merger.channelCount, 1);
+
+      Should.throwWithType('InvalidStateError', function () {
+        merger.channelCount = 3;
+      });
+
+      Should.beEqualTo(
+        'merger.channelCountMode', merger.channelCountMode, 'explicit'
+      );
+
+      Should.throwWithType('InvalidStateError', function () {
+        merger.channelCountMode = 'max';
+      });
+
+      done();
+    });
+
+    audit.defineTask('finish', function (done) {
+      finishJSTest();
+      done();
+    });
+
+    audit.runTasks(
+      'exceptions-channels',
+      'exceptions-properties',
+      'finish'
+    );
+
+    successfullyParsed = true;
+  </script>
 </body>
+
 </html>
