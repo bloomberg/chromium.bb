@@ -230,20 +230,6 @@ STATIC_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
 static bool shouldUseExternalPopupMenus = false;
 
-static int webInputEventKeyStateToPlatformEventKeyState(int webInputEventKeyState)
-{
-    int platformEventKeyState = 0;
-    if (webInputEventKeyState & WebInputEvent::ShiftKey)
-        platformEventKeyState = platformEventKeyState | PlatformEvent::ShiftKey;
-    if (webInputEventKeyState & WebInputEvent::ControlKey)
-        platformEventKeyState = platformEventKeyState | PlatformEvent::CtrlKey;
-    if (webInputEventKeyState & WebInputEvent::AltKey)
-        platformEventKeyState = platformEventKeyState | PlatformEvent::AltKey;
-    if (webInputEventKeyState & WebInputEvent::MetaKey)
-        platformEventKeyState = platformEventKeyState | PlatformEvent::MetaKey;
-    return platformEventKeyState;
-}
-
 namespace {
 
 class UserGestureNotifier {
@@ -3648,25 +3634,25 @@ WebDragOperation WebViewImpl::dragTargetDragEnter(
     const WebPoint& clientPoint,
     const WebPoint& screenPoint,
     WebDragOperationsMask operationsAllowed,
-    int keyModifiers)
+    int modifiers)
 {
     ASSERT(!m_currentDragData);
 
     m_currentDragData = DataObject::create(webDragData);
     m_operationsAllowed = operationsAllowed;
 
-    return dragTargetDragEnterOrOver(clientPoint, screenPoint, DragEnter, keyModifiers);
+    return dragTargetDragEnterOrOver(clientPoint, screenPoint, DragEnter, modifiers);
 }
 
 WebDragOperation WebViewImpl::dragTargetDragOver(
     const WebPoint& clientPoint,
     const WebPoint& screenPoint,
     WebDragOperationsMask operationsAllowed,
-    int keyModifiers)
+    int modifiers)
 {
     m_operationsAllowed = operationsAllowed;
 
-    return dragTargetDragEnterOrOver(clientPoint, screenPoint, DragOver, keyModifiers);
+    return dragTargetDragEnterOrOver(clientPoint, screenPoint, DragOver, modifiers);
 }
 
 void WebViewImpl::dragTargetDragLeave()
@@ -3689,7 +3675,7 @@ void WebViewImpl::dragTargetDragLeave()
 
 void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
                                  const WebPoint& screenPoint,
-                                 int keyModifiers)
+                                 int modifiers)
 {
     ASSERT(m_currentDragData);
 
@@ -3708,7 +3694,7 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
         return;
     }
 
-    m_currentDragData->setModifierKeyState(webInputEventKeyStateToPlatformEventKeyState(keyModifiers));
+    m_currentDragData->setModifiers(toPlatformMouseEventModifiers(modifiers));
     DragData dragData(
         m_currentDragData.get(),
         clientPoint,
@@ -3746,11 +3732,11 @@ void WebViewImpl::removeSpellingMarkersUnderWords(const WebVector<WebString>& wo
     }
 }
 
-WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(const WebPoint& clientPoint, const WebPoint& screenPoint, DragAction dragAction, int keyModifiers)
+WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(const WebPoint& clientPoint, const WebPoint& screenPoint, DragAction dragAction, int modifiers)
 {
     ASSERT(m_currentDragData);
 
-    m_currentDragData->setModifierKeyState(webInputEventKeyStateToPlatformEventKeyState(keyModifiers));
+    m_currentDragData->setModifiers(toPlatformMouseEventModifiers(modifiers));
     DragData dragData(
         m_currentDragData.get(),
         clientPoint,

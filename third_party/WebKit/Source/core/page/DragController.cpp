@@ -111,15 +111,10 @@ static bool dragTypeIsValid(DragSourceAction action)
 
 static PlatformMouseEvent createMouseEvent(DragData* dragData)
 {
-    int keyState = dragData->modifierKeyState();
-    bool shiftKey = static_cast<bool>(keyState & PlatformEvent::ShiftKey);
-    bool ctrlKey = static_cast<bool>(keyState & PlatformEvent::CtrlKey);
-    bool altKey = static_cast<bool>(keyState & PlatformEvent::AltKey);
-    bool metaKey = static_cast<bool>(keyState & PlatformEvent::MetaKey);
-
     return PlatformMouseEvent(dragData->clientPosition(), dragData->globalPosition(),
-        LeftButton, PlatformEvent::MouseMoved, 0, shiftKey, ctrlKey, altKey,
-        metaKey, PlatformMouseEvent::RealOrIndistinguishable, currentTime());
+        LeftButton, PlatformEvent::MouseMoved, 0,
+        static_cast<PlatformEvent::Modifiers>(dragData->modifiers()),
+        PlatformMouseEvent::RealOrIndistinguishable, currentTime());
 }
 
 static PassRefPtrWillBeRawPtr<DataTransfer> createDraggingDataTransfer(DataTransferAccessPolicy policy, DragData* dragData)
@@ -955,12 +950,12 @@ DragOperation DragController::dragOperation(DragData* dragData)
 
 bool DragController::isCopyKeyDown(DragData* dragData)
 {
-    int keyState = dragData->modifierKeyState();
+    int modifiers = dragData->modifiers();
 
 #if OS(MACOSX)
-    return keyState & PlatformEvent::AltKey;
+    return modifiers & PlatformEvent::AltKey;
 #else
-    return keyState & PlatformEvent::CtrlKey;
+    return modifiers & PlatformEvent::CtrlKey;
 #endif
 }
 

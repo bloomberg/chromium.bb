@@ -67,6 +67,24 @@ PASS testSet[i].buttons is 2
 GestureEvent::contextmenu with |showContextMenuOnMouseUp=true| longTapAction([rightButton]) -> shouldBe([])
 PASS testSet[i].buttons is 0
 
+DragEvent::dragstart dragDropAction([leftButton,rightButton]) -> shouldBe([leftButton,rightButton])
+PASS testSet[i].buttons is 3
+
+DragEvent::drag dragDropAction([leftButton,middleButton,rightButton]) -> shouldBe([leftButton,middleButton,rightButton])
+PASS testSet[i].buttons is 7
+
+DragEvent::dragend dragDropAction([leftButton,rightButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+DragEvent::dragenter dragDropAction([leftButton,middleButton]) -> shouldBe([leftButton,middleButton])
+PASS testSet[i].buttons is 5
+
+DragEvent::dragleave dragDropAction([leftButton,rightButton]) -> shouldBe([leftButton,rightButton])
+PASS testSet[i].buttons is 3
+
+DragEvent::dragover dragDropAction([leftButton,middleButton]) -> shouldBe([leftButton,middleButton])
+PASS testSet[i].buttons is 5
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -68,7 +68,7 @@ public:
     PassRefPtrWillBeRawPtr<DocumentFragment> asFragment(LocalFrame*, PassRefPtrWillBeRawPtr<Range> context, bool allowPlainText, bool& chosePlainText) const;
     bool canSmartReplace() const;
     bool containsFiles() const;
-    int modifierKeyState() const;
+    int modifiers() const;
 
     String droppedFileSystemId() const;
 

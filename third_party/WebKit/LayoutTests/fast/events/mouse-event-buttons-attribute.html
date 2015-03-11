@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<div id="region" style="width:100px; height:100px; position:absolute; left:0px; top:0px;"></div>
+<div id="target" style="width:100px; height:100px; position:absolute; left:0px; top:0px;"></div>
+<img id="drag" src="resources/greenbox30.png" style="position:absolute; left:0px; top:100px;" draggable>
 <script src="../../resources/js-test.js"></script>
 <script>
 
@@ -14,9 +15,11 @@ const TABLE = {
 const ME = 'MouseEvent';
 const WE = 'WheelEvent';
 const GE = 'GestureEvent';
+const DE = 'DragEvent';
 
+var target = document.getElementById('target');
+var drag = document.getElementById('drag');
 var buttons = -2;
-var div = document.getElementById('region');
 var testSet = [
   { type: ME, name: 'dblclick', modifiers: [L], expectedModifiers: [], action: doubleClickAction },
   { type: ME, name: 'click', modifiers: [L, R], expectedModifiers: [R], action: clickAction },
@@ -41,6 +44,12 @@ var testSet = [
   { type: GE, name: 'contextmenu', modifiers: [R], expectedModifiers: [], action: longPressAction, showContextMenuOnMouseUp: true },
   { type: GE, name: 'contextmenu', modifiers: [R], action: longTapAction, showContextMenuOnMouseUp: false },
   { type: GE, name: 'contextmenu', modifiers: [R], expectedModifiers: [], action: longTapAction, showContextMenuOnMouseUp: true },
+  { type: DE, name: 'dragstart', modifiers: [L, R], action: dragDropAction, eventTarget: drag },
+  { type: DE, name: 'drag', modifiers: [L, M, R], action: dragDropAction, eventTarget: drag },
+  { type: DE, name: 'dragend', modifiers: [L, R], expectedModifiers: [], action: dragDropAction, eventTarget: drag },
+  { type: DE, name: 'dragenter', modifiers: [L, M], action: dragDropAction },
+  { type: DE, name: 'dragleave', modifiers: [L, R], action: dragDropAction },
+  { type: DE, name: 'dragover', modifiers: [L, M], action: dragDropAction },
 ];
 
 function eventHandler(e)
@@ -101,15 +110,27 @@ function doubleTapAction(modifiers)
   eventSender.gestureTap(50, 50, 2);
 }
 
+function dragDropAction(modifiers)
+{
+  eventSender.mouseMoveTo(10, 110, modifiers);
+  eventSender.mouseDown(0, modifiers);
+  eventSender.mouseMoveTo(10, 80, modifiers);
+  eventSender.mouseMoveTo(10, 110, modifiers);
+  eventSender.mouseMoveTo(10, 80, modifiers);
+  eventSender.mouseUp(0, modifiers);
+}
+
 function raiseEvent(n)
 {
   if (!window.eventSender)
     return;
 
-  div.addEventListener(testSet[n].name, eventHandler, false);
+  var eventTarget = testSet[n].eventTarget || target;
+
+  eventTarget.addEventListener(testSet[n].name, eventHandler, false);
   testSet[n].action(testSet[n].modifiers);
   testSet[n].buttons = buttons;
-  div.removeEventListener(testSet[n].name, eventHandler, false);
+  eventTarget.removeEventListener(testSet[n].name, eventHandler, false);
   buttons = -1;
 }
 

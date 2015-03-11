@@ -139,6 +139,8 @@ public:
     WebGestureEventBuilder(const Widget*, const LayoutObject*, const GestureEvent&);
 };
 
+unsigned toPlatformMouseEventModifiers(int webModifiers);
+
 } // namespace blink
 
 #endif

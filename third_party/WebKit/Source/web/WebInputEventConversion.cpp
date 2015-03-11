@@ -115,7 +115,7 @@ static unsigned toPlatformEventModifiers(int webModifiers)
     return newModifiers;
 }
 
-static unsigned toPlatformMouseEventModifiers(int webModifiers)
+unsigned toPlatformMouseEventModifiers(int webModifiers)
 {
     unsigned newModifiers = toPlatformEventModifiers(webModifiers);
     if (webModifiers & WebInputEvent::LeftButtonDown)

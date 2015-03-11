@@ -217,7 +217,7 @@ void DataObject::addSharedBuffer(const String& name, PassRefPtr<SharedBuffer> bu
 }
 
 DataObject::DataObject()
-    : m_modifierKeyState(0)
+    : m_modifiers(0)
 {
 }
 

@@ -243,17 +243,17 @@ public:
         const WebPoint& clientPoint,
         const WebPoint& screenPoint,
         WebDragOperationsMask operationsAllowed,
-        int keyModifiers) override;
+        int modifiers) override;
     virtual WebDragOperation dragTargetDragOver(
         const WebPoint& clientPoint,
         const WebPoint& screenPoint,
         WebDragOperationsMask operationsAllowed,
-        int keyModifiers) override;
+        int modifiers) override;
     virtual void dragTargetDragLeave() override;
     virtual void dragTargetDrop(
         const WebPoint& clientPoint,
         const WebPoint& screenPoint,
-        int keyModifiers) override;
+        int modifiers) override;
     virtual void spellingMarkers(WebVector<uint32_t>* markers) override;
     virtual void removeSpellingMarkersUnderWords(const WebVector<WebString>& words) override;
     virtual unsigned long createUniqueIdentifierForRequest() override;
@@ -593,7 +593,7 @@ private:
     WebDragOperation dragTargetDragEnterOrOver(const WebPoint& clientPoint,
                                                const WebPoint& screenPoint,
                                                DragAction,
-                                               int keyModifiers);
+                                               int modifiers);
 
     void configureAutoResizeMode();
 

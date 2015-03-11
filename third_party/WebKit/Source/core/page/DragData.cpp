@@ -75,9 +75,9 @@ bool DragData::containsFiles() const
     return m_platformDragData->containsFilenames();
 }
 
-int DragData::modifierKeyState() const
+int DragData::modifiers() const
 {
-    return m_platformDragData->modifierKeyState();
+    return m_platformDragData->modifiers();
 }
 
 void DragData::asFilePaths(Vector<String>& result) const
