@@ -471,13 +471,14 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		case TYPE_NET_WM_STATE:
 			window->fullscreen = 0;
 			atom = xcb_get_property_value(reply);
-			for (i = 0; i < reply->value_len; i++)
+			for (i = 0; i < reply->value_len; i++) {
 				if (atom[i] == wm->atom.net_wm_state_fullscreen)
 					window->fullscreen = 1;
 				if (atom[i] == wm->atom.net_wm_state_maximized_vert)
 					window->maximized_vert = 1;
 				if (atom[i] == wm->atom.net_wm_state_maximized_horz)
 					window->maximized_horz = 1;
+			}
 			break;
 		case TYPE_MOTIF_WM_HINTS:
 			memcpy(&window->motif_hints,
