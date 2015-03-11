@@ -11,8 +11,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-// @EXEMPTION[include]
-#include "./framework.h"
+#include "native_client/tests/benchmark/framework.h"
 
 namespace {
 

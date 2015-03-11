@@ -8,8 +8,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-// @EXEMPTION[include]
-#include "./thread_pool.h"
+#include "native_client/tests/benchmark/thread_pool.h"
 
 namespace sdk_util {
 

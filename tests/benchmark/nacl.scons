@@ -22,13 +22,7 @@ env.Prepend(CPPPATH=['${MAIN_DIR}/src'])
 
 nexe = env.ComponentProgram(
     'benchmark_test',
-    ['benchmark_chameneos.cc',
-     'benchmark_chameneos_c.c',
-     'benchmark_binarytrees.cc',
-     'benchmark_binarytrees_c.c',
-     'benchmark_life.cc',
-     'benchmark_nbody.cc',
-     'benchmark_nbody_c.c',
+    ['benchmark_life.cc',
      'framework.cc',
      'main.cc',
      'thread_pool.cc'],
