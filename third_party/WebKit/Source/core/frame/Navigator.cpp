@@ -119,8 +119,6 @@ Vector<String> Navigator::languages()
 DEFINE_TRACE(Navigator)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_plugins);
-    visitor->trace(m_mimeTypes);
     HeapSupplementable<Navigator>::trace(visitor);
 #endif
     DOMWindowProperty::trace(visitor);
