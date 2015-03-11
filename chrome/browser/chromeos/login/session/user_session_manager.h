@@ -247,6 +247,10 @@ class UserSessionManager
   // Used when restoring user sessions after crash.
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
+  void ChildAccountStatusReceivedCallback();
+
+  void StopChildStatusObserving();
+
   void CreateUserSession(const UserContext& user_context,
                          bool has_auth_cookies);
   void PreStartSession();
@@ -411,6 +415,11 @@ class UserSessionManager
 
   // Whether should launch browser, tests may override this value.
   bool should_launch_browser_;
+
+  // Child account status is necessary for InitializeStartUrls call.
+  bool waiting_for_child_account_status_;
+
+  base::WeakPtrFactory<UserSessionManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };

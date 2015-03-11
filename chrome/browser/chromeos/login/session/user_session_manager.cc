@@ -65,6 +65,8 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
+#include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_switches.h"
@@ -99,6 +101,10 @@
 namespace chromeos {
 
 namespace {
+
+// Milliseconds until we timeout our attempt to fetch flags from the child
+// account service.
+static const int kFlagsFetchingLoginTimeoutMs = 1000;
 
 // ChromeVox tutorial URL (used in place of "getting started" url when
 // accessibility is enabled).
@@ -325,7 +331,9 @@ UserSessionManager::UserSessionManager()
       session_restore_strategy_(
           OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN),
       running_easy_unlock_key_ops_(false),
-      should_launch_browser_(true) {
+      should_launch_browser_(true),
+      waiting_for_child_account_status_(false),
+      weak_factory_(this) {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
@@ -779,6 +787,17 @@ void UserSessionManager::OnProfilePrepared(Profile* profile,
   RestorePendingUserSessions();
 }
 
+void UserSessionManager::ChildAccountStatusReceivedCallback() {
+  StopChildStatusObserving();
+}
+
+void UserSessionManager::StopChildStatusObserving() {
+  if (!waiting_for_child_account_status_) {
+    InitializeStartUrls();
+    waiting_for_child_account_status_ = false;
+  }
+}
+
 void UserSessionManager::CreateUserSession(const UserContext& user_context,
                                            bool has_auth_cookies) {
   user_context_ = user_context;
@@ -1042,13 +1061,16 @@ void UserSessionManager::ActivateWizard(const std::string& screen_name) {
 }
 
 void UserSessionManager::InitializeStartUrls() const {
+  // Child account status should be known by the time of this call.
   std::vector<std::string> start_urls;
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+
   bool can_show_getstarted_guide =
       user_manager->GetActiveUser()->GetType() ==
           user_manager::USER_TYPE_REGULAR &&
       !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
+
   // Skip the default first-run behavior for public accounts.
   if (!user_manager->IsLoggedInAsPublicAccount()) {
     if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
@@ -1080,6 +1102,17 @@ void UserSessionManager::InitializeStartUrls() const {
 }
 
 bool UserSessionManager::InitializeUserSession(Profile* profile) {
+  ChildAccountService* child_service =
+      ChildAccountServiceFactory::GetForProfile(profile);
+  child_service->AddChildStatusReceivedCallback(base::Bind(
+      &UserSessionManager::ChildAccountStatusReceivedCallback,
+      weak_factory_.GetWeakPtr()));
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&UserSessionManager::StopChildStatusObserving,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kFlagsFetchingLoginTimeoutMs));
+
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Kiosk apps has their own session initialization pipeline.
@@ -1098,8 +1131,12 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
     if (user_manager->IsCurrentUserNew() && !skip_post_login_screens) {
       // Don't specify start URLs if the administrator has configured the start
       // URLs via policy.
-      if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs()))
-        InitializeStartUrls();
+      if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
+        if (child_service->IsChildAccountStatusKnown())
+          InitializeStartUrls();
+        else
+          waiting_for_child_account_status_ = true;
+      }
 
       // Mark the device as registered., i.e. the second part of OOBE as
       // completed.

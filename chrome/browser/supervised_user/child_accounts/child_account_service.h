@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -24,6 +25,10 @@ namespace base {
 class FilePath;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 class Profile;
 
 // This class handles detection of child accounts (on sign-in as well as on
@@ -38,6 +43,8 @@ class ChildAccountService : public KeyedService,
 
   static bool IsChildAccountDetectionEnabled();
 
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   void Init();
 
   // Sets whether the signed-in account is a child account.
@@ -45,8 +52,14 @@ class ChildAccountService : public KeyedService,
   // happens outside of this class (like Android).
   void SetIsChildAccount(bool is_child_account);
 
+  // Responds whether at least one request for child status was successful.
+  // And we got answer whether the profile belongs to a child account or not.
+  bool IsChildAccountStatusKnown();
+
   // KeyedService:
   void Shutdown() override;
+
+  void AddChildStatusReceivedCallback(const base::Closure& callback);
 
  private:
   friend class ChildAccountServiceFactory;
@@ -110,6 +123,9 @@ class ChildAccountService : public KeyedService,
   // If fetching the family info fails, retry with exponential backoff.
   base::OneShotTimer<ChildAccountService> family_fetch_timer_;
   net::BackoffEntry family_fetch_backoff_;
+
+  // Callbacks to run when the user status becomes known.
+  std::vector<base::Closure> status_received_callback_list_;
 
   base::WeakPtrFactory<ChildAccountService> weak_ptr_factory_;
 

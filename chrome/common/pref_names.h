@@ -22,6 +22,7 @@
 namespace prefs {
 
 // Profile prefs. Please add Local State prefs below instead.
+extern const char kChildAccountStatusKnown[];
 extern const char kDefaultApps[];
 extern const char kDefaultAppsInstalled[];
 extern const char kDisableScreenshots[];
