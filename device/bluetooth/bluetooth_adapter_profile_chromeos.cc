@@ -28,8 +28,9 @@ void BluetoothAdapterProfileChromeOS::Register(
       new BluetoothAdapterProfileChromeOS(uuid));
 
   VLOG(1) << "Registering profile: " << profile->object_path().value();
+  const dbus::ObjectPath& object_path = profile->object_path();
   DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->RegisterProfile(
-      profile->object_path(),
+      object_path,
       uuid.canonical_value(),
       options,
       base::Bind(success_callback, base::Passed(&profile)),
