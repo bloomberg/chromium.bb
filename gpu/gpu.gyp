@@ -103,6 +103,7 @@
       'msvs_disabled_warnings': [4267, ],
     },
     {
+      # GN version: //gpu/command_buffer/client:gles2_c_lib_nocheck
       # Same as gles2_c_lib except with no parameter checking. Required for
       # OpenGL ES 2.0 conformance tests.
       'target_name': 'gles2_c_lib_nocheck',
