@@ -10,7 +10,7 @@ var EventBindings = require('event_bindings');
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 
 var CHROME_WEB_VIEW_EVENTS = {
-  'contextmenu': {
+  'contextmenushown': {
     evt: CreateEvent('chromeWebViewInternal.contextmenu'),
     cancelable: true,
     fields: ['items'],
