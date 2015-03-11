@@ -25,9 +25,6 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
   capabilities_.can_force_reclaim_resources = true;
-  // Frame always needs to be swapped because forced resource reclaiming
-  // destroys the Display's copy.
-  capabilities_.draw_and_swap_full_viewport_every_frame = true;
 }
 
 SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
