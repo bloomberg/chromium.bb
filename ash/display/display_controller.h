@@ -138,7 +138,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   // Checks if the mouse pointer is on one of displays, and moves to
   // the center of the nearest display if it's outside of all displays.
-  void EnsurePointerInDisplays();
+  void UpdateMouseLocationAfterDisplayChange();
 
   // Sets the work area's |insets| to the display assigned to |window|.
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,

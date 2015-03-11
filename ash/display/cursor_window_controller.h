@@ -15,6 +15,7 @@ namespace test {
 class MirrorWindowTestApi;
 }
 
+class CursorWindowControllerTest;
 class CursorWindowDelegate;
 
 // Draws a mouse cursor on a given container window.
@@ -48,6 +49,7 @@ class ASH_EXPORT CursorWindowController {
   void SetVisibility(bool visible);
 
  private:
+  friend class CursorWindowControllerTest;
   friend class test::MirrorWindowTestApi;
 
   // Sets the container window for the cursor window controller.
@@ -76,7 +78,6 @@ class ASH_EXPORT CursorWindowController {
   bool visible_;
 
   ui::CursorSetType cursor_set_;
-  gfx::Display::Rotation cursor_rotation_;
   gfx::Point hot_point_;
 
   // The display on which the cursor is drawn.

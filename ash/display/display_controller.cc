@@ -538,7 +538,7 @@ void DisplayController::SetPrimaryDisplay(
   GetDisplayManager()->set_force_bounds_changed(false);
 }
 
-void DisplayController::EnsurePointerInDisplays() {
+void DisplayController::UpdateMouseLocationAfterDisplayChange() {
   // If the mouse is currently on a display in native location,
   // use the same native location. Otherwise find the display closest
   // to the current cursor location in screen coordinates.
@@ -781,7 +781,7 @@ void DisplayController::PostDisplayConfigurationChange() {
   }
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
   UpdateHostWindowNames();
-  EnsurePointerInDisplays();
+  UpdateMouseLocationAfterDisplayChange();
 }
 
 AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(

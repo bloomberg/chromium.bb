@@ -95,7 +95,6 @@ CursorWindowController::CursorWindowController()
       cursor_type_(ui::kCursorNone),
       visible_(true),
       cursor_set_(ui::CURSOR_SET_NORMAL),
-      cursor_rotation_(gfx::Display::ROTATE_0),
       delegate_(new CursorWindowDelegate()) {
 }
 
@@ -129,7 +128,7 @@ void CursorWindowController::UpdateContainer() {
       display_ = Shell::GetScreen()->GetPrimaryDisplay();
     SetContainer(mirror_window);
   }
-  // Updates the hot point based on the current display/container.
+  // Updates the hot point based on the current display.
   UpdateCursorImage();
 }
 
@@ -146,6 +145,8 @@ void CursorWindowController::SetDisplay(const gfx::Display& display) {
   SetContainer(GetRootWindowController(root_window)->GetContainer(
       kShellWindowId_MouseCursorContainer));
   SetBoundsInScreen(display.bounds());
+  // Updates the hot point based on the current display.
+  UpdateCursorImage();
 }
 
 void CursorWindowController::UpdateLocation() {
@@ -164,11 +165,9 @@ void CursorWindowController::UpdateLocation() {
 }
 
 void CursorWindowController::SetCursor(gfx::NativeCursor cursor) {
-  if (cursor_type_ == cursor.native_type() &&
-      cursor_rotation_ == display_.rotation())
+  if (cursor_type_ == cursor.native_type())
     return;
   cursor_type_ = cursor.native_type();
-  cursor_rotation_ = display_.rotation();
   UpdateCursorImage();
   UpdateCursorVisibility();
 }
@@ -201,6 +200,7 @@ void CursorWindowController::SetContainer(aura::Window* container) {
   cursor_window_->Init(aura::WINDOW_LAYER_TEXTURED);
   cursor_window_->set_ignore_events(true);
   cursor_window_->set_owned_by_parent(false);
+  // Call UpdateCursorImage() to figure out |cursor_window_|'s desired size.
   UpdateCursorImage();
 
   container->AddChild(cursor_window_.get());
@@ -227,7 +227,7 @@ void CursorWindowController::UpdateCursorImage() {
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   gfx::ImageSkia rotated = *image;
   if (!is_cursor_compositing_enabled_) {
-    switch (cursor_rotation_) {
+    switch (display_.rotation()) {
       case gfx::Display::ROTATE_0:
         break;
       case gfx::Display::ROTATE_90:

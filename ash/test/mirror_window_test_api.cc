@@ -32,6 +32,11 @@ const gfx::Point& MirrorWindowTestApi::GetCursorHotPoint() const {
       cursor_window_controller()->hot_point_;
 }
 
+gfx::Point MirrorWindowTestApi::GetCursorHotPointLocationInRootWindow() const {
+  return GetCursorWindow()->GetBoundsInRootWindow().origin() +
+         GetCursorHotPoint().OffsetFromOrigin();
+}
+
 const aura::Window* MirrorWindowTestApi::GetCursorWindow() const {
   return Shell::GetInstance()->display_controller()->
       cursor_window_controller()->cursor_window_.get();

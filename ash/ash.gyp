@@ -753,6 +753,7 @@
       'content/display/screen_orientation_controller_chromeos_unittest.cc',
       'desktop_background/desktop_background_controller_unittest.cc',
       'dip_unittest.cc',
+      'display/cursor_window_controller_unittest.cc',
       'display/display_change_observer_chromeos_unittest.cc',
       'display/display_controller_unittest.cc',
       'display/display_error_observer_chromeos_unittest.cc',
