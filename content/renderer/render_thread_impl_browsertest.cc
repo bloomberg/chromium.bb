@@ -196,38 +196,6 @@ TEST_F(RenderThreadImplBrowserTest,
       FROM_HERE, base::Bind(&CheckRenderThreadInputHandlerManager, thread_));
 }
 
-// Checks that emulated discardable memory is discarded when the last widget
-// is hidden.
-// Disabled under LeakSanitizer due to memory leaks.
-TEST_F(RenderThreadImplBrowserTest,
-       WILL_LEAK(EmulatedDiscardableMemoryDiscardedWhenWidgetsHidden)) {
-  thread_->WidgetCreated();
-
-  // Allocate 128MB of discardable memory.
-  ScopedVector<base::DiscardableMemory> discardable_memory;
-  for (int i = 0; i < 32; ++i) {
-    discardable_memory.push_back(
-        base::DiscardableMemory::CreateLockedMemoryWithType(
-            base::DISCARDABLE_MEMORY_TYPE_EMULATED, 4 * 1024 * 1024).release());
-    ASSERT_TRUE(discardable_memory.back());
-    discardable_memory.back()->Unlock();
-  }
-
-  // Hide all widgets.
-  thread_->WidgetHidden();
-
-  // Count how much memory is left, should be at most one block.
-  int blocks_left = 0;
-  for (auto iter = discardable_memory.begin(); iter != discardable_memory.end();
-       ++iter) {
-    if ((*iter)->Lock() == base::DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS)
-      ++blocks_left;
-  }
-  EXPECT_LE(blocks_left, 1);
-
-  thread_->WidgetDestroyed();
-}
-
 // Disabled under LeakSanitizer due to memory leaks.
 TEST_F(RenderThreadImplBrowserTest,
        WILL_LEAK(ResourceDispatchIPCTasksGoThroughScheduler)) {

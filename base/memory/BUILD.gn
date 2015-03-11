@@ -9,8 +9,6 @@ source_set("memory") {
     "discardable_memory.cc",
     "discardable_memory.h",
     "discardable_memory_android.cc",
-    "discardable_memory_emulated.cc",
-    "discardable_memory_emulated.h",
     "discardable_memory_linux.cc",
     "discardable_memory_mac.cc",
     "discardable_memory_manager.cc",
@@ -59,8 +57,6 @@ source_set("memory") {
     sources -= [
       "discardable_memory.cc",
       "discardable_memory.h",
-      "discardable_memory_emulated.cc",
-      "discardable_memory_emulated.h",
       "discardable_memory_manager.cc",
       "discardable_memory_manager.h",
       "discardable_memory_shmem.cc",

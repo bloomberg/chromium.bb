@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory.h"
-#include "base/memory/discardable_memory_emulated.h"
 #include "base/memory/discardable_memory_shmem_allocator.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
@@ -211,9 +210,6 @@ const double kThrottledResourceRequestFlushPeriodS = 1. / 60.;
 // require pre-scaling if the default filter would require an
 // allocation that exceeds this limit.
 const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
-
-const size_t kEmulatedDiscardableMemoryBytesToKeepWhenWidgetsHidden =
-    4 * 1024 * 1024;
 
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
@@ -1163,7 +1159,6 @@ void RenderThreadImpl::IdleHandler() {
       --idle_notifications_to_skip_;
     } else {
       base::allocator::ReleaseFreeMemory();
-      base::DiscardableMemory::ReduceMemoryUsage();
     }
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
     return;
@@ -1178,9 +1173,6 @@ void RenderThreadImpl::IdleHandler() {
 
   if (blink::mainThreadIsolate() &&
       !blink::mainThreadIsolate()->IdleNotification(1000)) {
-    continue_timer = true;
-  }
-  if (!base::DiscardableMemory::ReduceMemoryUsage()) {
     continue_timer = true;
   }
 
@@ -1800,12 +1792,6 @@ void RenderThreadImpl::WidgetHidden() {
   hidden_widget_count_++;
 
   if (widget_count_ && hidden_widget_count_ == widget_count_) {
-    // TODO(reveman): Remove this when we have a better mechanism to prevent
-    // total discardable memory used by all renderers from growing too large.
-    base::internal::DiscardableMemoryEmulated::
-        ReduceMemoryUsageUntilWithinLimit(
-            kEmulatedDiscardableMemoryBytesToKeepWhenWidgetsHidden);
-
     if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
       ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
   }

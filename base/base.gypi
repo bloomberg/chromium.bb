@@ -319,8 +319,6 @@
           'memory/discardable_memory.cc',
           'memory/discardable_memory.h',
           'memory/discardable_memory_android.cc',
-          'memory/discardable_memory_emulated.cc',
-          'memory/discardable_memory_emulated.h',
           'memory/discardable_memory_linux.cc',
           'memory/discardable_memory_mac.cc',
           'memory/discardable_memory_manager.cc',

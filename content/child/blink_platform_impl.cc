@@ -1184,10 +1184,6 @@ bool BlinkPlatformImpl::memoryAllocatorWasteInBytes(size_t* size) {
 
 blink::WebDiscardableMemory*
 BlinkPlatformImpl::allocateAndLockDiscardableMemory(size_t bytes) {
-  base::DiscardableMemoryType type =
-      base::DiscardableMemory::GetPreferredType();
-  if (type == base::DISCARDABLE_MEMORY_TYPE_EMULATED)
-    return NULL;
   return content::WebDiscardableMemoryImpl::CreateLockedMemory(bytes).release();
 }
 

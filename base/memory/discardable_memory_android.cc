@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/discardable_memory_ashmem.h"
 #include "base/memory/discardable_memory_ashmem_allocator.h"
-#include "base/memory/discardable_memory_emulated.h"
 #include "base/memory/discardable_memory_shmem.h"
 #include "base/sys_info.h"
 
@@ -44,17 +43,11 @@ LazyInstance<SharedState>::Leaky g_shared_state = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 // static
-bool DiscardableMemory::ReduceMemoryUsage() {
-  return internal::DiscardableMemoryEmulated::ReduceMemoryUsage();
-}
-
-// static
 void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {
     DISCARDABLE_MEMORY_TYPE_SHMEM,
-    DISCARDABLE_MEMORY_TYPE_ASHMEM,
-    DISCARDABLE_MEMORY_TYPE_EMULATED
+    DISCARDABLE_MEMORY_TYPE_ASHMEM
   };
   types->assign(supported_types, supported_types + arraysize(supported_types));
 }
@@ -68,14 +61,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
       scoped_ptr<internal::DiscardableMemoryAshmem> memory(
           new internal::DiscardableMemoryAshmem(
               size, &shared_state->allocator, &shared_state->manager));
-      if (!memory->Initialize())
-        return nullptr;
-
-      return memory.Pass();
-    }
-    case DISCARDABLE_MEMORY_TYPE_EMULATED: {
-      scoped_ptr<internal::DiscardableMemoryEmulated> memory(
-          new internal::DiscardableMemoryEmulated(size));
       if (!memory->Initialize())
         return nullptr;
 
