@@ -151,6 +151,12 @@ enum e_g2d_op {
 	G2D_OP_CONJOINT_DST		= 0x22,
 };
 
+/*
+ * The G2D_COEFF_MODE_DST_{COLOR,ALPHA} modes both use the ALPHA_REG(0x618)
+ * register. The registers fields are as follows:
+ * bits 31:8 = color value (RGB order)
+ * bits 7:0 = alpha value
+ */
 enum e_g2d_coeff_mode {
 	G2D_COEFF_MODE_ONE,
 	G2D_COEFF_MODE_ZERO,
@@ -160,7 +166,7 @@ enum e_g2d_coeff_mode {
 	G2D_COEFF_MODE_DST_COLOR,
 	/* Global Alpha : Set by ALPHA_REG(0x618) */
 	G2D_COEFF_MODE_GB_ALPHA,
-	/* Global Color : Set by ALPHA_REG(0x618) */
+	/* Global Color and Alpha : Set by ALPHA_REG(0x618) */
 	G2D_COEFF_MODE_GB_COLOR,
 	/* (1-SRC alpha)/DST Alpha */
 	G2D_COEFF_MODE_DISJOINT_S,
