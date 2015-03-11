@@ -5,16 +5,27 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.LibraryProcessType;;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.child_accounts.ChildAccountService;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -27,6 +38,8 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
+
+import java.util.concurrent.Callable;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -93,6 +106,11 @@ public abstract class ChromiumApplication extends ContentApplication {
         DataReductionProxySettings.initialize(getApplicationContext());
     }
 
+    @Override
+    public void initCommandLine() {
+        ChromeCommandLineInitUtil.initChromeCommandLine(this);
+    }
+
     /**
      * Start the browser process asynchronously. This will set up a queue of UI
      * thread tasks to initialize the browser process.
@@ -108,6 +126,119 @@ public abstract class ChromiumApplication extends ContentApplication {
         Context applicationContext = getApplicationContext();
         BrowserStartupController.get(applicationContext, LibraryProcessType.PROCESS_BROWSER)
                 .startBrowserProcessesAsync(callback);
+    }
+
+    /**
+     * Loads native Libraries synchronously and starts Chrome browser processes.
+     * Must be called on the main thread.
+     *
+     * @param initGoogleServicesManager when true the GoogleServicesManager is initialized.
+     */
+    public void startBrowserProcessesAndLoadLibrariesSync(
+            Context context, boolean initGoogleServicesManager)
+            throws ProcessInitException {
+        ThreadUtils.assertOnUiThread();
+        initCommandLine();
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(this, true);
+        startChromeBrowserProcessesSync(initGoogleServicesManager);
+    }
+
+    /**
+     * Make sure the process is initialized as Browser process instead of
+     * ContentView process. If this is not called from the main thread, an event
+     * will be posted and return will be blocked waiting for that event to
+     * complete.
+     * @param initGoogleServicesManager when true the GoogleServicesManager is initialized.
+     */
+    public void startChromeBrowserProcessesSync(final boolean initGoogleServicesManager)
+            throws ProcessInitException {
+        final Context context = getApplicationContext();
+        int loadError = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                try {
+                    // Kick off checking for a child account with an empty callback.
+                    ChildAccountService childAccountService =
+                            ChildAccountService.getInstance(context);
+                    childAccountService.checkHasChildAccount(
+                            new ChildAccountService.HasChildAccountCallback() {
+                                @Override
+                                public void onChildAccountChecked(boolean hasChildAccount) {
+                                }
+                            });
+                    BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
+                            .startBrowserProcessesSync(false);
+                    if (initGoogleServicesManager) initializeGoogleServicesManager();
+                    // Wait until ChildAccountManager finishes its check.
+                    childAccountService.waitUntilFinished();
+                    return LoaderErrors.LOADER_ERROR_NORMAL_COMPLETION;
+                } catch (ProcessInitException e) {
+                    Log.e(TAG, "Unable to load native library.", e);
+                    return e.getErrorCode();
+                }
+            }
+        });
+        if (loadError != LoaderErrors.LOADER_ERROR_NORMAL_COMPLETION) {
+            throw new ProcessInitException(loadError);
+        }
+    }
+
+    /**
+     * Shows an error dialog following a startup error, and then exits the application.
+     * @param e The exception reported by Chrome initialization.
+     */
+    public static void reportStartupErrorAndExit(final ProcessInitException e) {
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED
+                || !(activity instanceof FragmentActivity)) {
+            return;
+        }
+        int errorCode = e.getErrorCode();
+        int msg;
+        switch (errorCode) {
+            case LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED:
+                msg = R.string.os_version_missing_features;
+                break;
+            case LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION:
+                msg = R.string.incompatible_libraries;
+                break;
+            default:
+                msg = R.string.native_startup_failed;
+        }
+        final String message = activity.getResources().getString(msg);
+
+        DialogFragment dialog = new DialogFragment() {
+            @Override
+            public Dialog onCreateDialog(Bundle savedInstanceState) {
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+                dialogBuilder
+                        .setMessage(message)
+                        .setCancelable(true)
+                        .setPositiveButton(getResources().getString(android.R.string.ok),
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        System.exit(-1);
+                                    }
+                                })
+                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                System.exit(-1);
+                            }
+                        });
+                return dialogBuilder.create();
+            }
+        };
+        dialog.show(
+                ((FragmentActivity) activity).getSupportFragmentManager(), "InvalidStartupDialog");
+    }
+
+    /**
+     * For extending classes to override and initialize GoogleServicesManager
+     */
+    protected void initializeGoogleServicesManager() {
+        // TODO(yusufo): Make this private when GoogleServicesManager is upstreamed.
     }
 
     /**

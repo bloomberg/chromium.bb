@@ -18,7 +18,16 @@ In particular, ~ at the start of a string means it's a regex.
     <Class name="~org\.chromium\..*\.Manifest(\$\w+)?" />
   </Match>
   <!-- Ignore "reliance on default String encoding" warnings, as we're not multi-platform -->
-
+  <Match>
+    <Class name="~org\.chromium\.chrome\.browser\.ChromiumApplication.*" />
+    <Method name="onCancel" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.chrome\.browser\.ChromiumApplication.*" />
+    <Method name="onClick" />
+    <Bug code="Dm" />
+  </Match>
   <Bug pattern="DM_DEFAULT_ENCODING" />
   <!-- Ignore bugs that are often false-positives in test code -->
   <Match>
