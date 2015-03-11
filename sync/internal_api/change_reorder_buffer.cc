@@ -59,8 +59,15 @@ class ChangeReorderBuffer::Traversal {
         top_ = node.GetMetahandle();
       } else {
         // Otherwise, get the parent ID so that we can add a ParentChildLink.
-        syncable::Entry parent(trans, syncable::GET_BY_ID,
-                               node.GetParentId());
+
+        // Treat nodes with unset parent ID as if they were linked to the root.
+        // That is a valid way to traverse the tree because all hierarchical
+        // datatypes must have a valid parent ID and the ones with unset parent
+        // ID have flat hierarchy where the order doesn't matter.
+        const syncable::Id& parent_id = !node.GetParentId().IsNull()
+                                            ? node.GetParentId()
+                                            : syncable::Id::GetRoot();
+        syncable::Entry parent(trans, syncable::GET_BY_ID, parent_id);
         CHECK(parent.good());
         node_parent = parent.GetMetahandle();
 

@@ -2896,6 +2896,39 @@ TEST_F(SyncManagerChangeProcessingTest, AddBookmarks) {
   EXPECT_LT(folder_change_pos, child_change_pos);
 }
 
+// Test creation of a preferences (with implicit parent Id)
+TEST_F(SyncManagerChangeProcessingTest, AddPreferences) {
+  int64 item1_id = kInvalidId;
+  int64 item2_id = kInvalidId;
+
+  // Create two preferences.
+  {
+    syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER,
+                                     share()->directory.get());
+
+    syncable::MutableEntry item1(&trans, syncable::CREATE, PREFERENCES,
+                                 "test_item_1");
+    ASSERT_TRUE(item1.good());
+    SetNodeProperties(&item1);
+    item1_id = item1.GetMetahandle();
+
+    // Need at least two items to ensure hitting all possible codepaths in
+    // ChangeReorderBuffer::Traversal::ExpandToInclude.
+    syncable::MutableEntry item2(&trans, syncable::CREATE, PREFERENCES,
+                                 "test_item_2");
+    ASSERT_TRUE(item2.good());
+    SetNodeProperties(&item2);
+    item2_id = item2.GetMetahandle();
+  }
+
+  // The closing of the above scope will delete the transaction.  Its processed
+  // changes should be waiting for us in a member of the test harness.
+  EXPECT_EQ(2UL, GetChangeListSize());
+
+  FindChangeInList(item1_id, ChangeRecord::ACTION_ADD);
+  FindChangeInList(item2_id, ChangeRecord::ACTION_ADD);
+}
+
 // Test moving a bookmark into an empty folder.
 TEST_F(SyncManagerChangeProcessingTest, MoveBookmarkIntoEmptyFolder) {
   int64 type_root = GetIdForDataType(BOOKMARKS);
