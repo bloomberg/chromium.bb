@@ -1663,8 +1663,10 @@ void WebViewImpl::close()
     }
 
     // Should happen after m_page.clear().
-    if (m_devToolsAgent)
+    if (m_devToolsAgent) {
+        m_devToolsAgent->dispose();
         m_devToolsAgent.clear();
+    }
 
     // Reset the delegate to prevent notifications being sent as we're being
     // deleted.

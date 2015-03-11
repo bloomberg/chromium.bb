@@ -231,6 +231,9 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     : m_client(client)
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
+#if ENABLE(ASSERT)
+    , m_hasBeenDisposed(false)
+#endif
     , m_instrumentingAgents(webViewImpl->page()->instrumentingAgents())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
@@ -304,10 +307,21 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
 {
+    ASSERT(m_hasBeenDisposed);
+}
+
+void WebDevToolsAgentImpl::dispose()
+{
+    // Explicitly dispose of the agent before destructing to ensure
+    // same behavior (and correctness) with and without Oilpan.
     ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
     m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(nullptr);
     if (m_attached)
         Platform::current()->currentThread()->removeTaskObserver(this);
+#if ENABLE(ASSERT)
+    ASSERT(!m_hasBeenDisposed);
+    m_hasBeenDisposed = true;
+#endif
 }
 
 DEFINE_TRACE(WebDevToolsAgentImpl)

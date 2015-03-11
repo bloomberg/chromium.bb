@@ -75,6 +75,7 @@ class WebDevToolsAgentImpl final
 public:
     WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*);
     ~WebDevToolsAgentImpl() override;
+    void dispose();
     DECLARE_VIRTUAL_TRACE();
 
     void willBeDestroyed();
@@ -164,6 +165,9 @@ private:
     WebDevToolsAgentClient* m_client;
     WebViewImpl* m_webViewImpl;
     bool m_attached;
+#if ENABLE(ASSERT)
+    bool m_hasBeenDisposed;
+#endif
 
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
