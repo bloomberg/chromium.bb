@@ -1102,6 +1102,7 @@ void EventSenderBindings::SetWmSysDeadChar(int sys_dead_char) {
 // EventSender -----------------------------------------------------------------
 
 WebMouseEvent::Button EventSender::pressed_button_ = WebMouseEvent::ButtonNone;
+int EventSender::modifiers_ = 0;
 
 WebPoint EventSender::last_mouse_pos_;
 
@@ -1206,14 +1207,18 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
                  last_mouse_pos_,
                  GetCurrentEventTimeSec(),
                  click_count_,
-                 0,
+                 modifiers_,
                  &event);
   WebPoint client_point(event.x, event.y);
   WebPoint screen_point(event.globalX, event.globalY);
   current_drag_data_ = drag_data;
   current_drag_effects_allowed_ = mask;
   current_drag_effect_ = view_->dragTargetDragEnter(
-      drag_data, client_point, screen_point, current_drag_effects_allowed_, 0);
+      drag_data,
+      client_point,
+      screen_point,
+      current_drag_effects_allowed_,
+      modifiers_);
 
   // Finish processing events.
   ReplaySavedEvents();
@@ -1231,6 +1236,7 @@ void EventSender::MouseDown(int button_number, int modifiers) {
   UpdateClickCountForButton(button_type);
 
   pressed_button_ = button_type;
+  modifiers_ = modifiers;
 
   WebMouseEvent event;
   InitMouseEvent(WebInputEvent::MouseDown,
@@ -2441,7 +2447,10 @@ void EventSender::DoMouseUp(const WebMouseEvent& e) {
   FinishDragAndDrop(
       e,
       view_->dragTargetDragOver(
-          client_point, screen_point, current_drag_effects_allowed_, 0));
+          client_point,
+          screen_point,
+          current_drag_effects_allowed_,
+          e.modifiers));
 }
 
 void EventSender::DoMouseMove(const WebMouseEvent& e) {
@@ -2457,7 +2466,7 @@ void EventSender::DoMouseMove(const WebMouseEvent& e) {
   WebPoint client_point(e.x, e.y);
   WebPoint screen_point(e.globalX, e.globalY);
   current_drag_effect_ = view_->dragTargetDragOver(
-      client_point, screen_point, current_drag_effects_allowed_, 0);
+      client_point, screen_point, current_drag_effects_allowed_, e.modifiers);
 }
 
 void EventSender::ReplaySavedEvents() {

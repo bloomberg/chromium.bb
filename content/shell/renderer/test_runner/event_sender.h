@@ -260,6 +260,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   // Currently pressed mouse button (Left/Right/Middle or None).
   static blink::WebMouseEvent::Button pressed_button_;
+  static int modifiers_;
 
   bool replaying_saved_events_;
 

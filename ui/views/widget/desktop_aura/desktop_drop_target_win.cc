@@ -20,6 +20,30 @@ using aura::client::DragDropDelegate;
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderWin;
 
+namespace {
+
+int ConvertKeyStateToAuraEventFlags(DWORD key_state)
+{
+  int flags = 0;
+
+  if (key_state & MK_CONTROL)
+    flags |= ui::EF_CONTROL_DOWN;
+  if (key_state & MK_ALT)
+    flags |= ui::EF_ALT_DOWN;
+  if (key_state & MK_SHIFT)
+    flags |= ui::EF_SHIFT_DOWN;
+  if (key_state & MK_LBUTTON)
+    flags |= ui::EF_LEFT_MOUSE_BUTTON;
+  if (key_state & MK_MBUTTON)
+    flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
+  if (key_state & MK_RBUTTON)
+    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
+
+  return flags;
+}
+
+}  // namespace
+
 namespace views {
 
 DesktopDropTargetWin::DesktopDropTargetWin(aura::Window* root_window,
@@ -132,11 +156,7 @@ void DesktopDropTargetWin::Translate(
       location,
       root_location,
       ui::DragDropTypes::DropEffectToDragOperation(effect)));
-  int flags = 0;
-  flags |= base::win::IsAltPressed() ? ui::EF_ALT_DOWN : ui::EF_NONE;
-  flags |= base::win::IsShiftPressed() ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
-  flags |= base::win::IsCtrlPressed() ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
-  (*event)->set_flags(flags);
+  (*event)->set_flags(ConvertKeyStateToAuraEventFlags(key_state));
   if (target_window_changed)
     (*delegate)->OnDragEntered(*event->get());
 }

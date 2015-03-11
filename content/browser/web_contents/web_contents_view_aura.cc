@@ -456,6 +456,12 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
     web_input_event_modifiers |= blink::WebInputEvent::AltKey;
   if (aura_event_flags & ui::EF_COMMAND_DOWN)
     web_input_event_modifiers |= blink::WebInputEvent::MetaKey;
+  if (aura_event_flags & ui::EF_LEFT_MOUSE_BUTTON)
+    web_input_event_modifiers |= blink::WebInputEvent::LeftButtonDown;
+  if (aura_event_flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+    web_input_event_modifiers |= blink::WebInputEvent::MiddleButtonDown;
+  if (aura_event_flags & ui::EF_RIGHT_MOUSE_BUTTON)
+    web_input_event_modifiers |= blink::WebInputEvent::RightButtonDown;
   return web_input_event_modifiers;
 }
 

@@ -24,6 +24,8 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContentsImpl;
 
+namespace {
+
 int GetModifierFlags() {
   int modifier_state = 0;
   UInt32 currentModifiers = GetCurrentKeyModifiers();
@@ -35,8 +37,23 @@ int GetModifierFlags() {
     modifier_state |= blink::WebInputEvent::AltKey;
   if (currentModifiers & ::cmdKey)
       modifier_state |= blink::WebInputEvent::MetaKey;
+
+  // The return value of 1 << 0 corresponds to the left mouse button,
+  // 1 << 1 corresponds to the right mouse button,
+  // 1 << n, n >= 2 correspond to other mouse buttons.
+  NSUInteger pressedButtons = [NSEvent pressedMouseButtons];
+
+  if (pressedButtons & (1 << 0))
+      modifier_state |= blink::WebInputEvent::LeftButtonDown;
+  if (pressedButtons & (1 << 1))
+      modifier_state |= blink::WebInputEvent::RightButtonDown;
+  if (pressedButtons & (1 << 2))
+      modifier_state |= blink::WebInputEvent::MiddleButtonDown;
+
   return modifier_state;
 }
+
+}  // namespace
 
 @implementation WebDragDest
 
