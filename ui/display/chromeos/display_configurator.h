@@ -356,8 +356,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   bool is_panel_fitting_enabled_;
 
   // This is detected by the constructor to determine whether or not we should
-  // be enabled.  If we aren't running on ChromeOS, we can't assume that the
-  // Xrandr X11 extension is supported.
+  // be enabled.  If we aren't running on Chrome OS, we can't assume that the
+  // Xrandr X11 extension or the Ozone underlying display hotplug system are
+  // supported.
   // If this flag is set to false, any attempts to change the display
   // configuration to immediately fail without changing the state.
   bool configure_display_;

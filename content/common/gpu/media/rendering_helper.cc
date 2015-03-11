@@ -40,6 +40,7 @@
 #if defined(USE_OZONE)
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/types/native_display_delegate.h"
 #endif  // defined(OS_CHROMEOS)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
@@ -246,6 +247,7 @@ void RenderingHelper::Setup() {
   base::RunLoop wait_display_setup;
   DisplayConfiguratorObserver display_setup_observer(&wait_display_setup);
   display_configurator_.reset(new ui::DisplayConfigurator());
+  display_configurator_->SetDelegateForTesting(0);
   display_configurator_->AddObserver(&display_setup_observer);
   display_configurator_->Init(true);
   display_configurator_->ForceInitialConfigure(0);
