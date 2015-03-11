@@ -7,25 +7,18 @@
       "drawsContent": true,
       "children": [
         {
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "position": [8, 88]
-            },
-            {
-              "position": [8, 88],
-              "bounds": [800, 600],
-              "drawsContent": true,
-              "repaintRects": [
-                [142, 62, 100, 100],
-                [0, 0, 100, 100]
-              ],
-              "paintInvalidationClients": [
-                "LayoutBlockFlow (positioned) DIV id='moveMe'",
-                "LayoutBlockFlow (positioned) DIV id='moveMe'"
-              ]
-            }
-          ]
+          "position": [8, 88]
+        },
+        {
+          "position": [8, 88],
+          "bounds": [800, 600]
+        },
+        {
+          "position": [150, 150],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#008000"
         }
       ]
     }
