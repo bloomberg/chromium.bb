@@ -445,6 +445,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item label, showing dialog to share the selected file.">
     Share
   </message>
+  <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
+    Show hidden files
+  </message>
   <message name="IDS_FILE_BROWSER_TASKS_BUTTON_LABEL" desc="Label for button that selects a task to open the current file.">
     Tasks
   </message>

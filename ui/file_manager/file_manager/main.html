@@ -230,6 +230,9 @@
                i18n-values="label:DRIVE_VISIT_DRIVE_GOOGLE_COM">
 
       <command id="toggle-pinned" i18n-values="label:OFFLINE_COLUMN_LABEL">
+      <command id="toggle-hidden-files"
+               i18n-values="label:TOGGLE_HIDDEN_FILES_COMMAND_LABEL"
+               shortcut="U+00BE-Ctrl" hide-shortcut-text>
 
       <command id="open-with" i18n-values="label:OPEN_WITH_BUTTON_LABEL">
       <command id="zip-selection"
@@ -285,18 +288,20 @@
     <cr-menu id="gear-menu" class="chrome-menu" showShortcuts>
       <cr-menu-item id="gear-menu-newwindow" command="#new-window"></cr-menu-item>
       <cr-menu-item id="gear-menu-newfolder" command="#new-folder"></cr-menu-item>
-      <hr id="drive-separator">
+      <hr>
+      <cr-menu-item id="gear-menu-toggle-hidden-files"
+                    command="#toggle-hidden-files"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-sync-settings"
-                command="#drive-sync-settings"></cr-menu-item>
+                    command="#drive-sync-settings"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-hosted-settings"
-                command="#drive-hosted-settings"></cr-menu-item>
+                    command="#drive-hosted-settings"></cr-menu-item>
       <hr id="help-separator">
       <cr-menu-item id="gear-menu-drive-buy-more-space"
-                command="#drive-buy-more-space"></cr-menu-item>
+                    command="#drive-buy-more-space"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-go-to-drive"
-                command="#drive-go-to-drive"></cr-menu-item>
+                    command="#drive-go-to-drive"></cr-menu-item>
       <cr-menu-item id="gear-menu-volume-help"
-                command="#volume-help"></cr-menu-item>
+                    command="#volume-help"></cr-menu-item>
       <hr id="volume-space-info-separator">
       <div id="volume-space-info">
         <div id="volume-space-info-contents">

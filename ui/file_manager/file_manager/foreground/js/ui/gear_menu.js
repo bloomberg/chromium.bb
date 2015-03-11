@@ -25,12 +25,6 @@ function GearMenu(element) {
   /**
    * @type {!HTMLElement}
    * @const
-   */
-  this.driveSeparator = queryRequiredElement(element, '#drive-separator');
-
-  /**
-   * @type {!HTMLElement}
-   * @const
    * @private
    */
   this.volumeSpaceInfo_ = queryRequiredElement(element, '#volume-space-info');

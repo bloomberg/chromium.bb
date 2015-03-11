@@ -83,7 +83,7 @@ function MainWindowComponent(
   this.appStateController_ = appStateController;
 
   /**
-   * @type {TaskController}
+   * @type {!TaskController}
    * @const
    * @private
    */
@@ -223,12 +223,6 @@ MainWindowComponent.prototype.onKeyDown_ = function(event) {
   }
 
   switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-    case 'Ctrl-U+00BE':  // Ctrl-. => Toggle filter files.
-      this.fileFilter_.setFilterHidden(
-          !this.fileFilter_.isFilterHiddenOn());
-      event.preventDefault();
-      return;
-
     case 'U+001B':  // Escape => Cancel dialog.
       if (this.dialogType_ != DialogType.FULL_PAGE) {
         // If there is nothing else for ESC to do, then cancel the dialog.

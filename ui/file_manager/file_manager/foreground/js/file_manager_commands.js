@@ -552,6 +552,23 @@ CommandHandler.COMMANDS_['new-window'] = /** @type {Command} */ ({
   }
 });
 
+CommandHandler.COMMANDS_['toggle-hidden-files'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager FileManager to use.
+   */
+  execute: function(event, fileManager) {
+    var isFilterHiddenOn = !fileManager.fileFilter.isFilterHiddenOn();
+    fileManager.fileFilter.setFilterHidden(isFilterHiddenOn);
+    event.command.checked = /* is show hidden files */!isFilterHiddenOn;
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager FileManager to use.
+   */
+  canExecute: CommandUtil.canExecuteAlways
+});
+
 /**
  * Toggles drive sync settings.
  * @type {Command}

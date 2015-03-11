@@ -270,6 +270,12 @@ FileManager.prototype = /** @struct */ {
     return this.directoryModel_;
   },
   /**
+   * @return {!FileFilter}
+   */
+  get fileFilter() {
+    return this.fileFilter_;
+  },
+  /**
    * @return {FolderShortcutsDataModel}
    */
   get folderShortcutsModel() {

@@ -49,7 +49,6 @@ GearMenuController.prototype.onShowGearMenu_ = function() {
 
   // Update view of drive-related settings.
   this.commandHandler_.updateAvailability();
-  this.gearMenu_.driveSeparator.hidden = !this.directoryModel_.isOnDrive();
 };
 
 /**
