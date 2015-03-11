@@ -20,6 +20,11 @@
       "os": "8.1"
     },
     {
+      "app": "ios_net_unittests",
+      "device type": "iPhone 5",
+      "os": "8.1"
+    },
+    {
       "app": "ios_web_unittests",
       "device type": "iPhone 5",
       "os": "8.1"
