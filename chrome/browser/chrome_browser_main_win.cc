@@ -41,7 +41,6 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/common/terminate_on_heap_corruption_experiment_win.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -270,10 +269,6 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
           base::TimeDelta::FromSeconds(45));
 
   InitializeChromeElf();
-
-  // TODO(erikwright): Remove this and the implementation of the experiment by
-  // September 2014.
-  InitializeDisableTerminateOnHeapCorruptionExperiment();
 
 #if defined(GOOGLE_CHROME_BUILD)
   did_run_updater_.reset(new DidRunUpdater);

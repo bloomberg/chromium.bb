@@ -40,8 +40,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   void ZygoteStarting(
       ScopedVector<content::ZygoteForkDelegate>* delegates) override;
   void ZygoteForked() override;
-#elif defined(OS_WIN)
-  virtual bool ShouldEnableTerminationOnHeapCorruption() override;
 #endif
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;

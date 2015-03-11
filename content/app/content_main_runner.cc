@@ -566,8 +566,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     base::CommandLine::Init(argc, argv);
 
-    if (!delegate_ || delegate_->ShouldEnableTerminationOnHeapCorruption())
-      base::EnableTerminationOnHeapCorruption();
+    base::EnableTerminationOnHeapCorruption();
 
 #if !defined(OS_IOS)
     SetProcessTitleFromCommandLine(argv);
