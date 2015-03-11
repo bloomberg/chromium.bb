@@ -70,6 +70,8 @@ struct GFX_EXPORT TextRunHarfBuzz {
   skia::RefPtr<SkTypeface> skia_face;
   FontRenderParams render_params;
   int font_size;
+  int baseline_offset;
+  int baseline_type;
   int font_style;
   bool strike;
   bool diagonal_strike;

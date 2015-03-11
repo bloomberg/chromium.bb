@@ -174,6 +174,25 @@ SkPaint::Hinting FontRenderParamsHintingToSkPaintHinting(
   return SkPaint::kNo_Hinting;
 }
 
+// Make sure ranges don't break text graphemes.  If a range in |break_list|
+// does break a grapheme in |render_text|, the range will be slightly
+// extended to encompass the grapheme.
+template <typename T>
+void RestoreBreakList(RenderText* render_text, BreakList<T>& break_list) {
+  break_list.SetMax(render_text->text().length());
+  Range range;
+  while (range.end() < break_list.max()) {
+    const auto& current_break = break_list.GetBreak(range.end());
+    range = break_list.GetRange(current_break);
+    if (range.end() < break_list.max() &&
+        !render_text->IsValidCursorIndex(range.end())) {
+      range.set_end(
+          render_text->IndexOfAdjacentGrapheme(range.end(), CURSOR_FORWARD));
+      break_list.ApplyValue(current_break->second, range);
+    }
+  }
+}
+
 }  // namespace
 
 namespace internal {
@@ -349,10 +368,11 @@ void SkiaTextRenderer::DiagonalStrike::Draw() {
 }
 
 StyleIterator::StyleIterator(const BreakList<SkColor>& colors,
-                             const std::vector<BreakList<bool> >& styles)
-    : colors_(colors),
-      styles_(styles) {
+                             const BreakList<BaselineStyle>& baselines,
+                             const std::vector<BreakList<bool>>& styles)
+    : colors_(colors), baselines_(baselines), styles_(styles) {
   color_ = colors_.breaks().begin();
+  baseline_ = baselines_.breaks().begin();
   for (size_t i = 0; i < styles_.size(); ++i)
     style_.push_back(styles_[i].breaks().begin());
 }
@@ -361,6 +381,7 @@ StyleIterator::~StyleIterator() {}
 
 Range StyleIterator::GetRange() const {
   Range range(colors_.GetRange(color_));
+  range = range.Intersect(baselines_.GetRange(baseline_));
   for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
     range = range.Intersect(styles_[i].GetRange(style_[i]));
   return range;
@@ -368,6 +389,7 @@ Range StyleIterator::GetRange() const {
 
 void StyleIterator::UpdatePosition(size_t position) {
   color_ = colors_.GetBreak(position);
+  baseline_ = baselines_.GetBreak(position);
   for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
     style_[i] = styles_[i].GetBreak(position);
 }
@@ -423,11 +445,13 @@ void RenderText::SetText(const base::string16& text) {
     return;
   text_ = text;
 
-  // Adjust ranged styles and colors to accommodate a new text length.
-  // Clear style ranges as they might break new text graphemes and apply
+  // Adjust ranged styles, baselines, and colors to accommodate a new text
+  // length. Clear style ranges as they might break new text graphemes and apply
   // the first style to the whole text instead.
   const size_t text_length = text_.length();
   colors_.SetMax(text_length);
+  baselines_.SetValue(baselines_.breaks().begin()->second);
+  baselines_.SetMax(text_length);
   for (size_t style = 0; style < NUM_TEXT_STYLES; ++style) {
     BreakList<bool>& break_list = styles_[style];
     break_list.SetValue(break_list.breaks().begin()->second);
@@ -670,6 +694,14 @@ void RenderText::ApplyColor(SkColor value, const Range& range) {
   colors_.ApplyValue(value, range);
 }
 
+void RenderText::SetBaselineStyle(BaselineStyle value) {
+  baselines_.SetValue(value);
+}
+
+void RenderText::ApplyBaselineStyle(BaselineStyle value, const Range& range) {
+  baselines_.ApplyValue(value, range);
+}
+
 void RenderText::SetStyle(TextStyle style, bool value) {
   styles_[style].SetValue(value);
 
@@ -910,6 +942,7 @@ RenderText::RenderText()
       focused_(false),
       composition_range_(Range::InvalidRange()),
       colors_(kDefaultColor),
+      baselines_(NORMAL_BASELINE),
       styles_(NUM_TEXT_STYLES),
       composition_and_selection_styles_applied_(false),
       obscured_(false),
@@ -1294,6 +1327,7 @@ base::string16 RenderText::Elide(const base::string16& text,
   render_text->SetCursorEnabled(cursor_enabled_);
   render_text->set_truncate_length(truncate_length_);
   render_text->styles_ = styles_;
+  render_text->baselines_ = baselines_;
   render_text->colors_ = colors_;
   if (text_width == 0) {
     render_text->SetText(text);
@@ -1347,24 +1381,11 @@ base::string16 RenderText::Elide(const base::string16& text,
       render_text->SetText(new_text);
     }
 
-    // Restore styles. Make sure style ranges don't break new text graphemes.
+    // Restore styles and baselines without breaking multi-character graphemes.
     render_text->styles_ = styles_;
-    for (size_t style = 0; style < NUM_TEXT_STYLES; ++style) {
-      BreakList<bool>& break_list = render_text->styles_[style];
-      break_list.SetMax(render_text->text_.length());
-      Range range;
-      while (range.end() < break_list.max()) {
-        BreakList<bool>::const_iterator current_break =
-            break_list.GetBreak(range.end());
-        range = break_list.GetRange(current_break);
-        if (range.end() < break_list.max() &&
-            !render_text->IsValidCursorIndex(range.end())) {
-          range.set_end(render_text->IndexOfAdjacentGrapheme(range.end(),
-                                                             CURSOR_FORWARD));
-          break_list.ApplyValue(current_break->second, range);
-        }
-      }
-    }
+    for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+      RestoreBreakList(render_text.get(), render_text->styles_[style]);
+    RestoreBreakList(render_text.get(), baselines_);
 
     // We check the width of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.
