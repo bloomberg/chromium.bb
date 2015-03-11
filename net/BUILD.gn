@@ -919,6 +919,48 @@ if (!is_ios && !is_android) {
     ]
   }
 
+  executable("hpack_example_generator") {
+    testonly = true
+    sources = [
+      "spdy/fuzzing/hpack_example_generator.cc",
+    ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    deps = [
+      "//base",
+      ":net",
+    ]
+  }
+
+  executable("hpack_fuzz_mutator") {
+    testonly = true
+    sources = [
+      "spdy/fuzzing/hpack_fuzz_mutator.cc",
+    ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    deps = [
+      "//base",
+      ":net",
+    ]
+  }
+
+  executable("hpack_fuzz_wrapper") {
+    testonly = true
+    sources = [
+      "spdy/fuzzing/hpack_fuzz_wrapper.cc",
+    ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    deps = [
+      "//base",
+      ":net",
+    ]
+  }
+
   if (use_v8_in_net) {
     executable("net_watcher") {
       testonly = true
@@ -1509,3 +1551,41 @@ if (!is_android && !is_win && !is_mac) {
     ]
   }
 }  # !is_android && !is_win && !is_mac
+
+executable("net_perftests") {
+  testonly = true
+  sources = [
+    "cookies/cookie_monster_perftest.cc",
+    "disk_cache/blockfile/disk_cache_perftest.cc",
+    "proxy/proxy_resolver_perftest.cc",
+    "udp/udp_socket_perftest.cc",
+  ]
+
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support_perf",
+    "//testing/gtest",
+    "//url",
+    ":net",
+    ":test_support",
+  ]
+
+  if (enable_websockets) {
+    sources += [ "websockets/websocket_frame_perftest.cc" ]
+  }
+
+  if (use_v8_in_net) {
+    deps += [ ":net_with_v8" ]
+  } else {
+    sources -= [ "proxy/proxy_resolver_perftest.cc" ]
+  }
+
+  if (is_win && icu_use_data_file) {
+    # This is needed to trigger the dll copy step on windows.
+    # TODO(mark): Specifying this here shouldn't be necessary.
+    deps += [ "//third_party/icu:icudata" ]
+  }
+}
