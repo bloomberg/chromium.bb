@@ -45,40 +45,9 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
   /** @private {Array<string>} */
   this.requiredCapabilities_ = requiredCapabilities;
 
-  /**
-   * @param {string} iq The Iq stanza received from the host.
-   * @private
-   */
-  this.onOutgoingIqHandler_ = function (iq) {};
-  /**
-   * @param {string} message Log message.
-   * @private
-   */
-  this.onDebugMessageHandler_ = function (message) {};
-  /**
-   * @param {number} state The connection state.
-   * @param {number} error The error code, if any.
-   * @private
-   */
-  this.onConnectionStatusUpdateHandler_ = function(state, error) {};
+  /** @private {remoting.ClientPlugin.ConnectionEventHandler} */
+  this.connectionEventHandler_ = null;
 
-  /**
-   * @param {string} channel The channel name.
-   * @param {string} connectionType The connection type.
-   * @private
-   */
-  this.onRouteChangedHandler_ = function(channel, connectionType) {};
-
-  /**
-   * @param {boolean} ready Connection ready state.
-   * @private
-   */
-  this.onConnectionReadyHandler_ = function(ready) {};
-  /**
-   * @param {!Array<string>} capabilities The negotiated capabilities.
-   * @private
-   */
-  this.onSetCapabilitiesHandler_ = function (capabilities) {};
   /**
    * @param {string} data Remote gnubbyd data.
    * @private
@@ -180,48 +149,11 @@ remoting.ClientPluginImpl.prototype.API_VERSION_ = 6;
 remoting.ClientPluginImpl.prototype.API_MIN_VERSION_ = 5;
 
 /**
- * @param {function(string):void} handler
+ * @param {remoting.ClientPlugin.ConnectionEventHandler} handler
  */
-remoting.ClientPluginImpl.prototype.setOnOutgoingIqHandler = function(handler) {
-  this.onOutgoingIqHandler_ = handler;
-};
-
-/**
- * @param {function(string):void} handler
- */
-remoting.ClientPluginImpl.prototype.setOnDebugMessageHandler =
+remoting.ClientPluginImpl.prototype.setConnectionEventHandler =
     function(handler) {
-  this.onDebugMessageHandler_ = handler;
-};
-
-/**
- * @param {function(number, number):void} handler
- */
-remoting.ClientPluginImpl.prototype.setConnectionStatusUpdateHandler =
-    function(handler) {
-  this.onConnectionStatusUpdateHandler_ = handler;
-};
-
-/**
- * @param {function(string, string):void} handler
- */
-remoting.ClientPluginImpl.prototype.setRouteChangedHandler = function(handler) {
-  this.onRouteChangedHandler_ =  handler;
-};
-
-/**
- * @param {function(boolean):void} handler
- */
-remoting.ClientPluginImpl.prototype.setConnectionReadyHandler =
-    function(handler) {
-  this.onConnectionReadyHandler_ = handler;
-};
-
-/**
- * @param {function(!Array<string>):void} handler
- */
-remoting.ClientPluginImpl.prototype.setCapabilitiesHandler = function(handler) {
-  this.onSetCapabilitiesHandler_ = handler;
+  this.connectionEventHandler_ = handler;
 };
 
 /**
@@ -295,6 +227,38 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     return tokens ? tokens : [];
   };
 
+  if (this.connectionEventHandler_) {
+    var handler = this.connectionEventHandler_;
+
+    if (message.method == 'sendOutgoingIq') {
+      handler.onOutgoingIq(getStringAttr(message.data, 'iq'));
+
+    } else if (message.method == 'logDebugMessage') {
+      handler.onDebugMessage(getStringAttr(message.data, 'message'));
+
+    } else if (message.method == 'onConnectionStatus') {
+      var state = remoting.ClientSession.State.fromString(
+          getStringAttr(message.data, 'state'));
+      var error = remoting.ClientSession.ConnectionError.fromString(
+          getStringAttr(message.data, 'error'));
+      handler.onConnectionStatusUpdate(state, error);
+
+    } else if (message.method == 'onRouteChanged') {
+      var channel = getStringAttr(message.data, 'channel');
+      var connectionType = getStringAttr(message.data, 'connectionType');
+      handler.onRouteChanged(channel, connectionType);
+
+    } else if (message.method == 'onConnectionReady') {
+      var ready = getBooleanAttr(message.data, 'ready');
+      handler.onConnectionReady(ready);
+
+    } else if (message.method == 'setCapabilities') {
+      /** @type {!Array<string>} */
+      var capabilities = tokenize(getStringAttr(message.data, 'capabilities'));
+      handler.onSetCapabilities(capabilities);
+    }
+  }
+
   if (message.method == 'hello') {
     // Resize in case we had to enlarge it to support click-to-play.
     this.hidePluginForClickToPlay_();
@@ -330,24 +294,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       this.onInitializedCallback_ = null;
     }
 
-  } else if (message.method == 'sendOutgoingIq') {
-    this.onOutgoingIqHandler_(getStringAttr(message.data, 'iq'));
-
-  } else if (message.method == 'logDebugMessage') {
-    this.onDebugMessageHandler_(getStringAttr(message.data, 'message'));
-
-  } else if (message.method == 'onConnectionStatus') {
-    var state = remoting.ClientSession.State.fromString(
-        getStringAttr(message.data, 'state'));
-    var error = remoting.ClientSession.ConnectionError.fromString(
-        getStringAttr(message.data, 'error'));
-    this.onConnectionStatusUpdateHandler_(state, error);
-
-  } else if (message.method == 'onRouteChanged') {
-    var channel = getStringAttr(message.data, 'channel');
-    var connectionType = getStringAttr(message.data, 'connectionType');
-    this.onRouteChangedHandler_(channel, connectionType);
-
   } else if (message.method == 'onDesktopSize') {
     this.hostDesktop_.onSizeUpdated(message);
   } else if (message.method == 'onDesktopShape') {
@@ -377,10 +323,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       remoting.clientSession.onFirstFrameReceived();
     }
 
-  } else if (message.method == 'onConnectionReady') {
-    var ready = getBooleanAttr(message.data, 'ready');
-    this.onConnectionReadyHandler_(ready);
-
   } else if (message.method == 'fetchPin') {
     // The pairingSupported value in the dictionary indicates whether both
     // client and host support pairing. If the client doesn't support pairing,
@@ -390,10 +332,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     this.credentials_.getPIN(pairingSupported).then(
         this.onPinFetched_.bind(this)
     );
-  } else if (message.method == 'setCapabilities') {
-    /** @type {!Array<string>} */
-    var capabilities = tokenize(getStringAttr(message.data, 'capabilities'));
-    this.onSetCapabilitiesHandler_(capabilities);
 
   } else if (message.method == 'fetchThirdPartyToken') {
     var tokenUrl = getStringAttr(message.data, 'tokenUrl');
@@ -461,7 +399,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       this.debugRegionHandler_(
           /** @type {{rects: Array<(Array<number>)>}} **/(message.data));
     }
-
   }
 };
 

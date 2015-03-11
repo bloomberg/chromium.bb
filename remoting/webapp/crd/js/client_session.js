@@ -39,6 +39,7 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  * @constructor
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
+ * @implements {remoting.ClientPlugin.ConnectionEventHandler}
  */
 remoting.ClientSession = function(plugin, host, signalStrategy, mode) {
   /** @private */
@@ -81,13 +82,7 @@ remoting.ClientSession = function(plugin, host, signalStrategy, mode) {
 
   /** @private {remoting.ClientPlugin} */
   this.plugin_ = plugin;
-  plugin.setOnOutgoingIqHandler(this.sendIq_.bind(this));
-  plugin.setOnDebugMessageHandler(this.onDebugMessage_.bind(this));
-  plugin.setConnectionStatusUpdateHandler(
-      this.onConnectionStatusUpdate_.bind(this));
-  plugin.setRouteChangedHandler(this.onRouteChanged_.bind(this));
-  plugin.setConnectionReadyHandler(this.onConnectionReady_.bind(this));
-  plugin.setCapabilitiesHandler(this.onSetCapabilities_.bind(this));
+  plugin.setConnectionEventHandler(this);
   plugin.setGnubbyAuthHandler(
       this.processGnubbyAuthMessage_.bind(this));
   plugin.setCastExtensionHandler(
@@ -357,10 +352,16 @@ remoting.ClientSession.prototype.sendIq_ = function(message) {
 };
 
 /**
- * @param {string} msg
- * @private
+ * @param {string} message XML string of IQ stanza to send to server.
  */
-remoting.ClientSession.prototype.onDebugMessage_ = function(msg) {
+remoting.ClientSession.prototype.onOutgoingIq = function(message) {
+  this.sendIq_(message);
+}
+
+/**
+ * @param {string} msg
+ */
+remoting.ClientSession.prototype.onDebugMessage = function(msg) {
   console.log('plugin: ' + msg.trimRight());
 };
 
@@ -382,11 +383,11 @@ remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
  * Callback that the plugin invokes to indicate that the connection
  * status has changed.
  *
- * @param {number} status The plugin's status.
- * @param {number} error The plugin's error state, if any.
- * @private
+ * @param {remoting.ClientSession.State} status The plugin's status.
+ * @param {remoting.ClientSession.ConnectionError} error The plugin's error
+ *        state, if any.
  */
-remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
+remoting.ClientSession.prototype.onConnectionStatusUpdate =
     function(status, error) {
   if (status == remoting.ClientSession.State.CONNECTED) {
     remoting.desktopConnectedView.updateClientSessionUi_(this);
@@ -412,7 +413,7 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
         this.error_ = remoting.Error.UNEXPECTED;
     }
   }
-  this.setState_(/** @type {remoting.ClientSession.State} */ (status));
+  this.setState_(status);
 };
 
 /**
@@ -423,7 +424,7 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
  * @param {string} connectionType The new connection type.
  * @private
  */
-remoting.ClientSession.prototype.onRouteChanged_ =
+remoting.ClientSession.prototype.onRouteChanged =
     function(channel, connectionType) {
   console.log('plugin: Channel ' + channel + ' using ' +
               connectionType + ' connection.');
@@ -435,9 +436,8 @@ remoting.ClientSession.prototype.onRouteChanged_ =
  * ready.
  *
  * @param {boolean} ready True if the connection is ready.
- * @private
  */
-remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
+remoting.ClientSession.prototype.onConnectionReady = function(ready) {
   // TODO(jamiewalch): Currently, the logic for determining whether or not the
   // connection is available is based solely on whether or not any video frames
   // have been received recently. which leads to poor UX on slow connections.
@@ -463,7 +463,7 @@ remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
  * @return {void} Nothing.
  * @private
  */
-remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
+remoting.ClientSession.prototype.onSetCapabilities = function(capabilities) {
   if (this.capabilities_ != null) {
     console.error('onSetCapabilities_() is called more than once');
     return;

@@ -125,44 +125,9 @@ remoting.ClientPlugin.prototype.sendClientMessage =
     function(name, data) {};
 
 /**
- * @param {function(string):void} handler Callback for sending an IQ stanza.
+ * @param {remoting.ClientPlugin.ConnectionEventHandler} handler
  */
-remoting.ClientPlugin.prototype.setOnOutgoingIqHandler =
-    function(handler) {};
-
-/**
- * @param {function(string):void} handler Callback for logging debug messages.
- */
-remoting.ClientPlugin.prototype.setOnDebugMessageHandler =
-    function(handler) {};
-
-/**
- * @param {function(number, number):void} handler Callback for connection status
- *     update notifications. The first parameter is the connection state; the
- *     second is the error code, if any.
- */
-remoting.ClientPlugin.prototype.setConnectionStatusUpdateHandler =
-    function(handler) {};
-
-/**
- * @param {function(string, string):void} handler Callback for route-change
- *     notifications. The first parameter is the channel name, and the second
- *     is the connection type.
- */
-remoting.ClientPlugin.prototype.setRouteChangedHandler = function(handler) {};
-
-/**
- * @param {function(boolean):void} handler Callback for connection readiness
- *     notifications.
- */
-remoting.ClientPlugin.prototype.setConnectionReadyHandler =
-    function(handler) {};
-
-/**
- * @param {function(!Array<string>):void} handler Callback to inform of
- *     capabilities negotiated between host and client.
- */
-remoting.ClientPlugin.prototype.setCapabilitiesHandler =
+remoting.ClientPlugin.prototype.setConnectionEventHandler =
     function(handler) {};
 
 /**
@@ -216,6 +181,52 @@ remoting.ClientPlugin.Feature = {
   EXTENSION_MESSAGE: 'extensionMessage',
   VIDEO_CONTROL: 'videoControl'
 };
+
+
+/**
+ * @interface
+ */
+remoting.ClientPlugin.ConnectionEventHandler = function() {};
+
+/**
+ * @param {string} iq
+ */
+remoting.ClientPlugin.ConnectionEventHandler.prototype.onOutgoingIq =
+    function(iq) {};
+
+/**
+ * @param {string} msg
+ */
+remoting.ClientPlugin.ConnectionEventHandler.prototype.onDebugMessage =
+    function(msg) {};
+
+/**
+ * @param {remoting.ClientSession.State} status The plugin's status.
+ * @param {remoting.ClientSession.ConnectionError} error The plugin's error
+ *        state, if any.
+ */
+remoting.ClientPlugin.ConnectionEventHandler.prototype.
+    onConnectionStatusUpdate = function(status, error) {};
+
+/**
+ * @param {string} channel The channel name.
+ * @param {string} connectionType The new connection type.
+ */
+remoting.ClientPlugin.ConnectionEventHandler.prototype.onRouteChanged =
+    function(channel, connectionType) {};
+
+/**
+ * @param {boolean} ready True if the connection is ready.
+ */
+remoting.ClientPlugin.ConnectionEventHandler.prototype.onConnectionReady =
+    function(ready) {};
+
+/**
+ * @param {!Array<string>} capabilities The set of capabilities negotiated
+ *     between the client and host.
+ */
+remoting.ClientPlugin.ConnectionEventHandler.prototype.onSetCapabilities =
+    function(capabilities) {};
 
 
 /**
