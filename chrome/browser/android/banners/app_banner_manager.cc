@@ -51,6 +51,7 @@ const char kBannerTag[] = "google-play-id";
 base::TimeDelta gTimeDeltaForTesting;
 bool gDisableSecureCheckForTesting = false;
 const int kIconMinimumSize = 144;
+int gCurrentRequestID = -1;
 
 // The requirement for now is an image/png that is at least 144x144.
 bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
@@ -243,16 +244,15 @@ void AppBannerManager::RecordCouldShowBanner(
 
 bool AppBannerManager::CheckIfShouldShow(
     const std::string& package_or_start_url) {
-  if (!AppBannerSettingsHelper::ShouldShowBanner(web_contents(), validated_url_,
-                                                 package_or_start_url,
-                                                 GetCurrentTime())) {
-    return false;
-  }
+  return AppBannerSettingsHelper::ShouldShowBanner(
+      web_contents(), validated_url_, package_or_start_url, GetCurrentTime());
+}
 
+void AppBannerManager::RecordDidShowBanner(
+    const std::string& package_or_start_url) {
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), validated_url_, package_or_start_url,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, GetCurrentTime());
-  return true;
 }
 
 void AppBannerManager::CancelActiveFetcher() {
@@ -273,6 +273,20 @@ bool AppBannerManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+bool AppBannerManager::OnMessageReceived(
+    const IPC::Message& message, content::RenderFrameHost* render_frame_host) {
+  bool handled = true;
+
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AppBannerManager, message,
+                                   render_frame_host)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AppBannerPromptReply,
+                        OnBannerPromptReply)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
 void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
                                        const GURL url,
                                        const SkBitmap* bitmap) {
@@ -288,6 +302,43 @@ void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
     return;
   }
 
+  std::string package_or_start_url;
+  if (!native_app_data_.is_null())
+    package_or_start_url = native_app_package_;
+  else if (!web_app_data_.IsEmpty())
+    package_or_start_url = web_app_data_.start_url.spec();
+
+  if (package_or_start_url.empty())
+    return;
+
+  RecordCouldShowBanner(package_or_start_url);
+  if (!CheckIfShouldShow(package_or_start_url))
+    return;
+
+  icon_.reset(new SkBitmap(*bitmap));
+
+  web_contents()->GetMainFrame()->Send(
+      new ChromeViewMsg_AppBannerPromptRequest(
+          web_contents()->GetMainFrame()->GetRoutingID(),
+          ++gCurrentRequestID,
+          package_or_start_url == native_app_package_ ? "android" : "web"));
+}
+
+void AppBannerManager::OnBannerPromptReply(
+    content::RenderFrameHost* render_frame_host,
+    int request_id,
+    blink::WebAppBannerPromptReply reply) {
+  // The renderer might have requested the prompt to be canceled.
+  if (reply == blink::WebAppBannerPromptReply::Cancel) {
+    // TODO(mlamouri,benwells): we should probably record that to behave
+    // differently with regard to showing the banner.
+    return;
+  }
+
+  // It might be a reply that is no longer expected.
+  if (request_id != gCurrentRequestID)
+    return;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
   if (jobj.is_null())
@@ -297,31 +348,25 @@ void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
 
   AppBannerInfoBar* weak_infobar_ptr = nullptr;
   if (!native_app_data_.is_null()) {
-    RecordCouldShowBanner(native_app_package_);
-    if (!CheckIfShouldShow(native_app_package_))
-      return;
-
     weak_infobar_ptr = AppBannerInfoBarDelegate::CreateForNativeApp(
         service,
         app_title_,
-        new SkBitmap(*bitmap),
+        icon_.release(),
         native_app_data_,
         native_app_package_);
 
+    RecordDidShowBanner(native_app_package_);
     rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                             "AppBanner.NativeApp.Shown",
                                             web_contents()->GetURL());
   } else if (!web_app_data_.IsEmpty()){
-    RecordCouldShowBanner(web_app_data_.start_url.spec());
-    if (!CheckIfShouldShow(web_app_data_.start_url.spec()))
-      return;
-
     weak_infobar_ptr = AppBannerInfoBarDelegate::CreateForWebApp(
         service,
         app_title_,
-        new SkBitmap(*bitmap),
+        icon_.release(),
         web_app_data_);
 
+    RecordDidShowBanner(web_app_data_.start_url.spec());
     rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                             "AppBanner.WebApp.Shown",
                                             web_contents()->GetURL());

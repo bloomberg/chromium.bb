@@ -17,6 +17,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
+#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 
 namespace content {
 struct FrameNavigateParams;
@@ -85,6 +86,8 @@ class AppBannerManager : public content::WebContentsObserver {
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
  private:
   friend class AppBannerManagerTest;
@@ -116,11 +119,21 @@ class AppBannerManager : public content::WebContentsObserver {
   // Check if the banner should be shown.
   bool CheckIfShouldShow(const std::string& package_or_start_url);
 
+  // Record that the banner was shown.
+  void RecordDidShowBanner(const std::string& package_or_start_url);
+
   // Cancels an active BitmapFetcher, stopping its banner from appearing.
   void CancelActiveFetcher();
 
   // Whether or not the banners should appear for native apps.
   static bool IsEnabledForNativeApps();
+
+  // Called after the manager sends a message to the renderer regarding its
+  // intention to show a prompt. The renderer will send a message back with the
+  // opportunity to cancel.
+  void OnBannerPromptReply(content::RenderFrameHost* render_frame_host,
+                           int request_id,
+                           blink::WebAppBannerPromptReply reply);
 
   // Icon size that we want to be use for the launcher.
   const int preferred_icon_size_;
@@ -137,6 +150,8 @@ class AppBannerManager : public content::WebContentsObserver {
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
   std::string native_app_package_;
+
+  scoped_ptr<SkBitmap> icon_;
 
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;

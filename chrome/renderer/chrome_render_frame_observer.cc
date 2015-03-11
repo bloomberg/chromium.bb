@@ -21,6 +21,7 @@
 #include "net/base/net_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
+#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -97,6 +98,8 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
                         OnRequestThumbnailForContextNode)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_AppBannerPromptRequest,
+                        OnAppBannerPromptRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -189,4 +192,14 @@ void ChromeRenderFrameObserver::DidFinishDocumentLoad() {
                   " releasing your website to the public.")));
     }
   }
+}
+
+void ChromeRenderFrameObserver::OnAppBannerPromptRequest(
+    int request_id, const std::string& platform) {
+  blink::WebAppBannerPromptReply reply = blink::WebAppBannerPromptReply::None;
+  render_frame()->GetWebFrame()->willShowInstallBannerPrompt(
+      base::UTF8ToUTF16(platform), &reply);
+
+  Send(new ChromeViewHostMsg_AppBannerPromptReply(
+      routing_id(), request_id, reply));
 }

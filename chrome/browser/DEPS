@@ -165,6 +165,7 @@ include_rules = [
   "-third_party/WebKit",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenOrientationLockType.h",
+  "+third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h",
   "+third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h",
   "+third_party/WebKit/public/web/WebCache.h",
   "+third_party/WebKit/public/web/WebContextMenuData.h",

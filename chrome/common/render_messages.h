@@ -32,6 +32,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
+#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -215,6 +216,9 @@ IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo)
   IPC_STRUCT_TRAITS_MEMBER(icons)
   IPC_STRUCT_TRAITS_MEMBER(mobile_capable)
 IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebAppBannerPromptReply,
+                          blink::WebAppBannerPromptReply::Cancel)
 
 //-----------------------------------------------------------------------------
 // RenderView messages
@@ -522,6 +526,12 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_NPAPINotSupported,
                     std::string /* identifer */)
 
+// Asks the renderer whether an app banner should be shown. It will reply with
+// ChromeViewHostMsg_AppBannerPromptReply.
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_AppBannerPromptRequest,
+                    int /* request_id */,
+                    std::string /* platform */)
+
 // Tells the renderer that the NPAPI cannot be used. For example Ash on windows.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_NPAPINotSupported)
 
@@ -664,6 +674,12 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetSearchURLs,
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
                             bool /* enabled */)
 #endif
+
+// Tells the browser process whether the web page wants the banner to be shown.
+// This is a reply from ChromeViewMsg_AppBannerPromptRequest.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_AppBannerPromptReply,
+                    int /* request_id */,
+                    blink::WebAppBannerPromptReply /* reply */)
 
 // Sent by the renderer to indicate that a fields trial has been activated.
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_FieldTrialActivated,
