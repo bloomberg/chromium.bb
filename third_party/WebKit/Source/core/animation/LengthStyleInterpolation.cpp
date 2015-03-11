@@ -203,24 +203,23 @@ static CSSPrimitiveValue::UnitType toUnitType(int lengthUnitType)
     return static_cast<CSSPrimitiveValue::UnitType>(CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(lengthUnitType)));
 }
 
-static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> previous, const InterpolableList* list, size_t position)
+static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(const InterpolableList* list)
 {
     const InterpolableList* listOfValues = toInterpolableList(list->get(0));
     const InterpolableList* listOfTypes = toInterpolableList(list->get(1));
-    while (position != CSSPrimitiveValue::LengthUnitTypeCount) {
+    RefPtrWillBeRawPtr<CSSCalcExpressionNode> expression;
+    for (size_t position = 0; position < CSSPrimitiveValue::LengthUnitTypeCount; position++) {
         const InterpolableNumber *subValueType = toInterpolableNumber(listOfTypes->get(position));
-        if (subValueType->value()) {
-            RefPtrWillBeRawPtr<CSSCalcExpressionNode> next;
-            double value = toInterpolableNumber(listOfValues->get(position))->value();
-            if (previous)
-                next = CSSCalcValue::createExpressionNode(previous, CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, toUnitType(position))), CalcAdd);
-            else
-                next = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, toUnitType(position)));
-            return constructCalcExpression(next, list, position + 1);
-        }
-        position++;
+        if (!subValueType->value())
+            continue;
+        double value = toInterpolableNumber(listOfValues->get(position))->value();
+        RefPtrWillBeRawPtr<CSSCalcExpressionNode> currentTerm = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, toUnitType(position)));
+        if (expression)
+            expression = CSSCalcValue::createExpressionNode(expression.release(), currentTerm.release(), CalcAdd);
+        else
+            expression = currentTerm.release();
     }
-    return previous;
+    return expression.release();
 }
 
 static double clampToRange(double x, ValueRange range)
@@ -284,7 +283,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::fromInterpol
         ASSERT_NOT_REACHED();
     default:
         ValueRange valueRange = (range == RangeNonNegative) ? ValueRangeNonNegative : ValueRangeAll;
-        return CSSPrimitiveValue::create(CSSCalcValue::create(constructCalcExpression(nullptr, listOfValuesAndTypes, 0), valueRange));
+        return CSSPrimitiveValue::create(CSSCalcValue::create(constructCalcExpression(listOfValuesAndTypes), valueRange));
     }
 }
 
