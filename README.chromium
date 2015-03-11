@@ -197,3 +197,6 @@ not disappear, as it is not in SCOWL yet. The updated dictionaries support
 typographical apostrophes. Because both aff and dic files changed, we
 incremented major version to 6-0. That's 1 higher than the highest major version
 of any dictionary.
+
+On Mar 10, 2015, we reran convert_dict on en-US and en-CA dictionaries to fix
+the missing REP rules.
