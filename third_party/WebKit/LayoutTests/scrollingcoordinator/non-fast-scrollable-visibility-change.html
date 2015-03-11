@@ -52,6 +52,7 @@
 <div id="console"></div>
 
 <script src="../resources/js-test.js"></script>
+<script src="../resources/run-after-display.js"></script>
 <script src="resources/non-fast-scrollable-region-testing.js"></script>
 <script>
   window.jsTestIsAsync = true;
@@ -76,7 +77,7 @@
     } else {
       // Next 3 statements have no functional impact just visual
       showSectionIf(function(){return true;});
-      awaitCompsitingUpdate(function(){
+      runAfterDisplay(function(){
         drawNonFastScrollableRegionOverlays();
 
         finishJSTest();
@@ -93,7 +94,7 @@
     // fast scrollable regions.
     showSectionIf(function(section){return section.id == type;});
 
-    awaitCompsitingUpdate(function() {
+    runAfterDisplay(function() {
       shouldBeEqualToString('document.getElementById("' + type + '").style.display', 'block');
 
       var elemToShow = document.querySelector('section#' + type + '> .to-show'),
@@ -112,7 +113,7 @@
         elemToShow.style.visibility = 'visible';
         shouldBe('window.internals.needsLayoutCount()', '0');
 
-        awaitCompsitingUpdate(function() {
+        runAfterDisplay(function() {
           nonFastScrollableRects = internals.nonFastScrollableRects(document);
           shouldBe('nonFastScrollableRects.length', '2');
           shouldBeEqualToString('rectToString(nonFastScrollableRects[0])', elemToShowExpected);
@@ -122,7 +123,7 @@
           elemToHide.style.visibility = 'hidden';
           shouldBe('window.internals.needsLayoutCount()', '0');
 
-          awaitCompsitingUpdate(function() {
+          runAfterDisplay(function() {
             nonFastScrollableRects = internals.nonFastScrollableRects(document);
             shouldBe('nonFastScrollableRects.length', '1');
             shouldBeEqualToString('rectToString(nonFastScrollableRects[0])', elemToShowExpected);
@@ -144,12 +145,12 @@
       break;
     case 'iframe':
       window.nextStep = nextStep;
-      inner = '<iframe id="iframe" onload="awaitCompsitingUpdate(window.nextStep)" src="data:text/html;charset=utf-8,<div style=\'height:1000px; width:1000px; background: linear-gradient(to bottom, red, white);\'>This should be covered by a green overlay.</div>"></iframe>';
+      inner = '<iframe id="iframe" onload="runAfterDisplay(window.nextStep)" src="data:text/html;charset=utf-8,<div style=\'height:1000px; width:1000px; background: linear-gradient(to bottom, red, white);\'>This should be covered by a green overlay.</div>"></iframe>';
       break;
     }
     container.innerHTML = inner;
     if (type == 'div')
-      awaitCompsitingUpdate(nextStep);
+      runAfterDisplay(nextStep);
   }
 
   // Shows sections that pass condition but hides others

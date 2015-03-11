@@ -16,6 +16,7 @@
 <div id="console"></div>
 
 <script src="../resources/js-test.js"></script>
+<script src="../resources/run-after-display.js"></script>
 <script src="resources/non-fast-scrollable-region-testing.js"></script>
 <script>
   window.jsTestIsAsync = true;
@@ -23,7 +24,7 @@
               'correctly when a CSS scale transformation is applied.');
 
   onload = function() {
-    awaitCompsitingUpdate(function(){
+    runAfterDisplay(function(){
       nonFastScrollableRects = window.internals.nonFastScrollableRects(document);
       shouldBe('nonFastScrollableRects.length', '1');
       shouldBeEqualToString('rectToString(nonFastScrollableRects[0])', '[150, 150, 240, 240]');

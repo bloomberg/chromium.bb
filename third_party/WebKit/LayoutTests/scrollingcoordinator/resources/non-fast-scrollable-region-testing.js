@@ -30,11 +30,6 @@ function drawNonFastScrollableRegionOverlays() {
     document.body.appendChild(overlay);
 }
 
-// Waits for one RAF call to ensure compositing update has occurred and invokes task.
-function awaitCompsitingUpdate(task) {
-    window.requestAnimationFrame(task);
-}
-
 function rectToString(rect) {
     return '[' + [rect.left, rect.top, rect.width, rect.height].join(', ') + ']';
 }

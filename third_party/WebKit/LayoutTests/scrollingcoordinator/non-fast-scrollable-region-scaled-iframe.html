@@ -15,6 +15,7 @@
 <div id="console"></div>
 
 <script src="../resources/js-test.js"></script>
+<script src="../resources/run-after-display.js"></script>
 <script src="resources/non-fast-scrollable-region-testing.js"></script>
 <script>
   window.jsTestIsAsync = true;
@@ -27,7 +28,7 @@
     else
       testFailed('This test requires window.eventSender.setPageScaleFactor to be available.');
 
-    awaitCompsitingUpdate(function(){
+    runAfterDisplay(function(){
       nonFastScrollableRects = window.internals.nonFastScrollableRects(document);
       shouldBe('nonFastScrollableRects.length', '1');
       shouldBeEqualToString('rectToString(nonFastScrollableRects[0])', '[110, 110, 120, 120]');
