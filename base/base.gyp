@@ -833,11 +833,6 @@
             ['include', '^sys_string_conversions_mac_unittest\\.mm$'],
           ],
         }],
-        ['OS == "android" and _toolset == "target"', {
-          'sources': [
-            'memory/discardable_memory_ashmem_allocator_unittest.cc',
-          ],
-        }],
         ['OS == "android"', {
           'sources/': [
             ['include', '^debug/proc_maps_linux_unittest\\.cc$'],

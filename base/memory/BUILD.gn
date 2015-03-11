@@ -44,15 +44,6 @@ source_set("memory") {
     "weak_ptr.h",
   ]
 
-  if (is_android) {
-    sources += [
-      "discardable_memory_ashmem.cc",
-      "discardable_memory_ashmem.h",
-      "discardable_memory_ashmem_allocator.cc",
-      "discardable_memory_ashmem_allocator.h",
-    ]
-  }
-
   if (is_nacl) {
     sources -= [
       "discardable_memory.cc",

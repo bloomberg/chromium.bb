@@ -827,14 +827,6 @@
               ['include', '^threading/platform_thread_linux\\.cc$'],
             ],
           }],
-          ['OS == "android" and _toolset == "target" and >(nacl_untrusted_build)==0', {
-           'sources': [
-             'memory/discardable_memory_ashmem.cc',
-             'memory/discardable_memory_ashmem.h',
-             'memory/discardable_memory_ashmem_allocator.cc',
-             'memory/discardable_memory_ashmem_allocator.h',
-           ],
-          }],
           ['OS == "android" and >(nacl_untrusted_build)==0', {
             'sources!': [
               'base_paths_posix.cc',
