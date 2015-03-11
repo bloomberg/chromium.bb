@@ -252,6 +252,8 @@ class PDFEngine {
   virtual int GetCopiesToPrint() = 0;
   // Returns the duplex setting.
   virtual int GetDuplexType() = 0;
+  // Returns true if all the pages are the same size.
+  virtual bool GetPageSizeAndUniformity(pp::Size* size) = 0;
 
   // Returns a VarArray of Bookmarks, each a VarDictionary containing the
   // following key/values:

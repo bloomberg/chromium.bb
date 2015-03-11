@@ -221,7 +221,7 @@ class PrintWebViewHelper
                               int* number_of_pages);
 
   // Set options for print preset from source PDF document.
-  void SetOptionsFromPdfDocument(
+  bool SetOptionsFromPdfDocument(
       PrintHostMsg_SetOptionsFromDocument_Params* options);
 
   // Update the current print settings with new |passed_job_settings|.
@@ -233,7 +233,7 @@ class PrintWebViewHelper
 
   // Get final print settings from the user.
   // Return false if the user cancels or on error.
-  bool GetPrintSettingsFromUser(blink::WebFrame* frame,
+  bool GetPrintSettingsFromUser(blink::WebLocalFrame* frame,
                                 const blink::WebNode& node,
                                 int expected_pages_count,
                                 bool is_scripted);

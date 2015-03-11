@@ -94,6 +94,7 @@ class PDFiumEngine : public PDFEngine,
   virtual bool GetPrintScaling();
   virtual int GetCopiesToPrint();
   virtual int GetDuplexType();
+  virtual bool GetPageSizeAndUniformity(pp::Size* size);
   virtual void AppendBlankPages(int num_pages);
   virtual void AppendPage(PDFEngine* engine, int index);
   virtual pp::Point GetScrollPosition();

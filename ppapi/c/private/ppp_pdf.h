@@ -40,8 +40,14 @@ struct PP_PdfPrintPresetOptions_Dev {
 
   // DuplexMode to be used for printing.
   PP_PrivateDuplexMode_Dev duplex;
+
+  // True if all the pages in the PDF are the same size.
+  PP_Bool is_page_size_uniform;
+
+  // Only valid if |is_page_size_uniform| is true. The page size.
+  PP_Size uniform_page_size;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfPrintPresetOptions_Dev, 12);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfPrintPresetOptions_Dev, 24);
 
 struct PPP_Pdf_1_1 {
   // Returns an absolute URL if the position is over a link.

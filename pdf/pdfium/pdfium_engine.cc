@@ -2461,6 +2461,24 @@ int PDFiumEngine::GetDuplexType() {
   return static_cast<int>(FPDF_VIEWERREF_GetDuplex(doc_));
 }
 
+bool PDFiumEngine::GetPageSizeAndUniformity(pp::Size* size) {
+  if (pages_.empty())
+    return false;
+
+  pp::Size page_size = GetPageSize(0);
+  for (size_t i = 1; i < pages_.size(); ++i) {
+    if (page_size != GetPageSize(i))
+      return false;
+  }
+
+  // Convert |page_size| back to points.
+  size->set_width(
+      ConvertUnit(page_size.width(), kPixelsPerInch, kPointsPerInch));
+  size->set_height(
+      ConvertUnit(page_size.height(), kPixelsPerInch, kPointsPerInch));
+  return true;
+}
+
 void PDFiumEngine::AppendBlankPages(int num_pages) {
   DCHECK(num_pages != 0);
 

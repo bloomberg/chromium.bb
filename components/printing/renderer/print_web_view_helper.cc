@@ -35,7 +35,6 @@
 #include "third_party/WebKit/public/web/WebPluginDocument.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebPrintPresetOptions.h"
-#include "third_party/WebKit/public/web/WebPrintScalingOption.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
@@ -312,12 +311,41 @@ bool PrintingFrameHasPageSizeStyle(blink::WebFrame* frame,
   return frame_has_custom_page_size_style;
 }
 
-MarginType GetMarginsForPdf(blink::WebFrame* frame,
-                            const blink::WebNode& node) {
-  if (frame->isPrintScalingDisabledForPlugin(node))
-    return NO_MARGINS;
-  else
-    return PRINTABLE_AREA_MARGINS;
+// Disable scaling when either:
+// - The PDF specifies disabling scaling.
+// - All the pages in the PDF are the same size, and that size is the same as
+//   the paper size.
+bool PDFShouldDisableScalingBasedOnPreset(
+    const blink::WebPrintPresetOptions& options,
+    const PrintMsg_Print_Params& params) {
+  if (options.isScalingDisabled)
+    return true;
+
+  if (!options.isPageSizeUniform)
+    return false;
+
+  int dpi = GetDPI(&params);
+  blink::WebSize page_size(
+      ConvertUnit(params.page_size.width(), dpi, kPointsPerInch),
+      ConvertUnit(params.page_size.height(), dpi, kPointsPerInch));
+  return options.uniformPageSize == page_size;
+}
+
+bool PDFShouldDisableScaling(blink::WebLocalFrame* frame,
+                             const blink::WebNode& node,
+                             const PrintMsg_Print_Params& params) {
+  const bool kDefaultPDFShouldDisableScalingSetting = true;
+  blink::WebPrintPresetOptions preset_options;
+  if (!frame->getPrintPresetOptionsForPlugin(node, &preset_options))
+    return kDefaultPDFShouldDisableScalingSetting;
+  return PDFShouldDisableScalingBasedOnPreset(preset_options, params);
+}
+
+MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
+                            const blink::WebNode& node,
+                            const PrintMsg_Print_Params& params) {
+  return PDFShouldDisableScaling(frame, node, params) ?
+      NO_MARGINS : PRINTABLE_AREA_MARGINS;
 }
 
 bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
@@ -343,7 +371,7 @@ bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
 //
 // In all other cases, we scale the source page to fit the printable area.
 blink::WebPrintScalingOption GetPrintScalingOption(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebNode& node,
     bool source_is_html,
     const base::DictionaryValue& job_settings,
@@ -355,8 +383,7 @@ blink::WebPrintScalingOption GetPrintScalingOption(
     if (!FitToPageEnabled(job_settings))
       return blink::WebPrintScalingOptionNone;
 
-    bool no_plugin_scaling = frame->isPrintScalingDisabledForPlugin(node);
-
+    bool no_plugin_scaling = PDFShouldDisableScaling(frame, node, params);
     if (params.is_first_request && no_plugin_scaling)
       return blink::WebPrintScalingOptionNone;
   }
@@ -1017,8 +1044,8 @@ void PrintWebViewHelper::OnPrintPreview(const base::DictionaryValue& settings) {
   if (print_pages_params_->params.is_first_request &&
       !print_preview_context_.IsModifiable()) {
     PrintHostMsg_SetOptionsFromDocument_Params options;
-    SetOptionsFromPdfDocument(&options);
-    Send(new PrintHostMsg_SetOptionsFromDocument(routing_id(), options));
+    if (SetOptionsFromPdfDocument(&options))
+      Send(new PrintHostMsg_SetOptionsFromDocument(routing_id(), options));
   }
 
   is_print_ready_metafile_sent_ = false;
@@ -1443,7 +1470,7 @@ bool PrintWebViewHelper::CalculateNumberOfPages(blink::WebLocalFrame* frame,
   return true;
 }
 
-void PrintWebViewHelper::SetOptionsFromPdfDocument(
+bool PrintWebViewHelper::SetOptionsFromPdfDocument(
     PrintHostMsg_SetOptionsFromDocument_Params* options) {
   blink::WebLocalFrame* source_frame = print_preview_context_.source_frame();
   const blink::WebNode& source_node = print_preview_context_.source_node();
@@ -1451,10 +1478,11 @@ void PrintWebViewHelper::SetOptionsFromPdfDocument(
   blink::WebPrintPresetOptions preset_options;
   if (!source_frame->getPrintPresetOptionsForPlugin(source_node,
                                                     &preset_options)) {
-    return;
+    return false;
   }
 
-  options->is_scaling_disabled = preset_options.isScalingDisabled;
+  options->is_scaling_disabled = PDFShouldDisableScalingBasedOnPreset(
+      preset_options, print_pages_params_->params);
   options->copies = preset_options.copies;
 
   // TODO(thestig) This should be a straight pass-through, but print preview
@@ -1470,6 +1498,7 @@ void PrintWebViewHelper::SetOptionsFromPdfDocument(
       options->duplex = UNKNOWN_DUPLEX_MODE;
       break;
   }
+  return true;
 }
 
 bool PrintWebViewHelper::UpdatePrintSettings(
@@ -1550,7 +1579,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   return true;
 }
 
-bool PrintWebViewHelper::GetPrintSettingsFromUser(blink::WebFrame* frame,
+bool PrintWebViewHelper::GetPrintSettingsFromUser(blink::WebLocalFrame* frame,
                                                   const blink::WebNode& node,
                                                   int expected_pages_count,
                                                   bool is_scripted) {
@@ -1561,8 +1590,10 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(blink::WebFrame* frame,
   params.has_selection = frame->hasSelection();
   params.expected_pages_count = expected_pages_count;
   MarginType margin_type = DEFAULT_MARGINS;
-  if (PrintingNodeOrPdfFrame(frame, node))
-    margin_type = GetMarginsForPdf(frame, node);
+  if (PrintingNodeOrPdfFrame(frame, node)) {
+    margin_type =
+        GetMarginsForPdf(frame, node, print_pages_params_->params);
+  }
   params.margin_type = margin_type;
   params.is_scripted = is_scripted;
 

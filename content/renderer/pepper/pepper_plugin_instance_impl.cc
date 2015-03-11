@@ -1837,6 +1837,10 @@ bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
       break;
   }
   preset_options->copies = options.copies;
+  preset_options->isPageSizeUniform = PP_ToBool(options.is_page_size_uniform);
+  preset_options->uniformPageSize =
+      blink::WebSize(options.uniform_page_size.width,
+                     options.uniform_page_size.height);
 
   return true;
 }
