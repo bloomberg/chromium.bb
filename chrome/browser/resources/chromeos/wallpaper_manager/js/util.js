@@ -323,7 +323,7 @@ WallpaperUtil.fetchURL = function(url, type, onSuccess, onFailure, opt_xhr) {
       if (this.status == 200) {
         onSuccess(this);
       } else {
-        onFailure();
+        onFailure(this.status);
       }
     });
     xhr.addEventListener('error', onFailure);

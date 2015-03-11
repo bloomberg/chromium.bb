@@ -29,12 +29,16 @@ SurpriseWallpaper.getInstance = function() {
  */
 SurpriseWallpaper.prototype.tryChangeWallpaper = function() {
   var self = this;
-  var onFailure = function() {
-    self.retryLater_();
-    self.fallbackToLocalRss_();
+  var onFailure = function(status) {
+    if (status != 404)
+      self.fallbackToLocalRss_();
+    else
+      self.updateRandomWallpaper_();
   };
-  // Try to fetch newest rss as document from server first. If any error occurs,
-  // proceed with local copy of rss.
+  // Try to fetch newest rss as document from server first. If the requested
+  // URL is not found (404 error), set a random wallpaper displayed in the
+  // wallpaper picker. If any other error occurs, proceed with local copy of
+  // rss.
   WallpaperUtil.fetchURL(Constants.WallpaperRssURL, 'document', function(xhr) {
     WallpaperUtil.saveToStorage(Constants.AccessRssKey,
         new XMLSerializer().serializeToString(xhr.responseXML), false);
@@ -94,9 +98,11 @@ SurpriseWallpaper.prototype.updateSurpriseWallpaper = function(opt_rss) {
         var self = this;
         this.setWallpaperFromRssItem_(item,
                                       function() {},
-                                      function() {
-                                        self.retryLater_();
-                                        self.updateRandomWallpaper_();
+                                      function(status) {
+                                        if (status != 404)
+                                          self.retryLater_();
+                                        else
+                                          self.updateRandomWallpaper_();
                                       });
         return;
       }
@@ -146,6 +152,8 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
       var wallpaper = filtered[index];
       var wallpaperURL = wallpaper.base_url + Constants.HighResolutionSuffix;
       var onSuccess = function() {
+        WallpaperUtil.saveWallpaperInfo(wallpaperURL, wallpaper.default_layout,
+            Constants.WallpaperSourceEnum.Online);
         WallpaperUtil.saveToStorage(
             Constants.AccessLastSurpriseWallpaperChangedDate,
             dateString,
@@ -177,8 +185,13 @@ SurpriseWallpaper.prototype.setWallpaperFromRssItem_ = function(item,
       chrome.wallpaperPrivate.setCustomWallpaper(xhr.response, layout, false,
                                                  'surprise_wallpaper',
                                                  onSuccess);
+      WallpaperUtil.saveWallpaperInfo(url, layout,
+                                      Constants.WallpaperSourceEnum.Online);
+      var dateString = new Date().toDateString();
+      WallpaperUtil.saveToStorage(
+          Constants.AccessLastSurpriseWallpaperChangedDate, dateString, true);
     } else {
-      onFailure();
+      self.updateRandomWallpaper_();
     }
   }, onFailure);
 };
@@ -277,33 +290,57 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     }
 
     if (changes[Constants.AccessSyncWallpaperInfoKey]) {
-      var newValue = changes[Constants.AccessSyncWallpaperInfoKey].newValue;
-      Constants.WallpaperLocalStorage.get(Constants.AccessLocalWallpaperInfoKey,
-                                          function(items) {
-        // Normally, the wallpaper info saved in local storage and sync storage
-        // are the same. If the synced value changed by sync service, they may
-        // different. In that case, change wallpaper to the one saved in sync
-        // storage and update the local value.
-        var localValue = items[Constants.AccessLocalWallpaperInfoKey];
-        if (localValue == undefined ||
-            localValue.url != newValue.url ||
-            localValue.layout != newValue.layout ||
-            localValue.source != newValue.source) {
-          if (newValue.source == Constants.WallpaperSourceEnum.Online) {
-            // TODO(bshe): Consider schedule an alarm to set online wallpaper
-            // later when failed. Note that we need to cancel the retry if user
-            // set another wallpaper before retry alarm invoked.
-            WallpaperUtil.setOnlineWallpaper(newValue.url, newValue.layout,
-              function() {}, function() {});
-          } else if (newValue.source == Constants.WallpaperSourceEnum.Custom) {
-            WallpaperUtil.setCustomWallpaperFromSyncFS(newValue.url,
-                                                       newValue.layout);
-          } else if (newValue.source == Constants.WallpaperSourceEnum.Default) {
-            chrome.wallpaperPrivate.resetWallpaper();
+      var syncInfo = changes[Constants.AccessSyncWallpaperInfoKey].newValue;
+
+      Constants.WallpaperSyncStorage.get(Constants.AccessSurpriseMeEnabledKey,
+                                         function(enabledItems) {
+        var syncSurpriseMeEnabled =
+            enabledItems[Constants.AccessSurpriseMeEnabledKey];
+
+        Constants.WallpaperSyncStorage.get(
+            Constants.AccessLastSurpriseWallpaperChangedDate, function(items) {
+          var syncLastSurpriseMeChangedDate =
+              items[Constants.AccessLastSurpriseWallpaperChangedDate];
+
+          var today = new Date().toDateString();
+          // If SurpriseMe is enabled and surprise wallpaper hasn't been changed
+          // today, we should not sync the change, instead onAlarm() will be
+          // triggered to update a surprise me wallpaper.
+          if (!syncSurpriseMeEnabled ||
+              (syncSurpriseMeEnabled &&
+                  syncLastSurpriseMeChangedDate == today)) {
+            Constants.WallpaperLocalStorage.get(
+                Constants.AccessLocalWallpaperInfoKey, function(infoItems) {
+              var localInfo = infoItems[Constants.AccessLocalWallpaperInfoKey];
+              // Normally, the wallpaper info saved in local storage and sync
+              // storage are the same. If the synced value changed by sync
+              // service, they may different. In that case, change wallpaper to
+              // the one saved in sync storage and update the local value.
+              if (localInfo == undefined ||
+                  localInfo.url != syncInfo.url ||
+                  localInfo.layout != syncInfo.layout ||
+                  localInfo.source != syncInfo.source) {
+                if (syncInfo.source == Constants.WallpaperSourceEnum.Online) {
+                  // TODO(bshe): Consider schedule an alarm to set online
+                  // wallpaper later when failed. Note that we need to cancel
+                  // the retry if user set another wallpaper before retry alarm
+                  // invoked.
+                  WallpaperUtil.setOnlineWallpaper(syncInfo.url,
+                      syncInfo.layout, function() {}, function() {});
+                } else if (syncInfo.source ==
+                              Constants.WallpaperSourceEnum.Custom) {
+                  WallpaperUtil.setCustomWallpaperFromSyncFS(syncInfo.url,
+                                                             syncInfo.layout);
+                } else if (syncInfo.source ==
+                              Constants.WallpaperSourceEnum.Default) {
+                  chrome.wallpaperPrivate.resetWallpaper();
+                }
+                WallpaperUtil.saveToStorage(
+                    Constants.AccessLocalWallpaperInfoKey, syncInfo, false);
+              }
+            });
           }
-          WallpaperUtil.saveToStorage(Constants.AccessLocalWallpaperInfoKey,
-                                      newValue, false);
-        }
+        });
       });
     }
   });

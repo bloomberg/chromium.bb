@@ -591,7 +591,7 @@ function WallpaperManager(dialogDom) {
                                             selectedItem.source);
             self.wallpaperRequest_ = null;
           };
-          var onFailure = function() {
+          var onFailure = function(status) {
             self.progressManager_.hideProgressBar(selectedGridItem);
             self.showError_(str('downloadFailed'));
             self.wallpaperRequest_ = null;

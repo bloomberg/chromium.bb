@@ -215,6 +215,15 @@ var chrome = {
     },
     sync: {
       get: function(key, callback) {
+        var items = {};
+        switch (key) {
+          case Constants.AccessSurpriseMeEnabledKey:
+            items[Constants.AccessSurpriseMeEnabledKey] = true;
+          case Constants.AccessLastSurpriseWallpaperChangedDate:
+            items[Constants.AccessLastSurpriseWallpaperChangedDate] =
+                new Date().toDateString();
+        }
+        callback(items);
       },
       set: function(items, callback) {
       }
