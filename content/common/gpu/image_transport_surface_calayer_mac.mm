@@ -17,6 +17,7 @@
 
 namespace {
 const size_t kFramesToKeepCAContextAfterDiscard = 2;
+const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 }
 
 @interface ImageTransportLayer : CAOpenGLLayer {
@@ -298,10 +299,10 @@ bool CALayerStorageProvider::LayerCanDraw() {
     if ([layer_ isAsynchronous]) {
       DCHECK(!gpu_vsync_disabled_);
       // If we are in asynchronous mode, we will be getting callbacks at every
-      // vsync, asking us if we have anything to draw. If we get 30 of these in
-      // a row, ask that we stop getting these callback for now, so that we
+      // vsync, asking us if we have anything to draw. If we get many of these
+      // in a row, ask that we stop getting these callback for now, so that we
       // don't waste CPU cycles.
-      if (can_draw_returned_false_count_ == 30)
+      if (can_draw_returned_false_count_ >= kCanDrawFalsesBeforeSwitchFromAsync)
         [layer_ setAsynchronous:NO];
       else
         can_draw_returned_false_count_ += 1;
