@@ -4,19 +4,18 @@
        in the LICENSE file. -->
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.chromium.android_webview.test">
+    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="21" />
+    <instrumentation android:name="android.test.InstrumentationTestRunner"
+        android:targetPackage="org.chromium.android_webview.shell"
+        android:label="Tests for org.chromium.android_webview"/>
+    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- We add an application tag here just so that we can indicate that this
          package needs to link against the android.test library, which is
          needed when building test cases. -->
     <application android:hardwareAccelerated="false">
         <uses-library android:name="android.test.runner" />
     </application>
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="21" />
-    <instrumentation android:name="android.test.InstrumentationTestRunner"
-        android:targetPackage="org.chromium.android_webview.shell"
-        android:label="Tests for org.chromium.android_webview"/>
-    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
-    <uses-permission android:name="android.permission.INJECT_EVENTS" />
-    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
-    <uses-permission android:name="android.permission.READ_LOGS"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 </manifest>
