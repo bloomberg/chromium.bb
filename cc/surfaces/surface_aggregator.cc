@@ -251,12 +251,12 @@ void SurfaceAggregator::HandleSurfaceQuad(
     // Contributing passes aggregated in to the pass list need to take the
     // transform of the surface quad into account to update their transform to
     // the root surface.
-    // TODO(jamesr): Make sure this is sufficient for surfaces nested several
-    // levels deep and add tests.
     copy_pass->transform_to_root_target.ConcatTransform(
         surface_quad->quadTransform());
     copy_pass->transform_to_root_target.ConcatTransform(
         content_to_target_transform);
+    copy_pass->transform_to_root_target.ConcatTransform(
+        dest_pass->transform_to_root_target);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     gfx::Transform(), ClipData(), copy_pass.get(), surface_id);
