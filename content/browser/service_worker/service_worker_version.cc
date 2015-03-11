@@ -365,12 +365,8 @@ void ServiceWorkerVersion::RegisterStatusChangeCallback(
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return ServiceWorkerVersionInfo(
-      running_status(),
-      status(),
-      script_url(),
-      version_id(),
-      embedded_worker()->process_id(),
-      embedded_worker()->thread_id(),
+      running_status(), status(), script_url(), registration_id(), version_id(),
+      embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
 }
 
@@ -812,6 +808,10 @@ void ServiceWorkerVersion::OnScriptLoaded() {
   ping_state_ = PINGING;
 }
 
+void ServiceWorkerVersion::OnStarting() {
+  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
+}
+
 void ServiceWorkerVersion::OnStarted() {
   DCHECK_EQ(RUNNING, running_status());
   DCHECK(cache_listener_.get());
@@ -820,7 +820,11 @@ void ServiceWorkerVersion::OnStarted() {
   // Fire all start callbacks.
   scoped_refptr<ServiceWorkerVersion> protect(this);
   RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_OK);
-  FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStarted(this));
+  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
+}
+
+void ServiceWorkerVersion::OnStopping() {
+  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
 }
 
 void ServiceWorkerVersion::OnStopped(
@@ -869,7 +873,7 @@ void ServiceWorkerVersion::OnStopped(
 
   streaming_url_request_jobs_.clear();
 
-  FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStopped(this));
+  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
 
   // There should be no more communication from/to a stopped worker. Deleting
   // the listener prevents any pending completion callbacks from causing

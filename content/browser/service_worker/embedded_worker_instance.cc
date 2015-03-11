@@ -147,6 +147,7 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
   status_ = STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnStarting());
   scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
       new EmbeddedWorkerMsg_StartWorker_Params());
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
@@ -177,8 +178,10 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   DCHECK(status_ == STARTING || status_ == RUNNING) << status_;
   ServiceWorkerStatusCode status =
       registry_->StopWorker(process_id_, embedded_worker_id_);
-  if (status == SERVICE_WORKER_OK)
+  if (status == SERVICE_WORKER_OK) {
     status_ = STOPPING;
+    FOR_EACH_OBSERVER(Listener, listener_list_, OnStopping());
+  }
   return status;
 }
 
@@ -258,8 +261,10 @@ void EmbeddedWorkerInstance::ProcessAllocated(
                          params.get(),
                          "Status", status);
   if (status != SERVICE_WORKER_OK) {
+    Status old_status = status_;
     status_ = STOPPED;
     callback.Run(status);
+    FOR_EACH_OBSERVER(Listener, listener_list_, OnStopped(old_status));
     return;
   }
   const int64 service_worker_version_id = params->service_worker_version_id;

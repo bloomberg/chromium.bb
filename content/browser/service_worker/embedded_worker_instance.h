@@ -70,7 +70,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
    public:
     virtual ~Listener() {}
     virtual void OnScriptLoaded() {}
+    virtual void OnStarting() {}
     virtual void OnStarted() {}
+    virtual void OnStopping() {}
     virtual void OnStopped(Status old_status) {}
     virtual void OnPausedAfterDownload() {}
     virtual void OnReportException(const base::string16& error_message,

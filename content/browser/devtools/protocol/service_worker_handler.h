@@ -7,13 +7,22 @@
 
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/service_worker/service_worker_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 
+// Windows headers will redefine SendMessage.
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
 namespace content {
 
+class RenderFrameHost;
+class ServiceWorkerContextWrapper;
 class ServiceWorkerDevToolsAgentHost;
 
 namespace devtools {
@@ -27,6 +36,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   ServiceWorkerHandler();
   ~ServiceWorkerHandler() override;
 
+  void SetRenderFrameHost(RenderFrameHost* render_frame_host);
   void SetClient(scoped_ptr<Client> client);
   void SetURL(const GURL& url);
   void Detached();
@@ -44,6 +54,8 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
 
  private:
+  class ContextObserver;
+
   // DevToolsAgentHostClient overrides.
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
@@ -54,12 +66,22 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
 
   bool MatchesInspectedPage(ServiceWorkerDevToolsAgentHost* host);
 
+  void OnWorkerRegistrationUpdated(
+      const std::vector<ServiceWorkerRegistrationInfo>& registrations);
+  void OnWorkerVersionUpdated(
+      const std::vector<ServiceWorkerVersionInfo>& registrations);
+  void OnWorkerRegistrationDeleted(int64 registration_id);
+
+  scoped_refptr<ServiceWorkerContextWrapper> context_;
   scoped_ptr<Client> client_;
   using AttachedHosts = std::map<
       std::string, scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
   AttachedHosts attached_hosts_;
   bool enabled_;
   GURL url_;
+  scoped_refptr<ContextObserver> context_observer_;
+
+  base::WeakPtrFactory<ServiceWorkerHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandler);
 };

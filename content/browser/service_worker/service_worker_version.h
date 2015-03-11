@@ -92,8 +92,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   class Listener {
    public:
-    virtual void OnWorkerStarted(ServiceWorkerVersion* version) {}
-    virtual void OnWorkerStopped(ServiceWorkerVersion* version) {}
+    virtual void OnRunningStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnVersionStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnErrorReported(ServiceWorkerVersion* version,
                                  const base::string16& error_message,
@@ -325,7 +324,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // EmbeddedWorkerInstance::Listener overrides:
   void OnScriptLoaded() override;
+  void OnStarting() override;
   void OnStarted() override;
+  void OnStopping() override;
   void OnStopped(EmbeddedWorkerInstance::Status old_status) override;
   void OnReportException(const base::string16& error_message,
                          int line_number,

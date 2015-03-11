@@ -112,8 +112,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ~ServiceWorkerContextCore() override;
 
   // ServiceWorkerVersion::Listener overrides.
-  void OnWorkerStarted(ServiceWorkerVersion* version) override;
-  void OnWorkerStopped(ServiceWorkerVersion* version) override;
+  void OnRunningStateChanged(ServiceWorkerVersion* version) override;
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
   void OnErrorReported(ServiceWorkerVersion* version,
                        const base::string16& error_message,

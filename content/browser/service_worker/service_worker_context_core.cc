@@ -304,7 +304,7 @@ void ServiceWorkerContextCore::RegistrationComplete(
   if (observer_list_.get()) {
     observer_list_->Notify(FROM_HERE,
                            &ServiceWorkerContextObserver::OnRegistrationStored,
-                           pattern);
+                           registration->id(), pattern);
   }
 }
 
@@ -439,22 +439,13 @@ void ServiceWorkerContextCore::TransferProviderHostIn(
   delete temp;
 }
 
-void ServiceWorkerContextCore::OnWorkerStarted(ServiceWorkerVersion* version) {
+void ServiceWorkerContextCore::OnRunningStateChanged(
+    ServiceWorkerVersion* version) {
   if (!observer_list_.get())
     return;
-  observer_list_->Notify(
-      FROM_HERE, &ServiceWorkerContextObserver::OnWorkerStarted,
-      version->version_id(), version->embedded_worker()->process_id(),
-      version->embedded_worker()->thread_id());
-}
-
-void ServiceWorkerContextCore::OnWorkerStopped(ServiceWorkerVersion* version) {
-  if (!observer_list_.get())
-    return;
-  observer_list_->Notify(
-      FROM_HERE, &ServiceWorkerContextObserver::OnWorkerStopped,
-      version->version_id(), version->embedded_worker()->process_id(),
-      version->embedded_worker()->thread_id());
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextObserver::OnRunningStateChanged,
+                         version->version_id());
 }
 
 void ServiceWorkerContextCore::OnVersionStateChanged(

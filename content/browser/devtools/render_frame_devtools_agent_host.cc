@@ -437,6 +437,7 @@ void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   input_handler_->SetRenderViewHost(rvh);
   network_handler_->SetRenderViewHost(rvh);
   page_handler_->SetRenderViewHost(rvh);
+  service_worker_handler_->SetRenderFrameHost(rfh);
 
   registrar_.Add(
       this,
@@ -457,6 +458,7 @@ void RenderFrameDevToolsAgentHost::ClearRenderFrameHost() {
   input_handler_->SetRenderViewHost(nullptr);
   network_handler_->SetRenderViewHost(nullptr);
   page_handler_->SetRenderViewHost(nullptr);
+  service_worker_handler_->SetRenderFrameHost(nullptr);
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {

@@ -304,27 +304,11 @@ class ServiceWorkerInternalsUI::PartitionObserver
       : partition_id_(partition_id), web_ui_(web_ui) {}
   ~PartitionObserver() override {}
   // ServiceWorkerContextObserver overrides:
-  void OnWorkerStarted(int64 version_id,
-                       int process_id,
-                       int thread_id) override {
+  void OnRunningStateChanged(int64 version_id) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     web_ui_->CallJavascriptFunction(
-        "serviceworker.onWorkerStarted",
-        FundamentalValue(partition_id_),
-        StringValue(base::Int64ToString(version_id)),
-        FundamentalValue(process_id),
-        FundamentalValue(thread_id));
-  }
-  void OnWorkerStopped(int64 version_id,
-                       int process_id,
-                       int thread_id) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    web_ui_->CallJavascriptFunction(
-        "serviceworker.onWorkerStopped",
-        FundamentalValue(partition_id_),
-        StringValue(base::Int64ToString(version_id)),
-        FundamentalValue(process_id),
-        FundamentalValue(thread_id));
+        "serviceworker.onRunningStateChanged", FundamentalValue(partition_id_),
+        StringValue(base::Int64ToString(version_id)));
   }
   void OnVersionStateChanged(int64 version_id) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -372,7 +356,8 @@ class ServiceWorkerInternalsUI::PartitionObserver
     web_ui_->CallJavascriptFunction("serviceworker.onConsoleMessageReported",
                                     args.get());
   }
-  void OnRegistrationStored(const GURL& pattern) override {
+  void OnRegistrationStored(int64 registration_id,
+                            const GURL& pattern) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     web_ui_->CallJavascriptFunction("serviceworker.onRegistrationStored",
                                     StringValue(pattern.spec()));

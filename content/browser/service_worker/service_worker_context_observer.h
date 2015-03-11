@@ -43,12 +43,7 @@ class ServiceWorkerContextObserver {
     const int line_number;
     const GURL source_url;
   };
-  virtual void OnWorkerStarted(int64 version_id,
-                               int process_id,
-                               int thread_id) {}
-  virtual void OnWorkerStopped(int64 version_id,
-                               int process_id,
-                               int thread_id) {}
+  virtual void OnRunningStateChanged(int64 version_id) {}
   virtual void OnVersionStateChanged(int64 version_id) {}
   virtual void OnErrorReported(int64 version_id,
                                int process_id,
@@ -58,7 +53,8 @@ class ServiceWorkerContextObserver {
                                       int process_id,
                                       int thread_id,
                                       const ConsoleMessage& message) {}
-  virtual void OnRegistrationStored(const GURL& pattern) {}
+  virtual void OnRegistrationStored(int64 registration_id,
+                                    const GURL& pattern) {}
   virtual void OnRegistrationDeleted(int64 registration_id,
                                      const GURL& pattern) {}
 

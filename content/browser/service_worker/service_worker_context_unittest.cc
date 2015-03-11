@@ -131,10 +131,12 @@ class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
   void TearDown() override { helper_.reset(); }
 
   // ServiceWorkerContextObserver overrides.
-  void OnRegistrationStored(const GURL& pattern) override {
+  void OnRegistrationStored(int64 registration_id,
+                            const GURL& pattern) override {
     NotificationLog log;
     log.type = REGISTRATION_STORED;
     log.pattern = pattern;
+    log.registration_id = registration_id;
     notifications_.push_back(log);
   }
   void OnRegistrationDeleted(int64 registration_id,
@@ -200,6 +202,7 @@ TEST_F(ServiceWorkerContextTest, Register) {
   ASSERT_EQ(1u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
+  EXPECT_EQ(registration_id, notifications_[0].registration_id);
 }
 
 // Test registration when the service worker rejects the install event. The
@@ -324,6 +327,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   ASSERT_EQ(2u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
+  EXPECT_EQ(registration_id, notifications_[0].registration_id);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[1].type);
   EXPECT_EQ(pattern, notifications_[1].pattern);
   EXPECT_EQ(registration_id, notifications_[1].registration_id);
@@ -413,13 +417,17 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
 
   ASSERT_EQ(6u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(registration_id1, notifications_[0].registration_id);
   EXPECT_EQ(origin1_p1, notifications_[0].pattern);
   EXPECT_EQ(REGISTRATION_STORED, notifications_[1].type);
   EXPECT_EQ(origin1_p2, notifications_[1].pattern);
+  EXPECT_EQ(registration_id2, notifications_[1].registration_id);
   EXPECT_EQ(REGISTRATION_STORED, notifications_[2].type);
   EXPECT_EQ(origin2_p1, notifications_[2].pattern);
+  EXPECT_EQ(registration_id3, notifications_[2].registration_id);
   EXPECT_EQ(REGISTRATION_STORED, notifications_[3].type);
   EXPECT_EQ(origin3_p1, notifications_[3].pattern);
+  EXPECT_EQ(registration_id4, notifications_[3].registration_id);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[4].type);
   EXPECT_EQ(origin1_p2, notifications_[4].pattern);
   EXPECT_EQ(registration_id2, notifications_[4].registration_id);
@@ -463,8 +471,10 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
   ASSERT_EQ(2u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
+  EXPECT_EQ(old_registration_id, notifications_[0].registration_id);
   EXPECT_EQ(REGISTRATION_STORED, notifications_[1].type);
   EXPECT_EQ(pattern, notifications_[1].pattern);
+  EXPECT_EQ(new_registration_id, notifications_[1].registration_id);
 }
 
 // Make sure that when registering a duplicate pattern+script_url
@@ -502,8 +512,10 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   ASSERT_EQ(2u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
+  EXPECT_EQ(old_registration_id, notifications_[0].registration_id);
   EXPECT_EQ(REGISTRATION_STORED, notifications_[1].type);
   EXPECT_EQ(pattern, notifications_[1].pattern);
+  EXPECT_EQ(old_registration_id, notifications_[1].registration_id);
 }
 
 // TODO(nhiroki): Test this for on-disk storage.
@@ -587,9 +599,11 @@ TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
   ASSERT_EQ(3u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
+  EXPECT_EQ(registration_id, notifications_[0].registration_id);
   EXPECT_EQ(STORAGE_RECOVERED, notifications_[1].type);
   EXPECT_EQ(REGISTRATION_STORED, notifications_[2].type);
   EXPECT_EQ(pattern, notifications_[2].pattern);
+  EXPECT_EQ(registration_id, notifications_[2].registration_id);
 }
 
 }  // namespace content

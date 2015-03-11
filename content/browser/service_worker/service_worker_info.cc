@@ -12,6 +12,7 @@ namespace content {
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
     : running_status(ServiceWorkerVersion::STOPPED),
       status(ServiceWorkerVersion::NEW),
+      registration_id(kInvalidServiceWorkerRegistrationId),
       version_id(kInvalidServiceWorkerVersionId),
       process_id(-1),
       thread_id(-1),
@@ -22,6 +23,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     ServiceWorkerVersion::RunningStatus running_status,
     ServiceWorkerVersion::Status status,
     const GURL& script_url,
+    int64 registration_id,
     int64 version_id,
     int process_id,
     int thread_id,
@@ -29,6 +31,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     : running_status(running_status),
       status(status),
       script_url(script_url),
+      registration_id(registration_id),
       version_id(version_id),
       process_id(process_id),
       thread_id(thread_id),
