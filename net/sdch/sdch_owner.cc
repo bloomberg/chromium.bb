@@ -254,7 +254,7 @@ class ScopedPrefNotifier {
 // Adjust SDCH limits downwards for mobile.
 #if defined(OS_ANDROID) || defined(OS_IOS)
 // static
-const size_t SdchOwner::kMaxTotalDictionarySize = 500 * 1000;
+const size_t SdchOwner::kMaxTotalDictionarySize = 2 * 500 * 1000;
 #else
 // static
 const size_t SdchOwner::kMaxTotalDictionarySize = 20 * 1000 * 1000;
