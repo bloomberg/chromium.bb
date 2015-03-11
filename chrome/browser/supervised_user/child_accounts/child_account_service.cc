@@ -306,6 +306,12 @@ void ChildAccountService::StartFetchingServiceFlags() {
   }
   account_id_ = SigninManagerFactory::GetForProfile(profile_)
       ->GetAuthenticatedAccountId();
+  flag_fetcher_.reset(new AccountServiceFlagFetcher(
+      account_id_,
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+      profile_->GetRequestContext(),
+      base::Bind(&ChildAccountService::OnFlagsFetched,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 void ChildAccountService::CancelFetchingServiceFlags() {
