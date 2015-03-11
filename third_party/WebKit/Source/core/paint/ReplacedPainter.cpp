@@ -33,8 +33,9 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         m_layoutReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase == PaintPhaseMask) {
-        LayoutObjectDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, visualOverflowRect);
-        m_layoutReplaced.paintMask(paintInfo, adjustedPaintOffset);
+        LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, visualOverflowRect);
+        if (!drawingRecorder.canUseCachedDrawing())
+            m_layoutReplaced.paintMask(paintInfo, adjustedPaintOffset);
         return;
     }
 

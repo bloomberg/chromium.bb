@@ -24,7 +24,13 @@ public:
 
     ~DrawingRecorder();
 
-    bool canUseCachedDrawing() const { return m_canUseCachedDrawing; }
+    bool canUseCachedDrawing() const
+    {
+#if ENABLE(ASSERT)
+        m_checkedCachedDrawing = true;
+#endif
+        return m_canUseCachedDrawing;
+    }
 
 #ifndef NDEBUG
     void setClientDebugString(const WTF::String&);
@@ -35,6 +41,9 @@ private:
     DisplayItemClient m_displayItemClient;
     const DisplayItem::Type m_displayItemType;
     bool m_canUseCachedDrawing;
+#if ENABLE(ASSERT)
+    mutable bool m_checkedCachedDrawing;
+#endif
 #ifndef NDEBUG
     WTF::String m_clientDebugString;
 #endif

@@ -100,7 +100,8 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
             overlays->paintWebFrame(*graphicsContext);
     } else {
         DrawingRecorder drawingRecorder(graphicsContext.get(), root.displayItemClient(), DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
-        graphicsContext->fillRect(dirtyRect, Color::white);
+        if (!drawingRecorder.canUseCachedDrawing())
+            graphicsContext->fillRect(dirtyRect, Color::white);
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {

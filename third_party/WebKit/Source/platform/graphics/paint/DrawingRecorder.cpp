@@ -20,6 +20,9 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, DisplayItemClient dis
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
     , m_canUseCachedDrawing(false)
+#if ENABLE(ASSERT)
+    , m_checkedCachedDrawing(false)
+#endif
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
@@ -47,6 +50,7 @@ DrawingRecorder::~DrawingRecorder()
         return;
 
 #if ENABLE(ASSERT)
+    ASSERT(m_checkedCachedDrawing);
     m_context->setInDrawingRecorder(false);
 #endif
 

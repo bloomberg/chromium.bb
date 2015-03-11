@@ -264,10 +264,11 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
     {
         DrawingRecorder drawingRecorder(graphicsContext.get(), displayItemClient(), DisplayItem::LinkHighlight, clipRect);
-
-        graphicsContext->clip(clipRect);
-        graphicsContext->setFillColor(m_node->layoutObject()->style()->tapHighlightColor());
-        graphicsContext->fillPath(m_path);
+        if (!drawingRecorder.canUseCachedDrawing()) {
+            graphicsContext->clip(clipRect);
+            graphicsContext->setFillColor(m_node->layoutObject()->style()->tapHighlightColor());
+            graphicsContext->fillPath(m_path);
+        }
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {

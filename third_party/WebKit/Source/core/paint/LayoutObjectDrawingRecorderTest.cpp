@@ -48,6 +48,10 @@ private:
 void drawNothing(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)
 {
     LayoutObjectDrawingRecorder drawingRecorder(context, *renderer, phase, bound);
+
+    // Redundant when there's nothing to draw but we must always do this check.
+    if (drawingRecorder.canUseCachedDrawing())
+        return;
 }
 
 void drawRect(GraphicsContext* context, LayoutView* renderer, PaintPhase phase, const FloatRect& bound)

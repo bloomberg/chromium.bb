@@ -107,7 +107,8 @@ public:
         GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
         FloatRect rect(0, 0, size.width, size.height);
         DrawingRecorder drawingRecorder(&graphicsContext, toDisplayItemClient(this), DisplayItem::PageOverlay, rect);
-        graphicsContext.fillRect(rect, m_color);
+        if (!drawingRecorder.canUseCachedDrawing())
+            graphicsContext.fillRect(rect, m_color);
     }
 
 private:

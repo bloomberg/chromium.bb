@@ -82,8 +82,10 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
 
     {
         DrawingRecorder recorder(context, buffer->displayItemClient(), DisplayItem::VideoBitmap, videoRect);
-        context->clip(dstRect);
-        context->translate(-srcRect.x(), -srcRect.y());
+        if (!recorder.canUseCachedDrawing()) {
+            context->clip(dstRect);
+            context->translate(-srcRect.x(), -srcRect.y());
+        }
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())

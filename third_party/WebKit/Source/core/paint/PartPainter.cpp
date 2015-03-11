@@ -64,8 +64,9 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
         LayoutRect rect = m_layoutPart.localSelectionRect();
         rect.moveBy(adjustedPaintOffset);
         IntRect selectionRect = pixelSnappedIntRect(rect);
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutPart, paintInfo.phase, selectionRect);
-        paintInfo.context->fillRect(selectionRect, m_layoutPart.selectionBackgroundColor());
+        LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutPart, paintInfo.phase, selectionRect);
+        if (!drawingRecorder.canUseCachedDrawing())
+            paintInfo.context->fillRect(selectionRect, m_layoutPart.selectionBackgroundColor());
     }
 
     if (m_layoutPart.canResize())
