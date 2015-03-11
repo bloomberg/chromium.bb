@@ -197,8 +197,10 @@ class SearchProvider : public BaseSearchProvider,
   // if suggested relevances cause undesirable behavior. Updates |done_|.
   void UpdateMatches();
 
-  // Called when timer_ expires.
-  void Run();
+  // Called when |timer_| expires.  Sends the suggest requests.
+  // If |query_is_private|, the function doesn't send this query to the default
+  // provider.
+  void Run(bool query_is_private);
 
   // Runs the history query, if necessary. The history query is synchronous.
   // This does not update |done_|.
@@ -212,10 +214,16 @@ class SearchProvider : public BaseSearchProvider,
   // NOTE: This function does not update |done_|.  Callers must do so.
   void StartOrStopSuggestQuery(bool minimal_changes);
 
-  // Returns true when the current query can be sent to the Suggest service.
-  // This will be false e.g. when Suggest is disabled, the query contains
-  // potentially private data, etc.
-  bool IsQuerySuitableForSuggest() const;
+  // Returns true when the current query can be sent to at least one suggest
+  // service.  This will be false for example when suggest is disabled.  In
+  // the process, calculates whether the query may contain potentionally
+  // private data and stores the result in |is_query_private|; such queries
+  // should not be sent to the default search engine.
+  bool IsQuerySuitableForSuggest(bool* query_is_private) const;
+
+  // Returns true if sending the query to a suggest server may leak sensitive
+  // information (and hence the suggest request shouldn't be sent).
+  bool IsQueryPotentionallyPrivate() const;
 
   // Remove existing keyword results if the user is no longer in keyword mode,
   // and, if |minimal_changes| is false, revise the existing results to

@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
@@ -510,15 +511,20 @@ void SearchProvider::UpdateMatches() {
   UpdateDone();
 }
 
-void SearchProvider::Run() {
+void SearchProvider::Run(bool query_is_private) {
   // Start a new request with the current input.
   suggest_results_pending_ = 0;
-  time_suggest_request_sent_ = base::TimeTicks::Now();
 
-  default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
-      providers_.GetDefaultProviderURL(), input_));
-  keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
-      providers_.GetKeywordProviderURL(), keyword_input_));
+  if (!query_is_private) {
+    default_fetcher_.reset(CreateSuggestFetcher(
+        kDefaultProviderURLFetcherID,
+        providers_.GetDefaultProviderURL(),
+        input_));
+  }
+  keyword_fetcher_.reset(CreateSuggestFetcher(
+      kKeywordProviderURLFetcherID,
+      providers_.GetKeywordProviderURL(),
+      keyword_input_));
 
   // Both the above can fail if the providers have been modified or deleted
   // since the query began.
@@ -527,6 +533,9 @@ void SearchProvider::Run() {
     // We only need to update the listener if we're actually done.
     if (done_)
       listener_->OnProviderUpdate(false);
+  } else {
+    // Sent at least one request.
+    time_suggest_request_sent_ = base::TimeTicks::Now();
   }
 }
 
@@ -593,7 +602,8 @@ base::TimeDelta SearchProvider::GetSuggestQueryDelay() const {
 }
 
 void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
-  if (!IsQuerySuitableForSuggest()) {
+  bool query_is_private;
+  if (!IsQuerySuitableForSuggest(&query_is_private)) {
     StopSuggest();
     ClearAllResults();
     return;
@@ -634,30 +644,39 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   // anyway.
   const base::TimeDelta delay = GetSuggestQueryDelay();
   if (delay <= base::TimeDelta()) {
-    Run();
+    Run(query_is_private);
     return;
   }
-  timer_.Start(FROM_HERE, delay, this, &SearchProvider::Run);
+  timer_.Start(FROM_HERE,
+               delay,
+               base::Bind(&SearchProvider::Run,
+                          base::Unretained(this),
+                          query_is_private));
 }
 
-bool SearchProvider::IsQuerySuitableForSuggest() const {
+bool SearchProvider::IsQuerySuitableForSuggest(bool* query_is_private) const {
+  *query_is_private = IsQueryPotentionallyPrivate();
+
   // Don't run Suggest in incognito mode, if the engine doesn't support it, or
-  // if the user has disabled it.
+  // if the user has disabled it.  Also don't send potentionally private data
+  // to the default search provider.  (It's always okay to send explicit
+  // keyword input to a keyword suggest server, if any.)
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
-  if (client_->IsOffTheRecord() ||
-      ((!default_url || default_url->suggestions_url().empty()) &&
-       (!keyword_url || keyword_url->suggestions_url().empty())) ||
-      !client_->SearchSuggestEnabled())
-    return false;
+  return !client_->IsOffTheRecord() && client_->SearchSuggestEnabled() &&
+      ((default_url && !default_url->suggestions_url().empty() &&
+        !*query_is_private) ||
+       (keyword_url && !keyword_url->suggestions_url().empty()));
+}
 
+bool SearchProvider::IsQueryPotentionallyPrivate() const {
   // If the input type might be a URL, we take extra care so that private data
   // isn't sent to the server.
 
   // FORCED_QUERY means the user is explicitly asking us to search for this, so
   // we assume it isn't a URL and/or there isn't private data.
   if (input_.type() == metrics::OmniboxInputType::FORCED_QUERY)
-    return true;
+    return false;
 
   // Next we check the scheme.  If this is UNKNOWN/URL with a scheme that isn't
   // http/https/ftp, we shouldn't send it.  Sending things like file: and data:
@@ -672,7 +691,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   if (!LowerCaseEqualsASCII(input_.scheme(), url::kHttpScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), url::kFtpScheme))
-    return (input_.type() == metrics::OmniboxInputType::QUERY);
+    return (input_.type() != metrics::OmniboxInputType::QUERY);
 
   // Don't send URLs with usernames, queries or refs.  Some of these are
   // private, and the Suggest server is unlikely to have any useful results
@@ -688,16 +707,16 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
       parts.query.is_nonempty() ||
       (parts.ref.is_nonempty() &&
        (input_.type() == metrics::OmniboxInputType::URL)))
-    return false;
+    return true;
 
   // Don't send anything for https except the hostname.  Hostnames are OK
   // because they are visible when the TCP connection is established, but the
   // specific path may reveal private information.
   if (LowerCaseEqualsASCII(input_.scheme(), url::kHttpsScheme) &&
       parts.path.is_nonempty())
-    return false;
+    return true;
 
-  return true;
+  return false;
 }
 
 void SearchProvider::UpdateAllOldResults(bool minimal_changes) {

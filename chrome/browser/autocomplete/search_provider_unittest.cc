@@ -682,55 +682,63 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
             match.fill_into_edit);
 }
 
-TEST_F(SearchProviderTest, DontSendPrivateDataToSuggest) {
-  // None of the following input strings should be sent to the suggest server,
-  // because they may contain private data.
-  const char* inputs[] = {
-    "username:password",
-    "http://username:password",
-    "https://username:password",
-    "username:password@hostname",
-    "http://username:password@hostname/",
-    "file://filename",
-    "data://data",
-    "unknownscheme:anything",
-    "http://hostname/?query=q",
-    "http://hostname/path#ref",
-    "http://hostname/path #ref",
-    "https://hostname/path",
+TEST_F(SearchProviderTest, SendDataToSuggestAtAppropriateTimes) {
+  struct {
+    std::string input;
+    const bool expect_to_send_to_default_provider;
+  } cases[] = {
+    // None of the following input strings should be sent to the default
+    // suggest server because they may contain potentionally private data.
+    { "username:password",                  false },
+    { "User:f",                             false },
+    { "http://username:password",           false },
+    { "https://username:password",          false },
+    { "username:password@hostname",         false },
+    { "http://username:password@hostname/", false },
+    { "file://filename",                    false },
+    { "data://data",                        false },
+    { "unknownscheme:anything",             false },
+    { "http://hostname/?query=q",           false },
+    { "http://hostname/path#ref",           false },
+    { "http://hostname/path #ref",          false },
+    { "https://hostname/path",              false },
+    // For all of the following input strings, it doesn't make much difference
+    // if we allow them to be sent to the default provider or not.  The strings
+    // need to be in this list of test cases however so that they are tested
+    // against the keyword provider and verified that they are allowed to be
+    // sent to it.
+    { "User:",                              false },
+    { "User::",                             false },
+    { "User:!",                             false },
+    // All of the following input strings should be sent to the default suggest
+    // server because they should not get caught by the private data checks.
+    { "User",                               true },
+    { "query",                              true },
+    { "query with spaces",                  true },
+    { "http://hostname",                    true },
+    { "http://hostname/path",               true },
+    { "http://hostname #ref",               true },
+    { "www.hostname.com #ref",              true },
+    { "https://hostname",                   true },
+    { "#hashtag",                           true },
+    { "foo https://hostname/path",          true },
   };
 
-  for (size_t i = 0; i < arraysize(inputs); ++i) {
-    QueryForInput(ASCIIToUTF16(inputs[i]), false, false);
-    // Make sure the default provider's suggest service was not queried.
-    ASSERT_TRUE(test_factory_.GetFetcherByID(
-        SearchProvider::kDefaultProviderURLFetcherID) == NULL);
-    // Run till the history results complete.
-    RunTillProviderDone();
-  }
-}
-
-TEST_F(SearchProviderTest, SendNonPrivateDataToSuggest) {
-  // All of the following input strings should be sent to the suggest server,
-  // because they should not get caught by the private data checks.
-  const char* inputs[] = {
-    "query",
-    "query with spaces",
-    "http://hostname",
-    "http://hostname/path",
-    "http://hostname #ref",
-    "www.hostname.com #ref",
-    "https://hostname",
-    "#hashtag",
-    "foo https://hostname/path"
-  };
-
-  profile_.BlockUntilHistoryProcessesPendingRequests();
-  for (size_t i = 0; i < arraysize(inputs); ++i) {
-    QueryForInput(ASCIIToUTF16(inputs[i]), false, false);
-    // Make sure the default provider's suggest service was queried.
-    ASSERT_TRUE(test_factory_.GetFetcherByID(
-        SearchProvider::kDefaultProviderURLFetcherID) != NULL);
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    SCOPED_TRACE("for input=" + cases[i].input);
+    QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
+    // Make sure the default provider's suggest service was or was not queried
+    // as appropriate.
+    EXPECT_EQ(
+        cases[i].expect_to_send_to_default_provider,
+        test_factory_.GetFetcherByID(
+            SearchProvider::kDefaultProviderURLFetcherID) != NULL);
+    // Send the same input with an explicitly invoked keyword.  In all cases,
+    // it's okay to send the request to the keyword suggest server.
+    QueryForInput(ASCIIToUTF16("k ") + ASCIIToUTF16(cases[i].input), false,
+                  false);
+    EXPECT_TRUE(test_factory_.GetFetcherByID(
+        SearchProvider::kKeywordProviderURLFetcherID) != NULL);
   }
 }
 
