@@ -348,7 +348,22 @@ void WaitForResizeComplete(WebContents* web_contents) {
     resize_observer.Wait();
   }
 }
-#endif  // USE_AURA
+#elif defined(OS_ANDROID)
+bool IsResizeComplete(RenderWidgetHostImpl* widget_host) {
+  return !widget_host->resize_ack_pending_for_testing();
+}
+
+void WaitForResizeComplete(WebContents* web_contents) {
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
+  if (!IsResizeComplete(widget_host)) {
+    WindowedNotificationObserver resize_observer(
+        NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+        base::Bind(IsResizeComplete, widget_host));
+    resize_observer.Wait();
+  }
+}
+#endif
 
 void SimulateMouseClick(WebContents* web_contents,
                         int modifiers,

@@ -118,9 +118,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, ScreenOrientationChange) {
   TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
   shell()->LoadURL(test_url);
   navigation_observer.Wait();
-#if USE_AURA
   WaitForResizeComplete(shell()->web_contents());
-#endif // USE_AURA
 
 #if defined(OS_WIN)
   // Screen Orientation is currently disabled on Windows 8.
@@ -152,9 +150,9 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, WindowOrientationChange) {
   TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
   shell()->LoadURL(test_url);
   navigation_observer.Wait();
-#if USE_AURA
+#if USE_AURA || defined(OS_ANDROID)
   WaitForResizeComplete(shell()->web_contents());
-#endif // USE_AURA
+#endif  // USE_AURA || defined(OS_ANDROID)
 
   if (!WindowOrientationSupported())
     return;
@@ -191,9 +189,9 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, DISABLED_LockSmoke) {
 #endif // defined(OS_WIN)
 
   navigation_observer.Wait();
-#if USE_AURA
+#if USE_AURA || defined(OS_ANDROID)
   WaitForResizeComplete(shell()->web_contents());
-#endif // USE_AURA
+#endif  // USE_AURA || defined(OS_ANDROID)
 
   std::string expected =
 #if defined(OS_ANDROID)

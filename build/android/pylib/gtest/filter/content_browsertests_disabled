@@ -15,10 +15,6 @@ DatabaseTest.*
 # Crashes
 RenderFrameHostManagerTest.IgnoreRendererDebugURLsWhenCrashed
 
-# Crashes due to using --disable-gpu.
-# Needs to investigate more in http://crbug.com/461624.
-ScreenOrientationBrowserTest.*
-
 # Plugins are not supported.
 BrowserPluginThreadedCompositorPixelTest.*
 BrowserPluginHostTest.*
@@ -74,7 +70,3 @@ GinBrowserTest.GinAndGarbageCollection
 
 # http://crbug.com/343604
 MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo/0
-
-# http://crbug.com/463041
-ScreenOrientationBrowserTest.ScreenOrientationChange
-ScreenOrientationBrowserTest.WindowOrientationCange
