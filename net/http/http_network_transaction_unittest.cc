@@ -8785,11 +8785,11 @@ TEST_P(HttpNetworkTransactionTest,
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
-  const HostPortPair host_port_pair = HostPortPair::FromURL(request.url);
   // Port must be < 1024, or the header will be ignored (since initial port was
   // port 80 (another restricted port).
   http_server_properties->SetAlternateProtocol(
-      host_port_pair, 666 /* port is ignored by MockConnect anyway */,
+      HostPortPair::FromURL(request.url),
+      666 /* port is ignored by MockConnect anyway */,
       AlternateProtocolFromNextProto(GetParam()), 1.0);
 
   scoped_ptr<HttpTransaction> trans(
@@ -8810,12 +8810,10 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("hello world", response_data);
 
   const AlternateProtocolInfo alternate =
-      http_server_properties->GetAlternateProtocol(host_port_pair);
+      http_server_properties->GetAlternateProtocol(
+          HostPortPair::FromURL(request.url));
   EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternate.protocol);
-  const AlternativeService alternative_service(
-      alternate.protocol, host_port_pair.host(), alternate.port);
-  EXPECT_TRUE(
-      http_server_properties->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(alternate.is_broken);
 }
 
 TEST_P(HttpNetworkTransactionTest,

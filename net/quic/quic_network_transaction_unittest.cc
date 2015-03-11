@@ -299,14 +299,11 @@ class QuicNetworkTransactionTest
   }
 
   void ExpectBrokenAlternateProtocolMapping() {
-    const HostPortPair origin = HostPortPair::FromURL(request_.url);
     const AlternateProtocolInfo alternate =
-        session_->http_server_properties()->GetAlternateProtocol(origin);
+        session_->http_server_properties()->GetAlternateProtocol(
+            HostPortPair::FromURL(request_.url));
     EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternate.protocol);
-    const AlternativeService alternative_service(alternate.protocol,
-                                                 origin.host(), alternate.port);
-    EXPECT_TRUE(session_->http_server_properties()->IsAlternativeServiceBroken(
-        alternative_service));
+    EXPECT_TRUE(alternate.is_broken);
   }
 
   void ExpectQuicAlternateProtocolMapping() {
