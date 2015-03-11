@@ -60,12 +60,15 @@ void ConnectivityChecker::Initialize() {
   url_request_context_.reset(builder.Build());
 
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
   loop_proxy_->PostTask(FROM_HERE,
                         base::Bind(&ConnectivityChecker::Check, this));
 }
 
 ConnectivityChecker::~ConnectivityChecker() {
   DCHECK(loop_proxy_.get());
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   loop_proxy_->DeleteSoon(FROM_HERE, url_request_context_.release());
   loop_proxy_->DeleteSoon(FROM_HERE, url_request_.release());
 }
@@ -116,8 +119,16 @@ void ConnectivityChecker::Check() {
 
 void ConnectivityChecker::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
+  VLOG(2) << "OnConnectionTypeChanged " << type;
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
     SetConnectivity(false);
+
+  Cancel();
+  Check();
+}
+
+void ConnectivityChecker::OnIPAddressChanged() {
+  VLOG(2) << "OnIPAddressChanged";
 
   Cancel();
   Check();

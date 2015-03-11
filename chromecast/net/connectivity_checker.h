@@ -28,7 +28,8 @@ namespace chromecast {
 class ConnectivityChecker
     : public base::RefCountedThreadSafe<ConnectivityChecker>,
       public net::URLRequest::Delegate,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver {
+      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   class ConnectivityObserver {
    public:
@@ -71,6 +72,9 @@ class ConnectivityChecker
   // NetworkChangeNotifier::ConnectionTypeObserver implementation:
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // net::NetworkChangeNotifier::IPAddressObserver implementation:
+  void OnIPAddressChanged() override;
 
   // Cancels current connectivity checking in progress.
   void Cancel();
