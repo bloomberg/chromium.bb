@@ -1,0 +1,52 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+import("//testing/test.gni")
+
+source_set("router") {
+  deps = [
+    "//base",
+    "//url",
+  ]
+  sources = [
+    "media_route.cc",
+    "media_route.h",
+    "media_route_id.h",
+    "media_sink.cc",
+    "media_sink.h",
+    "media_source.cc",
+    "media_source.h",
+    "media_source_helper.cc",
+    "media_source_helper.h",
+    "route_id_manager.cc",
+    "route_id_manager.h",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  deps = [
+    ":router",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+  sources = [
+    "media_route_unittest.cc",
+    "media_sink_unittest.cc",
+    "media_source_unittest.cc",
+    "route_id_manager_unittest.cc",
+  ]
+}
+
+# Optional standalone test binary, for faster isolated builds.
+test("unit_tests_main") {
+  deps = [
+    ":unit_tests",
+    "//testing/gmock:gmock_main",
+  ]
+  sources = [
+    ":unittest_files",
+  ]
+}

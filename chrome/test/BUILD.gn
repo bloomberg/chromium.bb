@@ -1484,6 +1484,9 @@ if (!is_android) {
                              ".",
                              "//chrome")
     }
+    if (enable_media_router) {
+      deps += [ "//chrome/browser/media/router:unit_tests" ]
+    }
     if (is_chromeos) {
       sources +=
           rebase_path(unit_gypi_values.chrome_unit_tests_chromeos_sources,

@@ -2327,6 +2327,11 @@
         ['enable_print_preview==1', {
           'sources': [ '<@(chrome_unit_tests_print_preview_sources)' ],
         }],
+        ['enable_media_router==1', {
+          'includes': [
+            'browser/media/router/media_router_tests.gypi',
+          ],
+        }],
         ['enable_captive_portal_detection==1', {
           'sources': [ '<@(chrome_unit_tests_captive_portal_sources)' ],
         }],

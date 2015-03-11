@@ -3182,6 +3182,11 @@
         ['enable_task_manager==1', {
           'sources': [ '<@(chrome_browser_task_manager_sources)' ],
         }],
+        ['enable_media_router==1', {
+          'dependencies': [
+            'browser/media/router/media_router.gyp:media_router',
+          ],
+        }],
         ['enable_spellcheck==1', {
           'sources': [ '<@(chrome_browser_spellchecker_sources)' ],
           'dependencies': [

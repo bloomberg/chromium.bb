@@ -124,6 +124,13 @@ group("gn_all") {
     deps += [ "//ui/ozone" ]
   }
 
+  if (enable_media_router) {
+    deps += [
+      "//chrome/browser/media/router/",
+      "//chrome/browser/media/router:unit_tests",
+    ]
+  }
+
   if (is_win || is_mac || is_chromeos) {
     # RLZ works on these platforms.
     # TODO(GYP): Is this target needed, or pulled in automatically?
