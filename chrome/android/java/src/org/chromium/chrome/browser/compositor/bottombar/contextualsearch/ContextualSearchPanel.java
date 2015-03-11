@@ -213,7 +213,19 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
                 if (mManagementDelegate.isRunningInCompatibilityMode()) {
                     mManagementDelegate.openResolvedSearchUrlInNewTab();
                 } else {
-                    expandPanel(StateChangeReason.SEARCH_BAR_TAP);
+                    // NOTE(pedrosimonetti): If the promo is active and getPromoContentHeight()
+                    // returns -1 that means that the promo page hasn't finished loading, and
+                    // therefore it wasn't possible to calculate the height of the promo contents.
+                    // This will only happen if the user taps on a word that will trigger the
+                    // promo, and then quickly taps on the peeking bar, before the promo page
+                    // (which is local) finishes loading.
+                    //
+                    // TODO(pedrosimonetti): For now, we're simply ignoring the tap action in
+                    // that case. Consider implementing a better approach, where the Panel
+                    // would auto-expand once the height is calculated.
+                    if (!getIsPromoActive() || getPromoContentHeight() != -1) {
+                        expandPanel(StateChangeReason.SEARCH_BAR_TAP);
+                    }
                 }
             } else if (isExpanded()) {
                 peekPanel(StateChangeReason.SEARCH_BAR_TAP);

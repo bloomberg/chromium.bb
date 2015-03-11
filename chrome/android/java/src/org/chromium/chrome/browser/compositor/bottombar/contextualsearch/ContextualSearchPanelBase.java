@@ -506,7 +506,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
     private float mPromoContentHeight;
     private boolean mShouldHidePromoHeader;
-    private static final float DEFAULT_PROMO_HEIGHT_DP = 250.f;
 
      /**
      * Sets the height of the promo content.
@@ -517,11 +516,10 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     /**
-     * Gets the height of the promo content.
+     * Gets the height of the promo content, or -1 if height has not been calculated.
      */
     public float getPromoContentHeight() {
-        return mPromoContentHeight > 0.0f
-                ? mPromoContentHeight : DEFAULT_PROMO_HEIGHT_DP;
+        return mPromoContentHeight > 0.0f ? mPromoContentHeight : -1.f;
     }
 
     /**
