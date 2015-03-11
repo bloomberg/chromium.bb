@@ -35,7 +35,7 @@ bool StyleRuleKeyframe::setKeyText(const String& keyText)
 {
     ASSERT(!keyText.isNull());
 
-    OwnPtr<Vector<double> > keys = CSSParser::parseKeyframeKeyList(keyText);
+    OwnPtr<Vector<double>> keys = CSSParser::parseKeyframeKeyList(keyText);
     if (!keys || keys->isEmpty())
         return false;
 
@@ -48,7 +48,7 @@ const Vector<double>& StyleRuleKeyframe::keys() const
     return m_keys;
 }
 
-void StyleRuleKeyframe::setKeys(PassOwnPtr<Vector<double> > keys)
+void StyleRuleKeyframe::setKeys(PassOwnPtr<Vector<double>> keys)
 {
     ASSERT(keys && !keys->isEmpty());
     m_keys = *keys;
@@ -80,10 +80,10 @@ String StyleRuleKeyframe::cssText() const
     return result.toString();
 }
 
-PassOwnPtr<Vector<double> > StyleRuleKeyframe::createKeyList(CSSParserValueList* keys)
+PassOwnPtr<Vector<double>> StyleRuleKeyframe::createKeyList(CSSParserValueList* keys)
 {
     size_t numKeys = keys ? keys->size() : 0;
-    OwnPtr<Vector<double> > keyVector = adoptPtr(new Vector<double>(numKeys));
+    OwnPtr<Vector<double>> keyVector = adoptPtr(new Vector<double>(numKeys));
     for (size_t i = 0; i < numKeys; ++i) {
         ASSERT(keys->valueAt(i)->unit == blink::CSSPrimitiveValue::CSS_NUMBER);
         double key = keys->valueAt(i)->fValue;

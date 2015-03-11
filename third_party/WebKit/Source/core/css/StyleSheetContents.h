@@ -93,7 +93,7 @@ public:
 
     void setHasFontFaceRule(bool b) { m_hasFontFaceRule = b; }
     bool hasFontFaceRule() const { return m_hasFontFaceRule; }
-    void findFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >& fontFaceRules);
+    void findFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace>>& fontFaceRules);
 
     void parserAddNamespace(const AtomicString& prefix, const AtomicString& uri);
     void parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase>);
@@ -102,8 +102,8 @@ public:
     void clearRules();
 
     // Rules other than @import.
-    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& childRules() const { return m_childRules; }
-    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport> >& importRules() const { return m_importRules; }
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& childRules() const { return m_childRules; }
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport>>& importRules() const { return m_importRules; }
 
     void notifyLoadedSheet(const CSSStyleSheetResource*);
 
@@ -173,8 +173,8 @@ private:
 
     String m_originalURL;
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport> > m_importRules;
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> > m_childRules;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport>> m_importRules;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> m_childRules;
     typedef HashMap<AtomicString, AtomicString> PrefixNamespaceURIMap;
     PrefixNamespaceURIMap m_namespaces;
 
@@ -189,8 +189,8 @@ private:
 
     CSSParserContext m_parserContext;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_loadingClients;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_completedClients;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet>> m_loadingClients;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet>> m_completedClients;
 
     OwnPtrWillBeMember<RuleSet> m_ruleSet;
     String m_sourceMapURL;

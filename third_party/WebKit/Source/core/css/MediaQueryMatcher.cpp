@@ -119,7 +119,7 @@ void MediaQueryMatcher::mediaFeaturesChanged()
     if (!m_document)
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> > listenersToNotify;
+    WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>> listenersToNotify;
     for (const auto& list : m_mediaLists) {
         if (list->mediaFeaturesChanged(&listenersToNotify)) {
             RefPtrWillBeRawPtr<Event> event(MediaQueryListEvent::create(list));
@@ -135,7 +135,7 @@ void MediaQueryMatcher::viewportChanged()
     if (!m_document)
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> > listenersToNotify;
+    WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>> listenersToNotify;
     for (const auto& listener : m_viewportListeners)
         listenersToNotify.append(listener);
 

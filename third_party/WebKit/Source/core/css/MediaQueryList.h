@@ -63,7 +63,7 @@ public:
     void removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
 
     // Will return true if a DOM event should be scheduled.
-    bool mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* listenersToNotify);
+    bool mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>>* listenersToNotify);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -81,7 +81,7 @@ private:
 
     RefPtrWillBeMember<MediaQueryMatcher> m_matcher;
     RefPtrWillBeMember<MediaQuerySet> m_media;
-    typedef WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener> > ListenerList;
+    typedef WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener>> ListenerList;
     ListenerList m_listeners;
     bool m_matchesDirty;
     bool m_matches;

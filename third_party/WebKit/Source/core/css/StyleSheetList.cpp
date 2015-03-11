@@ -38,7 +38,7 @@ StyleSheetList::StyleSheetList(TreeScope* treeScope)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(StyleSheetList);
 
-inline const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& StyleSheetList::styleSheets()
+inline const WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& StyleSheetList::styleSheets()
 {
 #if !ENABLE(OILPAN)
     if (!m_treeScope)
@@ -62,7 +62,7 @@ unsigned StyleSheetList::length()
 
 StyleSheet* StyleSheetList::item(unsigned index)
 {
-    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheets = styleSheets();
+    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& sheets = styleSheets();
     return index < sheets.size() ? sheets[index].get() : 0;
 }
 

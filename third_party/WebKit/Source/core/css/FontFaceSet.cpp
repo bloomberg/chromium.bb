@@ -72,7 +72,7 @@ private:
         m_fontFaces.swap(faces);
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<FontFace> > m_fontFaces;
+    WillBeHeapVector<RefPtrWillBeMember<FontFace>> m_fontFaces;
     int m_numLoading;
     bool m_errorOccured;
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
@@ -324,7 +324,7 @@ bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
         exceptionState.throwTypeError("The argument is not a FontFace.");
         return false;
     }
-    WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >::iterator it = m_nonCSSConnectedFaces.find(fontFace);
+    WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>::iterator it = m_nonCSSConnectedFaces.find(fontFace);
     if (it != m_nonCSSConnectedFaces.end()) {
         m_nonCSSConnectedFaces.remove(it);
         CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
@@ -350,7 +350,7 @@ bool FontFaceSet::has(FontFace* fontFace, ExceptionState& exceptionState) const
     return m_nonCSSConnectedFaces.contains(fontFace) || isCSSConnectedFontFace(fontFace);
 }
 
-const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >& FontFaceSet::cssConnectedFontFaceList() const
+const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>& FontFaceSet::cssConnectedFontFaceList() const
 {
     Document* d = document();
     d->ensureStyleResolver(); // Flush pending style changes.
@@ -376,8 +376,8 @@ void FontFaceSet::forEachInternal(FontFaceSetForEachCallback* callback, const Sc
 {
     if (!inActiveDocumentContext())
         return;
-    const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >& cssConnectedFaces = cssConnectedFontFaceList();
-    WillBeHeapVector<RefPtrWillBeMember<FontFace> > fontFaces;
+    const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>& cssConnectedFaces = cssConnectedFontFaceList();
+    WillBeHeapVector<RefPtrWillBeMember<FontFace>> fontFaces;
     fontFaces.reserveInitialCapacity(cssConnectedFaces.size() + m_nonCSSConnectedFaces.size());
     for (const auto& fontFace : cssConnectedFaces)
         fontFaces.append(fontFace);
@@ -429,7 +429,7 @@ void FontFaceSet::fireDoneEventIfPossible()
     }
 
     if (!m_readyResolvers.isEmpty()) {
-        WillBeHeapVector<OwnPtrWillBeMember<FontsReadyPromiseResolver> > resolvers;
+        WillBeHeapVector<OwnPtrWillBeMember<FontsReadyPromiseResolver>> resolvers;
         m_readyResolvers.swap(resolvers);
         for (size_t index = 0; index < resolvers.size(); ++index)
             resolvers[index]->resolve(this);

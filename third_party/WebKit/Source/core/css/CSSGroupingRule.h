@@ -55,7 +55,7 @@ protected:
     void appendCSSTextForItems(StringBuilder&) const;
 
     RefPtrWillBeMember<StyleRuleGroup> m_groupRule;
-    mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
+    mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule>> m_childRuleCSSOMWrappers;
     mutable OwnPtrWillBeMember<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 

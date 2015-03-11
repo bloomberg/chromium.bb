@@ -142,7 +142,7 @@ private:
     TextPosition m_startPosition;
     bool m_loadCompleted;
     mutable RefPtrWillBeMember<MediaList> m_mediaCSSOMWrapper;
-    mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
+    mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule>> m_childRuleCSSOMWrappers;
     mutable OwnPtrWillBeMember<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 

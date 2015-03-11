@@ -103,8 +103,8 @@ protected:
     DescendantInvalidationSet* invalidationSetForSelector(const CSSSelector&);
 
 private:
-    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<DescendantInvalidationSet> > InvalidationSetMap;
-    typedef WillBeHeapHashMap<CSSSelector::PseudoType, RefPtrWillBeMember<DescendantInvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > PseudoTypeInvalidationSetMap;
+    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<DescendantInvalidationSet>> InvalidationSetMap;
+    typedef WillBeHeapHashMap<CSSSelector::PseudoType, RefPtrWillBeMember<DescendantInvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>> PseudoTypeInvalidationSetMap;
 
     struct FeatureMetadata {
         FeatureMetadata()

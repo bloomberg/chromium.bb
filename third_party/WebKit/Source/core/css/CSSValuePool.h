@@ -70,7 +70,7 @@ private:
 
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, numCSSValueKeywords> m_identifierValueCache;
 
-    typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSPrimitiveValue> > ColorValueCache;
+    typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<CSSPrimitiveValue>> ColorValueCache;
     ColorValueCache m_colorValueCache;
     RefPtrWillBeMember<CSSPrimitiveValue> m_colorTransparent;
     RefPtrWillBeMember<CSSPrimitiveValue> m_colorWhite;
@@ -82,10 +82,10 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, maximumCacheableIntegerValue + 1> m_percentValueCache;
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, maximumCacheableIntegerValue + 1> m_numberValueCache;
 
-    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList> > FontFaceValueCache;
+    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList>> FontFaceValueCache;
     FontFaceValueCache m_fontFaceValueCache;
 
-    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<CSSPrimitiveValue> > FontFamilyValueCache;
+    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<CSSPrimitiveValue>> FontFamilyValueCache;
     FontFamilyValueCache m_fontFamilyValueCache;
 
     friend CSSValuePool& cssValuePool();

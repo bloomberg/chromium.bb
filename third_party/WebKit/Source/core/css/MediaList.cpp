@@ -162,7 +162,7 @@ String MediaQuerySet::mediaText() const
 
 DEFINE_TRACE(MediaQuerySet)
 {
-    // We don't support tracing of vectors of OwnPtrs (ie. OwnPtr<Vector<OwnPtr<MediaQuery> > >).
+    // We don't support tracing of vectors of OwnPtrs (ie. OwnPtr<Vector<OwnPtr<MediaQuery>>>).
     // Since this is a transitional object we are just ifdef'ing it out when oilpan is not enabled.
 #if ENABLE(OILPAN)
     visitor->trace(m_queries);
@@ -197,7 +197,7 @@ void MediaList::setMediaText(const String& value)
 
 String MediaList::item(unsigned index) const
 {
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queries = m_mediaQueries->queryVector();
+    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery>>& queries = m_mediaQueries->queryVector();
     if (index < queries.size())
         return queries[index]->cssText();
     return String();

@@ -28,7 +28,7 @@ public:
     // Used by StyleResolver.
     const Vector<double>& keys() const;
     // Used by BisonCSSParser when constructing a new StyleRuleKeyframe.
-    void setKeys(PassOwnPtr<Vector<double> >);
+    void setKeys(PassOwnPtr<Vector<double>>);
 
     const StylePropertySet& properties() const { return *m_properties; }
     MutableStylePropertySet& mutableProperties();
@@ -38,7 +38,7 @@ public:
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
-    static PassOwnPtr<Vector<double> > createKeyList(CSSParserValueList*);
+    static PassOwnPtr<Vector<double>> createKeyList(CSSParserValueList*);
 
 private:
     StyleRuleKeyframe();

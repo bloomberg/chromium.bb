@@ -178,7 +178,7 @@ bool CSSSegmentedFontFace::checkFont(const String& text) const
     return true;
 }
 
-void CSSSegmentedFontFace::match(const String& text, WillBeHeapVector<RefPtrWillBeMember<FontFace> >& faces) const
+void CSSSegmentedFontFace::match(const String& text, WillBeHeapVector<RefPtrWillBeMember<FontFace>>& faces) const
 {
     for (const auto& fontFace : m_fontFaces) {
         if (fontFace->cssFontFace()->ranges().intersectsWith(text))

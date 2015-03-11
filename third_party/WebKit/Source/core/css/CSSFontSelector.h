@@ -91,7 +91,7 @@ private:
     RawPtrWillBeWeakMember<Document> m_document;
     // FIXME: Move to Document or StyleEngine.
     FontFaceCache m_fontFaceCache;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSFontSelectorClient> > m_clients;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSFontSelectorClient>> m_clients;
 
     RefPtrWillBeMember<FontLoader> m_fontLoader;
     GenericFontFamilySettings m_genericFontFamilySettings;

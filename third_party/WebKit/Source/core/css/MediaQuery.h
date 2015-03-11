@@ -38,7 +38,7 @@
 namespace blink {
 class MediaQueryExp;
 
-typedef WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > ExpressionHeapVector;
+typedef WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>> ExpressionHeapVector;
 
 class MediaQuery : public NoBaseWillBeGarbageCollectedFinalized<MediaQuery> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

@@ -43,7 +43,7 @@ public:
 
     ~StyleRuleKeyframes();
 
-    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >& keyframes() const { return m_keyframes; }
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>& keyframes() const { return m_keyframes; }
 
     void parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe>);
     void wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe>);
@@ -68,7 +68,7 @@ private:
     StyleRuleKeyframes();
     explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > m_keyframes;
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>> m_keyframes;
     AtomicString m_name;
     unsigned m_version : 31;
     unsigned m_isPrefixed : 1;
@@ -115,7 +115,7 @@ private:
     virtual CSSRule::Type type() const override { return KEYFRAMES_RULE; }
 
     RefPtrWillBeMember<StyleRuleKeyframes> m_keyframesRule;
-    mutable WillBeHeapVector<RefPtrWillBeMember<CSSKeyframeRule> > m_childRuleCSSOMWrappers;
+    mutable WillBeHeapVector<RefPtrWillBeMember<CSSKeyframeRule>> m_childRuleCSSOMWrappers;
     mutable OwnPtrWillBeMember<CSSRuleList> m_ruleListCSSOMWrapper;
     bool m_isPrefixed;
 };

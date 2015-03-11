@@ -95,7 +95,7 @@ public:
 #endif
     }
 
-    WillBeHeapVector<RawPtrWillBeMember<StyleRule> > m_list;
+    WillBeHeapVector<RawPtrWillBeMember<StyleRule>> m_list;
 };
 
 // ElementRuleCollector is designed to be used as a stack object.

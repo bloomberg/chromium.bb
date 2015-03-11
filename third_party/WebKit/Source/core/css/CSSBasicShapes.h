@@ -136,7 +136,7 @@ public:
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> getXAt(unsigned i) const { return m_values.at(i * 2); }
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> getYAt(unsigned i) const { return m_values.at(i * 2 + 1); }
-    const WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> >& values() const { return m_values; }
+    const WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>>& values() const { return m_values; }
 
     void setWindRule(WindRule w) { m_windRule = w; }
     WindRule windRule() const { return m_windRule; }
@@ -154,7 +154,7 @@ private:
 
     virtual Type type() const override { return CSSBasicShapePolygonType; }
 
-    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> > m_values;
+    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>> m_values;
     WindRule m_windRule;
 };
 

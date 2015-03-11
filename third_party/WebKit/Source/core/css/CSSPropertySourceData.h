@@ -110,11 +110,11 @@ struct CSSMediaSourceData : public RefCountedWillBeGarbageCollected<CSSMediaSour
 
     DEFINE_INLINE_TRACE() { visitor->trace(queryData); }
 
-    WillBeHeapVector<RefPtrWillBeMember<CSSMediaQuerySourceData> > queryData;
+    WillBeHeapVector<RefPtrWillBeMember<CSSMediaQuerySourceData>> queryData;
 };
 
 struct CSSRuleSourceData;
-typedef WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData> > RuleSourceDataList;
+typedef WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData>> RuleSourceDataList;
 typedef WillBeHeapVector<SourceRange> SelectorRangeList;
 
 struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSourceData> {

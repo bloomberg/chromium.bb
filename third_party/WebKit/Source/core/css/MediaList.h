@@ -54,7 +54,7 @@ public:
 
     void addMediaQuery(PassOwnPtrWillBeRawPtr<MediaQuery>);
 
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queryVector() const { return m_queries; }
+    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery>>& queryVector() const { return m_queries; }
 
     String mediaText() const;
 
@@ -66,7 +66,7 @@ private:
     MediaQuerySet();
     MediaQuerySet(const MediaQuerySet&);
 
-    WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> > m_queries;
+    WillBeHeapVector<OwnPtrWillBeMember<MediaQuery>> m_queries;
 };
 
 class MediaList final : public RefCountedWillBeGarbageCollected<MediaList>, public ScriptWrappable {
