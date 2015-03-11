@@ -224,13 +224,69 @@ InspectorTest.firstElementsTreeOutline = function()
     return WebInspector.panels.elements._treeOutlines[0];
 }
 
+InspectorTest.filterMatchedStyles = function(text)
+{
+    var regex = text ? new RegExp(text, "i") : null;
+    InspectorTest.addResult("Filtering styles by: " + text);
+    WebInspector.panels.elements.sidebarPanes.styles._onFilterChanged(regex);
+}
+
+InspectorTest.dumpRenderedMatchedStyles = function()
+{
+    var styleSections = WebInspector.panels.elements.sidebarPanes.styles.sections;
+    for (var pseudoId in styleSections) {
+        var sections = styleSections[pseudoId].slice();
+        for (var i = 0; i < sections.length; ++i) {
+            var section = sections[i];
+            // Skip sections which were filtered out.
+            if (section.element.classList.contains("hidden"))
+                continue;
+            dumpRenderedSection(section);
+        }
+    }
+
+    function dumpRenderedSection(section)
+    {
+        InspectorTest.addResult(section._selectorElement.textContent + " {");
+        var rootElement = section.propertiesTreeOutline.rootElement();
+        for (var i = 0; i < rootElement.childCount(); ++i)
+            dumpRenderedProperty(rootElement.childAt(i));
+        InspectorTest.addResult("}");
+    }
+
+    function dumpRenderedProperty(property)
+    {
+        var text = new Array(4).join(" ");
+        text += property.nameElement.textContent;
+        text += ":";
+        if (property.isExpandable())
+            text += property.expanded ? "v" : ">";
+        else
+            text += " ";
+        text += property.valueElement.textContent;
+        if (property.listItemElement.classList.contains("filter-match"))
+            text = "F" + text.substring(1);
+        InspectorTest.addResult(text);
+        if (!property.expanded)
+            return;
+        var indent = new Array(8).join(" ");
+        for (var i = 0; i < property.childCount(); ++i) {
+            var childProperty = property.childAt(i);
+            var text = indent;
+            text += String.sprintf("%s: %s", childProperty.nameElement.textContent, childProperty.valueElement.textContent);
+            if (childProperty.listItemElement.classList.contains("filter-match"))
+                text = "F" + text.substring(1);
+            InspectorTest.addResult(text);
+        }
+    }
+}
+
 InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatched, omitLonghands, includeSelectorGroupMarks)
 {
     var styleSections = WebInspector.panels.elements.sidebarPanes.styles.sections;
     if (!excludeComputed)
         printStyleSection(InspectorTest.computedStyleSection(), omitLonghands, includeSelectorGroupMarks);
     for (var pseudoId in styleSections) {
-        var pseudoName = WebInspector.StylesSidebarPane.PseudoIdNames[pseudoId];
         var sections = styleSections[pseudoId].slice();
         for (var i = 0; i < sections.length; ++i) {
             var section = sections[i];
