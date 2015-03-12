@@ -1417,6 +1417,14 @@ Drag from top to exit.
       <message name="IDS_ACCESSIBILITY_FRE_ACCOUNT_SPINNER" desc="Content description for the first run account drop down spinner.">
         Choose account
       </message>
+      
+      <!-- External Navigation Strings -->
+      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING" desc="Alert dialog text warning that user that incognito mode does not continue into external apps.">
+        Leaving incognito mode if this link is opened in an external application. Continue?
+      </message>
+      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING_TITLE" desc="Title for incognito external intent. [CHAR-LIMIT=24]">
+        Warning
+      </message>
 
       <!-- First Run Experience: What's New screens -->
       <message name="IDS_FRE_NEW_RECENTS_MENU_TITLE" desc="Title for the Recents Menu what's-new-screen">

@@ -1,0 +1,354 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.externalnav;
+
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Browser;
+import android.util.Log;
+import android.webkit.WebView;
+
+import org.chromium.base.CommandLine;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.UrlUtilities;
+import org.chromium.ui.base.PageTransition;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+
+/**
+ * Logic related to the URL overriding/intercepting functionality.
+ * This feature allows Chrome to convert certain navigations to Android Intents allowing
+ * applications like Youtube to direct users clicking on a http(s) link to their native app.
+ */
+public class ExternalNavigationHandler {
+    private static final String TAG = "UrlHandler";
+    private static final String SCHEME_WTAI = "wtai://wp/";
+    private static final String SCHEME_WTAI_MC = "wtai://wp/mc;";
+
+    @VisibleForTesting
+    public static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
+
+    private final ExternalNavigationDelegate mDelegate;
+
+    /**
+     * Result types for checking if we should override URL loading.
+     */
+    public enum OverrideUrlLoadingResult {
+        /* We should override the URL loading and launch an intent. */
+        OVERRIDE_WITH_EXTERNAL_INTENT,
+        /* We should override the URL loading and clobber the current tab. */
+        OVERRIDE_WITH_CLOBBERING_TAB,
+        /* We shouldn't override the URL loading. */
+        NO_OVERRIDE,
+    }
+
+    /**
+     * A constructor for UrlHandler.
+     *
+     * @param activity The activity to launch an external intent from.
+     */
+    public ExternalNavigationHandler(Activity activity) {
+        this(new ExternalNavigationDelegateImpl(activity));
+    }
+
+    @VisibleForTesting
+    public ExternalNavigationHandler(ExternalNavigationDelegate delegate) {
+        mDelegate = delegate;
+    }
+
+    /**
+     * Determines whether the URL needs to be sent as an intent to the system,
+     * and sends it, if appropriate.
+     * @return Whether the URL generated an intent, caused a navigation in
+     *         current tab, or wasn't handled at all.
+     */
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+    public OverrideUrlLoadingResult shouldOverrideUrlLoading(ExternalNavigationParams params) {
+        // http://crbug.com/441284 : Disallow firing external intent while Chrome is in the
+        // background.
+        if (params.isApplicationMustBeInForeground() && !mDelegate.isChromeAppInForeground()) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+        // http://crbug.com/464669 : Disallow firing external intent from background tab.
+        if (params.isBackgroundTabNavigation()) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // pageTransition is a combination of an enumeration (core value) and bitmask.
+        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
+        boolean isLink = pageTransitionCore == PageTransition.LINK;
+        boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
+        boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
+        boolean isForwardBackNavigation =
+                (params.getPageTransition() & PageTransition.FORWARD_BACK) != 0;
+
+        // We do not want to show the intent picker for core types typed, bookmarks, auto toplevel,
+        // generated, keyword, keyword generated. See below for exception to typed URL and
+        // redirects:
+        // - http://crbug.com/143118 : URL intercepting should not be invoked on navigations
+        //   initiated by the user in the omnibox / NTP.
+        // - http://crbug.com/159153 : Don't override http or https URLs from the NTP or bookmarks.
+        // - http://crbug.com/162106: Intent picker should not be presented on returning to a page.
+        //   This should be covered by not showing the picker if the core type is reload.
+
+        // http://crbug.com/164194 . A navigation forwards or backwards should never trigger
+        // the intent picker.
+        if (isForwardBackNavigation) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // http://crbug/331571 : Do not override a navigation started from user typing.
+        // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
+        if (params.getRedirectHandler() != null
+                && params.getRedirectHandler().shouldStayInChrome()) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
+        // the link is not an incoming intent from another application, unless it's a redirect (see
+        // below).
+        boolean linkNotFromIntent = isLink && !isFromIntent;
+
+        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null ? false
+                : params.getRedirectHandler().isOnEffectiveIntentRedirectChain();
+
+        // http://crbug.com/170925: We need to show the intent picker when we receive an intent from
+        // another app that 30x redirects to a YouTube/Google Maps/Play Store/Google+ URL etc.
+        boolean incomingIntentRedirect = (isLink && isFromIntent && params.isRedirect())
+                || isOnEffectiveIntentRedirect;
+
+        // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
+        // following a form submit.
+        boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
+
+        if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // Don't override navigation from a chrome:* url to http or https. For example,
+        // when clicking a link in bookmarks or most visited. When navigating from such a
+        // page, there is clear intent to complete the navigation in Chrome.
+        if (params.getReferrerUrl() != null && params.getReferrerUrl().startsWith(
+                UrlConstants.CHROME_SCHEME) && (params.getUrl().startsWith(UrlConstants.HTTP_SCHEME)
+                        || params.getUrl().startsWith(UrlConstants.HTTPS_SCHEME))) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        if (params.getUrl().startsWith(SCHEME_WTAI_MC)) {
+            // wtai://wp/mc;number
+            // number=string(phone-number)
+            Intent intent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(WebView.SCHEME_TEL
+                            + params.getUrl().substring(SCHEME_WTAI_MC.length())));
+            mDelegate.startActivity(intent);
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+        } else if (params.getUrl().startsWith(SCHEME_WTAI)) {
+            // TODO: handle other WTAI schemes.
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // The "about:" schemes are internal to the browser; don't want these to
+        // be dispatched to other apps.
+        if (params.getUrl().startsWith("about:")) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // The "content:" scheme is disabled in Clank. Do not try to start an activity.
+        if (params.getUrl().startsWith("content:")) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // Special case - It makes no sense to use an external application for a YouTube
+        // pairing code URL, since these match the current tab with a device (Chromecast
+        // or similar) it is supposed to be controlling. Using a different application
+        // that isn't expecting this (in particular YouTube) doesn't work.
+        if (params.getUrl().matches(".*youtube\\.com.*[?&]pairingCode=.*")) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // TODO(changwan): check if we need to handle URL even when external intent is off.
+        if (CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.DISABLE_EXTERNAL_INTENT_REQUESTS)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        Intent intent;
+        // perform generic parsing of the URI to turn it into an Intent.
+        try {
+            intent = Intent.parseUri(params.getUrl(), Intent.URI_INTENT_SCHEME);
+        } catch (URISyntaxException ex) {
+            Log.w(TAG, "Bad URI " + params.getUrl() + ": " + ex.getMessage());
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        boolean hasBrowserFallbackUrl = false;
+        String browserFallbackUrl = intent.getStringExtra(EXTRA_BROWSER_FALLBACK_URL);
+        if (browserFallbackUrl != null
+                && UrlUtilities.isValidForIntentFallbackNavigation(browserFallbackUrl)) {
+            hasBrowserFallbackUrl = true;
+        }
+
+        // check whether the intent can be resolved. If not, we will see
+        // whether we can download it from the Market.
+        if (!mDelegate.canResolveActivity(intent)) {
+            if (hasBrowserFallbackUrl) {
+                // NOTE: any further redirection from fall-back URL should not override URL loading.
+                // Otherwise, it can be used in chain for fingerprinting multiple app installation
+                // status in one shot. In order to prevent this scenario, we notify redirection
+                // handler that redirection from the current navigation should stay in Chrome.
+                if (params.getRedirectHandler() != null) {
+                    params.getRedirectHandler()
+                            .setShouldStayInChromeUntilNewUrlLoading();
+                }
+                return mDelegate.clobberCurrentTab(browserFallbackUrl, params.getReferrerUrl(),
+                        params.getTab());
+            }
+            String packagename = intent.getPackage();
+            if (packagename != null) {
+                try {
+                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
+                            "market://details?id=" + packagename
+                            + "&referrer=" + mDelegate.getPackageName()));
+                    intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                    intent.setPackage("com.android.vending");
+                    mDelegate.startActivity(intent);
+                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                } catch (ActivityNotFoundException ex) {
+                    // ignore the error on devices that does not have
+                    // play market installed.
+                    return OverrideUrlLoadingResult.NO_OVERRIDE;
+                }
+            } else {
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
+        }
+
+        if (hasBrowserFallbackUrl) {
+            intent.removeExtra(EXTRA_BROWSER_FALLBACK_URL);
+        }
+
+        // sanitize the Intent, ensuring web pages can not bypass browser
+        // security (only access to BROWSABLE activities).
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.setComponent(null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            Intent selector = intent.getSelector();
+            if (selector != null) {
+                selector.addCategory(Intent.CATEGORY_BROWSABLE);
+                selector.setComponent(null);
+            }
+        }
+        // Set the Browser application ID to us in case the user chooses Chrome
+        // as the app.  This will make sure the link is opened in the same tab
+        // instead of making a new one.
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, mDelegate.getPackageName());
+        if (params.isOpenInNewTab()) intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // Make sure webkit can handle it internally before checking for specialized
+        // handlers. If webkit can't handle it internally, we need to call
+        // startActivityIfNeeded or startActivity.
+        if (UrlUtilities.isAcceptedScheme(params.getUrl())) {
+            if (!mDelegate.isSpecializedHandlerAvailable(intent)) {
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            } else if (params.getReferrerUrl() != null && isLink) {
+                // Current URL has at least one specialized handler available. For navigations
+                // within the same host, keep the navigation inside the browser unless the set of
+                // available apps to handle the new navigation is different. http://crbug.com/463138
+                URI currentUri;
+                URI previousUri;
+                try {
+                    currentUri = new URI(params.getUrl());
+                    previousUri = new URI(params.getReferrerUrl());
+                } catch (URISyntaxException e) {
+                    currentUri = null;
+                    previousUri = null;
+                }
+
+                if (currentUri != null && previousUri != null
+                        && currentUri.getHost().equals(previousUri.getHost())) {
+
+                    Intent previousIntent;
+                    try {
+                        previousIntent = Intent.parseUri(
+                                params.getReferrerUrl(), Intent.URI_INTENT_SCHEME);
+                    } catch (URISyntaxException e) {
+                        previousIntent = null;
+                    }
+
+                    if (previousIntent != null)  {
+                        List<ComponentName> currentHandlers = mDelegate.queryIntentActivities(
+                                intent);
+                        List<ComponentName> previousHandlers = mDelegate.queryIntentActivities(
+                                previousIntent);
+
+                        if (previousHandlers.containsAll(currentHandlers)) {
+                            return OverrideUrlLoadingResult.NO_OVERRIDE;
+                        }
+                    }
+                }
+            }
+        }
+
+        try {
+            if (params.isIncognito() && !mDelegate.willChromeHandleIntent(intent)) {
+                // This intent may leave Chrome.  Warn the user that incognito does not carry over
+                // to apps out side of Chrome.
+                mDelegate.startIncognitoIntent(intent);
+                return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+            } else {
+                if (params.getRedirectHandler() != null && incomingIntentRedirect) {
+                    if (!params.getRedirectHandler().hasNewResolver(intent)) {
+                        return OverrideUrlLoadingResult.NO_OVERRIDE;
+                    }
+                }
+                if (mDelegate.isDocumentMode() && params.getTransitionPageHelper() != null
+                        && params.getTransitionPageHelper().isTransitionStarting()) {
+                    // Use web to native app navigation transitions if there is exactly one
+                    // activity to handle the intent.
+                    List<ComponentName> list = mDelegate.queryIntentActivities(intent);
+                    if (list.size() == 1) {
+                        params.getTransitionPageHelper().transitionToNativeApp(
+                                params.getUrl(), intent);
+                        return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                    }
+                }
+                if (mDelegate.startActivityIfNeeded(intent)) {
+                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                } else {
+                    return OverrideUrlLoadingResult.NO_OVERRIDE;
+                }
+            }
+        } catch (ActivityNotFoundException ex) {
+            // Ignore the error. If no application can handle the URL,
+            // assume the browser can handle it.
+        }
+
+        return OverrideUrlLoadingResult.NO_OVERRIDE;
+    }
+
+    /**
+     * @return Whether the |url| could be handled by an external application on the system.
+     */
+    public boolean canExternalAppHandleUrl(String url) {
+        if (url.startsWith(SCHEME_WTAI_MC)) return true;
+        try {
+            Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+            return intent.getPackage() != null || mDelegate.canResolveActivity(intent);
+        } catch (URISyntaxException ex) {
+            // Ignore the error.
+        }
+        return false;
+    }
+}
