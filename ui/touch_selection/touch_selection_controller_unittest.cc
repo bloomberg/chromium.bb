@@ -304,6 +304,11 @@ TEST_F(TouchSelectionControllerTest, InsertionWithShowOnTapForEmptyEditable) {
   ChangeInsertion(insertion_rect, visible);
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_SHOWN));
   EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventAnchor());
+
+  // Additional taps should not hide the insertion handle in this case.
+  controller().OnTapEvent();
+  ChangeInsertion(insertion_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
 }
 
 TEST_F(TouchSelectionControllerTest, InsertionAppearsAfterTapFollowingTyping) {
