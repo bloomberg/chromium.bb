@@ -162,7 +162,7 @@ class TestCastSocket : public CastSocketImpl {
  public:
   static scoped_ptr<TestCastSocket> Create(
       Logger* logger,
-      long device_capabilities = cast_channel::CastDeviceCapability::NONE) {
+      uint64 device_capabilities = cast_channel::CastDeviceCapability::NONE) {
     return scoped_ptr<TestCastSocket>(
         new TestCastSocket(CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL,
                            kDistantTimeoutMillis, logger, device_capabilities));
@@ -170,7 +170,7 @@ class TestCastSocket : public CastSocketImpl {
 
   static scoped_ptr<TestCastSocket> CreateSecure(
       Logger* logger,
-      long device_capabilities = cast_channel::CastDeviceCapability::NONE) {
+      uint64 device_capabilities = cast_channel::CastDeviceCapability::NONE) {
     return scoped_ptr<TestCastSocket>(new TestCastSocket(
         CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL_VERIFIED,
         kDistantTimeoutMillis, logger, device_capabilities));
@@ -180,7 +180,7 @@ class TestCastSocket : public CastSocketImpl {
                           ChannelAuthType channel_auth,
                           int64 timeout_ms,
                           Logger* logger,
-                          long device_capabilities)
+                          uint64 device_capabilities)
       : CastSocketImpl("some_extension_id",
                        ip_endpoint,
                        channel_auth,
@@ -739,17 +739,26 @@ TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
       .WillOnce(RunCompletionCallback<1>(net::OK));
   socket_->AddReadResult(net::SYNCHRONOUS, net::ERR_FAILED);
 
+  LastErrors last_errors;
+  last_errors.net_return_value = 555;
+  LastErrors last_errors_captured;
+  last_errors_captured.net_return_value = 0;
+
+  EXPECT_CALL(*read_delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR, _))
+      .WillOnce(SaveArg<1>(&last_errors_captured));
+
   EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_SOCKET_ERROR));
   EXPECT_CALL(*socket_->GetMockTransport(), Start());
   socket_->Connect(read_delegate_.Pass(),
                    base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   socket_->GetMockTransport()->current_delegate()->OnError(
-      CHANNEL_ERROR_SOCKET_ERROR, LastErrors());
+      CHANNEL_ERROR_SOCKET_ERROR, last_errors);
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
+  EXPECT_EQ(555, last_errors_captured.net_return_value);
 }
 
 TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
