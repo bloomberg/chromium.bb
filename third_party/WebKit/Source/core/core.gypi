@@ -2725,6 +2725,8 @@
             'html/canvas/CanvasRenderingContext.h',
             'html/canvas/CanvasRenderingContext2D.cpp',
             'html/canvas/CanvasRenderingContext2D.h',
+            'html/canvas/CanvasRenderingContext2DState.cpp',
+            'html/canvas/CanvasRenderingContext2DState.h',
             'html/canvas/CanvasStyle.cpp',
             'html/canvas/CanvasStyle.h',
             'html/canvas/ContextAttributeHelpers.cpp',

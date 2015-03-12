@@ -45,7 +45,6 @@ public:
     void finalizeFrame(const FloatRect&) override;
     void setImageBuffer(ImageBuffer*) override;
     PassRefPtr<SkImage> newImageSnapshot() const override;
-    bool needsClipTracking() const override { return !m_fallbackSurface; }
     void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode, bool needsCopy) override;
     bool isExpensiveToPaint() override;
     void setHasExpensiveOp() override { m_currentFrameHasExpensiveOp = true; }

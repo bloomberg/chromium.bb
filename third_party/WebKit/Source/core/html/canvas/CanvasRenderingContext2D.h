@@ -28,21 +28,11 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/UnionTypesCore.h"
-#include "core/css/CSSFontSelectorClient.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/ClipList.h"
-#include "core/html/canvas/HitRegion.h"
-#include "core/svg/SVGMatrixTearOff.h"
-#include "platform/fonts/Font.h"
-#include "platform/graphics/Color.h"
-#include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/Path.h"
-#include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
@@ -53,17 +43,19 @@ namespace blink { class WebLayer; }
 namespace blink {
 
 class CanvasImageSource;
-class CanvasGradient;
-class CanvasPattern;
-class CanvasStyle;
-class Path2D;
+class CanvasRenderingContext2DState;
 class Element;
 class ExceptionState;
 class FloatRect;
-class HTMLCanvasElement;
-class HTMLImageElement;
-class HTMLVideoElement;
+class FloatSize;
+class Font;
+class FontMetrics;
+class HitRegion;
+class HitRegionOptions;
+class HitRegionManager;
 class ImageData;
+class Path2D;
+class SVGMatrixTearOff;
 class TextMetrics;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
@@ -123,13 +115,10 @@ public:
     String globalCompositeOperation() const;
     void setGlobalCompositeOperation(const String&);
 
-    void save() { ++m_stateStack.last()->m_unrealizedSaveCount; }
+    void save();
     void restore();
 
-    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> currentTransform() const
-    {
-        return SVGMatrixTearOff::create(state().m_transform);
-    }
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> currentTransform() const;
     void setCurrentTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>);
 
     void scale(float sx, float sy);
@@ -195,9 +184,6 @@ public:
     void strokeText(const String& text, float x, float y, float maxWidth);
     PassRefPtrWillBeRawPtr<TextMetrics> measureText(const String& text);
 
-    LineCap getLineCap() const { return state().m_lineCap; }
-    LineJoin getLineJoin() const { return state().m_lineJoin; }
-
     bool imageSmoothingEnabled() const;
     void setImageSmoothingEnabled(bool);
 
@@ -229,71 +215,10 @@ public:
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 
-    enum Direction {
-        DirectionInherit,
-        DirectionRTL,
-        DirectionLTR
-    };
-
-    enum ClipListCopyMode {
-        CopyClipList,
-        DontCopyClipList
-    };
-
-    class State final : public CSSFontSelectorClient {
-    public:
-        State();
-        virtual ~State();
-
-        State(const State&, ClipListCopyMode = CopyClipList);
-        State& operator=(const State&);
-
-        // CSSFontSelectorClient implementation
-        virtual void fontsNeedUpdate(CSSFontSelector*) override;
-
-        DECLARE_VIRTUAL_TRACE();
-
-        unsigned m_unrealizedSaveCount;
-
-        String m_unparsedStrokeColor;
-        String m_unparsedFillColor;
-        RefPtrWillBeMember<CanvasStyle> m_strokeStyle;
-        RefPtrWillBeMember<CanvasStyle> m_fillStyle;
-
-        float m_lineWidth;
-        LineCap m_lineCap;
-        LineJoin m_lineJoin;
-        float m_miterLimit;
-        FloatSize m_shadowOffset;
-        float m_shadowBlur;
-        RGBA32 m_shadowColor;
-        float m_globalAlpha;
-        SkXfermode::Mode m_globalComposite;
-        AffineTransform m_transform;
-        bool m_invertibleCTM;
-        Vector<float> m_lineDash;
-        float m_lineDashOffset;
-        bool m_imageSmoothingEnabled;
-
-        // Text state.
-        TextAlign m_textAlign;
-        TextBaseline m_textBaseline;
-        Direction m_direction;
-
-        String m_unparsedFont;
-        Font m_font;
-        bool m_realizedFont;
-
-        bool m_hasClip;
-        bool m_hasComplexClip;
-
-        ClipList m_clipList;
-    };
-
     CanvasRenderingContext2D(HTMLCanvasElement*, const CanvasContextCreationAttributes& attrs, Document&);
 
-    State& modifiableState() { ASSERT(!state().m_unrealizedSaveCount); return *m_stateStack.last(); }
-    const State& state() const { return *m_stateStack.last(); }
+    CanvasRenderingContext2DState& modifiableState();
+    const CanvasRenderingContext2DState& state() const { return *m_stateStack.last(); }
 
     void applyLineDash() const;
     void setShadow(const FloatSize& offset, float blur, RGBA32 color);
@@ -343,8 +268,6 @@ private:
     void drawFocusRing(const Path&);
     void updateFocusRingElementAccessibility(const Path&, Element*);
 
-    bool hasClip() { return state().m_hasClip; }
-
     void validateStateStack();
 
     enum DrawType {
@@ -367,12 +290,11 @@ private:
     void stop() override final;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual bool isTransformInvertible() const override { return state().m_invertibleCTM; }
+    virtual bool isTransformInvertible() const;
 
     virtual WebLayer* platformLayer() const override;
-    TextDirection toTextDirection(Direction, LayoutStyle** computedStyle = nullptr) const;
 
-    WillBeHeapVector<OwnPtrWillBeMember<State>> m_stateStack;
+    WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>> m_stateStack;
     OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;
     bool m_usesCSSCompatibilityParseMode;
     AntiAliasingMode m_clipAntialiasing;

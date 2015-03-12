@@ -9,6 +9,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/HitRegion.h"
 
 namespace blink {
 

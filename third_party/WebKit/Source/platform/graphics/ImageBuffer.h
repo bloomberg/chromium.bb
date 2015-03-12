@@ -93,7 +93,6 @@ public:
     bool isExpensiveToPaint() const { return m_surface->isExpensiveToPaint(); }
     bool isSurfaceValid() const;
     bool restoreSurface() const;
-    bool needsClipTracking() const { return m_surface->needsClipTracking(); }
     void didDraw(const FloatRect& rect) const { m_surface->didDraw(rect); }
 
     void setFilterLevel(SkPaint::FilterLevel filterLevel) { m_surface->setFilterLevel(filterLevel); }

@@ -113,6 +113,25 @@ PASS matrix.f is 0
 PASS imgdata[4] is 0
 PASS imgdata[5] is 0
 PASS imgdata[6] is 255
+Check that non-invertible transforms are reflected in currentTransform
+PASS matrix.a is 1
+PASS matrix.b is 0
+PASS matrix.c is 0
+PASS matrix.d is 1
+PASS matrix.e is 1
+PASS matrix.f is 2
+PASS matrix.a is 0
+PASS matrix.b is 0
+PASS matrix.c is 0
+PASS matrix.d is 0
+PASS matrix.e is 1
+PASS matrix.f is 2
+PASS matrix.a is 1
+PASS matrix.b is 0
+PASS matrix.c is 0
+PASS matrix.d is 1
+PASS matrix.e is 0
+PASS matrix.f is 0
 Check assigning an invalid object throws exception as expected
 PASS ctx.currentTransform = ctx threw exception TypeError: Failed to set the 'currentTransform' property on 'CanvasRenderingContext2D': The provided value is not of type 'SVGMatrix'..
 PASS ctx.currentTransform = undefined threw exception TypeError: Failed to set the 'currentTransform' property on 'CanvasRenderingContext2D': The provided value is not of type 'SVGMatrix'..

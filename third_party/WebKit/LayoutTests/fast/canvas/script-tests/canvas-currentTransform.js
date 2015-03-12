@@ -173,6 +173,18 @@ shouldBe("imgdata[4]", "0");
 shouldBe("imgdata[5]", "0");
 shouldBe("imgdata[6]", "255");
 
+debug("Check that non-invertible transforms are reflected in currentTransform");
+setCurrentTransform(ctx, 1, 0, 0, 1, 1, 2);
+ctx.scale(0, 0);
+matrix = ctx.currentTransform;
+shouldBe("matrix.a", "0");
+shouldBe("matrix.b", "0");
+shouldBe("matrix.c", "0");
+shouldBe("matrix.d", "0");
+shouldBe("matrix.e", "1");
+shouldBe("matrix.f", "2");
+setCurrentTransform(ctx, 1, 0, 0, 1, 0, 0);
+
 debug("Check assigning an invalid object throws exception as expected");
 shouldThrow("ctx.currentTransform = ctx", '"TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'."');
 shouldThrow("ctx.currentTransform = undefined", '"TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'."');

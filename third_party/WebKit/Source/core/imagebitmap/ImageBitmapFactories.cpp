@@ -47,6 +47,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/ImageSource.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
+#include "public/platform/WebSize.h"
 #include <v8.h>
 
 namespace blink {
