@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
                                          syncer::AttachmentServiceProxy());
   // Sync is installing a new extension, so it pends.
   EXPECT_FALSE(sync_service->ProcessExtensionSyncData(
-      extensions::ExtensionSyncData(sync_data)));
+      *extensions::ExtensionSyncData::CreateFromSyncData(sync_data)));
 
   WaitForExtensionInstall();
   content::RunAllBlockingPoolTasksUntilIdle();

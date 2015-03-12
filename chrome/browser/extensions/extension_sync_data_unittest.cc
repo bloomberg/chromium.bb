@@ -27,8 +27,10 @@ const char kName[] = "MyExtension";
 void ProtobufToSyncDataEqual(const sync_pb::EntitySpecifics& entity) {
   syncer::SyncData sync_data =
       syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
-  ExtensionSyncData extension_sync_data(sync_data);
-  syncer::SyncData output_sync_data = extension_sync_data.GetSyncData();
+  scoped_ptr<ExtensionSyncData> extension_sync_data =
+      ExtensionSyncData::CreateFromSyncData(sync_data);
+  ASSERT_TRUE(extension_sync_data.get());
+  syncer::SyncData output_sync_data = extension_sync_data->GetSyncData();
   const sync_pb::ExtensionSpecifics& output =
       output_sync_data.GetSpecifics().extension();
   const sync_pb::ExtensionSpecifics& input = entity.extension();
@@ -53,18 +55,20 @@ void ProtobufToSyncDataEqual(const sync_pb::EntitySpecifics& entity) {
 // confirms that the input is the same as the output.
 void SyncDataToProtobufEqual(const ExtensionSyncData& input) {
   syncer::SyncData sync_data = input.GetSyncData();
-  ExtensionSyncData output(sync_data);
+  scoped_ptr<ExtensionSyncData> output =
+      ExtensionSyncData::CreateFromSyncData(sync_data);
+  ASSERT_TRUE(output.get());
 
-  EXPECT_EQ(input.id(), output.id());
-  EXPECT_EQ(input.uninstalled(), output.uninstalled());
-  EXPECT_EQ(input.enabled(), output.enabled());
-  EXPECT_EQ(input.incognito_enabled(), output.incognito_enabled());
-  EXPECT_EQ(input.remote_install(), output.remote_install());
-  EXPECT_EQ(input.installed_by_custodian(), output.installed_by_custodian());
-  EXPECT_EQ(input.all_urls_enabled(), output.all_urls_enabled());
-  EXPECT_TRUE(input.version().Equals(output.version()));
-  EXPECT_EQ(input.update_url(), output.update_url());
-  EXPECT_EQ(input.name(), output.name());
+  EXPECT_EQ(input.id(), output->id());
+  EXPECT_EQ(input.uninstalled(), output->uninstalled());
+  EXPECT_EQ(input.enabled(), output->enabled());
+  EXPECT_EQ(input.incognito_enabled(), output->incognito_enabled());
+  EXPECT_EQ(input.remote_install(), output->remote_install());
+  EXPECT_EQ(input.installed_by_custodian(), output->installed_by_custodian());
+  EXPECT_EQ(input.all_urls_enabled(), output->all_urls_enabled());
+  EXPECT_TRUE(input.version().Equals(output->version()));
+  EXPECT_EQ(input.update_url(), output->update_url());
+  EXPECT_EQ(input.name(), output->name());
 }
 
 }  // namespace

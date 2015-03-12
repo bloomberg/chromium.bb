@@ -8472,6 +8472,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BadSyncDataReason" enum="BadSyncDataReason">
+  <owner>yoz@chromium.org</owner>
+  <summary>
+    The reason a valid ExtensionSyncData could not be parsed from a SyncData
+    received from sync.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.CheckForExternalUpdatesTime">
   <owner>rkaplow@chromium.org</owner>
   <summary>
@@ -44813,6 +44821,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Unused"/>
   <int value="1" label="Success"/>
   <int value="2" label="Failure"/>
+</enum>
+
+<enum name="BadSyncDataReason" type="int">
+  <int value="0" label="Bad extension ID"/>
+  <int value="1" label="Bad version"/>
+  <int value="2" label="Bad update URL"/>
+  <int value="3" label="No ExtensionSpecifics"/>
 </enum>
 
 <enum name="BaseRelocationType" type="int">

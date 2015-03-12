@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 #include "sync/api/sync_change.h"
 #include "url/gurl.h"
@@ -33,14 +34,19 @@ class ExtensionSyncData {
   };
 
   ExtensionSyncData();
-  explicit ExtensionSyncData(const syncer::SyncData& sync_data);
-  explicit ExtensionSyncData(const syncer::SyncChange& sync_change);
   ExtensionSyncData(const Extension& extension,
                     bool enabled,
                     bool incognito_enabled,
                     bool remote_install,
                     OptionalBoolean all_urls_enabled);
   ~ExtensionSyncData();
+
+  // For constructing an ExtensionSyncData from received sync data.
+  // May return null if the sync data was invalid.
+  static scoped_ptr<ExtensionSyncData> CreateFromSyncData(
+      const syncer::SyncData& sync_data);
+  static scoped_ptr<ExtensionSyncData> CreateFromSyncChange(
+      const syncer::SyncChange& sync_change);
 
   // Retrieve sync data from this class.
   syncer::SyncData GetSyncData() const;
@@ -50,8 +56,8 @@ class ExtensionSyncData {
   // Convert an ExtensionSyncData back out to a sync structure.
   void PopulateExtensionSpecifics(sync_pb::ExtensionSpecifics* specifics) const;
 
-  // Populate this class from sync inputs.
-  void PopulateFromExtensionSpecifics(
+  // Populate this class from sync inputs. Returns true if the input was valid.
+  bool PopulateFromExtensionSpecifics(
       const sync_pb::ExtensionSpecifics& specifics);
 
   void set_uninstalled(bool uninstalled);
@@ -77,7 +83,7 @@ class ExtensionSyncData {
 
  private:
   // Populate this class from sync inputs.
-  void PopulateFromSyncData(const syncer::SyncData& sync_data);
+  bool PopulateFromSyncData(const syncer::SyncData& sync_data);
 
   std::string id_;
   bool uninstalled_;

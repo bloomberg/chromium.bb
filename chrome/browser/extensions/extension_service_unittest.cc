@@ -161,6 +161,7 @@ using content::PluginService;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::AppSorting;
+using extensions::AppSyncData;
 using extensions::Blacklist;
 using extensions::CrxInstaller;
 using extensions::Extension;
@@ -5872,8 +5873,8 @@ TEST_F(ExtensionServiceTest, DisableExtensionFromSync) {
   const Extension* extension = service()->GetExtensionById(good0, true);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
-  extensions::ExtensionSyncData disable_good_crx(
-      *extension, false, false, false, ExtensionSyncData::BOOLEAN_UNSET);
+  ExtensionSyncData disable_good_crx(*extension, false, false, false,
+                                     ExtensionSyncData::BOOLEAN_UNSET);
 
   // Then sync data arrives telling us to disable |good0|.
   syncer::SyncDataList sync_data;
@@ -5919,8 +5920,8 @@ TEST_F(ExtensionServiceTest, DontDisableExtensionWithPendingEnableFromSync) {
 
   // Now sync data comes in that says to disable good0. This should be
   // ignored.
-  extensions::ExtensionSyncData disable_good_crx(
-      *extension, false, false, false, ExtensionSyncData::BOOLEAN_FALSE);
+  ExtensionSyncData disable_good_crx(*extension, false, false, false,
+                                     ExtensionSyncData::BOOLEAN_FALSE);
   syncer::SyncDataList sync_data;
   sync_data.push_back(disable_good_crx.GetSyncData());
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -5952,17 +5953,19 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
   syncer::SyncDataList list =
       extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
-  extensions::ExtensionSyncData data(list[0]);
-  EXPECT_EQ(extension->id(), data.id());
-  EXPECT_FALSE(data.uninstalled());
-  EXPECT_EQ(service()->IsExtensionEnabled(good_crx), data.enabled());
+  scoped_ptr<ExtensionSyncData> data =
+      ExtensionSyncData::CreateFromSyncData(list[0]);
+  ASSERT_TRUE(data.get());
+  EXPECT_EQ(extension->id(), data->id());
+  EXPECT_FALSE(data->uninstalled());
+  EXPECT_EQ(service()->IsExtensionEnabled(good_crx), data->enabled());
   EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile()),
-            data.incognito_enabled());
-  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data.all_urls_enabled());
-  EXPECT_TRUE(data.version().Equals(*extension->version()));
+            data->incognito_enabled());
+  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
+  EXPECT_TRUE(data->version().Equals(*extension->version()));
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
-            data.update_url());
-  EXPECT_EQ(extension->name(), data.name());
+            data->update_url());
+  EXPECT_EQ(extension->name(), data->name());
 }
 
 TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
@@ -5984,17 +5987,19 @@ TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
   syncer::SyncDataList list =
       extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
-  extensions::ExtensionSyncData data(list[0]);
-  EXPECT_EQ(extension->id(), data.id());
-  EXPECT_FALSE(data.uninstalled());
-  EXPECT_EQ(service()->IsExtensionEnabled(good_crx), data.enabled());
+  scoped_ptr<ExtensionSyncData> data =
+      ExtensionSyncData::CreateFromSyncData(list[0]);
+  ASSERT_TRUE(data.get());
+  EXPECT_EQ(extension->id(), data->id());
+  EXPECT_FALSE(data->uninstalled());
+  EXPECT_EQ(service()->IsExtensionEnabled(good_crx), data->enabled());
   EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile()),
-            data.incognito_enabled());
-  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data.all_urls_enabled());
-  EXPECT_TRUE(data.version().Equals(*extension->version()));
+            data->incognito_enabled());
+  EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
+  EXPECT_TRUE(data->version().Equals(*extension->version()));
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
-            data.update_url());
-  EXPECT_EQ(extension->name(), data.name());
+            data->update_url());
+  EXPECT_EQ(extension->name(), data->name());
 }
 
 TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
@@ -6036,10 +6041,12 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    extensions::ExtensionSyncData data(list[0]);
-    EXPECT_TRUE(data.enabled());
-    EXPECT_FALSE(data.incognito_enabled());
-    EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data.all_urls_enabled());
+    scoped_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(data.get());
+    EXPECT_TRUE(data->enabled());
+    EXPECT_FALSE(data->incognito_enabled());
+    EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
   }
 
   service()->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
@@ -6047,10 +6054,12 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    extensions::ExtensionSyncData data(list[0]);
-    EXPECT_FALSE(data.enabled());
-    EXPECT_FALSE(data.incognito_enabled());
-    EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data.all_urls_enabled());
+    scoped_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(data.get());
+    EXPECT_FALSE(data->enabled());
+    EXPECT_FALSE(data->incognito_enabled());
+    EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
   }
 
   extensions::util::SetIsIncognitoEnabled(good_crx, profile(), true);
@@ -6060,10 +6069,12 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    extensions::ExtensionSyncData data(list[0]);
-    EXPECT_FALSE(data.enabled());
-    EXPECT_TRUE(data.incognito_enabled());
-    EXPECT_EQ(ExtensionSyncData::BOOLEAN_FALSE, data.all_urls_enabled());
+    scoped_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(data.get());
+    EXPECT_FALSE(data->enabled());
+    EXPECT_TRUE(data->incognito_enabled());
+    EXPECT_EQ(ExtensionSyncData::BOOLEAN_FALSE, data->all_urls_enabled());
   }
 
   service()->EnableExtension(good_crx);
@@ -6073,10 +6084,12 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    extensions::ExtensionSyncData data(list[0]);
-    EXPECT_TRUE(data.enabled());
-    EXPECT_TRUE(data.incognito_enabled());
-    EXPECT_EQ(ExtensionSyncData::BOOLEAN_TRUE, data.all_urls_enabled());
+    scoped_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(data.get());
+    EXPECT_TRUE(data->enabled());
+    EXPECT_TRUE(data->incognito_enabled());
+    EXPECT_EQ(ExtensionSyncData::BOOLEAN_TRUE, data->all_urls_enabled());
   }
 }
 
@@ -6144,9 +6157,10 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    extensions::AppSyncData app_sync_data(list[0]);
-    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data.app_launch_ordinal()));
-    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data.page_ordinal()));
+    scoped_ptr<AppSyncData> app_sync_data =
+        AppSyncData::CreateFromSyncData(list[0]);
+    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->page_ordinal()));
   }
 
   AppSorting* sorting = ExtensionPrefs::Get(profile())->app_sorting();
@@ -6156,9 +6170,11 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    extensions::AppSyncData app_sync_data(list[0]);
-    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data.app_launch_ordinal()));
-    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data.page_ordinal()));
+    scoped_ptr<AppSyncData> app_sync_data =
+        AppSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(app_sync_data.get());
+    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data->app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->page_ordinal()));
   }
 
   sorting->SetPageOrdinal(app->id(), initial_ordinal.CreateAfter());
@@ -6167,9 +6183,11 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    extensions::AppSyncData app_sync_data(list[0]);
-    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data.app_launch_ordinal()));
-    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data.page_ordinal()));
+    scoped_ptr<AppSyncData> app_sync_data =
+        AppSyncData::CreateFromSyncData(list[0]);
+    ASSERT_TRUE(app_sync_data.get());
+    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data->app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data->page_ordinal()));
   }
 }
 
@@ -6206,9 +6224,10 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 3U);
 
-    extensions::AppSyncData data[kAppCount];
+    scoped_ptr<AppSyncData> data[kAppCount];
     for (size_t i = 0; i < kAppCount; ++i) {
-      data[i] = extensions::AppSyncData(list[i]);
+      data[i] = AppSyncData::CreateFromSyncData(list[i]);
+      ASSERT_TRUE(data[i].get());
     }
 
     // The sync data is not always in the same order our apps were installed in,
@@ -6217,8 +6236,8 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
     syncer::StringOrdinal app_launch_ordinals[kAppCount];
     for (size_t i = 0; i < kAppCount; ++i) {
       for (size_t j = 0; j < kAppCount; ++j) {
-        if (apps[i]->id() == data[j].id())
-          app_launch_ordinals[i] = data[j].app_launch_ordinal();
+        if (apps[i]->id() == data[j]->id())
+          app_launch_ordinals[i] = data[j]->app_launch_ordinal();
       }
     }
 

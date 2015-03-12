@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_APP_SYNC_DATA_H_
 #define CHROME_BROWSER_EXTENSIONS_APP_SYNC_DATA_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "extensions/common/constants.h"
 #include "sync/api/string_ordinal.h"
@@ -28,8 +29,6 @@ class ExtensionSyncData;
 class AppSyncData {
  public:
   AppSyncData();
-  explicit AppSyncData(const syncer::SyncData& sync_data);
-  explicit AppSyncData(const syncer::SyncChange& sync_change);
   AppSyncData(const Extension& extension,
               bool enabled,
               bool incognito_enabled,
@@ -39,6 +38,13 @@ class AppSyncData {
               const syncer::StringOrdinal& page_ordinal,
               extensions::LaunchType launch_type);
   ~AppSyncData();
+
+  // For constructing an AppSyncData from received sync data.
+  // May return null if the sync data was invalid.
+  static scoped_ptr<AppSyncData> CreateFromSyncData(
+      const syncer::SyncData& sync_data);
+  static scoped_ptr<AppSyncData> CreateFromSyncChange(
+      const syncer::SyncChange& sync_change);
 
   // Retrive sync data from this class.
   syncer::SyncData GetSyncData() const;
@@ -80,10 +86,10 @@ class AppSyncData {
   // Convert an AppSyncData back out to a sync structure.
   void PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const;
 
-  // Populate this class from sync inputs.
-  void PopulateFromAppSpecifics(
-      const sync_pb::AppSpecifics& specifics);
-  void PopulateFromSyncData(const syncer::SyncData& sync_data);
+  // Populate this class from sync inputs. Return true if the input
+  // was valid.
+  bool PopulateFromAppSpecifics(const sync_pb::AppSpecifics& specifics);
+  bool PopulateFromSyncData(const syncer::SyncData& sync_data);
 
   ExtensionSyncData extension_sync_data_;
   syncer::StringOrdinal app_launch_ordinal_;
@@ -97,4 +103,3 @@ class AppSyncData {
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_SYNC_DATA_H_
-

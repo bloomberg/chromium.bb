@@ -15,16 +15,6 @@ namespace extensions {
 
 AppSyncData::AppSyncData() {}
 
-AppSyncData::AppSyncData(const syncer::SyncData& sync_data) {
-  PopulateFromSyncData(sync_data);
-}
-
-AppSyncData::AppSyncData(const syncer::SyncChange& sync_change) {
-  PopulateFromSyncData(sync_change.sync_data());
-  extension_sync_data_.set_uninstalled(
-      sync_change.change_type() == syncer::SyncChange::ACTION_DELETE);
-}
-
 AppSyncData::AppSyncData(const Extension& extension,
                          bool enabled,
                          bool incognito_enabled,
@@ -49,6 +39,27 @@ AppSyncData::AppSyncData(const Extension& extension,
 }
 
 AppSyncData::~AppSyncData() {}
+
+// static
+scoped_ptr<AppSyncData> AppSyncData::CreateFromSyncData(
+    const syncer::SyncData& sync_data) {
+  scoped_ptr<AppSyncData> data(new AppSyncData);
+  if (data->PopulateFromSyncData(sync_data))
+    return data.Pass();
+  return scoped_ptr<AppSyncData>();
+}
+
+// static
+scoped_ptr<AppSyncData> AppSyncData::CreateFromSyncChange(
+    const syncer::SyncChange& sync_change) {
+  scoped_ptr<AppSyncData> data(CreateFromSyncData(sync_change.sync_data()));
+  if (!data.get())
+    return scoped_ptr<AppSyncData>();
+
+  data->extension_sync_data_.set_uninstalled(sync_change.change_type() ==
+                                             syncer::SyncChange::ACTION_DELETE);
+  return data.Pass();
+}
 
 syncer::SyncData AppSyncData::GetSyncData() const {
   sync_pb::EntitySpecifics specifics;
@@ -95,9 +106,11 @@ void AppSyncData::PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const {
       specifics->mutable_extension());
 }
 
-void AppSyncData::PopulateFromAppSpecifics(
+bool AppSyncData::PopulateFromAppSpecifics(
     const sync_pb::AppSpecifics& specifics) {
-  extension_sync_data_.PopulateFromExtensionSpecifics(specifics.extension());
+  if (!extension_sync_data_.PopulateFromExtensionSpecifics(
+          specifics.extension()))
+    return false;
 
   app_launch_ordinal_ = syncer::StringOrdinal(specifics.app_launch_ordinal());
   page_ordinal_ = syncer::StringOrdinal(specifics.page_ordinal());
@@ -109,10 +122,11 @@ void AppSyncData::PopulateFromAppSpecifics(
   bookmark_app_url_ = specifics.bookmark_app_url();
   bookmark_app_description_ = specifics.bookmark_app_description();
   bookmark_app_icon_color_ = specifics.bookmark_app_icon_color();
+  return true;
 }
 
-void AppSyncData::PopulateFromSyncData(const syncer::SyncData& sync_data) {
-  PopulateFromAppSpecifics(sync_data.GetSpecifics().app());
+bool AppSyncData::PopulateFromSyncData(const syncer::SyncData& sync_data) {
+  return PopulateFromAppSpecifics(sync_data.GetSpecifics().app());
 }
 
 }  // namespace extensions

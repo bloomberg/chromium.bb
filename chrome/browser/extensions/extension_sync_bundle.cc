@@ -32,9 +32,12 @@ void ExtensionSyncBundle::SetupSync(
   for (syncer::SyncDataList::const_iterator i = initial_sync_data.begin();
        i != initial_sync_data.end();
        ++i) {
-    ExtensionSyncData extension_sync_data(*i);
-    AddExtension(extension_sync_data.id());
-    extension_sync_service_->ProcessExtensionSyncData(extension_sync_data);
+    scoped_ptr<ExtensionSyncData> extension_sync_data(
+        ExtensionSyncData::CreateFromSyncData(*i));
+    if (extension_sync_data.get()) {
+      AddExtension(extension_sync_data->id());
+      extension_sync_service_->ProcessExtensionSyncData(*extension_sync_data);
+    }
   }
 }
 

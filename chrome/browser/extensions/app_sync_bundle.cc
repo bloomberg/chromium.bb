@@ -33,9 +33,11 @@ void AppSyncBundle::SetupSync(
   for (syncer::SyncDataList::const_iterator i = initial_sync_data.begin();
        i != initial_sync_data.end();
        ++i) {
-    AppSyncData app_sync_data(*i);
-    AddApp(app_sync_data.id());
-    extension_sync_service_->ProcessAppSyncData(app_sync_data);
+    scoped_ptr<AppSyncData> app_sync_data(AppSyncData::CreateFromSyncData(*i));
+    if (app_sync_data.get()) {
+      AddApp(app_sync_data->id());
+      extension_sync_service_->ProcessAppSyncData(*app_sync_data);
+    }
   }
 }
 

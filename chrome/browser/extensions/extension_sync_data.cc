@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -27,6 +28,28 @@ std::string GetExtensionSpecificsLogMessage(
                             specifics.update_url().c_str());
 }
 
+enum BadSyncDataReason {
+  // Invalid extension ID.
+  BAD_EXTENSION_ID,
+
+  // Invalid version.
+  BAD_VERSION,
+
+  // Invalid update URL.
+  BAD_UPDATE_URL,
+
+  // No ExtensionSpecifics in the EntitySpecifics.
+  NO_EXTENSION_SPECIFICS,
+
+  // Must be at the end.
+  NUM_BAD_SYNC_DATA_REASONS
+};
+
+void RecordBadSyncData(BadSyncDataReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.BadSyncDataReason", reason,
+                            NUM_BAD_SYNC_DATA_REASONS);
+}
+
 }  // namespace
 
 ExtensionSyncData::ExtensionSyncData()
@@ -36,27 +59,6 @@ ExtensionSyncData::ExtensionSyncData()
       remote_install_(false),
       all_urls_enabled_(BOOLEAN_UNSET),
       installed_by_custodian_(false) {
-}
-
-ExtensionSyncData::ExtensionSyncData(const syncer::SyncData& sync_data)
-    : uninstalled_(false),
-      enabled_(false),
-      incognito_enabled_(false),
-      remote_install_(false),
-      all_urls_enabled_(BOOLEAN_UNSET),
-      installed_by_custodian_(false) {
-  PopulateFromSyncData(sync_data);
-}
-
-ExtensionSyncData::ExtensionSyncData(const syncer::SyncChange& sync_change)
-    : uninstalled_(sync_change.change_type() ==
-                   syncer::SyncChange::ACTION_DELETE),
-      enabled_(false),
-      incognito_enabled_(false),
-      remote_install_(false),
-      all_urls_enabled_(BOOLEAN_UNSET),
-      installed_by_custodian_(false) {
-  PopulateFromSyncData(sync_change.sync_data());
 }
 
 ExtensionSyncData::ExtensionSyncData(const Extension& extension,
@@ -78,6 +80,28 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
 }
 
 ExtensionSyncData::~ExtensionSyncData() {}
+
+// static
+scoped_ptr<ExtensionSyncData> ExtensionSyncData::CreateFromSyncData(
+    const syncer::SyncData& sync_data) {
+  scoped_ptr<ExtensionSyncData> data(new ExtensionSyncData);
+  if (data->PopulateFromSyncData(sync_data))
+    return data.Pass();
+  return scoped_ptr<ExtensionSyncData>();
+}
+
+// static
+scoped_ptr<ExtensionSyncData> ExtensionSyncData::CreateFromSyncChange(
+    const syncer::SyncChange& sync_change) {
+  scoped_ptr<ExtensionSyncData> data(
+      CreateFromSyncData(sync_change.sync_data()));
+  if (!data.get())
+    return scoped_ptr<ExtensionSyncData>();
+
+  data->set_uninstalled(sync_change.change_type() ==
+                        syncer::SyncChange::ACTION_DELETE);
+  return data.Pass();
+}
 
 syncer::SyncData ExtensionSyncData::GetSyncData() const {
   sync_pb::EntitySpecifics specifics;
@@ -106,24 +130,30 @@ void ExtensionSyncData::PopulateExtensionSpecifics(
   specifics->set_name(name_);
 }
 
-void ExtensionSyncData::PopulateFromExtensionSpecifics(
+bool ExtensionSyncData::PopulateFromExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& specifics) {
   if (!crx_file::id_util::IdIsValid(specifics.id())) {
-    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics (bad ID):\n"
+    LOG(ERROR) << "Attempt to sync bad ExtensionSpecifics (bad ID):\n"
                << GetExtensionSpecificsLogMessage(specifics);
+    RecordBadSyncData(BAD_EXTENSION_ID);
+    return false;
   }
 
   Version specifics_version(specifics.version());
   if (!specifics_version.IsValid()) {
-    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics (bad version):\n"
+    LOG(ERROR) << "Attempt to sync bad ExtensionSpecifics (bad version):\n"
                << GetExtensionSpecificsLogMessage(specifics);
+    RecordBadSyncData(BAD_VERSION);
+    return false;
   }
 
   // The update URL must be either empty or valid.
   GURL specifics_update_url(specifics.update_url());
   if (!specifics_update_url.is_empty() && !specifics_update_url.is_valid()) {
-    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics (bad update URL):\n"
+    LOG(ERROR) << "Attempt to sync bad ExtensionSpecifics (bad update URL):\n"
                << GetExtensionSpecificsLogMessage(specifics);
+    RecordBadSyncData(BAD_UPDATE_URL);
+    return false;
   }
 
   id_ = specifics.id();
@@ -142,21 +172,23 @@ void ExtensionSyncData::PopulateFromExtensionSpecifics(
   remote_install_ = specifics.remote_install();
   installed_by_custodian_ = specifics.installed_by_custodian();
   name_ = specifics.name();
+  return true;
 }
 
 void ExtensionSyncData::set_uninstalled(bool uninstalled) {
   uninstalled_ = uninstalled;
 }
 
-void ExtensionSyncData::PopulateFromSyncData(
+bool ExtensionSyncData::PopulateFromSyncData(
     const syncer::SyncData& sync_data) {
   const sync_pb::EntitySpecifics& entity_specifics = sync_data.GetSpecifics();
 
-  if (entity_specifics.has_extension()) {
-    PopulateFromExtensionSpecifics(entity_specifics.extension());
-  } else {
-    LOG(FATAL) << "Attempt to sync bad EntitySpecifics.";
-  }
+  if (entity_specifics.has_extension())
+    return PopulateFromExtensionSpecifics(entity_specifics.extension());
+
+  LOG(ERROR) << "Attempt to sync bad EntitySpecifics: no extension data.";
+  RecordBadSyncData(NO_EXTENSION_SPECIFICS);
+  return false;
 }
 
 }  // namespace extensions

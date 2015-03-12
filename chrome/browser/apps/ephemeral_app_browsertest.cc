@@ -533,8 +533,8 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     for (syncer::SyncChangeList::iterator it =
              mock_sync_processor_.changes().begin();
          it != mock_sync_processor_.changes().end(); ++it) {
-      scoped_ptr<AppSyncData> data(new AppSyncData(*it));
-      if (data->id() == id)
+      scoped_ptr<AppSyncData> data(AppSyncData::CreateFromSyncChange(*it));
+      if (data.get() && data->id() == id)
         sync_data.reset(data.release());
     }
 
