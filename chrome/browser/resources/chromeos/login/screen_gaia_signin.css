@@ -14,10 +14,10 @@
 }
 
 .minute-maid #gaia-signin {
-  background: rgb(66, 133, 244);
-  padding: 50px 0 0 0;
+  padding: 0 0 0;
   width: 522px;
 }
+
 #gaia-signin.full-width {
   padding: 75px 0 0;
 }
@@ -77,8 +77,6 @@
   height: 100%;
 }
 
-.minute-maid #signin-frame,
-.minute-maid #gaia-signin-form-container,
 .full-width #signin-frame,
 .full-width #gaia-signin-form-container {
   width: 100%;
@@ -109,9 +107,11 @@
 
 webview#signin-frame {
   display: block;
+  height: 609px;
   margin-left: 0;
   overflow: hidden;
   padding: 0;
+  width: 522px;
 }
 
 /* Simpler alignment if no right panel. */
@@ -148,12 +148,6 @@ webview#signin-frame {
   -webkit-box-pack: center;
   display: -webkit-box;
   height: 100%;
-}
-
-#gaia-loading {
-  background-color: white;
-  height: 80%;
-  top: 80px;
 }
 
 #createSupervisedUserSeparator {
