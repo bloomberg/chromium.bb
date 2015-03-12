@@ -14,7 +14,16 @@
       // This include will be processed at build time by grit.
       <include src="../../../../third_party/dom_distiller_js/package/js/domdistiller.js"/>
     }
-    var context = Object.create(window);
+    <if expr="is_ios">
+      // UIWebView's JavaScript engine has a bug that causes crashes when
+      // creating a separate window object, so allow the script to run directly
+      // in the window until a better solution is created.
+      // TODO(kkhorimoto): investigate whether this is necessary for WKWebView.
+      var context = window;
+    </if>
+    <if expr="not is_ios">
+      var context = Object.create(window);
+    </if>
     context.setTimeout = function() {};
     context.clearTimeout = function() {};
     initialize(context);
@@ -23,7 +32,13 @@
     // runtime.
     var distiller = context.org.chromium.distiller.DomDistiller;
     var res = distiller.applyWithOptions($$OPTIONS);
+  <if expr="is_ios">
+    // UIWebView requires javascript to return a single string value.
+    return JSON.stringify(res);
+  </if>
+  <if expr="not is_ios">
     return res;
+  </if>
   } catch (e) {
     window.console.error("Error during distillation: " + e);
     if (e.stack != undefined) window.console.error(e.stack);
