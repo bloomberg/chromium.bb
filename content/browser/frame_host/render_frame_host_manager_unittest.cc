@@ -383,7 +383,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
       scoped_ptr<NavigationRequest> navigation_request =
           NavigationRequest::CreateBrowserInitiated(
               manager->frame_tree_node_, entry, FrameMsg_Navigate_Type::NORMAL,
-              base::TimeTicks::Now(), HistoryNavigationParams());
+              base::TimeTicks::Now(),
+              static_cast<NavigationControllerImpl*>(&controller()));
       return manager->GetFrameHostForNavigation(*navigation_request);
     }
     return manager->Navigate(entry);

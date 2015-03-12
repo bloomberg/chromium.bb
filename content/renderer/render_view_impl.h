@@ -843,7 +843,7 @@ class CONTENT_EXPORT RenderViewImpl
   // as a temporary holder for the state until the WebDataSource corresponding
   // to the new navigation is created.  See DidCreateDataSource.
   // TODO(nasko): Move to RenderFrame, as this is per-frame state.
-  scoped_ptr<FrameMsg_Navigate_Params> pending_navigation_params_;
+  scoped_ptr<NavigationParams> pending_navigation_params_;
 
   // Timer used to delay the updating of nav state (see SyncNavigationState).
   base::OneShotTimer<RenderViewImpl> nav_state_sync_timer_;

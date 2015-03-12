@@ -17,6 +17,7 @@
 namespace content {
 
 class FrameTreeNode;
+class NavigationController;
 class NavigationURLLoader;
 class ResourceRequestBody;
 class SiteInstanceImpl;
@@ -62,7 +63,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const NavigationEntryImpl& entry,
       FrameMsg_Navigate_Type::Value navigation_type,
       base::TimeTicks navigation_start,
-      const HistoryNavigationParams& history_params);
+      NavigationControllerImpl* controller);
 
   // Creates a request for a renderer-intiated navigation.
   // Note: |body| is sent to the IO thread when calling BeginNavigation, and

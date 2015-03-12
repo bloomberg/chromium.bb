@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/frame_message_enums.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
@@ -17,6 +18,11 @@
 #include "content/public/common/ssl_status.h"
 
 namespace content {
+class NavigationControllerImpl;
+struct CommitNavigationParams;
+struct CommonNavigationParams;
+struct HistoryNavigationParams;
+struct StartNavigationParams;
 
 class CONTENT_EXPORT NavigationEntryImpl
     : public NON_EXPORTED_BASE(NavigationEntry) {
@@ -227,6 +233,14 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Returns the history URL for a data URL to use in Blink.
   GURL GetHistoryURLForDataURL() const;
+
+  CommonNavigationParams ConstructCommonNavigationParams(
+      FrameMsg_Navigate_Type::Value navigation_type) const;
+  CommitNavigationParams ConstructCommitNavigationParams(
+      base::TimeTicks navigation_start) const;
+  HistoryNavigationParams ConstructHistoryNavigationParams(
+      NavigationControllerImpl* controller) const;
+  StartNavigationParams ConstructStartNavigationParams() const;
 
 #if defined(OS_ANDROID)
   base::TimeTicks intent_received_timestamp() const {

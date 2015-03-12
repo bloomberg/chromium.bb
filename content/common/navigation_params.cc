@@ -55,13 +55,25 @@ BeginNavigationParams::BeginNavigationParams(std::string method,
 }
 
 CommitNavigationParams::CommitNavigationParams()
-    : is_overriding_user_agent(false) {
+    : is_overriding_user_agent(false),
+      browser_navigation_start(base::TimeTicks::Now()),
+      can_load_local_resources(false),
+      request_time(base::Time::Now()) {
 }
 
-CommitNavigationParams::CommitNavigationParams(bool is_overriding_user_agent,
-                                               base::TimeTicks navigation_start)
+CommitNavigationParams::CommitNavigationParams(
+    bool is_overriding_user_agent,
+    base::TimeTicks navigation_start,
+    const std::vector<GURL>& redirects,
+    bool can_load_local_resources,
+    const std::string& frame_to_navigate,
+    base::Time request_time)
     : is_overriding_user_agent(is_overriding_user_agent),
-      browser_navigation_start(navigation_start) {
+      browser_navigation_start(navigation_start),
+      redirects(redirects),
+      can_load_local_resources(can_load_local_resources),
+      frame_to_navigate(frame_to_navigate),
+      request_time(request_time) {
 }
 
 CommitNavigationParams::~CommitNavigationParams() {}
@@ -70,7 +82,7 @@ HistoryNavigationParams::HistoryNavigationParams()
     : page_id(-1),
       pending_history_list_offset(-1),
       current_history_list_offset(-1),
-      current_history_list_length(-1),
+      current_history_list_length(0),
       should_clear_history_list(false) {
 }
 
@@ -90,6 +102,45 @@ HistoryNavigationParams::HistoryNavigationParams(
 }
 
 HistoryNavigationParams::~HistoryNavigationParams() {
+}
+
+StartNavigationParams::StartNavigationParams()
+    : is_post(false),
+      should_replace_current_entry(false),
+      transferred_request_child_id(-1),
+      transferred_request_request_id(-1) {
+}
+
+StartNavigationParams::StartNavigationParams(
+    bool is_post,
+    const std::string& extra_headers,
+    const std::vector<unsigned char>& browser_initiated_post_data,
+    bool should_replace_current_entry,
+    int transferred_request_child_id,
+    int transferred_request_request_id)
+    : is_post(is_post),
+      extra_headers(extra_headers),
+      browser_initiated_post_data(browser_initiated_post_data),
+      should_replace_current_entry(should_replace_current_entry),
+      transferred_request_child_id(transferred_request_child_id),
+      transferred_request_request_id(transferred_request_request_id) {
+}
+
+StartNavigationParams::~StartNavigationParams() {
+}
+
+NavigationParams::NavigationParams(
+    const CommonNavigationParams& common_params,
+    const StartNavigationParams& start_params,
+    const CommitNavigationParams& commit_params,
+    const HistoryNavigationParams& history_params)
+    : common_params(common_params),
+      start_params(start_params),
+      commit_params(commit_params),
+      history_params(history_params) {
+}
+
+NavigationParams::~NavigationParams() {
 }
 
 }  // namespace content

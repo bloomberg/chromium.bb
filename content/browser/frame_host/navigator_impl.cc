@@ -77,80 +77,6 @@ RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
   return rfh->frame_tree_node()->frame_tree()->root()->render_manager();
 }
 
-HistoryNavigationParams MakeHistoryParams(
-    const NavigationEntryImpl& entry,
-    NavigationControllerImpl* controller) {
-  int pending_history_list_offset = controller->GetIndexOfEntry(&entry);
-  int current_history_list_offset = controller->GetLastCommittedEntryIndex();
-  int current_history_list_length = controller->GetEntryCount();
-  if (entry.should_clear_history_list()) {
-    // Set the history list related parameters to the same values a
-    // NavigationController would return before its first navigation. This will
-    // fully clear the RenderView's view of the session history.
-    pending_history_list_offset = -1;
-    current_history_list_offset = -1;
-    current_history_list_length = 0;
-  }
-  return HistoryNavigationParams(
-      entry.GetPageState(), entry.GetPageID(), pending_history_list_offset,
-      current_history_list_offset, current_history_list_length,
-      entry.should_clear_history_list());
-}
-
-void MakeNavigateParams(const NavigationEntryImpl& entry,
-                        NavigationControllerImpl* controller,
-                        NavigationController::ReloadType reload_type,
-                        base::TimeTicks navigation_start,
-                        FrameMsg_Navigate_Params* params) {
-  FrameMsg_UILoadMetricsReportType::Value report_type =
-      FrameMsg_UILoadMetricsReportType::NO_REPORT;
-  base::TimeTicks ui_timestamp = base::TimeTicks();
-#if defined(OS_ANDROID)
-  if (!entry.intent_received_timestamp().is_null())
-    report_type = FrameMsg_UILoadMetricsReportType::REPORT_INTENT;
-  ui_timestamp = entry.intent_received_timestamp();
-#endif
-
-  params->common_params = CommonNavigationParams(
-      entry.GetURL(), entry.GetReferrer(), entry.GetTransitionType(),
-      GetNavigationType(controller->GetBrowserContext(), entry, reload_type),
-      !entry.IsViewSourceMode(), ui_timestamp, report_type,
-      entry.GetBaseURLForDataURL(), entry.GetHistoryURLForDataURL());
-  params->commit_params = CommitNavigationParams(
-      entry.GetIsOverridingUserAgent(), navigation_start);
-  params->history_params = MakeHistoryParams(entry, controller);
-
-  params->is_post = entry.GetHasPostData();
-  params->extra_headers = entry.extra_headers();
-  if (entry.GetBrowserInitiatedPostData()) {
-    params->browser_initiated_post_data.assign(
-        entry.GetBrowserInitiatedPostData()->front(),
-        entry.GetBrowserInitiatedPostData()->front() +
-            entry.GetBrowserInitiatedPostData()->size());
-  }
-
-  params->should_replace_current_entry = entry.should_replace_entry();
-  // This is used by the old performance infrastructure to set up DocumentState
-  // associated with the RenderView.
-  // TODO(ppi): make it go away.
-  params->request_time = base::Time::Now();
-  params->transferred_request_child_id =
-      entry.transferred_global_request_id().child_id;
-  params->transferred_request_request_id =
-      entry.transferred_global_request_id().request_id;
-
-  // Set the redirect chain to the navigation's redirects, unless we are
-  // returning to a completed navigation (whose previous redirects don't apply).
-  if (ui::PageTransitionIsNewNavigation(params->common_params.transition)) {
-    params->redirects = entry.GetRedirectChain();
-  } else {
-    params->redirects.clear();
-  }
-
-  params->can_load_local_resources = entry.GetCanLoadLocalResources();
-  params->frame_to_navigate = entry.GetFrameToNavigate();
-}
-
 }  // namespace
 
 struct NavigatorImpl::NavigationMetricsData {
@@ -372,30 +298,31 @@ bool NavigatorImpl::NavigateToEntry(
                                           dest_render_frame_host);
   }
 
-  // Create the navigation parameters.
-  // TODO(vitalybuka): Move this before AboutToNavigateRenderFrame once
-  // http://crbug.com/408684 is fixed.
-  FrameMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(
-      entry, controller_, reload_type, navigation_start, &navigate_params);
-
   // Navigate in the desired RenderFrameHost.
   // We can skip this step in the rare case that this is a transfer navigation
   // which began in the chosen RenderFrameHost, since the request has already
   // been issued.  In that case, simply resume the response.
   bool is_transfer_to_same =
-      navigate_params.transferred_request_child_id != -1 &&
-      navigate_params.transferred_request_child_id ==
+      entry.transferred_global_request_id().child_id != -1 &&
+      entry.transferred_global_request_id().child_id ==
           dest_render_frame_host->GetProcess()->GetID();
   if (!is_transfer_to_same) {
     navigation_data_.reset(new NavigationMetricsData(
         navigation_start, entry.GetURL(), entry.restore_type()));
-    dest_render_frame_host->Navigate(navigate_params);
+    // Create the navigation parameters.
+    // TODO(vitalybuka): Move this before AboutToNavigateRenderFrame once
+    // http://crbug.com/408684 is fixed.
+    FrameMsg_Navigate_Type::Value navigation_type =
+        GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
+    dest_render_frame_host->Navigate(
+        entry.ConstructCommonNavigationParams(navigation_type),
+        entry.ConstructStartNavigationParams(),
+        entry.ConstructCommitNavigationParams(navigation_start),
+        entry.ConstructHistoryNavigationParams(controller_));
   } else {
     // No need to navigate again.  Just resume the deferred request.
     dest_render_frame_host->GetProcess()->ResumeDeferredNavigation(
-        GlobalRequestID(navigate_params.transferred_request_child_id,
-                        navigate_params.transferred_request_request_id));
+        entry.transferred_global_request_id());
   }
 
   // Make sure no code called via RFH::Navigate clears the pending entry.
@@ -855,9 +782,9 @@ void NavigatorImpl::RequestNavigation(
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
   scoped_ptr<NavigationRequest> navigation_request =
-      NavigationRequest::CreateBrowserInitiated(
-          frame_tree_node, entry, navigation_type, navigation_start,
-          MakeHistoryParams(entry, controller_));
+      NavigationRequest::CreateBrowserInitiated(frame_tree_node, entry,
+                                                navigation_type,
+                                                navigation_start, controller_);
   // TODO(clamy): Check if navigations are blocked and if so store the
   // parameters.
 

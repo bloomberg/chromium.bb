@@ -6,6 +6,7 @@
 
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/navigation_url_loader.h"
@@ -62,7 +63,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     const NavigationEntryImpl& entry,
     FrameMsg_Navigate_Type::Value navigation_type,
     base::TimeTicks navigation_start,
-    const HistoryNavigationParams& history_params) {
+    NavigationControllerImpl* controller) {
   std::string method = entry.GetHasPostData() ? "POST" : "GET";
 
   // Copy existing headers and add necessary headers that may not be present
@@ -84,26 +85,13 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
         entry.GetBrowserInitiatedPostData()->size());
   }
 
-  FrameMsg_UILoadMetricsReportType::Value report_type =
-      FrameMsg_UILoadMetricsReportType::NO_REPORT;
-  base::TimeTicks ui_timestamp = base::TimeTicks();
-#if defined(OS_ANDROID)
-  if (!entry.intent_received_timestamp().is_null())
-    report_type = FrameMsg_UILoadMetricsReportType::REPORT_INTENT;
-  ui_timestamp = entry.intent_received_timestamp();
-#endif
-
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node,
-      CommonNavigationParams(
-          entry.GetURL(), entry.GetReferrer(), entry.GetTransitionType(),
-          navigation_type, !entry.IsViewSourceMode(), ui_timestamp, report_type,
-          entry.GetBaseURLForDataURL(), entry.GetHistoryURLForDataURL()),
+      frame_tree_node, entry.ConstructCommonNavigationParams(navigation_type),
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type), false),
-      CommitNavigationParams(entry.GetIsOverridingUserAgent(),
-                             navigation_start),
-      history_params, request_body, true, &entry));
+      entry.ConstructCommitNavigationParams(navigation_start),
+      entry.ConstructHistoryNavigationParams(controller), request_body, true,
+      &entry));
   return navigation_request.Pass();
 }
 
@@ -121,8 +109,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node, common_params, begin_params,
-      CommitNavigationParams(false, base::TimeTicks::Now()),
+      frame_tree_node, common_params, begin_params, CommitNavigationParams(),
       HistoryNavigationParams(PageState(), -1, -1, current_history_list_offset,
                               current_history_list_length, false),
       body, false, nullptr));

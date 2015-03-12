@@ -7,6 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/common/navigation_params.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -353,6 +355,72 @@ void NavigationEntryImpl::SetScreenshotPNGData(
 
 GURL NavigationEntryImpl::GetHistoryURLForDataURL() const {
   return GetBaseURLForDataURL().is_empty() ? GURL() : GetVirtualURL();
+}
+
+CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
+    FrameMsg_Navigate_Type::Value navigation_type) const {
+  FrameMsg_UILoadMetricsReportType::Value report_type =
+      FrameMsg_UILoadMetricsReportType::NO_REPORT;
+  base::TimeTicks ui_timestamp = base::TimeTicks();
+#if defined(OS_ANDROID)
+  if (!intent_received_timestamp().is_null())
+    report_type = FrameMsg_UILoadMetricsReportType::REPORT_INTENT;
+  ui_timestamp = intent_received_timestamp();
+#endif
+
+  return CommonNavigationParams(
+      GetURL(), GetReferrer(), GetTransitionType(), navigation_type,
+      !IsViewSourceMode(), ui_timestamp, report_type, GetBaseURLForDataURL(),
+      GetHistoryURLForDataURL());
+}
+
+CommitNavigationParams NavigationEntryImpl::ConstructCommitNavigationParams(
+    base::TimeTicks navigation_start) const {
+  // Set the redirect chain to the navigation's redirects, unless returning to a
+  // completed navigation (whose previous redirects don't apply).
+  std::vector<GURL> redirects;
+  if (ui::PageTransitionIsNewNavigation(GetTransitionType())) {
+    redirects = GetRedirectChain();
+  }
+
+  return CommitNavigationParams(GetIsOverridingUserAgent(), navigation_start,
+                                redirects, GetCanLoadLocalResources(),
+                                GetFrameToNavigate(), base::Time::Now());
+}
+
+HistoryNavigationParams NavigationEntryImpl::ConstructHistoryNavigationParams(
+    NavigationControllerImpl* controller) const {
+  int pending_history_list_offset = controller->GetIndexOfEntry(this);
+  int current_history_list_offset = controller->GetLastCommittedEntryIndex();
+  int current_history_list_length = controller->GetEntryCount();
+  if (should_clear_history_list()) {
+    // Set the history list related parameters to the same values a
+    // NavigationController would return before its first navigation. This will
+    // fully clear the RenderView's view of the session history.
+    pending_history_list_offset = -1;
+    current_history_list_offset = -1;
+    current_history_list_length = 0;
+  }
+  return HistoryNavigationParams(
+      GetPageState(), GetPageID(), pending_history_list_offset,
+      current_history_list_offset, current_history_list_length,
+      should_clear_history_list());
+}
+
+StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
+    const {
+  std::vector<unsigned char> browser_initiated_post_data;
+  if (GetBrowserInitiatedPostData()) {
+    browser_initiated_post_data.assign(
+        GetBrowserInitiatedPostData()->front(),
+        GetBrowserInitiatedPostData()->front() +
+            GetBrowserInitiatedPostData()->size());
+  }
+
+  return StartNavigationParams(
+      GetHasPostData(), extra_headers(), browser_initiated_post_data,
+      should_replace_entry(), transferred_global_request_id().child_id,
+      transferred_global_request_id().request_id);
 }
 
 }  // namespace content

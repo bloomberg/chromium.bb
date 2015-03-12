@@ -226,6 +226,10 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
   IPC_STRUCT_TRAITS_MEMBER(browser_navigation_start)
+  IPC_STRUCT_TRAITS_MEMBER(redirects)
+  IPC_STRUCT_TRAITS_MEMBER(can_load_local_resources)
+  IPC_STRUCT_TRAITS_MEMBER(frame_to_navigate)
+  IPC_STRUCT_TRAITS_MEMBER(request_time)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::HistoryNavigationParams)
@@ -235,6 +239,15 @@ IPC_STRUCT_TRAITS_BEGIN(content::HistoryNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(current_history_list_offset)
   IPC_STRUCT_TRAITS_MEMBER(current_history_list_length)
   IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::StartNavigationParams)
+  IPC_STRUCT_TRAITS_MEMBER(is_post)
+  IPC_STRUCT_TRAITS_MEMBER(extra_headers)
+  IPC_STRUCT_TRAITS_MEMBER(browser_initiated_post_data)
+  IPC_STRUCT_TRAITS_MEMBER(should_replace_current_entry)
+  IPC_STRUCT_TRAITS_MEMBER(transferred_request_child_id)
+  IPC_STRUCT_TRAITS_MEMBER(transferred_request_request_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
@@ -254,54 +267,6 @@ IPC_STRUCT_BEGIN(FrameMsg_NewFrame_WidgetParams)
 
   // Tells the new RenderWidget whether it is initially hidden.
   IPC_STRUCT_MEMBER(bool, hidden)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
-  // TODO(clamy): investigate which parameters are also needed in PlzNavigate
-  // and move them to the appropriate NavigationParams struct.
-
-  // These structs contain parameters shared by other navigation IPCs.
-  IPC_STRUCT_MEMBER(content::CommonNavigationParams, common_params)
-  IPC_STRUCT_MEMBER(content::CommitNavigationParams, commit_params)
-  IPC_STRUCT_MEMBER(content::HistoryNavigationParams, history_params)
-
-  // Whether the navigation is a POST request (as opposed to a GET).
-  IPC_STRUCT_MEMBER(bool, is_post)
-
-  // Extra headers (separated by \n) to send during the request.
-  IPC_STRUCT_MEMBER(std::string, extra_headers)
-
-  // If is_post is true, holds the post_data information from browser. Empty
-  // otherwise.
-  IPC_STRUCT_MEMBER(std::vector<unsigned char>, browser_initiated_post_data)
-
-  // Any redirect URLs that occurred before |url|. Useful for cross-process
-  // navigations; defaults to empty.
-  IPC_STRUCT_MEMBER(std::vector<GURL>, redirects)
-
-  // Informs the RenderView the pending navigation should replace the current
-  // history entry when it commits. This is used for cross-process redirects so
-  // the transferred navigation can recover the navigation state.
-  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
-
-  // The time the request was created. This is used by the old performance
-  // infrastructure to set up DocumentState associated with the RenderView.
-  // TODO(ppi): make it go away.
-  IPC_STRUCT_MEMBER(base::Time, request_time)
-
-  // The following two members identify a previous request that has been
-  // created before this navigation is being transferred to a new render view.
-  // This serves the purpose of recycling the old request.
-  // Unless this refers to a transferred navigation, these values are -1 and -1.
-  IPC_STRUCT_MEMBER(int, transferred_request_child_id)
-  IPC_STRUCT_MEMBER(int, transferred_request_request_id)
-
-  // Whether or not this url should be allowed to access local file://
-  // resources.
-  IPC_STRUCT_MEMBER(bool, can_load_local_resources)
-
-  // If not empty, which frame to navigate.
-  IPC_STRUCT_MEMBER(std::string, frame_to_navigate)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
@@ -398,7 +363,11 @@ IPC_MESSAGE_CONTROL4(FrameMsg_NewFrameProxy,
 
 // Tells the renderer to perform the specified navigation, interrupting any
 // existing navigation.
-IPC_MESSAGE_ROUTED1(FrameMsg_Navigate, FrameMsg_Navigate_Params)
+IPC_MESSAGE_ROUTED4(FrameMsg_Navigate,
+                    content::CommonNavigationParams, /* common_params */
+                    content::StartNavigationParams,  /* start_params */
+                    content::CommitNavigationParams, /* commit_params */
+                    content::HistoryNavigationParams /* history_params */)
 
 // Instructs the renderer to invoke the frame's beforeunload event handler.
 // Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.

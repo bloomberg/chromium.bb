@@ -43,9 +43,7 @@
 class GURL;
 class TransportDIB;
 struct FrameHostMsg_AddNavigationTransitionData_Params;
-struct FrameMsg_Navigate_Params;
 struct FrameMsg_NewFrame_WidgetParams;
-struct FrameMsg_RequestNavigation_Params;
 
 namespace blink {
 class WebGeolocationClient;
@@ -106,6 +104,7 @@ struct FrameReplicationState;
 struct HistoryNavigationParams;
 struct RequestNavigationParams;
 struct ResourceResponseHead;
+struct StartNavigationParams;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
@@ -529,7 +528,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // TODO(nasko): Make all tests in RenderViewImplTest friends and then move
   // this back to private member.
-  void OnNavigate(const FrameMsg_Navigate_Params& params);
+  void OnNavigate(const CommonNavigationParams& common_params,
+                  const StartNavigationParams& start_params,
+                  const CommitNavigationParams& commit_params,
+                  const HistoryNavigationParams& history_params);
 
   // Make this frame show an empty, unscriptable page.
   // TODO(nasko): Remove this method once swapped out state is no longer used.

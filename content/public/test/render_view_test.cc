@@ -362,11 +362,14 @@ void RenderViewTest::SetFocused(const blink::WebNode& node) {
 }
 
 void RenderViewTest::Reload(const GURL& url) {
-  FrameMsg_Navigate_Params params;
-  params.common_params.url = url;
-  params.common_params.navigation_type = FrameMsg_Navigate_Type::RELOAD;
+  CommonNavigationParams common_params(
+      url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::RELOAD,
+      true, base::TimeTicks(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
+      GURL(), GURL());
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->GetMainRenderFrame()->OnNavigate(params);
+  impl->GetMainRenderFrame()->OnNavigate(common_params, StartNavigationParams(),
+                                         CommitNavigationParams(),
+                                         HistoryNavigationParams());
   FrameLoadWaiter(impl->GetMainRenderFrame()).Wait();
 }
 
@@ -440,22 +443,17 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
                             impl->historyForwardListCount() + 1;
   int pending_offset = offset + impl->history_list_offset_;
 
-  FrameMsg_Navigate_Params navigate_params;
-  navigate_params.common_params.navigation_type =
-      FrameMsg_Navigate_Type::NORMAL;
-  navigate_params.common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  navigate_params.history_params.current_history_list_length =
-      history_list_length;
-  navigate_params.history_params.current_history_list_offset =
-      impl->history_list_offset_;
-  navigate_params.history_params.pending_history_list_offset = pending_offset;
-  navigate_params.history_params.page_id = impl->page_id_ + offset;
-  navigate_params.history_params.page_state = state;
-  navigate_params.request_time = base::Time::Now();
+  CommonNavigationParams common_params(
+      GURL(), Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
+      FrameMsg_Navigate_Type::NORMAL, true, base::TimeTicks(),
+      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL());
+  HistoryNavigationParams history_params(
+      state, impl->page_id_ + offset, pending_offset,
+      impl->history_list_offset_, history_list_length, false);
 
-  FrameMsg_Navigate navigate_message(impl->GetMainRenderFrame()->GetRoutingID(),
-                                     navigate_params);
-  impl->GetMainRenderFrame()->OnMessageReceived(navigate_message);
+  impl->GetMainRenderFrame()->OnNavigate(common_params, StartNavigationParams(),
+                                         CommitNavigationParams(),
+                                         history_params);
 
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.

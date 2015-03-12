@@ -189,17 +189,17 @@ TEST_F(RendererAccessibilityTest,
   // message that was queued up before will be quickly discarded
   // because the element it was referring to no longer exists,
   // so the event here is from loading this new page.
-  FrameMsg_Navigate_Params nav_params;
-  nav_params.common_params.url = GURL("data:text/html,<p>Hello, again.</p>");
-  nav_params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  nav_params.common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  nav_params.history_params.current_history_list_length = 1;
-  nav_params.history_params.current_history_list_offset = 0;
-  nav_params.history_params.pending_history_list_offset = 1;
-  nav_params.history_params.page_id = -1;
-  nav_params.commit_params.browser_navigation_start =
-      base::TimeTicks::FromInternalValue(1);
-  frame()->OnNavigate(nav_params);
+  CommonNavigationParams common_params;
+  HistoryNavigationParams history_params;
+  common_params.url = GURL("data:text/html,<p>Hello, again.</p>");
+  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.transition = ui::PAGE_TRANSITION_TYPED;
+  history_params.current_history_list_length = 1;
+  history_params.current_history_list_offset = 0;
+  history_params.pending_history_list_offset = 1;
+  history_params.page_id = -1;
+  frame()->OnNavigate(common_params, StartNavigationParams(),
+                      CommitNavigationParams(), history_params);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_TRUE(sink_->GetUniqueMessageMatching(
       AccessibilityHostMsg_Events::ID));

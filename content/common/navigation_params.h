@@ -26,8 +26,6 @@ class NavigationEntry;
 // The following structures hold parameters used during a navigation. In
 // particular they are used by FrameMsg_Navigate, FrameMsg_CommitNavigation and
 // FrameHostMsg_BeginNavigation.
-// TODO(clamy): Depending on the avancement of the history refactoring move the
-// history parameters from FrameMsg_Navigate into one of the structs.
 
 // Used by all navigation IPCs.
 struct CONTENT_EXPORT CommonNavigationParams {
@@ -106,7 +104,11 @@ struct CONTENT_EXPORT BeginNavigationParams {
 struct CONTENT_EXPORT CommitNavigationParams {
   CommitNavigationParams();
   CommitNavigationParams(bool is_overriding_user_agent,
-                         base::TimeTicks navigation_start);
+                         base::TimeTicks navigation_start,
+                         const std::vector<GURL>& redirects,
+                         bool can_load_local_resources,
+                         const std::string& frame_to_navigate,
+                         base::Time request_time);
   ~CommitNavigationParams();
 
   // Whether or not the user agent override string should be used.
@@ -115,7 +117,21 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // The navigationStart time to expose through the Navigation Timing API to JS.
   base::TimeTicks browser_navigation_start;
 
-  // TODO(clamy): Move the redirect chain here.
+  // Any redirect URLs that occurred before |url|. Useful for cross-process
+  // navigations; defaults to empty.
+  std::vector<GURL> redirects;
+
+  // Whether or not this url should be allowed to access local file://
+  // resources.
+  bool can_load_local_resources;
+
+  // If not empty, which frame to navigate.
+  std::string frame_to_navigate;
+
+  // The time the request was created. This is used by the old performance
+  // infrastructure to set up DocumentState associated with the RenderView.
+  // TODO(ppi): make it go away.
+  base::Time request_time;
 };
 
 // Used by FrameMsg_Navigate.
@@ -154,6 +170,54 @@ struct CONTENT_EXPORT HistoryNavigationParams {
   bool should_clear_history_list;
 };
 
+// Parameters needed at the start of a navigation. Used by FrameMsg_Navigate.
+// PlzNavigate: these parameters are not used in navigation.
+struct CONTENT_EXPORT StartNavigationParams {
+  StartNavigationParams();
+  StartNavigationParams(
+      bool is_post,
+      const std::string& extra_headers,
+      const std::vector<unsigned char>& browser_initiated_post_data,
+      bool should_replace_current_entry,
+      int transferred_request_child_id,
+      int transferred_request_request_id);
+  ~StartNavigationParams();
+
+  // Whether the navigation is a POST request (as opposed to a GET).
+  bool is_post;
+
+  // Extra headers (separated by \n) to send during the request.
+  std::string extra_headers;
+
+  // If is_post is true, holds the post_data information from browser. Empty
+  // otherwise.
+  std::vector<unsigned char> browser_initiated_post_data;
+
+  // Informs the RenderView the pending navigation should replace the current
+  // history entry when it commits. This is used for cross-process redirects so
+  // the transferred navigation can recover the navigation state.
+  bool should_replace_current_entry;
+
+  // The following two members identify a previous request that has been
+  // created before this navigation is being transferred to a new render view.
+  // This serves the purpose of recycling the old request.
+  // Unless this refers to a transferred navigation, these values are -1 and -1.
+  int transferred_request_child_id;
+  int transferred_request_request_id;
+};
+
+struct NavigationParams {
+  NavigationParams(const CommonNavigationParams& common_params,
+                   const StartNavigationParams& start_params,
+                   const CommitNavigationParams& commit_params,
+                   const HistoryNavigationParams& history_params);
+  ~NavigationParams();
+
+  CommonNavigationParams common_params;
+  StartNavigationParams start_params;
+  CommitNavigationParams commit_params;
+  HistoryNavigationParams history_params;
+};
 }  // namespace content
 
 #endif  // CONTENT_COMMON_NAVIGATION_PARAMS_H_

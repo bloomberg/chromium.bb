@@ -1530,19 +1530,23 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
   return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
 }
 
-void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
+void RenderFrameHostImpl::Navigate(
+    const CommonNavigationParams& common_params,
+    const StartNavigationParams& start_params,
+    const CommitNavigationParams& commit_params,
+    const HistoryNavigationParams& history_params) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::Navigate");
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
   // so do not grant them the ability to request additional URLs.
   if (!GetProcess()->IsIsolatedGuest()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-        GetProcess()->GetID(), params.common_params.url);
-    if (params.common_params.url.SchemeIs(url::kDataScheme) &&
-        params.common_params.base_url_for_data_url.SchemeIs(url::kFileScheme)) {
+        GetProcess()->GetID(), common_params.url);
+    if (common_params.url.SchemeIs(url::kDataScheme) &&
+        common_params.base_url_for_data_url.SchemeIs(url::kFileScheme)) {
       // If 'data:' is used, and we have a 'file:' base url, grant access to
       // local files.
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-          GetProcess()->GetID(), params.common_params.base_url_for_data_url);
+          GetProcess()->GetID(), common_params.base_url_for_data_url);
     }
   }
 
@@ -1550,9 +1554,8 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
   // file access.  If this is a different process, we will need to grant the
   // access again.  The files listed in the page state are validated when they
   // are received from the renderer to prevent abuse.
-  if (params.history_params.page_state.IsValid()) {
-    render_view_host_->GrantFileAccessFromPageState(
-        params.history_params.page_state);
+  if (history_params.page_state.IsValid()) {
+    render_view_host_->GrantFileAccessFromPageState(history_params.page_state);
   }
 
   // Only send the message if we aren't suspended at the start of a cross-site
@@ -1563,13 +1566,15 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
     // second navigation occurs, RenderFrameHostManager will cancel this pending
     // RFH and create a new pending RFH.
     DCHECK(!suspended_nav_params_.get());
-    suspended_nav_params_.reset(new FrameMsg_Navigate_Params(params));
+    suspended_nav_params_.reset(new NavigationParams(
+        common_params, start_params, commit_params, history_params));
   } else {
     // Get back to a clean state, in case we start a new navigation without
     // completing a RFH swap or unload handler.
     SetState(RenderFrameHostImpl::STATE_DEFAULT);
 
-    Send(new FrameMsg_Navigate(routing_id_, params));
+    Send(new FrameMsg_Navigate(routing_id_, common_params, start_params,
+                               commit_params, history_params));
   }
 
   // Force the throbber to start. We do this because Blink's "started
@@ -1583,21 +1588,17 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
   //
   // Blink doesn't send throb notifications for JavaScript URLs, so we
   // don't want to either.
-  if (!params.common_params.url.SchemeIs(url::kJavaScriptScheme))
+  if (!common_params.url.SchemeIs(url::kJavaScriptScheme))
     delegate_->DidStartLoading(this, true);
 }
 
 void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
-  FrameMsg_Navigate_Params params;
-  params.common_params.url = url;
-  params.common_params.transition = ui::PAGE_TRANSITION_LINK;
-  params.common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  params.commit_params.browser_navigation_start = base::TimeTicks::Now();
-  params.history_params.page_id = -1;
-  params.history_params.pending_history_list_offset = -1;
-  params.history_params.current_history_list_offset = -1;
-  params.history_params.current_history_list_length = 0;
-  Navigate(params);
+  CommonNavigationParams common_params(
+      url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::NORMAL,
+      true, base::TimeTicks::Now(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
+      GURL(), GURL());
+  Navigate(common_params, StartNavigationParams(), CommitNavigationParams(),
+           HistoryNavigationParams());
 }
 
 void RenderFrameHostImpl::OpenURL(const FrameHostMsg_OpenURL_Params& params,
@@ -1941,7 +1942,11 @@ void RenderFrameHostImpl::SetNavigationsSuspended(
     DCHECK(!proceed_time.is_null());
     suspended_nav_params_->commit_params.browser_navigation_start =
         proceed_time;
-    Send(new FrameMsg_Navigate(routing_id_, *suspended_nav_params_));
+    Send(new FrameMsg_Navigate(routing_id_,
+                               suspended_nav_params_->common_params,
+                               suspended_nav_params_->start_params,
+                               suspended_nav_params_->commit_params,
+                               suspended_nav_params_->history_params));
     suspended_nav_params_.reset();
   }
 }

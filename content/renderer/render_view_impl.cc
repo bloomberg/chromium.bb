@@ -2128,8 +2128,8 @@ void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
   // Make sure any previous redirect URLs end up in our new data source.
   if (pending_navigation_params_.get()) {
     for (std::vector<GURL>::const_iterator i =
-             pending_navigation_params_->redirects.begin();
-         i != pending_navigation_params_->redirects.end(); ++i) {
+             pending_navigation_params_->commit_params.redirects.begin();
+         i != pending_navigation_params_->commit_params.redirects.end(); ++i) {
       ds->appendRedirect(*i);
     }
   }
@@ -2222,14 +2222,16 @@ void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
 
 void RenderViewImpl::PopulateDocumentStateFromPending(
     DocumentState* document_state) {
-  const FrameMsg_Navigate_Params& params = *pending_navigation_params_.get();
-  document_state->set_request_time(params.request_time);
+  document_state->set_request_time(
+      pending_navigation_params_->commit_params.request_time);
 
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
-  if (!params.common_params.url.SchemeIs(url::kJavaScriptScheme) &&
-      params.common_params.navigation_type == FrameMsg_Navigate_Type::RESTORE) {
+  if (!pending_navigation_params_->common_params.url.SchemeIs(
+          url::kJavaScriptScheme) &&
+      pending_navigation_params_->common_params.navigation_type ==
+          FrameMsg_Navigate_Type::RESTORE) {
     // We're doing a load of a page that was restored from the last session. By
     // default this prefers the cache over loading (LOAD_PREFERRING_CACHE) which
     // can result in stale data for pages that are set to expire. We explicitly
@@ -2244,42 +2246,51 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
         WebURLRequest::UseProtocolCachePolicy);
   }
 
-  if (IsReload(params.common_params.navigation_type))
+  if (IsReload(pending_navigation_params_->common_params.navigation_type))
     document_state->set_load_type(DocumentState::RELOAD);
-  else if (params.history_params.page_state.IsValid())
+  else if (pending_navigation_params_->history_params.page_state.IsValid())
     document_state->set_load_type(DocumentState::HISTORY_LOAD);
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
 
   internal_data->set_is_overriding_user_agent(
-      params.commit_params.is_overriding_user_agent);
+      pending_navigation_params_->commit_params.is_overriding_user_agent);
   internal_data->set_must_reset_scroll_and_scale_state(
-      params.common_params.navigation_type ==
+      pending_navigation_params_->common_params.navigation_type ==
       FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
-  document_state->set_can_load_local_resources(params.can_load_local_resources);
+  document_state->set_can_load_local_resources(
+      pending_navigation_params_->commit_params.can_load_local_resources);
 }
 
 NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
-  const FrameMsg_Navigate_Params& params = *pending_navigation_params_.get();
   NavigationState* navigation_state = NULL;
 
   // A navigation resulting from loading a javascript URL should not be treated
   // as a browser initiated event.  Instead, we want it to look as if the page
   // initiated any load resulting from JS execution.
-  if (!params.common_params.url.SchemeIs(url::kJavaScriptScheme)) {
+  if (!pending_navigation_params_->common_params.url.SchemeIs(
+          url::kJavaScriptScheme)) {
     navigation_state = NavigationState::CreateBrowserInitiated(
-        params.history_params.page_id,
-        params.history_params.pending_history_list_offset,
-        params.history_params.should_clear_history_list,
-        params.common_params.transition);
-    navigation_state->set_should_replace_current_entry(
-        params.should_replace_current_entry);
-    navigation_state->set_transferred_request_child_id(
-        params.transferred_request_child_id);
-    navigation_state->set_transferred_request_request_id(
-        params.transferred_request_request_id);
-    navigation_state->set_allow_download(params.common_params.allow_download);
-    navigation_state->set_extra_headers(params.extra_headers);
+        pending_navigation_params_->history_params.page_id,
+        pending_navigation_params_->history_params.pending_history_list_offset,
+        pending_navigation_params_->history_params.should_clear_history_list,
+        pending_navigation_params_->common_params.transition);
+    navigation_state->set_allow_download(
+        pending_navigation_params_->common_params.allow_download);
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation)) {
+      navigation_state->set_should_replace_current_entry(
+          pending_navigation_params_->start_params
+              .should_replace_current_entry);
+      navigation_state->set_transferred_request_child_id(
+          pending_navigation_params_->start_params
+              .transferred_request_child_id);
+      navigation_state->set_transferred_request_request_id(
+          pending_navigation_params_->start_params
+              .transferred_request_request_id);
+      navigation_state->set_extra_headers(
+          pending_navigation_params_->start_params.extra_headers);
+    }
   } else {
     navigation_state = NavigationState::CreateContentInitiated();
   }
