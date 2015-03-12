@@ -31,11 +31,8 @@ function getAvailableLaunchTypes(app) {
 
   types.push("OPEN_AS_REGULAR_TAB");
   types.push("OPEN_AS_WINDOW");
-
-  if (navigator.userAgent.indexOf("CrOS") == -1) {
-    types.push("OPEN_AS_PINNED_TAB");
-    types.push("OPEN_FULL_SCREEN");
-  }
+  types.push("OPEN_AS_PINNED_TAB");
+  types.push("OPEN_FULL_SCREEN");
 
   return types;
 }

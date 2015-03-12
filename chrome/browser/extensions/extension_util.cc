@@ -384,13 +384,8 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
 }
 
 bool IsNewBookmarkAppsEnabled() {
-#if defined(OS_CHROMEOS)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNewBookmarkApps);
-#else
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNewBookmarkApps);
-#endif
 }
 
 bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
