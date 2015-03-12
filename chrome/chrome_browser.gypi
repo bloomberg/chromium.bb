@@ -237,6 +237,8 @@
       'browser/browsing_data/cookies_tree_model.h',
       'browser/browsing_data/local_data_container.cc',
       'browser/browsing_data/local_data_container.h',
+      'browser/caps/generate_state_json.h',
+      'browser/caps/generate_state_json.cc',
       'browser/character_encoding.cc',
       'browser/character_encoding.h',
       'browser/chrome_browser_application_mac.h',
