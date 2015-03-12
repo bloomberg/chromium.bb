@@ -53,7 +53,9 @@ void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
   // Keep all the broken ones since those don't get persisted.
   for (AlternateProtocolMap::iterator it = alternate_protocol_map_.begin();
        it != alternate_protocol_map_.end();) {
-    if (it->second.is_broken) {
+    const AlternativeService alternative_service(
+        it->second.protocol, it->first.host(), it->second.port);
+    if (IsAlternativeServiceBroken(alternative_service)) {
       ++it;
     } else {
       it = alternate_protocol_map_.Erase(it);
@@ -255,19 +257,19 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
     uint16 alternate_port,
     AlternateProtocol alternate_protocol,
     double alternate_probability) {
+  const AlternativeService alternative_service(alternate_protocol,
+                                               server.host(), alternate_port);
+  if (IsAlternativeServiceBroken(alternative_service)) {
+    DVLOG(1) << "Ignore alternative service since it is known to be broken.";
+    return;
+  }
 
-  AlternateProtocolInfo alternate(alternate_port,
-                                  alternate_protocol,
-                                  alternate_probability);
+  const AlternateProtocolInfo alternate(alternate_port, alternate_protocol,
+                                        alternate_probability);
   AlternateProtocolMap::const_iterator it =
       GetAlternateProtocolIterator(server);
   if (it != alternate_protocol_map_.end()) {
     const AlternateProtocolInfo existing_alternate = it->second;
-
-    if (existing_alternate.is_broken) {
-      DVLOG(1) << "Ignore alternate protocol since it's known to be broken.";
-      return;
-    }
 
     if (!existing_alternate.Equals(alternate)) {
       LOG(WARNING) << "Changing the alternate protocol for: "
@@ -317,7 +319,6 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
     // it can be marked as broken.
     it = alternate_protocol_map_.Put(server, alternate);
   }
-  it->second.is_broken = true;
   const AlternativeService alternative_service(alternate.protocol,
                                                server.host(), alternate.port);
   int count = ++recently_broken_alternative_services_[alternative_service];
@@ -342,6 +343,11 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   }
 }
 
+bool HttpServerPropertiesImpl::IsAlternativeServiceBroken(
+    const AlternativeService& alternative_service) {
+  return ContainsKey(broken_alternative_services_, alternative_service);
+}
+
 bool HttpServerPropertiesImpl::WasAlternateProtocolRecentlyBroken(
     const HostPortPair& server) {
   const AlternateProtocolInfo alternate_protocol = GetAlternateProtocol(server);
@@ -360,16 +366,32 @@ void HttpServerPropertiesImpl::ConfirmAlternateProtocol(
     return;
   const AlternativeService alternative_service(
       alternate_protocol.protocol, server.host(), alternate_protocol.port);
+  broken_alternative_services_.erase(alternative_service);
   recently_broken_alternative_services_.erase(alternative_service);
 }
 
 void HttpServerPropertiesImpl::ClearAlternateProtocol(
     const HostPortPair& server) {
-  AlternateProtocolMap::iterator it = alternate_protocol_map_.Peek(server);
-  if (it != alternate_protocol_map_.end())
-    alternate_protocol_map_.Erase(it);
-
   RemoveCanonicalHost(server);
+
+  AlternateProtocolMap::iterator it = alternate_protocol_map_.Peek(server);
+  if (it == alternate_protocol_map_.end()) {
+    return;
+  }
+  const AlternativeService alternative_service(
+      it->second.protocol, it->first.host(), it->second.port);
+  alternate_protocol_map_.Erase(it);
+
+  // The following is temporary to keep the existing semantics, which is that if
+  // there is a broken alternative service in the mapping, then this method
+  // leaves it in a non-broken, but recently broken state.
+  //
+  // TODO(bnc):
+  //  1. Verify and document the class invariant that no broken alternative
+  //     service can be in the mapping.
+  //  2. Remove the rest of this method as it will be moot.
+  //  3. Provide a SetAlternativeServiceRecentlyBroken if necessary.
+  ignore_result(broken_alternative_services_.erase(alternative_service));
 }
 
 const AlternateProtocolMap&
