@@ -205,7 +205,7 @@ void CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType rule
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserTokenRange& range, AllowedRulesType allowedRules)
 {
     ASSERT(range.peek().type() == AtKeywordToken);
-    const String& name = range.consume().value();
+    const CSSParserString& name = range.consume().value();
     const CSSParserToken* preludeStart = &range.peek();
     while (!range.atEnd() && range.peek().type() != LeftBraceToken && range.peek().type() != SemicolonToken)
         range.consumeComponentValue();
@@ -214,15 +214,15 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
 
     if (range.atEnd() || range.peek().type() == SemicolonToken) {
         range.consume();
-        if (allowedRules == AllowCharsetRules && equalIgnoringCase(name, "charset")) {
+        if (allowedRules == AllowCharsetRules && name.equalIgnoringCase("charset")) {
             // @charset is actually parsed before we get into the CSS parser.
             // In theory we should validate the prelude is a string, but we don't
             // have error logging yet so it doesn't matter.
             return nullptr;
         }
-        if (allowedRules <= AllowImportRules && equalIgnoringCase(name, "import"))
+        if (allowedRules <= AllowImportRules && name.equalIgnoringCase("import"))
             return consumeImportRule(prelude);
-        if (allowedRules <= AllowNamespaceRules && equalIgnoringCase(name, "namespace"))
+        if (allowedRules <= AllowNamespaceRules && name.equalIgnoringCase("namespace"))
             return consumeNamespaceRule(prelude);
         return nullptr; // Parse error, unrecognised at-rule without block
     }
@@ -233,19 +233,19 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
 
     ASSERT(allowedRules <= RegularRules);
 
-    if (equalIgnoringCase(name, "media"))
+    if (name.equalIgnoringCase("media"))
         return consumeMediaRule(prelude, block);
-    if (equalIgnoringCase(name, "supports"))
+    if (name.equalIgnoringCase("supports"))
         return consumeSupportsRule(prelude, block);
-    if (equalIgnoringCase(name, "viewport"))
+    if (name.equalIgnoringCase("viewport"))
         return consumeViewportRule(prelude, block);
-    if (equalIgnoringCase(name, "font-face"))
+    if (name.equalIgnoringCase("font-face"))
         return consumeFontFaceRule(prelude, block);
-    if (equalIgnoringCase(name, "-webkit-keyframes"))
+    if (name.equalIgnoringCase("-webkit-keyframes"))
         return consumeKeyframesRule(true, prelude, block);
-    if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && equalIgnoringCase(name, "keyframes"))
+    if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && name.equalIgnoringCase("keyframes"))
         return consumeKeyframesRule(false, prelude, block);
-    if (equalIgnoringCase(name, "page"))
+    if (name.equalIgnoringCase("page"))
         return consumePageRule(prelude, block);
     return nullptr; // Parse error, unrecognised at-rule with block
 }
@@ -272,14 +272,14 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeQualifiedRule(CSSPar
 }
 
 // This may still consume tokens if it fails
-static String consumeStringOrURI(CSSParserTokenRange& range)
+static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
 {
     const CSSParserToken& token = range.peek();
 
     if (token.type() == StringToken || token.type() == UrlToken)
-        return AtomicString(range.consumeIncludingWhitespaceAndComments().value());
+        return range.consumeIncludingWhitespaceAndComments().value();
 
-    if (token.type() != FunctionToken || !equalIgnoringCase(token.value(), "url"))
+    if (token.type() != FunctionToken || !token.valueEqualsIgnoringCase("url"))
         return AtomicString();
 
     CSSParserTokenRange contents = range.consumeBlock();
@@ -287,7 +287,7 @@ static String consumeStringOrURI(CSSParserTokenRange& range)
     ASSERT(uri.type() == StringToken);
     if (!contents.atEnd())
         return AtomicString();
-    return AtomicString(uri.value());
+    return uri.value();
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleImport> CSSParserImpl::consumeImportRule(CSSParserTokenRange prelude)
@@ -304,7 +304,7 @@ PassRefPtrWillBeRawPtr<StyleRuleNamespace> CSSParserImpl::consumeNamespaceRule(C
     prelude.consumeWhitespaceAndComments();
     AtomicString namespacePrefix;
     if (prelude.peek().type() == IdentToken)
-        namespacePrefix = AtomicString(prelude.consumeIncludingWhitespaceAndComments().value());
+        namespacePrefix = prelude.consumeIncludingWhitespaceAndComments().value();
 
     AtomicString uri(consumeStringOrURI(prelude));
     prelude.consumeWhitespaceAndComments();
@@ -414,14 +414,14 @@ PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTo
     prelude.consumeWhitespaceAndComments();
     AtomicString typeSelector;
     if (prelude.peek().type() == IdentToken)
-        typeSelector = AtomicString(prelude.consumeIncludingComments().value());
+        typeSelector = prelude.consumeIncludingComments().value();
 
     AtomicString pseudo;
     if (prelude.peek().type() == ColonToken) {
         prelude.consumeIncludingComments();
         if (prelude.peek().type() != IdentToken)
             return nullptr; // Parse error; expected ident token following colon in @page header
-        pseudo = AtomicString(prelude.consumeIncludingComments().value());
+        pseudo = prelude.consumeIncludingComments().value();
     }
 
     prelude.consumeWhitespaceAndComments();
@@ -525,7 +525,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
     const CSSParserToken* last = range.end() - 1;
     while (last->type() == WhitespaceToken || last->type() == CommentToken)
         --last;
-    if (last->type() == IdentToken && equalIgnoringCase(last->value(), "important")) {
+    if (last->type() == IdentToken && last->valueEqualsIgnoringCase("important")) {
         --last;
         while (last->type() == WhitespaceToken || last->type() == CommentToken)
             --last;
@@ -554,9 +554,9 @@ PassOwnPtr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenR
         const CSSParserToken& token = range.consumeIncludingWhitespaceAndComments();
         if (token.type() == PercentageToken && token.numericValue() >= 0 && token.numericValue() <= 100)
             result->append(token.numericValue() / 100);
-        else if (token.type() == IdentToken && equalIgnoringCase(token.value(), "from"))
+        else if (token.type() == IdentToken && token.valueEqualsIgnoringCase("from"))
             result->append(0);
-        else if (token.type() == IdentToken && equalIgnoringCase(token.value(), "to"))
+        else if (token.type() == IdentToken && token.valueEqualsIgnoringCase("to"))
             result->append(1);
         else
             return nullptr; // Parser error, invalid value in keyframe selector

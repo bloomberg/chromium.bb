@@ -160,7 +160,7 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& na
 
     const CSSParserToken& firstToken = range.peek();
     if (firstToken.type() == IdentToken) {
-        name = AtomicString(firstToken.value());
+        name = firstToken.value();
         range.consumeIncludingComments();
     } else if (firstToken.type() == DelimiterToken && firstToken.delimiter() == '*') {
         name = starAtom;
@@ -179,7 +179,7 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& na
     namespacePrefix = name;
     const CSSParserToken& nameToken = range.consumeIncludingComments();
     if (nameToken.type() == IdentToken) {
-        name = AtomicString(nameToken.value());
+        name = nameToken.value();
     } else if (nameToken.type() == DelimiterToken && nameToken.delimiter() == '*') {
         name = starAtom;
     } else {
@@ -256,7 +256,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeAttribute(CSSParserToken
     const CSSParserToken& attributeValue = block.consumeIncludingWhitespaceAndComments();
     if (attributeValue.type() != IdentToken && attributeValue.type() != StringToken)
         return nullptr;
-    selector->setValue(AtomicString(attributeValue.value()));
+    selector->setValue(attributeValue.value());
     selector->setAttribute(qualifiedName, consumeAttributeFlags(block));
 
     if (!block.atEnd())
@@ -281,7 +281,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
 
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(colons == 1 ? CSSSelector::PseudoClass : CSSSelector::PseudoElement);
-    selector->setValue(AtomicString(token.value().lower()));
+    selector->setValue(AtomicString(String(token.value()).lower()));
 
     if (token.type() == IdentToken) {
         range.consumeIncludingComments();
@@ -295,10 +295,10 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
     range.consumeComments();
 
     if ((colons == 1
-        && (equalIgnoringCase(token.value(), "host")
-            || equalIgnoringCase(token.value(), "host-context")
-            || equalIgnoringCase(token.value(), "-webkit-any")))
-        || (colons == 2 && equalIgnoringCase(token.value(), "cue"))) {
+        && (token.valueEqualsIgnoringCase("host")
+            || token.valueEqualsIgnoringCase("host-context")
+            || token.valueEqualsIgnoringCase("-webkit-any")))
+        || (colons == 2 && token.valueEqualsIgnoringCase("cue"))) {
 
         CSSSelectorList* selectorList = new CSSSelectorList();
         consumeCompoundSelectorList(block, *selectorList);
@@ -311,7 +311,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
         return selector.release();
     }
 
-    if (colons == 1 && equalIgnoringCase(token.value(), "not")) {
+    if (colons == 1 && token.valueEqualsIgnoringCase("not")) {
         OwnPtr<CSSParserSelector> innerSelector = consumeCompoundSelector(block);
         if (!innerSelector || !innerSelector->isSimple() || !block.atEnd())
             return nullptr;
@@ -321,22 +321,22 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
         return selector.release();
     }
 
-    if (colons == 1 && equalIgnoringCase(token.value(), "lang")) {
+    if (colons == 1 && token.valueEqualsIgnoringCase("lang")) {
         // FIXME: CSS Selectors Level 4 allows :lang(*-foo)
         const CSSParserToken& ident = block.consumeIncludingWhitespaceAndComments();
         if (ident.type() != IdentToken || !block.atEnd())
             return nullptr;
-        selector->setArgument(AtomicString(ident.value()));
+        selector->setArgument(ident.value());
         selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
         ASSERT(selector->pseudoType() == CSSSelector::PseudoLang);
         return selector.release();
     }
 
     if (colons == 1
-        && (equalIgnoringCase(token.value(), "nth-child")
-            || equalIgnoringCase(token.value(), "nth-last-child")
-            || equalIgnoringCase(token.value(), "nth-of-type")
-            || equalIgnoringCase(token.value(), "nth-last-of-type"))) {
+        && (token.valueEqualsIgnoringCase("nth-child")
+            || token.valueEqualsIgnoringCase("nth-last-child")
+            || token.valueEqualsIgnoringCase("nth-of-type")
+            || token.valueEqualsIgnoringCase("nth-last-of-type"))) {
         std::pair<int, int> ab;
         if (!consumeANPlusB(block, ab))
             return nullptr;
@@ -394,7 +394,7 @@ CSSSelector::Relation CSSSelectorParser::consumeCombinator(CSSParserTokenRange& 
         return fallbackResult;
     range.consumeIncludingComments();
     const CSSParserToken& ident = range.consumeIncludingComments();
-    if (ident.type() != IdentToken || !equalIgnoringCase(ident.value(), "deep"))
+    if (ident.type() != IdentToken || !ident.valueEqualsIgnoringCase("deep"))
         m_failedParsing = true;
     const CSSParserToken& slash = range.consumeIncludingWhitespaceAndComments();
     if (slash.type() != DelimiterToken || slash.delimiter() != '/')
@@ -430,7 +430,7 @@ CSSSelector::AttributeMatchType CSSSelectorParser::consumeAttributeFlags(CSSPars
     if (range.peek().type() != IdentToken)
         return CSSSelector::CaseSensitive;
     const CSSParserToken& flag = range.consumeIncludingWhitespaceAndComments();
-    if (flag.value() == "i") {
+    if (String(flag.value()) == "i") {
         if (RuntimeEnabledFeatures::cssAttributeCaseSensitivityEnabled() || isUASheetBehavior(m_context.mode()))
             return CSSSelector::CaseInsensitive;
     }
@@ -446,11 +446,11 @@ bool CSSSelectorParser::consumeANPlusB(CSSParserTokenRange& range, std::pair<int
         return true;
     }
     if (token.type() == IdentToken) {
-        if (equalIgnoringCase(token.value(), "odd")) {
+        if (token.valueEqualsIgnoringCase("odd")) {
             result = std::make_pair(2, 1);
             return true;
         }
-        if (equalIgnoringCase(token.value(), "even")) {
+        if (token.valueEqualsIgnoringCase("even")) {
             result = std::make_pair(2, 0);
             return true;
         }
@@ -469,7 +469,7 @@ bool CSSSelectorParser::consumeANPlusB(CSSParserTokenRange& range, std::pair<int
     } else if (token.type() == IdentToken) {
         if (token.value()[0] == '-') {
             result.first = -1;
-            nString = token.value().substring(1);
+            nString = String(token.value()).substring(1);
         } else {
             result.first = 1;
             nString = token.value();

@@ -9,6 +9,8 @@
 
 namespace blink {
 
+struct CSSParserString;
+
 class CSSTokenizerInputStream {
     WTF_MAKE_NONCOPYABLE(CSSTokenizerInputStream);
     WTF_MAKE_FAST_ALLOCATED;
@@ -44,6 +46,9 @@ public:
             ++offset;
         return offset;
     }
+
+    unsigned offset() const { return m_offset; }
+    CSSParserString rangeAsCSSParserString(unsigned start, unsigned length) const;
 
 private:
     size_t m_offset;

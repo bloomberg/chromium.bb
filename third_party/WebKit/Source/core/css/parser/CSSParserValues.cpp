@@ -47,26 +47,22 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
         CSSParserValue value;
         switch (token.type()) {
         case FunctionToken: {
-            if (equalIgnoringCase(token.value(), "url")) {
+            if (token.valueEqualsIgnoringCase("url")) {
                 const CSSParserToken& next = range.consumeIncludingWhitespaceAndComments();
                 if (next.type() == BadStringToken || range.consume().type() != RightParenthesisToken) {
                     destroyAndClear();
                     return;
                 }
                 ASSERT(next.type() == StringToken);
-                CSSParserString string;
-                string.init(next.value());
                 value.id = CSSValueInvalid;
                 value.isInt = false;
                 value.unit = CSSPrimitiveValue::CSS_URI;
-                value.string = string;
+                value.string = next.value();
                 break;
             }
 
             CSSParserFunction* function = new CSSParserFunction;
-            CSSParserString name;
-            name.init(token.value());
-            function->id = cssValueKeywordID(name);
+            function->id = cssValueKeywordID(token.value());
             CSSParserValueList* list = new CSSParserValueList;
             function->args = adoptPtr(list);
 
@@ -116,17 +112,15 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
             break;
         }
         case IdentToken: {
-            CSSParserString string;
-            string.init(token.value());
-            value.id = cssValueKeywordID(string);
+            value.id = cssValueKeywordID(token.value());
             value.isInt = false;
             value.unit = CSSPrimitiveValue::CSS_IDENT;
-            value.string = string;
+            value.string = token.value();
             break;
         }
         case DimensionToken:
             if (!token.unitType()) {
-                if (token.value() == "__qem") {
+                if (String(token.value()) == "__qem") {
                     value.setFromNumber(token.numericValue(), CSSParserValue::Q_EMS);
                     value.isInt = (token.numericValueType() == IntegerValueType);
                     break;
@@ -142,10 +136,8 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 number.isInt = (token.numericValueType() == IntegerValueType);
                 list->addValue(number);
 
-                CSSParserString unitString;
-                unitString.init(token.value());
                 CSSParserValue unit;
-                unit.string = unitString;
+                unit.string = token.value();
                 unit.unit = CSSPrimitiveValue::CSS_IDENT;
                 list->addValue(unit);
 
@@ -170,8 +162,6 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
         case StringToken:
         case UnicodeRangeToken:
         case UrlToken: {
-            CSSParserString string;
-            string.init(token.value());
             value.id = CSSValueInvalid;
             value.isInt = false;
             if (token.type() == HashToken)
@@ -182,7 +172,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 value.unit = CSSPrimitiveValue::CSS_UNICODE_RANGE;
             else
                 value.unit = CSSPrimitiveValue::CSS_URI;
-            value.string = string;
+            value.string = token.value();
             break;
         }
         case DelimiterToken:

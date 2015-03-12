@@ -10,6 +10,7 @@ namespace blink {
 }
 
 #include "core/css/parser/CSSParserTokenRange.h"
+#include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/CSSTokenizerInputStream.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -17,6 +18,7 @@ namespace blink {
 namespace blink {
 
 CSSTokenizer::Scope::Scope(const String& string)
+: m_string(string)
 {
     // According to the spec, we should perform preprocessing here.
     // See: http://dev.w3.org/csswg/css-syntax/#input-preprocessing
@@ -34,7 +36,7 @@ CSSTokenizer::Scope::Scope(const String& string)
     m_tokens.reserveInitialCapacity(string.length() / 3);
 
     CSSTokenizerInputStream input(string);
-    CSSTokenizer tokenizer(input);
+    CSSTokenizer tokenizer(input, *this);
     while (true) {
         CSSParserToken token = tokenizer.nextToken();
         if (token.type() == EOFToken)
@@ -76,8 +78,9 @@ static bool twoCharsAreValidEscape(UChar first, UChar second)
     return first == '\\' && !isNewLine(second) && second != kEndOfFileMarker;
 }
 
-CSSTokenizer::CSSTokenizer(CSSTokenizerInputStream& inputStream)
+CSSTokenizer::CSSTokenizer(CSSTokenizerInputStream& inputStream, Scope& scope)
     : m_input(inputStream)
+    , m_scope(scope)
 {
 }
 
@@ -121,7 +124,7 @@ CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType type)
     return CSSParserToken(type, CSSParserToken::BlockStart);
 }
 
-CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType blockType, CSSParserTokenType type, String name)
+CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType blockType, CSSParserTokenType type, CSSParserString name)
 {
     m_blockStack.append(blockType);
     return CSSParserToken(type, name, CSSParserToken::BlockStart);
@@ -446,9 +449,9 @@ CSSParserToken CSSTokenizer::consumeNumericToken()
 // http://dev.w3.org/csswg/css-syntax/#consume-ident-like-token
 CSSParserToken CSSTokenizer::consumeIdentLikeToken()
 {
-    String name = consumeName();
+    CSSParserString name = consumeName();
     if (consumeIfNext('(')) {
-        if (equalIgnoringCase(name, "url")) {
+        if (name.equalIgnoringCase("url")) {
             // The spec is slightly different so as to avoid dropping whitespace
             // tokens, but they wouldn't be used and this is easier.
             consumeUntilNonWhitespace();
@@ -464,6 +467,7 @@ CSSParserToken CSSTokenizer::consumeIdentLikeToken()
 // http://dev.w3.org/csswg/css-syntax/#consume-a-string-token
 CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
 {
+    // FIXME: Should we avoid allocations like consumeName?
     StringBuilder output;
     while (true) {
         UChar cc = consume();
@@ -471,7 +475,7 @@ CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
             // The "reconsume" here deviates from the spec, but is required to avoid consuming past the EOF
             if (cc == kEndOfFileMarker)
                 reconsume(cc);
-            return CSSParserToken(StringToken, output.toString());
+            return CSSParserToken(StringToken, registerString(output.toString()));
         }
         if (isNewLine(cc)) {
             reconsume(cc);
@@ -501,28 +505,25 @@ CSSParserToken CSSTokenizer::consumeUnicodeRange()
         --lengthRemaining;
     }
 
+    UChar32 end = start;
     if (lengthRemaining && consumeIfNext('?')) {
-        UChar32 end = start;
         do {
             start *= 16;
             end = end * 16 + 0xF;
             --lengthRemaining;
         } while (lengthRemaining && consumeIfNext('?'));
-        return CSSParserToken(UnicodeRangeToken, start, end);
-    }
-
-    if (m_input.nextInputChar() == '-' && isASCIIHexDigit(m_input.peek(1))) {
+    } else if (m_input.nextInputChar() == '-' && isASCIIHexDigit(m_input.peek(1))) {
         consume();
         lengthRemaining = 6;
-        UChar32 end = 0;
+        end = 0;
         do {
             end = end * 16 + toASCIIHexValue(consume());
             --lengthRemaining;
         } while (lengthRemaining && isASCIIHexDigit(m_input.nextInputChar()));
-        return CSSParserToken(UnicodeRangeToken, start, end);
     }
 
-    return CSSParserToken(UnicodeRangeToken, start, start);
+    String range = String::format("U+%X-%X", start, end);
+    return CSSParserToken(UnicodeRangeToken, registerString(range), start, end);
 }
 
 // http://dev.w3.org/csswg/css-syntax/#non-printable-code-point
@@ -534,6 +535,7 @@ static bool isNonPrintableCodePoint(UChar cc)
 // http://dev.w3.org/csswg/css-syntax/#consume-url-token
 CSSParserToken CSSTokenizer::consumeUrlToken()
 {
+    // FIXME: Should we avoid allocations like consumeName?
     consumeUntilNonWhitespace();
     StringBuilder result;
     while (true) {
@@ -542,13 +544,13 @@ CSSParserToken CSSTokenizer::consumeUrlToken()
             // The "reconsume" here deviates from the spec, but is required to avoid consuming past the EOF
             if (cc == kEndOfFileMarker)
                 reconsume(cc);
-            return CSSParserToken(UrlToken, result.toString());
+            return CSSParserToken(UrlToken, registerString(result.toString()));
         }
 
         if (isHTMLSpace(cc)) {
             consumeUntilNonWhitespace();
             if (consumeIfNext(')') || m_input.nextInputChar() == kEndOfFileMarker)
-                return CSSParserToken(UrlToken, result.toString());
+                return CSSParserToken(UrlToken, registerString(result.toString()));
             break;
         }
 
@@ -626,10 +628,21 @@ bool CSSTokenizer::consumeIfNext(UChar character)
 }
 
 // http://www.w3.org/TR/css3-syntax/#consume-a-name
-String CSSTokenizer::consumeName()
+CSSParserString CSSTokenizer::consumeName()
 {
-    // FIXME: Is this as efficient as it can be?
-    // The possibility of escape chars mandates a copy AFAICT.
+    // Names without escapes get handled without allocations
+    {
+        unsigned size = 0;
+        while (isNameChar(m_input.peek(size)))
+            size++;
+
+        if (!twoCharsAreValidEscape(m_input.peek(size), m_input.peek(size + 1))) {
+            unsigned startOffset = m_input.offset();
+            m_input.advance(size);
+            return m_input.rangeAsCSSParserString(startOffset, size);
+        }
+    }
+
     StringBuilder result;
     while (true) {
         UChar cc = consume();
@@ -642,7 +655,7 @@ String CSSTokenizer::consumeName()
             continue;
         }
         reconsume(cc);
-        return result.toString();
+        return registerString(result.toString());
     }
 }
 
@@ -722,6 +735,14 @@ bool CSSTokenizer::nextCharsAreIdentifier()
     bool areIdentifier = nextCharsAreIdentifier(first);
     reconsume(first);
     return areIdentifier;
+}
+
+CSSParserString CSSTokenizer::registerString(const String& string)
+{
+    m_scope.storeString(string);
+    CSSParserString result;
+    result.init(string);
+    return result;
 }
 
 } // namespace blink

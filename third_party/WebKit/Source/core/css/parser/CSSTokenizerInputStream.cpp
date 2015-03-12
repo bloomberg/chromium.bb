@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/parser/CSSTokenizerInputStream.h"
 
+#include "core/css/parser/CSSParserValues.h"
 #include "core/html/parser/InputStreamPreprocessor.h"
 
 namespace blink {
@@ -48,6 +49,17 @@ double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end)
     }
     // FIXME: It looks like callers ensure we have a valid number
     return isResultOK ? result : 0.0;
+}
+
+CSSParserString CSSTokenizerInputStream::rangeAsCSSParserString(unsigned start, unsigned length) const
+{
+    ASSERT(start + length <= m_string.length());
+    CSSParserString result;
+    if (m_string.is8Bit())
+        result.init(m_string.characters8() + start, length);
+    else
+        result.init(m_string.characters16() + start, length);
+    return result;
 }
 
 } // namespace blink

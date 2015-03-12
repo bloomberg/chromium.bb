@@ -7,7 +7,6 @@
 
 #include "core/css/parser/CSSPropertyParser.h"
 #include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
 #include <limits.h>
 
 namespace blink {
@@ -28,7 +27,7 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar c)
     ASSERT(m_type == DelimiterToken);
 }
 
-CSSParserToken::CSSParserToken(CSSParserTokenType type, String value, BlockType blockType)
+CSSParserToken::CSSParserToken(CSSParserTokenType type, CSSParserString value, BlockType blockType)
     : m_type(type)
     , m_blockType(blockType)
     , m_value(value)
@@ -46,17 +45,17 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, Num
     ASSERT(type == NumberToken);
 }
 
-CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar32 start, UChar32 end)
+CSSParserToken::CSSParserToken(CSSParserTokenType type, CSSParserString string, UChar32 start, UChar32 end)
     : m_type(UnicodeRangeToken)
     , m_blockType(NotBlock)
-    , m_value(String::format("U+%X-%X", start, end)) // FIXME: Remove this once CSSParserValues is gone
+    , m_value(string)
 {
     ASSERT_UNUSED(type, type == UnicodeRangeToken);
     m_unicodeRange.start = start;
     m_unicodeRange.end = end;
 }
 
-CSSParserToken::CSSParserToken(HashTokenType type, String value)
+CSSParserToken::CSSParserToken(HashTokenType type, CSSParserString value)
     : m_type(HashToken)
     , m_blockType(NotBlock)
     , m_value(value)
@@ -64,7 +63,7 @@ CSSParserToken::CSSParserToken(HashTokenType type, String value)
 {
 }
 
-void CSSParserToken::convertToDimensionWithUnit(String unit)
+void CSSParserToken::convertToDimensionWithUnit(CSSParserString unit)
 {
     ASSERT(m_type == NumberToken);
     m_type = DimensionToken;

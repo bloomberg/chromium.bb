@@ -6,7 +6,7 @@
 #define CSSParserToken_h
 
 #include "core/css/CSSPrimitiveValue.h"
-#include "wtf/text/WTFString.h"
+#include "core/css/parser/CSSParserValues.h"
 
 namespace blink {
 
@@ -71,22 +71,24 @@ public:
     };
 
     CSSParserToken(CSSParserTokenType, BlockType = NotBlock);
-    CSSParserToken(CSSParserTokenType, String value, BlockType = NotBlock);
+    CSSParserToken(CSSParserTokenType, CSSParserString, BlockType = NotBlock);
 
     CSSParserToken(CSSParserTokenType, UChar); // for DelimiterToken
     CSSParserToken(CSSParserTokenType, double, NumericValueType, NumericSign); // for NumberToken
-    CSSParserToken(CSSParserTokenType, UChar32, UChar32); // for UnicodeRangeToken
+    // FIXME: We shouldn't need to store a string
+    CSSParserToken(CSSParserTokenType, CSSParserString, UChar32, UChar32); // for UnicodeRangeToken
 
-    CSSParserToken(HashTokenType, String);
+    CSSParserToken(HashTokenType, CSSParserString);
 
     // Converts NumberToken to DimensionToken.
-    void convertToDimensionWithUnit(String);
+    void convertToDimensionWithUnit(CSSParserString);
 
     // Converts NumberToken to PercentageToken.
     void convertToPercentage();
 
     CSSParserTokenType type() const { return static_cast<CSSParserTokenType>(m_type); }
-    String value() const { return m_value; }
+    CSSParserString value() const { return m_value; }
+    bool valueEqualsIgnoringCase(const char* str) const { return m_value.equalIgnoringCase(str); }
 
     UChar delimiter() const;
     NumericSign numericSign() const;
@@ -107,7 +109,7 @@ private:
     unsigned m_numericSign : 2; // NumericSign
     unsigned m_unit : 7; // CSSPrimitiveValue::UnitType
 
-    String m_value;
+    CSSParserString m_value; // FIXME: Pack this better?
 
     union {
         UChar m_delimiter;

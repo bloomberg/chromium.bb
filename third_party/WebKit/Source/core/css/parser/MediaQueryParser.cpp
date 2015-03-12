@@ -278,11 +278,9 @@ bool MediaQueryData::tryAddParserValue(CSSParserTokenType type, const CSSParserT
         value.id = CSSValueInvalid;
         value.isInt = false;
     } else if (type == IdentToken) {
-        CSSParserString tokenValue;
-        tokenValue.init(token.value());
         value.unit = CSSPrimitiveValue::CSS_IDENT;
-        value.string = tokenValue;
-        value.id = cssValueKeywordID(tokenValue);
+        value.string = token.value();
+        value.id = cssValueKeywordID(token.value());
         value.isInt = false;
     } else {
         return false;

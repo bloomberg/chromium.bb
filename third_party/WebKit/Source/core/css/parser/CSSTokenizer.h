@@ -14,6 +14,7 @@
 namespace blink {
 
 class CSSTokenizerInputStream;
+struct CSSParserString;
 class CSSParserTokenRange;
 
 class CSSTokenizer {
@@ -26,11 +27,17 @@ public:
         CSSParserTokenRange tokenRange();
 
     private:
+        void storeString(const String& string) { m_stringPool.append(string); }
         Vector<CSSParserToken> m_tokens;
+        // We only allocate strings when escapes are used.
+        Vector<String> m_stringPool;
+        String m_string;
+
+        friend class CSSTokenizer;
     };
 
 private:
-    CSSTokenizer(CSSTokenizerInputStream&);
+    CSSTokenizer(CSSTokenizerInputStream&, Scope&);
 
     CSSParserToken nextToken();
 
@@ -51,7 +58,7 @@ private:
     bool consumeUntilCommentEndFound();
 
     bool consumeIfNext(UChar);
-    String consumeName();
+    CSSParserString consumeName();
     UChar32 consumeEscape();
 
     bool nextTwoCharsAreValidEscape();
@@ -60,7 +67,7 @@ private:
     bool nextCharsAreIdentifier(UChar);
     bool nextCharsAreIdentifier();
     CSSParserToken blockStart(CSSParserTokenType);
-    CSSParserToken blockStart(CSSParserTokenType blockType, CSSParserTokenType, String);
+    CSSParserToken blockStart(CSSParserTokenType blockType, CSSParserTokenType, CSSParserString);
     CSSParserToken blockEnd(CSSParserTokenType, CSSParserTokenType startType);
 
     typedef CSSParserToken (CSSTokenizer::*CodePoint)(UChar);
@@ -96,7 +103,10 @@ private:
     CSSParserToken stringStart(UChar);
     CSSParserToken endOfFile(UChar);
 
+    CSSParserString registerString(const String&);
+
     CSSTokenizerInputStream& m_input;
+    Scope& m_scope;
 };
 
 
