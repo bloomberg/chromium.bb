@@ -33,8 +33,8 @@
 #include "ash/shell.h"
 #endif
 
-#if defined(USE_X11)
-#include "chrome/browser/ui/views/frame/browser_command_handler_x11.h"
+#if defined(OS_LINUX)
+#include "chrome/browser/ui/views/frame/browser_command_handler_linux.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,8 +82,8 @@ void BrowserFrame::InitBrowserFrame() {
     non_client_view()->set_context_menu_controller(this);
   }
 
-#if defined(USE_X11)
-  browser_command_handler_.reset(new BrowserCommandHandlerX11(browser_view_));
+#if defined(OS_LINUX)
+  browser_command_handler_.reset(new BrowserCommandHandlerLinux(browser_view_));
 #endif
 }
 

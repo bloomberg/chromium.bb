@@ -201,6 +201,14 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
     hwstate.buttons_down |= GESTURES_BUTTON_MIDDLE;
   if (Event_Get_Button_Right(evdev))
     hwstate.buttons_down |= GESTURES_BUTTON_RIGHT;
+  if (Event_Get_Button(evdev, BTN_SIDE) ||
+      Event_Get_Button(evdev, BTN_BACK)) {
+    hwstate.buttons_down |= GESTURES_BUTTON_BACK;
+  }
+  if (Event_Get_Button(evdev, BTN_EXTRA) ||
+      Event_Get_Button(evdev, BTN_FORWARD)) {
+    hwstate.buttons_down |= GESTURES_BUTTON_FORWARD;
+  }
 
   GestureInterpreterPushHardwareState(interpreter_, &hwstate);
 }
@@ -300,18 +308,8 @@ void GestureInterpreterLibevdevCros::OnGestureButtonsChange(
   if (!cursor_)
     return;  // No cursor!
 
-  if (buttons->down & GESTURES_BUTTON_LEFT)
-    DispatchMouseButton(BTN_LEFT, true, gesture->end_time);
-  if (buttons->down & GESTURES_BUTTON_MIDDLE)
-    DispatchMouseButton(BTN_MIDDLE, true, gesture->end_time);
-  if (buttons->down & GESTURES_BUTTON_RIGHT)
-    DispatchMouseButton(BTN_RIGHT, true, gesture->end_time);
-  if (buttons->up & GESTURES_BUTTON_LEFT)
-    DispatchMouseButton(BTN_LEFT, false, gesture->end_time);
-  if (buttons->up & GESTURES_BUTTON_MIDDLE)
-    DispatchMouseButton(BTN_MIDDLE, false, gesture->end_time);
-  if (buttons->up & GESTURES_BUTTON_RIGHT)
-    DispatchMouseButton(BTN_RIGHT, false, gesture->end_time);
+  DispatchChangedMouseButtons(buttons->down, true, gesture->end_time);
+  DispatchChangedMouseButtons(buttons->up, false, gesture->end_time);
 }
 
 void GestureInterpreterLibevdevCros::OnGestureContactInitiated(
@@ -400,6 +398,20 @@ void GestureInterpreterLibevdevCros::OnGestureMetrics(
   NOTIMPLEMENTED();
 }
 
+void GestureInterpreterLibevdevCros::DispatchChangedMouseButtons(
+    unsigned int changed_buttons, bool down, stime_t time) {
+  if (changed_buttons & GESTURES_BUTTON_LEFT)
+    DispatchMouseButton(BTN_LEFT, down, time);
+  if (changed_buttons & GESTURES_BUTTON_MIDDLE)
+    DispatchMouseButton(BTN_MIDDLE, down, time);
+  if (changed_buttons & GESTURES_BUTTON_RIGHT)
+    DispatchMouseButton(BTN_RIGHT, down, time);
+  if (changed_buttons & GESTURES_BUTTON_BACK)
+    DispatchMouseButton(BTN_BACK, down, time);
+  if (changed_buttons & GESTURES_BUTTON_FORWARD)
+    DispatchMouseButton(BTN_FORWARD, down, time);
+}
+
 void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int button,
                                                          bool down,
                                                          stime_t time) {
@@ -461,10 +473,7 @@ bool GestureInterpreterLibevdevCros::SetMouseButtonState(unsigned int button,
     return false;
 
   // State transition: !(down) -> (down)
-  if (down)
-    mouse_button_state_.set(button_offset);
-  else
-    mouse_button_state_.reset(button_offset);
+  mouse_button_state_.set(button_offset, down);
 
   return true;
 }
@@ -473,6 +482,8 @@ void GestureInterpreterLibevdevCros::ReleaseMouseButtons(stime_t timestamp) {
   DispatchMouseButton(BTN_LEFT, false /* down */, timestamp);
   DispatchMouseButton(BTN_MIDDLE, false /* down */, timestamp);
   DispatchMouseButton(BTN_RIGHT, false /* down */, timestamp);
+  DispatchMouseButton(BTN_BACK, false /* down */, timestamp);
+  DispatchMouseButton(BTN_FORWARD, false /* down */, timestamp);
 }
 
 }  // namespace ui

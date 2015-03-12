@@ -109,6 +109,7 @@ void EventConverterEvdevImpl::AllowAllKeys() {
 
 void EventConverterEvdevImpl::OnStopped() {
   ReleaseKeys();
+  ReleaseMouseButtons();
 }
 
 void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
@@ -175,10 +176,7 @@ void EventConverterEvdevImpl::OnKeyChange(unsigned int key,
     return;
 
   // State transition: !(down) -> (down)
-  if (down)
-    key_state_.set(key);
-  else
-    key_state_.reset(key);
+  key_state_.set(key, down);
 
   dispatcher_->DispatchKeyEvent(KeyEventParams(id_, key, down, timestamp));
 }
@@ -189,21 +187,45 @@ void EventConverterEvdevImpl::ReleaseKeys() {
     OnKeyChange(key, false /* down */, timestamp);
 }
 
+void EventConverterEvdevImpl::ReleaseMouseButtons() {
+  base::TimeDelta timestamp = ui::EventTimeForNow();
+  for (int code = BTN_MOUSE; code < BTN_JOYSTICK; ++code)
+    OnButtonChange(code, false /* down */, timestamp);
+}
+
 void EventConverterEvdevImpl::OnLostSync() {
   LOG(WARNING) << "kernel dropped input events";
 
   // We may have missed key releases. Release everything.
   // TODO(spang): Use EVIOCGKEY to avoid releasing keys that are still held.
   ReleaseKeys();
+  ReleaseMouseButtons();
 }
 
 void EventConverterEvdevImpl::DispatchMouseButton(const input_event& input) {
   if (!cursor_)
     return;
 
-  dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
-      id_, cursor_->GetLocation(), input.code, input.value,
-      /* allow_remap */ true, TimeDeltaFromInputEvent(input)));
+  OnButtonChange(input.code, input.value, TimeDeltaFromInputEvent(input));
+}
+
+void EventConverterEvdevImpl::OnButtonChange(int code,
+                                             bool down,
+                                             const base::TimeDelta& timestamp) {
+  if (code == BTN_SIDE)
+    code = BTN_BACK;
+  else if (code == BTN_EXTRA)
+    code = BTN_FORWARD;
+
+  int button_offset = code - BTN_MOUSE;
+  if (mouse_button_state_.test(button_offset) == down)
+    return;
+
+  mouse_button_state_.set(button_offset, down);
+
+  dispatcher_->DispatchMouseButtonEvent(
+      MouseButtonEventParams(id_, cursor_->GetLocation(), code, down,
+                             /* allow_remap */ true, timestamp));
 }
 
 void EventConverterEvdevImpl::FlushEvents(const input_event& input) {

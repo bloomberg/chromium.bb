@@ -39,6 +39,10 @@ int EventFlagToEvdevModifier(int flag) {
       return EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
     case EF_RIGHT_MOUSE_BUTTON:
       return EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON;
+    case EF_BACK_MOUSE_BUTTON:
+      return EVDEV_MODIFIER_BACK_MOUSE_BUTTON;
+    case EF_FORWARD_MOUSE_BUTTON:
+      return EVDEV_MODIFIER_FORWARD_MOUSE_BUTTON;
     case EF_COMMAND_DOWN:
       return EVDEV_MODIFIER_COMMAND;
     default:

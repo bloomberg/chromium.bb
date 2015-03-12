@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_command_handler_x11.h"
+#include "chrome/browser/ui/views/frame/browser_command_handler_linux.h"
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -12,7 +12,8 @@
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 
-BrowserCommandHandlerX11::BrowserCommandHandlerX11(BrowserView* browser_view)
+BrowserCommandHandlerLinux::BrowserCommandHandlerLinux(
+    BrowserView* browser_view)
     : browser_view_(browser_view) {
   aura::Window* window = browser_view_->frame()->GetNativeWindow();
   DCHECK(window);
@@ -20,13 +21,13 @@ BrowserCommandHandlerX11::BrowserCommandHandlerX11(BrowserView* browser_view)
     window->AddPreTargetHandler(this);
 }
 
-BrowserCommandHandlerX11::~BrowserCommandHandlerX11() {
+BrowserCommandHandlerLinux::~BrowserCommandHandlerLinux() {
   aura::Window* window = browser_view_->frame()->GetNativeWindow();
   if (window)
     window->RemovePreTargetHandler(this);
 }
 
-void BrowserCommandHandlerX11::OnMouseEvent(ui::MouseEvent* event) {
+void BrowserCommandHandlerLinux::OnMouseEvent(ui::MouseEvent* event) {
   // Handle standard Linux mouse buttons for going back and forward.
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return;

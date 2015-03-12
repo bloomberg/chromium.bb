@@ -178,6 +178,12 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
     case BTN_MIDDLE:
       modifier = EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
       break;
+    case BTN_BACK:
+      modifier = EVDEV_MODIFIER_BACK_MOUSE_BUTTON;
+      break;
+    case BTN_FORWARD:
+      modifier = EVDEV_MODIFIER_FORWARD_MOUSE_BUTTON;
+      break;
     default:
       return;
   }

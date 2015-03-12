@@ -55,8 +55,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
                    bool down,
                    const base::TimeDelta& timestamp);
   void ReleaseKeys();
+  void ReleaseMouseButtons();
   void OnLostSync();
   void DispatchMouseButton(const input_event& input);
+  void OnButtonChange(int code, bool down, const base::TimeDelta& timestamp);
 
   // Flush events delimited by EV_SYN. This is useful for handling
   // non-axis-aligned movement properly.
@@ -83,6 +85,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
 
   // Pressed keys bitset.
   std::bitset<KEY_CNT> key_state_;
+
+  // Last mouse button state.
+  static const int kMouseButtonCount = BTN_JOYSTICK - BTN_MOUSE;
+  std::bitset<kMouseButtonCount> mouse_button_state_;
 
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
