@@ -22,7 +22,7 @@ IN_PROC_BROWSER_TEST_F(QUnitBrowserTestRunner, Remoting_Webapp_Js_Unittest) {
   }
 #endif // !defined(OS_MACOSX)
   RunTest(
-      base_dir.Append(FILE_PATH_LITERAL("remoting/unittests/unittest.html")));
+      base_dir.Append(FILE_PATH_LITERAL("remoting/unittests/unittests.html")));
 }
 
 }  // namespace remoting
