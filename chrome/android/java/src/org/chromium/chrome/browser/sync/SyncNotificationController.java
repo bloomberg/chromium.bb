@@ -43,22 +43,6 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         mAccountManagementFragment = accountManagementFragment;
     }
 
-    /**
-     * Deprecated for having unnecessary args; use the first constructor.
-     */
-    @Deprecated
-    public SyncNotificationController(Context context,
-            GoogleServicesNotificationController controller,
-            Class<? extends Activity> passphraseRequestActivity,
-            Class<? extends Fragment> accountManagementFragment) {
-        mApplicationContext = context.getApplicationContext();
-        mNotificationController = controller;
-        mProfileSyncService = ProfileSyncService.get(context);
-        mAndroidSyncSettings = AndroidSyncSettings.get(context);
-        mPassphraseRequestActivity = passphraseRequestActivity;
-        mAccountManagementFragment = accountManagementFragment;
-    }
-
     public void displayAndroidMasterSyncDisabledNotification() {
         String masterSyncDisabled =
                 GoogleServicesNotificationController.formatMessageParts(mApplicationContext,

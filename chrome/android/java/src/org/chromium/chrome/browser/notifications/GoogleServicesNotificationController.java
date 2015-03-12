@@ -45,19 +45,6 @@ public class GoogleServicesNotificationController {
         }
     }
 
-    @Deprecated
-    public static GoogleServicesNotificationController createNewInstance(Context context) {
-        return get(context);
-    }
-
-    @Deprecated
-    @VisibleForTesting
-    public static GoogleServicesNotificationController getInstance() {
-        synchronized (LOCK) {
-            return sInstance;
-        }
-    }
-
     public static String formatMessageParts(
             Context context, Integer featureNameResource, Integer messageResource) {
         return context.getString(featureNameResource) + ": " + context.getString(messageResource);
