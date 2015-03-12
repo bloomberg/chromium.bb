@@ -732,7 +732,7 @@ function WallpaperManager(dialogDom) {
   };
 
   /**
-   * Close the last opened overlay on pressing the Escape key.
+   * Close the last opened overlay or app window on pressing the Escape key.
    * @param {Event} event A keydown event.
    */
   WallpaperManager.prototype.onKeyDown_ = function(event) {
@@ -746,6 +746,8 @@ function WallpaperManager(dialogDom) {
       if (closeButton) {
         closeButton.click();
         event.preventDefault();
+      } else {
+        this.onClose_();
       }
     }
   };
