@@ -62,6 +62,15 @@ bool GetSlotValues(int fd, int32_t* request, unsigned int size) {
   return true;
 }
 
+void AssignBitset(const unsigned long* src,
+                  size_t src_len,
+                  unsigned long* dst,
+                  size_t dst_len) {
+  memcpy(dst, src, std::min(src_len, dst_len) * sizeof(unsigned long));
+  if (src_len < dst_len)
+    memset(&dst[src_len], 0, (dst_len - src_len) * sizeof(unsigned long));
+}
+
 }  // namespace
 
 EventDeviceInfo::EventDeviceInfo() {
@@ -123,6 +132,46 @@ bool EventDeviceInfo::Initialize(int fd) {
   }
 
   return true;
+}
+
+void EventDeviceInfo::SetEventTypes(const unsigned long* ev_bits, size_t len) {
+  AssignBitset(ev_bits, len, ev_bits_, arraysize(ev_bits_));
+}
+
+void EventDeviceInfo::SetKeyEvents(const unsigned long* key_bits, size_t len) {
+  AssignBitset(key_bits, len, key_bits_, arraysize(key_bits_));
+}
+
+void EventDeviceInfo::SetRelEvents(const unsigned long* rel_bits, size_t len) {
+  AssignBitset(rel_bits, len, rel_bits_, arraysize(rel_bits_));
+}
+
+void EventDeviceInfo::SetAbsEvents(const unsigned long* abs_bits, size_t len) {
+  AssignBitset(abs_bits, len, abs_bits_, arraysize(abs_bits_));
+}
+
+void EventDeviceInfo::SetMscEvents(const unsigned long* msc_bits, size_t len) {
+  AssignBitset(msc_bits, len, msc_bits_, arraysize(msc_bits_));
+}
+
+void EventDeviceInfo::SetSwEvents(const unsigned long* sw_bits, size_t len) {
+  AssignBitset(sw_bits, len, sw_bits_, arraysize(sw_bits_));
+}
+
+void EventDeviceInfo::SetLedEvents(const unsigned long* led_bits, size_t len) {
+  AssignBitset(led_bits, len, led_bits_, arraysize(led_bits_));
+}
+
+void EventDeviceInfo::SetProps(const unsigned long* prop_bits, size_t len) {
+  AssignBitset(prop_bits, len, prop_bits_, arraysize(prop_bits_));
+}
+
+void EventDeviceInfo::SetAbsInfo(unsigned int code,
+                                 const input_absinfo& abs_info) {
+  if (code > ABS_MAX)
+    return;
+
+  memcpy(&abs_info_[code], &abs_info, sizeof(abs_info));
 }
 
 bool EventDeviceInfo::HasEventType(unsigned int type) const {

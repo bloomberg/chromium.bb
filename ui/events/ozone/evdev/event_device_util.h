@@ -16,6 +16,10 @@ static inline bool EvdevBitIsSet(const unsigned long* data, int bit) {
   return data[bit / EVDEV_LONG_BITS] & (1UL << (bit % EVDEV_LONG_BITS));
 }
 
+static inline void EvdevSetBit(unsigned long* data, int bit) {
+  data[bit / EVDEV_LONG_BITS] |= (1UL << (bit % EVDEV_LONG_BITS));
+}
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_EVDEV_EVENT_DEVICE_UTIL_H_

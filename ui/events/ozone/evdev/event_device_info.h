@@ -42,6 +42,17 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Initialize device information from an open device.
   bool Initialize(int fd);
 
+  // Manual initialization.
+  void SetEventTypes(const unsigned long* ev_bits, size_t len);
+  void SetKeyEvents(const unsigned long* key_bits, size_t len);
+  void SetRelEvents(const unsigned long* rel_bits, size_t len);
+  void SetAbsEvents(const unsigned long* abs_bits, size_t len);
+  void SetMscEvents(const unsigned long* msc_bits, size_t len);
+  void SetSwEvents(const unsigned long* sw_bits, size_t len);
+  void SetLedEvents(const unsigned long* led_bits, size_t len);
+  void SetProps(const unsigned long* prop_bits, size_t len);
+  void SetAbsInfo(unsigned int code, const input_absinfo& absinfo);
+
   // Check events this device can generate.
   bool HasEventType(unsigned int type) const;
   bool HasKeyEvent(unsigned int code) const;
