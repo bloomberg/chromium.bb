@@ -11,7 +11,10 @@ namespace base {
 namespace internal {
 
 DiscardableMemoryShmem::DiscardableMemoryShmem(size_t bytes)
-    : bytes_(bytes), is_locked_(false) {
+    : chunk_(DiscardableMemoryShmemAllocator::GetInstance()
+                 ->AllocateLockedDiscardableMemory(bytes)),
+      is_locked_(true) {
+  DCHECK(chunk_);
 }
 
 DiscardableMemoryShmem::~DiscardableMemoryShmem() {
@@ -19,37 +22,27 @@ DiscardableMemoryShmem::~DiscardableMemoryShmem() {
     Unlock();
 }
 
-bool DiscardableMemoryShmem::Initialize() {
-  return Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
-}
-
-DiscardableMemoryLockStatus DiscardableMemoryShmem::Lock() {
+bool DiscardableMemoryShmem::Lock() {
   DCHECK(!is_locked_);
+  DCHECK(chunk_);
 
-  if (chunk_ && chunk_->Lock()) {
-    is_locked_ = true;
-    return DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
+  if (!chunk_->Lock()) {
+    chunk_.reset();
+    return false;
   }
 
-  chunk_ = DiscardableMemoryShmemAllocator::GetInstance()
-               ->AllocateLockedDiscardableMemory(bytes_);
-  if (!chunk_)
-    return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
-
   is_locked_ = true;
-  return DISCARDABLE_MEMORY_LOCK_STATUS_PURGED;
+  return true;
 }
 
 void DiscardableMemoryShmem::Unlock() {
   DCHECK(is_locked_);
-  DCHECK(chunk_);
   chunk_->Unlock();
   is_locked_ = false;
 }
 
 void* DiscardableMemoryShmem::Memory() const {
   DCHECK(is_locked_);
-  DCHECK(chunk_);
   return chunk_->Memory();
 }
 

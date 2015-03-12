@@ -20,12 +20,6 @@ enum DiscardableMemoryType {
   DISCARDABLE_MEMORY_TYPE_SHMEM
 };
 
-enum DiscardableMemoryLockStatus {
-  DISCARDABLE_MEMORY_LOCK_STATUS_FAILED,
-  DISCARDABLE_MEMORY_LOCK_STATUS_PURGED,
-  DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS
-};
-
 // Platform abstraction for discardable memory. DiscardableMemory is used to
 // cache large objects without worrying about blowing out memory, both on mobile
 // devices where there is no swap, and desktop devices where unused free memory
@@ -87,12 +81,9 @@ class BASE_EXPORT DiscardableMemory {
   static scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size);
 
   // Locks the memory so that it will not be purged by the system. Returns
-  // DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS on success. If the return value is
-  // DISCARDABLE_MEMORY_LOCK_STATUS_FAILED then this object should be
-  // discarded and a new one should be created. If the return value is
-  // DISCARDABLE_MEMORY_LOCK_STATUS_PURGED then the memory is present but any
-  // data that was in it is gone.
-  virtual DiscardableMemoryLockStatus Lock() WARN_UNUSED_RESULT = 0;
+  // true on success. If the return value is false then this object should be
+  // discarded and a new one should be created.
+  virtual bool Lock() WARN_UNUSED_RESULT = 0;
 
   // Unlocks the memory so that it can be purged by the system. Must be called
   // after every successful lock call.

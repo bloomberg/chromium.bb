@@ -20,12 +20,11 @@ class DiscardableMemoryShmem : public DiscardableMemory {
   bool Initialize();
 
   // Overridden from DiscardableMemory:
-  DiscardableMemoryLockStatus Lock() override;
+  bool Lock() override;
   void Unlock() override;
   void* Memory() const override;
 
  private:
-  const size_t bytes_;
   scoped_ptr<DiscardableMemoryShmemChunk> chunk_;
   bool is_locked_;
 

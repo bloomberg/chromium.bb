@@ -69,14 +69,7 @@ TEST_P(DiscardableMemoryTest, LockAndUnLock) {
   const scoped_ptr<DiscardableMemory> memory(CreateLockedMemory(kSize));
   ASSERT_TRUE(memory);
   void* addr = memory->Memory();
-  ASSERT_NE(nullptr, addr);
-
-  memory->Unlock();
-
-  EXPECT_NE(DISCARDABLE_MEMORY_LOCK_STATUS_FAILED, memory->Lock());
-  addr = memory->Memory();
-  ASSERT_NE(nullptr, addr);
-
+  EXPECT_NE(nullptr, addr);
   memory->Unlock();
 }
 
@@ -111,7 +104,7 @@ TEST_P(DiscardableMemoryTest, AddressSpace) {
     memory = CreateLockedMemory(kLargeSize);
     ASSERT_TRUE(memory);
     void* addr = memory->Memory();
-    ASSERT_NE(nullptr, addr);
+    EXPECT_NE(nullptr, addr);
     memory->Unlock();
   }
 }

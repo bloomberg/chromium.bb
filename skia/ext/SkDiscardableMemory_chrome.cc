@@ -7,17 +7,7 @@
 SkDiscardableMemoryChrome::~SkDiscardableMemoryChrome() {}
 
 bool SkDiscardableMemoryChrome::lock() {
-  const base::DiscardableMemoryLockStatus status = discardable_->Lock();
-  switch (status) {
-    case base::DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS:
-      return true;
-    case base::DISCARDABLE_MEMORY_LOCK_STATUS_PURGED:
-      discardable_->Unlock();
-      return false;
-    default:
-      discardable_.reset();
-      return false;
-  }
+  return discardable_->Lock();
 }
 
 void* SkDiscardableMemoryChrome::data() {
@@ -34,9 +24,6 @@ SkDiscardableMemoryChrome::SkDiscardableMemoryChrome(
 }
 
 SkDiscardableMemory* SkDiscardableMemory::Create(size_t bytes) {
-  scoped_ptr<base::DiscardableMemory> discardable(
+  return new SkDiscardableMemoryChrome(
       base::DiscardableMemory::CreateLockedMemory(bytes));
-  if (!discardable)
-    return NULL;
-  return new SkDiscardableMemoryChrome(discardable.Pass());
 }
