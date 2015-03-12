@@ -32,6 +32,7 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -195,7 +196,7 @@ void CastContentBrowserClient::AllowCertificateError(
 }
 
 void CastContentBrowserClient::SelectClientCertificate(
-    WebContents* web_contents,
+    content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     scoped_ptr<content::ClientCertificateDelegate> delegate) {
   GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
@@ -203,7 +204,7 @@ void CastContentBrowserClient::SelectClientCertificate(
   if (!requesting_url.is_valid()) {
     LOG(ERROR) << "Invalid URL string: "
                << requesting_url.possibly_invalid_spec();
-    delegate->SelectClientCertificate(nullptr);
+    delegate->ContinueWithCertificate(nullptr);
     return;
   }
 
@@ -223,7 +224,7 @@ void CastContentBrowserClient::SelectClientCertificate(
                  base::Unretained(this), requesting_url,
                  web_contents->GetRenderProcessHost()->GetID()),
       base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
-                 delegate.Pass()));
+                 base::Owned(delegate.release())));
 }
 
 net::X509Certificate*
