@@ -248,32 +248,30 @@ void FileManagerPrivateRequestFileSystemFunction::DidFail(
   SendResponse(false);
 }
 
-bool
-FileManagerPrivateRequestFileSystemFunction::SetupFileSystemAccessPermissions(
-    scoped_refptr<storage::FileSystemContext> file_system_context,
-    int child_id,
-    Profile* profile,
-    scoped_refptr<const extensions::Extension> extension) {
+bool FileManagerPrivateRequestFileSystemFunction::
+    SetupFileSystemAccessPermissions(
+        scoped_refptr<storage::FileSystemContext> file_system_context,
+        int child_id,
+        Profile* profile,
+        scoped_refptr<const extensions::Extension> extension,
+        const base::FilePath& mount_path,
+        const base::FilePath& virtual_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!extension.get())
     return false;
 
-  storage::ExternalFileSystemBackend* backend =
+  storage::ExternalFileSystemBackend* const backend =
       file_system_context->external_backend();
   if (!backend)
     return false;
 
-  // Grant full access to File API from this component extension.
-  backend->GrantFullAccessToExtension(extension_->id());
+  backend->GrantFileAccessToExtension(extension_->id(), virtual_path);
 
   // Grant R/W file permissions to the renderer hosting component
-  // extension for all paths exposed by our local file system backend.
-  std::vector<base::FilePath> root_dirs = backend->GetRootDirectories();
-  for (size_t i = 0; i < root_dirs.size(); ++i) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
-        child_id, root_dirs[i]);
-  }
+  // extension to the mount path of the volume.
+  ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
+      child_id, mount_path);
 
   // Grant permission to request externalfile scheme. The permission is needed
   // to start drag for external file URL.
@@ -310,14 +308,6 @@ bool FileManagerPrivateRequestFileSystemFunction::RunAsync() {
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host());
 
-  // Set up file permission access.
-  const int child_id = render_view_host()->GetProcess()->GetID();
-  if (!SetupFileSystemAccessPermissions(
-          file_system_context, child_id, GetProfile(), extension())) {
-    DidFail(base::File::FILE_ERROR_SECURITY);
-    return false;
-  }
-
   FileDefinition file_definition;
   if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
            GetProfile(),
@@ -328,6 +318,15 @@ bool FileManagerPrivateRequestFileSystemFunction::RunAsync() {
     return false;
   }
   file_definition.is_directory = true;
+
+  // Set up file permission access.
+  const int child_id = render_view_host()->GetProcess()->GetID();
+  if (!SetupFileSystemAccessPermissions(
+          file_system_context, child_id, GetProfile(), extension(),
+          volume_info.mount_path, file_definition.virtual_path)) {
+    DidFail(base::File::FILE_ERROR_SECURITY);
+    return false;
+  }
 
   file_manager::util::ConvertFileDefinitionToEntryDefinition(
       GetProfile(),
@@ -361,10 +360,22 @@ void FileManagerPrivateRequestFileSystemFunction::OnEntryDefinition(
   SendResponse(true);
 }
 
+FileManagerPrivateGrantAccessFunction::FileManagerPrivateGrantAccessFunction()
+    : chrome_details_(this) {
+}
+
 ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
   using extensions::api::file_manager_private::GrantAccess::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
+
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          chrome_details_.GetProfile(), render_view_host());
+
+  storage::ExternalFileSystemBackend* const backend =
+      file_system_context->external_backend();
+  DCHECK(backend);
 
   const std::vector<Profile*>& profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
@@ -384,6 +395,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
           file_system_url.mount_type() != storage::kFileSystemTypeExternal) {
         continue;
       }
+      backend->GrantFileAccessToExtension(extension_->id(),
+                                          file_system_url.virtual_path());
       content::ChildProcessSecurityPolicy::GetInstance()
           ->GrantCreateReadWriteFile(render_view_host()->GetProcess()->GetID(),
                                      file_system_url.path());

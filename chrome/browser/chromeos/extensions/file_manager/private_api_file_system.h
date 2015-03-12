@@ -71,7 +71,9 @@ class FileManagerPrivateRequestFileSystemFunction
       scoped_refptr<storage::FileSystemContext> file_system_context,
       int child_id,
       Profile* profile,
-      scoped_refptr<const extensions::Extension> extension);
+      scoped_refptr<const extensions::Extension> extension,
+      const base::FilePath& mount_path,
+      const base::FilePath& virtual_path);
 
   // Called when the entry definition is computed.
   void OnEntryDefinition(
@@ -82,6 +84,8 @@ class FileManagerPrivateRequestFileSystemFunction
 // from other profiles.
 class FileManagerPrivateGrantAccessFunction : public UIThreadExtensionFunction {
  public:
+  FileManagerPrivateGrantAccessFunction();
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.grantAccess",
                              FILEMANAGERPRIVATE_GRANTACCESS)
 
@@ -90,6 +94,8 @@ class FileManagerPrivateGrantAccessFunction : public UIThreadExtensionFunction {
 
  private:
   ExtensionFunction::ResponseAction Run() override;
+  const ChromeExtensionFunctionDetails chrome_details_;
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGrantAccessFunction);
 };
 
 // Base class for FileManagerPrivateAddFileWatchFunction and

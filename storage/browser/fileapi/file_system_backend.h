@@ -166,7 +166,8 @@ class ExternalFileSystemBackend : public FileSystemBackend {
   // permissions.
   virtual std::vector<base::FilePath> GetRootDirectories() const = 0;
   // Grants access to all external file system from extension identified with
-  // |extension_id|.
+  // |extension_id|. TODO(mtomasz): Remove, as full access should never be
+  // necessary. Use GrantFileAccessToExtension() instead.
   virtual void GrantFullAccessToExtension(const std::string& extension_id) = 0;
   // Grants access to |virtual_path| from |origin_url|.
   virtual void GrantFileAccessToExtension(

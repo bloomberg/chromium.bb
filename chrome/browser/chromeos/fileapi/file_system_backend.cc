@@ -223,11 +223,6 @@ void FileSystemBackend::GrantFileAccessToExtension(
     return;
   }
 
-  if (type == storage::kFileSystemTypeRestrictedNativeLocal) {
-    LOG(ERROR) << "Can't grant access for restricted mount point";
-    return;
-  }
-
   file_access_permissions_->GrantAccessPermission(extension_id, virtual_path);
 }
 

@@ -167,14 +167,6 @@ TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
       CreateFileSystemURL(extension, "system/foo1",
                           system_mount_points.get())));
 
-  // oem is restricted file system.
-  backend.GrantFileAccessToExtension(
-      extension, base::FilePath(FPL("oem/foo")));
-  // The extension should not be able to access the file even if
-  // GrantFileAccessToExtension was called.
-  EXPECT_FALSE(backend.IsAccessAllowed(
-      CreateFileSystemURL(extension, "oem/foo", mount_points.get())));
-
   backend.GrantFullAccessToExtension(extension);
   // The extension should be able to access restricted file system after it was
   // granted full access.

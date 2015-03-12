@@ -137,13 +137,16 @@ function initTests(callback) {
           var url = primaryFileSystem.root.toURL().replace(
               /[^\/]*\/?$/, kSecondaryDriveMountPointName);
 
-          webkitResolveLocalFileSystemURL(url, function(entry) {
-            if (!entry) {
-              callback(null, 'Failed to acquire secondary profile\'s volume.');
-              return;
-            }
+          chrome.fileManagerPrivate.grantAccess([url], function() {
+            webkitResolveLocalFileSystemURL(url, function(entry) {
+              if (!entry) {
+                callback(
+                    null, 'Failed to acquire secondary profile\'s volume.');
+                return;
+              }
 
-            callback(collectTests(primaryFileSystem.root, entry), 'Success.');
+              callback(collectTests(primaryFileSystem.root, entry), 'Success.');
+            });
           });
         });
   });
