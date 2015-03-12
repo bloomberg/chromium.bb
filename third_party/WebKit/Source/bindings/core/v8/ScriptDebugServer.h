@@ -31,7 +31,7 @@
 #ifndef ScriptDebugServer_h
 #define ScriptDebugServer_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/V8PersistentValueMap.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptDebugListener.h"
@@ -130,31 +130,29 @@ protected:
 
     void ensureDebuggerScriptCompiled();
     void discardDebuggerScript();
+    v8::Local<v8::Object> debuggerScriptLocal() const;
 
-    PauseOnExceptionsState m_pauseOnExceptionsState;
-    ScopedPersistent<v8::Object> m_debuggerScript;
-    v8::Local<v8::Object> m_executionState;
-    RefPtr<ScriptState> m_pausedScriptState;
-    bool m_breakpointsActivated;
-    ScopedPersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
-    HashMap<String, OwnPtr<ScopedPersistent<v8::Script>>> m_compiledScripts;
     v8::Isolate* m_isolate;
 
 private:
+    v8::Local<v8::String> v8InternalizedString(const char*) const;
+
     enum ScopeInfoDetails {
         AllScopes,
         FastAsyncScopes,
         NoScopes // Should be the last option.
     };
-
     ScriptValue currentCallFramesInner(ScopeInfoDetails);
-
     PassRefPtrWillBeRawPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
-
     void handleV8AsyncTaskEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData);
-
     void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData);
 
+    bool m_breakpointsActivated;
+    V8PersistentValueMap<String, v8::Script, false> m_compiledScripts;
+    v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
+    v8::UniquePersistent<v8::Object> m_debuggerScript;
+    v8::Local<v8::Object> m_executionState;
+    RefPtr<ScriptState> m_pausedScriptState;
     bool m_runningNestedMessageLoop;
 };
 

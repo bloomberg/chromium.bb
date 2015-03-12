@@ -127,7 +127,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFram
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
 
-    v8::Local<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
+    v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
     ASSERT(!debuggerScript->IsUndefined());
     m_listenersMap.set(localFrameRoot, listener);
 

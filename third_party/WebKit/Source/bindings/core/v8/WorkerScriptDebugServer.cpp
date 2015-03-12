@@ -67,7 +67,7 @@ void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
 
-    v8::Local<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
+    v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
     ASSERT(!debuggerScript->IsUndefined());
 
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getWorkerScripts")));
