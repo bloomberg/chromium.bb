@@ -556,7 +556,7 @@ namespace WTF {
         unsigned m_tableSize;
         unsigned m_keyCount;
         unsigned m_deletedCount:31;
-        bool m_queueFlag:1;
+        unsigned m_queueFlag:1;
 #if ENABLE(ASSERT)
         unsigned m_modifications;
 #endif
