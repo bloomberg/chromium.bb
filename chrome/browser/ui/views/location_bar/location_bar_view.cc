@@ -67,7 +67,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/feature_switch.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -105,28 +104,6 @@ int GetEditLeadingInternalSpace() {
   // The textfield has 1 px of whitespace before the text in the RTL case only.
   return base::i18n::IsRTL() ? 1 : 0;
 }
-
-// Functor for moving BookmarkManagerPrivate page actions to the right via
-// stable_partition.
-class IsPageActionViewRightAligned {
- public:
-  explicit IsPageActionViewRightAligned(
-      extensions::ExtensionRegistry* extension_registry)
-      : extension_registry_(extension_registry) {}
-
-  bool operator()(PageActionWithBadgeView* page_action_view) {
-    return extension_registry_->enabled_extensions().GetByID(
-        page_action_view->image_view()->extension_action()->extension_id())->
-        permissions_data()->
-        HasAPIPermission(extensions::APIPermission::kBookmarkManagerPrivate);
-  }
-
- private:
-  extensions::ExtensionRegistry* extension_registry_;
-
-  // NOTE: Can't DISALLOW_COPY_AND_ASSIGN as we pass this object by value to
-  // std::stable_partition().
-};
 
 }  // namespace
 
@@ -910,13 +887,6 @@ bool LocationBarView::RefreshPageActionViews() {
       page_action_view->SetVisible(false);
       page_action_views_.push_back(page_action_view);
     }
-
-    // Move rightmost extensions to the start.
-    std::stable_partition(
-        page_action_views_.begin(),
-        page_action_views_.end(),
-        IsPageActionViewRightAligned(
-            extensions::ExtensionRegistry::Get(profile())));
 
     View* right_anchor = open_pdf_in_reader_view_;
     if (!right_anchor)

@@ -64,7 +64,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -80,13 +79,6 @@ namespace {
 // Vertical space between the bottom edge of the location_bar and the first run
 // bubble arrow point.
 const static int kFirstRunBubbleYOffset = 1;
-
-// Functor for moving BookmarkManagerPrivate page actions to the right via
-// stable_partition.
-bool PageActionHasBookmarkManagerPrivate(PageActionDecoration* decoration) {
-  return decoration->GetExtension()->permissions_data()->HasAPIPermission(
-      extensions::APIPermission::kBookmarkManagerPrivate);
-}
 
 }  // namespace
 
@@ -647,11 +639,6 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
       page_action_decorations_.push_back(
           new PageActionDecoration(this, browser_, new_page_actions[i]));
     }
-
-    // Move rightmost extensions to the start.
-    std::stable_partition(page_action_decorations_.begin(),
-                          page_action_decorations_.end(),
-                          PageActionHasBookmarkManagerPrivate);
   }
 
   GURL url = GetToolbarModel()->GetURL();

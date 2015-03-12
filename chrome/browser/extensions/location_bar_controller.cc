@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/location_bar_controller.h"
 
+#include <algorithm>
+
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -15,6 +17,8 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -42,25 +46,23 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
 
   ActiveScriptController* active_script_controller =
       ActiveScriptController::GetForWebContents(web_contents_);
-  for (ExtensionSet::const_iterator iter = extensions.begin();
-       iter != extensions.end();
-       ++iter) {
+  for (const scoped_refptr<const Extension>& extension: extensions) {
     // Right now, we can consolidate these actions because we only want to show
     // one action per extension. If clicking on an active script action ever
     // has a response, then we will need to split the actions.
-    ExtensionAction* action = action_manager_->GetPageAction(**iter);
-    if (!action && active_script_controller->WantsToRun(iter->get())) {
+    ExtensionAction* action = action_manager_->GetPageAction(*extension);
+    if (!action && active_script_controller->WantsToRun(extension.get())) {
       ExtensionActionMap::iterator existing =
-          active_script_actions_.find((*iter)->id());
+          active_script_actions_.find(extension->id());
       if (existing != active_script_actions_.end()) {
         action = existing->second.get();
       } else {
         linked_ptr<ExtensionAction> active_script_action(
             ExtensionActionManager::Get(browser_context_)->
-                GetBestFitAction(**iter, ActionInfo::TYPE_PAGE).release());
+                GetBestFitAction(*extension, ActionInfo::TYPE_PAGE).release());
         active_script_action->SetIsVisible(
             ExtensionAction::kDefaultTabId, true);
-        active_script_actions_[(*iter)->id()] = active_script_action;
+        active_script_actions_[extension->id()] = active_script_action;
         action = active_script_action.get();
       }
     }
@@ -69,6 +71,22 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
       current_actions.push_back(action);
   }
 
+  // Sort by id to guarantee the extension actions are returned in the same
+  // order every time this function is called.
+  std::sort(current_actions.begin(), current_actions.end(),
+            [](ExtensionAction* a, ExtensionAction* b) {
+              return a->extension_id() < b->extension_id();
+            });
+  // Move extensions with BookmarkManagerPrivate permission to the start. This
+  // is to ensure they will always end up rightmost on the location bar.
+  std::stable_partition(
+      current_actions.begin(), current_actions.end(),
+      [&extensions](ExtensionAction* extension_action) {
+        return extensions.GetByID(extension_action->extension_id())
+            ->permissions_data()
+            ->HasAPIPermission(
+                extensions::APIPermission::kBookmarkManagerPrivate);
+      });
   return current_actions;
 }
 
