@@ -20,6 +20,7 @@ import sys
 import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.file_tools
 import pynacl.gsd_storage
 import pynacl.platform
 import pynacl.repo_tools
@@ -209,9 +210,21 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
 
   if not options.gcc:
     cc, cxx, ar, ranlib = CompilersForHost(host)
+    cc_list = [cc]
+    cxx_list = [cxx]
+    try:
+      if pynacl.file_tools.Which('ccache'):
+        # Set CCACHE_CPP2 envvar, to avoid an error due to a strange
+        # ccache/clang++ interaction.  Specifically, errors about
+        # "argument unused during compilation".
+        os.environ['CCACHE_CPP2'] = 'yes'
+        cc_list = ['ccache', cc]
+        cxx_list = ['ccache', cxx]
+    except pynacl.file_tools.ExecutableNotFound:
+      pass
 
-    configure_args.append('CC=' + ' '.join([cc] + extra_cc_args))
-    configure_args.append('CXX=' + ' '.join([cxx] + extra_cxx_args))
+    configure_args.append('CC=' + ' '.join(cc_list + extra_cc_args))
+    configure_args.append('CXX=' + ' '.join(cxx_list + extra_cxx_args))
     configure_args.append('AR=' + ar)
     configure_args.append('RANLIB=' + ranlib)
 
