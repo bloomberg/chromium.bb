@@ -55,7 +55,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   // Status.
   source->AddLocalizedString("status_cancelled", IDS_DOWNLOAD_TAB_CANCELLED);
   source->AddLocalizedString("status_removed", IDS_DOWNLOAD_FILE_REMOVED);
-  source->AddLocalizedString("status_paused", IDS_DOWNLOAD_PROGRESS_PAUSED);
 
   // Dangerous file.
   source->AddLocalizedString("danger_file_desc", IDS_PROMPT_DANGEROUS_DOWNLOAD);

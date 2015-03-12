@@ -343,11 +343,10 @@ cr.define('downloads', function() {
     getStatusText_: function(data) {
       switch (data.state) {
         case Item.States.IN_PROGRESS:
+        case Item.States.PAUSED:  // Fallthrough.
           return assert(data.progress_status_text);
         case Item.States.CANCELLED:
           return loadTimeData.getString('status_cancelled');
-        case Item.States.PAUSED:
-          return loadTimeData.getString('status_paused');
         case Item.States.DANGEROUS:
           break;  // Intentionally hit assertNotReached(); at bottom.
         case Item.States.INTERRUPTED:
