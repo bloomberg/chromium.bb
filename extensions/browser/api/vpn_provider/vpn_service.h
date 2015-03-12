@@ -67,6 +67,11 @@ class VpnService : public KeyedService,
              NetworkStateHandler* network_state_handler);
   ~VpnService() override;
 
+  void SendShowAddDialogToExtension(const std::string& extension_id);
+
+  void SendShowConfigureDialogToExtension(const std::string& extension_id,
+                                          const std::string& configuration_id);
+
   // NetworkConfigurationObserver:
   void OnConfigurationCreated(const std::string& service_path,
                               const std::string& profile_path,
@@ -104,11 +109,11 @@ class VpnService : public KeyedService,
                            const SuccessCallback& success,
                            const FailureCallback& failure);
 
-  // Destroys the VPN configuration with the name |configuration_name| after
-  // verifying that it belongs to the extension with id |extension_id|.
+  // Destroys the VPN configuration with |configuration_id| after verifying that
+  // it belongs to the extension with id |extension_id|.
   // Calls |success| or |failure| based on the outcome.
   void DestroyConfiguration(const std::string& extension_id,
-                            const std::string& configuration_name,
+                            const std::string& configuration_id,
                             const SuccessCallback& success,
                             const FailureCallback& failure);
 

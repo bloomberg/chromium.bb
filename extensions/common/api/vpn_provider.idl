@@ -58,11 +58,24 @@ namespace vpnProvider {
     failure
   };
 
+  // The enum is used by the platform to indicate the event that triggered
+  // <code>onUIEvent</code>.
+  enum UIEvent {
+    showAddDialog,
+    showConfigureDialog
+  };
+
   // The callback is used by <code>setParameters, sendPacket</code>
   // to signal completion. The callback is called with
   // <code>chrome.runtime.lastError</code> set to error code if
   // there is an error.
   [inline_doc] callback CallCompleteCallback = void ();
+
+  // The callback is used by <code>createConfig</code> to signal completion.
+  // The callback is called with <code>chrome.runtime.lastError</code> set to
+  // an error code if there is an error.
+  // |id|: A unique ID for the created configuration, empty string on failure.
+  [inline_doc] callback CreateConfigCompleteCallback = void (DOMString id);
 
   interface Functions {
     // Creates a new VPN configuration that persists across multiple login
@@ -74,10 +87,10 @@ namespace vpnProvider {
                              CallCompleteCallback callback);
 
     // Destroys a VPN configuration created by the extension.
-    // |name|: The name of the VPN configuration to destroy.
+    // |id|: ID of the VPN configuration to destroy.
     // |callback|: Called when the configuration is destroyed or if there is an
     // error.
-    static void destroyConfig(DOMString name,
+    static void destroyConfig(DOMString id,
                               optional CallCompleteCallback callback);
 
     // Sets the parameters for the VPN session. This should be called
@@ -108,10 +121,10 @@ namespace vpnProvider {
   interface Events {
     // Triggered when a message is received from the platform for a
     // VPN configuration owned by the extension.
-    // |name|: Name of the configuration the message is intended for.
+    // |id|: ID of the configuration the message is intended for.
     // |message|: The message received from the platform.
     // |error|: Error message when there is an error.
-    static void onPlatformMessage(DOMString name,
+    static void onPlatformMessage(DOMString id,
                                   PlatformMessage message,
                                   DOMString error);
 
@@ -122,7 +135,21 @@ namespace vpnProvider {
 
     // Triggered when a configuration created by the extension is removed by the
     // platform.
-    // |name|: Name of the configuration removed.
-    static void onConfigRemoved(DOMString name);
+    // |id|: ID of the removed configuration.
+    static void onConfigRemoved(DOMString id);
+
+    // Triggered when a configuration is created by the platform for the
+    // extension.
+    // |id|: ID of the configuration created.
+    // |name|: Name of the configuration created.
+    // |data|: Configuration data provided by the administrator.
+    static void onConfigCreated(DOMString id, DOMString name, object data);
+
+    // Triggered when there is a UI event for the extension. UI events are
+    // signals from the platform that indicate to the app that a UI dialog
+    // needs to be shown to the user.
+    // |event|: The UI event that is triggered.
+    // |id|: ID of the configuration for which the UI event was triggered.
+    static void onUIEvent(UIEvent event, optional DOMString id);
   };
 };

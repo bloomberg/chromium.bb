@@ -159,6 +159,21 @@ VpnService::~VpnService() {
                                        key_to_configuration_map_.end());
 }
 
+void VpnService::SendShowAddDialogToExtension(const std::string& extension_id) {
+  SendSignalToExtension(extension_id, api_vpn::OnUIEvent::kEventName,
+                        api_vpn::OnUIEvent::Create(
+                            api_vpn::UI_EVENT_SHOWADDDIALOG, std::string()));
+}
+
+void VpnService::SendShowConfigureDialogToExtension(
+    const std::string& extension_id,
+    const std::string& configuration_id) {
+  SendSignalToExtension(
+      extension_id, api_vpn::OnUIEvent::kEventName,
+      api_vpn::OnUIEvent::Create(api_vpn::UI_EVENT_SHOWCONFIGUREDIALOG,
+                                 configuration_id));
+}
+
 void VpnService::OnConfigurationCreated(const std::string& service_path,
                                         const std::string& profile_path,
                                         const base::DictionaryValue& properties,
@@ -316,10 +331,11 @@ void VpnService::CreateConfiguration(const std::string& extension_id,
 }
 
 void VpnService::DestroyConfiguration(const std::string& extension_id,
-                                      const std::string& configuration_name,
+                                      const std::string& configuration_id,
                                       const SuccessCallback& success,
                                       const FailureCallback& failure) {
-  const std::string key = GetKey(extension_id, configuration_name);
+  // The ID is the configuration name for now. This may change in the future.
+  const std::string key = GetKey(extension_id, configuration_id);
   if (!ContainsKey(key_to_configuration_map_, key)) {
     failure.Run(std::string(), std::string("Unauthorized access."));
     return;
