@@ -1540,56 +1540,6 @@ class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude
   }
 };
 
-// This test requires accumulating occlusion of 3d layers, which are skipped by
-// the occlusion tracker on the main thread. So this test should run on the impl
-// thread.
-IMPL_THREAD_TEST(OcclusionTrackerTestLayerBehindCameraDoesNotOcclude);
-
-template <class Types>
-class OcclusionTrackerTestLargePixelsOccludeInsideClipRect
-    : public OcclusionTrackerTest<Types> {
- protected:
-  explicit OcclusionTrackerTestLargePixelsOccludeInsideClipRect(
-      bool opaque_layers)
-      : OcclusionTrackerTest<Types>(opaque_layers) {}
-  void RunMyTest() override {
-    gfx::Transform transform;
-    transform.Translate(50.0, 50.0);
-    transform.ApplyPerspectiveDepth(100.0);
-    transform.Translate3d(0.0, 0.0, 99.0);
-    transform.Translate(-50.0, -50.0);
-
-    typename Types::ContentLayerType* parent = this->CreateRoot(
-        this->identity_matrix, gfx::PointF(), gfx::Size(100, 100));
-    parent->SetMasksToBounds(true);
-    typename Types::ContentLayerType* layer = this->CreateDrawingLayer(
-        parent, transform, gfx::PointF(), gfx::Size(100, 100), true);
-    parent->SetShouldFlattenTransform(false);
-    parent->Set3dSortingContextId(1);
-    layer->SetShouldFlattenTransform(false);
-    layer->Set3dSortingContextId(1);
-    this->CalcDrawEtc(parent);
-
-    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
-        gfx::Rect(0, 0, 1000, 1000));
-
-    // This is very close to the camera, so pixels in its visible_content_rect()
-    // will actually go outside of the layer's clip rect.  Ensure that those
-    // pixels don't occlude things outside the clip rect.
-    this->VisitLayer(layer, &occlusion);
-    this->EnterLayer(parent, &occlusion);
-    EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
-              occlusion.occlusion_from_inside_target().ToString());
-    EXPECT_EQ(gfx::Rect().ToString(),
-              occlusion.occlusion_from_outside_target().ToString());
-  }
-};
-
-// This test requires accumulating occlusion of 3d layers, which are skipped by
-// the occlusion tracker on the main thread. So this test should run on the impl
-// thread.
-IMPL_THREAD_TEST(OcclusionTrackerTestLargePixelsOccludeInsideClipRect);
-
 template <class Types>
 class OcclusionTrackerTestAnimationOpacity1OnMainThread
     : public OcclusionTrackerTest<Types> {

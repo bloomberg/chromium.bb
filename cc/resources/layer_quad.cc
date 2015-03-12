@@ -10,8 +10,11 @@
 namespace cc {
 
 LayerQuad::Edge::Edge(const gfx::PointF& p, const gfx::PointF& q) {
-  DCHECK(p != q);
-
+  if (p == q) {
+    degenerate_ = true;
+    return;
+  }
+  degenerate_ = false;
   gfx::Vector2dF tangent(p.y() - q.y(), q.x() - p.x());
   float cross2 = p.x() * q.y() - q.x() * p.y();
 
@@ -43,6 +46,22 @@ LayerQuad::LayerQuad(const Edge& left,
       bottom_(bottom) {}
 
 gfx::QuadF LayerQuad::ToQuadF() const {
+  if (left_.degenerate()) {
+    return gfx::QuadF(top_.Intersect(bottom_), top_.Intersect(right_),
+                      right_.Intersect(bottom_), bottom_.Intersect(top_));
+  }
+  if (right_.degenerate()) {
+    return gfx::QuadF(left_.Intersect(top_), top_.Intersect(bottom_),
+                      bottom_.Intersect(top_), bottom_.Intersect(left_));
+  }
+  if (top_.degenerate()) {
+    return gfx::QuadF(left_.Intersect(right_), right_.Intersect(left_),
+                      right_.Intersect(bottom_), bottom_.Intersect(left_));
+  }
+  if (bottom_.degenerate()) {
+    return gfx::QuadF(left_.Intersect(top_), top_.Intersect(right_),
+                      right_.Intersect(left_), left_.Intersect(right_));
+  }
   return gfx::QuadF(left_.Intersect(top_),
                     top_.Intersect(right_),
                     right_.Intersect(bottom_),
@@ -50,18 +69,42 @@ gfx::QuadF LayerQuad::ToQuadF() const {
 }
 
 void LayerQuad::ToFloatArray(float flattened[12]) const {
-  flattened[0] = left_.x();
-  flattened[1] = left_.y();
-  flattened[2] = left_.z();
-  flattened[3] = top_.x();
-  flattened[4] = top_.y();
-  flattened[5] = top_.z();
-  flattened[6] = right_.x();
-  flattened[7] = right_.y();
-  flattened[8] = right_.z();
-  flattened[9] = bottom_.x();
-  flattened[10] = bottom_.y();
-  flattened[11] = bottom_.z();
+  if (left_.degenerate()) {
+    flattened[0] = bottom_.x();
+    flattened[1] = bottom_.y();
+    flattened[2] = bottom_.z();
+  } else {
+    flattened[0] = left_.x();
+    flattened[1] = left_.y();
+    flattened[2] = left_.z();
+  }
+  if (top_.degenerate()) {
+    flattened[3] = left_.x();
+    flattened[4] = left_.y();
+    flattened[5] = left_.z();
+  } else {
+    flattened[3] = top_.x();
+    flattened[4] = top_.y();
+    flattened[5] = top_.z();
+  }
+  if (right_.degenerate()) {
+    flattened[6] = top_.x();
+    flattened[7] = top_.y();
+    flattened[8] = top_.z();
+  } else {
+    flattened[6] = right_.x();
+    flattened[7] = right_.y();
+    flattened[8] = right_.z();
+  }
+  if (bottom_.degenerate()) {
+    flattened[9] = right_.x();
+    flattened[10] = right_.y();
+    flattened[11] = right_.z();
+  } else {
+    flattened[9] = bottom_.x();
+    flattened[10] = bottom_.y();
+    flattened[11] = bottom_.z();
+  }
 }
 
 }  // namespace cc

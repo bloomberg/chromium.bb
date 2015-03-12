@@ -97,8 +97,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
 }
 
 TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorTRANSPARENT);
 
   // This verifies that the perspective of the clear layer (with black border)
   // does not influence the blending of the green box behind it. Also verifies
