@@ -61,6 +61,19 @@ NativeMessageProcessHost::NativeMessageProcessHost(
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (process_.IsValid()) {
+    // Kill the host process if necessary to make sure we don't leave zombies.
+    // On OSX base::EnsureProcessTerminated() may block, so we have to post a
+    // task on the blocking pool.
+#if defined(OS_MACOSX)
+    content::BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(&base::EnsureProcessTerminated, Passed(&process_)));
+#else
+    base::EnsureProcessTerminated(process_.Pass());
+#endif
+  }
 }
 
 // static
@@ -347,19 +360,6 @@ void NativeMessageProcessHost::Close(const std::string& error_message) {
     read_stream_.reset();
     write_stream_.reset();
     client_->CloseChannel(error_message);
-  }
-
-  if (process_.IsValid()) {
-    // Kill the host process if necessary to make sure we don't leave zombies.
-    // On OSX base::EnsureProcessTerminated() may block, so we have to post a
-    // task on the blocking pool.
-#if defined(OS_MACOSX)
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(&base::EnsureProcessTerminated, Passed(&process_)));
-#else
-    base::EnsureProcessTerminated(process_.Pass());
-#endif
   }
 }
 

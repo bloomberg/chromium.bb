@@ -88,7 +88,7 @@ class NativeMessageProcessHost :
   void HandleWriteResult(int result);
   void OnWritten(int result);
 
-  // Closes the connection. Called from OnError() and destructor.
+  // Closes the connection and reports the |error_message| to the client.
   void Close(const std::string& error_message);
 
   // The Client messages will be posted to. Should only be accessed from the
