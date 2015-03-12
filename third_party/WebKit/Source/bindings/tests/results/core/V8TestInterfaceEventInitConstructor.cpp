@@ -31,14 +31,14 @@ const WrapperTypeInfo& TestInterfaceEventInitConstructor::s_wrapperTypeInfo = V8
 
 namespace TestInterfaceEventInitConstructorV8Internal {
 
-static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceEventInitConstructor* impl = V8TestInterfaceEventInitConstructor::toImpl(holder);
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
-static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceEventInitConstructorV8Internal::readonlyStringAttributeAttributeGetter(info);
@@ -76,8 +76,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 } // namespace TestInterfaceEventInitConstructorV8Internal
 
-static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceEventInitConstructorAttributes[] = {
-    {"readonlyStringAttribute", TestInterfaceEventInitConstructorV8Internal::readonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitConstructorAccessors[] = {
+    {"readonlyStringAttribute", TestInterfaceEventInitConstructorV8Internal::readonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts},
 };
 
 void V8TestInterfaceEventInitConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -102,8 +102,8 @@ static void installV8TestInterfaceEventInitConstructorTemplate(v8::Local<v8::Fun
 
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceEventInitConstructor", V8Event::domTemplate(isolate), V8TestInterfaceEventInitConstructor::internalFieldCount,
-        V8TestInterfaceEventInitConstructorAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceEventInitConstructorAttributes),
         0, 0,
+        V8TestInterfaceEventInitConstructorAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceEventInitConstructorAccessors),
         0, 0);
     functionTemplate->SetCallHandler(V8TestInterfaceEventInitConstructor::constructorCallback);
     functionTemplate->SetLength(2);

@@ -156,7 +156,6 @@ function extension_testElementsSidebarSetExpression(nextTest)
             sidebar.setExpression("(" + expression.toString() + ")();", "title", extension_dumpSidebarContent.bind(this, panelName, nextTest));
         });
     }
-    // The response to this eval gives Inspector protocol error: Object has too long reference chain(must not be longer than 1000)
     webInspector.inspectedWindow.eval("inspect(document.body)", function() {
         webInspector.panels.elements.createSidebarPane("Watch Test: Expression", onSidebarCreated);
     });

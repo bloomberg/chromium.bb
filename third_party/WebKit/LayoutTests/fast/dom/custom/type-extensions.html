@@ -3,6 +3,9 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <body>
 <script>
+var outerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'outerHTML');
+var tagName = Object.getOwnPropertyDescriptor(Element.prototype, 'tagName');
+
 test(function() {
     var p = Object.create(HTMLDivElement.prototype);
     var C = document.registerElement('x-div', {extends: 'div', prototype: p});
@@ -17,7 +20,7 @@ test(function() {
     var C = document.registerElement('x-em', {extends: 'em', prototype: p});
     var e = new C();
     Node.prototype.appendChild.call(e, document.createTextNode('Hi!'));
-    assert_equals(e.outerHTML, '<em is="x-em">Hi!</em>',
+    assert_equals(outerHTML.get.call(e), '<em is="x-em">Hi!</em>',
                   'the type extension must not depend on the author-' +
                   'specified prototype');
 }, 'register a type extension with a non-element prototype');
@@ -44,14 +47,14 @@ test(function() {
 
 test(function() {
     var C = document.registerElement('x-augment', {extends: 'ins', prototype: {}});
-    assert_equals(new C().outerHTML, '<ins is="x-augment"></ins>');
+    assert_equals(outerHTML.get.call(new C()), '<ins is="x-augment"></ins>');
     var D = document.registerElement('x-elide', {extends: 'del', prototype: {}});
-    assert_equals(new D().outerHTML, '<del is="x-elide"></del>');
+    assert_equals(outerHTML.get.call(new D()), '<del is="x-elide"></del>');
 }, 'register a type extensions of an interface with multiple element names');
 
 test(function() {
     var C = document.registerElement('x-ins', {extends: 'InS', prototype: {}});
-    assert_equals(new C().tagName, 'INS',
+    assert_equals(tagName.get.call(new C()), 'INS',
                   'tag name should be that of the base element');
 }, 'register a type extension with unusual case');
 

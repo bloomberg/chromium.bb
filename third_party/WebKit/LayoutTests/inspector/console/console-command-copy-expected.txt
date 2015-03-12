@@ -8,7 +8,16 @@ InspectorFrontendHost.copyText: {
   "foo": "bar"
 }
 InspectorFrontendHost.copyText: [object Object]
-InspectorFrontendHost.copyText: [object HTMLAllCollection]
+InspectorFrontendHost.copyText: {
+  "0": {},
+  "1": {},
+  "2": {},
+  "3": {},
+  "4": {},
+  "5": {},
+  "6": {},
+  "length": 7
+}
 InspectorFrontendHost.copyText: NaN
 InspectorFrontendHost.copyText: Infinity
 InspectorFrontendHost.copyText: null

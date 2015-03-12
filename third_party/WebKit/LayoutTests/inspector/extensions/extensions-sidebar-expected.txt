@@ -6,7 +6,6 @@ RUNNING TEST: extension_testElementsSidebarPageReplacedWithObject
 Got onShown(), frame defined
 Got onShown(), frame not defined
 RUNNING TEST: extension_testElementsSidebarSetExpression
-log: Extension server error: Inspector protocol error: Object has too long reference chain(must not be longer than 1000)
 elements sidebar content: titlef0: "expression"f1: undefinedf2: nullf3: Objectf4: Array[0]f5: Array[3]f6: Objectf7: 42f8: Locationf9: HTMLCollection[1]f10: function () {}f11: "foo"__proto__: Object
 RUNNING TEST: extension_testElementsSidebarSetObject
 Watch sidebar created, callback arguments dump follows:

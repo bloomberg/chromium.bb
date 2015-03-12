@@ -1,3 +1,5 @@
+importScripts('/resources/testharness-helpers.js');
+
 // Allows a document to exercise the Notifications API within a service worker by sending commands.
 var messagePort = null;
 
@@ -38,7 +40,7 @@ addEventListener('message', function(workerEvent) {
 
 addEventListener('notificationclick', function(event) {
     // Copies the serializable attributes of the Notification instance on |event|.
-    var notificationCopy = JSON.parse(JSON.stringify(event.notification));
+    var notificationCopy = JSON.parse(stringifyDOMObject(event.notification));
 
     // Notifications containing "ACTION:CLOSE" in their message will be closed
     // immediately by the Service Worker.

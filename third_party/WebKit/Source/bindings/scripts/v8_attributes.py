@@ -101,7 +101,7 @@ def attribute_context(interface, attribute):
         'is_call_with_script_state': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom_element_callbacks': is_custom_element_callbacks,
-        'is_expose_js_accessors': 'ExposeJSAccessors' in extended_attributes,
+        'is_expose_js_accessors': is_expose_js_accessors(interface, attribute),
         'is_getter_raises_exception':  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in (None, 'Getter'),
@@ -473,6 +473,34 @@ def has_custom_setter(attribute):
     return (not attribute.is_read_only and
             'Custom' in extended_attributes and
             extended_attributes['Custom'] in [None, 'Setter'])
+
+
+# [ExposeJSAccessors]
+def is_expose_js_accessors(interface, attribute):
+    extended_attributes = attribute.extended_attributes
+
+    # These attributes must not be accessors on prototype chains.
+    if (attribute.is_static or
+            'Unforgeable' in extended_attributes or
+            'OverrideBuiltins' in interface.extended_attributes):
+        return False
+
+    # FIXME: We should move all of the following DOM attributes to prototype
+    # chains.
+    if (is_constructor_attribute(attribute) or
+            has_custom_getter(attribute) or
+            has_custom_setter(attribute) or
+            interface.name == 'Window' or
+            interface.name == 'WorkerGlobalScope' or
+            v8_utilities.indexed_property_getter(interface) or
+            v8_utilities.indexed_property_setter(interface) or
+            v8_utilities.indexed_property_deleter(interface) or
+            v8_utilities.named_property_getter(interface) or
+            v8_utilities.named_property_setter(interface) or
+            v8_utilities.named_property_deleter(interface)):
+        return False
+
+    return True
 
 
 ################################################################################
