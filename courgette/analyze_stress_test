@@ -53,7 +53,7 @@ $(count_result "FAIL_DISASSEMBLE") failed to disassemble/assemble
 $(count_result "PASS_BSDIFF") succesful bsdiff patches
 $(count_result "FAIL_BSDIFF") failed bsdiff patches
 $(count_result "BEST_COURGETTE") patch(es) where courgette is smaller (bz2)
-$(count_result "BEST_BSDIFF") patch(es) where bsdiff is smaller (xz)
+$(count_result "BEST_BSDIFF") patch(es) where bsdiff is smaller (bz2)
 $(count_result "BEST_TIE") patch(es) where both are the same size (bz2)
 $(count_result "XZBEST_COURGETTE") patch(es) where courgette (xz) is smaller
 $(count_result "XZBEST_BSDIFF") patch(es) where bsdiff is smaller (xz)
