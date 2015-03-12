@@ -9,45 +9,13 @@
 
 function test()
 {
-    var mockTargetId = 1;
-    var MockTarget = function(name, connection, callback)
-    {
-        WebInspector.Target.call(this, name, WebInspector.Target.Type.Page, connection, null, callback);
-    }
-    MockTarget.prototype = {
-        _loadedWithCapabilities: function(callback)
-        {
-            this.debuggerModel = new WebInspector.DebuggerModel(this);
-            this.resourceTreeModel = WebInspector.targetManager.mainTarget().resourceTreeModel;
-            if (callback)
-                callback();
-        },
-
-        __proto__: WebInspector.Target.prototype
-    }
-
-    function createMockTarget(userCallback)
-    {
-        var target = new MockTarget("mock-target-" + (mockTargetId++), new InspectorBackendClass.StubConnection(), callback);
-        function callback()
-        {
-            InspectorTest.testTargetManager.addTarget(target);
-            userCallback(target);
-        }
-    }
-
     function createWorkspaceWithTarget(userCallback)
     {
         InspectorTest.createWorkspace();
-
+        var target = InspectorTest.createMockTarget(InspectorTest._mockTargetId++);
         InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
         InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
-
-        createMockTarget(callback);
-        function callback(target)
-        {
-            userCallback(target);
-        }
+        userCallback(target);
     }
 
     function checkMapping(compiledLineNumber, compiledColumnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, mapping)

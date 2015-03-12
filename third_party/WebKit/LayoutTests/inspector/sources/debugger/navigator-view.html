@@ -7,7 +7,7 @@
 <script>
 function test()
 {
-    InspectorTest.createWorkspace(true);
+    InspectorTest.createWorkspaceWithTarget(true);
     var sourcesNavigatorView = new WebInspector.SourcesNavigatorView();
     sourcesNavigatorView.setWorkspace(InspectorTest.testWorkspace);
     sourcesNavigatorView.show(WebInspector.inspectorView.element);
@@ -102,7 +102,7 @@ function test()
     dumpNavigator();
 
     InspectorTest.addResult("Removing all resources:");
-    InspectorTest.testNetworkProject.reset();
+    InspectorTest.testNetworkProject._reset(InspectorTest.mainTarget);
     dumpNavigator();
 
     InspectorTest.completeTest();

@@ -10,11 +10,8 @@ function test()
 {
     var contentReceived;
     var finalMappedLocation;
-    InspectorTest.createWorkspace();
-    var target = WebInspector.targetManager.mainTarget();
-    var cssModel = new WebInspector.CSSStyleModel(target);
-    target.cssModel = cssModel;
-    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
+    var target = InspectorTest.createWorkspaceWithTarget();
+    WebInspector.cssWorkspaceBinding = InspectorTest.testCSSWorkspaceBinding;
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
@@ -23,11 +20,11 @@ function test()
     InspectorTest.addMockUISourceCodeToWorkspace(styleSheetURL, WebInspector.resourceTypes.Stylesheet, "");
 
     InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "updateLocations", locationsUpdated, true);
-    cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
+    target.cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
 
     function locationsUpdated()
     {
-        var uiLocation = WebInspector.cssWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(target, styleSheetId, styleSheetURL, 2, 3));
+        var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(target, styleSheetId, styleSheetURL, 2, 3));
         var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
         if (networkURL.indexOf(".scss") === -1)
             return;
@@ -54,7 +51,7 @@ function test()
     {
         const documentURL = "http://localhost:8000/inspector/stylesheet-source-mapping.html";
         const frame = InspectorTest.resourceTreeModel.mainFrame;
-        var resource = new WebInspector.Resource(InspectorTest.resourceTreeModel.target(), null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
+        var resource = new WebInspector.Resource(target, null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
         resource.requestContent = function(callback)
         {
             callback(content, false, mimeType);
@@ -65,17 +62,19 @@ function test()
 
     function cssUISourceCodeAdded(uiSourceCode)
     {
+        InspectorTest.addResult("Added CSS uiSourceCode: " + uiSourceCode.uri());
         InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(scssUISourceCodeAdded);
     }
 
     function scssUISourceCodeAdded(uiSourceCode)
     {
+        InspectorTest.addResult("Added SCSS uiSourceCode: " + uiSourceCode.uri());
         afterStyleSheetAdded();
     }
 
     function rawLocationToUILocation(line, column)
     {
-        return WebInspector.cssWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(target, styleSheetId, styleSheetURL, line, column));
+        return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(target, styleSheetId, styleSheetURL, line, column));
     }
 
     function afterStyleSheetAdded()

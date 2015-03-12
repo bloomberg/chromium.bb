@@ -7,9 +7,11 @@
 function test()
 {
     var mockContentsMap = {};
+    var target;
     var lastResourceId = 0;
     var lastStyleSheetId = 0;
 
+    InspectorTest._defaultWorkspaceEventHandler = function() {}
 
     function createMockStyleSheetHeader(url)
     {
@@ -21,16 +23,6 @@ function test()
             title: "",
             disabled: false
         };
-    }
-
-    InspectorTest.NetworkAgent.getResponseBody = function(requestId, callback)
-    {
-        callback(undefined, mockContentsMap[requestId], false);
-    }
-
-    InspectorTest.PageAgent.getResourceContent = function(frameId, url, callback)
-    {
-        callback(undefined, mockContentsMap[url], false);
     }
 
     function createResourceMock(type, content)
@@ -53,9 +45,9 @@ function test()
             break;
         }
 
-        var resource = new WebInspector.Resource(InspectorTest.resourceTreeModel.target(), null, url, documentURL, frameId, loaderId, type, mimeType);
-        mockContentsMap[url] = content;
-        InspectorTest.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
+        var resource = new WebInspector.Resource(target, null, url, documentURL, frameId, loaderId, type, mimeType);
+        resource._content = content;
+        target.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
 
         return resource;
     }
@@ -65,8 +57,8 @@ function test()
         var documentURL = "http://fake.url";
         var resourceId = ++lastResourceId + "";
         var url = documentURL + "/" + resourceId;
-        var script = InspectorTest.createScriptMock(url, 0, 0, false, content);
-        InspectorTest.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
+        var script = InspectorTest.createScriptMock(url, 0, 0, false, content, target);
+        target.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
     }
 
     function finishResource(resource)
@@ -77,16 +69,7 @@ function test()
 
     function createNetworkUISourceCodeProvider()
     {
-        var target = WebInspector.targetManager.mainTarget();
-        target.resourceTreeModel = new WebInspector.SDKModel(WebInspector.ResourceTreeModel, target);
-        target.resourceTreeModel.inspectedPageURL = function() { return "foo"; };
-        target.resourceTreeModel.inspectedPageDomain = function() { return "foo"; };
-        target.debuggerModel = new WebInspector.SDKModel(WebInspector.DebuggerModel, target);
-        target.debuggerModel._registerScript = function() {};
-        target.cssModel = new WebInspector.CSSStyleModel(target);
-        InspectorTest.resourceTreeModel = target.resourceTreeModel;
-        InspectorTest.debuggerModel = target.debuggerModel;
-        InspectorTest.createWorkspace();
+        target = InspectorTest.createWorkspaceWithTarget(true);
     }
 
     InspectorTest.runTestSuite([
@@ -99,7 +82,8 @@ function test()
 
             function uiSourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.dumpUISourceCode(uiSourceCode, next);
+                // setTimeouts are necessary since same event finalizes uiSourceCode creation.
+                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
             }
         },
 
@@ -112,7 +96,7 @@ function test()
 
             function uiSourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.dumpUISourceCode(uiSourceCode, next);
+                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
             }
         },
 
@@ -125,7 +109,7 @@ function test()
 
             function uiSourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.dumpUISourceCode(uiSourceCode, next);
+                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
             }
         },
 
@@ -138,7 +122,7 @@ function test()
 
             function uiSourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.dumpUISourceCode(uiSourceCode, next);
+                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
             }
         },
 
@@ -158,7 +142,6 @@ function test()
     function testRemoveStyleSheetFromModel(mockStyleSheetHeader, callback)
     {
         createNetworkUISourceCodeProvider();
-        var target = WebInspector.targetManager.mainTarget();
         InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
         target.cssModel._styleSheetAdded(mockStyleSheetHeader);
 

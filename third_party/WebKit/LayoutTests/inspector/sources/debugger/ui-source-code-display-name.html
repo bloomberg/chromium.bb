@@ -17,7 +17,7 @@ function test()
     }
 
     var workspace = new WebInspector.Workspace();
-    workspace.networkProject = new WebInspector.NetworkProject(workspace, WebInspector.networkMapping);
+    workspace.networkProject = new WebInspector.NetworkProject(InspectorTest.mainTarget, workspace, WebInspector.networkMapping);
 
     function addNetworkFile(url)
     {

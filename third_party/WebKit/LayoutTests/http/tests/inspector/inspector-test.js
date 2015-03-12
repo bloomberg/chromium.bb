@@ -7,6 +7,8 @@ function consoleOutputHook(messageType)
     InspectorTest.addResult(messageType + ": " + Array.prototype.slice.call(arguments, 1));
 }
 
+window._originalConsoleLog = console.log.bind(console);
+
 console.log = consoleOutputHook.bind(InspectorTest, "log");
 console.error = consoleOutputHook.bind(InspectorTest, "error");
 console.info = consoleOutputHook.bind(InspectorTest, "info");
@@ -744,6 +746,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.animationModel = target.animationModel;
         InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;
         InspectorTest.tracingManager = target.tracingManager;
+        InspectorTest.mainTarget = target;
     },
 
     targetRemoved: function(target) { }
@@ -892,6 +895,8 @@ function runTest(enableWatchDogWhileDebugging)
     var toEvaluate = "(" + initializeFrontend + ")(" + "[" + initializationFunctions + "]" + ");";
     testRunner.evaluateInWebInspector(initializeCallId, toEvaluate);
 
+    if (window.debugTest)
+        test = "function() { " + test.toString() + "; window.test = test; InspectorTest.addResult = window._originalConsoleLog; InspectorTest.completeTest = function() {}; InspectorTest.debugTest = true; }";
     toEvaluate = "(" + runTestInFrontend + ")(" + test + ");";
     testRunner.evaluateInWebInspector(runTestCallId, toEvaluate);
 

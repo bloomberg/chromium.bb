@@ -32,7 +32,7 @@ function test()
 
     function createMockWorkspace()
     {
-        InspectorTest.createWorkspace(true);
+        InspectorTest.createWorkspaceWithTarget(true);
         InspectorTest.testDebuggerProjectDelegate = new WebInspector.DebuggerProjectDelegate(InspectorTest.testWorkspace, "debugger:", WebInspector.projectTypes.Debugger);
         return InspectorTest.testWorkspace;
     }
@@ -80,7 +80,7 @@ function test()
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
             dumpNavigator(sourcesNavigatorView);
 
-            InspectorTest.testNetworkProject.reset();
+            InspectorTest.testNetworkProject._reset();
             dumpNavigator(sourcesNavigatorView);
             uiSourceCode = addNetworkFile(workspace, "bar.js");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);

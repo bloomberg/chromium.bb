@@ -8,7 +8,7 @@ function test()
     function createMockProject()
     {
         var workspace = new WebInspector.Workspace();
-        var projectDelegate = new WebInspector.NetworkProjectDelegate(workspace, "");
+        var projectDelegate = new WebInspector.NetworkProjectDelegate(InspectorTest.mainTarget, workspace, "");
         var project = workspace.addProject("projectId", projectDelegate);
         project.requestFileContent = function(uri, callback)
         {

@@ -87,7 +87,7 @@ function test()
                     var url = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
                     if (!url)
                         continue;
-                    var uri = InspectorTest.testNetworkMapping.uiSourceCodeForURL(url).uri();
+                    var uri = InspectorTest.testNetworkMapping.uiSourceCodeForURLForAnyTarget(url).uri();
                     InspectorTest.addResult("    " + url + " -> " + uri);
                 }
                 InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, contentCommitted, this);

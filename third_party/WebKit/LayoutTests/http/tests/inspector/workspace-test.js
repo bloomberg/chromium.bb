@@ -11,15 +11,60 @@ InspectorTest.createWorkspace = function(ignoreEvents)
     InspectorTest.testTargetManager = new WebInspector.TargetManager();
     InspectorTest.testWorkspace = new WebInspector.Workspace(InspectorTest.testFileSystemMapping);
     InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
-    if (InspectorTest.testNetworkProject)
-        InspectorTest.testNetworkProject.dispose();
-    InspectorTest.testNetworkProject = new WebInspector.NetworkProject(InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
-    InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
-    InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
+    InspectorTest.testNetworkProjectManager = new WebInspector.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
+    InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
+    InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
+
+    InspectorTest.testTargetManager.observeTargets({
+        targetAdded: function(target)
+        {
+            InspectorTest.testNetworkProject = WebInspector.NetworkProject.forTarget(target);
+        },
+
+        targetRemoved: function(target)
+        {
+        }
+    });
+
     if (ignoreEvents)
         return;
     InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
     InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
+}
+
+InspectorTest._mockTargetId = 1;
+
+InspectorTest.createMockTarget = function(id, debuggerModelConstructor)
+{
+    var MockTarget = function(name, connection, callback)
+    {
+        WebInspector.Target.call(this, name, WebInspector.Target.Type.Page, connection, null, callback);
+        this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
+        this.resourceTreeModel = WebInspector.targetManager.mainTarget().resourceTreeModel;
+        this.domModel = new WebInspector.DOMModel(this);
+        this.cssModel = new WebInspector.CSSStyleModel(this);
+        this.runtimeModel = new WebInspector.RuntimeModel(this);
+        this.consoleModel = new WebInspector.ConsoleModel(this);
+    }
+
+    MockTarget.prototype = {
+        _loadedWithCapabilities: function()
+        {
+        },
+
+        __proto__: WebInspector.Target.prototype
+    }
+
+    var target = new MockTarget("mock-target-" + id, new InspectorBackendClass.StubConnection());
+    InspectorTest.testTargetManager.addTarget(target);
+    return target;
+}
+
+InspectorTest.createWorkspaceWithTarget = function(ignoreEvents)
+{
+    InspectorTest.createWorkspace(ignoreEvents);
+    var target = InspectorTest.createMockTarget(InspectorTest._mockTargetId++);
+    return target;
 }
 
 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent = function(callback, count, projectType)

@@ -6,9 +6,10 @@
 <script>
 function test()
 {
-    var manager;
+    var target = InspectorTest.createWorkspaceWithTarget();
+    var manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
+
     var fileSystem;
-    var cssModel;
     var liveLocation;
     var mockStyleSheetId = 1;
     var fileSystemPath = "/var/www";
@@ -16,7 +17,7 @@ function test()
 
     function addMockHeader(sourceURL, sourceMapURL)
     {
-        cssModel._styleSheetAdded({
+        target.cssModel._styleSheetAdded({
             styleSheetId: mockStyleSheetId,
             frameId: 1000,
             sourceURL: sourceURL,
@@ -62,13 +63,6 @@ function test()
         var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
         InspectorTest.addResult(networkURL + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
     }
-
-    InspectorTest.createWorkspace();
-    manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
-    var target = WebInspector.targetManager.mainTarget();
-    cssModel = new WebInspector.CSSStyleModel(target, InspectorTest.testWorkspace);
-    target.cssModel = cssModel;
-    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testNetworkProject);
 
     var resourcesURL = WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/");
     var namePrefix = "update-locations-on-filesystem-scss-load."

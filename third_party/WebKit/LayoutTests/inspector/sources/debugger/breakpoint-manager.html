@@ -9,19 +9,19 @@
 function test()
 {
     var mockTarget;
+
+    function createWorkspace()
+    {
+        InspectorTest.createWorkspace(true);
+        mockTarget = InspectorTest.createMockTarget(1, InspectorTest.DebuggerModelMock);
+    }
+
     function resetWorkspace(breakpointManager)
     {
         mockTarget.debuggerModel.reset();
         InspectorTest.addResult("  Resetting workspace.");
         breakpointManager._debuggerWorkspaceBinding._reset(mockTarget);
-        breakpointManager._debuggerWorkspaceBinding._networkProject.reset();
-    }
-
-    function createWorkspace()
-    {
-        InspectorTest.createWorkspace(true);
-        mockTarget = InspectorTest.createMockTarget(1);
-        InspectorTest.testTargetManager.addTarget(mockTarget);
+        InspectorTest.testNetworkProject._reset();
     }
 
     function createBreakpoint(uiSourceCodeId, lineNumber, condition, enabled)

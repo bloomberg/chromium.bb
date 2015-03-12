@@ -28,37 +28,16 @@ InspectorTest.initializeDefaultMappingOnTarget = function(target)
     target.defaultMapping = defaultMapping;
 }
 
-InspectorTest.createMockTarget = function(id)
-{
-    var target = {
-        id: function()
-        {
-            return id;
-        },
-        resourceTreeModel: new WebInspector.Object(),
-        addEventListener: function() { },
-        removeEventListener: function() { },
-        dispose: function() { },
-        isDetached: function() { return !!this.detached; }
-    };
-    target._modelByConstructor = new Map();
-    InspectorTest.initializeDefaultMappingOnTarget(target);
-    target.debuggerModel = new InspectorTest.DebuggerModelMock(target, target.defaultMapping, InspectorTest.testDebuggerWorkspaceBinding);
-    target.debuggerModel._target = target;
-    return target;
-}
-
 InspectorTest.dumpTarget = function(targetAware)
 {
     return InspectorTest.dumpTargetIds ?  "target " + targetAware.target().id() + " " : "";
 }
 
-InspectorTest.DebuggerModelMock = function(target, sourceMapping, debuggerWorkspaceBinding)
+InspectorTest.DebuggerModelMock = function(target)
 {
     WebInspector.SDKModel.call(this, WebInspector.DebuggerModel, target);
     this._breakpointResolvedEventTarget = new WebInspector.Object();
     this._scripts = {};
-    this._sourceMapping = sourceMapping;
     this._breakpoints = {};
     this._debuggerWorkspaceBinding = InspectorTest.testDebuggerWorkspaceBinding;
 }
@@ -242,7 +221,7 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     InspectorTest.addResult("  Adding UISourceCode: " + url);
     var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
     var binding = breakpointManager._debuggerWorkspaceBinding;
-    var uiSourceCode = binding._networkProject.addFileForURL(url, contentProvider);
+    var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
         breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCode, breakpointManager.defaultMapping);

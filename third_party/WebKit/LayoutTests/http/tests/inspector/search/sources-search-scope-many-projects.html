@@ -47,7 +47,7 @@ function test()
     }
     WebInspector.inspectorView.showViewInDrawer("search");
 
-    InspectorTest.createWorkspace();
+    InspectorTest.createWorkspaceWithTarget();
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
     manager.addMockFileSystem(fileSystemPath);
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function(){}, 3);

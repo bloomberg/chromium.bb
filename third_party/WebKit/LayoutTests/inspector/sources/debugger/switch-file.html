@@ -12,7 +12,7 @@ function test()
     function addUISourceCode(url)
     {
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider, false);
+        var uiSourceCode = WebInspector.NetworkProject.forTarget(InspectorTest.mainTarget).addFileForURL(url, contentProvider, false);
         uiSourceCodes.push(uiSourceCode);
     }
 

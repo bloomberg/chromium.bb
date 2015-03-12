@@ -12,7 +12,7 @@ function test()
     {
         var projectDelegate = projectDelegates[projectId];
         if (!projectDelegates[projectId]) {
-            projectDelegate = new MockProjectDelegate();
+            projectDelegate = new MockProjectDelegate(projectId);
             workspace.addProject(projectId, projectDelegate);
             projectDelegates[projectId] = projectDelegate;
         }
@@ -23,12 +23,13 @@ function test()
         projectDelegate.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileAdded, fileDescriptor);
     }
 
-    function MockProjectDelegate()
+    function MockProjectDelegate(projectId)
     {
         WebInspector.Object.call(this);
+        this._projectId = projectId.startsWith("1:") ? projectId.substring(2) : projectId;
     }
     MockProjectDelegate.prototype = {
-        url: function() { return ""; },
+        url: function() { return this._projectId; },
         displayName: function() {},
         type: function() { return WebInspector.projectTypes.Network; },
         __proto__: WebInspector.Object.prototype
@@ -53,7 +54,7 @@ function test()
 
     function dumpUISourceCodeForURL(url)
     {
-        var uiSourceCode = networkMapping.uiSourceCodeForURL(url)
+        var uiSourceCode = networkMapping.uiSourceCodeForURLForAnyTarget(url);
         InspectorTest.addResult("    url " + url + " is mapped to " + (uiSourceCode ? uiSourceCode.uri() : null));
     }
 
@@ -65,10 +66,10 @@ function test()
     
     createUISourceCode(projectId, "localhost/index.html");
 
-    createUISourceCode("http://www.example.com", "index.html");
-    createUISourceCode("http://localhost", "index.html");
-    createUISourceCode("http://localhost", "foo/index.html");
-    createUISourceCode("https://localhost", "index.html");
+    createUISourceCode("1:http://www.example.com", "index.html");
+    createUISourceCode("1:http://localhost", "index.html");
+    createUISourceCode("1:http://localhost", "foo/index.html");
+    createUISourceCode("1:https://localhost", "index.html");
 
     dumpHasMappingForURL("http://www.example.com/index.html");
     dumpHasMappingForURL("http://localhost/index.html");
