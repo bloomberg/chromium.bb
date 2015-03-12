@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -54,11 +53,6 @@ AutocompleteHistoryManager::~AutocompleteHistoryManager() {
 void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle h,
     const WDTypedResult* result) {
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466312
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466312 AutocompleteHistoryManager::OnWebDataServiceRequestDone"));
   DCHECK(pending_query_handle_);
   pending_query_handle_ = 0;
 

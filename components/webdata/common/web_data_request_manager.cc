@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -121,11 +120,6 @@ void WebDataRequestManager::RequestCompletedOnThread(
     scoped_ptr<WebDataRequest> request) {
   if (request->IsCancelled())
     return;
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466312
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466312 WebDataRequestManager::RequestCompletedOnThread::UpdateMap"));
   {
     base::AutoLock l(pending_lock_);
     RequestMap::iterator i = pending_requests_.find(request->GetHandle());
@@ -138,12 +132,6 @@ void WebDataRequestManager::RequestCompletedOnThread(
     pending_requests_.erase(i);
   }
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466312
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466312 "
-          "WebDataRequestManager::RequestCompletedOnThread::NotifyConsumer"));
   // Notify the consumer if needed.
   if (!request->IsCancelled()) {
     WebDataServiceConsumer* consumer = request->GetConsumer();
