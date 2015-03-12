@@ -77,6 +77,13 @@ v8::Handle<v8::String> UTF8ToV8String(v8::Isolate* isolate,
       isolate, s.data(), v8::String::kNormalString, s.size());
 }
 
+// Throws a TypeError on the current V8 context if the args are invalid.
+void ThrowInvalidParameters(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  v8::Isolate* isolate = args.GetIsolate();
+  isolate->ThrowException(v8::Exception::TypeError(
+      v8::String::NewFromUtf8(isolate, "Invalid parameters")));
+}
+
 void Dispatch(blink::WebFrame* frame, const blink::WebString& script) {
   if (!frame) return;
   frame->executeScript(blink::WebScriptSource(script));
@@ -654,7 +661,12 @@ content::RenderView* SearchBoxExtensionWrapper::GetRenderView() {
 void SearchBoxExtensionWrapper::CheckIsUserSignedInToChromeAs(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderView* render_view = GetRenderView();
-  if (!render_view || args.Length() == 0 || args[0]->IsUndefined()) return;
+  if (!render_view) return;
+
+  if (!args.Length() || args[0]->IsUndefined()) {
+    ThrowInvalidParameters(args);
+    return;
+  }
 
   DVLOG(1) << render_view << " CheckIsUserSignedInToChromeAs";
 
@@ -676,10 +688,17 @@ void SearchBoxExtensionWrapper::CheckIsUserSyncingHistory(
 void SearchBoxExtensionWrapper::DeleteMostVisitedItem(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderView* render_view = GetRenderView();
-  if (!render_view || !args.Length()) return;
+  if (!render_view) return;
 
-  DVLOG(1) << render_view << " DeleteMostVisitedItem";
-  SearchBox::Get(render_view)->DeleteMostVisitedItem(args[0]->IntegerValue());
+  if (!args.Length()) {
+    ThrowInvalidParameters(args);
+    return;
+  }
+
+  DVLOG(1) << render_view
+           << " DeleteMostVisitedItem: " << args[0]->ToInteger()->Value();
+  SearchBox::Get(render_view)->
+      DeleteMostVisitedItem(args[0]->ToInteger()->Value());
 }
 
 // static
@@ -706,7 +725,12 @@ void SearchBoxExtensionWrapper::GetAppLauncherEnabled(
 void SearchBoxExtensionWrapper::GetDispositionFromClick(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderView* render_view = GetRenderView();
-  if (!render_view || args.Length() != 5) return;
+  if (!render_view) return;
+
+  if (args.Length() != 5) {
+    ThrowInvalidParameters(args);
+    return;
+  }
 
   bool middle_button = args[0]->BooleanValue();
   bool alt_key = args[1]->BooleanValue();
@@ -756,8 +780,10 @@ void SearchBoxExtensionWrapper::GetMostVisitedItemData(
   if (!render_view) return;
 
   // Need an rid argument.
-  if (args.Length() < 1 || !args[0]->IsNumber())
+  if (!args.Length() || !args[0]->IsNumber()) {
+    ThrowInvalidParameters(args);
     return;
+  }
 
   DVLOG(1) << render_view << " GetMostVisitedItem";
   InstantRestrictedID restricted_id = args[0]->IntegerValue();
@@ -1042,8 +1068,10 @@ void SearchBoxExtensionWrapper::LogEvent(
       GURL(chrome::kChromeSearchMostVisitedUrl));
   if (!render_view) return;
 
-  if (args.Length() < 1 || !args[0]->IsNumber())
+  if (!args.Length() || !args[0]->IsNumber()) {
+    ThrowInvalidParameters(args);
     return;
+  }
 
   DVLOG(1) << render_view << " LogEvent";
 
@@ -1061,8 +1089,10 @@ void SearchBoxExtensionWrapper::LogMostVisitedImpression(
       GURL(chrome::kChromeSearchMostVisitedUrl));
   if (!render_view) return;
 
-  if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined())
+  if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined()) {
+    ThrowInvalidParameters(args);
     return;
+  }
 
   DVLOG(1) << render_view << " LogMostVisitedImpression";
 
@@ -1077,8 +1107,10 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
       GURL(chrome::kChromeSearchMostVisitedUrl));
   if (!render_view) return;
 
-  if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined())
+  if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined()) {
+    ThrowInvalidParameters(args);
     return;
+  }
 
   DVLOG(1) << render_view << " LogMostVisitedNavigation";
 
@@ -1090,7 +1122,12 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
 void SearchBoxExtensionWrapper::NavigateContentWindow(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderView* render_view = GetRenderView();
-  if (!render_view || !args.Length()) return;
+  if (!render_view) return;
+
+  if (!args.Length()) {
+    ThrowInvalidParameters(args);
+    return;
+  }
 
   GURL destination_url;
   bool is_most_visited_item_url = false;
@@ -1161,7 +1198,13 @@ void SearchBoxExtensionWrapper::StopCapturingKeyStrokes(
 void SearchBoxExtensionWrapper::SetVoiceSearchSupported(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderView* render_view = GetRenderView();
-  if (!render_view || args.Length() < 1) return;
+  if (!render_view) {
+    return;
+  }
+  if (!args.Length()) {
+    ThrowInvalidParameters(args);
+    return;
+  }
 
   DVLOG(1) << render_view << " SetVoiceSearchSupported";
   SearchBox::Get(render_view)->SetVoiceSearchSupported(args[0]->BooleanValue());
@@ -1181,10 +1224,17 @@ void SearchBoxExtensionWrapper::UndoAllMostVisitedDeletions(
 void SearchBoxExtensionWrapper::UndoMostVisitedDeletion(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderView* render_view = GetRenderView();
-  if (!render_view || !args.Length()) return;
+  if (!render_view) {
+    return;
+  }
+  if (!args.Length()) {
+    ThrowInvalidParameters(args);
+    return;
+  }
 
   DVLOG(1) << render_view << " UndoMostVisitedDeletion";
-  SearchBox::Get(render_view)->UndoMostVisitedDeletion(args[0]->IntegerValue());
+  SearchBox::Get(render_view)
+      ->UndoMostVisitedDeletion(args[0]->ToInteger()->Value());
 }
 
 // static
