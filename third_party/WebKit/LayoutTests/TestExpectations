@@ -96,15 +96,6 @@ crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-sc
 crbug.com/428980 virtual/slimmingpaint/fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 virtual/slimmingpaint/fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]
 
-# Failing due to r188554
-crbug.com/450605 [ Android ] compositing/contents-opaque/layer-transform.html [ Failure ]
-crbug.com/450605 [ Android ] compositing/filters/sw-nested-shadow-overlaps-hw-nested-shadow.html [ Failure ]
-crbug.com/450605 [ Android ] compositing/filters/sw-shadow-overlaps-hw-layer.html [ Failure ]
-crbug.com/450605 [ Android ] compositing/filters/sw-shadow-overlaps-hw-shadow.html [ Failure ]
-crbug.com/450605 [ Android ] compositing/force-compositing-mode/force-composite-empty.html [ Failure ]
-crbug.com/450605 [ Android ] compositing/layer-creation/fixed-position-out-of-view.html [ Failure ]
-crbug.com/450605 [ Android ] fast/replaced/image-map-2.html [ Failure ]
-
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
 
 crbug.com/446356 [ Linux Debug ] fast/svg/whitespace-length-invalid.html [ Failure Timeout ]
