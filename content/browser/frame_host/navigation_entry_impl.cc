@@ -29,10 +29,6 @@ NavigationEntry* NavigationEntry::Create() {
   return new NavigationEntryImpl();
 }
 
-NavigationEntry* NavigationEntry::Create(const NavigationEntry& copy) {
-  return new NavigationEntryImpl(static_cast<const NavigationEntryImpl&>(copy));
-}
-
 NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
     NavigationEntry* entry) {
   return static_cast<NavigationEntryImpl*>(entry);
@@ -327,17 +323,66 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
   extra_data_.erase(key);
 }
 
+NavigationEntryImpl* NavigationEntryImpl::Clone() const {
+  NavigationEntryImpl* copy = new NavigationEntryImpl();
+
+  // TODO(creis): Once we have a tree of FrameNavigationEntries, make a deep
+  // copy.  Only share the same FrameNavigationEntries if cloning within the
+  // same tab.
+  copy->frame_entry_ = frame_entry_;
+
+  // Copy all state over, unless cleared in ResetForCommit.
+  copy->unique_id_ = unique_id_;
+  copy->bindings_ = bindings_;
+  copy->page_type_ = page_type_;
+  copy->virtual_url_ = virtual_url_;
+  copy->update_virtual_url_with_url_ = update_virtual_url_with_url_;
+  copy->title_ = title_;
+  copy->favicon_ = favicon_;
+  copy->page_state_ = page_state_;
+  copy->page_id_ = page_id_;
+  copy->ssl_ = ssl_;
+  copy->transition_type_ = transition_type_;
+  copy->user_typed_url_ = user_typed_url_;
+  copy->has_post_data_ = has_post_data_;
+  copy->post_id_ = post_id_;
+  copy->restore_type_ = restore_type_;
+  copy->original_request_url_ = original_request_url_;
+  copy->is_overriding_user_agent_ = is_overriding_user_agent_;
+  copy->timestamp_ = timestamp_;
+  copy->http_status_code_ = http_status_code_;
+  // ResetForCommit: browser_initiated_post_data_
+  copy->screenshot_ = screenshot_;
+  copy->extra_headers_ = extra_headers_;
+  // ResetForCommit: source_site_instance_
+  copy->base_url_for_data_url_ = base_url_for_data_url_;
+  // ResetForCommit: is_renderer_initiated_
+  copy->cached_display_title_ = cached_display_title_;
+  // ResetForCommit: transferred_global_request_id_
+  // ResetForCommit: should_replace_entry_
+  copy->redirect_chain_ = redirect_chain_;
+  // ResetForCommit: should_clear_history_list_
+  copy->frame_to_navigate_ = frame_to_navigate_;
+  // ResetForCommit: frame_tree_node_id_
+  // ResetForCommit: intent_received_timestamp_
+  copy->extra_data_ = extra_data_;
+
+  return copy;
+}
+
 void NavigationEntryImpl::ResetForCommit() {
   // Any state that only matters when a navigation entry is pending should be
   // cleared here.
+  // TODO(creis): This state should be moved to NavigationRequest once
+  // PlzNavigate is enabled.
   SetBrowserInitiatedPostData(nullptr);
+  set_source_site_instance(nullptr);
   set_is_renderer_initiated(false);
   set_transferred_global_request_id(GlobalRequestID());
   set_should_replace_entry(false);
 
   set_should_clear_history_list(false);
   set_frame_tree_node_id(-1);
-  set_source_site_instance(nullptr);
 
 #if defined(OS_ANDROID)
   // Reset the time stamp so that the metrics are not reported if this entry is

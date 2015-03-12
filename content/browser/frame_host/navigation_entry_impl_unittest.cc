@@ -213,6 +213,27 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_TRUE(entry2_->GetFrameToNavigate().empty());
 }
 
+// Test basic Clone behavior.
+TEST_F(NavigationEntryTest, NavigationEntryClone) {
+  // Set some additional values.
+  entry2_->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
+  entry2_->set_should_replace_entry(true);
+
+  scoped_ptr<NavigationEntryImpl> clone(entry2_->Clone());
+
+  // Value from FrameNavigationEntry.
+  EXPECT_EQ(entry2_->site_instance(), clone->site_instance());
+
+  // Value from constructor.
+  EXPECT_EQ(entry2_->GetTitle(), clone->GetTitle());
+
+  // Value set after constructor.
+  EXPECT_EQ(entry2_->GetTransitionType(), clone->GetTransitionType());
+
+  // Value not copied due to ResetForCommit.
+  EXPECT_NE(entry2_->should_replace_entry(), clone->should_replace_entry());
+}
+
 // Test timestamps.
 TEST_F(NavigationEntryTest, NavigationEntryTimestamps) {
   EXPECT_EQ(base::Time(), entry1_->GetTimestamp());

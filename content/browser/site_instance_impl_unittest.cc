@@ -265,7 +265,7 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
       instance1, 0, url, Referrer(), base::string16(), ui::PAGE_TRANSITION_LINK,
       false);
   // Clone the entry
-  NavigationEntryImpl* e2 = new NavigationEntryImpl(*e1);
+  NavigationEntryImpl* e2 = e1->Clone();
 
   // Should be able to change the SiteInstance of the cloned entry.
   e2->set_site_instance(instance2);

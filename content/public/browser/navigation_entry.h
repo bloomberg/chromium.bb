@@ -32,7 +32,6 @@ class NavigationEntry {
   virtual ~NavigationEntry() {}
 
   CONTENT_EXPORT static NavigationEntry* Create();
-  CONTENT_EXPORT static NavigationEntry* Create(const NavigationEntry& copy);
 
   // Page-related stuff --------------------------------------------------------
 

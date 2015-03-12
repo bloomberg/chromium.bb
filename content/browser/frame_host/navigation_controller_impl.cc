@@ -1050,7 +1050,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   if (pending_entry_ &&
       (!pending_entry_->site_instance() ||
        pending_entry_->site_instance() == rfh->GetSiteInstance())) {
-    new_entry = new NavigationEntryImpl(*pending_entry_);
+    new_entry = pending_entry_->Clone();
 
     update_virtual_url = new_entry->update_virtual_url_with_url();
   } else {
@@ -1260,8 +1260,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   // band with the actual navigations.
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
                                   << "that a last committed entry exists.";
-  NavigationEntryImpl* new_entry =
-      new NavigationEntryImpl(*GetLastCommittedEntry());
+  NavigationEntryImpl* new_entry = GetLastCommittedEntry()->Clone();
   new_entry->SetPageID(params.page_id);
   InsertOrReplaceEntry(new_entry, false);
 }
@@ -1805,12 +1804,14 @@ void NavigationControllerImpl::InsertEntriesFrom(
   DCHECK_LE(max_index, source.GetEntryCount());
   size_t insert_index = 0;
   for (int i = 0; i < max_index; i++) {
-    // When cloning a tab, copy all entries except interstitial pages
-    if (source.entries_[i].get()->GetPageType() !=
-        PAGE_TYPE_INTERSTITIAL) {
+    // When cloning a tab, copy all entries except interstitial pages.
+    if (source.entries_[i].get()->GetPageType() != PAGE_TYPE_INTERSTITIAL) {
+      // TODO(creis): Once we start sharing FrameNavigationEntries between
+      // NavigationEntries, it will not be safe to share them with another tab.
+      // Must have a version of Clone that recreates them.
       entries_.insert(entries_.begin() + insert_index++,
                       linked_ptr<NavigationEntryImpl>(
-                          new NavigationEntryImpl(*source.entries_[i])));
+                          source.entries_[i]->Clone()));
     }
   }
 }

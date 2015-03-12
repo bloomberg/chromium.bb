@@ -96,6 +96,15 @@ class CONTENT_EXPORT NavigationEntryImpl
   const std::vector<GURL>& GetRedirectChain() const override;
   bool IsRestored() const override;
 
+  // Creates a copy of this NavigationEntryImpl that can be modified
+  // independently from the original.  Does not copy any value that would be
+  // cleared in ResetForCommit.
+  // TODO(creis): Once we start sharing FrameNavigationEntries between
+  // NavigationEntryImpls, we will need to support two versions of Clone: one
+  // that shares the existing FrameNavigationEntries (for use within the same
+  // tab) and one that draws them from a different pool (for use in a new tab).
+  NavigationEntryImpl* Clone() const;
+
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
   void ResetForCommit();
@@ -259,6 +268,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // later. If you add a new field that needs to be persisted you'll have to
   // update SessionService/TabRestoreService and Android WebView
   // state_serializer.cc appropriately.
+  // For all new fields, update |Clone| and possibly |ResetForCommit|.
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
   // The FrameNavigationEntry for the main frame.
@@ -383,7 +393,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // time (see TabNavigation for an example of this).
   std::map<std::string, base::string16> extra_data_;
 
-  // Copy and assignment is explicitly allowed for this class.
+  DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };
 
 }  // namespace content
