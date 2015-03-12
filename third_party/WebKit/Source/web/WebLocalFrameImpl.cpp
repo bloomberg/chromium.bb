@@ -806,7 +806,7 @@ bool WebLocalFrameImpl::checkIfRunInsecureContent(const WebURL& url) const
     // PluginURLFetcher::OnReceivedRedirect for redirects of NPAPI resources.
     //
     // FIXME: Remove this method entirely once we smother NPAPI.
-    return MixedContentChecker::shouldBlockFetch(frame(), WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, url);
+    return MixedContentChecker::shouldBlockFetch(frame(), WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNested, url);
 }
 
 v8::Local<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebScriptSource& source)
