@@ -21,8 +21,6 @@ OutputSurfaceMojo::OutputSurfaceMojo(
       surface_(surface.Pass()),
       id_namespace_(0u),
       local_id_(0u) {
-  surface_->GetIdNamespace(
-      base::Bind(&OutputSurfaceMojo::SetIdNamespace, base::Unretained(this)));
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }
@@ -40,6 +38,8 @@ void OutputSurfaceMojo::SetIdNamespace(uint32_t id_namespace) {
 }
 
 bool OutputSurfaceMojo::BindToClient(cc::OutputSurfaceClient* client) {
+  surface_->GetIdNamespace(
+      base::Bind(&OutputSurfaceMojo::SetIdNamespace, base::Unretained(this)));
   return cc::OutputSurface::BindToClient(client);
 }
 
