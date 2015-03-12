@@ -108,9 +108,11 @@ base::FilePath GetVersionedFileName(const std::string& input_language,
 
     // Oct 28, 2014: Update from upstream, add new words.
     {"en-AU", "-4-0"},
-    {"en-CA", "-4-0"},
     {"en-GB", "-4-0"},
-    {"en-US", "-4-0"},
+
+    // March 10, 2015: Update from upstream, enable typographical apostrophe.
+    {"en-CA", "-6-1"},
+    {"en-US", "-6-1"},
   };
 
   // Generate the bdict file name using default version string or special

@@ -200,6 +200,8 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
      L"\x0442\x0432\x0443\x0439\x0442\x0435", true},
     // A valid English contraction
     {L"isn't", true},
+    // A valid English contraction with a typographical apostrophe.
+    {L"isn\x2019t", true},
     // A valid English word enclosed with underscores.
     {L"_hello_", true},
 
@@ -421,6 +423,7 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     {L"jum", false, 0, 0, L"hum"},
     {L"jum", false, 0, 0, L"sum"},
     {L"jum", false, 0, 0, L"um"},
+    {L"alot", false, 0, 0, L"a lot"},
     // A regression test for Issue 36523.
     {L"privliged", false, 0, 0, L"privileged"},
     // TODO (Sidchat): add many more examples.
