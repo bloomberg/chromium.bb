@@ -16,6 +16,8 @@
 #include "base/process/process.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
@@ -39,6 +41,9 @@ class CopyOutputResult;
 class DelegatedFrameProvider;
 class DelegatedRendererLayer;
 class Layer;
+class SurfaceFactory;
+class SurfaceIdAllocator;
+enum class SurfaceDrawStatus;
 }
 
 namespace blink {
@@ -81,6 +86,7 @@ class ReadbackRequest {
 class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
       public cc::DelegatedFrameResourceCollectionClient,
+      public cc::SurfaceFactoryClient,
       public ui::GestureProviderClient,
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
@@ -179,6 +185,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // cc::DelegatedFrameResourceCollectionClient implementation.
   void UnusedResourcesAreAvailable() override;
 
+  // cc::SurfaceFactoryClient implementation.
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
 
@@ -243,8 +252,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                               gfx::Rect src_subrect,
                               ReadbackRequestCallback& result_callback);
 
-  scoped_refptr<cc::DelegatedRendererLayer>
-      CreateDelegatedLayerForFrameProvider() const;
+  scoped_refptr<cc::Layer> CreateDelegatedLayer() const;
 
   bool HasValidFrame() const;
 
@@ -268,9 +276,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   static void OnContextLost();
 
  private:
-  void RunAckCallbacks();
+  void RunAckCallbacks(cc::SurfaceDrawStatus status);
 
   void DestroyDelegatedContent();
+  void CheckOutputSurfaceChanged(uint32 output_surface_id);
+  void SubmitFrame(scoped_ptr<cc::DelegatedFrameData> frame_data);
   void SwapDelegatedFrame(uint32 output_surface_id,
                           scoped_ptr<cc::DelegatedFrameData> frame_data);
   void SendDelegatedFrameAck(uint32 output_surface_id);
@@ -336,6 +346,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The model object.
   RenderWidgetHostImpl* host_;
 
+  bool use_surfaces_;
+
   // Used to control action dispatch at the next |OnVSync()| call.
   uint32 outstanding_vsync_requests_;
 
@@ -351,7 +363,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
-  scoped_refptr<cc::DelegatedRendererLayer> layer_;
+  scoped_refptr<cc::Layer> layer_;
+
+  scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  scoped_ptr<cc::SurfaceFactory> surface_factory_;
+  cc::SurfaceId surface_id_;
+  gfx::Size current_surface_size_;
+  cc::ReturnedResourceArray surface_returned_resources_;
 
   // The most recent texture size that was pushed to the texture layer.
   gfx::Size texture_size_in_layer_;

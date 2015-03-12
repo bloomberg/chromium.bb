@@ -30,6 +30,7 @@ class Layer;
 class LayerTreeHost;
 class OnscreenDisplayClient;
 class SurfaceIdAllocator;
+class SurfaceManager;
 }
 
 namespace content {
@@ -48,6 +49,9 @@ class CONTENT_EXPORT CompositorImpl
   ~CompositorImpl() override;
 
   static bool IsInitialized();
+
+  static cc::SurfaceManager* GetSurfaceManager();
+  static scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
 
   void PopulateGpuCapabilities(gpu::Capabilities gpu_capabilities);
 

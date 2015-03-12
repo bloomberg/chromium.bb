@@ -134,11 +134,6 @@ bool g_use_surface_manager = false;
 base::LazyInstance<cc::SurfaceManager> g_surface_manager =
     LAZY_INSTANCE_INITIALIZER;
 
-cc::SurfaceManager* GetSurfaceManager() {
-  if (!g_use_surface_manager)
-    return nullptr;
-  return g_surface_manager.Pointer();
-}
 
 int g_surface_id_namespace = 0;
 
@@ -162,12 +157,23 @@ bool CompositorImpl::IsInitialized() {
   return g_initialized;
 }
 
+// static
+cc::SurfaceManager* CompositorImpl::GetSurfaceManager() {
+  if (!g_use_surface_manager)
+    return nullptr;
+  return g_surface_manager.Pointer();
+}
+
+// static
+scoped_ptr<cc::SurfaceIdAllocator> CompositorImpl::CreateSurfaceIdAllocator() {
+  return make_scoped_ptr(new cc::SurfaceIdAllocator(++g_surface_id_namespace));
+}
+
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create()),
       resource_manager_(&ui_resource_provider_),
-      surface_id_allocator_(
-          new cc::SurfaceIdAllocator(++g_surface_id_namespace)),
+      surface_id_allocator_(CreateSurfaceIdAllocator()),
       has_transparent_background_(false),
       device_scale_factor_(1),
       window_(NULL),
