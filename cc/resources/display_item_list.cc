@@ -10,8 +10,12 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/picture_debug_util.h"
+#include "cc/debug/traced_picture.h"
+#include "cc/debug/traced_value.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDrawPictureCallback.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -30,12 +34,46 @@ DisplayItemList::~DisplayItemList() {
 void DisplayItemList::Raster(SkCanvas* canvas,
                              SkDrawPictureCallback* callback,
                              float contents_scale) const {
-  canvas->save();
-  canvas->scale(contents_scale, contents_scale);
-  for (size_t i = 0; i < items_.size(); ++i) {
-    items_[i]->Raster(canvas, callback);
+  if (!picture_) {
+    canvas->save();
+    canvas->scale(contents_scale, contents_scale);
+    for (size_t i = 0; i < items_.size(); ++i) {
+      items_[i]->Raster(canvas, callback);
+    }
+    canvas->restore();
+  } else {
+    DCHECK(picture_);
+
+    canvas->save();
+    canvas->scale(contents_scale, contents_scale);
+    if (callback) {
+      // If we have a callback, we need to call |draw()|, |drawPicture()|
+      // doesn't take a callback.  This is used by |AnalysisCanvas| to early
+      // out.
+      picture_->playback(canvas, callback);
+    } else {
+      // Prefer to call |drawPicture()| on the canvas since it could place the
+      // entire picture on the canvas instead of parsing the skia operations.
+      canvas->drawPicture(picture_.get());
+    }
+    canvas->restore();
   }
-  canvas->restore();
+}
+
+void DisplayItemList::CreateAndCacheSkPicture() {
+  // Convert to an SkPicture for faster rasterization. Code is identical to
+  // that in Picture::Record.
+  SkRTreeFactory factory;
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas;
+  canvas = skia::SharePtr(recorder.beginRecording(
+      layer_rect_.width(), layer_rect_.height(), &factory));
+  canvas->translate(-layer_rect_.x(), -layer_rect_.y());
+  canvas->clipRect(gfx::RectToSkRect(layer_rect_));
+  for (size_t i = 0; i < items_.size(); ++i)
+    items_[i]->Raster(canvas.get(), NULL);
+  picture_ = skia::AdoptRef(recorder.endRecording());
+  DCHECK(picture_);
 }
 
 void DisplayItemList::AppendItem(scoped_ptr<DisplayItem> item) {
@@ -61,6 +99,9 @@ size_t DisplayItemList::PictureMemoryUsage() const {
   for (const auto& item : items_) {
     total_size += item->PictureMemoryUsage();
   }
+
+  if (picture_)
+    total_size += SkPictureUtils::ApproximateBytesUsed(picture_.get());
 
   return total_size;
 }
