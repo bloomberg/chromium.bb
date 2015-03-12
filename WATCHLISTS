@@ -576,6 +576,9 @@
     'prerender': {
       'filepath': 'prerender'
     },
+    'push_messaging': {
+      'filepath': 'push_messaging'
+    },
     'pyauto': {
       'filepath': 'chrome/test/pyautolib' \
                   '|chrome/test/functional' \
@@ -999,6 +1002,7 @@
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
                   'jkarlin+watch@chromium.org', 'gavinp+prer@chromium.org',
                   'davidben+watch@chromium.org'],
+    'push_messaging': ['peter+watch@chromium.org', 'johnme+watch@chromium.org'],
     'pyauto': ['anantha@chromium.org',
                'dyu@chromium.org',
                'dennisjeffrey@chromium.org'],
