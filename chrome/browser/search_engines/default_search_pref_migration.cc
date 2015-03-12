@@ -10,23 +10,91 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "url/gurl.h"
 
 namespace {
 
-// Loads the user-selected DSE (if there is one, and it's not masked by policy
-// or an extension) from legacy preferences.
-scoped_ptr<TemplateURLData> LoadDefaultSearchProviderFromPrefs(
-    PrefService* pref_service) {
-  scoped_ptr<TemplateURLData> legacy_dse_from_prefs;
-  bool legacy_is_managed = false;
-  TemplateURLService::LoadDefaultSearchProviderFromPrefs(
-      pref_service, &legacy_dse_from_prefs, &legacy_is_managed);
-  return legacy_is_managed ?
-      scoped_ptr<TemplateURLData>() : legacy_dse_from_prefs.Pass();
+// Loads the user-selected DSE (if there is one) from legacy preferences.
+scoped_ptr<TemplateURLData> LoadDefaultSearchProviderFromLegacyPrefs(
+    PrefService* prefs) {
+  if (!prefs->HasPrefPath(prefs::kDefaultSearchProviderSearchURL) ||
+      !prefs->HasPrefPath(prefs::kDefaultSearchProviderKeyword))
+    return scoped_ptr<TemplateURLData>();
+
+  const PrefService::Preference* pref =
+      prefs->FindPreference(prefs::kDefaultSearchProviderSearchURL);
+  DCHECK(pref);
+  if (pref->IsManaged())
+    return scoped_ptr<TemplateURLData>();
+
+  base::string16 keyword =
+      base::UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderKeyword));
+  std::string search_url =
+      prefs->GetString(prefs::kDefaultSearchProviderSearchURL);
+  if (keyword.empty() || search_url.empty())
+    return scoped_ptr<TemplateURLData>();
+
+  scoped_ptr<TemplateURLData> default_provider_data(new TemplateURLData);
+  default_provider_data->short_name =
+      base::UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderName));
+  default_provider_data->SetKeyword(keyword);
+  default_provider_data->SetURL(search_url);
+  default_provider_data->suggestions_url =
+      prefs->GetString(prefs::kDefaultSearchProviderSuggestURL);
+  default_provider_data->instant_url =
+      prefs->GetString(prefs::kDefaultSearchProviderInstantURL);
+  default_provider_data->image_url =
+      prefs->GetString(prefs::kDefaultSearchProviderImageURL);
+  default_provider_data->new_tab_url =
+      prefs->GetString(prefs::kDefaultSearchProviderNewTabURL);
+  default_provider_data->search_url_post_params =
+      prefs->GetString(prefs::kDefaultSearchProviderSearchURLPostParams);
+  default_provider_data->suggestions_url_post_params =
+      prefs->GetString(prefs::kDefaultSearchProviderSuggestURLPostParams);
+  default_provider_data->instant_url_post_params =
+      prefs->GetString(prefs::kDefaultSearchProviderInstantURLPostParams);
+  default_provider_data->image_url_post_params =
+      prefs->GetString(prefs::kDefaultSearchProviderImageURLPostParams);
+  default_provider_data->favicon_url =
+      GURL(prefs->GetString(prefs::kDefaultSearchProviderIconURL));
+  default_provider_data->show_in_default_list = true;
+  default_provider_data->search_terms_replacement_key =
+      prefs->GetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey);
+  base::SplitString(prefs->GetString(prefs::kDefaultSearchProviderEncodings),
+                    ';', &default_provider_data->input_encodings);
+
+  default_provider_data->alternate_urls.clear();
+  const base::ListValue* alternate_urls =
+      prefs->GetList(prefs::kDefaultSearchProviderAlternateURLs);
+  for (size_t i = 0; i < alternate_urls->GetSize(); ++i) {
+    std::string alternate_url;
+    if (alternate_urls->GetString(i, &alternate_url))
+      default_provider_data->alternate_urls.push_back(alternate_url);
+  }
+
+  std::string id_string = prefs->GetString(prefs::kDefaultSearchProviderID);
+  if (!id_string.empty()) {
+    int64 value;
+    base::StringToInt64(id_string, &value);
+    default_provider_data->id = value;
+  }
+
+  std::string prepopulate_id =
+      prefs->GetString(prefs::kDefaultSearchProviderPrepopulateID);
+  if (!prepopulate_id.empty()) {
+    int value;
+    base::StringToInt(prepopulate_id, &value);
+    default_provider_data->prepopulate_id = value;
+  }
+
+  return default_provider_data.Pass();
 }
 
 void ClearDefaultSearchProviderFromLegacyPrefs(PrefService* prefs) {
@@ -52,7 +120,7 @@ void MigrateDefaultSearchPref(PrefService* pref_service) {
   DCHECK(pref_service);
 
   scoped_ptr<TemplateURLData> legacy_dse_from_prefs =
-      LoadDefaultSearchProviderFromPrefs(pref_service);
+      LoadDefaultSearchProviderFromLegacyPrefs(pref_service);
   if (!legacy_dse_from_prefs)
     return;
 

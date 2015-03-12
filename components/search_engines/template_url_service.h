@@ -98,25 +98,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURLService(const Initializer* initializers, const int count);
   ~TemplateURLService() override;
 
-  // Creates a TemplateURLData that was previously saved to |prefs| via
-  // SaveDefaultSearchProviderToPrefs or set via policy.
-  // Returns true if successful, false otherwise.
-  // If the user or the policy has opted for no default search, this
-  // returns true but default_provider is set to NULL.
-  // |*is_managed| specifies whether the default is managed via policy.
-  static bool LoadDefaultSearchProviderFromPrefs(
-      PrefService* prefs,
-      scoped_ptr<TemplateURLData>* default_provider_data,
-      bool* is_managed);
-
   // Removes any unnecessary characters from a user input keyword.
   // This removes the leading scheme, "www." and any trailing slash.
   static base::string16 CleanUserInputKeyword(const base::string16& keyword);
-
-  // Saves enough of url to |prefs| so that it can be loaded from preferences on
-  // start up.
-  static void SaveDefaultSearchProviderToPrefs(const TemplateURL* url,
-                                               PrefService* prefs);
 
   // Returns true if there is no TemplateURL that conflicts with the
   // keyword/url pair, or there is one but it can be replaced. If there is an

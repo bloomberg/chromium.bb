@@ -39,8 +39,6 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
                            PrefValueMap* prefs) override;
 
  private:
-  void HandleDictionaryPref(const PolicyMap& policies, PrefValueMap* prefs);
-
   // Calls |CheckPolicySettings()| on each of the handlers in |handlers_|
   // and returns whether all of the calls succeeded.
   bool CheckIndividualPolicies(const PolicyMap& policies,

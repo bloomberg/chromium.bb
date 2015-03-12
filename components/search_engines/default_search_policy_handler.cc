@@ -225,8 +225,8 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   return false;
 }
 
-void DefaultSearchPolicyHandler::HandleDictionaryPref(const PolicyMap& policies,
-                                                      PrefValueMap* prefs) {
+void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
+                                                     PrefValueMap* prefs) {
   if (DefaultSearchProviderIsDisabled(policies)) {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->SetBoolean(DefaultSearchManager::kDisabledByPolicy, true);
@@ -295,97 +295,6 @@ void DefaultSearchPolicyHandler::HandleDictionaryPref(const PolicyMap& policies,
     dict->SetString(DefaultSearchManager::kKeyword, host);
 
   DefaultSearchManager::AddPrefValueToMap(dict.release(), prefs);
-}
-
-void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
-                                                     PrefValueMap* prefs) {
-  HandleDictionaryPref(policies, prefs);
-
-  if (DefaultSearchProviderIsDisabled(policies)) {
-    prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, false);
-
-    // If default search is disabled, the other fields are ignored.
-    prefs->SetString(prefs::kDefaultSearchProviderName, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderSearchURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderSuggestURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderIconURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderEncodings, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderKeyword, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderInstantURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderNewTabURL, std::string());
-    prefs->SetValue(prefs::kDefaultSearchProviderAlternateURLs,
-                    new base::ListValue());
-    prefs->SetString(
-        prefs::kDefaultSearchProviderSearchTermsReplacementKey, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderImageURL, std::string());
-    prefs->SetString(
-        prefs::kDefaultSearchProviderSearchURLPostParams, std::string());
-    prefs->SetString(
-        prefs::kDefaultSearchProviderSuggestURLPostParams, std::string());
-    prefs->SetString(
-        prefs::kDefaultSearchProviderInstantURLPostParams, std::string());
-    prefs->SetString(
-        prefs::kDefaultSearchProviderImageURLPostParams, std::string());
-  } else {
-    // The search URL is required.  The other entries are optional.  Just make
-    // sure that they are all specified via policy, so that the regular prefs
-    // aren't used.
-    const base::Value* dummy;
-    std::string url;
-    if (DefaultSearchURLIsValid(policies, &dummy, &url)) {
-
-      for (std::vector<TypeCheckingPolicyHandler*>::const_iterator handler =
-               handlers_.begin();
-           handler != handlers_.end(); ++handler) {
-        (*handler)->ApplyPolicySettings(policies, prefs);
-      }
-
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderSuggestURL);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderIconURL);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderEncodings);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderKeyword);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderInstantURL);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderNewTabURL);
-      EnsureListPrefExists(prefs, prefs::kDefaultSearchProviderAlternateURLs);
-      EnsureStringPrefExists(
-          prefs,
-          prefs::kDefaultSearchProviderSearchTermsReplacementKey);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderImageURL);
-      EnsureStringPrefExists(
-          prefs,
-          prefs::kDefaultSearchProviderSearchURLPostParams);
-      EnsureStringPrefExists(
-          prefs,
-          prefs::kDefaultSearchProviderSuggestURLPostParams);
-      EnsureStringPrefExists(
-          prefs,
-          prefs::kDefaultSearchProviderInstantURLPostParams);
-      EnsureStringPrefExists(
-          prefs,
-          prefs::kDefaultSearchProviderImageURLPostParams);
-
-      // For the name and keyword, default to the host if not specified.  If
-      // there is no host (file: URLs?  Not sure), use "_" to guarantee that the
-      // keyword is non-empty.
-      std::string name, keyword;
-      std::string host(GURL(url).host());
-      if (host.empty())
-        host = "_";
-      if (!prefs->GetString(prefs::kDefaultSearchProviderName, &name) ||
-          name.empty()) {
-        prefs->SetString(prefs::kDefaultSearchProviderName, host);
-      }
-      if (!prefs->GetString(prefs::kDefaultSearchProviderKeyword, &keyword) ||
-          keyword.empty()) {
-        prefs->SetString(prefs::kDefaultSearchProviderKeyword, host);
-      }
-
-      // And clear the IDs since these are not specified via policy.
-      prefs->SetString(prefs::kDefaultSearchProviderID, std::string());
-      prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID,
-                       std::string());
-    }
-  }
 }
 
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(

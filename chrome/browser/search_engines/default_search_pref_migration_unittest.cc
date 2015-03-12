@@ -12,12 +12,17 @@
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 class DefaultSearchPrefMigrationTest : public testing::Test {
  public:
@@ -25,6 +30,8 @@ class DefaultSearchPrefMigrationTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override;
+
+  void SaveDefaultSearchProviderToLegacyPrefs(const TemplateURL* t_url);
 
   scoped_ptr<TemplateURL> CreateKeyword(const std::string& short_name,
                                         const std::string& keyword,
@@ -54,6 +61,77 @@ void DefaultSearchPrefMigrationTest::SetUp() {
       profile_->GetPrefs(), DefaultSearchManager::ObserverCallback()));
 }
 
+void DefaultSearchPrefMigrationTest::SaveDefaultSearchProviderToLegacyPrefs(
+    const TemplateURL* t_url) {
+  PrefService* prefs = profile()->GetPrefs();
+
+  bool enabled = false;
+  std::string search_url;
+  std::string suggest_url;
+  std::string instant_url;
+  std::string image_url;
+  std::string new_tab_url;
+  std::string search_url_post_params;
+  std::string suggest_url_post_params;
+  std::string instant_url_post_params;
+  std::string image_url_post_params;
+  std::string icon_url;
+  std::string encodings;
+  std::string short_name;
+  std::string keyword;
+  std::string id_string;
+  std::string prepopulate_id;
+  base::ListValue alternate_urls;
+  std::string search_terms_replacement_key;
+  if (t_url) {
+    DCHECK_EQ(TemplateURL::NORMAL, t_url->GetType());
+    enabled = true;
+    search_url = t_url->url();
+    suggest_url = t_url->suggestions_url();
+    instant_url = t_url->instant_url();
+    image_url = t_url->image_url();
+    new_tab_url = t_url->new_tab_url();
+    search_url_post_params = t_url->search_url_post_params();
+    suggest_url_post_params = t_url->suggestions_url_post_params();
+    instant_url_post_params = t_url->instant_url_post_params();
+    image_url_post_params = t_url->image_url_post_params();
+    GURL icon_gurl = t_url->favicon_url();
+    if (!icon_gurl.is_empty())
+      icon_url = icon_gurl.spec();
+    encodings = JoinString(t_url->input_encodings(), ';');
+    short_name = base::UTF16ToUTF8(t_url->short_name());
+    keyword = base::UTF16ToUTF8(t_url->keyword());
+    id_string = base::Int64ToString(t_url->id());
+    prepopulate_id = base::Int64ToString(t_url->prepopulate_id());
+    for (size_t i = 0; i < t_url->alternate_urls().size(); ++i)
+      alternate_urls.AppendString(t_url->alternate_urls()[i]);
+    search_terms_replacement_key = t_url->search_terms_replacement_key();
+  }
+  prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, enabled);
+  prefs->SetString(prefs::kDefaultSearchProviderSearchURL, search_url);
+  prefs->SetString(prefs::kDefaultSearchProviderSuggestURL, suggest_url);
+  prefs->SetString(prefs::kDefaultSearchProviderInstantURL, instant_url);
+  prefs->SetString(prefs::kDefaultSearchProviderImageURL, image_url);
+  prefs->SetString(prefs::kDefaultSearchProviderNewTabURL, new_tab_url);
+  prefs->SetString(prefs::kDefaultSearchProviderSearchURLPostParams,
+                   search_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderSuggestURLPostParams,
+                   suggest_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderInstantURLPostParams,
+                   instant_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderImageURLPostParams,
+                   image_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderIconURL, icon_url);
+  prefs->SetString(prefs::kDefaultSearchProviderEncodings, encodings);
+  prefs->SetString(prefs::kDefaultSearchProviderName, short_name);
+  prefs->SetString(prefs::kDefaultSearchProviderKeyword, keyword);
+  prefs->SetString(prefs::kDefaultSearchProviderID, id_string);
+  prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID, prepopulate_id);
+  prefs->Set(prefs::kDefaultSearchProviderAlternateURLs, alternate_urls);
+  prefs->SetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
+      search_terms_replacement_key);
+}
+
 scoped_ptr<TemplateURL> DefaultSearchPrefMigrationTest::CreateKeyword(
     const std::string& short_name,
     const std::string& keyword,
@@ -70,8 +148,7 @@ TEST_F(DefaultSearchPrefMigrationTest, MigrateUserSelectedValue) {
   scoped_ptr<TemplateURL> t_url(
       CreateKeyword("name1", "key1", "http://foo1/{searchTerms}"));
   // Store a value in the legacy location.
-  TemplateURLService::SaveDefaultSearchProviderToPrefs(t_url.get(),
-                                                       profile()->GetPrefs());
+  SaveDefaultSearchProviderToLegacyPrefs(t_url.get());
 
   // Run the migration.
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(profile()->GetPrefs());
@@ -91,8 +168,7 @@ TEST_F(DefaultSearchPrefMigrationTest, MigrateOnlyOnce) {
   scoped_ptr<TemplateURL> t_url(
       CreateKeyword("name1", "key1", "http://foo1/{searchTerms}"));
   // Store a value in the legacy location.
-  TemplateURLService::SaveDefaultSearchProviderToPrefs(t_url.get(),
-                                                       profile()->GetPrefs());
+  SaveDefaultSearchProviderToLegacyPrefs(t_url.get());
 
   // Run the migration.
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(profile()->GetPrefs());
@@ -123,8 +199,7 @@ TEST_F(DefaultSearchPrefMigrationTest, ModernValuePresent) {
   scoped_ptr<TemplateURL> t_url2(
       CreateKeyword("name2", "key2", "http://foo2/{searchTerms}"));
   // Store a value in the legacy location.
-  TemplateURLService::SaveDefaultSearchProviderToPrefs(t_url.get(),
-                                                       profile()->GetPrefs());
+  SaveDefaultSearchProviderToLegacyPrefs(t_url.get());
 
   // Store another value in the modern location.
   default_search_manager()->SetUserSelectedDefaultSearchEngine(t_url2->data());
@@ -153,8 +228,7 @@ TEST_F(DefaultSearchPrefMigrationTest,
   TemplateURL prepopulated_turl(prepopulated_default);
 
   // Store a value in the legacy location.
-  TemplateURLService::SaveDefaultSearchProviderToPrefs(&prepopulated_turl,
-                                                       profile()->GetPrefs());
+  SaveDefaultSearchProviderToLegacyPrefs(&prepopulated_turl);
 
   // Run the migration.
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(profile()->GetPrefs());

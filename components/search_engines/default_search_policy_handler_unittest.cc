@@ -138,135 +138,6 @@ void DefaultSearchPolicyHandlerTest::
               NULL);
 }
 
-// Checks that if the policy for default search is valid, i.e. there's a
-// search URL, that all the elements have been given proper defaults.
-TEST_F(DefaultSearchPolicyHandlerTest, MinimallyDefined) {
-  PolicyMap policy;
-  policy.Set(key::kDefaultSearchProviderEnabled,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             new base::FundamentalValue(true),
-             NULL);
-  policy.Set(key::kDefaultSearchProviderSearchURL,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             new base::StringValue(kSearchURL),
-             NULL);
-  UpdateProviderPolicy(policy);
-
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
-  EXPECT_TRUE(base::StringValue(kSearchURL).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderName, &value));
-  EXPECT_TRUE(base::StringValue(kHostName).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderKeyword, &value));
-  EXPECT_TRUE(base::StringValue(kHostName).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderSuggestURL,
-                               &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderIconURL, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderEncodings, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderInstantURL,
-                               &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderAlternateURLs,
-                             &value));
-  EXPECT_TRUE(base::ListValue().Equals(value));
-
-  EXPECT_TRUE(
-      store_->GetValue(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
-      &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderImageURL, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderSearchURLPostParams, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderSuggestURLPostParams, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderInstantURLPostParams, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderImageURLPostParams, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderNewTabURL, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-}
-
-// Checks that for a fully defined search policy, all elements have been
-// read properly.
-TEST_F(DefaultSearchPolicyHandlerTest, FullyDefined) {
-  PolicyMap policy;
-  BuildDefaultSearchPolicy(&policy);
-  UpdateProviderPolicy(policy);
-
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
-  EXPECT_TRUE(base::StringValue(kSearchURL).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderName, &value));
-  EXPECT_TRUE(base::StringValue(kName).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderKeyword, &value));
-  EXPECT_TRUE(base::StringValue(kKeyword).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderSuggestURL,
-                               &value));
-  EXPECT_TRUE(base::StringValue(kSuggestURL).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderIconURL, &value));
-  EXPECT_TRUE(base::StringValue(kIconURL).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderEncodings, &value));
-  EXPECT_TRUE(base::StringValue("UTF-16;UTF-8").Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderAlternateURLs, &value));
-  EXPECT_TRUE(default_alternate_urls_.Equals(value));
-
-  EXPECT_TRUE(
-      store_->GetValue(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
-      &value));
-  EXPECT_TRUE(base::StringValue(kReplacementKey).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderImageURL, &value));
-  EXPECT_TRUE(base::StringValue(std::string(kImageURL)).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderImageURLPostParams,
-                               &value));
-  EXPECT_TRUE(base::StringValue(std::string(kImageParams)).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderSearchURLPostParams, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderSuggestURLPostParams, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-
-  EXPECT_TRUE(store_->GetValue(
-      prefs::kDefaultSearchProviderInstantURLPostParams, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
-}
-
 // Checks that if the default search policy is missing, that no elements of the
 // default search policy will be present.
 TEST_F(DefaultSearchPolicyHandlerTest, MissingUrl) {
@@ -275,21 +146,8 @@ TEST_F(DefaultSearchPolicyHandlerTest, MissingUrl) {
   policy.Erase(key::kDefaultSearchProviderSearchURL);
   UpdateProviderPolicy(policy);
 
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderName, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderKeyword, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderSuggestURL, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderIconURL, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderEncodings, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderAlternateURLs,
-                                NULL));
-  EXPECT_FALSE(store_->GetValue(
-      prefs::kDefaultSearchProviderSearchTermsReplacementKey, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderImageURL, NULL));
-  EXPECT_FALSE(store_->GetValue(
-      prefs::kDefaultSearchProviderImageURLPostParams, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderInstantURL, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderNewTabURL, NULL));
+  const base::Value* temp = nullptr;
+  EXPECT_FALSE(store_->GetValue(kDefaultSearchProviderData, &temp));
 }
 
 // Checks that if the default search policy is invalid, that no elements of the
@@ -298,53 +156,17 @@ TEST_F(DefaultSearchPolicyHandlerTest, Invalid) {
   PolicyMap policy;
   BuildDefaultSearchPolicy(&policy);
   const char bad_search_url[] = "http://test.com/noSearchTerms";
-  policy.Set(key::kDefaultSearchProviderSearchURL,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             new base::StringValue(bad_search_url),
-             NULL);
+  policy.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, new base::StringValue(bad_search_url), NULL);
   UpdateProviderPolicy(policy);
 
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderName, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderKeyword, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderSuggestURL, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderIconURL, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderEncodings, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderAlternateURLs,
-                                NULL));
-  EXPECT_FALSE(store_->GetValue(
-      prefs::kDefaultSearchProviderSearchTermsReplacementKey, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderImageURL, NULL));
-  EXPECT_FALSE(store_->GetValue(
-      prefs::kDefaultSearchProviderImageURLPostParams, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderInstantURL, NULL));
-  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderNewTabURL, NULL));
-}
-
-// Checks that if the default search policy is invalid, that no elements of the
-// default search policy will be present.
-TEST_F(DefaultSearchPolicyHandlerTest, Disabled) {
-  PolicyMap policy;
-  policy.Set(key::kDefaultSearchProviderEnabled,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             new base::FundamentalValue(false),
-             NULL);
-  UpdateProviderPolicy(policy);
-
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderEnabled, &value));
-  base::FundamentalValue expected_enabled(false);
-  EXPECT_TRUE(base::Value::Equals(&expected_enabled, value));
-  EXPECT_TRUE(store_->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
-  base::StringValue expected_search_url((std::string()));
-  EXPECT_TRUE(base::Value::Equals(&expected_search_url, value));
+  const base::Value* temp = nullptr;
+  EXPECT_FALSE(store_->GetValue(kDefaultSearchProviderData, &temp));
 }
 
 // Checks that for a fully defined search policy, all elements have been
 // read properly into the dictionary pref.
-TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPref) {
+TEST_F(DefaultSearchPolicyHandlerTest, FullyDefined) {
   PolicyMap policy;
   BuildDefaultSearchPolicy(&policy);
   UpdateProviderPolicy(policy);
@@ -407,7 +229,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPref) {
 
 // Checks that disabling default search is properly reflected the dictionary
 // pref.
-TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefDSEDisabled) {
+TEST_F(DefaultSearchPolicyHandlerTest, Disabled) {
   PolicyMap policy;
   policy.Set(key::kDefaultSearchProviderEnabled,
              POLICY_LEVEL_MANDATORY,
@@ -427,7 +249,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefDSEDisabled) {
 
 // Checks that if the policy for default search is valid, i.e. there's a
 // search URL, that all the elements have been given proper defaults.
-TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefMinimallyDefined) {
+TEST_F(DefaultSearchPolicyHandlerTest, MinimallyDefined) {
   PolicyMap policy;
   policy.Set(key::kDefaultSearchProviderEnabled,
              POLICY_LEVEL_MANDATORY,
@@ -489,7 +311,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefMinimallyDefined) {
 
 // Checks that setting a file URL as the default search is reflected properly in
 // the dictionary pref.
-TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefFileURL) {
+TEST_F(DefaultSearchPolicyHandlerTest, FileURL) {
   PolicyMap policy;
   policy.Set(key::kDefaultSearchProviderEnabled,
              POLICY_LEVEL_MANDATORY,
