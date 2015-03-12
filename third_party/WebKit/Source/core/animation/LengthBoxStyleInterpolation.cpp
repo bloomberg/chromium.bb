@@ -26,13 +26,8 @@ PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> LengthBoxStyleInterpolation:
     bool startRect = start.isPrimitiveValue() && toCSSPrimitiveValue(start).isRect();
     bool endRect = end.isPrimitiveValue() && toCSSPrimitiveValue(end).isRect();
 
-    if (startRect && endRect) {
-        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(lengthBoxtoInterpolableValue(start, end, false), lengthBoxtoInterpolableValue(end, start, true), id, false, &start, &end));
-    }
-    if (start.isBorderImageSliceValue() && toCSSBorderImageSliceValue(start).slices()
-        && end.isBorderImageSliceValue() && toCSSBorderImageSliceValue(end).slices()
-        && toCSSBorderImageSliceValue(start).m_fill == toCSSBorderImageSliceValue(end).m_fill)
-        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(borderImageSlicetoInterpolableValue(start), borderImageSlicetoInterpolableValue(end), id, toCSSBorderImageSliceValue(start).m_fill, &start, &end));
+    if (startRect && endRect)
+        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(lengthBoxtoInterpolableValue(start, end, false), lengthBoxtoInterpolableValue(end, start, true), id, &start, &end));
     return nullptr;
 }
 
@@ -99,41 +94,12 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueT
     return CSSPrimitiveValue::create(result.release());
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::borderImageSlicetoInterpolableValue(const CSSValue& value)
-{
-    const int numberOfSides = 4;
-    OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(numberOfSides);
-    Quad* quad = toCSSBorderImageSliceValue(value).slices();
-    CSSPrimitiveValue* side[numberOfSides] = { quad->left(), quad->right(), quad->top(), quad->bottom() };
-
-    for (size_t i = 0; i < numberOfSides; i++) {
-        result->set(i, LengthStyleInterpolation::toInterpolableValue(*side[i]));
-    }
-    return result.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueToBorderImageSlice(InterpolableValue* value, bool fill)
-{
-    InterpolableList* lengthBox = toInterpolableList(value);
-    RefPtrWillBeRawPtr<Quad> quad = Quad::create();
-
-    quad->setLeft(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(0), RangeNonNegative));
-    quad->setRight(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(1), RangeNonNegative));
-    quad->setTop(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(2), RangeNonNegative));
-    quad->setBottom(LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(3), RangeNonNegative));
-
-    return CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad.release()), fill);
-}
-
 void LengthBoxStyleInterpolation::apply(StyleResolverState& state) const
 {
-    if (m_id == CSSPropertyWebkitMaskBoxImageSlice || m_id == CSSPropertyBorderImageSlice) {
-        StyleBuilder::applyProperty(m_id, state, interpolableValueToBorderImageSlice(m_cachedValue.get(), m_fill).get());
-    } else if (m_cachedValue.get()->isBool()) {
+    if (m_cachedValue.get()->isBool())
         StyleBuilder::applyProperty(m_id, state, toInterpolableBool(m_cachedValue.get())->value() ? m_endCSSValue.get() : m_startCSSValue.get());
-    } else {
+    else
         StyleBuilder::applyProperty(m_id, state, interpolableValueToLengthBox(m_cachedValue.get(), *m_startCSSValue, *m_endCSSValue).get());
-    }
 }
 
 DEFINE_TRACE(LengthBoxStyleInterpolation)

@@ -1,32 +1,60 @@
 CSS Animations:
 PASS: border-image-slice from [0%] to [50%] was [0%] at -0.3
 PASS: border-image-slice from [0%] to [50%] was [0%] at 0
-PASS: border-image-slice from [0%] to [50%] was [5%] at 0.1
-PASS: border-image-slice from [0%] to [50%] was [10%] at 0.2
 PASS: border-image-slice from [0%] to [50%] was [15%] at 0.3
-PASS: border-image-slice from [0%] to [50%] was [20%] at 0.4
 PASS: border-image-slice from [0%] to [50%] was [25%] at 0.5
 PASS: border-image-slice from [0%] to [50%] was [30%] at 0.6
-PASS: border-image-slice from [0%] to [50%] was [35%] at 0.7
-PASS: border-image-slice from [0%] to [50%] was [40%] at 0.8
-PASS: border-image-slice from [0%] to [50%] was [45%] at 0.9
 PASS: border-image-slice from [0%] to [50%] was [50%] at 1
 PASS: border-image-slice from [0%] to [50%] was [75%] at 1.5
-PASS: border-image-slice from [0%] to [50%] was [500%] at 10
+FAIL: border-image-slice from [0% fill] to [50%] was [0%] at -0.3, expected [0% fill]
+FAIL: border-image-slice from [0% fill] to [50%] was [0%] at 0, expected [0% fill]
+FAIL: border-image-slice from [0% fill] to [50%] was [15%] at 0.3, expected [0% fill]
+FAIL: border-image-slice from [0% fill] to [50%] was [25%] at 0.5, expected [50%]
+FAIL: border-image-slice from [0% fill] to [50%] was [30%] at 0.6, expected [50%]
+PASS: border-image-slice from [0% fill] to [50%] was [50%] at 1
+FAIL: border-image-slice from [0% fill] to [50%] was [75%] at 1.5, expected [50%]
+FAIL: border-image-slice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [0% 0% 8% 18%] at -0.3, expected [0% 0% 8% 17%]
+PASS: border-image-slice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [0% 10% 20% 30%] at 0
+PASS: border-image-slice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [12% 22% 32% 42%] at 0.3
+PASS: border-image-slice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [20% 30% 40% 50%] at 0.5
+PASS: border-image-slice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [24% 34% 44% 54%] at 0.6
+PASS: border-image-slice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [40% 50% 60% 70%] at 1
+PASS: border-image-slice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [60% 70% 80% 90%] at 1.5
+FAIL: border-image-slice from [0 10 20 30 fill] to [40 50 60 70 fill] was [0 0 8 18] at -0.3, expected [0 0 8 17 fill]
+FAIL: border-image-slice from [0 10 20 30 fill] to [40 50 60 70 fill] was [0 10 20 30] at 0, expected [0 10 20 30 fill]
+FAIL: border-image-slice from [0 10 20 30 fill] to [40 50 60 70 fill] was [12 22 32 42] at 0.3, expected [12 22 32 42 fill]
+FAIL: border-image-slice from [0 10 20 30 fill] to [40 50 60 70 fill] was [20 30 40 50] at 0.5, expected [20 30 40 50 fill]
+FAIL: border-image-slice from [0 10 20 30 fill] to [40 50 60 70 fill] was [24 34 44 54] at 0.6, expected [24 34 44 54 fill]
+FAIL: border-image-slice from [0 10 20 30 fill] to [40 50 60 70 fill] was [40 50 60 70] at 1, expected [40 50 60 70 fill]
+FAIL: border-image-slice from [0 10 20 30 fill] to [40 50 60 70 fill] was [60 70 80 90] at 1.5, expected [60 70 80 90 fill]
 
 Web Animations API:
 PASS: borderImageSlice from [0%] to [50%] was [0%] at -0.3
 PASS: borderImageSlice from [0%] to [50%] was [0%] at 0
-PASS: borderImageSlice from [0%] to [50%] was [5%] at 0.1
-PASS: borderImageSlice from [0%] to [50%] was [10%] at 0.2
 PASS: borderImageSlice from [0%] to [50%] was [15%] at 0.3
-PASS: borderImageSlice from [0%] to [50%] was [20%] at 0.4
 PASS: borderImageSlice from [0%] to [50%] was [25%] at 0.5
 PASS: borderImageSlice from [0%] to [50%] was [30%] at 0.6
-PASS: borderImageSlice from [0%] to [50%] was [35%] at 0.7
-PASS: borderImageSlice from [0%] to [50%] was [40%] at 0.8
-PASS: borderImageSlice from [0%] to [50%] was [45%] at 0.9
 PASS: borderImageSlice from [0%] to [50%] was [50%] at 1
 PASS: borderImageSlice from [0%] to [50%] was [75%] at 1.5
-PASS: borderImageSlice from [0%] to [50%] was [500%] at 10
+PASS: borderImageSlice from [0% fill] to [50%] was [0% fill] at -0.3
+PASS: borderImageSlice from [0% fill] to [50%] was [0% fill] at 0
+PASS: borderImageSlice from [0% fill] to [50%] was [0% fill] at 0.3
+PASS: borderImageSlice from [0% fill] to [50%] was [50%] at 0.5
+PASS: borderImageSlice from [0% fill] to [50%] was [50%] at 0.6
+PASS: borderImageSlice from [0% fill] to [50%] was [50%] at 1
+PASS: borderImageSlice from [0% fill] to [50%] was [50%] at 1.5
+PASS: borderImageSlice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [0% 0% 8% 17%] at -0.3
+PASS: borderImageSlice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [0% 10% 20% 30%] at 0
+PASS: borderImageSlice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [12% 22% 32% 42%] at 0.3
+PASS: borderImageSlice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [20% 30% 40% 50%] at 0.5
+PASS: borderImageSlice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [24% 34% 44% 54%] at 0.6
+PASS: borderImageSlice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [40% 50% 60% 70%] at 1
+PASS: borderImageSlice from [0% 10% 20% 30%] to [40% 50% 60% 70%] was [60% 70% 80% 90%] at 1.5
+PASS: borderImageSlice from [0 10 20 30 fill] to [40 50 60 70 fill] was [0 0 8 17 fill] at -0.3
+PASS: borderImageSlice from [0 10 20 30 fill] to [40 50 60 70 fill] was [0 10 20 30 fill] at 0
+PASS: borderImageSlice from [0 10 20 30 fill] to [40 50 60 70 fill] was [12 22 32 42 fill] at 0.3
+PASS: borderImageSlice from [0 10 20 30 fill] to [40 50 60 70 fill] was [20 30 40 50 fill] at 0.5
+PASS: borderImageSlice from [0 10 20 30 fill] to [40 50 60 70 fill] was [24 34 44 54 fill] at 0.6
+PASS: borderImageSlice from [0 10 20 30 fill] to [40 50 60 70 fill] was [40 50 60 70 fill] at 1
+PASS: borderImageSlice from [0 10 20 30 fill] to [40 50 60 70 fill] was [60 70 80 90 fill] at 1.5
 

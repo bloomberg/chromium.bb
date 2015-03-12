@@ -46,39 +46,6 @@ protected:
         EXPECT_EQ(unitType, rect->top()->primitiveType());
         EXPECT_EQ(unitType, rect->bottom()->primitiveType());
     }
-
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> borderImageSliceToInterpolableValue(CSSValue& value)
-    {
-        return LengthBoxStyleInterpolation::borderImageSlicetoInterpolableValue(value);
-    }
-
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToBorderImageSlice(InterpolableValue* value, bool fill)
-    {
-        return LengthBoxStyleInterpolation::interpolableValueToBorderImageSlice(value, fill);
-    }
-
-    static PassRefPtrWillBeRawPtr<CSSValue> roundTripBorderImageSlice(PassRefPtrWillBeRawPtr<CSSValue> value)
-    {
-        return interpolableValueToBorderImageSlice(borderImageSliceToInterpolableValue(*value).get(), toCSSBorderImageSliceValue(*value).m_fill);
-    }
-
-    static void testPrimitiveValueBorderImageSlice(RefPtrWillBeRawPtr<CSSValue> value, double left, double right, double top, double bottom, bool fill,
-        CSSPrimitiveValue::UnitType unitTypeLeft, CSSPrimitiveValue::UnitType unitTypeRight, CSSPrimitiveValue::UnitType unitTypeTop, CSSPrimitiveValue::UnitType unitTypeBottom)
-    {
-        EXPECT_TRUE(value->isBorderImageSliceValue());
-        Quad* quad = toCSSBorderImageSliceValue(value.get())->slices();
-
-        EXPECT_EQ(quad->left()->getDoubleValue(), left);
-        EXPECT_EQ(quad->right()->getDoubleValue(), right);
-        EXPECT_EQ(quad->top()->getDoubleValue(), top);
-        EXPECT_EQ(quad->bottom()->getDoubleValue(), bottom);
-
-        EXPECT_EQ(unitTypeLeft, quad->left()->primitiveType());
-        EXPECT_EQ(unitTypeRight, quad->right()->primitiveType());
-        EXPECT_EQ(unitTypeTop, quad->top()->primitiveType());
-        EXPECT_EQ(unitTypeBottom, quad->bottom()->primitiveType());
-        EXPECT_EQ(fill, toCSSBorderImageSliceValue(value.get())->m_fill);
-    }
 };
 
 TEST_F(AnimationLengthBoxStyleInterpolationTest, ZeroLengthBox)
@@ -150,63 +117,6 @@ TEST_F(AnimationLengthBoxStyleInterpolationTest, MultipleValues)
 
     value = roundTrip(CSSPrimitiveValue::create(rectPer.release()));
     testPrimitiveValue(value, 30, -30, 30, -30, CSSPrimitiveValue::CSS_PERCENTAGE);
-}
-
-TEST_F(AnimationLengthBoxStyleInterpolationTest, ZeroBorderImageSlice)
-{
-    RefPtrWillBeRawPtr<Quad> quad0 = Quad::create();
-    quad0->setLeft(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
-    quad0->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    quad0->setTop(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
-    quad0->setBottom(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    RefPtrWillBeRawPtr<CSSValue> value0 = roundTripBorderImageSlice(CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad0.release()), 0));
-    testPrimitiveValueBorderImageSlice(value0, 0, 0, 0, 0, 0, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PX);
-
-    RefPtrWillBeRawPtr<Quad> quad1 = Quad::create();
-    quad1->setLeft(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PERCENTAGE));
-    quad1->setRight(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    quad1->setTop(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_EMS));
-    quad1->setBottom(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
-    RefPtrWillBeRawPtr<CSSValue> value1 = roundTripBorderImageSlice(CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad1.release()), 1));
-    testPrimitiveValueBorderImageSlice(value1, 0, 0, 0, 0, 1, CSSPrimitiveValue::CSS_PERCENTAGE, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PX);
-}
-
-TEST_F(AnimationLengthBoxStyleInterpolationTest, SingleUnitBoxAndBool)
-{
-    RefPtrWillBeRawPtr<Quad> quad0 = Quad::create();
-    quad0->setLeft(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS));
-    quad0->setRight(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
-    quad0->setTop(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS));
-    quad0->setBottom(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PERCENTAGE));
-    RefPtrWillBeRawPtr<CSSValue> value0 = roundTripBorderImageSlice(CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad0.release()), 0));
-    testPrimitiveValueBorderImageSlice(value0, 10, 10, 10, 10, 0, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PERCENTAGE);
-
-    RefPtrWillBeRawPtr<Quad> quad1 = Quad::create();
-    quad1->setLeft(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_PERCENTAGE));
-    quad1->setRight(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_PX));
-    quad1->setTop(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
-    quad1->setBottom(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_PX));
-    RefPtrWillBeRawPtr<CSSValue> value1 = roundTripBorderImageSlice(CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad1.release()), 1));
-    testPrimitiveValueBorderImageSlice(value1, 0, 0, 0, 0, 1, CSSPrimitiveValue::CSS_PERCENTAGE, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PX);
-}
-
-TEST_F(AnimationLengthBoxStyleInterpolationTest, MultipleValuesBoxAndBool)
-{
-    RefPtrWillBeRawPtr<Quad> quad0 = Quad::create();
-    quad0->setLeft(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS));
-    quad0->setRight(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PX));
-    quad0->setTop(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_EMS));
-    quad0->setBottom(CSSPrimitiveValue::create(40, CSSPrimitiveValue::CSS_PERCENTAGE));
-    RefPtrWillBeRawPtr<CSSValue> value0 = roundTripBorderImageSlice(CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad0.release()), 0));
-    testPrimitiveValueBorderImageSlice(value0, 10, 30, 20, 40, 0, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PERCENTAGE);
-
-    RefPtrWillBeRawPtr<Quad> quad1 = Quad::create();
-    quad1->setLeft(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_PERCENTAGE));
-    quad1->setRight(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_PX));
-    quad1->setTop(CSSPrimitiveValue::create(50, CSSPrimitiveValue::CSS_EMS));
-    quad1->setBottom(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_PX));
-    RefPtrWillBeRawPtr<CSSValue> value1 = roundTripBorderImageSlice(CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad1.release()), 1));
-    testPrimitiveValueBorderImageSlice(value1, 0, 20, 50, 0, 1, CSSPrimitiveValue::CSS_PERCENTAGE, CSSPrimitiveValue::CSS_PX, CSSPrimitiveValue::CSS_EMS, CSSPrimitiveValue::CSS_PX);
 }
 
 }

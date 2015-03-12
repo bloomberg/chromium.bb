@@ -24,18 +24,54 @@ assertInterpolation({
 }, [
   {at: -0.3, is: '0%'}, // CSS border-image-slice can't be negative.
   {at: 0, is: '0%'},
-  {at: 0.1, is: '5%'},
-  {at: 0.2, is: '10%'},
   {at: 0.3, is: '15%'},
-  {at: 0.4, is: '20%'},
   {at: 0.5, is: '25%'},
   {at: 0.6, is: '30%'},
-  {at: 0.7, is: '35%'},
-  {at: 0.8, is: '40%'},
-  {at: 0.9, is: '45%'},
   {at: 1, is: '50%'},
   {at: 1.5, is: '75%'},
-  {at: 10, is: '500%'}
 ]);
+
+assertInterpolation({
+  property: 'border-image-slice',
+  from: '0% fill',
+  to: '50%',
+}, [
+  {at: -0.3, is: '0% fill'},
+  {at: 0, is: '0% fill'},
+  {at: 0.3, is: '0% fill'},
+  {at: 0.5, is: '50%'},
+  {at: 0.6, is: '50%'},
+  {at: 1, is: '50%'},
+  {at: 1.5, is: '50%'},
+]);
+
+assertInterpolation({
+  property: 'border-image-slice',
+  from: '0% 10% 20% 30%',
+  to: '40% 50% 60% 70%',
+}, [
+  {at: -0.3, is: '0% 0% 8% 17%'},
+  {at: 0, is: '0% 10% 20% 30%'},
+  {at: 0.3, is: '12% 22% 32% 42%'},
+  {at: 0.5, is: '20% 30% 40% 50%'},
+  {at: 0.6, is: '24% 34% 44% 54%'},
+  {at: 1, is: '40% 50% 60% 70%'},
+  {at: 1.5, is: '60% 70% 80% 90%'},
+]);
+
+assertInterpolation({
+  property: 'border-image-slice',
+  from: '0 10 20 30 fill',
+  to: '40 50 60 70 fill',
+}, [
+  {at: -0.3, is: '0 0 8 17 fill'}, // CSS border-image-slice can't be negative.
+  {at: 0, is: '0 10 20 30 fill'},
+  {at: 0.3, is: '12 22 32 42 fill'},
+  {at: 0.5, is: '20 30 40 50 fill'},
+  {at: 0.6, is: '24 34 44 54 fill'},
+  {at: 1, is: '40 50 60 70 fill'},
+  {at: 1.5, is: '60 70 80 90 fill'},
+]);
+
 </script>
 </body>

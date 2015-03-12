@@ -899,6 +899,8 @@
             'animation/ElementAnimation.h',
             'animation/ElementAnimations.cpp',
             'animation/ElementAnimations.h',
+            'animation/ImageSliceStyleInterpolation.cpp',
+            'animation/ImageSliceStyleInterpolation.h',
             'animation/ImageStyleInterpolation.cpp',
             'animation/ImageStyleInterpolation.h',
             'animation/InertAnimation.cpp',
