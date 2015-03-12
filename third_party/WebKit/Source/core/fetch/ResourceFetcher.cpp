@@ -927,6 +927,8 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
 {
     if (resource->options().requestInitiatorContext != DocumentContext)
         return;
+    if (resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal)
+        return;
 
     RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(resource->options().initiatorInfo.name, monotonicallyIncreasingTime());
 
