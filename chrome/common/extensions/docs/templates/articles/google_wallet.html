@@ -11,7 +11,7 @@
   </tr>
   <tr>
     <td><strong>Sample:</strong></td>
-    <td><a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/in-app-payments">in-app-payments</a></td>
+    <td><a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/managed-in-app-payments">managed-in-app-payments</a></td>
   </tr>
   <tr>
     <td><strong>Learn more:</strong></td>
@@ -30,7 +30,7 @@ The Google Wallet for digital goods client app, which is embedded in Chrome, com
 <a href="https://support.google.com/chrome_webstore/answer/1053354">Google Wallet</a>
 servers and handles all the required checkout details, so your app does not have to process any financial transactions.
 Google Wallet for digital goods requires you to package a JavaScript file,
-<a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a>,
+<a href="https://raw.githubusercontent.com/GoogleChrome/chrome-app-samples/master/samples/managed-in-app-payments/scripts/buy.js">buy.js</a>,
 with your app to trigger the purchase flow.
 </p>
 
@@ -108,7 +108,7 @@ integration steps.
 <ul>
   <li>You can use pre-generated JSON Web Tokens (JWTs) in your app, rather than using a server to generate the tokens.</li>
 
-  <li>You must package the <a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a>
+  <li>You must package the <a href="https://raw.githubusercontent.com/GoogleChrome/chrome-app-samples/master/samples/managed-in-app-payments/scripts/buy.js">buy.js</a>
   library with your app, and load the library from its location in your package.</li>
 
   <li>You must call the <code>buy()</code> method with an extra parameter called <code>parameters</code>.</li>
@@ -131,11 +131,11 @@ integration steps.
     </div>
   </li>
 
-  <li>Include <a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a> in your app.
+  <li>Include <a href="https://raw.githubusercontent.com/GoogleChrome/chrome-app-samples/master/samples/managed-in-app-payments/scripts/buy.js">buy.js</a> in your app.
     <div class="indent-small">
       Due to the security restrictions in the
       <a href="contentSecurityPolicy">Content Security Policy</a> for Chrome Apps,
-      you cannot include the <a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a>
+      you cannot include the <a href="https://raw.githubusercontent.com/GoogleChrome/chrome-app-samples/master/samples/managed-in-app-payments/scripts/buy.js">buy.js</a>
       library from an external location. Instead, you must package the library with your app, and load it from the packaged location.
     </div>
   </li>
@@ -185,7 +185,7 @@ instructions for setting up
 <a href="https://developers.google.com/commerce/wallet/digital/docs/subscriptions">subscriptions</a>
 for the Google Wallet for digital goods API,
 but note again the differences described above (you can use pre-generated JWT tokens;
-you must package <a href="https://raw.github.com/GoogleChrome/chrome-app-samples/master/in-app-payments/buy.js">buy.js</a>
+you must package <a href="https://raw.githubusercontent.com/GoogleChrome/chrome-app-samples/master/samples/managed-in-app-payments/scripts/buy.js">buy.js</a>
 with your app; and you must specify an additional parameter in the call to <code>buy()</code>).
 
 <h2 id="sample-app">Sample app</h2>
@@ -195,7 +195,7 @@ For a simple app that demonstrates how to use Google Wallet for digital goods, s
 </p>
 
 </ul>
-  <li><a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/in-app-payments">source code</a></li>
+  <li><a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/managed-in-app-payments">source code</a></li>
   <li><a href="https://chrome.google.com/webstore/detail/moldiohggmfllblgmikpeoagipenlcae">published app</a> (requires Chrome 29 or higher)</li>
 </ul>
 

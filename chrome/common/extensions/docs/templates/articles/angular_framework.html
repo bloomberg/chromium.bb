@@ -128,7 +128,7 @@ to launch the app and respond to system events.
 
 <p>
 In its
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/background.js">background.js</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/gdrive/js/background.js">background.js</a>
 script,
 Drive Uploader opens a 500x600px window to the main page.
 It also specifies a minimum height and width for the window
@@ -197,7 +197,7 @@ nav:hover #close-button {
 
 <p>
 In
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/app.js">app.js</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/gdrive/js/app.js">app.js</a>,
 this button is hooked up to <code>window.close()</code>.
 </p>
 
@@ -215,7 +215,7 @@ The View is the easiest, so let's start there.
 <h3 id="view">Creating the view</h3>
 
 <p>
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/main.html">main.html</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/gdrive/main.html">main.html</a>
 is the "V" in MVC; where we define HTML templates to render data into.
 In Angular, templates are simple blocks of HTML with some special sauce.
 </p>
@@ -389,7 +389,7 @@ of knowing when the OAuth token is ready.
 <strong>Note: </strong>
 To simplify things a bit,
 we've created a library,
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/gdocs.js">gdocs.js</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/gdrive/js/gdocs.js">gdocs.js</a>
 to handle API tasks.
 </p>
 
@@ -702,7 +702,7 @@ For that case,
 we can reuse the technique from before and fetch the images.
 The only difference this time is that
 each blob is written to the filesystem (see
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/app.js#L27">writeFile()</a>).
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/gdrive/js/app.js#L27">writeFile()</a>).
 The console verifies this behavior:
 </p>
 
@@ -728,7 +728,7 @@ if it can't upload files!
 </p>
 
 <p>
-<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/gdrive/js/app.js#L52">app.js</a>
+<a href="https://github.com/GoogleChrome/chrome-app-samples/blob/master/samples/gdrive/js/app.js#L52">app.js</a>
 handles this feature by implementing a small library
 around HTML5 Drag and Drop called <code>DnDFileController</code>.
 It gives the ability to drag in files from the desktop
