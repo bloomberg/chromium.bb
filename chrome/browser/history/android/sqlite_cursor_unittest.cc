@@ -94,8 +94,7 @@ class SQLiteCursorTest : public testing::Test,
   scoped_ptr<AndroidHistoryProviderService> service_;
   base::CancelableTaskTracker cancelable_tracker_;
   TestingProfile* testing_profile_;
-  HistoryService* hs_;
-
+  history::HistoryService* hs_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SQLiteCursorTest);

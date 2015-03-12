@@ -169,19 +169,20 @@ typedef std::vector<history::DownloadRow> InfoVector;
 
 }  // anonymous namespace
 
-DownloadHistory::HistoryAdapter::HistoryAdapter(HistoryService* history)
-  : history_(history) {
+DownloadHistory::HistoryAdapter::HistoryAdapter(
+    history::HistoryService* history)
+    : history_(history) {
 }
 DownloadHistory::HistoryAdapter::~HistoryAdapter() {}
 
 void DownloadHistory::HistoryAdapter::QueryDownloads(
-    const HistoryService::DownloadQueryCallback& callback) {
+    const history::HistoryService::DownloadQueryCallback& callback) {
   history_->QueryDownloads(callback);
 }
 
 void DownloadHistory::HistoryAdapter::CreateDownload(
     const history::DownloadRow& info,
-    const HistoryService::DownloadCreateCallback& callback) {
+    const history::HistoryService::DownloadCreateCallback& callback) {
   history_->CreateDownload(info, callback);
 }
 

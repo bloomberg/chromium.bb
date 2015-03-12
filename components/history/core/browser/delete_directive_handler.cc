@@ -124,8 +124,7 @@ class DeleteDirectiveHandler::DeleteDirectiveTask : public HistoryDBTask {
         post_processing_action_(post_processing_action) {}
 
   // Implements HistoryDBTask.
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override;
+  bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override;
   void DoneRunOnMainThread() override;
 
  private:
@@ -135,14 +134,14 @@ class DeleteDirectiveHandler::DeleteDirectiveTask : public HistoryDBTask {
   // time ranges of directives if the timestamp of one visit matches with one
   // global id.
   void ProcessGlobalIdDeleteDirectives(
-      history::HistoryBackend* history_backend,
+      HistoryBackend* history_backend,
       const syncer::SyncDataList& global_id_directives);
 
   // Process a list of time range directives, all history entries within the
   // time ranges are deleted. |time_range_directives| should be sorted by
   // |start_time_usec| and |end_time_usec| already.
   void ProcessTimeRangeDeleteDirectives(
-      history::HistoryBackend* history_backend,
+      HistoryBackend* history_backend,
       const syncer::SyncDataList& time_range_directives);
 
   base::WeakPtr<DeleteDirectiveHandler> delete_directive_handler_;
@@ -151,8 +150,8 @@ class DeleteDirectiveHandler::DeleteDirectiveTask : public HistoryDBTask {
 };
 
 bool DeleteDirectiveHandler::DeleteDirectiveTask::RunOnDBThread(
-    history::HistoryBackend* backend,
-    history::HistoryDatabase* db) {
+    HistoryBackend* backend,
+    HistoryDatabase* db) {
   syncer::SyncDataList global_id_directives;
   syncer::SyncDataList time_range_directives;
   for (syncer::SyncDataList::const_iterator it = delete_directives_.begin();
@@ -183,7 +182,7 @@ void DeleteDirectiveHandler::DeleteDirectiveTask::DoneRunOnMainThread() {
 
 void DeleteDirectiveHandler::DeleteDirectiveTask::
     ProcessGlobalIdDeleteDirectives(
-        history::HistoryBackend* history_backend,
+        HistoryBackend* history_backend,
         const syncer::SyncDataList& global_id_directives) {
   if (global_id_directives.empty())
     return;
@@ -233,7 +232,7 @@ void DeleteDirectiveHandler::DeleteDirectiveTask::
 
 void DeleteDirectiveHandler::DeleteDirectiveTask::
     ProcessTimeRangeDeleteDirectives(
-        history::HistoryBackend* history_backend,
+        HistoryBackend* history_backend,
         const syncer::SyncDataList& time_range_directives) {
   if (time_range_directives.empty())
     return;
@@ -299,7 +298,7 @@ void DeleteDirectiveHandler::Start(
   if (!initial_sync_data.empty()) {
     // Drop processed delete directives during startup.
     history_service->ScheduleDBTask(
-        scoped_ptr<history::HistoryDBTask>(
+        scoped_ptr<HistoryDBTask>(
             new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
                                     initial_sync_data, DROP_AFTER_PROCESSING)),
         &internal_tracker_);
@@ -404,7 +403,7 @@ syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
     // redelivered delete directives to avoid processing them again and again
     // in one chrome session.
     history_service->ScheduleDBTask(
-        scoped_ptr<history::HistoryDBTask>(
+        scoped_ptr<HistoryDBTask>(
             new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
                                     delete_directives, KEEP_AFTER_PROCESSING)),
         &internal_tracker_);

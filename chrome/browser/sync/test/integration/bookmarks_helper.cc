@@ -285,7 +285,7 @@ void WaitForHistoryToProcessPendingTasks() {
 
   for (size_t i = 0; i < profiles_which_need_to_wait.size(); ++i) {
     Profile* profile = profiles_which_need_to_wait[i];
-    HistoryService* history_service =
+    history::HistoryService* history_service =
         HistoryServiceFactory::GetForProfileWithoutCreating(profile);
     base::WaitableEvent done(false, false);
     base::CancelableTaskTracker task_tracker;

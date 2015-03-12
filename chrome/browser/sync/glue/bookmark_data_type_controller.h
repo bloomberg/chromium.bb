@@ -46,10 +46,11 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   bool DependentsLoaded();
 
   // history::HistoryServiceObserver:
-  void OnHistoryServiceLoaded(HistoryService* service) override;
-  void HistoryServiceBeingDeleted(HistoryService* history_service) override;
+  void OnHistoryServiceLoaded(history::HistoryService* service) override;
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
 
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
   ScopedObserver<bookmarks::BookmarkModel, BaseBookmarkModelObserver>
       bookmark_model_observer_;

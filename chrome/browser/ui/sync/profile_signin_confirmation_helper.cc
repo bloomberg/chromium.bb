@@ -130,7 +130,7 @@ void ProfileSigninConfirmationHelper::OnHistoryQueryResults(
 }
 
 void ProfileSigninConfirmationHelper::CheckHasHistory(int max_entries) {
-  HistoryService* service =
+  history::HistoryService* service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
   pending_requests_++;
   if (!service) {
@@ -149,7 +149,7 @@ void ProfileSigninConfirmationHelper::CheckHasHistory(int max_entries) {
 }
 
 void ProfileSigninConfirmationHelper::CheckHasTypedURLs() {
-  HistoryService* service =
+  history::HistoryService* service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
   pending_requests_++;
   if (!service) {

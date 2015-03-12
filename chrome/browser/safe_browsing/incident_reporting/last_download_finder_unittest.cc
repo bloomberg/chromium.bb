@@ -55,9 +55,9 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
     return NULL;
   }
 
-  HistoryService* history_service =
-      new HistoryService(ChromeHistoryClientFactory::GetForProfile(profile),
-                         scoped_ptr<history::VisitDelegate>());
+  history::HistoryService* history_service = new history::HistoryService(
+      ChromeHistoryClientFactory::GetForProfile(profile),
+      scoped_ptr<history::VisitDelegate>());
   if (history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
@@ -83,8 +83,9 @@ class LastDownloadFinderTest : public testing::Test {
   // download to its history.
   void CreateProfileWithDownload() {
     TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
-    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile, ServiceAccessType::EXPLICIT_ACCESS);
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
         CreateTestDownloadRow(),
         base::Bind(&LastDownloadFinderTest::OnDownloadCreated,
@@ -171,8 +172,9 @@ class LastDownloadFinderTest : public testing::Test {
   void AddDownload(Profile* profile, const history::DownloadRow& download) {
     base::RunLoop run_loop;
 
-    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile, ServiceAccessType::EXPLICIT_ACCESS);
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
         download,
         base::Bind(&LastDownloadFinderTest::ContinueOnDownloadCreated,

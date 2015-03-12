@@ -16,7 +16,9 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 
+namespace history {
 class HistoryService;
+}
 
 namespace browser_sync {
 
@@ -25,7 +27,7 @@ namespace browser_sync {
 class HistoryModelWorker : public syncer::ModelSafeWorker {
  public:
   explicit HistoryModelWorker(
-      const base::WeakPtr<HistoryService>& history_service,
+      const base::WeakPtr<history::HistoryService>& history_service,
       syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
@@ -43,7 +45,7 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
  private:
   ~HistoryModelWorker() override;
 
-  const base::WeakPtr<HistoryService> history_service_;
+  const base::WeakPtr<history::HistoryService> history_service_;
   // Helper object to make sure we don't leave tasks running on the history
   // thread.
   scoped_ptr<base::CancelableTaskTracker> cancelable_tracker_;

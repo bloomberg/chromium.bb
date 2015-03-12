@@ -442,7 +442,7 @@ void SearchProviderTest::QueryForInputAndWaitForFetcherResponses(
 GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
                                             base::string16 term,
                                             int visit_count) {
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       &profile_, ServiceAccessType::EXPLICIT_ACCESS);
   GURL search(t_url->url_ref().ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(term),

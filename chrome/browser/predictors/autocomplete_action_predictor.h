@@ -23,7 +23,6 @@
 
 struct AutocompleteMatch;
 class AutocompleteResult;
-class HistoryService;
 struct OmniboxLog;
 class PredictorsHandler;
 class Profile;
@@ -37,6 +36,7 @@ class Size;
 }
 
 namespace history {
+class HistoryService;
 class URLDatabase;
 }
 
@@ -187,7 +187,7 @@ class AutocompleteActionPredictor
 
   // Attempts to call DeleteOldEntries if the in-memory database has been loaded
   // by |service|. Returns success as a boolean.
-  bool TryDeleteOldEntries(HistoryService* service);
+  bool TryDeleteOldEntries(history::HistoryService* service);
 
   // Called to delete any old or invalid entries from the database. Called after
   // the local caches are created once the history service is available.
@@ -221,12 +221,13 @@ class AutocompleteActionPredictor
   void Shutdown() override;
 
   // history::HistoryServiceObserver:
-  void OnURLsDeleted(HistoryService* history_service,
+  void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
-  void OnHistoryServiceLoaded(HistoryService* history_service) override;
+  void OnHistoryServiceLoaded(
+      history::HistoryService* history_service) override;
 
   Profile* profile_;
 
@@ -259,7 +260,7 @@ class AutocompleteActionPredictor
 
   bool initialized_;
 
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictor);

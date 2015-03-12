@@ -131,7 +131,7 @@ void HistoryQuickProvider::DoAutocomplete() {
        autocomplete_input_.parts().password.is_nonempty() ||
        autocomplete_input_.parts().path.is_nonempty());
   if (can_have_url_what_you_typed_match_first) {
-    HistoryService* const history_service =
+    history::HistoryService* const history_service =
         HistoryServiceFactory::GetForProfile(
             profile_, ServiceAccessType::EXPLICIT_ACCESS);
     // We expect HistoryService to be available.  In case it's not,

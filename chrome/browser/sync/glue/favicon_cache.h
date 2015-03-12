@@ -194,7 +194,7 @@ class FaviconCache : public syncer::SyncableService,
   size_t NumTasksForTest() const;
 
   // history::HistoryServiceObserver:
-  void OnURLsDeleted(HistoryService* history_service,
+  void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
@@ -227,7 +227,7 @@ class FaviconCache : public syncer::SyncableService,
   // Maximum number of favicons to sync. 0 means no limit.
   const size_t max_sync_favicon_limit_;
 
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   // Weak pointer factory for favicon loads.

@@ -33,10 +33,16 @@
 #include "sync/api/syncable_service.h"
 #include "ui/base/page_transition_types.h"
 
+class FaviconService;
 class GURL;
+class HistoryQuickProviderTest;
+class HistoryURLProvider;
+class HistoryURLProviderTest;
 class InMemoryURLIndexTest;
 class PageUsageRequest;
 class SkBitmap;
+class SyncBookmarkDataTypeControllerTest;
+class TestingProfile;
 
 namespace base {
 class FilePath;
@@ -63,8 +69,6 @@ class VisitDelegate;
 class VisitFilter;
 class WebHistoryService;
 
-}  // namespace history
-
 // The history service records page titles, and visit times, as well as
 // (eventually) information about autocomplete.
 //
@@ -73,15 +77,15 @@ class WebHistoryService;
 class HistoryService : public syncer::SyncableService, public KeyedService {
  public:
   // Miscellaneous commonly-used types.
-  typedef std::vector<history::PageUsageData*> PageUsageDataList;
+  typedef std::vector<PageUsageData*> PageUsageDataList;
 
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, |history_client| may only be
   // null during testing, while |visit_delegate| may be null if the embedder use
   // another way to track visited links.
   HistoryService();
-  HistoryService(history::HistoryClient* history_client,
-                 scoped_ptr<history::VisitDelegate> visit_delegate);
+  HistoryService(HistoryClient* history_client,
+                 scoped_ptr<VisitDelegate> visit_delegate);
   ~HistoryService() override;
 
   // Initializes the history service, returning true on success. On false, do
@@ -89,7 +93,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // the history files. |languages| is a comma-separated list of languages to
   // use when interpreting URLs, it must not be empty (except during testing).
   bool Init(const std::string& languages,
-            const history::HistoryDatabaseParams& history_database_params) {
+            const HistoryDatabaseParams& history_database_params) {
     return Init(false, languages, history_database_params);
   }
 
@@ -104,7 +108,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Context ids are used to scope page IDs (see AddPage). These contexts
   // must tell us when they are being invalidated so that we can clear
   // out any cached data associated with that context.
-  void ClearCachedDataForContextID(history::ContextID context_id);
+  void ClearCachedDataForContextID(ContextID context_id);
 
   // Triggers the backend to load if it hasn't already, and then returns the
   // in-memory URL database. The returned pointer may be null if the in-memory
@@ -112,7 +116,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // system. Callers should not store or cache this value.
   //
   // TODO(brettw) this should return the InMemoryHistoryBackend.
-  history::URLDatabase* InMemoryDatabase();
+  URLDatabase* InMemoryDatabase();
 
   // Following functions get URL information from in-memory database.
   // They return false if database is not available (e.g. not loaded yet) or the
@@ -130,7 +134,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Returns a pointer to the TypedUrlSyncableService owned by HistoryBackend.
   // This method should only be called from the history thread, because the
   // returned service is intended to be accessed only via the history thread.
-  history::TypedUrlSyncableService* GetTypedUrlSyncableService() const;
+  TypedUrlSyncableService* GetTypedUrlSyncableService() const;
 
   // KeyedService:
   void Shutdown() override;
@@ -161,21 +165,19 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // All "Add Page" functions will update the visited link database.
   void AddPage(const GURL& url,
                base::Time time,
-               history::ContextID context_id,
+               ContextID context_id,
                int nav_entry_id,
                const GURL& referrer,
-               const history::RedirectList& redirects,
+               const RedirectList& redirects,
                ui::PageTransition transition,
-               history::VisitSource visit_source,
+               VisitSource visit_source,
                bool did_replace_entry);
 
   // For adding pages to history where no tracking information can be done.
-  void AddPage(const GURL& url,
-               base::Time time,
-               history::VisitSource visit_source);
+  void AddPage(const GURL& url, base::Time time, VisitSource visit_source);
 
   // All AddPage variants end up here.
-  void AddPage(const history::HistoryAddPageArgs& add_page_args);
+  void AddPage(const HistoryAddPageArgs& add_page_args);
 
   // Adds an entry for the specified url without creating a visit. This should
   // only be used when bookmarking a page, otherwise the row leaks in the
@@ -189,7 +191,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Updates the history database with a page's ending time stamp information.
   // The page can be identified by the combination of the context id, the
   // navigation entry id and the url.
-  void UpdateWithPageEndTime(history::ContextID context_id,
+  void UpdateWithPageEndTime(ContextID context_id,
                              int nav_entry_id,
                              const GURL& url,
                              base::Time end_ts);
@@ -205,8 +207,8 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // If success is false, neither the row nor the vector will be valid.
   typedef base::Callback<void(
       bool,  // Success flag, when false, nothing else is valid.
-      const history::URLRow&,
-      const history::VisitVector&)> QueryURLCallback;
+      const URLRow&,
+      const VisitVector&)> QueryURLCallback;
 
   // Queries the basic information about the URL in the history database. If
   // the caller is interested in the visits (each time the URL is visited),
@@ -221,14 +223,14 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Provides the result of a query. See QueryResults in history_types.h.
   // The common use will be to use QueryResults.Swap to suck the contents of
   // the results out of the passed in parameter and take ownership of them.
-  typedef base::Callback<void(history::QueryResults*)> QueryHistoryCallback;
+  typedef base::Callback<void(QueryResults*)> QueryHistoryCallback;
 
   // Queries all history with the given options (see QueryOptions in
   // history_types.h).  If empty, all results matching the given options
   // will be returned.
   base::CancelableTaskTracker::TaskId QueryHistory(
       const base::string16& text_query,
-      const history::QueryOptions& options,
+      const QueryOptions& options,
       const QueryHistoryCallback& callback,
       base::CancelableTaskTracker* tracker);
 
@@ -243,8 +245,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // If there is no such URL in the database or the most recent visit has no
   // redirect, the vector will be empty. If the given page has redirected to
   // multiple destinations, this will pick a random one.
-  typedef base::Callback<void(const history::RedirectList*)>
-      QueryRedirectsCallback;
+  typedef base::Callback<void(const RedirectList*)> QueryRedirectsCallback;
 
   // Schedules a query for the most recent redirect coming out of the given
   // URL. See the RedirectQuerySource above, which is guaranteed to be called
@@ -279,7 +280,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
-  typedef base::Callback<void(const history::MostVisitedURLList*)>
+  typedef base::Callback<void(const MostVisitedURLList*)>
       QueryMostVisitedURLsCallback;
 
   base::CancelableTaskTracker::TaskId QueryMostVisitedURLs(
@@ -294,12 +295,12 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // more expensive as additional data points are added in future changes, and
   // not useful in most cases. Set |extended_info| to true only if you
   // explicitly require the additional data.
-  typedef base::Callback<void(const history::FilteredURLList*)>
+  typedef base::Callback<void(const FilteredURLList*)>
       QueryFilteredURLsCallback;
 
   base::CancelableTaskTracker::TaskId QueryFilteredURLs(
       int result_count,
-      const history::VisitFilter& filter,
+      const VisitFilter& filter,
       bool extended_info,
       const QueryFilteredURLsCallback& callback,
       base::CancelableTaskTracker* tracker);
@@ -331,20 +332,19 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // This is the equivalent ExpireHistoryBetween() once for each element in the
   // vector. The fields of |ExpireHistoryArgs| map directly to the arguments of
   // of ExpireHistoryBetween().
-  void ExpireHistory(const std::vector<history::ExpireHistoryArgs>& expire_list,
+  void ExpireHistory(const std::vector<ExpireHistoryArgs>& expire_list,
                      const base::Closure& callback,
                      base::CancelableTaskTracker* tracker);
 
   // Removes all visits to the given URLs in the specified time range. Calls
   // ExpireHistoryBetween() to delete local visits, and handles deletion of
   // synced visits if appropriate.
-  void ExpireLocalAndRemoteHistoryBetween(
-      history::WebHistoryService* web_history,
-      const std::set<GURL>& restrict_urls,
-      base::Time begin_time,
-      base::Time end_time,
-      const base::Closure& callback,
-      base::CancelableTaskTracker* tracker);
+  void ExpireLocalAndRemoteHistoryBetween(WebHistoryService* web_history,
+                                          const std::set<GURL>& restrict_urls,
+                                          base::Time begin_time,
+                                          base::Time end_time,
+                                          const base::Closure& callback,
+                                          base::CancelableTaskTracker* tracker);
 
   // Processes the given |delete_directive| and sends it to the
   // SyncChangeProcessor (if it exists).  Returns any error resulting
@@ -362,7 +362,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // contains all the download's creation state, and 'callback' runs when the
   // history service request is complete. The callback is called on the thread
   // that calls CreateDownload().
-  void CreateDownload(const history::DownloadRow& info,
+  void CreateDownload(const DownloadRow& info,
                       const DownloadCreateCallback& callback);
 
   // Implemented by the caller of 'GetNextDownloadId' below, and is called with
@@ -375,19 +375,19 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
-  typedef base::Callback<void(scoped_ptr<std::vector<history::DownloadRow>>)>
+  typedef base::Callback<void(scoped_ptr<std::vector<DownloadRow>>)>
       DownloadQueryCallback;
 
   // Begins a history request to retrieve the state of all downloads in the
   // history db. 'callback' runs when the history service request is complete,
-  // at which point 'info' contains an array of history::DownloadRow, one per
+  // at which point 'info' contains an array of DownloadRow, one per
   // download. The callback is called on the thread that calls QueryDownloads().
   void QueryDownloads(const DownloadQueryCallback& callback);
 
   // Called to update the history service about the current state of a download.
   // This is a 'fire and forget' query, so just pass the relevant state info to
   // the database with no need for a callback.
-  void UpdateDownload(const history::DownloadRow& data);
+  void UpdateDownload(const DownloadRow& data);
 
   // Permanently remove some downloads from the history system. This is a 'fire
   // and forget' operation.
@@ -398,18 +398,18 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Sets the search terms for the specified url and keyword. url_id gives the
   // id of the url, keyword_id the id of the keyword and term the search term.
   void SetKeywordSearchTermsForURL(const GURL& url,
-                                   history::KeywordID keyword_id,
+                                   KeywordID keyword_id,
                                    const base::string16& term);
 
   // Deletes all search terms for the specified keyword.
-  void DeleteAllSearchTermsForKeyword(history::KeywordID keyword_id);
+  void DeleteAllSearchTermsForKeyword(KeywordID keyword_id);
 
   // Deletes any search term corresponding to |url|.
   void DeleteKeywordSearchTermForURL(const GURL& url);
 
   // Deletes all URL and search term entries matching the given |term| and
   // |keyword_id|.
-  void DeleteMatchingURLsForKeyword(history::KeywordID keyword_id,
+  void DeleteMatchingURLsForKeyword(KeywordID keyword_id,
                                     const base::string16& term);
 
   // Bookmarks -----------------------------------------------------------------
@@ -420,15 +420,15 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Observers -----------------------------------------------------------------
 
   // Adds/Removes an Observer.
-  void AddObserver(history::HistoryServiceObserver* observer);
-  void RemoveObserver(history::HistoryServiceObserver* observer);
+  void AddObserver(HistoryServiceObserver* observer);
+  void RemoveObserver(HistoryServiceObserver* observer);
 
   // Generic Stuff -------------------------------------------------------------
 
   // Schedules a HistoryDBTask for running on the history backend thread. See
   // HistoryDBTask for details on what this does. Takes ownership of |task|.
   virtual base::CancelableTaskTracker::TaskId ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask> task,
+      scoped_ptr<HistoryDBTask> task,
       base::CancelableTaskTracker* tracker);
 
   // This callback is invoked when favicon change for urls.
@@ -474,11 +474,10 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
                           int typed_count,
                           base::Time last_visit,
                           bool hidden,
-                          history::VisitSource visit_source);
+                          VisitSource visit_source);
 
   // The same as AddPageWithDetails() but takes a vector.
-  void AddPagesWithDetails(const history::URLRows& info,
-                           history::VisitSource visit_source);
+  void AddPagesWithDetails(const URLRows& info, VisitSource visit_source);
 
   base::WeakPtr<HistoryService> AsWeakPtr();
 
@@ -507,21 +506,21 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   class BackendDelegate;
   friend class base::RefCountedThreadSafe<HistoryService>;
   friend class BackendDelegate;
-  friend class FaviconService;
-  friend class history::HistoryBackend;
-  friend class history::HistoryQueryTest;
+  friend class ::FaviconService;
+  friend class HistoryBackend;
+  friend class HistoryQueryTest;
   friend class HistoryOperation;
-  friend class HistoryQuickProviderTest;
-  friend class history::HistoryTest;
-  friend class HistoryURLProvider;
-  friend class HistoryURLProviderTest;
+  friend class ::HistoryQuickProviderTest;
+  friend class HistoryTest;
+  friend class ::HistoryURLProvider;
+  friend class ::HistoryURLProviderTest;
   friend class ::InMemoryURLIndexTest;
   template <typename Info, typename Callback>
   friend class DownloadRequest;
   friend class PageUsageRequest;
   friend class RedirectRequest;
-  friend class SyncBookmarkDataTypeControllerTest;
-  friend class TestingProfile;
+  friend class ::SyncBookmarkDataTypeControllerTest;
+  friend class ::TestingProfile;
 
   // Called on shutdown, this will tell the history backend to complete and
   // will release pointers to it. No other functions should be called once
@@ -538,13 +537,13 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // that is only set by unittests which causes the backend to not init its DB.
   bool Init(bool no_db,
             const std::string& languages,
-            const history::HistoryDatabaseParams& history_database_params);
+            const HistoryDatabaseParams& history_database_params);
 
   // Called by the HistoryURLProvider class to schedule an autocomplete, it
   // will be called back on the internal history thread with the history
   // database so it can query. See history_autocomplete.cc for a diagram.
-  void ScheduleAutocomplete(const base::Callback<
-      void(history::HistoryBackend*, history::URLDatabase*)>& callback);
+  void ScheduleAutocomplete(
+      const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback);
 
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
@@ -553,12 +552,12 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Helper function for getting URL information.
   // Reads a URLRow from in-memory database. Returns false if database is not
   // available or the URL does not exist.
-  bool GetRowForURL(const GURL& url, history::URLRow* url_row);
+  bool GetRowForURL(const GURL& url, URLRow* url_row);
 
   // Observers ----------------------------------------------------------------
 
   // Notify all Observers registered that the VisitDatabase was changed.
-  void NotifyAddVisit(const history::BriefVisitInfo& info);
+  void NotifyAddVisit(const BriefVisitInfo& info);
 
   // Notify all HistoryServiceObservers registered that user is visiting a URL.
   // The |row| ID will be set to the value that is currently in effect in the
@@ -567,13 +566,13 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // then |redirects[0]=B| and |redirects[1]=A|. If there are no redirects,
   // |redirects| is an empty vector.
   void NotifyURLVisited(ui::PageTransition transition,
-                        const history::URLRow& row,
-                        const history::RedirectList& redirects,
+                        const URLRow& row,
+                        const RedirectList& redirects,
                         base::Time visit_time);
 
   // Notify all HistoryServiceObservers registered that URLs have been added or
   // modified. |changed_urls| contains the list of affects URLs.
-  void NotifyURLsModified(const history::URLRows& changed_urls);
+  void NotifyURLsModified(const URLRows& changed_urls);
 
   // Notify all HistoryServiceObservers registered that URLs have been deleted.
   // |all_history| is set to true, if all the URLs are deleted.
@@ -584,7 +583,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // |favicon_urls| list of favicon URLs that correspond to the deleted URLs.
   void NotifyURLsDeleted(bool all_history,
                          bool expired,
-                         const history::URLRows& deleted_rows,
+                         const URLRows& deleted_rows,
                          const std::set<GURL>& favicon_urls);
 
   // Notify all HistoryServiceObservers registered that the
@@ -598,13 +597,13 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Notify all HistoryServiceObservers registered that a keyword search term
   // has been updated. |row| contains the URL information for search |term|.
   // |keyword_id| associated with a URL and search term.
-  void NotifyKeywordSearchTermUpdated(const history::URLRow& row,
-                                      history::KeywordID keyword_id,
+  void NotifyKeywordSearchTermUpdated(const URLRow& row,
+                                      KeywordID keyword_id,
                                       const base::string16& term);
 
   // Notify all HistoryServiceObservers registered that keyword search term is
   // deleted. |url_id| is the id of the url row.
-  void NotifyKeywordSearchTermDeleted(history::URLID url_id);
+  void NotifyKeywordSearchTermDeleted(URLID url_id);
 
   // Favicon -------------------------------------------------------------------
 
@@ -752,8 +751,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Sets the in-memory URL database. This is called by the backend once the
   // database is loaded to make it available.
-  void SetInMemoryBackend(
-      scoped_ptr<history::InMemoryHistoryBackend> mem_backend);
+  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> mem_backend);
 
   // Called by our BackendDelegate when there is a problem reading the database.
   void NotifyProfileError(sql::InitStatus init_status);
@@ -777,36 +775,38 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   //
   // This pointer will be null once Cleanup() has been called, meaning no
   // more calls should be made to the history thread.
-  scoped_refptr<history::HistoryBackend> history_backend_;
+  scoped_refptr<HistoryBackend> history_backend_;
 
   // A cache of the user-typed URLs kept in memory that is used by the
   // autocomplete system. This will be null until the database has been created
   // on the background thread.
   // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
-  scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;
+  scoped_ptr<InMemoryHistoryBackend> in_memory_backend_;
 
   // The history service will inform its VisitDelegate of URLs recorded and
   // removed from the history database. This may be null during testing.
-  scoped_ptr<history::VisitDelegate> visit_delegate_;
+  scoped_ptr<VisitDelegate> visit_delegate_;
 
   // The history client, may be null when testing. The object should otherwise
   // outlive |HistoryService|.
-  history::HistoryClient* history_client_;
+  HistoryClient* history_client_;
 
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.
   bool backend_loaded_;
 
-  ObserverList<history::HistoryServiceObserver> observers_;
+  ObserverList<HistoryServiceObserver> observers_;
   base::CallbackList<void(const std::set<GURL>&)>
       favicon_changed_callback_list_;
 
-  history::DeleteDirectiveHandler delete_directive_handler_;
+  DeleteDirectiveHandler delete_directive_handler_;
 
   // All vended weak pointers are invalidated in Cleanup().
   base::WeakPtrFactory<HistoryService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };
+
+}  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_SERVICE_H_

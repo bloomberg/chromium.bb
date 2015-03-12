@@ -501,7 +501,7 @@ HistoryEnumerator::HistoryEnumerator(Profile* profile) {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
       new content::MessageLoopRunner;
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryHistory(base::string16(),
                    history::QueryOptions(),
@@ -529,7 +529,7 @@ class WaitHistoryLoadedObserver : public history::HistoryServiceObserver {
   ~WaitHistoryLoadedObserver() override;
 
   // history::HistoryServiceObserver:
-  void OnHistoryServiceLoaded(HistoryService* service) override;
+  void OnHistoryServiceLoaded(history::HistoryService* service) override;
 
  private:
   // weak
@@ -545,16 +545,16 @@ WaitHistoryLoadedObserver::~WaitHistoryLoadedObserver() {
 }
 
 void WaitHistoryLoadedObserver::OnHistoryServiceLoaded(
-    HistoryService* service) {
+    history::HistoryService* service) {
   runner_->Quit();
 }
 
-void WaitForHistoryToLoad(HistoryService* history_service) {
+void WaitForHistoryToLoad(history::HistoryService* history_service) {
   if (!history_service->BackendLoaded()) {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     WaitHistoryLoadedObserver observer(runner.get());
-    ScopedObserver<HistoryService, history::HistoryServiceObserver>
+    ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
         scoped_observer(&observer);
     scoped_observer.Add(history_service);
     runner->Run();

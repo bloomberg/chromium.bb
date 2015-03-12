@@ -23,6 +23,7 @@
 
 using content::MockDownloadItem;
 using content::MockDownloadManager;
+using history::HistoryService;
 using testing::AnyNumber;
 using testing::Assign;
 using testing::Return;

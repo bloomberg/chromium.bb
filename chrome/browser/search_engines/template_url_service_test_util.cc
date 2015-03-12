@@ -22,7 +22,7 @@ namespace {
 
 class TestingTemplateURLServiceClient : public ChromeTemplateURLServiceClient {
  public:
-  TestingTemplateURLServiceClient(HistoryService* history_service,
+  TestingTemplateURLServiceClient(history::HistoryService* history_service,
                                   base::string16* search_term)
       : ChromeTemplateURLServiceClient(history_service),
         search_term_(search_term) {}

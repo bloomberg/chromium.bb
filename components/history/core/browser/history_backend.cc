@@ -265,15 +265,15 @@ void HistoryBackend::ClearCachedDataForContextID(ContextID context_id) {
 }
 
 base::FilePath HistoryBackend::GetThumbnailFileName() const {
-  return history_dir_.Append(history::kThumbnailsFilename);
+  return history_dir_.Append(kThumbnailsFilename);
 }
 
 base::FilePath HistoryBackend::GetFaviconsFileName() const {
-  return history_dir_.Append(history::kFaviconsFilename);
+  return history_dir_.Append(kFaviconsFilename);
 }
 
 base::FilePath HistoryBackend::GetArchivedFileName() const {
-  return history_dir_.Append(history::kArchivedHistoryFilename);
+  return history_dir_.Append(kArchivedHistoryFilename);
 }
 
 SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
@@ -581,7 +581,7 @@ void HistoryBackend::InitImpl(
 
   // Compute the file names.
   history_dir_ = history_database_params.history_dir;
-  base::FilePath history_name = history_dir_.Append(history::kHistoryFilename);
+  base::FilePath history_name = history_dir_.Append(kHistoryFilename);
   base::FilePath thumbnail_name = GetFaviconsFileName();
   base::FilePath archived_name = GetArchivedFileName();
 
@@ -849,8 +849,8 @@ void HistoryBackend::SetPageTitle(const GURL& url,
   // Search for recent redirects which should get the same title. We make a
   // dummy list containing the exact URL visited if there are no redirects so
   // the processing below can be the same.
-  history::RedirectList dummy_list;
-  history::RedirectList* redirects;
+  RedirectList dummy_list;
+  RedirectList* redirects;
   RedirectCache::iterator iter = recent_redirects_.Get(url);
   if (iter != recent_redirects_.end()) {
     redirects = &iter->second;
@@ -929,13 +929,12 @@ bool HistoryBackend::GetMostRecentVisitsForURL(URLID id,
   return false;
 }
 
-size_t HistoryBackend::UpdateURLs(const history::URLRows& urls) {
+size_t HistoryBackend::UpdateURLs(const URLRows& urls) {
   if (!db_)
     return 0;
 
   URLRows changed_urls;
-  for (history::URLRows::const_iterator it = urls.begin(); it != urls.end();
-       ++it) {
+  for (URLRows::const_iterator it = urls.begin(); it != urls.end(); ++it) {
     DCHECK(it->id());
     if (db_->UpdateURLRow(it->id(), *it))
       changed_urls.push_back(*it);
@@ -986,7 +985,7 @@ bool HistoryBackend::GetVisitsSource(const VisitVector& visits,
   return true;
 }
 
-bool HistoryBackend::GetURL(const GURL& url, history::URLRow* url_row) {
+bool HistoryBackend::GetURL(const GURL& url, URLRow* url_row) {
   if (db_)
     return db_->GetRowForURL(url, url_row) != 0;
   return false;
@@ -1094,14 +1093,14 @@ void HistoryBackend::QueryDownloads(std::vector<DownloadRow>* rows) {
 }
 
 // Update a particular download entry.
-void HistoryBackend::UpdateDownload(const history::DownloadRow& data) {
+void HistoryBackend::UpdateDownload(const DownloadRow& data) {
   if (!db_)
     return;
   db_->UpdateDownload(data);
   ScheduleCommit();
 }
 
-bool HistoryBackend::CreateDownload(const history::DownloadRow& history_info) {
+bool HistoryBackend::CreateDownload(const DownloadRow& history_info) {
   if (!db_)
     return false;
   bool success = db_->CreateDownload(history_info);
@@ -1296,9 +1295,9 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
 }
 
 void HistoryBackend::QueryFilteredURLs(int result_count,
-                                       const history::VisitFilter& filter,
+                                       const VisitFilter& filter,
                                        bool extended_info,
-                                       history::FilteredURLList* result) {
+                                       FilteredURLList* result) {
   DCHECK(result);
   base::Time request_start = base::Time::Now();
 
@@ -1373,9 +1372,8 @@ void HistoryBackend::QueryFilteredURLs(int result_count,
           base::Histogram::kUmaTargetedHistogramFlag));
 }
 
-void HistoryBackend::GetRedirectsFromSpecificVisit(
-    VisitID cur_visit,
-    history::RedirectList* redirects) {
+void HistoryBackend::GetRedirectsFromSpecificVisit(VisitID cur_visit,
+                                                   RedirectList* redirects) {
   // Follow any redirects from the given visit and add them to the list.
   // It *should* be impossible to get a circular chain here, but we check
   // just in case to avoid infinite loops.
@@ -1392,9 +1390,8 @@ void HistoryBackend::GetRedirectsFromSpecificVisit(
   }
 }
 
-void HistoryBackend::GetRedirectsToSpecificVisit(
-    VisitID cur_visit,
-    history::RedirectList* redirects) {
+void HistoryBackend::GetRedirectsToSpecificVisit(VisitID cur_visit,
+                                                 RedirectList* redirects) {
   // Follow redirects going to cur_visit. These are added to |redirects| in
   // the order they are found. If a redirect chain looks like A -> B -> C and
   // |cur_visit| = C, redirects will be {B, A} in that order.
@@ -1414,8 +1411,8 @@ void HistoryBackend::GetRedirectsToSpecificVisit(
   }
 }
 
-void HistoryBackend::ScheduleAutocomplete(const base::Callback<
-    void(history::HistoryBackend*, history::URLDatabase*)>& callback) {
+void HistoryBackend::ScheduleAutocomplete(
+    const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback) {
   callback.Run(this, db_.get());
 }
 
@@ -2072,14 +2069,14 @@ bool HistoryBackend::SetFaviconMappingsForPageAndRedirects(
 
   // Find all the pages whose favicons we should set, we want to set it for
   // all the pages in the redirect chain if it redirected.
-  history::RedirectList redirects;
+  RedirectList redirects;
   GetCachedRecentRedirects(page_url, &redirects);
 
   bool mappings_changed = false;
 
   // Save page <-> favicon associations.
-  for (history::RedirectList::const_iterator i(redirects.begin());
-       i != redirects.end(); ++i) {
+  for (RedirectList::const_iterator i(redirects.begin()); i != redirects.end();
+       ++i) {
     mappings_changed |= SetFaviconMappingsForPage(*i, icon_type, icon_ids);
   }
   return mappings_changed;
@@ -2142,9 +2139,8 @@ bool HistoryBackend::SetFaviconMappingsForPage(
   return mappings_changed;
 }
 
-void HistoryBackend::GetCachedRecentRedirects(
-    const GURL& page_url,
-    history::RedirectList* redirect_list) {
+void HistoryBackend::GetCachedRecentRedirects(const GURL& page_url,
+                                              RedirectList* redirect_list) {
   RedirectCache::iterator iter = recent_redirects_.Get(page_url);
   if (iter != recent_redirects_.end()) {
     *redirect_list = iter->second;
@@ -2160,7 +2156,7 @@ void HistoryBackend::GetCachedRecentRedirects(
 
 void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(
     const GURL& page_url) {
-  history::RedirectList redirect_list;
+  RedirectList redirect_list;
   GetCachedRecentRedirects(page_url, &redirect_list);
   if (!redirect_list.empty()) {
     std::set<GURL> favicons_changed(redirect_list.begin(), redirect_list.end());
@@ -2306,7 +2302,7 @@ void HistoryBackend::ExpireHistoryForTimes(const std::set<base::Time>& times,
       << "Max time is after end time: " << times.rbegin()->ToJsTime()
       << " v.s. " << end_time.ToJsTime();
 
-  history::QueryOptions options;
+  QueryOptions options;
   options.begin_time = begin_time;
   options.end_time = end_time;
   options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
@@ -2349,11 +2345,11 @@ void HistoryBackend::ExpireHistoryForTimes(const std::set<base::Time>& times,
 }
 
 void HistoryBackend::ExpireHistory(
-    const std::vector<history::ExpireHistoryArgs>& expire_list) {
+    const std::vector<ExpireHistoryArgs>& expire_list) {
   if (db_) {
     bool update_first_recorded_time = false;
 
-    for (std::vector<history::ExpireHistoryArgs>::const_iterator it =
+    for (std::vector<ExpireHistoryArgs>::const_iterator it =
              expire_list.begin();
          it != expire_list.end(); ++it) {
       expirer_.ExpireHistoryBetween(it->urls, it->begin_time, it->end_time);

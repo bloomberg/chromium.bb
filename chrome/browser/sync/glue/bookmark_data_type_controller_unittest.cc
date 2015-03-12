@@ -49,9 +49,9 @@ using testing::SetArgumentPointee;
 
 namespace {
 
-class HistoryMock : public HistoryService {
+class HistoryMock : public history::HistoryService {
  public:
-  HistoryMock() : HistoryService() {}
+  HistoryMock() : history::HistoryService() {}
   MOCK_METHOD0(BackendLoaded, bool(void));
 
  protected:

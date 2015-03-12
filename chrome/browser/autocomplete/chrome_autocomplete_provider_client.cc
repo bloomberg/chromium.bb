@@ -66,8 +66,9 @@ void ChromeAutocompleteProviderClient::Classify(
 }
 
 history::URLDatabase* ChromeAutocompleteProviderClient::InMemoryDatabase() {
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   return history_service ? history_service->InMemoryDatabase() : NULL;
 }
 

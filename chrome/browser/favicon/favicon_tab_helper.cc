@@ -118,7 +118,7 @@ void FaviconTabHelper::SaveFavicon() {
 
   // Make sure the page is in history, otherwise adding the favicon does
   // nothing.
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_->GetOriginalProfile(), ServiceAccessType::IMPLICIT_ACCESS);
   if (!history)
     return;

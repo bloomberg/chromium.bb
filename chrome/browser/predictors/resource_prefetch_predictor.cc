@@ -568,8 +568,9 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   inflight_navigations_.erase(nav_it);
 
   // Kick off history lookup to determine if we should record the URL.
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(history_service);
   history_service->ScheduleDBTask(
       scoped_ptr<history::HistoryDBTask>(
@@ -1297,7 +1298,7 @@ void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
 }
 
 void ResourcePrefetchPredictor::OnURLsDeleted(
-    HistoryService* history_service,
+    history::HistoryService* history_service,
     bool all_history,
     bool expired,
     const history::URLRows& deleted_rows,
@@ -1320,15 +1321,16 @@ void ResourcePrefetchPredictor::OnURLsDeleted(
 }
 
 void ResourcePrefetchPredictor::OnHistoryServiceLoaded(
-    HistoryService* history_service) {
+    history::HistoryService* history_service) {
   OnHistoryAndCacheLoaded();
   history_service_observer_.Remove(history_service);
 }
 
 void ResourcePrefetchPredictor::ConnectToHistoryService() {
   // Register for HistoryServiceLoading if it is not ready.
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   if (!history_service)
     return;
   if (history_service->BackendLoaded()) {

@@ -111,9 +111,9 @@ class HistoryBackendMock : public HistoryBackend {
   virtual ~HistoryBackendMock() {}
 };
 
-class HistoryServiceMock : public HistoryService {
+class HistoryServiceMock : public history::HistoryService {
  public:
-  HistoryServiceMock() : HistoryService(), backend_(nullptr) {}
+  HistoryServiceMock() : history::HistoryService(), backend_(nullptr) {}
 
   base::CancelableTaskTracker::TaskId ScheduleDBTask(
       scoped_ptr<history::HistoryDBTask> task,
@@ -130,9 +130,7 @@ class HistoryServiceMock : public HistoryService {
 
   MOCK_METHOD0(Shutdown, void());
 
-  void ShutdownBaseService() {
-    HistoryService::Shutdown();
-  }
+  void ShutdownBaseService() { history::HistoryService::Shutdown(); }
 
   void set_task_runner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {

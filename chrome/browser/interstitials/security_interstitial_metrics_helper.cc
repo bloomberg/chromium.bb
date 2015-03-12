@@ -38,9 +38,10 @@ SecurityInterstitialMetricsHelper::SecurityInterstitialMetricsHelper(
   DCHECK(!uma_prefix_.empty());
   DCHECK(!rappor_prefix_.empty());
   DCHECK(!sampling_event_name_.empty());
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-      ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+          ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         request_url_,

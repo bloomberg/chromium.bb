@@ -19,12 +19,15 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/base/layout.h"
 
-class HistoryService;
 class ProfileSyncService;
 class SupervisedUserService;
 
 namespace bookmarks {
 class BookmarkModel;
+}
+
+namespace history {
+class HistoryService;
 }
 
 // The handler for Javascript messages related to the "history" view.
@@ -171,7 +174,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   std::string GetAcceptLanguages() const;
 
   // history::HistoryServiceObserver:
-  void OnURLsDeleted(HistoryService* history_service,
+  void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
@@ -205,7 +208,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Timer used to implement a timeout on a Web History response.
   base::OneShotTimer<BrowsingHistoryHandler> web_history_timer_;
 
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   base::WeakPtrFactory<BrowsingHistoryHandler> weak_factory_;

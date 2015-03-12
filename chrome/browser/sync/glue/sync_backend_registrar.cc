@@ -94,8 +94,9 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
   tracked_objects::ScopedTracker tracker2(FROM_HERE_WITH_EXPLICIT_FUNCTION(
       "426272 SyncBackendRegistrar::ctor history"));
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::IMPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::IMPLICIT_ACCESS);
   if (history_service) {
     workers_[syncer::GROUP_HISTORY] =
         new HistoryModelWorker(history_service->AsWeakPtr(), this);

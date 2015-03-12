@@ -146,7 +146,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
   OmniboxViewTest() : observer_(this) {}
 
   // history::HisoryServiceObserver
-  void OnHistoryServiceLoaded(HistoryService* history_service) override {
+  void OnHistoryServiceLoaded(
+      history::HistoryService* history_service) override {
     base::MessageLoop::current()->Quit();
   }
 
@@ -289,8 +290,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
   void AddHistoryEntry(const TestHistoryEntry& entry, const Time& time) {
     Profile* profile = browser()->profile();
-    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile, ServiceAccessType::EXPLICIT_ACCESS);
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
 
     if (!history_service->BackendLoaded()) {
@@ -314,8 +316,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
       bookmarks::AddIfNotBookmarked(bookmark_model, url, base::string16());
     // Wait at least for the AddPageWithDetails() call to finish.
     {
-      ScopedObserver<HistoryService, history::HistoryServiceObserver> observer(
-          this);
+      ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
+          observer(this);
       observer.Add(history_service);
       content::RunMessageLoop();
       // We don't want to return until all observers have processed this
@@ -363,13 +365,13 @@ class OmniboxViewTest : public InProcessBrowserTest,
     base::MessageLoop::current()->Quit();
   }
 
-  void OnURLsModified(HistoryService* history_service,
+  void OnURLsModified(history::HistoryService* history_service,
                       const history::URLRows& changed_urls) override {
     base::MessageLoop::current()->Quit();
   }
 
  private:
-  ScopedObserver<HistoryService, OmniboxViewTest> observer_;
+  ScopedObserver<history::HistoryService, OmniboxViewTest> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewTest);
 };

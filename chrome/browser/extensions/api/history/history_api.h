@@ -17,10 +17,12 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
-class HistoryService;
-
 namespace base {
 class ListValue;
+}
+
+namespace history {
+class HistoryService;
 }
 
 namespace extensions {
@@ -29,17 +31,18 @@ namespace extensions {
 // extension system.
 class HistoryEventRouter : public history::HistoryServiceObserver {
  public:
-  HistoryEventRouter(Profile* profile, HistoryService* history_service);
+  HistoryEventRouter(Profile* profile,
+                     history::HistoryService* history_service);
   ~HistoryEventRouter() override;
 
  private:
   // history::HistoryServiceObserver.
-  void OnURLVisited(HistoryService* history_service,
+  void OnURLVisited(history::HistoryService* history_service,
                     ui::PageTransition transition,
                     const history::URLRow& row,
                     const history::RedirectList& redirects,
                     base::Time visit_time) override;
-  void OnURLsDeleted(HistoryService* history_service,
+  void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
@@ -50,7 +53,7 @@ class HistoryEventRouter : public history::HistoryServiceObserver {
                      scoped_ptr<base::ListValue> event_args);
 
   Profile* profile_;
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryEventRouter);

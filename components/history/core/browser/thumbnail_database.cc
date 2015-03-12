@@ -92,7 +92,7 @@ const int kDeprecatedVersionNumber = 4;  // and earlier.
 
 void FillIconMapping(const sql::Statement& statement,
                      const GURL& page_url,
-                     history::IconMapping* icon_mapping) {
+                     IconMapping* icon_mapping) {
   icon_mapping->mapping_id = statement.ColumnInt64(0);
   icon_mapping->icon_id = statement.ColumnInt64(1);
   icon_mapping->icon_type =
@@ -544,7 +544,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
 void DatabaseErrorCallback(sql::Connection* db,
                            const base::FilePath& db_path,
                            size_t startup_kb,
-                           history::HistoryClient* history_client,
+                           HistoryClient* history_client,
                            int extended_error,
                            sql::Statement* stmt) {
   // TODO(shess): Assert that this is running on a safe thread.

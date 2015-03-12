@@ -20,12 +20,15 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class HistoryService;
 class Profile;
 
 namespace content {
 class NotificationDetails;
 class NotificationSource;
+}
+
+namespace history {
+class HistoryService;
 }
 
 namespace safe_browsing {
@@ -111,8 +114,9 @@ class LastDownloadFinder : public content::NotificationObserver,
                const content::NotificationDetails& details) override;
 
   // history::HistoryServiceObserver:
-  void OnHistoryServiceLoaded(HistoryService* service) override;
-  void HistoryServiceBeingDeleted(HistoryService* history_service) override;
+  void OnHistoryServiceLoaded(history::HistoryService* service) override;
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
 
   // Caller-supplied callback to make an asynchronous request for a profile's
   // persistent download details.
@@ -136,7 +140,7 @@ class LastDownloadFinder : public content::NotificationObserver,
   history::DownloadRow most_recent_row_;
 
   // HistoryServiceObserver
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   // A factory for asynchronous operations on profiles' HistoryService.

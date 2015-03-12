@@ -13,6 +13,7 @@
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "url/gurl.h"
 
+namespace history {
 namespace {
 
 // URLIterator from std::vector<GURL>
@@ -34,16 +35,15 @@ class URLIteratorFromURLs : public visitedlink::VisitedLinkMaster::URLIterator {
 
 // IterateUrlsDBTask bridge HistoryBackend::URLEnumerator to
 // visitedlink::VisitedLinkDelegate::URLEnumerator.
-class IterateUrlsDBTask : public history::HistoryDBTask {
+class IterateUrlsDBTask : public HistoryDBTask {
  public:
   explicit IterateUrlsDBTask(const scoped_refptr<
       visitedlink::VisitedLinkDelegate::URLEnumerator>& enumerator);
   ~IterateUrlsDBTask() override;
 
  private:
-  // Implementation of history::HistoryDBTask.
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override;
+  // Implementation of HistoryDBTask.
+  bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override;
   void DoneRunOnMainThread() override;
 
   scoped_refptr<visitedlink::VisitedLinkDelegate::URLEnumerator> enumerator_;
@@ -59,13 +59,13 @@ IterateUrlsDBTask::IterateUrlsDBTask(const scoped_refptr<
 IterateUrlsDBTask::~IterateUrlsDBTask() {
 }
 
-bool IterateUrlsDBTask::RunOnDBThread(history::HistoryBackend* backend,
-                                      history::HistoryDatabase* db) {
+bool IterateUrlsDBTask::RunOnDBThread(HistoryBackend* backend,
+                                      HistoryDatabase* db) {
   bool success = false;
   if (db) {
-    history::HistoryDatabase::URLEnumerator iter;
+    HistoryDatabase::URLEnumerator iter;
     if (db->InitURLEnumeratorForEverything(&iter)) {
-      history::URLRow row;
+      URLRow row;
       while (iter.GetNextURL(&row))
         enumerator_->OnURL(row.url());
       success = true;
@@ -116,6 +116,8 @@ void ContentVisitDelegate::DeleteAllURLs() {
 void ContentVisitDelegate::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   DCHECK(history_service_);
-  scoped_ptr<history::HistoryDBTask> task(new IterateUrlsDBTask(enumerator));
+  scoped_ptr<HistoryDBTask> task(new IterateUrlsDBTask(enumerator));
   history_service_->ScheduleDBTask(task.Pass(), &task_tracker_);
 }
+
+}  // namespace history

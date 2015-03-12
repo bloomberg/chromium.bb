@@ -21,16 +21,18 @@ namespace visitedlink {
 class VisitedLinkMaster;
 }
 
-// ContentVisitDelegate bridge history::VisitDelegate events to
+namespace history {
+
+// ContentVisitDelegate bridge VisitDelegate events to
 // visitedlink::VisitedLinkMaster.
-class ContentVisitDelegate : public history::VisitDelegate,
+class ContentVisitDelegate : public VisitDelegate,
                              public visitedlink::VisitedLinkDelegate {
  public:
   explicit ContentVisitDelegate(content::BrowserContext* browser_context);
   ~ContentVisitDelegate() override;
 
  private:
-  // Implementation of history::VisitDelegate.
+  // Implementation of VisitDelegate.
   bool Init(HistoryService* history_service) override;
   void AddURL(const GURL& url) override;
   void AddURLs(const std::vector<GURL>& urls) override;
@@ -47,5 +49,7 @@ class ContentVisitDelegate : public history::VisitDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(ContentVisitDelegate);
 };
+
+}  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CONTENT_BROWSER_CONTENT_VISIT_DELEGATE_H_

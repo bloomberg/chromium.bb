@@ -1088,8 +1088,9 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_VisitedReferrer) {
   // midnight.
   base::Time time_of_visit(
       base::Time::Now().LocalMidnight() - base::TimeDelta::FromSeconds(10));
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile(), ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile(),
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   ASSERT_TRUE(history_service);
   history_service->AddPage(url, time_of_visit, history::SOURCE_BROWSED);
 

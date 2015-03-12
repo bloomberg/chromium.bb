@@ -26,8 +26,9 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(profile_);
   DCHECK(match.deletable);
 
-  HistoryService* const history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* const history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
 
   // Delete the underlying URL along with all its visits from the history DB.
   // The resulting HISTORY_URLS_DELETED notification will also cause all caches

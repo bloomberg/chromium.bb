@@ -595,8 +595,9 @@ DownloadTargetDeterminer::Result
     if (!IsDangerousFile(VISITED_REFERRER)) {
       // HistoryServiceFactory redirects incognito profiles to on-record
       // profiles.  There's no history for on-record profiles in unit_tests.
-      HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-          GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
+      history::HistoryService* history_service =
+          HistoryServiceFactory::GetForProfile(
+              GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
 
       if (history_service && download_->GetReferrerUrl().is_valid()) {
         history_service->GetVisibleVisitCountToHost(

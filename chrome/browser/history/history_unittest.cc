@@ -998,7 +998,7 @@ class HistoryTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
-    history_service_.reset(new HistoryService);
+    history_service_.reset(new history::HistoryService);
     if (!history_service_->Init(std::string(),
                                 HistoryDatabaseParamsForPath(history_dir_))) {
       history_service_.reset();
@@ -1035,7 +1035,7 @@ class HistoryTest : public testing::Test {
   // Fills the query_url_row_ and query_url_visits_ structures with the
   // information about the given URL and returns true. If the URL was not
   // found, this will return false and those structures will not be changed.
-  bool QueryURL(HistoryService* history, const GURL& url) {
+  bool QueryURL(history::HistoryService* history, const GURL& url) {
     history_service_->QueryURL(
         url,
         true,
@@ -1062,7 +1062,7 @@ class HistoryTest : public testing::Test {
 
   // Fills in saved_redirects_ with the redirect information for the given URL,
   // returning true on success. False means the URL was not found.
-  void QueryRedirectsFrom(HistoryService* history, const GURL& url) {
+  void QueryRedirectsFrom(history::HistoryService* history, const GURL& url) {
     history_service_->QueryRedirectsFrom(
         url,
         base::Bind(&HistoryTest::OnRedirectQueryComplete,
@@ -1090,7 +1090,7 @@ class HistoryTest : public testing::Test {
   // When non-NULL, this will be deleted on tear down and we will block until
   // the backend thread has completed. This allows tests for the history
   // service to use this feature, but other tests to ignore this.
-  scoped_ptr<HistoryService> history_service_;
+  scoped_ptr<history::HistoryService> history_service_;
 
   // names of the database files
   base::FilePath history_dir_;

@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
-class HistoryService;
 class Profile;
 
 namespace content {

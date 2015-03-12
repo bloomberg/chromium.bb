@@ -132,7 +132,7 @@ class InMemoryURLIndexTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<InMemoryURLIndex> url_index_;
   TestingProfile profile_;
-  HistoryService* history_service_;
+  history::HistoryService* history_service_;
   history::HistoryDatabase* history_database_;
 };
 

@@ -221,9 +221,10 @@ KeyedService* BuildFaviconService(content::BrowserContext* profile) {
 
 KeyedService* BuildHistoryService(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  HistoryService* history_service = new HistoryService(
+  history::HistoryService* history_service = new history::HistoryService(
       ChromeHistoryClientFactory::GetForProfile(profile),
-      scoped_ptr<history::VisitDelegate>(new ContentVisitDelegate(profile)));
+      scoped_ptr<history::VisitDelegate>(
+          new history::ContentVisitDelegate(profile)));
   return history_service;
 }
 
@@ -582,9 +583,10 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
       return false;
   }
   // This will create and init the history service.
-  HistoryService* history_service = static_cast<HistoryService*>(
-      HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          this, BuildHistoryService));
+  history::HistoryService* history_service =
+      static_cast<history::HistoryService*>(
+          HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              this, BuildHistoryService));
   if (!history_service->Init(
           no_db, GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(GetPath()))) {
@@ -601,7 +603,7 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
 }
 
 void TestingProfile::DestroyHistoryService() {
-  HistoryService* history_service =
+  history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(this);
   if (!history_service)
     return;
@@ -662,7 +664,7 @@ void TestingProfile::CreateWebDataService() {
 void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
   // Only get the history service if it actually exists since the caller of the
   // test should explicitly call CreateHistoryService to build it.
-  HistoryService* history_service =
+  history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(this);
   DCHECK(history_service);
   InMemoryURLIndex* index = InMemoryURLIndexFactory::GetForProfile(this);
@@ -979,8 +981,9 @@ PrefProxyConfigTracker* TestingProfile::GetProxyConfigTracker() {
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      this, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(this,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(history_service);
   DCHECK(base::MessageLoop::current());
 

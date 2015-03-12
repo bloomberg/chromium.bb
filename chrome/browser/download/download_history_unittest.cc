@@ -74,7 +74,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   ~FakeHistoryAdapter() override {}
 
   void QueryDownloads(
-      const HistoryService::DownloadQueryCallback& callback) override {
+      const history::HistoryService::DownloadQueryCallback& callback) override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
         base::Bind(&FakeHistoryAdapter::QueryDownloadsDone,
@@ -82,7 +82,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   }
 
   void QueryDownloadsDone(
-      const HistoryService::DownloadQueryCallback& callback) {
+      const history::HistoryService::DownloadQueryCallback& callback) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     CHECK(expect_query_downloads_.get());
     callback.Run(expect_query_downloads_.Pass());
@@ -90,9 +90,9 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void set_slow_create_download(bool slow) { slow_create_download_ = slow; }
 
-  void CreateDownload(
-      const history::DownloadRow& info,
-      const HistoryService::DownloadCreateCallback& callback) override {
+  void CreateDownload(const history::DownloadRow& info,
+                      const history::HistoryService::DownloadCreateCallback&
+                          callback) override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     create_download_info_ = info;
     // Must not call CreateDownload() again before FinishCreateDownload()!

@@ -285,12 +285,13 @@ class ResourcePrefetchPredictor
       size_t max_assumed_prefetched) const;
 
   // history::HistoryServiceObserver:
-  void OnURLsDeleted(HistoryService* history_service,
+  void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
-  void OnHistoryServiceLoaded(HistoryService* history_service) override;
+  void OnHistoryServiceLoaded(
+      history::HistoryService* history_service) override;
 
   // Used to connect to HistoryService or register for service loaded
   // notificatioan.
@@ -318,7 +319,7 @@ class ResourcePrefetchPredictor
   ResultsMap results_map_;
   STLValueDeleter<ResultsMap> results_map_deleter_;
 
-  ScopedObserver<HistoryService, history::HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictor);

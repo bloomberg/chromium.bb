@@ -683,7 +683,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
 
     Profile* profile = Profile::FromBrowserContext(item_->GetBrowserContext());
-    HistoryService* history = HistoryServiceFactory::GetForProfile(
+    history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
     if (!history) {
       SendRequest();

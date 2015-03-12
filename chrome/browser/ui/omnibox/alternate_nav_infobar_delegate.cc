@@ -75,8 +75,9 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   }
 
   // Tell the history system to remove any saved search term for the search.
-  HistoryService* const history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::IMPLICIT_ACCESS);
+  history::HistoryService* const history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::IMPLICIT_ACCESS);
   if (history_service)
     history_service->DeleteKeywordSearchTermForURL(search_url_);
 

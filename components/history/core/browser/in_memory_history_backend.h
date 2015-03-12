@@ -29,14 +29,13 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/keyword_id.h"
 
-class HistoryService;
-
 namespace base {
 class FilePath;
 }
 
 namespace history {
 
+class HistoryService;
 class InMemoryDatabase;
 class URLDatabase;
 class URLRow;

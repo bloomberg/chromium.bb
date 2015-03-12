@@ -201,7 +201,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
     if (!template_url)
       return false;
 
-    HistoryService* history = HistoryServiceFactory::GetForProfile(
+    history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
     GURL search(template_url->url_ref().ReplaceSearchTerms(
         TemplateURLRef::SearchTermsArgs(term),
@@ -216,7 +216,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
   }
 
   void BlockUntilHistoryProcessesPendingRequests() {
-    HistoryService* history = HistoryServiceFactory::GetForProfile(
+    history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
     DCHECK(history);
     DCHECK(base::MessageLoop::current());

@@ -1619,24 +1619,26 @@ void ChromeBrowserProvider::OnHistoryChanged() {
   Java_ChromeBrowserProvider_onHistoryChanged(env, obj.obj());
 }
 
-void ChromeBrowserProvider::OnURLVisited(HistoryService* history_service,
-                                         ui::PageTransition transition,
-                                         const history::URLRow& row,
-                                         const history::RedirectList& redirects,
-                                         base::Time visit_time) {
+void ChromeBrowserProvider::OnURLVisited(
+    history::HistoryService* history_service,
+    ui::PageTransition transition,
+    const history::URLRow& row,
+    const history::RedirectList& redirects,
+    base::Time visit_time) {
   OnHistoryChanged();
 }
 
-void ChromeBrowserProvider::OnURLsDeleted(HistoryService* history_service,
-                                          bool all_history,
-                                          bool expired,
-                                          const history::URLRows& deleted_rows,
-                                          const std::set<GURL>& favicon_urls) {
+void ChromeBrowserProvider::OnURLsDeleted(
+    history::HistoryService* history_service,
+    bool all_history,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
   OnHistoryChanged();
 }
 
 void ChromeBrowserProvider::OnKeywordSearchTermUpdated(
-    HistoryService* history_service,
+    history::HistoryService* history_service,
     const history::URLRow& row,
     history::KeywordID keyword_id,
     const base::string16& term) {
@@ -1648,6 +1650,6 @@ void ChromeBrowserProvider::OnKeywordSearchTermUpdated(
 }
 
 void ChromeBrowserProvider::OnKeywordSearchTermDeleted(
-    HistoryService* history_service,
+    history::HistoryService* history_service,
     history::URLID url_id) {
 }

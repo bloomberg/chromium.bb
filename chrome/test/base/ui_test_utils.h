@@ -153,7 +153,7 @@ int FindInPage(content::WebContents* tab,
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service);
 
 // Blocks until the |history_service|'s history finishes loading.
-void WaitForHistoryToLoad(HistoryService* history_service);
+void WaitForHistoryToLoad(history::HistoryService* history_service);
 
 // Download the given file and waits for the download to complete.
 void DownloadURL(Browser* browser, const GURL& download_url);

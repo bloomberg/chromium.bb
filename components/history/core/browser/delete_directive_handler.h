@@ -16,9 +16,9 @@ namespace sync_pb {
 class HistoryDeleteDirectiveSpecifics;
 }
 
-class HistoryService;
-
 namespace history {
+
+class HistoryService;
 
 // DeleteDirectiveHandler sends delete directives created locally to sync
 // engine to propagate to other clients. It also expires local history entries

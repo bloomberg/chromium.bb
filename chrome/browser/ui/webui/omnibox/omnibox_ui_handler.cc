@@ -165,8 +165,9 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
 
 bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
                                          bool* is_typed_host) const {
-  HistoryService* const history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* const history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   if (!history_service)
     return false;
   history::URLDatabase* url_db = history_service->InMemoryDatabase();

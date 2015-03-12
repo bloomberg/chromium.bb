@@ -10,10 +10,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class HistoryService;
-
 namespace history {
 struct HistoryAddPageArgs;
+class HistoryService;
 }
 
 class HistoryTabHelper : public content::WebContentsObserver,
@@ -54,7 +53,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
   void WebContentsDestroyed() override;
 
   // Helper function to return the history service.  May return NULL.
-  HistoryService* GetHistoryService();
+  history::HistoryService* GetHistoryService();
 
   // Whether we have a (non-empty) title for the current page.
   // Used to prevent subsequent title updates from affecting history. This

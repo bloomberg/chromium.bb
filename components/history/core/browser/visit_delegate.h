@@ -10,9 +10,10 @@
 #include "base/macros.h"
 
 class GURL;
-class HistoryService;
 
 namespace history {
+
+class HistoryService;
 
 // VisitDelegate gets notified about URLs recorded as visited by the
 // HistoryService.

@@ -102,7 +102,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(0, num_pending_);
   }
 
-  HistoryService* history_service() {
+  history::HistoryService* history_service() {
     return HistoryServiceFactory::GetForProfile(
         profile(), ServiceAccessType::EXPLICIT_ACCESS);
   }

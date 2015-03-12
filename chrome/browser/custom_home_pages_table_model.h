@@ -15,7 +15,6 @@
 
 class GURL;
 class Profile;
-class HistoryService;
 
 namespace history {
 class URLRow;

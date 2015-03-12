@@ -193,8 +193,9 @@ WebsiteSettings::WebsiteSettings(
       did_revoke_user_ssl_decisions_(false) {
   Init(profile, url, ssl);
 
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         site_url_,

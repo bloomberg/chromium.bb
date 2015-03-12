@@ -217,7 +217,7 @@ class HistoryURLProviderTest : public testing::Test,
   content::TestBrowserThreadBundle thread_bundle_;
   ACMatches matches_;
   scoped_ptr<TestingProfile> profile_;
-  HistoryService* history_service_;
+  history::HistoryService* history_service_;
   scoped_refptr<HistoryURLProvider> autocomplete_;
   // Should the matches be sorted and duplicates removed?
   bool sort_matches_;

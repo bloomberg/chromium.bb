@@ -25,7 +25,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "sql/connection.h"
 
-class HistoryService;
 class HistoryQuickProviderTest;
 
 namespace base {
@@ -38,6 +37,7 @@ class InMemoryURLIndexCacheItem;
 
 namespace history {
 class HistoryDatabase;
+class HistoryService;
 }
 
 class URLIndexPrivateData;
@@ -95,7 +95,7 @@ class InMemoryURLIndex : public KeyedService,
   // transaction journals will be stored. |languages| gives a list of language
   // encodings by which URLs and omnibox searches are broken down into words and
   // characters.
-  InMemoryURLIndex(HistoryService* history_service,
+  InMemoryURLIndex(history::HistoryService* history_service,
                    const base::FilePath& history_dir,
                    const std::string& languages);
   ~InMemoryURLIndex() override;
@@ -228,19 +228,20 @@ class InMemoryURLIndex : public KeyedService,
   void Shutdown() override;
 
   // HistoryServiceObserver:
-  void OnURLVisited(HistoryService* history_service,
+  void OnURLVisited(history::HistoryService* history_service,
                     ui::PageTransition transition,
                     const history::URLRow& row,
                     const history::RedirectList& redirects,
                     base::Time visit_time) override;
-  void OnURLsModified(HistoryService* history_service,
+  void OnURLsModified(history::HistoryService* history_service,
                       const history::URLRows& changed_urls) override;
-  void OnURLsDeleted(HistoryService* history_service,
+  void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
-  void OnHistoryServiceLoaded(HistoryService* history_service) override;
+  void OnHistoryServiceLoaded(
+      history::HistoryService* history_service) override;
 
   // Sets the directory wherein the cache file will be maintained.
   // For unit test usage only.
@@ -261,7 +262,7 @@ class InMemoryURLIndex : public KeyedService,
   const std::set<std::string>& scheme_whitelist() { return scheme_whitelist_; }
 
   // The HistoryService; may be null when testing.
-  HistoryService* history_service_;
+  history::HistoryService* history_service_;
 
   // Directory where cache file resides. This is, except when unit testing,
   // the same directory in which the history database is found. It should never

@@ -254,7 +254,7 @@ AndroidHistoryProviderService::QueryHistoryAndBookmarks(
     const std::string& sort_order,
     const QueryCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(nullptr);
@@ -275,7 +275,7 @@ AndroidHistoryProviderService::UpdateHistoryAndBookmarks(
     const std::vector<base::string16>& selection_args,
     const UpdateCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(0);
@@ -294,7 +294,7 @@ AndroidHistoryProviderService::DeleteHistoryAndBookmarks(
     const std::vector<base::string16>& selection_args,
     const DeleteCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(0);
@@ -312,7 +312,7 @@ AndroidHistoryProviderService::InsertHistoryAndBookmark(
     const history::HistoryAndBookmarkRow& values,
     const InsertCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(0);
@@ -330,7 +330,7 @@ AndroidHistoryProviderService::DeleteHistory(
     const std::vector<base::string16>& selection_args,
     const DeleteCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(0);
@@ -350,7 +350,7 @@ AndroidHistoryProviderService::MoveStatement(
     int destination,
     const MoveStatementCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(current_pos);
@@ -365,7 +365,7 @@ AndroidHistoryProviderService::MoveStatement(
 
 void AndroidHistoryProviderService::CloseStatement(
     history::AndroidStatement* statement) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     delete statement;
@@ -381,7 +381,7 @@ AndroidHistoryProviderService::InsertSearchTerm(
     const history::SearchRow& row,
     const InsertCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(0);
@@ -400,7 +400,7 @@ AndroidHistoryProviderService::UpdateSearchTerms(
     const std::vector<base::string16>& selection_args,
     const UpdateCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(0);
@@ -419,7 +419,7 @@ AndroidHistoryProviderService::DeleteSearchTerms(
     const std::vector<base::string16>& selection_args,
     const DeleteCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(0);
@@ -440,7 +440,7 @@ AndroidHistoryProviderService::QuerySearchTerms(
     const std::string& sort_order,
     const QueryCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!hs) {
     callback.Run(nullptr);

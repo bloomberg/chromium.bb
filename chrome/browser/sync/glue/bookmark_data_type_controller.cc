@@ -47,8 +47,9 @@ bool BookmarkDataTypeController::StartModels() {
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(profile_);
     bookmark_model_observer_.Add(bookmark_model);
-    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
     history_service_observer_.Add(history_service);
     return false;
   }
@@ -95,7 +96,7 @@ bool BookmarkDataTypeController::DependentsLoaded() {
   if (!bookmark_model || !bookmark_model->loaded())
     return false;
 
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!history || !history->BackendLoaded())
     return false;
@@ -105,7 +106,7 @@ bool BookmarkDataTypeController::DependentsLoaded() {
 }
 
 void BookmarkDataTypeController::OnHistoryServiceLoaded(
-    HistoryService* service) {
+    history::HistoryService* service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state_, MODEL_STARTING);
   history_service_observer_.RemoveAll();
@@ -118,7 +119,7 @@ void BookmarkDataTypeController::OnHistoryServiceLoaded(
 }
 
 void BookmarkDataTypeController::HistoryServiceBeingDeleted(
-    HistoryService* history_service) {
+    history::HistoryService* history_service) {
   CleanUpState();
 }
 

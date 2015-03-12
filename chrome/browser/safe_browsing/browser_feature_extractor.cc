@@ -303,7 +303,7 @@ void BrowserFeatureExtractor::StartExtractFeatures(
     scoped_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  HistoryService* history;
+  history::HistoryService* history;
   if (!request || !request->IsInitialized() || !GetHistoryService(&history)) {
     callback.Run(false, request.Pass());
     return;
@@ -370,7 +370,7 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
              request.get());
 
   // Issue next history lookup for host visits.
-  HistoryService* history;
+  history::HistoryService* history;
   if (!GetHistoryService(&history)) {
     callback.Run(false, request.Pass());
     return;
@@ -401,7 +401,7 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
   SetHostVisitsFeatures(num_visits, first_visit, true, request.get());
 
   // Same lookup but for the HTTPS URL.
-  HistoryService* history;
+  history::HistoryService* history;
   if (!GetHistoryService(&history)) {
     callback.Run(false, request.Pass());
     return;
@@ -454,7 +454,8 @@ void BrowserFeatureExtractor::SetHostVisitsFeatures(
   }
 }
 
-bool BrowserFeatureExtractor::GetHistoryService(HistoryService** history) {
+bool BrowserFeatureExtractor::GetHistoryService(
+    history::HistoryService** history) {
   *history = NULL;
   if (tab_ && tab_->GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());

@@ -129,7 +129,7 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
 }  // namespace
 
 HistoryEventRouter::HistoryEventRouter(Profile* profile,
-                                       HistoryService* history_service)
+                                       history::HistoryService* history_service)
     : profile_(profile), history_service_observer_(this) {
   DCHECK(profile);
   history_service_observer_.Add(history_service);
@@ -138,7 +138,7 @@ HistoryEventRouter::HistoryEventRouter(Profile* profile,
 HistoryEventRouter::~HistoryEventRouter() {
 }
 
-void HistoryEventRouter::OnURLVisited(HistoryService* history_service,
+void HistoryEventRouter::OnURLVisited(history::HistoryService* history_service,
                                       ui::PageTransition transition,
                                       const history::URLRow& row,
                                       const history::RedirectList& redirects,
@@ -148,7 +148,7 @@ void HistoryEventRouter::OnURLVisited(HistoryService* history_service,
   DispatchEvent(profile_, api::history::OnVisited::kEventName, args.Pass());
 }
 
-void HistoryEventRouter::OnURLsDeleted(HistoryService* history_service,
+void HistoryEventRouter::OnURLsDeleted(history::HistoryService* history_service,
                                        bool all_history,
                                        bool expired,
                                        const history::URLRows& deleted_rows,
@@ -279,7 +279,7 @@ bool HistoryGetVisitsFunction::RunAsyncImpl() {
   if (!ValidateUrl(params->details.url, &url))
     return false;
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryURL(url,
                true,  // Retrieve full history of a URL.
@@ -324,7 +324,7 @@ bool HistorySearchFunction::RunAsyncImpl() {
   if (params->query.max_results.get())
     options.max_count = *params->query.max_results;
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text,
                    options,
@@ -358,7 +358,7 @@ bool HistoryAddUrlFunction::RunAsync() {
   if (!ValidateUrl(params->details.url, &url))
     return false;
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->AddPage(url, base::Time::Now(), history::SOURCE_EXTENSION);
 
@@ -377,7 +377,7 @@ bool HistoryDeleteUrlFunction::RunAsync() {
   if (!ValidateUrl(params->details.url, &url))
     return false;
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->DeleteURL(url);
 
@@ -406,7 +406,7 @@ bool HistoryDeleteRangeFunction::RunAsyncImpl() {
   base::Time end_time = GetTime(params->range.end_time);
 
   std::set<GURL> restrict_urls;
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
@@ -436,7 +436,7 @@ bool HistoryDeleteAllFunction::RunAsyncImpl() {
     return false;
 
   std::set<GURL> restrict_urls;
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,

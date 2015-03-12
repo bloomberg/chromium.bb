@@ -78,7 +78,7 @@ class URLIndexPrivateData
   // characters. |scheme_whitelist| is used to filter non-qualifying schemes.
   // |history_service| is used to schedule an update to the recent visits
   // component of this URL's entry in the index.
-  bool UpdateURL(HistoryService* history_service,
+  bool UpdateURL(history::HistoryService* history_service,
                  const history::URLRow& row,
                  const std::string& languages,
                  const std::set<std::string>& scheme_whitelist,
@@ -94,7 +94,7 @@ class URLIndexPrivateData
   // thread) for the recent visits information for |url_id|.  Unless
   // something unexpectedly goes wrong, UdpateRecentVisits() should
   // eventually be called from a callback.
-  void ScheduleUpdateRecentVisits(HistoryService* history_service,
+  void ScheduleUpdateRecentVisits(history::HistoryService* history_service,
                                   history::URLID url_id,
                                   base::CancelableTaskTracker* tracker);
 
@@ -251,7 +251,7 @@ class URLIndexPrivateData
   // historyDB thread to fetch and update the recent visits
   // information.
   bool IndexRow(history::HistoryDatabase* history_db,
-                HistoryService* history_service,
+                history::HistoryService* history_service,
                 const history::URLRow& row,
                 const std::string& languages,
                 const std::set<std::string>& scheme_whitelist,

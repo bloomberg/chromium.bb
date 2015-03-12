@@ -64,11 +64,12 @@ namespace {
 
 // Post the work task on |history_service|'s DB thread from the UI
 // thread.
-void PostWorkerTask(const base::WeakPtr<HistoryService>& history_service,
-                    const syncer::WorkCallback& work,
-                    base::CancelableTaskTracker* cancelable_tracker,
-                    WaitableEvent* done,
-                    syncer::SyncerError* error) {
+void PostWorkerTask(
+    const base::WeakPtr<history::HistoryService>& history_service,
+    const syncer::WorkCallback& work,
+    base::CancelableTaskTracker* cancelable_tracker,
+    WaitableEvent* done,
+    syncer::SyncerError* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (history_service.get()) {
     scoped_ptr<history::HistoryDBTask> task(new WorkerTask(work, done, error));
@@ -82,10 +83,9 @@ void PostWorkerTask(const base::WeakPtr<HistoryService>& history_service,
 }  // namespace
 
 HistoryModelWorker::HistoryModelWorker(
-    const base::WeakPtr<HistoryService>& history_service,
+    const base::WeakPtr<history::HistoryService>& history_service,
     syncer::WorkerLoopDestructionObserver* observer)
-  : syncer::ModelSafeWorker(observer),
-    history_service_(history_service) {
+    : syncer::ModelSafeWorker(observer), history_service_(history_service) {
   CHECK(history_service.get());
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cancelable_tracker_.reset(new base::CancelableTaskTracker);

@@ -280,7 +280,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
 }
 
 bool URLIndexPrivateData::UpdateURL(
-    HistoryService* history_service,
+    history::HistoryService* history_service,
     const history::URLRow& row,
     const std::string& languages,
     const std::set<std::string>& scheme_whitelist,
@@ -365,7 +365,7 @@ void URLIndexPrivateData::UpdateRecentVisits(
 }
 
 void URLIndexPrivateData::ScheduleUpdateRecentVisits(
-    HistoryService* history_service,
+    history::HistoryService* history_service,
     history::URLID url_id,
     base::CancelableTaskTracker* tracker) {
   history_service->ScheduleDBTask(
@@ -688,7 +688,7 @@ WordIDSet URLIndexPrivateData::WordIDSetForTermChars(
 
 bool URLIndexPrivateData::IndexRow(
     history::HistoryDatabase* history_db,
-    HistoryService* history_service,
+    history::HistoryService* history_service,
     const history::URLRow& row,
     const std::string& languages,
     const std::set<std::string>& scheme_whitelist,

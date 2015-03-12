@@ -103,8 +103,6 @@ using testing::Not;
 using testing::SetArgumentPointee;
 using testing::Return;
 
-class HistoryService;
-
 namespace syncable {
 class Id;
 }

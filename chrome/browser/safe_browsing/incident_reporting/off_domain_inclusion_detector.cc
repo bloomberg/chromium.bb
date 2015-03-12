@@ -237,7 +237,7 @@ void OffDomainInclusionDetector::ContinueAnalysisWithHistoryCheck(
     return;
   }
 
-  HistoryService* history_service =
+  history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile);
 
   if (!history_service) {

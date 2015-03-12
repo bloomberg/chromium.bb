@@ -63,7 +63,7 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
   STLDeleteElements(&items_);
 
   history_tracker_.TryCancelAll();
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   // |history| may be null during unit tests.
   if (history) {

@@ -9,7 +9,7 @@
 #include "extensions/common/constants.h"
 
 ChromeTemplateURLServiceClient::ChromeTemplateURLServiceClient(
-    HistoryService* history_service)
+    history::HistoryService* history_service)
     : owner_(NULL),
       history_service_observer_(this),
       history_service_(history_service) {
@@ -75,7 +75,7 @@ void ChromeTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
 }
 
 void ChromeTemplateURLServiceClient::OnURLVisited(
-    HistoryService* history_service,
+    history::HistoryService* history_service,
     ui::PageTransition transition,
     const history::URLRow& row,
     const history::RedirectList& redirects,

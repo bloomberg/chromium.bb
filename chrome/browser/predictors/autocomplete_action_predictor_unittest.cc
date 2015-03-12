@@ -127,7 +127,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
   }
 
   history::URLID AddRowToHistory(const TestUrlInfo& test_row) {
-    HistoryService* history = HistoryServiceFactory::GetForProfile(
+    history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
     CHECK(history);
     history::URLDatabase* url_db = history->InMemoryDatabase();
@@ -188,8 +188,9 @@ class AutocompleteActionPredictorTest : public testing::Test {
 
   void DeleteOldIdsFromCaches(
       std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
-    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
 
     history::URLDatabase* url_db = history_service->InMemoryDatabase();

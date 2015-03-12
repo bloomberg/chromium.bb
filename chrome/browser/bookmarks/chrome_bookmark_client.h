@@ -16,12 +16,15 @@
 #include "components/policy/core/browser/managed_bookmarks_tracker.h"
 
 class GURL;
-class HistoryService;
 class HistoryServiceFactory;
 class Profile;
 
 namespace bookmarks {
 class BookmarkModel;
+}
+
+namespace history {
+class HistoryService;
 }
 
 class ChromeBookmarkClient : public bookmarks::BookmarkClient,
@@ -63,7 +66,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
 
  private:
   friend class HistoryServiceFactory;
-  void SetHistoryService(HistoryService* history_service);
+  void SetHistoryService(history::HistoryService* history_service);
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
@@ -94,7 +97,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   // HistoryService associated to the Profile. Due to circular dependency, this
   // cannot be passed to the constructor, nor lazily fetched. Instead the value
   // is initialized from HistoryServiceFactory.
-  HistoryService* history_service_;
+  history::HistoryService* history_service_;
 
   scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
       favicon_changed_subscription_;

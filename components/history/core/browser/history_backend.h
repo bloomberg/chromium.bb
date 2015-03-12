@@ -119,7 +119,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
         scoped_ptr<InMemoryHistoryBackend> backend) = 0;
 
     // Notify HistoryService that VisitDatabase was changed. The event will be
-    // forwarded to the history::HistoryServiceObservers in the UI thread.
+    // forwarded to the HistoryServiceObservers in the UI thread.
     virtual void NotifyAddVisit(const BriefVisitInfo& info) = 0;
 
     // Notify HistoryService that some URLs favicon changed that will forward
@@ -208,8 +208,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Run the |callback| on the History thread.
   // |callback| should handle the null database case.
-  void ScheduleAutocomplete(const base::Callback<
-      void(history::HistoryBackend*, history::URLDatabase*)>& callback);
+  void ScheduleAutocomplete(
+      const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback);
 
   void QueryURL(const GURL& url,
                 bool want_visits,
@@ -245,9 +245,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // leading to each of these URLs, filterd and sorted based on the |filter|.
   // If |debug| is enabled, additional data will be computed and provided.
   void QueryFilteredURLs(int result_count,
-                         const history::VisitFilter& filter,
+                         const VisitFilter& filter,
                          bool debug,
-                         history::FilteredURLList* result);
+                         FilteredURLList* result);
 
   // Favicon -------------------------------------------------------------------
 
@@ -304,7 +304,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   uint32 GetNextDownloadId();
   void QueryDownloads(std::vector<DownloadRow>* rows);
   void UpdateDownload(const DownloadRow& data);
-  bool CreateDownload(const history::DownloadRow& history_info);
+  bool CreateDownload(const DownloadRow& history_info);
   void RemoveDownloads(const std::set<uint32>& ids);
 
   // Keyword search terms ------------------------------------------------------
@@ -344,11 +344,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // For each element in |urls|, updates the pre-existing URLRow in the database
   // with the same ID; or ignores the element if no such row exists. Returns the
   // number of records successfully updated.
-  virtual size_t UpdateURLs(const history::URLRows& urls);
+  virtual size_t UpdateURLs(const URLRows& urls);
 
   // While adding visits in batch, the source needs to be provided.
   virtual bool AddVisits(const GURL& url,
-                         const std::vector<history::VisitInfo>& visits,
+                         const std::vector<VisitInfo>& visits,
                          VisitSource visit_source);
 
   virtual bool RemoveVisits(const VisitVector& visits);
@@ -358,7 +358,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // was SOURCE_BROWSED. Returns false if there is no HistoryDatabase..
   bool GetVisitsSource(const VisitVector& visits, VisitSourceMap* sources);
 
-  virtual bool GetURL(const GURL& url, history::URLRow* url_row);
+  virtual bool GetURL(const GURL& url, URLRow* url_row);
 
   // Returns the syncable service for syncing typed urls. The returned service
   // is owned by |this| object.
@@ -547,12 +547,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // |cur_visit|. |cur_visit| is assumed to be valid. Assumes that
   // this HistoryBackend object has been Init()ed successfully.
   void GetRedirectsFromSpecificVisit(VisitID cur_visit,
-                                     history::RedirectList* redirects);
+                                     RedirectList* redirects);
 
   // Similar to the above function except returns a redirect list ending
   // at |cur_visit|.
-  void GetRedirectsToSpecificVisit(VisitID cur_visit,
-                                   history::RedirectList* redirects);
+  void GetRedirectsToSpecificVisit(VisitID cur_visit, RedirectList* redirects);
 
   // Update the visit_duration information in visits table.
   void UpdateVisitDuration(VisitID visit_id, const base::Time end_ts);
@@ -686,7 +685,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Returns all the page URLs in the redirect chain for |page_url|. If there
   // are no known redirects for |page_url|, returns a vector with |page_url|.
   void GetCachedRecentRedirects(const GURL& page_url,
-                                history::RedirectList* redirect_list);
+                                RedirectList* redirect_list);
 
   // Send notification that the favicon has changed for |page_url| and all its
   // redirects.
@@ -778,7 +777,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   //
   // As with AddPage, the last item in the redirect chain will be the
   // destination of the redirect (i.e., the key into recent_redirects_);
-  typedef base::MRUCache<GURL, history::RedirectList> RedirectCache;
+  typedef base::MRUCache<GURL, RedirectList> RedirectCache;
   RedirectCache recent_redirects_;
 
   // Timestamp of the first entry in our database.

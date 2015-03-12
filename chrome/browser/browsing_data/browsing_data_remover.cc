@@ -300,8 +300,9 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       "OriginSetMask has been updated without updating user metrics");
 
   if ((remove_mask & REMOVE_HISTORY) && may_delete_history) {
-    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (history_service) {
       std::set<GURL> restrict_urls;
       if (!remove_origin_.is_empty())

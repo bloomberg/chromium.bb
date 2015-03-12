@@ -229,7 +229,7 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
 // http://crbug.com/393149
 TEST_F(ProfileSigninConfirmationHelperTest,
        DISABLED_PromptForNewProfile_History) {
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   ASSERT_TRUE(history);
 
@@ -253,7 +253,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
 // http://crbug.com/393149
 TEST_F(ProfileSigninConfirmationHelperTest,
        DISABLED_PromptForNewProfile_TypedURLs) {
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   ASSERT_TRUE(history);
 

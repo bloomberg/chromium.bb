@@ -68,9 +68,9 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
     return NULL;
   }
 
-  HistoryService* history_service =
-      new HistoryService(ChromeHistoryClientFactory::GetForProfile(profile),
-                         scoped_ptr<history::VisitDelegate>());
+  history::HistoryService* history_service = new history::HistoryService(
+      ChromeHistoryClientFactory::GetForProfile(profile),
+      scoped_ptr<history::VisitDelegate>());
   if (history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
@@ -164,7 +164,7 @@ class MockOffDomainInclusionDetector
 // being destructed.
 class ScopedHistoryEntry {
  public:
-  ScopedHistoryEntry(HistoryService* history_service, const GURL& url)
+  ScopedHistoryEntry(history::HistoryService* history_service, const GURL& url)
       : history_service_(history_service), url_(url) {
     base::RunLoop run_loop;
 
@@ -188,7 +188,7 @@ class ScopedHistoryEntry {
   }
 
  private:
-  HistoryService* history_service_;
+  history::HistoryService* history_service_;
   const GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedHistoryEntry);
@@ -225,8 +225,9 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
                               bool parent_is_main_frame) const {
     const GURL url(url_str);
 
-    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-        testing_profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            testing_profile_, ServiceAccessType::EXPLICIT_ACCESS);
     scoped_ptr<ScopedHistoryEntry> scoped_history_entry;
     if (ShouldAddSimulatedURLsToHistory())
       scoped_history_entry.reset(new ScopedHistoryEntry(history_service, url));

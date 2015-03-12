@@ -56,7 +56,7 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
 #endif
 
   if (!profile_->IsOffTheRecord()) {
-    HistoryService* history = HistoryServiceFactory::GetForProfile(
+    history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
     history->GetNextDownloadId(
         manager_delegate_->GetDownloadIdReceiverCallback());

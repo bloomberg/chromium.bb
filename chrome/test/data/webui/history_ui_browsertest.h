@@ -9,7 +9,9 @@
 
 #include "chrome/test/base/web_ui_browser_test.h"
 
+namespace history {
 class HistoryService;
+}
 
 class HistoryUIBrowserTest : public WebUIBrowserTest {
  public:
@@ -32,7 +34,7 @@ class HistoryUIBrowserTest : public WebUIBrowserTest {
 
  private:
   // The HistoryService is owned by the profile.
-  HistoryService* history_;
+  history::HistoryService* history_;
 
   // The time from which entries added via AddPageToHistory() will be offset.
   base::Time baseline_time_;

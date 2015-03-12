@@ -22,19 +22,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 
 // static
-HistoryService* HistoryServiceFactory::GetForProfile(Profile* profile,
-                                                     ServiceAccessType sat) {
-  // If saving history is disabled, only allow explicit access.
-  if (profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      sat != ServiceAccessType::EXPLICIT_ACCESS)
-    return NULL;
-
-  return static_cast<HistoryService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
-}
-
-// static
-HistoryService* HistoryServiceFactory::GetForProfileIfExists(
+history::HistoryService* HistoryServiceFactory::GetForProfile(
     Profile* profile,
     ServiceAccessType sat) {
   // If saving history is disabled, only allow explicit access.
@@ -42,14 +30,27 @@ HistoryService* HistoryServiceFactory::GetForProfileIfExists(
       sat != ServiceAccessType::EXPLICIT_ACCESS)
     return NULL;
 
-  return static_cast<HistoryService*>(
+  return static_cast<history::HistoryService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
+}
+
+// static
+history::HistoryService* HistoryServiceFactory::GetForProfileIfExists(
+    Profile* profile,
+    ServiceAccessType sat) {
+  // If saving history is disabled, only allow explicit access.
+  if (profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
+      sat != ServiceAccessType::EXPLICIT_ACCESS)
+    return NULL;
+
+  return static_cast<history::HistoryService*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
-HistoryService*
-HistoryServiceFactory::GetForProfileWithoutCreating(Profile* profile) {
-  return static_cast<HistoryService*>(
+history::HistoryService* HistoryServiceFactory::GetForProfileWithoutCreating(
+    Profile* profile) {
+  return static_cast<history::HistoryService*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
@@ -77,9 +78,11 @@ HistoryServiceFactory::~HistoryServiceFactory() {
 KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  scoped_ptr<HistoryService> history_service(new HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile),
-      scoped_ptr<history::VisitDelegate>(new ContentVisitDelegate(profile))));
+  scoped_ptr<history::HistoryService> history_service(
+      new history::HistoryService(
+          ChromeHistoryClientFactory::GetForProfile(profile),
+          scoped_ptr<history::VisitDelegate>(
+              new history::ContentVisitDelegate(profile))));
   if (!history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {

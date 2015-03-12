@@ -228,8 +228,9 @@ void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {
 }
 
 void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
     entry->task_id = history_service->QueryURL(
         entry->url,
@@ -243,8 +244,9 @@ void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
 }
 
 void CustomHomePagesTableModel::LoadAllTitles() {
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   // It's possible for multiple LoadAllTitles() queries to be inflight we want
   // to make sure everything is resolved before updating the observer or we risk
   // getting rendering glitches.

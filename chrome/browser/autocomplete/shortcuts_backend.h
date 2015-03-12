@@ -109,7 +109,7 @@ class ShortcutsBackend : public RefcountedKeyedService,
                const content::NotificationDetails& details) override;
 
   // history::HistoryServiceObserver:
-  void OnURLsDeleted(HistoryService* history_service,
+  void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
@@ -155,7 +155,7 @@ class ShortcutsBackend : public RefcountedKeyedService,
   GuidMap guid_map_;
 
   content::NotificationRegistrar notification_registrar_;
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   // For some unit-test only.

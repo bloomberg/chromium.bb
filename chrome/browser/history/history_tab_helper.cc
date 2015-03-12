@@ -40,13 +40,13 @@ HistoryTabHelper::~HistoryTabHelper() {
 
 void HistoryTabHelper::UpdateHistoryForNavigation(
     const history::HistoryAddPageArgs& add_page_args) {
-  HistoryService* hs = GetHistoryService();
+  history::HistoryService* hs = GetHistoryService();
   if (hs)
     GetHistoryService()->AddPage(add_page_args);
 }
 
 void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
-  HistoryService* hs = GetHistoryService();
+  history::HistoryService* hs = GetHistoryService();
   if (hs)
     hs->SetPageTitle(entry.GetVirtualURL(),
                      entry.GetTitleForDisplay(std::string()));
@@ -137,7 +137,7 @@ void HistoryTabHelper::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
   }
 }
 
-HistoryService* HistoryTabHelper::GetHistoryService() {
+history::HistoryService* HistoryTabHelper::GetHistoryService() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
@@ -154,7 +154,7 @@ void HistoryTabHelper::WebContentsDestroyed() {
   if (profile->IsOffTheRecord())
     return;
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   if (hs) {
     NavigationEntry* entry = tab->GetController().GetLastCommittedEntry();

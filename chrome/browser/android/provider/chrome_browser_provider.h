@@ -184,21 +184,21 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   void OnHistoryChanged();
 
   // Override history::HistoryServiceObserver.
-  void OnURLVisited(HistoryService* history_service,
+  void OnURLVisited(history::HistoryService* history_service,
                     ui::PageTransition transition,
                     const history::URLRow& row,
                     const history::RedirectList& redirects,
                     base::Time visit_time) override;
-  void OnURLsDeleted(HistoryService* history_service,
+  void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
-  void OnKeywordSearchTermUpdated(HistoryService* history_service,
+  void OnKeywordSearchTermUpdated(history::HistoryService* history_service,
                                   const history::URLRow& row,
                                   history::KeywordID keyword_id,
                                   const base::string16& term) override;
-  void OnKeywordSearchTermDeleted(HistoryService* history_service,
+  void OnKeywordSearchTermDeleted(history::HistoryService* history_service,
                                   history::URLID url_id) override;
 
   JavaObjectWeakGlobalRef weak_java_provider_;
@@ -217,7 +217,7 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   bool handling_extensive_changes_;

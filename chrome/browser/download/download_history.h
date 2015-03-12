@@ -30,22 +30,22 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
   // Caller must guarantee that HistoryService outlives HistoryAdapter.
   class HistoryAdapter {
    public:
-    explicit HistoryAdapter(HistoryService* history);
+    explicit HistoryAdapter(history::HistoryService* history);
     virtual ~HistoryAdapter();
 
     virtual void QueryDownloads(
-        const HistoryService::DownloadQueryCallback& callback);
+        const history::HistoryService::DownloadQueryCallback& callback);
 
     virtual void CreateDownload(
         const history::DownloadRow& info,
-        const HistoryService::DownloadCreateCallback& callback);
+        const history::HistoryService::DownloadCreateCallback& callback);
 
     virtual void UpdateDownload(const history::DownloadRow& data);
 
     virtual void RemoveDownloads(const std::set<uint32>& ids);
 
    private:
-    HistoryService* history_;
+    history::HistoryService* history_;
     DISALLOW_COPY_AND_ASSIGN(HistoryAdapter);
   };
 

@@ -995,7 +995,7 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
       base::Time::Now(), base::Time::Now());
 
   // Add a visit that matches the url of the keyword.
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       test_util()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
   history->AddPage(
       GURL(t_url->url_ref().ReplaceSearchTerms(

@@ -437,7 +437,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
       profile, new FaviconSource(profile, FaviconSource::ANY));
 
   // Get notifications when history is cleared.
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   if (hs)
     history_service_observer_.Add(hs);
@@ -490,7 +490,7 @@ void BrowsingHistoryHandler::QueryHistory(
   query_results_.clear();
   results_info_value_.Clear();
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text,
                    options,
@@ -579,8 +579,9 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
     return;
   }
 
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   history::WebHistoryService* web_history =
       WebHistoryServiceFactory::GetForProfile(profile);
 
@@ -1008,11 +1009,12 @@ std::string BrowsingHistoryHandler::GetAcceptLanguages() const {
   return profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 
-void BrowsingHistoryHandler::OnURLsDeleted(HistoryService* history_service,
-                                           bool all_history,
-                                           bool expired,
-                                           const history::URLRows& deleted_rows,
-                                           const std::set<GURL>& favicon_urls) {
+void BrowsingHistoryHandler::OnURLsDeleted(
+    history::HistoryService* history_service,
+    bool all_history,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
   if (all_history || DeletionsDiffer(deleted_rows, urls_to_be_deleted_))
     web_ui()->CallJavascriptFunction("historyDeleted");
 }

@@ -13,8 +13,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
-class HistoryService;
-
 namespace history {
 class HistoryBackend;
 }

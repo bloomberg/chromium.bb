@@ -254,7 +254,7 @@ class DownloadsHistoryDataCollector {
 
   bool WaitForDownloadInfo(
       scoped_ptr<std::vector<history::DownloadRow> >* results) {
-    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+    history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
     DCHECK(hs);
     hs->QueryDownloads(

@@ -531,9 +531,10 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
           GetThemeSyncableService()->AsWeakPtr();
 #endif
     case syncer::HISTORY_DELETE_DIRECTIVES: {
-      HistoryService* history = HistoryServiceFactory::GetForProfile(
+      history::HistoryService* history = HistoryServiceFactory::GetForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
-      return history ? history->AsWeakPtr() : base::WeakPtr<HistoryService>();
+      return history ? history->AsWeakPtr()
+                     : base::WeakPtr<history::HistoryService>();
     }
 #if defined(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:

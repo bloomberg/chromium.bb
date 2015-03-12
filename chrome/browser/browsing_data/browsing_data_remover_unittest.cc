@@ -421,7 +421,7 @@ class RemoveHistoryTester {
   base::Closure quit_closure_;
 
   // TestingProfile owns the history service; we shouldn't delete it.
-  HistoryService* history_service_;
+  history::HistoryService* history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveHistoryTester);
 };

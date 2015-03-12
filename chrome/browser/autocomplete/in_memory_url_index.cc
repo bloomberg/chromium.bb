@@ -77,7 +77,7 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 
 // InMemoryURLIndex ------------------------------------------------------------
 
-InMemoryURLIndex::InMemoryURLIndex(HistoryService* history_service,
+InMemoryURLIndex::InMemoryURLIndex(history::HistoryService* history_service,
                                    const base::FilePath& history_dir,
                                    const std::string& languages)
     : history_service_(history_service),
@@ -136,7 +136,7 @@ void InMemoryURLIndex::DeleteURL(const GURL& url) {
   private_data_->DeleteURL(url);
 }
 
-void InMemoryURLIndex::OnURLVisited(HistoryService* history_service,
+void InMemoryURLIndex::OnURLVisited(history::HistoryService* history_service,
                                     ui::PageTransition transition,
                                     const history::URLRow& row,
                                     const history::RedirectList& redirects,
@@ -149,7 +149,7 @@ void InMemoryURLIndex::OnURLVisited(HistoryService* history_service,
                                                   &private_data_tracker_);
 }
 
-void InMemoryURLIndex::OnURLsModified(HistoryService* history_service,
+void InMemoryURLIndex::OnURLsModified(history::HistoryService* history_service,
                                       const history::URLRows& changed_urls) {
   DCHECK_EQ(history_service_, history_service);
   for (const auto& row : changed_urls) {
@@ -161,7 +161,7 @@ void InMemoryURLIndex::OnURLsModified(HistoryService* history_service,
   }
 }
 
-void InMemoryURLIndex::OnURLsDeleted(HistoryService* history_service,
+void InMemoryURLIndex::OnURLsDeleted(history::HistoryService* history_service,
                                      bool all_history,
                                      bool expired,
                                      const history::URLRows& deleted_rows,
@@ -194,7 +194,8 @@ void InMemoryURLIndex::OnURLsDeleted(HistoryService* history_service,
   }
 }
 
-void InMemoryURLIndex::OnHistoryServiceLoaded(HistoryService* history_service) {
+void InMemoryURLIndex::OnHistoryServiceLoaded(
+    history::HistoryService* history_service) {
   if (listen_to_history_service_loaded_)
     ScheduleRebuildFromHistory();
   listen_to_history_service_loaded_ = false;

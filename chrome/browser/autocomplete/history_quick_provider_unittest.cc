@@ -112,7 +112,7 @@ class WaitForURLsDeletedObserver : public history::HistoryServiceObserver {
 
  private:
   // history::HistoryServiceObserver:
-  void OnURLsDeleted(HistoryService* service,
+  void OnURLsDeleted(history::HistoryService* service,
                      bool all_history,
                      bool expired,
                      const history::URLRows& deleted_rows,
@@ -132,7 +132,7 @@ WaitForURLsDeletedObserver::~WaitForURLsDeletedObserver() {
 }
 
 void WaitForURLsDeletedObserver::OnURLsDeleted(
-    HistoryService* service,
+    history::HistoryService* service,
     bool all_history,
     bool expired,
     const history::URLRows& deleted_rows,
@@ -140,10 +140,10 @@ void WaitForURLsDeletedObserver::OnURLsDeleted(
   runner_->Quit();
 }
 
-void WaitForURLsDeletedNotification(HistoryService* history_service) {
+void WaitForURLsDeletedNotification(history::HistoryService* history_service) {
   base::RunLoop runner;
   WaitForURLsDeletedObserver observer(&runner);
-  ScopedObserver<HistoryService, history::HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       scoped_observer(&observer);
   scoped_observer.Add(history_service);
   runner.Run();
@@ -216,7 +216,7 @@ class HistoryQuickProviderTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   scoped_ptr<TestingProfile> profile_;
-  HistoryService* history_service_;
+  history::HistoryService* history_service_;
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 

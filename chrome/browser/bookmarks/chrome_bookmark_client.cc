@@ -215,7 +215,8 @@ bool ChromeBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
          !bookmarks::IsDescendantOf(node, supervised_node_);
 }
 
-void ChromeBookmarkClient::SetHistoryService(HistoryService* history_service) {
+void ChromeBookmarkClient::SetHistoryService(
+    history::HistoryService* history_service) {
   DCHECK(history_service);
   history_service_ = history_service;
   favicon_changed_subscription_ = history_service_->AddFaviconChangedCallback(

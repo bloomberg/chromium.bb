@@ -70,7 +70,7 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
     // Check to see if the history service is ready. Because it loads async, it
     // may not be ready when the Bridge is created. If this happens, register
     // for a notification that tells us the HistoryService is ready.
-    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+    history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (hs) {
       history_service_observer_.Add(hs);
@@ -242,7 +242,7 @@ HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForMenuItem(
   return NULL;
 }
 
-HistoryService* HistoryMenuBridge::service() {
+history::HistoryService* HistoryMenuBridge::service() {
   return history_service_;
 }
 
@@ -433,7 +433,7 @@ void HistoryMenuBridge::CancelFaviconRequest(HistoryItem* item) {
   }
 }
 
-void HistoryMenuBridge::OnURLVisited(HistoryService* history_service,
+void HistoryMenuBridge::OnURLVisited(history::HistoryService* history_service,
                                      ui::PageTransition transition,
                                      const history::URLRow& row,
                                      const history::RedirectList& redirects,
@@ -441,12 +441,12 @@ void HistoryMenuBridge::OnURLVisited(HistoryService* history_service,
   OnHistoryChanged();
 }
 
-void HistoryMenuBridge::OnURLsModified(HistoryService* history_service,
+void HistoryMenuBridge::OnURLsModified(history::HistoryService* history_service,
                                        const history::URLRows& changed_urls) {
   OnHistoryChanged();
 }
 
-void HistoryMenuBridge::OnURLsDeleted(HistoryService* history_service,
+void HistoryMenuBridge::OnURLsDeleted(history::HistoryService* history_service,
                                       bool all_history,
                                       bool expired,
                                       const history::URLRows& deleted_rows,
@@ -455,7 +455,7 @@ void HistoryMenuBridge::OnURLsDeleted(HistoryService* history_service,
 }
 
 void HistoryMenuBridge::OnHistoryServiceLoaded(
-    HistoryService* history_service) {
+    history::HistoryService* history_service) {
   history_service_ = history_service;
   Init();
 }

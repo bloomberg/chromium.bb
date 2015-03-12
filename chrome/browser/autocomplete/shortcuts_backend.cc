@@ -93,7 +93,7 @@ ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
         extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(profile));
 #endif
-    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+    history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
     if (hs)
       history_service_observer_.Add(hs);
@@ -195,7 +195,7 @@ void ShortcutsBackend::Observe(int type,
 #endif
 }
 
-void ShortcutsBackend::OnURLsDeleted(HistoryService* history_service,
+void ShortcutsBackend::OnURLsDeleted(history::HistoryService* history_service,
                                      bool all_history,
                                      bool expired,
                                      const history::URLRows& deleted_rows,

@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "components/history/core/browser/history_client.h"
 
-class HistoryService;
 class Profile;
 
 namespace bookmarks {

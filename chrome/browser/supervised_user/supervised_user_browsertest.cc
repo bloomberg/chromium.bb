@@ -128,7 +128,7 @@ class SupervisedUserBlockModeTest : public InProcessBrowserTest {
 
   // Acts like a synchronous call to history's QueryHistory. Modified from
   // history_querying_unittest.cc.
-  void QueryHistory(HistoryService* history_service,
+  void QueryHistory(history::HistoryService* history_service,
                     const std::string& text_query,
                     const history::QueryOptions& options,
                     history::QueryResults* results) {
@@ -267,8 +267,9 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
             filter->GetFilteringBehaviorForURL(blocked_url.GetWithEmptyPath()));
 
   // Query the history entry.
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   history::QueryOptions options;
   history::QueryResults results;
   QueryHistory(history_service, "", options, &results);

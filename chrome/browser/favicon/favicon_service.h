@@ -18,8 +18,11 @@
 
 class FaviconClient;
 class GURL;
-class HistoryService;
 class Profile;
+
+namespace history {
+class HistoryService;
+}
 
 // The favicon service provides methods to access favicons. It calls the history
 // backend behind the scenes. The callbacks are run asynchronously, even in the
@@ -213,7 +216,7 @@ class FaviconService : public KeyedService {
  private:
   typedef uint32 MissingFaviconURLHash;
   base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
-  HistoryService* history_service_;
+  history::HistoryService* history_service_;
   Profile* profile_;
   FaviconClient* favicon_client_;
 

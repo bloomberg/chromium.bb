@@ -19,8 +19,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class HistoryService;
-
 namespace base {
 class DictionaryValue;
 }
@@ -31,6 +29,10 @@ class WebContents;
 
 namespace gfx {
 class Size;
+}
+
+namespace history {
+class HistoryService;
 }
 
 namespace prerender {
@@ -160,7 +162,7 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
   void Shutdown();
 
   // history::HistoryServiceObserver:
-  void OnAddVisit(HistoryService* history_service,
+  void OnAddVisit(history::HistoryService* history_service,
                   const history::BriefVisitInfo& info) override;
 
   void OnGetInitialVisitHistory(
@@ -175,7 +177,7 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
 
  private:
   struct PrerenderProperties;
-  HistoryService* GetHistoryIfExists() const;
+  history::HistoryService* GetHistoryIfExists() const;
   void Init();
   bool IsPrerenderStillValid(PrerenderProperties* prerender) const;
   bool DoesPrerenderMatchPLTRecord(PrerenderProperties* prerender,
@@ -233,7 +235,7 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
 
   scoped_ptr<PrefetchList> prefetch_list_;
 
-  ScopedObserver<HistoryService, HistoryServiceObserver>
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   base::WeakPtrFactory<PrerenderLocalPredictor> weak_factory_;

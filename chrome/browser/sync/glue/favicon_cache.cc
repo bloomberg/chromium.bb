@@ -226,7 +226,7 @@ FaviconCache::FaviconCache(Profile* profile, int max_sync_favicon_limit)
       max_sync_favicon_limit_(max_sync_favicon_limit),
       history_service_observer_(this),
       weak_ptr_factory_(this) {
-  HistoryService* hs = NULL;
+  history::HistoryService* hs = NULL;
   if (profile_) {
     hs = HistoryServiceFactory::GetForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
@@ -1033,7 +1033,7 @@ size_t FaviconCache::NumTasksForTest() const {
   return page_task_map_.size();
 }
 
-void FaviconCache::OnURLsDeleted(HistoryService* history_service,
+void FaviconCache::OnURLsDeleted(history::HistoryService* history_service,
                                  bool all_history,
                                  bool expired,
                                  const history::URLRows& deleted_rows,
