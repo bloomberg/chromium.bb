@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -67,8 +68,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/api/device_permissions_manager.h"
-#include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_host.h"
@@ -77,7 +76,6 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/browser/view_type_utils.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -109,18 +107,6 @@ const char kAppsDeveloperToolsExtensionId[] =
 }  // namespace
 
 namespace extensions {
-
-ExtensionPage::ExtensionPage(const GURL& url,
-                             int render_process_id,
-                             int render_view_id,
-                             bool incognito,
-                             bool generated_background_page)
-    : url(url),
-      render_process_id(render_process_id),
-      render_view_id(render_view_id),
-      incognito(incognito),
-      generated_background_page(generated_background_page) {
-}
 
 // The install prompt is not necessarily modal (e.g. Mac, Linux Unity). This
 // means that the user can navigate while the dialog is up, causing the dialog
@@ -218,7 +204,7 @@ void ExtensionSettingsHandler::RegisterProfilePrefs(
 
 base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const Extension* extension,
-    const std::vector<ExtensionPage>& pages,
+    const InspectableViewsFinder::ViewList& views,
     const WarningService* warning_service) {
   // The items which are to be written into app_dict are also described in
   // chrome/browser/resources/extensions/extension_list.js in @typedef for
@@ -398,25 +384,10 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   }
 
   // Add views
-  base::ListValue* views = new base::ListValue;
-  for (std::vector<ExtensionPage>::const_iterator iter = pages.begin();
-       iter != pages.end(); ++iter) {
-    base::DictionaryValue* view_value = new base::DictionaryValue;
-    if (iter->url.scheme() == kExtensionScheme) {
-      // No leading slash.
-      view_value->SetString("path", iter->url.path().substr(1));
-    } else {
-      // For live pages, use the full URL.
-      view_value->SetString("path", iter->url.spec());
-    }
-    view_value->SetInteger("renderViewId", iter->render_view_id);
-    view_value->SetInteger("renderProcessId", iter->render_process_id);
-    view_value->SetBoolean("incognito", iter->incognito);
-    view_value->SetBoolean("generatedBackgroundPage",
-                           iter->generated_background_page);
-    views->Append(view_value);
-  }
-  extension_data->Set("views", views);
+  base::ListValue* views_value = new base::ListValue;
+  for (const InspectableViewsFinder::View& view : views)
+    views_value->Append(view->ToValue().release());
+  extension_data->Set("views", views_value);
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(extension_service_->profile());
   extension_data->SetBoolean(
@@ -904,12 +875,13 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   const ExtensionSet& enabled_set = registry->enabled_extensions();
+  InspectableViewsFinder views_finder(profile, deleting_rvh_);
   for (ExtensionSet::const_iterator extension = enabled_set.begin();
        extension != enabled_set.end(); ++extension) {
     if (ui_util::ShouldDisplayInExtensionSettings(extension->get(), profile)) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),
-          GetInspectablePagesForExtension(extension->get(), true),
+          views_finder.GetViewsForExtension(**extension, true),
           warnings));
     }
   }
@@ -919,18 +891,17 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
     if (ui_util::ShouldDisplayInExtensionSettings(extension->get(), profile)) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),
-          GetInspectablePagesForExtension(extension->get(), false),
+          views_finder.GetViewsForExtension(**extension, false),
           warnings));
     }
   }
   const ExtensionSet& terminated_set = registry->terminated_extensions();
-  std::vector<ExtensionPage> empty_pages;
   for (ExtensionSet::const_iterator extension = terminated_set.begin();
        extension != terminated_set.end(); ++extension) {
     if (ui_util::ShouldDisplayInExtensionSettings(extension->get(), profile)) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),
-          empty_pages,  // Terminated process has no active pages.
+          InspectableViewsFinder::ViewList(),  // No views for terminated.
           warnings));
     }
   }
@@ -1209,122 +1180,6 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   extension_management_observer_.Add(
       ExtensionManagementFactory::GetForBrowserContext(profile));
-}
-
-std::vector<ExtensionPage>
-ExtensionSettingsHandler::GetInspectablePagesForExtension(
-    const Extension* extension, bool extension_is_enabled) {
-  std::vector<ExtensionPage> result;
-
-  // Get the extension process's active views.
-  extensions::ProcessManager* process_manager =
-      ProcessManager::Get(extension_service_->profile());
-  GetInspectablePagesForExtensionProcess(
-      extension,
-      process_manager->GetRenderViewHostsForExtension(extension->id()),
-      &result);
-
-  // Get app window views
-  GetAppWindowPagesForExtensionProfile(
-      extension, extension_service_->profile(), &result);
-
-  // Include a link to start the lazy background page, if applicable.
-  if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
-      extension_is_enabled &&
-      !process_manager->GetBackgroundHostForExtension(extension->id())) {
-    result.push_back(ExtensionPage(
-        BackgroundInfo::GetBackgroundURL(extension),
-        -1,
-        -1,
-        false,
-        BackgroundInfo::HasGeneratedBackgroundPage(extension)));
-  }
-
-  // Repeat for the incognito process, if applicable. Don't try to get
-  // app windows for incognito processes.
-  if (extension_service_->profile()->HasOffTheRecordProfile() &&
-      IncognitoInfo::IsSplitMode(extension) &&
-      util::IsIncognitoEnabled(extension->id(),
-                               extension_service_->profile())) {
-    extensions::ProcessManager* process_manager = ProcessManager::Get(
-        extension_service_->profile()->GetOffTheRecordProfile());
-    GetInspectablePagesForExtensionProcess(
-        extension,
-        process_manager->GetRenderViewHostsForExtension(extension->id()),
-        &result);
-
-    if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
-        extension_is_enabled &&
-        !process_manager->GetBackgroundHostForExtension(extension->id())) {
-      result.push_back(ExtensionPage(
-          BackgroundInfo::GetBackgroundURL(extension),
-          -1,
-          -1,
-          true,
-          BackgroundInfo::HasGeneratedBackgroundPage(extension)));
-    }
-  }
-
-  return result;
-}
-
-void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
-    const Extension* extension,
-    const std::set<RenderViewHost*>& views,
-    std::vector<ExtensionPage>* result) {
-  bool has_generated_background_page =
-      BackgroundInfo::HasGeneratedBackgroundPage(extension);
-  for (std::set<RenderViewHost*>::const_iterator iter = views.begin();
-       iter != views.end(); ++iter) {
-    RenderViewHost* host = *iter;
-    WebContents* web_contents = WebContents::FromRenderViewHost(host);
-    ViewType host_type = GetViewType(web_contents);
-    if (host == deleting_rvh_ ||
-        VIEW_TYPE_EXTENSION_POPUP == host_type ||
-        VIEW_TYPE_EXTENSION_DIALOG == host_type)
-      continue;
-
-    GURL url = web_contents->GetURL();
-    content::RenderProcessHost* process = host->GetProcess();
-    bool is_background_page =
-        (url == BackgroundInfo::GetBackgroundURL(extension));
-    result->push_back(
-        ExtensionPage(url,
-                      process->GetID(),
-                      host->GetRoutingID(),
-                      process->GetBrowserContext()->IsOffTheRecord(),
-                      is_background_page && has_generated_background_page));
-  }
-}
-
-void ExtensionSettingsHandler::GetAppWindowPagesForExtensionProfile(
-    const Extension* extension,
-    Profile* profile,
-    std::vector<ExtensionPage>* result) {
-  AppWindowRegistry* registry = AppWindowRegistry::Get(profile);
-  if (!registry) return;
-
-  const AppWindowRegistry::AppWindowList windows =
-      registry->GetAppWindowsForApp(extension->id());
-
-  bool has_generated_background_page =
-      BackgroundInfo::HasGeneratedBackgroundPage(extension);
-  for (AppWindowRegistry::const_iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    WebContents* web_contents = (*it)->web_contents();
-    RenderViewHost* host = web_contents->GetRenderViewHost();
-    content::RenderProcessHost* process = host->GetProcess();
-
-    bool is_background_page =
-        (web_contents->GetURL() == BackgroundInfo::GetBackgroundURL(extension));
-    result->push_back(
-        ExtensionPage(web_contents->GetURL(),
-                      process->GetID(),
-                      host->GetRoutingID(),
-                      process->GetBrowserContext()->IsOffTheRecord(),
-                      is_background_page && has_generated_background_page));
-  }
 }
 
 void ExtensionSettingsHandler::OnReinstallComplete(

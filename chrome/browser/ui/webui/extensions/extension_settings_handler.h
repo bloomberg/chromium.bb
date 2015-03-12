@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -47,21 +48,6 @@ class Extension;
 class ExtensionRegistry;
 class ManagementPolicy;
 
-// Information about a page running in an extension, for example a popup bubble,
-// a background page, or a tab contents.
-struct ExtensionPage {
-  ExtensionPage(const GURL& url,
-                int render_process_id,
-                int render_view_id,
-                bool incognito,
-                bool generated_background_page);
-  GURL url;
-  int render_process_id;
-  int render_view_id;
-  bool incognito;
-  bool generated_background_page;
-};
-
 // Extension Settings UI handler.
 class ExtensionSettingsHandler
     : public content::WebUIMessageHandler,
@@ -85,7 +71,7 @@ class ExtensionSettingsHandler
   // Note: |warning_service| can be NULL in unit tests.
   base::DictionaryValue* CreateExtensionDetailValue(
       const Extension* extension,
-      const std::vector<ExtensionPage>& pages,
+      const InspectableViewsFinder::ViewList& pages,
       const WarningService* warning_service);
 
   void GetLocalizedValues(content::WebUIDataSource* source);
@@ -196,17 +182,6 @@ class ExtensionSettingsHandler
 
   // Register for notifications that we need to reload the page.
   void MaybeRegisterForNotifications();
-
-  // Helper that lists the current inspectable html pages for an extension.
-  std::vector<ExtensionPage> GetInspectablePagesForExtension(
-      const Extension* extension, bool extension_is_enabled);
-  void GetInspectablePagesForExtensionProcess(
-      const Extension* extension,
-      const std::set<content::RenderViewHost*>& views,
-      std::vector<ExtensionPage>* result);
-  void GetAppWindowPagesForExtensionProfile(const Extension* extension,
-                                            Profile* profile,
-                                            std::vector<ExtensionPage>* result);
 
   // Called when the reinstallation is complete.
   void OnReinstallComplete(bool success,

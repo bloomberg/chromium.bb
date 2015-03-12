@@ -24,11 +24,198 @@ var ItemType;
 var ItemInspectView;
 
 /**
+ * @enum {string}
+ */
+chrome.developerPrivate.ExtensionType = {
+  HOSTED_APP: 'HOSTED_APP',
+  PLATFORM_APP: 'PLATFORM_APP',
+  LEGACY_PACKAGED_APP: 'LEGACY_PACKAGED_APP',
+  EXTENSION: 'EXTENSION',
+  THEME: 'THEME',
+  SHARED_MODULE: 'SHARED_MODULE'
+};
+
+/**
+ * @enum {string}
+ */
+chrome.developerPrivate.Location = {
+  FROM_STORE: 'FROM_STORE',
+  UNPACKED: 'UNPACKED',
+  THIRD_PARTY: 'THIRD_PARTY',
+  UNKNOWN: 'UNKNOWN'
+};
+
+/**
+ * @enum {string}
+ */
+chrome.developerPrivate.ViewType = {
+  APP_WINDOW: 'APP_WINDOW',
+  BACKGROUND_CONTENTS: 'BACKGROUND_CONTENTS',
+  EXTENSION_BACKGROUND_PAGE: 'EXTENSION_BACKGROUND_PAGE',
+  EXTENSION_DIALOG: 'EXTENSION_DIALOG',
+  EXTENSION_POPUP: 'EXTENSION_POPUP',
+  LAUNCHER_PAGE: 'LAUNCHER_PAGE',
+  PANEL: 'PANEL',
+  TAB_CONTENTS: 'TAB_CONTENTS',
+  VIRTUAL_KEYBOARD: 'VIRTUAL_KEYBOARD'
+};
+
+/**
+ * @enum {string}
+ */
+chrome.developerPrivate.ErrorType = {
+  MANIFEST: 'MANIFEST',
+  RUNTIME: 'RUNTIME'
+};
+
+/**
+ * @enum {string}
+ */
+chrome.developerPrivate.ErrorLevel = {
+  LOG: 'LOG',
+  WARN: 'WARN',
+  ERROR: 'ERROR'
+};
+
+/**
+ * @enum {string}
+ */
+chrome.developerPrivate.ExtensionState = {
+  ENABLED: 'ENABLED',
+  DISABLED: 'DISABLED',
+  TERMINATED: 'TERMINATED'
+};
+
+/**
  * @typedef {{
  *   message: string
  * }}
  */
 var InstallWarning;
+
+/**
+ * @typedef {{
+ *   isEnabled: boolean,
+ *   isActive: boolean
+ * }}
+ */
+var AccessModifier;
+
+/**
+ * @typedef {{
+ *   lineNumber: number,
+ *   columnNumber: number,
+ *   url: string,
+ *   functionName: string
+ * }}
+ */
+var StackFrame;
+
+/**
+ * @typedef {{
+ *   type: chrome.developerPrivate.ErrorType,
+ *   extensionId: string,
+ *   fromIncognito: boolean,
+ *   source: string,
+ *   message: string,
+ *   manifestKey: string,
+ *   manifestSpecific: (string|undefined)
+ * }}
+ */
+var ManifestError;
+
+/**
+ * @typedef {{
+ *   type: chrome.developerPrivate.ErrorType,
+ *   extensionId: string,
+ *   fromIncognito: boolean,
+ *   source: string,
+ *   message: string,
+ *   severity: chrome.developerPrivate.ErrorLevel,
+ *   contextUrl: string,
+ *   occurrences: number,
+ *   renderViewId: number,
+ *   renderProcessId: number,
+ *   canInspect: boolean,
+ *   stackTrace: Array
+ * }}
+ */
+var RuntimeError;
+
+/**
+ * @typedef {{
+ *   suspiciousInstall: boolean,
+ *   corruptInstall: boolean,
+ *   updateRequired: boolean
+ * }}
+ */
+var DisableReasons;
+
+/**
+ * @typedef {{
+ *   openInTab: boolean,
+ *   url: string
+ * }}
+ */
+var OptionsPage;
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   specified: boolean
+ * }}
+ */
+var HomePage;
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   renderProcessId: number,
+ *   renderViewId: number,
+ *   incognito: boolean,
+ *   type: chrome.developerPrivate.ViewType
+ * }}
+ */
+var ExtensionView;
+
+/**
+ * @typedef {{
+ *   actionButtonHidden: boolean,
+ *   blacklistText: (string|undefined),
+ *   dependentExtensions: Array,
+ *   description: string,
+ *   disableReasons: DisableReasons,
+ *   errorCollection: AccessModifier,
+ *   fileAccess: AccessModifier,
+ *   homePage: HomePage,
+ *   iconUrl: string,
+ *   id: string,
+ *   incognitoAccess: AccessModifier,
+ *   installedByCustodian: boolean,
+ *   installWarnings: Array,
+ *   launchUrl: (string|undefined),
+ *   location: chrome.developerPrivate.Location,
+ *   locationText: (string|undefined),
+ *   manifestErrors: Array,
+ *   mustRemainInstalled: boolean,
+ *   name: string,
+ *   offlineEnabled: boolean,
+ *   optionsPage: (OptionsPage|undefined),
+ *   path: (string|undefined),
+ *   policyText: (string|undefined),
+ *   prettifiedPath: (string|undefined),
+ *   runOnAllUrls: AccessModifier,
+ *   runtimeErrors: Array,
+ *   runtimeWarnings: Array,
+ *   state: chrome.developerPrivate.ExtensionState,
+ *   type: chrome.developerPrivate.ExtensionType,
+ *   updateUrl: string,
+ *   userMayModify: boolean,
+ *   version: string,
+ *   views: Array
+ * }}
+ */
+var ExtensionInfo;
 
 /**
  * @typedef {{
@@ -38,7 +225,6 @@ var InstallWarning;
  *   description: string,
  *   may_disable: boolean,
  *   enabled: boolean,
- *   disabled_reason: (string|undefined),
  *   isApp: boolean,
  *   type: ItemType,
  *   allow_activity: boolean,
@@ -63,6 +249,14 @@ var InstallWarning;
  * }}
  */
 var ItemInfo;
+
+/**
+ * @typedef {{
+ *   includeDisabled: (boolean|undefined),
+ *   includeTerminated: (boolean|undefined)
+ * }}
+ */
+var GetExtensionsInfoOptions;
 
 /**
  * @typedef {{
@@ -199,6 +393,21 @@ chrome.developerPrivate = {};
  * autoUpdate is successful.
  */
 chrome.developerPrivate.autoUpdate = function(callback) {};
+
+/**
+ * Returns information of all the extensions and apps installed.
+ * @param {GetExtensionsInfoOptions=} options Options to restrict the items
+ * returned.
+ * @param {Function=} callback Called with extensions info.
+ */
+chrome.developerPrivate.getExtensionsInfo = function(options, callback) {};
+
+/**
+ * Returns information of a particular extension.
+ * @param {string} id The id of the extension.
+ * @param {Function=} callback Called with the result.
+ */
+chrome.developerPrivate.getExtensionInfo = function(id, callback) {};
 
 /**
  * Returns information of all the extensions and apps installed.

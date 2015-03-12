@@ -7,6 +7,7 @@
 // apps and extensions.
 namespace developerPrivate {
 
+  // DEPRECATED: Prefer ExtensionType.
   enum ItemType {
     hosted_app,
     packaged_app,
@@ -15,6 +16,7 @@ namespace developerPrivate {
     theme
   };
 
+  // DEPRECATED: Prefer ExtensionView.
   dictionary ItemInspectView {
     // path to the inspect page.
     DOMString path;
@@ -31,6 +33,150 @@ namespace developerPrivate {
     DOMString message;
   };
 
+  enum ExtensionType {
+    HOSTED_APP,
+    PLATFORM_APP,
+    LEGACY_PACKAGED_APP,
+    EXTENSION,
+    THEME,
+    SHARED_MODULE
+  };
+
+  enum Location {
+    FROM_STORE,
+    UNPACKED,
+    THIRD_PARTY,
+    // "Unknown" includes crx's installed from chrome://extensions.
+    UNKNOWN
+  };
+
+  enum ViewType {
+    APP_WINDOW,
+    BACKGROUND_CONTENTS,
+    EXTENSION_BACKGROUND_PAGE,
+    EXTENSION_DIALOG,
+    EXTENSION_POPUP,
+    LAUNCHER_PAGE,
+    PANEL,
+    TAB_CONTENTS,
+    VIRTUAL_KEYBOARD
+  };
+
+  enum ErrorType {
+    MANIFEST,
+    RUNTIME
+  };
+
+  enum ErrorLevel {
+    LOG,
+    WARN,
+    ERROR
+  };
+
+  enum ExtensionState {
+    ENABLED,
+    DISABLED,
+    TERMINATED
+  };
+
+  dictionary AccessModifier {
+    boolean isEnabled;
+    boolean isActive;
+  };
+
+  dictionary StackFrame {
+    long lineNumber;
+    long columnNumber;
+    DOMString url;
+    DOMString functionName;
+  };
+
+  dictionary ManifestError {
+    ErrorType type;
+    DOMString extensionId;
+    boolean fromIncognito;
+    DOMString source;
+    DOMString message;
+    DOMString manifestKey;
+    DOMString? manifestSpecific;
+  };
+
+  dictionary RuntimeError {
+    ErrorType type;
+    DOMString extensionId;
+    boolean fromIncognito;
+    DOMString source;
+    DOMString message;
+    ErrorLevel severity;
+    DOMString contextUrl;
+    long occurrences;
+    long renderViewId;
+    long renderProcessId;
+    boolean canInspect;
+    StackFrame[] stackTrace;
+  };
+
+  dictionary DisableReasons {
+    boolean suspiciousInstall;
+    boolean corruptInstall;
+    boolean updateRequired;
+  };
+
+  dictionary OptionsPage {
+    boolean openInTab;
+    DOMString url;
+  };
+
+  dictionary HomePage {
+    DOMString url;
+    boolean specified;
+  };
+
+  dictionary ExtensionView {
+    DOMString url;
+    long renderProcessId;
+    long renderViewId;
+    boolean incognito;
+    ViewType type;
+  };
+
+  dictionary ExtensionInfo {
+    boolean actionButtonHidden;  // enable_show_button
+    DOMString? blacklistText;
+    DOMString[] dependentExtensions;
+    DOMString description;
+    DisableReasons disableReasons;  //suspicious, corrupt, updaterequired
+    AccessModifier errorCollection;  // errorCollectionEd, wantsErrorCollection;
+    AccessModifier fileAccess;  // allowFileAccess, wantsFileAccess
+    HomePage homePage;  // homepageProvided && homepageUrl
+    DOMString iconUrl;  // icon
+    DOMString id;
+    AccessModifier incognitoAccess;  // enabled/can be enabled incognito
+    boolean installedByCustodian;
+    DOMString[] installWarnings;
+    DOMString? launchUrl;
+    Location location;  // is_unpacked, is from store, allow reload
+    DOMString? locationText;
+    ManifestError[] manifestErrors;
+    boolean mustRemainInstalled;  // recommendedInstall
+    DOMString name;
+    boolean offlineEnabled;
+    OptionsPage? optionsPage;
+    DOMString? path;
+    DOMString? policyText;
+    DOMString? prettifiedPath;
+    AccessModifier runOnAllUrls;  // allowAllUrls, showAllUrls
+    RuntimeError[] runtimeErrors;
+    DOMString[] runtimeWarnings;  // warnings
+    ExtensionState state;
+    ExtensionType type;  // is_hosted_app, is_platform_app, etc
+    DOMString updateUrl;
+    boolean userMayModify;  // managed install
+    DOMString version;
+    ExtensionView[] views;
+  };
+
+  // DEPRECATED: Prefer ExtensionInfo.
   dictionary ItemInfo {
     DOMString id;
     DOMString name;
@@ -38,7 +184,6 @@ namespace developerPrivate {
     DOMString description;
     boolean may_disable;
     boolean enabled;
-    DOMString? disabled_reason;
     boolean isApp;
     ItemType type;
     boolean allow_activity;
@@ -66,6 +211,11 @@ namespace developerPrivate {
 
     // All views of the current extension.
     ItemInspectView[] views;
+  };
+
+  dictionary GetExtensionsInfoOptions {
+    boolean? includeDisabled;
+    boolean? includeTerminated;
   };
 
   // TODO(devlin): Combine inspect and openDevTools?
@@ -200,6 +350,8 @@ namespace developerPrivate {
 
   callback VoidCallback = void ();
   callback BooleanCallback = void (boolean result);
+  callback ExtensionInfosCallback = void (ExtensionInfo[] result);
+  callback ExtensionInfoCallback = void (ExtensionInfo result);
   callback ItemsInfoCallback = void (ItemInfo[] result);
   callback GetProjectsInfoCallback = void (ProjectInfo[] result);
   callback PathCallback = void (DOMString path);
@@ -215,9 +367,22 @@ namespace developerPrivate {
     static void autoUpdate(optional BooleanCallback callback);
 
     // Returns information of all the extensions and apps installed.
+    // |options| : Options to restrict the items returned.
+    // |callback| : Called with extensions info.
+    static void getExtensionsInfo(optional GetExtensionsInfoOptions options,
+                                  optional ExtensionInfosCallback callback);
+
+    // Returns information of a particular extension.
+    // |id| : The id of the extension.
+    // |callback| : Called with the result.
+    static void getExtensionInfo(DOMString id,
+                                 optional ExtensionInfoCallback callback);
+
+    // Returns information of all the extensions and apps installed.
     // |includeDisabled| : include disabled items.
     // |includeTerminated| : include terminated items.
     // |callback| : Called with items info.
+    // DEPRECATED: Prefer getExtensionsInfo.
     static void getItemsInfo(boolean includeDisabled,
                              boolean includeTerminated,
                              ItemsInfoCallback callback);

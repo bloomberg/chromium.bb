@@ -58,8 +58,8 @@
  *            updateRequiredByPolicy: boolean,
  *            version: string,
  *            views: Array<{renderViewId: number, renderProcessId: number,
- *                path: string, incognito: boolean,
- *                generatedBackgroundPage: boolean}>,
+ *                url: string, incognito: boolean,
+ *                type: chrome.developerPrivate.ViewType}>,
  *            wantsErrorCollection: boolean,
  *            wantsFileAccess: boolean,
  *            warnings: (Array|undefined)}}
@@ -729,8 +729,19 @@ cr.define('extensions', function() {
           link.removeEventListener('click', link.clickHandler);
 
         extension.views.forEach(function(view, i) {
-          var displayName = view.generatedBackgroundPage ?
-              loadTimeData.getString('backgroundPage') : view.path;
+          if (view.type == chrome.developerPrivate.ViewType.EXTENSION_DIALOG ||
+              view.type == chrome.developerPrivate.ViewType.EXTENSION_POPUP) {
+            return;
+          }
+          var displayName;
+          if (view.url.indexOf('chrome-extension://') == 0) {
+            var pathOffset = 'chrome-extension://'.length + 32 + 1;
+            displayName = view.url.substring(pathOffset);
+            if (displayName == '_generated_background_page.html')
+              displayName = loadTimeData.getString('backgroundPage');
+          } else {
+            displayName = view.url;
+          }
           var label = displayName +
               (view.incognito ?
                   ' ' + loadTimeData.getString('viewIncognito') : '') +

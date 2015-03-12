@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -14,16 +15,21 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/api/developer_private.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/test_util.h"
+#include "extensions/common/value_builder.h"
 
 namespace extensions {
 
@@ -402,6 +408,107 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   EXPECT_FALSE(response->after_highlight.empty());
   EXPECT_EQ("foo: manifest.json", response->title);
   EXPECT_EQ(kErrorMessage, response->message);
+}
+
+// Test developerPrivate.getExtensionsInfo.
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
+  // Enable error console for testing.
+  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
+  FeatureSwitch::ScopedOverride error_console_override(
+      FeatureSwitch::error_console(), true);
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+
+  const char kName[] = "extension name";
+  const char kVersion[] = "1.0.0.1";
+  std::string id = crx_file::id_util::GenerateId(kName);
+  DictionaryBuilder manifest;
+  manifest.Set("name", kName)
+          .Set("version", kVersion)
+          .Set("manifest_version", 2)
+          .Set("description", "an extension")
+          .Set("permissions", ListBuilder().Append("file://*/*"));
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder().SetManifest(manifest)
+                        .SetLocation(Manifest::UNPACKED)
+                        .SetPath(data_dir())
+                        .SetID(id)
+                        .Build();
+  service()->AddExtension(extension.get());
+  ErrorConsole* error_console = ErrorConsole::Get(profile());
+  error_console->ReportError(
+      make_scoped_ptr(new RuntimeError(
+          extension->id(),
+          false,
+          base::UTF8ToUTF16("source"),
+          base::UTF8ToUTF16("message"),
+          StackTrace(1, StackFrame(1,
+                                   1,
+                                   base::UTF8ToUTF16("source"),
+                                   base::UTF8ToUTF16("function"))),
+          GURL("url"),
+          logging::LOG_ERROR,
+          1,
+          1)));
+  error_console->ReportError(
+      make_scoped_ptr(new ManifestError(extension->id(),
+                                        base::UTF8ToUTF16("message"),
+                                        base::UTF8ToUTF16("key"),
+                                        base::string16())));
+
+  // It's not feasible to validate every field here, because that would be
+  // a duplication of the logic in the method itself. Instead, test a handful
+  // of fields, and, more importantly, check that we return something reasonable
+  // (which is done through the serialization/deserialization that happens).
+  scoped_refptr<UIThreadExtensionFunction> function(
+      new api::DeveloperPrivateGetExtensionsInfoFunction());
+  EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
+  const base::ListValue* results = function->GetResultList();
+  ASSERT_EQ(1u, results->GetSize());
+  const base::ListValue* list = nullptr;
+  ASSERT_TRUE(results->GetList(0u, &list));
+  ASSERT_EQ(1u, list->GetSize());
+  const base::Value* value = nullptr;
+  ASSERT_TRUE(list->Get(0u, &value));
+  scoped_ptr<api::developer_private::ExtensionInfo> info =
+      api::developer_private::ExtensionInfo::FromValue(*value);
+  ASSERT_TRUE(info);
+  EXPECT_EQ(kName, info->name);
+  EXPECT_EQ(id, info->id);
+  EXPECT_EQ(kVersion, info->version);
+  EXPECT_EQ(api::developer_private::EXTENSION_STATE_ENABLED, info->state);
+  EXPECT_EQ(api::developer_private::EXTENSION_TYPE_EXTENSION, info->type);
+  EXPECT_TRUE(info->file_access.is_enabled);
+  EXPECT_FALSE(info->file_access.is_active);
+  EXPECT_TRUE(info->incognito_access.is_enabled);
+  EXPECT_FALSE(info->incognito_access.is_active);
+  ASSERT_EQ(1u, info->runtime_errors.size());
+  const api::developer_private::RuntimeError& runtime_error =
+      *info->runtime_errors[0];
+  EXPECT_EQ(extension->id(), runtime_error.extension_id);
+  EXPECT_EQ(api::developer_private::ERROR_TYPE_RUNTIME, runtime_error.type);
+  EXPECT_EQ(api::developer_private::ERROR_LEVEL_ERROR,
+            runtime_error.severity);
+  EXPECT_EQ(1u, runtime_error.stack_trace.size());
+  ASSERT_EQ(1u, info->manifest_errors.size());
+  const api::developer_private::ManifestError& manifest_error =
+      *info->manifest_errors[0];
+  EXPECT_EQ(extension->id(), manifest_error.extension_id);
+
+  // As a sanity check, also run the GetItemsInfo and make sure it returns a
+  // sane value.
+  function = new api::DeveloperPrivateGetItemsInfoFunction();
+  base::ListValue args;
+  args.AppendBoolean(false);
+  args.AppendBoolean(false);
+  EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
+  results = function->GetResultList();
+  ASSERT_EQ(1u, results->GetSize());
+  ASSERT_TRUE(results->GetList(0u, &list));
+  ASSERT_EQ(1u, list->GetSize());
+  ASSERT_TRUE(list->Get(0u, &value));
+  scoped_ptr<api::developer_private::ItemInfo> item_info =
+      api::developer_private::ItemInfo::FromValue(*value);
+  ASSERT_TRUE(item_info);
 }
 
 }  // namespace extensions

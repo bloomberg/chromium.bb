@@ -7,12 +7,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/test_browser_thread.h"
@@ -71,7 +73,7 @@ class ExtensionUITest : public testing::Test {
     base::Value* value;
 
     JSONFileValueDeserializer deserializer(path);
-    value = deserializer.Deserialize(NULL, error);
+    value = deserializer.Deserialize(nullptr, error);
 
     return static_cast<base::DictionaryValue*>(value);
   }
@@ -99,7 +101,7 @@ class ExtensionUITest : public testing::Test {
 
   base::DictionaryValue* CreateExtensionDetailViewFromPath(
       const base::FilePath& extension_path,
-      const std::vector<ExtensionPage>& pages,
+      const InspectableViewsFinder::ViewList& views,
       Manifest::Location location) {
     std::string error;
 
@@ -114,12 +116,13 @@ class ExtensionUITest : public testing::Test {
     EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
 
-    return handler_->CreateExtensionDetailValue(extension.get(), pages, NULL);
+    return handler_->CreateExtensionDetailValue(
+        extension.get(), views, nullptr);
   }
 
   void CompareExpectedAndActualOutput(
       const base::FilePath& extension_path,
-      const std::vector<ExtensionPage>& pages,
+      const InspectableViewsFinder::ViewList& views,
       const base::FilePath& expected_output_path) {
     std::string error;
 
@@ -130,7 +133,7 @@ class ExtensionUITest : public testing::Test {
     // Produce test output.
     scoped_ptr<base::DictionaryValue> actual_output_data(
         CreateExtensionDetailViewFromPath(
-            extension_path, pages, Manifest::INVALID_LOCATION));
+            extension_path, views, Manifest::INVALID_LOCATION));
 
     // Compare the outputs.
     // Ignore unknown fields in the actual output data.
@@ -140,7 +143,7 @@ class ExtensionUITest : public testing::Test {
     for (base::DictionaryValue::Iterator field(*expected_output_data);
          !field.IsAtEnd(); field.Advance()) {
       const base::Value* expected_value = &field.value();
-      base::Value* actual_value = NULL;
+      base::Value* actual_value = nullptr;
       EXPECT_TRUE(actual_output_data->Get(field.key(), &actual_value)) <<
           field.key() + " is missing" + paths_details;
       EXPECT_TRUE(expected_value->Equals(actual_value)) << field.key() +
@@ -177,20 +180,20 @@ TEST_F(ExtensionUITest, GenerateExtensionsJSONData) {
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
 
-  std::vector<ExtensionPage> pages;
-  pages.push_back(ExtensionPage(
+  InspectableViewsFinder::ViewList views;
+  views.push_back(InspectableViewsFinder::ConstructView(
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/bar.html"),
-      42, 88, false, false));
-  pages.push_back(ExtensionPage(
+      42, 88, false, VIEW_TYPE_TAB_CONTENTS));
+  views.push_back(InspectableViewsFinder::ConstructView(
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/dog.html"),
-      0, 0, false, false));
+      0, 0, false, VIEW_TYPE_TAB_CONTENTS));
 
   expected_output_path = data_test_dir_path.AppendASCII("extensions")
       .AppendASCII("ui")
       .AppendASCII("create_extension_detail_value_expected_output")
       .AppendASCII("good-extension1.json");
 
-  CompareExpectedAndActualOutput(extension_path, pages, expected_output_path);
+  CompareExpectedAndActualOutput(extension_path, views, expected_output_path);
 
 #if !defined(OS_CHROMEOS)
   // Test Extension2
@@ -206,9 +209,11 @@ TEST_F(ExtensionUITest, GenerateExtensionsJSONData) {
       .AppendASCII("good-extension2.json");
 
   // It's OK to have duplicate URLs, so long as the IDs are different.
-  pages[1].url = pages[0].url;
+  views[0]->url =
+      "chrome-extension://hpiknbiabeeppbpihjehijgoemciehgk/bar.html";
+  views[1]->url = views[0]->url;
 
-  CompareExpectedAndActualOutput(extension_path, pages, expected_output_path);
+  CompareExpectedAndActualOutput(extension_path, views, expected_output_path);
 #endif
 
   // Test Extension3
@@ -223,9 +228,9 @@ TEST_F(ExtensionUITest, GenerateExtensionsJSONData) {
       .AppendASCII("create_extension_detail_value_expected_output")
       .AppendASCII("good-extension3.json");
 
-  pages.clear();
+  views.clear();
 
-  CompareExpectedAndActualOutput(extension_path, pages, expected_output_path);
+  CompareExpectedAndActualOutput(extension_path, views, expected_output_path);
 }
 
 // Test that using Manifest::UNPACKED for the extension location triggers the
@@ -240,11 +245,11 @@ TEST_F(ExtensionUITest, LocationLoadPropagation) {
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
 
-  std::vector<ExtensionPage> pages;
+  InspectableViewsFinder::ViewList views;
 
   scoped_ptr<base::DictionaryValue> extension_details(
       CreateExtensionDetailViewFromPath(
-          extension_path, pages, Manifest::UNPACKED));
+          extension_path, views, Manifest::UNPACKED));
 
   bool ui_allow_reload = false;
   bool ui_is_unpacked = false;
@@ -272,11 +277,11 @@ TEST_F(ExtensionUITest, LocationExternalPrefPropagation) {
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
 
-  std::vector<ExtensionPage> pages;
+  InspectableViewsFinder::ViewList views;
 
   scoped_ptr<base::DictionaryValue> extension_details(
       CreateExtensionDetailViewFromPath(
-          extension_path, pages, Manifest::EXTERNAL_PREF));
+          extension_path, views, Manifest::EXTERNAL_PREF));
 
   bool ui_allow_reload = true;
   bool ui_is_unpacked = true;
@@ -301,11 +306,11 @@ TEST_F(ExtensionUITest, PathPropagation) {
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
 
-  std::vector<ExtensionPage> pages;
+  InspectableViewsFinder::ViewList views;
 
   scoped_ptr<base::DictionaryValue> extension_details(
       CreateExtensionDetailViewFromPath(
-          extension_path, pages, Manifest::UNPACKED));
+          extension_path, views, Manifest::UNPACKED));
 
   base::FilePath::StringType ui_path;
 
@@ -327,7 +332,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
       CreateExtension("no urls", ListBuilder().Pass());
 
   scoped_ptr<base::DictionaryValue> value(handler()->CreateExtensionDetailValue(
-      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
+      all_urls_extension.get(), InspectableViewsFinder::ViewList(), nullptr));
   bool result = false;
   const std::string kShowAllUrls = "showAllUrls";
   const std::string kAllowAllUrls = "allowAllUrls";
@@ -343,7 +348,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
 
   // Now the extension should both want and have all urls.
   value.reset(handler()->CreateExtensionDetailValue(
-      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
+      all_urls_extension.get(), InspectableViewsFinder::ViewList(), nullptr));
   EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_TRUE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
@@ -351,7 +356,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
 
   // The other extension should neither want nor have all urls.
   value.reset(handler()->CreateExtensionDetailValue(
-      no_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
+      no_urls_extension.get(), InspectableViewsFinder::ViewList(), nullptr));
   EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_FALSE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
@@ -368,7 +373,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   // Since the extension doesn't have access to all urls (but normally would),
   // the extension should have the "want" flag even with the switch off.
   value.reset(handler()->CreateExtensionDetailValue(
-      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
+      all_urls_extension.get(), InspectableViewsFinder::ViewList(), nullptr));
   EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_TRUE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
@@ -378,7 +383,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   // there, since it has an explicitly-set user preference.
   util::SetAllowedScriptingOnAllUrls(all_urls_extension->id(), profile(), true);
   value.reset(handler()->CreateExtensionDetailValue(
-      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
+      all_urls_extension.get(), InspectableViewsFinder::ViewList(), nullptr));
   EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_TRUE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
@@ -391,7 +396,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   // Even though the extension has all_urls permission, the checkbox shouldn't
   // show up without the switch.
   value.reset(handler()->CreateExtensionDetailValue(
-      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
+      all_urls_extension.get(), InspectableViewsFinder::ViewList(), nullptr));
   EXPECT_TRUE(value->GetBoolean(kShowAllUrls, &result));
   EXPECT_FALSE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));

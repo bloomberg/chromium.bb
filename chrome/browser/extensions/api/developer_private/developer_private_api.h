@@ -188,44 +188,43 @@ class DeveloperPrivateAutoUpdateFunction : public ChromeSyncExtensionFunction {
 };
 
 class DeveloperPrivateGetItemsInfoFunction
-    : public ChromeAsyncExtensionFunction {
+    : public DeveloperPrivateAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.getItemsInfo",
                              DEVELOPERPRIVATE_GETITEMSINFO)
-
- protected:
-  ~DeveloperPrivateGetItemsInfoFunction() override;
-
-  // ExtensionFunction:
-  bool RunAsync() override;
+  DeveloperPrivateGetItemsInfoFunction();
 
  private:
-  scoped_ptr<developer::ItemInfo> CreateItemInfo(const Extension& item,
-                                                 bool item_is_enabled);
+  ~DeveloperPrivateGetItemsInfoFunction() override;
+  ResponseAction Run() override;
 
   void GetIconsOnFileThread(
-      ItemInfoList item_list,
-      std::map<std::string, ExtensionResource> itemIdToIconResourceMap);
+      std::map<std::string, ExtensionResource> resource_map);
+  void Finish();
 
-  // Helper that lists the current inspectable html pages for the extension.
-  void GetInspectablePagesForExtensionProcess(
-      const Extension* extension,
-      const std::set<content::RenderViewHost*>& views,
-      ItemInspectViewList* result);
+  ItemInfoList item_list_;
+};
 
-  ItemInspectViewList GetInspectablePagesForExtension(
-      const Extension* extension,
-      bool extension_is_enabled);
+class DeveloperPrivateGetExtensionsInfoFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.getExtensionsInfo",
+                             DEVELOPERPRIVATE_GETEXTENSIONSINFO);
 
-  void GetAppWindowPagesForExtensionProfile(const Extension* extension,
-                                            ItemInspectViewList* result);
+ private:
+  ~DeveloperPrivateGetExtensionsInfoFunction() override;
+  ResponseAction Run() override;
+};
 
-  linked_ptr<developer::ItemInspectView> constructInspectView(
-      const GURL& url,
-      int render_process_id,
-      int render_view_id,
-      bool incognito,
-      bool generated_background_page);
+class DeveloperPrivateGetExtensionInfoFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.getExtensionInfo",
+                             DEVELOPERPRIVATE_GETEXTENSIONINFO);
+
+ private:
+  ~DeveloperPrivateGetExtensionInfoFunction() override;
+  ResponseAction Run() override;
 };
 
 class DeveloperPrivateInspectFunction : public UIThreadExtensionFunction {

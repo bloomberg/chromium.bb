@@ -15,15 +15,15 @@
   "allowFileAccess": false,
   "views": [
     {
-      "generatedBackgroundPage": false,
-      "path": "bar.html",
+      "type": "TAB_CONTENTS",
+      "url": "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/bar.html",
       "renderProcessId": 42,
       "renderViewId": 88,
       "incognito": false
     },
     {
-      "generatedBackgroundPage": false,
-      "path": "dog.html",
+      "type": "TAB_CONTENTS",
+      "url": "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/dog.html",
       "renderProcessId": 0,
       "renderViewId": 0,
       "incognito": false
