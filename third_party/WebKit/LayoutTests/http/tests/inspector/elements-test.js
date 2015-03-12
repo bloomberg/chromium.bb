@@ -318,8 +318,6 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
             var section = sections[i];
             if (section.rule() && excludeMatched)
                 continue;
-            if (section.element && section.element.classList.contains("user-rule") && !WebInspector.settings.showUserAgentStyles.get())
-                continue;
             if (section.element.previousSibling && section.element.previousSibling.className === "sidebar-separator") {
                 var nodeDescription = "";
                 if (section.element.previousSibling.firstElementChild)
