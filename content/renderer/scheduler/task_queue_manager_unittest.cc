@@ -826,6 +826,15 @@ TEST_F(TaskQueueManagerTest, TaskObserverRemovingInsideTask) {
   message_loop_->RunUntilIdle();
 }
 
+TEST_F(TaskQueueManagerTest, ThreadCheckAfterTermination) {
+  Initialize(1);
+  scoped_refptr<base::SingleThreadTaskRunner> runner =
+      manager_->TaskRunnerForQueue(0);
+  EXPECT_TRUE(runner->RunsTasksOnCurrentThread());
+  manager_.reset();
+  EXPECT_TRUE(runner->RunsTasksOnCurrentThread());
+}
+
 }  // namespace
 }  // namespace content
 

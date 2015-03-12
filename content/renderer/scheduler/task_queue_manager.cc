@@ -87,6 +87,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 
   // This lock protects all members except the work queue.
   mutable base::Lock lock_;
+  base::PlatformThreadId thread_id_;
   TaskQueueManager* task_queue_manager_;
   base::TaskQueue incoming_queue_;
   TaskQueueManager::PumpPolicy pump_policy_;
@@ -101,7 +102,8 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 };
 
 TaskQueue::TaskQueue(TaskQueueManager* task_queue_manager)
-    : task_queue_manager_(task_queue_manager),
+    : thread_id_(base::PlatformThread::CurrentId()),
+      task_queue_manager_(task_queue_manager),
       pump_policy_(TaskQueueManager::PumpPolicy::AUTO),
       name_(nullptr) {
 }
@@ -116,9 +118,7 @@ void TaskQueue::WillDeleteTaskQueueManager() {
 
 bool TaskQueue::RunsTasksOnCurrentThread() const {
   base::AutoLock lock(lock_);
-  if (!task_queue_manager_)
-    return false;
-  return task_queue_manager_->RunsTasksOnCurrentThread();
+  return base::PlatformThread::CurrentId() == thread_id_;
 }
 
 bool TaskQueue::PostDelayedTaskImpl(const tracked_objects::Location& from_here,
