@@ -68,9 +68,19 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Has relative X & Y axes.
   bool HasRelXY() const;
 
-  // Determine whether absolute device X/Y coordinates are mapped onto the
-  // screen. This is the case for touchscreens and tablets but not touchpads.
-  bool IsMappedToScreen() const;
+  // Determine whether this is a "Direct Touch" device e.g. touchscreen.
+  // Corresponds to INPUT_PROP_DIRECT but may be inferred.
+  // NB: The Linux documentation says tablets would be direct, but they are
+  //     not (and drivers do not actually set INPUT_PROP_DIRECT for them).
+  bool HasDirect() const;
+
+  // Determine whether device moves the cursor. This is the case for touchpads
+  // and tablets but not touchscreens.
+  // Corresponds to INPUT_PROP_POINTER but may be inferred.
+  bool HasPointer() const;
+
+  // Has stylus EV_KEY events.
+  bool HasStylus() const;
 
   // Determine whether there's a keyboard on this device.
   bool HasKeyboard() const;
@@ -81,9 +91,26 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Determine whether there's a touchpad on this device.
   bool HasTouchpad() const;
 
+  // Determine whether there's a tablet on this device.
+  bool HasTablet() const;
+
+  // Determine whether there's a touchscreen on this device.
+  bool HasTouchscreen() const;
+
  private:
   // Return the slot vector in |slot_values_| for |code|.
   const std::vector<int32_t>& GetMtSlotsForCode(int code) const;
+
+  enum class LegacyAbsoluteDeviceType {
+    LADT_TOUCHPAD,
+    LADT_TOUCHSCREEN,
+    LADT_TABLET,
+    LADT_NONE,
+  };
+
+  // Probe absolute X & Y axis behavior. This is for legacy drivers that
+  // do not tell us what the axes mean.
+  LegacyAbsoluteDeviceType ProbeLegacyAbsoluteDevice() const;
 
   unsigned long ev_bits_[EVDEV_BITS_TO_LONGS(EV_CNT)];
   unsigned long key_bits_[EVDEV_BITS_TO_LONGS(KEY_CNT)];

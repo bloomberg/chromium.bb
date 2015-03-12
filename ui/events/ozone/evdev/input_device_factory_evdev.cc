@@ -56,16 +56,6 @@ struct OpenInputDeviceParams {
 };
 
 #if defined(USE_EVDEV_GESTURES)
-bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
-  if (devinfo.HasTouchpad())
-    return true;
-
-  if (devinfo.HasRelXY())
-    return true;  // mouse
-
-  return false;
-}
-
 void SetGestureIntProperty(GesturePropertyProvider* provider,
                            int id,
                            const std::string& name,
@@ -98,7 +88,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
 #if defined(USE_EVDEV_GESTURES)
   // Touchpad or mouse: use gestures library.
   // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
-  if (UseGesturesLibraryForDevice(devinfo)) {
+  if (devinfo.HasTouchpad() || devinfo.HasMouse()) {
     scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp =
         make_scoped_ptr(new GestureInterpreterLibevdevCros(
             params.id, params.cursor, params.gesture_property_provider,
@@ -109,7 +99,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
 #endif
 
   // Touchscreen: use TouchEventConverterEvdev.
-  if (devinfo.HasMTAbsXY()) {
+  if (devinfo.HasTouchscreen()) {
     scoped_ptr<TouchEventConverterEvdev> converter(new TouchEventConverterEvdev(
         fd, params.path, params.id, type, params.dispatcher));
     converter->Initialize(devinfo);
@@ -117,7 +107,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   }
 
   // Graphics tablet
-  if (devinfo.HasAbsXY())
+  if (devinfo.HasTablet())
     return make_scoped_ptr<EventConverterEvdev>(new TabletEventConverterEvdev(
         fd, params.path, params.id, type, params.cursor, devinfo,
         params.dispatcher));

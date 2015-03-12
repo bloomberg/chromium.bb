@@ -201,27 +201,49 @@ bool EventDeviceInfo::HasRelXY() const {
   return HasRelEvent(REL_X) && HasRelEvent(REL_Y);
 }
 
-bool EventDeviceInfo::IsMappedToScreen() const {
-  // Device position is mapped directly to the screen.
-  if (HasProp(INPUT_PROP_DIRECT))
-    return true;
+bool EventDeviceInfo::HasDirect() const {
+  bool has_direct = HasProp(INPUT_PROP_DIRECT);
+  bool has_pointer = HasProp(INPUT_PROP_POINTER);
+  if (has_direct || has_pointer)
+    return has_direct;
 
-  // Tablets are mapped to the screen.
-  if (HasKeyEvent(BTN_TOOL_PEN) || HasKeyEvent(BTN_STYLUS) ||
-      HasKeyEvent(BTN_STYLUS2))
-    return true;
+  switch (ProbeLegacyAbsoluteDevice()) {
+    case LegacyAbsoluteDeviceType::LADT_TOUCHSCREEN:
+      return true;
 
-  // Device position moves the cursor.
-  if (HasProp(INPUT_PROP_POINTER))
-    return false;
+    case LegacyAbsoluteDeviceType::LADT_TABLET:
+    case LegacyAbsoluteDeviceType::LADT_TOUCHPAD:
+    case LegacyAbsoluteDeviceType::LADT_NONE:
+      return false;
+  }
 
-  // Touchpads are not mapped to the screen.
-  if (HasKeyEvent(BTN_LEFT) || HasKeyEvent(BTN_MIDDLE) ||
-      HasKeyEvent(BTN_RIGHT) || HasKeyEvent(BTN_TOOL_FINGER))
-    return false;
+  NOTREACHED();
+  return false;
+}
 
-  // Touchscreens are mapped to the screen.
-  return true;
+bool EventDeviceInfo::HasPointer() const {
+  bool has_direct = HasProp(INPUT_PROP_DIRECT);
+  bool has_pointer = HasProp(INPUT_PROP_POINTER);
+  if (has_direct || has_pointer)
+    return has_pointer;
+
+  switch (ProbeLegacyAbsoluteDevice()) {
+    case LegacyAbsoluteDeviceType::LADT_TOUCHPAD:
+    case LegacyAbsoluteDeviceType::LADT_TABLET:
+      return true;
+
+    case LegacyAbsoluteDeviceType::LADT_TOUCHSCREEN:
+    case LegacyAbsoluteDeviceType::LADT_NONE:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool EventDeviceInfo::HasStylus() const {
+  return HasKeyEvent(BTN_TOOL_PEN) || HasKeyEvent(BTN_STYLUS) ||
+         HasKeyEvent(BTN_STYLUS2);
 }
 
 bool EventDeviceInfo::HasKeyboard() const {
@@ -242,7 +264,15 @@ bool EventDeviceInfo::HasMouse() const {
 }
 
 bool EventDeviceInfo::HasTouchpad() const {
-  return (HasAbsXY() || HasMTAbsXY()) && !IsMappedToScreen();
+  return HasAbsXY() && HasPointer() && !HasStylus();
+}
+
+bool EventDeviceInfo::HasTablet() const {
+  return HasAbsXY() && HasPointer() && HasStylus();
+}
+
+bool EventDeviceInfo::HasTouchscreen() const {
+  return HasAbsXY() && HasDirect();
 }
 
 const std::vector<int32_t>& EventDeviceInfo::GetMtSlotsForCode(int code) const {
@@ -251,6 +281,23 @@ const std::vector<int32_t>& EventDeviceInfo::GetMtSlotsForCode(int code) const {
   DCHECK_LT(index, EVDEV_ABS_MT_COUNT)
       << code << " is not a valid multi-touch code";
   return slot_values_[index];
+}
+
+EventDeviceInfo::LegacyAbsoluteDeviceType
+EventDeviceInfo::ProbeLegacyAbsoluteDevice() const {
+  if (!HasAbsXY())
+    return LegacyAbsoluteDeviceType::LADT_NONE;
+
+  if (HasStylus())
+    return LegacyAbsoluteDeviceType::LADT_TABLET;
+
+  if (HasKeyEvent(BTN_TOOL_FINGER) && HasKeyEvent(BTN_TOUCH))
+    return LegacyAbsoluteDeviceType::LADT_TOUCHPAD;
+
+  if (HasKeyEvent(BTN_TOUCH) || HasKeyEvent(BTN_LEFT))
+    return LegacyAbsoluteDeviceType::LADT_TOUCHSCREEN;
+
+  return LegacyAbsoluteDeviceType::LADT_NONE;
 }
 
 }  // namespace ui
