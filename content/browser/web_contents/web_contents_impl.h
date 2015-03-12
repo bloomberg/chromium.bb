@@ -1074,17 +1074,9 @@ class CONTENT_EXPORT WebContentsImpl
   net::LoadStateWithParam load_state_;
   base::string16 load_state_host_;
 
-  // LoadingProgressMap maps FrameTreeNode IDs to a double representing that
-  // frame's completion (from 0 to 1).
-  typedef base::hash_map<int64, double> LoadingProgressMap;
-  LoadingProgressMap loading_progresses_;
   double loading_total_progress_;
 
   base::TimeTicks loading_last_progress_update_;
-
-  // Counter to track how many frames have sent start notifications but not
-  // stop notifications.
-  int loading_frames_in_progress_;
 
   // Upload progress, for displaying in the status bar.
   // Set to zero when there is no significant upload happening.
