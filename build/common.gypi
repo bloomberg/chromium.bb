@@ -4010,6 +4010,7 @@
                       ['clang==1', {
                         'cflags!': [
                           # Clang does not support the following options.
+                          '-mapcs-frame',
                           '-mthumb-interwork',
                           '-finline-limit=64',
                           '-fno-tree-sra',
