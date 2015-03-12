@@ -57,23 +57,21 @@ function test()
         { "cat": "blink.console", "name": "nestableNested2", "ph": "e", "ts": 177000, "args": {"step": "n2"}, "id": 123, "tid": mainThread, "pid": pid },
         { "cat": "blink.console", "name": "nestableNested1", "ph": "e", "ts": 179000, "args": {}, "id": 123, "tid": mainThread, "pid": pid },
 
-        { "cat": "blink.console", "name": "nestableUnterminated", "ph": "b", "ts": 181000, "args": {}, "id": 124, "tid": mainThread, "pid": pid },
-        { "cat": "blink.console", "name": "nestableEndWithoutBegin", "ph": "e", "ts": 182000, "args": {}, "id": 124, "tid": mainThread, "pid": pid }
+        { "cat": "blink.console", "name": "nestableEndWithoutBegin", "ph": "e", "ts": 181000, "args": {}, "id": 124, "tid": mainThread, "pid": pid },
+        { "cat": "blink.console", "name": "nestableUnterminated", "ph": "b", "ts": 182000, "args": {}, "id": 124, "tid": mainThread, "pid": pid }
     ];
 
     var model = InspectorTest.createTracingModel();
     model.setEventsForTest(testData);
     var events = model.sortedProcesses()[0].threadById(mainThread).asyncEvents();
     for (var i = 0; i < events.length; ++i) {
-        var steps = events[i];
-        var stepString = "";
+        var stepString = events[i].name + " " + events[i].startTime + "-" + events[i].endTime + ": ";
+        var steps = events[i].steps;
         for (var j = 0; j < steps.length; ++j) {
             var step = steps[j];
             if (j)
-                stepString += " - ";
-            stepString += step.phase + " " + step.name + " " + step.startTime;
-            if (step.endTime)
-                stepString += "-" + step.endTime;
+                stepString += ", ";
+            stepString += step.phase + " " + step.startTime;
         }
         InspectorTest.addResult(stepString);
     }
