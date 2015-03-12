@@ -67,6 +67,30 @@ void InputEventTracker::ReleaseAll() {
   DCHECK(touch_point_ids_.empty());
 }
 
+void InputEventTracker::ReleaseAllIfModifiersStuck(bool alt_expected,
+                                                   bool ctrl_expected,
+                                                   bool meta_expected,
+                                                   bool shift_expected) {
+  // See src/ui/events/keycodes/dom4/keycode_converter_data.h for these values.
+  bool alt_down =
+      pressed_keys_.find(0x0700e2) != pressed_keys_.end() ||  // Left
+      pressed_keys_.find(0x0700e6) != pressed_keys_.end();    // Right
+  bool ctrl_down =
+      pressed_keys_.find(0x0700e0) != pressed_keys_.end() ||  // Left
+      pressed_keys_.find(0x0700e4) != pressed_keys_.end();    // Right
+  bool meta_down =
+      pressed_keys_.find(0x0700e3) != pressed_keys_.end() ||  // Left
+      pressed_keys_.find(0x0700e7) != pressed_keys_.end();    // Right
+  bool shift_down =
+      pressed_keys_.find(0x0700e1) != pressed_keys_.end() ||  // Left
+      pressed_keys_.find(0x0700e5) != pressed_keys_.end();    // Right
+
+  if ((alt_down && !alt_expected) || (ctrl_down && !ctrl_expected) ||
+      (meta_down && !meta_expected) || (shift_down && !shift_expected)) {
+    ReleaseAll();
+  }
+}
+
 void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
   // We don't need to track the keyboard lock states of key down events.
   // Pressed keys will be released with |lock_states| set to 0.

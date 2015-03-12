@@ -13,6 +13,8 @@
 #include "ppapi/cpp/touch_point.h"
 #include "ppapi/cpp/var.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/input_event_tracker.h"
+#include "remoting/protocol/input_stub.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace remoting {
@@ -106,8 +108,10 @@ protocol::MouseEvent MakeMouseEvent(const pp::MouseInputEvent& pp_mouse_event,
 
 }  // namespace
 
-PepperInputHandler::PepperInputHandler()
+PepperInputHandler::PepperInputHandler(
+    protocol::InputEventTracker* input_tracker)
     : input_stub_(nullptr),
+      input_tracker_(input_tracker),
       has_focus_(false),
       send_mouse_input_when_unfocused_(false),
       send_mouse_move_deltas_(false),
@@ -118,6 +122,8 @@ PepperInputHandler::PepperInputHandler()
 }
 
 bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
+  ReleaseAllIfModifiersStuck(event);
+
   switch (event.GetType()) {
     // Touch input cases.
     case PP_INPUTEVENT_TYPE_TOUCHSTART:
@@ -257,6 +263,31 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
 
 void PepperInputHandler::DidChangeFocus(bool has_focus) {
   has_focus_ = has_focus;
+}
+
+void PepperInputHandler::ReleaseAllIfModifiersStuck(
+    const pp::InputEvent& event) {
+  switch (event.GetType()) {
+    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+    case PP_INPUTEVENT_TYPE_MOUSEENTER:
+    case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+      // Don't check modifiers on every mouse move event.
+      break;
+
+    case PP_INPUTEVENT_TYPE_KEYUP:
+      // PPAPI doesn't always set modifiers correctly on KEYUP events. See
+      // crbug.com/464791 for details.
+      break;
+
+    default: {
+      uint32_t modifiers = event.GetModifiers();
+      input_tracker_->ReleaseAllIfModifiersStuck(
+          (modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY) != 0,
+          (modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY) != 0,
+          (modifiers & PP_INPUTEVENT_MODIFIER_METAKEY) != 0,
+          (modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY) != 0);
+    }
+  }
 }
 
 }  // namespace remoting

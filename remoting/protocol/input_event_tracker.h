@@ -33,6 +33,12 @@ class InputEventTracker : public InputStub {
   // touch points to the InputStub.
   void ReleaseAll();
 
+  // Similar to ReleaseAll, but conditional on a modifier key tracked by this
+  // class being pressed without the corresponding parameter indicating that it
+  // should be.
+  void ReleaseAllIfModifiersStuck(bool alt_expected, bool ctrl_expected,
+                                  bool meta_expected, bool shift_expected);
+
   // InputStub interface.
   void InjectKeyEvent(const KeyEvent& event) override;
   void InjectTextEvent(const TextEvent& event) override;

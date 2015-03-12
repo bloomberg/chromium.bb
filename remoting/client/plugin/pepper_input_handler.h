@@ -6,7 +6,6 @@
 #define REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "remoting/protocol/input_stub.h"
 
 namespace pp {
 class InputEvent;
@@ -16,11 +15,15 @@ namespace remoting {
 
 namespace protocol {
 class InputStub;
+class InputEventTracker;
 } // namespace protocol
 
 class PepperInputHandler {
  public:
-  PepperInputHandler();
+  // Create a PepperInputHandler using the specified InputEventTracker to
+  // handle auto-release. The InputEventTracker instance must remain valid
+  // for the lifetime of the PepperInputHandler.
+  explicit PepperInputHandler(protocol::InputEventTracker* input_tracker);
 
   // Sets the input stub to which processed events will be passed.
   void set_input_stub(protocol::InputStub* input_stub) {
@@ -44,8 +47,17 @@ class PepperInputHandler {
   void DidChangeFocus(bool has_focus);
 
  private:
+  // Check for any missed "keyup" events for modifiers. These can sometimes be
+  // missed due to OS-level keyboard shortcuts such as "lock screen" that cause
+  // focus to switch to another application. If any modifier keys are held that
+  // are not indicated as active on |event|, release all keys.
+  void ReleaseAllIfModifiersStuck(const pp::InputEvent& event);
+
   // Receives input events generated from PPAPI input.
   protocol::InputStub* input_stub_;
+
+  // Tracks input events to manage auto-release in ReleaseAllIfModifiersStuck.
+  protocol::InputEventTracker* input_tracker_;
 
   // True if the plugin has focus.
   bool has_focus_;

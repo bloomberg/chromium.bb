@@ -189,6 +189,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       input_tracker_(&mouse_input_filter_),
       touch_input_scaler_(&input_tracker_),
       key_mapper_(&touch_input_scaler_),
+      input_handler_(&input_tracker_),
       cursor_setter_(this),
       empty_cursor_filter_(&cursor_setter_),
       text_input_controller_(this),
