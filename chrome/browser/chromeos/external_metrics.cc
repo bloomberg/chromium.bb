@@ -94,7 +94,7 @@ void SetupProgressiveScanFieldTrial() {
 
 // The interval between external metrics collections in seconds
 static const int kExternalMetricsCollectionIntervalSeconds = 30;
-const char kEventsFilePath[] = "/var/run/metrics/uma-events";
+const char kEventsFilePath[] = "/var/lib/metrics/uma-events";
 
 ExternalMetrics::ExternalMetrics() : uma_events_file_(kEventsFilePath) {
 }
