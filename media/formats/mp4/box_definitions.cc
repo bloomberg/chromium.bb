@@ -27,11 +27,8 @@ FourCC ProtectionSystemSpecificHeader::BoxType() const { return FOURCC_PSSH; }
 
 bool ProtectionSystemSpecificHeader::Parse(BoxReader* reader) {
   // Validate the box's contents and hang on to the system ID.
-  uint32 size;
   RCHECK(reader->ReadFullBoxHeader() &&
-         reader->ReadVec(&system_id, 16) &&
-         reader->Read4(&size) &&
-         reader->HasBytes(size));
+         reader->ReadVec(&system_id, 16));
 
   // Copy the entire box, including the header, for passing to EME as initData.
   DCHECK(raw_box.empty());
