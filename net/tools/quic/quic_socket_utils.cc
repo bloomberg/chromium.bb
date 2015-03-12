@@ -31,14 +31,12 @@ IPAddressNumber QuicSocketUtils::GetAddressFromMsghdr(struct msghdr* hdr) {
       int len = 0;
       if (cmsg->cmsg_type == IPV6_PKTINFO) {
         in6_pktinfo* info = reinterpret_cast<in6_pktinfo*>CMSG_DATA(cmsg);
-        in6_addr addr = info->ipi6_addr;
-        addr_data = reinterpret_cast<const uint8*>(&addr);
-        len = sizeof(addr);
+        addr_data = reinterpret_cast<const uint8*>(&info->ipi6_addr);
+        len = sizeof(in6_addr);
       } else if (cmsg->cmsg_type == IP_PKTINFO) {
         in_pktinfo* info = reinterpret_cast<in_pktinfo*>CMSG_DATA(cmsg);
-        in_addr addr = info->ipi_addr;
-        addr_data = reinterpret_cast<const uint8*>(&addr);
-        len = sizeof(addr);
+        addr_data = reinterpret_cast<const uint8*>(&info->ipi_addr);
+        len = sizeof(in_addr);
       } else {
         continue;
       }
