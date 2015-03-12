@@ -139,7 +139,7 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
         assertEquals("Visa", storedCard.getName());
         assertEquals("10", storedCard.getMonth());
         assertEquals("4012888888881881", storedCard.getNumber());
-        assertEquals("Visa - 1881", storedCard.getObfuscatedNumber());
+        assertEquals("Visa \u22ef1881", storedCard.getObfuscatedNumber());
         assertNotNull(mHelper.getCreditCard(cardTwoGUID));
     }
 

@@ -883,10 +883,14 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("Visa - 3456", "04/12", kVisaCard,
-                 autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("MasterCard - 8765", "10/14", kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(5)));
+      Suggestion(
+          "Visa \xE2\x8B\xAF"
+          "3456",
+          "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(
+          "MasterCard \xE2\x8B\xAF"
+          "8765",
+          "10/14", kMasterCard, autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return only matching credit card profile suggestions when the
@@ -909,8 +913,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("Visa - 3456", "04/12", kVisaCard,
-                 autofill_manager_->GetPackedCreditCardID(4)));
+      Suggestion(
+          "Visa \xE2\x8B\xAF"
+          "3456",
+          "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 // Test that we return credit card profile suggestions when the selected form
@@ -930,8 +936,12 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
 #if defined(OS_ANDROID)
-  static const char* kVisaSuggestion = "Visa - 3456";
-  static const char* kMcSuggestion = "MasterCard - 8765";
+  static const char* kVisaSuggestion =
+      "Visa \xE2\x8B\xAF"
+      "3456";
+  static const char* kMcSuggestion =
+      "MasterCard \xE2\x8B\xAF"
+      "8765";
 #else
   static const char* kVisaSuggestion = "*3456";
   static const char* kMcSuggestion = "*8765";
@@ -1021,12 +1031,18 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
   // Test that we sent the right values to the external delegate.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("Visa - 3456", "04/12", kVisaCard,
-                 autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("MasterCard - 8765", "10/14", kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(5)),
-      Suggestion("MasterCard - 3456", "05/12", kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(7)));
+      Suggestion(
+          "Visa \xE2\x8B\xAF"
+          "3456",
+          "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(
+          "MasterCard \xE2\x8B\xAF"
+          "8765",
+          "10/14", kMasterCard, autofill_manager_->GetPackedCreditCardID(5)),
+      Suggestion(
+          "MasterCard \xE2\x8B\xAF"
+          "3456",
+          "05/12", kMasterCard, autofill_manager_->GetPackedCreditCardID(7)));
 }
 
 // Test that we return profile and credit card suggestions for combined forms.
@@ -1062,10 +1078,14 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   // Test that we sent the credit card suggestions to the external delegate.
   external_delegate_->CheckSuggestions(
       kPageID2,
-      Suggestion("Visa - 3456", "04/12", kVisaCard,
-                 autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("MasterCard - 8765", "10/14", kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(5)));
+      Suggestion(
+          "Visa \xE2\x8B\xAF"
+          "3456",
+          "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(
+          "MasterCard \xE2\x8B\xAF"
+          "8765",
+          "10/14", kMasterCard, autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that for non-https forms with both address and credit card fields, we
@@ -3110,8 +3130,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsForNumberSpitAcrossFields) {
 
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("Visa - 3456", "04/12", kVisaCard,
-                 autofill_manager_->GetPackedCreditCardID(4)));
+      Suggestion(
+          "Visa \xE2\x8B\xAF"
+          "3456",
+          "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 }  // namespace autofill

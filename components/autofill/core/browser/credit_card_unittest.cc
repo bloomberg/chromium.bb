@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 
 namespace autofill {
 
@@ -88,27 +89,45 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(
       &credit_card2, "John Dillinger", "5105 1051 0510 5100", "", "2010");
   base::string16 summary2 = credit_card2.Label();
-  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), summary2);
+  EXPECT_EQ(UTF8ToUTF16(
+                "MasterCard \xE2\x8B\xAF"
+                "5100"),
+            summary2);
   base::string16 obfuscated2 = credit_card2.TypeAndLastFourDigits();
-  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), obfuscated2);
+  EXPECT_EQ(UTF8ToUTF16(
+                "MasterCard \xE2\x8B\xAF"
+                "5100"),
+            obfuscated2);
 
   // Case 3: No year.
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card3, "John Dillinger", "5105 1051 0510 5100", "01", "");
   base::string16 summary3 = credit_card3.Label();
-  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), summary3);
+  EXPECT_EQ(UTF8ToUTF16(
+                "MasterCard \xE2\x8B\xAF"
+                "5100"),
+            summary3);
   base::string16 obfuscated3 = credit_card3.TypeAndLastFourDigits();
-  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), obfuscated3);
+  EXPECT_EQ(UTF8ToUTF16(
+                "MasterCard \xE2\x8B\xAF"
+                "5100"),
+            obfuscated3);
 
   // Case 4: Have everything.
   CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card4, "John Dillinger", "5105 1051 0510 5100", "01", "2010");
   base::string16 summary4 = credit_card4.Label();
-  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100, Exp: 01/2010"), summary4);
+  EXPECT_EQ(UTF8ToUTF16(
+                "MasterCard \xE2\x8B\xAF"
+                "5100, Exp: 01/2010"),
+            summary4);
   base::string16 obfuscated4 = credit_card4.TypeAndLastFourDigits();
-  EXPECT_EQ(ASCIIToUTF16("MasterCard - 5100"), obfuscated4);
+  EXPECT_EQ(UTF8ToUTF16(
+                "MasterCard \xE2\x8B\xAF"
+                "5100"),
+            obfuscated4);
 
   // Case 5: Very long credit card
   CreditCard credit_card5(base::GenerateGUID(), "https://www.example.com/");
@@ -117,9 +136,15 @@ TEST(CreditCardTest, PreviewSummaryAndTypeAndLastFourDigitsStrings) {
       "John Dillinger",
       "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010");
   base::string16 summary5 = credit_card5.Label();
-  EXPECT_EQ(ASCIIToUTF16("Card - 5100, Exp: 01/2010"), summary5);
+  EXPECT_EQ(UTF8ToUTF16(
+                "Card \xE2\x8B\xAF"
+                "5100, Exp: 01/2010"),
+            summary5);
   base::string16 obfuscated5 = credit_card5.TypeAndLastFourDigits();
-  EXPECT_EQ(ASCIIToUTF16("Card - 5100"), obfuscated5);
+  EXPECT_EQ(UTF8ToUTF16(
+                "Card \xE2\x8B\xAF"
+                "5100"),
+            obfuscated5);
 }
 
 TEST(CreditCardTest, AssignmentOperator) {
