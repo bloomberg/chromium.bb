@@ -78,14 +78,3 @@
 #preview-area .preview-area-open-system-dialog-button-throbber {
   vertical-align: middle;
 }
-
-.preview-area-overlayed {
-  /**
-   * The 100 ms delay here is intended to match that of
-   * #preview-area .preview-area-overlay-layer.invisible
-   * This is important because without this delay there will be a noticeable
-   * flicker whenever the overlay is displayed for a short period of time.
-   */
-  transition: visibility 100ms linear 100ms;
-  visibility: hidden;
-}

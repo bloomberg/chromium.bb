@@ -201,7 +201,6 @@ cr.define('print_preview', function() {
     OPEN_SYSTEM_DIALOG_BUTTON_THROBBER:
         'preview-area-open-system-dialog-button-throbber',
     OVERLAY: 'preview-area-overlay-layer',
-    OVERLAYED: 'preview-area-overlayed',
     MARGIN_CONTROL: 'margin-control',
     PREVIEW_AREA: 'preview-area-plugin-wrapper'
   };
@@ -536,14 +535,12 @@ cr.define('print_preview', function() {
       var marginControls = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.MARGIN_CONTROL);
       for (var i = 0; i < marginControls.length; ++i) {
-        marginControls[i].classList.toggle(PreviewArea.Classes_.OVERLAYED,
-                                           visible);
+        marginControls[i].setAttribute('aria-hidden', visible);
       }
       var previewAreaControls = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.PREVIEW_AREA);
       for (var i = 0; i < previewAreaControls.length; ++i) {
-        previewAreaControls[i].classList.toggle(PreviewArea.Classes_.OVERLAYED,
-                                                visible);
+        previewAreaControls[i].setAttribute('aria-hidden', visible);
       }
 
       if (!visible) {
