@@ -1111,6 +1111,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setShrinksStandaloneImagesToFit(false);
   settings->setShrinksViewportContentToFit(true);
+  settings->setUseMobileViewportStyle(true);
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
