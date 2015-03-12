@@ -1010,7 +1010,9 @@ bool GpuControlList::GpuControlListEntry::GLVersionInfoMismatch(
   GLType gl_type = kGLTypeNone;
   if (segments.size() > 2 &&
       segments[0] == "OpenGL" && segments[1] == "ES") {
-    number = segments[2];
+    bool full_match = RE2::FullMatch(segments[2], "([\\d.]+).*", &number);
+    DCHECK(full_match);
+
     gl_type = kGLTypeGLES;
     if (segments.size() > 3 &&
         StartsWithASCII(segments[3], "(ANGLE", false)) {

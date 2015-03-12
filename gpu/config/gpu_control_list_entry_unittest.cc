@@ -398,6 +398,9 @@ TEST_F(GpuControlListEntryTest, GlVersionGLESEntry) {
   gpu_info.gl_version = "OpenGL ES 3.0 V@66.0 AU@ (CL@)";
   EXPECT_TRUE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
 
+  gpu_info.gl_version = "OpenGL ES 3.0V@66.0 AU@ (CL@)";
+  EXPECT_TRUE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
+
   gpu_info.gl_version = "OpenGL ES 3.1 V@66.0 AU@ (CL@)";
   EXPECT_FALSE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
 
