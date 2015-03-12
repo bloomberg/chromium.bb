@@ -78,12 +78,12 @@ int QuicSocketUtils::CreateNonBlockingSocket(int domain,
 #else
   fd = socket(domain, type, protocol);
 #endif
-  if (fd < 0)
+  if (fd < 0) {
     LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);
-  else if (set_nonblocking &&  // compiler will elide this code on Linux
-           fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) < 0) {
+  } else if (set_nonblocking &&  // the compiler will elide this code on Linux
+             fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) < 0) {
     close(fd);
-    LOG(FATAL) << "fcntl(O_NONBLOCK) failed: " << strerror(errno);
+    LOG(ERROR) << "fcntl(O_NONBLOCK) failed: " << strerror(errno);
     fd = -1;
   }
 

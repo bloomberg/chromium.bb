@@ -104,8 +104,9 @@ bool QuicServer::Listen(const IPEndPoint& address) {
   int address_family = address.GetSockAddrFamily();
   fd_ = QuicSocketUtils::CreateNonBlockingSocket(address_family, SOCK_DGRAM,
                                                  IPPROTO_UDP);
-  if (fd_ < 0)
+  if (fd_ < 0) {
     return false;  // failure already logged
+  }
 
   // Enable the socket option that allows the local address to be
   // returned if the socket is bound to more than one address.
