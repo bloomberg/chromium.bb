@@ -33,11 +33,18 @@ class BrowserCompositorMac {
     return accelerated_widget_mac_.get();
   }
 
+  // Suspend will prevent the compositor from producing new frames. This should
+  // be called to avoid creating spurious frames while changing state.
+  // Compositors are created as suspended.
+  void Suspend();
+  void Unsuspend();
+
  private:
   BrowserCompositorMac();
 
   scoped_ptr<ui::AcceleratedWidgetMac> accelerated_widget_mac_;
   ui::Compositor compositor_;
+  scoped_refptr<ui::CompositorLock> compositor_suspended_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorMac);
 };

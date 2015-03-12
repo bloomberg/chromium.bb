@@ -615,6 +615,14 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   if (browser_compositor_state_ == BrowserCompositorSuspended) {
     delegated_frame_host_->SetCompositor(browser_compositor_->compositor());
     delegated_frame_host_->WasShown(ui::LatencyInfo());
+    // Unsuspend the browser compositor after showing the delegated frame host.
+    // If there is not a saved delegated frame, then the delegated frame host
+    // will keep the compositor locked until a delegated frame is swapped.
+    float scale_factor = ViewScaleFactor();
+    browser_compositor_->compositor()->SetScaleAndSize(
+        scale_factor,
+        gfx::ConvertSizeToPixel(scale_factor, GetViewBounds().size()));
+    browser_compositor_->Unsuspend();
     browser_compositor_state_ = BrowserCompositorActive;
   }
 }
@@ -625,6 +633,9 @@ void RenderWidgetHostViewMac::SuspendBrowserCompositorView() {
 
   // Hide the DelegatedFrameHost to transition from Active -> Suspended.
   if (browser_compositor_state_ == BrowserCompositorActive) {
+    // Ensure that any changes made to the ui::Compositor do not result in new
+    // frames being produced.
+    browser_compositor_->Suspend();
     // Marking the DelegatedFrameHost as removed from the window hierarchy is
     // necessary to remove all connections to its old ui::Compositor.
     delegated_frame_host_->WasHidden();
@@ -833,6 +844,12 @@ void RenderWidgetHostViewMac::Show() {
   [cocoa_view_ setHidden:NO];
   if (!render_widget_host_->is_hidden())
     return;
+
+  // Re-create the browser compositor. If the DelegatedFrameHost has a cached
+  // frame from the last time it was visible, then it will immediately be
+  // drawn. If not, then the compositor will remain locked until a new delegated
+  // frame is swapped.
+  EnsureBrowserCompositorView();
 
   WasUnOccluded();
 

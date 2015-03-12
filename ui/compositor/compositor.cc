@@ -47,10 +47,12 @@ namespace ui {
 
 CompositorLock::CompositorLock(Compositor* compositor)
     : compositor_(compositor) {
-  compositor_->task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CompositorLock::CancelLock, AsWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
+  if (compositor_->locks_will_time_out_) {
+    compositor_->task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CompositorLock::CancelLock, AsWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
+  }
 }
 
 CompositorLock::~CompositorLock() {
@@ -76,7 +78,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       device_scale_factor_(0.0f),
       last_started_frame_(0),
       last_ended_frame_(0),
-      disable_schedule_composite_(false),
+      locks_will_time_out_(true),
       compositor_lock_(NULL),
       layer_animator_collection_(this),
       weak_ptr_factory_(this) {
@@ -294,12 +296,8 @@ void Compositor::BeginMainFrameNotExpectedSoon() {
 }
 
 void Compositor::Layout() {
-  // We're sending damage that will be addressed during this composite
-  // cycle, so we don't need to schedule another composite to address it.
-  disable_schedule_composite_ = true;
   if (root_layer_)
     root_layer_->SendDamagedRects();
-  disable_schedule_composite_ = false;
 }
 
 void Compositor::RequestNewOutputSurface() {

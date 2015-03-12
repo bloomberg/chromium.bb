@@ -111,9 +111,10 @@ class COMPOSITOR_EXPORT ContextFactory {
 // event. The typical use case is when waiting for a renderer to produce a frame
 // at the right size. The caller keeps a reference on this object, and drops the
 // reference once it desires to release the lock.
-// Note however that the lock is cancelled after a short timeout to ensure
+// By default, the lock will be cancelled after a short timeout to ensure
 // responsiveness of the UI, so the compositor tree should be kept in a
-// "reasonable" state while the lock is held.
+// "reasonable" state while the lock is held. If the compositor sets
+// locks to not time out, then the lock will remain in effect until destroyed.
 // Don't instantiate this class directly, use Compositor::GetCompositorLock.
 class COMPOSITOR_EXPORT CompositorLock
     : public base::RefCounted<CompositorLock>,
@@ -226,6 +227,13 @@ class COMPOSITOR_EXPORT Compositor
   void RemoveAnimationObserver(CompositorAnimationObserver* observer);
   bool HasAnimationObserver(const CompositorAnimationObserver* observer) const;
 
+  // Change the timeout behavior for all future locks that are created. Locks
+  // should time out if there is an expectation that the compositor will be
+  // responsive.
+  void SetLocksWillTimeOut(bool locks_will_time_out) {
+    locks_will_time_out_ = locks_will_time_out;
+  }
+
   // Creates a compositor lock. Returns NULL if it is not possible to lock at
   // this time (i.e. we're waiting to complete a previous unlock).
   scoped_refptr<CompositorLock> GetCompositorLock();
@@ -319,8 +327,7 @@ class COMPOSITOR_EXPORT Compositor
   int last_started_frame_;
   int last_ended_frame_;
 
-  bool disable_schedule_composite_;
-
+  bool locks_will_time_out_;
   CompositorLock* compositor_lock_;
 
   LayerAnimatorCollection layer_animator_collection_;

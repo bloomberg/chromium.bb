@@ -46,9 +46,19 @@ BrowserCompositorMac::BrowserCompositorMac()
           accelerated_widget_mac_->accelerated_widget(),
           content::GetContextFactory(),
           RenderWidgetResizeHelper::Get()->task_runner()) {
+  compositor_.SetLocksWillTimeOut(false);
+  Suspend();
 }
 
 BrowserCompositorMac::~BrowserCompositorMac() {}
+
+void BrowserCompositorMac::Suspend() {
+  compositor_suspended_lock_ = compositor_.GetCompositorLock();
+}
+
+void BrowserCompositorMac::Unsuspend() {
+  compositor_suspended_lock_ = nullptr;
+}
 
 // static
 scoped_ptr<BrowserCompositorMac> BrowserCompositorMac::Create() {

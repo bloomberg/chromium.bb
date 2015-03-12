@@ -144,6 +144,7 @@ source_set("test_support") {
 if (!is_android) {
   test("compositor_unittests") {
     sources = [
+      "compositor_unittest.cc",
       "layer_animation_element_unittest.cc",
       "layer_animation_sequence_unittest.cc",
       "layer_animator_unittest.cc",

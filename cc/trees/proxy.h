@@ -80,9 +80,8 @@ class CC_EXPORT Proxy {
 
   virtual void NotifyInputThrottledUntilCommit() = 0;
 
-  // Defers commits until it is reset. It is only supported when in threaded
-  // mode. It's an error to make a sync call like CompositeAndReadback while
-  // commits are deferred.
+  // Defers commits until it is reset. It is only supported when using a
+  // scheduler.
   virtual void SetDeferCommits(bool defer_commits) = 0;
 
   virtual void MainThreadHasStoppedFlinging() = 0;

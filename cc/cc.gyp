@@ -540,6 +540,7 @@
         'trees/layer_tree_host_common.h',
         'trees/layer_tree_host_impl.cc',
         'trees/layer_tree_host_impl.h',
+        'trees/layer_tree_host_single_thread_client.h',
         'trees/layer_tree_impl.cc',
         'trees/layer_tree_impl.h',
         'trees/layer_tree_settings.cc',

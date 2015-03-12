@@ -154,6 +154,7 @@
         'compositor_test_support',
       ],
       'sources': [
+        'compositor_unittest.cc',
         'layer_animation_element_unittest.cc',
         'layer_animation_sequence_unittest.cc',
         'layer_animator_unittest.cc',
