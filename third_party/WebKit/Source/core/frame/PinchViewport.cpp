@@ -94,6 +94,7 @@ void PinchViewport::setSize(const IntSize& size)
 
     bool autosizerNeedsUpdating =
         (size.width() != m_size.width())
+        && mainFrame()->settings()
         && mainFrame()->settings()->textAutosizingEnabled();
 
     TRACE_EVENT2("blink", "PinchViewport::setSize", "width", size.width(), "height", size.height());
