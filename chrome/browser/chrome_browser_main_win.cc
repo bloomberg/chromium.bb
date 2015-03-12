@@ -248,9 +248,26 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
     // otherwise it will spawn utility process to build cache file, which will
     // be used during next browser start/postprofileinit.
     if (!content::LoadFontCache(path)) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
-          base::Bind(ExecuteFontCacheBuildTask, path));
+      // We delay building of font cache until first startup page loads.
+      // Selected 5 seconds as delay based on 50th percentile value
+      // for Startup.FirstWebContents.NonEmptyPaint.
+      // During first renderer start there are lot of things happening
+      // simultaneously some of them are:
+      // - Renderer is going through all font files on the system to create
+      //   a font collection.
+      // - Renderer loading up startup URL, accessing HTML/JS File cache,
+      //   net activity etc.
+      // - Extension initialization.
+      // We delay building of cache mainly to avoid parallel font file
+      // loading along with Renderer. Some systems have significant number of
+      // font files which takes long time to process.
+      // Related information is at http://crbug.com/436195.
+      const int kBuildFontCacheDelaySec = 5;
+      content::BrowserThread::PostDelayedTask(
+          content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(ExecuteFontCacheBuildTask, path),
+          base::TimeDelta::FromSeconds(kBuildFontCacheDelaySec));
     }
   }
 }
