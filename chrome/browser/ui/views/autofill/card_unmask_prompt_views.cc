@@ -39,6 +39,10 @@ namespace {
 // dialog.
 const int kEdgePadding = 19;
 
+// From AutofillDialogViews. TODO(estade): share.
+SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
+SkColor kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
+
 class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               views::ComboboxListener,
                               views::DialogDelegateView,
@@ -47,6 +51,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   explicit CardUnmaskPromptViews(CardUnmaskPromptController* controller)
       : controller_(controller),
         main_contents_(nullptr),
+        permanent_error_label_(nullptr),
         cvc_input_(nullptr),
         month_input_(nullptr),
         year_input_(nullptr),
@@ -99,17 +104,14 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
         // invalid since we don't know the location of the problem.
         if (!controller_->ShouldRequestExpirationDate())
           cvc_input_->SetInvalid(true);
-      } else {
-        // Move the error message up to the top of the content area.
-        main_contents_->AddChildViewAt(error_label_, 0);
-        error_label_->set_background(views::Background::CreateSolidBackground(
-            SkColorSetRGB(0xee, 0xee, 0xee)));
-        error_label_->SetBorder(views::Border::CreateEmptyBorder(
-            10, kEdgePadding, 10, kEdgePadding));
-      }
 
-      // TODO(estade): When do we hide |error_label_|?
-      SetErrorMessage(error_message);
+        // TODO(estade): When do we hide |error_label_|?
+        SetRetriableErrorMessage(error_message);
+      } else {
+        permanent_error_label_->SetText(error_message);
+        permanent_error_label_->SetVisible(true);
+        SetRetriableErrorMessage(base::string16());
+      }
 
       GetDialogClientView()->UpdateDialogButtons();
     }
@@ -117,7 +119,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     Layout();
   }
 
-  void SetErrorMessage(const base::string16& message) {
+  void SetRetriableErrorMessage(const base::string16& message) {
     if (message.empty()) {
       error_label_->SetMultiLine(false);
       error_label_->SetText(base::ASCIIToUTF16(" "));
@@ -151,6 +153,29 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   View* GetContentsView() override {
     InitIfNecessary();
     return this;
+  }
+
+  views::View* CreateFootnoteView() override {
+    // Local storage checkbox and (?) tooltip.
+    views::View* storage_row = new views::View();
+    views::BoxLayout* storage_row_layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal, kEdgePadding, kEdgePadding, 0);
+    storage_row->SetLayoutManager(storage_row_layout);
+    storage_row->SetBorder(
+        views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
+    storage_row->set_background(
+        views::Background::CreateSolidBackground(kShadingColor));
+
+    storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
+    storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
+    storage_row->AddChildView(storage_checkbox_);
+    storage_row_layout->SetFlexForView(storage_checkbox_, 1);
+
+    storage_row->AddChildView(new TooltipIcon(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP)));
+
+    return storage_row;
   }
 
   // views::View
@@ -253,7 +278,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
         month_input_->SetInvalid(false);
         year_input_->SetInvalid(false);
         error_label_->SetMultiLine(false);
-        SetErrorMessage(base::string16());
+        SetRetriableErrorMessage(base::string16());
       }
     } else if (month_input_->selected_index() !=
                    month_combobox_model_.GetDefaultIndex() &&
@@ -262,7 +287,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
       month_input_->SetInvalid(true);
       year_input_->SetInvalid(true);
       error_label_->SetMultiLine(true);
-      SetErrorMessage(l10n_util::GetStringUTF16(
+      SetRetriableErrorMessage(l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE));
     }
 
@@ -276,12 +301,25 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
     main_contents_ = new views::View();
     main_contents_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 10));
     AddChildView(main_contents_);
 
+    permanent_error_label_ = new views::Label();
+    permanent_error_label_->set_background(
+        views::Background::CreateSolidBackground(
+            SkColorSetRGB(0xdb, 0x44, 0x37)));
+    permanent_error_label_->SetBorder(
+        views::Border::CreateEmptyBorder(10, kEdgePadding, 10, kEdgePadding));
+    permanent_error_label_->SetEnabledColor(SK_ColorWHITE);
+    permanent_error_label_->SetAutoColorReadabilityEnabled(false);
+    permanent_error_label_->SetVisible(false);
+    permanent_error_label_->SetMultiLine(true);
+    permanent_error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    main_contents_->AddChildView(permanent_error_label_);
+
     views::View* controls_container = new views::View();
-    controls_container->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, kEdgePadding, 10, 10));
+    controls_container->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, kEdgePadding, 0, 0));
     main_contents_->AddChildView(controls_container);
 
     views::Label* instructions =
@@ -289,6 +327,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
     instructions->SetMultiLine(true);
     instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    instructions->SetBorder(views::Border::CreateEmptyBorder(0, 0, 15, 0));
     controls_container->AddChildView(instructions);
 
     views::View* input_row = new views::View();
@@ -325,25 +364,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     error_label_ = new views::Label(base::ASCIIToUTF16(" "));
     error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     error_label_->SetEnabledColor(kWarningColor);
+    error_label_->SetBorder(views::Border::CreateEmptyBorder(3, 0, 5, 0));
     controls_container->AddChildView(error_label_);
-
-    // Local storage checkbox and (?) tooltip.
-    views::View* storage_row = new views::View();
-    views::BoxLayout* storage_row_layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-    storage_row->SetLayoutManager(storage_row_layout);
-    controls_container->AddChildView(storage_row);
-
-    storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
-    storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
-    storage_row->AddChildView(storage_checkbox_);
-    storage_row_layout->SetFlexForView(storage_checkbox_, 1);
-
-    TooltipIcon* tooltip = new TooltipIcon(l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP));
-    tooltip->set_bubble_arrow(views::BubbleBorder::BOTTOM_RIGHT);
-    storage_row->AddChildView(tooltip);
 
     progress_overlay_ = new views::View();
     views::BoxLayout* progress_layout =
@@ -377,6 +399,9 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   views::View* main_contents_;
 
+  // The error label for permanent errors (where the user can't retry).
+  views::Label* permanent_error_label_;
+
   DecoratedTextfield* cvc_input_;
 
   // These will be null when expiration date is not required.
@@ -386,9 +411,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   MonthComboboxModel month_combobox_model_;
   YearComboboxModel year_combobox_model_;
 
-  // The error label for most errors, which lives beneath the inputs. When
-  // the dialog reaches an error state that is unrecoverable, the label is moved
-  // to the top of the content area.
+  // The error label for most errors, which lives beneath the inputs.
   views::Label* error_label_;
 
   views::Checkbox* storage_checkbox_;
