@@ -146,8 +146,8 @@ void DrmNativeDisplayDelegate::GetDisplays(
   get_displays_callback_ = callback;
   // GetDisplays() is supposed to force a refresh of the display list.
   if (!proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays())) {
-    get_displays_callback_.Run(displays_.get());
     get_displays_callback_.Reset();
+    callback.Run(displays_.get());
   }
 }
 
@@ -159,6 +159,8 @@ void DrmNativeDisplayDelegate::Configure(const DisplaySnapshot& output,
                                          const DisplayMode* mode,
                                          const gfx::Point& origin,
                                          const ConfigureCallback& callback) {
+  // The dummy display is used on the first run only. Note: cannot post a task
+  // here since there is no task runner.
   if (has_dummy_display_) {
     callback.Run(true);
     return;
@@ -280,14 +282,17 @@ void DrmNativeDisplayDelegate::OnChannelDestroyed(int host_id) {
   // If the channel got destroyed in the middle of a configuration then just
   // respond with failure.
   if (!get_displays_callback_.is_null()) {
-    get_displays_callback_.Run(std::vector<DisplaySnapshot*>());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&DrmNativeDisplayDelegate::RunUpdateDisplaysCallback,
+                   weak_ptr_factory_.GetWeakPtr(), get_displays_callback_));
     get_displays_callback_.Reset();
   }
 
   for (const auto& pair : configure_callback_map_) {
-    pair.second.Run(false);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(pair.second, false));
   }
-
   configure_callback_map_.clear();
 }
 
@@ -312,7 +317,10 @@ void DrmNativeDisplayDelegate::OnUpdateNativeDisplays(
         new DrmDisplaySnapshotProxy(displays[i], display_manager_));
 
   if (!get_displays_callback_.is_null()) {
-    get_displays_callback_.Run(displays_.get());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&DrmNativeDisplayDelegate::RunUpdateDisplaysCallback,
+                   weak_ptr_factory_.GetWeakPtr(), get_displays_callback_));
     get_displays_callback_.Reset();
   }
 }
@@ -321,9 +329,15 @@ void DrmNativeDisplayDelegate::OnDisplayConfigured(int64_t display_id,
                                                    bool status) {
   auto it = configure_callback_map_.find(display_id);
   if (it != configure_callback_map_.end()) {
-    it->second.Run(status);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(it->second, status));
     configure_callback_map_.erase(it);
   }
+}
+
+void DrmNativeDisplayDelegate::RunUpdateDisplaysCallback(
+    const GetDisplaysCallback& callback) const {
+  callback.Run(displays_.get());
 }
 
 }  // namespace ui

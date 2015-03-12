@@ -79,6 +79,8 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate,
 
   void OnNewGraphicsDevice(const base::FilePath& path, base::File file);
 
+  void RunUpdateDisplaysCallback(const GetDisplaysCallback& callback) const;
+
   DrmGpuPlatformSupportHost* proxy_;  // Not owned.
   DeviceManager* device_manager_;     // Not owned.
   DisplayManager* display_manager_;   // Not owned.
