@@ -208,18 +208,17 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
 
         // Respect xlink:href, take attributes from referenced element
         Node* refNode = SVGURIReference::targetElementFromIRIString(current->hrefString(), treeScope());
-        if (isSVGPatternElement(refNode)) {
-            current = toSVGPatternElement(refNode);
 
-            // Cycle detection
-            if (processedPatterns.contains(current))
-                return;
-        } else {
-            return;
-        }
+        // Only consider attached SVG pattern elements.
+        if (!isSVGPatternElement(refNode) || !refNode->layoutObject())
+            break;
+
+        current = toSVGPatternElement(refNode);
+
+        // Cycle detection
+        if (processedPatterns.contains(current))
+            break;
     }
-
-    ASSERT_NOT_REACHED();
 }
 
 AffineTransform SVGPatternElement::localCoordinateSpaceTransform(SVGElement::CTMScope) const
