@@ -127,6 +127,10 @@ LengthStyleInterpolation::LengthSetter LengthStyleInterpolation::lengthSetterFor
     switch (property) {
     case CSSPropertyBottom:
         return &LayoutStyle::setBottom;
+    case CSSPropertyCx:
+        return &LayoutStyle::setCx;
+    case CSSPropertyCy:
+        return &LayoutStyle::setCy;
     case CSSPropertyFlexBasis:
         return &LayoutStyle::setFlexBasis;
     case CSSPropertyHeight:
@@ -161,14 +165,26 @@ LengthStyleInterpolation::LengthSetter LengthStyleInterpolation::lengthSetterFor
         return &LayoutStyle::setPaddingRight;
     case CSSPropertyPaddingTop:
         return &LayoutStyle::setPaddingTop;
+    case CSSPropertyR:
+        return &LayoutStyle::setR;
+    case CSSPropertyRx:
+        return &LayoutStyle::setRx;
+    case CSSPropertyRy:
+        return &LayoutStyle::setRy;
     case CSSPropertyRight:
         return &LayoutStyle::setRight;
     case CSSPropertyShapeMargin:
         return &LayoutStyle::setShapeMargin;
+    case CSSPropertyStrokeDashoffset:
+        return &LayoutStyle::setStrokeDashOffset;
     case CSSPropertyTop:
         return &LayoutStyle::setTop;
     case CSSPropertyWidth:
         return &LayoutStyle::setWidth;
+    case CSSPropertyX:
+        return &LayoutStyle::setX;
+    case CSSPropertyY:
+        return &LayoutStyle::setY;
     // These properties don't have a LayoutStyle setter with the signature void(*)(const Length&).
     case CSSPropertyBaselineShift:
     case CSSPropertyBorderBottomWidth:
@@ -180,7 +196,6 @@ LengthStyleInterpolation::LengthSetter LengthStyleInterpolation::lengthSetterFor
     case CSSPropertyOutlineOffset:
     case CSSPropertyOutlineWidth:
     case CSSPropertyPerspective:
-    case CSSPropertyStrokeDashoffset:
     case CSSPropertyStrokeWidth:
     case CSSPropertyVerticalAlign:
     case CSSPropertyWebkitBorderHorizontalSpacing:

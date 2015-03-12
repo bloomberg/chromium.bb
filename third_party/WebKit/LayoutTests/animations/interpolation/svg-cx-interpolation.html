@@ -2,11 +2,10 @@
 <meta charset="UTF-8">
 <style>
 svg {
-  stroke-dashoffset: 100px;
+  cx: 100px;
 }
 .target {
   stroke: black;
-  stroke-width: 10px;
   font-size: 16px;
 }
 .replica {
@@ -16,13 +15,13 @@ svg {
 <body>
 <template id="target-template">
   <svg height="200" width="10">
-    <path d="M5,0 l0,200" stroke-dasharray="15,15" class="target">
+    <circle cx="50%" cy="50%" r="25%" class="target">
   </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
 assertInterpolation({
-  property: 'stroke-dashoffset',
+  property: 'cx',
   from: '-10px',
   to: '10px'
 }, [
@@ -35,7 +34,7 @@ assertInterpolation({
   {at: 1.25, is: '15px'},
 ]);
 assertInterpolation({
-  property: 'stroke-dashoffset',
+  property: 'cx',
   from: '-20px',
   to: '30em'
 }, [
@@ -48,7 +47,7 @@ assertInterpolation({
   {at: 1.25, is: '605px'},
 ]);
 assertInterpolation({
-  property: 'stroke-dashoffset',
+  property: 'cx',
   from: 'inherit',
   to: '140px'
 }, [
@@ -61,7 +60,7 @@ assertInterpolation({
   {at: 1.25, is: '150px'},
 ]);
 assertInterpolation({
-  property: 'stroke-dashoffset',
+  property: 'cx',
   from: '-10',
   to: '10'
 }, [

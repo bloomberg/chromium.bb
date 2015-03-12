@@ -20,6 +20,13 @@ PASS: stroke-dashoffset from [inherit] to [140px] was [120px] at 0.5
 PASS: stroke-dashoffset from [inherit] to [140px] was [130px] at 0.75
 PASS: stroke-dashoffset from [inherit] to [140px] was [140px] at 1
 PASS: stroke-dashoffset from [inherit] to [140px] was [150px] at 1.25
+PASS: stroke-dashoffset from [-10] to [10] was [-15] at -0.25
+PASS: stroke-dashoffset from [-10] to [10] was [-10] at 0
+PASS: stroke-dashoffset from [-10] to [10] was [-5] at 0.25
+PASS: stroke-dashoffset from [-10] to [10] was [0] at 0.5
+PASS: stroke-dashoffset from [-10] to [10] was [5] at 0.75
+PASS: stroke-dashoffset from [-10] to [10] was [10] at 1
+PASS: stroke-dashoffset from [-10] to [10] was [15] at 1.25
 
 Web Animations API:
 PASS: strokeDashoffset from [-10px] to [10px] was [-15px] at -0.25
@@ -43,4 +50,11 @@ PASS: strokeDashoffset from [inherit] to [140px] was [120px] at 0.5
 PASS: strokeDashoffset from [inherit] to [140px] was [130px] at 0.75
 PASS: strokeDashoffset from [inherit] to [140px] was [140px] at 1
 PASS: strokeDashoffset from [inherit] to [140px] was [150px] at 1.25
+PASS: strokeDashoffset from [-10] to [10] was [-15] at -0.25
+PASS: strokeDashoffset from [-10] to [10] was [-10] at 0
+PASS: strokeDashoffset from [-10] to [10] was [-5] at 0.25
+PASS: strokeDashoffset from [-10] to [10] was [0] at 0.5
+PASS: strokeDashoffset from [-10] to [10] was [5] at 0.75
+PASS: strokeDashoffset from [-10] to [10] was [10] at 1
+PASS: strokeDashoffset from [-10] to [10] was [15] at 1.25
 

@@ -640,13 +640,13 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setY(animatableValueToLength(value, state));
         return;
     case CSSPropertyR:
-        style->setR(animatableValueToLength(value, state));
+        style->setR(animatableValueToLength(value, state, ValueRangeNonNegative));
         return;
     case CSSPropertyRx:
-        style->setRx(animatableValueToLength(value, state));
+        style->setRx(animatableValueToLength(value, state, ValueRangeNonNegative));
         return;
     case CSSPropertyRy:
-        style->setRy(animatableValueToLength(value, state));
+        style->setRy(animatableValueToLength(value, state, ValueRangeNonNegative));
         return;
 
     default:

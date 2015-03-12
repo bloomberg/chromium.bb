@@ -169,6 +169,9 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyPaddingRight:
     case CSSPropertyPaddingTop:
     case CSSPropertyPerspective:
+    case CSSPropertyR:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
     case CSSPropertyShapeMargin:
     case CSSPropertyStrokeWidth:
     case CSSPropertyWebkitBorderHorizontalSpacing:
@@ -180,6 +183,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         // Fall through
     case CSSPropertyBaselineShift:
     case CSSPropertyBottom:
+    case CSSPropertyCx:
+    case CSSPropertyCy:
     case CSSPropertyLeft:
     case CSSPropertyLetterSpacing:
     case CSSPropertyMarginBottom:
@@ -194,6 +199,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyVerticalAlign:
     case CSSPropertyWordSpacing:
     case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyX:
+    case CSSPropertyY:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue, property) && LengthStyleInterpolation::canCreateFrom(*toCSSValue, property))
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
 

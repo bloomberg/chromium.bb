@@ -1376,13 +1376,13 @@ public:
     float strokeMiterLimit() const { return svgStyle().strokeMiterLimit(); }
     void setStrokeMiterLimit(float f) { accessSVGStyle().setStrokeMiterLimit(f); }
 
-    void setCx(Length cx) { accessSVGStyle().setCx(cx); }
-    void setCy(Length cy) { accessSVGStyle().setCy(cy); }
-    void setX(Length x) { accessSVGStyle().setX(x); }
-    void setY(Length y) { accessSVGStyle().setY(y); }
-    void setR(Length r) { accessSVGStyle().setR(r); }
-    void setRx(Length rx) { accessSVGStyle().setRx(rx); }
-    void setRy(Length ry) { accessSVGStyle().setRy(ry); }
+    void setCx(const Length& cx) { accessSVGStyle().setCx(cx); }
+    void setCy(const Length& cy) { accessSVGStyle().setCy(cy); }
+    void setX(const Length& x) { accessSVGStyle().setX(x); }
+    void setY(const Length& y) { accessSVGStyle().setY(y); }
+    void setR(const Length& r) { accessSVGStyle().setR(r); }
+    void setRx(const Length& rx) { accessSVGStyle().setRx(rx); }
+    void setRy(const Length& ry) { accessSVGStyle().setRy(ry); }
 
     float floodOpacity() const { return svgStyle().floodOpacity(); }
     void setFloodOpacity(float f) { accessSVGStyle().setFloodOpacity(f); }
