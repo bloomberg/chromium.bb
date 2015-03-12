@@ -59,12 +59,7 @@ void ViewportStyleResolver::collectViewportRules()
     CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
     collectViewportRules(defaultStyleSheets.defaultStyle(), UserAgentOrigin);
 
-    bool useMobileViewportStyle = m_document->settings() && m_document->settings()->useMobileViewportStyle();
-#if OS(ANDROID)
-    // FIXME: Remove when useMobileViewportStyle is set from chromium.
-    useMobileViewportStyle = true;
-#endif
-    if (useMobileViewportStyle)
+    if (m_document->settings() && m_document->settings()->useMobileViewportStyle())
         collectViewportRules(defaultStyleSheets.defaultMobileViewportStyle(), UserAgentOrigin);
 
     if (m_document->isMobileDocument())
