@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -826,6 +827,11 @@ scoped_ptr<TemplateURLService::Subscription>
 void TemplateURLService::OnWebDataServiceRequestDone(
     KeywordWebDataService::Handle h,
     const WDTypedResult* result) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466312
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466312 TemplateURLService::OnWebDataServiceRequestDone"));
   // Reset the load_handle so that we don't try and cancel the load in
   // the destructor.
   load_handle_ = 0;
