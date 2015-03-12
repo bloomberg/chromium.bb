@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/extensions/extension_toolbar_icon_surfacing_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -80,6 +81,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       chevron_(NULL),
       suppress_chevron_(false),
       added_to_view_(false),
+      shown_bubble_(false),
       resize_amount_(0),
       animation_target_size_(0) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
@@ -444,6 +446,17 @@ void BrowserActionsContainer::Layout() {
       view->SetVisible(true);
     }
   }
+}
+
+void BrowserActionsContainer::OnMouseEntered(const ui::MouseEvent& event) {
+  if (!shown_bubble_ && !toolbar_action_views_.empty()) {
+    ExtensionToolbarIconSurfacingBubble* bubble =
+        new ExtensionToolbarIconSurfacingBubble(toolbar_action_views_[0],
+                                                toolbar_actions_bar_.get());
+    views::BubbleDelegateView::CreateBubble(bubble);
+    bubble->GetWidget()->Show();
+  }
+  shown_bubble_ = true;
 }
 
 bool BrowserActionsContainer::GetDropFormats(

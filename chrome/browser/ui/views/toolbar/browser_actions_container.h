@@ -199,6 +199,7 @@ class BrowserActionsContainer
   int GetHeightForWidth(int width) const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
   bool GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
@@ -321,6 +322,9 @@ class BrowserActionsContainer
 
   // True if the container has been added to the parent view.
   bool added_to_view_;
+
+  // Whether or not the info bubble has been shown, if it should be.
+  bool shown_bubble_;
 
   // This is used while the user is resizing (and when the animations are in
   // progress) to know how wide the delta is between the current state and what

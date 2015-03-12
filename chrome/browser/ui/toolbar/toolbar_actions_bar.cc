@@ -666,6 +666,10 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
   }
 }
 
+bool ToolbarActionsBar::ShouldShowInfoBubble() {
+  return false;
+}
+
 void ToolbarActionsBar::OnToolbarExtensionAdded(
     const extensions::Extension* extension,
     int index) {
@@ -827,6 +831,9 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
 
 Browser* ToolbarActionsBar::GetBrowser() {
   return browser_;
+}
+
+void ToolbarActionsBar::OnToolbarActionsBarBubbleClosed(CloseAction action) {
 }
 
 void ToolbarActionsBar::ReorderActions() {

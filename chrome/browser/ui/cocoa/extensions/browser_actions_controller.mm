@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_toolbar_icon_surfacing_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -91,6 +92,9 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // and updates the chevron overflow menu. Also fires a notification to let the
 // toolbar know that the drag has finished.
 - (void)containerDragFinished:(NSNotification*)notification;
+
+// Shows the toolbar info bubble, if it should be displayed.
+- (void)containerMouseEntered:(NSNotification*)notification;
 
 // Adjusts the position of the surrounding action buttons depending on where the
 // button is within the container.
@@ -313,6 +317,14 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
     [self showChevronIfNecessaryInFrame:[containerView_ frame]];
     [self updateGrippyCursors];
     [container setResizable:!isOverflow_];
+    if (toolbarActionsBar_->ShouldShowInfoBubble()) {
+      [containerView_ setTrackingEnabled:YES];
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(containerMouseEntered:)
+                 name:kBrowserActionsContainerMouseEntered
+               object:containerView_];
+    }
   }
 
   return self;
@@ -644,6 +656,25 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
 
   [self updateGrippyCursors];
   [self resizeContainerToWidth:toolbarActionsBar_->GetPreferredSize().width()];
+}
+
+- (void)containerMouseEntered:(NSNotification*)notification {
+  if (toolbarActionsBar_->ShouldShowInfoBubble()) {
+    NSPoint anchor = [self popupPointForId:[[buttons_ objectAtIndex:0]
+                                               viewController]->GetId()];
+    anchor = [[containerView_ window] convertBaseToScreen:anchor];
+    ExtensionToolbarIconSurfacingBubbleMac* bubble =
+        [[ExtensionToolbarIconSurfacingBubbleMac alloc]
+            initWithParentWindow:[containerView_ window]
+                     anchorPoint:anchor
+                        delegate:toolbarActionsBar_.get()];
+    [bubble showWindow:nil];
+  }
+  [containerView_ setTrackingEnabled:NO];
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:kBrowserActionsContainerMouseEntered
+              object:containerView_];
 }
 
 - (void)actionButtonDragging:(NSNotification*)notification {
