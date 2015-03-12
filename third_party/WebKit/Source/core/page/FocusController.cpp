@@ -556,10 +556,11 @@ Node* FocusController::findFocusableNodeRecursivelyForward(const FocusNavigation
             Node* foundInInnerFocusScope = findFocusableNodeRecursivelyForward(innerScope, nullptr);
             return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyForward(scope, found);
         }
+        // Skip to the next node.
         if (!isNonFocusableFocusScopeOwner(*found))
             found = findFocusableNodeRecursivelyForward(scope, found);
     }
-    if (!isNonFocusableFocusScopeOwner(*found))
+    if (!found || !isNonFocusableFocusScopeOwner(*found))
         return found;
 
     // Now |found| is on a focusable scope owner (either shadow host or <shadow>)

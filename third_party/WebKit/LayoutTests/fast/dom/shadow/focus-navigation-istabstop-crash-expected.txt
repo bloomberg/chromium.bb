@@ -1,0 +1,8 @@
+crbug.com/463486 when tab navigation skips a node with isTabStop=false to chrome, crash happens
+
+
+Test finished.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

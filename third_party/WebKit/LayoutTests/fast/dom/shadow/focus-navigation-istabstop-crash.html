@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<p>crbug.com/463486 when tab navigation skips a node with isTabStop=false to chrome, crash happens</p>
+<input id="first"><input id="second">
+<pre id="console"></pre>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+if (!window.eventSender)
+    testFailed('');
+
+document.querySelector('#first').focus();
+document.querySelector('#second').isTabStop = false;
+eventSender.keyDown('\t');
+
+debug('Test finished.');
+</script>
