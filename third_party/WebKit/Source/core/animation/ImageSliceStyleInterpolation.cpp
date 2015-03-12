@@ -22,41 +22,40 @@ bool ImageSliceStyleInterpolation::usesDefaultInterpolation(const CSSValue& star
         || startSlice.m_fill != endSlice.m_fill;
 }
 
-// PassDecompositionResult is required because the Windows compiler fails to call the OwnPtr(OwnPtr&&) constructor.
-struct PassDecompositionResult {
-    PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue;
+namespace {
+
+class Decomposition {
+    STACK_ALLOCATED();
+public:
+    Decomposition(const CSSBorderImageSliceValue& value)
+    {
+        decompose(value);
+    }
+
+    OwnPtrWillBeMember<InterpolableValue> interpolableValue;
     ImageSliceStyleInterpolation::Metadata metadata;
+
+private:
+    void decompose(const CSSBorderImageSliceValue& value)
+    {
+        const size_t kQuadSides = 4;
+        OwnPtrWillBeRawPtr<InterpolableList> interpolableList = InterpolableList::create(kQuadSides);
+        const Quad& quad = *value.slices();
+        interpolableList->set(0, InterpolableNumber::create(quad.top()->getDoubleValue()));
+        interpolableList->set(1, InterpolableNumber::create(quad.right()->getDoubleValue()));
+        interpolableList->set(2, InterpolableNumber::create(quad.bottom()->getDoubleValue()));
+        interpolableList->set(3, InterpolableNumber::create(quad.left()->getDoubleValue()));
+        bool isPercentage = quad.top()->isPercentage();
+        ASSERT(quad.bottom()->isPercentage() == isPercentage
+            && quad.left()->isPercentage() == isPercentage
+            && quad.right()->isPercentage() == isPercentage);
+
+        interpolableValue = interpolableList.release();
+        metadata = ImageSliceStyleInterpolation::Metadata {isPercentage, value.m_fill};
+    }
 };
 
-struct DecompositionResult {
-    DecompositionResult(const PassDecompositionResult& o)
-        : interpolableValue(o.interpolableValue)
-        , metadata(o.metadata)
-    { }
-    OwnPtrWillBeRawPtr<InterpolableValue> interpolableValue;
-    ImageSliceStyleInterpolation::Metadata metadata;
-};
-
-static PassDecompositionResult decompose(const CSSBorderImageSliceValue& value)
-{
-    const size_t kQuadSides = 4;
-    OwnPtrWillBeRawPtr<InterpolableList> interpolableList = InterpolableList::create(kQuadSides);
-    const Quad& quad = *value.slices();
-    interpolableList->set(0, InterpolableNumber::create(quad.top()->getDoubleValue()));
-    interpolableList->set(1, InterpolableNumber::create(quad.right()->getDoubleValue()));
-    interpolableList->set(2, InterpolableNumber::create(quad.bottom()->getDoubleValue()));
-    interpolableList->set(3, InterpolableNumber::create(quad.left()->getDoubleValue()));
-    bool isPercentage = quad.top()->isPercentage();
-    ASSERT(quad.bottom()->isPercentage() == isPercentage
-        && quad.left()->isPercentage() == isPercentage
-        && quad.right()->isPercentage() == isPercentage);
-    return PassDecompositionResult {
-        interpolableList.release(),
-        ImageSliceStyleInterpolation::Metadata {isPercentage, value.m_fill},
-    };
-}
-
-static PassRefPtr<CSSBorderImageSliceValue> compose(const InterpolableValue& value, const ImageSliceStyleInterpolation::Metadata& metadata)
+PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> compose(const InterpolableValue& value, const ImageSliceStyleInterpolation::Metadata& metadata)
 {
     const InterpolableList& interpolableList = toInterpolableList(value);
     CSSPrimitiveValue::UnitType type = metadata.isPercentage ? CSSPrimitiveValue::CSS_PERCENTAGE : CSSPrimitiveValue::CSS_NUMBER;
@@ -68,13 +67,15 @@ static PassRefPtr<CSSBorderImageSliceValue> compose(const InterpolableValue& val
     return CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad.release()), metadata.fill);
 }
 
+} // namespace
+
 PassRefPtrWillBeRawPtr<ImageSliceStyleInterpolation> ImageSliceStyleInterpolation::maybeCreate(const CSSValue& start, const CSSValue& end, CSSPropertyID property)
 {
     if (!start.isBorderImageSliceValue() || !end.isBorderImageSliceValue())
         return nullptr;
 
-    DecompositionResult startDecompose = decompose(toCSSBorderImageSliceValue(start));
-    DecompositionResult endDecompose = decompose(toCSSBorderImageSliceValue(end));
+    Decomposition startDecompose(toCSSBorderImageSliceValue(start));
+    Decomposition endDecompose(toCSSBorderImageSliceValue(end));
     if (!(startDecompose.metadata == endDecompose.metadata))
         return nullptr;
 
