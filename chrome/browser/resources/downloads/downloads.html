@@ -16,7 +16,10 @@
   <script src="chrome://resources/js/event_tracker.js"></script>
   <script src="chrome://resources/js/cr/ui/focus_row.js"></script>
   <script src="chrome://resources/js/cr/ui/focus_grid.js"></script>
-  <script src="chrome://downloads/downloads.js"></script>
+  <script src="chrome://downloads/item.js"></script>
+  <script src="chrome://downloads/item_view.js"></script>
+  <script src="chrome://downloads/focus_row.js"></script>
+  <script src="chrome://downloads/manager.js"></script>
 </head>
 <body>
   <header>
@@ -43,6 +46,51 @@
 <if expr="not is_macosx">
   <command id="undo-command" shortcut="Ctrl-U+005A"><!-- Ctrl+Z -->
 </if>
+  <div id="templates" hidden>
+    <div class="download">
+      <div class="date-container">
+        <div class="since"></div>
+        <div class="date"></div>
+      </div>
+      <div class="safe">
+        <div class="progress background"></div>
+        <canvas class="progress"></canvas>
+        <img class="icon" alt="">
+        <div class="title-area">
+          <a is="action-link" class="name"></a>
+          <span class="name"></span>
+          <span class="status"></span>
+        </div>
+        <div class="url-container">
+          <a class="src-url" target="_blank"></a>
+        </div>
+        <div class="controls">
+          <a is="action-link" class="show"
+              i18n-content="control_showinfolder"></a>
+          <a class="retry" i18n-content="control_retry" download></a>
+          <a is="action-link" class="pause" i18n-content="control_pause"></a>
+          <a is="action-link" class="resume" i18n-content="control_resume"></a>
+          <a is="action-link" class="remove"
+              i18n-content="control_removefromlist"></a>
+          <a is="action-link" class="cancel" i18n-content="control_cancel"></a>
+          <span class="controlled-by"
+              i18n-values=".innerHTML:control_by_extension"></span>
+        </div>
+      </div>
+      <div class="dangerous">
+        <img class="icon" alt="">
+        <div class="description"></div>
+        <div class="controls">
+          <a is="action-link" class="restore"
+              i18n-content="danger_restore"></a>
+          <a is="action-link" class="remove"
+              i18n-content="control_removefromlist"></a>
+        </div>
+        <button class="save" i18n-content="danger_save"></button>
+        <button class="discard" i18n-content="danger_discard"></button>
+      </div>
+    </div>
+  </div>
   <script src="chrome://downloads/strings.js"></script>
   <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>

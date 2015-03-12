@@ -129,7 +129,10 @@
       <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_CSS" file="resources\domain_reliability_internals.css" type="BINDATA" />
       <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_JS" file="resources\domain_reliability_internals.js" type="BINDATA" />
       <if expr="not is_android">
-        <include name="IDR_DOWNLOADS_JS" file="resources\downloads\downloads.js" type="BINDATA" />
+        <include name="IDR_DOWNLOAD_FOCUS_ROW_JS" file="resources\downloads\focus_row.js" type="BINDATA" />
+        <include name="IDR_DOWNLOAD_ITEM_JS" file="resources\downloads\item.js" type="BINDATA" />
+        <include name="IDR_DOWNLOAD_ITEM_VIEW_JS" file="resources\downloads\item_view.js" type="BINDATA" />
+        <include name="IDR_DOWNLOAD_MANAGER_JS" file="resources\downloads\manager.js" type="BINDATA" />
       </if>
       <if expr="enable_extensions">
         <include name="IDR_EXTENSION_COMMAND_LIST_JS" file="resources\extensions\extension_command_list.js" flattenhtml="true" type="BINDATA" />

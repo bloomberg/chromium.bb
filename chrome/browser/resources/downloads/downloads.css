@@ -84,7 +84,7 @@ html[dir=rtl] .download.otr > .show-dangerous {
   opacity: 1;
 }
 
-.malware-description {
+.description.malware {
   color: rgb(196, 42, 23);
 }
 
@@ -108,7 +108,8 @@ html[dir=rtl] .progress {
 
 .name,
 .src-url,
-.controls a {
+.controls a,
+.description {
   -webkit-padding-end: 4px;
   -webkit-padding-start: 4px;
 }

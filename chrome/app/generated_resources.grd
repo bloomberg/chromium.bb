@@ -2061,7 +2061,7 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
       <message name="IDS_DOWNLOAD_BY_EXTENSION"
                desc="Indicates which extension downloaded this file.">
-        Downloaded by <ph name="EXTENSION">$1<ex>The Best Chrome Extension Ever</ex></ph>
+        Downloaded by &lt;a&gt;<ph name="EXTENSION">$1<ex>The Best Chrome Extension Ever</ex></ph>&lt;/a&gt;
       </message>
 
       <!-- Download Context Menu Items -->

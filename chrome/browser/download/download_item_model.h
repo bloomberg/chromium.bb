@@ -152,6 +152,12 @@ class DownloadItemModel {
   // ShouldPreferOpeningInBrowser().
   void OpenUsingPlatformHandler();
 
+  // Whether the download was removed and this is currently being undone.
+  bool IsBeingRevived() const;
+
+  // Set whether the download is being revived.
+  void SetIsBeingRevived(bool is_being_revived);
+
   content::DownloadItem* download() { return download_; }
 
  private:

@@ -50,11 +50,13 @@ BaseDownloadsWebUITest.prototype = {
     // The entries will begin at 1:00 AM on Sept 2, 2008, and will be spaced
     // two minutes apart.
     var timestamp = new Date(2008, 9, 2, 1, 0).getTime();
+    var list = [];
     for (var i = 0; i < TOTAL_RESULT_COUNT; ++i) {
-      downloads.updated(this.createDownload_(i, timestamp));
+      list.push(this.createDownload_(i, timestamp));
       timestamp += 2 * 60 * 1000;  // Next visit is two minutes later.
     }
-    expectEquals(downloads.size(), TOTAL_RESULT_COUNT);
+    downloads.Manager.updateAll(list);
+    expectEquals(downloads.Manager.size(), TOTAL_RESULT_COUNT);
   },
 
   /**
@@ -70,14 +72,14 @@ BaseDownloadsWebUITest.prototype = {
       id: id,
       started: timestamp,
       otr: false,
-      state: Download.States.COMPLETE,
+      state: downloads.Item.States.COMPLETE,
       retry: false,
       file_path: '/path/to/file',
       file_url: 'http://google.com/' + timestamp,
       file_name: 'download_' + timestamp,
       url: 'http://google.com/' + timestamp,
       file_externally_removed: false,
-      danger_type: Download.DangerType.NOT_DANGEROUS,
+      danger_type: downloads.Item.DangerType.NOT_DANGEROUS,
       last_reason_text: '',
       since_string: 'today',
       date_string: 'today',
@@ -91,8 +93,8 @@ BaseDownloadsWebUITest.prototype = {
    * Simulates getting no results from C++.
    */
   sendEmptyList: function() {
-    downloadsList([]);
-    assertEquals(0, downloads.size());
+    downloads.Manager.updateAll([]);
+    assertEquals(0, downloads.Manager.size());
   },
 
   /**
@@ -115,7 +117,9 @@ BaseDownloadsWebUITest.prototype = {
     expectEquals(!visible, $('clear-all').hidden);
 
     // "Remove from list" links should only exist when deletions are allowed.
-    expectEquals(visible ? TOTAL_RESULT_COUNT : 0,
-        document.querySelectorAll('.control-remove-link').length);
+    var query = '#downloads-display .safe .remove';
+    if (!visible)
+      query += '[hidden]';
+    expectEquals(TOTAL_RESULT_COUNT, document.querySelectorAll(query).length);
   },
 };

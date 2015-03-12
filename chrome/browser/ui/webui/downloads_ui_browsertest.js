@@ -14,7 +14,7 @@ TEST_F('BaseDownloadsWebUITest', 'DeleteAllowed', function() {
 });
 
 TEST_F('BaseDownloadsWebUITest', 'NoResultsHiddenWhenDownloads', function() {
-  assertNotEquals(0, downloads.size());
+  assertNotEquals(0, downloads.Manager.size());
   expectFalse($('downloads-display').hidden);
   expectTrue($('no-downloads-or-results').hidden);
 });
@@ -24,7 +24,7 @@ TEST_F('BaseDownloadsWebUITest', 'NoSearchResultsShown', function() {
   var noResults = $('no-downloads-or-results');
   expectTrue(noResults.hidden);
 
-  setSearch('just try to search for me!');
+  downloads.Manager.setSearchText('just try to search for me!');
   this.sendEmptyList();
 
   expectTrue($('downloads-display').hidden);
@@ -36,7 +36,7 @@ TEST_F('BaseDownloadsWebUITest', 'NoDownloadsAfterClearAll', function() {
   var noResults = $('no-downloads-or-results');
   expectTrue(noResults.hidden);
 
-  clearAll();
+  $('clear-all').click();
   this.sendEmptyList();
 
   expectTrue($('downloads-display').hidden);
@@ -55,7 +55,7 @@ EmptyDownloadsWebUITest.prototype = {
   /** @override */
   setUp: function() {
     // Doesn't create any fake downloads.
-    assertEquals(0, downloads.size());
+    assertEquals(0, downloads.Manager.size());
   },
 };
 
@@ -66,7 +66,7 @@ TEST_F('EmptyDownloadsWebUITest', 'NoDownloadsMessageShowing', function() {
 });
 
 TEST_F('EmptyDownloadsWebUITest', 'NoSearchResultsWithNoDownloads', function() {
-  setSearch('bananas');
+  downloads.Manager.setSearchText('bananas');
   this.sendEmptyList();
 
   expectTrue($('downloads-display').hidden);
@@ -96,4 +96,10 @@ TEST_F('DownloadsWebUIDeleteProhibitedTest', 'DeleteProhibited', function() {
   // TODO(pamg): Mock out the back-end calls, so we can also test removing a
   // single item.
   testDone();
+});
+
+TEST_F('DownloadsWebUIDeleteProhibitedTest', 'ClearLeavesSearch', function() {
+  downloads.Manager.setSearchText('muhahaha');
+  $('clear-all').click();
+  expectGE(downloads.Manager.getInstance().searchText_.length, 0);
 });

@@ -61,17 +61,17 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
   ~MockDownloadsDOMHandler() override {}
 
   base::ListValue* downloads_list() { return downloads_list_.get(); }
-  base::ListValue* download_updated() { return download_updated_.get(); }
+  base::DictionaryValue* download_updated() { return download_updated_.get(); }
 
   void WaitForDownloadsList() {
-    if (downloads_list_.get())
+    if (downloads_list_)
       return;
     base::AutoReset<bool> reset_waiting(&waiting_list_, true);
     content::RunMessageLoop();
   }
 
   void WaitForDownloadUpdated() {
-    if (download_updated_.get())
+    if (download_updated_)
       return;
     base::AutoReset<bool> reset_waiting(&waiting_updated_, true);
     content::RunMessageLoop();
@@ -91,8 +91,8 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
  protected:
   content::WebContents* GetWebUIWebContents() override { return NULL; }
 
-  void CallDownloadsList(const base::ListValue& downloads) override {
-    downloads_list_.reset(downloads.DeepCopy());
+  void CallUpdateAll(const base::ListValue& list) override {
+    downloads_list_.reset(list.DeepCopy());
     if (waiting_list_) {
       content::BrowserThread::PostTask(content::BrowserThread::UI,
                                        FROM_HERE,
@@ -100,8 +100,8 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
     }
   }
 
-  void CallDownloadUpdated(const base::ListValue& download) override {
-    download_updated_.reset(download.DeepCopy());
+  void CallUpdateItem(const base::DictionaryValue& item) override {
+    download_updated_.reset(item.DeepCopy());
     if (waiting_updated_) {
       content::BrowserThread::PostTask(content::BrowserThread::UI,
                                        FROM_HERE,
@@ -115,7 +115,7 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
 
  private:
   scoped_ptr<base::ListValue> downloads_list_;
-  scoped_ptr<base::ListValue> download_updated_;
+  scoped_ptr<base::DictionaryValue> download_updated_;
   bool waiting_list_;
   bool waiting_updated_;
   content::DownloadManager* manager_;  // weak.
@@ -168,6 +168,7 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
         content::DOWNLOAD_INTERRUPT_REASON_NONE,
         false);
 
+    mock_handler_->ForceSendCurrentDownloads();
     mock_handler_->WaitForDownloadsList();
     ASSERT_EQ(1, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
     EXPECT_TRUE(ListMatches(
@@ -260,11 +261,16 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, DownloadsRelayed) {
   DownloadAnItem();
 
   mock_handler_->WaitForDownloadUpdated();
-  ASSERT_EQ(1, static_cast<int>(mock_handler_->download_updated()->GetSize()));
-  EXPECT_TRUE(ListMatches(
-      mock_handler_->download_updated(),
-      "[{\"file_externally_removed\": true,"
-      "  \"id\": \"1\"}]"));
+  const base::DictionaryValue* update = mock_handler_->download_updated();
+  ASSERT_TRUE(update);
+
+  bool removed;
+  ASSERT_TRUE(update->GetBoolean("file_externally_removed", &removed));
+  EXPECT_TRUE(removed);
+
+  std::string id;
+  ASSERT_TRUE(update->GetString("id", &id));
+  EXPECT_EQ("1", id);
 
   mock_handler_->reset_downloads_list();
   browser()->profile()->GetPrefs()->SetBoolean(
