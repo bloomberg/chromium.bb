@@ -281,7 +281,7 @@ LDPatterns = [
   ( '(--end-group)',       "env.append('INPUTS', $0)"),
   ( '(-Bstatic)',          "env.append('INPUTS', $0)"),
   ( '(-Bdynamic)',          "env.append('INPUTS', $0)"),
-  ( '(--(no-)?whole-archive)', "env.append('INPUTS', $0)"),
+  ( '((-)?-(no-)?whole-archive)', "env.append('INPUTS', $0)"),
   ( '(--undefined=.*)',    "env.append('INPUTS', $0)"),
   ( ('(-u)','(.*)'),       "env.append('INPUTS', $0+$1)"),
   ( '(-u.*)',              "env.append('INPUTS', $0)"),
