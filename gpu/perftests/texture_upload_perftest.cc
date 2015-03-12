@@ -34,7 +34,7 @@ const int kUploadPerfTestRuns = 100;
 // clang-format off
 const char kVertexShader[] =
 SHADER(
-  uniform vec2 translation = vec2(0.0, 0.0);
+  uniform vec2 translation;
   attribute vec2 a_position;
   attribute vec2 a_texCoord;
   varying vec2 v_texCoord;
@@ -189,15 +189,15 @@ class TextureUploadPerfTest : public testing::Test {
     glBindAttribLocation(program_object_, 1, "a_texCoord");
     glLinkProgram(program_object_);
 
-    translation_location_ =
-        glGetUniformLocation(program_object_, "translation");
-    DCHECK_NE(-1, translation_location_);
-
     GLint linked = -1;
     glGetProgramiv(program_object_, GL_LINK_STATUS, &linked);
     CHECK_NE(0, linked);
     glUseProgram(program_object_);
     glUniform1i(sampler_location_, 0);
+    translation_location_ =
+        glGetUniformLocation(program_object_, "translation");
+    DCHECK_NE(-1, translation_location_);
+    glUniform2f(translation_location_, 0.0f, 0.0f);
 
     sampler_location_ = glGetUniformLocation(program_object_, "a_texture");
     CHECK_NE(-1, sampler_location_);
