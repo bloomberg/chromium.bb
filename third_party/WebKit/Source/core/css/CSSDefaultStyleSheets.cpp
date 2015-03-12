@@ -199,6 +199,7 @@ DEFINE_TRACE(CSSDefaultStyleSheets)
     visitor->trace(m_defaultXHTMLMobileProfileStyle);
     visitor->trace(m_defaultTransitionStyle);
     visitor->trace(m_defaultStyleSheet);
+    visitor->trace(m_mobileViewportStyleSheet);
     visitor->trace(m_quirksStyleSheet);
     visitor->trace(m_svgStyleSheet);
     visitor->trace(m_mathmlStyleSheet);
