@@ -678,7 +678,6 @@ Shell::~Shell() {
   RemovePreTargetHandler(speech_feedback_handler_.get());
   speech_feedback_handler_.reset();
 #endif
-  RemovePreTargetHandler(user_activity_detector_.get());
   RemovePreTargetHandler(overlay_filter_.get());
   RemovePreTargetHandler(input_method_filter_.get());
   RemovePreTargetHandler(accelerator_filter_.get());
@@ -922,7 +921,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   // ui::UserActivityDetector passes events to observers, so let them get
   // rewritten first.
   user_activity_detector_.reset(new ui::UserActivityDetector);
-  AddPreTargetHandler(user_activity_detector_.get());
 
   overlay_filter_.reset(new OverlayEventFilter);
   AddPreTargetHandler(overlay_filter_.get());

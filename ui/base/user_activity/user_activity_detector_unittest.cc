@@ -13,6 +13,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
@@ -36,10 +37,22 @@ class TestUserActivityObserver : public UserActivityObserver {
   DISALLOW_COPY_AND_ASSIGN(TestUserActivityObserver);
 };
 
+// A test implementation of PlatformEventSource that we can instantiate to make
+// sure that the PlatformEventSource has an instance while in unit tests.
+class TestPlatformEventSource : public ui::PlatformEventSource {
+ public:
+  TestPlatformEventSource() {}
+  ~TestPlatformEventSource() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPlatformEventSource);
+};
+
 class UserActivityDetectorTest : public testing::Test {
  public:
   UserActivityDetectorTest()
-      : detector_(new UserActivityDetector),
+      : platform_event_source_(new TestPlatformEventSource),
+        detector_(new UserActivityDetector),
         observer_(new TestUserActivityObserver) {
     detector_->AddObserver(observer_.get());
     now_ = base::TimeTicks::Now();
@@ -57,6 +70,11 @@ class UserActivityDetectorTest : public testing::Test {
     detector_->set_now_for_test(now_);
   }
 
+  void OnEvent(const ui::Event* event) {
+    detector_->ProcessReceivedEvent(event);
+  }
+
+  scoped_ptr<TestPlatformEventSource> platform_event_source_;
   scoped_ptr<UserActivityDetector> detector_;
   scoped_ptr<TestUserActivityObserver> observer_;
 
@@ -70,7 +88,7 @@ class UserActivityDetectorTest : public testing::Test {
 // events.
 TEST_F(UserActivityDetectorTest, Basic) {
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  detector_->OnKeyEvent(&key_event);
+  OnEvent(&key_event);
   EXPECT_FALSE(key_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
             detector_->last_activity_time().ToInternalValue());
@@ -82,7 +100,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
   AdvanceTime(advance_delta);
   ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  detector_->OnMouseEvent(&mouse_event);
+  OnEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
             detector_->last_activity_time().ToInternalValue());
@@ -93,7 +111,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
 
   // Temporarily ignore mouse events when displays are turned on or off.
   detector_->OnDisplayPowerChanging();
-  detector_->OnMouseEvent(&mouse_event);
+  OnEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(time_before_ignore.ToInternalValue(),
             detector_->last_activity_time().ToInternalValue());
@@ -104,7 +122,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
       base::TimeDelta::FromMilliseconds(
           UserActivityDetector::kDisplayPowerChangeIgnoreMouseMs);
   AdvanceTime(kIgnoreMouseTime / 2);
-  detector_->OnMouseEvent(&mouse_event);
+  OnEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(time_before_ignore.ToInternalValue(),
             detector_->last_activity_time().ToInternalValue());
@@ -113,7 +131,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
 
   // After enough time has passed, mouse events should be reported again.
   AdvanceTime(std::max(kIgnoreMouseTime, advance_delta));
-  detector_->OnMouseEvent(&mouse_event);
+  OnEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
             detector_->last_activity_time().ToInternalValue());
@@ -123,7 +141,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
   AdvanceTime(advance_delta);
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
-  detector_->OnTouchEvent(&touch_event);
+  OnEvent(&touch_event);
   EXPECT_FALSE(touch_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
             detector_->last_activity_time().ToInternalValue());
@@ -137,7 +155,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
       ui::EF_NONE,
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-  detector_->OnGestureEvent(&gesture_event);
+  OnEvent(&gesture_event);
   EXPECT_FALSE(gesture_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
             detector_->last_activity_time().ToInternalValue());
@@ -149,14 +167,14 @@ TEST_F(UserActivityDetectorTest, Basic) {
 TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
   // The observer should be notified about a key event.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  detector_->OnKeyEvent(&event);
+  OnEvent(&event);
   EXPECT_FALSE(event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
   // It shouldn't be notified if a second event occurs in the same instant in
   // time.
-  detector_->OnKeyEvent(&event);
+  OnEvent(&event);
   EXPECT_FALSE(event.handled());
   EXPECT_EQ(0, observer_->num_invocations());
   observer_->reset_stats();
@@ -165,7 +183,7 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
   AdvanceTime(
       base::TimeDelta::FromMilliseconds(
           UserActivityDetector::kNotifyIntervalMs - 100));
-  detector_->OnKeyEvent(&event);
+  OnEvent(&event);
   EXPECT_FALSE(event.handled());
   EXPECT_EQ(0, observer_->num_invocations());
   observer_->reset_stats();
@@ -175,7 +193,7 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
   AdvanceTime(base::TimeDelta::FromMilliseconds(
       UserActivityDetector::kNotifyIntervalMs));
 
-  detector_->OnKeyEvent(&event);
+  OnEvent(&event);
   EXPECT_FALSE(event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
 }
@@ -185,7 +203,7 @@ TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
   ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), ui::EF_IS_SYNTHESIZED,
                              ui::EF_NONE);
-  detector_->OnMouseEvent(&mouse_event);
+  OnEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(base::TimeTicks().ToInternalValue(),
             detector_->last_activity_time().ToInternalValue());
