@@ -16,7 +16,6 @@
       'browser/about_flags_unittest.cc',
       'browser/android/banners/app_banner_manager_unittest.cc',
       'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
-      'browser/android/manifest_icon_selector_unittest.cc',
       # TODO(newt): move this to test_support_unit?
       'browser/android/mock_location_settings.cc',
       'browser/android/mock_location_settings.h',
@@ -132,6 +131,7 @@
       'browser/io_thread_unittest.cc',
       'browser/logging_chrome_unittest.cc',
       'browser/mac/keystone_glue_unittest.mm',
+      'browser/manifest/manifest_icon_selector_unittest.cc',
       'browser/media/native_desktop_media_list_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/cloned_install_detector_unittest.cc',

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_MANIFEST_ICON_SELECTOR_H_
-#define CHROME_BROWSER_ANDROID_MANIFEST_ICON_SELECTOR_H_
+#ifndef CHROME_BROWSER_MANIFEST_MANIFEST_ICON_SELECTOR_H_
+#define CHROME_BROWSER_MANIFEST_MANIFEST_ICON_SELECTOR_H_
 
 #include "base/basictypes.h"
 #include "content/public/common/manifest.h"
@@ -76,4 +76,4 @@ class ManifestIconSelector {
   DISALLOW_COPY_AND_ASSIGN(ManifestIconSelector);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_MANIFEST_ICON_SELECTOR_H_
+#endif  // CHROME_BROWSER_MANIFEST_MANIFEST_ICON_SELECTOR_H_
