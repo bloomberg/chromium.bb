@@ -269,7 +269,7 @@ void V8PerIsolateData::clearEndOfScopeTasks()
 void V8PerIsolateData::setScriptDebugServer(PassOwnPtrWillBeRawPtr<ScriptDebugServer> server)
 {
     ASSERT(!m_debugServer);
-    m_debugServer = server.get();
+    m_debugServer = server;
 }
 
 } // namespace blink
