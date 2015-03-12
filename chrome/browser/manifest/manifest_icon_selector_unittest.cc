@@ -299,7 +299,7 @@ TEST_F(ManifestIconSelectorTest, ClosestIconToPreferred) {
   // The Device Scale Factor is 1.0 and the preferred icon size is returned by
   // GetPreferredIconSizeInDp().
   int very_small = GetPreferredIconSizeInDp() / 4;
-  int small = GetPreferredIconSizeInDp() / 2;
+  int small_size = GetPreferredIconSizeInDp() / 2;
   int bit_small = GetPreferredIconSizeInDp() - 1;
   int bit_big = GetPreferredIconSizeInDp() + 1;
   int big = GetPreferredIconSizeInDp() * 2;
@@ -330,7 +330,7 @@ TEST_F(ManifestIconSelectorTest, ClosestIconToPreferred) {
     sizes_2.push_back(gfx::Size(bit_small, bit_small));
 
     std::vector<gfx::Size> sizes_3;
-    sizes_3.push_back(gfx::Size(small, small));
+    sizes_3.push_back(gfx::Size(small_size, small_size));
 
     std::vector<content::Manifest::Icon> icons;
     icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", 1.0, sizes_1));
