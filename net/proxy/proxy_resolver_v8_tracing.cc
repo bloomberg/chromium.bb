@@ -707,6 +707,10 @@ void ProxyResolverV8Tracing::Job::DoDnsOperation() {
   } else {
     DCHECK(dns_request);
     pending_dns_ = dns_request;
+    if (!parent_->on_load_state_changed_.is_null()) {
+      parent_->on_load_state_changed_.Run(
+          this, LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
+    }
     // OnDnsOperationComplete() will be called by host resolver on completion.
   }
 
@@ -731,6 +735,12 @@ void ProxyResolverV8Tracing::Job::OnDnsOperationComplete(int result) {
   SaveDnsToLocalCache(pending_dns_host_, pending_dns_op_, result,
                       pending_dns_addresses_);
   pending_dns_ = NULL;
+
+  if (!parent_->on_load_state_changed_.is_null() &&
+      !pending_dns_completed_synchronously_ && !cancelled_.IsSet()) {
+    parent_->on_load_state_changed_.Run(this,
+                                        LOAD_STATE_RESOLVING_PROXY_FOR_URL);
+  }
 
   if (blocking_dns_) {
     event_.Signal();
@@ -934,11 +944,23 @@ ProxyResolverV8Tracing::ProxyResolverV8Tracing(
     HostResolver* host_resolver,
     ProxyResolverErrorObserver* error_observer,
     NetLog* net_log)
+    : ProxyResolverV8Tracing(host_resolver,
+                             error_observer,
+                             net_log,
+                             LoadStateChangedCallback()) {
+}
+
+ProxyResolverV8Tracing::ProxyResolverV8Tracing(
+    HostResolver* host_resolver,
+    ProxyResolverErrorObserver* error_observer,
+    NetLog* net_log,
+    const LoadStateChangedCallback& on_load_state_changed)
     : ProxyResolver(true /*expects_pac_bytes*/),
       host_resolver_(host_resolver),
       error_observer_(error_observer),
       net_log_(net_log),
-      num_outstanding_callbacks_(0) {
+      num_outstanding_callbacks_(0),
+      on_load_state_changed_(on_load_state_changed) {
   // TODO(eroman): Remove once crbug.com/454983 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(

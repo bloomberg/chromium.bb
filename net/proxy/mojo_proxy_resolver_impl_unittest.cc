@@ -14,6 +14,7 @@
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_server.h"
+#include "net/test/event_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
@@ -24,31 +25,39 @@ namespace {
 class TestRequestClient : public interfaces::ProxyResolverRequestClient,
                           public mojo::ErrorHandler {
  public:
+  enum Event {
+    RESULT_RECEIVED,
+    LOAD_STATE_CHANGED,
+    CONNECTION_ERROR,
+  };
+
   explicit TestRequestClient(
       mojo::InterfaceRequest<interfaces::ProxyResolverRequestClient> request);
 
   void WaitForResult();
-  void WaitForConnectionError();
 
   Error error() { return error_; }
   const mojo::Array<interfaces::ProxyServerPtr>& results() { return results_; }
+  LoadState load_state() { return load_state_; }
+  EventWaiter<Event>& event_waiter() { return event_waiter_; }
 
  private:
   // interfaces::ProxyResolverRequestClient override.
   void ReportResult(int32_t error,
                     mojo::Array<interfaces::ProxyServerPtr> results) override;
+  void LoadStateChanged(int32_t load_state) override;
 
   // mojo::ErrorHandler override.
   void OnConnectionError() override;
 
   bool done_ = false;
-  bool encountered_connection_error_ = false;
   Error error_ = ERR_FAILED;
+  LoadState load_state_ = LOAD_STATE_IDLE;
   mojo::Array<interfaces::ProxyServerPtr> results_;
-  base::Closure run_loop_quit_closure_;
-  base::Closure connection_error_callback_;
 
   mojo::Binding<interfaces::ProxyResolverRequestClient> binding_;
+
+  EventWaiter<Event> event_waiter_;
 };
 
 TestRequestClient::TestRequestClient(
@@ -61,38 +70,27 @@ void TestRequestClient::WaitForResult() {
   if (done_)
     return;
 
-  base::RunLoop run_loop;
-  run_loop_quit_closure_ = run_loop.QuitClosure();
-  run_loop.Run();
+  event_waiter_.WaitForEvent(RESULT_RECEIVED);
   ASSERT_TRUE(done_);
-}
-
-void TestRequestClient::WaitForConnectionError() {
-  if (encountered_connection_error_)
-    return;
-
-  base::RunLoop run_loop;
-  connection_error_callback_ = run_loop.QuitClosure();
-  run_loop.Run();
-  ASSERT_TRUE(encountered_connection_error_);
 }
 
 void TestRequestClient::ReportResult(
     int32_t error,
     mojo::Array<interfaces::ProxyServerPtr> results) {
-  if (!run_loop_quit_closure_.is_null()) {
-    run_loop_quit_closure_.Run();
-  }
+  event_waiter_.NotifyEvent(RESULT_RECEIVED);
   ASSERT_FALSE(done_);
   error_ = static_cast<Error>(error);
   results_ = results.Pass();
   done_ = true;
 }
 
+void TestRequestClient::LoadStateChanged(int32_t load_state) {
+  event_waiter_.NotifyEvent(LOAD_STATE_CHANGED);
+  load_state_ = static_cast<LoadState>(load_state);
+}
+
 void TestRequestClient::OnConnectionError() {
-  if (!connection_error_callback_.is_null())
-    connection_error_callback_.Run();
-  encountered_connection_error_ = true;
+  event_waiter_.NotifyEvent(CONNECTION_ERROR);
 }
 
 class SetPacScriptClient {
@@ -211,12 +209,14 @@ class MojoProxyResolverImplTest : public testing::Test {
     scoped_ptr<CallbackMockProxyResolver> mock_resolver(
         new CallbackMockProxyResolver);
     mock_proxy_resolver_ = mock_resolver.get();
-    resolver_.reset(new MojoProxyResolverImpl(mock_resolver.Pass()));
+    resolver_impl_.reset(new MojoProxyResolverImpl(mock_resolver.Pass()));
+    resolver_ = resolver_impl_.get();
   }
 
   CallbackMockProxyResolver* mock_proxy_resolver_;
 
-  scoped_ptr<interfaces::ProxyResolver> resolver_;
+  scoped_ptr<MojoProxyResolverImpl> resolver_impl_;
+  interfaces::ProxyResolver* resolver_;
 };
 
 TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
@@ -228,6 +228,12 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
   scoped_refptr<MockAsyncProxyResolverBase::Request> request =
       mock_proxy_resolver_->pending_requests()[0];
   EXPECT_EQ(GURL("http://example.com"), request->url());
+
+  resolver_impl_->LoadStateChanged(request.get(),
+                                   LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
+  client.event_waiter().WaitForEvent(TestRequestClient::LOAD_STATE_CHANGED);
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT, client.load_state());
+
   request->results()->UsePacString(
       "PROXY proxy.example.com:1; "
       "SOCKS4 socks4.example.com:2; "
@@ -409,8 +415,8 @@ TEST_F(MojoProxyResolverImplTest, DestroyService) {
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
   scoped_refptr<MockAsyncProxyResolverBase::Request> request =
       mock_proxy_resolver_->pending_requests()[0];
-  resolver_.reset();
-  client.WaitForConnectionError();
+  resolver_impl_.reset();
+  client.event_waiter().WaitForEvent(TestRequestClient::CONNECTION_ERROR);
 }
 
 }  // namespace net

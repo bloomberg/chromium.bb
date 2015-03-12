@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "mojo/common/common_type_converters.h"
@@ -66,6 +67,8 @@ struct GetProxyForUrlAction {
     DISCONNECT,
     // Wait for the client pipe to be disconnected.
     WAIT_FOR_CLIENT_DISCONNECT,
+    // Send a LoadStateChanged message and keep the client pipe open.
+    SEND_LOAD_STATE_AND_BLOCK,
   };
 
   GetProxyForUrlAction() {}
@@ -113,6 +116,13 @@ struct GetProxyForUrlAction {
     return result;
   }
 
+  static GetProxyForUrlAction SendLoadStateChanged(const GURL& url) {
+    GetProxyForUrlAction result;
+    result.expected_url = url;
+    result.action = SEND_LOAD_STATE_AND_BLOCK;
+    return result;
+  }
+
   Action action = COMPLETE;
   Error error = OK;
   mojo::Array<interfaces::ProxyServerPtr> proxy_servers;
@@ -133,6 +143,8 @@ class MockMojoProxyResolver : public interfaces::ProxyResolver {
 
   void WaitForNextRequest();
 
+  void ClearBlockedClients();
+
  private:
   // Overridden from interfaces::ProxyResolver:
   void SetPacScript(const mojo::String& data,
@@ -150,6 +162,7 @@ class MockMojoProxyResolver : public interfaces::ProxyResolver {
 
   base::Closure quit_closure_;
 
+  ScopedVector<interfaces::ProxyResolverRequestClientPtr> blocked_clients_;
   mojo::Binding<interfaces::ProxyResolver> binding_;
 };
 
@@ -205,6 +218,10 @@ void MockMojoProxyResolver::SetPacScript(
   WakeWaiter();
 }
 
+void MockMojoProxyResolver::ClearBlockedClients() {
+  blocked_clients_.clear();
+}
+
 void MockMojoProxyResolver::GetProxyForUrl(
     const mojo::String& url,
     interfaces::ProxyResolverRequestClientPtr client) {
@@ -225,6 +242,11 @@ void MockMojoProxyResolver::GetProxyForUrl(
       break;
     case GetProxyForUrlAction::WAIT_FOR_CLIENT_DISCONNECT:
       ASSERT_FALSE(client.WaitForIncomingMethodCall());
+      break;
+    case GetProxyForUrlAction::SEND_LOAD_STATE_AND_BLOCK:
+      client->LoadStateChanged(LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
+      blocked_clients_.push_back(
+          new interfaces::ProxyResolverRequestClientPtr(client.Pass()));
       break;
   }
   WakeWaiter();
@@ -303,6 +325,7 @@ class Request {
 
   int error() const { return error_; }
   const ProxyInfo& results() const { return results_; }
+  LoadState load_state() { return resolver_->GetLoadState(handle_); }
 
  private:
   ProxyResolverMojo* resolver_;
@@ -520,6 +543,21 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL) {
 TEST_F(ProxyResolverMojoTest, GetProxyForURL_WithoutSetPacScript) {
   scoped_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
   EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED, request->Resolve());
+}
+
+TEST_F(ProxyResolverMojoTest, GetProxyForURL_LoadState) {
+  mojo_proxy_resolver_factory_.AddFutureGetProxyAction(
+      0, GetProxyForUrlAction::SendLoadStateChanged(GURL(kExampleUrl)));
+  SetPacScript(0);
+
+  scoped_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
+  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, request->load_state());
+  while (request->load_state() == LOAD_STATE_RESOLVING_PROXY_FOR_URL)
+    base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT, request->load_state());
+  mojo_proxy_resolver_factory_.GetMockResolver().ClearBlockedClients();
+  EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED, request->WaitForResult());
 }
 
 TEST_F(ProxyResolverMojoTest, GetProxyForURL_MultipleResults) {

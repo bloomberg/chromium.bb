@@ -10,7 +10,6 @@
 #include "net/base/net_log.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_script_data.h"
 
 namespace net {
@@ -23,6 +22,11 @@ class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
   ~Job() override;
 
   void Start();
+
+  // Invoked when the LoadState for this job changes.
+  void LoadStateChanged(LoadState load_state);
+
+  net::ProxyResolver::RequestHandle request_handle() { return request_handle_; }
 
  private:
   // mojo::ErrorHandler override.
@@ -38,6 +42,7 @@ class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
   ProxyInfo result_;
   GURL url_;
   net::ProxyResolver::RequestHandle request_handle_;
+  bool done_;
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -52,6 +57,14 @@ MojoProxyResolverImpl::~MojoProxyResolverImpl() {
   if (!set_pac_script_requests_.empty())
     resolver_->CancelSetPacScript();
   STLDeleteElements(&resolve_jobs_);
+}
+
+void MojoProxyResolverImpl::LoadStateChanged(
+    net::ProxyResolver::RequestHandle handle,
+    LoadState load_state) {
+  auto it = request_handle_to_job_.find(handle);
+  DCHECK(it != request_handle_to_job_.end());
+  it->second->LoadStateChanged(load_state);
 }
 
 void MojoProxyResolverImpl::SetPacScript(
@@ -75,6 +88,9 @@ void MojoProxyResolverImpl::GetProxyForUrl(
 }
 
 void MojoProxyResolverImpl::DeleteJob(Job* job) {
+  if (job->request_handle())
+    request_handle_to_job_.erase(job->request_handle());
+
   size_t num_erased = resolve_jobs_.erase(job);
   DCHECK(num_erased);
   delete job;
@@ -106,11 +122,12 @@ MojoProxyResolverImpl::Job::Job(
     : resolver_(resolver),
       client_(client.Pass()),
       url_(url),
-      request_handle_(nullptr) {
+      request_handle_(nullptr),
+      done_(false) {
 }
 
 MojoProxyResolverImpl::Job::~Job() {
-  if (request_handle_)
+  if (request_handle_ && !done_)
     resolver_->resolver_->CancelRequest(request_handle_);
 }
 
@@ -123,10 +140,16 @@ void MojoProxyResolverImpl::Job::Start() {
     return;
   }
   client_.set_error_handler(this);
+  resolver_->request_handle_to_job_.insert(
+      std::make_pair(request_handle_, this));
+}
+
+void MojoProxyResolverImpl::Job::LoadStateChanged(LoadState load_state) {
+  client_->LoadStateChanged(load_state);
 }
 
 void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
-  request_handle_ = nullptr;
+  done_ = true;
   DVLOG(1) << "GetProxyForUrl(" << url_ << ") finished with error " << error
            << ". " << result_.proxy_list().size() << " Proxies returned:";
   for (const auto& proxy : result_.proxy_list().GetAll()) {

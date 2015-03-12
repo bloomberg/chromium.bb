@@ -46,7 +46,8 @@ class MojoProxyResolverFactoryImplTest : public testing::Test,
   void OnConnectionError() override { waiter_.NotifyEvent(CONNECTION_ERROR); }
 
   scoped_ptr<ProxyResolver> CreateFakeProxyResolver(
-      HostResolver* host_resolver) {
+      HostResolver* host_resolver,
+      const ProxyResolver::LoadStateChangedCallback& callback) {
     EXPECT_TRUE(host_resolver);
     instances_created_++;
     waiter_.NotifyEvent(RESOLVER_CREATED);

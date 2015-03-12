@@ -5,6 +5,7 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_H_
 #define NET_PROXY_PROXY_RESOLVER_H_
 
+#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -27,6 +28,9 @@ class NET_EXPORT_PRIVATE ProxyResolver {
  public:
   // Opaque pointer type, to return a handle to cancel outstanding requests.
   typedef void* RequestHandle;
+
+  using LoadStateChangedCallback =
+      const base::Callback<void(RequestHandle, LoadState)>;
 
   // See |expects_pac_bytes()| for the meaning of |expects_pac_bytes|.
   explicit ProxyResolver(bool expects_pac_bytes)

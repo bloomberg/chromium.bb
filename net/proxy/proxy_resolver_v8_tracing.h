@@ -42,6 +42,19 @@ class NET_EXPORT_PRIVATE ProxyResolverV8Tracing
                          ProxyResolverErrorObserver* error_observer,
                          NetLog* net_log);
 
+  // Constructs a ProxyResolver that will issue DNS requests through
+  // |host_resolver|, forward Javascript errors through |error_observer|, and
+  // log Javascript errors and alerts to |net_log|. When the LoadState for a
+  // request changes, |on_load_state_changed| will be invoked with the
+  // RequestHandle for that request with the new LoadState.
+  //
+  // Note that the constructor takes ownership of |error_observer|, whereas
+  // |host_resolver| and |net_log| are expected to outlive |this|.
+  ProxyResolverV8Tracing(HostResolver* host_resolver,
+                         ProxyResolverErrorObserver* error_observer,
+                         NetLog* net_log,
+                         const LoadStateChangedCallback& on_load_state_changed);
+
   ~ProxyResolverV8Tracing() override;
 
   // ProxyResolver implementation:
@@ -74,6 +87,9 @@ class NET_EXPORT_PRIVATE ProxyResolverV8Tracing
 
   // The number of outstanding (non-cancelled) jobs.
   int num_outstanding_callbacks_;
+
+  // Invoked when the load state for a request changes.
+  const LoadStateChangedCallback on_load_state_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8Tracing);
 };

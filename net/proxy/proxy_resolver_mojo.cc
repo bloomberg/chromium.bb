@@ -31,6 +31,9 @@ class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
   // Cancels the job and prevents the callback from being run.
   void Cancel();
 
+  // Returns the LoadState of this job.
+  LoadState load_state() { return load_state_; }
+
  private:
   // Overridden from mojo::ErrorHandler:
   void OnConnectionError() override;
@@ -39,11 +42,13 @@ class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
   void ReportResult(
       int32_t error,
       mojo::Array<interfaces::ProxyServerPtr> proxy_servers) override;
+  void LoadStateChanged(int32_t load_state) override;
 
   ProxyResolverMojo* resolver_;
   const GURL url_;
   ProxyInfo* results_;
   net::CompletionCallback callback_;
+  LoadState load_state_ = LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 
   base::ThreadChecker thread_checker_;
   mojo::Binding<interfaces::ProxyResolverRequestClient> binding_;
@@ -98,6 +103,10 @@ void ProxyResolverMojo::Job::ReportResult(
   callback_.Run(error);
   callback_.Reset();
   resolver_->RemoveJob(this);
+}
+
+void ProxyResolverMojo::Job::LoadStateChanged(int32_t load_state) {
+  load_state_ = static_cast<LoadState>(load_state);
 }
 
 ProxyResolverMojo::ProxyResolverMojo(
@@ -247,8 +256,9 @@ void ProxyResolverMojo::CancelRequest(RequestHandle request) {
 }
 
 LoadState ProxyResolverMojo::GetLoadState(RequestHandle request) const {
-  // TODO(amistry): Implement real LoadState.
-  return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
+  Job* job = static_cast<Job*>(request);
+  CHECK_EQ(1u, pending_jobs_.count(job));
+  return job->load_state();
 }
 
 }  // namespace net

@@ -41,6 +41,7 @@ interface ProxyResolver {
 
 interface ProxyResolverRequestClient {
   ReportResult(int32 error, array<ProxyServer>? proxy_servers);
+  LoadStateChanged(int32 load_state);
 };
 
 interface ProxyResolverFactory {

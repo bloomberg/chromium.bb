@@ -7,15 +7,17 @@
 
 #include "base/callback.h"
 #include "net/interfaces/proxy_resolver_service.mojom.h"
+#include "net/proxy/proxy_resolver.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace net {
 class HostResolver;
-class ProxyResolver;
 
 class MojoProxyResolverFactoryImpl : public interfaces::ProxyResolverFactory {
  public:
-  using Factory = base::Callback<scoped_ptr<ProxyResolver>(HostResolver*)>;
+  using Factory = base::Callback<scoped_ptr<ProxyResolver>(
+      HostResolver*,
+      const ProxyResolver::LoadStateChangedCallback&)>;
 
   explicit MojoProxyResolverFactoryImpl(
       mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request);

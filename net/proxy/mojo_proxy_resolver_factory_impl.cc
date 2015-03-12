@@ -14,9 +14,10 @@ namespace net {
 namespace {
 
 scoped_ptr<ProxyResolver> CreateDefaultProxyResolver(
-    HostResolver* host_resolver) {
+    HostResolver* host_resolver,
+    const ProxyResolver::LoadStateChangedCallback& callback) {
   return make_scoped_ptr(
-      new ProxyResolverV8Tracing(host_resolver, nullptr, nullptr));
+      new ProxyResolverV8Tracing(host_resolver, nullptr, nullptr, callback));
 }
 
 // A class to manage the lifetime of a MojoProxyResolverImpl and a
@@ -33,6 +34,9 @@ class MojoProxyResolverHolder : public mojo::ErrorHandler {
   // mojo::ErrorHandler override.
   void OnConnectionError() override;
 
+  void LoadStateChanged(ProxyResolver::RequestHandle handle,
+                        LoadState load_state);
+
   HostResolverMojo host_resolver_;
   MojoProxyResolverImpl proxy_resolver_;
   mojo::Binding<interfaces::ProxyResolver> binding_;
@@ -47,13 +51,22 @@ MojoProxyResolverHolder::MojoProxyResolverHolder(
     : host_resolver_(host_resolver.Pass(),
                      base::Bind(&MojoProxyResolverHolder::OnConnectionError,
                                 base::Unretained(this))),
-      proxy_resolver_(proxy_resolver_factory.Run(&host_resolver_)),
+      proxy_resolver_(proxy_resolver_factory.Run(
+          &host_resolver_,
+          base::Bind(&MojoProxyResolverHolder::LoadStateChanged,
+                     base::Unretained(this)))),
       binding_(&proxy_resolver_, request.Pass()) {
   binding_.set_error_handler(this);
 }
 
 void MojoProxyResolverHolder::OnConnectionError() {
   delete this;
+}
+
+void MojoProxyResolverHolder::LoadStateChanged(
+    ProxyResolver::RequestHandle handle,
+    LoadState load_state) {
+  proxy_resolver_.LoadStateChanged(handle, load_state);
 }
 
 }  // namespace

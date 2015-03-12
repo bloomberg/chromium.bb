@@ -5,23 +5,26 @@
 #ifndef NET_PROXY_MOJO_PROXY_RESOLVER_IMPL_H_
 #define NET_PROXY_MOJO_PROXY_RESOLVER_IMPL_H_
 
+#include <map>
 #include <queue>
 #include <set>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/interfaces/proxy_resolver_service.mojom.h"
+#include "net/proxy/proxy_resolver.h"
 
 namespace net {
-
-class ProxyResolver;
-class ProxyResolverScriptData;
 
 class MojoProxyResolverImpl : public interfaces::ProxyResolver {
  public:
   explicit MojoProxyResolverImpl(scoped_ptr<net::ProxyResolver> resolver);
 
   ~MojoProxyResolverImpl() override;
+
+  // Invoked when the LoadState of a request changes.
+  void LoadStateChanged(net::ProxyResolver::RequestHandle handle,
+                        LoadState load_state);
 
  private:
   class Job;
@@ -53,6 +56,7 @@ class MojoProxyResolverImpl : public interfaces::ProxyResolver {
 
   scoped_ptr<net::ProxyResolver> resolver_;
   std::set<Job*> resolve_jobs_;
+  std::map<net::ProxyResolver::RequestHandle, Job*> request_handle_to_job_;
 
   std::queue<SetPacScriptRequest> set_pac_script_requests_;
 
