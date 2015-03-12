@@ -167,6 +167,7 @@ public:
     virtual void setUnsafePluginPastingEnabled(bool) override;
     virtual void setUsesEncodingDetector(bool) override;
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool) override;
+    virtual void setUseMobileViewportStyle(bool) override;
     virtual void setUseSolidColorScrollbars(bool) override;
     virtual void setUseWideViewport(bool) override;
     virtual void setV8CacheOptions(V8CacheOptions) override;

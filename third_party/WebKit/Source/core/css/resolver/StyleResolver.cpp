@@ -217,7 +217,7 @@ void StyleResolver::finishAppendAuthorStyleSheets()
     if (document().layoutView() && document().layoutView()->style())
         document().layoutView()->style()->font().update(document().styleEngine().fontSelector());
 
-    collectViewportRules();
+    m_viewportStyleResolver->collectViewportRules();
 
     document().styleEngine().resetCSSFeatureFlags(m_features);
 }
@@ -245,9 +245,10 @@ void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
     if (!resolver)
         return;
 
-    resolver->resetAuthorStyle();
-    if (treeScope.rootNode().isDocumentNode())
+    if (treeScope.rootNode().isDocumentNode()) {
+        resolver->resetAuthorStyle();
         return;
+    }
 
     // resolver is going to be freed below.
     treeScope.clearScopedStyleResolver();
@@ -885,23 +886,6 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForPage(int pageIndex)
     return state.takeStyle();
 }
 
-void StyleResolver::collectViewportRules()
-{
-    CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
-    viewportStyleResolver()->collectViewportRules(defaultStyleSheets.defaultStyle(), ViewportStyleResolver::UserAgentOrigin);
-
-    if (!InspectorInstrumentation::applyViewportStyleOverride(&document(), this))
-        viewportStyleResolver()->collectViewportRules(defaultStyleSheets.defaultViewportStyle(), ViewportStyleResolver::UserAgentOrigin);
-
-    if (document().isMobileDocument())
-        viewportStyleResolver()->collectViewportRules(defaultStyleSheets.defaultXHTMLMobileProfileStyle(), ViewportStyleResolver::UserAgentOrigin);
-
-    if (ScopedStyleResolver* scopedResolver = document().scopedStyleResolver())
-        scopedResolver->collectViewportRulesTo(this);
-
-    viewportStyleResolver()->resolve();
-}
-
 PassRefPtr<LayoutStyle> StyleResolver::defaultStyleForElement()
 {
     RefPtr<LayoutStyle> style = LayoutStyle::create();
@@ -1320,7 +1304,7 @@ void StyleResolver::invalidateMatchedPropertiesCache()
 
 void StyleResolver::notifyResizeForViewportUnits()
 {
-    collectViewportRules();
+    m_viewportStyleResolver->collectViewportRules();
     m_matchedPropertiesCache.clearViewportDependent();
 }
 

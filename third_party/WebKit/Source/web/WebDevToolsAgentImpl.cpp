@@ -609,6 +609,11 @@ void WebDevToolsAgentImpl::setScriptEnabled(bool enabled)
     m_pageAgent->setScriptEnabled(enabled);
 }
 
+void WebDevToolsAgentImpl::setUseMobileViewportStyle(bool enabled)
+{
+    m_pageAgent->setUseMobileViewportStyle(enabled);
+}
+
 void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
 {
     if (!m_deviceMetricsEnabled) {

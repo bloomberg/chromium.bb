@@ -74,14 +74,14 @@ static PassRefPtrWillBeRawPtr<StyleSheetContents> parseUASheet(const String& str
 
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     : m_defaultStyle(nullptr)
-    , m_defaultViewportStyle(nullptr)
+    , m_defaultMobileViewportStyle(nullptr)
     , m_defaultQuirksStyle(nullptr)
     , m_defaultPrintStyle(nullptr)
     , m_defaultViewSourceStyle(nullptr)
     , m_defaultXHTMLMobileProfileStyle(nullptr)
     , m_defaultTransitionStyle(nullptr)
     , m_defaultStyleSheet(nullptr)
-    , m_viewportStyleSheet(nullptr)
+    , m_mobileViewportStyleSheet(nullptr)
     , m_quirksStyleSheet(nullptr)
     , m_svgStyleSheet(nullptr)
     , m_mathmlStyleSheet(nullptr)
@@ -89,7 +89,6 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     , m_fullscreenStyleSheet(nullptr)
 {
     m_defaultStyle = RuleSet::create();
-    m_defaultViewportStyle = RuleSet::create();
     m_defaultPrintStyle = RuleSet::create();
     m_defaultQuirksStyle = RuleSet::create();
 
@@ -97,13 +96,6 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     String defaultRules = loadResourceAsASCIIString("html.css") + LayoutTheme::theme().extraDefaultStyleSheet();
     m_defaultStyleSheet = parseUASheet(defaultRules);
     m_defaultStyle->addRulesFromSheet(defaultStyleSheet(), screenEval());
-#if OS(ANDROID)
-    String viewportRules = loadResourceAsASCIIString("viewportAndroid.css");
-#else
-    String viewportRules;
-#endif
-    m_viewportStyleSheet = parseUASheet(viewportRules);
-    m_defaultViewportStyle->addRulesFromSheet(viewportStyleSheet(), screenEval());
     m_defaultPrintStyle->addRulesFromSheet(defaultStyleSheet(), printEval());
 
     // Quirks-mode rules.
@@ -143,6 +135,16 @@ RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle()
         m_defaultXHTMLMobileProfileStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
     }
     return m_defaultXHTMLMobileProfileStyle.get();
+}
+
+RuleSet* CSSDefaultStyleSheets::defaultMobileViewportStyle()
+{
+    if (!m_defaultMobileViewportStyle) {
+        m_defaultMobileViewportStyle = RuleSet::create();
+        m_mobileViewportStyleSheet = parseUASheet(loadResourceAsASCIIString("viewportAndroid.css"));
+        m_defaultMobileViewportStyle->addRulesFromSheet(m_mobileViewportStyleSheet.get(), screenEval());
+    }
+    return m_defaultMobileViewportStyle.get();
 }
 
 void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element, bool& changedDefaultStyle)
@@ -190,14 +192,13 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
 DEFINE_TRACE(CSSDefaultStyleSheets)
 {
     visitor->trace(m_defaultStyle);
-    visitor->trace(m_defaultViewportStyle);
+    visitor->trace(m_defaultMobileViewportStyle);
     visitor->trace(m_defaultQuirksStyle);
     visitor->trace(m_defaultPrintStyle);
     visitor->trace(m_defaultViewSourceStyle);
     visitor->trace(m_defaultXHTMLMobileProfileStyle);
     visitor->trace(m_defaultTransitionStyle);
     visitor->trace(m_defaultStyleSheet);
-    visitor->trace(m_viewportStyleSheet);
     visitor->trace(m_quirksStyleSheet);
     visitor->trace(m_svgStyleSheet);
     visitor->trace(m_mathmlStyleSheet);

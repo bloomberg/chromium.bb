@@ -20,6 +20,7 @@
 #include "config.h"
 #include "core/page/Page.h"
 
+#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/StyleEngine.h"
@@ -515,6 +516,17 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         if (!mainFrame() || !mainFrame()->isLocalFrame())
             break;
         deprecatedLocalMainFrame()->document()->axObjectCacheOwner().clearAXObjectCache();
+        break;
+    case SettingsDelegate::ViewportRuleChange:
+        {
+            if (!mainFrame() || !mainFrame()->isLocalFrame())
+                break;
+            Document* doc = toLocalFrame(mainFrame())->document();
+            if (!doc || !doc->styleResolver())
+                break;
+            doc->styleResolver()->viewportStyleResolver()->collectViewportRules();
+        }
+        break;
     }
 }
 

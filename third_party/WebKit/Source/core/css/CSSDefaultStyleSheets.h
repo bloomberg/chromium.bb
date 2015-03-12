@@ -38,17 +38,16 @@ public:
     void ensureDefaultStyleSheetsForElement(Element*, bool& changedDefaultStyle);
 
     RuleSet* defaultStyle() { return m_defaultStyle.get(); }
-    RuleSet* defaultViewportStyle() { return m_defaultViewportStyle.get(); }
     RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }
     RuleSet* defaultPrintStyle() { return m_defaultPrintStyle.get(); }
     RuleSet* defaultViewSourceStyle();
     RuleSet* defaultTransitionStyle();
+    RuleSet* defaultMobileViewportStyle();
 
     // FIXME: Remove WAP support.
     RuleSet* defaultXHTMLMobileProfileStyle();
 
     StyleSheetContents* defaultStyleSheet() { return m_defaultStyleSheet.get(); }
-    StyleSheetContents* viewportStyleSheet() { return m_viewportStyleSheet.get(); }
     StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet.get(); }
     StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet.get(); }
     StyleSheetContents* mathmlStyleSheet() { return m_mathmlStyleSheet.get(); }
@@ -61,7 +60,7 @@ private:
     CSSDefaultStyleSheets();
 
     OwnPtrWillBeMember<RuleSet> m_defaultStyle;
-    OwnPtrWillBeMember<RuleSet> m_defaultViewportStyle;
+    OwnPtrWillBeMember<RuleSet> m_defaultMobileViewportStyle;
     OwnPtrWillBeMember<RuleSet> m_defaultQuirksStyle;
     OwnPtrWillBeMember<RuleSet> m_defaultPrintStyle;
     OwnPtrWillBeMember<RuleSet> m_defaultViewSourceStyle;
@@ -69,7 +68,7 @@ private:
     OwnPtrWillBeMember<RuleSet> m_defaultTransitionStyle;
 
     RefPtrWillBeMember<StyleSheetContents> m_defaultStyleSheet;
-    RefPtrWillBeMember<StyleSheetContents> m_viewportStyleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_mobileViewportStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_quirksStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_svgStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_mathmlStyleSheet;

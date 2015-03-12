@@ -50,6 +50,7 @@ public:
     enum ChangeType {
         StyleChange,
         ViewportDescriptionChange,
+        ViewportRuleChange,
         MediaTypeChange,
         DNSPrefetchingChange,
         MultisamplingChange,

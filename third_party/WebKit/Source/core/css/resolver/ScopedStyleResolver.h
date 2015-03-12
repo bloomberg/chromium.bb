@@ -38,8 +38,8 @@
 namespace blink {
 
 class PageRuleCollector;
-class StyleResolver;
 class StyleSheetContents;
+class ViewportStyleResolver;
 
 // This class selects a LayoutStyle for a given element based on a collection of stylesheets.
 class ScopedStyleResolver final : public NoBaseWillBeGarbageCollected<ScopedStyleResolver> {
@@ -65,7 +65,7 @@ public:
     void matchPageRules(PageRuleCollector&);
     void collectFeaturesTo(RuleFeatureSet&, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const;
     void resetAuthorStyle();
-    void collectViewportRulesTo(StyleResolver*) const;
+    void collectViewportRulesTo(ViewportStyleResolver*) const;
 
     DECLARE_TRACE();
 

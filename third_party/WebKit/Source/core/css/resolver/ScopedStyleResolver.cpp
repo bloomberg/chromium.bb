@@ -35,7 +35,7 @@
 #include "core/css/RuleFeature.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/resolver/StyleResolver.h" // For MatchRequest.
+#include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
@@ -203,12 +203,12 @@ void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
         collector.matchPageRules(&m_authorStyleSheets[i]->contents()->ruleSet());
 }
 
-void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
+void ScopedStyleResolver::collectViewportRulesTo(ViewportStyleResolver* resolver) const
 {
     if (!m_scope->rootNode().isDocumentNode())
         return;
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
-        resolver->viewportStyleResolver()->collectViewportRules(&m_authorStyleSheets[i]->contents()->ruleSet(), ViewportStyleResolver::AuthorOrigin);
+        resolver->collectViewportRules(&m_authorStyleSheets[i]->contents()->ruleSet(), ViewportStyleResolver::AuthorOrigin);
 }
 
 DEFINE_TRACE(ScopedStyleResolver)

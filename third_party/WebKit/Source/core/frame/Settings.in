@@ -324,3 +324,7 @@ disableReadingFromCanvas initial=false
 strictMixedContentChecking initial=false
 strictPowerfulFeatureRestrictions initial=false
 logDnsPrefetchAndPreconnect initial=false
+
+# If true, the UA styles will include viewportAndroid.css. It is used for
+# Android, and dynamically set by the inspector for mobile emulation.
+useMobileViewportStyle initial=false, invalidate=ViewportRule

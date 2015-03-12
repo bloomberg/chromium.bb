@@ -38,7 +38,6 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -437,11 +436,12 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_originalDeviceSupportsMouse(false)
     , m_originalDeviceSupportsTouch(false)
     , m_originalMaxTouchPoints(0)
-    , m_embedderTextAutosizingEnabled(m_page->settings().textAutosizingEnabled())
     , m_embedderFontScaleFactor(m_page->settings().deviceScaleAdjustment())
+    , m_embedderTextAutosizingEnabled(m_page->settings().textAutosizingEnabled())
     , m_embedderPreferCompositingToLCDTextEnabled(m_page->settings().preferCompositingToLCDTextEnabled())
     , m_embedderScriptEnabled(m_page->settings().scriptEnabled())
     , m_reloading(false)
+    , m_embedderUseMobileViewport(m_page->settings().useMobileViewportStyle())
 {
 }
 
@@ -474,6 +474,14 @@ void InspectorPageAgent::setScriptEnabled(bool enabled)
     m_embedderScriptEnabled = enabled;
     if (!m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled))
         m_page->settings().setScriptEnabled(enabled);
+}
+
+void InspectorPageAgent::setUseMobileViewportStyle(bool enabled)
+{
+    m_embedderUseMobileViewport = enabled;
+    bool emulateMobileEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateMobileEnabled;
+    if (!emulateMobileEnabled)
+        m_page->settings().setUseMobileViewportStyle(enabled);
 }
 
 void InspectorPageAgent::setFrontend(InspectorFrontend* frontend)
@@ -1350,10 +1358,12 @@ void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, 
         m_page->settings().setTextAutosizingEnabled(mobile);
         m_page->settings().setPreferCompositingToLCDTextEnabled(mobile);
         m_page->settings().setDeviceScaleAdjustment(calculateFontScaleFactor(width, height, static_cast<float>(deviceScaleFactor)));
+        m_page->settings().setUseMobileViewportStyle(mobile);
     } else {
         m_page->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);
         m_page->settings().setPreferCompositingToLCDTextEnabled(m_embedderPreferCompositingToLCDTextEnabled);
         m_page->settings().setDeviceScaleAdjustment(m_embedderFontScaleFactor);
+        m_page->settings().setUseMobileViewportStyle(m_embedderUseMobileViewport);
     }
 
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
@@ -1407,19 +1417,6 @@ void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
         document->styleResolverChanged();
         document->updateLayout();
     }
-}
-
-bool InspectorPageAgent::applyViewportStyleOverride(StyleResolver* resolver)
-{
-    if (!m_deviceMetricsOverridden || !m_emulateMobileEnabled)
-        return false;
-
-    RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
-    styleSheet->parseString(loadResourceAsASCIIString("viewportAndroid.css"));
-    OwnPtrWillBeRawPtr<RuleSet> ruleSet = RuleSet::create();
-    ruleSet->addRulesFromSheet(styleSheet.get(), MediaQueryEvaluator("screen"));
-    resolver->viewportStyleResolver()->collectViewportRules(ruleSet.get(), ViewportStyleResolver::UserAgentOrigin);
-    return true;
 }
 
 void InspectorPageAgent::applyEmulatedMedia(String* media)

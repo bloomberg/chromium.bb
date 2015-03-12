@@ -31,14 +31,17 @@
 #include "core/css/resolver/ViewportStyleResolver.h"
 
 #include "core/CSSValueKeywords.h"
+#include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 
 namespace blink {
 
@@ -49,6 +52,28 @@ ViewportStyleResolver::ViewportStyleResolver(Document* document)
     , m_hasAuthorStyle(false)
 {
     ASSERT(m_document);
+}
+
+void ViewportStyleResolver::collectViewportRules()
+{
+    CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
+    collectViewportRules(defaultStyleSheets.defaultStyle(), UserAgentOrigin);
+
+    bool useMobileViewportStyle = m_document->settings() && m_document->settings()->useMobileViewportStyle();
+#if OS(ANDROID)
+    // FIXME: Remove when useMobileViewportStyle is set from chromium.
+    useMobileViewportStyle = true;
+#endif
+    if (useMobileViewportStyle)
+        collectViewportRules(defaultStyleSheets.defaultMobileViewportStyle(), UserAgentOrigin);
+
+    if (m_document->isMobileDocument())
+        collectViewportRules(defaultStyleSheets.defaultXHTMLMobileProfileStyle(), UserAgentOrigin);
+
+    if (ScopedStyleResolver* scopedResolver = m_document->scopedStyleResolver())
+        scopedResolver->collectViewportRulesTo(this);
+
+    resolve();
 }
 
 void ViewportStyleResolver::collectViewportRules(RuleSet* rules, Origin origin)
@@ -84,9 +109,6 @@ void ViewportStyleResolver::addViewportRule(StyleRuleViewport* viewportRule, Ori
 
 void ViewportStyleResolver::resolve()
 {
-    if (!m_document)
-        return;
-
     if (!m_propertySet) {
         m_document->setViewportDescription(ViewportDescription(ViewportDescription::UserAgentStyleSheet));
         return;

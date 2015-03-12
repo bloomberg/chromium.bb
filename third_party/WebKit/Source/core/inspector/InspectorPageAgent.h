@@ -57,7 +57,6 @@ class LocalFrame;
 class Page;
 class LayoutObject;
 class SharedBuffer;
-class StyleResolver;
 class TextResourceDecoder;
 
 typedef String ErrorString;
@@ -105,6 +104,7 @@ public:
     void setDeviceScaleAdjustment(float);
     void setPreferCompositingToLCDTextEnabled(bool);
     void setScriptEnabled(bool);
+    void setUseMobileViewportStyle(bool);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
@@ -161,7 +161,6 @@ public:
     void frameClearedScheduledNavigation(LocalFrame*);
     void willRunJavaScriptDialog(const String& message);
     void didRunJavaScriptDialog();
-    bool applyViewportStyleOverride(StyleResolver*);
     void applyEmulatedMedia(String*);
     void didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
     void didLayout();
@@ -235,11 +234,13 @@ private:
     bool m_originalDeviceSupportsTouch;
     int m_originalMaxTouchPoints;
 
-    bool m_embedderTextAutosizingEnabled;
     double m_embedderFontScaleFactor;
+
+    bool m_embedderTextAutosizingEnabled;
     bool m_embedderPreferCompositingToLCDTextEnabled;
     bool m_embedderScriptEnabled;
     bool m_reloading;
+    bool m_embedderUseMobileViewport;
 
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
 };

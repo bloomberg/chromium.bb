@@ -52,8 +52,8 @@ public:
 
     enum Origin { UserAgentOrigin, AuthorOrigin };
 
+    void collectViewportRules();
     void collectViewportRules(RuleSet*, Origin);
-
     void resolve();
 
     DECLARE_TRACE();

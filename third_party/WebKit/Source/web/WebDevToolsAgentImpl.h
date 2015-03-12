@@ -97,6 +97,7 @@ public:
     void setDeviceScaleAdjustment(float);
     void setPreferCompositingToLCDTextEnabled(bool);
     void setScriptEnabled(bool);
+    void setUseMobileViewportStyle(bool);
 
     // WebDevToolsAgent implementation.
     void attach(const WebString& hostId) override;
