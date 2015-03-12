@@ -112,7 +112,6 @@ parser.add_option('-s', action='store', dest='sysroot', type='string')
 parser.add_option('-a', action='store', dest='arch', type='string')
 parser.add_option('--atleast-version', action='store',
                   dest='atleast_version', type='string')
-parser.add_option('--libdir', action='store_true', dest='libdir')
 (options, args) = parser.parse_args()
 
 # Make a list of regular expressions to strip out.
@@ -137,18 +136,6 @@ if options.atleast_version:
     print "true"
   else:
     print "false"
-  sys.exit(0)
-
-if options.libdir:
-  try:
-    libdir = subprocess.check_output([options.pkg_config,
-                                      "--variable=libdir"] +
-                                     args,
-                                     env=os.environ)
-  except:
-    print "Error from pkg-config."
-    sys.exit(1)
-  sys.stdout.write(libdir.strip())
   sys.exit(0)
 
 try:

@@ -43,12 +43,8 @@
         'ax_tree_update.h',
         'ax_view_state.cc',
         'ax_view_state.h',
-        'platform/atk_util_auralinux.cc',
-        'platform/atk_util_auralinux.h',
         'platform/ax_platform_node.cc',
         'platform/ax_platform_node.h',
-        'platform/ax_platform_node_auralinux.cc',
-        'platform/ax_platform_node_auralinux.h',
         'platform/ax_platform_node_base.cc',
         'platform/ax_platform_node_base.h',
         'platform/ax_platform_node_delegate.h',
@@ -61,27 +57,6 @@
         ['OS=="win"', {
           'dependencies': [
             '../../third_party/iaccessible2/iaccessible2.gyp:iaccessible2'
-          ],
-        }],
-        ['OS=="linux" and chromeos==0', {
-          'dependencies': [
-            '../../build/linux/system.gyp:atk',
-            '../../build/linux/system.gyp:gconf',
-            '../../build/linux/system.gyp:glib',
-          ],
-          'variables': {
-            'clang_warning_flags': [
-              # glib uses the pre-c++11 typedef-as-static_assert hack.
-              '-Wno-unused-local-typedefs',
-            ],
-          },
-        }],
-        ['OS!="linux" or chromeos==1', {
-          'sources!': [
-            'platform/ax_platform_node_auralinux.cc',
-            'platform/ax_platform_node_auralinux.h',
-            'platform/atk_util_auralinux.cc',
-            'platform/atk_util_auralinux.h',
           ],
         }],
       ],

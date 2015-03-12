@@ -13,7 +13,7 @@
 
 namespace views {
 
-#if !defined(OS_WIN) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if !defined(OS_WIN)
 // static
 NativeViewAccessibility* NativeViewAccessibility::Create(View* view) {
   return new NativeViewAccessibility(view);
@@ -23,8 +23,7 @@ NativeViewAccessibility* NativeViewAccessibility::Create(View* view) {
 NativeViewAccessibility::NativeViewAccessibility(View* view)
     : view_(view),
       parent_widget_(nullptr),
-      ax_node_(nullptr) {
-  ax_node_ = ui::AXPlatformNode::Create(this);
+      ax_node_(ui::AXPlatformNode::Create(this)) {
 }
 
 NativeViewAccessibility::~NativeViewAccessibility() {

@@ -109,7 +109,6 @@ component("views") {
       }
       if (is_linux) {
         sources += gypi_values.views_desktop_aura_linux_sources
-        configs += [ "//build/config/linux:atk" ]
       }
     }
   }

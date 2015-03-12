@@ -9,7 +9,7 @@
 
 namespace ui {
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 // static
 AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
   return nullptr;
