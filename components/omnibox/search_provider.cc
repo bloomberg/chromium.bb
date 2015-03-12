@@ -125,9 +125,11 @@ SearchProvider::SearchProvider(
     : BaseSearchProvider(template_url_service, client.Pass(),
                          AutocompleteProvider::TYPE_SEARCH),
       listener_(listener),
-      suggest_results_pending_(0),
       providers_(template_url_service),
       answers_cache_(10) {
+  // |template_url_service_| can be null in tests.
+  if (template_url_service_)
+    template_url_service_->AddObserver(this);
 }
 
 // static
@@ -139,7 +141,46 @@ void SearchProvider::ResetSession() {
   field_trial_triggered_in_session_ = false;
 }
 
+void SearchProvider::OnTemplateURLServiceChanged() {
+  // Only update matches at this time if we haven't already claimed we're done
+  // processing the query.
+  if (done_)
+    return;
+
+  // Check that the engines we're using weren't renamed or deleted.  (In short,
+  // require that an engine still exists with the keywords in use.)  For each
+  // deleted engine, cancel the in-flight request if any, drop its suggestions,
+  // and, in the case when the default provider was affected, point the cached
+  // default provider keyword name at the new name for the default provider.
+
+  // Get...ProviderURL() looks up the provider using the cached keyword name
+  // stored in |providers_|.
+  const TemplateURL* template_url = providers_.GetDefaultProviderURL();
+  if (!template_url) {
+    CancelFetcher(&default_fetcher_);
+    default_results_.Clear();
+    providers_.set(template_url_service_->GetDefaultSearchProvider()->keyword(),
+                   providers_.keyword_provider());
+  }
+  template_url = providers_.GetKeywordProviderURL();
+  if (!providers_.keyword_provider().empty() && !template_url) {
+    CancelFetcher(&keyword_fetcher_);
+    keyword_results_.Clear();
+    providers_.set(providers_.default_provider(), base::string16());
+  }
+  // It's possible the template URL changed without changing associated keyword.
+  // Hence, it's always necessary to update matches to use the new template
+  // URL.  (One could cache the template URL and only call UpdateMatches() and
+  // OnProviderUpdate() if a keyword was deleted/renamed or the template URL
+  // was changed.  That would save extra calls to these functions.  However,
+  // this is uncommon and not likely to be worth the extra work.)
+  UpdateMatches();
+  listener_->OnProviderUpdate(true);  // always pretend something changed
+}
+
 SearchProvider::~SearchProvider() {
+  if (template_url_service_)
+    template_url_service_->RemoveObserver(this);
 }
 
 // static
@@ -323,9 +364,6 @@ void SearchProvider::RecordDeletionResult(bool success) {
 
 void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!done_);
-  --suggest_results_pending_;
-  DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
-
   const bool is_keyword = source == keyword_fetcher_.get();
 
   // Ensure the request succeeded and that the provider used is still available.
@@ -348,21 +386,23 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
         SortResults(is_keyword, results);
     }
   }
+
+  // Delete the fetcher now that we're done with it.
+  if (is_keyword)
+    keyword_fetcher_.reset();
+  else
+    default_fetcher_.reset();
+
+  // Update matches, done status, etc., and send alerts if necessary.
   UpdateMatches();
   if (done_ || results_updated)
     listener_->OnProviderUpdate(results_updated);
 }
 
 void SearchProvider::StopSuggest() {
-  // Increment the appropriate field in the histogram by the number of
-  // pending requests that were invalidated.
-  for (int i = 0; i < suggest_results_pending_; ++i)
-    LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
-  suggest_results_pending_ = 0;
+  CancelFetcher(&default_fetcher_);
+  CancelFetcher(&keyword_fetcher_);
   timer_.Stop();
-  // Stop any in-progress URL fetches.
-  keyword_fetcher_.reset();
-  default_fetcher_.reset();
 }
 
 void SearchProvider::ClearAllResults() {
@@ -447,7 +487,6 @@ void SearchProvider::UpdateMatches() {
        keyword_results_.HasServerProvidedScores())) {
     // These blocks attempt to repair undesirable behavior by suggested
     // relevances with minimal impact, preserving other suggested relevances.
-
     const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
     const bool is_extension_keyword = (keyword_url != NULL) &&
         (keyword_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION);
@@ -513,7 +552,7 @@ void SearchProvider::UpdateMatches() {
 
 void SearchProvider::Run(bool query_is_private) {
   // Start a new request with the current input.
-  suggest_results_pending_ = 0;
+  time_suggest_request_sent_ = base::TimeTicks::Now();
 
   if (!query_is_private) {
     default_fetcher_.reset(CreateSuggestFetcher(
@@ -528,7 +567,7 @@ void SearchProvider::Run(bool query_is_private) {
 
   // Both the above can fail if the providers have been modified or deleted
   // since the query began.
-  if (suggest_results_pending_ == 0) {
+  if (!default_fetcher_ && !keyword_fetcher_) {
     UpdateDone();
     // We only need to update the listener if we're actually done.
     if (done_)
@@ -652,6 +691,13 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
                base::Bind(&SearchProvider::Run,
                           base::Unretained(this),
                           query_is_private));
+}
+
+void SearchProvider::CancelFetcher(scoped_ptr<net::URLFetcher>* fetcher) {
+  if (*fetcher) {
+    LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
+    fetcher->reset();
+  }
 }
 
 bool SearchProvider::IsQuerySuitableForSuggest(bool* query_is_private) const {
@@ -815,7 +861,6 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
         providers_.template_url_service()->search_terms_data()));
   }
 
-  suggest_results_pending_++;
   LogOmniboxSuggestRequest(REQUEST_SENT);
 
   net::URLFetcher* fetcher =
@@ -1411,9 +1456,9 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
 }
 
 void SearchProvider::UpdateDone() {
-  // We're done when the timer isn't running, there are no suggest queries
-  // pending, and we're not waiting on Instant.
-  done_ = !timer_.IsRunning() && (suggest_results_pending_ == 0);
+  // We're done when the timer isn't running and there are no suggest queries
+  // pending.
+  done_ = !timer_.IsRunning() && !default_fetcher_ && !keyword_fetcher_;
 }
 
 std::string SearchProvider::GetSessionToken() {

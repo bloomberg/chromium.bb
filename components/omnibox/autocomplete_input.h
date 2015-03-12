@@ -188,7 +188,7 @@ class AutocompleteInput {
   void Clear();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
+  friend class AutocompleteProviderTest;
 
   // NOTE: Whenever adding a new field here, please make sure to update Clear()
   // method.

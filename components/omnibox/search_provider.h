@@ -23,6 +23,7 @@
 #include "components/omnibox/answers_cache.h"
 #include "components/omnibox/base_search_provider.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class AutocompleteProviderClient;
@@ -50,6 +51,7 @@ class URLFetcher;
 // comes back, the provider creates and returns matches for the best
 // suggestions.
 class SearchProvider : public BaseSearchProvider,
+                       public TemplateURLServiceObserver,
                        public net::URLFetcherDelegate {
  public:
   SearchProvider(AutocompleteProviderListener* listener,
@@ -76,6 +78,7 @@ class SearchProvider : public BaseSearchProvider,
   ~SearchProvider() override;
 
  private:
+  friend class AutocompleteProviderTest;
   friend class SearchProviderTest;
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, CanSendURL);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest,
@@ -90,7 +93,6 @@ class SearchProvider : public BaseSearchProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, AnswersCache);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveExtraAnswers);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoesNotProvideOnFocus);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, ClearPrefetchedResults);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, SetPrefetchQuery);
 
@@ -172,6 +174,9 @@ class SearchProvider : public BaseSearchProvider,
       const SearchSuggestionParser::SuggestResult& result) const override;
   void RecordDeletionResult(bool success) override;
 
+  // TemplateURLServiceObserver:
+  void OnTemplateURLServiceChanged() override;
+
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
@@ -213,6 +218,9 @@ class SearchProvider : public BaseSearchProvider,
   // current input.  If so, starts it if necessary; otherwise stops it.
   // NOTE: This function does not update |done_|.  Callers must do so.
   void StartOrStopSuggestQuery(bool minimal_changes);
+
+  // Stops |fetcher| if it's running.  This includes resetting the scoped_ptr.
+  void CancelFetcher(scoped_ptr<net::URLFetcher>* fetcher);
 
   // Returns true when the current query can be sent to at least one suggest
   // service.  This will be false for example when suggest is disabled.  In
@@ -305,7 +313,7 @@ class SearchProvider : public BaseSearchProvider,
 
   // Gets the relevance score for the verbatim result.  This value may be
   // provided by the suggest server or calculated locally; if
-  // |relevance_from_server| is non-NULL, it will be set to indicate which of
+  // |relevance_from_server| is non-null, it will be set to indicate which of
   // those is true.
   int GetVerbatimRelevance(bool* relevance_from_server) const;
 
@@ -357,10 +365,6 @@ class SearchProvider : public BaseSearchProvider,
 
   AutocompleteProviderListener* listener_;
 
-  // The number of suggest results that haven't yet arrived. If it's greater
-  // than 0, it indicates that one of the URLFetchers is still running.
-  int suggest_results_pending_;
-
   // Maintains the TemplateURLs used.
   Providers providers_;
 
@@ -387,6 +391,8 @@ class SearchProvider : public BaseSearchProvider,
   base::TimeTicks time_suggest_request_sent_;
 
   // Fetchers used to retrieve results for the keyword and default providers.
+  // After a fetcher's results are returned, it gets reset, so a non-null
+  // fetcher indicates that fetcher is still in flight.
   scoped_ptr<net::URLFetcher> keyword_fetcher_;
   scoped_ptr<net::URLFetcher> default_fetcher_;
 

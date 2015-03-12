@@ -621,6 +621,46 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
 }
 
+// Make sure we get a query-what-you-typed result from the default search
+// provider even if the default search provider's keyword is renamed in the
+// middle of processing the query.
+TEST_F(SearchProviderTest, HasQueryWhatYouTypedIfDefaultKeywordChanges) {
+  base::string16 query = ASCIIToUTF16("query");
+  QueryForInput(query, false, false);
+
+  // Make sure the default provider's suggest service was queried.
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  ASSERT_TRUE(fetcher);
+
+  // Look up the TemplateURL for the keyword and modify its keyword.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(&profile_);
+  TemplateURL* template_url =
+      template_url_service->GetTemplateURLForKeyword(default_t_url_->keyword());
+  EXPECT_TRUE(template_url);
+  template_url_service->ResetTemplateURL(
+      template_url, template_url->short_name(),
+      ASCIIToUTF16("new_keyword_asdf"), template_url->url());
+
+  // In resetting the default provider, the fetcher should've been canceled.
+  fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  EXPECT_TRUE(!fetcher);
+  RunTillProviderDone();
+
+  // Makes sure the query-what-you-typed match is there.
+  AutocompleteMatch wyt_match;
+  EXPECT_TRUE(FindMatchWithDestination(
+      GURL(default_t_url_->url_ref().ReplaceSearchTerms(
+          TemplateURLRef::SearchTermsArgs(query),
+          TemplateURLServiceFactory::GetForProfile(
+              &profile_)->search_terms_data())),
+      &wyt_match));
+  EXPECT_TRUE(wyt_match.description.empty());
+  EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
+}
+
 TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
   base::string16 term = term1_.substr(0, term1_.length() - 1);
   QueryForInput(term, true, false);
@@ -688,7 +728,7 @@ TEST_F(SearchProviderTest, SendDataToSuggestAtAppropriateTimes) {
     const bool expect_to_send_to_default_provider;
   } cases[] = {
     // None of the following input strings should be sent to the default
-    // suggest server because they may contain potentionally private data.
+    // suggest server because they may contain potentially private data.
     { "username:password",                  false },
     { "User:f",                             false },
     { "http://username:password",           false },

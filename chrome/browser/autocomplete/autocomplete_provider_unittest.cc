@@ -215,8 +215,18 @@ class AutocompleteProviderTest : public testing::Test,
   GURL GetDestinationURL(AutocompleteMatch match,
                          base::TimeDelta query_formulation_time) const;
 
+  void set_search_provider_field_trial_triggered_in_session(bool val) {
+    controller_->search_provider_->field_trial_triggered_in_session_ = val;
+  }
+  bool search_provider_field_trial_triggered_in_session() {
+    return controller_->search_provider_->field_trial_triggered_in_session();
+  }
+  void set_current_page_classification(
+      metrics::OmniboxEventProto::PageClassification classification) {
+    controller_->input_.current_page_classification_ = classification;
+  }
+
   AutocompleteResult result_;
-  scoped_ptr<AutocompleteController> controller_;
 
  private:
   // content::NotificationObserver:
@@ -227,6 +237,7 @@ class AutocompleteProviderTest : public testing::Test,
   base::MessageLoopForUI message_loop_;
   content::NotificationRegistrar registrar_;
   TestingProfile profile_;
+  scoped_ptr<AutocompleteController> controller_;
 };
 
 void AutocompleteProviderTest::RegisterTemplateURL(
@@ -718,25 +729,21 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0j0&", url.path());
 
   // Test field trial triggered bit set.
-  controller_->search_provider_->field_trial_triggered_in_session_ = true;
-  EXPECT_TRUE(
-      controller_->search_provider_->field_trial_triggered_in_session());
+  set_search_provider_field_trial_triggered_in_session(true);
+  EXPECT_TRUE(search_provider_field_trial_triggered_in_session());
   url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j0&", url.path());
 
   // Test page classification set.
-  controller_->input_.current_page_classification_ =
-      metrics::OmniboxEventProto::OTHER;
-  controller_->search_provider_->field_trial_triggered_in_session_ = false;
-  EXPECT_FALSE(
-      controller_->search_provider_->field_trial_triggered_in_session());
+  set_current_page_classification(metrics::OmniboxEventProto::OTHER);
+  set_search_provider_field_trial_triggered_in_session(false);
+  EXPECT_FALSE(search_provider_field_trial_triggered_in_session());
   url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0j4&", url.path());
 
   // Test page classification and field trial triggered set.
-  controller_->search_provider_->field_trial_triggered_in_session_ = true;
-  EXPECT_TRUE(
-      controller_->search_provider_->field_trial_triggered_in_session());
+  set_search_provider_field_trial_triggered_in_session(true);
+  EXPECT_TRUE(search_provider_field_trial_triggered_in_session());
   url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j4&", url.path());
 }
