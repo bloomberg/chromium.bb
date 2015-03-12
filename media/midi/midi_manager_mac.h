@@ -66,11 +66,7 @@ class MEDIA_EXPORT MidiManagerMac : public MidiManager {
   MIDIClientRef midi_client_;
   MIDIPortRef coremidi_input_;
   MIDIPortRef coremidi_output_;
-
-  enum{ kMaxPacketListSize = 512 };
-  char midi_buffer_[kMaxPacketListSize];
-  MIDIPacketList* packet_list_;
-  MIDIPacket* midi_packet_;
+  std::vector<uint8> midi_buffer_;
 
   // Keeps track of the index (0-based) for each of our sources.
   typedef std::map<MIDIEndpointRef, uint32> SourceMap;
