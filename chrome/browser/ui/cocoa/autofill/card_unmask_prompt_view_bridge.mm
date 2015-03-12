@@ -59,11 +59,15 @@ void CardUnmaskPromptViewBridge::ControllerGone() {
 }
 
 void CardUnmaskPromptViewBridge::DisableAndWaitForVerification() {
+  [view_controller_ setInputsEnabled:false];
+  [view_controller_ updateVerifyButtonEnabled];
 }
 
 void CardUnmaskPromptViewBridge::GotVerificationResult(
     const base::string16& error_message,
     bool allow_retry) {
+  [view_controller_ setInputsEnabled:true];
+  [view_controller_ updateVerifyButtonEnabled];
 }
 
 void CardUnmaskPromptViewBridge::OnConstrainedWindowClosed(
@@ -85,7 +89,18 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
 #pragma mark CardUnmaskPromptViewCocoa
 
-@implementation CardUnmaskPromptViewCocoa
+@implementation CardUnmaskPromptViewCocoa {
+  base::scoped_nsobject<NSTextField> cvcInput_;
+  base::scoped_nsobject<NSPopUpButton> monthPopup_;
+  base::scoped_nsobject<NSPopUpButton> yearPopup_;
+  base::scoped_nsobject<NSButton> verifyButton_;
+
+  int monthPopupDefaultIndex_;
+  int yearPopupDefaultIndex_;
+
+  // Owns |self|.
+  autofill::CardUnmaskPromptViewBridge* bridge_;
+}
 
 + (NSPopUpButton*)buildDatePopupWithModel:(ui::ComboboxModel&)model {
   NSPopUpButton* popup =
@@ -126,8 +141,49 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   return self;
 }
 
-- (IBAction)closeSheet:(id)sender {
+- (void)setInputsEnabled:(BOOL)enabled {
+  [cvcInput_ setEnabled:enabled];
+  [monthPopup_ setEnabled:enabled];
+  [yearPopup_ setEnabled:enabled];
+}
+
+- (void)updateVerifyButtonEnabled {
+  autofill::CardUnmaskPromptController* controller = bridge_->GetController();
+  DCHECK(controller);
+
+  BOOL enable =
+      [cvcInput_ isEnabled] &&
+      controller->InputCvcIsValid(
+          base::SysNSStringToUTF16([cvcInput_ stringValue])) &&
+      (!monthPopup_ ||
+       [monthPopup_ indexOfSelectedItem] != monthPopupDefaultIndex_) &&
+      (!yearPopup_ ||
+       [yearPopup_ indexOfSelectedItem] != yearPopupDefaultIndex_);
+
+  [verifyButton_ setEnabled:enable];
+}
+
+- (void)onVerify:(id)sender {
+  autofill::CardUnmaskPromptController* controller = bridge_->GetController();
+  DCHECK(controller);
+
+  controller->OnUnmaskResponse(
+      base::SysNSStringToUTF16([cvcInput_ stringValue]),
+      base::SysNSStringToUTF16([monthPopup_ titleOfSelectedItem]),
+      base::SysNSStringToUTF16([yearPopup_ titleOfSelectedItem]), false);
+}
+
+- (void)onCancel:(id)sender {
   bridge_->PerformClose();
+}
+
+- (void)onExpirationDateChanged:(id)sender {
+  [self updateVerifyButtonEnabled];
+}
+
+// Called when text in CVC input field changes.
+- (void)controlTextDidChange:(NSNotification*)notification {
+  [self updateVerifyButtonEnabled];
 }
 
 - (void)loadView {
@@ -174,36 +230,44 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
     // Month.
     autofill::MonthComboboxModel monthModel;
-    base::scoped_nsobject<NSPopUpButton> monthPopup(
+    monthPopupDefaultIndex_ = monthModel.GetDefaultIndex();
+    monthPopup_.reset(
         [CardUnmaskPromptViewCocoa buildDatePopupWithModel:monthModel]);
-    [expirationView addSubview:monthPopup];
+    [monthPopup_ setTarget:self];
+    [monthPopup_ setAction:@selector(onExpirationDateChanged:)];
+    [expirationView addSubview:monthPopup_];
 
     // Year.
     autofill::YearComboboxModel yearModel;
-    base::scoped_nsobject<NSPopUpButton> yearPopup(
+    yearPopupDefaultIndex_ = yearModel.GetDefaultIndex();
+    yearPopup_.reset(
         [CardUnmaskPromptViewCocoa buildDatePopupWithModel:yearModel]);
-    [expirationView addSubview:yearPopup];
+    [yearPopup_ setTarget:self];
+    [yearPopup_ setAction:@selector(onExpirationDateChanged:)];
+    [expirationView addSubview:yearPopup_];
 
     // Layout month and year within expirationView.
-    [yearPopup
-        setFrameOrigin:NSMakePoint(NSMaxX([monthPopup frame]) + kButtonGap, 0)];
-    NSRect expirationFrame = NSUnionRect([monthPopup frame], [yearPopup frame]);
+    [yearPopup_
+        setFrameOrigin:NSMakePoint(NSMaxX([monthPopup_ frame]) + kButtonGap,
+                                   0)];
+    NSRect expirationFrame =
+        NSUnionRect([monthPopup_ frame], [yearPopup_ frame]);
     expirationFrame.size.width += kButtonGap;
     [expirationView setFrame:expirationFrame];
     [inputRowView addSubview:expirationView];
   }
 
   // CVC text input.
-  base::scoped_nsobject<NSTextField> cvcInput(
-      [[NSTextField alloc] initWithFrame:NSZeroRect]);
-  [[cvcInput cell]
+  cvcInput_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
+  [[cvcInput_ cell]
       setPlaceholderString:l10n_util::GetNSString(
                                IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC)];
-  [[cvcInput cell] setScrollable:YES];
-  [cvcInput sizeToFit];
-  [cvcInput setFrame:NSMakeRect(NSMaxX([expirationView frame]), 0,
-                                kCvcInputWidth, NSHeight([cvcInput frame]))];
-  [inputRowView addSubview:cvcInput];
+  [[cvcInput_ cell] setScrollable:YES];
+  [cvcInput_ setDelegate:self];
+  [cvcInput_ sizeToFit];
+  [cvcInput_ setFrame:NSMakeRect(NSMaxX([expirationView frame]), 0,
+                                 kCvcInputWidth, NSHeight([cvcInput_ frame]))];
+  [inputRowView addSubview:cvcInput_];
 
   // CVC image.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -214,7 +278,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [cvcImageView setImage:cvcImage];
   [cvcImageView setFrameSize:[cvcImage size]];
   [cvcImageView
-      setFrameOrigin:NSMakePoint(NSMaxX([cvcInput frame]) + kButtonGap, 0)];
+      setFrameOrigin:NSMakePoint(NSMaxX([cvcInput_ frame]) + kButtonGap, 0)];
   [inputRowView addSubview:cvcImageView];
 
   // Cancel button.
@@ -223,20 +287,21 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [cancelButton setTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
   [cancelButton setKeyEquivalent:kKeyEquivalentEscape];
   [cancelButton setTarget:self];
-  [cancelButton setAction:@selector(closeSheet:)];
+  [cancelButton setAction:@selector(onCancel:)];
   [cancelButton sizeToFit];
   [mainView addSubview:cancelButton];
 
   // Verify button.
-  base::scoped_nsobject<NSButton> verifyButton(
+  verifyButton_.reset(
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
   // TODO(bondd): use l10n string.
-  [verifyButton setTitle:@"Verify"];
-  [verifyButton setKeyEquivalent:kKeyEquivalentReturn];
-  [verifyButton setTarget:self];
-  [verifyButton setAction:@selector(closeSheet:)];
-  [verifyButton sizeToFit];
-  [mainView addSubview:verifyButton];
+  [verifyButton_ setTitle:@"Verify"];
+  [verifyButton_ setKeyEquivalent:kKeyEquivalentReturn];
+  [verifyButton_ setTarget:self];
+  [verifyButton_ setAction:@selector(onVerify:)];
+  [verifyButton_ sizeToFit];
+  [self updateVerifyButtonEnabled];
+  [mainView addSubview:verifyButton_];
 
   // Layout inputRowView.
   [CardUnmaskPromptViewCocoa sizeToFitView:inputRowView];
@@ -250,14 +315,14 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   // Layout mainView contents, starting at the bottom and moving up.
 
   // Verify and Cancel buttons.
-  [verifyButton
-      setFrameOrigin:NSMakePoint(contentWidth - NSWidth([verifyButton frame]),
+  [verifyButton_
+      setFrameOrigin:NSMakePoint(contentWidth - NSWidth([verifyButton_ frame]),
                                  chrome_style::kClientBottomPadding)];
 
   [cancelButton
-      setFrameOrigin:NSMakePoint(NSMinX([verifyButton frame]) - kButtonGap -
+      setFrameOrigin:NSMakePoint(NSMinX([verifyButton_ frame]) - kButtonGap -
                                      NSWidth([cancelButton frame]),
-                                 NSMinY([verifyButton frame]))];
+                                 NSMinY([verifyButton_ frame]))];
 
   // Input row.
   [inputRowView setFrameOrigin:NSMakePoint(0, NSMaxY([cancelButton frame]) +

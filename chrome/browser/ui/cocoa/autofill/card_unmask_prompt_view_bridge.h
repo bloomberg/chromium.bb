@@ -46,17 +46,14 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
 
 }  // autofill
 
-@interface CardUnmaskPromptViewCocoa : NSViewController<NSWindowDelegate> {
- @private
-  // Owns |self|.
-  autofill::CardUnmaskPromptViewBridge* bridge_;
-}
+@interface CardUnmaskPromptViewCocoa
+    : NSViewController<NSWindowDelegate, NSTextFieldDelegate>
 
 // Designated initializer. |bridge| must not be NULL.
 - (id)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge;
 
-// Closes the sheet and ends the modal loop.
-- (IBAction)closeSheet:(id)sender;
+- (void)setInputsEnabled:(BOOL)enabled;
+- (void)updateVerifyButtonEnabled;
 
 @end
 
