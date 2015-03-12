@@ -98,4 +98,16 @@ void FetchContext::sendRemainingDelegateMessages(unsigned long, const ResourceRe
 {
 }
 
+void FetchContext::dispatchWillRequestResource(FetchRequest*)
+{
+}
+
+void FetchContext::willStartLoadingResource(ResourceRequest&)
+{
+}
+
+void FetchContext::didLoadResource()
+{
+}
+
 } // namespace blink

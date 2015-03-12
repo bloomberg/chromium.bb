@@ -77,6 +77,11 @@ public:
     void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest) override;
     void sendRemainingDelegateMessages(unsigned long identifier, const ResourceResponse&, int dataLength) override;
 
+    bool shouldLoadNewResource(Resource::Type) const override;
+    void dispatchWillRequestResource(FetchRequest*) override;
+    void willStartLoadingResource(ResourceRequest&) override;
+    void didLoadResource() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

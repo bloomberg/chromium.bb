@@ -58,7 +58,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/PingLoader.h"
-#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "core/timing/ResourceTimingInfo.h"
@@ -629,17 +628,6 @@ int64_t ResourceFetcher::serviceWorkerID() const
     return localFrame->loader().client()->serviceWorkerID(*localFrame->loader().documentLoader());
 }
 
-bool ResourceFetcher::shouldLoadNewResource(Resource::Type type) const
-{
-    if (!frame())
-        return false;
-    if (!documentLoader())
-        return true;
-    if (type == Resource::MainResource)
-        return documentLoader() == frame()->loader().provisionalDocumentLoader();
-    return documentLoader() == frame()->loader().documentLoader();
-}
-
 bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& request, RevalidationPolicy policy)
 {
     if (FetchRequest::DeferredByClient == request.defer())
@@ -700,8 +688,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     if (!canRequest(type, request.resourceRequest(), url, request.options(), request.forPreload(), request.originRestriction()))
         return nullptr;
 
-    if (LocalFrame* f = frame())
-        f->loader().client()->dispatchWillRequestResource(&request);
+    context().dispatchWillRequestResource(&request);
 
     if (!request.forPreload()) {
         V8DOMActivityLogger* activityLogger = nullptr;
@@ -760,7 +747,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     }
 
     if (resourceNeedsLoad(resource.get(), request, policy)) {
-        if (!shouldLoadNewResource(type)) {
+        if (!context().shouldLoadNewResource(type)) {
             if (memoryCache()->contains(resource.get()))
                 memoryCache()->remove(resource.get());
             return nullptr;
@@ -1155,8 +1142,7 @@ void ResourceFetcher::redirectReceived(Resource* resource, const ResourceRespons
 void ResourceFetcher::didLoadResource()
 {
     scheduleDocumentResourcesGC();
-    if (frame())
-        frame()->loader().loadDone();
+    context().didLoadResource();
 }
 
 void ResourceFetcher::scheduleDocumentResourcesGC()
@@ -1410,9 +1396,7 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
 
 void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceRequest& request)
 {
-    if (documentLoader())
-        documentLoader()->applicationCacheHost()->willStartLoadingResource(request);
-
+    context().willStartLoadingResource(request);
     storeResourceTimingInitiatorInformation(resource);
     TRACE_EVENT_ASYNC_BEGIN2("blink.net", "Resource", resource, "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
 }

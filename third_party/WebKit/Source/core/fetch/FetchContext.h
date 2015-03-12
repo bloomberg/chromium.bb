@@ -33,6 +33,7 @@
 
 #include "core/fetch/CachePolicy.h"
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -83,6 +84,11 @@ public:
     virtual void dispatchDidFinishLoading(unsigned long identifier, double finishTime, int64_t encodedDataLength);
     virtual void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest);
     virtual void sendRemainingDelegateMessages(unsigned long identifier, const ResourceResponse&, int dataLength);
+
+    virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
+    virtual void dispatchWillRequestResource(FetchRequest*);
+    virtual void willStartLoadingResource(ResourceRequest&);
+    virtual void didLoadResource();
 };
 
 }

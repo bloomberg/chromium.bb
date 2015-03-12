@@ -183,8 +183,6 @@ private:
 
     explicit ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext>);
 
-    bool shouldLoadNewResource(Resource::Type) const;
-
     ResourcePtr<Resource> requestResource(Resource::Type, FetchRequest&);
     ResourcePtr<Resource> createResourceForRevalidation(const FetchRequest&, Resource*);
     ResourcePtr<Resource> createResourceForLoading(Resource::Type, FetchRequest&, const String& charset);

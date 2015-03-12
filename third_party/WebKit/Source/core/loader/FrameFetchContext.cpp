@@ -45,6 +45,7 @@
 #include "core/loader/LinkLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/ProgressTracker.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -305,6 +306,35 @@ void FrameFetchContext::sendRemainingDelegateMessages(unsigned long identifier, 
         dispatchDidReceiveData(identifier, 0, dataLength, 0);
 
     dispatchDidFinishLoading(identifier, 0, 0);
+}
+
+bool FrameFetchContext::shouldLoadNewResource(Resource::Type type) const
+{
+    if (!frame())
+        return false;
+    if (!m_documentLoader)
+        return true;
+    if (type == Resource::MainResource)
+        return m_documentLoader == frame()->loader().provisionalDocumentLoader();
+    return m_documentLoader == frame()->loader().documentLoader();
+}
+
+void FrameFetchContext::dispatchWillRequestResource(FetchRequest* request)
+{
+    if (frame())
+        frame()->loader().client()->dispatchWillRequestResource(request);
+}
+
+void FrameFetchContext::willStartLoadingResource(ResourceRequest& request)
+{
+    if (m_documentLoader)
+        m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
+}
+
+void FrameFetchContext::didLoadResource()
+{
+    if (frame())
+        frame()->loader().checkCompleted();
 }
 
 DEFINE_TRACE(FrameFetchContext)
