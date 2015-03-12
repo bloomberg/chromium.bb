@@ -390,8 +390,7 @@ remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
 remoting.ClientSession.prototype.onConnectionStatusUpdate =
     function(status, error) {
   if (status == remoting.ClientSession.State.CONNECTED) {
-    remoting.desktopConnectedView.updateClientSessionUi_(this);
-
+    remoting.desktopConnectedView.onConnected();
   } else if (status == remoting.ClientSession.State.FAILED) {
     switch (error) {
       case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:

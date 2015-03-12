@@ -13,20 +13,7 @@
 var remoting = remoting || {};
 
 /**
- * True to enable mouse lock.
- * This is currently disabled because the current client plugin does not
- * properly handle mouse lock and delegated large cursors at the same time.
- * This should be re-enabled (by removing this flag) once a version of
- * the plugin that supports both has reached Chrome Stable channel.
- * (crbug.com/429322).
- *
- * @type {boolean}
- */
-remoting.enableMouseLock = false;
-
-/**
  * @param {remoting.ClientPlugin} plugin
- * @param {remoting.ClientSession} session
  * @param {HTMLElement} container
  * @param {remoting.Host} host
  * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
@@ -34,10 +21,10 @@ remoting.enableMouseLock = false;
  *     when the client doesn't define any.
  * @constructor
  * @extends {base.EventSourceImpl}
+ * @implements {base.Disposable}
  */
-remoting.DesktopConnectedView = function(plugin, session, container, host, mode,
+remoting.DesktopConnectedView = function(plugin, container, host, mode,
                                          defaultRemapKeys) {
-  this.session_ = session;
 
   /** @private {HTMLElement} */
   this.container_ = container;
@@ -54,31 +41,15 @@ remoting.DesktopConnectedView = function(plugin, session, container, host, mode,
   /** @private {string} */
   this.defaultRemapKeys_ = defaultRemapKeys;
 
-  /** @private */
-  this.callPluginLostFocus_ = this.pluginLostFocus_.bind(this);
-  /** @private */
-  this.callPluginGotFocus_ = this.pluginGotFocus_.bind(this);
   /** @private {Element} */
   this.debugRegionContainer_ =
       this.container_.querySelector('.debug-region-container');
 
-  /** @private {Element} */
-  this.mouseCursorOverlay_ =
-      this.container_.querySelector('.mouse-cursor-overlay');
-
   /** @private {remoting.DesktopViewport} */
   this.viewport_ = null;
 
-  /** @type {Element} */
-  var img = this.mouseCursorOverlay_;
-  /**
-   * @param {Event} event
-   * @private
-   */
-  this.updateMouseCursorPosition_ = function(event) {
-    img.style.top = event.offsetY + 'px';
-    img.style.left = event.offsetX + 'px';
-  };
+  /** private {remoting.ConnectedView} */
+  this.view_ = null;
 
   /** @private {remoting.VideoFrameRecorder} */
   this.videoFrameRecorder_ = null;
@@ -87,6 +58,27 @@ remoting.DesktopConnectedView = function(plugin, session, container, host, mode,
   this.eventHooks_ = null;
 
   this.setupPlugin_();
+};
+
+/** @return {void} Nothing. */
+remoting.DesktopConnectedView.prototype.dispose = function() {
+  if (remoting.windowFrame) {
+    remoting.windowFrame.setDesktopConnectedView(null);
+  }
+  if (remoting.toolbar) {
+    remoting.toolbar.setDesktopConnectedView(null);
+  }
+  if (remoting.optionsMenu) {
+    remoting.optionsMenu.setDesktopConnectedView(null);
+  }
+
+  document.body.classList.remove('connected');
+
+  base.dispose(this.eventHooks_);
+  this.eventHooks_ = null;
+
+  base.dispose(this.viewport_);
+  this.viewport_ = null;
 };
 
 // The mode of this session.
@@ -170,15 +162,6 @@ remoting.DesktopConnectedView.prototype.setupPlugin_ = function() {
   if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY)) {
     this.applyRemapKeys_(true);
   }
-
-  // TODO(wez): Only allow mouse lock if the app has the pointerLock permission.
-  // Enable automatic mouse-lock.
-  if (remoting.enableMouseLock &&
-      this.plugin_.hasFeature(remoting.ClientPlugin.Feature.ALLOW_MOUSE_LOCK)) {
-    this.plugin_.allowMouseLock();
-  }
-
-  this.plugin_.setMouseCursorHandler(this.updateMouseCursorImage_.bind(this));
 };
 
 /**
@@ -194,111 +177,47 @@ remoting.DesktopConnectedView.prototype.onResize_ = function() {
 };
 
 /**
- * Called when the app window is hidden.
- * @return {void} Nothing.
- */
-remoting.DesktopConnectedView.prototype.onVisibilityChanged_ = function() {
-  this.pauseVideo(document.hidden);
-};
-
-/**
  * Callback that the plugin invokes to indicate when the connection is
  * ready.
  *
  * @param {boolean} ready True if the connection is ready.
  */
 remoting.DesktopConnectedView.prototype.onConnectionReady = function(ready) {
-  if (!ready) {
-    this.container_.classList.add('session-client-inactive');
-  } else {
-    this.container_.classList.remove('session-client-inactive');
+  if (this.view_) {
+    this.view_.onConnectionReady(ready);
   }
 };
 
-/**
- * Deletes the <embed> element from the container, without sending a
- * session_terminate request.  This is to be called when the session was
- * disconnected by the Host.
- *
- * @return {void} Nothing.
- */
-remoting.DesktopConnectedView.prototype.removePlugin = function() {
-  if (this.plugin_) {
-    this.plugin_.element().removeEventListener(
-        'focus', this.callPluginGotFocus_, false);
-    this.plugin_.element().removeEventListener(
-        'blur', this.callPluginLostFocus_, false);
-    this.plugin_ = null;
+remoting.DesktopConnectedView.prototype.onConnected = function() {
+  document.body.classList.add('connected');
+
+  this.view_ = new remoting.ConnectedView(
+      this.plugin_, this.container_,
+      this.container_.querySelector('.mouse-cursor-overlay'));
+
+  var scrollerElement = document.getElementById('scroller');
+  this.viewport_ = new remoting.DesktopViewport(
+      scrollerElement || document.body,
+      this.plugin_.hostDesktop(),
+      this.host_.options);
+
+  if (remoting.windowFrame) {
+    remoting.windowFrame.setDesktopConnectedView(this);
+  }
+  if (remoting.toolbar) {
+    remoting.toolbar.setDesktopConnectedView(this);
+  }
+  if (remoting.optionsMenu) {
+    remoting.optionsMenu.setDesktopConnectedView(this);
   }
 
-  this.updateClientSessionUi_(null);
-};
-
-/**
- * @param {remoting.ClientSession} clientSession The active session, or null if
- *     there is no connection.
- */
-remoting.DesktopConnectedView.prototype.updateClientSessionUi_ = function(
-    clientSession) {
-  if (clientSession === null) {
-    if (remoting.windowFrame) {
-      remoting.windowFrame.setDesktopConnectedView(null);
-    }
-    if (remoting.toolbar) {
-      remoting.toolbar.setDesktopConnectedView(null);
-    }
-    if (remoting.optionsMenu) {
-      remoting.optionsMenu.setDesktopConnectedView(null);
-    }
-
-    document.body.classList.remove('connected');
-    this.container_.removeEventListener(
-        'mousemove', this.updateMouseCursorPosition_, true);
-    base.dispose(this.eventHooks_);
-    this.eventHooks_ = null;
-    base.dispose(this.viewport_);
-    this.viewport_ = null;
-  } else {
-    var scrollerElement = document.getElementById('scroller');
-    this.viewport_ = new remoting.DesktopViewport(
-        scrollerElement || document.body,
-        this.plugin_.hostDesktop(),
-        this.host_.options);
-    if (remoting.windowFrame) {
-      remoting.windowFrame.setDesktopConnectedView(this);
-    }
-    if (remoting.toolbar) {
-      remoting.toolbar.setDesktopConnectedView(this);
-    }
-    if (remoting.optionsMenu) {
-      remoting.optionsMenu.setDesktopConnectedView(this);
-    }
-
-    document.body.classList.add('connected');
-    this.container_.addEventListener(
-        'mousemove', this.updateMouseCursorPosition_, true);
-    // Activate full-screen related UX.
-    this.setFocusHandlers_();
-    this.eventHooks_ = new base.Disposables(
-      new base.DomEventHook(window, 'resize', this.onResize_.bind(this), false),
-      new base.DomEventHook(document, 'visibilitychange',
-                            this.onVisibilityChanged_.bind(this), false),
-      new remoting.Fullscreen.EventHook(this.onFullScreenChanged_.bind(this))
-    );
-    this.onFullScreenChanged_(remoting.fullscreen.isActive());
-  }
-};
-
-/**
- * Constrains the focus to the plugin element.
- * @private
- */
-remoting.DesktopConnectedView.prototype.setFocusHandlers_ = function() {
-  this.plugin_.element().addEventListener(
-      'focus', this.callPluginGotFocus_, false);
-  this.plugin_.element().addEventListener(
-      'blur', this.callPluginLostFocus_, false);
-  this.plugin_.element().focus();
+  // Activate full-screen related UX.
+  this.eventHooks_ = new base.Disposables(
+    this.view_,
+    new base.DomEventHook(window, 'resize', this.onResize_.bind(this), false),
+    new remoting.Fullscreen.EventHook(this.onFullScreenChanged_.bind(this))
+  );
+  this.onFullScreenChanged_(remoting.fullscreen.isActive());
 };
 
 /**
@@ -337,45 +256,6 @@ remoting.DesktopConnectedView.prototype.onFullScreenChanged_ = function (
     // for both events.
     this.viewport_.onResize();
     this.viewport_.enableBumpScroll(Boolean(fullscreen));
-  }
-};
-
-/**
- * Callback function called when the plugin element gets focus.
- */
-remoting.DesktopConnectedView.prototype.pluginGotFocus_ = function() {
-  remoting.clipboard.initiateToHost();
-};
-
-/**
- * Callback function called when the plugin element loses focus.
- */
-remoting.DesktopConnectedView.prototype.pluginLostFocus_ = function() {
-  if (this.plugin_) {
-    // Release all keys to prevent them becoming 'stuck down' on the host.
-    this.plugin_.releaseAllKeys();
-    if (this.plugin_.element()) {
-      // Focus should stay on the element, not (for example) the toolbar.
-      // Due to crbug.com/246335, we can't restore the focus immediately,
-      // otherwise the plugin gets confused about whether or not it has focus.
-      window.setTimeout(
-          this.plugin_.element().focus.bind(this.plugin_.element()), 0);
-    }
-  }
-};
-
-/**
- * @param {string} url
- * @param {number} hotspotX
- * @param {number} hotspotY
- */
-remoting.DesktopConnectedView.prototype.updateMouseCursorImage_ =
-    function(url, hotspotX, hotspotY) {
-  this.mouseCursorOverlay_.hidden = !url;
-  if (url) {
-    this.mouseCursorOverlay_.style.marginLeft = '-' + hotspotX + 'px';
-    this.mouseCursorOverlay_.style.marginTop = '-' + hotspotY + 'px';
-    this.mouseCursorOverlay_.src = url;
   }
 };
 
@@ -467,30 +347,6 @@ remoting.DesktopConnectedView.prototype.sendCtrlAltDel = function() {
 remoting.DesktopConnectedView.prototype.sendPrintScreen = function() {
   console.log('Sending Print Screen.');
   this.sendKeyCombination_([0x070046]);
-};
-
-/**
- * Requests that the host pause or resume video updates.
- *
- * @param {boolean} pause True to pause video, false to resume.
- * @return {void} Nothing.
- */
-remoting.DesktopConnectedView.prototype.pauseVideo = function(pause) {
-  if (this.plugin_) {
-    this.plugin_.pauseVideo(pause);
-  }
-};
-
-/**
- * Requests that the host pause or resume audio.
- *
- * @param {boolean} pause True to pause audio, false to resume.
- * @return {void} Nothing.
- */
-remoting.DesktopConnectedView.prototype.pauseAudio = function(pause) {
-  if (this.plugin_) {
-    this.plugin_.pauseAudio(pause)
-  }
 };
 
 remoting.DesktopConnectedView.prototype.initVideoFrameRecorder = function() {

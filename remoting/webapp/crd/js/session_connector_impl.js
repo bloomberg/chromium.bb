@@ -356,9 +356,8 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
   remoting.clientSession = this.clientSession_;
 
   this.connectedView_ = new remoting.DesktopConnectedView(
-      this.plugin_, this.clientSession_, this.clientContainer_, this.host_,
-      this.connectionMode_,
-      this.defaultRemapKeys_);
+      this.plugin_, this.clientContainer_, this.host_,
+      this.connectionMode_, this.defaultRemapKeys_);
   remoting.desktopConnectedView = this.connectedView_;
 
   this.clientSession_.logHostOfflineErrors(this.logHostOfflineErrors_);
@@ -388,15 +387,11 @@ remoting.SessionConnectorImpl.prototype.removePlugin_ = function() {
   this.clientSession_ = null;
   remoting.clientSession = null;
 
-  if (this.connectedView_) {
-    this.connectedView_.removePlugin();
-  }
+  base.dispose(this.connectedView_);
   this.connectedView_ = null;
   remoting.desktopConnectedView = null;
 
-  if (this.plugin_) {
-    this.plugin_.dispose();
-  }
+  base.dispose(this.plugin_);
   this.plugin_ = null;
 };
 
