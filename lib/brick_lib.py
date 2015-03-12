@@ -306,6 +306,9 @@ def _PathToLocator(path):
   workspace_path = workspace_lib.WorkspacePath()
   path = os.path.abspath(path)
 
+  if workspace_path is None:
+    return None
+
   # If path is in the current workspace, return the relative path prefixed with
   # //.
   if os.path.commonprefix([path, workspace_path]) == workspace_path:
