@@ -47,6 +47,7 @@ class ManagePasswordsUIControllerMock
   void ChooseCredential(const autofill::PasswordForm& form,
                         password_manager::CredentialType form_type) override;
   bool choose_credential() const { return choose_credential_; }
+  autofill::PasswordForm chosen_credential() { return chosen_credential_; }
 
   const autofill::PasswordForm& PendingPassword() const override;
   void SetPendingPassword(autofill::PasswordForm pending_password);
@@ -77,6 +78,7 @@ class ManagePasswordsUIControllerMock
   bool choose_credential_;
   base::TimeDelta elapsed_;
 
+  autofill::PasswordForm chosen_credential_;
   autofill::PasswordForm pending_password_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIControllerMock);

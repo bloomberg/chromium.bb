@@ -68,6 +68,8 @@ void ManagePasswordsUIControllerMock::NeverSavePasswordInternal() {
 void ManagePasswordsUIControllerMock::ChooseCredential(
     const autofill::PasswordForm& form,
     password_manager::CredentialType form_type) {
+  SetState(password_manager::ui::INACTIVE_STATE);
   EXPECT_FALSE(choose_credential_);
   choose_credential_ = true;
+  chosen_credential_ = form;
 }
