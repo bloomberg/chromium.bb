@@ -201,7 +201,7 @@ browserTest.connectMe2Me = function() {
       return browserTest.onUIMode(AppMode.CLIENT_HOST_NEEDS_UPGRADE);
     }).then(function() {
       // On fulfilled.
-      browserTest.clickOnControl('host-needs-update-connect-button');
+      browserTest.clickOnControl('#host-needs-update-dialog .connect-button');
     }, function() {
       // On time out.
       return Promise.resolve();

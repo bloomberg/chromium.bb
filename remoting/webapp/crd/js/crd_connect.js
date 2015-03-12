@@ -41,32 +41,16 @@ remoting.connectMe2Me = function(hostId) {
     return;
   }
   var webappVersion = chrome.runtime.getManifest().version;
-  if (remoting.Host.needsUpdate(host, webappVersion)) {
-    var needsUpdateMessage =
-        document.getElementById('host-needs-update-message');
-    l10n.localizeElementFromTag(needsUpdateMessage,
-                                /*i18n-content*/'HOST_NEEDS_UPDATE_TITLE',
-                                host.hostName);
-    /** @type {Element} */
-    var connect = document.getElementById('host-needs-update-connect-button');
-    /** @type {Element} */
-    var cancel = document.getElementById('host-needs-update-cancel-button');
-    /** @param {Event} event */
-    var onClick = function(event) {
-      connect.removeEventListener('click', onClick, false);
-      cancel.removeEventListener('click', onClick, false);
-      if (event.target == connect) {
-        remoting.connectMe2MeHostVersionAcknowledged_(host);
-      } else {
-        remoting.setMode(remoting.AppMode.HOME);
-      }
-    }
-    connect.addEventListener('click', onClick, false);
-    cancel.addEventListener('click', onClick, false);
-    remoting.setMode(remoting.AppMode.CLIENT_HOST_NEEDS_UPGRADE);
-  } else {
+  var needsUpdateDialog = new remoting.HostNeedsUpdateDialog(
+      document.getElementById('host-needs-update-dialog'), host);
+
+  needsUpdateDialog.showIfNecessary(webappVersion).then(function() {
     remoting.connectMe2MeHostVersionAcknowledged_(host);
-  }
+  }).catch(function(/** remoting.Error */ error) {
+    if (error.tag === remoting.Error.Tag.CANCELLED) {
+      remoting.setMode(remoting.AppMode.HOME);
+    }
+  });
 };
 
 /**
@@ -161,7 +145,7 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
       sharedSecret = /** @type {string} */ (pairingInfo['sharedSecret']);
     }
     connector.connectMe2Me(host, requestPin, fetchThirdPartyToken,
-                                    clientId, sharedSecret);
+                                 clientId, sharedSecret);
   }
 
   remoting.HostSettings.load(host.hostId, connectMe2MeHostSettingsRetrieved);
