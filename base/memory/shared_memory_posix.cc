@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/process/process_metrics.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/safe_strerror_posix.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -118,6 +119,11 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
 // In case we want to delete it later, it may be useful to save the value
 // of mem_filename after FilePathForMemoryName().
 bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466437
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466437 SharedMemory::Create::Start"));
   DCHECK_EQ(-1, mapped_file_);
   if (options.size == 0) return false;
 
@@ -140,11 +146,22 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     // Q: Why not use the shm_open() etc. APIs?
     // A: Because they're limited to 4mb on OS X.  FFFFFFFUUUUUUUUUUU
     FilePath directory;
-    if (GetShmemTempDir(options.executable, &directory))
+    if (GetShmemTempDir(options.executable, &directory)) {
+      // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466437
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "466437 SharedMemory::Create::OpenTemporaryFile"));
       fp.reset(CreateAndOpenTemporaryFileInDir(directory, &path));
+    }
 
     if (fp) {
       if (options.share_read_only) {
+        // TODO(erikchen): Remove ScopedTracker below once
+        // http://crbug.com/466437 is fixed.
+        tracked_objects::ScopedTracker tracking_profile3(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "466437 SharedMemory::Create::OpenReadonly"));
         // Also open as readonly so that we can ShareReadOnlyToProcess.
         readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
         if (!readonly_fd.is_valid()) {
@@ -153,6 +170,12 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
           return false;
         }
       }
+
+      // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466437
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile4(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "466437 SharedMemory::Create::Unlink"));
       // Deleting the file prevents anyone else from mapping it in (making it
       // private), and prevents the need for cleanup (once the last fd is
       // closed, it is truly freed).
