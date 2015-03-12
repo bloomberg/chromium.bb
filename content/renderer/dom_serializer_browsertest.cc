@@ -15,6 +15,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/routing_id_mangling_disabler.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/savable_resources.h"
 #include "content/shell/browser/shell.h"
@@ -774,6 +775,8 @@ class DomSerializerTests : public ContentBrowserTest,
   // The local_directory_name_ is dummy relative path of directory which
   // contain all saved auxiliary files included all sub frames and resources.
   const base::FilePath local_directory_name_;
+
+  content::RoutingIDManglingDisabler mangling_disabler_;
 };
 
 // If original contents have document type, the serialized contents also have

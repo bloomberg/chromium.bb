@@ -1010,6 +1010,8 @@ void RenderProcessHostImpl::AddRoute(
     IPC::Listener* listener) {
   CHECK(!listeners_.Lookup(routing_id))
       << "Found Routing ID Conflict: " << routing_id;
+  CHECK(widget_helper_->IsRoutingIDProbablyValid(routing_id))
+      << "Found Routing ID conflicts: " << routing_id;
   listeners_.AddWithID(listener, routing_id);
 }
 

@@ -16,6 +16,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/routing_id_issuer.h"
 #include "content/common/view_messages.h"
 
 namespace content {
@@ -37,6 +38,7 @@ void AddWidgetHelper(int render_process_id,
 
 RenderWidgetHelper::RenderWidgetHelper()
     : render_process_id_(-1),
+      routing_id_issuer_(RoutingIDIssuer::Create()),
       resource_dispatcher_host_(NULL) {
 }
 
@@ -63,7 +65,11 @@ void RenderWidgetHelper::Init(
 }
 
 int RenderWidgetHelper::GetNextRoutingID() {
-  return next_routing_id_.GetNext() + 1;
+  return routing_id_issuer_->IssueNext();
+}
+
+bool RenderWidgetHelper::IsRoutingIDProbablyValid(int routing_id) const {
+  return routing_id_issuer_->IsProbablyValid(routing_id);
 }
 
 // static

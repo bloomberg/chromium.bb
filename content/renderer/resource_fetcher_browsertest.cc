@@ -15,6 +15,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/routing_id_mangling_disabler.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -284,6 +285,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
     EXPECT_EQ(delegate->response().httpStatusCode(), 200);
     EXPECT_EQ(kHeader, delegate->data());
   }
+
+  content::RoutingIDManglingDisabler routing_id_mangling_disabler_;
 };
 
 // Test a fetch from the test server.
