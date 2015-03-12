@@ -6,21 +6,13 @@
 function test()
 {
     InspectorTest.startDumpingProtocolMessages();
-    InspectorTest.startCollectingProtocolMessages();
     InspectorTest.sendCommand("Debugger.enable", {}, setEventListenerBreakpoint);
-
-    function dumpCollectedMessages()
-    {
-        var messages = InspectorTest.stopCollectingProtocolMessages();
-        for (var i = 0; i < messages.length; ++i)
-            InspectorTest.log(messages[i].side + ": " + messages[i].message);
-    }
 
     function finishIfError(message)
     {
         if (message.result)
             return;
-        dumpCollectedMessages();
+        testRunner.logToStderr("FAIL: finishIfError");
         InspectorTest.log("FAIL: " + JSON.stringify(message));
         InspectorTest.completeTest();
     }
@@ -49,7 +41,7 @@ function test()
     function finish(message)
     {
         if (!message.error) {
-            dumpCollectedMessages();
+            testRunner.logToStderr("FAIL: finish");
             InspectorTest.log("FAIL: we expected an error but it wasn't happen.");
             InspectorTest.completeTest();
             return;
