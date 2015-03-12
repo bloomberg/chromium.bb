@@ -146,7 +146,7 @@ public class PostMessageTest extends AwTestBase {
             + "        onmessage = function (e) {"
             + "            var myport = e.ports[0];"
             + "            myport.onmessage = function (f) {"
-            + "                received = received + f.data;"
+            + "                received += f.data;"
             + "                document.title = received;"
             + "            }"
             + "        }"
@@ -261,8 +261,7 @@ public class PostMessageTest extends AwTestBase {
                 // set a web event handler, this puts the port in a started state.
                 channel[1].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) {
-                    }
+                    public void onMessage(String message, MessagePort[] sentPorts) { }
                 }, null);
                 try {
                     mAwContents.postMessageToFrame(null, "2", mWebServer.getBaseUrl(),
@@ -314,7 +313,7 @@ public class PostMessageTest extends AwTestBase {
                 // set a web event handler, this puts the port in a started state.
                 channel1[1].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) { }
+                    public void onMessage(String message, MessagePort[] sentPorts) { }
                 }, null);
                 MessagePort[] channel2 = mAwContents.createMessageChannel();
                 try {
@@ -572,7 +571,7 @@ public class PostMessageTest extends AwTestBase {
                 channelContainer.set(channel);
                 channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -653,7 +652,7 @@ public class PostMessageTest extends AwTestBase {
             public void run() {
                 channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -683,7 +682,7 @@ public class PostMessageTest extends AwTestBase {
                 MessagePort[] channel = mAwContents.createMessageChannel();
                 channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -710,7 +709,7 @@ public class PostMessageTest extends AwTestBase {
                 MessagePort[] channel = mAwContents.createMessageChannel();
                 channel[1].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -739,6 +738,58 @@ public class PostMessageTest extends AwTestBase {
             }
         });
         expectTitle("123");
+    }
+
+    private static final String RECEIVE_JS_MESSAGE_CHANNEL_PAGE =
+            "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        var received ='';"
+            + "        var mc = new MessageChannel();"
+            + "        mc.port1.onmessage = function (e) {"
+            + "            received += e.data;"
+            + "            document.title = received;"
+            + "            if (e.data == '2') { mc.port1.postMessage('3'); }"
+            + "        };"
+            + "        onmessage = function (e) {"
+            + "            var myPort = e.ports[0];"
+            + "            myPort.postMessage('from window', [mc.port2]);"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+
+    // Test webview can use a message port received from JS for full duplex communication.
+    // Test steps:
+    // 1. Java creates a message channel, and send one port to JS
+    // 2. JS creates a new message channel and sends one port to Java using the channel in 1
+    // 3. Java sends a message using the new channel in 2.
+    // 4. Js responds to this message using the channel in 2.
+    // 5. Java responds to message in 4 using the channel in 2.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testCanUseReceivedMessagePortFromJS() throws Throwable {
+        loadPage(RECEIVE_JS_MESSAGE_CHANNEL_PAGE);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                mAwContents.postMessageToFrame(null, "1", mWebServer.getBaseUrl(),
+                        new MessagePort[]{channel[1]});
+                channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
+                    @Override
+                    public void onMessage(String message, final MessagePort[] p) {
+                        p[0].setWebEventHandler(new MessagePort.WebEventHandler() {
+                            @Override
+                            public void onMessage(String message, MessagePort[] q) {
+                                assertEquals("3", message);
+                                p[0].postMessage("4", null);
+                            }
+                        }, null);
+                        p[0].postMessage("2", null);
+                    }
+                }, null);
+            }
+        });
+        expectTitle("24");
     }
 
     private static class TestMessagePort extends MessagePort {
@@ -787,13 +838,13 @@ public class PostMessageTest extends AwTestBase {
             mPort.setWebEventHandler(webEventHandler, handler);
         }
         @Override
-        public void onMessage(String message) {
-            mPort.onMessage(message);
+        public void onMessage(String message, MessagePort[] sentPorts) {
+            mPort.onMessage(message, sentPorts);
         }
         @Override
-        public void postMessage(String message, MessagePort[] msgPorts) throws
+        public void postMessage(String message, MessagePort[] sentPorts) throws
                 IllegalStateException {
-            mPort.postMessage(message, msgPorts);
+            mPort.postMessage(message, sentPorts);
         }
     }
 
@@ -918,7 +969,7 @@ public class PostMessageTest extends AwTestBase {
                 channelContainer.set(channel);
                 channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -948,7 +999,7 @@ public class PostMessageTest extends AwTestBase {
                 channelContainer.set(channel);
                 channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -990,7 +1041,7 @@ public class PostMessageTest extends AwTestBase {
                 channelContainer.set(channel);
                 channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
-                    public void onMessage(String message) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);

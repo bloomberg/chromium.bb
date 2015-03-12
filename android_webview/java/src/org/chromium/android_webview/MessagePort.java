@@ -75,7 +75,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
      * The message event handler for receiving messages. Called on a background thread.
      */
     public abstract static class WebEventHandler {
-        public abstract void onMessage(String message);
+        public abstract void onMessage(String message, MessagePort[] sentPorts);
     }
 
     private static final String TAG = "MessagePort";
@@ -87,10 +87,12 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     private static class PostMessageFromWeb {
         public MessagePort port;
         public String message;
+        public MessagePort[] sentPorts;
 
-        public PostMessageFromWeb(MessagePort port, String message) {
+        public PostMessageFromWeb(MessagePort port, String message, MessagePort[] sentPorts) {
             this.port = port;
             this.message = message;
+            this.sentPorts = sentPorts;
         }
     }
 
@@ -105,7 +107,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         public void handleMessage(Message msg) {
             if (msg.what == POST_MESSAGE) {
                 PostMessageFromWeb m = (PostMessageFromWeb) msg.obj;
-                m.port.onMessage(m.message);
+                m.port.onMessage(m.message, m.sentPorts);
                 return;
             }
             throw new IllegalStateException("undefined message");
@@ -191,9 +193,9 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     }
 
     // Only called on IO thread.
-    public void onReceivedMessage(String message) {
+    public void onReceivedMessage(String message, MessagePort[] sentPorts) {
         synchronized (mLock) {
-            PostMessageFromWeb m = new PostMessageFromWeb(this, message);
+            PostMessageFromWeb m = new PostMessageFromWeb(this, message, sentPorts);
             Handler handler = mHandler != null ? mHandler : sDefaultHandler;
             Message msg = handler.obtainMessage(POST_MESSAGE, m);
             handler.sendMessage(msg);
@@ -209,7 +211,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     }
 
     // This method may be called on a different thread than UI thread.
-    public void onMessage(String message) {
+    public void onMessage(String message, MessagePort[] ports) {
         synchronized (mLock) {
             if (isClosed()) {
                 Log.w(TAG, "Port [" + mPortId + "] received message in closed state");
@@ -220,23 +222,23 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
                         + message);
                 return;
             }
-            mWebEventHandler.onMessage(message);
+            mWebEventHandler.onMessage(message, ports);
         }
     }
 
-    public void postMessage(String message, MessagePort[] msgPorts) throws IllegalStateException {
+    public void postMessage(String message, MessagePort[] sentPorts) throws IllegalStateException {
         if (isClosed() || isTransferred()) {
             throw new IllegalStateException("Port is already closed or transferred");
         }
-        if (msgPorts != null) {
-            for (MessagePort port : msgPorts) {
+        if (sentPorts != null) {
+            for (MessagePort port : sentPorts) {
                 if (port.equals(this)) {
                     throw new IllegalStateException("Source port cannot be transferred");
                 }
             }
         }
         mStarted = true;
-        mPostMessageSender.postMessage(null, message, null, msgPorts);
+        mPostMessageSender.postMessage(null, message, null, sentPorts);
     }
 
     // Implements PostMessageSender.PostMessageSenderDelegate interface method.

@@ -96,6 +96,11 @@ void AwMessagePortServiceImpl::OnConvertedWebToAppMessage(
     return;
   }
 
+  // Add the ports to AwMessagePortService.
+  for (const auto& iter : sent_message_port_ids) {
+    AddPort(iter, ports_[message_port_id]);
+  }
+
   ScopedJavaLocalRef<jstring> jmsg = ConvertUTF16ToJavaString(env, value);
   ScopedJavaLocalRef<jintArray> jports =
       ToJavaIntArray(env, sent_message_port_ids);
@@ -210,6 +215,7 @@ void AwMessagePortServiceImpl::OnMessageChannelCreated(
       *port2, ports->obj());
 }
 
+// Adds a new port to the message port service.
 void AwMessagePortServiceImpl::AddPort(int message_port_id,
                                        AwMessagePortMessageFilter* filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

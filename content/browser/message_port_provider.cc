@@ -99,4 +99,13 @@ void MessagePortProvider::OnMessagePortDelegateClosing(
   MessagePortService::GetInstance()->OnMessagePortDelegateClosing(delegate);
 }
 
+// static
+void MessagePortProvider::UpdateMessagePort(int message_port_id,
+                                            MessagePortDelegate* delegate) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  MessagePortService::GetInstance()->UpdateMessagePort(message_port_id,
+                                                       delegate,
+                                                       message_port_id);
+}
+
 } // namespace content

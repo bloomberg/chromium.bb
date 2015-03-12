@@ -144,8 +144,14 @@ public class AwMessagePortService {
     // Called on IO thread.
     @CalledByNative
     private void onReceivedMessage(int portId, String message, int[] ports) {
-        // TODO(sgurun) implement receiving ports from native
-        mPortStorage.get(portId).onReceivedMessage(message);
+        MessagePort[] messagePorts = null;
+        for (int i = 0; i < ports.length; i++) {
+            if (messagePorts == null) {
+                messagePorts = new MessagePort[ports.length];
+            }
+            messagePorts[i] = addPort(new MessagePort(this), ports[i]);
+        }
+        mPortStorage.get(portId).onReceivedMessage(message, messagePorts);
     }
 
     @CalledByNative

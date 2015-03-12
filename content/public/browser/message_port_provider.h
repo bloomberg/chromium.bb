@@ -46,6 +46,7 @@ class CONTENT_EXPORT MessagePortProvider {
                                    int* port2);
 
   // Posts a MessageEvent to a message port associated with a message channel.
+  // Should be called on IO thread.
   static void PostMessageToPort(
       int sender_port_id,
       const MessagePortMessage& message,
@@ -63,7 +64,15 @@ class CONTENT_EXPORT MessagePortProvider {
   static void ReleaseMessages(int message_port_id);
 
   // Cleanup the message ports that belong to the closing delegate.
+  // Should be called on IO thread.
   static void OnMessagePortDelegateClosing(MessagePortDelegate * delegate);
+
+  // Update message port information when the message port is transferred
+  // from a different process. The updated message ports will have their
+  // routing numbers equal to the message port numbers.
+  // Should be called on IO thread.
+  static void UpdateMessagePort(int message_port_id,
+                                MessagePortDelegate* delegate);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MessagePortProvider);

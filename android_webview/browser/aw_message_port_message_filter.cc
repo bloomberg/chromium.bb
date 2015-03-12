@@ -89,7 +89,10 @@ void AwMessagePortMessageFilter::SendMessage(
   std::vector<int> sent_message_port_ids(sent_message_ports.size());
   for (size_t i = 0; i < sent_message_ports.size(); ++i) {
     DCHECK(!sent_message_ports[i].send_messages_as_values);
-    sent_message_port_ids[i] = sent_message_ports[i].id;
+    int sent_port_id = sent_message_ports[i].id;
+    MessagePortProvider::HoldMessages(sent_port_id);
+    MessagePortProvider::UpdateMessagePort(sent_port_id, this);
+    sent_message_port_ids[i] = sent_port_id;
   }
   Send(new AwMessagePortMsg_WebToAppMessage(
       route_id_,
