@@ -108,21 +108,6 @@ void InMemoryURLIndex::Init() {
   PostRestoreFromCacheFileTask();
 }
 
-void InMemoryURLIndex::ShutDown() {
-  if (history_service_) {
-    history_service_->RemoveObserver(this);
-    history_service_ = nullptr;
-  }
-  cache_reader_tracker_.TryCancelAll();
-  shutdown_ = true;
-  base::FilePath path;
-  if (!GetCacheFilePath(&path))
-    return;
-  private_data_tracker_.TryCancelAll();
-  URLIndexPrivateData::WritePrivateDataToCacheFileTask(private_data_, path);
-  needs_to_be_cached_ = false;
-}
-
 void InMemoryURLIndex::ClearPrivateData() {
   private_data_->Clear();
 }
@@ -259,6 +244,23 @@ void InMemoryURLIndex::OnCacheLoadDone(
       listen_to_history_service_loaded_ = true;
     }
   }
+}
+
+// Cleanup ---------------------------------------------------------------------
+
+void InMemoryURLIndex::Shutdown() {
+  if (history_service_) {
+    history_service_->RemoveObserver(this);
+    history_service_ = nullptr;
+  }
+  cache_reader_tracker_.TryCancelAll();
+  shutdown_ = true;
+  base::FilePath path;
+  if (!GetCacheFilePath(&path))
+    return;
+  private_data_tracker_.TryCancelAll();
+  URLIndexPrivateData::WritePrivateDataToCacheFileTask(private_data_, path);
+  needs_to_be_cached_ = false;
 }
 
 // Restoring from the History DB -----------------------------------------------

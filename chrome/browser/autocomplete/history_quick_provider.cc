@@ -58,9 +58,12 @@ bool IsBookmarked(bookmarks::BookmarkModel* bookmark_model, const GURL& url) {
 
 bool HistoryQuickProvider::disabled_ = false;
 
-HistoryQuickProvider::HistoryQuickProvider(Profile* profile)
+HistoryQuickProvider::HistoryQuickProvider(
+    Profile* profile,
+    InMemoryURLIndex* in_memory_url_index)
     : HistoryProvider(profile, AutocompleteProvider::TYPE_HISTORY_QUICK),
-      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)) {
+      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      in_memory_url_index_(in_memory_url_index) {
 }
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
@@ -80,7 +83,7 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   // TODO(pkasting): We should just block here until this loads.  Any time
   // someone unloads the history backend, we'll get inconsistent inline
   // autocomplete behavior here.
-  if (GetIndex()) {
+  if (in_memory_url_index_) {
     base::TimeTicks start_time = base::TimeTicks::Now();
     DoAutocomplete();
     if (input.text().length() < 6) {
@@ -103,7 +106,7 @@ void HistoryQuickProvider::DoAutocomplete() {
     ScoredHistoryMatchBuilderImpl builder(base::Bind(
         &IsBookmarked,
         base::Unretained(BookmarkModelFactory::GetForProfile(profile_))));
-    matches = GetIndex()->HistoryItemsForTerms(
+    matches = in_memory_url_index_->HistoryItemsForTerms(
         autocomplete_input_.text(), autocomplete_input_.cursor_position(),
         AutocompleteProvider::kMaxMatches, builder);
   }
@@ -299,16 +302,4 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   match.RecordAdditionalInfo("last visit", info.last_visit());
 
   return match;
-}
-
-InMemoryURLIndex* HistoryQuickProvider::GetIndex() {
-  if (index_for_testing_.get())
-    return index_for_testing_.get();
-
-  HistoryService* const history_service = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  if (!history_service)
-    return NULL;
-
-  return history_service->InMemoryIndex();
 }

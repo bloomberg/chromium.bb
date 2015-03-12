@@ -13,6 +13,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/in_memory_url_index.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
@@ -223,6 +225,17 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
       ChromeHistoryClientFactory::GetForProfile(profile),
       scoped_ptr<history::VisitDelegate>(new ContentVisitDelegate(profile)));
   return history_service;
+}
+
+KeyedService* BuildInMemoryURLIndex(content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  InMemoryURLIndex* in_memory_url_index = new InMemoryURLIndex(
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::IMPLICIT_ACCESS),
+      profile->GetPath(),
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  in_memory_url_index->Init();
+  return in_memory_url_index;
 }
 
 KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
@@ -578,6 +591,10 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
     return false;
   }
+  // Some tests expect that CreateHistoryService() will also make the
+  // InMemoryURLIndex available.
+  InMemoryURLIndexFactory::GetInstance()->SetTestingFactory(
+      this, BuildInMemoryURLIndex);
   // Disable WebHistoryService by default, since it makes network requests.
   WebHistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
   return true;
@@ -648,7 +665,7 @@ void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(this);
   DCHECK(history_service);
-  InMemoryURLIndex* index = history_service->InMemoryIndex();
+  InMemoryURLIndex* index = InMemoryURLIndexFactory::GetForProfile(this);
   if (!index || index->restored())
     return;
   base::RunLoop run_loop;

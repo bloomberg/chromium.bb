@@ -34,7 +34,6 @@
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-class InMemoryURLIndex;
 class InMemoryURLIndexTest;
 class PageUsageRequest;
 class SkBitmap;
@@ -132,9 +131,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // This method should only be called from the history thread, because the
   // returned service is intended to be accessed only via the history thread.
   history::TypedUrlSyncableService* GetTypedUrlSyncableService() const;
-
-  // Return the quick history index.
-  InMemoryURLIndex* InMemoryIndex() const { return in_memory_url_index_.get(); }
 
   // KeyedService:
   void Shutdown() override;
@@ -800,11 +796,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.
   bool backend_loaded_;
-
-  // The index used for quick history lookups.
-  // TODO(mrossetti): Move in_memory_url_index out of history_service.
-  // See http://crbug.com/138321
-  scoped_ptr<InMemoryURLIndex> in_memory_url_index_;
 
   ObserverList<history::HistoryServiceObserver> observers_;
   base::CallbackList<void(const std::set<GURL>&)>

@@ -287,10 +287,10 @@ void InMemoryURLIndexTest::SetUp() {
 }
 
 void InMemoryURLIndexTest::TearDown() {
-  // Ensure that the InMemoryURLIndex no longer observer HistoryService before
+  // Ensure that the InMemoryURLIndex no longer observes HistoryService before
   // it is destroyed in order to prevent HistoryService calling dead observer.
   if (url_index_)
-    url_index_->ShutDown();
+    url_index_->Shutdown();
 }
 
 base::FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
@@ -1230,7 +1230,7 @@ void InMemoryURLIndexCacheTest::SetUp() {
 
 void InMemoryURLIndexCacheTest::TearDown() {
   if (url_index_)
-    url_index_->ShutDown();
+    url_index_->Shutdown();
 }
 
 void InMemoryURLIndexCacheTest::set_history_dir(

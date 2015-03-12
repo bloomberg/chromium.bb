@@ -24,7 +24,7 @@ struct ScoredHistoryMatch;
 // history.
 class HistoryQuickProvider : public HistoryProvider {
  public:
-  explicit HistoryQuickProvider(Profile* profile);
+  HistoryQuickProvider(Profile* profile, InMemoryURLIndex* in_memory_url_index);
 
   // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
   // completion performed.
@@ -54,17 +54,9 @@ class HistoryQuickProvider : public HistoryProvider {
   AutocompleteMatch QuickMatchToACMatch(const ScoredHistoryMatch& history_match,
                                         int score);
 
-  // Returns the index that should be used for history lookups.
-  InMemoryURLIndex* GetIndex();
-
-  // Only for use in unittests.  Takes ownership of |index|.
-  void set_index(InMemoryURLIndex* index) { index_for_testing_.reset(index); }
-
   AutocompleteInput autocomplete_input_;
   std::string languages_;
-
-  // Only used for testing.
-  scoped_ptr<InMemoryURLIndex> index_for_testing_;
+  InMemoryURLIndex* in_memory_url_index_;  // Not owned by this class.
 
   // This provider is disabled when true.
   static bool disabled_;

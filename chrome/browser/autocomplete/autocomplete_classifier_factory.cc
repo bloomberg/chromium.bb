@@ -7,6 +7,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,6 +55,7 @@ AutocompleteClassifierFactory::AutocompleteClassifierFactory()
   // TODO(pkasting): Uncomment these once they exist.
   //   DependsOn(PrefServiceFactory::GetInstance());
   DependsOn(ShortcutsBackendFactory::GetInstance());
+  DependsOn(InMemoryURLIndexFactory::GetInstance());
 }
 
 AutocompleteClassifierFactory::~AutocompleteClassifierFactory() {

@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/url_index_private_data.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_backend.h"
@@ -232,11 +233,14 @@ void HistoryQuickProviderTest::SetUp() {
   history_service_ = HistoryServiceFactory::GetForProfile(
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   EXPECT_TRUE(history_service_);
-  provider_ = new HistoryQuickProvider(profile_.get());
+  InMemoryURLIndex* index =
+      InMemoryURLIndexFactory::GetForProfile(profile_.get());
+  EXPECT_TRUE(index);
+  provider_ = new HistoryQuickProvider(profile_.get(), index);
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(), &HistoryQuickProviderTest::CreateTemplateURLService);
   FillData();
-  provider_->GetIndex()->RebuildFromHistory(history_backend()->db());
+  index->RebuildFromHistory(history_backend()->db());
 }
 
 void HistoryQuickProviderTest::TearDown() {

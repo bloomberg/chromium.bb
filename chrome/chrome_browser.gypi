@@ -1197,6 +1197,8 @@
       'browser/autocomplete/history_url_provider.h',
       'browser/autocomplete/in_memory_url_index.cc',
       'browser/autocomplete/in_memory_url_index.h',
+      'browser/autocomplete/in_memory_url_index_factory.cc',
+      'browser/autocomplete/in_memory_url_index_factory.h',
       'browser/autocomplete/in_memory_url_index_types.cc',
       'browser/autocomplete/in_memory_url_index_types.h',
       'browser/autocomplete/scored_history_match.cc',

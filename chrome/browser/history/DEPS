@@ -20,7 +20,6 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/autocomplete/in_memory_url_index.h",
   "!chrome/browser/chrome_notification_types.h",
   "!chrome/browser/prerender/prerender_contents.h",
   "!chrome/browser/prerender/prerender_manager.h",
@@ -65,7 +64,6 @@ specific_include_rules = {
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
-    "!chrome/browser/autocomplete/scored_history_match_builder_impl.h",
     "!chrome/browser/bookmarks/bookmark_model_factory.h",
     "!chrome/browser/signin/profile_oauth2_token_service_factory.h",
     "!chrome/browser/signin/signin_manager_factory.h",

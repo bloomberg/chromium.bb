@@ -22,6 +22,7 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "sql/connection.h"
 
 class HistoryService;
@@ -60,7 +61,8 @@ class URLIndexPrivateData;
 // will eliminate such words except in the case where a single character
 // is being searched on and which character occurs as the second char16 of a
 // multi-char16 instance.
-class InMemoryURLIndex : public history::HistoryServiceObserver,
+class InMemoryURLIndex : public KeyedService,
+                         public history::HistoryServiceObserver,
                          public base::SupportsWeakPtr<InMemoryURLIndex> {
  public:
   // Defines an abstract class which is notified upon completion of restoring
@@ -102,10 +104,6 @@ class InMemoryURLIndex : public history::HistoryServiceObserver,
   // data cannot be restored from its cache file then it is rebuilt from the
   // history database.
   void Init();
-
-  // Signals that any outstanding initialization should be canceled and
-  // flushes the cache to disk.
-  void ShutDown();
 
   // Scans the history index and returns a vector with all scored, matching
   // history items. This entry point simply forwards the call on to the
@@ -223,6 +221,11 @@ class InMemoryURLIndex : public history::HistoryServiceObserver,
   // Notifies the observer, if any, of the success of the private data caching.
   // |succeeded| is true on a successful save.
   void OnCacheSaveDone(bool succeeded);
+
+  // KeyedService:
+  // Signals that any outstanding initialization should be canceled and
+  // flushes the cache to disk.
+  void Shutdown() override;
 
   // HistoryServiceObserver:
   void OnURLVisited(HistoryService* history_service,

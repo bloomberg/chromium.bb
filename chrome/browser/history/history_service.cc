@@ -28,12 +28,12 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/in_memory_url_index.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/in_memory_database.h"
@@ -878,11 +878,6 @@ void HistoryService::Cleanup() {
     // Get rid of the in-memory backend.
     in_memory_backend_.reset();
 
-    // Give the InMemoryURLIndex a chance to shutdown.
-    // NOTE: In tests, there may be no index.
-    if (in_memory_url_index_)
-      in_memory_url_index_->ShutDown();
-
     // The backend's destructor must run on the history thread since it is not
     // threadsafe. So this thread must not be the last thread holding a
     // reference to the backend, or a crash could happen.
@@ -932,14 +927,6 @@ bool HistoryService::Init(
   if (!thread_->StartWithOptions(options)) {
     Cleanup();
     return false;
-  }
-
-  if (!languages.empty()) {
-    // Do not create |in_memory_url_index_| when languages is empty (which
-    // should only happens during testing).
-    in_memory_url_index_.reset(new InMemoryURLIndex(
-        this, history_database_params.history_dir, languages));
-    in_memory_url_index_->Init();
   }
 
   // Create the history backend.

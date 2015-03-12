@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_provider.h"
 #include "chrome/browser/autocomplete/zero_suggest_provider.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -186,8 +187,10 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(new BookmarkProvider(profile));
   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
     providers_.push_back(new BuiltinProvider());
-  if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK)
-    providers_.push_back(new HistoryQuickProvider(profile));
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK) {
+    providers_.push_back(new HistoryQuickProvider(
+        profile, InMemoryURLIndexFactory::GetForProfile(profile)));
+  }
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
     history_url_provider_ = new HistoryURLProvider(this, profile);
     providers_.push_back(history_url_provider_);

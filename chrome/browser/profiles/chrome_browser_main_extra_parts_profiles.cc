@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 
+#include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
@@ -205,6 +206,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_EXTENSIONS)
   HotwordServiceFactory::GetInstance();
 #endif
+  InMemoryURLIndexFactory::GetInstance();
   invalidation::ProfileInvalidationProviderFactory::GetInstance();
   InstantServiceFactory::GetInstance();
 #if defined(ENABLE_SERVICE_DISCOVERY)
