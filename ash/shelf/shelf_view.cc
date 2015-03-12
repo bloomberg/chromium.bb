@@ -731,10 +731,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
     }
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    if (i != last_button_index) {
-      x = layout_manager_->PrimaryAxisValue(x + w + button_spacing, x);
-      y = layout_manager_->PrimaryAxisValue(y, y + h + button_spacing);
-    }
+    x = layout_manager_->PrimaryAxisValue(x + w + button_spacing, x);
+    y = layout_manager_->PrimaryAxisValue(y, y + h + button_spacing);
   }
 
   if (is_overflow_mode()) {
@@ -776,9 +774,27 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
       last_hidden_index_ >= first_panel_index;
 
   // Create Space for the overflow button
-  if (show_overflow &&
-      last_visible_index_ > 0 && last_visible_index_ < last_button_index)
-    --last_visible_index_;
+  if (show_overflow) {
+    // The following code makes sure that platform apps icons (aligned to left /
+    // top) are favored over panel apps icons (aligned to right / bottom).
+    if (last_visible_index_ > 0 && last_visible_index_ < last_button_index) {
+      // This condition means that we will take one platform app and replace it
+      // with the overflow button and put the app in the overflow bubble.
+      // This happens when the space needed for platform apps exceeds the
+      // reserved area for non-panel icons,
+      // (i.e. |last_icon_position| > |reserved_icon_space|).
+      --last_visible_index_;
+    } else if (last_hidden_index_ >= first_panel_index &&
+               last_hidden_index_ < view_model_->view_size() - 1) {
+      // This condition means that we will take a panel app icon and replace it
+      // with the overflow button.
+      // This happens when there is still room for platform apps in the reserved
+      // area for non-panel icons,
+      // (i.e. |last_icon_position| < |reserved_icon_space|).
+      ++last_hidden_index_;
+    }
+  }
+
   for (int i = 0; i < view_model_->view_size(); ++i) {
     bool visible = i <= last_visible_index_ || i > last_hidden_index_;
     // To receive drag event continuously from |drag_view_| during the dragging

@@ -858,6 +858,62 @@ TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
   EXPECT_FALSE(GetButtonByID(platform_app)->visible());
 }
 
+// Making sure that no buttons on the shelf will ever overlap after adding many
+// of them.
+TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
+  std::vector<ShelfID> button_ids;
+  // Add app icons until the overflow button is visible.
+  while (!test_api_->IsOverflowButtonVisible()) {
+    ShelfID id = AddPlatformApp();
+    button_ids.push_back(id);
+  }
+  ASSERT_LT(button_ids.size(), 10000U);
+  ASSERT_GT(button_ids.size(), 2U);
+
+  // Remove 2 icons to make more room for panel icons, the overflow button
+  // should go away.
+  for (int i = 0; i < 2; ++i) {
+    ShelfID id = button_ids.back();
+    RemoveByID(id);
+    button_ids.pop_back();
+  }
+  EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
+  EXPECT_TRUE(GetButtonByID(button_ids.back())->visible());
+
+  // Add 20 panel icons, and expect to have overflow.
+  for (int i = 0; i < 20; ++i) {
+    ShelfID id = AddPanel();
+    button_ids.push_back(id);
+  }
+  ASSERT_LT(button_ids.size(), 10000U);
+  EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
+
+  // Test that any two successive visible icons never overlap in all shelf
+  // alignment types.
+  const ShelfAlignment kAlignments[] = {
+      SHELF_ALIGNMENT_LEFT,
+      SHELF_ALIGNMENT_RIGHT,
+      SHELF_ALIGNMENT_TOP,
+      SHELF_ALIGNMENT_BOTTOM
+  };
+
+  for (ShelfAlignment alignment : kAlignments) {
+    EXPECT_TRUE(shelf_view_->shelf_layout_manager()->SetAlignment(alignment));
+    // For every 2 successive visible icons, expect that their bounds don't
+    // intersect.
+    for (int i = 1; i < test_api_->GetButtonCount() - 1; ++i) {
+      if (!(test_api_->GetButton(i)->visible() &&
+            test_api_->GetButton(i + 1)->visible())) {
+        continue;
+      }
+
+      const gfx::Rect& bounds1 = test_api_->GetBoundsByIndex(i);
+      const gfx::Rect& bounds2 = test_api_->GetBoundsByIndex(i + 1);
+      EXPECT_FALSE(bounds1.Intersects(bounds2));
+    }
+  }
+}
+
 // Adds button until overflow then removes first added one. Verifies that
 // the last added one changes from invisible to visible and overflow
 // chevron is gone.
