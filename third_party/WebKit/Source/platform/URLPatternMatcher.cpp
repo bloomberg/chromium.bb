@@ -123,7 +123,7 @@ bool URLPatternMatcher::matchesHost(const KURL& test) const
         return true;
 
     // Check if the domain is a subdomain of our host.
-    if (!host.endsWith(m_host, false))
+    if (!host.endsWith(m_host, TextCaseInsensitive))
         return false;
 
     ASSERT(host.length() > m_host.length());

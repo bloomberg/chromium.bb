@@ -204,8 +204,8 @@ public:
         NotEnoughCharacters,
     };
 
-    LookAheadResult lookAhead(const String& string) { return lookAheadInline(string, true); }
-    LookAheadResult lookAheadIgnoringCase(const String& string) { return lookAheadInline(string, false); }
+    LookAheadResult lookAhead(const String& string) { return lookAheadInline(string, TextCaseSensitive); }
+    LookAheadResult lookAheadIgnoringCase(const String& string) { return lookAheadInline(string, TextCaseInsensitive); }
 
     void advance()
     {
@@ -374,18 +374,18 @@ private:
         updateSlowCaseFunctionPointers();
     }
 
-    inline LookAheadResult lookAheadInline(const String& string, bool caseSensitive)
+    inline LookAheadResult lookAheadInline(const String& string, TextCaseSensitivity caseSensitivity)
     {
         if (!m_pushedChar1 && string.length() <= static_cast<unsigned>(m_currentString.m_length)) {
             String currentSubstring = m_currentString.currentSubString(string.length());
-            if (currentSubstring.startsWith(string, caseSensitive))
+            if (currentSubstring.startsWith(string, caseSensitivity))
                 return DidMatch;
             return DidNotMatch;
         }
-        return lookAheadSlowCase(string, caseSensitive);
+        return lookAheadSlowCase(string, caseSensitivity);
     }
 
-    LookAheadResult lookAheadSlowCase(const String& string, bool caseSensitive)
+    LookAheadResult lookAheadSlowCase(const String& string, TextCaseSensitivity caseSensitivity)
     {
         unsigned count = string.length();
         if (count > length())
@@ -394,7 +394,7 @@ private:
         String consumedString = String::createUninitialized(count, consumedCharacters);
         advance(count, consumedCharacters);
         LookAheadResult result = DidNotMatch;
-        if (consumedString.startsWith(string, caseSensitive))
+        if (consumedString.startsWith(string, caseSensitivity))
             result = DidMatch;
         prepend(SegmentedString(consumedString));
         return result;

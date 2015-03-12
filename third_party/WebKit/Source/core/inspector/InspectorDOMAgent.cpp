@@ -1180,8 +1180,8 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
             case Node::ELEMENT_NODE: {
                 if ((!startTagFound && !endTagFound && (node->nodeName().findIgnoringCase(tagNameQuery) != kNotFound))
                     || (startTagFound && endTagFound && equalIgnoringCase(node->nodeName(), tagNameQuery))
-                    || (startTagFound && !endTagFound && node->nodeName().startsWith(tagNameQuery, false))
-                    || (!startTagFound && endTagFound && node->nodeName().endsWith(tagNameQuery, false))) {
+                    || (startTagFound && !endTagFound && node->nodeName().startsWith(tagNameQuery, TextCaseInsensitive))
+                    || (!startTagFound && endTagFound && node->nodeName().endsWith(tagNameQuery, TextCaseInsensitive))) {
                     resultCollector.add(node);
                     break;
                 }
@@ -1190,11 +1190,11 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 AttributeCollection attributes = element->attributes();
                 for (auto& attribute : attributes) {
                     // Add attribute pair
-                    if (attribute.localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
+                    if (attribute.localName().find(whitespaceTrimmedQuery, 0, TextCaseInsensitive) != kNotFound) {
                         resultCollector.add(node);
                         break;
                     }
-                    size_t foundPosition = attribute.value().find(attributeQuery, 0, false);
+                    size_t foundPosition = attribute.value().find(attributeQuery, 0, TextCaseInsensitive);
                     if (foundPosition != kNotFound) {
                         if (!exactAttributeMatch || (!foundPosition && attribute.value().length() == attributeQuery.length())) {
                             resultCollector.add(node);

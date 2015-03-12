@@ -198,7 +198,7 @@ bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& del
         ++pos;
         skipWhiteSpace(refresh, pos, fromHttpEquivMeta);
         unsigned urlStartPos = pos;
-        if (refresh.find("url", urlStartPos, false) == urlStartPos) {
+        if (refresh.find("url", urlStartPos, TextCaseInsensitive) == urlStartPos) {
             urlStartPos += 3;
             skipWhiteSpace(refresh, urlStartPos, fromHttpEquivMeta);
             if (refresh[urlStartPos] == '=') {
@@ -322,7 +322,7 @@ void findCharsetInMediaType(const String& mediaType, unsigned& charsetPos, unsig
     unsigned length = mediaType.length();
 
     while (pos < length) {
-        pos = mediaType.find("charset", pos, false);
+        pos = mediaType.find("charset", pos, TextCaseInsensitive);
         if (pos == kNotFound || !pos) {
             charsetLen = 0;
             return;
@@ -501,7 +501,7 @@ bool parseRange(const String& range, long long& rangeOffset, long long& rangeEnd
 
     // The "bytes" unit identifier should be present.
     static const char bytesStart[] = "bytes=";
-    if (!range.startsWith(bytesStart, false))
+    if (!range.startsWith(bytesStart, TextCaseInsensitive))
         return false;
     String byteRange = range.substring(sizeof(bytesStart) - 1);
 

@@ -89,7 +89,7 @@ static bool isSupportedSVG10Feature(const String& feature, const String& version
 //      addString(svgFeatures, "dom.svg.all");
         initialized = true;
     }
-    return feature.startsWith("org.w3c.", false)
+    return feature.startsWith("org.w3c.", TextCaseInsensitive)
         && svgFeatures.contains(feature.right(feature.length() - 8));
 }
 
@@ -149,7 +149,7 @@ static bool isSupportedSVG11Feature(const String& feature, const String& version
         addString(svgFeatures, "Extensibility");
         initialized = true;
     }
-    return feature.startsWith("http://www.w3.org/tr/svg11/feature#", false)
+    return feature.startsWith("http://www.w3.org/tr/svg11/feature#", TextCaseInsensitive)
         && svgFeatures.contains(feature.right(feature.length() - 35));
 }
 
@@ -160,9 +160,9 @@ DOMImplementation::DOMImplementation(Document& document)
 
 bool DOMImplementation::hasFeature(const String& feature, const String& version)
 {
-    if (feature.startsWith("http://www.w3.org/TR/SVG", false)
-    || feature.startsWith("org.w3c.dom.svg", false)
-    || feature.startsWith("org.w3c.svg", false)) {
+    if (feature.startsWith("http://www.w3.org/TR/SVG", TextCaseInsensitive)
+    || feature.startsWith("org.w3c.dom.svg", TextCaseInsensitive)
+    || feature.startsWith("org.w3c.svg", TextCaseInsensitive)) {
         // FIXME: SVG 2.0 support?
         return isSupportedSVG10Feature(feature, version) || isSupportedSVG11Feature(feature, version);
     }
@@ -233,7 +233,7 @@ bool DOMImplementation::isXMLMIMEType(const String& mimeType)
     if (length < 7)
         return false;
 
-    if (mimeType[0] == '/' || mimeType[length - 5] == '/' || !mimeType.endsWith("+xml", false))
+    if (mimeType[0] == '/' || mimeType[length - 5] == '/' || !mimeType.endsWith("+xml", TextCaseInsensitive))
         return false;
 
     bool hasSlash = false;
@@ -279,10 +279,10 @@ bool DOMImplementation::isXMLMIMEType(const String& mimeType)
 
 bool DOMImplementation::isJSONMIMEType(const String& mimeType)
 {
-    if (mimeType.startsWith("application/json", false))
+    if (mimeType.startsWith("application/json", TextCaseInsensitive))
         return true;
-    if (mimeType.startsWith("application/", false)) {
-        size_t subtype = mimeType.find("+json", 12, false);
+    if (mimeType.startsWith("application/", TextCaseInsensitive)) {
+        size_t subtype = mimeType.find("+json", 12, TextCaseInsensitive);
         if (subtype != kNotFound) {
             // Just check that a parameter wasn't matched.
             size_t parameterMarker = mimeType.find(";");
@@ -298,7 +298,7 @@ bool DOMImplementation::isJSONMIMEType(const String& mimeType)
 
 static bool isTextPlainType(const String& mimeType)
 {
-    return mimeType.startsWith("text/", false)
+    return mimeType.startsWith("text/", TextCaseInsensitive)
         && !(equalIgnoringCase(mimeType, "text/html")
             || equalIgnoringCase(mimeType, "text/xml")
             || equalIgnoringCase(mimeType, "text/xsl"));

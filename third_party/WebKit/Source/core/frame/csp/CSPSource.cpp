@@ -46,7 +46,7 @@ bool CSPSource::hostMatches(const KURL& url) const
     const String& host = url.host();
     if (equalIgnoringCase(host, m_host))
         return true;
-    return m_hostWildcard == HasWildcard && host.endsWith("." + m_host, false);
+    return m_hostWildcard == HasWildcard && host.endsWith("." + m_host, TextCaseInsensitive);
 
 }
 
@@ -58,7 +58,7 @@ bool CSPSource::pathMatches(const KURL& url) const
     String path = decodeURLEscapeSequences(url.path());
 
     if (m_path.endsWith("/"))
-        return path.startsWith(m_path, false);
+        return path.startsWith(m_path, TextCaseInsensitive);
 
     return path == m_path;
 }

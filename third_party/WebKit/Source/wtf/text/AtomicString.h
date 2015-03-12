@@ -88,32 +88,32 @@ public:
     UChar operator[](unsigned i) const { return m_string[i]; }
 
     bool contains(UChar c) const { return m_string.contains(c); }
-    bool contains(const LChar* s, bool caseSensitive = true) const
-        { return m_string.contains(s, caseSensitive); }
-    bool contains(const String& s, bool caseSensitive = true) const
-        { return m_string.contains(s, caseSensitive); }
+    bool contains(const LChar* s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.contains(s, caseSensitivity); }
+    bool contains(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.contains(s, caseSensitivity); }
 
     size_t find(UChar c, size_t start = 0) const { return m_string.find(c, start); }
-    size_t find(const LChar* s, size_t start = 0, bool caseSentitive = true) const
-        { return m_string.find(s, start, caseSentitive); }
-    size_t find(const String& s, size_t start = 0, bool caseSentitive = true) const
-        { return m_string.find(s, start, caseSentitive); }
+    size_t find(const LChar* s, size_t start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.find(s, start, caseSensitivity); }
+    size_t find(const String& s, size_t start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.find(s, start, caseSensitivity); }
 
-    bool startsWith(const String& s, bool caseSensitive = true) const
-        { return m_string.startsWith(s, caseSensitive); }
+    bool startsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.startsWith(s, caseSensitivity); }
     bool startsWith(UChar character) const
         { return m_string.startsWith(character); }
     template<unsigned matchLength>
-    bool startsWith(const char (&prefix)[matchLength], bool caseSensitive = true) const
-        { return m_string.startsWith<matchLength>(prefix, caseSensitive); }
+    bool startsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.startsWith<matchLength>(prefix, caseSensitivity); }
 
-    bool endsWith(const String& s, bool caseSensitive = true) const
-        { return m_string.endsWith(s, caseSensitive); }
+    bool endsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.endsWith(s, caseSensitivity); }
     bool endsWith(UChar character) const
         { return m_string.endsWith(character); }
     template<unsigned matchLength>
-    bool endsWith(const char (&prefix)[matchLength], bool caseSensitive = true) const
-        { return m_string.endsWith<matchLength>(prefix, caseSensitive); }
+    bool endsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.endsWith<matchLength>(prefix, caseSensitivity); }
 
     AtomicString lower() const;
     AtomicString upper() const { return AtomicString(impl()->upper()); }

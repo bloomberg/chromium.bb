@@ -44,7 +44,7 @@ PassRefPtrWillBeRawPtr<DOMWindowCSS> DOMWindowCSS::create()
 
 static String valueWithoutImportant(const String& value)
 {
-    if (!value.endsWith("important", false))
+    if (!value.endsWith("important", TextCaseInsensitive))
         return value;
 
     String newValue = value;

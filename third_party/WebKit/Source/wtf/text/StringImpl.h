@@ -390,17 +390,17 @@ public:
 
     size_t count(LChar) const;
 
-    bool startsWith(StringImpl* str, bool caseSensitive = true) { return (caseSensitive ? reverseFind(str, 0) : reverseFindIgnoringCase(str, 0)) == 0; }
+    bool startsWith(StringImpl* str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) { return ((caseSensitivity == TextCaseSensitive) ? reverseFind(str, 0) : reverseFindIgnoringCase(str, 0)) == 0; }
     bool startsWith(UChar) const;
-    bool startsWith(const char*, unsigned matchLength, bool caseSensitive) const;
+    bool startsWith(const char*, unsigned matchLength, TextCaseSensitivity) const;
     template<unsigned matchLength>
-    bool startsWith(const char (&prefix)[matchLength], bool caseSensitive = true) const { return startsWith(prefix, matchLength - 1, caseSensitive); }
+    bool startsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return startsWith(prefix, matchLength - 1, caseSensitivity); }
 
-    bool endsWith(StringImpl*, bool caseSensitive = true);
+    bool endsWith(StringImpl*, TextCaseSensitivity = TextCaseSensitive);
     bool endsWith(UChar) const;
-    bool endsWith(const char*, unsigned matchLength, bool caseSensitive) const;
+    bool endsWith(const char*, unsigned matchLength, TextCaseSensitivity) const;
     template<unsigned matchLength>
-    bool endsWith(const char (&prefix)[matchLength], bool caseSensitive = true) const { return endsWith(prefix, matchLength - 1, caseSensitive); }
+    bool endsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return endsWith(prefix, matchLength - 1, caseSensitivity); }
 
     PassRefPtr<StringImpl> replace(UChar, UChar);
     PassRefPtr<StringImpl> replace(UChar, StringImpl*);

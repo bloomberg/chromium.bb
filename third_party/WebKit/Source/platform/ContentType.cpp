@@ -43,7 +43,7 @@ String ContentType::parameter(const String& parameterName) const
     // a MIME type can have one or more "param=value" after a semi-colon, and separated from each other by semi-colons
     size_t semi = strippedType.find(';');
     if (semi != kNotFound) {
-        size_t start = strippedType.find(parameterName, semi + 1, false);
+        size_t start = strippedType.find(parameterName, semi + 1, TextCaseInsensitive);
         if (start != kNotFound) {
             start = strippedType.find('=', start + parameterName.length());
             if (start != kNotFound) {

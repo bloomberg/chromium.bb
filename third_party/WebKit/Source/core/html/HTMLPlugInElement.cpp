@@ -580,7 +580,7 @@ bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType,
     if (document().frame()->page() && (mimeType == "image/tiff" || mimeType == "image/tif" || mimeType == "image/x-tiff")) {
         const PluginData* pluginData = document().frame()->page()->pluginData();
         String pluginName = pluginData ? pluginData->pluginNameForMimeType(mimeType) : String();
-        if (!pluginName.isEmpty() && !pluginName.contains("QuickTime", false))
+        if (!pluginName.isEmpty() && !pluginName.contains("QuickTime", TextCaseInsensitive))
             return true;
     }
 

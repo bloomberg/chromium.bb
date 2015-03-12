@@ -227,12 +227,12 @@ public:
         { return m_impl ? m_impl->reverseFindIgnoringCase(str.impl(), start) : kNotFound; }
 
     // Wrappers for find & reverseFind adding dynamic sensitivity check.
-    size_t find(const LChar* str, unsigned start, bool caseSensitive) const
-        { return caseSensitive ? find(str, start) : findIgnoringCase(str, start); }
-    size_t find(const String& str, unsigned start, bool caseSensitive) const
-        { return caseSensitive ? find(str, start) : findIgnoringCase(str, start); }
-    size_t reverseFind(const String& str, unsigned start, bool caseSensitive) const
-        { return caseSensitive ? reverseFind(str, start) : reverseFindIgnoringCase(str, start); }
+    size_t find(const LChar* str, unsigned start, TextCaseSensitivity caseSensitivity) const
+        { return (caseSensitivity == TextCaseSensitive) ? find(str, start) : findIgnoringCase(str, start); }
+    size_t find(const String& str, unsigned start, TextCaseSensitivity caseSensitivity) const
+        { return (caseSensitivity == TextCaseSensitive) ? find(str, start) : findIgnoringCase(str, start); }
+    size_t reverseFind(const String& str, unsigned start, TextCaseSensitivity caseSensitivity) const
+        { return (caseSensitivity == TextCaseSensitive) ? reverseFind(str, start) : reverseFindIgnoringCase(str, start); }
 
     Vector<UChar> charactersWithNullTermination() const;
     unsigned copyTo(UChar* buffer, unsigned pos, unsigned maxLength) const;
@@ -249,24 +249,24 @@ public:
     UChar32 characterStartingAt(unsigned) const;
 
     bool contains(UChar c) const { return find(c) != kNotFound; }
-    bool contains(const LChar* str, bool caseSensitive = true) const { return find(str, 0, caseSensitive) != kNotFound; }
-    bool contains(const String& str, bool caseSensitive = true) const { return find(str, 0, caseSensitive) != kNotFound; }
+    bool contains(const LChar* str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return find(str, 0, caseSensitivity) != kNotFound; }
+    bool contains(const String& str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return find(str, 0, caseSensitivity) != kNotFound; }
 
-    bool startsWith(const String& s, bool caseSensitive = true) const
-        { return m_impl ? m_impl->startsWith(s.impl(), caseSensitive) : s.isEmpty(); }
+    bool startsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? m_impl->startsWith(s.impl(), caseSensitivity) : s.isEmpty(); }
     bool startsWith(UChar character) const
         { return m_impl ? m_impl->startsWith(character) : false; }
     template<unsigned matchLength>
-    bool startsWith(const char (&prefix)[matchLength], bool caseSensitive = true) const
-        { return m_impl ? m_impl->startsWith<matchLength>(prefix, caseSensitive) : !matchLength; }
+    bool startsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? m_impl->startsWith<matchLength>(prefix, caseSensitivity) : !matchLength; }
 
-    bool endsWith(const String& s, bool caseSensitive = true) const
-        { return m_impl ? m_impl->endsWith(s.impl(), caseSensitive) : s.isEmpty(); }
+    bool endsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? m_impl->endsWith(s.impl(), caseSensitivity) : s.isEmpty(); }
     bool endsWith(UChar character) const
         { return m_impl ? m_impl->endsWith(character) : false; }
     template<unsigned matchLength>
-    bool endsWith(const char (&prefix)[matchLength], bool caseSensitive = true) const
-        { return m_impl ? m_impl->endsWith<matchLength>(prefix, caseSensitive) : !matchLength; }
+    bool endsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? m_impl->endsWith<matchLength>(prefix, caseSensitivity) : !matchLength; }
 
     void append(const String&);
     void append(LChar);

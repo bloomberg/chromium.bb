@@ -236,7 +236,7 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
     if (!attrName.namespaceURI().isNull())
         return nullAtom;
 
-    if (!attrName.localName().startsWith("on", false))
+    if (!attrName.localName().startsWith("on", TextCaseInsensitive))
         return nullAtom;
 
     typedef HashMap<AtomicString, AtomicString> StringToStringMap;

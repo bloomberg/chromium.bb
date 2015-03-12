@@ -273,7 +273,7 @@ String extractCharset(const String& value)
     unsigned length = value.length();
 
     while (pos < length) {
-        pos = value.find(charsetString, pos, false);
+        pos = value.find(charsetString, pos, TextCaseInsensitive);
         if (pos == kNotFound)
             break;
 

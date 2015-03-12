@@ -86,7 +86,7 @@ static inline bool shouldUpdateHeaderAfterRevalidation(const AtomicString& heade
             return false;
     }
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(headerPrefixesToIgnoreAfterRevalidation); i++) {
-        if (header.startsWith(headerPrefixesToIgnoreAfterRevalidation[i], false))
+        if (header.startsWith(headerPrefixesToIgnoreAfterRevalidation[i], TextCaseInsensitive))
             return false;
     }
     return true;

@@ -345,13 +345,13 @@ bool SecurityOrigin::canReceiveDragData(const SecurityOrigin* dragInitiator) con
 static bool isFeedWithNestedProtocolInHTTPFamily(const KURL& url)
 {
     const String& urlString = url.string();
-    if (!urlString.startsWith("feed", false))
+    if (!urlString.startsWith("feed", TextCaseInsensitive))
         return false;
 
-    return urlString.startsWith("feed://", false)
-        || urlString.startsWith("feed:http:", false) || urlString.startsWith("feed:https:", false)
-        || urlString.startsWith("feeds:http:", false) || urlString.startsWith("feeds:https:", false)
-        || urlString.startsWith("feedsearch:http:", false) || urlString.startsWith("feedsearch:https:", false);
+    return urlString.startsWith("feed://", TextCaseInsensitive)
+        || urlString.startsWith("feed:http:", TextCaseInsensitive) || urlString.startsWith("feed:https:", TextCaseInsensitive)
+        || urlString.startsWith("feeds:http:", TextCaseInsensitive) || urlString.startsWith("feeds:https:", TextCaseInsensitive)
+        || urlString.startsWith("feedsearch:http:", TextCaseInsensitive) || urlString.startsWith("feedsearch:https:", TextCaseInsensitive);
 }
 
 bool SecurityOrigin::canDisplay(const KURL& url) const

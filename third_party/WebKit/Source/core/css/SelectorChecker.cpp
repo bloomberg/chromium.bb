@@ -403,7 +403,7 @@ static inline bool containsHTMLSpace(const AtomicString& string)
     return containsHTMLSpaceTemplate<UChar>(string.characters16(), string.length());
 }
 
-static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::Match match, const AtomicString& selectorValue, bool caseSensitive)
+static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::Match match, const AtomicString& selectorValue, TextCaseSensitivity caseSensitivity)
 {
     const AtomicString& value = attributeItem.value();
     if (value.isNull())
@@ -411,7 +411,7 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
 
     switch (match) {
     case CSSSelector::AttributeExact:
-        if (caseSensitive ? selectorValue != value : !equalIgnoringCase(selectorValue, value))
+        if ((caseSensitivity == TextCaseSensitive) ? selectorValue != value : !equalIgnoringCase(selectorValue, value))
             return false;
         break;
     case CSSSelector::AttributeList:
@@ -422,7 +422,7 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
 
             unsigned startSearchAt = 0;
             while (true) {
-                size_t foundPos = value.find(selectorValue, startSearchAt, caseSensitive);
+                size_t foundPos = value.find(selectorValue, startSearchAt, caseSensitivity);
                 if (foundPos == kNotFound)
                     return false;
                 if (!foundPos || isHTMLSpace<UChar>(value[foundPos - 1])) {
@@ -437,21 +437,21 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
             break;
         }
     case CSSSelector::AttributeContain:
-        if (!value.contains(selectorValue, caseSensitive) || selectorValue.isEmpty())
+        if (!value.contains(selectorValue, caseSensitivity) || selectorValue.isEmpty())
             return false;
         break;
     case CSSSelector::AttributeBegin:
-        if (!value.startsWith(selectorValue, caseSensitive) || selectorValue.isEmpty())
+        if (!value.startsWith(selectorValue, caseSensitivity) || selectorValue.isEmpty())
             return false;
         break;
     case CSSSelector::AttributeEnd:
-        if (!value.endsWith(selectorValue, caseSensitive) || selectorValue.isEmpty())
+        if (!value.endsWith(selectorValue, caseSensitivity) || selectorValue.isEmpty())
             return false;
         break;
     case CSSSelector::AttributeHyphen:
         if (value.length() < selectorValue.length())
             return false;
-        if (!value.startsWith(selectorValue, caseSensitive))
+        if (!value.startsWith(selectorValue, caseSensitivity))
             return false;
         // It they start the same, check for exact match or following '-':
         if (value.length() != selectorValue.length() && value[selectorValue.length()] != '-')
@@ -476,17 +476,17 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
     element.synchronizeAttribute(selectorAttr.localName());
 
     const AtomicString& selectorValue = selector.value();
-    bool caseInsensitive = selector.attributeMatchType() == CSSSelector::CaseInsensitive;
+    TextCaseSensitivity caseSensitivity = (selector.attributeMatchType() == CSSSelector::CaseInsensitive) ? TextCaseInsensitive : TextCaseSensitive;
 
     AttributeCollection attributes = element.attributesWithoutUpdate();
     for (const auto& attributeItem: attributes) {
         if (!attributeItem.matches(selectorAttr))
             continue;
 
-        if (attributeValueMatches(attributeItem, match, selectorValue, !caseInsensitive))
+        if (attributeValueMatches(attributeItem, match, selectorValue, caseSensitivity))
             return true;
 
-        if (caseInsensitive) {
+        if (caseSensitivity == TextCaseInsensitive) {
             if (selectorAttr.namespaceURI() != starAtom)
                 return false;
             continue;
@@ -499,7 +499,7 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
 
         // If case-insensitive, re-check, and count if result differs.
         // See http://code.google.com/p/chromium/issues/detail?id=327060
-        if (legacyCaseInsensitive && attributeValueMatches(attributeItem, match, selectorValue, false)) {
+        if (legacyCaseInsensitive && attributeValueMatches(attributeItem, match, selectorValue, TextCaseInsensitive)) {
             UseCounter::count(element.document(), UseCounter::CaseInsensitiveAttrSelectorMatch);
             return true;
         }
@@ -877,7 +877,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
             else
                 value = element.computeInheritedLanguage();
             const AtomicString& argument = selector.argument();
-            if (value.isEmpty() || !value.startsWith(argument, false))
+            if (value.isEmpty() || !value.startsWith(argument, TextCaseInsensitive))
                 break;
             if (value.length() != argument.length() && value[argument.length()] != '-')
                 break;

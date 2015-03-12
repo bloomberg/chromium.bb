@@ -45,7 +45,7 @@ namespace blink {
 // instead of "zh-CN" and "zh-TW".
 static CString toSkFontMgrLocale(const String& locale)
 {
-    if (!locale.startsWith("zh", false))
+    if (!locale.startsWith("zh", TextCaseInsensitive))
         return locale.ascii();
 
     switch (localeToScriptCodeForFontSelection(locale)) {

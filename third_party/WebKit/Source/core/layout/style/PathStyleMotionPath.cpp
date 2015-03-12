@@ -18,8 +18,7 @@ PathStyleMotionPath::PathStyleMotionPath(const String& pathString)
 
 bool PathStyleMotionPath::isClosed() const
 {
-    bool caseSensitive = false;
-    return m_pathString.endsWith("Z", caseSensitive);
+    return m_pathString.endsWith("Z", TextCaseInsensitive);
 }
 
 } // namespace blink

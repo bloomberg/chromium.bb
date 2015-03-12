@@ -72,7 +72,7 @@ KURL getSubResourceURLFromElement(Element* element)
 
     String value = element->getAttribute(attributeName);
     // Ignore javascript content.
-    if (value.isEmpty() || value.stripWhiteSpace().startsWith("javascript:", false))
+    if (value.isEmpty() || value.stripWhiteSpace().startsWith("javascript:", TextCaseInsensitive))
         return KURL();
 
     return element->document().completeURL(value);
