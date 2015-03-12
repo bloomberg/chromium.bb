@@ -557,6 +557,10 @@ void IOThread::Init() {
 }
 
 void IOThread::InitAsync() {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("466432 IOThread::InitAsync::Start"));
   TRACE_EVENT0("startup", "IOThread::InitAsync");
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -564,6 +568,11 @@ void IOThread::InitAsync() {
   net::SetMessageLoopForNSSHttpIO();
 #endif
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CommandLineForCurrentProcess"));
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -584,6 +593,11 @@ void IOThread::InitAsync() {
       extension_event_router_forwarder_;
 #endif
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::ChromeNetworkDelegate"));
   scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
                                 &system_enable_referrers_));
@@ -593,9 +607,24 @@ void IOThread::InitAsync() {
     chrome_network_delegate->NeverThrottleRequests();
 #endif
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CreateGlobalHostResolver"));
   globals_->system_network_delegate = chrome_network_delegate.Pass();
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::UpdateDnsClientEnabled::Start"));
   UpdateDnsClientEnabled();
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::UpdateDnsClientEnabled::End"));
 #if defined(OS_CHROMEOS)
   // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
   globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
@@ -607,11 +636,26 @@ void IOThread::InitAsync() {
 
   globals_->transport_security_state.reset(new net::TransportSecurityState());
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile7(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CreateMultiLogVerifier"));
   net::MultiLogCTVerifier* ct_verifier = new net::MultiLogCTVerifier();
   globals_->cert_transparency_verifier.reset(ct_verifier);
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile8(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CreateLogVerifiers::Start"));
   // Add built-in logs
   ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile9(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CreateLogVerifiers::End"));
 
   // Add logs from command line
   if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {
@@ -639,6 +683,11 @@ void IOThread::InitAsync() {
     }
   }
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile10(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CertPolicyEnforcer"));
   net::CertPolicyEnforcer* policy_enforcer = NULL;
   policy_enforcer = new net::CertPolicyEnforcer(
       IsCertificateTransparencyRequiredForEV(command_line));
@@ -653,8 +702,18 @@ void IOThread::InitAsync() {
   globals_->proxy_script_fetcher_proxy_service.reset(
       net::ProxyService::CreateDirectWithNetLog(net_log_));
   // In-memory cookie store.
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile11(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CreateCookieStore::Start"));
   globals_->system_cookie_store =
         content::CreateCookieStore(content::CookieStoreConfig());
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile12(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CreateCookieStore::End"));
   // In-memory channel ID store.
   globals_->system_channel_id_service.reset(
       new net::ChannelIDService(
@@ -689,6 +748,11 @@ void IOThread::InitAsync() {
           switches::kEnableUserAlternateProtocolPorts)) {
     globals_->enable_user_alternate_protocol_ports = true;
   }
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile13(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::InitializeNetworkOptions"));
   InitializeNetworkOptions(command_line);
 
   net::HttpNetworkSession::Params session_params;
@@ -697,14 +761,30 @@ void IOThread::InitAsync() {
   session_params.proxy_service =
       globals_->proxy_script_fetcher_proxy_service.get();
 
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile14(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::HttpNetorkSession::Start"));
   TRACE_EVENT_BEGIN0("startup", "IOThread::InitAsync:HttpNetworkSession");
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile15(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::HttpNetorkSession::End"));
   globals_->proxy_script_fetcher_http_transaction_factory
       .reset(new net::HttpNetworkLayer(network_session.get()));
   TRACE_EVENT_END0("startup", "IOThread::InitAsync:HttpNetworkSession");
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile16(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::SetProtocolHandler"));
   job_factory->SetProtocolHandler(url::kDataScheme,
                                   new net::DataProtocolHandler());
   job_factory->SetProtocolHandler(
