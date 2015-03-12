@@ -55180,6 +55180,10 @@ To add a new entry, add it with any value and run test to compute valid value.
     Whitelisted exception for bug 316759.  Suspect background address detection,
     field unknown.
   </int>
+  <int value="5" label="EXCEPTION_NSREGULAREXPRESSION_NIL_STRING">
+    Whitelisted exception for bug 466076.  Suspect background address detection,
+    field unknown.
+  </int>
 </enum>
 
 <enum name="OSXFullscreenParameters" type="int">

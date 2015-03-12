@@ -31,6 +31,7 @@ enum ExceptionEventType {
   EXCEPTION_VIEW_NOT_IN_WINDOW,
   EXCEPTION_NSURL_INIT_NIL,
   EXCEPTION_NSDATADETECTOR_NIL_STRING,
+  EXCEPTION_NSREGULAREXPRESSION_NIL_STRING,
 
   // Always keep this at the end.
   EXCEPTION_MAX,
@@ -126,13 +127,22 @@ static IMP gOriginalInitIMP = NULL;
         fatal = NO;
       }
 
-      // TODO(shess): <http://crbug.com/316759> OSX 10.9 is failing
-      // trying to extract structure from a string.
+      // <http://crbug.com/316759> OSX 10.9 fails trying to extract
+      // structure from a string.
       NSString* const kNSDataDetectorNilCheck =
           @"*** -[NSDataDetector enumerateMatchesInString:"
           @"options:range:usingBlock:]: nil argument";
       if ([aReason isEqualToString:kNSDataDetectorNilCheck]) {
         RecordExceptionEvent(EXCEPTION_NSDATADETECTOR_NIL_STRING);
+        fatal = NO;
+      }
+
+      // <http://crbug.com/466076> OSX 10.10 moved the method.
+      NSString* const kNSRegularExpressionNilCheck =
+          @"*** -[NSRegularExpression enumerateMatchesInString:"
+          @"options:range:usingBlock:]: nil argument";
+      if ([aReason isEqualToString:kNSRegularExpressionNilCheck]) {
+        RecordExceptionEvent(EXCEPTION_NSREGULAREXPRESSION_NIL_STRING);
         fatal = NO;
       }
     }
