@@ -150,6 +150,10 @@ component("base") {
     "idle/idle_linux.cc",
     "idle/idle_mac.mm",
     "idle/idle_win.cc",
+    "ios/cru_context_menu_controller.h",
+    "ios/cru_context_menu_controller.mm",
+    "ios/cru_context_menu_holder.h",
+    "ios/cru_context_menu_holder.mm",
     "l10n/formatter.cc",
     "l10n/formatter.h",
     "l10n/l10n_font_util.cc",
@@ -620,6 +624,7 @@ if (is_android) {
 # GYP version: ui/base/ui_base_tests.gyp:ui_base_unittests
 test("ui_base_unittests") {
   sources = [
+    "ios/cru_context_menu_controller_unittest.mm",
     "l10n/l10n_util_mac_unittest.mm",
     "l10n/l10n_util_unittest.cc",
     "l10n/l10n_util_win_unittest.cc",
