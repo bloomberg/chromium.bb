@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromiseProperties.h"
+#include "core/CoreExport.h"
 #include <v8.h>
 
 namespace blink {
@@ -43,7 +44,7 @@ class ScriptWrappable;
     SCRIPT_PROMISE_PROPERTIES(V, Promise)  \
     SCRIPT_PROMISE_PROPERTIES(V, Resolver)
 
-class V8HiddenValue {
+class CORE_EXPORT V8HiddenValue {
 public:
 #define V8_DECLARE_METHOD(name) static v8::Handle<v8::String> name(v8::Isolate* isolate);
     V8_HIDDEN_VALUES(V8_DECLARE_METHOD);

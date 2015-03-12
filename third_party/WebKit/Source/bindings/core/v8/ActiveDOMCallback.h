@@ -31,6 +31,7 @@
 #ifndef ActiveDOMCallback_h
 #define ActiveDOMCallback_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/OwnPtr.h"
 
@@ -45,7 +46,7 @@ class ExecutionContext;
 //
 // Should only be created, used, and destroyed on the script execution
 // context thread.
-class ActiveDOMCallback : public ContextLifecycleObserver {
+class CORE_EXPORT ActiveDOMCallback : public ContextLifecycleObserver {
 public:
     explicit ActiveDOMCallback(ExecutionContext*);
     virtual ~ActiveDOMCallback();

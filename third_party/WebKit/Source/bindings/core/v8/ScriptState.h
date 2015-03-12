@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/V8PerContextData.h"
+#include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include <v8.h>
@@ -65,7 +66,7 @@ public:
         return scriptState;
     }
 
-    static ScriptState* forMainWorld(LocalFrame*);
+    CORE_EXPORT static ScriptState* forMainWorld(LocalFrame*);
 
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }

@@ -32,6 +32,7 @@
 #define SerializedScriptValue_h
 
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include <v8.h>
@@ -55,7 +56,7 @@ typedef Vector<RefPtr<DOMArrayBuffer>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle>> BlobDataHandleMap;
 typedef Vector<blink::WebBlobInfo> WebBlobInfoArray;
 
-class SerializedScriptValue : public ThreadSafeRefCounted<SerializedScriptValue> {
+class CORE_EXPORT SerializedScriptValue : public ThreadSafeRefCounted<SerializedScriptValue> {
 public:
     // Increment this for each incompatible change to the wire format.
     // Version 2: Added StringUCharTag for UChar v8 strings.

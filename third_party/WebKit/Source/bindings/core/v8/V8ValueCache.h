@@ -27,7 +27,9 @@
 #define V8ValueCache_h
 
 #include "bindings/core/v8/V8PersistentValueMap.h"
+#include "core/CoreExport.h"
 #include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
@@ -58,7 +60,8 @@ public:
 };
 
 
-class StringCache {
+class CORE_EXPORT StringCache {
+    WTF_MAKE_NONCOPYABLE(StringCache);
 public:
     StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }
     ~StringCache();

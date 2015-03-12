@@ -7,11 +7,12 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8.h"
+#include "core/CoreExport.h"
 #include <v8.h>
 
 namespace blink {
 
-v8::Handle<v8::Object> v8IteratorResultValue(v8::Isolate*, bool done, v8::Handle<v8::Value>);
+CORE_EXPORT v8::Handle<v8::Object> v8IteratorResultValue(v8::Isolate*, bool done, v8::Handle<v8::Value>);
 
 template<typename T>
 inline ScriptValue v8IteratorResult(ScriptState* scriptState, const T& value)

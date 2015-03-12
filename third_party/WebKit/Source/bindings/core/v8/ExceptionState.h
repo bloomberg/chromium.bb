@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/CoreExport.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -44,7 +45,7 @@ namespace blink {
 typedef int ExceptionCode;
 class ScriptState;
 
-class ExceptionState {
+class CORE_EXPORT ExceptionState {
     WTF_MAKE_NONCOPYABLE(ExceptionState);
 public:
     enum Context {
@@ -134,7 +135,7 @@ private:
 };
 
 // Used if exceptions can/should not be directly thrown.
-class NonThrowableExceptionState final : public ExceptionState {
+class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
 public:
     NonThrowableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message) override;
@@ -144,7 +145,7 @@ public:
 };
 
 // Used if any exceptions thrown are ignorable.
-class TrackExceptionState final : public ExceptionState {
+class CORE_EXPORT TrackExceptionState final : public ExceptionState {
 public:
     TrackExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message) override;

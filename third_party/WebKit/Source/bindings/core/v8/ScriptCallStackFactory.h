@@ -31,6 +31,7 @@
 #ifndef ScriptCallStackFactory_h
 #define ScriptCallStackFactory_h
 
+#include "core/CoreExport.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "wtf/Forward.h"
 #include <v8.h>
@@ -49,7 +50,7 @@ const v8::StackTrace::StackTraceOptions stackTraceOptions = static_cast<v8::Stac
     | v8::StackTrace::kFunctionName);
 
 PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(v8::Isolate*, v8::Handle<v8::StackTrace>, size_t maxStackSize);
-PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool emptyStackIsAllowed = false);
+CORE_EXPORT PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool emptyStackIsAllowed = false);
 PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize = ScriptCallStack::maxCallStackSizeToCapture, bool emptyStackIsAllowed = false);
 PassRefPtrWillBeRawPtr<ScriptArguments> createScriptArguments(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount);
 

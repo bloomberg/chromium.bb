@@ -47,19 +47,19 @@
 namespace blink {
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, v8::Local<v8::Value>& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, v8::Local<v8::Value>& value)
 {
     return dictionary.get(key, value);
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Dictionary& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Dictionary& value)
 {
     return dictionary.get(key, value);
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, bool& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, bool& value)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))
@@ -81,7 +81,7 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, int32_t& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, int32_t& value)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))
@@ -95,7 +95,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, int3
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, double& value, bool& hasValue)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, double& value, bool& hasValue)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value)) {
@@ -149,7 +149,7 @@ bool getStringType(const Dictionary& dictionary, const String& key, StringType& 
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, String& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, String& value)
 {
     return getStringType(dictionary, key, value);
 }
@@ -217,7 +217,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, shor
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, unsigned short& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, unsigned short& value)
 {
     return getNumericType<unsigned short>(dictionary, key, value);
 }
@@ -320,7 +320,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vector<String>& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vector<String>& value)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))
@@ -340,7 +340,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vect
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vector<Vector<String>>& value, ExceptionState& exceptionState)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Vector<Vector<String>>& value, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))
@@ -382,7 +382,7 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, ArrayValue& value)
+CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, ArrayValue& value)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))
@@ -422,7 +422,7 @@ struct DictionaryHelperTraits<DOMUint8Array> {
     typedef V8Uint8Array type;
 };
 
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<DOMUint8Array>& value);
+template CORE_EXPORT bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<DOMUint8Array>& value);
 
 template <typename T>
 struct IntegralTypeTraits {

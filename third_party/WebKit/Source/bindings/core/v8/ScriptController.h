@@ -32,13 +32,14 @@
 #define ScriptController_h
 
 #include "bindings/core/v8/SharedPersistent.h"
-
 #include "bindings/core/v8/WindowProxyManager.h"
+#include "core/CoreExport.h"
 #include "core/fetch/AccessControlStatus.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
 #include <v8.h>
@@ -65,7 +66,8 @@ enum ReasonForCallingCanExecuteScripts {
     NotAboutToExecuteScript
 };
 
-class ScriptController final : public NoBaseWillBeGarbageCollectedFinalized<ScriptController> {
+class CORE_EXPORT ScriptController final : public NoBaseWillBeGarbageCollectedFinalized<ScriptController> {
+    WTF_MAKE_NONCOPYABLE(ScriptController);
 public:
     enum ExecuteScriptPolicy {
         ExecuteScriptWhenScriptsDisabled,

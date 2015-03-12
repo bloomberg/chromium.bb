@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8EventListener.h"
+#include "core/CoreExport.h"
 #include <v8.h>
 
 namespace blink {
@@ -64,7 +65,7 @@ public:
         listenerObject->DeleteHiddenValue(wrapperProperty);
     }
 
-    static PassRefPtr<EventListener> getEventListener(ScriptState*, v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
+    CORE_EXPORT static PassRefPtr<EventListener> getEventListener(ScriptState*, v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
 
 private:
     static V8EventListener* doFindWrapper(v8::Local<v8::Object> object, v8::Handle<v8::String> wrapperProperty, ScriptState* scriptState)

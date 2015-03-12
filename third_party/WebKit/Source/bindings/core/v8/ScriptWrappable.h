@@ -32,6 +32,7 @@
 #define ScriptWrappable_h
 
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include <v8.h>
@@ -50,7 +51,7 @@ namespace blink {
  *  - disposeWrapper (via setWeakCallback, triggered by V8 garbage collecter):
  *        remove v8::Persistent and become empty.
  */
-class ScriptWrappable {
+class CORE_EXPORT ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(ScriptWrappable);
 public:
     ScriptWrappable() { }

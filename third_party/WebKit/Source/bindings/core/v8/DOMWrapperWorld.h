@@ -32,6 +32,7 @@
 #define DOMWrapperWorld_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassRefPtr.h"
@@ -178,8 +179,8 @@ private:
     void registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase>);
     void unregisterDOMObjectHolder(DOMObjectHolderBase*);
 
-    static unsigned isolatedWorldCount;
-    static DOMWrapperWorld* worldOfInitializingWindow;
+    CORE_EXPORT static unsigned isolatedWorldCount;
+    CORE_EXPORT static DOMWrapperWorld* worldOfInitializingWindow;
 
     const int m_worldId;
     const int m_extensionGroup;

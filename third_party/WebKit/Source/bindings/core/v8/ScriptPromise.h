@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
@@ -46,7 +47,7 @@ class DOMException;
 // So holding a ScriptPromise as a member variable in DOM object causes
 // memory leaks since it has a reference from C++ to V8.
 //
-class ScriptPromise final {
+class CORE_EXPORT ScriptPromise final {
 public:
     // Constructs an empty promise.
     ScriptPromise() { }

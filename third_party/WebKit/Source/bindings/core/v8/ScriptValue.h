@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SharedPersistent.h"
+#include "core/CoreExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -42,7 +43,7 @@ namespace blink {
 
 class JSONValue;
 
-class ScriptValue final {
+class CORE_EXPORT ScriptValue final {
 public:
     template<typename T>
     static ScriptValue from(ScriptState* scriptState, T value)

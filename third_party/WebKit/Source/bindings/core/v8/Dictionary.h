@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingMacros.h"
+#include "core/CoreExport.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -44,7 +45,7 @@ namespace blink {
 // Dictionary class provides ways to retrieve property values as C++ objects
 // from a V8 object. Instances of this class must not outlive V8's handle scope
 // because they hold a V8 value without putting it on persistent handles.
-class Dictionary {
+class CORE_EXPORT Dictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Dictionary();

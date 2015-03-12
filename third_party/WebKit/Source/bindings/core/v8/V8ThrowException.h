@@ -25,12 +25,13 @@
 #ifndef V8ThrowException_h
 #define V8ThrowException_h
 
+#include "core/CoreExport.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
-class V8ThrowException {
+class CORE_EXPORT V8ThrowException {
 public:
 
     static v8::Handle<v8::Value> createDOMException(v8::Isolate* isolate, int ec, const String& message, const v8::Handle<v8::Object>& creationContext)

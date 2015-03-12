@@ -32,6 +32,7 @@
 #define ScriptFunction_h
 
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include <v8.h>
 
@@ -49,7 +50,7 @@ namespace blink {
 //         return self->bindToV8Function();
 //     }
 // };
-class ScriptFunction : public GarbageCollectedFinalized<ScriptFunction> {
+class CORE_EXPORT ScriptFunction : public GarbageCollectedFinalized<ScriptFunction> {
 public:
     virtual ~ScriptFunction() { }
     ScriptState* scriptState() const { return m_scriptState.get(); }

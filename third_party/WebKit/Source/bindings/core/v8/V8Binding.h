@@ -43,6 +43,7 @@
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/core/v8/V8ValueCache.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
@@ -65,10 +66,10 @@ class ConvertableToTraceFormat;
 }
 
 // Helpers for throwing JavaScript TypeErrors for arity mismatches.
-void setArityTypeError(ExceptionState&, const char* valid, unsigned provided);
-v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(v8::Isolate*, const char* method, const char* type, unsigned expected, unsigned provided);
+CORE_EXPORT void setArityTypeError(ExceptionState&, const char* valid, unsigned provided);
+CORE_EXPORT v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(v8::Isolate*, const char* method, const char* type, unsigned expected, unsigned provided);
 v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(v8::Isolate*, const char* type, unsigned expected, unsigned provided);
-void setMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned provided);
+CORE_EXPORT void setMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned provided);
 
 template<typename CallbackInfo, typename S>
 inline void v8SetReturnValue(const CallbackInfo& info, const v8::Persistent<S>& handle)
@@ -420,7 +421,7 @@ uint16_t toUInt16(v8::Handle<v8::Value>);
 // Convert a value to a 32-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-long
-int32_t toInt32(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT int32_t toInt32(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 inline int32_t toInt32(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     return toInt32(value, NormalConversion, exceptionState);
@@ -432,7 +433,7 @@ int32_t toInt32(v8::Handle<v8::Value>);
 // Convert a value to a 32-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-long
-uint32_t toUInt32Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT uint32_t toUInt32Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 inline uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is already a 32-bit unsigned integer.
@@ -457,7 +458,7 @@ uint32_t toUInt32(v8::Handle<v8::Value>);
 // Convert a value to a 64-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-long-long
-int64_t toInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT int64_t toInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 inline int64_t toInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     return toInt64(value, NormalConversion, exceptionState);
@@ -469,7 +470,7 @@ int64_t toInt64(v8::Handle<v8::Value>);
 // Convert a value to a 64-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-long-long
-uint64_t toUInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT uint64_t toUInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 inline uint64_t toUInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     return toUInt64(value, NormalConversion, exceptionState);
@@ -479,7 +480,7 @@ inline uint64_t toUInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionS
 uint64_t toUInt64(v8::Handle<v8::Value>);
 
 // Convert a value to a double precision float, which might fail.
-double toDoubleSlow(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT double toDoubleSlow(v8::Handle<v8::Value>, ExceptionState&);
 
 inline double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
@@ -489,7 +490,7 @@ inline double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionSta
 }
 
 // Convert a value to a double precision float, throwing on non-finite values.
-double toRestrictedDouble(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT double toRestrictedDouble(v8::Handle<v8::Value>, ExceptionState&);
 
 // Convert a value to a single precision float, which might fail.
 inline float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
@@ -498,13 +499,13 @@ inline float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState
 }
 
 // Convert a value to a single precision float, throwing on non-finite values.
-float toRestrictedFloat(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT float toRestrictedFloat(v8::Handle<v8::Value>, ExceptionState&);
 
 // Converts a value to a String, throwing if any code unit is outside 0-255.
-String toByteString(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT String toByteString(v8::Handle<v8::Value>, ExceptionState&);
 
 // Converts a value to a String, replacing unmatched UTF-16 surrogates with replacement characters.
-String toUSVString(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT String toUSVString(v8::Handle<v8::Value>, ExceptionState&);
 
 inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
 {
@@ -870,7 +871,7 @@ struct NativeValueTraits<Vector<T>> {
     }
 };
 
-v8::Isolate* toIsolate(ExecutionContext*);
+CORE_EXPORT v8::Isolate* toIsolate(ExecutionContext*);
 v8::Isolate* toIsolate(LocalFrame*);
 
 DOMWindow* toDOMWindow(v8::Isolate*, v8::Handle<v8::Value>);
@@ -879,8 +880,8 @@ LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
 LocalDOMWindow* currentDOMWindow(v8::Isolate*);
 LocalDOMWindow* callingDOMWindow(v8::Isolate*);
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
-ExecutionContext* currentExecutionContext(v8::Isolate*);
-ExecutionContext* callingExecutionContext(v8::Isolate*);
+CORE_EXPORT ExecutionContext* currentExecutionContext(v8::Isolate*);
+CORE_EXPORT ExecutionContext* callingExecutionContext(v8::Isolate*);
 
 // Returns a V8 context associated with a ExecutionContext and a DOMWrapperWorld.
 // This method returns an empty context if there is no frame or the frame is already detached.
@@ -929,7 +930,7 @@ template<class Collection> static void indexedPropertyEnumerator(const v8::Prope
 // These methods store hidden values into an array that is stored in the internal field of a DOM wrapper.
 void addHiddenValueToArray(v8::Isolate*, v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
 void removeHiddenValueFromArray(v8::Isolate*, v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
-void moveEventListenerToNewWrapper(v8::Isolate*, v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex);
+CORE_EXPORT void moveEventListenerToNewWrapper(v8::Isolate*, v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex);
 
 PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate*, v8::Handle<v8::Value>, int);
 

@@ -27,6 +27,7 @@
 #define V8StringResource_h
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/CoreExport.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
@@ -153,8 +154,8 @@ enum ExternalMode {
 };
 
 template <typename StringType>
-StringType v8StringToWebCoreString(v8::Handle<v8::String>, ExternalMode);
-String int32ToWebCoreString(int value);
+CORE_EXPORT StringType v8StringToWebCoreString(v8::Handle<v8::String>, ExternalMode);
+CORE_EXPORT String int32ToWebCoreString(int value);
 
 // V8StringResource is an adapter class that converts V8 values to Strings
 // or AtomicStrings as appropriate, using multiple typecast operators.

@@ -8,6 +8,7 @@
 #include "bindings/core/v8/SerializationTag.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/CoreExport.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -91,7 +92,7 @@ private:
 
 // SerializedScriptValueWriter is responsible for serializing primitive types and storing
 // information used to reconstruct composite types.
-class SerializedScriptValueWriter {
+class CORE_EXPORT SerializedScriptValueWriter {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SerializedScriptValueWriter);
 public:
@@ -178,7 +179,7 @@ private:
     unsigned m_position;
 };
 
-class ScriptValueSerializer {
+class CORE_EXPORT ScriptValueSerializer {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScriptValueSerializer);
 protected:
@@ -398,7 +399,7 @@ private:
 };
 
 // Interface used by SerializedScriptValueReader to create objects of composite types.
-class ScriptValueCompositeCreator {
+class CORE_EXPORT ScriptValueCompositeCreator {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScriptValueCompositeCreator);
 public:
@@ -421,7 +422,7 @@ public:
 
 // SerializedScriptValueReader is responsible for deserializing primitive types and
 // restoring information about saved objects of composite types.
-class SerializedScriptValueReader {
+class CORE_EXPORT SerializedScriptValueReader {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SerializedScriptValueReader);
 public:
@@ -519,7 +520,7 @@ private:
     const BlobDataHandleMap& m_blobDataHandles;
 };
 
-class ScriptValueDeserializer : public ScriptValueCompositeCreator {
+class CORE_EXPORT ScriptValueDeserializer : public ScriptValueCompositeCreator {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScriptValueDeserializer);
 public:
