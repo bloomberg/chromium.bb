@@ -6,3 +6,5 @@ xhwang@chromium.org
 # WebRTC OWNERS.
 perkj@chromium.org
 tommi@chromium.org
+
+per-file video_capture*=mcasas@chromium.org
