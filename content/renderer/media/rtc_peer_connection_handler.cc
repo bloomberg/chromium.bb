@@ -359,7 +359,7 @@ class StatsResponse : public webrtc::StatsObserver {
  private:
   struct Report {
     Report(const StatsReport* report)
-        : thread_checker(), id(report->id().ToString()),
+        : thread_checker(), id(report->id()->ToString()),
           type(report->TypeToString()),  timestamp(report->timestamp()),
           values(report->values()) {
     }

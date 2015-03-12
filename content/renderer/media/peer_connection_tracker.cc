@@ -237,7 +237,7 @@ static base::DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
   // The format must be consistent with what webrtc_internals.js expects.
   // If you change it here, you must change webrtc_internals.js as well.
   result->Set("stats", stats.release());
-  result->SetString("id", report.id().ToString());
+  result->SetString("id", report.id()->ToString());
   result->SetString("type", report.TypeToString());
 
   return result.release();
