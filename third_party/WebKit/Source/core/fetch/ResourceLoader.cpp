@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/fetch/ResourceLoader.h"
 
+#include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoaderHost.h"
 #include "core/fetch/ResourcePtr.h"
@@ -355,7 +356,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
                 resource = m_resource->resourceToRevalidate();
             else
                 m_resource->setResponse(resourceResponse);
-            if (!m_host->canAccessResource(resource, m_options.securityOrigin.get(), response.url())) {
+            if (!m_host->canAccessResource(resource, m_options.securityOrigin.get(), response.url(), ResourceLoaderHost::ShouldLogAccessControlErrors)) {
                 m_host->didReceiveResponse(m_resource, resourceResponse);
                 cancel(ResourceError::cancelledDueToAccessCheckError(KURL(response.url())));
                 return;

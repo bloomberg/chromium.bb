@@ -16,10 +16,11 @@ namespace blink {
 class Document;
 class Element;
 class KURL;
+class Resource;
 
 class SubresourceIntegrity {
 public:
-    static bool CheckSubresourceIntegrity(const Element&, const WTF::String& content, const KURL& resourceUrl, const WTF::String& mimeType);
+    static bool CheckSubresourceIntegrity(const Element&, const WTF::String& content, const KURL& resourceUrl, const WTF::String& mimeType, const Resource&);
 
 private:
     // FIXME: After the merge with the Chromium repo, this should be refactored

@@ -351,15 +351,23 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
             UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
             return;
         }
-
-        if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url(), sourceCode.resource()->mimeType()))
-            return;
     }
 
     // FIXME: Can this be moved earlier in the function?
     // Why are we ever attempting to execute scripts without a frame?
     if (!frame)
         return;
+
+    AccessControlStatus corsCheck = NotSharableCrossOrigin;
+    if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(&m_element->document(), m_element->document().securityOrigin())))
+        corsCheck = SharableCrossOrigin;
+
+    if (m_isExternalScript) {
+        const KURL resourceUrl = sourceCode.resource()->resourceRequest().url();
+        if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url(), sourceCode.resource()->mimeType(), *sourceCode.resource())) {
+            return;
+        }
+    }
 
     const bool isImportedScript = contextDocument != elementDocument;
     // http://www.whatwg.org/specs/web-apps/current-work/#execute-the-script-block step 2.3
@@ -368,10 +376,6 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
 
     if (isHTMLScriptLoader(m_element))
         contextDocument->pushCurrentScript(toHTMLScriptElement(m_element));
-
-    AccessControlStatus corsCheck = NotSharableCrossOrigin;
-    if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(&m_element->document(), m_element->document().securityOrigin())))
-        corsCheck = SharableCrossOrigin;
 
     // Create a script from the script element node, using the script
     // block's source and the script block's type.
