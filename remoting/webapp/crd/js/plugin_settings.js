@@ -63,11 +63,8 @@ remoting.Settings.prototype.getAppRemotingApplicationId = function() {
 remoting.Settings.prototype.DIRECTORY_BOT_JID = 'DIRECTORY_BOT_JID';
 
 // XMPP server connection settings.
-/** @type {string} XMPP server name and port to use in It2Me host. */
-remoting.Settings.prototype.XMPP_SERVER_FOR_IT2ME_HOST =
-    'XMPP_SERVER_FOR_IT2ME_HOST';
-/** @type {string} XMPP server name and port to use in the client. */
-remoting.Settings.prototype.XMPP_SERVER_FOR_CLIENT = 'XMPP_SERVER_FOR_CLIENT';
+/** @type {string} XMPP server name and port. */
+remoting.Settings.prototype.XMPP_SERVER = 'XMPP_SERVER';
 /** @type {boolean} Whether to use TLS on connections to the XMPP server. */
 remoting.Settings.prototype.XMPP_SERVER_USE_TLS =
     Boolean('XMPP_SERVER_USE_TLS');

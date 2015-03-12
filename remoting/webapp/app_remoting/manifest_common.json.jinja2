@@ -36,8 +36,6 @@
     "storage",
     {
       "socket": [
-        "tcp-connect",
-        "tcp-listen",
         "udp-send-to",
         "udp-bind",
         "udp-multicast-membership",
@@ -48,7 +46,7 @@
   ],
   "sockets": {
     "tcp": {
-      "connect": "*"
+      "connect": "{{ XMPP_SERVER }}"
     }
   },
   "oauth2": {

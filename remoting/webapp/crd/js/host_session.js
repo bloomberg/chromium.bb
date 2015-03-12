@@ -77,13 +77,11 @@ remoting.HostSession.prototype.connect =
   /** @private */
   this.hostFacade_ = hostFacade;
 
-  this.hostFacade_.connect(
-      email, 'oauth2:' + accessToken,
-      onStateChanged, onNatTraversalPolicyChanged, logDebugInfo,
-      remoting.settings.XMPP_SERVER_FOR_IT2ME_HOST,
-      remoting.settings.XMPP_SERVER_USE_TLS,
-      remoting.settings.DIRECTORY_BOT_JID,
-      onError);
+  this.hostFacade_.connect(email, 'oauth2:' + accessToken, onStateChanged,
+                           onNatTraversalPolicyChanged, logDebugInfo,
+                           remoting.settings.XMPP_SERVER,
+                           remoting.settings.XMPP_SERVER_USE_TLS,
+                           remoting.settings.DIRECTORY_BOT_JID, onError);
 };
 
 /**

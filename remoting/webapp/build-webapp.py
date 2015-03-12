@@ -287,12 +287,10 @@ def buildWebApp(buildtype, version, destination, zip_path,
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "Boolean('XMPP_SERVER_USE_TLS')",
                   os.environ.get('XMPP_SERVER_USE_TLS', 'true'))
-  replaceString(destination, 'XMPP_SERVER_FOR_IT2ME_HOST',
-                os.environ.get('XMPP_SERVER_FOR_IT2ME_HOST',
-                               'talk.google.com:5222'))
-  replaceString(destination, 'XMPP_SERVER_FOR_CLIENT',
-                os.environ.get('XMPP_SERVER_FOR_CLIENT',
-                               'talk.google.com:443'))
+
+  xmppServer = os.environ.get('XMPP_SERVER',
+                               'talk.google.com:443')
+  replaceString(destination, 'XMPP_SERVER', xmppServer)
   replaceString(destination, 'DIRECTORY_BOT_JID',
                 os.environ.get('DIRECTORY_BOT_JID',
                                'remoting@bot.talk.google.com'))
@@ -341,6 +339,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
         'APP_NAME': app_name,
         'APP_DESCRIPTION': app_description,
         'OAUTH_GDRIVE_SCOPE': '',
+        'XMPP_SERVER': xmppServer,
     }
     if 'GOOGLE_DRIVE' in app_capabilities:
       context['OAUTH_GDRIVE_SCOPE'] = ('https://docs.google.com/feeds/ '

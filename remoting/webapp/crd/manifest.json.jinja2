@@ -81,8 +81,6 @@
 {% if webapp_type != 'v1' %}
     ,{
       "socket": [
-        "tcp-connect",
-        "tcp-listen",
         "udp-send-to",
         "udp-bind",
         "udp-multicast-membership",
@@ -95,7 +93,7 @@
 {% if webapp_type != 'v1' %}
   ,"sockets": {
     "tcp": {
-      "connect": "*"
+      "connect": "{{ XMPP_SERVER }}"
     }
   }
 {% endif %}
