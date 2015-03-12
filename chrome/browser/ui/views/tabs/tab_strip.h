@@ -213,7 +213,7 @@ class TabStrip : public views::View,
   // TabController overrides:
   const ui::ListSelectionModel& GetSelectionModel() override;
   bool SupportsMultipleSelection() override;
-  bool ShouldHideCloseButtonForInactiveTab(const Tab* tab) override;
+  bool ShouldHideCloseButtonForInactiveTabs() override;
   void SelectTab(Tab* tab) override;
   void ExtendSelectionTo(Tab* tab) override;
   void ToggleSelected(Tab* tab) override;
@@ -271,10 +271,11 @@ class TabStrip : public views::View,
 
   friend class TabDragController;
   friend class TabDragControllerTest;
+  friend class TabStripTest;
   FRIEND_TEST_ALL_PREFIXES(TabDragControllerTest, GestureEndShouldEndDragTest);
   friend class TabStripTest;
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabHitTestMaskWhenStacked);
-  FRIEND_TEST_ALL_PREFIXES(TabStripTest, ClippedTabCloseButton);
+  FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
 
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.

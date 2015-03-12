@@ -969,28 +969,12 @@ bool TabStrip::SupportsMultipleSelection() {
   return touch_layout_ == NULL;
 }
 
-// TODO(tdanderson): Modify this logic and clean up related code once a
-//                   decision has been made on the experimental
-//                   flag --tab-close-buttons-hidden-with-touch.
-bool TabStrip::ShouldHideCloseButtonForInactiveTab(const Tab* tab) {
-  DCHECK(!tab->IsActive());
-
-  // Do not force the close button to hide if mouse was used as
-  // the last input type to interact with the tab strip.
-  if (!stacked_layout_)
+bool TabStrip::ShouldHideCloseButtonForInactiveTabs() {
+  if (!touch_layout_)
     return false;
 
-  std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTabCloseButtonsHiddenWithTouch);
-  int width = tab->width();
-  if (switch_value == "always" ||
-      (switch_value == "narrow" && width < Tab::GetStandardSize().width()) ||
-      (switch_value == "stacked" && width <= Tab::GetTouchWidth())) {
-    return true;
-  }
-
-  return false;
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHideInactiveStackedTabCloseButtons);
 }
 
 void TabStrip::SelectTab(Tab* tab) {

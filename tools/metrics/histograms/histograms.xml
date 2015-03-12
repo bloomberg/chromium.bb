@@ -52832,6 +52832,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="939554480" label="enable-credit-card-scan"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="980396200" label="enable-new-korean-ime"/>
+  <int value="1019857902"
+      label="disable-hide-inactive-stacked-tab-close-buttons"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1050321458" label="new-profile-management"/>

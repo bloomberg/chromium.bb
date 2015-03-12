@@ -146,7 +146,7 @@ class Tab : public gfx::AnimationDelegate,
 
   friend class TabStripTest;
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabHitTestMaskWhenStacked);
-  FRIEND_TEST_ALL_PREFIXES(TabStripTest, ClippedTabCloseButton);
+  FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
 
   // The animation object used to swap the favicon with the sad tab icon.
   class FaviconCrashAnimation;

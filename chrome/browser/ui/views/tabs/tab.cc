@@ -1461,7 +1461,7 @@ bool Tab::ShouldShowMediaIndicator() const {
 }
 
 bool Tab::ShouldShowCloseBox() const {
-  if (!IsActive() && controller_->ShouldHideCloseButtonForInactiveTab(this))
+  if (!IsActive() && controller_->ShouldHideCloseButtonForInactiveTabs())
     return false;
 
   return chrome::ShouldTabShowCloseButton(

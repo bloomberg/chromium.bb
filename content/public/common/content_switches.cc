@@ -157,6 +157,11 @@ const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
 // Manager can be used to terminate the offending process in this case.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
+// Disable hiding the close buttons of inactive tabs when the tabstrip is in
+// stacked mode.
+const char kDisableHideInactiveStackedTabCloseButtons[] =
+    "disable-hide-inactive-stacked-tab-close-buttons";
+
 // Disable the RenderThread's HistogramCustomizer.
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 
@@ -763,11 +768,6 @@ const char kTabCaptureDownscaleQuality[]    = "tab-capture-downscale-quality";
 // One flag for upscaling, one for downscaling.
 // Upscale defaults to "best".
 const char kTabCaptureUpscaleQuality[]      = "tab-capture-upscale-quality";
-
-// Options for hiding the close buttons of inactive tabs when touch
-// is used to interact with the tabstrip.
-const char kTabCloseButtonsHiddenWithTouch[] =
-    "tab-close-buttons-hidden-with-touch";
 
 // Allows for forcing socket connections to http/https to use fixed ports.
 const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";

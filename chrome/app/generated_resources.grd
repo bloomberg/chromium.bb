@@ -6573,20 +6573,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_BEST" desc="">
         best
       </message>
-      <message name="IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_NAME" desc="">
-        Hide close buttons of inactive tabs with touch.
+      <message name="IDS_FLAGS_DISABLE_HIDE_INACTIVE_STACKED_TAB_CLOSE_BUTTONS_NAME" desc="">
+        Disable hiding close buttons on inactive tabs when stacked
       </message>
-      <message name="IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_DESCRIPTION" desc="">
-        Options to hide the close buttons of inactive tabs when touch is used for the tabstrip.
-      </message>
-      <message name="IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_ALWAYS" desc="">
-        Always hide
-      </message>
-      <message name="IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_NARROW" desc="">
-        Hide when tab is narrower than its standard width
-      </message>
-      <message name="IDS_FLAGS_TAB_CLOSE_BUTTONS_HIDDEN_WITH_TOUCH_STACKED" desc="">
-        Hide when tabs start stacking
+      <message name="IDS_FLAGS_DISABLE_HIDE_INACTIVE_STACKED_TAB_CLOSE_BUTTONS_DESCRIPTION" desc="">
+        Disables hiding the close buttons of inactive tabs when the tabstrip is in stacked mode.
       </message>
       <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_NAME" desc="Name of about:flags option for default tile width.">
         Default tile width
