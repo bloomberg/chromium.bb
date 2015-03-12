@@ -60,7 +60,7 @@ namespace {
 // version to avoid unnecessarily comparison errors with the latest release.
 // This should be manually kept up-to-date on each Android release.
 const int kDefaultAndroidMajorVersion = 5;
-const int kDefaultAndroidMinorVersion = 0;
+const int kDefaultAndroidMinorVersion = 1;
 const int kDefaultAndroidBugfixVersion = 99;
 
 // Parse out the OS version numbers from the system properties.
