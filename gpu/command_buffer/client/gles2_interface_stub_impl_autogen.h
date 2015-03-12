@@ -226,6 +226,13 @@ void GLES2InterfaceStub::DrawElements(GLenum /* mode */,
                                       GLenum /* type */,
                                       const void* /* indices */) {
 }
+void GLES2InterfaceStub::DrawRangeElements(GLenum /* mode */,
+                                           GLuint /* start */,
+                                           GLuint /* end */,
+                                           GLsizei /* count */,
+                                           GLenum /* type */,
+                                           const void* /* indices */) {
+}
 void GLES2InterfaceStub::Enable(GLenum /* cap */) {
 }
 void GLES2InterfaceStub::EnableVertexAttribArray(GLuint /* index */) {

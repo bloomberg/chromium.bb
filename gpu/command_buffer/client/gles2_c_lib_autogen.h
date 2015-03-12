@@ -259,6 +259,15 @@ void GLES2DrawElements(GLenum mode,
                        const void* indices) {
   gles2::GetGLContext()->DrawElements(mode, count, type, indices);
 }
+void GLES2DrawRangeElements(GLenum mode,
+                            GLuint start,
+                            GLuint end,
+                            GLsizei count,
+                            GLenum type,
+                            const void* indices) {
+  gles2::GetGLContext()->DrawRangeElements(mode, start, end, count, type,
+                                           indices);
+}
 void GLES2Enable(GLenum cap) {
   gles2::GetGLContext()->Enable(cap);
 }
@@ -1564,6 +1573,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glDrawElements",
      reinterpret_cast<GLES2FunctionPointer>(glDrawElements),
+    },
+    {
+     "glDrawRangeElements",
+     reinterpret_cast<GLES2FunctionPointer>(glDrawRangeElements),
     },
     {
      "glEnable",

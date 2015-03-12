@@ -664,6 +664,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void RemoveMappedBufferRangeById(GLuint buffer);
   void ClearMappedBufferRangeMap();
 
+  void DrawElementsImpl(GLenum mode, GLsizei count, GLenum type,
+                        const void* indices, const char* func_name);
+
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   TransferBufferInterface* transfer_buffer_;

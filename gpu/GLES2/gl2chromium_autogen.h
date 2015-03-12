@@ -69,6 +69,7 @@
 #define glDisableVertexAttribArray GLES2_GET_FUN(DisableVertexAttribArray)
 #define glDrawArrays GLES2_GET_FUN(DrawArrays)
 #define glDrawElements GLES2_GET_FUN(DrawElements)
+#define glDrawRangeElements GLES2_GET_FUN(DrawRangeElements)
 #define glEnable GLES2_GET_FUN(Enable)
 #define glEnableVertexAttribArray GLES2_GET_FUN(EnableVertexAttribArray)
 #define glFenceSync GLES2_GET_FUN(FenceSync)

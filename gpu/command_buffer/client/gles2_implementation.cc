@@ -816,23 +816,44 @@ void GLES2Implementation::DrawElements(
       << count << ", "
       << GLES2Util::GetStringIndexType(type) << ", "
       << static_cast<const void*>(indices) << ")");
+  DrawElementsImpl(mode, count, type, indices, "glDrawRangeElements");
+}
+
+void GLES2Implementation::DrawRangeElements(
+    GLenum mode, GLuint start, GLuint end,
+    GLsizei count, GLenum type, const void* indices) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDrawRangeElements("
+      << GLES2Util::GetStringDrawMode(mode) << ", "
+      << start << ", " << end << ", " << count << ", "
+      << GLES2Util::GetStringIndexType(type) << ", "
+      << static_cast<const void*>(indices) << ")");
+  if (end < start) {
+    SetGLError(GL_INVALID_VALUE, "glDrawRangeElements", "end < start");
+    return;
+  }
+  DrawElementsImpl(mode, count, type, indices, "glDrawRangeElements");
+}
+
+void GLES2Implementation::DrawElementsImpl(
+    GLenum mode, GLsizei count, GLenum type, const void* indices,
+    const char* func_name) {
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDrawElements", "count less than 0.");
+    SetGLError(GL_INVALID_VALUE, func_name, "count < 0");
     return;
   }
-  if (count == 0) {
-    return;
-  }
-  if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
-      !ValidateOffset("glDrawElements", reinterpret_cast<GLintptr>(indices))) {
-    return;
-  }
-  GLuint offset = 0;
   bool simulated = false;
-  if (!vertex_array_object_manager_->SetupSimulatedIndexAndClientSideBuffers(
-      "glDrawElements", this, helper_, count, type, 0, indices,
-      &offset, &simulated)) {
-    return;
+  GLuint offset = ToGLuint(indices);
+  if (count > 0) {
+    if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
+        !ValidateOffset(func_name, reinterpret_cast<GLintptr>(indices))) {
+      return;
+    }
+    if (!vertex_array_object_manager_->SetupSimulatedIndexAndClientSideBuffers(
+        func_name, this, helper_, count, type, 0, indices,
+        &offset, &simulated)) {
+      return;
+    }
   }
   helper_->DrawElements(mode, count, type, offset);
   RestoreElementAndArrayBuffers(simulated);

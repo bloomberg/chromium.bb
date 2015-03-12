@@ -60,6 +60,7 @@ GL_APICALL void         GL_APIENTRY glDisable (GLenumCapability cap);
 GL_APICALL void         GL_APIENTRY glDisableVertexAttribArray (GLuint index);
 GL_APICALL void         GL_APIENTRY glDrawArrays (GLenumDrawMode mode, GLint first, GLsizei count);
 GL_APICALL void         GL_APIENTRY glDrawElements (GLenumDrawMode mode, GLsizei count, GLenumIndexType type, const void* indices);
+GL_APICALL void         GL_APIENTRY glDrawRangeElements (GLenumDrawMode mode, GLuint start, GLuint end, GLsizei count, GLenumIndexType type, const void* indices);
 GL_APICALL void         GL_APIENTRY glEnable (GLenumCapability cap);
 GL_APICALL void         GL_APIENTRY glEnableVertexAttribArray (GLuint index);
 GL_APICALL GLsync       GL_APIENTRY glFenceSync (GLenumSyncCondition condition, GLbitfieldSyncFlags flags);

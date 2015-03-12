@@ -390,6 +390,16 @@ void GLES2TraceImplementation::DrawElements(GLenum mode,
   gl_->DrawElements(mode, count, type, indices);
 }
 
+void GLES2TraceImplementation::DrawRangeElements(GLenum mode,
+                                                 GLuint start,
+                                                 GLuint end,
+                                                 GLsizei count,
+                                                 GLenum type,
+                                                 const void* indices) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DrawRangeElements");
+  gl_->DrawRangeElements(mode, start, end, count, type, indices);
+}
+
 void GLES2TraceImplementation::Enable(GLenum cap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::Enable");
   gl_->Enable(cap);

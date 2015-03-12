@@ -2002,6 +2002,11 @@ _FUNCTION_INFO = {
     'defer_draws': True,
     'trace_level': 2,
   },
+  'DrawRangeElements': {
+    'type': 'Manual',
+    'gen_cmd': 'False',
+    'unsafe': True,
+  },
   'Enable': {
     'decoder_func': 'DoEnable',
     'impl_func': False,
