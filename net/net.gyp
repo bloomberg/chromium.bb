@@ -293,6 +293,7 @@
             'sources!': [
               'dns/host_resolver_mojo_unittest.cc',
               'dns/mojo_host_resolver_impl_unittest.cc',
+              'proxy/load_state_change_coalescer_unittest.cc',
               'proxy/mojo_proxy_resolver_factory_impl_unittest.cc',
               'proxy/mojo_proxy_resolver_impl_unittest.cc',
               'proxy/proxy_resolver_mojo_unittest.cc',
@@ -884,6 +885,8 @@
           'sources': [
             'dns/host_resolver_mojo.cc',
             'dns/host_resolver_mojo.h',
+            'proxy/load_state_change_coalescer.cc',
+            'proxy/load_state_change_coalescer.h',
             'proxy/mojo_proxy_resolver_factory_impl.cc',
             'proxy/mojo_proxy_resolver_factory_impl.h',
             'proxy/mojo_proxy_resolver_impl.cc',

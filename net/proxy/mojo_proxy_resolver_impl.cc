@@ -8,11 +8,15 @@
 #include "mojo/common/url_type_converters.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/proxy/load_state_change_coalescer.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_script_data.h"
 
 namespace net {
+namespace {
+const int kLoadStateChangeCoalesceTimeoutMilliseconds = 10;
+}
 
 class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
  public:
@@ -36,6 +40,8 @@ class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
 
   void GetProxyDone(int error);
 
+  void SendLoadStateChanged(LoadState load_state);
+
   MojoProxyResolverImpl* resolver_;
 
   interfaces::ProxyResolverRequestClientPtr client_;
@@ -43,6 +49,7 @@ class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
   GURL url_;
   net::ProxyResolver::RequestHandle request_handle_;
   bool done_;
+  LoadStateChangeCoalescer load_state_change_coalescer_;
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -123,7 +130,13 @@ MojoProxyResolverImpl::Job::Job(
       client_(client.Pass()),
       url_(url),
       request_handle_(nullptr),
-      done_(false) {
+      done_(false),
+      load_state_change_coalescer_(
+          base::Bind(&MojoProxyResolverImpl::Job::SendLoadStateChanged,
+                     base::Unretained(this)),
+          base::TimeDelta::FromMilliseconds(
+              kLoadStateChangeCoalesceTimeoutMilliseconds),
+          LOAD_STATE_RESOLVING_PROXY_FOR_URL) {
 }
 
 MojoProxyResolverImpl::Job::~Job() {
@@ -145,7 +158,7 @@ void MojoProxyResolverImpl::Job::Start() {
 }
 
 void MojoProxyResolverImpl::Job::LoadStateChanged(LoadState load_state) {
-  client_->LoadStateChanged(load_state);
+  load_state_change_coalescer_.LoadStateChanged(load_state);
 }
 
 void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
@@ -166,6 +179,10 @@ void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
 
 void MojoProxyResolverImpl::Job::OnConnectionError() {
   resolver_->DeleteJob(this);
+}
+
+void MojoProxyResolverImpl::Job::SendLoadStateChanged(LoadState load_state) {
+  client_->LoadStateChanged(load_state);
 }
 
 MojoProxyResolverImpl::SetPacScriptRequest::SetPacScriptRequest(
