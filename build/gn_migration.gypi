@@ -112,10 +112,6 @@
         '../net/net.gyp:dump_cache',
         '../net/net.gyp:gdig',
         '../net/net.gyp:get_server_time',
-        '../net/net.gyp:hpack_example_generator',
-        '../net/net.gyp:hpack_fuzz_mutator',
-        '../net/net.gyp:hpack_fuzz_wrapper',
-        '../net/net.gyp:net_perftests',
         '../net/net.gyp:net_unittests',
         '../net/net.gyp:net_watcher',  # TODO(GYP): This should be conditional on use_v8_in_net
         '../net/net.gyp:run_testserver',
@@ -231,7 +227,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
-            '../base/base.gyp:chromium_android_linker',
+            '../base/base.gyp:chromium_android_linker', 
             '../breakpad/breakpad.gyp:dump_syms',
             '../build/android/rezip.gyp:rezip_apk_jar',
             '../chrome/chrome.gyp:chrome_shell_apk',
@@ -239,7 +235,7 @@
             #"//clank" TODO(GYP) - conditional somehow?
             '../tools/imagediff/image_diff.gyp:image_diff#host',
             '../tools/telemetry/telemetry.gyp:bitmaptools#host',
-
+      
             # TODO(GYP): Remove these when the components_unittests work.
             #"//components/history/core/test:test",
             #"//components/policy:policy_component_test_support",
@@ -251,7 +247,7 @@
             #"//components/wallpaper",
 
             '../content/content_shell_and_tests.gyp:content_shell_apk',
-
+      
             # TODO(GYP): Are these needed, or will they be pulled in automatically?
             #"//third_party/android_tools:android_gcm_java",
             #"//third_party/android_tools:uiautomator_java",
@@ -412,6 +408,7 @@
             '../device/device_tests.gyp:device_unittests',
             '../gin/gin.gyp:gin_v8_snapshot_fingerprint',
             '../gin/gin.gyp:gin_shell',
+            '../google_apis/gcm/gcm.gyp:mcs_probe',
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gles2_conform_support/gles2_conform_support.gyp:gles2_conform_support',
             '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
@@ -421,6 +418,10 @@
             '../media/cast/cast.gyp:generate_timecode_audio',
             '../media/cast/cast.gyp:tap_proxy',
             '../mojo/mojo_base.gyp:mojo_application_chromium',
+            '../net/net.gyp:hpack_example_generator',
+            '../net/net.gyp:hpack_fuzz_mutator',
+            '../net/net.gyp:hpack_fuzz_wrapper',
+            '../net/net.gyp:net_perftests',
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
             '../ppapi/tools/ppapi_tools.gyp:pepper_hash_for_uma',
             '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests',

@@ -62,10 +62,6 @@ group("gn_all") {
     "//media/cast:cast_unittests",
     "//mojo",
     "//mojo/common:mojo_common_unittests",
-    "//net:hpack_example_generator",
-    "//net:hpack_fuzz_mutator",
-    "//net:hpack_fuzz_wrapper",
-    "//net:net_perftests",
     "//net:net_unittests",
     "//ppapi:ppapi_unittests",
     "//ppapi/examples",  # TODO(GYP): What's the GYP equivalent?
@@ -193,10 +189,6 @@ group("gn_all") {
       "//google_apis/gcm:gcm_unit_tests",
       "//ipc:ipc_tests",  # TODO(GYP) ??
       "//jingle:jingle_unittests",  # TODO(GYP) ??
-      "//net:hpack_example_generator",
-      "//net:hpack_fuzz_mutator",
-      "//net:hpack_fuzz_wrapper",
-      "//net:net_perftests",
       "//net:net_unittests",
       "//ppapi/examples",
       "//third_party/pdfium/samples:pdfium_test",
