@@ -7,6 +7,7 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 
+#include "base/files/file_path_watcher.h"
 #include "chrome/browser/chrome_browser_main.h"
 
 class DidRunUpdater;
@@ -68,6 +69,10 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
  private:
 #if defined(GOOGLE_CHROME_BUILD)
   scoped_ptr<DidRunUpdater> did_run_updater_;
+#endif
+#if defined(KASKO)
+  // Cleans up Kasko crash reports that exceeded the maximum upload attempts.
+  base::FilePathWatcher failed_kasko_crash_report_watcher_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);

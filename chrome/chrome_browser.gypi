@@ -3467,6 +3467,7 @@
           ],
           'dependencies': [
             'chrome_process_finder',
+            'chrome_watcher_client',
             'installer_util_strings',
             '../chrome/chrome.gyp:chrome_version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
@@ -3487,6 +3488,14 @@
             '../ui/views/views.gyp:views',
           ],
           'conditions': [
+            ['kasko==1', {
+              'dependencies': [
+                'kasko_dll',
+              ],
+              'export_dependent_settings': [
+                'kasko_dll',
+              ],
+            }],
             ['win_use_allocator_shim==1', {
               'dependencies': [
                 '<(allocator_target)',

@@ -3652,6 +3652,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="CrashReport.PermanentUploadFailure" enum="BooleanHit">
+  <owner>erikwright@chromium.org</owner>
+  <summary>
+    Counts crash reports that the Kasko crash reporter fails to upload and hands
+    off to Chrome. Kasko stores the failed reports in a location specified by
+    Chrome. Chrome records this metric when it detects new minidump files in
+    that location. Currently the reports are discarded, but they could
+    eventually be uploaded via the Chrome network stack.
+  </summary>
+</histogram>
+
 <histogram name="Cros.ClickOnShelf" enum="CrosShelfClickTarget">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.

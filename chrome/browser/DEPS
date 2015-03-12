@@ -3,6 +3,7 @@ include_rules = [
   "+ash",
   "+athena/content/public",
   "+chrome/app",
+  "+chrome/chrome_watcher",
   "+chrome/grit",  # For generated headers
   "+chrome/installer",
   "+chrome_elf/blacklist",
@@ -124,6 +125,7 @@ include_rules = [
   "+sync/internal_api/public/attachments",  # Needed for tests.
   "+sync/protocol",  # Sync protobuf files.
   "+sync/util",  # Sync utilities like GetSessionName.
+  "+syzygy/kasko",
   "+third_party/cros_system_api",
   "+win8/util",
 

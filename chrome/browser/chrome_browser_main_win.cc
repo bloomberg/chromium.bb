@@ -11,9 +11,11 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -35,7 +37,9 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
+#include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -67,6 +71,10 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/google/did_run_updater_win.h"
+#endif
+
+#if defined(KASKO)
+#include "syzygy/kasko/api/reporter.h"
 #endif
 
 namespace {
@@ -110,6 +118,41 @@ void ExecuteFontCacheBuildTask(const base::FilePath& path) {
   utility_process_host->Send(
       new ChromeUtilityHostMsg_BuildDirectWriteFontCache(path));
 }
+
+#if defined(KASKO)
+void ObserveFailedCrashReportDirectory(const base::FilePath& path, bool error) {
+  DCHECK(!error);
+  if (error)
+    return;
+  base::FileEnumerator enumerator(path, true, base::FileEnumerator::FILES);
+  for (base::FilePath report_file = enumerator.Next(); !report_file.empty();
+       report_file = enumerator.Next()) {
+    if (report_file.Extension() ==
+        kasko::api::kPermanentFailureMinidumpExtension) {
+      UMA_HISTOGRAM_BOOLEAN("CrashReport.PermanentUploadFailure", true);
+    }
+    bool result = base::DeleteFile(report_file, false);
+    DCHECK(result);
+  }
+}
+
+void StartFailedKaskoCrashReportWatcher(base::FilePathWatcher* watcher) {
+  base::FilePath watcher_data_directory;
+  if (!PathService::Get(chrome::DIR_WATCHER_DATA, &watcher_data_directory)) {
+    NOTREACHED();
+  } else {
+    base::FilePath permanent_failure_directory =
+        watcher_data_directory.Append(kPermanentlyFailedReportsSubdir);
+    if (!watcher->Watch(permanent_failure_directory, true,
+                        base::Bind(&ObserveFailedCrashReportDirectory))) {
+      NOTREACHED();
+    }
+
+    // Call it once to observe any files present prior to the Watch() call.
+    ObserveFailedCrashReportDirectory(permanent_failure_directory, false);
+  }
+}
+#endif
 
 }  // namespace
 
@@ -286,6 +329,14 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
           base::TimeDelta::FromSeconds(45));
 
   InitializeChromeElf();
+
+#if defined(KASKO)
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&StartFailedKaskoCrashReportWatcher,
+                 base::Unretained(&failed_kasko_crash_report_watcher_)),
+      base::TimeDelta::FromMinutes(5));
+#endif
 
 #if defined(GOOGLE_CHROME_BUILD)
   did_run_updater_.reset(new DidRunUpdater);
