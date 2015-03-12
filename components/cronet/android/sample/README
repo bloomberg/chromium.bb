@@ -63,7 +63,7 @@ You should observe the following lines [see footnote 1]
 
 dependencies {
    compile file('libs/cronet.jar')
-   compile file('libs/cornet_stub.jar')
+   compile file('libs/cronet_stub.jar')
 }   
 
 If absent, the lines may be added by hand to the gradle file
