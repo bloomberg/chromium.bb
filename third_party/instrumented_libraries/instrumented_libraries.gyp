@@ -8,6 +8,7 @@
     'instrumented_libraries_jobs%': 1,
   },
 
+  'libdir': 'lib',
   'ubuntu_release': '<!(lsb_release -cs)',
 
   'conditions': [
@@ -174,7 +175,7 @@
           ['_toolset=="target"', {
             'ldflags': [
               # Add RPATH to result binary to make it linking instrumented libraries ($ORIGIN means relative RPATH)
-              '-Wl,-R,\$$ORIGIN/instrumented_libraries/<(_sanitizer_type)/lib/',
+              '-Wl,-R,\$$ORIGIN/instrumented_libraries/<(_sanitizer_type)/<(_libdir)/',
               '-Wl,-z,origin',
             ],
           }],

@@ -16,389 +16,381 @@ import sys
 
 SCRIPT_ABSOLUTE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-class ScopedChangeDirectory(object):
-  """Changes current working directory and restores it back automatically."""
-
-  def __init__(self, path):
-    self.path = path
-    self.old_path = ''
-
-  def __enter__(self):
-    self.old_path = os.getcwd()
-    os.chdir(self.path)
-    return self
-
-  def __exit__(self, exc_type, exc_value, traceback):
-    os.chdir(self.old_path)
-
-def get_package_build_dependencies(package):
-  command = 'apt-get -s build-dep %s | grep Inst | cut -d " " -f 2' % package
-  command_result = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                    shell=True)
-  if command_result.wait():
-    raise Exception('Failed to determine build dependencies for %s' % package)
-  build_dependencies = [l.strip() for l in command_result.stdout]
-  return build_dependencies
-
-
-def check_package_build_dependencies(package):
-  build_dependencies = get_package_build_dependencies(package)
-  if len(build_dependencies):
-    print >> sys.stderr, 'Please, install build-dependencies for %s' % package
-    print >> sys.stderr, 'One-liner for APT:'
-    print >> sys.stderr, 'sudo apt-get -y --no-remove build-dep %s' % package
-    sys.exit(1)
-
-
-def shell_call(command, verbose=False, environment=None):
-  """ Wrapper on subprocess.Popen
-
-  Calls command with specific environment and verbosity using
-  subprocess.Popen
-
-  Args:
-    command: Command to run in shell.
-    verbose: If False, hides all stdout and stderr in case of successful build.
-        Otherwise, always prints stdout and stderr.
-    environment: Parameter 'env' for subprocess.Popen.
-
-  Returns:
-    None
-
-  Raises:
-    Exception: if return code after call is not zero.
-  """
-  child = subprocess.Popen(
-      command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-      env=environment, shell=True)
-  stdout, stderr = child.communicate()
-  if verbose or child.returncode:
-    print stdout
-  if child.returncode:
-    raise Exception('Failed to run: %s' % command)
-
-
-def run_shell_commands(commands, verbose=False, environment=None):
-  for command in commands:
-    shell_call(command, verbose, environment)
-
-
-def fix_rpaths(destdir):
-  # TODO(earthdok): reimplement fix_rpaths.sh in Python.
-  shell_call("%s/fix_rpaths.sh %s/lib" % (SCRIPT_ABSOLUTE_PATH, destdir))
-
-
-def destdir_configure_make_install(parsed_arguments, environment,
-                                   install_prefix):
-  configure_command = './configure %s' % parsed_arguments.extra_configure_flags
-  configure_command += ' --libdir=/lib/'
-  # Installing to a temporary directory allows us to safely clean up the .la
-  # files below.
-  destdir = '%s/debian/instrumented_build' % os.getcwd()
-  # Some makefiles use BUILDROOT or INSTALL_ROOT instead of DESTDIR.
-  make_command = 'make DESTDIR=%s BUILDROOT=%s INSTALL_ROOT=%s' % (destdir,
-                                                                   destdir,
-                                                                   destdir)
-  build_and_install_in_destdir = [
-    configure_command,
-    '%s -j%s' % (make_command, parsed_arguments.jobs),
-    # Parallel install is flaky for some packages.
-    '%s install -j1' % make_command,
-    # Kill the .la files. They contain absolute paths, and will cause build
-    # errors in dependent libraries.
-    'rm %s/lib/*.la -f' % destdir
-  ]
-  run_shell_commands(build_and_install_in_destdir,
-                     parsed_arguments.verbose, environment)
-  fix_rpaths(destdir)
-  run_shell_commands([
-      # Now move the contents of the temporary destdir to their final place.
-      # We only care for the contents of lib/.
-      'mkdir -p %s/lib' % install_prefix,
-      'cp %s/lib/* %s/lib/ -rdf' % (destdir, install_prefix)],
-                     parsed_arguments.verbose, environment)
-
-
-def nss_make_and_copy(parsed_arguments, environment, install_prefix):
-  # NSS uses a build system that's different from configure/make/install. All
-  # flags must be passed as arguments to make.
-  make_args = []
-  # Do an optimized build.
-  make_args.append('BUILD_OPT=1')
-  # Set USE_64=1 on x86_64 systems.
-  if platform.architecture()[0] == '64bit':
-    make_args.append('USE_64=1')
-  # Passing C(XX)FLAGS overrides the defaults, and EXTRA_C(XX)FLAGS is not
-  # supported. Append our extra flags to CC/CXX.
-  make_args.append('CC="%s %s"' % (environment['CC'], environment['CFLAGS']))
-  make_args.append('CXX="%s %s"' %
-                   (environment['CXX'], environment['CXXFLAGS']))
-  # We need to override ZDEFS_FLAG at least to prevent -Wl,-z,defs.
-  # Might as well use this to pass the linker flags, since ZDEF_FLAG is always
-  # added during linking on Linux.
-  make_args.append('ZDEFS_FLAG="-Wl,-z,nodefs %s"' % environment['LDFLAGS'])
-  make_args.append('NSPR_INCLUDE_DIR=/usr/include/nspr')
-  make_args.append('NSPR_LIB_DIR=%s/lib' % install_prefix)
-  make_args.append('NSS_ENABLE_ECC=1')
-  # Make sure we don't override the default flags.
-  for variable in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
-    del environment[variable]
-  with ScopedChangeDirectory('nss') as cd_nss:
-    # -j is not supported
-    shell_call('make %s' % ' '.join(make_args), parsed_arguments.verbose,
-               environment)
-    fix_rpaths(os.getcwd())
-    # 'make install' is not supported. Copy the DSOs manually.
-    install_dir = '%s/lib/' % install_prefix
-    for (dirpath, dirnames, filenames) in os.walk('./lib/'):
-      for filename in filenames:
-        if filename.endswith('.so'):
-          full_path = os.path.join(dirpath, filename)
-          if parsed_arguments.verbose:
-            print 'download_build_install.py: installing %s' % full_path
-          shutil.copy(full_path, install_dir)
-
-
-def libcap2_make_install(parsed_arguments, environment, install_prefix):
-  # libcap2 doesn't come with a configure script
-  make_args = [
-      '%s="%s"' % (name, environment[name])
-      for name in['CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS']]
-  shell_call('make -j%s %s' % (parsed_arguments.jobs, ' '.join(make_args)),
-             parsed_arguments.verbose, environment)
-  destdir = '%s/debian/instrumented_build' % os.getcwd()
-  install_args = [
-      'DESTDIR=%s' % destdir,
-      # Do not install in lib64/.
-      'lib=lib',
-      # Skip a step that requires sudo.
-      'RAISE_SETFCAP=no'
-  ]
-  shell_call('make -j%s install %s' %
-             (parsed_arguments.jobs, ' '.join(install_args)),
-             parsed_arguments.verbose, environment)
-  fix_rpaths(destdir)
-  run_shell_commands([
-      # Now move the contents of the temporary destdir to their final place.
-      # We only care for the contents of lib/.
-      'mkdir -p %s/lib' % install_prefix,
-      'cp %s/lib/* %s/lib/ -rdf' % (destdir, install_prefix)],
-                      parsed_arguments.verbose, environment)
-
-
-def libpci3_make_install(parsed_arguments, environment, install_prefix):
-  # pciutils doesn't have a configure script
-  # This build script follows debian/rules.
-
-  # Find out the package version. We'll use this when creating symlinks.
-  dir_name = os.path.split(os.getcwd())[-1]
-  match = re.match('pciutils-(\d+\.\d+\.\d+)', dir_name)
-  if match is None:
-    raise Exception(
-        'Unable to guess libpci3 version from directory name: %s' %  dir_name)
-  version = match.group(1)
-
-  # `make install' will create a "$(DESTDIR)-udeb" directory alongside destdir.
-  # We don't want that in our product dir, so we use an intermediate directory.
-  destdir = '%s/debian/pciutils' % os.getcwd()
-  make_args = [
-      '%s="%s"' % (name, environment[name])
-      for name in['CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS']]
-  make_args.append('SHARED=yes')
-  # pciutils-3.2.1 (Trusty) fails to build due to unresolved libkmod symbols.
-  # The binary package has no dependencies on libkmod, so it looks like it was
-  # actually built without libkmod support.
-  make_args.append('LIBKMOD=no')
-  paths = [
-      'LIBDIR=/lib/',
-      'PREFIX=/usr',
-      'SBINDIR=/usr/bin',
-      'IDSDIR=/usr/share/misc',
-  ]
-  install_args = ['DESTDIR=%s' % destdir]
-  run_shell_commands([
-      'mkdir -p %s-udeb/usr/bin' % destdir,
-      'make -j%s %s' % (parsed_arguments.jobs, ' '.join(make_args + paths)),
-      'make -j%s %s install' % (
-          parsed_arguments.jobs,
-          ' '.join(install_args + paths))],
-                     parsed_arguments.verbose, environment)
-  fix_rpaths(destdir)
-  # Now install the DSOs to their final place.
-  run_shell_commands([
-      'mkdir -p %s/lib' % install_prefix,
-      'install -m 644 lib/libpci.so* %s/lib/' % install_prefix,
-      'ln -sf libpci.so.%s %s/lib/libpci.so.3' % (version, install_prefix)],
-                     parsed_arguments.verbose, environment)
-
-
-def build_and_install(parsed_arguments, environment, install_prefix):
-  if parsed_arguments.build_method == 'destdir':
-    destdir_configure_make_install(
-        parsed_arguments, environment, install_prefix)
-  elif parsed_arguments.build_method == 'custom_nss':
-    nss_make_and_copy(parsed_arguments, environment, install_prefix)
-  elif parsed_arguments.build_method == 'custom_libcap':
-    libcap2_make_install(parsed_arguments, environment, install_prefix)
-  elif parsed_arguments.build_method == 'custom_libpci3':
-    libpci3_make_install(parsed_arguments, environment, install_prefix)
-  else:
-    raise Exception('Unrecognized build method: %s' %
-                    parsed_arguments.build_method)
-
-
 def unescape_flags(s):
-  # GYP escapes the build flags as if they are going to be inserted directly
-  # into the command line. Since we pass them via CFLAGS/LDFLAGS, we must drop
-  # the double quotes accordingly. 
+  """Un-escapes build flags received from GYP.
+
+  GYP escapes build flags as if they are to be inserted directly into a command
+  line, wrapping each flag in double quotes. When flags are passed via
+  CFLAGS/LDFLAGS instead, double quotes must be dropped.
+  """
   return ' '.join(shlex.split(s))
 
 
-def build_environment(parsed_arguments, product_directory, install_prefix):
-  environment = os.environ.copy()
-  # The CC/CXX environment variables take precedence over the command line
-  # flags.
-  if 'CC' not in environment and parsed_arguments.cc:
-    environment['CC'] = parsed_arguments.cc
-  if 'CXX' not in environment and parsed_arguments.cxx:
-    environment['CXX'] = parsed_arguments.cxx
+def real_path(path_relative_to_script):
+  """Returns the absolute path to a file.
 
-  cflags = unescape_flags(parsed_arguments.cflags)
-  if parsed_arguments.sanitizer_blacklist:
-    cflags += ' -fsanitize-blacklist=%s/%s' % (
-        SCRIPT_ABSOLUTE_PATH,
-        parsed_arguments.sanitizer_blacklist)
-  environment['CFLAGS'] = cflags
-  environment['CXXFLAGS'] = cflags
-
-  ldflags = unescape_flags(parsed_arguments.ldflags)
-  # Make sure the linker searches the instrumented libraries dir for
-  # library dependencies.
-  environment['LDFLAGS'] = '%s -L%s/lib' % (ldflags, install_prefix)
-
-  if parsed_arguments.sanitizer_type == 'asan':
-    # Do not report leaks during the build process.
-    environment['ASAN_OPTIONS'] = '%s:detect_leaks=0' % \
-        environment.get('ASAN_OPTIONS', '')
-
-  # libappindicator1 needs this.
-  environment['CSC'] = '/usr/bin/mono-csc'
-  return environment
+  GYP generates paths relative to the location of the .gyp file, which coincides
+  with the location of this script. This function converts them to absolute
+  paths.
+  """
+  return os.path.realpath(os.path.join(SCRIPT_ABSOLUTE_PATH,
+                                       path_relative_to_script))
 
 
+class InstrumentedPackageBuilder(object):
+  """Checks out and builds a single instrumented package."""
+  def __init__(self, args, clobber):
+    self._cc = args.cc
+    self._cxx = args.cxx
+    self._extra_configure_flags = args.extra_configure_flags
+    self._jobs = args.jobs
+    self._libdir = args.libdir
+    self._package = args.package
+    self._patch = real_path(args.patch) if args.patch else None
+    self._run_before_build = \
+        real_path(args.run_before_build) if args.run_before_build else None
+    self._sanitizer = args.sanitizer
+    self._verbose = args.verbose
+    self._clobber = clobber
+    self._working_dir = os.path.join(
+        real_path(args.intermediate_dir), self._package, '')
 
-def download_build_install(parsed_arguments):
-  product_directory = os.path.normpath('%s/%s' % (
-      SCRIPT_ABSOLUTE_PATH,
-      parsed_arguments.product_directory))
+    product_dir = real_path(args.product_dir)
+    self._destdir = os.path.join(
+        product_dir, 'instrumented_libraries', self._sanitizer)
 
-  install_prefix = '%s/instrumented_libraries/%s' % (
-      product_directory,
-      parsed_arguments.sanitizer_type)
+    self._cflags = unescape_flags(args.cflags)
+    if args.sanitizer_blacklist:
+      blacklist_file = real_path(args.sanitizer_blacklist)
+      self._cflags += ' -fsanitize-blacklist=%s' % blacklist_file
 
-  environment = build_environment(parsed_arguments, product_directory,
-                                  install_prefix)
+    self._ldflags = unescape_flags(args.ldflags)
 
-  package_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
-                                 parsed_arguments.package)
+    self.init_build_env()
 
-  # Clobber by default, unless the developer wants to hack on the package's
-  # source code.
-  clobber = (environment.get('INSTRUMENTED_LIBRARIES_NO_CLOBBER', '') != '1')
+    # Initialized later.
+    self._source_dir = None
 
-  download_source = True
-  if os.path.exists(package_directory):
-    if clobber:
-      shell_call('rm -rf %s' % package_directory, parsed_arguments.verbose)
-    else:
-      download_source = False
-  if download_source:
-    os.makedirs(package_directory)
+  def init_build_env(self):
+    self._build_env = os.environ.copy()
 
-  with ScopedChangeDirectory(package_directory) as cd_package:
-    if download_source:
-      shell_call('apt-get source %s' % parsed_arguments.package,
-                 parsed_arguments.verbose)
-    # There should be exactly one subdirectory after downloading a package.
-    subdirectories = [d for d in os.listdir('.') if os.path.isdir(d)]
-    if len(subdirectories) != 1:
+    self._build_env['CC'] = self._cc
+    self._build_env['CXX'] = self._cxx
+
+    self._build_env['CFLAGS'] = self._cflags
+    self._build_env['CXXFLAGS'] = self._cflags
+    self._build_env['LDFLAGS'] = self._ldflags
+
+    if self._sanitizer == 'asan':
+      # Do not report leaks during the build process.
+      self._build_env['ASAN_OPTIONS'] = \
+          '%s:detect_leaks=0' % self._build_env.get('ASAN_OPTIONS', '')
+
+    # libappindicator1 needs this.
+    self._build_env['CSC'] = '/usr/bin/mono-csc'
+
+  def shell_call(self, command, env=None, cwd=None):
+    """Wrapper around subprocess.Popen().
+
+    Calls command with specific environment and verbosity using
+    subprocess.Popen().
+    """
+    child = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        env=env, shell=True, cwd=cwd)
+    stdout, stderr = child.communicate()
+    if self._verbose or child.returncode:
+      print stdout
+    if child.returncode:
+      raise Exception('Failed to run: %s' % command)
+
+  def maybe_download_source(self):
+    """Checks out the source code (if needed) and sets self._source_dir."""
+    get_fresh_source = self._clobber or not os.path.exists(self._working_dir)
+    if get_fresh_source:
+      self.shell_call('rm -rf %s' % self._working_dir)
+      os.makedirs(self._working_dir)
+      self.shell_call('apt-get source %s' % self._package,
+                      cwd=self._working_dir)
+
+    (dirpath, dirnames, filenames) = os.walk(self._working_dir).next()
+    if len(dirnames) != 1:
       raise Exception('apt-get source %s must create exactly one subdirectory.'
-         % parsed_arguments.package)
-    with ScopedChangeDirectory(subdirectories[0]):
-      # Here we are in the package directory.
-      if download_source:
-        # Patch/run_before_build steps are only done once.
-        if parsed_arguments.patch:
-          shell_call(
-              'patch -p1 -i %s/%s' %
-              (os.path.relpath(cd_package.old_path),
-               parsed_arguments.patch),
-              parsed_arguments.verbose)
-        if parsed_arguments.run_before_build:
-          shell_call(
-              '%s/%s' %
-              (os.path.relpath(cd_package.old_path),
-               parsed_arguments.run_before_build),
-              parsed_arguments.verbose)
-      try:
-        build_and_install(parsed_arguments, environment, install_prefix)
-      except Exception as exception:
-        print exception
-        print 'Failed to build package %s.' % parsed_arguments.package
-        print ('Probably, some of its dependencies are not installed: %s' %
-               ' '.join(get_package_build_dependencies(parsed_arguments.package)))
-        sys.exit(1)
+         % self._package)
+    self._source_dir = os.path.join(dirpath, dirnames[0], '')
 
-  # Touch a txt file to indicate package is installed.
-  open('%s/%s.txt' % (install_prefix, parsed_arguments.package), 'w').close()
+    return get_fresh_source
 
-  # Remove downloaded package and generated temporary build files.
-  # Failed builds intentionally skip this step, in order to aid in tracking down
-  # build failures.
-  if clobber:
-    shell_call('rm -rf %s' % package_directory, parsed_arguments.verbose)
+  def patch_source(self):
+    if self._patch:
+      self.shell_call('patch -p1 -i %s' % self._patch, cwd=self._source_dir)
+    if self._run_before_build:
+      self.shell_call(self._run_before_build, cwd=self._source_dir)
+
+  def download_build_install(self):
+    got_fresh_source = self.maybe_download_source()
+    if got_fresh_source:
+      self.patch_source()
+
+    self.shell_call('mkdir -p %s' % self.dest_libdir())
+
+    try:
+      self.build_and_install()
+    except Exception as exception:
+      print 'ERROR: Failed to build package %s. Have you run ' \
+            'src/third_party/instrumented_libraries/install-build-deps.sh?' % \
+            self._package
+      print
+      raise
+
+    # Touch a text file to indicate package is installed.
+    stamp_file = os.path.join(self._destdir, '%s.txt' % self._package)
+    open(stamp_file, 'w').close()
+
+    # Remove downloaded package and generated temporary build files. Failed
+    # builds intentionally skip this step to help debug build failures.
+    if self._clobber:
+      self.shell_call('rm -rf %s' % self._working_dir)
+
+  def fix_rpaths(self, directory):
+    # TODO(earthdok): reimplement fix_rpaths.sh in Python.
+    script = real_path('fix_rpaths.sh')
+    self.shell_call("%s %s" % (script, directory))
+
+  def temp_dir(self):
+    """Returns the directory which will be passed to `make install'."""
+    return os.path.join(self._source_dir, 'debian', 'instrumented_build')
+
+  def temp_libdir(self):
+    """Returns the directory under temp_dir() containing the DSOs."""
+    return os.path.join(self.temp_dir(), self._libdir)
+
+  def dest_libdir(self):
+    """Returns the final location of the DSOs."""
+    return os.path.join(self._destdir, self._libdir)
+
+  def make(self, args, jobs=None, env=None, cwd=None):
+    """Invokes `make'.
+
+    Invokes `make' with the specified args, using self._build_env and
+    self._source_dir by default.
+    """
+    if jobs is None:
+      jobs = self._jobs
+    if cwd is None:
+      cwd = self._source_dir
+    if env is None:
+      env = self._build_env
+    cmd = ['make', '-j%s' % jobs] + args
+    self.shell_call(' '.join(cmd), env=env, cwd=cwd)
+
+  def make_install(self, args, **kwargs):
+    """Invokes `make install'."""
+    self.make(['install'] + args, **kwargs)
+
+  def build_and_install(self):
+    """Builds and installs the DSOs.
+
+    Builds the package with ./configure + make, installs it to a temporary
+    location, then moves the relevant files to their permanent location. 
+    """
+    configure_cmd = './configure --libdir=/%s/ %s' % (
+        self._libdir, self._extra_configure_flags)
+    self.shell_call(configure_cmd, env=self._build_env, cwd=self._source_dir)
+
+    # Some makefiles use BUILDROOT or INSTALL_ROOT instead of DESTDIR.
+    args = ['DESTDIR', 'BUILDROOT', 'INSTALL_ROOT']
+    make_args = ['%s=%s' % (name, self.temp_dir()) for name in args]
+    self.make(make_args)
+
+    # Some packages don't support parallel install. Use -j1 always.
+    self.make_install(make_args, jobs=1)
+
+    # .la files are not needed, nuke them.
+    self.shell_call('rm %s/*.la -f' % self.temp_libdir())
+
+    self.fix_rpaths(self.temp_libdir())
+
+    # Now move the contents of the temporary destdir to their final place.
+    # We only care for the contents of LIBDIR.
+    self.shell_call('cp %s/* %s/ -rdf' % (self.temp_libdir(),
+                                          self.dest_libdir()))
+
+
+class LibcapBuilder(InstrumentedPackageBuilder):
+  def build_and_install(self):
+    # libcap2 doesn't have a configure script
+    build_args = ['CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS']
+    make_args = [
+        '%s="%s"' % (name, self._build_env[name]) for name in build_args
+    ]
+    self.make(make_args)
+
+    install_args = [
+        'DESTDIR=%s' % self.temp_dir(),
+        'lib=%s' % self._libdir,
+        # Skip a step that requires sudo.
+        'RAISE_SETFCAP=no'
+    ]
+    self.make_install(install_args)
+
+    self.fix_rpaths(self.temp_libdir())
+
+    # Now move the contents of the temporary destdir to their final place.
+    # We only care for the contents of LIBDIR.
+    self.shell_call('cp %s/* %s/ -rdf' % (self.temp_libdir(),
+                                          self.dest_libdir()))
+
+
+class Libpci3Builder(InstrumentedPackageBuilder):
+  def package_version(self):
+    """Guesses libpci3 version from source directory name."""
+    dir_name = os.path.split(os.path.normpath(self._source_dir))[-1]
+    match = re.match('pciutils-(\d+\.\d+\.\d+)', dir_name)
+    if match is None:
+      raise Exception(
+          'Unable to guess libpci3 version from directory name: %s' %  dir_name)
+    return match.group(1)
+
+  def temp_libdir(self):
+    # DSOs have to be picked up from <source_dir>/lib, since `make install'
+    # doesn't actualy install them anywhere.
+    return os.path.join(self._source_dir, 'lib')
+
+  def build_and_install(self):
+    # pciutils doesn't have a configure script
+    # This build process follows debian/rules.
+    self.shell_call('mkdir -p %s-udeb/usr/bin' % self.temp_dir())
+
+    build_args = ['CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS']
+    make_args = [
+        '%s="%s"' % (name, self._build_env[name]) for name in build_args
+    ]
+    make_args += [
+        'LIBDIR=/%s/' % self._libdir,
+        'PREFIX=/usr',
+        'SBINDIR=/usr/bin',
+        'IDSDIR=/usr/share/misc',
+        'SHARED=yes',
+        # pciutils-3.2.1 (Trusty) fails to build due to unresolved libkmod
+        # symbols. The binary package has no dependencies on libkmod, so it
+        # looks like it was actually built without libkmod support.
+       'LIBKMOD=no',
+    ]
+    self.make(make_args)
+
+    # `make install' is not needed.
+    self.fix_rpaths(self.temp_libdir())
+
+    # Now install the DSOs to their final place.
+    self.shell_call(
+        'install -m 644 %s/libpci.so* %s' % (self.temp_libdir(),
+                                             self.dest_libdir()))
+    self.shell_call(
+        'ln -sf libpci.so.%s %s/libpci.so.3' % (self.package_version(),
+                                                self.dest_libdir()))
+
+
+class NSSBuilder(InstrumentedPackageBuilder):
+  def build_and_install(self):
+    # NSS uses a build system that's different from configure/make/install. All
+    # flags must be passed as arguments to make.
+    make_args = [
+        # Do an optimized build.
+        'BUILD_OPT=1',
+        # CFLAGS/CXXFLAGS should not be used, as doing so overrides the flags in
+        # the makefile completely. The only way to append our flags is to tack
+        # them onto CC/CXX.
+        'CC="%s %s"' % (self._build_env['CC'], self._build_env['CFLAGS']),
+        'CXX="%s %s"' % (self._build_env['CXX'], self._build_env['CXXFLAGS']),
+        # We need to override ZDEFS_FLAG at least to avoid -Wl,-z,defs, which
+        # is not compatible with sanitizers. We also need some way to pass
+        # LDFLAGS without overriding the defaults. Conveniently, ZDEF_FLAG is
+        # always appended to link flags when building NSS on Linux, so we can
+        # just add our LDFLAGS here.
+        'ZDEFS_FLAG="-Wl,-z,nodefs %s"' % self._build_env['LDFLAGS'],
+        'NSPR_INCLUDE_DIR=/usr/include/nspr',
+        'NSPR_LIB_DIR=%s' % self.dest_libdir(),
+        'NSS_ENABLE_ECC=1'
+    ]
+    if platform.architecture()[0] == '64bit':
+      make_args.append('USE_64=1')
+
+    # Make sure we don't override the default flags in the makefile.
+    for variable in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
+      del self._build_env[variable]
+
+    # Hardcoded paths.
+    temp_dir = os.path.join(self._source_dir, 'nss')
+    temp_libdir = os.path.join(temp_dir, 'lib')
+
+    # Parallel build is not supported. Also, the build happens in
+    # <source_dir>/nss.
+    self.make(make_args, jobs=1, cwd=temp_dir)
+
+    self.fix_rpaths(temp_libdir)
+
+    # 'make install' is not supported. Copy the DSOs manually.
+    for (dirpath, dirnames, filenames) in os.walk(temp_libdir):
+      for filename in filenames:
+        if filename.endswith('.so'):
+          full_path = os.path.join(dirpath, filename)
+          if self._verbose:
+            print 'download_build_install.py: installing %s' % full_path
+          shutil.copy(full_path, self.dest_libdir())
+
 
 def main():
-  argument_parser = argparse.ArgumentParser(
-      description='Download, build and install instrumented package')
+  parser = argparse.ArgumentParser(
+      description='Download, build and install an instrumented package.')
 
-  argument_parser.add_argument('-j', '--jobs', type=int, default=1)
-  argument_parser.add_argument('-p', '--package', required=True)
-  argument_parser.add_argument(
-      '-i', '--product-directory', default='.',
+  parser.add_argument('-j', '--jobs', type=int, default=1)
+  parser.add_argument('-p', '--package', required=True)
+  parser.add_argument(
+      '-i', '--product-dir', default='.',
       help='Relative path to the directory with chrome binaries')
-  argument_parser.add_argument(
-      '-m', '--intermediate-directory', default='.',
+  parser.add_argument(
+      '-m', '--intermediate-dir', default='.',
       help='Relative path to the directory for temporary build files')
-  argument_parser.add_argument('--extra-configure-flags', default='')
-  argument_parser.add_argument('--cflags', default='')
-  argument_parser.add_argument('--ldflags', default='')
-  argument_parser.add_argument('-s', '--sanitizer-type', required=True,
+  parser.add_argument('--extra-configure-flags', default='')
+  parser.add_argument('--cflags', default='')
+  parser.add_argument('--ldflags', default='')
+  parser.add_argument('-s', '--sanitizer', required=True,
                                choices=['asan', 'msan', 'tsan'])
-  argument_parser.add_argument('-v', '--verbose', action='store_true')
-  argument_parser.add_argument('--check-build-deps', action='store_true')
-  argument_parser.add_argument('--cc')
-  argument_parser.add_argument('--cxx')
-  argument_parser.add_argument('--patch', default='')
+  parser.add_argument('-v', '--verbose', action='store_true')
+  parser.add_argument('--cc')
+  parser.add_argument('--cxx')
+  parser.add_argument('--patch', default='')
   # This should be a shell script to run before building specific libraries.
   # This will be run after applying the patch above.
-  argument_parser.add_argument('--run-before-build', default='')
-  argument_parser.add_argument('--build-method', default='destdir')
-  argument_parser.add_argument('--sanitizer-blacklist', default='')
+  parser.add_argument('--run-before-build', default='')
+  parser.add_argument('--build-method', default='destdir')
+  parser.add_argument('--sanitizer-blacklist', default='')
+  # The LIBDIR argument to configure/make.
+  parser.add_argument('--libdir', default='lib')
 
   # Ignore all empty arguments because in several cases gyp passes them to the
   # script, but ArgumentParser treats them as positional arguments instead of
   # ignoring (and doesn't have such options).
-  parsed_arguments = argument_parser.parse_args(
-      [arg for arg in sys.argv[1:] if len(arg) != 0])
-  # Ensure current working directory is this script directory.
-  os.chdir(SCRIPT_ABSOLUTE_PATH)
-  # Ensure all build dependencies are installed.
-  if parsed_arguments.check_build_deps:
-    check_package_build_dependencies(parsed_arguments.package)
+  args = parser.parse_args([arg for arg in sys.argv[1:] if len(arg) != 0])
 
-  download_build_install(parsed_arguments)
+  # Clobber by default, unless the developer wants to hack on the package's
+  # source code.
+  clobber = \
+        (os.environ.get('INSTRUMENTED_LIBRARIES_NO_CLOBBER', '') != '1')
 
+  if args.build_method == 'destdir':
+    builder = InstrumentedPackageBuilder(args, clobber)
+  elif args.build_method == 'custom_nss':
+    builder = NSSBuilder(args, clobber)
+  elif args.build_method == 'custom_libcap':
+    builder = LibcapBuilder(args, clobber)
+  elif args.build_method == 'custom_libpci3':
+    builder = Libpci3Builder(args, clobber)
+  else:
+    raise Exception('Unrecognized build method: %s' % args.build_method)
+
+  builder.download_build_install()
 
 if __name__ == '__main__':
   main()
