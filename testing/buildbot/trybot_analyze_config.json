@@ -11,6 +11,7 @@
       "build/linux/sysroot_ld_path.sh",
       "DEPS",
       "testing/buildbot/.*",
+      "testing/test_env.py",
       "tools/clang/blink_gc_plugin/CMakeLists.txt",
       "tools/whitespace.txt"
     ]
