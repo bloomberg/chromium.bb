@@ -25,16 +25,16 @@ Measurement::Measurement(const std::string& name,
     : name(name), wall_time(wall_time), cpu_time(cpu_time), gpu_time(gpu_time) {
 }
 
-void Measurement::PrintResult(const std::string& suffix) const {
-  perf_test::PrintResult(name, "_wall" + suffix, "",
-                         wall_time.InMillisecondsF(), "ms", true);
+void Measurement::PrintResult(const std::string& graph) const {
+  perf_test::PrintResult(graph, "", name + "_wall", wall_time.InMillisecondsF(),
+                         "ms", true);
   if (cpu_time.InMicroseconds() >= 0) {
-    perf_test::PrintResult(name, "_cpu" + suffix, "",
-                           cpu_time.InMillisecondsF(), "ms", true);
+    perf_test::PrintResult(graph, "", name + "_cpu", cpu_time.InMillisecondsF(),
+                           "ms", true);
   }
   if (gpu_time.InMicroseconds() >= 0) {
-    perf_test::PrintResult(name, "_gpu" + suffix, "",
-                           gpu_time.InMillisecondsF(), "ms", true);
+    perf_test::PrintResult(graph, "", name + "_gpu", gpu_time.InMillisecondsF(),
+                           "ms", true);
   }
 }
 

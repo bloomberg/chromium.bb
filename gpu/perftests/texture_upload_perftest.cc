@@ -337,15 +337,15 @@ class TextureUploadPerfTest : public testing::Test {
         aggregate.Increment(measurement);
       }
     }
-    std::string suffix = base::StringPrintf(
-        "_%d_%s", size.width(), gfx::GLEnums::GetStringEnum(format).c_str());
+    std::string graph_name = base::StringPrintf(
+        "%d_%s", size.width(), gfx::GLEnums::GetStringEnum(format).c_str());
     if (successful_runs) {
       for (const auto& entry : aggregates) {
         const auto m = entry.second.Divide(successful_runs);
-        m.PrintResult(suffix);
+        m.PrintResult(graph_name);
       }
     }
-    perf_test::PrintResult("sample_runs", suffix, "",
+    perf_test::PrintResult("sample_runs", "", graph_name,
                            static_cast<size_t>(successful_runs), "laps", true);
   }
 
@@ -455,8 +455,9 @@ TEST_F(TextureUploadPerfTest, renaming) {
   bool gpu_timer_errors = gpu_timing_client_->IsAvailable() &&
                           gpu_timing_client_->CheckAndResetTimerErrors();
   if (!gpu_timer_errors) {
-    upload_and_draw_timers.GetAsMeasurement("upload_and_draw").PrintResult("");
-    finish_timers.GetAsMeasurement("finish").PrintResult("");
+    upload_and_draw_timers.GetAsMeasurement("upload_and_draw")
+        .PrintResult("renaming");
+    finish_timers.GetAsMeasurement("finish").PrintResult("renaming");
   }
 }
 

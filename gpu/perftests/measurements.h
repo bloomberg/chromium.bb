@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 
 namespace gfx {
-  class GPUTimingClient;
-  class GPUTimer;
+class GPUTimingClient;
+class GPUTimer;
 }
 
 namespace gpu {
@@ -26,7 +26,7 @@ struct Measurement {
               const base::TimeDelta gpu_time);
   ~Measurement();
 
-  void PrintResult(const std::string& suffix) const;
+  void PrintResult(const std::string& graph) const;
   Measurement& Increment(const Measurement& m);
   Measurement Divide(int a) const;
 
