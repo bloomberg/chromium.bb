@@ -1698,6 +1698,12 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     notify_error = validation_pool.PatchConflict(self.patches[0])
     self.assertEqualNotifyArg(notify_error, self.patches[0], 'error')
 
+  def testConflictAlreadyMerged(self):
+    """Submit a change that conflicts with TOT because it was already merged."""
+    error = gob_util.GOBError(httplib.CONFLICT, 'change is merged\n')
+    self.pool_mock.submit_results[self.patches[0]] = error
+    self.SubmitPool(submitted=self.patches, rejected=())
+
   def testServerError(self):
     """Test case where GOB returns a server error."""
     error = gerrit.GerritException('Internal server error')

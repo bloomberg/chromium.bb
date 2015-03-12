@@ -1727,7 +1727,10 @@ class ValidationPool(object):
             submitted.append(dep_change)
         except (gob_util.GOBError, gerrit.GerritException) as e:
           if getattr(e, 'http_status', None) == httplib.CONFLICT:
-            dep_error = PatchConflict(dep_change)
+            if e.message.rstrip().endswith('change is merged'):
+              submitted.append(dep_change)
+            else:
+              dep_error = PatchConflict(dep_change)
           else:
             dep_error = PatchFailedToSubmit(dep_change, str(e))
 
