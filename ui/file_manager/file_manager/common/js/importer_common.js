@@ -80,6 +80,7 @@ importer.isEligibleType = function(entry) {
 importer.isBeneathMediaDir = function(entry) {
   var path = entry.fullPath.toUpperCase();
   return path.indexOf('/DCIM/') === 0 ||
+      path.indexOf('/MP_ROOT/') === 0 ||
       path.indexOf('/MISSINGNO/') >= 0;
 };
 
@@ -131,7 +132,9 @@ importer.isMediaDirectory = function(entry, volumeInfoProvider) {
   var path = entry.fullPath.toUpperCase();
   if (path.indexOf('/MISSINGNO') !== -1) {
     return true;
-  } else if (path !== '/DCIM' && path !== '/DCIM/') {
+  } else if (path !== '/DCIM' && path !== '/DCIM/' &&
+      // MP_ROOT is a sony thing.
+      path !== '/MP_ROOT' && path !== '/MP_ROOT/') {
     return false;
   }
 

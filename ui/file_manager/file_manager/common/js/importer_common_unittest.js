@@ -83,7 +83,7 @@ function testIsEligibleEntry() {
 }
 
 function testIsMediaDirectory() {
-  ['/DCIM', '/DCIM/', '/dcim', '/dcim/' ].forEach(
+  ['/DCIM', '/DCIM/', '/dcim', '/dcim/', '/MP_ROOT/' ].forEach(
       assertIsMediaDir);
   ['/blabbity/DCIM', '/blabbity/dcim', '/blabbity-blab'].forEach(
       assertIsNotMediaDir);
