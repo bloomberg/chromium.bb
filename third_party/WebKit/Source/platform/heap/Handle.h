@@ -409,7 +409,32 @@ class CrossThreadPersistent : public Persistent<T, GlobalPersistents> {
 public:
     CrossThreadPersistent(T* raw) : Persistent<T, GlobalPersistents>(raw) { }
 
-    using Persistent<T, GlobalPersistents>::operator=;
+    CrossThreadPersistent& operator=(const CrossThreadPersistent& other)
+    {
+        Persistent<T, GlobalPersistents>::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadPersistent& operator=(const Persistent<U, GlobalPersistents>& other)
+    {
+        Persistent<T, GlobalPersistents>::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadPersistent& operator=(const Member<U>& other)
+    {
+        Persistent<T, GlobalPersistents>::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    CrossThreadPersistent& operator=(const RawPtr<U>& other)
+    {
+        Persistent<T, GlobalPersistents>::operator=(other);
+        return *this;
+    }
 };
 
 // FIXME: derive affinity based on the collection.
