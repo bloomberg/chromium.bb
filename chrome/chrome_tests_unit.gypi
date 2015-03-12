@@ -200,6 +200,7 @@
       'browser/prerender/prerender_unittest.cc',
       'browser/prerender/prerender_util_unittest.cc',
       'browser/process_info_snapshot_mac_unittest.cc',
+      'browser/process_singleton_win_unittest.cc',
       'browser/profiles/file_path_verifier_win_unittest.cc',
       'browser/profiles/gaia_info_update_service_unittest.cc',
       'browser/profiles/profile_avatar_icon_util_unittest.cc',

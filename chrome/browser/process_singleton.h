@@ -61,9 +61,9 @@ class ProcessSingleton : public base::NonThreadSafe {
   // Chrome process was launched. Return true if the command line will be
   // handled within the current browser instance or false if the remote process
   // should handle it (i.e., because the current process is shutting down).
-  typedef base::Callback<bool(
-      const base::CommandLine& command_line,
-      const base::FilePath& current_directory)> NotificationCallback;
+  using NotificationCallback =
+      base::Callback<bool(const base::CommandLine& command_line,
+                          const base::FilePath& current_directory)>;
 
   ProcessSingleton(const base::FilePath& user_data_dir,
                    const NotificationCallback& notification_callback);
@@ -91,6 +91,13 @@ class ProcessSingleton : public base::NonThreadSafe {
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   static void DisablePromptForTesting();
+#endif
+#if defined(OS_WIN)
+  // Called to query whether to kill a hung browser process that has visible
+  // windows. Return true to allow killing the hung process.
+  using ShouldKillRemoteProcessCallback = base::Callback<bool()>;
+  void OverrideShouldKillRemoteProcessCallbackForTesting(
+      const ShouldKillRemoteProcessCallback& display_dialog_callback);
 #endif
 
  protected:
@@ -128,6 +135,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
   HANDLE lock_file_;
   base::FilePath user_data_dir_;
+  ShouldKillRemoteProcessCallback should_kill_remote_process_callback_;
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   // Return true if the given pid is one of our child processes.
   // Assumes that the current pid is the root of all pids of the current

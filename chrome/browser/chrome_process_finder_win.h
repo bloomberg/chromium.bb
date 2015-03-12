@@ -7,6 +7,8 @@
 
 #include <windows.h>
 
+#include "base/time/time.h"
+
 namespace base {
 class FilePath;
 }
@@ -28,6 +30,9 @@ HWND FindRunningChromeWindow(const base::FilePath& user_data_dir);
 // |fast_start| is true when this is being called on the window fast start path.
 NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
                                                 bool fast_start);
+
+// Changes the notification timeout to |new_timeout|, returns the old timeout.
+base::TimeDelta SetNotificationTimeoutForTesting(base::TimeDelta new_timeout);
 
 }  // namespace chrome
 

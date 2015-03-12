@@ -28,7 +28,7 @@
 
 namespace {
 
-const int kTimeoutInSeconds = 20;
+int timeout_in_milliseconds = 20 * 1000;
 
 // The following is copied from net/base/escape.cc. We don't want to depend on
 // net here because this gets compiled into chrome.exe to facilitate
@@ -141,13 +141,9 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
   cds.cbData = static_cast<DWORD>((to_send.length() + 1) * sizeof(wchar_t));
   cds.lpData = const_cast<wchar_t*>(to_send.c_str());
   DWORD_PTR result = 0;
-  if (::SendMessageTimeout(remote_window,
-                           WM_COPYDATA,
-                           NULL,
-                           reinterpret_cast<LPARAM>(&cds),
-                           SMTO_ABORTIFHUNG,
-                           kTimeoutInSeconds * 1000,
-                           &result)) {
+  if (::SendMessageTimeout(remote_window, WM_COPYDATA, NULL,
+                           reinterpret_cast<LPARAM>(&cds), SMTO_ABORTIFHUNG,
+                           timeout_in_milliseconds, &result)) {
     return result ? NOTIFY_SUCCESS : NOTIFY_FAILED;
   }
 
@@ -157,6 +153,13 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
 
   // If the window couldn't be notified but still exists, assume it is hung.
   return NOTIFY_WINDOW_HUNG;
+}
+
+base::TimeDelta SetNotificationTimeoutForTesting(base::TimeDelta new_timeout) {
+  base::TimeDelta old_timeout =
+      base::TimeDelta::FromMilliseconds(timeout_in_milliseconds);
+  timeout_in_milliseconds = new_timeout.InMilliseconds();
+  return old_timeout;
 }
 
 }  // namespace chrome

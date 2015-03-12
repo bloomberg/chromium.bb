@@ -195,6 +195,14 @@ bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
   return false;
 }
 
+bool DisplayShouldKillMessageBox() {
+  return chrome::ShowMessageBox(
+             NULL, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+             l10n_util::GetStringUTF16(IDS_BROWSER_HUNGBROWSER_MESSAGE),
+             chrome::MESSAGE_BOX_TYPE_QUESTION) !=
+         chrome::MESSAGE_BOX_RESULT_NO;
+}
+
 }  // namespace
 
 // Microsoft's Softricity virtualization breaks the sandbox processes.
@@ -232,8 +240,11 @@ ProcessSingleton::ProcessSingleton(
     const base::FilePath& user_data_dir,
     const NotificationCallback& notification_callback)
     : notification_callback_(notification_callback),
-      is_virtualized_(false), lock_file_(INVALID_HANDLE_VALUE),
-      user_data_dir_(user_data_dir) {
+      is_virtualized_(false),
+      lock_file_(INVALID_HANDLE_VALUE),
+      user_data_dir_(user_data_dir),
+      should_kill_remote_process_callback_(
+          base::Bind(&DisplayShouldKillMessageBox)) {
 }
 
 ProcessSingleton::~ProcessSingleton() {
@@ -279,12 +290,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
                       reinterpret_cast<LPARAM>(&visible_window));
 
   // If there is a visible browser window, ask the user before killing it.
-  if (visible_window &&
-      chrome::ShowMessageBox(
-          NULL,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          l10n_util::GetStringUTF16(IDS_BROWSER_HUNGBROWSER_MESSAGE),
-          chrome::MESSAGE_BOX_TYPE_QUESTION) == chrome::MESSAGE_BOX_RESULT_NO) {
+  if (visible_window && !should_kill_remote_process_callback_.Run()) {
     // The user denied. Quit silently.
     return PROCESS_NOTIFIED;
   }
@@ -436,4 +442,9 @@ bool ProcessSingleton::Create() {
 }
 
 void ProcessSingleton::Cleanup() {
+}
+
+void ProcessSingleton::OverrideShouldKillRemoteProcessCallbackForTesting(
+    const ShouldKillRemoteProcessCallback& display_dialog_callback) {
+  should_kill_remote_process_callback_ = display_dialog_callback;
 }
