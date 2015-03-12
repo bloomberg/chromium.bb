@@ -39,7 +39,7 @@ llvm_test_suite=6438a2b505fa29f82eb850aed1785db1738b971c
 #
 # Three lines avoid merge conflicts.
 #
-compiler_rt=2713ae545b16fb6f9105ab5d241352512037c112
+compiler_rt=73bb5a264b4b3e1a74fa7e994abc741ad6e6ef90
 #
 # Three lines avoid merge conflicts.
 #
