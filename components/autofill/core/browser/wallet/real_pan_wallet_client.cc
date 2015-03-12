@@ -141,10 +141,11 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
         response_dict.reset(
             static_cast<base::DictionaryValue*>(message_value.release()));
         response_dict->GetString("pan", &real_pan);
-        if (real_pan.empty())
-          result = AutofillClient::TRY_AGAIN_FAILURE;
         // TODO(estade): check response for allow_retry.
       }
+      if (real_pan.empty())
+        result = AutofillClient::TRY_AGAIN_FAILURE;
+
       break;
     }
 
