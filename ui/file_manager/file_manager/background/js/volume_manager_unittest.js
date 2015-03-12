@@ -251,3 +251,33 @@ function testVolumeInfoListWhenReady(callback) {
         assertEquals(volumeInfo, volumes[1]);
       }), callback);
 }
+
+function testDriveMountedDuringInitialization(callback) {
+  var sendMetadataListCallback;
+  chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {
+    sendMetadataListCallback = callback;
+  };
+
+  // Start initialization.
+  var instancePromise = VolumeManager.getInstance();
+
+  // Drive is mounted during initialization.
+  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+    eventType: 'mount',
+    status: 'success',
+    volumeMetadata: {
+      volumeId: 'drive',
+      volumeType: VolumeManagerCommon.VolumeType.DRIVE,
+      sourcePath: '/drive',
+      profile: getMockProfile()
+    }
+  });
+
+  // Complete initialization.
+  sendMetadataListCallback([]);
+
+  reportPromise(instancePromise.then(function(volumeManager) {
+    assertTrue(!!volumeManager.getCurrentProfileVolumeInfo(
+        VolumeManagerCommon.VolumeType.DRIVE));
+  }), callback);
+}

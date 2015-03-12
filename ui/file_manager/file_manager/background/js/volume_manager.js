@@ -625,7 +625,34 @@ VolumeManager.getInstance = function(opt_callback) {
 VolumeManager.revokeInstanceForTesting = function() {
   VolumeManager.instancePromise_ = null;
   VolumeManager.instance_ = null;
-}
+};
+
+/**
+ * Adds new volume info from the given volumeMetadata. If the corresponding
+ * volume info has already been added, the volumeMetadata is ignored.
+ * @param {!VolumeMetadata} volumeMetadata
+ * @return {!Promise<!VolumeInfo>}
+ * @private
+ */
+VolumeManager.prototype.addVolumeMetadata_ = function(volumeMetadata) {
+  return new Promise(function(callback) {
+    volumeManagerUtil.createVolumeInfo(volumeMetadata, callback);
+  }).then(function(volumeInfo) {
+    if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
+      this.volumeInfoList.add(volumeInfo);
+
+      // Update the network connection status, because until the drive is
+      // initialized, the status is set to not ready.
+      // TODO(mtomasz): The connection status should be migrated into
+      // VolumeMetadata.
+      if (volumeMetadata.volumeType ===
+          VolumeManagerCommon.VolumeType.DRIVE) {
+        this.onDriveConnectionStatusChanged_();
+      }
+    }
+    return volumeInfo;
+  }.bind(this));
+};
 
 /**
  * Initializes mount points.
@@ -634,6 +661,8 @@ VolumeManager.revokeInstanceForTesting = function() {
  * @private
  */
 VolumeManager.prototype.initialize_ = function(callback) {
+  chrome.fileManagerPrivate.onMountCompleted.addListener(
+      this.onMountCompleted_.bind(this));
   console.debug('Requesting volume list.');
   chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
     console.debug('Volume list fetched with: ' + volumeMetadataList.length +
@@ -644,23 +673,16 @@ VolumeManager.prototype.initialize_ = function(callback) {
     // volumes in the volumeMetadataList are mounted. crbug.com/135477.
     this.mountQueue_.run(function(inCallback) {
       // Create VolumeInfo for each volume.
-      var group = new AsyncUtil.Group();
-      for (var i = 0; i < volumeMetadataList.length; i++) {
-        console.debug('Initializing volume: ' + volumeMetadataList[i].volumeId);
-        group.add(function(volumeMetadata, continueCallback) {
-          volumeManagerUtil.createVolumeInfo(
-              volumeMetadata,
+      Promise.all([
+        volumeMetadataList.map(function(volumeMetadata) {
+          console.debug(
+              'Initializing volume: ' + volumeMetadata.volumeId);
+          return this.addVolumeMetadata_(volumeMetadata).then(
               function(volumeInfo) {
-                this.volumeInfoList.add(volumeInfo);
-                if (volumeMetadata.volumeType ===
-                    VolumeManagerCommon.VolumeType.DRIVE)
-                  this.onDriveConnectionStatusChanged_();
                 console.debug('Initialized volume: ' + volumeInfo.volumeId);
-                continueCallback();
-              }.bind(this));
-        }.bind(this, volumeMetadataList[i]));
-      }
-      group.run(function() {
+              });
+        }.bind(this))
+      ]).then(function() {
         console.debug('Initialized all volumes.');
         // Call the callback of the initialize function.
         callback();
@@ -669,9 +691,6 @@ VolumeManager.prototype.initialize_ = function(callback) {
         inCallback();
       });
     }.bind(this));
-
-    chrome.fileManagerPrivate.onMountCompleted.addListener(
-        this.onMountCompleted_.bind(this));
   }.bind(this));
 };
 
@@ -693,20 +712,9 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
                 VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM ||
             event.status ===
                 VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
-          volumeManagerUtil.createVolumeInfo(
-              event.volumeMetadata,
+          this.addVolumeMetadata_(event.volumeMetadata).then(
               function(volumeInfo) {
-                this.volumeInfoList.add(volumeInfo);
                 this.finishRequest_(requestKey, event.status, volumeInfo);
-
-                if (volumeInfo.volumeType ===
-                    VolumeManagerCommon.VolumeType.DRIVE) {
-                  // Update the network connection status, because until the
-                  // drive is initialized, the status is set to not ready.
-                  // TODO(mtomasz): The connection status should be migrated
-                  // into VolumeMetadata.
-                  this.onDriveConnectionStatusChanged_();
-                }
                 callback();
               }.bind(this));
         } else {
