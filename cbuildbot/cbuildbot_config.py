@@ -2633,6 +2633,26 @@ _release.add_config('bobcat-release',
   signer_tests=False,
 )
 
+_release.add_config('daisy_freon-release',
+  _base_configs['daisy_freon'],
+  important=True,
+)
+
+_release.add_config('gizmo-release',
+  _base_configs['gizmo'],
+  important=True,
+)
+
+_release.add_config('lemmings-release',
+  _base_configs['lemmings'],
+  important=True,
+)
+
+_release.add_config('peppy-release',
+  _base_configs['peppy'],
+  important=True,
+)
+
 _release.add_config('samus-release',
   _base_configs['samus'],
   important=True,
@@ -2691,6 +2711,7 @@ _release.add_config('lemmings-release',
 _release.add_config('panther_embedded-minimal-release',
   _base_configs['panther_embedded'],
   profile='minimal',
+  important=True,
   paygen=False,
   signer_tests=False,
 )
@@ -2848,9 +2869,7 @@ _AddGroupConfig('sandybridge-freon', 'parrot_freon', (
     'lumpy_freon',
     'butterfly_freon',
     'stumpy_freon',
-),
-  important=False,
-)
+))
 
 # ivybridge chipset boards
 _AddGroupConfig('ivybridge', 'stout', (
@@ -2863,9 +2882,7 @@ _AddGroupConfig('ivybridge-freon', 'stout_freon', (
   'link',
 ), (
     'parrot_ivb-freon',
-),
-  important=False,
-)
+))
 
 # slippy-based haswell boards
 # TODO(davidjames): Combine slippy and beltino into haswell canary, once we've
@@ -2916,7 +2933,7 @@ _AddGroupConfig('rambi-d', 'cranky', (
     'banjo',
     'sumo',
     'ninja',
-    ),
+),
     important=False,
 )
 
@@ -2925,8 +2942,7 @@ _AddGroupConfig('rambi-freon-a', 'rambi_freon', (
     'clapper_freon',
     'enguarde_freon',
     'expresso_freon',
-),
-  important=False,
+    ),
 )
 
 _AddGroupConfig('rambi-freon-b', 'glimmer_freon', (
@@ -2941,8 +2957,7 @@ _AddGroupConfig('rambi-freon-c', 'squawks_freon', (
     'swanky_freon',
     'winky_freon',
     'candy_freon',
-),
-  important=False,
+    ),
 )
 
 # daisy-based boards
@@ -2972,7 +2987,6 @@ _AddGroupConfig('auron', 'auron', (
 _AddGroupConfig('auron-b', 'lulu', (
     'cid',
     ),
-    important=False
 )
 
 # veyron-based boards
@@ -2981,7 +2995,6 @@ _AddGroupConfig('veyron', 'veyron_pinky', (
     'veyron_mighty',
     'veyron_speedy'
     ),
-    important=False,
 )
 
 _AddGroupConfig('veyron-b', 'veyron_gus', (
@@ -2995,7 +3008,6 @@ _AddGroupConfig('veyron-b', 'veyron_gus', (
 _AddGroupConfig('veyron-c', 'veyron_brain', (
     'veyron_danger',
     ),
-    important=False,
 )
 
 # jecht-based boards
@@ -3285,30 +3297,20 @@ _waterfall_config_map = {
       'whirlwind-paladin',
 
       # Experimental Canaries (Group)
-      'auron-b-release-group',
-      'ivybridge-freon-release-group',
       'jecht-release-group',
       'rambi-d-release-group',
-      'rambi-freon-a-release-group',
       'rambi-freon-b-release-group',
-      'rambi-freon-c-release-group',
-      'sandybridge-freon-release-group',
       'veyron-b-release-group',
-      'veyron-c-release-group',
-      'veyron-release-group',
 
       # Experimental Canaries
       'bobcat-release',
       'cosmos-release',
-      'daisy_freon-release',
       'daisy_winter-release',
       'gizmo-release',
       'kayle-release',
       'lemmings-release',
       'nyan_freon-release',
-      'panther_embedded-minimal-release',
       'panther_moblab-release',
-      'peppy-release',
       'rush_ryu-release',
       'strago-release',
       'urara-release',

@@ -1319,6 +1319,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: lulu, cid)",
+        "important": true,
         "name": "auron-b-release-group"
     },
     "auron-chrome-pfq": {
@@ -12786,6 +12787,7 @@
             "test",
             "factory_install"
         ],
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -21148,6 +21150,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: stout_freon, link, parrot_ivb-freon)",
+        "important": true,
         "name": "ivybridge-freon-release-group"
     },
     "ivybridge-full-group": {
@@ -33829,6 +33832,7 @@
             "test",
             "factory_install"
         ],
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -39034,6 +39038,7 @@
             "test",
             "factory_install"
         ],
+        "important": true,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -43403,6 +43408,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: rambi_freon, clapper_freon, enguarde_freon, expresso_freon)",
+        "important": true,
         "name": "rambi-freon-a-release-group"
     },
     "rambi-freon-b-full-group": {
@@ -44079,6 +44085,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: squawks_freon, swanky_freon, winky_freon, candy_freon)",
+        "important": true,
         "name": "rambi-freon-c-release-group"
     },
     "rambi-full": {
@@ -47524,6 +47531,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: parrot_freon, lumpy_freon, butterfly_freon, stumpy_freon)",
+        "important": true,
         "name": "sandybridge-freon-release-group"
     },
     "sandybridge-full-group": {
@@ -57332,6 +57340,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_brain, veyron_danger)",
+        "important": true,
         "name": "veyron-c-release-group"
     },
     "veyron-full-group": {
@@ -57677,6 +57686,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_pinky, veyron_jerry, veyron_mighty, veyron_speedy)",
+        "important": true,
         "name": "veyron-release-group"
     },
     "veyron_brain-chrome-pfq": {
