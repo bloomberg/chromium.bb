@@ -143,18 +143,16 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view1 = widget1->GetNativeView();
   aura::client::GetFocusClient(native_view1)->FocusWindow(native_view1);
-  ASSERT_EQ(2, static_cast<int>(widget_listener.focus_changes().size()));
-  EXPECT_EQ(native_view1, widget_listener.focus_changes()[0].second);
-  EXPECT_EQ(native_view1, widget_listener.focus_changes()[1].second);
+  ASSERT_EQ(2u, widget_listener.focus_changes().size());
+  EXPECT_EQ(nullptr, widget_listener.focus_changes()[0]);
+  EXPECT_EQ(native_view1, widget_listener.focus_changes()[1]);
 
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view2 = widget2->GetNativeView();
   aura::client::GetFocusClient(native_view2)->FocusWindow(native_view2);
-  ASSERT_EQ(2, static_cast<int>(widget_listener.focus_changes().size()));
-  EXPECT_EQ(NativeViewPair(native_view1, native_view2),
-            widget_listener.focus_changes()[0]);
-  EXPECT_EQ(NativeViewPair(native_view1, native_view2),
-            widget_listener.focus_changes()[1]);
+  ASSERT_EQ(2u, widget_listener.focus_changes().size());
+  EXPECT_EQ(nullptr, widget_listener.focus_changes()[0]);
+  EXPECT_EQ(native_view2, widget_listener.focus_changes()[1]);
 }
 
 // Counts accelerator calls.

@@ -106,7 +106,7 @@ void PanelStackWindow::OnWidgetDestroying(views::Widget* widget) {
   window_ = NULL;
 }
 
-}
+}  // namespace
 
 // static
 NativePanelStackWindow* NativePanelStackWindow::Create(
@@ -339,13 +339,12 @@ void PanelStackView::OnPanelActivated(Panel* panel) {
   // Nothing to do.
 }
 
-void PanelStackView::OnNativeFocusChange(gfx::NativeView focused_before,
-                                         gfx::NativeView focused_now) {
+void PanelStackView::OnNativeFocusChanged(gfx::NativeView focused_now) {
   // When the user selects the stacked panels via ALT-TAB or WIN-TAB, the
   // background stack window, instead of the foreground panel window, receives
   // WM_SETFOCUS message. To deal with this, we listen to the focus change event
   // and activate the most recently active panel.
-  // Note that OnNativeFocusChange might be called when window_ has not be
+  // Note that OnNativeFocusChanged might be called when window_ has not been
   // created yet.
 #if defined(OS_WIN)
   if (!panels_.empty() && window_ && focused_now == window_->GetNativeView()) {

@@ -64,8 +64,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::WidgetFocusChangeListener implementation.
-  void OnNativeFocusChange(gfx::NativeView focused_before,
-                           gfx::NativeView focused_now) override;
+  void OnNativeFocusChanged(gfx::NativeView focused_now) override;
 
   // Stop observing accelerators and focus changes.
   void RemoveObserver();

@@ -81,9 +81,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
 }
 
 #if !defined(OS_MACOSX)
-void WindowsEventRouter::OnNativeFocusChange(
-    gfx::NativeView focused_before,
-    gfx::NativeView focused_now) {
+void WindowsEventRouter::OnNativeFocusChanged(gfx::NativeView focused_now) {
   if (!focused_now)
     OnActiveWindowChanged(NULL);
 }

@@ -134,10 +134,9 @@ void TestWidgetFocusChangeListener::ClearFocusChanges() {
   focus_changes_.clear();
 }
 
-void TestWidgetFocusChangeListener::OnNativeFocusChange(
-    gfx::NativeView focused_before,
+void TestWidgetFocusChangeListener::OnNativeFocusChanged(
     gfx::NativeView focused_now) {
-  focus_changes_.push_back(NativeViewPair(focused_before, focused_now));
+  focus_changes_.push_back(focused_now);
 }
 
 }  // namespace views

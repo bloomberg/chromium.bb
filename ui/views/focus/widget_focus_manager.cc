@@ -25,11 +25,10 @@ void WidgetFocusManager::RemoveFocusChangeListener(
   focus_change_listeners_.RemoveObserver(listener);
 }
 
-void WidgetFocusManager::OnWidgetFocusEvent(gfx::NativeView focused_before,
-                                            gfx::NativeView focused_now) {
-  if (enabled_ && focused_before != focused_now) {
+void WidgetFocusManager::OnNativeFocusChanged(gfx::NativeView focused_now) {
+  if (enabled_) {
     FOR_EACH_OBSERVER(WidgetFocusChangeListener, focus_change_listeners_,
-                      OnNativeFocusChange(focused_before, focused_now));
+                      OnNativeFocusChanged(focused_now));
   }
 }
 

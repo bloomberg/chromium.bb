@@ -50,8 +50,7 @@ class FocusRingController : public FocusRingLayerDelegate,
                              const gfx::Rect& new_bounds) override;
 
   // views::WidgetFocusChangeListener overrides:
-  void OnNativeFocusChange(gfx::NativeView focused_before,
-                           gfx::NativeView focused_now) override;
+  void OnNativeFocusChanged(gfx::NativeView focused_now) override;
 
   // views::FocusChangeListener overrides:
   void OnWillChangeFocus(views::View* focused_before,

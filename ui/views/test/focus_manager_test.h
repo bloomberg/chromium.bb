@@ -74,27 +74,24 @@ class TestFocusChangeListener : public FocusChangeListener {
   DISALLOW_COPY_AND_ASSIGN(TestFocusChangeListener);
 };
 
-typedef std::pair<gfx::NativeView, gfx::NativeView> NativeViewPair;
-
 // Use to record widget focus change notifications.
 class TestWidgetFocusChangeListener : public WidgetFocusChangeListener {
  public:
   TestWidgetFocusChangeListener();
   ~TestWidgetFocusChangeListener() override;
 
-  const std::vector<NativeViewPair>& focus_changes() const {
+  const std::vector<gfx::NativeView>& focus_changes() const {
     return focus_changes_;
   }
   void ClearFocusChanges();
 
   // Overridden from WidgetFocusChangeListener:
-  void OnNativeFocusChange(gfx::NativeView focused_before,
-                           gfx::NativeView focused_now) override;
+  void OnNativeFocusChanged(gfx::NativeView focused_now) override;
 
  private:
-  // Pairs of (focused_before, focused_now) parameters we've received via calls
-  // to OnNativeFocusChange(), in oldest-to-newest-received order.
-  std::vector<NativeViewPair> focus_changes_;
+  // Parameter received via OnNativeFocusChanged in oldest-to-newest-received
+  // order.
+  std::vector<gfx::NativeView> focus_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWidgetFocusChangeListener);
 };

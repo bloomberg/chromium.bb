@@ -58,8 +58,8 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual void OnNativeWidgetActivationChanged(bool active) = 0;
 
   // Called when native focus moves from one native view to another.
-  virtual void OnNativeFocus(gfx::NativeView focused_view) = 0;
-  virtual void OnNativeBlur(gfx::NativeView focused_view) = 0;
+  virtual void OnNativeFocus() = 0;
+  virtual void OnNativeBlur() = 0;
 
   // Called when the window is about to be shown/hidden.
   virtual void OnNativeWidgetVisibilityChanging(bool visible) = 0;

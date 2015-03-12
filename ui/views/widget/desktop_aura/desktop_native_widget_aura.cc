@@ -1126,7 +1126,7 @@ void DesktopNativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
                                               aura::Window* lost_focus) {
   if (content_window_ == gained_focus) {
     desktop_window_tree_host_->OnNativeWidgetFocus();
-    native_widget_delegate_->OnNativeFocus(lost_focus);
+    native_widget_delegate_->OnNativeFocus();
 
     // If focus is moving from a descendant Window to |content_window_| then
     // native activation hasn't changed. Still, the InputMethod must be informed
@@ -1136,7 +1136,7 @@ void DesktopNativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
       input_method->OnFocus();
   } else if (content_window_ == lost_focus) {
     desktop_window_tree_host_->OnNativeWidgetBlur();
-    native_widget_delegate_->OnNativeBlur(gained_focus);
+    native_widget_delegate_->OnNativeBlur();
   }
 }
 

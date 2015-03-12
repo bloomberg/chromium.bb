@@ -1066,14 +1066,12 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
     non_client_view()->frame_view()->SchedulePaint();
 }
 
-void Widget::OnNativeFocus(gfx::NativeView old_focused_view) {
-  WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(old_focused_view,
-                                                        GetNativeView());
+void Widget::OnNativeFocus() {
+  WidgetFocusManager::GetInstance()->OnNativeFocusChanged(GetNativeView());
 }
 
-void Widget::OnNativeBlur(gfx::NativeView new_focused_view) {
-  WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(GetNativeView(),
-                                                        new_focused_view);
+void Widget::OnNativeBlur() {
+  WidgetFocusManager::GetInstance()->OnNativeFocusChanged(nullptr);
 }
 
 void Widget::OnNativeWidgetVisibilityChanging(bool visible) {

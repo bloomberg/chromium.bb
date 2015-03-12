@@ -780,8 +780,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool IsInactiveRenderingDisabled() const override;
   void EnableInactiveRendering() override;
   void OnNativeWidgetActivationChanged(bool active) override;
-  void OnNativeFocus(gfx::NativeView old_focused_view) override;
-  void OnNativeBlur(gfx::NativeView new_focused_view) override;
+  void OnNativeFocus() override;
+  void OnNativeBlur() override;
   void OnNativeWidgetVisibilityChanging(bool visible) override;
   void OnNativeWidgetVisibilityChanged(bool visible) override;
   void OnNativeWidgetCreated(bool desktop_widget) override;

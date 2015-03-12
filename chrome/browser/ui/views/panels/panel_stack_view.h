@@ -66,8 +66,7 @@ class PanelStackView : public NativePanelStackWindow,
   typedef std::map<Panel*, gfx::Rect> BoundsUpdates;
 
   // Overridden from views::WidgetFocusChangeListener:
-  void OnNativeFocusChange(gfx::NativeView focused_before,
-                           gfx::NativeView focused_now) override;
+  void OnNativeFocusChanged(gfx::NativeView focused_now) override;
 
   // Overridden from AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

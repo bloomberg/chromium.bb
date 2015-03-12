@@ -43,8 +43,7 @@ class WindowsEventRouter : public WindowControllerListObserver,
   void OnWindowControllerRemoved(WindowController* window) override;
 
 #if !defined(OS_MACOSX)
-  void OnNativeFocusChange(gfx::NativeView focused_before,
-                           gfx::NativeView focused_now) override;
+  void OnNativeFocusChanged(gfx::NativeView focused_now) override;
 #endif
 
   // content::NotificationObserver.

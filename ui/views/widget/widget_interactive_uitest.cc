@@ -727,7 +727,7 @@ class ModalDialogDelegate : public DialogDelegateView {
 TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   TestWidgetFocusChangeListener focus_listener;
   WidgetFocusManager::GetInstance()->AddFocusChangeListener(&focus_listener);
-  const std::vector<NativeViewPair>& focus_changes =
+  const std::vector<gfx::NativeView>& focus_changes =
       focus_listener.focus_changes();
 
   // Create a top level widget.
@@ -746,7 +746,7 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   gfx::NativeView top_level_native_view = top_level_widget.GetNativeView();
   ASSERT_FALSE(focus_listener.focus_changes().empty());
   EXPECT_EQ(1u, focus_changes.size());
-  EXPECT_EQ(NativeViewPair(NULL, top_level_native_view), focus_changes[0]);
+  EXPECT_EQ(top_level_native_view, focus_changes[0]);
 
   // Create a modal dialog.
   // This instance will be destroyed when the dialog is destroyed.
@@ -760,18 +760,14 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 
   gfx::NativeView modal_native_view = modal_dialog_widget->GetNativeView();
   EXPECT_EQ(3u, focus_changes.size());
-  EXPECT_EQ(NativeViewPair(top_level_native_view, modal_native_view),
-            focus_changes[1]);
-  EXPECT_EQ(NativeViewPair(top_level_native_view, modal_native_view),
-            focus_changes[2]);
+  EXPECT_EQ(nullptr, focus_changes[1]);
+  EXPECT_EQ(modal_native_view, focus_changes[2]);
 
   modal_dialog_widget->CloseNow();
 
   EXPECT_EQ(5u, focus_changes.size());
-  EXPECT_EQ(NativeViewPair(modal_native_view, top_level_native_view),
-            focus_changes[3]);
-  EXPECT_EQ(NativeViewPair(modal_native_view, top_level_native_view),
-            focus_changes[4]);
+  EXPECT_EQ(nullptr, focus_changes[3]);
+  EXPECT_EQ(top_level_native_view, focus_changes[4]);
 
   top_level_widget.CloseNow();
   WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(&focus_listener);
@@ -797,7 +793,7 @@ TEST_F(WidgetTestInteractive, SystemModalWindowReleasesCapture) {
 
   ASSERT_FALSE(focus_listener.focus_changes().empty());
   EXPECT_EQ(top_level_widget.GetNativeView(),
-            focus_listener.focus_changes().back().second);;
+            focus_listener.focus_changes().back());;
 
   EXPECT_FALSE(top_level_widget.HasCapture());
   top_level_widget.SetCapture(NULL);

@@ -127,8 +127,7 @@ void FocusRingController::OnWidgetBoundsChanged(views::Widget* widget,
   UpdateFocusRing();
 }
 
-void FocusRingController::OnNativeFocusChange(gfx::NativeView focused_before,
-                                              gfx::NativeView focused_now) {
+void FocusRingController::OnNativeFocusChanged(gfx::NativeView focused_now) {
   views::Widget* widget =
       focused_now ? views::Widget::GetWidgetForNativeWindow(focused_now) : NULL;
   SetWidget(widget);

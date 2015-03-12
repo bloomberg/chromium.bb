@@ -21,8 +21,7 @@ namespace views {
 // children of a single top-level native-view.
 class WidgetFocusChangeListener {
  public:
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) = 0;
+  virtual void OnNativeFocusChanged(gfx::NativeView focused_now) = 0;
 
  protected:
   virtual ~WidgetFocusChangeListener() {}
@@ -38,16 +37,12 @@ class VIEWS_EXPORT WidgetFocusManager {
   void AddFocusChangeListener(WidgetFocusChangeListener* listener);
   void RemoveFocusChangeListener(WidgetFocusChangeListener* listener);
 
-  // To be called when native-focus shifts from |focused_before| to
-  // |focused_now|.
-  // TODO(port) : Invocations to this routine are only implemented for
-  // the Win32 platform.  Calls need to be placed appropriately for
-  // non-Windows environments.
-  void OnWidgetFocusEvent(gfx::NativeView focused_before,
-                          gfx::NativeView focused_now);
+  // Called when native-focus shifts within, or off, a widget. |focused_now| is
+  // null when focus is lost.
+  void OnNativeFocusChanged(gfx::NativeView focused_now);
 
   // Enable/Disable notification of registered listeners during calls
-  // to OnWidgetFocusEvent.  Used to prevent unwanted focus changes from
+  // to OnNativeFocusChanged.  Used to prevent unwanted focus changes from
   // propagating notifications.
   void EnableNotifications() { enabled_ = true; }
   void DisableNotifications() { enabled_ = false; }

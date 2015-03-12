@@ -107,9 +107,7 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   SchedulePaint();
 }
 
-void AutofillPopupBaseView::OnNativeFocusChange(
-    gfx::NativeView focused_before,
-    gfx::NativeView focused_now) {
+void AutofillPopupBaseView::OnNativeFocusChanged(gfx::NativeView focused_now) {
   if (GetWidget() && GetWidget()->GetNativeView() != focused_now)
     HideController();
 }
