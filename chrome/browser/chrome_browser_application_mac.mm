@@ -12,6 +12,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -468,8 +469,88 @@ void SwizzleInit() {
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  base::mac::ScopedSendingEvent sendingEventScoper;
-  [super sendEvent:event];
+  // tracked_objects::ScopedTracker does not support parameterized
+  // instrumentations, so a big switch with each bunch instrumented is required.
+  switch (event.type) {
+    case NSLeftMouseDown:
+    case NSLeftMouseUp:
+    case NSRightMouseDown:
+    case NSRightMouseUp:
+    case NSMouseMoved:
+    case NSLeftMouseDragged:
+    case NSRightMouseDragged:
+    case NSMouseEntered:
+    case NSMouseExited:
+    case NSOtherMouseDown:
+    case NSOtherMouseUp:
+    case NSOtherMouseDragged: {
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "463272 -[BrowserCrApplication sendEvent:] Mouse"));
+      base::mac::ScopedSendingEvent sendingEventScoper;
+      [super sendEvent:event];
+      break;
+    }
+
+    case NSKeyDown:
+    case NSKeyUp: {
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "463272 -[BrowserCrApplication sendEvent:] Key"));
+      base::mac::ScopedSendingEvent sendingEventScoper;
+      [super sendEvent:event];
+      break;
+    }
+
+    case NSScrollWheel: {
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "463272 -[BrowserCrApplication sendEvent:] ScrollWheel"));
+      base::mac::ScopedSendingEvent sendingEventScoper;
+      [super sendEvent:event];
+      break;
+    }
+
+    case NSEventTypeGesture:
+    case NSEventTypeMagnify:
+    case NSEventTypeSwipe:
+    case NSEventTypeRotate:
+    case NSEventTypeBeginGesture:
+    case NSEventTypeEndGesture: {
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "463272 -[BrowserCrApplication sendEvent:] Gesture"));
+      base::mac::ScopedSendingEvent sendingEventScoper;
+      [super sendEvent:event];
+      break;
+    }
+
+    case NSAppKitDefined: {
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "463272 -[BrowserCrApplication sendEvent:] AppKit"));
+      base::mac::ScopedSendingEvent sendingEventScoper;
+      [super sendEvent:event];
+      break;
+    }
+
+    case NSSystemDefined: {
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "463272 -[BrowserCrApplication sendEvent:] System"));
+      base::mac::ScopedSendingEvent sendingEventScoper;
+      [super sendEvent:event];
+      break;
+    }
+
+    default: {
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "463272 -[BrowserCrApplication sendEvent:] Other"));
+      base::mac::ScopedSendingEvent sendingEventScoper;
+      [super sendEvent:event];
+    }
+  }
 }
 
 // NSExceptions which are caught by the event loop are logged here.
