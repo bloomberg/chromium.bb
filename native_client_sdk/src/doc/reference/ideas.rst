@@ -203,13 +203,16 @@ TCC
 ---
 
 * **Project:** Port Fabrice Ballard's Tiny C Compiler _TCC to NaCl and PNaCl.
-* **Brief explanation:** Port TCC to NaCl and enhance to follow NaCl sandboxing
-  rule, as well as emitting PNaCl bitcode. The same could be done with `Pico
-  C`_.
+* **Brief explanation:** Port TCC to NaCl and enhance to follow `NaCl sandboxing
+  rules`_, as well as emitting `PNaCl bitcode`_. The same could be done with
+  `Pico C`_.
 * **Expected results:** Compiler ported and code generator working. Can run a
   small benchmark of your choice.
 * **Knowledge Prerequisite:** C, assembly, compilers.
+* **Mentor:** JF Bastien.
 
+.. _`NaCl sandboxing rules`: https://developer.chrome.com/native-client/reference/sandbox_internals/index
+.. _`PNaCl bitcode`: https://developer.chrome.com/native-client/reference/pnacl-bitcode-manual
 .. _TCC: http://bellard.org/tcc/
 .. _`Pico C`: https://code.google.com/p/picoc
 
