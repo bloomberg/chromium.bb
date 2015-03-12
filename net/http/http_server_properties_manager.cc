@@ -204,14 +204,6 @@ void HttpServerPropertiesManager::SetBrokenAlternateProtocol(
   ScheduleUpdatePrefsOnNetworkThread();
 }
 
-void HttpServerPropertiesManager::MarkAlternativeServiceRecentlyBroken(
-    const AlternativeService& alternative_service) {
-  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  http_server_properties_impl_->MarkAlternativeServiceRecentlyBroken(
-      alternative_service);
-  ScheduleUpdatePrefsOnNetworkThread();
-}
-
 bool HttpServerPropertiesManager::IsAlternativeServiceBroken(
     const AlternativeService& alternative_service) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());

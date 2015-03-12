@@ -349,23 +349,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
 }
 
-TEST_F(AlternateProtocolServerPropertiesTest, MarkRecentlyBroken) {
-  HostPortPair host_port_pair("foo", 80);
-  impl_.SetAlternateProtocol(host_port_pair, 443, NPN_SPDY_4, 1.0);
-
-  const AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternateProtocolRecentlyBroken(host_port_pair));
-
-  impl_.MarkAlternativeServiceRecentlyBroken(alternative_service);
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_TRUE(impl_.WasAlternateProtocolRecentlyBroken(host_port_pair));
-
-  impl_.ConfirmAlternateProtocol(host_port_pair);
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  EXPECT_FALSE(impl_.WasAlternateProtocolRecentlyBroken(host_port_pair));
-}
-
 TEST_F(AlternateProtocolServerPropertiesTest, Forced) {
   // Test forced alternate protocols.
 
