@@ -37,49 +37,41 @@ int WebRtcToMediaPlaneType(webrtc::PlaneType type) {
   }
 }
 
-// Thin adapter from media::VideoFrame to webrtc::VideoFrameBuffer.
+// Thin adapter from media::VideoFrame to webrtc::VideoFrameBuffer. This
+// implementation is read-only and will return null if trying to get a
+// non-const pointer to the pixel data. This object will be accessed from
+// different threads, but that's safe since it's read-only.
 class VideoFrameWrapper : public webrtc::VideoFrameBuffer {
  public:
   VideoFrameWrapper(const scoped_refptr<media::VideoFrame>& frame)
       : frame_(frame) {}
 
-  int width() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->visible_rect().width();
-  }
+ private:
+  int width() const override { return frame_->visible_rect().width(); }
 
-  int height() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return frame_->visible_rect().height();
-  }
+  int height() const override { return frame_->visible_rect().height(); }
 
   const uint8_t* data(webrtc::PlaneType type) const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->visible_data(WebRtcToMediaPlaneType(type));
   }
 
   uint8_t* data(webrtc::PlaneType type) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(frame_->HasOneRef());
-    return frame_->visible_data(WebRtcToMediaPlaneType(type));
+    NOTREACHED();
+    return nullptr;
   }
 
   int stride(webrtc::PlaneType type) const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->stride(WebRtcToMediaPlaneType(type));
   }
 
   rtc::scoped_refptr<webrtc::NativeHandle> native_handle() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
     return nullptr;
   }
 
- private:
   ~VideoFrameWrapper() override {}
   friend class rtc::RefCountedObject<VideoFrameWrapper>;
 
   scoped_refptr<media::VideoFrame> frame_;
-  base::ThreadChecker thread_checker_;
 };
 
 }  // anonymous namespace
