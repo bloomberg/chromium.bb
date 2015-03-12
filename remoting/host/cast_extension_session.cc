@@ -142,7 +142,7 @@ class CastStatsObserver : public webrtc::StatsObserver {
       VLOG(1) << "Report " << index++ << ":";
       for (const auto& v : report->values()) {
         VLOG(1) << "Stat: " << v.second->display_name() << "="
-                << v.second->value << ".";
+                << v.second->ToString() << ".";
       }
     }
   }

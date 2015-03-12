@@ -182,9 +182,9 @@ bool MockPeerConnectionImpl::GetStats(
 
   DCHECK_EQ(kStatsOutputLevelStandard, level);
   webrtc::StatsReport report1(webrtc::StatsReport::NewTypedId(
-      webrtc::StatsReport::kStatsReportTypeSsrc, "1234").Pass());
+      webrtc::StatsReport::kStatsReportTypeSsrc, "1234"));
   webrtc::StatsReport report2(webrtc::StatsReport::NewTypedId(
-      webrtc::StatsReport::kStatsReportTypeSession, "nontrack").Pass());
+      webrtc::StatsReport::kStatsReportTypeSession, "nontrack"));
   report1.set_timestamp(42);
   report1.AddString(webrtc::StatsReport::kStatsValueNameFingerprint,
                     "trackvalue");
