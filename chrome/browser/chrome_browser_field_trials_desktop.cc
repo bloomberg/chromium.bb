@@ -8,14 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -73,14 +71,12 @@ void SetupLightSpeedTrials() {
 
 }  // namespace
 
-void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line,
-                             PrefService* local_state) {
+void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
   prerender::ConfigurePrerender(parsed_command_line);
   AutoLaunchChromeFieldTrial();
   SetupInfiniteCacheFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
   SetupLightSpeedTrials();
-  SetupShowAppLauncherPromoFieldTrial(local_state);
 }
 
 }  // namespace chrome

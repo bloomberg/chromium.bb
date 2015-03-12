@@ -151,9 +151,8 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAppLauncherShortcutVersion, 0);
 #endif
 
-  // Identifies whether we should show the app launcher promo or not.
-  // Note that a field trial also controls the showing, so the promo won't show
-  // unless the pref is set AND the field trial is set to a proper group.
+  // Identifies whether we should show the app launcher promo or not. This
+  // becomes false when the user dismisses the promo.
   registry->RegisterBooleanPref(prefs::kShowAppLauncherPromo, true);
 }
 

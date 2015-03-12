@@ -8,8 +8,6 @@
 #include "base/basictypes.h"
 #include "base/time/time.h"
 
-class PrefService;
-
 namespace base {
 class CommandLine;
 }
@@ -20,9 +18,7 @@ namespace chrome {
 // Add an invocation of your field trial init function to this method, or to
 // SetupFieldTrials in chrome_browser_field_trials.cc if it is for all
 // platforms.
-// |local_state| is needed by some other methods called from within this one.
-void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line,
-                             PrefService* local_state);
+void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line);
 
 }  // namespace chrome
 

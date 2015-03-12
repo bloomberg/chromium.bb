@@ -8,8 +8,6 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 
-class PrefService;
-
 namespace base {
 class Time;
 }
@@ -21,8 +19,7 @@ class ChromeBrowserFieldTrials {
 
   // Called by the browser main sequence to set up Field Trials for this client.
   // |local_state| is used to set browser-wide properties.
-  void SetupFieldTrials(const base::Time& install_time,
-                        PrefService* local_state);
+  void SetupFieldTrials(const base::Time& install_time);
 
  private:
   // Instantiates dynamic trials by querying their state, to ensure they get
