@@ -250,6 +250,8 @@ Label* AssemblyProgram::FindLabel(RVA rva, RVAToLabel* labels) {
   Label*& slot = (*labels)[rva];
   if (slot == NULL) {
     slot = new(std::nothrow) Label(rva);
+    if (slot == NULL)
+      return NULL;
   }
   slot->count_++;
   return slot;
