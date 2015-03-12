@@ -41,6 +41,7 @@
 // Define ourselves as the clientPtr.  Mozilla just hacked their C++ callback class into this old C decoder,
 // so we will too.
 #include "platform/SharedBuffer.h"
+#include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -167,7 +168,7 @@ public:
     bool isDefined() const { return m_isDefined; }
 
     // Build RGBA table using the data stream.
-    void buildTable(const unsigned char* data, size_t length);
+    void buildTable(blink::FastSharedBufferReader*);
     const Table& table() const { return m_table; }
 
 private:
@@ -209,7 +210,7 @@ public:
         m_lzwBlocks.append(GIFLZWBlock(position, size));
     }
 
-    bool decode(const unsigned char* data, size_t length, blink::GIFImageDecoder* client, bool* frameDecoded);
+    bool decode(blink::FastSharedBufferReader*, blink::GIFImageDecoder* client, bool* frameDecoded);
 
     int frameId() const { return m_frameId; }
     void setRect(unsigned x, unsigned y, unsigned width, unsigned height)
@@ -329,11 +330,6 @@ public:
 private:
     bool parseData(size_t dataPosition, size_t len, blink::GIFImageDecoder::GIFParseQuery);
     void setRemainingBytes(size_t);
-
-    const unsigned char* data(size_t dataPosition) const
-    {
-        return reinterpret_cast<const unsigned char*>(m_data->data()) + dataPosition;
-    }
 
     void addFrameIfNecessary();
     bool currentFrameIsFirstFrame() const
