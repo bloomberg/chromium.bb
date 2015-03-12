@@ -652,6 +652,9 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
 
 bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 {
+    if (!m_client)
+        return false;
+
     bool eventSwallowed = false;
     bool eventCancelled = false; // for disambiguation
 

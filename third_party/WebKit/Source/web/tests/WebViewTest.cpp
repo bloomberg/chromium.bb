@@ -1281,6 +1281,18 @@ TEST_F(WebViewTest, ClientTapHandling)
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
 
+TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
+{
+    WebViewImpl* webView = WebViewImpl::create(nullptr);
+    webView->setMainFrame(WebLocalFrame::create(nullptr));
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureTap;
+    event.x = 3;
+    event.y = 8;
+    EXPECT_FALSE(webView->handleInputEvent(event));
+    webView->close();
+}
+
 #if OS(ANDROID)
 TEST_F(WebViewTest, LongPressSelection)
 {
