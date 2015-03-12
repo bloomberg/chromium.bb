@@ -8,6 +8,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebFloatSize.h"
 #include "public/platform/WebPrivateOwnPtr.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
 
 namespace blink {
 
@@ -37,12 +38,19 @@ public:
     enum : size_t { kInvalidIndex = static_cast<size_t>(-1) };
 
     struct TransformNode {
-        TransformNode(size_t parent) : parentNodeIndex(parent) { }
+        TransformNode(size_t parent, const SkMatrix44& matrix44)
+            : parentNodeIndex(parent)
+            , matrix(matrix44)
+        {
+        }
 
         bool isRoot() const { return parentNodeIndex == kInvalidIndex; }
 
         // Index of parent in m_nodes (kInvalidIndex for root).
         size_t parentNodeIndex;
+
+        // Transformation matrix of this node, relative to its parent.
+        SkMatrix44 matrix;
     };
 
     struct RangeRecord {

@@ -968,6 +968,7 @@
       'text/SegmentedStringTest.cpp',
       'text/UnicodeUtilitiesTest.cpp',
       'transforms/TransformOperationsTest.cpp',
+      'transforms/TransformTestHelper.h',
       'transforms/TransformationMatrixTest.cpp',
       'weborigin/DatabaseIdentifierTest.cpp',
       'weborigin/KURLTest.cpp',

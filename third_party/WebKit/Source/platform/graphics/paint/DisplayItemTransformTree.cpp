@@ -10,7 +10,7 @@ namespace blink {
 DisplayItemTransformTree::DisplayItemTransformTree()
 {
     // There is always a root node.
-    m_nodes.append(TransformNode(kInvalidIndex));
+    m_nodes.append(TransformNode(kInvalidIndex, SkMatrix44::kIdentity_Constructor));
     ASSERT(m_nodes[0].isRoot());
 }
 

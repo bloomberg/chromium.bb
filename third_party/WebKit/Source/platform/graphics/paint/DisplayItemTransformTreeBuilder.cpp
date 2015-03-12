@@ -75,7 +75,9 @@ void DisplayItemTransformTreeBuilder::processDisplayItem(const DisplayItem& disp
         case RequiresTransformNode:
             // Emit a transform node.
             finishRange();
-            size_t newNode = m_transformTree->createNewNode(currentTransformNodeData().transformNode);
+            size_t newNode = m_transformTree->createNewNode(
+                currentTransformNodeData().transformNode,
+                matrix);
             pushCurrentTransformNode(newNode, FloatSize());
             break;
         }

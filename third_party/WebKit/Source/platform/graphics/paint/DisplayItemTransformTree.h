@@ -6,6 +6,7 @@
 #define DisplayItemTransformTree_h
 
 #include "platform/PlatformExport.h"
+#include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebDisplayItemTransformTree.h"
 #include "wtf/Vector.h"
 
@@ -45,10 +46,12 @@ public:
     }
 
     // Returns the new node index.
-    size_t createNewNode(size_t parentNodeIndex)
+    size_t createNewNode(size_t parentNodeIndex, const TransformationMatrix& matrix)
     {
         ASSERT(parentNodeIndex != kInvalidIndex);
-        m_nodes.append(TransformNode(parentNodeIndex));
+        m_nodes.append(TransformNode(
+            parentNodeIndex,
+            TransformationMatrix::toSkMatrix44(matrix)));
         return m_nodes.size() - 1;
     }
 

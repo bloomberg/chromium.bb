@@ -9,6 +9,7 @@
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/DisplayItemTransformTree.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
+#include "platform/transforms/TransformTestHelper.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebDisplayItemTransformTree.h"
 #include <gtest/gtest.h>
@@ -234,6 +235,53 @@ TEST_F(DisplayItemTransformTreeBuilderTest, SkipUnnecessaryRangeRecords)
     EXPECT_EQ(2u, nodeDepth(tree, tree.nodeAt(transformNodeIndex)));
     EXPECT_EQ(RangeRecord(2, 3, transformNodeIndex), tree.rangeRecordAt(0));
     EXPECT_EQ(RangeRecord(5, 6, transformNodeIndex), tree.rangeRecordAt(1));
+}
+
+TEST_F(DisplayItemTransformTreeBuilderTest, RootTransformNodeHasIdentityTransform)
+{
+    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    ASSERT_EQ(1u, tree.nodeCount());
+    EXPECT_TRUE(tree.nodeAt(0).matrix.isIdentity());
+    EXPECT_TRANSFORMS_ALMOST_EQ(TransformationMatrix(), tree.nodeAt(0).matrix);
+}
+
+TEST_F(DisplayItemTransformTreeBuilderTest, Transform3DMatrix)
+{
+    TransformationMatrix matrix;
+    matrix.rotate3d(45, 45, 45);
+
+    auto transform1 = processBeginTransform3D(matrix);
+    processDummyDisplayItem();
+    processEndTransform3D(transform1);
+    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+
+    const auto& rangeRecord = tree.rangeRecordAt(0);
+    const auto& transformNode = tree.nodeAt(rangeRecord.transformNodeIndex);
+    EXPECT_TRANSFORMS_ALMOST_EQ(matrix, transformNode.matrix);
+}
+
+TEST_F(DisplayItemTransformTreeBuilderTest, NestedTransformsAreNotCombined)
+{
+    // It's up the consumer of the tree to multiply transformation matrices.
+
+    TransformationMatrix matrix1;
+    matrix1.rotate3d(45, 45, 45);
+    TransformationMatrix matrix2;
+    matrix2.translate3d(0, 10, 20);
+    EXPECT_NE(matrix2, matrix1 * matrix2);
+
+    auto transform1 = processBeginTransform3D(matrix1);
+    auto transform2 = processBeginTransform3D(matrix2);
+    processDummyDisplayItem();
+    processEndTransform3D(transform2);
+    processDummyDisplayItem();
+    processEndTransform3D(transform1);
+    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+
+    const auto& transformNode = tree.nodeAt(tree.rangeRecordAt(0).transformNodeIndex);
+    ASSERT_FALSE(transformNode.isRoot());
+    EXPECT_TRANSFORMS_ALMOST_EQ(matrix2, transformNode.matrix);
+    EXPECT_TRANSFORMS_ALMOST_EQ(matrix1, tree.parentNode(transformNode).matrix);
 }
 
 } // namespace
