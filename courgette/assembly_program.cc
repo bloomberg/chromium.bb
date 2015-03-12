@@ -536,6 +536,7 @@ CheckBool AssemblyProgram::TrimLabels() {
           BytesInstruction* new_instruction =
             new(std::nothrow) BytesInstruction(arm_op, op_size);
           instructions_[i] = new_instruction;
+          delete instruction;
         }
         break;
       }
