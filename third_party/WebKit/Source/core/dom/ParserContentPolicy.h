@@ -52,13 +52,6 @@ static inline bool pluginContentIsAllowed(ParserContentPolicy parserContentPolic
     return parserContentPolicy != DisallowScriptingAndPluginContent;
 }
 
-static inline ParserContentPolicy allowPluginContent(ParserContentPolicy parserContentPolicy)
-{
-    if (pluginContentIsAllowed(parserContentPolicy))
-        return parserContentPolicy;
-    return DisallowScriptingContent;
-}
-
 } // namespace blink
 
 #endif // ParserContentPolicy_h

@@ -83,7 +83,7 @@ regionBasedColumnsEnabled initial=false
 downloadableBinaryFontsEnabled initial=true
 
 xssAuditorEnabled initial=false
-unsafePluginPastingEnabled initial=true
+unsafePluginPastingEnabled initial=false
 treatIPAddressAsDomain initial=false
 
 preferCompositingToLCDTextEnabled initial=false, invalidate=AcceleratedCompositing
