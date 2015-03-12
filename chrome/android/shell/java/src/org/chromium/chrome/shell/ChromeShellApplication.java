@@ -6,6 +6,7 @@ package org.chromium.chrome.shell;
 
 import android.content.Intent;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.chrome.browser.ChromiumApplication;
@@ -93,6 +94,13 @@ public class ChromeShellApplication extends ChromiumApplication {
 
     public void removeObserver(ChromeShellApplicationObserver observer) {
         mObservers.remove(observer);
+    }
+
+    @Override
+    public void initCommandLine() {
+        if (!CommandLine.isInitialized()) {
+            CommandLine.initFromFile(COMMAND_LINE_FILE);
+        }
     }
 
     @Override
