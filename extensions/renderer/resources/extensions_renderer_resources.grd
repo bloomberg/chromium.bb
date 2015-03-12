@@ -9,7 +9,6 @@
   <release seq="1">
     <includes>
       <!-- Extension libraries. -->
-      <include name="IDR_APP_VIEW_DENY_JS" file="guest_view/app_view/app_view_deny.js" type="BINDATA" />
       <include name="IDR_APP_VIEW_JS" file="guest_view/app_view/app_view.js" type="BINDATA" />
       <include name="IDR_ASYNC_WAITER_JS" file="async_waiter.js" type="BINDATA" />
       <include name="IDR_BROWSER_TEST_ENVIRONMENT_SPECIFIC_BINDINGS_JS" file="browser_test_environment_specific_bindings.js" type="BINDATA" />
@@ -29,6 +28,7 @@
       <include name="IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="guest_view/extension_view/extension_view_internal.js" type="BINDATA" />
       <include name="IDR_GUEST_VIEW_JS" file="guest_view/guest_view.js" type="BINDATA" />
       <include name="IDR_GUEST_VIEW_CONTAINER_JS" file="guest_view/guest_view_container.js" type="BINDATA" />
+      <include name="IDR_GUEST_VIEW_DENY_JS" file="guest_view/guest_view_deny.js" type="BINDATA" />
       <include name="IDR_GUEST_VIEW_EVENTS_JS" file="guest_view/guest_view_events.js" type="BINDATA" />
       <include name="IDR_IMAGE_UTIL_JS" file="image_util.js" type="BINDATA" />
       <include name="IDR_JSON_SCHEMA_JS" file="json_schema.js" type="BINDATA" />
@@ -57,7 +57,6 @@
       <include name="IDR_WEB_VIEW_API_METHODS_JS" file="guest_view/web_view/web_view_api_methods.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_ATTRIBUTES_JS" file="guest_view/web_view/web_view_attributes.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_CONSTANTS_JS" file="guest_view/web_view/web_view_constants.js" type="BINDATA" />
-      <include name="IDR_WEB_VIEW_DENY_JS" file="guest_view/web_view/web_view_deny.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_EVENTS_JS" file="guest_view/web_view/web_view_events.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_EXPERIMENTAL_JS" file="guest_view/web_view/web_view_experimental.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="guest_view/web_view/web_view_internal.js" type="BINDATA" />

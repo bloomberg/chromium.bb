@@ -42,20 +42,18 @@ GuestViewContainer.forwardApiMethods = function(proto, apiMethods) {
 
 // Registers the browserplugin and guestview as custom elements once the
 // document has loaded.
-GuestViewContainer.registerElement =
-    function(guestViewContainerType) {
+GuestViewContainer.registerElement = function(guestViewContainerType) {
   var useCapture = true;
   window.addEventListener('readystatechange', function listener(event) {
-    if (document.readyState == 'loading') {
+    if (document.readyState == 'loading')
       return;
-    }
 
     registerBrowserPluginElement(
         guestViewContainerType.VIEW_TYPE.toLowerCase());
     registerGuestViewElement(guestViewContainerType);
     window.removeEventListener(event.type, listener, useCapture);
   }, useCapture);
-    };
+};
 
 // Create the 'guest' property to track new GuestViews and always listen for
 // their resizes.

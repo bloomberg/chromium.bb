@@ -529,7 +529,6 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
 
   // Libraries.
   resources.push_back(std::make_pair("appView", IDR_APP_VIEW_JS));
-  resources.push_back(std::make_pair("appViewDeny", IDR_APP_VIEW_DENY_JS));
   resources.push_back(std::make_pair("entryIdManager", IDR_ENTRY_ID_MANAGER));
   resources.push_back(std::make_pair(kEventBindings, IDR_EVENT_BINDINGS_JS));
   resources.push_back(std::make_pair("extensionOptions",
@@ -550,6 +549,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("guestView", IDR_GUEST_VIEW_JS));
   resources.push_back(std::make_pair("guestViewContainer",
                                      IDR_GUEST_VIEW_CONTAINER_JS));
+  resources.push_back(std::make_pair("guestViewDeny", IDR_GUEST_VIEW_DENY_JS));
   resources.push_back(std::make_pair("guestViewEvents",
                                      IDR_GUEST_VIEW_EVENTS_JS));
   resources.push_back(std::make_pair("imageUtil", IDR_IMAGE_UTIL_JS));
@@ -586,7 +586,6 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                                      IDR_WEB_VIEW_ATTRIBUTES_JS));
   resources.push_back(std::make_pair("webViewConstants",
                                      IDR_WEB_VIEW_CONSTANTS_JS));
-  resources.push_back(std::make_pair("webViewDeny", IDR_WEB_VIEW_DENY_JS));
   resources.push_back(std::make_pair("webViewEvents", IDR_WEB_VIEW_EVENTS_JS));
   resources.push_back(std::make_pair("webViewExperimental",
                                      IDR_WEB_VIEW_EXPERIMENTAL_JS));
@@ -1535,8 +1534,6 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   // Require AppView.
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     module_system->Require("appView");
-  } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
-    module_system->Require("appViewDeny");
   }
 
   // Require ExtensionOptions.
@@ -1566,8 +1563,14 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
         .is_available()) {
       module_system->Require("webViewExperimental");
     }
-  } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
-    module_system->Require("webViewDeny");
+  }
+
+  // The "guestViewDeny" module must always be loaded last. It registers
+  // error-providing custom elements for the GuestView types that are not
+  // available, and thus all of those types must have been checked and loaded
+  // (or not loaded) beforehand.
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
+    module_system->Require("guestViewDeny");
   }
 }
 
