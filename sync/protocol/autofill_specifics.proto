@@ -117,7 +117,7 @@ message WalletMaskedCreditCard {
 // on the server that is pulled down rather than synced between Chromes.
 message WalletPostalAddress {
   // Server-generated unique ID string. This is opaque to the client.
-  optional string id = 1; 
+  optional string id = 1;
 
   optional string recipient_name = 12;
   optional string company_name = 2;
@@ -150,6 +150,9 @@ message WalletPostalAddress {
 
   optional string country_code = 10;
   optional string language_code = 11;
+
+  // Phone number. The format is unspecified and will be explicitly ignored.
+  optional string phone_number = 13;
 }
 
 message AutofillWalletSpecifics {

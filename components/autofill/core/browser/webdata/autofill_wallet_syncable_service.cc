@@ -99,6 +99,8 @@ AutofillProfile ProfileFromSpecifics(
                      base::UTF8ToUTF16(address.sorting_code()));
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY,
                      base::UTF8ToUTF16(address.country_code()));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                     base::UTF8ToUTF16(address.phone_number()));
   profile.set_language_code(address.language_code());
 
   return profile;

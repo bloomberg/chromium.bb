@@ -914,6 +914,7 @@ bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
         "postal_code,"  // ADDRESS_HOME_ZIP
         "sorting_code,"  // ADDRESS_HOME_SORTING_CODE
         "country_code,"  // ADDRESS_HOME_COUNTRY
+        "phone_number,"  // PHONE_HOME_WHOLE_NUMBER
         "language_code "
       "FROM server_addresses"));
 
@@ -933,11 +934,14 @@ bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
     profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(index++));
     profile->SetRawInfo(ADDRESS_HOME_SORTING_CODE, s.ColumnString16(index++));
     profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(index++));
+    base::string16 phone_number = s.ColumnString16(index++);
     profile->set_language_code(s.ColumnString(index++));
 
-    // SetInfo instead of SetRawInfo on the name so the constituent pieces will
-    // be parsed.
+    // SetInfo instead of SetRawInfo so the constituent pieces will be parsed
+    // for these data types.
     profile->SetInfo(AutofillType(NAME_FULL), recipient_name,
+                     profile->language_code());
+    profile->SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone_number,
                      profile->language_code());
 
     profiles->push_back(profile.release());
@@ -966,8 +970,9 @@ void AutofillTable::SetServerProfiles(
         "postal_code,"  // ADDRESS_HOME_ZIP
         "sorting_code,"  // ADDRESS_HOME_SORTING_CODE
         "country_code,"  // ADDRESS_HOME_COUNTRY
+        "phone_number,"  // PHONE_HOME_WHOLE_NUMBER
         "language_code) "
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"));
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"));
   for (const auto& profile : profiles) {
     DCHECK(profile.record_type() == AutofillProfile::SERVER_PROFILE);
 
@@ -985,6 +990,7 @@ void AutofillTable::SetServerProfiles(
     insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_ZIP));
     insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE));
     insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+    insert.BindString16(index++, profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
     insert.BindString(index++, profile.language_code());
 
     insert.Run();

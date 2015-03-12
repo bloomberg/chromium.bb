@@ -700,6 +700,7 @@ base::DictionaryValue* WalletMaskedCreditCardToValue(
 base::DictionaryValue* WalletPostalAddressToValue(
     const sync_pb::WalletPostalAddress& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(recipient_name);
   SET_STR(company_name);
   SET_STR_REP(street_address);
   SET_STR(address_1);
@@ -709,6 +710,7 @@ base::DictionaryValue* WalletPostalAddressToValue(
   SET_STR(postal_code);
   SET_STR(sorting_code);
   SET_STR(country_code);
+  SET_STR(phone_number);
   SET_STR(language_code);
   return value;
 }
