@@ -10,7 +10,8 @@
                         "cast_shell": ["defaulttests"],
                         "cast_shell_apk": ["defaulttests"],
                         "linux_arm_compile": ["defaulttests"],
-                        "linux_chromium_asan_rel_ng": ["defaulttests"]
+                        "linux_chromium_asan_rel_ng": ["defaulttests"],
+                        "linux_chromium_chromeos_ozone_rel_ng": ["defaulttests"]
                     },
                     "tryserver.chromium.mac": {
                         "mac_chromium_gn_rel": ["defaulttests"]
