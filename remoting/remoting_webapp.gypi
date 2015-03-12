@@ -70,8 +70,8 @@
           'action_name': 'Verify remoting webapp unittests',
           'inputs': [
             '<@(remoting_webapp_crd_js_files)',
-            '<@(remoting_webapp_unittest_all_js_files)',
-            '<@(remoting_webapp_unittest_js_proto_files)',
+            '<@(remoting_webapp_unittests_all_js_files)',
+            '<@(remoting_webapp_unittests_js_proto_files)',
           ],
           'outputs': [
             '<(success_stamp_ut)',
@@ -82,8 +82,8 @@
             '--no-single-file',
             '--success-stamp', '<(success_stamp_ut)',
             '<@(remoting_webapp_crd_js_files)',
-            '<@(remoting_webapp_unittest_all_js_files)',
-            '<@(remoting_webapp_unittest_js_proto_files)',
+            '<@(remoting_webapp_unittests_all_js_files)',
+            '<@(remoting_webapp_unittests_js_proto_files)',
           ],
         },
       ],  # actions

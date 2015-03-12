@@ -33,12 +33,12 @@
     ],
     # Browser test files.
     'remoting_webapp_browsertest_js_mock_files': [
-      'webapp/browser_test/mock_client_plugin.js',
-      'webapp/browser_test/mock_host_list_api.js',
-      'webapp/browser_test/mock_identity.js',
-      'webapp/browser_test/mock_oauth2_api.js',
-      'webapp/browser_test/mock_session_connector.js',
-      'webapp/unittests/mock_signal_strategy.js',
+      'webapp/crd/js/mock_client_plugin.js',
+      'webapp/crd/js/mock_host_list_api.js',
+      'webapp/crd/js/mock_identity.js',
+      'webapp/crd/js/mock_oauth2_api.js',
+      'webapp/crd/js/mock_session_connector.js',
+      'webapp/crd/js/mock_signal_strategy.js',
     ],
     'remoting_webapp_browsertest_js_proto_files': [
       'webapp/js_proto/sinon_proto.js',
@@ -55,55 +55,55 @@
     #
 
     # These product files are excluded from our JavaScript unittest
-    'remoting_webapp_unittest_exclude_js_files': [
+    'remoting_webapp_unittests_exclude_js_files': [
       # background.js is where the onLoad handler is defined, which
       # makes it the entry point of the background page.
       'webapp/crd/js/background.js',
     ],
     # The unit test cases for the webapp
-    'remoting_webapp_unittest_js_files': [
-      'webapp/unittests/apps_v2_migration_unittest.js',
-      'webapp/unittests/base_unittest.js',
-      'webapp/unittests/desktop_viewport_unittest.js',
-      'webapp/unittests/dns_blackhole_checker_unittest.js',
-      'webapp/unittests/event_hook_unittest.js',
-      'webapp/unittests/fallback_signal_strategy_unittest.js',
-      'webapp/unittests/host_table_entry_unittest.js',
-      'webapp/unittests/ipc_unittest.js',
-      'webapp/unittests/l10n_unittest.js',
-      'webapp/unittests/menu_button_unittest.js',
-      'webapp/unittests/xhr_unittest.js',
-      'webapp/unittests/xmpp_connection_unittest.js',
-      'webapp/unittests/xmpp_login_handler_unittest.js',
-      'webapp/unittests/xmpp_stream_parser_unittest.js',
+    'remoting_webapp_unittests_js_files': [
+      'webapp/base/js/base_unittest.js',
+      'webapp/base/js/base_event_hook_unittest.js',
+      'webapp/base/js/ipc_unittest.js',
+      'webapp/crd/js/apps_v2_migration_unittest.js',
+      'webapp/crd/js/desktop_viewport_unittest.js',
+      'webapp/crd/js/dns_blackhole_checker_unittest.js',
+      'webapp/crd/js/fallback_signal_strategy_unittest.js',
+      'webapp/crd/js/host_table_entry_unittest.js',
+      'webapp/crd/js/l10n_unittest.js',
+      'webapp/crd/js/menu_button_unittest.js',
+      'webapp/crd/js/xhr_unittest.js',
+      'webapp/crd/js/xmpp_connection_unittest.js',
+      'webapp/crd/js/xmpp_login_handler_unittest.js',
+      'webapp/crd/js/xmpp_stream_parser_unittest.js',
     ],
-    'remoting_webapp_unittest_js_mock_files': [
+    'remoting_webapp_unittests_js_mock_files': [
       # Some proto files can be repurposed as simple mocks for the unittests.
       # Note that some defs in chrome_proto are overwritten by chrome_mocks.
+      'webapp/crd/js/mock_signal_strategy.js',
       'webapp/js_proto/chrome_proto.js',
-      'webapp/unittests/chrome_mocks.js',
-      'webapp/unittests/mock_signal_strategy.js',
+      'webapp/js_proto/chrome_mocks.js',
       'webapp/unittests/sinon_helpers.js',
     ],
     # Prototypes for objects that are not mocked.
-    'remoting_webapp_unittest_js_proto_files': [
+    'remoting_webapp_unittests_js_proto_files': [
       'webapp/js_proto/chrome_cast_proto.js',
       'webapp/js_proto/dom_proto.js',
       'webapp/js_proto/remoting_proto.js',
       'webapp/js_proto/qunit_proto.js',
       'webapp/js_proto/sinon_proto.js',
     ],
-    'remoting_webapp_unittest_all_js_files': [
-      '<@(remoting_webapp_unittest_js_files)',
-      '<@(remoting_webapp_unittest_js_mock_files)',
+    'remoting_webapp_unittests_all_js_files': [
+      '<@(remoting_webapp_unittests_js_files)',
+      '<@(remoting_webapp_unittests_js_mock_files)',
     ],
     # All the files needed to run the unittests.
-    'remoting_webapp_unittest_all_files': [
+    'remoting_webapp_unittests_all_files': [
       'webapp/crd/html/menu_button.css',
-      '<@(remoting_webapp_unittest_all_js_files)',
+      '<@(remoting_webapp_unittests_all_js_files)',
     ],
-    'remoting_webapp_unittest_template_main':
-      'webapp/crd/html/template_unittest.html',
+    'remoting_webapp_unittests_template_main':
+      'webapp/crd/html/template_unittests.html',
 
     #
     # Webapp JavaScript file groups.

@@ -658,7 +658,7 @@ if (!is_android) {
       "//ppapi:ppapi_tests",
 
       #'../remoting/remoting.gyp:remoting_browser_test_resources',  TODO(GYP)
-      #'../remoting/remoting.gyp:remoting_webapp_unittest',  TODO(GYP)
+      #'../remoting/remoting.gyp:remoting_webapp_unittests',  TODO(GYP)
       "//third_party/mesa:osmesa",
       "//third_party/widevine/cdm:widevine_test_license_server",
     ]

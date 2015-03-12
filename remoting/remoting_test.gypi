@@ -335,7 +335,7 @@
       ], # end of copies
     },  # end of target 'remoting_browser_test_resources'
     {
-      'target_name': 'remoting_webapp_unittest',
+      'target_name': 'remoting_webapp_unittests',
       'type': 'none',
       'variables': {
         'output_dir': '<(PRODUCT_DIR)/remoting/unittests',
@@ -372,32 +372,32 @@
           'destination': '<(output_dir)',
           'files': [
             '<@(webapp_js_files)',
-            '<@(remoting_webapp_unittest_all_files)',
+            '<@(remoting_webapp_unittests_all_files)',
           ],
         },
       ],
       'actions': [
         {
-          'action_name': 'Build Remoting Webapp unittest.html',
+          'action_name': 'Build Remoting Webapp unittests.html',
           'inputs': [
             'webapp/build-html.py',
-            '<(remoting_webapp_unittest_template_main)',
+            '<(remoting_webapp_unittests_template_main)',
             '<@(webapp_js_files)',
-            '<@(remoting_webapp_unittest_all_js_files)'
+            '<@(remoting_webapp_unittests_all_js_files)'
           ],
           'outputs': [
-            '<(output_dir)/unittest.html',
+            '<(output_dir)/unittests.html',
           ],
           'action': [
             'python', 'webapp/build-html.py',
             '<@(_outputs)',
-            '<(remoting_webapp_unittest_template_main)',
+            '<(remoting_webapp_unittests_template_main)',
             # GYP automatically removes subsequent duplicated command line
             # arguments.  Therefore, the excludejs flag must be set before the
             # instrumentedjs flag or else GYP will ignore the files in the
             # exclude list.
-            '--exclude-js', '<@(remoting_webapp_unittest_exclude_js_files)',
-            '--js', '<@(remoting_webapp_unittest_all_js_files)',
+            '--exclude-js', '<@(remoting_webapp_unittests_exclude_js_files)',
+            '--js', '<@(remoting_webapp_unittests_all_js_files)',
             '--instrument-js', '<@(webapp_js_files)',
            ],
         },

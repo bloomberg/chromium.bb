@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Launches the remoting webapp unit test in chrome with the appropriate flags.
+"""Launches the remoting webapp unit tests in chrome with the appropriate flags.
 """
 
 import argparse
@@ -32,7 +32,7 @@ def BuildTestPageUri(opt_module=None, opt_coverage=False):
   script_path = os.path.dirname(__file__)
 
   test_page_path = os.path.join(script_path,
-      '../../out/Debug/remoting/unittests/unittest.html')
+      '../../out/Debug/remoting/unittests/unittests.html')
   test_page_path = 'file://' + os.path.abspath(test_page_path)
 
   test_page_params = {}

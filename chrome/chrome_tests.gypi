@@ -1971,7 +1971,7 @@
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../remoting/remoting.gyp:remoting_browser_test_resources',
-        '../remoting/remoting.gyp:remoting_webapp_unittest',
+        '../remoting/remoting.gyp:remoting_webapp_unittests',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_test_license_server',
       ],

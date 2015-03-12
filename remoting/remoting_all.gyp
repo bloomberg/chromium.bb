@@ -23,7 +23,7 @@
         '../remoting/remoting.gyp:remoting_resources',
         '../remoting/remoting.gyp:remoting_webapp',
         '../remoting/remoting.gyp:remoting_webapp_html',
-        '../remoting/remoting.gyp:remoting_webapp_unittest',
+        '../remoting/remoting.gyp:remoting_webapp_unittests',
         '../remoting/app_remoting_webapp.gyp:ar_sample_app',
       ],
 
