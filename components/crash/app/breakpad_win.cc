@@ -543,7 +543,6 @@ void InitCrashReporter(const std::string& process_type_switch) {
 
   base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueForBaseDebug,
                                              &ClearCrashKeyForBaseDebug);
-  GetCrashReporterClient()->RegisterCrashKeys();
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
   LPTOP_LEVEL_EXCEPTION_FILTER default_filter = NULL;
