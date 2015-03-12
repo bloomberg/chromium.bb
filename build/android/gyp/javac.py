@@ -80,7 +80,8 @@ def DoJavac(
       '-classpath', ':'.join(classpath),
       '-d', classes_dir]
   if chromium_code:
-    javac_args.extend(['-Xlint:unchecked', '-Xlint:deprecation'])
+    # TODO(aurimas): re-enable '-Xlint:deprecation' checks once they are fixed.
+    javac_args.extend(['-Xlint:unchecked'])
   else:
     # XDignore.symbol.file makes javac compile against rt.jar instead of
     # ct.sym. This means that using a java internal package/class will not
