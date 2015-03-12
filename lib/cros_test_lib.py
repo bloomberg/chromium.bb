@@ -783,6 +783,23 @@ class TestCase(unittest.TestCase):
     if os.path.exists(path):
       raise self.failureException('path exists when it should not: %s' % path)
 
+  def GetSequenceDiff(self, seq1, seq2):
+    """Get a string describing the difference between two sequences.
+
+    Args:
+      seq1: First sequence to compare.
+      seq2: Second sequence to compare.
+
+    Returns:
+      A string that describes how the two sequences differ.
+    """
+    try:
+      self.assertSequenceEqual(seq1, seq2)
+    except AssertionError as ex:
+      return ex.message
+    else:
+      return 'no differences'
+
 
 class LoggingTestCase(TestCase):
   """Base class for logging capturer test cases."""
