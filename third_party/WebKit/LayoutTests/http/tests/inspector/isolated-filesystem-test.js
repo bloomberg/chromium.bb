@@ -2,6 +2,10 @@ var initialize_IsolatedFileSystemTest = function() {
 
 InspectorTest.createIsolatedFileSystemManager = function(workspace)
 {
+    var normalizePath = WebInspector.IsolatedFileSystem.normalizePath
+    WebInspector.IsolatedFileSystem = MockIsolatedFileSystem;
+    WebInspector.IsolatedFileSystem.normalizePath = normalizePath;
+
     var manager = new MockIsolatedFileSystemManager();
     manager.fileSystemMapping = InspectorTest.testFileSystemMapping;
     manager.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(manager, workspace, InspectorTest.testNetworkMapping);
@@ -93,10 +97,6 @@ MockIsolatedFileSystem.prototype = {
     }
 }
 
-var normalizePath = WebInspector.IsolatedFileSystem.normalizePath
-WebInspector.IsolatedFileSystem = MockIsolatedFileSystem;
-WebInspector.IsolatedFileSystem.normalizePath = normalizePath;
-
 var MockIsolatedFileSystemManager = function() {};
 MockIsolatedFileSystemManager.prototype = {
     addMockFileSystem: function(path, skipAddFileSystem)
@@ -146,6 +146,112 @@ InspectorTest.addMockFileSystem = function(path)
 InspectorTest.addFilesToMockFileSystem = function(path, files)
 {
     MockIsolatedFileSystem._isolatedFileSystemMocks[path]._addFiles(files);
+}
+
+InspectorFrontendHost.isolatedFileSystem = function(name, url)
+{
+    return InspectorTest.TestFileSystem._instances[name];
+}
+
+InspectorTest.TestFileSystem = function(fileSystemPath)
+{
+    this.root = new InspectorTest.TestFileSystem.Entry("", true);
+    this.fileSystemPath = fileSystemPath;
+}
+
+InspectorTest.TestFileSystem._instances = {};
+
+InspectorTest.TestFileSystem.prototype = {
+    reportCreated: function()
+    {
+        WebInspector.isolatedFileSystemManager._loaded = true;
+        InspectorTest.TestFileSystem._instances[this.fileSystemPath] = this;
+        InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemAdded, {
+            fileSystem: { fileSystemPath: this.fileSystemPath,
+                          fileSystemName: this.fileSystemPath }
+        });
+    }
+}
+
+InspectorTest.TestFileSystem.Entry = function(name, isDirectory)
+{
+    this.name = name;
+    this._children = [];
+    this._childrenMap = {};
+    this.isDirectory = isDirectory;
+}
+
+InspectorTest.TestFileSystem.Entry.prototype = {
+    get fullPath()
+    {
+        return (this.parent ? this.parent.fullPath : "") + "/" + this.name;
+    },
+
+    mkdir: function(name)
+    {
+        var child = new InspectorTest.TestFileSystem.Entry(name, true);
+        this._childrenMap[name] = child;
+        this._children.push(child);
+        child.parent = this;
+        return child;
+    },
+
+    addFile: function(name, content)
+    {
+        var child = new InspectorTest.TestFileSystem.Entry(name, false);
+        this._childrenMap[name] = child;
+        this._children.push(child);
+        child.parent = this;
+        child.content = new Blob([content], {type: 'text/plain'});
+    },
+
+    createReader: function()
+    {
+        return new InspectorTest.TestFileSystem.Reader(this._children);
+    },
+
+    file: function(callback)
+    {
+        callback(this.content);
+    },
+
+    getDirectory: function(path, noop, callback)
+    {
+        this.getEntry(path, noop, callback);
+    },
+
+    getFile: function(path, noop, callback)
+    {
+        this.getEntry(path, noop, callback);
+    },
+
+    getEntry: function(path, noop, callback)
+    {
+        if (path.startsWith("/"))
+            path = path.substring(1);
+        if (!path) {
+            callback(this);
+            return;
+        }
+        var entry = this;
+        for (var token of path.split("/"))
+            entry = entry._childrenMap[token];
+        callback(entry);
+    }
+}
+
+InspectorTest.TestFileSystem.Reader = function(children)
+{
+    this._children = children;
+}
+
+InspectorTest.TestFileSystem.Reader.prototype = {
+    readEntries: function(callback)
+    {
+        var children = this._children;
+        this._children = [];
+        callback(children);
+    }
 }
 
 };
