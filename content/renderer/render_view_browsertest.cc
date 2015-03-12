@@ -1688,7 +1688,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
       base::ASCIIToUTF16(
           "Number(document.getElementById('pagename').innerHTML == 'Page C')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
-  EXPECT_EQ(1, was_page_b);
+  EXPECT_EQ(1, was_page_c);
 
   PageState forward_state =
       HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
