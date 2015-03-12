@@ -70,6 +70,16 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
       PermissionIDSet* permission_ids,
       Manifest::Type extension_type) const;
 
+  // Applies coalescing rules and writes the resulting messages and their
+  // details into |message_strings| and |message_details_strings|.
+  // TODO(treib): Remove this method as soon as we've fully switched to the
+  // new system.
+  void CoalesceWarningMessages(
+      const PermissionSet* permissions,
+      Manifest::Type extension_type,
+      std::vector<base::string16>* message_strings,
+      std::vector<base::string16>* message_details_strings) const;
+
   // Returns true if |new_permissions| has an elevated API privilege level
   // compared to |old_permissions|.
   bool IsAPIPrivilegeIncrease(

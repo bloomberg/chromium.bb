@@ -189,105 +189,11 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   std::vector<base::string16> message_strings;
-  PermissionMessages messages =
-      GetPermissionMessages(permissions, extension_type);
-
-  // WARNING: When modifying a coalescing rule in this list, be sure to also
-  // modify the corresponding rule in
-  // ChromePermissionMessageProvider::GetCoalescedPermissionMessages().
-  // TODO(sashab): Deprecate this function, and remove this list.
-  for (PermissionMessages::const_iterator i = messages.begin();
-       i != messages.end(); ++i) {
-    int id = i->id();
-    // Access to users' devices should provide a single warning message
-    // specifying the transport method used; serial and/or Bluetooth.
-    if (id == PermissionMessage::kBluetooth ||
-        id == PermissionMessage::kSerial) {
-      if (ContainsMessages(messages,
-                           PermissionMessage::kBluetooth,
-                           PermissionMessage::kSerial)) {
-        if (id == PermissionMessage::kBluetooth) {
-          message_strings.push_back(l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL));
-        }
-        continue;
-      }
-    }
-    if (id == PermissionMessage::kAccessibilityFeaturesModify ||
-        id == PermissionMessage::kAccessibilityFeaturesRead) {
-      if (ContainsMessages(messages,
-                           PermissionMessage::kAccessibilityFeaturesModify,
-                           PermissionMessage::kAccessibilityFeaturesRead)) {
-        if (id == PermissionMessage::kAccessibilityFeaturesModify) {
-          message_strings.push_back(l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ_MODIFY));
-        }
-        continue;
-      }
-    }
-    if (id == PermissionMessage::kAudioCapture ||
-        id == PermissionMessage::kVideoCapture) {
-      if (ContainsMessages(messages,
-                           PermissionMessage::kAudioCapture,
-                           PermissionMessage::kVideoCapture)) {
-        if (id == PermissionMessage::kAudioCapture) {
-          message_strings.push_back(l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE));
-        }
-        continue;
-      }
-    }
-    if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo ||
-        id == PermissionMessage::kMediaGalleriesAllGalleriesDelete ||
-        id == PermissionMessage::kMediaGalleriesAllGalleriesRead) {
-      if (ContainsMessages(
-              messages,
-              PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
-              PermissionMessage::kMediaGalleriesAllGalleriesDelete,
-              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
-        if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
-          message_strings.push_back(l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE_DELETE));
-        }
-        continue;
-      }
-      if (ContainsMessages(
-              messages,
-              PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
-              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
-        if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
-          message_strings.push_back(l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE));
-        }
-        continue;
-      }
-      if (ContainsMessages(
-              messages,
-              PermissionMessage::kMediaGalleriesAllGalleriesDelete,
-              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
-        if (id == PermissionMessage::kMediaGalleriesAllGalleriesDelete) {
-          message_strings.push_back(l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE));
-        }
-        continue;
-      }
-    }
-    if (permissions->HasAPIPermission(APIPermission::kSessions) &&
-        id == PermissionMessage::kTabs) {
-      message_strings.push_back(l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS));
-      continue;
-    }
-    if (permissions->HasAPIPermission(APIPermission::kSessions) &&
-        id == PermissionMessage::kBrowsingHistory) {
-      message_strings.push_back(l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS));
-      continue;
-    }
-
-    message_strings.push_back(i->message());
-  }
-
+  std::vector<base::string16> message_details_strings;
+  CoalesceWarningMessages(permissions,
+                          extension_type,
+                          &message_strings,
+                          &message_details_strings);
   return message_strings;
 }
 
@@ -296,14 +202,12 @@ ChromePermissionMessageProvider::GetWarningMessagesDetails(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   std::vector<base::string16> message_strings;
-  PermissionMessages messages =
-      GetPermissionMessages(permissions, extension_type);
-
-  for (PermissionMessages::const_iterator i = messages.begin();
-       i != messages.end(); ++i)
-    message_strings.push_back(i->details());
-
-  return message_strings;
+  std::vector<base::string16> message_details_strings;
+  CoalesceWarningMessages(permissions,
+                          extension_type,
+                          &message_strings,
+                          &message_details_strings);
+  return message_details_strings;
 }
 
 bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
@@ -430,6 +334,120 @@ ChromePermissionMessageProvider::GetHostPermissionMessages(
     }
   }
   return messages;
+}
+
+void ChromePermissionMessageProvider::CoalesceWarningMessages(
+    const PermissionSet* permissions,
+    Manifest::Type extension_type,
+    std::vector<base::string16>* message_strings,
+    std::vector<base::string16>* message_details_strings) const {
+  PermissionMessages messages =
+      GetPermissionMessages(permissions, extension_type);
+
+  // WARNING: When modifying a coalescing rule in this list, be sure to also
+  // modify the corresponding rule in
+  // ChromePermissionMessageProvider::GetCoalescedPermissionMessages().
+  // TODO(sashab): Deprecate this function, and remove this list.
+  for (PermissionMessages::const_iterator i = messages.begin();
+       i != messages.end(); ++i) {
+    int id = i->id();
+    // Access to users' devices should provide a single warning message
+    // specifying the transport method used; serial and/or Bluetooth.
+    if (id == PermissionMessage::kBluetooth ||
+        id == PermissionMessage::kSerial) {
+      if (ContainsMessages(messages,
+                           PermissionMessage::kBluetooth,
+                           PermissionMessage::kSerial)) {
+        if (id == PermissionMessage::kBluetooth) {
+          message_strings->push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL));
+          message_details_strings->push_back(base::string16());
+        }
+        continue;
+      }
+    }
+    if (id == PermissionMessage::kAccessibilityFeaturesModify ||
+        id == PermissionMessage::kAccessibilityFeaturesRead) {
+      if (ContainsMessages(messages,
+                           PermissionMessage::kAccessibilityFeaturesModify,
+                           PermissionMessage::kAccessibilityFeaturesRead)) {
+        if (id == PermissionMessage::kAccessibilityFeaturesModify) {
+          message_strings->push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ_MODIFY));
+          message_details_strings->push_back(base::string16());
+        }
+        continue;
+      }
+    }
+    if (id == PermissionMessage::kAudioCapture ||
+        id == PermissionMessage::kVideoCapture) {
+      if (ContainsMessages(messages,
+                           PermissionMessage::kAudioCapture,
+                           PermissionMessage::kVideoCapture)) {
+        if (id == PermissionMessage::kAudioCapture) {
+          message_strings->push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE));
+          message_details_strings->push_back(base::string16());
+        }
+        continue;
+      }
+    }
+    if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo ||
+        id == PermissionMessage::kMediaGalleriesAllGalleriesDelete ||
+        id == PermissionMessage::kMediaGalleriesAllGalleriesRead) {
+      if (ContainsMessages(
+              messages,
+              PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
+              PermissionMessage::kMediaGalleriesAllGalleriesDelete,
+              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
+        if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
+          message_strings->push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE_DELETE));
+          message_details_strings->push_back(base::string16());
+        }
+        continue;
+      }
+      if (ContainsMessages(
+              messages,
+              PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
+              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
+        if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
+          message_strings->push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE));
+          message_details_strings->push_back(base::string16());
+        }
+        continue;
+      }
+      if (ContainsMessages(
+              messages,
+              PermissionMessage::kMediaGalleriesAllGalleriesDelete,
+              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
+        if (id == PermissionMessage::kMediaGalleriesAllGalleriesDelete) {
+          message_strings->push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE));
+          message_details_strings->push_back(base::string16());
+        }
+        continue;
+      }
+    }
+    if (permissions->HasAPIPermission(APIPermission::kSessions) &&
+        id == PermissionMessage::kTabs) {
+      message_strings->push_back(l10n_util::GetStringUTF16(
+          IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS));
+      message_details_strings->push_back(base::string16());
+      continue;
+    }
+    if (permissions->HasAPIPermission(APIPermission::kSessions) &&
+        id == PermissionMessage::kBrowsingHistory) {
+      message_strings->push_back(l10n_util::GetStringUTF16(
+          IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS));
+      message_details_strings->push_back(base::string16());
+      continue;
+    }
+
+    message_strings->push_back(i->message());
+    message_details_strings->push_back(i->details());
+  }
 }
 
 bool ChromePermissionMessageProvider::IsAPIPrivilegeIncrease(
