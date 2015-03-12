@@ -2912,6 +2912,10 @@ _FUNCTION_INFO = {
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
   },
+  'UnmapBuffer': {
+    'type': 'Custom',
+    'unsafe': True,
+  },
   'UnmapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
     'extension': True,

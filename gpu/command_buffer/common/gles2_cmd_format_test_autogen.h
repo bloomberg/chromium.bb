@@ -3799,6 +3799,16 @@ TEST_F(GLES2FormatTest, MapBufferRange) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, UnmapBuffer) {
+  cmds::UnmapBuffer& cmd = *GetBufferAs<cmds::UnmapBuffer>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::UnmapBuffer::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, ResizeCHROMIUM) {
   cmds::ResizeCHROMIUM& cmd = *GetBufferAs<cmds::ResizeCHROMIUM>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),

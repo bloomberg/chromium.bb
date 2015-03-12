@@ -257,6 +257,7 @@
 #define glMapBufferSubDataCHROMIUM GLES2_GET_FUN(MapBufferSubDataCHROMIUM)
 #define glUnmapBufferSubDataCHROMIUM GLES2_GET_FUN(UnmapBufferSubDataCHROMIUM)
 #define glMapBufferRange GLES2_GET_FUN(MapBufferRange)
+#define glUnmapBuffer GLES2_GET_FUN(UnmapBuffer)
 #define glMapTexSubImage2DCHROMIUM GLES2_GET_FUN(MapTexSubImage2DCHROMIUM)
 #define glUnmapTexSubImage2DCHROMIUM GLES2_GET_FUN(UnmapTexSubImage2DCHROMIUM)
 #define glResizeCHROMIUM GLES2_GET_FUN(ResizeCHROMIUM)

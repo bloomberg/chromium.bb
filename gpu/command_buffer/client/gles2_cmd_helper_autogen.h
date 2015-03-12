@@ -2241,6 +2241,13 @@ void MapBufferRange(GLenum target,
   }
 }
 
+void UnmapBuffer(GLenum target) {
+  gles2::cmds::UnmapBuffer* c = GetCmdSpace<gles2::cmds::UnmapBuffer>();
+  if (c) {
+    c->Init(target);
+  }
+}
+
 void ResizeCHROMIUM(GLuint width, GLuint height, GLfloat scale_factor) {
   gles2::cmds::ResizeCHROMIUM* c = GetCmdSpace<gles2::cmds::ResizeCHROMIUM>();
   if (c) {

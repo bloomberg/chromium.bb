@@ -993,6 +993,9 @@ void* GLES2InterfaceStub::MapBufferRange(GLenum /* target */,
                                          GLbitfield /* access */) {
   return 0;
 }
+GLboolean GLES2InterfaceStub::UnmapBuffer(GLenum /* target */) {
+  return 0;
+}
 void* GLES2InterfaceStub::MapTexSubImage2DCHROMIUM(GLenum /* target */,
                                                    GLint /* level */,
                                                    GLint /* xoffset */,

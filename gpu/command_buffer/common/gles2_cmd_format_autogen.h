@@ -11019,6 +11019,38 @@ static_assert(offsetof(MapBufferRange, result_shm_id) == 28,
 static_assert(offsetof(MapBufferRange, result_shm_offset) == 32,
               "offset of MapBufferRange result_shm_offset should be 32");
 
+struct UnmapBuffer {
+  typedef UnmapBuffer ValueType;
+  static const CommandId kCmdId = kUnmapBuffer;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target) {
+    SetHeader();
+    target = _target;
+  }
+
+  void* Set(void* cmd, GLenum _target) {
+    static_cast<ValueType*>(cmd)->Init(_target);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+};
+
+static_assert(sizeof(UnmapBuffer) == 8, "size of UnmapBuffer should be 8");
+static_assert(offsetof(UnmapBuffer, header) == 0,
+              "offset of UnmapBuffer header should be 0");
+static_assert(offsetof(UnmapBuffer, target) == 4,
+              "offset of UnmapBuffer target should be 4");
+
 struct ResizeCHROMIUM {
   typedef ResizeCHROMIUM ValueType;
   static const CommandId kCmdId = kResizeCHROMIUM;

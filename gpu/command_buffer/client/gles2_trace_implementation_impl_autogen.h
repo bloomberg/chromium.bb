@@ -1691,6 +1691,11 @@ void* GLES2TraceImplementation::MapBufferRange(GLenum target,
   return gl_->MapBufferRange(target, offset, size, access);
 }
 
+GLboolean GLES2TraceImplementation::UnmapBuffer(GLenum target) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::UnmapBuffer");
+  return gl_->UnmapBuffer(target);
+}
+
 void* GLES2TraceImplementation::MapTexSubImage2DCHROMIUM(GLenum target,
                                                          GLint level,
                                                          GLint xoffset,

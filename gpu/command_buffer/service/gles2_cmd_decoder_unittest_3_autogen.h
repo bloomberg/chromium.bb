@@ -220,6 +220,8 @@ TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
 
 // TODO(gman): MapBufferRange
 
+// TODO(gman): UnmapBuffer
+
 // TODO(gman): ResizeCHROMIUM
 // TODO(gman): GetRequestableExtensionsCHROMIUM
 

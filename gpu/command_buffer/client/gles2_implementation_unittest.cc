@@ -3600,7 +3600,7 @@ TEST_F(GLES2ImplementationTest, WaitSync) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, MapBufferRangeWrite) {
+TEST_F(GLES2ImplementationTest, MapBufferRangeUnmapBufferWrite) {
   ExpectedMemoryInfo result =
       GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
 
@@ -3613,6 +3613,8 @@ TEST_F(GLES2ImplementationTest, MapBufferRangeWrite) {
 
   void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_WRITE_BIT);
   EXPECT_TRUE(mem != nullptr);
+
+  EXPECT_TRUE(gl_->UnmapBuffer(GL_ARRAY_BUFFER));
 }
 
 TEST_F(GLES2ImplementationTest, MapBufferRangeWriteWithInvalidateBit) {
@@ -3652,7 +3654,7 @@ TEST_F(GLES2ImplementationTest, MapBufferRangeWriteWithGLError) {
   EXPECT_TRUE(mem == nullptr);
 }
 
-TEST_F(GLES2ImplementationTest, MapBufferRangeRead) {
+TEST_F(GLES2ImplementationTest, MapBufferRangeUnmapBufferRead) {
   ExpectedMemoryInfo result =
       GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
 
@@ -3665,6 +3667,8 @@ TEST_F(GLES2ImplementationTest, MapBufferRangeRead) {
 
   void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_READ_BIT);
   EXPECT_TRUE(mem != nullptr);
+
+  EXPECT_TRUE(gl_->UnmapBuffer(GL_ARRAY_BUFFER));
 }
 
 TEST_F(GLES2ImplementationTest, MapBufferRangeReadWithGLError) {
@@ -3681,6 +3685,63 @@ TEST_F(GLES2ImplementationTest, MapBufferRangeReadWithGLError) {
 
   void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_READ_BIT);
   EXPECT_TRUE(mem == nullptr);
+}
+
+TEST_F(GLES2ImplementationTest, UnmapBufferFails) {
+  // No bound buffer.
+  EXPECT_FALSE(gl_->UnmapBuffer(GL_ARRAY_BUFFER));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  const GLuint kBufferId = 123;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kBufferId);
+
+  // Buffer is unmapped.
+  EXPECT_FALSE(gl_->UnmapBuffer(GL_ARRAY_BUFFER));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+}
+
+TEST_F(GLES2ImplementationTest, BufferDataUnmapsDataStore) {
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result.ptr, uint32_t(1)))
+      .RetiresOnSaturation();
+
+  const GLuint kBufferId = 123;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kBufferId);
+
+  void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_WRITE_BIT);
+  EXPECT_TRUE(mem != nullptr);
+
+  std::vector<uint8_t> data(16);
+  // BufferData unmaps the data store.
+  gl_->BufferData(GL_ARRAY_BUFFER, 16, &data[0], GL_STREAM_DRAW);
+
+  EXPECT_FALSE(gl_->UnmapBuffer(GL_ARRAY_BUFFER));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+}
+
+TEST_F(GLES2ImplementationTest, DeleteBuffersUnmapsDataStore) {
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::MapBufferRange::Result));
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result.ptr, uint32_t(1)))
+      .RetiresOnSaturation();
+
+  const GLuint kBufferId = 123;
+  gl_->BindBuffer(GL_ARRAY_BUFFER, kBufferId);
+
+  void* mem = gl_->MapBufferRange(GL_ARRAY_BUFFER, 10, 64, GL_MAP_WRITE_BIT);
+  EXPECT_TRUE(mem != nullptr);
+
+  std::vector<uint8_t> data(16);
+  // DeleteBuffers unmaps the data store.
+  gl_->DeleteBuffers(1, &kBufferId);
+
+  EXPECT_FALSE(gl_->UnmapBuffer(GL_ARRAY_BUFFER));
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
 }
 
 TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {

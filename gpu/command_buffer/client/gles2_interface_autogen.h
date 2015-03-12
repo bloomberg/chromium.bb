@@ -587,6 +587,7 @@ virtual void* MapBufferRange(GLenum target,
                              GLintptr offset,
                              GLsizeiptr size,
                              GLbitfield access) = 0;
+virtual GLboolean UnmapBuffer(GLenum target) = 0;
 virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
                                        GLint level,
                                        GLint xoffset,

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
@@ -27,6 +28,19 @@ class TestHelper;
 // Info about Buffers currently in the system.
 class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
  public:
+  struct MappedRange {
+    GLintptr offset;
+    GLsizeiptr size;
+    GLenum access;
+    void* pointer;  // Pointer returned by driver.
+    scoped_refptr<gpu::Buffer> shm;  // Client side mem.
+
+    MappedRange(GLintptr offset, GLsizeiptr size, GLenum access,
+                void* pointer, scoped_refptr<gpu::Buffer> shm);
+    ~MappedRange();
+    void* GetShmPointer() const;
+  };
+
   Buffer(BufferManager* manager, GLuint service_id);
 
   GLuint service_id() const {
@@ -67,12 +81,17 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     return is_client_side_array_;
   }
 
-  void set_buffer_range_pointer(void* mem) {
-    buffer_range_pointer_ = mem;
+  void SetMappedRange(GLintptr offset, GLsizeiptr size, GLenum access,
+                      void* pointer, scoped_refptr<gpu::Buffer> shm) {
+    mapped_range_.reset(new MappedRange(offset, size, access, pointer, shm));
   }
 
-  void* buffer_range_pointer() const {
-    return buffer_range_pointer_;
+  void RemoveMappedRange() {
+    mapped_range_.reset(nullptr);
+  }
+
+  const MappedRange* GetMappedRange() const {
+    return mapped_range_.get();
   }
 
  private:
@@ -171,8 +190,8 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Usage of buffer.
   GLenum usage_;
 
-  // Returned value from last glMapBufferRange call.
-  void* buffer_range_pointer_;
+  // Data cached from last glMapBufferRange call.
+  scoped_ptr<MappedRange> mapped_range_;
 
   // A map of ranges to the highest value in that range of a certain type.
   typedef std::map<Range, GLuint, Range::Less> RangeToMaxValueMap;

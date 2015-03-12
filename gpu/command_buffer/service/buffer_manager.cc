@@ -74,6 +74,27 @@ void BufferManager::StopTracking(Buffer* buffer) {
   --buffer_count_;
 }
 
+Buffer::MappedRange::MappedRange(
+    GLintptr offset, GLsizeiptr size, GLenum access, void* pointer,
+    scoped_refptr<gpu::Buffer> shm)
+    : offset(offset),
+      size(size),
+      access(access),
+      pointer(pointer),
+      shm(shm) {
+  DCHECK(pointer);
+  DCHECK(shm.get() && GetShmPointer());
+}
+
+Buffer::MappedRange::~MappedRange() {
+}
+
+void* Buffer::MappedRange::GetShmPointer() const {
+  DCHECK(shm.get());
+  return shm->GetDataAddress(static_cast<unsigned int>(offset),
+                             static_cast<unsigned int>(size));
+}
+
 Buffer::Buffer(BufferManager* manager, GLuint service_id)
     : manager_(manager),
       size_(0),
@@ -82,8 +103,7 @@ Buffer::Buffer(BufferManager* manager, GLuint service_id)
       is_client_side_array_(false),
       service_id_(service_id),
       target_(0),
-      usage_(GL_STATIC_DRAW),
-      buffer_range_pointer_(nullptr) {
+      usage_(GL_STATIC_DRAW) {
   manager_->StartTracking(this);
 }
 
@@ -120,7 +140,7 @@ void Buffer::SetInfo(
       memset(shadow_.get(), 0, size);
     }
   }
-  buffer_range_pointer_ = nullptr;
+  mapped_range_.reset(nullptr);
 }
 
 bool Buffer::CheckRange(
