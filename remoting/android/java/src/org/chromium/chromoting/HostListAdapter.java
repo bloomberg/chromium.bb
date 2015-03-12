@@ -12,12 +12,6 @@ import android.widget.Toast;
 
 /** Describes the appearance and behavior of each host list entry. */
 class HostListAdapter extends ArrayAdapter<HostInfo> {
-    /** Color to use for hosts that are online. */
-    private static final String HOST_COLOR_ONLINE = "green";
-
-    /** Color to use for hosts that are offline. */
-    private static final String HOST_COLOR_OFFLINE = "red";
-
     private Chromoting mChromoting;
 
     /** Constructor. */

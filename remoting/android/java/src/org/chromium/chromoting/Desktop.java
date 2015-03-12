@@ -178,7 +178,7 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
     }
 
     /** The overlay button's onClick handler. */
-    public void onOverlayButtonPressed(View view) {
+    public void onOverlayButtonPressed(@SuppressWarnings("unused") View view) {
         showActionBar();
     }
 

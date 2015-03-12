@@ -31,12 +31,6 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
             mLongPressCount = pointerCount;
         }
 
-        /** Resets the mock listener to its initial state. */
-        public void reset() {
-            mTapCount = -1;
-            mLongPressCount = -1;
-        }
-
         public void assertTapDetected(int expectedCount) {
             assertEquals(expectedCount, mTapCount);
             assertEquals(-1, mLongPressCount);
@@ -155,6 +149,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
     @Feature({"Chromoting"})
     public void testLongPress() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 // Ensure the gesture-detector is created on the UI thread, so that it uses the
                 // Handler for the UI thread for LongPress notifications.
@@ -168,6 +163,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
         Thread.sleep(2 * ViewConfiguration.getLongPressTimeout());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 injectUpEvent(0);
             }

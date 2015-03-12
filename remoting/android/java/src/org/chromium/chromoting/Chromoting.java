@@ -382,7 +382,7 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
     }
 
     @Override
-    public void onItemSelected(AdapterView parent, View view, int itemPosition, long itemId) {
+    public void onItemSelected(AdapterView<?> parent, View view, int itemPosition, long itemId) {
         mAccount = mAccounts[itemPosition];
 
         getPreferences(MODE_PRIVATE).edit().putString("account_name", mAccount.name)
@@ -395,7 +395,7 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
     }
 
     @Override
-    public void onNothingSelected(AdapterView parent) {
+    public void onNothingSelected(AdapterView<?> parent) {
     }
 
     @Override
