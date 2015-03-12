@@ -40,6 +40,10 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
   }
   ~MockEventConverterEvdevImpl() override {}
 
+  // EventConverterEvdevImpl:
+  bool HasKeyboard() const override { return true; }
+  bool HasTouchpad() const override { return true; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEventConverterEvdevImpl);
 };
