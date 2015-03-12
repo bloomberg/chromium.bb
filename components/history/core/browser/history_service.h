@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_SERVICE_H_
-#define CHROME_BROWSER_HISTORY_HISTORY_SERVICE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_SERVICE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_SERVICE_H_
 
 #include <set>
 #include <string>
@@ -23,11 +23,11 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/delete_directive_handler.h"
-#include "chrome/browser/history/typed_url_syncable_service.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_usage_data.h"
+#include "components/history/core/browser/delete_directive_handler.h"
 #include "components/history/core/browser/keyword_id.h"
+#include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "sql/init_status.h"
 #include "sync/api/syncable_service.h"
@@ -203,10 +203,10 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // empty.
   //
   // If success is false, neither the row nor the vector will be valid.
-  typedef base::Callback<
-      void(bool,  // Success flag, when false, nothing else is valid.
-           const history::URLRow&,
-           const history::VisitVector&)> QueryURLCallback;
+  typedef base::Callback<void(
+      bool,  // Success flag, when false, nothing else is valid.
+      const history::URLRow&,
+      const history::VisitVector&)> QueryURLCallback;
 
   // Queries the basic information about the URL in the history database. If
   // the caller is interested in the visits (each time the URL is visited),
@@ -264,11 +264,11 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Requests the number of user-visible visits (i.e. no redirects or subframes)
   // to all urls on the same scheme/host/port as |url|.  This is only valid for
   // HTTP and HTTPS URLs.
-  typedef base::Callback<
-      void(bool,         // Were we able to determine the # of visits?
-           int,          // Number of visits.
-           base::Time)>  // Time of first visit. Only set if bool
-                         // is true and int is > 0.
+  typedef base::Callback<void(
+      bool,         // Were we able to determine the # of visits?
+      int,          // Number of visits.
+      base::Time)>  // Time of first visit. Only set if bool
+                    // is true and int is > 0.
       GetVisibleVisitCountToHostCallback;
 
   base::CancelableTaskTracker::TaskId GetVisibleVisitCountToHost(
@@ -362,9 +362,8 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // contains all the download's creation state, and 'callback' runs when the
   // history service request is complete. The callback is called on the thread
   // that calls CreateDownload().
-  void CreateDownload(
-      const history::DownloadRow& info,
-      const DownloadCreateCallback& callback);
+  void CreateDownload(const history::DownloadRow& info,
+                      const DownloadCreateCallback& callback);
 
   // Implemented by the caller of 'GetNextDownloadId' below, and is called with
   // the maximum id of all downloads records in the database plus 1.
@@ -439,7 +438,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // returned Subscription is destroyed. This must occurs before HistoryService
   // is destroyed.
   scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
-      AddFaviconChangedCallback(const OnFaviconChangedCallback& callback)
+  AddFaviconChangedCallback(const OnFaviconChangedCallback& callback)
       WARN_UNUSED_RESULT;
 
   // Testing -------------------------------------------------------------------
@@ -517,7 +516,8 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   friend class HistoryURLProvider;
   friend class HistoryURLProviderTest;
   friend class ::InMemoryURLIndexTest;
-  template<typename Info, typename Callback> friend class DownloadRequest;
+  template <typename Info, typename Callback>
+  friend class DownloadRequest;
   friend class PageUsageRequest;
   friend class RedirectRequest;
   friend class SyncBookmarkDataTypeControllerTest;
@@ -809,4 +809,4 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_SERVICE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_SERVICE_H_

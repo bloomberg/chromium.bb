@@ -6,6 +6,7 @@ include_rules = [
   "+google_apis/gaia",
   "+net",
   "+sql",
+  "+sync",
   "+third_party/skia",
   "+third_party/sqlite",
   "+ui/base",

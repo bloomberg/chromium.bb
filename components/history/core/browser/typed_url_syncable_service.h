@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_TYPED_URL_SYNCABLE_SERVICE_H_
-#define CHROME_BROWSER_HISTORY_TYPED_URL_SYNCABLE_SERVICE_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNCABLE_SERVICE_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNCABLE_SERVICE_H_
 
 #include <set>
 #include <vector>
@@ -64,14 +64,15 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   }
 
  private:
-  typedef std::vector<std::pair<URLID, URLRow> > TypedUrlUpdateVector;
-  typedef std::vector<std::pair<GURL, std::vector<VisitInfo> > >
+  typedef std::vector<std::pair<URLID, URLRow>> TypedUrlUpdateVector;
+  typedef std::vector<std::pair<GURL, std::vector<VisitInfo>>>
       TypedUrlVisitVector;
 
   // This is a helper map used only in Merge/Process* functions. The lifetime
   // of the iterator is longer than the map object.
-  typedef std::map<GURL, std::pair<syncer::SyncChange::SyncChangeType,
-                                   URLRows::iterator> > TypedUrlMap;
+  typedef std::map<GURL,
+                   std::pair<syncer::SyncChange::SyncChangeType,
+                             URLRows::iterator>> TypedUrlMap;
   // This is a helper map used to associate visit vectors from the history db
   // to the typed urls in the above map.
   typedef std::map<GURL, VisitVector> UrlVisitVectorMap;
@@ -92,12 +93,11 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   bool CreateOrUpdateSyncNode(URLRow typed_url,
                               syncer::SyncChangeList* changes);
 
-  void AddTypedUrlToChangeList(
-    syncer::SyncChange::SyncChangeType change_type,
-    const URLRow& row,
-    const VisitVector& visits,
-    std::string title,
-    syncer::SyncChangeList* change_list);
+  void AddTypedUrlToChangeList(syncer::SyncChange::SyncChangeType change_type,
+                               const URLRow& row,
+                               const VisitVector& visits,
+                               std::string title,
+                               syncer::SyncChangeList* change_list);
 
   // Converts the passed URL information to a TypedUrlSpecifics structure for
   // writing to the sync DB.
@@ -112,8 +112,7 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   // etc) by modifying the passed |url| object and |visits| vector.
   // Returns false if we could not fetch the visits for the passed URL, and
   // tracks DB error statistics internally for reporting via UMA.
-  virtual bool FixupURLAndGetVisits(URLRow* url,
-                                    VisitVector* visits);
+  virtual bool FixupURLAndGetVisits(URLRow* url, VisitVector* visits);
 
   // TODO(sync): Consider using "delete all" sync logic instead of in-memory
   // cache of typed urls. See http://crbug.com/231689.
@@ -159,4 +158,4 @@ class TypedUrlSyncableService : public syncer::SyncableService {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_TYPED_URL_SYNCABLE_SERVICE_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNCABLE_SERVICE_H_

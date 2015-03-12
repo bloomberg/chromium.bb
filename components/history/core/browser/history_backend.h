@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_BACKEND_H_
-#define CHROME_BROWSER_HISTORY_HISTORY_BACKEND_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_BACKEND_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_BACKEND_H_
 
 #include <set>
 #include <string>
@@ -371,10 +371,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   virtual void DeleteURL(const GURL& url);
 
   // Calls ExpireHistoryBackend::ExpireHistoryBetween and commits the change.
-  void ExpireHistoryBetween(
-      const std::set<GURL>& restrict_urls,
-      base::Time begin_time,
-      base::Time end_time);
+  void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
+                            base::Time begin_time,
+                            base::Time end_time);
 
   // Finds the URLs visited at |times| and expires all their visits within
   // [|begin_time|, |end_time|). All times in |times| should be in
@@ -382,7 +381,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // server side, i.e. web history deletes, where only visit times (possibly
   // incomplete) are transmitted to protect user's privacy.
   void ExpireHistoryForTimes(const std::set<base::Time>& times,
-                             base::Time begin_time, base::Time end_time);
+                             base::Time begin_time,
+                             base::Time end_time);
 
   // Calls ExpireHistoryBetween() once for each element in the vector.
   // The fields of |ExpireHistoryArgs| map directly to the arguments of
@@ -441,9 +441,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // code to avoid syncing visits that would immediately be expired).
   virtual bool IsExpiredVisitTime(const base::Time& time);
 
-  base::Time GetFirstRecordedTimeForTest() {
-    return first_recorded_time_;
-  }
+  base::Time GetFirstRecordedTimeForTest() { return first_recorded_time_; }
 
  protected:
   ~HistoryBackend() override;
@@ -548,13 +546,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Returns a redirect chain in |redirects| for the VisitID
   // |cur_visit|. |cur_visit| is assumed to be valid. Assumes that
   // this HistoryBackend object has been Init()ed successfully.
-  void GetRedirectsFromSpecificVisit(
-      VisitID cur_visit, history::RedirectList* redirects);
+  void GetRedirectsFromSpecificVisit(VisitID cur_visit,
+                                     history::RedirectList* redirects);
 
   // Similar to the above function except returns a redirect list ending
   // at |cur_visit|.
-  void GetRedirectsToSpecificVisit(
-      VisitID cur_visit, history::RedirectList* redirects);
+  void GetRedirectsToSpecificVisit(VisitID cur_visit,
+                                   history::RedirectList* redirects);
 
   // Update the visit_duration information in visits table.
   void UpdateVisitDuration(VisitID visit_id, const base::Time end_ts);
@@ -648,12 +646,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // TOUCH_ICON, and FAVICON. See the comment for
   // GetFaviconResultsForBestMatch() for more details on how
   // |favicon_bitmap_results| is constructed.
-  bool GetFaviconsFromDB(
-      const GURL& page_url,
-      int icon_types,
-      const std::vector<int>& desired_sizes,
-      std::vector<favicon_base::FaviconRawBitmapResult>*
-          favicon_bitmap_results);
+  bool GetFaviconsFromDB(const GURL& page_url,
+                         int icon_types,
+                         const std::vector<int>& desired_sizes,
+                         std::vector<favicon_base::FaviconRawBitmapResult>*
+                             favicon_bitmap_results);
 
   // Returns the favicon bitmaps whose edge sizes most closely match
   // |desired_sizes| in |favicon_bitmap_results|. If |desired_sizes| has a '0'
@@ -693,8 +690,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Send notification that the favicon has changed for |page_url| and all its
   // redirects.
-  void SendFaviconChangedNotificationForPageAndRedirects(
-      const GURL& page_url);
+  void SendFaviconChangedNotificationForPageAndRedirects(const GURL& page_url);
 
   // Generic stuff -------------------------------------------------------------
 
@@ -828,4 +824,4 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_BACKEND_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_BACKEND_H_

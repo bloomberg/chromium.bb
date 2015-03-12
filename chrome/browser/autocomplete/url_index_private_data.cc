@@ -20,10 +20,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
-#include "chrome/browser/history/history_service.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
+#include "components/history/core/browser/history_service.h"
 #include "net/base/net_util.h"
 
 #if defined(USE_SYSTEM_PROTOBUF)

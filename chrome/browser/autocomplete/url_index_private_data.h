@@ -14,7 +14,7 @@
 #include "chrome/browser/autocomplete/in_memory_url_index_cache.pb.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_types.h"
 #include "chrome/browser/autocomplete/scored_history_match.h"
-#include "chrome/browser/history/history_service.h"
+#include "components/history/core/browser/history_service.h"
 
 class HistoryQuickProviderTest;
 

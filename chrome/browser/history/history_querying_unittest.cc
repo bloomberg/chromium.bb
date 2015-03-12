@@ -11,8 +11,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/history/history_service.h"
 #include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

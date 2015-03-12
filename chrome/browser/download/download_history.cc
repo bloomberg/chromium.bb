@@ -30,10 +30,10 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/download/download_crx_util.h"
-#include "chrome/browser/history/history_service.h"
 #include "components/history/content/browser/download_constants_utils.h"
 #include "components/history/core/browser/download_database.h"
 #include "components/history/core/browser/download_row.h"
+#include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"

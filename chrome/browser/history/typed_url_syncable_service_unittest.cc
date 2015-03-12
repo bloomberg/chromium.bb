@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/typed_url_syncable_service.h"
+#include "components/history/core/browser/typed_url_syncable_service.h"
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/history_backend.h"
+#include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/notification_types.h"
 #include "sync/api/fake_sync_change_processor.h"

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/typed_url_syncable_service.h"
+#include "components/history/core/browser/typed_url_syncable_service.h"
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/history_backend.h"
+#include "components/history/core/browser/history_backend.h"
 #include "net/base/net_util.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
@@ -118,8 +118,7 @@ syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
 
   // TODO(mgist): Add implementation
 
-  return syncer::SyncError(FROM_HERE,
-                           syncer::SyncError::DATATYPE_ERROR,
+  return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                            "Typed url syncable service is not implemented.",
                            syncer::TYPED_URLS);
 }
@@ -200,21 +199,21 @@ void TypedUrlSyncableService::OnUrlsDeleted(bool all_history,
          url != synced_typed_urls_.end(); ++url) {
       VisitVector visits;
       URLRow row(*url);
-      AddTypedUrlToChangeList(syncer::SyncChange::ACTION_DELETE,
-                              row, visits, url->spec(), &changes);
+      AddTypedUrlToChangeList(syncer::SyncChange::ACTION_DELETE, row, visits,
+                              url->spec(), &changes);
     }
     // Clear cache of server state.
     synced_typed_urls_.clear();
   } else {
     DCHECK(rows);
     // Delete rows.
-    for (URLRows::const_iterator row = rows->begin();
-         row != rows->end(); ++row) {
+    for (URLRows::const_iterator row = rows->begin(); row != rows->end();
+         ++row) {
       // Add specifics to change list for all synced urls that were deleted.
       if (synced_typed_urls_.find(row->url()) != synced_typed_urls_.end()) {
         VisitVector visits;
-        AddTypedUrlToChangeList(syncer::SyncChange::ACTION_DELETE,
-                                *row, visits, row->url().spec(), &changes);
+        AddTypedUrlToChangeList(syncer::SyncChange::ACTION_DELETE, *row, visits,
+                                row->url().spec(), &changes);
         // Delete typed url from cache.
         synced_typed_urls_.erase(row->url());
       }
@@ -260,8 +259,7 @@ bool TypedUrlSyncableService::ShouldSyncVisit(
   // suggestions. But there are relatively few URLs with > 10 visits, and those
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
-  return (transition == ui::PAGE_TRANSITION_TYPED &&
-          typed_count > 0 &&
+  return (transition == ui::PAGE_TRANSITION_TYPED && typed_count > 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||
            (typed_count % kTypedUrlVisitThrottleMultiple) == 0));
 }
@@ -286,10 +284,9 @@ bool TypedUrlSyncableService::CreateOrUpdateSyncNode(
   syncer::SyncChange::SyncChangeType change_type;
 
   // If server already has URL, then send a sync update, else add it.
-  change_type =
-      (synced_typed_urls_.find(url.url()) != synced_typed_urls_.end()) ?
-      syncer::SyncChange::ACTION_UPDATE :
-      syncer::SyncChange::ACTION_ADD;
+  change_type = (synced_typed_urls_.find(url.url()) != synced_typed_urls_.end())
+                    ? syncer::SyncChange::ACTION_UPDATE
+                    : syncer::SyncChange::ACTION_ADD;
 
   // Ensure cache of server state is up to date.
   synced_typed_urls_.insert(url.url());
@@ -314,17 +311,15 @@ void TypedUrlSyncableService::AddTypedUrlToChangeList(
     WriteToTypedUrlSpecifics(row, visits, typed_url);
   }
 
-  change_list->push_back(
-      syncer::SyncChange(FROM_HERE, change_type,
-                         syncer::SyncData::CreateLocalData(
-                             kTypedUrlTag, title, entity_specifics)));
+  change_list->push_back(syncer::SyncChange(
+      FROM_HERE, change_type, syncer::SyncData::CreateLocalData(
+                                  kTypedUrlTag, title, entity_specifics)));
 }
 
 void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
     const URLRow& url,
     const VisitVector& visits,
     sync_pb::TypedUrlSpecifics* typed_url) {
-
   DCHECK(!url.last_visit().is_null());
   DCHECK(!visits.empty());
   DCHECK_EQ(url.last_visit().ToInternalValue(),
@@ -407,13 +402,12 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
   CHECK_EQ(typed_url->visits_size(), typed_url->visit_transitions_size());
 }
 
-bool TypedUrlSyncableService::FixupURLAndGetVisits(
-    URLRow* url,
-    VisitVector* visits) {
+bool TypedUrlSyncableService::FixupURLAndGetVisits(URLRow* url,
+                                                   VisitVector* visits) {
   ++num_db_accesses_;
   CHECK(history_backend_);
-  if (!history_backend_->GetMostRecentVisitsForURL(
-          url->id(), kMaxVisitsToFetch, visits)) {
+  if (!history_backend_->GetMostRecentVisitsForURL(url->id(), kMaxVisitsToFetch,
+                                                   visits)) {
     ++num_db_errors_;
     return false;
   }
@@ -425,8 +419,8 @@ bool TypedUrlSyncableService::FixupURLAndGetVisits(
   // This is a workaround for http://crbug.com/84258.
   if (visits->empty()) {
     DVLOG(1) << "Found empty visits for URL: " << url->url();
-    VisitRow visit(
-        url->id(), url->last_visit(), 0, ui::PAGE_TRANSITION_TYPED, 0);
+    VisitRow visit(url->id(), url->last_visit(), 0, ui::PAGE_TRANSITION_TYPED,
+                   0);
     visits->push_back(visit);
   }
 

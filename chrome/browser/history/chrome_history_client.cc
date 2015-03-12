@@ -15,7 +15,7 @@
 #if defined(OS_ANDROID)
 #include "base/files/file_path.h"
 #include "chrome/browser/history/android/android_provider_backend.h"
-#include "chrome/browser/history/history_backend.h"
+#include "components/history/core/browser/history_backend.h"
 #endif
 
 #if defined(OS_ANDROID)

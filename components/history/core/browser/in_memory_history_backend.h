@@ -17,8 +17,8 @@
 // main thread where operations can be completed synchronously. It listens for
 // notifications from the "regular" history backend and keeps itself in sync.
 
-#ifndef CHROME_BROWSER_HISTORY_IN_MEMORY_HISTORY_BACKEND_H_
-#define CHROME_BROWSER_HISTORY_IN_MEMORY_HISTORY_BACKEND_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_HISTORY_BACKEND_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_HISTORY_BACKEND_H_
 
 #include <string>
 
@@ -61,9 +61,7 @@ class InMemoryHistoryBackend : public HistoryServiceObserver {
   // Returns the underlying database associated with this backend. The current
   // autocomplete code was written fro this, but it should probably be removed
   // so that it can deal directly with this object, rather than the DB.
-  InMemoryDatabase* db() const {
-    return db_.get();
-  }
+  InMemoryDatabase* db() const { return db_.get(); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
@@ -104,4 +102,4 @@ class InMemoryHistoryBackend : public HistoryServiceObserver {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_IN_MEMORY_HISTORY_BACKEND_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_HISTORY_BACKEND_H_

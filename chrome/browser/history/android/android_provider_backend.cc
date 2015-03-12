@@ -6,12 +6,12 @@
 
 #include "base/i18n/case_conversion.h"
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
-#include "chrome/browser/history/history_backend.h"
 #include "components/history/core/browser/android/android_time.h"
 #include "components/history/core/browser/android/android_urls_sql_handler.h"
 #include "components/history/core/browser/android/favicon_sql_handler.h"
 #include "components/history/core/browser/android/urls_sql_handler.h"
 #include "components/history/core/browser/android/visit_sql_handler.h"
+#include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database.h"

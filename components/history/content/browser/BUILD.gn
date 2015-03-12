@@ -4,6 +4,8 @@
 
 static_library("browser") {
   sources = [
+    "content_visit_delegate.cc",
+    "content_visit_delegate.h",
     "download_constants_utils.cc",
     "download_constants_utils.h",
     "history_context_helper.cc",
@@ -15,6 +17,7 @@ static_library("browser") {
   deps = [
     "//base",
     "//components/history/core/browser",
+    "//components/visitedlink/browser",
     "//content/public/browser",
   ]
 }

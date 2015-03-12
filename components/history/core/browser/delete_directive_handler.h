@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_DELETE_DIRECTIVE_HANDLER_H_
-#define CHROME_BROWSER_HISTORY_DELETE_DIRECTIVE_HANDLER_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_DELETE_DIRECTIVE_HANDLER_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_DELETE_DIRECTIVE_HANDLER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -37,10 +37,9 @@ class DeleteDirectiveHandler {
   // Create delete directives for the deletion of visits identified by
   // |global_ids| (which may be empty), in the time range specified by
   // |begin_time| and |end_time|.
-  bool CreateDeleteDirectives(
-      const std::set<int64>& global_ids,
-      base::Time begin_time,
-      base::Time end_time);
+  bool CreateDeleteDirectives(const std::set<int64>& global_ids,
+                              base::Time begin_time,
+                              base::Time end_time);
 
   // Sends the given |delete_directive| to SyncChangeProcessor (if it exists).
   // Returns any error resulting from sending the delete directive to sync.
@@ -61,10 +60,7 @@ class DeleteDirectiveHandler {
   friend class DeleteDirectiveTask;
 
   // Action to take on processed delete directives.
-  enum PostProcessingAction {
-    KEEP_AFTER_PROCESSING,
-    DROP_AFTER_PROCESSING
-  };
+  enum PostProcessingAction { KEEP_AFTER_PROCESSING, DROP_AFTER_PROCESSING };
 
   // Callback when history backend finishes deleting visits according to
   // |delete_directives|.
@@ -81,4 +77,4 @@ class DeleteDirectiveHandler {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_DELETE_DIRECTIVE_HANDLER_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_DELETE_DIRECTIVE_HANDLER_H_

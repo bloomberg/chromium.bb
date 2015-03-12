@@ -31,7 +31,6 @@
     'favicon_base.gypi',
     'google.gypi',
     'handoff.gypi',
-    'history.gypi',
     'infobars.gypi',
     'json_schema.gypi',
     'keyed_service.gypi',
@@ -135,6 +134,7 @@
       # introduced.
       'includes': [
         'gcm_driver.gypi',
+        'history.gypi',
         'omnibox.gypi',
         'renderer_context_menu.gypi',
         'search_engines.gypi',

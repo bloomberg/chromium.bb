@@ -8,8 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/autocomplete/url_index_private_data.h"
-#include "chrome/browser/history/history_service.h"
 #include "chrome/common/url_constants.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "content/public/browser/browser_thread.h"
 

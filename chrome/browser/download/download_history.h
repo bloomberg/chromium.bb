@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
-#include "chrome/browser/history/history_service.h"
+#include "components/history/core/browser/history_service.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
