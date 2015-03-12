@@ -140,6 +140,14 @@ def TripleIsX8664(t):
 def HostIsDebug(options):
   return options.host_flavor == 'debug'
 
+def ProgramPath(program):
+  """Returns the path for the given program, or None if it doesn't exist."""
+  try:
+    return pynacl.file_tools.Which(program)
+  except pynacl.file_tools.ExecutableNotFound:
+    pass
+  return None
+
 # Return a tuple (C compiler, C++ compiler) of the compilers to compile the host
 # toolchains
 def CompilersForHost(host):
@@ -210,19 +218,16 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
 
   if not options.gcc:
     cc, cxx, ar, ranlib = CompilersForHost(host)
-    cc_list = [cc]
-    cxx_list = [cxx]
-    try:
-      if pynacl.file_tools.Which('ccache'):
-        # Set CCACHE_CPP2 envvar, to avoid an error due to a strange
-        # ccache/clang++ interaction.  Specifically, errors about
-        # "argument unused during compilation".
-        os.environ['CCACHE_CPP2'] = 'yes'
-        cc_list = ['ccache', cc]
-        cxx_list = ['ccache', cxx]
-    except pynacl.file_tools.ExecutableNotFound:
-      pass
-
+    if ProgramPath('ccache'):
+      # Set CCACHE_CPP2 envvar, to avoid an error due to a strange
+      # ccache/clang++ interaction.  Specifically, errors about
+      # "argument unused during compilation".
+      os.environ['CCACHE_CPP2'] = 'yes'
+      cc_list = ['ccache', cc]
+      cxx_list = ['ccache', cxx]
+    else:
+      cc_list = [cc]
+      cxx_list = [cxx]
     configure_args.append('CC=' + ' '.join(cc_list + extra_cc_args))
     configure_args.append('CXX=' + ' '.join(cxx_list + extra_cxx_args))
     configure_args.append('AR=' + ar)
@@ -275,6 +280,8 @@ def CmakeHostArchFlags(host, options):
   cc, cxx, _, _ = CompilersForHost(host)
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
+  if ProgramPath('ccache'):
+    cmake_flags.extend(['-DSYSTEM_HAS_CCACHE=ON'])
 
   # There seems to be a bug in chrome clang where it exposes the msan interface
   # (even when compiling without msan) but then does not link with an
