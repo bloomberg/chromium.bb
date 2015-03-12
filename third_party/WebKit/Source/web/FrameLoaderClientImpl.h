@@ -173,6 +173,8 @@ public:
 
     virtual void dispatchDidChangeManifest() override;
 
+    virtual void dispatchDidChangeDefaultPresentation() override;
+
     virtual unsigned backForwardLength() override;
 
     virtual void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) override;

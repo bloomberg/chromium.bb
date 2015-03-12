@@ -44,6 +44,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/SubresourceIntegrity.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/html/LinkDefaultPresentation.h"
 #include "core/html/LinkManifest.h"
 #include "core/html/imports/LinkImport.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -214,6 +215,8 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
             m_link = LinkImport::create(this);
         } else if (m_relAttribute.isManifest()) {
             m_link = LinkManifest::create(this);
+        } else if (m_relAttribute.isDefaultPresentation()) {
+            m_link = LinkDefaultPresentation::create(this);
         } else {
             OwnPtrWillBeRawPtr<LinkStyle> link = LinkStyle::create(this);
             if (fastHasAttribute(disabledAttr) || m_relAttribute.isTransitionExitingStylesheet())

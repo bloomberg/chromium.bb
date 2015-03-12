@@ -147,6 +147,8 @@ public:
 
     BLINK_EXPORT WebURL manifestURL() const;
 
+    BLINK_EXPORT WebURL defaultPresentationURL() const;
+
 #if BLINK_IMPLEMENTATION
     WebDocument(const PassRefPtrWillBeRawPtr<Document>&);
     WebDocument& operator=(const PassRefPtrWillBeRawPtr<Document>&);

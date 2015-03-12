@@ -844,6 +844,10 @@ public:
     // Returns null if there is no such element.
     HTMLLinkElement* linkManifest() const;
 
+    // Returns the HTMLLinkElement currently in use for the default presentation URL.
+    // Returns null if there is no such element.
+    HTMLLinkElement* linkDefaultPresentation() const;
+
     void setUseSecureKeyboardEntryWhenActive(bool);
     bool useSecureKeyboardEntryWhenActive() const;
 

@@ -253,4 +253,76 @@ TEST_F(DocumentTest, LinkManifest)
     EXPECT_EQ(link, document().linkManifest());
 }
 
+// This test checks that Documunt::linkDefaultPresentation() returns a value conform to the specification.
+TEST_F(DocumentTest, linkDefaultPresentation)
+{
+    // Test the default result.
+    EXPECT_EQ(0, document().linkDefaultPresentation());
+
+    // Check that we use the first element with <link rel='default-presentation'>
+    RefPtrWillBeRawPtr<HTMLLinkElement> link = HTMLLinkElement::create(document(), false);
+    link->setAttribute(blink::HTMLNames::relAttr, "default-presentation");
+    link->setAttribute(blink::HTMLNames::hrefAttr, "presentation.html");
+    document().head()->appendChild(link);
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+
+    RefPtrWillBeRawPtr<HTMLLinkElement> link2 = HTMLLinkElement::create(document(), false);
+    link2->setAttribute(blink::HTMLNames::relAttr, "default-presentation");
+    link2->setAttribute(blink::HTMLNames::hrefAttr, "presentation.html");
+    document().head()->insertBefore(link2, link.get());
+    EXPECT_EQ(link2, document().linkDefaultPresentation());
+    document().head()->appendChild(link2);
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+
+    // Check that crazy URLs are accepted.
+    link->setAttribute(blink::HTMLNames::hrefAttr, "far:foo.bar");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+
+    // Check that empty URLs are accepted.
+    link->setAttribute(blink::HTMLNames::hrefAttr, "");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+
+    // Check that URLs from different origins are accepted.
+    link->setAttribute(blink::HTMLNames::hrefAttr, "http://example.org/presentation.html");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+    link->setAttribute(blink::HTMLNames::hrefAttr, "http://foo.example.org/presentation.html");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+    link->setAttribute(blink::HTMLNames::hrefAttr, "http://foo.bar/presentation.html");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+
+    // More than one token in @rel is accepted.
+    link->setAttribute(blink::HTMLNames::relAttr, "foo bar default-presentation");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+
+    // Such as spaces around the token.
+    link->setAttribute(blink::HTMLNames::relAttr, " default-presentation ");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+
+    // Check that rel=default-presentation actually matters.
+    link->setAttribute(blink::HTMLNames::relAttr, "");
+    EXPECT_EQ(link2, document().linkDefaultPresentation());
+    link->setAttribute(blink::HTMLNames::relAttr, "default-presentation");
+
+    // Check that links outside of the <head> are ignored.
+    document().head()->removeChild(link.get(), ASSERT_NO_EXCEPTION);
+    document().head()->removeChild(link2.get(), ASSERT_NO_EXCEPTION);
+    EXPECT_EQ(0, document().linkDefaultPresentation());
+    document().body()->appendChild(link);
+    EXPECT_EQ(0, document().linkDefaultPresentation());
+    document().head()->appendChild(link);
+    document().head()->appendChild(link2);
+
+    // Check that some attribute values do not have an effect.
+    link->setAttribute(blink::HTMLNames::crossoriginAttr, "use-credentials");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+    link->setAttribute(blink::HTMLNames::hreflangAttr, "klingon");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+    link->setAttribute(blink::HTMLNames::typeAttr, "image/gif");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+    link->setAttribute(blink::HTMLNames::sizesAttr, "16x16");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+    link->setAttribute(blink::HTMLNames::mediaAttr, "print");
+    EXPECT_EQ(link, document().linkDefaultPresentation());
+}
+
 } // unnamed namespace

@@ -6416,6 +6416,32 @@ TEST_F(WebFrameTest, ManifestCSPFetchSelfReportOnly)
 }
 
 
+class DefaultPresentationChangeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    DefaultPresentationChangeWebFrameClient() : m_defaultPresentationChangeCount(0) { }
+    virtual void didChangeDefaultPresentation(WebLocalFrame*) override
+    {
+        ++m_defaultPresentationChangeCount;
+    }
+
+    int defaultPresentationChangeCount() { return m_defaultPresentationChangeCount; }
+
+private:
+    int m_defaultPresentationChangeCount;
+};
+
+TEST_F(WebFrameTest, NotifyDefaultPresentationChange)
+{
+    registerMockedHttpURLLoad("link-presentation-url-change.html");
+
+    DefaultPresentationChangeWebFrameClient webFrameClient;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "link-presentation-url-change.html", true, &webFrameClient);
+
+    EXPECT_EQ(14, webFrameClient.defaultPresentationChangeCount());
+}
+
+
 TEST_F(WebFrameTest, ReloadBypassingCache)
 {
     // Check that a reload ignoring cache on a frame will result in the cache

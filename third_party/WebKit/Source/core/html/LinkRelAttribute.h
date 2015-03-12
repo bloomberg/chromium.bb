@@ -53,6 +53,7 @@ public:
     bool isImport() const { return m_isImport; }
     bool isManifest() const { return m_isManifest; }
     bool isTransitionExitingStylesheet() const { return m_isTransitionExitingStylesheet; }
+    bool isDefaultPresentation() const { return m_isDefaultPresentation; }
 
 private:
     IconType m_iconType;
@@ -67,6 +68,7 @@ private:
     bool m_isImport : 1;
     bool m_isManifest : 1;
     bool m_isTransitionExitingStylesheet : 1;
+    bool m_isDefaultPresentation : 1;
 };
 
 }

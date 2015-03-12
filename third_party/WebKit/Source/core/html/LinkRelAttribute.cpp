@@ -49,6 +49,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isImport(false)
     , m_isManifest(false)
     , m_isTransitionExitingStylesheet(false)
+    , m_isDefaultPresentation(false)
 {
     if (rel.isEmpty())
         return;
@@ -94,6 +95,9 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
         } else if (equalIgnoringCase(rel, "transition-exiting-stylesheet")) {
             if (RuntimeEnabledFeatures::navigationTransitionsEnabled())
                 m_isTransitionExitingStylesheet = true;
+        } else if (equalIgnoringCase(linkType, "default-presentation")) {
+            if (RuntimeEnabledFeatures::presentationEnabled())
+                m_isDefaultPresentation = true;
         }
     }
 }

@@ -940,6 +940,12 @@ void FrameLoaderClientImpl::dispatchDidChangeManifest()
         m_webFrame->client()->didChangeManifest(m_webFrame);
 }
 
+void FrameLoaderClientImpl::dispatchDidChangeDefaultPresentation()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didChangeDefaultPresentation(m_webFrame);
+}
+
 unsigned FrameLoaderClientImpl::backForwardLength()
 {
     WebViewImpl* webview = m_webFrame->viewImpl();
