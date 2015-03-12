@@ -24,7 +24,8 @@
 #include "ash/multi_profile_uma.h"
 #include "ash/new_window_delegate.h"
 #include "ash/root_window_controller.h"
-#include "ash/rotator/screen_rotation.h"
+#include "ash/rotator/screen_rotation_animator.h"
+#include "ash/rotator/window_rotation.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
@@ -293,8 +294,8 @@ void HandleRotateScreen() {
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(point);
   const DisplayInfo& display_info =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
-  Shell::GetInstance()->display_manager()->SetDisplayRotation(
-      display.id(), GetNextRotation(display_info.rotation()));
+  ash::ScreenRotationAnimator(display.id())
+      .Rotate(GetNextRotation(display_info.rotation()));
 }
 
 // Rotate the active window.
@@ -310,7 +311,7 @@ void HandleRotateActiveWindow() {
         set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
     active_window->layer()->GetAnimator()->StartAnimation(
         new ui::LayerAnimationSequence(
-            new ash::ScreenRotation(360, active_window->layer())));
+            new ash::WindowRotation(360, active_window->layer())));
   }
 }
 

@@ -395,6 +395,20 @@ const Experiment::Choice kFillOnAccountSelectChoices[] = {
     autofill::switches::kEnableFillOnAccountSelectNoHighlighting, "" },
 };
 
+#if defined(USE_ASH)
+const Experiment::Choice kAshScreenRotationAnimationChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, "", "" },
+  { IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION,
+    ash::switches::kAshEnableScreenRotationAnimation, "partial-rotation" },
+  { IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION_SLOW,
+    ash::switches::kAshEnableScreenRotationAnimation, "partial-rotation-slow" },
+  { IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION,
+    ash::switches::kAshEnableScreenRotationAnimation, "full-rotation" },
+  { IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION_SLOW,
+    ash::switches::kAshEnableScreenRotationAnimation, "full-rotation-slow" }
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -980,6 +994,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),
+  },
+  {
+    "ash-enable-screen-rotation-animations",
+    IDS_FLAGS_ASH_ENABLE_SCREEN_ROTATION_ANIMATION_NAME,
+    IDS_FLAGS_ASH_ENABLE_SCREEN_ROTATION_ANIMATION_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kAshScreenRotationAnimationChoices)
   },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)

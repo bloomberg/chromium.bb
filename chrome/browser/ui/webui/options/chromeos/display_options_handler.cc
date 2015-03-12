@@ -10,6 +10,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
+#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -431,7 +432,7 @@ void DisplayOptionsHandler::HandleSetOrientation(const base::ListValue* args) {
 
   content::RecordAction(
       base::UserMetricsAction("Options_DisplaySetOrientation"));
-  GetDisplayManager()->SetDisplayRotation(display_id, new_rotation);
+  ash::ScreenRotationAnimator(display_id).Rotate(new_rotation);
 }
 
 void DisplayOptionsHandler::HandleSetColorProfile(const base::ListValue* args) {

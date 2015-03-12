@@ -6129,6 +6129,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_DISABLE_SCREEN_ORIENTATION_LOCK_DESCRIPTION" desc="Description for the flag which can be used to disable support for javascript locking rotation">
           Disables the ability for javascript to lock the screen orienation.
         </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_SCREEN_ROTATION_ANIMATION_NAME" desc="Title for the flag which can be used to select screen rotation animations.">
+          Screen rotation animation.
+        </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_SCREEN_ROTATION_ANIMATION_DESCRIPTION" desc="Description for the flag which can be used to select screen rotation animations.">
+          Experimental screen rotation animations.
+        </message>
+        <message name="IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION" desc="Screen rotation animation option.">
+          Partial Rotation
+        </message>
+        <message name="IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION_SLOW" desc="Screen rotation animation option.">
+          Partial Rotation - Slow
+        </message>
+        <message name="IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION" desc="Screen rotation animation option.">
+          Full Rotation
+        </message>
+        <message name="IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION_SLOW" desc="Screen rotation animation option.">
+          Full Rotation - Slow
+        </message>
         <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME" desc="Title for the flag which can be used to test the TouchView maximizing mode.">
           Enable TouchView maximizing UI for testing
         </message>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/rotator/screen_rotation.h"
+#include "ash/rotator/window_rotation.h"
 
 #include "base/time/time.h"
 #include "ui/compositor/layer.h"
@@ -30,17 +30,17 @@ base::TimeDelta GetTransitionDuration(int degrees) {
 
 }  // namespace
 
-ScreenRotation::ScreenRotation(int degrees, ui::Layer* layer)
+WindowRotation::WindowRotation(int degrees, ui::Layer* layer)
     : ui::LayerAnimationElement(LayerAnimationElement::TRANSFORM,
                                 GetTransitionDuration(degrees)),
       degrees_(degrees) {
   InitTransform(layer);
 }
 
-ScreenRotation::~ScreenRotation() {
+WindowRotation::~WindowRotation() {
 }
 
-void ScreenRotation::InitTransform(ui::Layer* layer) {
+void WindowRotation::InitTransform(ui::Layer* layer) {
   // No rotation required, use the identity transform.
   if (degrees_ == 0) {
     interpolated_transform_.reset(
@@ -79,14 +79,12 @@ void ScreenRotation::InitTransform(ui::Layer* layer) {
 
   scoped_ptr<ui::InterpolatedTransform> rotation(
       new ui::InterpolatedTransformAboutPivot(
-          old_pivot,
-          new ui::InterpolatedRotation(0, degrees_)));
+          old_pivot, new ui::InterpolatedRotation(0, degrees_)));
 
   scoped_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
-          gfx::Point(0, 0),
-          gfx::Point(new_pivot.x() - old_pivot.x(),
-                     new_pivot.y() - old_pivot.y())));
+          gfx::Point(0, 0), gfx::Point(new_pivot.x() - old_pivot.x(),
+                                       new_pivot.y() - old_pivot.y())));
 
   float scale_factor = 0.9f;
   scoped_ptr<ui::InterpolatedTransform> scale_down(
@@ -104,20 +102,20 @@ void ScreenRotation::InitTransform(ui::Layer* layer) {
   interpolated_transform_->SetChild(rotation.release());
 }
 
-void ScreenRotation::OnStart(ui::LayerAnimationDelegate* delegate) {
+void WindowRotation::OnStart(ui::LayerAnimationDelegate* delegate) {
 }
 
-bool ScreenRotation::OnProgress(double t,
+bool WindowRotation::OnProgress(double t,
                                 ui::LayerAnimationDelegate* delegate) {
   delegate->SetTransformFromAnimation(interpolated_transform_->Interpolate(t));
   return true;
 }
 
-void ScreenRotation::OnGetTarget(TargetValue* target) const {
+void WindowRotation::OnGetTarget(TargetValue* target) const {
   target->transform = interpolated_transform_->Interpolate(1.0);
 }
 
-void ScreenRotation::OnAbort(ui::LayerAnimationDelegate* delegate) {
+void WindowRotation::OnAbort(ui::LayerAnimationDelegate* delegate) {
 }
 
 }  // namespace ash

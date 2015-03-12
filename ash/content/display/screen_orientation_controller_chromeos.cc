@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/auto_reset.h"
@@ -118,8 +119,8 @@ void ScreenOrientationController::SetDisplayRotation(
   current_rotation_ = rotation;
   base::AutoReset<bool> auto_ignore_display_configuration_updates(
       &ignore_display_configuration_updates_, true);
-  display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
-                                      rotation);
+  ash::ScreenRotationAnimator(gfx::Display::InternalDisplayId())
+      .Rotate(rotation);
 }
 
 void ScreenOrientationController::OnWindowActivated(aura::Window* gained_active,

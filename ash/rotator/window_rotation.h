@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SCREEN_ROTATION_H_
-#define ASH_SCREEN_ROTATION_H_
+#ifndef ASH_WINDOW_ROTATION_H_
+#define ASH_WINDOW_ROTATION_H_
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
@@ -22,16 +22,16 @@ class RootWindow;
 
 namespace ash {
 
-// A screen rotation represents a single transition from one screen orientation
+// A window rotation represents a single transition from one window orientation
 // to another. The  intended usage is that a new instance of the class is
 // created for every transition. It is possible to update the target orientation
 // in the middle of a transition.
-class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
+class ASH_EXPORT WindowRotation : public ui::LayerAnimationElement {
  public:
   // |degrees| are clockwise. |layer| is the target of the animation. Does not
   // take ownership of |layer|.
-  ScreenRotation(int degrees, ui::Layer* layer);
-  ~ScreenRotation() override;
+  WindowRotation(int degrees, ui::Layer* layer);
+  ~WindowRotation() override;
 
  private:
   // Generates the intermediate transformation matrices used during the
@@ -52,9 +52,9 @@ class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
   // The target origin.
   gfx::Point new_origin_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenRotation);
+  DISALLOW_COPY_AND_ASSIGN(WindowRotation);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SCREEN_ROTATION_H_
+#endif  // ASH_WINDOW_ROTATION_H_

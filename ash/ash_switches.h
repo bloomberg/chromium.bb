@@ -32,6 +32,7 @@ ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 #endif
 ASH_EXPORT extern const char kAshEnableMirroredScreen[];
 ASH_EXPORT extern const char kAshEnablePowerButtonQuickLock[];
+ASH_EXPORT extern const char kAshEnableScreenRotationAnimation[];
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableSystemSounds[];
 ASH_EXPORT extern const char kAshEnableTouchViewTesting[];
