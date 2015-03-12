@@ -367,6 +367,7 @@ void WebSocketHost::OnAddChannelRequest(
   } else {
     AddChannel(socket_url, requested_protocols, origin, render_frame_id);
   }
+  // |this| may have been deleted here.
 }
 
 void WebSocketHost::AddChannel(
@@ -386,12 +387,23 @@ void WebSocketHost::AddChannel(
       new WebSocketEventHandler(dispatcher_, routing_id_, render_frame_id));
   channel_.reset(
       new net::WebSocketChannel(event_interface.Pass(), url_request_context_));
-  channel_->SendAddChannelRequest(socket_url, requested_protocols, origin);
 
   if (pending_flow_control_quota_ > 0) {
-    channel_->SendFlowControl(pending_flow_control_quota_);
+    // channel_->SendFlowControl(pending_flow_control_quota_) must be called
+    // after channel_->SendAddChannelRequest() below.
+    // We post OnFlowControl() here using |weak_ptr_factory_| instead of
+    // calling SendFlowControl directly, because |this| may have been deleted
+    // after channel_->SendAddChannelRequest().
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebSocketHost::OnFlowControl,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   pending_flow_control_quota_));
     pending_flow_control_quota_ = 0;
   }
+
+  channel_->SendAddChannelRequest(socket_url, requested_protocols, origin);
+  // |this| may have been deleted here.
 }
 
 void WebSocketHost::OnSendFrame(bool fin,
