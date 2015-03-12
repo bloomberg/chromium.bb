@@ -27,6 +27,9 @@ class URLLoaderImpl : public URLLoader,
   URLLoaderImpl(NetworkContext* context, InterfaceRequest<URLLoader> request);
   ~URLLoaderImpl() override;
 
+  // Called when the associated NetworkContext is going away.
+  void Cleanup();
+
  private:
   // URLLoader methods:
   void Start(URLRequestPtr request,

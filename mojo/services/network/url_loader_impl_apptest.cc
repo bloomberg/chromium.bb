@@ -15,9 +15,9 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace mojo {
-namespace {
 
 class TestURLRequestJob;
 
@@ -27,16 +27,6 @@ template <class A>
 void PassA(A* destination, A value) {
   *destination = value.Pass();
 }
-
-// Extends URLLoaderImpl to allow to get a weak pointer and check if it has been
-// correctly deleted.
-class TestedURLLoaderImpl : public URLLoaderImpl,
-                            public base::SupportsWeakPtr<TestedURLLoaderImpl> {
- public:
-  TestedURLLoaderImpl(NetworkContext* context,
-                      InterfaceRequest<URLLoader> request)
-      : URLLoaderImpl(context, request.Pass()) {}
-};
 
 class TestURLRequestJob : public net::URLRequestJob {
  public:
@@ -124,12 +114,12 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
     url_request_context->Init();
     network_context_.reset(new NetworkContext(url_request_context.Pass()));
     MessagePipe pipe;
-    url_loader_proxy_ = MakeProxy<URLLoader>(pipe.handle0.Pass());
-    url_loader_ =
-        (new TestedURLLoaderImpl(network_context_.get(),
-                                 MakeRequest<URLLoader>(pipe.handle1.Pass())))
-            ->AsWeakPtr();
-    EXPECT_TRUE(url_loader_);
+    new URLLoaderImpl(network_context_.get(), GetProxy(&url_loader_proxy_));
+    EXPECT_TRUE(IsUrlLoaderValid());
+  }
+
+  bool IsUrlLoaderValid() {
+    return network_context_->GetURLLoaderCountForTesting() > 0u;
   }
 
   base::MessageLoop message_loop_;
@@ -137,14 +127,13 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
   net::URLRequestJobFactoryImpl url_request_job_factory_;
   scoped_ptr<NetworkContext> network_context_;
   URLLoaderPtr url_loader_proxy_;
-  base::WeakPtr<TestedURLLoaderImpl> url_loader_;
 };
 
 TEST_F(UrlLoaderImplTest, ClosedBeforeAnyCall) {
   url_loader_proxy_.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(url_loader_);
+  EXPECT_FALSE(IsUrlLoaderValid());
 }
 
 TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnTheNetwork) {
@@ -156,26 +145,26 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnTheNetwork) {
                            base::Bind(&PassA<URLResponsePtr>, &response));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
   ASSERT_TRUE(g_current_job);
 
   g_current_job->NotifyHeadersComplete();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_TRUE(response);
   EXPECT_EQ(TestURLRequestJob::READING, g_current_job->status());
 
   url_loader_proxy_.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
 
   response.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(url_loader_);
+  EXPECT_FALSE(IsUrlLoaderValid());
 }
 
 TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnThePipeToBeWriteable) {
@@ -187,14 +176,14 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnThePipeToBeWriteable) {
                            base::Bind(&PassA<URLResponsePtr>, &response));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
   ASSERT_TRUE(g_current_job);
 
   g_current_job->NotifyHeadersComplete();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_TRUE(response);
   EXPECT_EQ(TestURLRequestJob::READING, g_current_job->status());
 
@@ -208,12 +197,12 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnThePipeToBeWriteable) {
   url_loader_proxy_.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
 
   response.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(url_loader_);
+  EXPECT_FALSE(IsUrlLoaderValid());
 }
 
 TEST_F(UrlLoaderImplTest, RequestCompleted) {
@@ -225,26 +214,26 @@ TEST_F(UrlLoaderImplTest, RequestCompleted) {
                            base::Bind(&PassA<URLResponsePtr>, &response));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
   ASSERT_TRUE(g_current_job);
 
   g_current_job->NotifyHeadersComplete();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_TRUE(response);
   EXPECT_EQ(TestURLRequestJob::READING, g_current_job->status());
 
   url_loader_proxy_.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
 
   g_current_job->NotifyReadComplete(0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(url_loader_);
+  EXPECT_FALSE(IsUrlLoaderValid());
 }
 
 TEST_F(UrlLoaderImplTest, RequestFailed) {
@@ -256,27 +245,26 @@ TEST_F(UrlLoaderImplTest, RequestFailed) {
                            base::Bind(&PassA<URLResponsePtr>, &response));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
   ASSERT_TRUE(g_current_job);
 
   g_current_job->NotifyHeadersComplete();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_TRUE(response);
   EXPECT_EQ(TestURLRequestJob::READING, g_current_job->status());
 
   url_loader_proxy_.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(url_loader_);
+  EXPECT_TRUE(IsUrlLoaderValid());
 
   g_current_job->NotifyReadComplete(-1);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(url_loader_);
+  EXPECT_FALSE(IsUrlLoaderValid());
 }
 
 }  // namespace mojo
-}  // namespace

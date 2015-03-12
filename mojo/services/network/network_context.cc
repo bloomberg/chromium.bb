@@ -4,8 +4,12 @@
 
 #include "mojo/services/network/network_context.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/path_service.h"
+#include "mojo/services/network/url_loader_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -14,7 +18,8 @@ namespace mojo {
 
 NetworkContext::NetworkContext(
     scoped_ptr<net::URLRequestContext> url_request_context)
-    : url_request_context_(url_request_context.Pass()) {
+    : url_request_context_(url_request_context.Pass()),
+      in_shutdown_(false) {
 }
 
 NetworkContext::NetworkContext(const base::FilePath& base_path)
@@ -22,7 +27,32 @@ NetworkContext::NetworkContext(const base::FilePath& base_path)
 }
 
 NetworkContext::~NetworkContext() {
+  in_shutdown_ = true;
   // TODO(darin): Be careful about destruction order of member variables?
+
+  // Call each URLLoaderImpl and ask it to release its net::URLRequest, as the
+  // corresponding net::URLRequestContext is going away with this
+  // NetworkContext. The loaders can be deregistering themselves in Cleanup(),
+  // so iterate over a copy.
+  for (auto& url_loader : url_loaders_) {
+    url_loader->Cleanup();
+  }
+}
+
+void NetworkContext::RegisterURLLoader(URLLoaderImpl* url_loader) {
+  DCHECK(url_loaders_.count(url_loader) == 0);
+  url_loaders_.insert(url_loader);
+}
+
+void NetworkContext::DeregisterURLLoader(URLLoaderImpl* url_loader) {
+  if (!in_shutdown_) {
+    size_t removed_count = url_loaders_.erase(url_loader);
+    DCHECK(removed_count);
+  }
+}
+
+size_t NetworkContext::GetURLLoaderCountForTesting() {
+  return url_loaders_.size();
 }
 
 // static

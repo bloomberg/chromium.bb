@@ -101,9 +101,17 @@ URLLoaderImpl::URLLoaderImpl(NetworkContext* context,
       binding_(this, request.Pass()),
       weak_ptr_factory_(this) {
   binding_.set_error_handler(this);
+  context_->RegisterURLLoader(this);
 }
 
 URLLoaderImpl::~URLLoaderImpl() {
+  context_->DeregisterURLLoader(this);
+}
+
+void URLLoaderImpl::Cleanup() {
+  // The associated network context is going away and we have to destroy
+  // net::URLRequest hold by this loader.
+  delete this;
 }
 
 void URLLoaderImpl::Start(URLRequestPtr request,
