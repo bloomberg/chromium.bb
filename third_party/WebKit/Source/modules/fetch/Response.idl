@@ -22,7 +22,6 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyIn
     // FIXME: Implement redirect().
     readonly attribute ResponseType type;
     readonly attribute USVString url;
-    // FIXME: Implement attribute boolean finalURL;
     readonly attribute unsigned short status;
     readonly attribute boolean ok;
     readonly attribute ByteString statusText;
