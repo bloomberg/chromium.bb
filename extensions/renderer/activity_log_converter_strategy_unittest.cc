@@ -90,7 +90,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
 
   v8::Isolate* isolate_;
   v8::HandleScope handle_scope_;
-  v8::UniquePersistent<v8::Context> context_;
+  v8::Global<v8::Context> context_;
   v8::Context::Scope context_scope_;
   scoped_ptr<V8ValueConverter> converter_;
   scoped_ptr<ActivityLogConverterStrategy> strategy_;

@@ -130,9 +130,9 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
   typedef std::map<int, linked_ptr<CastUdpTransport> > UdpTransportMap;
   UdpTransportMap udp_transport_map_;
 
-  v8::UniquePersistent<v8::Function> create_callback_;
+  v8::Global<v8::Function> create_callback_;
 
-  typedef std::map<int, linked_ptr<v8::UniquePersistent<v8::Function>>>
+  typedef std::map<int, linked_ptr<v8::Global<v8::Function>>>
       RtpStreamCallbackMap;
   RtpStreamCallbackMap get_raw_events_callbacks_;
   RtpStreamCallbackMap get_stats_callbacks_;

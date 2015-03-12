@@ -45,7 +45,7 @@ class LoadWatcher : public content::RenderViewObserver {
   }
 
   ScriptContext* context_;
-  v8::UniquePersistent<v8::Function> callback_;
+  v8::Global<v8::Function> callback_;
   DISALLOW_COPY_AND_ASSIGN(LoadWatcher);
 };
 }  // namespace

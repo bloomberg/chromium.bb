@@ -200,9 +200,9 @@ void MimeHandlerViewContainer::didFinishLoading(
 void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
                                            v8::Handle<v8::Value> message) {
   if (!guest_loaded_) {
-    linked_ptr<v8::UniquePersistent<v8::Value>> scoped_persistent(
-        new v8::UniquePersistent<v8::Value>(isolate, message));
-    pending_messages_.push_back(scoped_persistent);
+    linked_ptr<v8::Global<v8::Value>> global(
+        new v8::Global<v8::Value>(isolate, message));
+    pending_messages_.push_back(global);
     return;
   }
 

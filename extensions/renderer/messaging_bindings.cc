@@ -219,8 +219,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
       callback->Call(context->Global(), 0, NULL);
     }
 
-    v8::UniquePersistent<v8::Object> object_;
-    v8::UniquePersistent<v8::Function> callback_;
+    v8::Global<v8::Object> object_;
+    v8::Global<v8::Function> callback_;
     v8::Isolate* isolate_;
 
     DISALLOW_COPY_AND_ASSIGN(GCCallback);

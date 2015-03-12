@@ -68,7 +68,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
   ScriptContext* context_;
 
-  v8::UniquePersistent<v8::ObjectTemplate> object_template_;
+  v8::Global<v8::ObjectTemplate> object_template_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectBackedNativeHandler);
 };

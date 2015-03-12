@@ -528,8 +528,8 @@ void ModuleSystem::RequireAsync(
   v8::Handle<v8::Promise::Resolver> resolver(
       v8::Promise::Resolver::New(GetIsolate()));
   args.GetReturnValue().Set(resolver->GetPromise());
-  scoped_ptr<v8::UniquePersistent<v8::Promise::Resolver> > persistent_resolver(
-      new v8::UniquePersistent<v8::Promise::Resolver>(GetIsolate(), resolver));
+  scoped_ptr<v8::Global<v8::Promise::Resolver>> global_resolver(
+      new v8::Global<v8::Promise::Resolver>(GetIsolate(), resolver));
   gin::ModuleRegistry* module_registry =
       gin::ModuleRegistry::From(context_->v8_context());
   if (!module_registry) {
@@ -538,11 +538,10 @@ void ModuleSystem::RequireAsync(
         GetIsolate(), "Extension view no longer exists")));
     return;
   }
-  module_registry->LoadModule(GetIsolate(),
-                              module_name,
-                              base::Bind(&ModuleSystem::OnModuleLoaded,
-                                         weak_factory_.GetWeakPtr(),
-                                         base::Passed(&persistent_resolver)));
+  module_registry->LoadModule(
+      GetIsolate(), module_name,
+      base::Bind(&ModuleSystem::OnModuleLoaded, weak_factory_.GetWeakPtr(),
+                 base::Passed(&global_resolver)));
   if (module_registry->available_modules().count(module_name) == 0)
     LoadModule(module_name);
 }
@@ -676,7 +675,7 @@ void ModuleSystem::OnDidAddPendingModule(
 }
 
 void ModuleSystem::OnModuleLoaded(
-    scoped_ptr<v8::UniquePersistent<v8::Promise::Resolver> > resolver,
+    scoped_ptr<v8::Global<v8::Promise::Resolver>> resolver,
     v8::Handle<v8::Value> value) {
   if (!is_valid())
     return;

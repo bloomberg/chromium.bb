@@ -152,7 +152,7 @@ class ScriptContext : public RequestSender::Source {
 
  protected:
   // The v8 context the bindings are accessible to.
-  v8::UniquePersistent<v8::Context> v8_context_;
+  v8::Global<v8::Context> v8_context_;
 
  private:
   class Runner;

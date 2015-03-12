@@ -514,9 +514,8 @@ void CastStreamingNativeHandler::GetRawEvents(
   const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
   // TODO(imcheng): Use a weak reference to ensure we don't call into an
   // invalid context when the callback is invoked.
-  linked_ptr<v8::UniquePersistent<v8::Function>> callback(
-      new v8::UniquePersistent<v8::Function>(args.GetIsolate(),
-                                             args[2].As<v8::Function>()));
+  linked_ptr<v8::Global<v8::Function>> callback(new v8::Global<v8::Function>(
+      args.GetIsolate(), args[2].As<v8::Function>()));
   std::string extra_data;
   if (!args[1]->IsNull()) {
     extra_data = *v8::String::Utf8Value(args[1]);
@@ -547,9 +546,8 @@ void CastStreamingNativeHandler::GetStats(
 
   // TODO(imcheng): Use a weak reference to ensure we don't call into an
   // invalid context when the callback is invoked.
-  linked_ptr<v8::UniquePersistent<v8::Function>> callback(
-      new v8::UniquePersistent<v8::Function>(args.GetIsolate(),
-                                             args[1].As<v8::Function>()));
+  linked_ptr<v8::Global<v8::Function>> callback(new v8::Global<v8::Function>(
+      args.GetIsolate(), args[1].As<v8::Function>()));
   get_stats_callbacks_.insert(std::make_pair(transport_id, callback));
 
   transport->GetStats(

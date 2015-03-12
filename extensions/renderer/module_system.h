@@ -197,9 +197,8 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // Invoked when a module is loaded in response to a requireAsync call.
   // Resolves |resolver| with |value|.
-  void OnModuleLoaded(
-      scoped_ptr<v8::UniquePersistent<v8::Promise::Resolver> > resolver,
-      v8::Handle<v8::Value> value);
+  void OnModuleLoaded(scoped_ptr<v8::Global<v8::Promise::Resolver>> resolver,
+                      v8::Handle<v8::Value> value);
 
   // gin::ModuleRegistryObserver overrides.
   void OnDidAddPendingModule(

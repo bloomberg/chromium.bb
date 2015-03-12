@@ -103,12 +103,12 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   scoped_ptr<blink::WebURLLoader> loader_;
 
   // The scriptable object that backs the plugin.
-  v8::UniquePersistent<v8::Object> scriptable_object_;
+  v8::Global<v8::Object> scriptable_object_;
 
   // Pending postMessage messages that need to be sent to the guest. These are
   // queued while the guest is loading and once it is fully loaded they are
   // delivered so that messages aren't lost.
-  std::vector<linked_ptr<v8::UniquePersistent<v8::Value>>> pending_messages_;
+  std::vector<linked_ptr<v8::Global<v8::Value>>> pending_messages_;
 
   // True if the guest page has fully loaded and its JavaScript onload function
   // has been called.

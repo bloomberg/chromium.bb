@@ -42,7 +42,7 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
 
    private:
     GuestViewContainer* container_;
-    v8::UniquePersistent<v8::Function> callback_;
+    v8::Global<v8::Function> callback_;
     v8::Isolate* const isolate_;
   };
 
@@ -110,10 +110,10 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
   std::deque<linked_ptr<Request> > pending_requests_;
   linked_ptr<Request> pending_response_;
 
-  v8::UniquePersistent<v8::Function> destruction_callback_;
+  v8::Global<v8::Function> destruction_callback_;
   v8::Isolate* destruction_isolate_;
 
-  v8::UniquePersistent<v8::Function> element_resize_callback_;
+  v8::Global<v8::Function> element_resize_callback_;
   v8::Isolate* element_resize_isolate_;
 
   // Weak pointer factory used for calling the element resize callback.
