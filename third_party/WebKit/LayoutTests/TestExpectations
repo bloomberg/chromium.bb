@@ -568,6 +568,7 @@ crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolu
 
 crbug.com/443242 http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-dedicated-basic.html [ Failure Pass ]
 
+crbug.com/465864 fast/js/getOwnPropertyDescriptor.html [ Pass Failure ]
 crbug.com/465864 fast/js/mozilla/strict/15.3.5.1.html [ Pass Failure ]
 crbug.com/465864 http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ Pass Failure ]
 crbug.com/465864 ietestcenter/Javascript/15.2.3.3-4-186.html [ Pass Failure ]
