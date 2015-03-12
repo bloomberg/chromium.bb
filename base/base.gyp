@@ -541,7 +541,6 @@
         'mac/scoped_sending_event_unittest.mm',
         'md5_unittest.cc',
         'memory/aligned_memory_unittest.cc',
-        'memory/discardable_memory_manager_unittest.cc',
         'memory/discardable_memory_unittest.cc',
         'memory/discardable_shared_memory_unittest.cc',
         'memory/linked_ptr_unittest.cc',
