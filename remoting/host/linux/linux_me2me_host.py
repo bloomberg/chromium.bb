@@ -23,6 +23,7 @@ import pipes
 import platform
 import psutil
 import platform
+import pwd
 import re
 import signal
 import socket
@@ -1033,6 +1034,10 @@ Web Store: https://chrome.google.com/remotedesktop"""
   parser.add_option("", "--add-user", dest="add_user", default=False,
                     action="store_true",
                     help="Add current user to the chrome-remote-desktop group.")
+  parser.add_option("", "--add-user-as-root", dest="add_user_as_root",
+                    action="store", metavar="USER",
+                    help="Adds the specified user to the chrome-remote-desktop "
+                    "group (must be run as root).")
   parser.add_option("", "--host-version", dest="host_version", default=False,
                     action="store_true",
                     help="Prints version of the host.")
@@ -1085,6 +1090,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   if options.add_user:
     user = getpass.getuser()
+
     try:
       if user in grp.getgrnam(CHROME_REMOTING_GROUP_NAME).gr_mem:
         logging.info("User '%s' is already a member of '%s'." %
@@ -1093,17 +1099,42 @@ Web Store: https://chrome.google.com/remotedesktop"""
     except KeyError:
       logging.info("Group '%s' not found." % CHROME_REMOTING_GROUP_NAME)
 
+    command = [SCRIPT_PATH, '--add-user-as-root', user]
     if os.getenv("DISPLAY"):
-      sudo_command = "gksudo --description \"Chrome Remote Desktop\""
+      # TODO(rickyz): Add a Polkit policy that includes a more friendly message
+      # about what this command does.
+      command = ["/usr/bin/pkexec"] + command
     else:
-      sudo_command = "sudo"
-    command = ("sudo -k && exec %(sudo)s -- sh -c "
-               "\"groupadd -f %(group)s && gpasswd --add %(user)s %(group)s\"" %
-               { 'group': CHROME_REMOTING_GROUP_NAME,
-                 'user': user,
-                 'sudo': sudo_command })
-    os.execv("/bin/sh", ["/bin/sh", "-c", command])
+      command = ["/usr/bin/sudo", "-k", "--"] + command
+
+    # Run with an empty environment out of paranoia, though if an attacker
+    # controls the environment this script is run under, we're already screwed
+    # anyway.
+    os.execve(command[0], command, {})
     return 1
+
+  if options.add_user_as_root is not None:
+    if os.getuid() != 0:
+      logging.error("--add-user-as-root can only be specified as root.")
+      return 1;
+
+    user = options.add_user_as_root
+    try:
+      pwd.getpwnam(user)
+    except KeyError:
+      logging.error("user '%s' does not exist." % user)
+      return 1
+
+    try:
+      subprocess.check_call(["/usr/sbin/groupadd", "-f",
+                             CHROME_REMOTING_GROUP_NAME])
+      subprocess.check_call(["/usr/bin/gpasswd", "--add", user,
+                             CHROME_REMOTING_GROUP_NAME])
+    except (ValueError, OSError, subprocess.CalledProcessError) as e:
+      logging.error("Command failed: " + str(e))
+      return 1
+
+    return 0
 
   if options.host_version:
     # TODO(sergeyu): Also check RPM package version once we add RPM package.
