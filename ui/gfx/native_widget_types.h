@@ -106,6 +106,13 @@ class ViewAndroid;
 #endif
 class SkBitmap;
 
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+extern "C" {
+struct _AtkObject;
+typedef struct _AtkObject AtkObject;
+}
+#endif
+
 namespace gfx {
 
 #if defined(USE_AURA)
@@ -164,7 +171,11 @@ typedef cairo_t* NativeDrawingContext;
 #else
 typedef void* NativeDrawingContext;
 #endif  // defined(USE_CAIRO)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+typedef AtkObject* NativeViewAccessible;
+#else
 typedef void* NativeViewAccessible;
+#endif
 #endif
 
 // A constant value to indicate that gfx::NativeCursor refers to no cursor.

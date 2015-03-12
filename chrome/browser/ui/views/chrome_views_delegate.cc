@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/context_factory.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -381,6 +382,10 @@ bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
 
 ui::ContextFactory* ChromeViewsDelegate::GetContextFactory() {
   return content::GetContextFactory();
+}
+
+std::string ChromeViewsDelegate::GetApplicationName() {
+  return chrome::VersionInfo().Name();
 }
 
 #if defined(OS_WIN)

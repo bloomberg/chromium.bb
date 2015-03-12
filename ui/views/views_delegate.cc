@@ -4,6 +4,7 @@
 
 #include "ui/views/views_delegate.h"
 
+#include "base/command_line.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
 
 namespace views {
@@ -83,6 +84,11 @@ bool ViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
 
 ui::ContextFactory* ViewsDelegate::GetContextFactory() {
   return NULL;
+}
+
+std::string ViewsDelegate::GetApplicationName() {
+  base::FilePath program = base::CommandLine::ForCurrentProcess()->GetProgram();
+  return program.BaseName().AsUTF8Unsafe();
 }
 
 #if defined(OS_WIN)
