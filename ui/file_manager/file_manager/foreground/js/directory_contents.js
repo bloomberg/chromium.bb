@@ -799,7 +799,15 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
     var url = this.fileList_.item(i).toURL();
 
     if (url in removedMap) {
-      this.fileList_.splice(i, 1);
+      // Find the maximum range in which all items need to be removed.
+      var begin = i;
+      var end = i + 1;
+      while (end < this.fileList_.length &&
+             this.fileList_.item(end).toURL() in removedMap) {
+        end++;
+      }
+      // Remove the range [begin, end) at once to avoid multiple sorting.
+      this.fileList_.splice(begin, end - begin);
       i--;
       continue;
     }
