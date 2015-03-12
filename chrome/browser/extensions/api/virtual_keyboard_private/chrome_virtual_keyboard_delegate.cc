@@ -64,6 +64,10 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
   scoped_ptr<base::ListValue> features(new base::ListValue());
   features->AppendString(
       GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
+  features->AppendString(GenerateFeatureFlag(
+      "gestureselection", keyboard::IsGestureSelectionEnabled()));
+  features->AppendString(GenerateFeatureFlag(
+      "gesturedeletion", keyboard::IsGestureDeletionEnabled()));
   features->AppendString(GenerateFeatureFlag("experimental",
       keyboard::IsExperimentalInputViewEnabled()));
   // TODO(rsadam): Populate features with more inputview features.

@@ -99,6 +99,12 @@ KEYBOARD_EXPORT bool IsExperimentalInputViewEnabled();
 // Returns true if gesture typing is enabled for virtual keyboard.
 KEYBOARD_EXPORT bool IsGestureTypingEnabled();
 
+// Returns true if gesture deletion is enabled for virtual keyboard.
+KEYBOARD_EXPORT bool IsGestureDeletionEnabled();
+
+// Returns true if gesture selection is enabled for virtual keyboard.
+KEYBOARD_EXPORT bool IsGestureSelectionEnabled();
+
 // Insert |text| into the active TextInputClient if there is one. Returns true
 // if |text| was successfully inserted.
 KEYBOARD_EXPORT bool InsertText(const base::string16& text);

@@ -27,6 +27,12 @@ KEYBOARD_EXPORT extern const char kEnableExperimentalInputViewFeatures[];
 // Enables gesture typing for the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableGestureTyping[];
 
+// Enables gesture typing for the virtual keyboard.
+KEYBOARD_EXPORT extern const char kEnableGestureSelection[];
+
+// Enables gesture typing for the virtual keyboard.
+KEYBOARD_EXPORT extern const char kEnableGestureDeletion[];
+
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
 

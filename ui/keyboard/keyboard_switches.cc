@@ -14,6 +14,8 @@ const char kEnableInputView[] = "enable-input-view";
 const char kEnableExperimentalInputViewFeatures[] =
     "enable-experimental-input-view-features";
 const char kEnableGestureTyping[] = "enable-gesture-typing";
+const char kEnableGestureSelection[] = "enable-gesture-selection";
+const char kEnableGestureDeletion[] = "enable-gesture-deletion";
 
 const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
 const char kDisableSmartVirtualKeyboard[] = "disable-smart-virtual-keyboard";

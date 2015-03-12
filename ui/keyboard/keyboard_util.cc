@@ -163,6 +163,16 @@ bool IsGestureTypingEnabled() {
           switches::kEnableGestureTyping);
 }
 
+bool IsGestureSelectionEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGestureSelection);
+}
+
+bool IsGestureDeletionEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGestureDeletion);
+}
+
 bool InsertText(const base::string16& text) {
   keyboard::KeyboardController* controller = KeyboardController::GetInstance();
   if (!controller)

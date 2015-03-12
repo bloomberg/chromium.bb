@@ -14425,6 +14425,18 @@ Do you accept?
         <message name="IDS_FLAGS_ENABLE_GESTURE_TYPING_DESCRIPTION" desc="Description of about::flags option to enable gesture typing for the virtual keyboard">
           Enable gesture typing for the virtual keyboard.
         </message>
+        <message name="IDS_FLAGS_ENABLE_GESTURE_SELECTION_NAME" desc="Name of about::flags option to enable gesture selection for the virtual keyboard">
+          Gesture selection for the virtual keyboard.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_GESTURE_SELECTION_DESCRIPTION" desc="Description of about::flags option to enable gesture selection for the virtual keyboard">
+          Enable gesture selection for the virtual keyboard.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_GESTURE_DELETION_NAME" desc="Name of about::flags option to enable gesture deletion for the virtual keyboard">
+          Gesture deletion for the virtual keyboard.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_GESTURE_DELETION_DESCRIPTION" desc="Description of about::flags option to enable gesture deletion for the virtual keyboard">
+          Enable gesture deletion for the virtual keyboard.
+        </message>
         <message name="IDS_FLAGS_ENABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME" desc="Name of about::flags option to enable bypass proxy for captive portal authorization on Chrome OS.">
           Enable bypass proxy for Captive Portal Authorization
         </message>

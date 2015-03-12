@@ -1337,6 +1337,20 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableGestureTyping)
   },
   {
+    "enable-gesture-deletion",
+    IDS_FLAGS_ENABLE_GESTURE_DELETION_NAME,
+    IDS_FLAGS_ENABLE_GESTURE_DELETION_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(keyboard::switches::kEnableGestureDeletion)
+  },
+  {
+    "enable-gesture-selection",
+    IDS_FLAGS_ENABLE_GESTURE_SELECTION_NAME,
+    IDS_FLAGS_ENABLE_GESTURE_SELECTION_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(keyboard::switches::kEnableGestureSelection)
+  },
+  {
     "disable-smart-virtual-keyboard",
     IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_NAME,
     IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_DESCRIPTION,
