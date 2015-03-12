@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/net/certificate_error_reporter.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
@@ -112,26 +113,29 @@ class NotSendingTestReporter : public TestReporter {
   }
 };
 
-// A ChromeFraudulentCertificateReporter that uses a MockURLRequest, but is
+// A CertificateErrorReporter that uses a MockURLRequest, but is
 // otherwise normal: reports are constructed and sent in the usual way.
-class MockReporter : public ChromeFraudulentCertificateReporter {
+class MockReporter : public CertificateErrorReporter {
  public:
   explicit MockReporter(net::URLRequestContext* request_context)
-    : ChromeFraudulentCertificateReporter(request_context) {}
+      : CertificateErrorReporter(request_context, GURL("http://example.com")) {}
 
+  void SendReport(ReportType type,
+                  const std::string& hostname,
+                  const net::SSLInfo& ssl_info) override {
+    EXPECT_EQ(type, REPORT_TYPE_PINNING_VIOLATION);
+    EXPECT_FALSE(hostname.empty());
+    EXPECT_TRUE(ssl_info.is_valid());
+    CertificateErrorReporter::SendReport(type, hostname, ssl_info);
+  }
+
+ private:
   scoped_ptr<net::URLRequest> CreateURLRequest(
       net::URLRequestContext* context) override {
     return context->CreateRequest(GURL(std::string()),
                                   net::DEFAULT_PRIORITY,
                                   NULL,
                                   NULL);
-  }
-
-  void SendReport(const std::string& hostname,
-                  const net::SSLInfo& ssl_info) override {
-    DCHECK(!hostname.empty());
-    DCHECK(ssl_info.is_valid());
-    ChromeFraudulentCertificateReporter::SendReport(hostname, ssl_info);
   }
 };
 
@@ -151,7 +155,8 @@ static void DoReportIsNotSent() {
 
 static void DoMockReportIsSent() {
   net::TestURLRequestContext context;
-  MockReporter reporter(&context);
+  scoped_ptr<MockReporter> error_reporter(new MockReporter(&context));
+  ChromeFraudulentCertificateReporter reporter(error_reporter.Pass());
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info);
 }

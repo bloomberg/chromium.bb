@@ -1758,6 +1758,8 @@
       'browser/net/about_protocol_handler.h',
       'browser/net/async_dns_field_trial.cc',
       'browser/net/async_dns_field_trial.h',
+      'browser/net/certificate_error_reporter.cc',
+      'browser/net/certificate_error_reporter.h',
       'browser/net/chrome_cookie_notification_details.h',
       'browser/net/chrome_extensions_network_delegate.cc',
       'browser/net/chrome_extensions_network_delegate.h',

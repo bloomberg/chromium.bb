@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "net/url_request/fraudulent_certificate_reporter.h"
-#include "net/url_request/url_request.h"
 
 namespace net {
 class URLRequestContext;
@@ -17,38 +17,26 @@ class URLRequestContext;
 
 namespace chrome_browser_net {
 
+class CertificateErrorReporter;
+
 class ChromeFraudulentCertificateReporter
-    : public net::FraudulentCertificateReporter,
-      public net::URLRequest::Delegate {
+    : public net::FraudulentCertificateReporter {
  public:
   explicit ChromeFraudulentCertificateReporter(
       net::URLRequestContext* request_context);
 
-  ~ChromeFraudulentCertificateReporter() override;
+  // Useful for tests to use a mock reporter.
+  explicit ChromeFraudulentCertificateReporter(
+      scoped_ptr<CertificateErrorReporter> certificate_reporter);
 
-  // Allows users of this class to override this and set their own URLRequest
-  // type. Used by SendReport.
-  virtual scoped_ptr<net::URLRequest> CreateURLRequest(
-      net::URLRequestContext* context);
+  ~ChromeFraudulentCertificateReporter() override;
 
   // net::FraudulentCertificateReporter
   void SendReport(const std::string& hostname,
                   const net::SSLInfo& ssl_info) override;
 
-  // net::URLRequest::Delegate
-  void OnResponseStarted(net::URLRequest* request) override;
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
-
- protected:
-  net::URLRequestContext* const request_context_;
-
  private:
-  // Performs post-report cleanup.
-  void RequestComplete(net::URLRequest* request);
-
-  const GURL upload_url_;
-  // Owns the contained requests.
-  std::set<net::URLRequest*> inflight_requests_;
+  scoped_ptr<CertificateErrorReporter> certificate_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeFraudulentCertificateReporter);
 };
@@ -56,4 +44,3 @@ class ChromeFraudulentCertificateReporter
 }  // namespace chrome_browser_net
 
 #endif  // CHROME_BROWSER_NET_CHROME_FRAUDULENT_CERTIFICATE_REPORTER_H_
-
