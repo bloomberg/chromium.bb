@@ -35,6 +35,8 @@
         'domain_reliability/config.h',
         'domain_reliability/context.cc',
         'domain_reliability/context.h',
+        'domain_reliability/context_manager.cc',
+        'domain_reliability/context_manager.h',
         'domain_reliability/dispatcher.cc',
         'domain_reliability/dispatcher.h',
         'domain_reliability/domain_reliability_export.h',

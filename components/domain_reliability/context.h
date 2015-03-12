@@ -33,6 +33,13 @@ class MockableTime;
 // domain's config and per-resource beacon queues.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
  public:
+  class DOMAIN_RELIABILITY_EXPORT Factory {
+   public:
+    virtual ~Factory();
+    virtual scoped_ptr<DomainReliabilityContext> CreateContextForConfig(
+        scoped_ptr<const DomainReliabilityConfig> config) = 0;
+  };
+
   DomainReliabilityContext(
       MockableTime* time,
       const DomainReliabilityScheduler::Params& scheduler_params,

@@ -30,6 +30,9 @@ typedef BeaconDeque::iterator BeaconIterator;
 typedef BeaconDeque::const_iterator BeaconConstIterator;
 }  // namespace
 
+DomainReliabilityContext::Factory::~Factory() {
+}
+
 class DomainReliabilityContext::ResourceState {
  public:
   ResourceState(DomainReliabilityContext* context,

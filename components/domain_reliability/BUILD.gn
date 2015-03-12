@@ -44,6 +44,8 @@ component("domain_reliability") {
     "config.h",
     "context.cc",
     "context.h",
+    "context_manager.cc",
+    "context_manager.h",
     "dispatcher.cc",
     "dispatcher.h",
     "domain_reliability_export.h",

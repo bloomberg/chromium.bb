@@ -16,6 +16,7 @@
 #include "components/domain_reliability/clear_mode.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/context.h"
+#include "components/domain_reliability/context_manager.h"
 #include "components/domain_reliability/dispatcher.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/scheduler.h"
@@ -42,7 +43,8 @@ namespace domain_reliability {
 // The top-level object that measures requests and hands off the measurements
 // to the proper |DomainReliabilityContext|.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
-    : public net::NetworkChangeNotifier::NetworkChangeObserver {
+    : public net::NetworkChangeNotifier::NetworkChangeObserver,
+      DomainReliabilityContext::Factory {
  public:
   // Creates a Monitor. |local_state_pref_service| must live on |pref_thread|
   // (which should be the current thread); |network_thread| is the thread
@@ -115,7 +117,13 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   DomainReliabilityContext* AddContextForTesting(
       scoped_ptr<const DomainReliabilityConfig> config);
 
-  size_t contexts_size_for_testing() const { return contexts_.size(); }
+  size_t contexts_size_for_testing() const {
+    return context_manager_.contexts_size_for_testing();
+  }
+
+  // DomainReliabilityContext::Factory implementation:
+  scoped_ptr<DomainReliabilityContext> CreateContextForConfig(
+      scoped_ptr<const DomainReliabilityConfig> config) override;
 
  private:
   friend class DomainReliabilityMonitorTest;
@@ -139,15 +147,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
     bool is_upload;
   };
 
-  // Creates a context, adds it to the monitor, and returns a pointer to it.
-  // (The pointer is only valid until the Monitor is destroyed.)
-  DomainReliabilityContext* AddContext(
-      scoped_ptr<const DomainReliabilityConfig> config);
-  // Deletes all contexts from |contexts_| and clears the map.
-  void ClearContexts();
   void OnRequestLegComplete(const RequestInfo& info);
-
-  DomainReliabilityContext* GetContextForHost(const std::string& host) const;
 
   bool OnPrefThread() const {
     return pref_task_runner_->BelongsToCurrentThread();
@@ -164,7 +164,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   DomainReliabilityScheduler::Params scheduler_params_;
   DomainReliabilityDispatcher dispatcher_;
   scoped_ptr<DomainReliabilityUploader> uploader_;
-  ContextMap contexts_;
+  DomainReliabilityContextManager context_manager_;
 
   scoped_refptr<base::SingleThreadTaskRunner> pref_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
