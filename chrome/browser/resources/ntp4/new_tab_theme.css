@@ -25,8 +25,7 @@ body {
 }
 
 #attribution,
-[is='action-link'],
-.link-span {
+[is='action-link'] {
   color: $21;  /* COLOR_NTP_TEXT_LIGHT */
 }
 

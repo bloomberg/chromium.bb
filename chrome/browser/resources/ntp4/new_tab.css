@@ -253,6 +253,10 @@ html[dir='rtl'] #login-container {
   right: auto;
 }
 
+#login-container [is='action-link'] {
+  -webkit-margin-start: 0;
+}
+
 .login-status-icon {
   -webkit-padding-end: 37px;
   background-position: right center;
@@ -262,10 +266,6 @@ html[dir='rtl'] #login-container {
 
 html[dir='rtl'] .login-status-icon {
   background-position-x: left;
-}
-
-.link-span {
-  text-decoration: underline;
 }
 
 #login-status-bubble-contents {

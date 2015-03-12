@@ -66,11 +66,15 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
   return canvas.ExtractImageRep().sk_bitmap();
 }
 
-// Puts the |content| into a span with the given CSS class.
-base::string16 CreateSpanWithClass(const base::string16& content,
-                                   const std::string& css_class) {
-  return base::ASCIIToUTF16("<span class='" + css_class + "'>") +
-      net::EscapeForHTML(content) + base::ASCIIToUTF16("</span>");
+// Puts the |content| into an element with the given CSS class.
+base::string16 CreateElementWithClass(const base::string16& content,
+                                      const std::string& tag_name,
+                                      const std::string& css_class,
+                                      const std::string& extends_tag) {
+  base::string16 start_tag = base::ASCIIToUTF16("<" + tag_name +
+      " class='" + css_class + "' is='" + extends_tag + "'>");
+  base::string16 end_tag = base::ASCIIToUTF16("</" + tag_name + ">");
+  return start_tag + net::EscapeForHTML(content) + end_tag;
 }
 
 }  // namespace
@@ -189,15 +193,15 @@ void NTPLoginHandler::UpdateLogin() {
       if (cache.GetNumberOfProfiles() == 1) {
         base::string16 name = cache.GetGAIANameOfProfileAtIndex(profile_index);
         if (!name.empty())
-          header = CreateSpanWithClass(name, "profile-name");
+          header = CreateElementWithClass(name, "span", "profile-name", "");
         const gfx::Image* image =
             cache.GetGAIAPictureOfProfileAtIndex(profile_index);
         if (image)
           icon_url = webui::GetBitmapDataUrl(GetGAIAPictureForNTP(*image));
       }
       if (header.empty()) {
-        header = CreateSpanWithClass(base::UTF8ToUTF16(username),
-                                     "profile-name");
+        header = CreateElementWithClass(base::UTF8ToUTF16(username), "span",
+                                        "profile-name", "");
       }
     }
   } else {
@@ -208,7 +212,8 @@ void NTPLoginHandler::UpdateLogin() {
     if (!profile->IsLegacySupervised() && signin->IsSigninAllowed()) {
       base::string16 signed_in_link = l10n_util::GetStringUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
-      signed_in_link = CreateSpanWithClass(signed_in_link, "link-span");
+      signed_in_link =
+          CreateElementWithClass(signed_in_link, "a", "", "action-link");
       header = l10n_util::GetStringFUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
