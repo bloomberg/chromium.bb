@@ -332,7 +332,7 @@ base::string16 InferLabelFromNext(const WebFormControlElement& element) {
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
-// placeholder text,
+// the placeholder text. e.g. <input placeholder="foo">
 base::string16 InferLabelFromPlaceholder(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kPlaceholder, ("placeholder"));
   if (element.hasAttribute(kPlaceholder))
@@ -610,7 +610,7 @@ void ForEachMatchingFormFieldCommon(
     const FormData& data,
     FieldFilterMask filters,
     bool force_override,
-    Callback callback) {
+    const Callback& callback) {
   DCHECK(control_elements);
   if (control_elements->size() != data.fields.size()) {
     // This case should be reachable only for pathological websites and tests,
@@ -664,7 +664,7 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
                               const FormData& data,
                               FieldFilterMask filters,
                               bool force_override,
-                              Callback callback) {
+                              const Callback& callback) {
   std::vector<WebFormControlElement> control_elements =
       ExtractAutofillableElementsInForm(form_element, ExtractionRequirements());
   ForEachMatchingFormFieldCommon(&control_elements, initiating_element, data,
@@ -678,7 +678,7 @@ void ForEachMatchingUnownedFormField(const WebElement& initiating_element,
                                      const FormData& data,
                                      FieldFilterMask filters,
                                      bool force_override,
-                                     Callback callback) {
+                                     const Callback& callback) {
   if (initiating_element.isNull())
     return;
 

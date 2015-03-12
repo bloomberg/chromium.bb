@@ -43,8 +43,7 @@ class FormCache {
   // |element|.  Returns false if the form is not found.
   bool ClearFormWithElement(const blink::WebFormControlElement& element);
 
-  // For each field in the |form|, sets the field's placeholder text to the
-  // field's overall predicted type.  Also sets the title to include the field's
+  // For each field in the |form|, sets the title to include the field's
   // heuristic type, server type, and signature; as well as the form's signature
   // and the experiment id for the server predictions.
   bool ShowPredictions(const FormDataPredictions& form);

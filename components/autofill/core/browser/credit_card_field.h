@@ -33,6 +33,10 @@ class CreditCardField : public FormField {
 
   CreditCardField();
 
+  // Parses the expiration month/year/date fields. Returns true if it finds
+  // something new.
+  bool ParseExpirationDate(AutofillScanner* scanner);
+
   // For the combined expiration field we return |exp_year_type_|; otherwise if
   // |expiration_year_| is having year with |max_length| of 2-digits we return
   // |CREDIT_CARD_EXP_2_DIGIT_YEAR|; otherwise |CREDIT_CARD_EXP_4_DIGIT_YEAR|.

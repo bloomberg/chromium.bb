@@ -24,7 +24,7 @@ static const size_t kMaxValidCardNumberSize = 19;
 // static
 scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
-    return NULL;
+    return nullptr;
 
   scoped_ptr<CreditCardField> credit_card_field(new CreditCardField);
   size_t saved_cursor = scanner->SaveCursor();
@@ -34,7 +34,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   // bottom of the loop.
   for (int fields = 0; !scanner->IsEnd(); ++fields) {
     // Ignore gift card fields.
-    if (ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), NULL))
+    if (ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), nullptr))
       break;
 
     if (!credit_card_field->cardholder_) {
@@ -110,71 +110,15 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       continue;
     }
 
-    if (!credit_card_field->expiration_date_ &&
-        LowerCaseEqualsASCII(scanner->Cursor()->form_control_type, "month")) {
-      credit_card_field->expiration_date_ = scanner->Cursor();
-      credit_card_field->expiration_month_ = nullptr;
-      credit_card_field->expiration_year_ = nullptr;
-      scanner->Advance();
+    if (credit_card_field->ParseExpirationDate(scanner))
       continue;
-    }
 
-    if (!credit_card_field->expiration_month_ &&
+    if (credit_card_field->expiration_month_ &&
+        !credit_card_field->expiration_year_ &&
         !credit_card_field->expiration_date_) {
-      // First try to parse split month/year expiration fields.
-      size_t month_year_saved_cursor = scanner->SaveCursor();
-      if (ParseFieldSpecifics(scanner,
-                              base::UTF8ToUTF16(kExpirationMonthRe),
-                              MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT,
-                              &credit_card_field->expiration_month_) &&
-          ParseFieldSpecifics(scanner,
-                              base::UTF8ToUTF16(kExpirationYearRe),
-                              MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT,
-                              &credit_card_field->expiration_year_)) {
-        continue;
-      }
-
-      // If that fails, look for just MM/YY(YY).
-      scanner->RewindTo(month_year_saved_cursor);
-      if (ParseFieldSpecifics(scanner,
-                              base::ASCIIToUTF16("^mm$"),
-                              MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT,
-                              &credit_card_field->expiration_month_) &&
-          ParseFieldSpecifics(scanner,
-                              base::ASCIIToUTF16("^(yy|yyyy)$"),
-                              MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT,
-                              &credit_card_field->expiration_year_)) {
-        continue;
-      }
-
-      // If that fails, try to parse a combined expiration field.
-      // Look for a 2-digit year first.
-      // We allow <select> fields, because they're used e.g. on qvc.com.
-      scanner->RewindTo(month_year_saved_cursor);
-      if (ParseFieldSpecifics(scanner,
-                              base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
-                              MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT,
-                              &credit_card_field->expiration_date_)) {
-        credit_card_field->exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
-        credit_card_field->expiration_month_ = nullptr;
-        continue;
-      }
-
-      if (ParseFieldSpecifics(scanner,
-                              base::UTF8ToUTF16(kExpirationDateRe),
-                              MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT,
-                              &credit_card_field->expiration_date_)) {
-        credit_card_field->expiration_month_ = nullptr;
-        continue;
-      }
-
-      if (credit_card_field->expiration_month_ &&
-          !credit_card_field->expiration_year_ &&
-          !credit_card_field->expiration_date_) {
-        // Parsed a month but couldn't parse a year; give up.
-        scanner->RewindTo(saved_cursor);
-        return NULL;
-      }
+      // Parsed a month but couldn't parse a year; give up.
+      scanner->RewindTo(saved_cursor);
+      return nullptr;
     }
 
     // Some pages (e.g. ExpediaBilling.html) have a "card description"
@@ -182,7 +126,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     // We also ignore any other fields within a credit card block that
     // start with "card", under the assumption that they are related to
     // the credit card section being processed but are uninteresting to us.
-    if (ParseField(scanner, base::UTF8ToUTF16(kCardIgnoredRe), NULL))
+    if (ParseField(scanner, base::UTF8ToUTF16(kCardIgnoredRe), nullptr))
       continue;
 
     break;
@@ -210,17 +154,17 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     return credit_card_field.Pass();
 
   scanner->RewindTo(saved_cursor);
-  return NULL;
+  return nullptr;
 }
 
 CreditCardField::CreditCardField()
-    : cardholder_(NULL),
-      cardholder_last_(NULL),
-      type_(NULL),
-      verification_(NULL),
-      expiration_month_(NULL),
-      expiration_year_(NULL),
-      expiration_date_(NULL),
+    : cardholder_(nullptr),
+      cardholder_last_(nullptr),
+      type_(nullptr),
+      verification_(nullptr),
+      expiration_month_(nullptr),
+      expiration_year_(nullptr),
+      expiration_date_(nullptr),
       exp_year_type_(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
 }
 
@@ -241,7 +185,7 @@ bool CreditCardField::ClassifyField(ServerFieldTypeMap* map) const {
   // then ignore both fields. Putting them into separate fields is probably
   // wrong, because the credit card can also contain a middle name or middle
   // initial.
-  if (cardholder_last_ == NULL)
+  if (cardholder_last_ == nullptr)
     ok = ok && AddClassification(cardholder_, CREDIT_CARD_NAME, map);
 
   if (expiration_date_) {
@@ -256,6 +200,70 @@ bool CreditCardField::ClassifyField(ServerFieldTypeMap* map) const {
   }
 
   return ok;
+}
+
+bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
+  if (!expiration_date_ &&
+      LowerCaseEqualsASCII(scanner->Cursor()->form_control_type, "month")) {
+    expiration_date_ = scanner->Cursor();
+    expiration_month_ = nullptr;
+    expiration_year_ = nullptr;
+    scanner->Advance();
+    return true;
+  }
+
+  if (expiration_month_ || expiration_date_)
+    return false;
+
+  // First try to parse split month/year expiration fields.
+  size_t month_year_saved_cursor = scanner->SaveCursor();
+  const int kMatchTelAndSelect = MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT;
+  if (ParseFieldSpecifics(scanner,
+                          base::UTF8ToUTF16(kExpirationMonthRe),
+                          kMatchTelAndSelect,
+                          &expiration_month_) &&
+      ParseFieldSpecifics(scanner,
+                          base::UTF8ToUTF16(kExpirationYearRe),
+                          kMatchTelAndSelect,
+                          &expiration_year_)) {
+    return true;
+  }
+
+  // If that fails, look for just MM/YY(YY).
+  scanner->RewindTo(month_year_saved_cursor);
+  if (ParseFieldSpecifics(scanner,
+                          base::ASCIIToUTF16("^mm$"),
+                          kMatchTelAndSelect,
+                          &expiration_month_) &&
+      ParseFieldSpecifics(scanner,
+                          base::ASCIIToUTF16("^(yy|yyyy)$"),
+                          kMatchTelAndSelect,
+                          &expiration_year_)) {
+    return true;
+  }
+
+  // If that fails, try to parse a combined expiration field.
+  // Look for a 2-digit year first.
+  // We allow <select> fields, because they're used e.g. on qvc.com.
+  scanner->RewindTo(month_year_saved_cursor);
+  if (ParseFieldSpecifics(scanner,
+                          base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
+                          kMatchTelAndSelect,
+                          &expiration_date_)) {
+    exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
+    expiration_month_ = nullptr;
+    return true;
+  }
+
+  if (ParseFieldSpecifics(scanner,
+                          base::UTF8ToUTF16(kExpirationDateRe),
+                          kMatchTelAndSelect,
+                          &expiration_date_)) {
+    expiration_month_ = nullptr;
+    return true;
+  }
+
+  return false;
 }
 
 ServerFieldType CreditCardField::GetExpirationYearType() const {
