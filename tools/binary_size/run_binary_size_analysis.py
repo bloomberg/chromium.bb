@@ -59,29 +59,6 @@ NAME_NO_PATH_BUCKET = '(No Path)'
 BIG_BUCKET_LIMIT = 3000
 
 
-# TODO(andrewhayden): Only used for legacy reports. Delete.
-def FormatBytes(byte_count):
-  """Pretty-print a number of bytes."""
-  if byte_count > 1e6:
-    byte_count = byte_count / 1.0e6
-    return '%.1fm' % byte_count
-  if byte_count > 1e3:
-    byte_count = byte_count / 1.0e3
-    return '%.1fk' % byte_count
-  return str(byte_count)
-
-
-# TODO(andrewhayden): Only used for legacy reports. Delete.
-def SymbolTypeToHuman(symbol_type):
-  """Convert a symbol type as printed by nm into a human-readable name."""
-  return {'b': 'bss',
-          'd': 'data',
-          'r': 'read-only data',
-          't': 'code',
-          'w': 'weak symbol',
-          'v': 'weak symbol'}[symbol_type]
-
-
 def _MkChild(node, name):
   child = node[NODE_CHILDREN_KEY].get(name)
   if child is None:
@@ -598,8 +575,6 @@ def main():
                     'mapped to source locations. By default, a tempfile is '
                     'used and is deleted when the program terminates.'
                     'This argument is only valid when using --library.')
-  parser.add_option('--legacy', action='store_true',
-                    help='emit legacy binary size report instead of modern')
   parser.add_option('--disable-disambiguation', action='store_true',
                     help='disables the disambiguation process altogether,'
                     ' NOTE: this may, depending on your toolchain, produce'

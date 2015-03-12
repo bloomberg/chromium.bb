@@ -461,7 +461,7 @@ def main():
   parser.add_option('--showsources', action='store_true', default=False,
                     help='show per-source statistics')
   parser.add_option('--showsymbols', action='store_true', default=False,
-                    help='show all symbol information; implies --showfiles')
+                    help='show all symbol information; implies --showsources')
   parser.add_option('--verbose', action='store_true', default=False,
                     help='output internal debugging stuff')
   opts, _args = parser.parse_args()
