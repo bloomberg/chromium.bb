@@ -31,6 +31,8 @@ public:
     void removeCues(TextTrack*, const TextTrackCueList*);
     void removeCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue>);
 
+    void hideCues(TextTrack*, const TextTrackCueList*);
+
     void updateActiveCues(double);
 
     bool ignoreUpdateRequests() const { return m_ignoreUpdate > 0; }

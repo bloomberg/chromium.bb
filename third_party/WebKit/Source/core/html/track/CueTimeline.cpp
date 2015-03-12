@@ -83,6 +83,12 @@ void CueTimeline::removeCueInternal(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
     }
 }
 
+void CueTimeline::hideCues(TextTrack*, const TextTrackCueList* cues)
+{
+    for (size_t i = 0; i < cues->length(); ++i)
+        cues->item(i)->removeDisplayTree();
+}
+
 static bool trackIndexCompare(TextTrack* a, TextTrack* b)
 {
     return a->trackIndex() - b->trackIndex() < 0;

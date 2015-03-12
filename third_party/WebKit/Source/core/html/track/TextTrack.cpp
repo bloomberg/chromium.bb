@@ -173,14 +173,14 @@ void TextTrack::setMode(const AtomicString& mode)
     if (m_mode == mode)
         return;
 
-    // If mode changes to disabled, remove this track's cues from the client
-    // because they will no longer be accessible from the cues() function.
-    if (mode == disabledKeyword() && cueTimeline() && m_cues)
-        cueTimeline()->removeCues(this, m_cues.get());
-
-    if (mode != showingKeyword() && m_cues)
-        for (size_t i = 0; i < m_cues->length(); ++i)
-            m_cues->item(i)->removeDisplayTree();
+    if (m_cues && cueTimeline()) {
+        // If mode changes to disabled, remove this track's cues from the client
+        // because they will no longer be accessible from the cues() function.
+        if (mode == disabledKeyword())
+            cueTimeline()->removeCues(this, m_cues.get());
+        else if (mode != showingKeyword())
+            cueTimeline()->hideCues(this, m_cues.get());
+    }
 
     m_mode = mode;
 
