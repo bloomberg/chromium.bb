@@ -30,4 +30,24 @@ class DeletedMembersInHeaderAreOKThough {
   std::vector<std::string> two_;
 };
 
+class ExplicitlyInlinedIsAlsoOK {
+  ExplicitlyInlinedIsAlsoOK();
+  ~ExplicitlyInlinedIsAlsoOK();
+  ExplicitlyInlinedIsAlsoOK(const ExplicitlyInlinedIsAlsoOK&);
+
+ private:
+  std::vector<int> one_;
+  std::vector<std::string> two_;
+};
+
+inline ExplicitlyInlinedIsAlsoOK::ExplicitlyInlinedIsAlsoOK() {
+}
+
+inline ExplicitlyInlinedIsAlsoOK::~ExplicitlyInlinedIsAlsoOK() {
+}
+
+inline ExplicitlyInlinedIsAlsoOK::ExplicitlyInlinedIsAlsoOK(
+    const ExplicitlyInlinedIsAlsoOK&) {
+}
+
 #endif  // INLINE_CTOR_H_

@@ -296,9 +296,9 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
             emitWarning(it->getInnerLocStart(),
                         "Complex constructor has an inlined body.");
           }
-        } else if (it->isInlined() && !it->isDeleted() &&
-                   (!it->isCopyOrMoveConstructor() ||
-                    it->isExplicitlyDefaulted())) {
+        } else if (it->isInlined() && !it->isInlineSpecified() &&
+                   !it->isDeleted() && (!it->isCopyOrMoveConstructor() ||
+                                        it->isExplicitlyDefaulted())) {
           // isInlined() is a more reliable check than hasInlineBody(), but
           // unfortunately, it results in warnings for implicit copy/move
           // constructors in the previously mentioned situation. To preserve
@@ -319,7 +319,8 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
                   "Complex class/struct needs an explicit out-of-line "
                   "destructor.");
     } else if (CXXDestructorDecl* dtor = record->getDestructor()) {
-      if (dtor->isInlined() && !dtor->isDeleted()) {
+      if (dtor->isInlined() && !dtor->isInlineSpecified() &&
+          !dtor->isDeleted()) {
         emitWarning(dtor->getInnerLocStart(),
                     "Complex destructor has an inline body.");
       }
