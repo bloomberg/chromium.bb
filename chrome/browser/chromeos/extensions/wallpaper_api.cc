@@ -73,11 +73,13 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
     }
     url_fetcher_.reset();
     callback_.Run(success, response);
+    callback_.Reset();
   }
 
   void CancelPreviousFetch() {
     if (url_fetcher_.get()) {
       callback_.Run(false, wallpaper_api_util::kCancelWallpaperMessage);
+      callback_.Reset();
       url_fetcher_.reset();
     }
   }
