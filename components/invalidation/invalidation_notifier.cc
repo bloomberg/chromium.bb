@@ -12,8 +12,6 @@
 #include "google/cacheinvalidation/include/invalidation-client-factory.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "net/url_request/url_request_context.h"
-#include "webrtc/libjingle/xmpp/jid.h"
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
 
 namespace syncer {
 

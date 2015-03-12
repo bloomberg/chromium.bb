@@ -16,7 +16,4 @@ include_rules = [
   "+net/base/network_change_notifier.h",
   "+net/http/http_status_code.h",
   "+net/url_request",
-
-  # invalidation_notifier depends on the xmpp part of libjingle.
-  "+webrtc/libjingle/xmpp",
 ]
