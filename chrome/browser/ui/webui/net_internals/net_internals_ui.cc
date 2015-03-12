@@ -428,7 +428,9 @@ void NetInternalsMessageHandler::RegisterMessages() {
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             profile->GetRequestContext());
   proxy_->AddRequestContextGetter(profile->GetMediaRequestContext());
+#if defined(ENABLE_EXTENSIONS)
   proxy_->AddRequestContextGetter(profile->GetRequestContextForExtensions());
+#endif
 
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);
@@ -713,11 +715,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
   SendJavascriptCommand("receivedConstants", NetInternalsUI::GetConstants());
 
-  // TODO(mmenke) DCHECK in CreateNetLogEntriesForActiveObjects in
-  // net_log_util.cc fails on Android (https://www.crbug.com/453088)
-#if !defined(OS_ANDROID)
   PrePopulateEventList();
-#endif
 
   // Register with network stack to observe events.
   io_thread_->net_log()->AddThreadSafeObserver(this,
