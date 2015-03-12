@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::DefaultQuicConfig;
+using net::test::MockConnection;
 using net::test::SupportedVersions;
 using std::string;
 using testing::StrictMock;

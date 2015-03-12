@@ -14,14 +14,15 @@
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/spdy_utils.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
-#include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
+using net::test::MockConnection;
 using net::test::MockSession;
 using net::test::SupportedVersions;
-using net::tools::test::MockConnection;
+using net::test::kInitialSessionFlowControlWindowForTest;
+using net::test::kInitialStreamFlowControlWindowForTest;
 using std::string;
 using testing::_;
 using testing::AnyNumber;

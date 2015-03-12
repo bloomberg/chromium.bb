@@ -13,18 +13,17 @@
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
-#include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
+using net::test::MockConnection;
 using net::test::PacketSavingConnection;
 using net::test::QuicSessionPeer;
 using net::test::SupportedVersions;
 using net::test::TestPeerIPAddress;
 using net::test::ValueRestore;
 using net::test::kTestPort;
-using net::tools::test::MockConnection;
 using testing::Invoke;
 using testing::_;
 

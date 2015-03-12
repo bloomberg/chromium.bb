@@ -332,9 +332,9 @@ class MockConnection : public QuicConnection {
 
   MOCK_METHOD1(ResumeConnectionState, bool(const CachedNetworkParameters&));
 
-  void ProcessUdpPacketInternal(const IPEndPoint& self_address,
-                                const IPEndPoint& peer_address,
-                                const QuicEncryptedPacket& packet) {
+  void ReallyProcessUdpPacket(const IPEndPoint& self_address,
+                              const IPEndPoint& peer_address,
+                              const QuicEncryptedPacket& packet) {
     QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
