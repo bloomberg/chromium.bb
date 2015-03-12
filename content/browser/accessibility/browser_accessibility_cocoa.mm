@@ -1146,7 +1146,7 @@ NSDictionary* attributeToMethodNameMap = nil;
            j < child->PlatformChildCount();
            ++j) {
         BrowserAccessibility* cell = child->PlatformGetChild(j);
-        if (!browserAccessibility_->IsCellOrTableHeaderRole())
+        if (!cell->IsCellOrTableHeaderRole())
           continue;
         int colIndex;
         if (!cell->GetIntAttribute(
