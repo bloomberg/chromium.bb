@@ -398,6 +398,9 @@ class VideoTrack : public Track {
 
   long long GetWidth() const;
   long long GetHeight() const;
+  long long GetDisplayWidth() const;
+  long long GetDisplayHeight() const;
+  long long GetStereoMode() const;
   double GetFrameRate() const;
 
   bool VetEntry(const BlockEntry*) const;
@@ -406,6 +409,10 @@ class VideoTrack : public Track {
  private:
   long long m_width;
   long long m_height;
+  long long m_display_width;
+  long long m_display_height;
+  long long m_stereo_mode;
+
   double m_rate;
 };
 

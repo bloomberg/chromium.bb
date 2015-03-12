@@ -5352,6 +5352,10 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
 
   long long width = 0;
   long long height = 0;
+  long long display_width = 0;
+  long long display_height = 0;
+  long long stereo_mode = 0;
+
   double rate = 0.0;
 
   IMkvReader* const pReader = pSegment->m_pReader;
@@ -5382,6 +5386,21 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
       height = UnserializeUInt(pReader, pos, size);
 
       if (height <= 0)
+        return E_FILE_FORMAT_INVALID;
+    } else if (id == 0x14B0) { // display width
+      display_width = UnserializeUInt(pReader, pos, size);
+
+      if (display_width <= 0)
+        return E_FILE_FORMAT_INVALID;
+    } else if (id == 0x14BA) { // display height
+      display_height = UnserializeUInt(pReader, pos, size);
+
+      if (display_height <= 0)
+        return E_FILE_FORMAT_INVALID;
+    } else if (id == 0x13B8) { // stereo mode
+      stereo_mode = UnserializeUInt(pReader, pos, size);
+
+      if (stereo_mode < 0)
         return E_FILE_FORMAT_INVALID;
     } else if (id == 0x0383E3) {  // frame rate
       const long status = UnserializeFloat(pReader, pos, size, rate);
@@ -5414,6 +5433,9 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
 
   pTrack->m_width = width;
   pTrack->m_height = height;
+  pTrack->m_display_width = display_width;
+  pTrack->m_display_height = display_height;
+  pTrack->m_stereo_mode = stereo_mode;
   pTrack->m_rate = rate;
 
   pResult = pTrack;
@@ -5525,6 +5547,16 @@ long VideoTrack::Seek(long long time_ns, const BlockEntry*& pResult) const {
 long long VideoTrack::GetWidth() const { return m_width; }
 
 long long VideoTrack::GetHeight() const { return m_height; }
+
+long long VideoTrack::GetDisplayWidth() const {
+  return m_display_width > 0 ? m_display_width : GetWidth();
+}
+
+long long VideoTrack::GetDisplayHeight() const {
+  return m_display_height > 0 ? m_display_height : GetHeight();
+}
+
+long long VideoTrack::GetStereoMode() const { return m_stereo_mode; }
 
 double VideoTrack::GetFrameRate() const { return m_rate; }
 
