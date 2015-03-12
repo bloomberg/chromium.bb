@@ -105,8 +105,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   settings.per_tile_painting_enabled = true;
 #endif
 #if defined(OS_WIN)
-  settings.disable_hi_res_timer_tasks_on_battery =
-      !context_factory_->DoesCreateTestContexts();
   settings.renderer_settings.finish_rendering_on_resize = true;
 #endif
 
