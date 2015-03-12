@@ -20,8 +20,8 @@ struct CONTENT_EXPORT SyntheticTapGestureParams
 
   GestureType GetGestureType() const override;
 
-  gfx::Point position;
-  int duration_ms;
+  gfx::PointF position;
+  float duration_ms;
 
   static const SyntheticTapGestureParams* Cast(
       const SyntheticGestureParams* gesture_params);

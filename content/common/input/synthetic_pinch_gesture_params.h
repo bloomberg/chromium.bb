@@ -22,8 +22,8 @@ struct CONTENT_EXPORT SyntheticPinchGestureParams
   GestureType GetGestureType() const override;
 
   float scale_factor;
-  gfx::Point anchor;
-  int relative_pointer_speed_in_pixels_s;
+  gfx::PointF anchor;
+  float relative_pointer_speed_in_pixels_s;
 
   static const SyntheticPinchGestureParams* Cast(
       const SyntheticGestureParams* gesture_params);

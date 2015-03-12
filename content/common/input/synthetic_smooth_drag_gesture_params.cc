@@ -9,7 +9,7 @@
 namespace content {
 namespace {
 
-const int kDefaultSpeedInPixelsPerSec = 800;
+const float kDefaultSpeedInPixelsPerSec = 800;
 
 }  // namespace
 

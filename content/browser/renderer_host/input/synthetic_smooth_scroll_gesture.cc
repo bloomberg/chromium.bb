@@ -43,9 +43,7 @@ bool SyntheticSmoothScrollGesture::InitializeMoveGesture(
       gesture_type == SyntheticGestureParams::MOUSE_INPUT) {
     SyntheticSmoothMoveGestureParams move_params;
     move_params.start_point = params_.anchor;
-    // TODO(ssid): Remove this when params for scroll is changed to float
-    for (size_t i = 0; i < params_.distances.size(); i++)
-      move_params.distances.push_back(params_.distances[i]);
+    move_params.distances = params_.distances;
     move_params.speed_in_pixels_s = params_.speed_in_pixels_s;
     move_params.prevent_fling = params_.prevent_fling;
     move_params.input_type = GetInputSourceType(gesture_type);

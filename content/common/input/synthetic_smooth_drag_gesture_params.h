@@ -26,7 +26,7 @@ struct CONTENT_EXPORT SyntheticSmoothDragGestureParams
 
   gfx::PointF start_point;
   std::vector<gfx::Vector2dF> distances;
-  int speed_in_pixels_s;
+  float speed_in_pixels_s;
 
   static const SyntheticSmoothDragGestureParams* Cast(
       const SyntheticGestureParams* gesture_params);
