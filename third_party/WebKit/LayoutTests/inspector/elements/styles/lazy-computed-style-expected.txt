@@ -34,30 +34,17 @@ div  { (user agent stylesheet)
 
 
 ==== All styles (computed should be there) ====
-[expanded] 
-  -webkit-background-clip: border-box;
-  -webkit-background-origin: padding-box;
-  -webkit-background-size: auto;
-  background-attachment: scroll;
-    #inspected - initial lazy-computed-style.html:15
-  background-clip: border-box;
-    #inspected - initial lazy-computed-style.html:15
-  background-color: rgb(128, 128, 128);
-    #inspected - gray lazy-computed-style.html:15
-    /-- overloaded --/ #inspected - black lazy-computed-style.html:10
-    /-- overloaded --/ #inspected - green lazy-computed-style.html:5
-  background-image: none;
-    #inspected - initial lazy-computed-style.html:15
-  background-origin: padding-box;
-    #inspected - initial lazy-computed-style.html:15
-  background-size: auto;
-    #inspected - initial lazy-computed-style.html:15
-  display: block;
-    div - block user agent stylesheet
-  font-family: Courier;
-    #inspected - Courier lazy-computed-style.html:10
-    /-- overloaded --/ #inspected - Times lazy-computed-style.html:5
-
+-webkit-background-clip: border-box;
+-webkit-background-origin: padding-box;
+-webkit-background-size: auto;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: rgb(128, 128, 128);
+background-image: none;
+background-origin: padding-box;
+background-size: auto;
+display: block;
+font-family: Courier;
 [expanded] 
 element.style  { ()
 

@@ -7,9 +7,35 @@ InspectorTest.inlineStyleSection = function()
     return WebInspector.panels.elements.sidebarPanes.styles.sections[0][0];
 }
 
-InspectorTest.computedStyleSection = function()
+InspectorTest.computedStyleSidebarPane = function()
 {
-    return WebInspector.panels.elements.sidebarPanes.styles._computedStylePane._computedStyleSection;
+    return WebInspector.panels.elements.sidebarPanes.styles._computedStylePane;
+}
+
+InspectorTest.dumpComputedStyle = function()
+{
+    var computed = InspectorTest.computedStyleSidebarPane();
+    var items = computed.element.querySelectorAll(".computed-style-property");
+    for (var i = 0; i < items.length; ++i) {
+        var item = items[i];
+        var property = item[WebInspector.ComputedStyleSidebarPane._propertySymbol];
+        if (property.name === "width" || property.name === "height")
+            continue;
+        InspectorTest.addResult(item.textContent);
+    }
+}
+
+InspectorTest.findComputedPropertyWithName = function(name)
+{
+    var computed = InspectorTest.computedStyleSidebarPane();
+    var items = computed.element.querySelectorAll(".computed-style-property");
+    for (var i = 0; i < items.length; ++i) {
+        var item = items[i];
+        var property = item[WebInspector.ComputedStyleSidebarPane._propertySymbol];
+        if (property.name === name)
+            return item;
+    }
+    return null;
 }
 
 InspectorTest.firstMatchedStyleSection = function()
@@ -285,7 +311,7 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
 {
     var styleSections = WebInspector.panels.elements.sidebarPanes.styles.sections;
     if (!excludeComputed)
-        printStyleSection(InspectorTest.computedStyleSection(), omitLonghands, includeSelectorGroupMarks);
+        InspectorTest.dumpComputedStyle();
     for (var pseudoId in styleSections) {
         var sections = styleSections[pseudoId].slice();
         for (var i = 0; i < sections.length; ++i) {

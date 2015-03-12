@@ -3,29 +3,18 @@ Tests that injected user stylesheets are reflected in the Styles pane.
 
 
 Main frame style:
-[expanded] 
-  -webkit-background-clip: border-box;
-  -webkit-background-origin: padding-box;
-  -webkit-background-size: auto;
-  -webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) 100% / 1 / 0px stretch;
-    #main - url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQVR42r2RsQrDMAxEBRdl8SDcX8lQPGg1GBI6lvz/h7QyRRXV0qUULwfvwZ1tenw5PxToRPWMC52eA9+WDnlh3HFQ/xBQl86NFYJqeGflkiogrOvVlIFhqURFVho3x1moGAa3deMs+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) injected stylesheet
-  background-attachment: scroll;
-    #main - initial inject-stylesheet.html:5
-  background-clip: border-box;
-    #main - initial inject-stylesheet.html:5
-  background-color: rgb(0, 0, 255);
-    #main - blue inject-stylesheet.html:5
-  background-image: none;
-    #main - initial inject-stylesheet.html:5
-  background-origin: padding-box;
-    #main - initial inject-stylesheet.html:5
-  background-size: auto;
-    #main - initial inject-stylesheet.html:5
-  color: rgb(255, 0, 0);
-    #main - red injected stylesheet
-  display: block;
-    div - block user agent stylesheet
-
+-webkit-background-clip: border-box;
+-webkit-background-origin: padding-box;
+-webkit-background-size: auto;
+-webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==) 100% / 1 / 0px stretch;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: rgb(0, 0, 255);
+background-image: none;
+background-origin: padding-box;
+background-size: auto;
+color: rgb(255, 0, 0);
+display: block;
 [expanded] 
 element.style  { ()
 
@@ -55,39 +44,20 @@ div  { (user agent stylesheet)
 
 
 iframe style:
-[expanded] 
-  -webkit-background-clip: border-box;
-  -webkit-background-origin: padding-box;
-  -webkit-background-size: auto;
-  background-attachment: scroll;
-    #iframebody - initial injected stylesheet
-    /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
-  background-clip: border-box;
-    #iframebody - initial injected stylesheet
-    /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
-  background-color: rgb(255, 0, 0);
-    #iframebody - red injected stylesheet
-    /-- overloaded --/ body - green inject-styleshe…me-data.html:4
-  background-image: none;
-    #iframebody - initial injected stylesheet
-    /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
-  background-origin: padding-box;
-    #iframebody - initial injected stylesheet
-    /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
-  background-size: auto;
-    #iframebody - initial injected stylesheet
-    /-- overloaded --/ body - initial inject-styleshe…me-data.html:4
-  display: block;
-    body - block user agent stylesheet
-  margin-bottom: 8px;
-    body - 8px user agent stylesheet
-  margin-left: 8px;
-    body - 8px user agent stylesheet
-  margin-right: 8px;
-    body - 8px user agent stylesheet
-  margin-top: 8px;
-    body - 8px user agent stylesheet
-
+-webkit-background-clip: border-box;
+-webkit-background-origin: padding-box;
+-webkit-background-size: auto;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: rgb(255, 0, 0);
+background-image: none;
+background-origin: padding-box;
+background-size: auto;
+display: block;
+margin-bottom: 8px;
+margin-left: 8px;
+margin-right: 8px;
+margin-top: 8px;
 [expanded] 
 element.style  { ()
 

@@ -2,12 +2,8 @@ Tests that webkit css region styling can be parsed correctly. Test passes if it 
 
 P color styled in region: #008000.
 
-[expanded] 
-  color: rgb(255, 0, 0);
-    #p1 - #ff0000 region-style-crash.html:6
-  display: block;
-    p - block user agent stylesheet
-
+color: rgb(255, 0, 0);
+display: block;
 [expanded] 
 element.style  { ()
 

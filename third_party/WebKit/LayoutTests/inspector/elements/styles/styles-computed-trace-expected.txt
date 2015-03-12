@@ -1,64 +1,33 @@
 Tests that computed styles expand and allow tracing to style rules.
 
 ==== Computed style for ID1 ====
-[expanded] 
-  -webkit-background-clip: border-box;
-  -webkit-background-origin: padding-box;
-  -webkit-background-size: auto;
-  background-attachment: scroll;
-    #id1 - initial styles-computed-trace.html:23
-  background-clip: border-box;
-    #id1 - initial styles-computed-trace.html:23
-  background-color: rgb(128, 128, 128);
-    #id1 - gray styles-computed-trace.html:23
-    /-- overloaded --/ #id1 - black styles-computed-trace.html:18
-    /-- overloaded --/ #id1 - green styles-computed-trace.html:13
-  background-image: none;
-    #id1 - initial styles-computed-trace.html:23
-  background-origin: padding-box;
-    #id1 - initial styles-computed-trace.html:23
-  background-size: auto;
-    #id1 - initial styles-computed-trace.html:23
-  display: block;
-    div - block user agent stylesheet
-  font-family: Courier;
-    #id1 - Courier styles-computed-trace.html:18
-    /-- overloaded --/ #id1 - Times styles-computed-trace.html:13
-    /-- overloaded --/ body - Arial styles-computed-trace.html:4
-  text-decoration: underline solid rgb(0, 0, 0);
-    div - underline styles-computed-trace.html:9
-  text-decoration-color: rgb(0, 0, 0);
-    div - initial styles-computed-trace.html:9
-  text-decoration-line: underline;
-    div - underline styles-computed-trace.html:9
-  text-decoration-style: solid;
-    div - initial styles-computed-trace.html:9
-
+-webkit-background-clip: border-box;
+-webkit-background-origin: padding-box;
+-webkit-background-size: auto;
+background-attachment: scroll;
+background-clip: border-box;
+background-color: rgb(128, 128, 128);
+background-image: none;
+background-origin: padding-box;
+background-size: auto;
+display: block;
+font-family: Courier;
+text-decoration: underline solid rgb(0, 0, 0);
+text-decoration-color: rgb(0, 0, 0);
+text-decoration-line: underline;
+text-decoration-style: solid;
 [expanded] 
 element.style  { ()
 
 
 ==== Computed style for ID2 ====
-[expanded] 
-  background-color: rgb(0, 0, 255);
-    #id2 - blue styles-computed-trace.html:27
-  display: block;
-    div - block user agent stylesheet
-  font-family: Courier;
-    #id2 - Courier styles-computed-trace.html:27
-    /-- overloaded --/ #id1 - Courier styles-computed-trace.html:18
-    /-- overloaded --/ #id1 - Times styles-computed-trace.html:13
-    /-- overloaded --/ body - Arial styles-computed-trace.html:4
-  text-decoration: underline solid rgb(0, 0, 0);
-    /-- overloaded --/ #id2 - invalidvalue styles-computed-trace.html:27
-    div - underline styles-computed-trace.html:9
-  text-decoration-color: rgb(0, 0, 0);
-    div - initial styles-computed-trace.html:9
-  text-decoration-line: underline;
-    div - underline styles-computed-trace.html:9
-  text-decoration-style: solid;
-    div - initial styles-computed-trace.html:9
-
+background-color: rgb(0, 0, 255);
+display: block;
+font-family: Courier;
+text-decoration: underline solid rgb(0, 0, 0);
+text-decoration-color: rgb(0, 0, 0);
+text-decoration-line: underline;
+text-decoration-style: solid;
 [expanded] 
 element.style  { ()
 

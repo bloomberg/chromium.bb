@@ -1,60 +1,27 @@
 Tests that elements panel shows proper styles in the sidebar panel.
 
 Foo
-[expanded] 
-  -webkit-font-smoothing: subpixel-antialiased;
-    element.style - subpixel-antialiased 
-  border-bottom-left-radius: 5px;
-    .foo - 5px elements-panel-styles.css:21
-  border-bottom-right-radius: 5px;
-    .foo - 5px elements-panel-styles.css:21
-  border-top-left-radius: 5px;
-    .foo - 5px elements-panel-styles.css:21
-  border-top-right-radius: 5px;
-    .foo - 5px elements-panel-styles.css:21
-  color: rgb(0, 0, 255);
-    .foo, .foo::before - blue elements-panel-styles.css:34
-    /-- overloaded --/ .foo - black elements-panel-styles.css:21
-    /-- overloaded --/ #container - red elements-panel-styles.css:10
-    /-- overloaded --/ html - magenta !important elements-panel-styles.css:61
-  display: block;
-    /-- overloaded --/ element.style - none 
-    .foo, .foo::before - block !important elements-panel-styles.css:34
-    /-- overloaded --/ div - block user agent stylesheet
-  font-family: serif;
-    #container - serif elements-panel-styles.css:10
-  font-size: 14px;
-    #container - 14px elements-panel-styles.css:10
-    /-- overloaded --/ body - 12px elements-panel-styles.css:1
-  font-style: italic;
-    #container .foo - italic !important elements-panel-styles.css:17
-    /-- overloaded --/ .foo - normal !important elements-panel-styles.css:21
-  font-weight: normal;
-    .foo - normal !important elements-panel-styles.css:21
-    /-- overloaded --/ .foo - bold elements-panel-styles.css:21
-  margin-bottom: 2px;
-    .foo - 2px elements-panel-styles.css:21
-  margin-left: 0px;
-    .foo - 1px elements-panel-styles.css:21
-  margin-right: 0px;
-    .foo - 0px elements-panel-styles.css:21
-  margin-top: 10px;
-    .foo - 10px elements-panel-styles.css:21
-  padding-bottom: 4px;
-    .foo - 4px elements-panel-styles.css:21
-  padding-left: 4px;
-    .foo - 4px elements-panel-styles.css:21
-  padding-right: 1px;
-    .foo - 1px elements-panel-styles.css:21
-  padding-top: 4px;
-    .foo - 4px elements-panel-styles.css:21
-  text-align: -webkit-left;
-    div[Attributes Style] - -webkit-left 
-  text-indent: 0px;
-    /-- overloaded --/ body .foo - 10px elements-panel-styles.css:6
-    .foo - 0 !important elements-panel-styles.css:21
-    /-- overloaded --/ body - 20px !important elements-panel-styles.css:1
-
+-webkit-font-smoothing: subpixel-antialiased;
+border-bottom-left-radius: 5px;
+border-bottom-right-radius: 5px;
+border-top-left-radius: 5px;
+border-top-right-radius: 5px;
+color: rgb(0, 0, 255);
+display: block;
+font-family: serif;
+font-size: 14px;
+font-style: italic;
+font-weight: normal;
+margin-bottom: 2px;
+margin-left: 0px;
+margin-right: 0px;
+margin-top: 10px;
+padding-bottom: 4px;
+padding-left: 4px;
+padding-right: 1px;
+padding-top: 4px;
+text-align: -webkit-left;
+text-indent: 0px;
 [expanded] 
 element.style  { ()
 /-- overloaded --/   display: none;
