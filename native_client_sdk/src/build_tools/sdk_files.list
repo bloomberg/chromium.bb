@@ -21,7 +21,6 @@ examples/api/var_array_buffer/*
 examples/api/var_dictionary/*
 examples/api/video_decode/*
 examples/api/websocket/*
-examples/benchmarks/*
 examples/button_close.png
 examples/button_close_hover.png
 examples/demo/drive/*

@@ -118,9 +118,8 @@ def main(args):
   filters['DISABLE_PACKAGE'] = False
   filters['EXPERIMENTAL'] = False
   filters['TOOLS'] = toolchains
-  filters['DEST'] = ['examples/api', 'examples/benchmarks',
-                     'examples/getting_started', 'examples/demo',
-                     'examples/tutorial']
+  filters['DEST'] = ['examples/api', 'examples/getting_started',
+                     'examples/demo', 'examples/tutorial']
   tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)
   build_projects.UpdateHelpers(app_dir, clobber=True)
   build_projects.UpdateProjects(app_dir, tree, clobber=False,

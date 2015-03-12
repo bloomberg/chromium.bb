@@ -11,8 +11,7 @@ def CmpByName(x, y):
   
 class LandingPage(object):
   def __init__(self):
-    self.section_list = ['Getting Started', 'API', 'Benchmarks', 'Demo',
-        'Tutorial']
+    self.section_list = ['Getting Started', 'API', 'Demo', 'Tutorial']
     self.section_map = collections.defaultdict(list)
 
   def GeneratePage(self, template_path):

@@ -179,7 +179,7 @@ def UpdateProjects(pepperdir, project_tree, toolchains,
       fh.write(out)
 
   # Generate top Make for examples
-  targets = ['api', 'benchmarks', 'demo', 'getting_started', 'tutorial']
+  targets = ['api', 'demo', 'getting_started', 'tutorial']
   targets = [x for x in targets if 'examples/'+x in project_tree]
   branch_name = 'examples'
   generate_make.GenerateMasterMakefile(pepperdir,
