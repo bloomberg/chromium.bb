@@ -48,6 +48,7 @@ function throwException()
 
 function test() 
 {
+    InspectorTest.startDumpingProtocolMessages();
     InspectorTest.startDebuggerTest(step1);
 
     function step1()
@@ -65,10 +66,12 @@ function test()
         // FIXME: Test is flaky with PauseOnAllExceptions due to races in debugger.
         InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         InspectorTest.nodeWithId("element", didResolveNode);
+        testRunner.logToStderr("didShowScriptSource");
     }
 
     function didResolveNode(node)
     {
+        testRunner.logToStderr("didResolveNode");
         var pane = WebInspector.domBreakpointsSidebarPane;
         InspectorTest.addResult("Set up DOM breakpoints.");
         pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
@@ -79,6 +82,7 @@ function test()
 
     function setUpEventBreakpoints()
     {
+        testRunner.logToStderr("setUpEventBreakpoints");
         var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
         InspectorTest.addResult("Set up Event breakpoints.");
         pane._setBreakpoint("listener:click");
@@ -87,24 +91,28 @@ function test()
 
     function didSetUp()
     {
+        testRunner.logToStderr("didSetUp");
         InspectorTest.addResult("Did set up.");
         InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause(callFrames)
     {
+        testRunner.logToStderr("didPause");
         InspectorTest.captureStackTrace(callFrames);
         InspectorTest.DebuggerAgent.setSkipAllPauses(true, didSetSkipAllPauses);
     }
 
     function didSetSkipAllPauses()
     {
+        testRunner.logToStderr("didSetSkipAllPauses");
         InspectorTest.addResult("Set up to skip all pauses.");
         doReloadPage();
     }
 
     function doReloadPage()
     {
+        testRunner.logToStderr("doReloadPage");
         InspectorTest.addResult("Reloading the page...");
         InspectorTest.waitUntilPausedNextTime(didPauseAfterReload);
         InspectorTest.reloadPage(didReloadPage);
@@ -112,12 +120,14 @@ function test()
 
     function didReloadPage()
     {
+        testRunner.logToStderr("didReloadPage");
         InspectorTest.addResult("PASS: Reloaded without hitting breakpoints.");
         completeTest();
     }
 
     function didPauseAfterReload(callFrames)
     {
+        testRunner.logToStderr("didPauseAfterReload");
         InspectorTest.addResult("FAIL: Should not pause while reloading the page!");
         InspectorTest.captureStackTrace(callFrames);
         InspectorTest.waitUntilPausedNextTime(didPauseAfterReload);
@@ -126,6 +136,7 @@ function test()
 
     function completeTest()
     {
+        testRunner.logToStderr("completeTest");
         var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
         pane._removeBreakpoint("listener:click");
         InspectorTest.completeDebuggerTest();
