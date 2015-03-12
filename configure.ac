@@ -101,13 +101,16 @@ then
   if test x$MAKEINFO_VERSION = x -o 0$MAKEINFO_VERSION -lt $MAKEINFO_VERSION_REQ
   then
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([Program 'makeinfo' version >= $MAKEINFO_VERSION_REQ is required.])
+    AC_MSG_WARN([Program 'makeinfo' version >= $MAKEINFO_VERSION_REQ is required. Documentation will not be built.])
+    have_makeinfo_5=false
   else
     AC_MSG_RESULT([yes])
+    have_makeinfo_5=true
   fi
 else
   AC_MSG_ERROR([Missing program 'makeinfo', please install.)])
 fi
+AM_CONDITIONAL([HAVE_MAKEINFO_5], [test x$have_makeinfo_5 = xtrue])
 
 # Check if we have Python installed
 AM_PATH_PYTHON([2.6],, [:])
