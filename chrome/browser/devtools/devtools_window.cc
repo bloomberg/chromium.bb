@@ -171,7 +171,6 @@ BrowserWindow* DevToolsToolboxDelegate::GetInspectedBrowserWindow() {
     return browser->window();
   return NULL;
 }
-
 }  // namespace
 
 // DevToolsEventForwarder -----------------------------------------------------
@@ -388,17 +387,17 @@ bool DevToolsWindow::IsDevToolsWindow(content::WebContents* web_contents) {
 }
 
 // static
-DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
+void DevToolsWindow::OpenDevToolsWindowForWorker(
     Profile* profile,
     const scoped_refptr<DevToolsAgentHost>& worker_agent) {
   DevToolsWindow* window = FindDevToolsWindow(worker_agent.get());
   if (!window) {
     window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
-    DCHECK(window);
+    if (!window)
+      return;
     window->bindings_->AttachTo(worker_agent);
   }
   window->ScheduleShow(DevToolsToggleAction::Show());
-  return window;
 }
 
 // static
@@ -409,45 +408,45 @@ DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
 }
 
 // static
-DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
+void DevToolsWindow::OpenDevToolsWindow(
     content::WebContents* inspected_web_contents) {
-  return ToggleDevToolsWindow(
-      inspected_web_contents, true, DevToolsToggleAction::Show(), "");
+  ToggleDevToolsWindow(
+        inspected_web_contents, true, DevToolsToggleAction::Show(), "");
 }
 
 // static
-DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
+void DevToolsWindow::OpenDevToolsWindow(
     content::WebContents* inspected_web_contents,
     const DevToolsToggleAction& action) {
-  return ToggleDevToolsWindow(inspected_web_contents, true, action, "");
+  ToggleDevToolsWindow(inspected_web_contents, true, action, "");
 }
 
 // static
-DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
+void DevToolsWindow::OpenDevToolsWindow(
     Profile* profile,
     const scoped_refptr<content::DevToolsAgentHost>& agent_host) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (!window) {
     window = DevToolsWindow::Create(
         profile, GURL(), nullptr, false, std::string(), false, std::string());
-    DCHECK(window);
+    if (!window)
+      return;
     window->bindings_->AttachTo(agent_host);
   }
   window->ScheduleShow(DevToolsToggleAction::Show());
-  return window;
 }
 
 // static
-DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
+void DevToolsWindow::ToggleDevToolsWindow(
     Browser* browser,
     const DevToolsToggleAction& action) {
   if (action.type() == DevToolsToggleAction::kToggle &&
       browser->is_devtools()) {
     browser->tab_strip_model()->CloseAllTabs();
-    return NULL;
+    return;
   }
 
-  return ToggleDevToolsWindow(
+  ToggleDevToolsWindow(
       browser->tab_strip_model()->GetActiveWebContents(),
       action.type() == DevToolsToggleAction::kInspect,
       action, "");
@@ -463,15 +462,16 @@ void DevToolsWindow::OpenExternalFrontend(
   if (!window) {
     window = Create(profile, GURL(), nullptr, isWorker,
         DevToolsUI::GetProxyURL(frontend_url).spec(), false, std::string());
-    if (window)
-      window->bindings_->AttachTo(agent_host);
+    if (!window)
+      return;
+    window->bindings_->AttachTo(agent_host);
   }
-  if (window)
-    window->ScheduleShow(DevToolsToggleAction::Show());
+
+  window->ScheduleShow(DevToolsToggleAction::Show());
 }
 
 // static
-DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
+void DevToolsWindow::ToggleDevToolsWindow(
     content::WebContents* inspected_web_contents,
     bool force_open,
     const DevToolsToggleAction& action,
@@ -487,7 +487,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
         base::UserMetricsAction("DevTools_InspectRenderer"));
     window = Create(profile, GURL(), inspected_web_contents,
                     false, std::string(), true, settings);
-    DCHECK(window);
+    if (!window)
+      return;
     window->bindings_->AttachTo(agent.get());
     do_open = true;
   }
@@ -501,8 +502,6 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     window->ScheduleShow(action);
   else
     window->CloseWindow();
-
-  return window;
 }
 
 // static
@@ -517,8 +516,10 @@ void DevToolsWindow::InspectElement(
   base::TimeTicks start_time = base::TimeTicks::Now();
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
-  DevToolsWindow* window = OpenDevToolsWindow(inspected_web_contents);
-  if (should_measure_time)
+  OpenDevToolsWindow(inspected_web_contents);
+
+  DevToolsWindow* window = FindDevToolsWindow(agent.get());
+  if (should_measure_time && window)
     window->inspect_element_start_time_ = start_time;
 }
 
@@ -722,6 +723,10 @@ DevToolsWindow* DevToolsWindow::Create(
     const std::string& remote_frontend,
     bool can_dock,
     const std::string& settings) {
+  // If developer tools disabled by policy don't open the window.
+  if (profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
+    return nullptr;
+
   if (inspected_web_contents) {
     // Check for a place to dock.
     Browser* browser = NULL;

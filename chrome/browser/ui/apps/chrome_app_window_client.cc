@@ -8,6 +8,7 @@
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
 
@@ -55,9 +56,16 @@ extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindow(
 void ChromeAppWindowClient::OpenDevToolsWindow(
     content::WebContents* web_contents,
     const base::Closure& callback) {
-  DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindow(
-      web_contents, DevToolsToggleAction::ShowConsole());
-  devtools_window->SetLoadCompletedCallback(callback);
+  scoped_refptr<content::DevToolsAgentHost> agent(
+      content::DevToolsAgentHost::GetOrCreateFor(web_contents));
+  DevToolsWindow::OpenDevToolsWindow(web_contents);
+
+  DevToolsWindow* devtools_window =
+      DevToolsWindow::FindDevToolsWindow(agent.get());
+  if (devtools_window)
+    devtools_window->SetLoadCompletedCallback(callback);
+  else
+    callback.Run();
 }
 
 bool ChromeAppWindowClient::IsCurrentChannelOlderThanDev() {

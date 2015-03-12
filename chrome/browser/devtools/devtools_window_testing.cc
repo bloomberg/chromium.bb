@@ -106,8 +106,11 @@ DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowSync(
   std::string settings = is_docked ?
       "{\"currentDockState\":\"\\\"bottom\\\"\"}" :
       "{\"currentDockState\":\"\\\"undocked\\\"\"}";
-  DevToolsWindow* window = DevToolsWindow::ToggleDevToolsWindow(
-      inspected_web_contents, true, DevToolsToggleAction::Show(), settings);
+  scoped_refptr<content::DevToolsAgentHost> agent(
+      content::DevToolsAgentHost::GetOrCreateFor(inspected_web_contents));
+  DevToolsWindow::ToggleDevToolsWindow(
+        inspected_web_contents, true, DevToolsToggleAction::Show(), settings);
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
   WaitForDevToolsWindowLoad(window);
   return window;
 }
@@ -123,8 +126,9 @@ DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowSync(
 // static
 DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowForWorkerSync(
     Profile* profile, content::DevToolsAgentHost* worker_agent) {
-  DevToolsWindow* window = DevToolsWindow::OpenDevToolsWindowForWorker(
+  DevToolsWindow::OpenDevToolsWindowForWorker(
       profile, worker_agent);
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(worker_agent);
   WaitForDevToolsWindowLoad(window);
   return window;
 }

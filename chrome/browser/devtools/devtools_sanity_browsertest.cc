@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -812,7 +813,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestDeviceEmulation) {
   RunTest("testDeviceMetricsOverrides", "about:blank");
 }
 
-
 // Tests that external navigation from inspector page is always handled by
 // DevToolsWindow and results in inspected page navigation.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
@@ -952,4 +952,17 @@ IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, MAYBE_RemoteDebugger) {
 #endif
 
   ASSERT_TRUE(RunExtensionTest("target_list")) << message_;
+}
+
+using DevToolsPolicyTest = InProcessBrowserTest;
+IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, PolicyTrue) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kDevToolsDisabled, true);
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  scoped_refptr<content::DevToolsAgentHost> agent(
+      content::DevToolsAgentHost::GetOrCreateFor(web_contents));
+  DevToolsWindow::OpenDevToolsWindow(web_contents);
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
+  ASSERT_FALSE(window);
 }

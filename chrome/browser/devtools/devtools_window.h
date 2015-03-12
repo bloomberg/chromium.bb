@@ -62,24 +62,37 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   static bool IsDevToolsWindow(content::WebContents* web_contents);
   static DevToolsWindow* AsDevToolsWindow(content::WebContents* web_contents);
+  static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
 
   // Open or reveal DevTools window, and perform the specified action.
-  static DevToolsWindow* OpenDevToolsWindow(
-      content::WebContents* inspected_web_contents,
-      const DevToolsToggleAction& action);
+  // How to get pointer to the created window see comments for
+  // ToggleDevToolsWindow().
+  static void OpenDevToolsWindow(content::WebContents* inspected_web_contents,
+                                 const DevToolsToggleAction& action);
 
   // Open or reveal DevTools window, with no special action.
-  static DevToolsWindow* OpenDevToolsWindow(
-      content::WebContents* inspected_web_contents);
+  // How to get pointer to the created window see comments for
+  // ToggleDevToolsWindow().
+  static void OpenDevToolsWindow(content::WebContents* inspected_web_contents);
 
   // Open or reveal DevTools window. This window will be undocked.
-  static DevToolsWindow* OpenDevToolsWindow(
+  static void OpenDevToolsWindow(
       Profile* profile,
       const scoped_refptr<content::DevToolsAgentHost>& agent_host);
 
   // Perform specified action for current WebContents inside a |browser|.
   // This may close currently open DevTools window.
-  static DevToolsWindow* ToggleDevToolsWindow(
+  // If DeveloperToolsDisabled policy is set, no DevTools window created.
+  // In case if needed pointer to the created window one should use
+  // DevToolsAgentHost and DevToolsWindow::FindDevToolsWindow(). E.g.:
+  //
+  // scoped_refptr<content::DevToolsAgentHost> agent(
+  //   content::DevToolsAgentHost::GetOrCreateFor(inspected_web_contents));
+  // DevToolsWindow::ToggleDevToolsWindow(
+  //   inspected_web_contents, DevToolsToggleAction::Show());
+  // DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
+  //
+  static void ToggleDevToolsWindow(
       Browser* browser,
       const DevToolsToggleAction& action);
 
@@ -91,7 +104,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       bool isWorker);
 
   // Worker frontend is always undocked.
-  static DevToolsWindow* OpenDevToolsWindowForWorker(
+  static void OpenDevToolsWindowForWorker(
       Profile* profile,
       const scoped_refptr<content::DevToolsAgentHost>& worker_agent);
 
@@ -228,9 +241,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                              const std::string& remote_frontend,
                              bool can_dock,
                              const std::string& settings);
-  static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
+
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
-  static DevToolsWindow* ToggleDevToolsWindow(
+  static void ToggleDevToolsWindow(
       content::WebContents* web_contents,
       bool force_open,
       const DevToolsToggleAction& action,
