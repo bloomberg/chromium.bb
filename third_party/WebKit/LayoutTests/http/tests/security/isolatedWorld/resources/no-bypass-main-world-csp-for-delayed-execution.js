@@ -34,7 +34,7 @@ function test(message) {
             break;
         case 2:
             testRunner.setIsolatedWorldContentSecurityPolicy(1, permissiveCSP);
-            testRunner.evaluateScriptInIsolatedWorld(1, String(injectInlineScript) + "\ninjectInlineScript('try { eval(\"alert(\\\'FAIL: Case " + tests + " should have been blocked by a CSP.\\\');\"); } catch( e) { alert(\\\'PASS: Case " + tests + " was blocked by a CSP.\\\'); }');");
+            testRunner.evaluateScriptInIsolatedWorld(1, String(injectInlineScript) + "\ninjectInlineScript('try { eval(\"alert(\\\'FAIL: Case " + tests + " should have been blocked by a CSP.\\\');\"); } catch( e) { console.log(e); alert(\\\'PASS: Case " + tests + " was blocked by a CSP.\\\'); }');");
             break;
         case 1:
             if (message != "done") {

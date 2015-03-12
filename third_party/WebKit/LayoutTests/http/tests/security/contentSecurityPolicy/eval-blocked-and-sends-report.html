@@ -8,6 +8,7 @@
         try {
             eval("alert('FAIL')");
         } catch (e) {
+            console.log(e);
             console.log('PASS: eval() blocked.');
         }
     </script>

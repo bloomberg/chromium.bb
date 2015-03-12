@@ -108,6 +108,11 @@ public:
         DidNotRedirect
     };
 
+    enum ExceptionStatus {
+        WillThrowException,
+        WillNotThrowException
+    };
+
     static PassRefPtr<ContentSecurityPolicy> create()
     {
         return adoptRef(new ContentSecurityPolicy());
@@ -130,7 +135,12 @@ public:
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& scriptContent, ReportingStatus = SendReport) const;
     bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& styleContent, ReportingStatus = SendReport) const;
-    bool allowEval(ScriptState* = nullptr, ReportingStatus = SendReport) const;
+    // When the reporting status is |SendReport|, the |ExceptionStatus|
+    // should indicate whether the caller will throw a JavaScript
+    // exception in the event of a violation. When the caller will throw
+    // an exception, ContentSecurityPolicy does not log a violation
+    // message to the console because it would be redundant.
+    bool allowEval(ScriptState* = nullptr, ReportingStatus = SendReport, ExceptionStatus = WillNotThrowException) const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
     // Checks whether the plugin type should be allowed in the given
     // document; enforces the CSP rule that PluginDocuments inherit
