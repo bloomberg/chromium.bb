@@ -514,15 +514,11 @@ CheckBool DisassemblerWin32X86::ParseNonSectionFileRegion(
   if (incomplete_disassembly_)
     return true;
 
-  const uint8* start = OffsetToPointer(start_file_offset);
-  const uint8* end = OffsetToPointer(end_file_offset);
-
-  const uint8* p = start;
-
-  while (p < end) {
-    if (!program->EmitByteInstruction(*p))
+  if (end_file_offset > start_file_offset) {
+    if (!program->EmitBytesInstruction(OffsetToPointer(start_file_offset),
+                                       end_file_offset - start_file_offset)) {
       return false;
-    ++p;
+    }
   }
 
   return true;
