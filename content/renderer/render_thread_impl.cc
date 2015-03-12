@@ -632,29 +632,6 @@ void RenderThreadImpl::Init() {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));
 
-  std::vector<base::DiscardableMemoryType> supported_types;
-  base::DiscardableMemory::GetSupportedTypes(&supported_types);
-  DCHECK(!supported_types.empty());
-
-  // The default preferred type is always the first one in list.
-  base::DiscardableMemoryType type = supported_types[0];
-
-  if (command_line.HasSwitch(switches::kUseDiscardableMemory)) {
-    std::string requested_type_name = command_line.GetSwitchValueASCII(
-        switches::kUseDiscardableMemory);
-    base::DiscardableMemoryType requested_type =
-        base::DiscardableMemory::GetNamedType(requested_type_name);
-    if (std::find(supported_types.begin(),
-                  supported_types.end(),
-                  requested_type) != supported_types.end()) {
-      type = requested_type;
-    } else {
-      LOG(ERROR) << "Requested discardable memory type is not supported.";
-    }
-  }
-
-  base::DiscardableMemory::SetPreferredType(type);
-
   if (is_impl_side_painting_enabled_) {
     int num_raster_threads = 0;
     std::string string_value =

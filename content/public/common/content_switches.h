@@ -224,7 +224,6 @@ extern const char kTraceStartupDuration[];
 extern const char kTraceStartupFile[];
 CONTENT_EXPORT extern const char kTraceUploadURL[];
 CONTENT_EXPORT extern const char kUIPrioritizeInGpuProcess[];
-CONTENT_EXPORT extern const char kUseDiscardableMemory[];
 CONTENT_EXPORT extern const char kUseFakeUIForMediaStream[];
 CONTENT_EXPORT extern const char kEnableNativeGpuMemoryBuffers[];
 CONTENT_EXPORT extern const char kUseImageTextureTarget[];

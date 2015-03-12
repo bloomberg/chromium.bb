@@ -820,9 +820,6 @@ const char kTraceUploadURL[]                = "trace-upload-url";
 extern const char kUIPrioritizeInGpuProcess[] =
     "ui-prioritize-in-gpu-process";
 
-// Overrides the preferred discardable memory implementation.
-const char kUseDiscardableMemory[] = "use-discardable-memory";
-
 // Bypass the media stream infobar by selecting the default device for media
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";

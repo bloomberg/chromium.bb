@@ -15,11 +15,6 @@
 
 namespace base {
 
-enum DiscardableMemoryType {
-  DISCARDABLE_MEMORY_TYPE_NONE,
-  DISCARDABLE_MEMORY_TYPE_SHMEM
-};
-
 // Platform abstraction for discardable memory. DiscardableMemory is used to
 // cache large objects without worrying about blowing out memory, both on mobile
 // devices where there is no swap, and desktop devices where unused free memory
@@ -55,29 +50,7 @@ class BASE_EXPORT DiscardableMemory {
  public:
   virtual ~DiscardableMemory() {}
 
-  // Gets the discardable memory type with a given name.
-  static DiscardableMemoryType GetNamedType(const std::string& name);
-
-  // Gets the name of a discardable memory type.
-  static const char* GetTypeName(DiscardableMemoryType type);
-
-  // Gets system supported discardable memory types. Default preferred type
-  // at the front of vector.
-  static void GetSupportedTypes(std::vector<DiscardableMemoryType>* types);
-
-  // Sets the preferred discardable memory type. This overrides the default
-  // preferred type. Can only be called once prior to GetPreferredType()
-  // or CreateLockedMemory(). Caller is responsible for correct ordering.
-  static void SetPreferredType(DiscardableMemoryType type);
-
-  // Gets the preferred discardable memory type.
-  static DiscardableMemoryType GetPreferredType();
-
-  // Create a DiscardableMemory instance with specified |type| and |size|.
-  static scoped_ptr<DiscardableMemory> CreateLockedMemoryWithType(
-      DiscardableMemoryType type, size_t size);
-
-  // Create a DiscardableMemory instance with preferred type and |size|.
+  // Create a DiscardableMemory instance with |size|.
   static scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size);
 
   // Locks the memory so that it will not be purged by the system. Returns
