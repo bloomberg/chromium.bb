@@ -60,6 +60,31 @@ class HistogramCache {
     return InsertLocked(j_histogram_key, histogram);
   }
 
+  HistogramBase* CountHistogram(JNIEnv* env,
+                                jstring j_histogram_name,
+                                jint j_histogram_key) {
+    // These values are based on the hard-coded constants in the
+    // UMA_HISTOGRAM_COUNTS macro from base/metrics/histogram_macros.h.
+    const int histogram_min = 1;
+    const int histogram_max = 1000000;
+    const int histogram_num_buckets = 50;
+
+    DCHECK(j_histogram_name);
+    DCHECK(j_histogram_key);
+    HistogramBase* histogram = FindLocked(j_histogram_key);
+    if (histogram) {
+      DCHECK(histogram->HasConstructionArguments(histogram_min, histogram_max,
+                                                 histogram_num_buckets));
+      return histogram;
+    }
+
+    std::string histogram_name = ConvertJavaStringToUTF8(env, j_histogram_name);
+    histogram = Histogram::FactoryGet(histogram_name, histogram_min,
+                                      histogram_max, histogram_num_buckets,
+                                      HistogramBase::kUmaTargetedHistogramFlag);
+    return InsertLocked(j_histogram_key, histogram);
+  }
+
   HistogramBase* CustomTimesHistogram(JNIEnv* env,
                                       jstring j_histogram_name,
                                       jint j_histogram_key,
@@ -130,6 +155,18 @@ void RecordEnumeratedHistogram(JNIEnv* env,
 
   g_histograms.Get()
       .EnumeratedHistogram(env, j_histogram_name, j_histogram_key, j_boundary)
+      ->Add(sample);
+}
+
+void RecordCountHistogram(JNIEnv* env,
+                          jclass clazz,
+                          jstring j_histogram_name,
+                          jint j_histogram_key,
+                          jint j_sample) {
+  int sample = static_cast<int>(j_sample);
+
+  g_histograms.Get()
+      .CountHistogram(env, j_histogram_name, j_histogram_key)
       ->Add(sample);
 }
 

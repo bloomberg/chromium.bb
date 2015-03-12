@@ -80,6 +80,47 @@ public class RecordHistogramTest extends InstrumentationTestCase {
     }
 
     /**
+     * Tests recording of count histograms.
+     */
+    @SmallTest
+    public void testRecordCountHistogram() {
+        String histogram = "HelloWorld.CountMetric";
+        HistogramDelta zeroCount = new HistogramDelta(histogram, 0);
+        HistogramDelta oneCount = new HistogramDelta(histogram, 1);
+        HistogramDelta twoCount = new HistogramDelta(histogram, 2);
+        HistogramDelta eightThousandCount = new HistogramDelta(histogram, 8000);
+
+        assertEquals(0, zeroCount.getDelta());
+        assertEquals(0, oneCount.getDelta());
+        assertEquals(0, twoCount.getDelta());
+        assertEquals(0, eightThousandCount.getDelta());
+
+        RecordHistogram.recordCountHistogram(histogram, 0);
+        assertEquals(1, zeroCount.getDelta());
+        assertEquals(0, oneCount.getDelta());
+        assertEquals(0, twoCount.getDelta());
+        assertEquals(0, eightThousandCount.getDelta());
+
+        RecordHistogram.recordCountHistogram(histogram, 0);
+        assertEquals(2, zeroCount.getDelta());
+        assertEquals(0, oneCount.getDelta());
+        assertEquals(0, twoCount.getDelta());
+        assertEquals(0, eightThousandCount.getDelta());
+
+        RecordHistogram.recordCountHistogram(histogram, 2);
+        assertEquals(2, zeroCount.getDelta());
+        assertEquals(0, oneCount.getDelta());
+        assertEquals(1, twoCount.getDelta());
+        assertEquals(0, eightThousandCount.getDelta());
+
+        RecordHistogram.recordCountHistogram(histogram, 8000);
+        assertEquals(2, zeroCount.getDelta());
+        assertEquals(0, oneCount.getDelta());
+        assertEquals(1, twoCount.getDelta());
+        assertEquals(1, eightThousandCount.getDelta());
+    }
+
+    /**
      * Tests recording of custom times histograms.
      */
     @SmallTest

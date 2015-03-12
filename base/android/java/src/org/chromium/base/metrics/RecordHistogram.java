@@ -43,6 +43,16 @@ public class RecordHistogram {
     }
 
     /**
+     * Records a sample in a count histogram of the given name. This is the Java equivalent of the
+     * UMA_HISTOGRAM_COUNTS C++ macro.
+     * @param name name of the histogram
+     * @param sample sample to be recorded, at least 1 and at most 999999
+     */
+    public static void recordCountHistogram(String name, int sample) {
+        nativeRecordCountHistogram(name, System.identityHashCode(name), sample);
+    }
+
+    /**
      * Records a sample in a histogram of times. Useful for recording short durations. This is the
      * Java equivalent of the UMA_HISTOGRAM_TIMES C++ macro.
      * @param name name of the histogram
@@ -123,6 +133,7 @@ public class RecordHistogram {
     private static native void nativeRecordBooleanHistogram(String name, int key, boolean sample);
     private static native void nativeRecordEnumeratedHistogram(
             String name, int key, int sample, int boundary);
+    private static native void nativeRecordCountHistogram(String name, int key, int sample);
 
     private static native int nativeGetHistogramValueCountForTesting(String name, int sample);
     private static native void nativeInitialize();
