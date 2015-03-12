@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'includes': [
+    '../base/base.isolate',
+    '../gin/v8.isolate',
+  ],
   'conditions': [
     ['use_x11==0', {
       'variables': {
@@ -69,10 +73,5 @@
         ],
       },
     }],
-  ],
-  'includes': [
-    '../base/base.isolate',
-    '../gin/v8.isolate',
-    '../third_party/angle/angle.isolate',
   ],
 }

@@ -64,6 +64,5 @@
   ],
   'includes': [
     '../base/base.isolate',
-    '../third_party/angle/angle.isolate',
   ],
 }

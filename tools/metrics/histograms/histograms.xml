@@ -10880,22 +10880,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="GPU.ANGLE.D3D11InitializeResult" enum="D3D11InitializeResult">
-  <owner>jmadill@chromium.org</owner>
-  <summary>
-    The result from initializing a D3D11 device in ANGLE. Can be success, or one
-    of several error codes which indicate different reasons for failing.
-  </summary>
-</histogram>
-
-<histogram name="GPU.ANGLE.D3D9InitializeResult" enum="D3D9InitializeResult">
-  <owner>jmadill@chromium.org</owner>
-  <summary>
-    The result from initializing a D3D9 device in ANGLE. Can be success, or one
-    of several error codes which indicate different reasons for failing.
-  </summary>
-</histogram>
-
 <histogram name="GPU.CollectContextGraphicsInfo" units="microseconds">
   <owner>vangelis@chromium.org</owner>
   <summary>
@@ -10917,8 +10901,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>jmadill@chromium.org</owner>
   <summary>
     ANGLE's currently active D3D shader model version. Logged once every startup
-    of the GPU process, on Windows only. Note that Shader Models 2 and 3 map to
-    D3D9 with ANGLE, and 4+ map to D3D11 ANGLE.
+    of the GPU process, on Windows only.
   </summary>
 </histogram>
 
@@ -46115,27 +46098,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Not Compliant"/>
   <int value="1" label="Whitelisted"/>
   <int value="2" label="Has enough SCTs"/>
-</enum>
-
-<enum name="D3D11InitializeResult" type="int">
-  <int value="0" label="Success"/>
-  <int value="1" label="Error initializing compiler"/>
-  <int value="2" label="Missing DLL dependency"/>
-  <int value="3" label="D3D11CreateDevice returned E_INVALIDARG"/>
-  <int value="4" label="D3D11CreateDevice returned other error"/>
-  <int value="5" label="DXGI version not supported"/>
-  <int value="6" label="Other initialization error"/>
-</enum>
-
-<enum name="D3D9InitializeResult" type="int">
-  <int value="0" label="Success"/>
-  <int value="1" label="Error initializing compiler"/>
-  <int value="2" label="Missing DLL dependency"/>
-  <int value="3" label="Error creating device"/>
-  <int value="4" label="Shader version not supported"/>
-  <int value="5" label="StretchRect from textures not supported"/>
-  <int value="6" label="Device lost of out-of-memory error"/>
-  <int value="7" label="Other initialization error"/>
 </enum>
 
 <enum name="DailyEventIntervalType" type="int">
