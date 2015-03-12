@@ -128,6 +128,9 @@ interface InspectorInstrumentation {
     [DOM, Inline=FastReturn]
     void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
 
+    [DOMDebugger]
+    void willSetInnerHTML(Element* element);
+
     [DOMDebugger, Inline=FastReturn]
     void willSendXMLHttpRequest(ExecutionContext*, const String& url);
 

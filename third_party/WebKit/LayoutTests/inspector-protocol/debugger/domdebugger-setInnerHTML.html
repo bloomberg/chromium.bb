@@ -1,0 +1,33 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function modifyHTML()
+{
+    document.getElementById("divUnderTest").innerHTML = "innerHTML";
+}
+
+function test()
+{
+    InspectorTest.sendCommand("Debugger.enable", {});
+    InspectorTest.sendCommand("DOM.enable", {});
+    InspectorTest.sendCommand("DOMDebugger.enable", {});
+    InspectorTest.sendCommand("DOMDebugger.setInstrumentationBreakpoint", {"eventName":"setInnerHTML"});
+    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "modifyHTML()" });
+    InspectorTest.eventHandler["Debugger.paused"] = handleDebuggerPausedOne;
+
+    function handleDebuggerPausedOne(messageObject)
+    {
+        var callFrame = messageObject.params.callFrames[0];
+        InspectorTest.log("Paused on the innerHTML assignment: " + callFrame.functionName + "@:" + callFrame.location.lineNumber);
+        InspectorTest.sendCommand("Debugger.resume", { });
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+<div id="divUnderTest"></div>
+</body>
+</html>

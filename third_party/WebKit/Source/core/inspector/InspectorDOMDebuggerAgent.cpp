@@ -60,6 +60,7 @@ namespace blink {
 static const char requestAnimationFrameEventName[] = "requestAnimationFrame";
 static const char cancelAnimationFrameEventName[] = "cancelAnimationFrame";
 static const char animationFrameFiredEventName[] = "animationFrameFired";
+static const char setInnerHTMLEventName[] = "setInnerHTML";
 static const char setTimerEventName[] = "setTimer";
 static const char clearTimerEventName[] = "clearTimer";
 static const char timerFiredEventName[] = "timerFired";
@@ -353,6 +354,11 @@ void InspectorDOMDebuggerAgent::willModifyDOMAttr(Element* element, const Atomic
         descriptionForDOMEvent(element, AttributeModified, false, eventData.get());
         m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::DOM, eventData.release());
     }
+}
+
+void InspectorDOMDebuggerAgent::willSetInnerHTML()
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(setInnerHTMLEventName, 0), true);
 }
 
 void InspectorDOMDebuggerAgent::descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description)
