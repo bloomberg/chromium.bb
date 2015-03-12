@@ -18,7 +18,6 @@
 #include "cc/resources/priority_calculator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/occlusion_tracker.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {

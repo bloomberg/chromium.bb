@@ -10,7 +10,6 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/tile_manager.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 

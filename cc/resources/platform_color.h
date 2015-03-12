@@ -8,8 +8,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "cc/resources/resource_format.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
 namespace cc {

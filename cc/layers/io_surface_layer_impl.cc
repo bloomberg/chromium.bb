@@ -5,15 +5,10 @@
 #include "cc/layers/io_surface_layer_impl.h"
 
 #include "base/strings/stringprintf.h"
-#include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/output/output_surface.h"
 #include "cc/quads/io_surface_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
-#include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
 
 namespace cc {
 

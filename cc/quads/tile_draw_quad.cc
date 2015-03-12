@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
