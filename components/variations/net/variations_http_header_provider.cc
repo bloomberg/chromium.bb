@@ -115,6 +115,23 @@ bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
   return true;
 }
 
+std::set<std::string> VariationsHttpHeaderProvider::GetVariationHeaderNames()
+    const {
+  std::set<std::string> headers;
+  headers.insert(kChromeUMAEnabled);
+  headers.insert(kClientData);
+  return headers;
+}
+
+void VariationsHttpHeaderProvider::ResetForTesting() {
+  base::AutoLock scoped_lock(lock_);
+
+  // Stop observing field trials so that it can be restarted when this is
+  // re-inited. Note: This is a no-op if this is not currently observing.
+  base::FieldTrialList::RemoveObserver(this);
+  variation_ids_cache_initialized_ = false;
+}
+
 VariationsHttpHeaderProvider::VariationsHttpHeaderProvider()
     : variation_ids_cache_initialized_(false) {
 }
@@ -269,14 +286,6 @@ bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
 
   return google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                          google_util::ALLOW_NON_STANDARD_PORTS);
-}
-
-std::set<std::string> VariationsHttpHeaderProvider::GetVariationHeaderNames()
-    const {
-  std::set<std::string> headers;
-  headers.insert(kChromeUMAEnabled);
-  headers.insert(kClientData);
-  return headers;
 }
 
 }  // namespace variations

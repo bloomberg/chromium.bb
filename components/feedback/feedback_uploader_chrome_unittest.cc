@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "components/variations/net/variations_http_header_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -42,7 +43,9 @@ class FeedbackUploaderChromeTest : public ::testing::Test {
 
 TEST_F(FeedbackUploaderChromeTest, VariationHeaders) {
   // Register a trial and variation id, so that there is data in variations
-  // headers.
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   base::FieldTrialList field_trial_list_(NULL);
   CreateFieldTrialWithId("Test", "Group1", 123);
 
@@ -60,6 +63,8 @@ TEST_F(FeedbackUploaderChromeTest, VariationHeaders) {
   EXPECT_FALSE(value.empty());
   // The fetcher's delegate is responsible for freeing the fetcher (and itself).
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
 
 }  // namespace feedback

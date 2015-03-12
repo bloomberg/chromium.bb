@@ -57,6 +57,9 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // Returns the HTTP header names which are added in this class.
   std::set<std::string> GetVariationHeaderNames() const;
 
+  // Resets any cached state for tests.
+  void ResetForTesting();
+
  private:
   friend struct DefaultSingletonTraits<VariationsHttpHeaderProvider>;
 
