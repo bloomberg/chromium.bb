@@ -114,7 +114,7 @@ public class PostMessageTest extends AwTestBase {
 
     private static final String TEST_PAGE =
             "<!DOCTYPE html><html><body>"
-            + "    <script type=\"text/javascript\">"
+            + "    <script>"
             + "        onmessage = function (e) {"
             + "            messageObject.setMessageParams(e.data, e.origin, e.ports);"
             + "            if (e.ports != null && e.ports.length > 0) {"
@@ -522,7 +522,17 @@ public class PostMessageTest extends AwTestBase {
         private boolean mReady;
         private MessagePort[] mChannel;
         private Object mLock = new Object();
-        private String mMessage;
+        private String mMessage = "";
+        private int mCount;
+        private int mWaitCount;
+
+        public ChannelContainer() {
+            this(1);
+        }
+
+        public ChannelContainer(int n) {
+            mWaitCount = n;
+        }
 
         public void set(MessagePort[] channel) {
             mChannel = channel;
@@ -533,10 +543,15 @@ public class PostMessageTest extends AwTestBase {
 
         public void setMessage(String message) {
             synchronized (mLock) {
-                mMessage = message;
+                mMessage += message;
+                if (++mCount < mWaitCount) return;
                 mReady = true;
                 mLock.notify();
             }
+        }
+
+        public int getMessageCount() {
+            return mCount;
         }
 
         public String getMessage() {
@@ -600,7 +615,7 @@ public class PostMessageTest extends AwTestBase {
 
     private static final String ECHO_PAGE =
             "<!DOCTYPE html><html><body>"
-            + "    <script type=\"text/javascript\">"
+            + "    <script>"
             + "        onmessage = function (e) {"
             + "            var myPort = e.ports[0];"
             + "            myPort.onmessage = function(e) {"
@@ -880,7 +895,7 @@ public class PostMessageTest extends AwTestBase {
     // from worker.
     private static final String TEST_PAGE_FOR_PORT_TRANSFER =
             "<!DOCTYPE html><html><body>"
-            + "    <script type=\"text/javascript\">"
+            + "    <script>"
             + "        var worker = new Worker(\"worker.js\");"
             + "        onmessage = function (e) {"
             + "            if (e.data == \"" + WEBVIEW_MESSAGE + "\") {"
@@ -1013,22 +1028,23 @@ public class PostMessageTest extends AwTestBase {
     }
 
     private static final String TEST_PAGE_FOR_UNSUPPORTED_MESSAGES = "<!DOCTYPE html><html><body>"
-            + "    <script type=\"text/javascript\">"
+            + "    <script>"
             + "        onmessage = function (e) {"
-            + "            if (e.ports != null && e.ports.length > 0) {"
-            + "                 e.ports[0].postMessage();"
-            + "                 e.ports[0].postMessage(null);"
-            + "                 e.ports[0].postMessage(undefined);"
-            + "                 e.ports[0].postMessage(NaN);"
-            + "                 e.ports[0].postMessage(0);"
-            + "                 e.ports[0].postMessage(new Set());"
-            + "                 e.ports[0].postMessage({});"
-            + "                 e.ports[0].postMessage(\"" + JS_MESSAGE + "\");"
-            + "            }"
+            + "            e.source.postMessage('" + HELLO + "', '*');"
+            + "            e.ports[0].postMessage();"
+            + "            e.ports[0].postMessage(null);"
+            + "            e.ports[0].postMessage(undefined);"
+            + "            e.ports[0].postMessage(NaN);"
+            + "            e.ports[0].postMessage(0);"
+            + "            e.ports[0].postMessage(new Set());"
+            + "            e.ports[0].postMessage({});"
+            + "            e.ports[0].postMessage(['1','2','3']);"
+            + "            e.ports[0].postMessage('" + JS_MESSAGE + "');"
             + "        }"
             + "   </script>"
             + "</body></html>";
 
+    // Make sure that postmessage can handle unsupported messages gracefully.
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostUnsupportedWebMessageToApp() throws Throwable {
@@ -1051,5 +1067,41 @@ public class PostMessageTest extends AwTestBase {
         });
         channelContainer.waitForMessage();
         assertEquals(JS_MESSAGE, channelContainer.getMessage());
+        // Assert that onMessage is called only once.
+        assertEquals(1, channelContainer.getMessageCount());
+    }
+
+    private static final String TEST_TRANSFER_EMPTY_PORTS = "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        onmessage = function (e) {"
+            + "            e.ports[0].postMessage('1', null);"
+            + "            e.ports[0].postMessage('2', []);"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+
+    // Make sure that postmessage can handle unsupported messages gracefully.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testTransferEmptyPortsArray() throws Throwable {
+        loadPage(TEST_TRANSFER_EMPTY_PORTS);
+        final ChannelContainer channelContainer = new ChannelContainer(2);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MessagePort[] channel = mAwContents.createMessageChannel();
+                channelContainer.set(channel);
+                channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
+                    @Override
+                    public void onMessage(String message, MessagePort[] sentPorts) {
+                        channelContainer.setMessage(message);
+                    }
+                }, null);
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
+                        new MessagePort[] {channel[1]});
+            }
+        });
+        channelContainer.waitForMessage();
+        assertEquals("12", channelContainer.getMessage());
     }
 }
