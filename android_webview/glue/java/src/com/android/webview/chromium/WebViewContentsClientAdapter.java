@@ -522,6 +522,12 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
+    @Override
+    public void onPageCommitVisible(String url) {
+        // TODO: implement once required framework changes land
+        // Please note that this needs an SDK build check. See crbug/461303 for details.
+    }
+
     /**
      * @see ContentViewClient#onReceivedError(int,String,String)
      */

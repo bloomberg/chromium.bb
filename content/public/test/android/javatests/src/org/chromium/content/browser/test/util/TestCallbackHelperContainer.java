@@ -42,6 +42,21 @@ public class TestCallbackHelperContainer {
     }
 
     /**
+     * CallbackHelper for OnPageCommitVisible.
+     */
+    public static class OnPageCommitVisibleHelper extends CallbackHelper {
+        private String mUrl;
+        public void notifyCalled(String url) {
+            mUrl = url;
+            notifyCalled();
+        }
+        public String getUrl() {
+            assert getCallCount() > 0;
+            return mUrl;
+        }
+    }
+
+    /**
      * CallbackHelper for OnPageFinished.
      */
     public static class OnPageFinishedHelper extends CallbackHelper {

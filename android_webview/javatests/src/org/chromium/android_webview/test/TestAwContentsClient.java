@@ -14,6 +14,7 @@ import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
@@ -26,6 +27,7 @@ public class TestAwContentsClient extends NullContentsClient {
     private boolean mAllowSslError;
     private final OnPageStartedHelper mOnPageStartedHelper;
     private final OnPageFinishedHelper mOnPageFinishedHelper;
+    private final OnPageCommitVisibleHelper mOnPageCommitVisibleHelper;
     private final OnReceivedErrorHelper mOnReceivedErrorHelper;
     private final OnReceivedHttpErrorHelper mOnReceivedHttpErrorHelper;
     private final CallbackHelper mOnReceivedSslErrorHelper;
@@ -43,6 +45,7 @@ public class TestAwContentsClient extends NullContentsClient {
         super(ThreadUtils.getUiThreadLooper());
         mOnPageStartedHelper = new OnPageStartedHelper();
         mOnPageFinishedHelper = new OnPageFinishedHelper();
+        mOnPageCommitVisibleHelper = new OnPageCommitVisibleHelper();
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
         mOnReceivedHttpErrorHelper = new OnReceivedHttpErrorHelper();
         mOnReceivedSslErrorHelper = new CallbackHelper();
@@ -60,6 +63,10 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public OnPageStartedHelper getOnPageStartedHelper() {
         return mOnPageStartedHelper;
+    }
+
+    public OnPageCommitVisibleHelper getOnPageCommitVisibleHelper() {
+        return mOnPageCommitVisibleHelper;
     }
 
     public OnPageFinishedHelper getOnPageFinishedHelper() {
@@ -152,6 +159,11 @@ public class TestAwContentsClient extends NullContentsClient {
     @Override
     public void onPageStarted(String url) {
         mOnPageStartedHelper.notifyCalled(url);
+    }
+
+    @Override
+    public void onPageCommitVisible(String url) {
+        mOnPageCommitVisibleHelper.notifyCalled(url);
     }
 
     @Override

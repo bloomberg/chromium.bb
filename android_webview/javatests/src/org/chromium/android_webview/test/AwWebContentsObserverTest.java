@@ -37,7 +37,8 @@ public class AwWebContentsObserverTest extends AwTestBase  {
             @Override
             public void run() {
                 mWebContentsObserver = new AwWebContentsObserver(
-                        mTestContainerView.getContentViewCore().getWebContents(), mContentsClient);
+                        mTestContainerView.getContentViewCore().getWebContents(),
+                        mTestContainerView.getAwContents(), mContentsClient);
             }
         });
     }

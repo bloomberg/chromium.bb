@@ -862,7 +862,7 @@ public class AwContents implements SmartClipProvider,
         if (mWebContentsObserver != null) {
             mWebContentsObserver.destroy();
         }
-        mWebContentsObserver = new AwWebContentsObserver(mWebContents, mContentsClient);
+        mWebContentsObserver = new AwWebContentsObserver(mWebContents, this, mContentsClient);
     }
 
     /**

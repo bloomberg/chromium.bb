@@ -164,6 +164,10 @@ public class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public void onPageCommitVisible(String url) {
+    }
+
+    @Override
     public void onReceivedError(int errorCode, String description, String failingUrl) {
     }
 
