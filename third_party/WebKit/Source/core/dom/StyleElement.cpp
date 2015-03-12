@@ -115,10 +115,9 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
     if (m_sheet)
         m_sheet->clearOwnerNode();
 
-    if (element->inDocument()) {
-        // HTMLLinkElement in shadow tree is not supported.
-        TreeScope& treeScope = isHTMLStyleElement(element) || isSVGStyleElement(element) ? element->treeScope() : element->document();
-        document.styleEngine().removeStyleSheetCandidateNode(element, treeScope);
+    if (m_registeredAsCandidate) {
+        ASSERT(element->inDocument());
+        document.styleEngine().removeStyleSheetCandidateNode(element, element->treeScope());
     }
 }
 
