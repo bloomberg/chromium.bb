@@ -267,15 +267,11 @@ cr.define('hotword', function() {
 
         // Start the detector if there's a session and the user is unlocked, and
         // stops it otherwise.
-        if (!this.hotwordStatus_.userIsActive) {
-          // If the user is no longer the active user, we need to shut down the
-          // detector so that we're no longer using the microphone. As a result,
-          // the microphone indicator in the task bar is not shown.
-          this.shutdownDetector_();
-        } else if (this.sessions_.length && !this.isLocked_) {
+        if (this.sessions_.length && !this.isLocked_ &&
+            this.hotwordStatus_.userIsActive) {
           this.startDetector_();
         } else {
-          this.stopDetector_();
+          this.shutdownDetector_();
         }
 
         if (!chrome.idle.onStateChanged.hasListener(
@@ -337,6 +333,13 @@ cr.define('hotword', function() {
                     hotword.constants.UmaMetrics.MEDIA_STREAM_RESULT,
                     hotword.constants.UmaMediaStreamOpenResult.SUCCESS,
                     hotword.constants.UmaMediaStreamOpenResult.MAX);
+                // The detector could have been shut down before the stream
+                // finishes opening.
+                if (this.pluginManager_ == null) {
+                  stream.getAudioTracks()[0].stop();
+                  return;
+                }
+
                 if (this.isAlwaysOnEnabled())
                   this.keepAlive_.start();
                 if (!this.pluginManager_.initialize(naclArch, stream)) {
