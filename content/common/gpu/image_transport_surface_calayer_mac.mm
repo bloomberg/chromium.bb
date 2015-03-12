@@ -193,11 +193,6 @@ void CALayerStorageProvider::SwapBuffers(
     [context_ retain];
   }
 
-  // If we create a new layer, always force it to draw immediately. This is
-  // especially important at tab-switch, where we don't want to wait for a
-  // vsync to un-block the browser (which is waiting for the frame to come in).
-  bool force_immediate_draw = false;
-
   // Allocate a CALayer to use to draw the content and make it current to the
   // CAContext, if needed.
   if (!layer_) {
@@ -208,7 +203,6 @@ void CALayerStorageProvider::SwapBuffers(
     [layer_ setFrame:CGRectMake(0, 0, dip_size.width(), dip_size.height())];
 
     [context_ setLayer:layer_];
-    force_immediate_draw = true;
   }
 
   // Replacing the CAContext's CALayer will sometimes results in an immediate
@@ -217,7 +211,7 @@ void CALayerStorageProvider::SwapBuffers(
     return;
 
   // Tell CoreAnimation to draw our frame.
-  if (gpu_vsync_disabled_ || throttling_disabled_ || force_immediate_draw) {
+  if (gpu_vsync_disabled_ || throttling_disabled_) {
     DrawImmediatelyAndUnblockBrowser();
   } else {
     if (![layer_ isAsynchronous])
