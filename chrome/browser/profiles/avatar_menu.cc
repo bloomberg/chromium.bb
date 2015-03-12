@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -277,6 +278,11 @@ void AvatarMenu::OnProfileAvatarChanged(const base::FilePath& profile_path) {
 
 void AvatarMenu::OnProfileHighResAvatarLoaded(
     const base::FilePath& profile_path) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461175 AvatarMenu::OnProfileHighResAvatarLoaded"));
   Update();
 }
 

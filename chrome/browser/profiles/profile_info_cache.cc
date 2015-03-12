@@ -1083,16 +1083,36 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
                                              const std::string& key,
                                              gfx::Image** image) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461175 ProfileInfoCache::OnAvatarPictureLoaded::Start"));
 
   cached_avatar_images_loading_[key] = false;
   delete cached_avatar_images_[key];
 
   if (*image) {
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "461175 ProfileInfoCache::OnAvatarPictureLoaded::SetImage"));
     cached_avatar_images_[key] = *image;
   } else {
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "461175 ProfileInfoCache::OnAvatarPictureLoaded::MakeEmptyImage"));
     // Place an empty image in the cache to avoid reloading it again.
     cached_avatar_images_[key] = new gfx::Image();
   }
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461175 ProfileInfoCache::OnAvatarPictureLoaded::DeleteImage"));
   delete image;
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
