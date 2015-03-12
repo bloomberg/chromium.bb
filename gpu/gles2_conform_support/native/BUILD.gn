@@ -7,6 +7,7 @@ source_set("native") {
   output_name = "egl_main_native"
   sources = [
     "egl_native.cc",
+    "egl_native_win.cc",
     "main.cc",
   ]
   defines = [
@@ -26,9 +27,6 @@ source_set("native") {
       "egl_native_x11.cc",
     ]
   }
-  if (is_win) {
-    sources += [ "egl_native_win.cc" ]
-  }
 }
 
 # GYP version: gpu/gles2_conform_support/gles2_conform_support.gyp:egl_main_windowless
@@ -36,6 +34,7 @@ source_set("windowless") {
   output_name = "egl_main_windowless"
   sources = [
     "egl_native.cc",
+    "egl_native_win.cc",
     "egl_native_windowless.cc",
     "main.cc",
   ]
@@ -55,8 +54,5 @@ source_set("windowless") {
       "egl_native_aura.cc",
       "egl_native_x11.cc",
     ]
-  }
-  if (is_win) {
-    sources += [ "egl_native_win.cc" ]
   }
 }

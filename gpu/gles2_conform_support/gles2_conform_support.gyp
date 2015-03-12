@@ -100,6 +100,7 @@
       ],
     },
     {
+      # GN version: //gpu/gles2_conform_support
       'target_name': 'gles2_conform_support',
       'type': 'executable',
       'dependencies': [

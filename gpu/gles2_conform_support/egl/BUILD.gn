@@ -24,7 +24,6 @@ source_set("egl") {
 
   deps = [
     "//base",
-    "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation_no_check",
     "//gpu/command_buffer/service",
     "//gpu",
