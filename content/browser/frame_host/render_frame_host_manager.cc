@@ -1720,16 +1720,6 @@ void RenderFrameHostManager::CommitPending() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSitePerProcess) &&
       !is_main_frame) {
-    // If this is a subframe, it should have a CrossProcessFrameConnector
-    // created already.  Use it to link the new RFH's view to the proxy that
-    // belongs to the parent frame's SiteInstance.
-    // Note: We do this after swapping out the old RFH because that may create
-    // the proxy we're looking for.
-    RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
-    if (proxy_to_parent) {
-      proxy_to_parent->SetChildRWHView(render_frame_host_->GetView());
-    }
-
     // Since the new RenderFrameHost is now committed, there must be no proxies
     // for its SiteInstance. Delete any existing ones.
     RenderFrameProxyHostMap::iterator iter =
@@ -1738,6 +1728,17 @@ void RenderFrameHostManager::CommitPending() {
       delete iter->second;
       proxy_hosts_.erase(iter);
     }
+
+    // If this is a subframe, it should have a CrossProcessFrameConnector
+    // created already.  Use it to link the new RFH's view to the proxy that
+    // belongs to the parent frame's SiteInstance. If this navigation causes
+    // an out-of-process frame to return to the same process as its parent, the
+    // proxy would have been removed from proxy_hosts_ above.
+    // Note: We do this after swapping out the old RFH because that may create
+    // the proxy we're looking for.
+    RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
+    if (proxy_to_parent)
+      proxy_to_parent->SetChildRWHView(render_frame_host_->GetView());
   }
 
   // After all is done, there must never be a proxy in the list which has the
