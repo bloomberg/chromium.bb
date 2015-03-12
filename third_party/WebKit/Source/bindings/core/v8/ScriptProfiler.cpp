@@ -239,7 +239,7 @@ PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(HeapSnapshotProg
     ASSERT(control);
     ActivityControlAdapter adapter(control);
     GlobalObjectNameResolver resolver;
-    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8::String::Empty(isolate), &adapter, &resolver);
+    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(&adapter, &resolver);
     return snapshot ? ScriptHeapSnapshot::create(snapshot) : nullptr;
 }
 
