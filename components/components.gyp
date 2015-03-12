@@ -29,6 +29,7 @@
     'error_page.gypi',
     'favicon.gypi',
     'favicon_base.gypi',
+    'feedback.gypi',
     'google.gypi',
     'handoff.gypi',
     'infobars.gypi',
@@ -87,11 +88,6 @@
         'open_from_clipboard.gypi',
         'webp_transcode.gypi',
       ],
-    }],
-    ['OS != "android"', {
-      'includes': [
-        'feedback.gypi',
-      ]
     }],
     ['OS != "ios" and OS != "android"', {
       'includes': [

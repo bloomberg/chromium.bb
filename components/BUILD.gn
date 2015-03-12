@@ -164,7 +164,6 @@ group("all_components") {
       "//components/domain_reliability",  # Blocked on content.
       "//components/favicon_base",  # Should work, needs checking.
       "//components/favicon/core",  # Blocked on keyed service.
-      "//components/feedback",  # Blocked on content.
       "//components/gcm_driver",  # Should work, needs checking.
       "//components/google/core/browser",  # Should work, needs checking.
       "//components/history/core/browser",  # Should work, needs checking.
