@@ -1452,6 +1452,7 @@
       'proxy/proxy_script_decider_unittest.cc',
       'proxy/proxy_script_fetcher_impl_unittest.cc',
       'proxy/proxy_server_unittest.cc',
+      'proxy/proxy_service_mojo_unittest.cc',
       'proxy/proxy_service_unittest.cc',
       'quic/congestion_control/cubic_test.cc',
       'quic/congestion_control/hybrid_slow_start_test.cc',

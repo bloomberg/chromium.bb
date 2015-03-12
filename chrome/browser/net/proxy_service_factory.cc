@@ -29,6 +29,10 @@
 #include "net/proxy/proxy_resolver_v8.h"
 #endif
 
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#include "net/proxy/proxy_service_mojo.h"
+#endif
+
 using content::BrowserThread;
 
 // static
@@ -129,13 +133,21 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     dhcp_proxy_script_fetcher = dhcp_factory.Create(context);
 #endif
 
-    proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
-        proxy_config_service,
-        new net::ProxyScriptFetcherImpl(context),
-        dhcp_proxy_script_fetcher,
-        context->host_resolver(),
-        net_log,
-        network_delegate);
+#if !defined(OS_ANDROID)
+    if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
+      proxy_service = net::CreateProxyServiceUsingMojoInProcess(
+          proxy_config_service, new net::ProxyScriptFetcherImpl(context),
+          dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
+          network_delegate);
+    }
+#endif  // !defined(OS_ANDROID)
+
+    if (!proxy_service) {
+      proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
+          proxy_config_service, new net::ProxyScriptFetcherImpl(context),
+          dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
+          network_delegate);
+    }
 #endif  // defined(OS_IOS)
   } else {
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(

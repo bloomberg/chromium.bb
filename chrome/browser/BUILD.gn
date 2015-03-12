@@ -385,7 +385,10 @@ static_library("browser") {
                              ".",
                              "//chrome")
     } else {
-      deps += [ "//chrome/browser/policy:path_parser" ]
+      deps += [
+        "//chrome/browser/policy:path_parser",
+        "//net:net_browser_services",
+      ]
     }
   } else {
     # Configuration policy disabled.

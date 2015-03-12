@@ -296,6 +296,7 @@
               'proxy/mojo_proxy_resolver_factory_impl_unittest.cc',
               'proxy/mojo_proxy_resolver_impl_unittest.cc',
               'proxy/proxy_resolver_mojo_unittest.cc',
+              'proxy/proxy_service_mojo_unittest.cc',
             ],
           },
         ],
@@ -851,9 +852,13 @@
           'sources': [
             'dns/mojo_host_resolver_impl.cc',
             'dns/mojo_host_resolver_impl.h',
+            'proxy/in_process_mojo_proxy_resolver_factory.cc',
+            'proxy/in_process_mojo_proxy_resolver_factory.h',
             'proxy/mojo_proxy_resolver_factory.h',
             'proxy/proxy_resolver_mojo.cc',
             'proxy/proxy_resolver_mojo.h',
+            'proxy/proxy_service_mojo.cc',
+            'proxy/proxy_service_mojo.h',
           ],
           'dependencies': [
             'mojo_type_converters',
@@ -863,6 +868,13 @@
             '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+
+            # NOTE(amistry): As long as we support in-process Mojo v8 PAC, we
+            # need this dependency since in_process_mojo_proxy_resolver_factory
+            # creates the utility process side Mojo services in the browser
+            # process.  Ultimately, this will go away when we only support
+            # out-of-process.
+            'net_utility_services',
           ],
         },
         {

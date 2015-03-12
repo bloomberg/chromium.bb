@@ -1194,6 +1194,9 @@ const char kValidateCrx[]                   = "validate-crx";
 // Uses experimental simple cache backend if possible.
 const char kUseSimpleCacheBackend[]         = "use-simple-cache-backend";
 
+// Enables using an in-process Mojo service for the v8 proxy resolver.
+const char kV8PacMojoInProcess[] = "v8-pac-mojo-in-process";
+
 // Specifies a custom URL for the server which reports variation data to the
 // client. Specifying this switch enables the Variations service on
 // unofficial builds. See variations_service.cc.

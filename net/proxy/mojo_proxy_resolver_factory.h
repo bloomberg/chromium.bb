@@ -19,6 +19,9 @@ class MojoProxyResolverFactory {
   // Note: The connection request |req| may be resolved asynchronously.
   virtual void Create(mojo::InterfaceRequest<interfaces::ProxyResolver> req,
                       interfaces::HostResolverPtr host_resolver) = 0;
+
+ protected:
+  virtual ~MojoProxyResolverFactory() = default;
 };
 
 }  // namespace net

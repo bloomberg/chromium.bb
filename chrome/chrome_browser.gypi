@@ -3402,6 +3402,7 @@
           'dependencies': [
             '../device/core/core.gyp:device_core',
             '../device/usb/usb.gyp:device_usb',
+            '../net/net.gyp:net_browser_services',
           ]
         }],
         ['OS=="android"', {

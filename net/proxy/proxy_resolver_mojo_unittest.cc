@@ -255,7 +255,7 @@ void MockMojoProxyResolver::GetProxyForUrl(
 class TestMojoProxyResolverFactory : public MojoProxyResolverFactory {
  public:
   TestMojoProxyResolverFactory();
-  ~TestMojoProxyResolverFactory();
+  ~TestMojoProxyResolverFactory() override;
 
   // Overridden from MojoProxyResolverFactory:
   void Create(mojo::InterfaceRequest<interfaces::ProxyResolver> req,
