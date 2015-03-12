@@ -203,6 +203,8 @@ var MainView = (function() {
       addTab(PrerenderView);
       addTab(CrosView);
 
+      // To prevent flickering, main-tab-contents initially has display = none.
+      $('main-tab-contents').style.display = '';
       this.tabSwitcher_.showMenuItem(CrosView.TAB_ID, cr.isChromeOS);
     },
 
