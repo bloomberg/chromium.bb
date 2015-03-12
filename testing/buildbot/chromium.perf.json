@@ -12,11 +12,6 @@
       {
         "name": "host_info",
         "script": "host_info.py"
-      },
-      {
-	"name": "gpu_perftests",
-	"script": "gtest_perf_test.py",
-	"args": ["gpu_perftests"]
       }
     ]
   },
@@ -46,20 +41,10 @@
   },
   "Mac 10.8 Perf (1)": {
     "scripts": [
-      {
-	"name": "gpu_perftests",
-	"script": "gtest_perf_test.py",
-	"args": ["gpu_perftests", "--test-launcher-print-test-stdio=always"]
-      }
     ]
   },
   "Mac 10.9 Perf (1)": {
     "scripts": [
-      {
-	"name": "gpu_perftests",
-	"script": "gtest_perf_test.py",
-	"args": ["gpu_perftests", "--test-launcher-print-test-stdio=always"]
-      }
     ]
   }
 }
