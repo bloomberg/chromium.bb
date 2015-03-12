@@ -8,8 +8,19 @@ from measurements import startup
 from metrics import cpu
 from metrics import startup_metric
 from telemetry.core import util
+from telemetry.value import histogram
 from telemetry.value import histogram_util
 
+_HISTOGRAMS = [
+    {
+        'name': 'SessionRestore.ForegroundTabFirstLoaded',
+        'display_name': 'SessionRestore_ForegroundTabFirstLoaded',
+    },
+    {
+        'name': 'SessionRestore.AllTabsLoaded',
+        'display_name': 'SessionRestore_AllTabsLoaded',
+    },
+]
 
 class SessionRestore(startup.Startup):
   """Performs a measurement of Chromium's Session restore performance.
@@ -31,6 +42,10 @@ class SessionRestore(startup.Startup):
     options.AppendExtraBrowserArgs([
         '--restore-last-session'
     ])
+
+    # Prevent about:blank from being the foreground tab, as that prevents
+    # accurately measuring foreground first load time for session restore.
+    options.startup_url = ''
 
   def TabForPage(self, page, browser):
     # Detect that the session restore has completed.
@@ -58,4 +73,10 @@ class SessionRestore(startup.Startup):
     self._cpu_metric.Stop(None, None)
     self._cpu_metric.AddResults(tab, results, 'cpu_utilization')
 
-    # TODO(jeremy): Measure time to load - first, last and frontmost tab here.
+    for h in _HISTOGRAMS:
+      histogram_data = histogram_util.GetHistogram(
+          histogram_util.BROWSER_HISTOGRAM, h['name'], tab)
+
+      results.AddValue(histogram.HistogramValue(
+          page, h['display_name'], 'ms', raw_value_json=histogram_data,
+          important=False))
