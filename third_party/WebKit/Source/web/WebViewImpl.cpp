@@ -419,6 +419,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
     , m_userGestureObserved(false)
+    , m_displayMode(WebDisplayModeBrowser)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -545,6 +546,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
 
 void WebViewImpl::setDisplayMode(WebDisplayMode mode)
 {
+    m_displayMode = mode;
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return;
 

@@ -1690,6 +1690,7 @@ void WebLocalFrameImpl::createFrameView()
         frame()->view()->enableAutoSizeMode(webView->minAutoSize(), webView->maxAutoSize());
 
     frame()->view()->setInputEventsTransformForEmulation(m_inputEventsOffsetForEmulation, m_inputEventsScaleFactorForEmulation);
+    frame()->view()->setDisplayMode(webView->displayMode());
 
     if (isLocalRoot)
         webView->suppressInvalidations(false);

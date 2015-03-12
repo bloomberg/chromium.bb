@@ -533,6 +533,7 @@ public:
     virtual void forceNextWebGLContextCreationToFail() override;
 
     IntSize mainFrameSize();
+    WebDisplayMode displayMode() const { return m_displayMode; }
 
     PageScaleConstraintsSet& pageScaleConstraintsSet() { return m_pageScaleConstraintsSet; }
 
@@ -773,6 +774,7 @@ private:
     float m_zoomFactorOverride;
 
     bool m_userGestureObserved;
+    WebDisplayMode m_displayMode;
 
     RefPtr<EventListener> m_popupMouseWheelEventListener;
 };

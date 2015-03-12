@@ -1193,7 +1193,8 @@ void FrameView::addPartToUpdate(LayoutEmbeddedObject& object)
 void FrameView::setDisplayMode(WebDisplayMode mode)
 {
     m_displayMode = mode;
-    m_frame->document()->mediaQueryAffectingValueChanged();
+    if (m_frame->document())
+        m_frame->document()->mediaQueryAffectingValueChanged();
 }
 
 void FrameView::setMediaType(const AtomicString& mediaType)
