@@ -8,6 +8,7 @@
 """A git-command for integrating reviews on Rietveld."""
 
 from distutils.version import LooseVersion
+from multiprocessing.pool import ThreadPool
 import base64
 import glob
 import json
@@ -20,7 +21,6 @@ import stat
 import sys
 import tempfile
 import textwrap
-import threading
 import urllib2
 import urlparse
 import webbrowser
@@ -1342,6 +1342,51 @@ def color_for_status(status):
     'error': Fore.WHITE,
   }.get(status, Fore.WHITE)
 
+def fetch_cl_status(b):
+  """Fetches information for an issue and returns (branch, issue, color)."""
+  c = Changelist(branchref=b)
+  i = c.GetIssueURL()
+  status = c.GetStatus()
+  color = color_for_status(status)
+
+  if i and (not status or status == 'error'):
+    # The issue probably doesn't exist anymore.
+    i += ' (broken)'
+
+  return (b, i, color)
+
+def get_cl_statuses(branches, fine_grained, max_processes=None):
+  """Returns a blocking iterable of (branch, issue, color) for given branches.
+
+  If fine_grained is true, this will fetch CL statuses from the server.
+  Otherwise, simply indicate if there's a matching url for the given branches.
+
+  If max_processes is specified, it is used as the maximum number of processes
+  to spawn to fetch CL status from the server. Otherwise 1 process per branch is
+  spawned.
+  """
+  # Silence upload.py otherwise it becomes unwieldly.
+  upload.verbosity = 0
+
+  if fine_grained:
+    # Process one branch synchronously to work through authentication, then
+    # spawn processes to process all the other branches in parallel.
+    if branches:
+      yield fetch_cl_status(branches[0])
+
+      branches_to_fetch = branches[1:]
+      pool = ThreadPool(
+          min(max_processes, len(branches_to_fetch))
+              if max_processes is not None
+              else len(branches_to_fetch))
+      for x in pool.imap_unordered(fetch_cl_status, branches_to_fetch):
+        yield x
+  else:
+    # Do not use GetApprovingReviewers(), since it requires an HTTP request.
+    for b in branches:
+      c = Changelist(branchref=b)
+      url = c.GetIssueURL()
+      yield (b, url, Fore.BLUE if url else Fore.WHITE)
 
 def CMDstatus(parser, args):
   """Show status of changelists.
@@ -1360,6 +1405,9 @@ def CMDstatus(parser, args):
                     help='print only specific field (desc|id|patch|url)')
   parser.add_option('-f', '--fast', action='store_true',
                     help='Do not retrieve review status')
+  parser.add_option(
+      '-j', '--maxjobs', action='store', type=int,
+      help='The maximum number of jobs to use when retrieving review status')
   (options, args) = parser.parse_args(args)
   if args:
     parser.error('Unsupported args: %s' % args)
@@ -1391,49 +1439,17 @@ def CMDstatus(parser, args):
   branches = [c.GetBranch() for c in changes]
   alignment = max(5, max(len(b) for b in branches))
   print 'Branches associated with reviews:'
-  # Adhoc thread pool to request data concurrently.
-  output = Queue.Queue()
+  output = get_cl_statuses(branches,
+                           fine_grained=not options.fast,
+                           max_processes=options.maxjobs)
 
-  # Silence upload.py otherwise it becomes unweldly.
-  upload.verbosity = 0
-
-  if not options.fast:
-    def fetch(b):
-      """Fetches information for an issue and returns (branch, issue, color)."""
-      c = Changelist(branchref=b)
-      i = c.GetIssueURL()
-      status = c.GetStatus()
-      color = color_for_status(status)
-
-      if i and (not status or status == 'error'):
-        # The issue probably doesn't exist anymore.
-        i += ' (broken)'
-
-      output.put((b, i, color))
-
-    # Process one branch synchronously to work through authentication, then
-    # spawn threads to process all the other branches in parallel.
-    if branches:
-      fetch(branches[0])
-    threads = [
-      threading.Thread(target=fetch, args=(b,)) for b in branches[1:]]
-    for t in threads:
-      t.daemon = True
-      t.start()
-  else:
-    # Do not use GetApprovingReviewers(), since it requires an HTTP request.
-    for b in branches:
-      c = Changelist(branchref=b)
-      url = c.GetIssueURL()
-      output.put((b, url, Fore.BLUE if url else Fore.WHITE))
-
-  tmp = {}
+  branch_statuses = {}
   alignment = max(5, max(len(ShortBranchName(b)) for b in branches))
   for branch in sorted(branches):
-    while branch not in tmp:
-      b, i, color = output.get()
-      tmp[b] = (i, color)
-    issue, color = tmp.pop(branch)
+    while branch not in branch_statuses:
+      b, i, color = output.next()
+      branch_statuses[b] = (i, color)
+    issue, color = branch_statuses.pop(branch)
     reset = Fore.RESET
     if not sys.stdout.isatty():
       color = ''

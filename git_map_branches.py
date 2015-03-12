@@ -109,6 +109,7 @@ class BranchMapper(object):
 
   def __init__(self):
     self.verbosity = 0
+    self.maxjobs = 0
     self.output = OutputManager()
     self.__gone_branches = set()
     self.__branches_info = None
@@ -116,10 +117,25 @@ class BranchMapper(object):
     self.__current_branch = None
     self.__current_hash = None
     self.__tag_set = None
+    self.__status_info = {}
 
   def start(self):
     self.__branches_info = get_branches_info(
         include_tracking_status=self.verbosity >= 1)
+    if (self.verbosity >= 2):
+      # Avoid heavy import unless necessary.
+      from git_cl import get_cl_statuses
+
+      status_info = get_cl_statuses(self.__branches_info.keys(),
+                                    fine_grained=self.verbosity > 2,
+                                    max_processes=self.maxjobs)
+
+      for _ in xrange(len(self.__branches_info)):
+        # This is a blocking get which waits for the remote CL status to be
+        # retrieved.
+        (branch, url, color) = status_info.next()
+        self.__status_info[branch] = (url, color);
+
     roots = set()
 
     # A map of parents to a list of their children.
@@ -238,11 +254,9 @@ class BranchMapper(object):
 
     # The Rietveld issue associated with the branch.
     if self.verbosity >= 2:
-      import git_cl  # avoid heavy import cost unless we need it
       none_text = '' if self.__is_invalid_parent(branch) else 'None'
-      url = git_cl.Changelist(
-          branchref=branch).GetIssueURL() if branch_hash else None
-      line.append(url or none_text, color=Fore.BLUE if url else Fore.WHITE)
+      (url, color) = self.__status_info[branch]
+      line.append(url or none_text, color=color)
 
     self.output.append(line)
 
@@ -265,12 +279,16 @@ def main(argv):
                       help='Display branch hash and Rietveld URL')
   parser.add_argument('--no-color', action='store_true', dest='nocolor',
                       help='Turn off colors.')
+  parser.add_argument(
+      '-j', '--maxjobs', action='store', type=int,
+      help='The number of jobs to use when retrieving review status')
 
   opts = parser.parse_args(argv)
 
   mapper = BranchMapper()
   mapper.verbosity = opts.v
   mapper.output.nocolor = opts.nocolor
+  mapper.maxjobs = opts.maxjobs
   mapper.start()
   print mapper.output.as_formatted_string()
   return 0
