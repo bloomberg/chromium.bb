@@ -100,11 +100,7 @@ public:
     void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
 
     // Settings overrides.
-    void setTextAutosizingEnabled(bool);
-    void setDeviceScaleAdjustment(float);
-    void setPreferCompositingToLCDTextEnabled(bool);
     void setScriptEnabled(bool);
-    void setUseMobileViewportStyle(bool);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
@@ -184,8 +180,8 @@ public:
     String loaderId(DocumentLoader*);
     LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
     LocalFrame* assertFrame(ErrorString*, const String& frameId);
-    bool deviceMetricsOverrideEnabled();
     void pageScaleFactorChanged();
+    void setViewportNotificationsEnabled(bool);
     bool screencastEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
@@ -225,8 +221,7 @@ private:
     HashMap<String, LocalFrame*> m_identifierToFrame;
     HashMap<DocumentLoader*, String> m_loaderToIdentifier;
     bool m_enabled;
-    bool m_deviceMetricsOverridden;
-    bool m_emulateMobileEnabled;
+    bool m_viewportNotificationsEnabled;
 
     bool m_touchEmulationEnabled;
     bool m_originalTouchEnabled;
@@ -234,13 +229,8 @@ private:
     bool m_originalDeviceSupportsTouch;
     int m_originalMaxTouchPoints;
 
-    double m_embedderFontScaleFactor;
-
-    bool m_embedderTextAutosizingEnabled;
-    bool m_embedderPreferCompositingToLCDTextEnabled;
     bool m_embedderScriptEnabled;
     bool m_reloading;
-    bool m_embedderUseMobileViewport;
 
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
 };

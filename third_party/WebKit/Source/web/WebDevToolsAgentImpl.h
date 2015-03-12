@@ -83,21 +83,17 @@ public:
     bool handleInputEvent(Page*, const WebInputEvent&);
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(const String& message);
+    InspectorPageAgent* pageAgent() const { return m_pageAgent.get(); }
 
     // Instrumentation from web/ layer.
     void didCommitLoadForLocalFrame(LocalFrame*);
     void pageScaleFactorChanged();
-    bool deviceEmulationEnabled();
     bool screencastEnabled();
     void willAddPageOverlay(const GraphicsLayer*);
     void didRemovePageOverlay(const GraphicsLayer*);
 
     // Settings overrides.
-    void setTextAutosizingEnabled(bool);
-    void setDeviceScaleAdjustment(float);
-    void setPreferCompositingToLCDTextEnabled(bool);
     void setScriptEnabled(bool);
-    void setUseMobileViewportStyle(bool);
 
     // WebDevToolsAgent implementation.
     void attach(const WebString& hostId) override;
@@ -156,8 +152,6 @@ private:
     void didProcessTask() override;
 
     void initializeDeferredAgents();
-    void enableMobileEmulation();
-    void disableMobileEmulation();
     bool handleGestureEvent(LocalFrame*, const PlatformGestureEvent&);
     bool handleMouseEvent(LocalFrame*, const PlatformMouseEvent&);
     bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
@@ -190,12 +184,6 @@ private:
 
     bool m_generatingEvent;
 
-    bool m_deviceMetricsEnabled;
-    bool m_emulateMobileEnabled;
-    bool m_originalViewportEnabled;
-    bool m_isOverlayScrollbarsEnabled;
-    float m_originalDefaultMinimumPageScaleFactor;
-    float m_originalDefaultMaximumPageScaleFactor;
     bool m_touchEventEmulationEnabled;
     OwnPtr<IntPoint> m_lastPinchAnchorCss;
     OwnPtr<IntPoint> m_lastPinchAnchorDip;

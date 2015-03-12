@@ -120,31 +120,6 @@ KURL urlWithoutFragment(const KURL& url)
     return result;
 }
 
-static float calculateFontScaleFactor(int width, int height, float deviceScaleFactor)
-{
-    // Chromium on Android uses a device scale adjustment for fonts used in text autosizing for
-    // improved legibility. This function computes this adjusted value for text autosizing.
-    // For a description of the Android device scale adjustment algorithm, see:
-    // chrome/browser/chrome_content_browser_client.cc, GetDeviceScaleAdjustment(...)
-    if (!width || !height || !deviceScaleFactor)
-        return 1;
-
-    static const float kMinFSM = 1.05f;
-    static const int kWidthForMinFSM = 320;
-    static const float kMaxFSM = 1.3f;
-    static const int kWidthForMaxFSM = 800;
-
-    float minWidth = std::min(width, height) / deviceScaleFactor;
-    if (minWidth <= kWidthForMinFSM)
-        return kMinFSM;
-    if (minWidth >= kWidthForMaxFSM)
-        return kMaxFSM;
-
-    // The font scale multiplier varies linearly between kMinFSM and kMaxFSM.
-    float ratio = static_cast<float>(minWidth - kWidthForMinFSM) / (kWidthForMaxFSM - kWidthForMinFSM);
-    return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
-}
-
 }
 
 class InspectorPageAgent::GetResourceContentLoadListener final : public VoidCallback {
@@ -429,44 +404,15 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
-    , m_deviceMetricsOverridden(false)
-    , m_emulateMobileEnabled(false)
+    , m_viewportNotificationsEnabled(false)
     , m_touchEmulationEnabled(false)
     , m_originalTouchEnabled(false)
     , m_originalDeviceSupportsMouse(false)
     , m_originalDeviceSupportsTouch(false)
     , m_originalMaxTouchPoints(0)
-    , m_embedderFontScaleFactor(m_page->settings().deviceScaleAdjustment())
-    , m_embedderTextAutosizingEnabled(m_page->settings().textAutosizingEnabled())
-    , m_embedderPreferCompositingToLCDTextEnabled(m_page->settings().preferCompositingToLCDTextEnabled())
     , m_embedderScriptEnabled(m_page->settings().scriptEnabled())
     , m_reloading(false)
-    , m_embedderUseMobileViewport(m_page->settings().useMobileViewportStyle())
 {
-}
-
-void InspectorPageAgent::setTextAutosizingEnabled(bool enabled)
-{
-    m_embedderTextAutosizingEnabled = enabled;
-    bool emulateMobileEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateMobileEnabled;
-    if (!emulateMobileEnabled)
-        m_page->settings().setTextAutosizingEnabled(enabled);
-}
-
-void InspectorPageAgent::setDeviceScaleAdjustment(float deviceScaleAdjustment)
-{
-    m_embedderFontScaleFactor = deviceScaleAdjustment;
-    bool emulateMobileEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateMobileEnabled;
-    if (!emulateMobileEnabled)
-        m_page->settings().setDeviceScaleAdjustment(deviceScaleAdjustment);
-}
-
-void InspectorPageAgent::setPreferCompositingToLCDTextEnabled(bool enabled)
-{
-    m_embedderPreferCompositingToLCDTextEnabled = enabled;
-    bool emulateMobileEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateMobileEnabled;
-    if (!emulateMobileEnabled)
-        m_page->settings().setPreferCompositingToLCDTextEnabled(enabled);
 }
 
 void InspectorPageAgent::setScriptEnabled(bool enabled)
@@ -474,14 +420,6 @@ void InspectorPageAgent::setScriptEnabled(bool enabled)
     m_embedderScriptEnabled = enabled;
     if (!m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled))
         m_page->settings().setScriptEnabled(enabled);
-}
-
-void InspectorPageAgent::setUseMobileViewportStyle(bool enabled)
-{
-    m_embedderUseMobileViewport = enabled;
-    bool emulateMobileEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateMobileEnabled;
-    if (!emulateMobileEnabled)
-        m_page->settings().setUseMobileViewportStyle(enabled);
 }
 
 void InspectorPageAgent::setFrontend(InspectorFrontend* frontend)
@@ -550,7 +488,6 @@ void InspectorPageAgent::disable(ErrorString*)
         m_inspectorResourceContentLoader->dispose();
         m_inspectorResourceContentLoader.clear();
     }
-    m_deviceMetricsOverridden = false;
 
     setShowPaintRects(0, false);
     setShowDebugBorders(0, false);
@@ -962,11 +899,10 @@ void InspectorPageAgent::setShowDebugBorders(ErrorString* errorString, bool show
 
 void InspectorPageAgent::setShowFPSCounter(ErrorString* errorString, bool show)
 {
-    // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
     if (show && !compositingEnabled(errorString))
         return;
-    m_client->setShowFPSCounter(show && !m_deviceMetricsOverridden);
+    m_client->setShowFPSCounter(show);
 }
 
 void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString* errorString, bool enabled)
@@ -974,7 +910,7 @@ void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString* errorString, 
     m_state->setBoolean(PageAgentState::pageAgentContinuousPaintingEnabled, enabled);
     if (enabled && !compositingEnabled(errorString))
         return;
-    m_client->setContinuousPaintingEnabled(enabled && !m_deviceMetricsOverridden);
+    m_client->setContinuousPaintingEnabled(enabled);
 }
 
 void InspectorPageAgent::setShowScrollBottleneckRects(ErrorString* errorString, bool show)
@@ -1125,11 +1061,6 @@ LocalFrame* InspectorPageAgent::assertFrame(ErrorString* errorString, const Stri
     return frame;
 }
 
-bool InspectorPageAgent::deviceMetricsOverrideEnabled()
-{
-    return m_enabled && m_deviceMetricsOverridden;
-}
-
 bool InspectorPageAgent::screencastEnabled()
 {
     return m_enabled && m_state->getBoolean(PageAgentState::screencastEnabled);
@@ -1215,7 +1146,7 @@ void InspectorPageAgent::didScroll()
 
 void InspectorPageAgent::viewportChanged()
 {
-    if (!m_enabled || !m_deviceMetricsOverridden || !inspectedFrame()->isMainFrame())
+    if (!m_enabled || !m_viewportNotificationsEnabled || !inspectedFrame()->isMainFrame())
         return;
     IntSize contentsSize = inspectedFrame()->view()->contentsSize();
     IntRect viewRect = inspectedFrame()->view()->visibleContentRect();
@@ -1253,6 +1184,11 @@ void InspectorPageAgent::pageScaleFactorChanged()
     if (m_enabled)
         m_overlay->update();
     viewportChanged();
+}
+
+void InspectorPageAgent::setViewportNotificationsEnabled(bool enabled)
+{
+    m_viewportNotificationsEnabled = enabled;
 }
 
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
@@ -1341,34 +1277,10 @@ void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, 
     if (!inspectedFrame()->isMainFrame())
         return;
 
-    m_deviceMetricsOverridden = enabled;
-    m_emulateMobileEnabled = mobile;
     if (enabled)
         m_client->setDeviceMetricsOverride(width, height, static_cast<float>(deviceScaleFactor), mobile, fitWindow, static_cast<float>(scale), static_cast<float>(offsetX), static_cast<float>(offsetY));
     else
         m_client->clearDeviceMetricsOverride();
-
-    Document* document = inspectedFrame()->document();
-    if (document) {
-        document->styleResolverChanged();
-        document->mediaQueryAffectingValueChanged();
-    }
-
-    if (m_deviceMetricsOverridden) {
-        m_page->settings().setTextAutosizingEnabled(mobile);
-        m_page->settings().setPreferCompositingToLCDTextEnabled(mobile);
-        m_page->settings().setDeviceScaleAdjustment(calculateFontScaleFactor(width, height, static_cast<float>(deviceScaleFactor)));
-        m_page->settings().setUseMobileViewportStyle(mobile);
-    } else {
-        m_page->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);
-        m_page->settings().setPreferCompositingToLCDTextEnabled(m_embedderPreferCompositingToLCDTextEnabled);
-        m_page->settings().setDeviceScaleAdjustment(m_embedderFontScaleFactor);
-        m_page->settings().setUseMobileViewportStyle(m_embedderUseMobileViewport);
-    }
-
-    // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
-    m_client->setShowFPSCounter(m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter) && !m_deviceMetricsOverridden);
-    m_client->setContinuousPaintingEnabled(m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled) && !m_deviceMetricsOverridden);
 }
 
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)

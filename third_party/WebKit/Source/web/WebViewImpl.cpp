@@ -140,6 +140,7 @@
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/ContextFeaturesClientImpl.h"
 #include "web/DatabaseClientImpl.h"
+#include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
 #include "web/LinkHighlight.h"
@@ -395,6 +396,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_imeAcceptEvents(true)
     , m_operationsAllowed(WebDragOperationNone)
     , m_dragOperation(WebDragOperationNone)
+    , m_devToolsEmulator(nullptr)
     , m_isTransparent(false)
     , m_tabsToLinks(false)
     , m_layerTreeView(0)
@@ -448,6 +450,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     }
 
     initializeLayerTreeView();
+
+    m_devToolsEmulator = adoptPtr(new DevToolsEmulator(this));
 }
 
 WebViewImpl::~WebViewImpl()
@@ -930,7 +934,8 @@ void WebViewImpl::setShowFPSCounter(bool show)
 {
     if (m_layerTreeView) {
         TRACE_EVENT0("blink", "WebViewImpl::setShowFPSCounter");
-        m_layerTreeView->setShowFPSCounter(show);
+        // FIXME: allow emulation, fps counter and continuous painting at the same time: crbug.com/299837.
+        m_layerTreeView->setShowFPSCounter(show && !m_devToolsEmulator->deviceEmulationEnabled());
     }
     m_showFPSCounter = show;
 }
@@ -956,11 +961,21 @@ void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
 {
     if (m_layerTreeView) {
         TRACE_EVENT0("blink", "WebViewImpl::setContinuousPaintingEnabled");
-        m_layerTreeView->setContinuousPaintingEnabled(enabled);
+        // FIXME: allow emulation, fps counter and continuous painting at the same time: crbug.com/299837.
+        m_layerTreeView->setContinuousPaintingEnabled(enabled && !m_devToolsEmulator->deviceEmulationEnabled());
     }
     m_continuousPaintingEnabled = enabled;
     if (m_client)
         m_client->scheduleAnimation();
+}
+
+void WebViewImpl::updateShowFPSCounterAndContinuousPainting()
+{
+    if (m_layerTreeView) {
+        // FIXME: allow emulation, fps counter and continuous painting at the same time: crbug.com/299837.
+        m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled && !m_devToolsEmulator->deviceEmulationEnabled());
+        m_layerTreeView->setShowFPSCounter(m_showFPSCounter && !m_devToolsEmulator->deviceEmulationEnabled());
+    }
 }
 
 void WebViewImpl::setShowScrollBottleneckRects(bool show)
@@ -1727,7 +1742,7 @@ void WebViewImpl::performResize()
     // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
     // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
     // Therefore we should force explicit media queries invalidation here.
-    if (m_devToolsAgent && m_devToolsAgent->deviceEmulationEnabled()) {
+    if (m_devToolsEmulator->deviceEmulationEnabled()) {
         if (Document* document = mainFrameImpl()->frame()->document()) {
             document->styleResolverChanged();
             document->mediaQueryAffectingValueChanged();
@@ -2767,7 +2782,7 @@ void WebViewImpl::didChangeWindowResizerRect()
 WebSettingsImpl* WebViewImpl::settingsImpl()
 {
     if (!m_webSettings)
-        m_webSettings = adoptPtr(new WebSettingsImpl(&m_page->settings()));
+        m_webSettings = adoptPtr(new WebSettingsImpl(&m_page->settings(), m_devToolsEmulator.get()));
     ASSERT(m_webSettings);
     return m_webSettings.get();
 }
@@ -4390,10 +4405,11 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         m_isAcceleratedCompositingActive = true;
         if (m_pageOverlays)
             m_pageOverlays->update();
-        m_layerTreeView->setShowFPSCounter(m_showFPSCounter);
+        // FIXME: allow emulation, fps counter and continuous painting at the same time: crbug.com/299837.
+        m_layerTreeView->setShowFPSCounter(m_showFPSCounter && !m_devToolsEmulator->deviceEmulationEnabled());
         m_layerTreeView->setShowPaintRects(m_showPaintRects);
         m_layerTreeView->setShowDebugBorders(m_showDebugBorders);
-        m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled);
+        m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled && !m_devToolsEmulator->deviceEmulationEnabled());
         m_layerTreeView->setShowScrollBottleneckRects(m_showScrollBottleneckRects);
         m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
     }

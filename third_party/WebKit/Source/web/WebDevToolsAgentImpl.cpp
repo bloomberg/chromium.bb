@@ -89,6 +89,7 @@
 #include "public/web/WebDeviceEmulationParams.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
+#include "web/DevToolsEmulator.h"
 #include "web/WebGraphicsContextImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
@@ -249,12 +250,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_deferredAgentsInitialized(false)
     , m_generatingEvent(false)
-    , m_deviceMetricsEnabled(false)
-    , m_emulateMobileEnabled(false)
-    , m_originalViewportEnabled(false)
-    , m_isOverlayScrollbarsEnabled(false)
-    , m_originalDefaultMinimumPageScaleFactor(0)
-    , m_originalDefaultMaximumPageScaleFactor(0)
     , m_touchEventEmulationEnabled(false)
 {
     ASSERT(isMainThread());
@@ -308,6 +303,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_agents.append(InspectorDOMStorageAgent::create(page));
 
     m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(this);
+    m_webViewImpl->devToolsEmulator()->setDevToolsAgent(this);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -321,6 +317,7 @@ void WebDevToolsAgentImpl::dispose()
     // same behavior (and correctness) with and without Oilpan.
     ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
     m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(nullptr);
+    m_webViewImpl->devToolsEmulator()->setDevToolsAgent(nullptr);
     if (m_attached)
         Platform::current()->currentThread()->removeTaskObserver(this);
 #if ENABLE(ASSERT)
@@ -569,11 +566,6 @@ void WebDevToolsAgentImpl::pageScaleFactorChanged()
     m_pageAgent->pageScaleFactorChanged();
 }
 
-bool WebDevToolsAgentImpl::deviceEmulationEnabled()
-{
-    return m_pageAgent->deviceMetricsOverrideEnabled();
-}
-
 bool WebDevToolsAgentImpl::screencastEnabled()
 {
     return m_pageAgent->screencastEnabled();
@@ -589,100 +581,24 @@ void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
     m_layerTreeAgent->didRemovePageOverlay(layer);
 }
 
-void WebDevToolsAgentImpl::setTextAutosizingEnabled(bool enabled)
-{
-    m_pageAgent->setTextAutosizingEnabled(enabled);
-}
-
-void WebDevToolsAgentImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
-{
-    m_pageAgent->setDeviceScaleAdjustment(deviceScaleAdjustment);
-}
-
-void WebDevToolsAgentImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
-{
-    m_pageAgent->setPreferCompositingToLCDTextEnabled(enabled);
-}
-
 void WebDevToolsAgentImpl::setScriptEnabled(bool enabled)
 {
     m_pageAgent->setScriptEnabled(enabled);
 }
 
-void WebDevToolsAgentImpl::setUseMobileViewportStyle(bool enabled)
-{
-    m_pageAgent->setUseMobileViewportStyle(enabled);
-}
-
 void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
 {
-    if (!m_deviceMetricsEnabled) {
-        m_deviceMetricsEnabled = true;
-        m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
-    }
-    if (mobile)
-        enableMobileEmulation();
-    else
-        disableMobileEmulation();
-
-    WebDeviceEmulationParams params;
-    params.screenPosition = mobile ? WebDeviceEmulationParams::Mobile : WebDeviceEmulationParams::Desktop;
-    params.deviceScaleFactor = deviceScaleFactor;
-    params.viewSize = WebSize(width, height);
-    params.fitToView = fitWindow;
-    params.scale = scale;
-    params.offset = WebFloatPoint(offsetX, offsetY);
-    m_client->enableDeviceEmulation(params);
+    m_webViewImpl->devToolsEmulator()->setDeviceMetricsOverride(width, height, deviceScaleFactor, mobile, fitWindow, scale, offsetX, offsetY);
 }
 
 void WebDevToolsAgentImpl::clearDeviceMetricsOverride()
 {
-    if (m_deviceMetricsEnabled) {
-        m_deviceMetricsEnabled = false;
-        m_webViewImpl->setBackgroundColorOverride(Color::transparent);
-        disableMobileEmulation();
-        m_client->disableDeviceEmulation();
-    }
+    m_webViewImpl->devToolsEmulator()->clearDeviceMetricsOverride();
 }
 
 void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
 {
     m_touchEventEmulationEnabled = enabled;
-}
-
-void WebDevToolsAgentImpl::enableMobileEmulation()
-{
-    if (m_emulateMobileEnabled)
-        return;
-    m_emulateMobileEnabled = true;
-    m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
-    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-    m_originalViewportEnabled = RuntimeEnabledFeatures::cssViewportEnabled();
-    RuntimeEnabledFeatures::setCSSViewportEnabled(true);
-    m_webViewImpl->enableViewport();
-    m_webViewImpl->settings()->setViewportMetaEnabled(true);
-    m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
-    m_webViewImpl->setZoomFactorOverride(1);
-
-    m_originalDefaultMinimumPageScaleFactor = m_webViewImpl->defaultMinimumPageScaleFactor();
-    m_originalDefaultMaximumPageScaleFactor = m_webViewImpl->defaultMaximumPageScaleFactor();
-    m_webViewImpl->setDefaultPageScaleLimits(0.25f, 5);
-}
-
-void WebDevToolsAgentImpl::disableMobileEmulation()
-{
-    if (!m_emulateMobileEnabled)
-        return;
-    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
-    RuntimeEnabledFeatures::setCSSViewportEnabled(m_originalViewportEnabled);
-    m_webViewImpl->disableViewport();
-    m_webViewImpl->settings()->setViewportMetaEnabled(false);
-    m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
-    m_webViewImpl->setZoomFactorOverride(0);
-    m_emulateMobileEnabled = false;
-    m_webViewImpl->setDefaultPageScaleLimits(
-        m_originalDefaultMinimumPageScaleFactor,
-        m_originalDefaultMaximumPageScaleFactor);
 }
 
 void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)

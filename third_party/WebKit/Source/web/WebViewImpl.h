@@ -66,6 +66,7 @@
 namespace blink {
 
 class DataObject;
+class DevToolsEmulator;
 class Frame;
 class FullscreenController;
 class InputMethodContext;
@@ -297,6 +298,7 @@ public:
     void setIgnoreInputEvents(bool newValue);
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
+    void updateShowFPSCounterAndContinuousPainting();
 
     Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
@@ -338,6 +340,11 @@ public:
     WebDevToolsAgentImpl* devToolsAgentImpl() const
     {
         return m_devToolsAgent.get();
+    }
+
+    DevToolsEmulator* devToolsEmulator() const
+    {
+        return m_devToolsEmulator.get();
     }
 
     // Returns the main frame associated with this view. This may be null when
@@ -727,6 +734,7 @@ private:
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
     OwnPtrWillBePersistent<WebDevToolsAgentImpl> m_devToolsAgent;
+    OwnPtr<DevToolsEmulator> m_devToolsEmulator;
     OwnPtr<PageOverlayList> m_pageOverlays;
 
     // Whether the webview is rendering transparently.

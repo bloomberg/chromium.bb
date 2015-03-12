@@ -36,12 +36,14 @@
 
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "web/DevToolsEmulator.h"
 #include "web/WebDevToolsAgentImpl.h"
 
 namespace blink {
 
-WebSettingsImpl::WebSettingsImpl(Settings* settings)
+WebSettingsImpl::WebSettingsImpl(Settings* settings, DevToolsEmulator* devToolsEmulator)
     : m_settings(settings)
+    , m_devToolsEmulator(devToolsEmulator)
     , m_devToolsAgent(nullptr)
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
@@ -158,10 +160,7 @@ void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(bool autoZoomFocusedN
 
 void WebSettingsImpl::setTextAutosizingEnabled(bool enabled)
 {
-    if (m_devToolsAgent)
-        m_devToolsAgent->setTextAutosizingEnabled(enabled);
-    else
-        m_settings->setTextAutosizingEnabled(enabled);
+    m_devToolsEmulator->setTextAutosizingEnabled(enabled);
 }
 
 void WebSettingsImpl::setAccessibilityFontScaleFactor(float fontScaleFactor)
@@ -186,10 +185,7 @@ void WebSettingsImpl::setInlineTextBoxAccessibilityEnabled(bool enabled)
 
 void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
-    if (m_devToolsAgent)
-        m_devToolsAgent->setDeviceScaleAdjustment(deviceScaleAdjustment);
-    else
-        m_settings->setDeviceScaleAdjustment(deviceScaleAdjustment);
+    m_devToolsEmulator->setDeviceScaleAdjustment(deviceScaleAdjustment);
 }
 
 void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)
@@ -537,10 +533,7 @@ void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
 
 void WebSettingsImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
 {
-    if (m_devToolsAgent)
-        m_devToolsAgent->setPreferCompositingToLCDTextEnabled(enabled);
-    else
-        m_settings->setPreferCompositingToLCDTextEnabled(enabled);
+    m_devToolsEmulator->setPreferCompositingToLCDTextEnabled(enabled);
 }
 
 void WebSettingsImpl::setMinimumAccelerated2dCanvasSize(int numPixels)
@@ -765,10 +758,7 @@ void WebSettingsImpl::setV8CacheOptions(V8CacheOptions options)
 
 void WebSettingsImpl::setUseMobileViewportStyle(bool enabled)
 {
-    if (m_devToolsAgent)
-        m_devToolsAgent->setUseMobileViewportStyle(enabled);
-    else
-        m_settings->setUseMobileViewportStyle(enabled);
+    m_devToolsEmulator->setUseMobileViewportStyle(enabled);
 }
 
 } // namespace blink

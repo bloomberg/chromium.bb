@@ -21,6 +21,8 @@
       'DatabaseClientImpl.h',
       'DateTimeChooserImpl.cpp',
       'DateTimeChooserImpl.h',
+      'DevToolsEmulator.cpp',
+      'DevToolsEmulator.h',
       'DragClientImpl.cpp',
       'DragClientImpl.h',
       'EditorClientImpl.cpp',
