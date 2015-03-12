@@ -13,21 +13,34 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync_driver/pref_names.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "sync/api/fake_sync_change_processor.h"
+#include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_error_factory_mock.h"
 
 namespace extensions {
 
 namespace {
 
 const char kExternalAppId[] = "kekdneafjmhmndejhmbcadfiiofngffo";
+const char kStandaloneAppId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 
 class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
  public:
@@ -37,9 +50,18 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
   ~ExternalProviderImplChromeOSTest() override {}
 
-  void InitServiceWithExternalProviders() {
+  void InitServiceWithExternalProviders(bool standalone) {
     InitializeEmptyExtensionService();
     service_->Init();
+
+    if (standalone) {
+      external_externsions_overrides_.reset(new base::ScopedPathOverride(
+          chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+          data_dir().Append("external_standalone")));
+    } else {
+      external_externsions_overrides_.reset(new base::ScopedPathOverride(
+          chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().Append("external")));
+    }
 
     ProviderCollection providers;
     extensions::ExternalProviderImpl::CreateExternalProviders(
@@ -55,9 +77,6 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   // ExtensionServiceTestBase overrides:
   void SetUp() override {
     ExtensionServiceTestBase::SetUp();
-
-    external_externsions_overrides_.reset(new base::ScopedPathOverride(
-        chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().Append("external")));
   }
 
   void TearDown() override {
@@ -77,7 +96,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
 // Normal mode, external app should be installed.
 TEST_F(ExternalProviderImplChromeOSTest, Normal) {
-  InitServiceWithExternalProviders();
+  InitServiceWithExternalProviders(false);
 
   service_->CheckForExternalUpdates();
   content::WindowedNotificationObserver(
@@ -93,12 +112,98 @@ TEST_F(ExternalProviderImplChromeOSTest, AppMode) {
   command->AppendSwitchASCII(switches::kForceAppMode, std::string());
   command->AppendSwitchASCII(switches::kAppId, std::string("app_id"));
 
-  InitServiceWithExternalProviders();
+  InitServiceWithExternalProviders(false);
 
   service_->CheckForExternalUpdates();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(service_->GetInstalledExtension(kExternalAppId));
+}
+
+// Normal mode, standalone app should be installed, because sync is enabled but
+// not running.
+TEST_F(ExternalProviderImplChromeOSTest, Standalone) {
+  InitServiceWithExternalProviders(true);
+
+  service_->CheckForExternalUpdates();
+  content::WindowedNotificationObserver(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources()).Wait();
+
+  EXPECT_TRUE(service_->GetInstalledExtension(kStandaloneAppId));
+}
+
+// Normal mode, standalone app should be installed, because sync is disabled.
+TEST_F(ExternalProviderImplChromeOSTest, SyncDisabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+
+  InitServiceWithExternalProviders(true);
+
+  service_->CheckForExternalUpdates();
+  content::WindowedNotificationObserver(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources()).Wait();
+
+  EXPECT_TRUE(service_->GetInstalledExtension(kStandaloneAppId));
+}
+
+// User signed in, sync service started, install app when sync is disabled by
+// policy.
+TEST_F(ExternalProviderImplChromeOSTest, PolicyDisabled) {
+  InitServiceWithExternalProviders(true);
+
+  // Log user in, start sync.
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(
+      new ProfileManagerWithoutInit(temp_dir().path()));
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(profile_.get());
+  signin->SetAuthenticatedUsername("test_user@gmail.com");
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
+      ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
+
+  // App sync will wait for priority sync to complete.
+  service_->CheckForExternalUpdates();
+
+  // Sync is dsabled by policy.
+  profile_->GetPrefs()->SetBoolean(sync_driver::prefs::kSyncManaged, true);
+
+  content::WindowedNotificationObserver(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources()).Wait();
+
+  EXPECT_TRUE(service_->GetInstalledExtension(kStandaloneAppId));
+
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
+}
+
+// User signed in, sync service started, install app when priority sync is
+// completed.
+TEST_F(ExternalProviderImplChromeOSTest, PriorityCompleted) {
+  InitServiceWithExternalProviders(true);
+
+  // User is logged in.
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(profile_.get());
+  signin->SetAuthenticatedUsername("test_user@gmail.com");
+
+  // App sync will wait for priority sync to complete.
+  service_->CheckForExternalUpdates();
+
+  // Priority sync completed.
+  PrefServiceSyncable::FromProfile(profile_.get())
+      ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
+      ->MergeDataAndStartSyncing(syncer::PRIORITY_PREFERENCES,
+                                 syncer::SyncDataList(),
+                                 scoped_ptr<syncer::SyncChangeProcessor>(
+                                     new syncer::FakeSyncChangeProcessor),
+                                 scoped_ptr<syncer::SyncErrorFactory>(
+                                     new syncer::SyncErrorFactoryMock()));
+
+  content::WindowedNotificationObserver(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources()).Wait();
+
+  EXPECT_TRUE(service_->GetInstalledExtension(kStandaloneAppId));
 }
 
 }  // namespace extensions
