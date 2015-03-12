@@ -3363,7 +3363,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.CorruptMetaTable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tnagel@chromium.org</owner>
   <summary>
     Records the detection of a corrupted meta table. See http://crbug.com/111376
     .
@@ -29289,7 +29289,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Profile.ProfileError" enum="ProfileErrorType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tnagel@chromium.org</owner>
   <summary>
     The error with the current user profile that caused an error dialog to be
     shown. This dialog is shown usually when there is some sort of corruption in
