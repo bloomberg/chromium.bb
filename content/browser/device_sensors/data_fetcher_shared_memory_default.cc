@@ -9,7 +9,7 @@
 
 namespace {
 
-static bool SetMotionBuffer(content::DeviceMotionHardwareBuffer* buffer,
+bool SetMotionBuffer(content::DeviceMotionHardwareBuffer* buffer,
     bool enabled) {
   if (!buffer)
     return false;
@@ -19,7 +19,7 @@ static bool SetMotionBuffer(content::DeviceMotionHardwareBuffer* buffer,
   return true;
 }
 
-static bool SetOrientationBuffer(
+bool SetOrientationBuffer(
     content::DeviceOrientationHardwareBuffer* buffer, bool enabled) {
   if (!buffer)
     return false;
@@ -29,7 +29,7 @@ static bool SetOrientationBuffer(
   return true;
 }
 
-static bool SetLightBuffer(content::DeviceLightHardwareBuffer* buffer,
+bool SetLightBuffer(content::DeviceLightHardwareBuffer* buffer,
                            double lux) {
   if (!buffer)
     return false;

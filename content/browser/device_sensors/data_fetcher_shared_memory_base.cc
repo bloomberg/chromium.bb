@@ -17,7 +17,7 @@ namespace content {
 
 namespace {
 
-static size_t GetConsumerSharedMemoryBufferSize(ConsumerType consumer_type) {
+size_t GetConsumerSharedMemoryBufferSize(ConsumerType consumer_type) {
   switch (consumer_type) {
     case CONSUMER_TYPE_MOTION:
       return sizeof(DeviceMotionHardwareBuffer);

@@ -63,7 +63,7 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   class SensorEventSinkOrientation;
   class SensorEventSinkLight;
 
-  virtual FetcherType GetType() const override;
+  FetcherType GetType() const override;
 
   bool RegisterForSensor(REFSENSOR_TYPE_ID sensor_type, ISensor** sensor,
       scoped_refptr<SensorEventSink> event_sink);

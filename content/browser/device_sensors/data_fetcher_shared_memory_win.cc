@@ -37,15 +37,15 @@ class DataFetcherSharedMemory::SensorEventSink
   virtual ~SensorEventSink() {}
 
   // IUnknown interface
-  virtual ULONG STDMETHODCALLTYPE AddRef() override {
+  ULONG STDMETHODCALLTYPE AddRef() override {
     return IUnknownImpl::AddRef();
   }
 
-  virtual ULONG STDMETHODCALLTYPE Release() override {
+  ULONG STDMETHODCALLTYPE Release() override {
     return IUnknownImpl::Release();
   }
 
-  virtual STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
+  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
     if (riid == __uuidof(ISensorEvents)) {
       *ppv = static_cast<ISensorEvents*>(this);
       AddRef();
@@ -108,7 +108,7 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
   virtual ~SensorEventSinkOrientation() {}
 
  protected:
-  virtual bool UpdateSharedMemoryBuffer(
+  bool UpdateSharedMemoryBuffer(
       ISensor* sensor, ISensorDataReport* new_data) override {
     double alpha, beta, gamma;
     bool has_alpha, has_beta, has_gamma;
@@ -151,7 +151,7 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
   virtual ~SensorEventSinkMotion() {}
 
  protected:
-  virtual bool UpdateSharedMemoryBuffer(
+  bool UpdateSharedMemoryBuffer(
       ISensor* sensor, ISensorDataReport* new_data) override {
 
     SENSOR_TYPE_ID sensor_type = GUID_NULL;
@@ -237,7 +237,7 @@ class DataFetcherSharedMemory::SensorEventSinkLight
   virtual ~SensorEventSinkLight() {}
 
  protected:
-  virtual bool UpdateSharedMemoryBuffer(ISensor* sensor,
+  bool UpdateSharedMemoryBuffer(ISensor* sensor,
                                         ISensorDataReport* new_data) override {
     double lux;
     bool has_lux;

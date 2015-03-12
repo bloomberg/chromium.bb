@@ -25,13 +25,13 @@ enum OrientationSensorType {
   ORIENTATION_SENSOR_MAX = 3,
 };
 
-static void UpdateDeviceOrientationHistogram(OrientationSensorType type) {
+void UpdateDeviceOrientationHistogram(OrientationSensorType type) {
   UMA_HISTOGRAM_ENUMERATION("InertialSensor.DeviceOrientationSensorAndroid",
                             type,
                             ORIENTATION_SENSOR_MAX);
 }
 
-}
+}  // namespace
 
 namespace content {
 
