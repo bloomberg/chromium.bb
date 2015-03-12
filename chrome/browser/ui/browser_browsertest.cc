@@ -26,6 +26,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -2253,6 +2254,40 @@ IN_PROC_BROWSER_TEST_F(LaunchBrowserWithNonAsciiUserDatadir,
                        TestNonAsciiUserDataDir) {
   // Verify that the window is present.
   ASSERT_TRUE(browser());
+  ASSERT_TRUE(browser()->profile());
+  // Verify that the profile has been added correctly to the ProfileInfoCache.
+  ASSERT_EQ(1u, g_browser_process->profile_manager()->
+      GetProfileInfoCache().GetNumberOfProfiles());
+}
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN)
+// This test verifies that Chrome can be launched with a user-data-dir path
+// which trailing slashes.
+class LaunchBrowserWithTrailingSlashDatadir : public BrowserTest {
+ public:
+  LaunchBrowserWithTrailingSlashDatadir() {}
+
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    base::FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
+    tmp_profile = tmp_profile.Append(L"Test Chrome\\");
+
+    ASSERT_TRUE(base::CreateDirectory(tmp_profile));
+    command_line->AppendSwitchPath(switches::kUserDataDir, tmp_profile);
+  }
+
+  base::ScopedTempDir temp_dir_;
+};
+
+IN_PROC_BROWSER_TEST_F(LaunchBrowserWithTrailingSlashDatadir,
+                       TestTrailingSlashUserDataDir) {
+  // Verify that the window is present.
+  ASSERT_TRUE(browser());
+  ASSERT_TRUE(browser()->profile());
+  // Verify that the profile has been added correctly to the ProfileInfoCache.
+  ASSERT_EQ(1u, g_browser_process->profile_manager()->
+      GetProfileInfoCache().GetNumberOfProfiles());
 }
 #endif  // defined(OS_WIN)
 
