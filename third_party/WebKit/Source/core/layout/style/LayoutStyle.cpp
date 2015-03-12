@@ -70,20 +70,14 @@ struct SameSizeAsLayoutStyle : public RefCounted<SameSizeAsLayoutStyle> {
 
 static_assert(sizeof(LayoutStyle) == sizeof(SameSizeAsLayoutStyle), "LayoutStyle should stay small");
 
-inline LayoutStyle* defaultStyle()
-{
-    DEFINE_STATIC_REF(LayoutStyle, s_defaultStyle, (LayoutStyle::createDefaultStyle()));
-    return s_defaultStyle;
-}
-
 PassRefPtr<LayoutStyle> LayoutStyle::create()
 {
     return adoptRef(new LayoutStyle());
 }
 
-PassRefPtr<LayoutStyle> LayoutStyle::createDefaultStyle()
+PassRefPtr<LayoutStyle> LayoutStyle::createInitialStyle()
 {
-    return adoptRef(new LayoutStyle(DefaultStyle));
+    return adoptRef(new LayoutStyle(InitialStyle));
 }
 
 PassRefPtr<LayoutStyle> LayoutStyle::createAnonymousStyleWithDisplay(const LayoutStyle& parentStyle, EDisplay display)
@@ -101,21 +95,21 @@ PassRefPtr<LayoutStyle> LayoutStyle::clone(const LayoutStyle& other)
 }
 
 ALWAYS_INLINE LayoutStyle::LayoutStyle()
-    : m_box(defaultStyle()->m_box)
-    , visual(defaultStyle()->visual)
-    , m_background(defaultStyle()->m_background)
-    , surround(defaultStyle()->surround)
-    , rareNonInheritedData(defaultStyle()->rareNonInheritedData)
-    , rareInheritedData(defaultStyle()->rareInheritedData)
-    , inherited(defaultStyle()->inherited)
-    , m_svgStyle(defaultStyle()->m_svgStyle)
+    : m_box(initialStyle()->m_box)
+    , visual(initialStyle()->visual)
+    , m_background(initialStyle()->m_background)
+    , surround(initialStyle()->surround)
+    , rareNonInheritedData(initialStyle()->rareNonInheritedData)
+    , rareInheritedData(initialStyle()->rareInheritedData)
+    , inherited(initialStyle()->inherited)
+    , m_svgStyle(initialStyle()->m_svgStyle)
 {
     setBitDefaults(); // Would it be faster to copy this from the default style?
     static_assert((sizeof(InheritedFlags) <= 8), "InheritedFlags should not grow");
     static_assert((sizeof(NonInheritedFlags) <= 8), "NonInheritedFlags should not grow");
 }
 
-ALWAYS_INLINE LayoutStyle::LayoutStyle(DefaultStyleTag)
+ALWAYS_INLINE LayoutStyle::LayoutStyle(InitialStyleTag)
 {
     setBitDefaults();
 

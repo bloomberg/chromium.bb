@@ -327,15 +327,21 @@ protected:
 private:
     ALWAYS_INLINE LayoutStyle();
 
-    enum DefaultStyleTag {
-        DefaultStyle
+    enum InitialStyleTag {
+        InitialStyle
     };
-    ALWAYS_INLINE explicit LayoutStyle(DefaultStyleTag);
+    ALWAYS_INLINE explicit LayoutStyle(InitialStyleTag);
     ALWAYS_INLINE LayoutStyle(const LayoutStyle&);
+
+    static PassRefPtr<LayoutStyle> createInitialStyle();
+    static inline LayoutStyle* initialStyle()
+    {
+        DEFINE_STATIC_REF(LayoutStyle, s_initialStyle, (LayoutStyle::createInitialStyle()));
+        return s_initialStyle;
+    }
 
 public:
     static PassRefPtr<LayoutStyle> create();
-    static PassRefPtr<LayoutStyle> createDefaultStyle();
     static PassRefPtr<LayoutStyle> createAnonymousStyleWithDisplay(const LayoutStyle& parentStyle, EDisplay);
     static PassRefPtr<LayoutStyle> clone(const LayoutStyle&);
 

@@ -90,7 +90,7 @@ void LayoutFullScreen::willBeDestroyed()
 
 void LayoutFullScreen::updateStyle()
 {
-    RefPtr<LayoutStyle> fullscreenStyle = LayoutStyle::createDefaultStyle();
+    RefPtr<LayoutStyle> fullscreenStyle = LayoutStyle::create();
 
     // Create a stacking context:
     fullscreenStyle->setZIndex(INT_MAX);

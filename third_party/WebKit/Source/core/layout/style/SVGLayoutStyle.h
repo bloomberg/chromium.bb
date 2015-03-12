@@ -447,11 +447,11 @@ protected:
     DataRef<StyleResourceData> resources;
 
 private:
-    enum CreateDefaultType { CreateDefault };
+    enum CreateInitialType { CreateInitial };
 
     SVGLayoutStyle();
     SVGLayoutStyle(const SVGLayoutStyle&);
-    SVGLayoutStyle(CreateDefaultType); // Used to create the default style.
+    SVGLayoutStyle(CreateInitialType); // Used to create the initial style singleton.
 
     bool diffNeedsLayoutAndPaintInvalidation(const SVGLayoutStyle* other) const;
     bool diffNeedsPaintInvalidation(const SVGLayoutStyle* other) const;

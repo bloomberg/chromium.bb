@@ -33,20 +33,20 @@ namespace blink {
 
 SVGLayoutStyle::SVGLayoutStyle()
 {
-    static SVGLayoutStyle* defaultStyle = new SVGLayoutStyle(CreateDefault);
+    static SVGLayoutStyle* initialStyle = new SVGLayoutStyle(CreateInitial);
 
-    fill = defaultStyle->fill;
-    stroke = defaultStyle->stroke;
-    stops = defaultStyle->stops;
-    misc = defaultStyle->misc;
-    inheritedResources = defaultStyle->inheritedResources;
-    layout = defaultStyle->layout;
-    resources = defaultStyle->resources;
+    fill = initialStyle->fill;
+    stroke = initialStyle->stroke;
+    stops = initialStyle->stops;
+    misc = initialStyle->misc;
+    inheritedResources = initialStyle->inheritedResources;
+    layout = initialStyle->layout;
+    resources = initialStyle->resources;
 
     setBitDefaults();
 }
 
-SVGLayoutStyle::SVGLayoutStyle(CreateDefaultType)
+SVGLayoutStyle::SVGLayoutStyle(CreateInitialType)
 {
     setBitDefaults();
 

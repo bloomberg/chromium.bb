@@ -569,14 +569,14 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutS
     if (baseLayoutStyle) {
         state.setStyle(LayoutStyle::clone(*baseLayoutStyle));
         if (!state.parentStyle())
-            state.setParentStyle(defaultStyleForElement());
+            state.setParentStyle(initialStyleForElement());
     } else {
         if (state.parentStyle()) {
             RefPtr<LayoutStyle> style = LayoutStyle::create();
             style->inheritFrom(*state.parentStyle(), isAtShadowBoundary(element) ? LayoutStyle::AtShadowBoundary : LayoutStyle::NotAtShadowBoundary);
             state.setStyle(style.release());
         } else {
-            state.setStyle(defaultStyleForElement());
+            state.setStyle(initialStyleForElement());
             state.setParentStyle(LayoutStyle::clone(*state.style()));
         }
     }
@@ -782,7 +782,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         style->inheritFrom(*state.parentStyle());
         state.setStyle(style.release());
     } else {
-        state.setStyle(defaultStyleForElement());
+        state.setStyle(initialStyleForElement());
         state.setParentStyle(LayoutStyle::clone(*state.style()));
     }
 
@@ -886,7 +886,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForPage(int pageIndex)
     return state.takeStyle();
 }
 
-PassRefPtr<LayoutStyle> StyleResolver::defaultStyleForElement()
+PassRefPtr<LayoutStyle> StyleResolver::initialStyleForElement()
 {
     RefPtr<LayoutStyle> style = LayoutStyle::create();
     FontBuilder fontBuilder(document());
@@ -901,7 +901,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForText(Text* textNode)
 
     Node* parentNode = NodeRenderingTraversal::parent(*textNode);
     if (!parentNode || !parentNode->layoutStyle())
-        return defaultStyleForElement();
+        return initialStyleForElement();
     return parentNode->layoutStyle();
 }
 

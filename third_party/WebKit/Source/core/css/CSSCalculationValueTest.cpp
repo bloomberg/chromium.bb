@@ -89,7 +89,7 @@ bool lengthArraysEqual(CSSLengthArray& a, CSSLengthArray& b)
 
 TEST(CSSCalculationValue, AccumulatePixelsAndPercent)
 {
-    RefPtr<LayoutStyle> style = LayoutStyle::createDefaultStyle();
+    RefPtr<LayoutStyle> style = LayoutStyle::create();
     style->setEffectiveZoom(5);
     CSSToLengthConversionData conversionData(style.get(), style.get(), nullptr, style->effectiveZoom());
 

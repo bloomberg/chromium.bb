@@ -115,7 +115,6 @@ public:
     PassRefPtr<LayoutStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, LayoutStyle* parentStyle);
 
     PassRefPtr<LayoutStyle> styleForPage(int pageIndex);
-    PassRefPtr<LayoutStyle> defaultStyleForElement();
     PassRefPtr<LayoutStyle> styleForText(Text*);
 
     static PassRefPtr<LayoutStyle> styleForDocument(Document&);
@@ -205,6 +204,8 @@ public:
     void addTreeBoundaryCrossingScope(ContainerNode& scope);
 
 private:
+    PassRefPtr<LayoutStyle> initialStyleForElement();
+
     void initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule>>& watchedSelectors);
 
     // FIXME: This should probably go away, folded into FontBuilder.
