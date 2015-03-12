@@ -779,6 +779,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
     case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
+    case CONTENT_SETTINGS_TYPE_APP_BANNER:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
