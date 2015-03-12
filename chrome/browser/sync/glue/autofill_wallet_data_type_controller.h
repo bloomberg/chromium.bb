@@ -11,10 +11,6 @@
 class Profile;
 class ProfileSyncComponentsFactory;
 
-namespace autofill {
-class PersonalDataManager;
-}
-
 namespace browser_sync {
 
 class AutofillWalletDataTypeController
@@ -41,7 +37,6 @@ class AutofillWalletDataTypeController
   void WebDatabaseLoaded();
 
   Profile* const profile_;
-  autofill::PersonalDataManager* personal_data_;
   bool callback_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletDataTypeController);

@@ -5,12 +5,10 @@
 #include "chrome/browser/sync/glue/autofill_wallet_data_type_controller.h"
 
 #include "base/bind.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
@@ -28,7 +26,6 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
           base::Bind(&ChromeReportUnrecoverableError),
           profile_sync_factory),
       profile_(profile),
-      personal_data_(nullptr),
       callback_registered_(false) {
 }
 
@@ -54,11 +51,6 @@ bool AutofillWalletDataTypeController::PostTaskOnBackendThread(
 bool AutofillWalletDataTypeController::StartModels() {
   DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
-
-  personal_data_ =
-      autofill::PersonalDataManagerFactory::GetForProfile(profile_);
-  if (!personal_data_->IsDataLoaded())
-    return false;
 
   autofill::AutofillWebDataService* web_data_service =
       WebDataServiceFactory::GetAutofillWebDataForProfile(
