@@ -1425,12 +1425,13 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
     , m_applySuperscript(false)
 {
     Document* document = position.document();
-    if (!style || !style->style() || !document || !document->frame())
+    if (!style || !style->style() || !document || !document->frame() || !position.element())
         return;
 
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyle = position.computedStyle();
     // FIXME: take care of background-color in effect
     RefPtrWillBeRawPtr<MutableStylePropertySet> mutableStyle = getPropertiesNotIn(style->style(), computedStyle.get());
+    ASSERT(mutableStyle);
 
     reconcileTextDecorationProperties(mutableStyle.get());
     if (!document->frame()->editor().shouldStyleWithCSS())
