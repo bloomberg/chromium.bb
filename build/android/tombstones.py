@@ -18,6 +18,7 @@ import sys
 import optparse
 
 from pylib import android_commands
+from pylib.device import device_errors
 from pylib.device import device_utils
 
 
@@ -172,14 +173,20 @@ def _GetTombstonesForDevice(device, options):
   tombstones = all_tombstones if options.all_tombstones else [all_tombstones[0]]
 
   device_now = _GetDeviceDateTime(device)
-  for tombstone_file, tombstone_time in tombstones:
-    ret += [{'serial': str(device),
-             'device_abi': device.product_cpu_abi,
-             'device_now': device_now,
-             'time': tombstone_time,
-             'file': tombstone_file,
-             'stack': options.stack,
-             'data': _GetTombstoneData(device, tombstone_file)}]
+  try:
+    for tombstone_file, tombstone_time in tombstones:
+      ret += [{'serial': str(device),
+               'device_abi': device.product_cpu_abi,
+               'device_now': device_now,
+               'time': tombstone_time,
+               'file': tombstone_file,
+               'stack': options.stack,
+               'data': _GetTombstoneData(device, tombstone_file)}]
+  except device_errors.CommandFailedError:
+    for line in device.RunShellCommand(
+        'TZ=UTC su -c ls -a -l /data/tombstones'):
+      print '%s: %s' % (str(device), line)
+    raise
 
   # Erase all the tombstones if desired.
   if options.wipe_tombstones:

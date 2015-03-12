@@ -13,7 +13,9 @@ import itertools
 import logging
 import multiprocessing
 import os
+import posixpath
 import re
+import shutil
 import sys
 import tempfile
 import time
@@ -129,6 +131,7 @@ def _JoinLines(lines):
 class DeviceUtils(object):
 
   _MAX_ADB_COMMAND_LENGTH = 512
+  _MAX_ADB_OUTPUT_LENGTH = 32768
   _VALID_SHELL_VARIABLE = re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$')
 
   # Property in /data/local.prop that controls Java assertions.
@@ -937,6 +940,21 @@ class DeviceUtils(object):
       os.makedirs(dirname)
     self.adb.Pull(device_path, host_path)
 
+  def _ReadFileWithPull(self, device_path):
+    try:
+      d = tempfile.mkdtemp()
+      host_temp_path = os.path.join(d, 'tmp_ReadFileWithPull')
+      self.adb.Pull(device_path, host_temp_path)
+      with open(host_temp_path, 'r') as host_temp:
+        return host_temp.read()
+    finally:
+      if os.path.exists(d):
+        shutil.rmtree(d)
+
+  _LS_RE = re.compile(
+      r'(?P<perms>\S+) +(?P<owner>\S+) +(?P<group>\S+) +(?:(?P<size>\d+) +)?'
+      + r'(?P<date>\S+) +(?P<time>\S+) +(?P<name>.+)$')
+
   @decorators.WithTimeoutAndRetriesFromInstance()
   def ReadFile(self, device_path, as_root=False,
                timeout=None, retries=None):
@@ -960,8 +978,29 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return _JoinLines(self.RunShellCommand(
-        ['cat', device_path], as_root=as_root, check_return=True))
+    # TODO(jbudorick): Implement a generic version of Stat() that handles
+    # as_root=True, then switch this implementation to use that.
+    size = None
+    ls_out = self.RunShellCommand(['ls', '-l', device_path], as_root=as_root,
+                                  check_return=True)
+    for line in ls_out:
+      m = self._LS_RE.match(line)
+      if m and m.group('name') == posixpath.basename(device_path):
+        size = int(m.group('size'))
+        break
+    else:
+      logging.warning('Could not determine size of %s.', device_path)
+
+    if size is None or size <= self._MAX_ADB_OUTPUT_LENGTH:
+      return _JoinLines(self.RunShellCommand(
+          ['cat', device_path], as_root=as_root, check_return=True))
+    elif as_root and self.NeedsSU():
+      with device_temp_file.DeviceTempFile(self.adb) as device_temp:
+        self.RunShellCommand(['cp', device_path, device_temp.name],
+                             as_root=True, check_return=True)
+        return self._ReadFileWithPull(device_temp.name)
+    else:
+      return self._ReadFileWithPull(device_path)
 
   def _WriteFileWithPush(self, device_path, contents):
     with tempfile.NamedTemporaryFile() as host_temp:
