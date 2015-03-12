@@ -246,10 +246,6 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
       module_system->Require("chromeWebViewExperimental");
     }
   }
-
-  if (context->GetAvailability("extensionOptionsInternal").is_available()) {
-    module_system->Require("extensionOptions");
-  }
 }
 
 void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(

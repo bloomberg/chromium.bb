@@ -262,6 +262,10 @@ class Dispatcher : public content::RenderProcessObserver,
       std::string* bind_name,
       ScriptContext* context);
 
+  // Requires the GuestView modules in the module system of the ScriptContext
+  // |context|.
+  void RequireGuestViewModules(ScriptContext* context);
+
   // The delegate for this dispatcher. Not owned, but must extend beyond the
   // Dispatcher's own lifetime.
   DispatcherDelegate* delegate_;

@@ -324,37 +324,7 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("platformApp");
   }
 
-  if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
-    module_system->Require("appView");
-  } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
-    module_system->Require("appViewDeny");
-  }
-
-  if (extensions::FeatureSwitch::surface_worker()->IsEnabled() &&
-      context->GetAvailability("surfaceWorkerInternal").is_available()) {
-    module_system->Require("surfaceWorker");
-  }
-
-  if (context->GetAvailability("extensionViewInternal").is_available()) {
-    module_system->Require("extensionView");
-    module_system->Require("extensionViewApiMethods");
-    module_system->Require("extensionViewAttributes");
-  }
-
-  // Note: setting up the WebView class here, not the chrome.webview API.
-  // The API will be automatically set up when first used.
-  if (context->GetAvailability("webViewInternal").is_available()) {
-    module_system->Require("webView");
-    module_system->Require("webViewApiMethods");
-    module_system->Require("webViewAttributes");
-    if (context->GetAvailability("webViewExperimentalInternal")
-            .is_available()) {
-      module_system->Require("webViewExperimental");
-    }
-  } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
-    module_system->Require("webViewDeny");
-  }
-
+  RequireGuestViewModules(context);
   delegate_->RequireAdditionalModules(context, is_within_platform_app);
 
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
@@ -1556,6 +1526,49 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
 
   return bind_object.IsEmpty() ? AsObjectOrEmpty(GetOrCreateChrome(context))
                                : bind_object;
+}
+
+void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
+  Feature::Context context_type = context->context_type();
+  ModuleSystem* module_system = context->module_system();
+
+  // Require AppView.
+  if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
+    module_system->Require("appView");
+  } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
+    module_system->Require("appViewDeny");
+  }
+
+  // Require ExtensionOptions.
+  if (context->GetAvailability("extensionOptionsInternal").is_available()) {
+    module_system->Require("extensionOptions");
+  }
+
+  // Require ExtensionView.
+  if (context->GetAvailability("extensionViewInternal").is_available()) {
+    module_system->Require("extensionView");
+    module_system->Require("extensionViewApiMethods");
+    module_system->Require("extensionViewAttributes");
+  }
+
+  // Require SurfaceView.
+  if (extensions::FeatureSwitch::surface_worker()->IsEnabled() &&
+      context->GetAvailability("surfaceWorkerInternal").is_available()) {
+    module_system->Require("surfaceWorker");
+  }
+
+  // Require WebView.
+  if (context->GetAvailability("webViewInternal").is_available()) {
+    module_system->Require("webView");
+    module_system->Require("webViewApiMethods");
+    module_system->Require("webViewAttributes");
+    if (context->GetAvailability("webViewExperimentalInternal")
+        .is_available()) {
+      module_system->Require("webViewExperimental");
+    }
+  } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
+    module_system->Require("webViewDeny");
+  }
 }
 
 }  // namespace extensions
