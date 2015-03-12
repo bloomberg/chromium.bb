@@ -99,6 +99,9 @@ def write_event_interfaces_file(event_idl_files, destination_filename, only_if_c
     lines = ['namespace="Event"\n']
     if suffix:
         lines.append('suffix="' + suffix + '"\n')
+        lines.append('export=%s_EXPORT\n' % suffix.upper())
+    else:
+        lines.append('export=CORE_EXPORT\n')
     lines.append('\n')
     interface_lines = [interface_line(event_idl_file)
                        for event_idl_file in event_idl_files]

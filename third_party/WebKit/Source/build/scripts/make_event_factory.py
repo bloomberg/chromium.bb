@@ -63,6 +63,7 @@ class EventFactoryWriter(in_generator.Writer):
         'RuntimeEnabled': None,
     }
     default_parameters = {
+        'export': '',
         'namespace': '',
         'suffix': '',
     }
