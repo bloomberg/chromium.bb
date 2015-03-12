@@ -73,11 +73,13 @@ const char kAddressLinesExtraRe[] =
 const char kAddressLookupRe[] =
     "lookup";
 const char kCountryRe[] =
-    "country|countries|location"
+    "country|countries"
     "|país|pais"  // es
     "|国"  // ja-JP
     "|国家"  // zh-CN
     "|국가|나라";  // ko-KR
+const char kCountryLocationRe[] =
+    "location";
 const char kZipCodeRe[] =
     "zip|postal|post.*code|pcode"
     "|pin.?code"  // en-IN

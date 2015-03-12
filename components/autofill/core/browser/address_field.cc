@@ -195,14 +195,23 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
 }
 
 bool AddressField::ParseCountry(AutofillScanner* scanner) {
-  // Parse a country.  The occasional page (e.g.
-  // Travelocity_New Member Information1.html) calls this a "location".
   if (country_ && !country_->IsEmpty())
     return false;
 
+  scanner->SaveCursor();
+  if (ParseFieldSpecifics(scanner,
+                          UTF8ToUTF16(kCountryRe),
+                          MATCH_DEFAULT | MATCH_SELECT,
+                          &country_)) {
+    return true;
+  }
+
+  // The occasional page (e.g. google account registration page) calls this a
+  // "location". However, this only makes sense for select tags.
+  scanner->Rewind();
   return ParseFieldSpecifics(scanner,
-                             UTF8ToUTF16(kCountryRe),
-                             MATCH_DEFAULT | MATCH_SELECT,
+                             UTF8ToUTF16(kCountryLocationRe),
+                             MATCH_LABEL | MATCH_NAME | MATCH_SELECT,
                              &country_);
 }
 
