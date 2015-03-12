@@ -992,6 +992,8 @@
       'browser/net/view_http_cache_job_factory.h',
       'browser/notification_service_impl.cc',
       'browser/notification_service_impl.h',
+      'browser/notifications/notification_database.cc',
+      'browser/notifications/notification_database.h',
       'browser/notifications/notification_event_dispatcher_impl.cc',
       'browser/notifications/notification_event_dispatcher_impl.h',
       'browser/notifications/notification_message_filter.cc',
